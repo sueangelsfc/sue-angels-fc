@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://suesangelsfc.co.uk/sitemap.xml

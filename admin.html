@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en" data-screen-label="Admin">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Control panel · Sue's Angels FC</title>
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="assets/badge/sue-angels-badge.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+  <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" />
+  <link rel="stylesheet" href="colors_and_type.css" />
+  <link rel="stylesheet" href="site.css" />
+  <link rel="stylesheet" href="redesign.css" />
+  <link rel="stylesheet" href="admin-skin.css" />
+  <style>.cms__navbtn { text-transform: uppercase; letter-spacing: 0.04em; }</style>
+  <script>(function(){try{var t=localStorage.getItem('sa-theme');if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+</head>
+<body>
+  <div id="rd-root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script src="supabase-config.js?v=19"></script>
+  <script src="supabase.js?v=19"></script>
+  <script src="dataStore.js?v=19"></script>
+  <script type="text/babel" src="Nav.jsx"></script>
+  <script type="text/babel" src="PageShell.jsx"></script>
+  <script type="text/babel" src="AdminMode.jsx"></script>
+  <script type="text/babel" src="MediaStore.jsx"></script>
+  <script type="text/babel" src="TableSync.jsx"></script>
+  <script type="text/babel" src="MatchEntry.jsx"></script>
+  <script type="text/babel" src="FixtureEntry.jsx"></script>
+  <script type="text/babel" src="PlayerPhotos.jsx"></script>
+  <script type="text/babel" src="GalleryAlbums.jsx"></script>
+
+  <script type="text/babel" src="RedesignShell.jsx"></script>
+  <script type="text/babel" src="AdminPanel.jsx"></script>
+  <script src="fx.js?v=19" defer></script>
+  <script src="gallery-fx.js?v=19" defer></script>
+  <script src="player-fx.js?v=19" defer></script>
+</body>
+</html>

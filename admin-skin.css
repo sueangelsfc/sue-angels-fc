@@ -1,0 +1,94 @@
+/* admin-skin.css — retheme the control panel to the new site aesthetic
+   (Clash Display + Hanken Grotesk, navy/volt glass). Loaded LAST in admin.html
+   so it overrides colors_and_type.css + redesign.css without touching them. */
+
+:root {
+  /* swap the type families the admin inherits → new site fonts */
+  --font-display: 'Clash Display', system-ui, sans-serif;
+  --font-stat:    'Clash Display', system-ui, sans-serif;
+  --font-sans:    'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+  /* softer, modern radii to match the new glass */
+  --rd-radius: 22px;
+  --rd-radius-sm: 14px;
+  --radius-lg: 22px;
+  --radius-md: 12px;
+
+  /* ── ADMIN-ONLY palette: ORANGE · SILVER · BLACK ─────────────────────
+     Overrides the shared brand tokens so the control panel stands apart
+     from the public site (which keeps its volt-green identity). */
+  --volt:           #FF7A1A;   /* primary accent → orange */
+  --volt-glow:      #FF9A4D;   /* hover / glow ramp */
+  --volt-deep:      #E2660A;   /* pressed */
+  --volt-on:        #140A02;   /* near-black text on orange */
+  --navy:           #14161A;   /* base surface → charcoal */
+  --navy-deep:      #070708;   /* page bg → near-black */
+  --navy-rise:      #15181D;
+  --navy-rise-2:    #1E232A;
+  --bg:             #070708;
+  --surface-1:      #111318;
+  --surface-2:      #181C22;
+  --surface-3:      #20252D;
+  --fg-1:           #F5F7F9;   /* bright */
+  --fg-2:           #C6CCD4;   /* silver body */
+  --fg-3:           #8E96A0;   /* muted silver */
+  --fg-4:           #565E68;
+  --fg-on-volt:     #140A02;
+  --hairline:       rgba(200,208,216,0.10);
+  --hairline-strong:rgba(200,208,216,0.22);
+  --hairline-volt:  rgba(255,122,26,0.40);
+  --glow-volt-sm:   0 0 24px rgba(255,122,26,0.45);
+  --glow-volt-lg:   0 0 64px rgba(255,122,26,0.55);
+}
+
+/* headings: Clash Display loses the old uppercase-condensed feel */
+.rd-h1, .rd-h2, .rd-h3, h1, h2, h3 {
+  font-family: 'Clash Display', system-ui, sans-serif !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: -0.02em !important;
+}
+body, .rd-lead, p, input, textarea, select, button {
+  font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
+}
+
+/* page background — admin-only ORANGE/SILVER glow on near-black */
+html[data-theme="dark"] body.rd-body, body.rd-body {
+  background:
+    radial-gradient(1100px 680px at 82% -12%, rgba(255,122,26,0.16), transparent 58%),
+    radial-gradient(900px 620px at 4% 6%, rgba(184,192,204,0.12), transparent 56%),
+    #070708 !important;
+  background-attachment: fixed !important;
+}
+html[data-theme="light"] body.rd-body {
+  background:
+    radial-gradient(1100px 680px at 82% -12%, rgba(255,122,26,0.22), transparent 56%),
+    radial-gradient(900px 620px at 4% 6%, rgba(150,160,172,0.55), transparent 54%),
+    #E7E9EC !important;
+  background-attachment: fixed !important;
+}
+
+/* glass cards → match new tier-2 glass */
+.rd-card, .cms-gate__card, .cms__nav, .cms-row {
+  border-radius: var(--rd-radius) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
+  backdrop-filter: blur(26px) saturate(150%);
+}
+
+/* pill buttons already align; just ensure volt + radius parity */
+.rd-btn { border-radius: 9999px !important; font-weight: 600 !important; }
+.rd-btn--volt { background: var(--volt) !important; color: #140A02 !important; }
+.rd-btn--volt:hover { background: #FF9A4D !important; }
+html[data-theme="light"] .rd-btn--volt { background: #140A02 !important; color: var(--volt) !important; }
+
+/* nav buttons in the CMS sidebar */
+.cms__navbtn { border-radius: 12px !important; font-weight: 600 !important; letter-spacing: 0.01em; }
+.cms__navbtn.is-active { background: var(--volt) !important; color: #140A02 !important; }
+
+/* inputs / fields → rounded glass */
+.rd-field input, .rd-field textarea, .rd-field select,
+input[type="text"], input[type="email"], input[type="number"], input[type="date"], textarea, select {
+  border-radius: 12px !important;
+}
+
+/* chips */
+.rd-chip { border-radius: 9999px !important; }

@@ -1105,7 +1105,7 @@ function ProfileCard({
     }
   }, "Contribution breakdown"), /*#__PURE__*/React.createElement("p", {
     className: "m-panel__hint"
-  }, "Share of the team\u2019s output \u2014 hover any metric to see what it means"), /*#__PURE__*/React.createElement(PercentileWheel, {
+  }, "Share of the team\u2019s output. Hover any metric to see what it means"), /*#__PURE__*/React.createElement(PercentileWheel, {
     p: p
   })), /*#__PURE__*/React.createElement("div", {
     className: "m-panel"
@@ -2685,15 +2685,15 @@ function Sponsors({
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(PageHero, {
     eyebrow: "Partners",
     title: /*#__PURE__*/React.createElement(React.Fragment, null, "Behind the ", /*#__PURE__*/React.createElement("em", null, "badge"), "."),
-    sub: "The businesses and clubs that back Sue's Angels \u2014 including our ground-share partner. Here's who they are, and how to join them.",
+    sub: "The businesses and clubs that back Sue's Angels, including our ground-share partner. Here's who they are, and how to join them.",
     actions: /*#__PURE__*/React.createElement("button", {
       className: "m-btn m-btn--volt",
       onClick: () => go('contact')
     }, "Partner with us ", /*#__PURE__*/React.createElement(Arrow, null))
   }), h("section", { className: "mp-sec" }, h("div", { className: "m-wrap" },
     h(Head, { eyebrow: "Why partner", title: "More than a logo on a shirt" }),
-    h("p", { className: "m-lead", style: { maxWidth: "64ch", marginBottom: 26 } }, "Sue’s Angels isn’t a typical grassroots side. We’re League Ten champions — unbeaten in our first season — built around a cause that matters, with a growing audience that puts local businesses in front of the right people."),
-    h("div", { className: "mp-grid mp-g2" }, [["Champions, with momentum", "Played 18, won 18, promoted for 26/27. Your brand backs a winning, rising club — not a hopeful start-up."], ["A club with a cause", "Founded in memory of Susan Anne Martin and supporting sepsis awareness. Backing us means standing behind something real."], ["Local roots, real reach", "Home at The Reeves in Hanworth — serving Kingston, Sunbury, Staines and south-west London, and growing across Instagram, TikTok and the web."], ["A package, not a slot", "No fixed tiers. We build the partnership around your business — kit, content, matchday and more."]].map((c, i) => h("div", { key: i, className: "m-glass", style: { padding: "clamp(22px,3vw,30px)" } }, h("h3", { className: "m-h3" }, c[0]), h("p", { style: { color: "var(--m-ink-2)", marginTop: 8 } }, c[1])))))), /*#__PURE__*/React.createElement("section", {
+    h("p", { className: "m-lead", style: { maxWidth: "64ch", marginBottom: 26 } }, "Sue’s Angels isn’t a typical grassroots side. We are League Ten champions, unbeaten in our first season, built around a cause that matters, with a growing audience that puts local businesses in front of the right people."),
+    h("div", { className: "mp-grid mp-g2" }, [["Champions, with momentum", "Played 18, won 18, promoted for 26/27. Your brand backs a winning, rising club, not a hopeful start-up."], ["A club with a cause", "Founded in memory of Susan Anne Martin, and supporting sepsis awareness. Backing us means standing behind something that matters."], ["Local roots, real reach", "Home at The Reeves in Hanworth, serving Kingston, Sunbury, Staines and south-west London, and growing across Instagram, TikTok and the web."], ["A package, not a slot", "No fixed tiers. We build the partnership around your business, from kit and content to matchday and more."]].map((c, i) => h("div", { key: i, className: "m-glass", style: { padding: "clamp(22px,3vw,30px)" } }, h("h3", { className: "m-h3" }, c[0]), h("p", { style: { color: "var(--m-ink-2)", marginTop: 8 } }, c[1])))))), /*#__PURE__*/React.createElement("section", {
     className: "mp-sec"
   }, /*#__PURE__*/React.createElement("div", {
     className: "m-wrap"
@@ -2739,8 +2739,8 @@ function Sponsors({
     className: "m-h3"
   }, t), /*#__PURE__*/React.createElement("p", null, c)))))), h("section", { className: "mp-sec", style: { paddingTop: 0 } }, h("div", { className: "m-wrap" },
     h(Head, { eyebrow: "Getting involved", title: "How it works" }),
-    h("div", { className: "mp-grid mp-g3" }, [["01", "Get in touch", "Tell us a little about your business and what you’d like from a partnership."], ["02", "We build your package", "We tailor the exposure around you — kit, website, social, matchday and content. No fixed tiers."], ["03", "Your brand goes live", "You join the badge and reach our community every week, on and off the pitch."]].map((s, i) => h("div", { key: i, className: "mp-feat" }, h("div", { className: "mp-feat__n" }, s[0]), h("h3", { className: "m-h3" }, s[1]), h("p", null, s[2])))),
-    h("div", { className: "m-glass", style: { padding: "clamp(24px,4vw,44px)", marginTop: 22, textAlign: "center" } }, h("p", { className: "m-eyebrow m-eyebrow--volt", style: { justifyContent: "center", display: "inline-flex" } }, "Become a partner"), h("h2", { className: "mp-hero__title", style: { fontSize: "clamp(1.6rem,4vw,2.6rem)", marginTop: 10 } }, "Put your brand behind the badge."), h("p", { className: "m-lead", style: { margin: "12px auto 0", maxWidth: "52ch" } }, "Sponsorship, kit, matchday or community partnerships — let’s build something that works for your business and the club."), h("div", { style: { marginTop: 24, display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" } }, h("button", { className: "m-btn m-btn--volt", onClick: () => go("contact") }, "Make an enquiry ", h(Arrow, null)), h("a", { className: "m-btn m-btn--ghost", href: "mailto:susangelsfc@gmail.com" }, "Email the club"))))), /*#__PURE__*/React.createElement("section", {
+    h("div", { className: "mp-grid mp-g3" }, [["01", "Get in touch", "Tell us a little about your business and what you’d like from a partnership."], ["02", "We build your package", "We tailor the exposure around you, across kit, website, social, matchday and content. No fixed tiers."], ["03", "Your brand goes live", "You join the badge and reach our community every week, on and off the pitch."]].map((s, i) => h("div", { key: i, className: "mp-feat" }, h("div", { className: "mp-feat__n" }, s[0]), h("h3", { className: "m-h3" }, s[1]), h("p", null, s[2])))),
+    h("div", { className: "m-glass", style: { padding: "clamp(24px,4vw,44px)", marginTop: 22, textAlign: "center" } }, h("p", { className: "m-eyebrow m-eyebrow--volt", style: { justifyContent: "center", display: "inline-flex" } }, "Become a partner"), h("h2", { className: "m-h2", style: { marginTop: 10 } }, "Put your brand behind the badge."), h("p", { className: "m-lead", style: { margin: "12px auto 0", maxWidth: "54ch" } }, "Sponsorship, kit, matchday or community partnerships. Let’s build something that works for your business and the club."), h("div", { style: { marginTop: 24, display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" } }, h("button", { className: "m-btn m-btn--volt", onClick: () => go("contact") }, "Make an enquiry ", h(Arrow, null)), h("a", { className: "m-btn m-btn--ghost", href: "mailto:susangelsfc@gmail.com" }, "Email the club"))))), /*#__PURE__*/React.createElement("section", {
     className: "mp-sec",
     style: {
       paddingTop: 0
@@ -3023,30 +3023,28 @@ function Sepsis({ go }) {
     ['Skin mottled, bluish or pale', 'Blotchy, discoloured or unusually pale skin.'],
   ];
   const help = [
-    ['Know & share the signs', 'The six signs below can save a life. Learn them, then pass them on — to family, teammates, anyone.', 'Share this page', () => { try { if (navigator.share) navigator.share({ title: 'Know the signs of sepsis — Sue’s Angels FC', url: location.href }); else if (navigator.clipboard) { navigator.clipboard.writeText(location.href); alert('Link copied — thank you for sharing.'); } } catch (e) {} }],
-    ['Support the UK Sepsis Trust', 'The UK Sepsis Trust funds support, research and awareness across the country. Learn more or give directly.', 'Visit sepsistrust.org', 'https://www.sepsistrust.org'],
-    ['Stand with the club', 'Back Sue’s Angels as a sponsor, partner or volunteer, and help carry the message further.', 'Get involved', () => go('contact')],
+    ['Know and share the signs', 'The signs above can save a life. Take a moment to learn them, and share them with the people you love.', 'Share this page', () => { try { if (navigator.share) navigator.share({ title: 'Know the signs of sepsis', url: location.href }); else if (navigator.clipboard) { navigator.clipboard.writeText(location.href); alert('Link copied. Thank you for sharing.'); } } catch (e) {} }],
+    ['Support the UK Sepsis Trust', 'The UK Sepsis Trust offers support to families, funds research, and raises awareness across the country. You can find out more or give on their website.', 'Visit sepsistrust.org', 'https://www.sepsistrust.org'],
+    ['Stand with the club', 'Back Sue’s Angels as a sponsor, partner or volunteer, and help us carry her message a little further.', 'Get involved', () => go('contact')],
   ];
   return h(React.Fragment, null,
     h(PageHero, {
       eyebrow: 'Our cause',
       title: h(React.Fragment, null, 'For ', h('em', null, 'Sue'), '.'),
-      sub: 'Sue’s Angels FC was founded in memory of Susan Anne Martin, who we lost to sepsis. We play in her name — and we want more people to know the signs that save lives.',
+      sub: 'Sue’s Angels FC was founded in memory of Susan Anne Martin, who we lost to sepsis. We play in her name, and we hope that by sharing what we have learned, we can help other families recognise the signs in time.',
       actions: h(React.Fragment, null,
         h('button', { className: 'm-btn m-btn--volt', onClick: () => scrollTo('signs') }, 'Know the signs ', h(Arrow, null)),
         h('button', { className: 'm-btn m-btn--ghost', onClick: () => go('contact') }, 'Support the cause')),
     }),
     h('section', { className: 'mp-sec' }, h('div', { className: 'm-wrap' },
-      h('div', { className: 'mp-grid mp-g3' }, [['In her name', 'Founded in 2025 for Susan Anne Martin'], ['~48,000', 'UK lives lost to sepsis every year'], ['Minutes matter', 'Caught early, sepsis is survivable']].map((s, i) => h('div', { key: i, className: 'm-glass', style: { padding: 'clamp(22px,3vw,30px)' } },
-        h('div', { style: { font: '600 clamp(1.7rem,4vw,2.5rem)/1 var(--m-display)', color: 'var(--m-volt-ink)', letterSpacing: '-0.02em' } }, s[0]),
-        h('div', { style: { marginTop: 8, color: 'var(--m-ink-2)' } }, s[1])))))),
+      h('div', { className: 'mp-grid mp-g3' }, [['2025', 'Founded in her memory'], ['48,000', 'Lives lost to sepsis in the UK each year'], ['6', 'Signs that can help save one']].map((s, i) => h('div', { key: i, className: 'm-kpi' }, h('b', null, s[0]), h('span', null, s[1])))))),
     h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
       h('div', { className: 'm-glass', style: { padding: 'clamp(24px,3vw,44px)' } },
         h('p', { className: 'm-eyebrow m-eyebrow--volt' }, 'Why we exist'),
         h('blockquote', { style: { font: '600 clamp(1.5rem,3.2vw,2.6rem)/1.16 var(--m-display)', letterSpacing: '-0.03em', margin: '16px 0 0' } }, '“What we do in life echoes in eternity.”'),
         h('div', { className: 'm-prose', style: { marginTop: 18 } },
-          h('p', null, 'The club carries one name onto the pitch every week. Sue’s Angels FC was founded in 2025 in memory of Susan Anne Martin — and built so that her name lives on in something that brings people together.'),
-          h('p', null, 'We lost Sue to sepsis. That loss shaped everything about this club: how we play, why we turn up, and the cause we’ve chosen to stand behind.'))))),
+          h('p', null, 'Everything about this club begins with one person. Sue’s Angels FC was founded in 2025 in memory of Susan Anne Martin, so that her name stays part of something good, week after week.'),
+          h('p', null, 'We lost Sue to sepsis. It is a loss her family and friends carry every day, and it is the reason this club exists. We play for her, and we talk openly about sepsis so that fewer people have to go through the same thing.'))))),
     h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
       h('div', { style: { position: 'relative', borderRadius: 'var(--m-radius)', overflow: 'hidden' } },
         h('picture', { style: { display: 'block', width: '100%' } },
@@ -3055,17 +3053,17 @@ function Sepsis({ go }) {
         h('div', { style: { position: 'absolute', inset: 0, background: 'linear-gradient(0deg, rgba(4,14,21,0.9), rgba(4,14,21,0.05) 55%)' } }),
         h('div', { style: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: 'clamp(18px,3vw,32px)' } },
           h('p', { className: 'm-eyebrow m-eyebrow--volt' }, 'The team that plays in her name'),
-          h('p', { style: { font: '600 clamp(1.1rem,2.4vw,1.7rem)/1.2 var(--m-display)', color: '#fff', marginTop: 8, letterSpacing: '-0.02em' } }, 'Every matchday carries Susan Anne Martin’s memory forward.'))))),
+          h('h3', { className: 'm-h3', style: { color: '#fff', marginTop: 8 } }, 'Every time we step onto the pitch, we carry Sue with us.'))))),
     h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
-      h(Head, { eyebrow: 'Understanding sepsis', title: 'Fast. Common. Often missed.' }),
+      h(Head, { eyebrow: 'Understanding sepsis', title: 'What sepsis is' }),
       h('div', { className: 'm-prose', style: { maxWidth: '70ch' } },
-        h('p', null, 'Sepsis is the body’s extreme response to an infection — the immune system turns on the body itself, and it can become life-threatening within hours. It can affect anyone, of any age, from any infection.'),
-        h('p', null, h(React.Fragment, null, 'The ', h('a', { href: 'https://www.sepsistrust.org', target: '_blank', rel: 'noopener', style: { color: 'var(--m-volt-ink)' } }, 'UK Sepsis Trust'), ' estimates sepsis claims around 48,000 lives in the UK every year. Many are preventable — and spotting it early is the single biggest factor. That’s why we talk about it.'))))),
+        h('p', null, 'Sepsis is what can happen when the body’s response to an infection starts to harm its own tissues and organs. It can affect anyone, at any age, and it can turn serious very quickly. That is why noticing it early matters so much.'),
+        h('p', null, h(React.Fragment, null, 'The ', h('a', { href: 'https://www.sepsistrust.org', target: '_blank', rel: 'noopener', style: { color: 'var(--m-volt-ink)' } }, 'UK Sepsis Trust'), ' estimates that sepsis takes around 48,000 lives in the UK every year. So many of those losses could have been prevented, and the biggest difference is spotting it early. That is why we keep talking about it.'))))),
     h('section', { id: 'signs', className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
       h(Head, { eyebrow: 'Know the signs', title: 'Could it be sepsis?' }),
-      h('p', { className: 'm-lead', style: { maxWidth: '62ch', marginBottom: 22 } }, 'In an adult, seek urgent medical help — call 999 or NHS 111 — and just ask the question if you notice any of these:'),
+      h('p', { className: 'm-lead', style: { maxWidth: '62ch', marginBottom: 22 } }, 'In an adult, trust your instinct and get help quickly. Call 999 or NHS 111, and ask the question if you notice any of these:'),
       h('div', { className: 'mp-grid mp-g3' }, signs.map((s, i) => h('div', { key: i, className: 'm-glass', style: { padding: '20px 22px' } },
-        h('div', { style: { font: '600 1.05rem/1.2 var(--m-display)', letterSpacing: '-0.01em' } }, s[0]),
+        h('h3', { className: 'm-h3', style: { fontSize: '1.1rem' } }, s[0]),
         h('p', { style: { marginTop: 8, color: 'var(--m-ink-2)', fontSize: '0.92rem' } }, s[1])))),
       h('div', { className: 'm-glass', style: { padding: 'clamp(20px,3vw,30px)', marginTop: 18 } },
         h('p', { className: 'm-eyebrow m-eyebrow--volt' }, 'In a child or baby'),
@@ -3073,12 +3071,12 @@ function Sepsis({ go }) {
         h('ul', { style: { margin: '12px 0 0', paddingLeft: 18, color: 'var(--m-ink-2)', lineHeight: 1.75 } }, ['Is breathing very fast', 'Has a fit or convulsion', 'Looks mottled, bluish or pale', 'Has a rash that doesn’t fade when you press it', 'Is very lethargic or hard to wake', 'Feels abnormally cold to touch'].map((x, i) => h('li', { key: i }, x))),
         h('p', { style: { marginTop: 12, color: 'var(--m-ink-3)', fontSize: '0.86rem' } }, 'For babies under 5, also look out for not feeding, repeated vomiting, or no wet nappy for 12 hours.')),
       h('div', { className: 'm-glass', style: { padding: 'clamp(20px,3vw,32px)', marginTop: 18, borderColor: 'var(--m-volt)' } },
-        h('p', { style: { font: '600 1.1rem/1.4 var(--m-sans)' } }, 'Trust your instinct. If someone is getting worse fast, don’t wait — ask: “could it be sepsis?”'),
-        h('p', { style: { marginTop: 10, color: 'var(--m-ink-3)', fontSize: '0.86rem' } }, h(React.Fragment, null, 'General guidance only. For full, up-to-date information visit the ', h('a', { href: 'https://www.sepsistrust.org', target: '_blank', rel: 'noopener', style: { color: 'var(--m-volt-ink)' } }, 'UK Sepsis Trust'), ' and the ', h('a', { href: 'https://www.nhs.uk/conditions/sepsis/', target: '_blank', rel: 'noopener', style: { color: 'var(--m-volt-ink)' } }, 'NHS'), '.'))))),
+        h('p', { style: { font: '600 1.1rem/1.4 var(--m-sans)' } }, 'Trust your instinct. If someone is getting worse quickly, please do not wait. Ask the question: could it be sepsis?'),
+        h('p', { style: { marginTop: 10, color: 'var(--m-ink-3)', fontSize: '0.86rem' } }, h(React.Fragment, null, 'This is general guidance. For full, up to date information, please visit the ', h('a', { href: 'https://www.sepsistrust.org', target: '_blank', rel: 'noopener', style: { color: 'var(--m-volt-ink)' } }, 'UK Sepsis Trust'), ' and the ', h('a', { href: 'https://www.nhs.uk/conditions/sepsis/', target: '_blank', rel: 'noopener', style: { color: 'var(--m-volt-ink)' } }, 'NHS'), '.'))))),
     h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
       h(Head, { eyebrow: 'Get involved', title: 'Three ways to help' }),
       h('div', { className: 'mp-grid mp-g3' }, help.map((c, i) => h('div', { key: i, className: 'm-glass', style: { padding: 'clamp(22px,3vw,30px)', display: 'flex', flexDirection: 'column', gap: 12 } },
-        h('div', { style: { font: '600 1.2rem/1.15 var(--m-display)', letterSpacing: '-0.01em' } }, c[0]),
+        h('h3', { className: 'm-h3' }, c[0]),
         h('p', { style: { color: 'var(--m-ink-2)', flex: 1 } }, c[1]),
         typeof c[3] === 'string'
           ? h('a', { className: 'm-btn m-btn--ghost', href: c[3], target: '_blank', rel: 'noopener', style: { alignSelf: 'flex-start' } }, c[2])
@@ -3086,8 +3084,8 @@ function Sepsis({ go }) {
     h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
       h('div', { className: 'm-glass', style: { padding: 'clamp(28px,4vw,52px)', textAlign: 'center' } },
         h('p', { className: 'm-eyebrow m-eyebrow--volt', style: { justifyContent: 'center', display: 'inline-flex' } }, 'In her name'),
-        h('h2', { className: 'mp-hero__title', style: { fontSize: 'clamp(1.8rem,4vw,3rem)', marginTop: 12 } }, 'Play for something bigger.'),
-        h('p', { className: 'm-lead', style: { margin: '14px auto 0', maxWidth: '54ch' } }, 'In memory of Susan Anne Martin. Every match, every season, carries her name — and her message — a little further.'),
+        h('h2', { className: 'm-h2', style: { marginTop: 12 } }, 'We play for something bigger.'),
+        h('p', { className: 'm-lead', style: { margin: '14px auto 0', maxWidth: '56ch' } }, 'In memory of Susan Anne Martin. Every match, and every season, carries her name and her story a little further.'),
         h('div', { style: { marginTop: 26, display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' } },
           h('button', { className: 'm-btn m-btn--volt', onClick: () => go('sponsors') }, 'Partner with the club ', h(Arrow, null)),
           h('button', { className: 'm-btn m-btn--ghost', onClick: () => go('contact') }, 'Get in touch'))))));

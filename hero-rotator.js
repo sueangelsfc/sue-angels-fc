@@ -15,11 +15,23 @@
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var rotators = [];
 
+  // Prefer a .webp sibling for the local hero banners; fall back to the original
+  // .jpg automatically if the browser can't load webp (older Safari/Firefox).
+  function webpVariant(url) {
+    return /assets\/hero\/banner-\d+\.jpg$/.test(url) ? url.replace(/\.jpg$/, '.webp') : url;
+  }
   function load(layer, url, cb) {
-    if (layer.getAttribute('src') === url) { cb && cb(); return; }
+    var primary = webpVariant(url);
+    if (layer.getAttribute('src') === primary && layer.naturalWidth) { cb && cb(); return; }
     layer.onload = function () { cb && cb(); };
-    layer.onerror = function () { cb && cb(); };
-    layer.src = url;
+    layer.onerror = function () {
+      // webp failed — retry once with the original jpg, then give up gracefully
+      if (primary !== url && (layer.getAttribute('src') || '').indexOf('.webp') !== -1) {
+        layer.onerror = function () { cb && cb(); };
+        layer.src = url;
+      } else { cb && cb(); }
+    };
+    layer.src = primary;
     if (layer.complete && layer.naturalWidth) { layer.onload = null; cb && cb(); }
   }
 
@@ -38,7 +50,7 @@
       load(B, url, function () {
         B.style.opacity = '1';       // CSS transition fades it in; if throttled it snaps — still correct
         setTimeout(function () {
-          A.src = url; A.style.opacity = '1';
+          A.src = B.getAttribute('src') || url; A.style.opacity = '1';   // inherit the source B actually loaded
           B.style.opacity = '0';
           busy = false;
         }, FADE);

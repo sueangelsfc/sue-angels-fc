@@ -1580,7 +1580,10 @@ function Home({
     title: "Recent results",
     link: "All results"
   }), /*#__PURE__*/React.createElement("div", {
-    className: "mh-rail"
+    className: "mh-rail",
+    tabIndex: 0,
+    role: "group",
+    "aria-label": "Recent results (scrollable)"
   }, results.map(r => /*#__PURE__*/React.createElement(ResCard, {
     key: r.id,
     r: r
@@ -1810,16 +1813,26 @@ function About({
       overflow: 'hidden',
       padding: 0
     }
-  }, /*#__PURE__*/React.createElement("img", {
+  }, /*#__PURE__*/React.createElement("picture", {
+    style: {
+      display: 'block',
+      width: '100%',
+      height: '100%'
+    }
+  }, /*#__PURE__*/React.createElement("source", {
+    type: "image/webp",
+    srcSet: "assets/hero-team.webp"
+  }), /*#__PURE__*/React.createElement("img", {
     src: "assets/hero-team.jpg",
     alt: "The squad",
+    loading: "lazy",
     style: {
       width: '100%',
       height: '100%',
       objectFit: 'cover',
       display: 'block'
     }
-  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+  }))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     className: "m-eyebrow m-eyebrow--volt"
   }, "Off the field \xB7 Sue's story"), /*#__PURE__*/React.createElement("h2", {
     className: "m-h2",
@@ -1981,7 +1994,10 @@ function Champions({
     title: "League results",
     link: "All results"
   }), /*#__PURE__*/React.createElement("div", {
-    className: "mh-rail"
+    className: "mh-rail",
+    tabIndex: 0,
+    role: "group",
+    "aria-label": "League results (scrollable)"
   }, league.slice(0, 8).map(r => /*#__PURE__*/React.createElement(ResCard, {
     key: r.id,
     r: r
@@ -3046,6 +3062,18 @@ function SiteHeader({
       localStorage.setItem('sa-theme', t);
     } catch (e) {}
   };
+  useEffect(() => {
+    if (!open) return;
+    const onKey = e => {
+      if (e.key === 'Escape') {
+        setOpen(false);
+        const b = document.querySelector('.sa-burger');
+        if (b) b.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("a", {
     className: "sa-skip",
     href: "#main"
@@ -3058,6 +3086,8 @@ function SiteHeader({
     src: "assets/badge/sue-angels-badge.png",
     alt: ""
   }), "Sue's Angels"), /*#__PURE__*/React.createElement("nav", {
+    id: "sa-primary-nav",
+    "aria-label": "Primary",
     className: `sa-nav ${open ? 'is-open' : ''}`
   }, NAV.map(([k, l]) => /*#__PURE__*/React.createElement("a", {
     key: k,
@@ -3083,6 +3113,7 @@ function SiteHeader({
     className: "sa-burger",
     "aria-label": "Menu",
     "aria-expanded": open,
+    "aria-controls": "sa-primary-nav",
     onClick: () => setOpen(!open)
   }, open ? '✕' : '☰'))));
 }

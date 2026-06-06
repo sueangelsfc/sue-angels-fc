@@ -92,6 +92,16 @@
           const client = await window.SupabaseStore.client();
           const { data, error } = await client.from(table).select('key, data');
           if (error) throw error;
+          // Cloud is the source of truth: prune any locally-cached rows that no
+          // longer exist in the cloud. Without this, an item deleted on one
+          // device keeps showing on every other device that had cached it
+          // (and "comes back to life" on reload). Only runs after a SUCCESSFUL
+          // fetch — on network failure we fall through to the catch and keep
+          // the local cache as an offline fallback.
+          const cloudKeys = new Set(data.map((r) => r.key));
+          for (const k of Object.keys(cache)) {
+            if (!cloudKeys.has(k)) { delete cache[k]; lsRemove(prefix + k); }
+          }
           for (const row of data) {
             cache[row.key] = row.data;
             lsSet(prefix + row.key, row.data);

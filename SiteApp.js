@@ -3392,7 +3392,7 @@ function PercentileWheel(props) {
       [0.5, 0.75, 1].map(function (f, i) { return h('circle', { key: 'r' + i, cx: cx, cy: cy, r: inR + (maxR - inR) * f, fill: 'none', className: 'm-wheel__ring' }); }),
       metrics.map(function (m, i) { var v = m[1], r = inR + (v / 100) * (maxR - inR); return h('path', { key: 'w' + i, d: wedge(i, r), className: 'm-wheel__wedge' + (hover === i ? ' is-active' : ''), style: { opacity: (0.30 + 0.58 * (v / 100)).toFixed(2) }, onMouseEnter: enter(i), onMouseLeave: leave }); }),
       metrics.map(function (m, i) { var a = (i * 60 - 90) * Math.PI / 180, e = pt(a, maxR); return h('line', { key: 'l' + i, x1: cx, y1: cy, x2: e[0].toFixed(1), y2: e[1].toFixed(1), className: 'm-wheel__spoke' }); }),
-      photo ? h('image', { href: photo, 'xlinkHref': photo, x: cx - inR, y: cy - inR, width: inR * 2, height: inR * 2, clipPath: 'url(#m-wheelclip-' + p.num + ')', preserveAspectRatio: 'xMidYMid slice' }) : null,
+      photo ? h('image', { href: photo, 'xlinkHref': photo, x: cx - inR, y: cy - inR, width: inR * 2, height: inR * 2, clipPath: 'url(#m-wheelclip-' + p.num + ')', preserveAspectRatio: 'xMidYMin slice' }) : null,
       h('circle', { cx: cx, cy: cy, r: inR, fill: 'none', className: 'm-wheel__photoring' }),
       metrics.map(function (m, i) { var am = ((i + 0.5) * 60 - 90) * Math.PI / 180, lp = pt(am, maxR + 28), hit = pt(am, maxR + 22);
         return h('g', { key: 't' + i, className: 'm-wheel__lblg' + (hover === i ? ' is-active' : ''), onMouseEnter: enter(i), onMouseLeave: leave },

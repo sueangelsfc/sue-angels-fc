@@ -1364,6 +1364,20 @@ h1, h2, h3, p, span, b, a, li { overflow-wrap: anywhere; }
   .mp-coach { flex-direction: column; text-align: center; gap: 14px; }
 }
 
+/* small phones: stop the glass header clipping the burger/toggle on the right */
+@media (max-width: 430px) {
+  .sa-header { gap: 6px; padding: 8px 8px 8px 12px; width: calc(100% - 20px); }
+  .sa-brand { font-size: 0.82rem; gap: 7px; min-width: 0; }
+  .sa-brand img { width: 28px; height: 28px; }
+  .sa-act { gap: 6px; }
+  .sa-header .m-toggle { padding: 0; width: 36px; height: 36px; justify-content: center; }
+  .sa-burger { width: 36px; height: 36px; font-size: 16px; }
+}
+@media (max-width: 344px) {
+  /* badge-only brand so the very smallest screens never clip the controls */
+  .sa-brand { font-size: 0; gap: 0; }
+}
+
 @media (max-width: 600px) {
   /* sub-tab rows wrap so every tab stays on screen (Coaches, Past players,
      filter pills etc. were getting pushed off the right edge in a scroll row) */

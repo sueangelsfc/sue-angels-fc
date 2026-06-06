@@ -1372,6 +1372,10 @@ h1, h2, h3, p, span, b, a, li { overflow-wrap: anywhere; }
   .mp-subtab { white-space: nowrap; padding: 7px 13px; font-size: 0.64rem; letter-spacing: 0.03em; }
   /* primary / ghost buttons: trimmed for small screens, still comfortably tappable */
   .m-btn { padding: 12px 18px; font-size: 0.82rem; }
+  /* position filter pills (Goalkeepers/Defenders/…): match the compact tab pills */
+  .mp-posselect { gap: 6px; margin-bottom: 18px; }
+  .mp-posselect__btn { padding: 7px 13px; gap: 6px; font-size: 0.64rem; letter-spacing: 0.04em; }
+  .mp-posselect__n { font-size: 0.7rem; }
   /* league table: let it scroll horizontally rather than crush 8 columns */
   .mp-ltable, .mh-table--full { display: block; overflow-x: auto; white-space: nowrap;
     -webkit-overflow-scrolling: touch; }

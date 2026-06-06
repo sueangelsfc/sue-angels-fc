@@ -995,6 +995,13 @@ html[data-theme="light"] .ma__honour svg { color: var(--m-volt-ink); }
 .mp-player__flipbtn:hover { background: var(--m-volt); color: var(--m-navy); transform: scale(1.1) rotate(-12deg); }
 @media (prefers-reduced-motion: reduce) { .mp-player__inner { transition: none; } }
 @media (max-width: 900px) { .mp-slider .mp-player { width: 76vw; } }
+@media (max-width: 560px) {
+  .mp-slider .mp-player { width: 64vw; }
+  .mp-slider .mp-player, .mp-slider .mp-player--flip { min-height: 340px; }
+  .mp-player__name { font-size: 1.1rem; }
+  .mp-player__stats b { font-size: 1.1rem; }
+  .mp-player__body { padding: 15px; }
+}
 
 .mp-subtabs--filters { margin-top: 4px; align-items: center; }
 .mp-filtersep { width: 1px; height: 20px; background: var(--m-edge-2); margin: 0 6px; flex: 0 0 auto; }

@@ -2654,6 +2654,7 @@ function DonateBlock() {
 function Sponsors({
   go
 }) {
+  const h = React.createElement;
   const [detail, setDetail] = useState(null);
   const partners = [{
     logo: 'assets/sponsors/sporting-solutions.png',
@@ -2689,7 +2690,10 @@ function Sponsors({
       className: "m-btn m-btn--volt",
       onClick: () => go('contact')
     }, "Partner with us ", /*#__PURE__*/React.createElement(Arrow, null))
-  }), /*#__PURE__*/React.createElement("section", {
+  }), h("section", { className: "mp-sec" }, h("div", { className: "m-wrap" },
+    h(Head, { eyebrow: "Why partner", title: "More than a logo on a shirt" }),
+    h("p", { className: "m-lead", style: { maxWidth: "64ch", marginBottom: 26 } }, "Sue’s Angels isn’t a typical grassroots side. We’re League Ten champions — unbeaten in our first season — built around a cause that matters, with a growing audience that puts local businesses in front of the right people."),
+    h("div", { className: "mp-grid mp-g2" }, [["Champions, with momentum", "Played 18, won 18, promoted for 26/27. Your brand backs a winning, rising club — not a hopeful start-up."], ["A club with a cause", "Founded in memory of Susan Anne Martin and supporting sepsis awareness. Backing us means standing behind something real."], ["Local roots, real reach", "Home at The Reeves in Hanworth — serving Kingston, Sunbury, Staines and south-west London, and growing across Instagram, TikTok and the web."], ["A package, not a slot", "No fixed tiers. We build the partnership around your business — kit, content, matchday and more."]].map((c, i) => h("div", { key: i, className: "m-glass", style: { padding: "clamp(22px,3vw,30px)" } }, h("h3", { className: "m-h3" }, c[0]), h("p", { style: { color: "var(--m-ink-2)", marginTop: 8 } }, c[1])))))), /*#__PURE__*/React.createElement("section", {
     className: "mp-sec"
   }, /*#__PURE__*/React.createElement("div", {
     className: "m-wrap"
@@ -2733,7 +2737,10 @@ function Sponsors({
     className: "mp-feat__n"
   }, n), /*#__PURE__*/React.createElement("h3", {
     className: "m-h3"
-  }, t), /*#__PURE__*/React.createElement("p", null, c)))))), /*#__PURE__*/React.createElement("section", {
+  }, t), /*#__PURE__*/React.createElement("p", null, c)))))), h("section", { className: "mp-sec", style: { paddingTop: 0 } }, h("div", { className: "m-wrap" },
+    h(Head, { eyebrow: "Getting involved", title: "How it works" }),
+    h("div", { className: "mp-grid mp-g3" }, [["01", "Get in touch", "Tell us a little about your business and what you’d like from a partnership."], ["02", "We build your package", "We tailor the exposure around you — kit, website, social, matchday and content. No fixed tiers."], ["03", "Your brand goes live", "You join the badge and reach our community every week, on and off the pitch."]].map((s, i) => h("div", { key: i, className: "mp-feat" }, h("div", { className: "mp-feat__n" }, s[0]), h("h3", { className: "m-h3" }, s[1]), h("p", null, s[2])))),
+    h("div", { className: "m-glass", style: { padding: "clamp(24px,4vw,44px)", marginTop: 22, textAlign: "center" } }, h("p", { className: "m-eyebrow m-eyebrow--volt", style: { justifyContent: "center", display: "inline-flex" } }, "Become a partner"), h("h2", { className: "mp-hero__title", style: { fontSize: "clamp(1.6rem,4vw,2.6rem)", marginTop: 10 } }, "Put your brand behind the badge."), h("p", { className: "m-lead", style: { margin: "12px auto 0", maxWidth: "52ch" } }, "Sponsorship, kit, matchday or community partnerships — let’s build something that works for your business and the club."), h("div", { style: { marginTop: 24, display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" } }, h("button", { className: "m-btn m-btn--volt", onClick: () => go("contact") }, "Make an enquiry ", h(Arrow, null)), h("a", { className: "m-btn m-btn--ghost", href: "mailto:susangelsfc@gmail.com" }, "Email the club"))))), /*#__PURE__*/React.createElement("section", {
     className: "mp-sec",
     style: {
       paddingTop: 0

@@ -1207,8 +1207,9 @@ html[data-theme="light"] .mh-join { background: radial-gradient(150% 150% at 0% 
   .sa-burger { display: grid; place-items: center; }
   .sa-joincta { display: none; }
   .sa-nav { position: absolute; top: calc(100% + 10px); left: 0; right: 0; flex-direction: column; gap: 4px; padding: 12px; border-radius: 22px;
-    background: var(--m-glass-3); border: 1px solid var(--m-edge); box-shadow: var(--m-shadow-2); -webkit-backdrop-filter: blur(24px) saturate(150%); backdrop-filter: blur(24px) saturate(150%);
+    background: rgba(6,18,27,0.995); border: 1px solid var(--m-edge); box-shadow: var(--m-shadow-2); -webkit-backdrop-filter: blur(24px) saturate(150%); backdrop-filter: blur(24px) saturate(150%);
     overflow: hidden; max-height: 0; opacity: 0; pointer-events: none; transition: max-height .3s var(--m-ease), opacity .25s var(--m-ease); }
+  html[data-theme="light"] .sa-nav { background: rgba(245,248,250,0.995); }
   .sa-nav.is-open { max-height: 78vh; opacity: 1; pointer-events: auto; }
   .sa-nav a { padding: 13px 16px; font-size: 0.82rem; }
 }

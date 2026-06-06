@@ -3241,7 +3241,7 @@ function SiteFooter() {
     style: {
       marginTop: 24
     }
-  }, /*#__PURE__*/React.createElement("small", null, "Founded 2025 \xB7 in memory of Susan Anne Martin \xB7 League Ten Champions 25/26 \xB7 supporting sepsis awareness"))));
+  }, /*#__PURE__*/React.createElement("small", null, "Sunday-league football at The Reeves, Hanworth \xB7 serving Kingston, Sunbury, Staines and south-west London \xB7 founded 2025 in memory of Susan Anne Martin \xB7 League Ten champions 25/26 \xB7 supporting sepsis awareness"))));
 }
 function BackToTop() {
   const [show, setShow] = useState(false);

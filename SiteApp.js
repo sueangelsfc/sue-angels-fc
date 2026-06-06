@@ -1805,7 +1805,7 @@ function About({
   }, /*#__PURE__*/React.createElement("div", {
     className: "m-glass",
     style: {
-      minHeight: 280,
+      aspectRatio: '16 / 11',
       borderRadius: 'var(--m-radius)',
       overflow: 'hidden',
       padding: 0
@@ -1934,9 +1934,8 @@ function Champions({
   }, /*#__PURE__*/React.createElement("p", {
     className: "m-panel__t"
   }, "Final league record"), /*#__PURE__*/React.createElement("div", {
+    className: "mh-recgrid",
     style: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(4,1fr)',
       gap: 12
     }
   }, record.map(([l, v]) => /*#__PURE__*/React.createElement("div", {
@@ -2484,7 +2483,7 @@ function Schedule({
     className: `mp-subtab ${outcome === k ? 'is-active' : ''}`,
     onClick: () => setOutcome(k)
   }, l)))), results.length ? /*#__PURE__*/React.createElement("div", {
-    className: "mp-grid mp-g4"
+    className: "mp-grid mp-results"
   }, results.map(r => /*#__PURE__*/React.createElement(ResCard, {
     key: r.id,
     r: r
@@ -2492,7 +2491,7 @@ function Schedule({
     className: "cms-empty",
     style: { margin: '8px 0', color: 'var(--m-ink-3)' }
   }, "No matches fit these filters.")) : tab === 'table' ? /*#__PURE__*/React.createElement(LeagueTable, null) : fixtures.length ? /*#__PURE__*/React.createElement("div", {
-    className: "mp-grid mp-g4"
+    className: "mp-grid mp-results"
   }, fixtures.map((f, i) => /*#__PURE__*/React.createElement("div", {
     className: "mh-res",
     key: i

@@ -1328,3 +1328,109 @@ html[data-theme="light"] .ts-form__cell--l b { color: #c0392b; }
 }
 @media (max-width: 560px) { .ts-tiles { grid-template-columns: 1fr 1fr; } }
 @media (prefers-reduced-motion: reduce) { .ts-wdl i, .ts-goals__for, .ts-goals__ag { transition: none; } .ts-form__cell:hover, .mp-sp:hover { transform: none; } }
+
+/* =========================================================================
+   MOBILE HARDENING — site-wide pass (≤760 / ≤600 / ≤430)
+   Prevents horizontal overflow and stacks every dense component cleanly.
+   ========================================================================= */
+
+/* Universal overflow safety: grid/flex children may exceed their track unless
+   allowed to shrink; long words & media must never push the page wider. */
+img, svg, video, canvas, iframe { max-width: 100%; }
+.m-wrap > *, .mp-grid > *, .mp-split > *, .ma > *, .ts > * { min-width: 0; }
+h1, h2, h3, p, span, b, a, li { overflow-wrap: anywhere; }
+
+@media (max-width: 760px) {
+  /* tighter section rhythm so content isn't pinched by big vertical padding */
+  .mp-sec { padding: clamp(34px, 9vw, 56px) 0; }
+  /* glass header: tighten so brand + burger + toggle never collide */
+  .sa-header { gap: 8px; padding: 9px 9px 9px 14px; width: calc(100% - 20px); }
+  .sa-brand { font-size: 0.9rem; gap: 8px; }
+  .sa-brand img { width: 30px; height: 30px; }
+  /* manager stats: ring above the tiles, full width */
+  .ma__record { flex-direction: column; align-items: stretch; }
+  .ma__record .m-ring { align-self: center; }
+  .ma__tiles { width: 100%; }
+  /* team-stats goals comparison: keep numbers from squeezing the bar */
+  .ts-goals__row { gap: 12px; }
+  /* coach cards: stack photo over text, centered */
+  .mp-coach { flex-direction: column; text-align: center; gap: 14px; }
+}
+
+@media (max-width: 600px) {
+  /* sub-tab rows (season · category · profile filters): one swipeable row
+     instead of wrapping into a tall messy stack */
+  .mp-subtabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none;
+    -webkit-overflow-scrolling: touch; margin-bottom: 18px; padding-bottom: 2px; }
+  .mp-subtabs::-webkit-scrollbar { display: none; }
+  .mp-subtab { flex: 0 0 auto; white-space: nowrap; }
+  /* league table: let it scroll horizontally rather than crush 8 columns */
+  .mp-ltable, .mh-table--full { display: block; overflow-x: auto; white-space: nowrap;
+    -webkit-overflow-scrolling: touch; }
+  .mp-ltable thead, .mh-table--full thead { } /* keep table semantics intact */
+  /* score-cover badges scale down so the VS/score stays centered */
+  .mp-news__gbadge { width: 44px; height: 44px; }
+  .mp-news__sc img { max-width: 46px; max-height: 46px; }
+  .mp-news__sc b { font-size: 2.1rem; }
+  /* donation + post cards: comfortable single column already; trim padding */
+  .mp-donate2__card, .mp-donate a { padding: 22px; }
+  /* modals: use the full width on phones */
+  .m-modal { padding: 12px 10px 28px; }
+  .m-modal__sponsor { padding: 22px; }
+  .m-modal__close { top: 12px; right: 12px; }
+  /* album lightbox arrows pulled in so they don't sit off-screen */
+  .m-albumbox__nav--prev { left: 8px; } .m-albumbox__nav--next { right: 8px; }
+  .m-albumbox__nav { width: 44px; height: 44px; font-size: 1.4rem; }
+}
+
+@media (max-width: 430px) {
+  /* very small phones: drop to single-column photo grids + 2-up stat tiles */
+  .mp-g4 { grid-template-columns: 1fr 1fr; }
+  .ma__tiles { grid-template-columns: repeat(2, 1fr); }
+  .ts-goals__side b { font-size: clamp(1.5rem, 7vw, 2rem); }
+  /* profile dashboard: stack identity, hide oversized number ghost */
+  .m-pc__top { grid-template-columns: 1fr; }
+  .m-counters { grid-template-columns: repeat(2, 1fr); }
+  /* keep the hero headline from overflowing on the narrowest screens */
+  .mp-hero__title { font-size: clamp(2.4rem, 12vw, 3.2rem); }
+  .mh-hero__title, .ts-hero__title { font-size: clamp(2rem, 10vw, 2.8rem); }
+}
+
+/* =========================================================================
+   MOBILE FIX PASS 2 — results/champions overflow, cover sizing, squad fill
+   ========================================================================= */
+
+/* Results & fixtures grid: bulletproof responsive — columns never wider than
+   the screen (min(100%, …)), so it collapses to 1 column on phones with NO
+   horizontal overflow, and gives 2–3 columns on larger screens. */
+.mp-results { display: grid; gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
+/* let result-card team names ellipsis instead of forcing the card wide */
+.mh-res__row { min-width: 0; }
+.mh-res__row span { min-width: 0; }
+
+/* Champions “final league record” tiles: 4-up desktop → 2-up phone (was an
+   inline repeat(4,1fr) that overflowed). */
+.mh-recgrid { display: grid; grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 720px) {
+  .mh-recgrid { grid-template-columns: repeat(2, 1fr); }
+  .mh-ledger__tiles { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Matchday / auto-generated cover: scale badges + score to the card so both
+   crests, VS and the photo credit are always fully visible. */
+.mp-news__sc { gap: clamp(10px, 4vw, 22px); max-width: 100%; justify-content: center; flex-wrap: nowrap; }
+.mp-news__gbadge { width: clamp(34px, 13vw, 54px); height: auto; flex: 0 0 auto; }
+.mp-news__cover .mp-news__ft { text-align: center; max-width: 100%; white-space: normal; line-height: 1.35; }
+
+@media (max-width: 600px) {
+  /* gallery: single clean column of matchday cards on phones */
+  .mp-g4 { grid-template-columns: 1fr 1fr; }
+  /* “what it took” rows: let the trailing stat wrap under instead of off-screen */
+  .m-srow { flex-wrap: wrap; }
+  .m-srow__s { flex-basis: 100%; text-align: left; padding-left: 54px; margin-top: -4px; }
+  /* champions / fixtures filter pills already scroll via .mp-subtabs rule */
+}
+@media (max-width: 430px) {
+  .mp-g4 { grid-template-columns: 1fr; }
+}

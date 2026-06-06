@@ -52,11 +52,24 @@ async function resolveModel(apiKey, requested) {
 }
 
 export default async function handler(req, res) {
-  // CORS — allow the site itself + Vercel preview deploys to call.
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // CORS — only the club's own site + its Vercel preview deploys may call this,
+  // so the Anthropic key can't be spent from an arbitrary third-party page.
+  const ALLOWED_ORIGINS = [
+    'https://www.suesangelsfc.co.uk',
+    'https://suesangelsfc.co.uk',
+  ];
+  const origin = req.headers.origin || '';
+  const originAllowed = !origin /* same-origin / server-to-server: no Origin header */
+    || ALLOWED_ORIGINS.includes(origin)
+    || /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin);
+  if (origin && originAllowed) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(204).end();
+  if (!originAllowed)          return res.status(403).json({ error: 'Origin not allowed' });
   if (req.method !== 'POST')   return res.status(405).json({ error: 'POST only' });
 
   const apiKey = process.env.ANTHROPIC_API_KEY;

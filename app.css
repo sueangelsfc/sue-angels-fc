@@ -1367,8 +1367,11 @@ h1, h2, h3, p, span, b, a, li { overflow-wrap: anywhere; }
 @media (max-width: 600px) {
   /* sub-tab rows wrap so every tab stays on screen (Coaches, Past players,
      filter pills etc. were getting pushed off the right edge in a scroll row) */
-  .mp-subtabs, .mp-subtabs--filters { flex-wrap: wrap; overflow-x: visible; margin-bottom: 18px; }
-  .mp-subtab { white-space: nowrap; }
+  .mp-subtabs, .mp-subtabs--filters { flex-wrap: wrap; overflow-x: visible; gap: 6px; margin-bottom: 18px; }
+  /* compact pill sizing so wrapped tabs/filters fit the viewport */
+  .mp-subtab { white-space: nowrap; padding: 7px 13px; font-size: 0.64rem; letter-spacing: 0.03em; }
+  /* primary / ghost buttons: trimmed for small screens, still comfortably tappable */
+  .m-btn { padding: 12px 18px; font-size: 0.82rem; }
   /* league table: let it scroll horizontally rather than crush 8 columns */
   .mp-ltable, .mh-table--full { display: block; overflow-x: auto; white-space: nowrap;
     -webkit-overflow-scrolling: touch; }

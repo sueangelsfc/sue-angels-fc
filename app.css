@@ -692,6 +692,12 @@ html[data-theme="light"] .mh-hero__scrim {
 .mh-route__ic svg { width: 20px; height: 20px; }
 .mh-route b { font-family: var(--m-display); font-weight: 600; text-transform: uppercase; font-size: 1.02rem; letter-spacing: -0.01em; }
 .mh-route span { font: 500 0.74rem var(--m-sans); color: var(--m-ink-3); margin-top: 3px; }
+/* homepage identity tiles — share the site's card styling + hover lift */
+.mh-pillar { display: flex; flex-direction: column; gap: 8px; text-align: left; padding: clamp(20px, 2.5vw, 26px); border-radius: var(--m-radius); background: var(--m-glass-2); border: 1px solid var(--m-edge); box-shadow: var(--m-shadow-1), inset 0 1px 0 var(--m-hi); color: inherit; font: inherit; cursor: pointer; transition: transform .3s var(--m-ease), border-color .3s var(--m-ease), box-shadow .35s; }
+.mh-pillar:hover { transform: translateY(-6px); border-color: var(--m-volt); box-shadow: 0 26px 56px -26px rgba(214,242,58,0.3), var(--m-shadow-1); }
+.mh-pillar__body { color: var(--m-ink-2); flex: 1; margin: 0; }
+.mh-pillar__cta { color: var(--m-volt-ink); font: 600 0.8rem var(--m-sans); margin-top: 4px; }
+@media (prefers-reduced-motion: reduce) { .mh-pillar { transition: none; } .mh-pillar:hover { transform: none; } }
 
 /* next-match card */
 .mh-nm2 { padding: clamp(20px, 2.4vw, 28px); border-radius: var(--m-radius); background: var(--m-glass-3);

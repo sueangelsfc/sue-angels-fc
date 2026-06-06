@@ -3004,9 +3004,73 @@ function JoinPage() {
 }
 
 /* ══ PRODUCTION SHELL ═══════════════════════════════════════════════════ */
+function Sepsis({ go }) {
+  const h = React.createElement;
+  const scrollTo = (id) => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: RM() ? 'auto' : 'smooth', block: 'start' }); };
+  const signs = [
+    ['Slurred speech or confusion', 'Sudden disorientation, drowsiness or trouble speaking clearly.'],
+    ['Extreme shivering or muscle pain', 'Shaking, fever, or pain that feels far worse than usual.'],
+    ['Passing no urine in a day', 'A clear drop in how often they go to the toilet.'],
+    ['Severe breathlessness', 'Struggling for breath, or breathing very fast.'],
+    ['“It feels like I’m going to die”', 'A deep, sudden sense that something is seriously wrong.'],
+    ['Skin mottled, bluish or pale', 'Blotchy, discoloured or unusually pale skin.'],
+  ];
+  const help = [
+    ['Know & share the signs', 'The six signs below can save a life. Learn them, then pass them on — to family, teammates, anyone.', 'Share this page', () => { try { if (navigator.share) navigator.share({ title: 'Know the signs of sepsis — Sue’s Angels FC', url: location.href }); else if (navigator.clipboard) { navigator.clipboard.writeText(location.href); alert('Link copied — thank you for sharing.'); } } catch (e) {} }],
+    ['Support the UK Sepsis Trust', 'The UK Sepsis Trust funds support, research and awareness across the country. Learn more or give directly.', 'Visit sepsistrust.org', 'https://www.sepsistrust.org'],
+    ['Stand with the club', 'Back Sue’s Angels as a sponsor, partner or volunteer, and help carry the message further.', 'Get involved', () => go('contact')],
+  ];
+  return h(React.Fragment, null,
+    h(PageHero, {
+      eyebrow: 'Our cause',
+      title: h(React.Fragment, null, 'For ', h('em', null, 'Sue'), '.'),
+      sub: 'Sue’s Angels FC was founded in memory of Susan Anne Martin, who we lost to sepsis. We play in her name — and we want more people to know the signs that save lives.',
+      actions: h(React.Fragment, null,
+        h('button', { className: 'm-btn m-btn--volt', onClick: () => scrollTo('signs') }, 'Know the signs ', h(Arrow, null)),
+        h('button', { className: 'm-btn m-btn--ghost', onClick: () => go('contact') }, 'Support the cause')),
+    }),
+    h('section', { className: 'mp-sec' }, h('div', { className: 'm-wrap' },
+      h('div', { className: 'm-glass', style: { padding: 'clamp(24px,3vw,44px)' } },
+        h('p', { className: 'm-eyebrow m-eyebrow--volt' }, 'Why we exist'),
+        h('blockquote', { style: { font: '600 clamp(1.5rem,3.2vw,2.6rem)/1.16 var(--m-display)', letterSpacing: '-0.03em', margin: '16px 0 0' } }, '“What we do in life echoes in eternity.”'),
+        h('div', { className: 'm-prose', style: { marginTop: 18 } },
+          h('p', null, 'The club carries one name onto the pitch every week. Sue’s Angels FC was founded in 2025 in memory of Susan Anne Martin — and built so that her name lives on in something that brings people together.'),
+          h('p', null, 'We lost Sue to sepsis. That loss shaped everything about this club: how we play, why we turn up, and the cause we’ve chosen to stand behind.'))))),
+    h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
+      h(Head, { eyebrow: 'Understanding sepsis', title: 'Fast. Common. Often missed.' }),
+      h('div', { className: 'm-prose', style: { maxWidth: '70ch' } },
+        h('p', null, 'Sepsis is the body’s extreme response to an infection — the immune system turns on the body itself, and it can become life-threatening within hours. It can affect anyone, of any age, from any infection.'),
+        h('p', null, h(React.Fragment, null, 'The ', h('a', { href: 'https://www.sepsistrust.org', target: '_blank', rel: 'noopener', style: { color: 'var(--m-volt-ink)' } }, 'UK Sepsis Trust'), ' estimates sepsis claims around 48,000 lives in the UK every year. Many are preventable — and spotting it early is the single biggest factor. That’s why we talk about it.'))))),
+    h('section', { id: 'signs', className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
+      h(Head, { eyebrow: 'Know the signs', title: 'Could it be sepsis?' }),
+      h('p', { className: 'm-lead', style: { maxWidth: '62ch', marginBottom: 22 } }, 'In an adult, seek urgent medical help — call 999 or NHS 111 — and just ask the question if you notice any of these:'),
+      h('div', { className: 'mp-grid mp-g3' }, signs.map((s, i) => h('div', { key: i, className: 'm-glass', style: { padding: '20px 22px' } },
+        h('div', { style: { font: '600 1.05rem/1.2 var(--m-display)', letterSpacing: '-0.01em' } }, s[0]),
+        h('p', { style: { marginTop: 8, color: 'var(--m-ink-2)', fontSize: '0.92rem' } }, s[1])))),
+      h('div', { className: 'm-glass', style: { padding: 'clamp(20px,3vw,32px)', marginTop: 18, borderColor: 'var(--m-volt)' } },
+        h('p', { style: { font: '600 1.1rem/1.4 var(--m-sans)' } }, 'Trust your instinct. If someone is getting worse fast, don’t wait — ask: “could it be sepsis?”'),
+        h('p', { style: { marginTop: 10, color: 'var(--m-ink-3)', fontSize: '0.86rem' } }, h(React.Fragment, null, 'General guidance only. For full, up-to-date information visit the ', h('a', { href: 'https://www.sepsistrust.org', target: '_blank', rel: 'noopener', style: { color: 'var(--m-volt-ink)' } }, 'UK Sepsis Trust'), ' and the ', h('a', { href: 'https://www.nhs.uk/conditions/sepsis/', target: '_blank', rel: 'noopener', style: { color: 'var(--m-volt-ink)' } }, 'NHS'), '.'))))),
+    h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
+      h(Head, { eyebrow: 'Get involved', title: 'Three ways to help' }),
+      h('div', { className: 'mp-grid mp-g3' }, help.map((c, i) => h('div', { key: i, className: 'm-glass', style: { padding: 'clamp(22px,3vw,30px)', display: 'flex', flexDirection: 'column', gap: 12 } },
+        h('div', { style: { font: '600 1.2rem/1.15 var(--m-display)', letterSpacing: '-0.01em' } }, c[0]),
+        h('p', { style: { color: 'var(--m-ink-2)', flex: 1 } }, c[1]),
+        typeof c[3] === 'string'
+          ? h('a', { className: 'm-btn m-btn--ghost', href: c[3], target: '_blank', rel: 'noopener', style: { alignSelf: 'flex-start' } }, c[2])
+          : h('button', { className: 'm-btn m-btn--ghost', onClick: c[3], style: { alignSelf: 'flex-start' } }, c[2])))))),
+    h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
+      h('div', { className: 'm-glass', style: { padding: 'clamp(28px,4vw,52px)', textAlign: 'center' } },
+        h('p', { className: 'm-eyebrow m-eyebrow--volt', style: { justifyContent: 'center', display: 'inline-flex' } }, 'In her name'),
+        h('h2', { className: 'mp-hero__title', style: { fontSize: 'clamp(1.8rem,4vw,3rem)', marginTop: 12 } }, 'Play for something bigger.'),
+        h('p', { className: 'm-lead', style: { margin: '14px auto 0', maxWidth: '54ch' } }, 'In memory of Susan Anne Martin. Every match, every season, carries her name — and her message — a little further.'),
+        h('div', { style: { marginTop: 26, display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' } },
+          h('button', { className: 'm-btn m-btn--volt', onClick: () => go('sponsors') }, 'Partner with the club ', h(Arrow, null)),
+          h('button', { className: 'm-btn m-btn--ghost', onClick: () => go('contact') }, 'Get in touch'))))));
+}
 const HREF = {
   home: 'index.html',
   about: 'about.html',
+  sepsis: 'sepsis.html',
   champions: 'champions.html',
   team: 'teams.html',
   schedule: 'schedule.html',
@@ -3015,10 +3079,11 @@ const HREF = {
   contact: 'contact.html',
   join: 'join.html'
 };
-const NAV = [['home', 'Home'], ['about', 'About'], ['champions', 'Champions'], ['team', 'Team'], ['schedule', 'Schedule'], ['media', 'Media'], ['sponsors', 'Sponsors'], ['contact', 'Contact']];
+const NAV = [['home', 'Home'], ['about', 'About'], ['sepsis', 'Our Cause'], ['champions', 'Champions'], ['team', 'Team'], ['schedule', 'Schedule'], ['media', 'Media'], ['sponsors', 'Sponsors'], ['contact', 'Contact']];
 const PAGES = {
   home: Home,
   about: About,
+  sepsis: Sepsis,
   champions: Champions,
   team: Team,
   schedule: Schedule,
@@ -3033,6 +3098,8 @@ function currentPage() {
     '': 'home',
     'index.html': 'home',
     'about.html': 'about',
+    'sepsis.html': 'sepsis',
+    'our-cause.html': 'sepsis',
     'champions.html': 'champions',
     'teams.html': 'team',
     'team.html': 'team',

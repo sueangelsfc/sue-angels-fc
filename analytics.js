@@ -88,7 +88,7 @@
   var SECTION = {
     "/fixtures.html": "fixtures", "/results.html": "results", "/table.html": "table",
     "/schedule.html": "schedule", "/media.html": "media", "/news.html": "news",
-    "/gallery.html": "gallery", "/sponsors.html": "sponsors", "/teams.html": "team",
+    "/gallery.html": "gallery", "/sponsors.html": "sponsors", "/sepsis.html": "sepsis", "/teams.html": "team",
     "/champions.html": "champions"
   };
   (function () {

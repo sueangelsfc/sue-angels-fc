@@ -366,5 +366,7 @@
     window.addEventListener('resize', sync);
     sync();
   }
-  if (document.readyState !== 'loading') mountScrollNav();else window.addEventListener('DOMContentLoaded', mountScrollNav);
+  // Disabled: the up/down scroll-nav pair is removed from the public site
+  // (mobile + desktop). Leave mountScrollNav defined but never call it.
+  void mountScrollNav;
 })();

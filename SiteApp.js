@@ -2687,10 +2687,15 @@ function Sponsors({
     eyebrow: "Partners",
     title: /*#__PURE__*/React.createElement(React.Fragment, null, "Behind the ", /*#__PURE__*/React.createElement("em", null, "badge"), "."),
     sub: "The businesses and clubs that back Sue's Angels, including our ground-share partner. Here's who they are, and how to join them.",
-    actions: /*#__PURE__*/React.createElement("button", {
+    actions: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
       className: "m-btn m-btn--volt",
       onClick: () => go('contact')
-    }, "Partner with us ", /*#__PURE__*/React.createElement(Arrow, null))
+    }, "Partner with us ", /*#__PURE__*/React.createElement(Arrow, null)), /*#__PURE__*/React.createElement("a", {
+      className: "m-btn m-btn--ghost",
+      href: "assets/sue-angels-sponsorship-pack.pdf",
+      target: "_blank",
+      rel: "noopener"
+    }, "Download the pack"))
   }), h("section", { className: "mp-sec" }, h("div", { className: "m-wrap" },
     h(Head, { eyebrow: "Why partner", title: "More than a logo on a shirt" }),
     h("p", { className: "m-lead", style: { maxWidth: "64ch", marginBottom: 26 } }, "Sue’s Angels isn’t a typical grassroots side. We are League Ten champions, unbeaten in our first season, built around a cause that matters, with a growing audience that puts local businesses in front of the right people."),

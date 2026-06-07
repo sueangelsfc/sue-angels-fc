@@ -1369,7 +1369,13 @@ function ShareBtn({ title, what, label, image, url: urlProp, story }) {
       var ext = (blob.type && blob.type.indexOf('png') > -1) ? 'png' : 'jpg';
       var file = new File([blob], 'sue-angels.' + ext, { type: blob.type || 'image/jpeg' });
       if (!navigator.canShare({ files: [file] })) return false;
-      await navigator.share({ files: [file], title: shareTitle() });
+      // Carry the deep-link alongside the image so apps that accept text
+      // (WhatsApp, Messages, X, Instagram DM) link back to the page. Instagram
+      // Stories ignore the text - that link can only be added via IG's sticker.
+      var url = shareUrl();
+      var payload = { files: [file], title: shareTitle(), text: shareTitle() + '\n' + url };
+      if (!navigator.canShare(payload)) payload = { files: [file], title: shareTitle() };
+      await navigator.share(payload);
       track('native-image'); setOpen(false); return true;
     } catch (e) {
       if (e && e.name === 'AbortError') { setOpen(false); return true; }

@@ -1346,7 +1346,7 @@ function saStoryImage(spec, post) {
             // ---- photo card (players / coaches / articles / table / album / video) ----
             var HD = post ? { by: 64, bs: 108, ey: 238, py: 308 } : { by: 120, bs: 150, ey: 332, py: 410 };
             if (badge) c.drawImage(badge, W / 2 - HD.bs / 2, HD.by, HD.bs, HD.bs);
-            tracked('1px'); c.fillStyle = P.eyebrow; c.font = '700 ' + (post ? 30 : 34) + 'px "Hanken Grotesk", Arial, sans-serif';
+            tracked('6px'); c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '700 ' + (post ? 26 : 29) + 'px "Hanken Grotesk", Arial, sans-serif';
             c.fillText(String(spec.eyebrow || "SUE'S ANGELS FC").toUpperCase(), W / 2, HD.ey); tracked('0px');
             var SUB_Y = SP_LABEL_Y - 66, TITLE_Y = SUB_Y - 56;
             var px2 = 130, py2 = HD.py, pw2 = W - 260, ph2 = (TITLE_Y - 132) - py2;
@@ -1364,10 +1364,10 @@ function saStoryImage(spec, post) {
             sg.addColorStop(0, 'rgba(' + P.scrim + ',0)'); sg.addColorStop(1, 'rgba(' + P.scrim + ',0.5)');
             c.fillStyle = sg; c.fillRect(px2, py2 + ph2 - 200, pw2, 200);
             c.restore();
-            c.strokeStyle = P.border; c.lineWidth = 4; rr(px2, py2, pw2, ph2, 44); c.stroke();
+            c.strokeStyle = 'rgba(214,242,58,0.45)'; c.lineWidth = 3; rr(px2, py2, pw2, ph2, 44); c.stroke();
             c.fillStyle = P.title; c.font = '700 ' + (post ? 64 : 74) + 'px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
             saWrapText(c, String(spec.title || '').toUpperCase(), W / 2, TITLE_Y, W - 150, post ? 72 : 82, 2);
-            if (spec.subtitle) { c.fillStyle = P.subtitle; c.font = '600 ' + (post ? 34 : 38) + 'px "Hanken Grotesk", Arial, sans-serif'; c.fillText(String(spec.subtitle), W / 2, SUB_Y); }
+            if (spec.subtitle) { tracked('2px'); c.fillStyle = '#D6F23A'; c.font = '700 ' + (post ? 28 : 31) + 'px "Hanken Grotesk", Arial, sans-serif'; c.fillText(String(spec.subtitle).toUpperCase(), W / 2, SUB_Y); tracked('0px'); }
             drawFooter();
           }
           try { resolve(cv.toDataURL('image/jpeg', 0.92)); } catch (e) { resolve(null); }

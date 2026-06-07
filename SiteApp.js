@@ -3062,6 +3062,24 @@ function Sponsors({
 }
 
 /* ══ CONTACT ════════════════════════════════════════════════════════════ */
+// Real enquiry delivery. The forms used to discard the message silently; this
+// builds a prefilled email to the club so enquiries actually arrive. Swap to a
+// hosted form service later by changing this one function.
+function saSendEnquiry(form, label) {
+  try {
+    var inp = form.querySelectorAll('input');
+    var name = inp[0] ? inp[0].value.trim() : '';
+    var email = inp[1] ? inp[1].value.trim() : '';
+    var extra = inp[2] ? inp[2].value.trim() : '';
+    var ta = form.querySelector('textarea');
+    var message = ta ? ta.value.trim() : '';
+    var body = ['Enquiry: ' + label, 'Name: ' + name, 'Email: ' + email];
+    if (extra) body.push('Details: ' + extra);
+    body.push('', message);
+    var href = 'mailto:susangelsfc@gmail.com?subject=' + encodeURIComponent("Sue's Angels FC - " + label + ' enquiry') + '&body=' + encodeURIComponent(body.join('\n'));
+    window.location.href = href;
+  } catch (e) {}
+}
 function Contact() {
   const routes = [['general', 'General', 'Questions, hellos, anything else'], ['sponsor', 'Sponsor enquiry', 'Brand partnerships & backing the club'], ['trial', 'Player trial', 'You want a shot? Tell us about you'], ['media', 'Media volunteer', 'Photo, video, design, editorial, social']];
   const [route, setRoute] = useState('general');
@@ -3104,6 +3122,7 @@ function Contact() {
     className: "m-glass mp-form",
     onSubmit: e => {
       e.preventDefault();
+      saSendEnquiry(e.target, routes.find(r => r[0] === route)[1]);
       setSent(true);
     }
   }, sent ? /*#__PURE__*/React.createElement("div", {
@@ -3117,9 +3136,9 @@ function Contact() {
     style: {
       marginBottom: 12
     }
-  }, "Sent"), /*#__PURE__*/React.createElement("h3", {
+  }, "Almost there"), /*#__PURE__*/React.createElement("h3", {
     className: "m-h3"
-  }, "Thanks. We'll reply within 48 hours.")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+  }, "Your enquiry is ready in your email app. Press send and we'll reply within 48 hours.")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "m-eyebrow"
   }, routes.find(r => r[0] === route)[1], " enquiry"), /*#__PURE__*/React.createElement("div", {
     className: "mp-frow"
@@ -3189,6 +3208,7 @@ function JoinPage() {
     className: "m-glass mp-form",
     onSubmit: e => {
       e.preventDefault();
+      saSendEnquiry(e.target, routes.find(r => r[0] === route)[1]);
       setSent(true);
     }
   }, sent ? /*#__PURE__*/React.createElement("div", {
@@ -3202,9 +3222,9 @@ function JoinPage() {
     style: {
       marginBottom: 12
     }
-  }, "Sent"), /*#__PURE__*/React.createElement("h3", {
+  }, "Almost there"), /*#__PURE__*/React.createElement("h3", {
     className: "m-h3"
-  }, "Thanks. We\u2019ll reply within 48 hours.")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+  }, "Your enquiry is ready in your email app. Press send and we\u2019ll reply within 48 hours.")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "m-eyebrow"
   }, routes.find(r => r[0] === route)[1]), /*#__PURE__*/React.createElement("div", {
     className: "mp-frow"
@@ -3500,40 +3520,32 @@ function SiteHeader({
   }, open ? '✕' : '☰'))));
 }
 function SiteFooter() {
-  return /*#__PURE__*/React.createElement("footer", {
-    className: "mh-footer"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "m-wrap"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "mh-footer__row"
-  }, /*#__PURE__*/React.createElement("a", {
-    className: "mh-footer__brand",
-    href: "index.html",
-    style: {
-      textDecoration: 'none',
-      color: 'inherit'
-    }
-  }, /*#__PURE__*/React.createElement("img", {
-    src: "assets/badge/sue-angels-badge.png",
-    alt: ""
-  }), "Sue's Angels FC"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: 'flex',
-      gap: 18,
-      flexWrap: 'wrap'
-    }
-  }, NAV.map(([k, l]) => /*#__PURE__*/React.createElement("a", {
-    key: k,
-    href: HREF[k],
-    style: {
-      color: 'var(--m-ink-3)',
-      font: '600 0.74rem var(--m-sans)',
-      letterSpacing: '0.08em',
-      textTransform: 'uppercase'
-    }
-  }, l)))), /*#__PURE__*/React.createElement("div", {
-    className: "sa-vh"
-  }, /*#__PURE__*/React.createElement("small", null, "Sunday-league football at The Reeves, Hanworth \xB7 serving Kingston, Sunbury, Staines and south-west London \xB7 founded 2025 in memory of Susan Anne Martin \xB7 League Ten champions 25/26 \xB7 supporting sepsis awareness"))));
+  var h = React.createElement;
+  var groups = [
+    ['The Club', [['about', 'Our Story'], ['sepsis', 'Our Cause'], ['champions', 'Champions'], ['sponsors', 'Sponsors']]],
+    ['On the Pitch', [['squad', 'Squad'], ['stats', 'Player Stats'], ['coaches', 'Coaches'], ['schedule', 'Matches'], ['league', 'League']]],
+    ['Media', [['news', 'News'], ['gallery', 'Gallery'], ['videos', 'Videos']]],
+    ['Get involved', [['join', 'Join'], ['contact', 'Contact']]]
+  ];
+  var supporting = [['teams.html', 'Full squad page'], ['table.html', 'League table'], ['fixtures.html', 'Fixtures'], ['results.html', 'Results'], ['media.html', 'Media hub']];
+  var social = [['Instagram', 'https://instagram.com/suesangelsfc'], ['TikTok', 'https://tiktok.com/@suesangelsfc']];
+  var linkStyle = { color: 'var(--m-ink-3)', font: '600 0.82rem var(--m-sans)', textDecoration: 'none', display: 'block', padding: '5px 0' };
+  return h("footer", { className: "mh-footer" }, h("div", { className: "m-wrap" },
+    h("div", { className: "mh-footer__row", style: { alignItems: 'flex-start' } },
+      h("div", null,
+        h("a", { className: "mh-footer__brand", href: "index.html", style: { textDecoration: 'none', color: 'inherit' } }, h("img", { src: "assets/badge/sue-angels-badge.png", alt: "" }), "Sue's Angels FC"),
+        h("p", { style: { color: 'var(--m-ink-3)', fontSize: '0.84rem', marginTop: 12, maxWidth: '36ch', lineHeight: 1.6 } }, "Grassroots football in south-west London, founded in memory of Susan Anne Martin. League Ten champions, supporting sepsis awareness.")),
+      h("div", { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } }, social.map(function (s) { return h("a", { key: s[0], href: s[1], target: "_blank", rel: "noopener", className: "m-btn m-btn--ghost", style: { padding: '9px 16px' } }, "Follow on ", s[0]); }))),
+    h("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: 24, marginTop: 32 } },
+      groups.map(function (g) {
+        return h("div", { key: g[0] },
+          h("div", { style: { font: '700 0.68rem var(--m-sans)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--m-ink-2)', marginBottom: 8 } }, g[0]),
+          g[1].map(function (it) { return h("a", { key: it[0], href: HREF[it[0]], style: linkStyle }, it[1]); }));
+      })),
+    h("div", { style: { marginTop: 26, paddingTop: 18, borderTop: '1px solid var(--m-edge)', display: 'flex', flexWrap: 'wrap', gap: '6px 18px', alignItems: 'center' } },
+      h("span", { style: { font: '700 0.64rem var(--m-sans)', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--m-ink-3)' } }, "Also"),
+      supporting.map(function (it) { return h("a", { key: it[0], href: it[0], style: { color: 'var(--m-ink-3)', fontSize: '0.8rem', textDecoration: 'none' } }, it[1]); })),
+    h("div", { className: "sa-vh" }, h("small", null, "Sunday-league football at The Reeves, Hanworth \xB7 serving Kingston, Sunbury, Staines and south-west London \xB7 founded 2025 in memory of Susan Anne Martin \xB7 League Ten champions 25/26 \xB7 supporting sepsis awareness"))));
 }
 function BackToTop() {
   const [show, setShow] = useState(false);

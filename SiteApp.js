@@ -1687,7 +1687,7 @@ function Home({
     size: 25
   }) : null, r.c.replace(' FC', ''))), /*#__PURE__*/React.createElement("td", null, r.pl), /*#__PURE__*/React.createElement("td", null, r.w), /*#__PURE__*/React.createElement("td", null, r.gd), /*#__PURE__*/React.createElement("td", {
     className: "mh-table__pts"
-  }, r.pts)))))))), /*#__PURE__*/React.createElement(Join, {
+  }, r.pts)))))))), /*#__PURE__*/React.createElement("section", { className: "mh-sec", style: { paddingTop: 0 } }, /*#__PURE__*/React.createElement("div", { className: "m-wrap", style: { textAlign: 'center' } }, /*#__PURE__*/React.createElement("p", { className: "m-eyebrow m-eyebrow--volt", style: { justifyContent: 'center', display: 'inline-flex' } }, "Proudly backed by"), /*#__PURE__*/React.createElement("div", { style: { display: 'flex', gap: 'clamp(16px,4vw,40px)', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', margin: '18px 0 22px' } }, [['assets/sponsors/sporting-solutions.png', 'Sporting Solutions Ltd'], ['assets/sponsors/hodgson-roofing.png', 'Hodgson Roofing'], ['assets/sponsors/staines-rugby.png', 'Staines Rugby Club']].map(function (s) { return /*#__PURE__*/React.createElement("div", { key: s[1], style: { background: '#fff', borderRadius: 12, padding: '10px 18px', display: 'flex', alignItems: 'center' } }, /*#__PURE__*/React.createElement("img", { src: s[0], alt: s[1], loading: 'lazy', style: { height: 'clamp(30px,5vw,44px)', width: 'auto', objectFit: 'contain' } })); })), /*#__PURE__*/React.createElement("a", { className: "m-btn m-btn--ghost", href: "sponsors.html" }, "Become a partner"))), /*#__PURE__*/React.createElement(Join, {
     go: go
   }));
 }
@@ -1726,7 +1726,10 @@ function Join({
   }, "Join the club ", /*#__PURE__*/React.createElement(Arrow, null)), /*#__PURE__*/React.createElement("button", {
     className: "m-btn m-btn--ghost",
     onClick: () => go('contact')
-  }, "Get in touch")))));
+  }, "Get in touch"), /*#__PURE__*/React.createElement("button", {
+    className: "m-btn m-btn--ghost",
+    onClick: () => go('sponsors')
+  }, "Partner with us")))));
 }
 
 /* ══ ABOUT ══════════════════════════════════════════════════════════════ */

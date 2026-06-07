@@ -1602,7 +1602,9 @@ function Home({
     className: "mh-hero__photo"
   }, /*#__PURE__*/React.createElement("img", {
     ref: imgRef,
-    src: "assets/hero-team.jpg",
+    src: "assets/hero-team.webp",
+    fetchpriority: "high",
+    onError: function (e) { if ((e.target.getAttribute('src') || '').indexOf('hero-team.webp') > -1) e.target.src = 'assets/hero-team.jpg'; },
     alt: ""
   })), /*#__PURE__*/React.createElement("div", {
     className: "mh-hero__scrim"

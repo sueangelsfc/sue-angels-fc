@@ -3643,12 +3643,12 @@ function SquadBoard(props) {
           h('span', { className: 'm-chip m-chip--volt mp-player__pos' }, pos),
           h('div', { className: 'mp-player__body' },
             h('div', { className: 'mp-player__name' }, p.last, h('span', null, p.first)),
-            h('div', { className: 'mp-player__stats' }, frontStats.map(function (s, k) { return h('div', { key: k }, h('b', null, hideStats ? '\u2013' : s[0]), h('span', null, s[1])); })))),
+            h('div', { className: 'mp-player__stats' }, frontStats.map(function (s, k) { return h('div', { key: k }, h('b', null, hideStats ? '\u2013' : h(CountNum, { value: s[0] })), h('span', null, s[1])); })))),
         h('div', { className: 'mp-player__face mp-player__back' },
           h('div', { className: 'mp-pb__head' },
             h('span', { className: 'mp-pb__num' }, p.num != null ? p.num : ''),
             h('div', { className: 'mp-pb__id' }, h('b', null, p.first + ' ' + p.last), h('span', null, p.gk ? 'Goalkeeper' : pos))),
-          h('div', { className: 'mp-pb__grid' }, backStats.map(function (s, k) { return h('div', { className: 'mp-pb__stat', key: k }, h('b', null, hideStats ? '\u2013' : (s[0] != null ? s[0] : 0)), h('span', null, s[1])); })),
+          h('div', { className: 'mp-pb__grid' }, backStats.map(function (s, k) { return h('div', { className: 'mp-pb__stat', key: k }, h('b', null, hideStats ? '\u2013' : h(CountNum, { value: s[0] != null ? s[0] : 0 })), h('span', null, s[1])); })),
           h('button', { className: 'm-btn m-btn--volt mp-pb__cta', onClick: function () { onOpen && onOpen(p.num); } }, 'Full profile'))),
       h('button', { className: 'mp-player__flipbtn', onClick: flip, type: 'button', 'aria-label': 'Flip card for stats', title: 'Flip for stats' },
         h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' },
@@ -3691,6 +3691,26 @@ function SparkChart(props) {
       lines.map(function (L, li) { var lv = L.d[L.d.length - 1] || 0; return h('circle', { key: 'lp' + li, className: 'm-spark__dot', cx: xx(n - 1), cy: yy(lv), r: L.glow ? 4.5 : 3, fill: L.c, stroke: 'var(--m-bg)', strokeWidth: 1, style: { animationDelay: (1.05 + li * 0.12) + 's' } }); })),
     h('div', { className: 'm-sparklegend' }, lines.map(function (L, li) { return h('span', { key: 'lg' + li, className: 'm-sparklegend__i' }, h('i', { style: { background: L.c } }), L.k + ' · ' + (L.d[L.d.length - 1] || 0)); })));
 }
+// Count a value up from 0 on mount (and whenever it changes), so the stat tiles
+// have a bit of life. Respects reduced-motion (jumps straight to the value).
+function useCountUp(target) {
+  var st = useState(0), val = st[0], setVal = st[1];
+  useEffect(function () {
+    var n = Number(target) || 0;
+    if (RM() || n === 0) { setVal(n); return; }
+    var start = null, dur = 1500, raf;
+    function step(ts) {
+      if (start == null) start = ts;
+      var prog = Math.min(1, (ts - start) / dur);
+      setVal(Math.round((1 - Math.pow(1 - prog, 3)) * n));
+      if (prog < 1) raf = requestAnimationFrame(step);
+    }
+    raf = requestAnimationFrame(step);
+    return function () { if (raf) cancelAnimationFrame(raf); };
+  }, [target]);
+  return val;
+}
+function CountNum(props) { return useCountUp(props.value); }
 function StatCounters(props) {
   var h = React.createElement, p = props.p, isGK = props.isGK;
   var squad = window.derivedSquad ? window.derivedSquad(props.matcher || null, props.seasonKey || null) : [];
@@ -3706,16 +3726,22 @@ function StatCounters(props) {
   var counters = isGK
     ? [['Apps', 'apps'], ['Starts', 'started'], ['Clean sheets', 'cs'], ['Conceded', 'conceded'], ['MOTM', 'motm'], ['Win %', 'win']]
     : [['Apps', 'apps'], ['Starts', 'started'], ['Goals', 'goals'], ['Assists', 'assists'], ['MOTM', 'motm'], ['Win %', 'win']];
+  var ach = counters.filter(function (c) { return ['apps', 'started', 'conceded'].indexOf(c[1]) === -1; });
+  var best = null, bestPct = -1;
+  ach.forEach(function (c) { var k = c[1], v = me[k] || 0, mx = k === 'win' ? 100 : maxOf(k), pc = mx ? v / mx : 0; if (v > 0 && pc > bestPct) { bestPct = pc; best = k; } });
+  var fillSt = useState(false), filled = fillSt[0], setFilled = fillSt[1];
+  useEffect(function () { var r = requestAnimationFrame(function () { setFilled(true); }); return function () { cancelAnimationFrame(r); }; }, []);
   return h('div', { className: 'm-counters' }, counters.map(function (c, i) {
     var key = c[1], val = me[key] || 0;
     var mx = key === 'win' ? 100 : maxOf(key);
     var pct = mx ? Math.min(1, val / mx) : 0;
     var C = 2 * Math.PI * 25, dash = pct * C;
-    return h('div', { className: 'm-counter', key: i },
+    var isBest = key === best;
+    return h('div', { className: 'm-counter' + (isBest ? ' is-standout' : ''), key: i },
       h('svg', { viewBox: '0 0 64 64', className: 'm-counter__svg' },
         h('circle', { cx: 32, cy: 32, r: 25, className: 'm-counter__track' }),
-        h('circle', { cx: 32, cy: 32, r: 25, className: 'm-counter__arc', strokeDasharray: dash.toFixed(1) + ' ' + C.toFixed(1), style: { '--m-dash': dash.toFixed(1) }, transform: 'rotate(-90 32 32)' })),
-      h('b', { className: 'm-counter__v' }, val + (key === 'win' ? '%' : '')),
+        h('circle', { cx: 32, cy: 32, r: 25, className: 'm-counter__arc', strokeDasharray: C.toFixed(1), strokeDashoffset: (filled ? C - dash : C).toFixed(1), transform: 'rotate(-90 32 32)' })),
+      h('b', { className: 'm-counter__v', style: isBest ? { color: 'var(--m-volt)', textShadow: '0 0 16px rgba(214,242,58,0.5)' } : null }, h(CountNum, { value: val }), key === 'win' ? '%' : ''),
       h('span', { className: 'm-counter__l' }, c[0]));
   }));
 }

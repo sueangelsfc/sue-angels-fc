@@ -346,13 +346,10 @@ html[data-theme="light"] { --m-volt-ink: #0A1B27; }
 .m-counter:hover { transform: translateY(-7px); filter: drop-shadow(0 12px 18px rgba(214,242,58,0.42)); }
 .m-counter__svg { width: 74px; height: 74px; display: block; }
 .m-counter__track { fill: none; stroke: var(--m-edge-2); stroke-width: 5; }
-.m-counter__arc { fill: none; stroke: var(--m-volt); stroke-width: 5; stroke-linecap: round; filter: drop-shadow(0 0 5px rgba(214,242,58,0.55)); transition: stroke-dasharray 1s var(--m-ease); }
+.m-counter__arc { fill: none; stroke: var(--m-volt); stroke-width: 5; stroke-linecap: round; filter: drop-shadow(0 0 5px rgba(214,242,58,0.55)); transition: stroke-dashoffset 1.4s cubic-bezier(0.33, 1, 0.68, 1); }
 .m-counter__v { position: absolute; top: 6px; height: 74px; left: 0; right: 0; display: grid; place-items: center; font-family: var(--m-display); font-weight: 600; font-size: 1.4rem; color: var(--m-ink-1); font-variant-numeric: tabular-nums; }
 .m-counter__l { font: 700 0.6rem var(--m-sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--m-ink-3); text-align: center; }
-.m-counter:hover .m-counter__arc {
-  animation: m-counter-fill 0.85s var(--m-ease) forwards;
-}
-@keyframes m-counter-fill { from { stroke-dashoffset: var(--m-dash, 0); } to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .m-counter__arc { transition: none; } }
 @media (max-width: 720px) { .m-counters { grid-template-columns: repeat(3, 1fr); } }
 
 /* Monaco-style percentile wheel */

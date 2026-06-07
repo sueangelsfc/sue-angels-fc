@@ -1243,15 +1243,45 @@ function ResCard({
 }
 function ShareBtn({ title, what, label }) {
   var h = React.createElement;
-  var onShare = async function () {
+  var [open, setOpen] = useState(false);
+  var ref = useRef(null);
+  useEffect(function () {
+    if (!open) return;
+    var onDoc = function (e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    var onKey = function (e) { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return function () { document.removeEventListener('mousedown', onDoc); document.removeEventListener('keydown', onKey); };
+  }, [open]);
+  var track = function (method) { if (window.saTrack) window.saTrack('share', { what: what || 'page', method: method }); };
+  var shareTitle = function () { return title || document.title; };
+  var copyLink = async function (method, msg) {
     var url = location.href;
-    try {
-      if (navigator.share) { await navigator.share({ title: title || document.title, url: url }); if (window.saTrack) window.saTrack('share', { what: what || 'page' }); return; }
-    } catch (e) { if (e && e.name === 'AbortError') return; }
-    try { await navigator.clipboard.writeText(url); if (window.saTrack) window.saTrack('share', { what: what || 'page', method: 'copy' }); alert('Link copied. You can paste it into Instagram, WhatsApp or anywhere you like.'); }
+    try { await navigator.clipboard.writeText(url); track(method || 'copy'); alert(msg || 'Link copied. Paste it anywhere you like — Instagram, a story, a chat.'); }
     catch (e) { window.prompt('Copy this link:', url); }
+    setOpen(false);
   };
-  return h('button', { type: 'button', className: 'm-btn m-btn--ghost', onClick: onShare, style: { display: 'inline-flex', alignItems: 'center', gap: 8 } }, label || 'Share', h('svg', { viewBox: '0 0 24 24', width: 15, height: 15, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, h('path', { d: 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8' }), h('polyline', { points: '16 6 12 2 8 6' }), h('line', { x1: 12, y1: 2, x2: 12, y2: 15 })));
+  var nativeShare = async function () {
+    var url = location.href;
+    try { if (navigator.share) { await navigator.share({ title: shareTitle(), url: url }); track('native'); setOpen(false); return; } }
+    catch (e) { if (e && e.name === 'AbortError') { setOpen(false); return; } }
+    copyLink('native-fallback');
+  };
+  var openWin = function (u, method) { window.open(u, '_blank', 'noopener,noreferrer'); track(method); setOpen(false); };
+  var u = encodeURIComponent(location.href);
+  var t = encodeURIComponent(shareTitle());
+  var igMsg = 'Link copied. Open Instagram and paste it into your story, a caption or your bio.';
+  var ttMsg = 'Link copied. Open TikTok and paste it into your caption or bio.';
+  var items = [
+    navigator.share ? { k: 'native', label: 'Share to apps…', fn: nativeShare } : null,
+    { k: 'ig', label: 'Instagram', fn: function () { if (navigator.share) nativeShare(); else copyLink('instagram', igMsg); } },
+    { k: 'x', label: 'X (Twitter)', fn: function () { openWin('https://twitter.com/intent/tweet?text=' + t + '&url=' + u, 'x'); } },
+    { k: 'tt', label: 'TikTok', fn: function () { if (navigator.share) nativeShare(); else copyLink('tiktok', ttMsg); } },
+    { k: 'wa', label: 'WhatsApp', fn: function () { openWin('https://wa.me/?text=' + t + '%20' + u, 'whatsapp'); } },
+    { k: 'fb', label: 'Facebook', fn: function () { openWin('https://www.facebook.com/sharer/sharer.php?u=' + u, 'facebook'); } },
+    { k: 'copy', label: 'Copy link', fn: function () { copyLink('copy'); } }
+  ].filter(Boolean);
+  return h('div', { className: 'sa-share', ref: ref }, h('button', { type: 'button', className: 'm-btn m-btn--ghost', 'aria-haspopup': 'menu', 'aria-expanded': open ? 'true' : 'false', onClick: function () { setOpen(function (v) { return !v; }); }, style: { display: 'inline-flex', alignItems: 'center', gap: 8 } }, label || 'Share', h('svg', { viewBox: '0 0 24 24', width: 15, height: 15, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true' }, h('path', { d: 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8' }), h('polyline', { points: '16 6 12 2 8 6' }), h('line', { x1: 12, y1: 2, x2: 12, y2: 15 }))), open ? h('div', { className: 'sa-share__menu', role: 'menu' }, items.map(function (it) { return h('button', { key: it.k, type: 'button', role: 'menuitem', className: 'sa-share__item', onClick: it.fn }, it.label); })) : null);
 }
 function Home({
   go

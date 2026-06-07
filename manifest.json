@@ -1,0 +1,18 @@
+{
+  "name": "Sue's Angels FC",
+  "short_name": "Sue's Angels",
+  "description": "London Sunday-league football club founded in memory of Susan Anne Martin. Fixtures, results, the league table, news and the matchday gallery.",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#04121B",
+  "theme_color": "#04121B",
+  "lang": "en-GB",
+  "categories": ["sports"],
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -61,8 +61,9 @@ function getQuery(req) {
 // evaluate just that literal (plain objects/strings/numbers/bools — no calls).
 // String-aware bracket matching so a "]" inside a value can't close it early.
 function extractArray(src, name) {
-  const marker = 'window.' + name + ' = [';
-  const start = src.indexOf(marker);
+  let start = src.indexOf('window.' + name + ' = [');
+  if (start < 0) start = src.indexOf('const ' + name + ' = [');
+  if (start < 0) start = src.indexOf(name + ' = [');
   if (start < 0) return null;
   const open = src.indexOf('[', start);
   let depth = 0, i = open, q = null;
@@ -129,9 +130,38 @@ async function resolve(q, pageSrc) {
     const score = (r.hs != null && r.as != null) ? (r.hs + '-' + r.as) : 'v';
     const line = shortName(r.home) + ' ' + score + ' ' + shortName(r.away);
     const meta = [r.competition, r.date].filter(Boolean).join(' · ');
+    // Angels' result (w/d/l) from their perspective.
+    let result = '';
+    if (r.hs != null && r.as != null) {
+      const usHome = String(r.home).includes('Angels');
+      const us = usHome ? r.hs : r.as, them = usHome ? r.as : r.hs;
+      result = us > them ? 'w' : us < them ? 'l' : 'd';
+    }
+    // Prefer an uploaded match cover photo; otherwise generate the scorecard.
+    const uploaded = cleanDataUrl(await supaGet('player_photos', 'cover:' + id));
+    let image;
+    if (uploaded) {
+      image = SITE + '/api/og-image?article=' + encodeURIComponent(id); // og-image also serves cover:<id>
+    } else {
+      const reg = extractArray(pageSrc, 'BADGE_REGISTRY') || [];
+      const badgeUrl = nm => {
+        const s = String(nm || '').toLowerCase();
+        const hit = reg.find(b => b.match && s.indexOf(b.match) > -1);
+        return hit && hit.src ? (SITE + '/' + hit.src) : '';
+      };
+      const params = new URLSearchParams({
+        home: r.home || '', away: r.away || '',
+        hs: r.hs != null ? String(r.hs) : '', as: r.as != null ? String(r.as) : '',
+        comp: r.competition || 'League Ten', date: r.date || '', result: result,
+        left: badgeUrl(r.home), right: badgeUrl(r.away)
+      });
+      image = SITE + '/api/og-cover?' + params.toString();
+    }
     return {
       title: line + " — Match report · Sue's Angels FC",
-      desc: (meta ? meta + '. ' : '') + "Read the full match report from Sue's Angels FC."
+      desc: (meta ? meta + '. ' : '') + "Read the full match report from Sue's Angels FC.",
+      image: image,
+      imageAlt: line
     };
   }
   // ---- News article ----

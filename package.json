@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "description": "Serverless function dependencies only. The static site has no build step (vercel.json buildCommand is null); this package.json exists solely so Vercel installs @vercel/og for the api/og-cover image generator.",
+  "dependencies": {
+    "@vercel/og": "^0.6.2"
+  }
+}

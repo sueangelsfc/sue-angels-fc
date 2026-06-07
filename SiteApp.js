@@ -1346,8 +1346,44 @@ function saStoryImage(spec, post) {
             section('GOALS', spec.scorers);
             section('ASSISTS', spec.assists);
             drawFooter();
+          } else if (spec.kind === 'table') {
+            // ---- league table graphic (actual standings) ----
+            var trows = spec.rows || [];
+            tracked('4px'); c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '700 ' + (post ? 23 : 26) + 'px "Hanken Grotesk", Arial, sans-serif';
+            c.fillText(String(spec.eyebrow || 'LEAGUE TABLE').toUpperCase(), W / 2, post ? 104 : 150); tracked('0px');
+            c.fillStyle = '#D6F23A'; c.font = '700 ' + (post ? 54 : 68) + 'px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
+            c.fillText(String(spec.title || 'League Ten').toUpperCase(), W / 2, post ? 176 : 248);
+            var topY = post ? 286 : 376, botY = SP_LABEL_Y - 24;
+            var rh = Math.min(post ? 64 : 92, (botY - topY) / (trows.length + 1.3));
+            var rowFont = Math.max(19, Math.min(33, Math.round(rh * 0.44)));
+            var headFont = Math.max(15, Math.min(22, Math.round(rh * 0.34)));
+            var COL = { pos: 78, club: 142, p: 636, w: 700, d: 764, l: 828, gd: 916, pts: 1012 };
+            var ML = 54, MR = 1026;
+            c.font = '700 ' + headFont + 'px "Hanken Grotesk", Arial, sans-serif'; c.fillStyle = 'rgba(255,255,255,0.5)'; tracked('1px');
+            c.textAlign = 'left'; c.fillText('#', COL.pos, topY); c.fillText('CLUB', COL.club, topY);
+            c.textAlign = 'right'; c.fillText('P', COL.p, topY); c.fillText('W', COL.w, topY); c.fillText('D', COL.d, topY); c.fillText('L', COL.l, topY); c.fillText('GD', COL.gd, topY); c.fillText('PTS', COL.pts, topY);
+            tracked('0px');
+            c.strokeStyle = 'rgba(255,255,255,0.14)'; c.lineWidth = 2; c.beginPath(); c.moveTo(ML, topY + rh * 0.34); c.lineTo(MR, topY + rh * 0.34); c.stroke();
+            var ty = topY + rh;
+            trows.forEach(function (r) {
+              if (r.us) { c.fillStyle = 'rgba(214,242,58,0.14)'; rr(ML, ty - rh * 0.64, MR - ML, rh * 0.9, 12); c.fill(); }
+              var main = r.us ? '#D6F23A' : '#FFFFFF';
+              c.textAlign = 'left'; c.font = '800 ' + rowFont + 'px "Hanken Grotesk", Arial, sans-serif'; c.fillStyle = r.us ? '#D6F23A' : 'rgba(255,255,255,0.55)'; c.fillText(String(r.pos), COL.pos, ty);
+              c.fillStyle = main; c.font = (r.us ? '800 ' : '600 ') + rowFont + 'px "Hanken Grotesk", Arial, sans-serif';
+              var club = String(r.club || ''), maxw = COL.p - 86 - COL.club, full = club;
+              while (c.measureText(club).width > maxw && club.length > 4) club = club.slice(0, -1);
+              if (club !== full) club = club.replace(/\s+$/, '') + '…';
+              c.fillText(club, COL.club, ty);
+              c.textAlign = 'right'; c.fillStyle = r.us ? '#D6F23A' : 'rgba(255,255,255,0.82)'; c.font = '600 ' + rowFont + 'px "Hanken Grotesk", Arial, sans-serif';
+              c.fillText(String(r.pl), COL.p, ty); c.fillText(String(r.w), COL.w, ty); c.fillText(String(r.d), COL.d, ty); c.fillText(String(r.l), COL.l, ty);
+              c.fillText((typeof r.gd === 'number' ? (r.gd > 0 ? '+' : '') + r.gd : String(r.gd)), COL.gd, ty);
+              c.fillStyle = main; c.font = '800 ' + rowFont + 'px "Hanken Grotesk", Arial, sans-serif'; c.fillText(String(r.pts), COL.pts, ty);
+              ty += rh;
+            });
+            c.textAlign = 'center';
+            drawFooter();
           } else {
-            // ---- photo card (players / coaches / articles / table / album / video) ----
+            // ---- photo card (players / coaches / articles / album / video) ----
             var HD = post ? { by: 64, bs: 108, ey: 238, py: 308 } : { by: 120, bs: 150, ey: 332, py: 410 };
             if (badge) c.drawImage(badge, W / 2 - HD.bs / 2, HD.by, HD.bs, HD.bs);
             tracked('6px'); c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '700 ' + (post ? 26 : 29) + 'px "Hanken Grotesk", Arial, sans-serif';
@@ -2847,7 +2883,7 @@ function LeagueTable() {
       color: 'var(--m-ink-3)',
       fontStyle: 'italic'
     }
-  }, "Vacancy, to be confirmed"))))))), /*#__PURE__*/React.createElement("div", { style: { marginTop: 18, textAlign: "center" } }, /*#__PURE__*/React.createElement(ShareBtn, { what: "table", label: "Share table", title: "League Ten table · Sue's Angels FC", url: "table.html", story: function () { var me = (rows || []).filter(function (r) { return r.us; })[0]; if (!me) return { title: 'League Ten', subtitle: "Sue's Angels FC · 25/26", eyebrow: 'Southern Sunday League', photo: null, footer: 'suesangelsfc.co.uk' }; var pos = me.p === 1 ? 'Champions' : me.p + (me.p === 2 ? 'nd' : me.p === 3 ? 'rd' : 'th') + ' place'; return { title: 'League Ten', subtitle: pos + ' · P' + me.pl + ' W' + me.w + ' D' + me.d + ' L' + me.l, eyebrow: 'Southern Sunday League · 25/26', photo: null, footer: 'suesangelsfc.co.uk' }; } })));
+  }, "Vacancy, to be confirmed"))))))), /*#__PURE__*/React.createElement("div", { style: { marginTop: 18, textAlign: "center" } }, /*#__PURE__*/React.createElement(ShareBtn, { what: "table", label: "Share table", title: "League Ten table · Sue's Angels FC", url: "table.html", story: function () { return { kind: 'table', eyebrow: 'Southern Sunday League · 25/26', title: 'League Ten Table', rows: (rows || []).map(function (r) { return { pos: r.p, club: String(r.c || '').replace(' FC', ''), pl: r.pl, w: r.w, d: r.d, l: r.l, gd: r.gd, pts: r.pts, us: r.us }; }), footer: 'suesangelsfc.co.uk' }; } })));
 }
 function Schedule({
   go
@@ -3748,7 +3784,12 @@ function SiteFooter() {
       h("div", null,
         h("a", { className: "mh-footer__brand", href: "index.html", style: { textDecoration: 'none', color: 'inherit' } }, h("img", { src: "assets/badge/sue-angels-badge.png", alt: "" }), "Sue's Angels FC"),
         h("p", { style: { color: 'var(--m-ink-3)', fontSize: '0.84rem', marginTop: 12, maxWidth: '36ch', lineHeight: 1.6 } }, "Grassroots football in south-west London, founded in memory of Susan Anne Martin. League Ten champions, supporting sepsis awareness.")),
-      h("div", { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } }, social.map(function (s) { return h("a", { key: s[0], href: s[1], target: "_blank", rel: "noopener", className: "m-btn m-btn--ghost", style: { padding: '9px 16px' } }, "Follow on ", s[0]); }))),
+      h("div", { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } }, social.map(function (s) {
+        var ic = s[0] === 'Instagram'
+          ? h('svg', { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true' }, h('rect', { x: 2, y: 2, width: 20, height: 20, rx: 5, ry: 5 }), h('path', { d: 'M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z' }), h('line', { x1: 17.5, y1: 6.5, x2: 17.51, y2: 6.5 }))
+          : h('svg', { width: 21, height: 21, viewBox: '0 0 24 24', fill: 'currentColor', 'aria-hidden': 'true' }, h('path', { d: 'M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z' }));
+        return h("a", { key: s[0], href: s[1], target: "_blank", rel: "noopener", className: "m-btn m-btn--ghost", 'aria-label': 'Follow on ' + s[0], title: s[0], style: { padding: 0, width: 46, height: 46, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' } }, ic);
+      }))),
     h("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))', gap: 24, marginTop: 32 } },
       groups.map(function (g) {
         return h("div", { key: g[0] },

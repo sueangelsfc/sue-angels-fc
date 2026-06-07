@@ -1262,115 +1262,110 @@ function saWrapText(c, text, x, baseY, maxW, lh, maxLines) {
 // Generate a branded 1080x1920 Instagram-story card as a PNG data URL, so what
 // lands in someone's story looks designed (badge, photo, name, branding) rather
 // than a raw photo. Resolves null on any failure so the caller can fall back.
-function saStoryImage(spec) {
+function saStoryImage(spec, post) {
   return new Promise(function (resolve) {
     try {
       if (!spec) return resolve(null);
-      var W = 1080, H = 1920;
+      var W = 1080, H = post ? 1350 : 1920;
       var cv = document.createElement('canvas'); cv.width = W; cv.height = H;
       var c = cv.getContext('2d');
       function rr(x, y, w, hh, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + hh, r); c.arcTo(x + w, y + hh, x, y + hh, r); c.arcTo(x, y + hh, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
       function load(src) { return new Promise(function (res) { if (!src) return res(null); var im = new Image(); im.crossOrigin = 'anonymous'; im.onload = function () { res(im); }; im.onerror = function () { res(null); }; im.src = src; }); }
       var draw = function () {
-        // Every card uses the club's default cover background: a dark teal->navy
-        // radial, identical in light and dark mode.
-        var P = { bg: '#04121B', frame: '#0A2230', border: 'rgba(214,242,58,0.55)', eyebrow: '#D6F23A', title: '#FFFFFF', subtitle: '#D6F23A', accent: '#D6F23A', footer: 'rgba(255,255,255,0.9)', scrim: '4,18,27' };
-        var bg0 = c.createRadialGradient(W / 2, 0, 120, W / 2, 0, 1480);
+        var P = { frame: '#0A2230', border: 'rgba(214,242,58,0.55)', eyebrow: '#D6F23A', title: '#FFFFFF', subtitle: '#D6F23A', scrim: '4,18,27' };
+        var bg0 = c.createRadialGradient(W / 2, 0, 120, W / 2, 0, Math.max(1480, H));
         bg0.addColorStop(0, 'rgb(20,56,73)'); bg0.addColorStop(1, 'rgb(4,18,27)');
         c.fillStyle = bg0; c.fillRect(0, 0, W, H);
-        Promise.all([load(spec.badge || 'assets/badge/sue-angels-badge.png'), load(spec.photo), load(spec.homeBadge), load(spec.awayBadge), load(spec.sponsors && spec.sponsors[0]), load(spec.sponsors && spec.sponsors[1]), load(spec.sponsors && spec.sponsors[2])]).then(function (imgs) {
+        var tracked = function (v) { try { c.letterSpacing = v; } catch (e) {} };
+        Promise.all([load(spec.badge || 'assets/badge/sue-angels-badge.png'), load(spec.photo), load(spec.homeBadge), load(spec.awayBadge), load('assets/sponsors/sporting-solutions.png'), load('assets/sponsors/hodgson-roofing.png'), load('assets/sponsors/staines-rugby.png')]).then(function (imgs) {
           var badge = imgs[0], photo = imgs[1], homeImg = imgs[2], awayImg = imgs[3];
           var sponsors = [imgs[4], imgs[5], imgs[6]].filter(Boolean);
           var clean = function (s) { return String(s || '').replace(/ FC$/i, '').trim(); };
           c.textAlign = 'center';
-          if (spec.kind === 'score') {
-            // Always the dark "default media cover" look (identical in light & dark).
-            var bg = c.createRadialGradient(W / 2, 0, 120, W / 2, 0, 1480);
-            bg.addColorStop(0, 'rgb(20,56,73)'); bg.addColorStop(1, 'rgb(4,18,27)');
-            c.fillStyle = bg; c.fillRect(0, 0, W, H);
-            var tracked = function (v) { try { c.letterSpacing = v; } catch (e) {} };
-            var drawBadge = function (im, cx, cyc, sz) { if (!im) return; var ar = im.width / im.height, w = sz, hh = sz; if (ar > 1) hh = sz / ar; else w = sz * ar; c.drawImage(im, cx - w / 2, cyc - hh / 2, w, hh); };
-            // top label
-            tracked('6px'); c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '700 29px "Hanken Grotesk", Arial, sans-serif';
-            c.fillText('FULL TIME', W / 2, 168); tracked('0px');
-            // score row: badges hug the score, centred as a group
-            var sCenterY = 384, badge = 160, gap = 56;
-            c.font = '600 116px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
-            var scoreStr = (spec.hs != null ? spec.hs : '') + '  -  ' + (spec.as != null ? spec.as : '');
-            var sw = c.measureText(scoreStr).width;
-            drawBadge(homeImg, W / 2 - sw / 2 - gap - badge / 2, sCenterY, badge);
-            drawBadge(awayImg, W / 2 + sw / 2 + gap + badge / 2, sCenterY, badge);
-            c.fillStyle = '#FFFFFF'; c.fillText(scoreStr, W / 2, sCenterY + 40);
-            c.fillStyle = 'rgba(255,255,255,0.62)'; c.font = '600 28px "Hanken Grotesk", Arial, sans-serif';
-            c.fillText(clean(spec.home), W / 2 - sw / 2 - gap - badge / 2, sCenterY + badge / 2 + 62);
-            c.fillText(clean(spec.away), W / 2 + sw / 2 + gap + badge / 2, sCenterY + badge / 2 + 62);
-            // competition (volt)
-            var cy = 644;
-            tracked('4px'); c.fillStyle = '#D6F23A'; c.font = '700 28px "Hanken Grotesk", Arial, sans-serif';
-            c.fillText(String(spec.eyebrow || '').toUpperCase(), W / 2, cy); tracked('0px'); cy += 30;
-            // result pill (cover style)
-            if (spec.result) {
-              var rl = spec.result === 'w' ? 'WIN' : spec.result === 'l' ? 'LOSS' : 'DRAW';
-              tracked('3px'); c.font = '700 30px "Hanken Grotesk", Arial, sans-serif';
-              var tw = c.measureText(rl).width + 6, ppw = tw + 66, pph = 62, prx = W / 2 - ppw / 2, pry = cy + 16;
-              var pbg = spec.result === 'w' ? '#D6F23A' : spec.result === 'l' ? 'rgba(255,120,120,0.20)' : 'rgba(255,255,255,0.15)';
-              var ptx = spec.result === 'w' ? '#071D29' : spec.result === 'l' ? '#ffb4b4' : '#ffffff';
-              c.fillStyle = pbg; rr(prx, pry, ppw, pph, pph / 2); c.fill();
-              c.fillStyle = ptx; c.fillText(rl, W / 2, pry + 42); tracked('0px'); cy = pry + pph + 58;
-            } else { cy += 46; }
-            // venue / kick
-            var meta = []; if (spec.venue) meta.push(spec.venue); if (spec.kick) meta.push('KO ' + spec.kick);
-            if (meta.length) { tracked('3px'); c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '600 26px "Hanken Grotesk", Arial, sans-serif'; c.fillText(meta.join('   ·   ').toUpperCase(), W / 2, cy); tracked('0px'); cy += 74; }
-            cy += 10;
-            // scorers / assists
-            var section = function (label, items, max) {
-              if (!items || !items.length) return;
-              tracked('4px'); c.fillStyle = '#D6F23A'; c.font = '700 27px "Hanken Grotesk", Arial, sans-serif'; c.fillText(label, W / 2, cy); tracked('0px'); cy += 56;
-              c.fillStyle = '#FFFFFF'; c.font = '700 36px "Hanken Grotesk", Arial, sans-serif';
-              items.slice(0, max).forEach(function (it) { c.fillText(String(it.name).toUpperCase() + (it.n > 1 ? '  ×' + it.n : ''), W / 2, cy); cy += 52; });
-              if (items.length > max) { c.fillStyle = 'rgba(255,255,255,0.55)'; c.font = '600 30px "Hanken Grotesk", Arial, sans-serif'; c.fillText('+ ' + (items.length - max) + ' more', W / 2, cy); cy += 50; }
-              cy += 40;
-            };
-            section('GOALS', spec.scorers, 5);
-            section('ASSISTS', spec.assists, 4);
-            // sponsors
+          // bottom zone: sponsors + url, anchored to the foot of the card
+          var FOOT_Y = H - 58, SP_LOGO_Y = H - 252, SP_LABEL_Y = H - 282;
+          var drawFooter = function () {
             if (sponsors.length) {
-              tracked('4px'); c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '700 25px "Hanken Grotesk", Arial, sans-serif'; c.fillText('PROUDLY BACKED BY', W / 2, 1652); tracked('0px');
-              var spw = 210, sph = 94, sgap = 24, stot = sponsors.length * spw + (sponsors.length - 1) * sgap, sx = W / 2 - stot / 2, sy = 1692, spad = 16;
+              tracked('4px'); c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '700 24px "Hanken Grotesk", Arial, sans-serif'; c.fillText('PROUDLY BACKED BY', W / 2, SP_LABEL_Y); tracked('0px');
+              var spw = 196, sph = 86, sgap = 22, stot = sponsors.length * spw + (sponsors.length - 1) * sgap, sx = W / 2 - stot / 2, sy = SP_LOGO_Y, spad = 14;
               sponsors.forEach(function (im) {
-                c.fillStyle = '#FFFFFF'; rr(sx, sy, spw, sph, 14); c.fill();
+                c.fillStyle = '#FFFFFF'; rr(sx, sy, spw, sph, 12); c.fill();
                 var aw = spw - 2 * spad, ah = sph - 2 * spad, iar = im.width / im.height, idw, idh;
                 if (iar > aw / ah) { idw = aw; idh = aw / iar; } else { idh = ah; idw = ah * iar; }
                 c.drawImage(im, sx + (spw - idw) / 2, sy + (sph - idh) / 2, idw, idh);
                 sx += spw + sgap;
               });
             }
-            c.fillStyle = 'rgba(255,255,255,0.55)'; c.font = '600 36px "Hanken Grotesk", Arial, sans-serif';
-            c.fillText(String(spec.footer || 'suesangelsfc.co.uk'), W / 2, 1858);
+            c.fillStyle = 'rgba(255,255,255,0.55)'; c.font = '600 34px "Hanken Grotesk", Arial, sans-serif';
+            c.fillText(String(spec.footer || 'suesangelsfc.co.uk'), W / 2, FOOT_Y);
+          };
+          if (spec.kind === 'score') {
+            var drawBadge = function (im, cx, cyc, sz) { if (!im) return; var ar = im.width / im.height, w = sz, hh = sz; if (ar > 1) hh = sz / ar; else w = sz * ar; c.drawImage(im, cx - w / 2, cyc - hh / 2, w, hh); };
+            var SC = post ? { ftY: 124, scY: 286, badge: 128, gap: 44, scFont: 84, compY: 480, max1: 2, max2: 2 } : { ftY: 168, scY: 384, badge: 160, gap: 56, scFont: 116, compY: 644, max1: 5, max2: 4 };
+            tracked('6px'); c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '700 28px "Hanken Grotesk", Arial, sans-serif';
+            c.fillText('FULL TIME', W / 2, SC.ftY); tracked('0px');
+            c.font = '600 ' + SC.scFont + 'px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
+            var scoreStr = (spec.hs != null ? spec.hs : '') + '  -  ' + (spec.as != null ? spec.as : '');
+            var sw = c.measureText(scoreStr).width;
+            drawBadge(homeImg, W / 2 - sw / 2 - SC.gap - SC.badge / 2, SC.scY, SC.badge);
+            drawBadge(awayImg, W / 2 + sw / 2 + SC.gap + SC.badge / 2, SC.scY, SC.badge);
+            c.fillStyle = '#FFFFFF'; c.fillText(scoreStr, W / 2, SC.scY + SC.scFont * 0.34);
+            c.fillStyle = 'rgba(255,255,255,0.62)'; c.font = '600 26px "Hanken Grotesk", Arial, sans-serif';
+            c.fillText(clean(spec.home), W / 2 - sw / 2 - SC.gap - SC.badge / 2, SC.scY + SC.badge / 2 + 54);
+            c.fillText(clean(spec.away), W / 2 + sw / 2 + SC.gap + SC.badge / 2, SC.scY + SC.badge / 2 + 54);
+            var cy = SC.compY;
+            tracked('4px'); c.fillStyle = '#D6F23A'; c.font = '700 27px "Hanken Grotesk", Arial, sans-serif';
+            c.fillText(String(spec.eyebrow || '').toUpperCase(), W / 2, cy); tracked('0px'); cy += 28;
+            if (spec.result) {
+              var rl = spec.result === 'w' ? 'WIN' : spec.result === 'l' ? 'LOSS' : 'DRAW';
+              tracked('3px'); c.font = '700 28px "Hanken Grotesk", Arial, sans-serif';
+              var tw = c.measureText(rl).width + 6, ppw = tw + 60, pph = 56, prx = W / 2 - ppw / 2, pry = cy + 14;
+              var pbg = spec.result === 'w' ? '#D6F23A' : spec.result === 'l' ? 'rgba(255,120,120,0.20)' : 'rgba(255,255,255,0.15)';
+              var ptx = spec.result === 'w' ? '#071D29' : spec.result === 'l' ? '#ffb4b4' : '#ffffff';
+              c.fillStyle = pbg; rr(prx, pry, ppw, pph, pph / 2); c.fill();
+              c.fillStyle = ptx; c.fillText(rl, W / 2, pry + 38); tracked('0px'); cy = pry + pph + 50;
+            } else { cy += 42; }
+            var meta = []; if (spec.venue) meta.push(spec.venue); if (spec.kick) meta.push('KO ' + spec.kick);
+            if (meta.length) { tracked('3px'); c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '600 25px "Hanken Grotesk", Arial, sans-serif'; c.fillText(meta.join('   ·   ').toUpperCase(), W / 2, cy); tracked('0px'); cy += 64; }
+            cy += 8;
+            var limitY = SP_LABEL_Y - 36;
+            var section = function (label, items, max) {
+              if (!items || !items.length || cy > limitY - 64) return;
+              tracked('4px'); c.fillStyle = '#D6F23A'; c.font = '700 26px "Hanken Grotesk", Arial, sans-serif'; c.fillText(label, W / 2, cy); tracked('0px'); cy += 50;
+              c.fillStyle = '#FFFFFF'; c.font = '700 34px "Hanken Grotesk", Arial, sans-serif';
+              var shown = 0;
+              items.slice(0, max).forEach(function (it) { if (cy <= limitY) { c.fillText(String(it.name).toUpperCase() + (it.n > 1 ? '  ×' + it.n : ''), W / 2, cy); cy += 48; shown++; } });
+              var rem = items.length - shown;
+              if (rem > 0 && cy <= limitY) { c.fillStyle = 'rgba(255,255,255,0.55)'; c.font = '600 28px "Hanken Grotesk", Arial, sans-serif'; c.fillText('+ ' + rem + ' more', W / 2, cy); cy += 46; }
+              cy += 34;
+            };
+            section('GOALS', spec.scorers, SC.max1);
+            section('ASSISTS', spec.assists, SC.max2);
+            drawFooter();
           } else {
-            // ---- photo card (players / coaches / articles / table) ----
-            if (badge) { var bs2 = 150; c.drawImage(badge, W / 2 - bs2 / 2, 120, bs2, bs2); }
-            c.fillStyle = P.eyebrow; c.font = '700 34px "Hanken Grotesk", Arial, sans-serif';
-            c.fillText(String(spec.eyebrow || "SUE'S ANGELS FC").toUpperCase(), W / 2, 332);
-            var px2 = 130, py2 = 410, pw2 = W - 260, ph2 = 940;
-            c.save(); rr(px2, py2, pw2, ph2, 48); c.clip();
+            // ---- photo card (players / coaches / articles / table / album / video) ----
+            var HD = post ? { by: 64, bs: 108, ey: 238, py: 308 } : { by: 120, bs: 150, ey: 332, py: 410 };
+            if (badge) c.drawImage(badge, W / 2 - HD.bs / 2, HD.by, HD.bs, HD.bs);
+            tracked('1px'); c.fillStyle = P.eyebrow; c.font = '700 ' + (post ? 30 : 34) + 'px "Hanken Grotesk", Arial, sans-serif';
+            c.fillText(String(spec.eyebrow || "SUE'S ANGELS FC").toUpperCase(), W / 2, HD.ey); tracked('0px');
+            var SUB_Y = SP_LABEL_Y - 66, TITLE_Y = SUB_Y - 56;
+            var px2 = 130, py2 = HD.py, pw2 = W - 260, ph2 = (TITLE_Y - 132) - py2;
+            c.save(); rr(px2, py2, pw2, ph2, 44); c.clip();
             if (photo) {
               var ar = photo.width / photo.height, far = pw2 / ph2, dw, dh, dx, dy;
               if (ar > far) { dh = ph2; dw = ph2 * ar; dx = px2 - (dw - pw2) / 2; dy = py2; }
               else { dw = pw2; dh = pw2 / ar; dx = px2; dy = py2 - (dh - ph2) * 0.2; }
               c.drawImage(photo, dx, dy, dw, dh);
-            } else { c.fillStyle = P.frame; c.fillRect(px2, py2, pw2, ph2); if (badge) c.drawImage(badge, W / 2 - 170, py2 + ph2 / 2 - 170, 340, 340); }
-            var sg = c.createLinearGradient(0, py2 + ph2 - 240, 0, py2 + ph2);
-            sg.addColorStop(0, 'rgba(' + P.scrim + ',0)'); sg.addColorStop(1, 'rgba(' + P.scrim + ',0.55)');
-            c.fillStyle = sg; c.fillRect(px2, py2 + ph2 - 240, pw2, 240);
+            } else { c.fillStyle = P.frame; c.fillRect(px2, py2, pw2, ph2); if (badge) { var bz = Math.min(340, ph2 - 80); c.drawImage(badge, W / 2 - bz / 2, py2 + ph2 / 2 - bz / 2, bz, bz); } }
+            var sg = c.createLinearGradient(0, py2 + ph2 - 200, 0, py2 + ph2);
+            sg.addColorStop(0, 'rgba(' + P.scrim + ',0)'); sg.addColorStop(1, 'rgba(' + P.scrim + ',0.5)');
+            c.fillStyle = sg; c.fillRect(px2, py2 + ph2 - 200, pw2, 200);
             c.restore();
-            c.strokeStyle = P.border; c.lineWidth = 4; rr(px2, py2, pw2, ph2, 48); c.stroke();
-            c.fillStyle = P.title; c.font = '700 78px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
-            saWrapText(c, String(spec.title || '').toUpperCase(), W / 2, 1500, W - 150, 86, 2);
-            if (spec.subtitle) { c.fillStyle = P.subtitle; c.font = '600 40px "Hanken Grotesk", Arial, sans-serif'; c.fillText(String(spec.subtitle), W / 2, 1600); }
-            c.fillStyle = P.accent; rr(W / 2 - 60, 1700, 120, 8, 4); c.fill();
-            c.fillStyle = P.footer; c.font = '600 38px "Hanken Grotesk", Arial, sans-serif';
-            c.fillText(String(spec.footer || 'suesangelsfc.co.uk'), W / 2, 1840);
+            c.strokeStyle = P.border; c.lineWidth = 4; rr(px2, py2, pw2, ph2, 44); c.stroke();
+            c.fillStyle = P.title; c.font = '700 ' + (post ? 64 : 74) + 'px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
+            saWrapText(c, String(spec.title || '').toUpperCase(), W / 2, TITLE_Y, W - 150, post ? 72 : 82, 2);
+            if (spec.subtitle) { c.fillStyle = P.subtitle; c.font = '600 ' + (post ? 34 : 38) + 'px "Hanken Grotesk", Arial, sans-serif'; c.fillText(String(spec.subtitle), W / 2, SUB_Y); }
+            drawFooter();
           }
           try { resolve(cv.toDataURL('image/jpeg', 0.92)); } catch (e) { resolve(null); }
         }, function () { resolve(null); });
@@ -1421,6 +1416,7 @@ window.saReportStorySpec = function (report) {
 function ShareBtn({ title, what, label, image, url: urlProp, story }) {
   var h = React.createElement;
   var [open, setOpen] = useState(false);
+  var [fmt, setFmt] = useState('story');
   var ref = useRef(null);
   var shareUrl = function () { try { return urlProp ? new URL(urlProp, location.href).href : location.href; } catch (e) { return location.href; } };
   useEffect(function () {
@@ -1445,7 +1441,7 @@ function ShareBtn({ title, what, label, image, url: urlProp, story }) {
   var shareImageFile = async function () {
     if (!navigator.canShare || typeof File === 'undefined') return false;
     var src = image;
-    try { if (story) { var spec = (typeof story === 'function') ? story() : story; if (spec) { var gen = await saStoryImage(spec); if (gen) src = gen; } } } catch (e) {}
+    try { if (story) { var spec = (typeof story === 'function') ? story() : story; if (spec) { var gen = await saStoryImage(spec, fmt === 'post'); if (gen) src = gen; } } } catch (e) {}
     if (!src) return false;
     try {
       var resp = await fetch(src);
@@ -1496,7 +1492,7 @@ function ShareBtn({ title, what, label, image, url: urlProp, story }) {
     { k: 'fb', label: 'Facebook', fn: function () { openWin('https://www.facebook.com/sharer/sharer.php?u=' + u, 'facebook'); } },
     { k: 'copy', label: 'Copy link', fn: function () { copyLink('copy'); } }
   ].filter(Boolean);
-  return h('div', { className: 'sa-share', ref: ref }, h('button', { type: 'button', className: 'm-btn m-btn--ghost', 'aria-haspopup': 'menu', 'aria-expanded': open ? 'true' : 'false', onClick: function () { setOpen(function (v) { return !v; }); }, style: { display: 'inline-flex', alignItems: 'center', gap: 8 } }, label || 'Share', h('svg', { viewBox: '0 0 24 24', width: 15, height: 15, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true' }, h('path', { d: 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8' }), h('polyline', { points: '16 6 12 2 8 6' }), h('line', { x1: 12, y1: 2, x2: 12, y2: 15 }))), open ? h('div', { className: 'sa-share__menu', role: 'menu' }, items.map(function (it) { return h('button', { key: it.k, type: 'button', role: 'menuitem', className: 'sa-share__item', onClick: it.fn }, it.label); })) : null);
+  return h('div', { className: 'sa-share', ref: ref }, h('button', { type: 'button', className: 'm-btn m-btn--ghost', 'aria-haspopup': 'menu', 'aria-expanded': open ? 'true' : 'false', onClick: function () { setOpen(function (v) { return !v; }); }, style: { display: 'inline-flex', alignItems: 'center', gap: 8 } }, label || 'Share', h('svg', { viewBox: '0 0 24 24', width: 15, height: 15, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true' }, h('path', { d: 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8' }), h('polyline', { points: '16 6 12 2 8 6' }), h('line', { x1: 12, y1: 2, x2: 12, y2: 15 }))), open ? h('div', { className: 'sa-share__menu', role: 'menu' }, (story ? [h('div', { key: 'fmt', style: { display: 'flex', gap: 6, padding: '8px 10px 10px' }, onClick: function (e) { e.stopPropagation(); } }, [['story', 'Story · 9:16'], ['post', 'Post · 4:5']].map(function (f) { return h('button', { key: f[0], type: 'button', onClick: function () { setFmt(f[0]); }, style: { flex: 1, padding: '7px 8px', borderRadius: 8, border: '1px solid ' + (fmt === f[0] ? 'var(--m-volt)' : 'var(--m-edge-2)'), background: fmt === f[0] ? 'var(--m-volt)' : 'transparent', color: fmt === f[0] ? 'var(--m-navy)' : 'var(--m-ink-2)', font: '600 0.72rem var(--m-sans)', cursor: 'pointer' } }, f[1]); }))] : []).concat(items.map(function (it) { return h('button', { key: it.k, type: 'button', role: 'menuitem', className: 'sa-share__item', onClick: it.fn }, it.label); }))) : null);
 }
 function Home({
   go

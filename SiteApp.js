@@ -1241,7 +1241,10 @@ function ResCard({
     className: "mh-res__comp"
   }, r.competition || 'League Ten', " \xB7 ", usHome ? 'Home' : 'Away'));
 }
-function ShareBtn({ title, what, label }) {
+// Slug for share-friendly player URLs, e.g. "Louis Allen" -> "louis-allen".
+function saSlug(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
+function saPlayerName(p) { return p ? ((p.first || '') + ' ' + (p.last || '')).trim() : ''; }
+function ShareBtn({ title, what, label, image }) {
   var h = React.createElement;
   var [open, setOpen] = useState(false);
   var ref = useRef(null);
@@ -1261,11 +1264,36 @@ function ShareBtn({ title, what, label }) {
     catch (e) { window.prompt('Copy this link:', url); }
     setOpen(false);
   };
+  // Share the preview IMAGE as a file. This is the only way Instagram Stories /
+  // posts and TikTok can actually receive shared content on mobile — a plain URL
+  // is rejected by those apps. Returns true if the share (or cancel) was handled.
+  var shareImageFile = async function () {
+    if (!image || !navigator.canShare || typeof File === 'undefined') return false;
+    try {
+      var resp = await fetch(image);
+      var blob = await resp.blob();
+      if (!blob || !blob.size) return false;
+      var ext = (blob.type && blob.type.indexOf('png') > -1) ? 'png' : 'jpg';
+      var file = new File([blob], 'sue-angels.' + ext, { type: blob.type || 'image/jpeg' });
+      if (!navigator.canShare({ files: [file] })) return false;
+      await navigator.share({ files: [file], title: shareTitle() });
+      track('native-image'); setOpen(false); return true;
+    } catch (e) {
+      if (e && e.name === 'AbortError') { setOpen(false); return true; }
+      return false;
+    }
+  };
   var nativeShare = async function () {
+    if (await shareImageFile()) return;
     var url = location.href;
     try { if (navigator.share) { await navigator.share({ title: shareTitle(), url: url }); track('native'); setOpen(false); return; } }
     catch (e) { if (e && e.name === 'AbortError') { setOpen(false); return; } }
     copyLink('native-fallback');
+  };
+  var toApp = async function (method, copyMsg) {
+    if (await shareImageFile()) return;          // mobile: hand the app the image (Story/Post)
+    if (navigator.share) { nativeShare(); return; }
+    copyLink(method, copyMsg);                    // desktop: copy the link to paste in
   };
   var openWin = function (u, method) { window.open(u, '_blank', 'noopener,noreferrer'); track(method); setOpen(false); };
   var u = encodeURIComponent(location.href);
@@ -1274,9 +1302,9 @@ function ShareBtn({ title, what, label }) {
   var ttMsg = 'Link copied. Open TikTok and paste it into your caption or bio.';
   var items = [
     navigator.share ? { k: 'native', label: 'Share to apps…', fn: nativeShare } : null,
-    { k: 'ig', label: 'Instagram', fn: function () { if (navigator.share) nativeShare(); else copyLink('instagram', igMsg); } },
+    { k: 'ig', label: 'Instagram', fn: function () { toApp('instagram', igMsg); } },
     { k: 'x', label: 'X (Twitter)', fn: function () { openWin('https://twitter.com/intent/tweet?text=' + t + '&url=' + u, 'x'); } },
-    { k: 'tt', label: 'TikTok', fn: function () { if (navigator.share) nativeShare(); else copyLink('tiktok', ttMsg); } },
+    { k: 'tt', label: 'TikTok', fn: function () { toApp('tiktok', ttMsg); } },
     { k: 'wa', label: 'WhatsApp', fn: function () { openWin('https://wa.me/?text=' + t + '%20' + u, 'whatsapp'); } },
     { k: 'fb', label: 'Facebook', fn: function () { openWin('https://www.facebook.com/sharer/sharer.php?u=' + u, 'facebook'); } },
     { k: 'copy', label: 'Copy link', fn: function () { copyLink('copy'); } }
@@ -2275,8 +2303,14 @@ function Team({
   }, []);
   useEffect(() => {
     try {
-      const pn = parseInt(new URLSearchParams(window.location.search).get('player'), 10);
-      if (pn) { setTab('squad'); setProfile(pn); }
+      const raw = new URLSearchParams(window.location.search).get('player');
+      if (raw) {
+        const all = window.derivedSquad ? window.derivedSquad(null, null) : (window.SQUAD || []);
+        let p = null;
+        if (/^\d+$/.test(raw)) p = (all || []).find(x => x.num === parseInt(raw, 10)); // back-compat numeric links
+        else { const s = raw.toLowerCase(); p = (all || []).find(x => saSlug(saPlayerName(x)) === s); }
+        if (p) { setTab('squad'); setProfile(p.num); }
+      }
     } catch (e) {}
   }, []);
   // Keep the URL + page title in sync with the open player profile, so a profile
@@ -2289,8 +2323,9 @@ function Team({
       if (profile != null) {
         const all = window.derivedSquad ? window.derivedSquad(null, null) : (window.SQUAD || []);
         const p = (all || []).find(x => x.num === profile);
-        const nm = p ? ((p.first || '') + ' ' + (p.last || '')).trim() : '';
-        window.history.replaceState(null, '', 'teams.html?player=' + profile);
+        const nm = saPlayerName(p);
+        const slug = saSlug(nm) || String(profile);
+        window.history.replaceState(null, '', 'teams.html?player=' + slug);
         document.title = (nm || 'Player') + " · Sue's Angels FC";
       } else {
         window.history.replaceState(null, '', 'teams.html');
@@ -2440,7 +2475,7 @@ function Team({
     onClose: () => setProfile(null)
   }, /*#__PURE__*/React.createElement(ProfileCard, {
     num: profile
-  }), /*#__PURE__*/React.createElement("div", { style: { marginTop: 16, textAlign: "center" } }, /*#__PURE__*/React.createElement(ShareBtn, { what: "player", label: "Share player" }))) : null, coach ? /*#__PURE__*/React.createElement(Modal, {
+  }), /*#__PURE__*/React.createElement("div", { style: { marginTop: 16, textAlign: "center" } }, /*#__PURE__*/React.createElement(ShareBtn, { what: "player", label: "Share player", image: window.getPlayerPhoto ? window.getPlayerPhoto(profile) : null }))) : null, coach ? /*#__PURE__*/React.createElement(Modal, {
     onClose: () => setCoach(null)
   }, /*#__PURE__*/React.createElement(CoachModalContent, {
     coach: coach
@@ -2715,7 +2750,7 @@ function Media({
   const videoCard = (v, i) => h("button", { className: "mp-news mp-clickable", key: v.id || i, onClick: () => setVid(v) }, v.cover ? h("div", { className: "mp-news__cover" }, h("img", { src: v.cover, alt: "" })) : maGenCover({ layout: 'badges', top: v.category || 'VIDEO', left: v.homeBadge || 'assets/badge/sue-angels-shield.png', right: v.awayBadge || '', center: '\u25B6', bottom: v.title || 'Watch' }), h("div", { className: "mp-news__body" }, v.category ? h("span", { className: "m-chip m-chip--volt mp-news__tag" }, v.category) : null, v.title ? h("h3", { className: "m-h3" }, v.title) : null));
   const videosBody = videos.length ? h("div", { className: "mp-grid mp-g3" }, videos.map(videoCard)) : h("div", { className: "m-empty" }, h("b", null, "NO VIDEOS YET"), h("span", null, "MATCH GOALS & CLIPS WILL APPEAR HERE"));
 
-  return h(React.Fragment, null, h(PageHero, { eyebrow: "The latest", title: h(React.Fragment, null, "Me", h("em", null, "dia")), sub: "Match reports, club news and the matchday gallery." }), h("section", { className: "mp-sec" }, h("div", { className: "m-wrap" }, h("div", { className: "mp-subtabs" }, [['news', 'News'], ['gallery', 'Gallery'], ['videos', 'Videos']].map(([k, l]) => h("button", { key: k, className: `mp-subtab ${tab === k ? 'is-active' : ''}`, onClick: () => setTab(k) }, l))), tab === 'news' ? h(React.Fragment, null, catTabs, newsBody) : tab === 'videos' ? videosBody : h(React.Fragment, null, gcatTabs, galleryBody))), report ? h(Modal, { onClose: () => setReport(null) }, h("div", { className: "m-glass m-modal__sponsor" }, h("p", { className: "m-eyebrow m-eyebrow--volt" }, report.competition || 'League Ten', " \u00b7 ", report.date), h("h2", { className: "m-h2", style: { marginTop: 10 } }, report.home.replace(' FC', ''), " ", report.hs, "-", report.as, " ", report.away.replace(' FC', '')), h("div", { className: "m-prose" }, function () { var d = window.loadMatchEntry ? window.loadMatchEntry(report.id) : null; var t = d && (d.polishedReport || d.commentary); t = t && String(t).trim(); if (!t) return h("p", null, "Match report to follow, watch this space."); return t.split(/\n+/).map(function (p, i) { return h("p", { key: i }, p); }); }()), h("div", { style: { marginTop: 18, textAlign: "center" } }, h(ShareBtn, { what: "report", label: "Share report" })))) : null, article ? h(Modal, { onClose: () => setArticle(null) }, h("div", { className: "m-glass m-modal__sponsor" }, article.cover ? h("img", { src: article.cover, alt: "", style: { width: '100%', maxHeight: 340, objectFit: 'cover', borderRadius: 14, marginBottom: 18 } }) : null, h("p", { className: "m-eyebrow m-eyebrow--volt" }, article.cat, " \u00b7 ", article.date), h("h2", { className: "m-h2", style: { marginTop: 10 } }, article.title), h("div", { className: "m-prose", style: { marginTop: 16 } }, String(article.body || '').split(/\n+/).filter(Boolean).map((p, i) => h("p", { key: i }, p))), h("div", { style: { marginTop: 18, textAlign: "center" } }, h(ShareBtn, { what: "article", label: "Share post" })))) : null, album ? (function () { var ph = window.galleryPhotos ? window.galleryPhotos(album) : (album.photos || []); if (!ph.length) return null; var idx = ((ai % ph.length) + ph.length) % ph.length; var tags = (album.photoTags && album.photoTags[idx]) || []; return h("div", { className: "m-zoom m-albumbox", onClick: () => setAlbum(null) }, h("button", { className: "m-modal__close", onClick: () => setAlbum(null) }, "\u2715"), ph.length > 1 ? h("button", { className: "m-albumbox__nav m-albumbox__nav--prev", onClick: (e) => { e.stopPropagation(); setAi(idx - 1); } }, "\u2039") : null, h("figure", { className: "m-albumbox__fig", onClick: (e) => e.stopPropagation() }, h("img", { src: ph[idx], alt: "" }), tags.length ? h("figcaption", { className: "m-albumbox__tags" }, tags.join(" \u00b7 ")) : null, h("span", { className: "m-albumbox__count" }, (idx + 1) + " / " + ph.length)), ph.length > 1 ? h("button", { className: "m-albumbox__nav m-albumbox__nav--next", onClick: (e) => { e.stopPropagation(); setAi(idx + 1); } }, "\u203A") : null); })() : null, vid ? h("div", { className: "m-zoom", onClick: () => setVid(null) }, h("button", { className: "m-modal__close", onClick: () => setVid(null) }, "\u2715"), (function () { var u = vid.url || ''; var m = u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([\w-]+)/); if (m) return h("iframe", { src: 'https://www.youtube.com/embed/' + m[1] + '?autoplay=1', style: { width: 'min(92vw, 960px)', aspectRatio: '16 / 9', border: 0, borderRadius: 14 }, allow: 'autoplay; fullscreen', allowFullScreen: true }); return h("video", { src: u, controls: true, autoPlay: true, style: { width: 'min(92vw, 960px)', maxHeight: '82vh', borderRadius: 14, background: '#000' } }); })()) : null, zoom ? h("div", { className: "m-zoom", onClick: () => setZoom(null) }, h("button", { className: "m-modal__close", onClick: () => setZoom(null) }, "\u2715"), h("img", { src: zoom, alt: "" })) : null);
+  return h(React.Fragment, null, h(PageHero, { eyebrow: "The latest", title: h(React.Fragment, null, "Me", h("em", null, "dia")), sub: "Match reports, club news and the matchday gallery." }), h("section", { className: "mp-sec" }, h("div", { className: "m-wrap" }, h("div", { className: "mp-subtabs" }, [['news', 'News'], ['gallery', 'Gallery'], ['videos', 'Videos']].map(([k, l]) => h("button", { key: k, className: `mp-subtab ${tab === k ? 'is-active' : ''}`, onClick: () => setTab(k) }, l))), tab === 'news' ? h(React.Fragment, null, catTabs, newsBody) : tab === 'videos' ? videosBody : h(React.Fragment, null, gcatTabs, galleryBody))), report ? h(Modal, { onClose: () => setReport(null) }, h("div", { className: "m-glass m-modal__sponsor" }, h("p", { className: "m-eyebrow m-eyebrow--volt" }, report.competition || 'League Ten', " \u00b7 ", report.date), h("h2", { className: "m-h2", style: { marginTop: 10 } }, report.home.replace(' FC', ''), " ", report.hs, "-", report.as, " ", report.away.replace(' FC', '')), h("div", { className: "m-prose" }, function () { var d = window.loadMatchEntry ? window.loadMatchEntry(report.id) : null; var t = d && (d.polishedReport || d.commentary); t = t && String(t).trim(); if (!t) return h("p", null, "Match report to follow, watch this space."); return t.split(/\n+/).map(function (p, i) { return h("p", { key: i }, p); }); }()), h("div", { style: { marginTop: 18, textAlign: "center" } }, h(ShareBtn, { what: "report", label: "Share report" })))) : null, article ? h(Modal, { onClose: () => setArticle(null) }, h("div", { className: "m-glass m-modal__sponsor" }, article.cover ? h("img", { src: article.cover, alt: "", style: { width: '100%', maxHeight: 340, objectFit: 'cover', borderRadius: 14, marginBottom: 18 } }) : null, h("p", { className: "m-eyebrow m-eyebrow--volt" }, article.cat, " \u00b7 ", article.date), h("h2", { className: "m-h2", style: { marginTop: 10 } }, article.title), h("div", { className: "m-prose", style: { marginTop: 16 } }, String(article.body || '').split(/\n+/).filter(Boolean).map((p, i) => h("p", { key: i }, p))), h("div", { style: { marginTop: 18, textAlign: "center" } }, h(ShareBtn, { what: "article", label: "Share post", image: article.cover || null })))) : null, album ? (function () { var ph = window.galleryPhotos ? window.galleryPhotos(album) : (album.photos || []); if (!ph.length) return null; var idx = ((ai % ph.length) + ph.length) % ph.length; var tags = (album.photoTags && album.photoTags[idx]) || []; return h("div", { className: "m-zoom m-albumbox", onClick: () => setAlbum(null) }, h("button", { className: "m-modal__close", onClick: () => setAlbum(null) }, "\u2715"), ph.length > 1 ? h("button", { className: "m-albumbox__nav m-albumbox__nav--prev", onClick: (e) => { e.stopPropagation(); setAi(idx - 1); } }, "\u2039") : null, h("figure", { className: "m-albumbox__fig", onClick: (e) => e.stopPropagation() }, h("img", { src: ph[idx], alt: "" }), tags.length ? h("figcaption", { className: "m-albumbox__tags" }, tags.join(" \u00b7 ")) : null, h("span", { className: "m-albumbox__count" }, (idx + 1) + " / " + ph.length)), ph.length > 1 ? h("button", { className: "m-albumbox__nav m-albumbox__nav--next", onClick: (e) => { e.stopPropagation(); setAi(idx + 1); } }, "\u203A") : null); })() : null, vid ? h("div", { className: "m-zoom", onClick: () => setVid(null) }, h("button", { className: "m-modal__close", onClick: () => setVid(null) }, "\u2715"), (function () { var u = vid.url || ''; var m = u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([\w-]+)/); if (m) return h("iframe", { src: 'https://www.youtube.com/embed/' + m[1] + '?autoplay=1', style: { width: 'min(92vw, 960px)', aspectRatio: '16 / 9', border: 0, borderRadius: 14 }, allow: 'autoplay; fullscreen', allowFullScreen: true }); return h("video", { src: u, controls: true, autoPlay: true, style: { width: 'min(92vw, 960px)', maxHeight: '82vh', borderRadius: 14, background: '#000' } }); })()) : null, zoom ? h("div", { className: "m-zoom", onClick: () => setZoom(null) }, h("button", { className: "m-modal__close", onClick: () => setZoom(null) }, "\u2715"), h("img", { src: zoom, alt: "" })) : null);
 }
 
 /* ══ SPONSORS ═══════════════════════════════════════════════════════════ */
@@ -3354,9 +3389,7 @@ function SiteFooter() {
       textTransform: 'uppercase'
     }
   }, l)))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 24
-    }
+    className: "sa-vh"
   }, /*#__PURE__*/React.createElement("small", null, "Sunday-league football at The Reeves, Hanworth \xB7 serving Kingston, Sunbury, Staines and south-west London \xB7 founded 2025 in memory of Susan Anne Martin \xB7 League Ten champions 25/26 \xB7 supporting sepsis awareness"))));
 }
 function BackToTop() {

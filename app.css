@@ -1468,6 +1468,18 @@ h1, h2, h3, p, span, b, a, li { overflow-wrap: anywhere; }
   .mp-g4 { grid-template-columns: 1fr; }
 }
 
+/* Visually hidden but kept in the DOM (read by search engines + screen readers) */
+.sa-vh {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ---- Share menu (player / coach / report / article) -------------------- */
 .sa-share { position: relative; display: inline-block; text-align: left; }
 .sa-share__menu {

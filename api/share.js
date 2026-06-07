@@ -32,6 +32,16 @@ function esc(s) {
 
 function shortName(s) { return String(s || '').replace(/\s*FC$/i, '').trim(); }
 
+// Unwrap one or more layers of JSON-string quoting (matches the client helper).
+function cleanDataUrl(v) {
+  if (typeof v !== 'string') return null;
+  let s = v;
+  while (s.length > 1 && s[0] === '"' && s[s.length - 1] === '"') {
+    try { s = JSON.parse(s); } catch (e) { s = s.slice(1, -1); }
+  }
+  return s || null;
+}
+
 function clip(s, n) {
   s = String(s || '').replace(/\s+/g, ' ').trim();
   return s.length > n ? s.slice(0, n - 1).trim() + '…' : s;
@@ -80,18 +90,25 @@ async function supaGet(table, key) {
 async function resolve(q, pageSrc) {
   // ---- Player profile ----
   if (q.player != null) {
-    const num = parseInt(q.player, 10);
-    if (!Number.isFinite(num)) return null;
+    const raw = String(q.player);
     let squad = extractArray(pageSrc, 'SQUAD') || [];
     const custom = await supaGet('player_photos', 'roster:players');
     if (Array.isArray(custom)) squad = squad.concat(custom);
-    const p = squad.find(x => x && Number(x.num) === num);
+    const nameOf = x => ((x.first ? x.first + ' ' : '') + (x.last || '')).trim();
+    const slugOf = x => nameOf(x).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    const p = /^\d+$/.test(raw)
+      ? squad.find(x => x && Number(x.num) === parseInt(raw, 10))
+      : squad.find(x => x && slugOf(x) === raw.toLowerCase());
     if (!p) return null;
-    const name = ((p.first ? p.first + ' ' : '') + (p.last || '')).trim() || ('Number ' + num);
+    const num = p.num;
+    const name = nameOf(p) || ('Number ' + num);
     const role = p.gk ? 'Goalkeeper' : (p.pos || p.position || '');
+    const photo = cleanDataUrl(await supaGet('player_photos', String(num)));
     return {
       title: name + ' — #' + num + " · Sue's Angels FC",
-      desc: (role ? role + '. ' : '') + "First-team squad member at Sue's Angels FC — League Ten champions, unbeaten in our inaugural season."
+      desc: (role ? role + '. ' : '') + "First-team squad member at Sue's Angels FC — League Ten champions, unbeaten in our inaugural season.",
+      image: photo ? (SITE + '/api/og-image?player=' + num) : null,
+      imageAlt: photo ? name : null
     };
   }
   // ---- Match report ----
@@ -119,12 +136,17 @@ async function resolve(q, pageSrc) {
   }
   // ---- News article ----
   if (q.article != null) {
-    const data = await supaGet('articles', String(q.article));
+    const id = String(q.article);
+    const data = await supaGet('articles', id);
     if (!data || !data.title) return null;
-    const body = clip(data.body || data.excerpt || '', 200);
+    const body = clip(data.body || data.lede || data.excerpt || '', 200);
+    const override = cleanDataUrl(await supaGet('player_photos', 'cover:' + id));
+    const cover = override || cleanDataUrl(data.cover);
     return {
       title: data.title + " · Sue's Angels FC",
-      desc: body || [data.cat, data.date].filter(Boolean).join(' · ') || "Club news from Sue's Angels FC."
+      desc: body || [data.cat, data.date].filter(Boolean).join(' · ') || "Club news from Sue's Angels FC.",
+      image: cover ? (SITE + '/api/og-image?article=' + encodeURIComponent(id)) : null,
+      imageAlt: cover ? data.title : null
     };
   }
   // ---- Coach ----
@@ -156,6 +178,21 @@ function injectMeta(html, meta, canonical) {
     [/(<meta\s+property="og:url"\s+content=")[\s\S]*?("\s*\/?>)/i, '$1' + u + '$2']
   ];
   for (const [re, sub] of reps) html = html.replace(re, sub);
+  if (meta.image) {
+    const img = esc(meta.image);
+    html = html.replace(/(<meta\s+property="og:image"\s+content=")[\s\S]*?("\s*\/?>)/i, '$1' + img + '$2');
+    html = html.replace(/(<meta\s+name="twitter:image"\s+content=")[\s\S]*?("\s*\/?>)/i, '$1' + img + '$2');
+    // Drop the fixed 1200×630 dimensions + type of the club card so platforms
+    // measure the actual player photo / cover instead of cropping to wrong ratio.
+    html = html.replace(/\s*<meta\s+property="og:image:width"[\s\S]*?\/?>/i, '');
+    html = html.replace(/\s*<meta\s+property="og:image:height"[\s\S]*?\/?>/i, '');
+    html = html.replace(/\s*<meta\s+property="og:image:type"[\s\S]*?\/?>/i, '');
+    if (meta.imageAlt) {
+      const a = esc(meta.imageAlt);
+      html = html.replace(/(<meta\s+property="og:image:alt"\s+content=")[\s\S]*?("\s*\/?>)/i, '$1' + a + '$2');
+      html = html.replace(/(<meta\s+name="twitter:image:alt"\s+content=")[\s\S]*?("\s*\/?>)/i, '$1' + a + '$2');
+    }
+  }
   return html;
 }
 

@@ -9,6 +9,9 @@
     },
     "api/share.js": {
       "maxDuration": 10
+    },
+    "api/og-image.js": {
+      "maxDuration": 10
     }
   },
   "headers": [

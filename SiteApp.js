@@ -1328,19 +1328,23 @@ function saStoryImage(spec, post) {
             var meta = []; if (spec.venue) meta.push(spec.venue); if (spec.kick) meta.push('KO ' + spec.kick);
             if (meta.length && !post) { tracked('3px'); c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '600 25px "Hanken Grotesk", Arial, sans-serif'; c.fillText(meta.join('   ·   ').toUpperCase(), W / 2, cy); tracked('0px'); cy += 64; }
             cy += 8;
-            var limitY = SP_LABEL_Y - 36;
-            var section = function (label, items, max) {
-              if (!items || !items.length || cy > limitY - 64) return;
-              tracked('4px'); c.fillStyle = '#D6F23A'; c.font = '700 26px "Hanken Grotesk", Arial, sans-serif'; c.fillText(label, W / 2, cy); tracked('0px'); cy += 50;
-              c.fillStyle = '#FFFFFF'; c.font = '700 34px "Hanken Grotesk", Arial, sans-serif';
-              var shown = 0;
-              items.slice(0, max).forEach(function (it) { if (cy <= limitY) { c.fillText(String(it.name).toUpperCase() + (it.n > 1 ? '  ×' + it.n : ''), W / 2, cy); cy += 48; shown++; } });
-              var rem = items.length - shown;
-              if (rem > 0 && cy <= limitY) { c.fillStyle = 'rgba(255,255,255,0.55)'; c.font = '600 28px "Hanken Grotesk", Arial, sans-serif'; c.fillText('+ ' + rem + ' more', W / 2, cy); cy += 46; }
-              cy += 34;
+            // Always show ALL scorers + assisters - size the rows to fit the space.
+            var nG = (spec.scorers || []).length, nA = (spec.assists || []).length;
+            var nLab = (nG ? 1 : 0) + (nA ? 1 : 0);
+            var avail = (SP_LABEL_Y - 36) - cy;
+            var units = nG + nA + nLab + (nLab > 1 ? 0.6 : 0);
+            var lineH = units > 0 ? Math.min(54, avail / units) : 54;
+            var nameFont = Math.max(18, Math.min(36, Math.round(lineH * 0.7)));
+            var labelFont = Math.max(17, Math.min(27, Math.round(lineH * 0.52)));
+            var section = function (label, items) {
+              if (!items || !items.length) return;
+              tracked('4px'); c.fillStyle = '#D6F23A'; c.font = '700 ' + labelFont + 'px "Hanken Grotesk", Arial, sans-serif'; c.fillText(label, W / 2, cy); tracked('0px'); cy += lineH;
+              c.fillStyle = '#FFFFFF'; c.font = '700 ' + nameFont + 'px "Hanken Grotesk", Arial, sans-serif';
+              items.forEach(function (it) { c.fillText(String(it.name).toUpperCase() + (it.n > 1 ? '  ×' + it.n : ''), W / 2, cy); cy += lineH; });
+              cy += lineH * 0.6;
             };
-            section('GOALS', spec.scorers, SC.max1);
-            section('ASSISTS', spec.assists, SC.max2);
+            section('GOALS', spec.scorers);
+            section('ASSISTS', spec.assists);
             drawFooter();
           } else {
             // ---- photo card (players / coaches / articles / table / album / video) ----

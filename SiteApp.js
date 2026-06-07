@@ -2482,7 +2482,7 @@ function Team({
   })) : null, (!retiredGroups.length && !departedOnlyGroups.length) ? /*#__PURE__*/React.createElement("div", { className: "m-empty" }, /*#__PURE__*/React.createElement("b", null, season === '26/27' ? "FULL SQUAD" : "NOBODY'S LEFT"), /*#__PURE__*/React.createElement("span", null, season === '26/27' ? "NO GOODBYES IN 26/27 YET" : "NO RETIRED OR DEPARTED PLAYERS THIS SEASON")) : null) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(TeamStatsPanel, {
     season: season,
     squadCount: squad.length
-  })))), profile != null ? /*#__PURE__*/React.createElement(Modal, {
+  })))), (slim && tab !== 'coaches') ? /*#__PURE__*/React.createElement("section", { className: "mp-sec", style: { paddingTop: 0 } }, /*#__PURE__*/React.createElement("div", { className: "m-wrap" }, /*#__PURE__*/React.createElement("div", { className: "m-glass", style: { padding: "clamp(24px,4vw,40px)", textAlign: "center" } }, /*#__PURE__*/React.createElement("p", { className: "m-eyebrow m-eyebrow--volt", style: { justifyContent: "center", display: "inline-flex" } }, "Want to play here?"), /*#__PURE__*/React.createElement("h2", { className: "m-h2", style: { marginTop: 10 } }, "Trials are open for 26/27."), /*#__PURE__*/React.createElement("p", { className: "m-lead", style: { margin: "12px auto 0", maxWidth: "48ch" } }, "Think you can wear the shirt? Register your interest and we'll be in touch with dates."), /*#__PURE__*/React.createElement("a", { className: "m-btn m-btn--volt", href: "join.html", style: { marginTop: 22 } }, "Apply for a trial")))) : null, profile != null ? /*#__PURE__*/React.createElement(Modal, {
     wide: true,
     onClose: () => setProfile(null)
   }, /*#__PURE__*/React.createElement(ProfileCard, {

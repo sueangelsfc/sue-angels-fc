@@ -3319,11 +3319,22 @@ const HREF = {
   schedule: 'schedule.html',
   league: 'league.html',
   media: 'media.html',
+  news: 'news.html',
+  gallery: 'gallery.html',
+  videos: 'videos.html',
   sponsors: 'sponsors.html',
   contact: 'contact.html',
   join: 'join.html'
 };
 const NAV = [['home', 'Home'], ['about', 'About'], ['sepsis', 'Our Cause'], ['champions', 'Champions'], ['team', 'Team'], ['schedule', 'Matches'], ['league', 'League'], ['media', 'Media'], ['sponsors', 'Sponsors'], ['contact', 'Contact']];
+// Grouped navigation with dropdowns. Items without `items` are direct links.
+const NAV_GROUPS = [
+  { k: 'home', l: 'Home' },
+  { l: 'The Club', items: [['about', 'Our Story'], ['sepsis', 'Our Cause'], ['champions', 'Champions'], ['sponsors', 'Sponsors']] },
+  { l: 'On the Pitch', items: [['team', 'Team'], ['schedule', 'Matches'], ['league', 'League']] },
+  { l: 'Media', items: [['news', 'News'], ['gallery', 'Gallery'], ['videos', 'Videos']] },
+  { k: 'contact', l: 'Contact' }
+];
 const PAGES = {
   home: Home,
   about: About,
@@ -3356,6 +3367,7 @@ function currentPage() {
     'media.html': 'media',
     'news.html': 'media',
     'gallery.html': 'media',
+    'videos.html': 'media',
     'sponsors.html': 'sponsors',
     'contact.html': 'contact',
     'join.html': 'join'
@@ -3402,12 +3414,29 @@ function SiteHeader({
     id: "sa-primary-nav",
     "aria-label": "Primary",
     className: `sa-nav ${open ? 'is-open' : ''}`
-  }, NAV.map(([k, l]) => /*#__PURE__*/React.createElement("a", {
-    key: k,
-    href: HREF[k],
-    className: page === k ? 'is-active' : '',
+  }, NAV_GROUPS.map(g => g.items ? /*#__PURE__*/React.createElement("div", {
+    key: g.l,
+    className: "sa-nav__group" + (g.items.some(it => it[0] === page) ? " is-active" : "")
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "sa-nav__top",
+    "aria-haspopup": "true"
+  }, g.l, /*#__PURE__*/React.createElement("span", {
+    className: "sa-nav__caret",
+    "aria-hidden": "true"
+  }, "▾")), /*#__PURE__*/React.createElement("div", {
+    className: "sa-nav__menu"
+  }, g.items.map(it => /*#__PURE__*/React.createElement("a", {
+    key: it[0],
+    href: HREF[it[0]],
+    className: page === it[0] ? 'is-active' : '',
     onClick: () => setOpen(false)
-  }, l))), /*#__PURE__*/React.createElement("div", {
+  }, it[1])))) : /*#__PURE__*/React.createElement("a", {
+    key: g.k,
+    href: HREF[g.k],
+    className: page === g.k ? 'is-active' : '',
+    onClick: () => setOpen(false)
+  }, g.l))), /*#__PURE__*/React.createElement("div", {
     className: "sa-act"
   }, /*#__PURE__*/React.createElement("button", {
     className: "m-toggle",

@@ -1525,3 +1525,47 @@ h1, h2, h3, p, span, b, a, li { overflow-wrap: anywhere; }
 @media (prefers-reduced-motion: reduce) {
   .sa-share__menu { animation: none; }
 }
+
+/* ---- Grouped dropdown navigation -------------------------------------- */
+.sa-nav__group { position: relative; }
+.sa-nav__top {
+  -webkit-appearance: none; appearance: none; background: none; border: 0; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 9px 14px; border-radius: 9999px;
+  font: 700 0.72rem var(--m-sans); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--m-ink-2); white-space: nowrap; transition: background .2s, color .2s;
+}
+.sa-nav__caret { font-size: 0.62rem; opacity: 0.6; }
+
+@media (min-width: 921px) {
+  .sa-nav { overflow: visible; }
+  .sa-nav__group { display: inline-flex; }
+  .sa-nav__top:hover, .sa-nav__group:focus-within .sa-nav__top { color: var(--m-ink-1); background: var(--m-glass-1); }
+  .sa-nav__group.is-active .sa-nav__top { color: var(--m-ink-1); }
+  .sa-nav__menu {
+    position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(6px);
+    min-width: 184px; padding: 8px; display: flex; flex-direction: column; gap: 2px;
+    background: var(--m-navy); border: 1px solid var(--m-edge); border-radius: 16px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+    opacity: 0; visibility: hidden; transition: opacity .14s ease, transform .14s ease; z-index: 90;
+  }
+  .sa-nav__group:hover .sa-nav__menu,
+  .sa-nav__group:focus-within .sa-nav__menu {
+    opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0);
+  }
+  .sa-nav__menu a {
+    padding: 10px 13px; border-radius: 10px; text-transform: none; letter-spacing: 0;
+    font-weight: 600; font-size: 0.82rem; color: var(--m-ink-1); white-space: nowrap;
+  }
+  .sa-nav__menu a:hover, .sa-nav__menu a.is-active { background: var(--m-glass-1); color: var(--m-volt-ink); }
+}
+
+@media (max-width: 920px) {
+  .sa-nav__group { display: block; border-top: 1px solid var(--m-edge); margin-top: 4px; padding-top: 4px; }
+  .sa-nav__group:first-child { border-top: 0; margin-top: 0; padding-top: 0; }
+  .sa-nav__top { width: 100%; justify-content: flex-start; padding: 10px 16px 2px; color: var(--m-ink-3); font-size: 0.62rem; pointer-events: none; }
+  .sa-nav__caret { display: none; }
+  .sa-nav__menu { display: flex; flex-direction: column; }
+}
+
+@media (max-width: 920px) { .sa-nav.is-open { overflow-y: auto; -webkit-overflow-scrolling: touch; } }

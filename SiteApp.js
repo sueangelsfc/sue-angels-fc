@@ -1272,16 +1272,21 @@ function saStoryImage(spec) {
       function rr(x, y, w, hh, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + hh, r); c.arcTo(x + w, y + hh, x, y + hh, r); c.arcTo(x, y + hh, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
       function load(src) { return new Promise(function (res) { if (!src) return res(null); var im = new Image(); im.crossOrigin = 'anonymous'; im.onload = function () { res(im); }; im.onerror = function () { res(null); }; im.src = src; }); }
       var draw = function () {
+        // palette follows the viewer's current theme (light / dark)
+        var light = document.documentElement.getAttribute('data-theme') === 'light';
+        var P = light
+          ? { bg: '#EAEEF2', glow: 'rgba(214,242,58,0.34)', frame: 'rgba(255,255,255,0.7)', border: 'rgba(86,102,10,0.75)', eyebrow: '#56660A', title: '#07131D', subtitle: '#56660A', accent: '#56660A', footer: 'rgba(20,38,52,0.82)', scrim: '234,238,242' }
+          : { bg: '#04121B', glow: 'rgba(214,242,58,0.18)', frame: '#0A2230', border: 'rgba(214,242,58,0.55)', eyebrow: '#D6F23A', title: '#FFFFFF', subtitle: '#D6F23A', accent: '#D6F23A', footer: 'rgba(255,255,255,0.9)', scrim: '4,18,27' };
         // background + volt glow
-        c.fillStyle = '#04121B'; c.fillRect(0, 0, W, H);
+        c.fillStyle = P.bg; c.fillRect(0, 0, W, H);
         var g = c.createRadialGradient(W / 2, 380, 80, W / 2, 380, 980);
-        g.addColorStop(0, 'rgba(214,242,58,0.18)'); g.addColorStop(1, 'rgba(214,242,58,0)');
+        g.addColorStop(0, P.glow); g.addColorStop(1, 'rgba(214,242,58,0)');
         c.fillStyle = g; c.fillRect(0, 0, W, H);
         Promise.all([load(spec.badge || 'assets/badge/sue-angels-badge.png'), load(spec.photo)]).then(function (imgs) {
           var badge = imgs[0], photo = imgs[1];
           if (badge) { var bs = 150; c.drawImage(badge, W / 2 - bs / 2, 120, bs, bs); }
           c.textAlign = 'center';
-          c.fillStyle = '#D6F23A'; c.font = '700 34px "Hanken Grotesk", Arial, sans-serif';
+          c.fillStyle = P.eyebrow; c.font = '700 34px "Hanken Grotesk", Arial, sans-serif';
           c.fillText(String(spec.eyebrow || "SUE'S ANGELS FC").toUpperCase(), W / 2, 332);
           // photo frame
           var px = 130, py = 410, pw = W - 260, ph = 940;
@@ -1293,21 +1298,21 @@ function saStoryImage(spec) {
             if (ar > far) { dh = ph; dw = ph * ar; dx = px - (dw - pw) / 2; dy = py; }
             else { dw = pw; dh = pw / ar; dx = px; dy = py - (dh - ph) * 0.2; }
             c.drawImage(photo, dx, dy, dw, dh);
-          } else { c.fillStyle = '#0A2230'; c.fillRect(px, py, pw, ph); if (badge) c.drawImage(badge, W / 2 - 170, py + ph / 2 - 170, 340, 340); }
+          } else { c.fillStyle = P.frame; c.fillRect(px, py, pw, ph); if (badge) c.drawImage(badge, W / 2 - 170, py + ph / 2 - 170, 340, 340); }
           // scrim for legibility at the foot of the photo
           var sg = c.createLinearGradient(0, py + ph - 240, 0, py + ph);
-          sg.addColorStop(0, 'rgba(4,18,27,0)'); sg.addColorStop(1, 'rgba(4,18,27,0.55)');
+          sg.addColorStop(0, 'rgba(' + P.scrim + ',0)'); sg.addColorStop(1, 'rgba(' + P.scrim + ',0.55)');
           c.fillStyle = sg; c.fillRect(px, py + ph - 240, pw, 240);
           c.restore();
-          c.strokeStyle = 'rgba(214,242,58,0.55)'; c.lineWidth = 4; rr(px, py, pw, ph, 48); c.stroke();
+          c.strokeStyle = P.border; c.lineWidth = 4; rr(px, py, pw, ph, 48); c.stroke();
           // title
-          c.fillStyle = '#FFFFFF'; c.font = '700 78px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
+          c.fillStyle = P.title; c.font = '700 78px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
           saWrapText(c, String(spec.title || '').toUpperCase(), W / 2, 1500, W - 150, 86, 2);
           // subtitle
-          if (spec.subtitle) { c.fillStyle = '#D6F23A'; c.font = '600 40px "Hanken Grotesk", Arial, sans-serif'; c.fillText(String(spec.subtitle), W / 2, 1600); }
+          if (spec.subtitle) { c.fillStyle = P.subtitle; c.font = '600 40px "Hanken Grotesk", Arial, sans-serif'; c.fillText(String(spec.subtitle), W / 2, 1600); }
           // accent bar + footer
-          c.fillStyle = '#D6F23A'; rr(W / 2 - 60, 1700, 120, 8, 4); c.fill();
-          c.fillStyle = 'rgba(255,255,255,0.9)'; c.font = '600 38px "Hanken Grotesk", Arial, sans-serif';
+          c.fillStyle = P.accent; rr(W / 2 - 60, 1700, 120, 8, 4); c.fill();
+          c.fillStyle = P.footer; c.font = '600 38px "Hanken Grotesk", Arial, sans-serif';
           c.fillText(String(spec.footer || 'suesangelsfc.co.uk'), W / 2, 1840);
           try { resolve(cv.toDataURL('image/jpeg', 0.92)); } catch (e) { resolve(null); }
         }, function () { resolve(null); });

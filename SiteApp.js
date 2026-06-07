@@ -1241,6 +1241,18 @@ function ResCard({
     className: "mh-res__comp"
   }, r.competition || 'League Ten', " \xB7 ", usHome ? 'Home' : 'Away'));
 }
+function ShareBtn({ title, what, label }) {
+  var h = React.createElement;
+  var onShare = async function () {
+    var url = location.href;
+    try {
+      if (navigator.share) { await navigator.share({ title: title || document.title, url: url }); if (window.saTrack) window.saTrack('share', { what: what || 'page' }); return; }
+    } catch (e) { if (e && e.name === 'AbortError') return; }
+    try { await navigator.clipboard.writeText(url); if (window.saTrack) window.saTrack('share', { what: what || 'page', method: 'copy' }); alert('Link copied. You can paste it into Instagram, WhatsApp or anywhere you like.'); }
+    catch (e) { window.prompt('Copy this link:', url); }
+  };
+  return h('button', { type: 'button', className: 'm-btn m-btn--ghost', onClick: onShare, style: { display: 'inline-flex', alignItems: 'center', gap: 8 } }, label || 'Share', h('svg', { viewBox: '0 0 24 24', width: 15, height: 15, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, h('path', { d: 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8' }), h('polyline', { points: '16 6 12 2 8 6' }), h('line', { x1: 12, y1: 2, x2: 12, y2: 15 })));
+}
 function Home({
   go
 }) {
@@ -2256,6 +2268,31 @@ function Team({
       }
     } catch (e) {}
   }, [profile]);
+  // Coach profiles: deep-link entry (?coach=id) + URL/title sync, so they can be shared too.
+  const coachEntry = useRef(false);
+  useEffect(() => {
+    if (coachEntry.current) return;
+    try {
+      const id = new URLSearchParams(window.location.search).get('coach');
+      if (!id) { coachEntry.current = true; return; }
+      const list = (window.COACHES || []).concat(window.getCustomCoaches ? window.getCustomCoaches() : []);
+      const c = list.find(x => x && (x.id === id || x.name === id));
+      if (c) { coachEntry.current = true; setTab('coaches'); setCoach(c); }
+    } catch (e) {}
+  }, [statusTick]);
+  const coachFirst = useRef(true);
+  useEffect(() => {
+    if (coachFirst.current) { coachFirst.current = false; return; }
+    try {
+      if (coach) {
+        window.history.replaceState(null, '', 'teams.html?coach=' + encodeURIComponent(coach.id || coach.name || ''));
+        document.title = (coach.name || 'Coach') + " · Sue's Angels FC";
+      } else if (profile == null) {
+        window.history.replaceState(null, '', 'teams.html');
+        document.title = "Team · Sue's Angels FC";
+      }
+    } catch (e) {}
+  }, [coach]);
   const [season, setSeason] = useState('25/26');
   const seasonKey = season === 'all' ? null : season;
   const allSquad = useMemo(() => window.derivedSquad ? window.derivedSquad(null, seasonKey) : [], [statusTick, season]);
@@ -2373,11 +2410,11 @@ function Team({
     onClose: () => setProfile(null)
   }, /*#__PURE__*/React.createElement(ProfileCard, {
     num: profile
-  })) : null, coach ? /*#__PURE__*/React.createElement(Modal, {
+  }), /*#__PURE__*/React.createElement("div", { style: { marginTop: 16, textAlign: "center" } }, /*#__PURE__*/React.createElement(ShareBtn, { what: "player", label: "Share player" }))) : null, coach ? /*#__PURE__*/React.createElement(Modal, {
     onClose: () => setCoach(null)
   }, /*#__PURE__*/React.createElement(CoachModalContent, {
     coach: coach
-  })) : null);
+  }), /*#__PURE__*/React.createElement("div", { style: { marginTop: 16, textAlign: "center" } }, /*#__PURE__*/React.createElement(ShareBtn, { what: "coach", label: "Share coach" }))) : null);
 }
 
 /* ══ SCHEDULE ═══════════════════════════════════════════════════════════ */
@@ -2648,7 +2685,7 @@ function Media({
   const videoCard = (v, i) => h("button", { className: "mp-news mp-clickable", key: v.id || i, onClick: () => setVid(v) }, v.cover ? h("div", { className: "mp-news__cover" }, h("img", { src: v.cover, alt: "" })) : maGenCover({ layout: 'badges', top: v.category || 'VIDEO', left: v.homeBadge || 'assets/badge/sue-angels-shield.png', right: v.awayBadge || '', center: '\u25B6', bottom: v.title || 'Watch' }), h("div", { className: "mp-news__body" }, v.category ? h("span", { className: "m-chip m-chip--volt mp-news__tag" }, v.category) : null, v.title ? h("h3", { className: "m-h3" }, v.title) : null));
   const videosBody = videos.length ? h("div", { className: "mp-grid mp-g3" }, videos.map(videoCard)) : h("div", { className: "m-empty" }, h("b", null, "NO VIDEOS YET"), h("span", null, "MATCH GOALS & CLIPS WILL APPEAR HERE"));
 
-  return h(React.Fragment, null, h(PageHero, { eyebrow: "The latest", title: h(React.Fragment, null, "Me", h("em", null, "dia")), sub: "Match reports, club news and the matchday gallery." }), h("section", { className: "mp-sec" }, h("div", { className: "m-wrap" }, h("div", { className: "mp-subtabs" }, [['news', 'News'], ['gallery', 'Gallery'], ['videos', 'Videos']].map(([k, l]) => h("button", { key: k, className: `mp-subtab ${tab === k ? 'is-active' : ''}`, onClick: () => setTab(k) }, l))), tab === 'news' ? h(React.Fragment, null, catTabs, newsBody) : tab === 'videos' ? videosBody : h(React.Fragment, null, gcatTabs, galleryBody))), report ? h(Modal, { onClose: () => setReport(null) }, h("div", { className: "m-glass m-modal__sponsor" }, h("p", { className: "m-eyebrow m-eyebrow--volt" }, report.competition || 'League Ten', " \u00b7 ", report.date), h("h2", { className: "m-h2", style: { marginTop: 10 } }, report.home.replace(' FC', ''), " ", report.hs, "-", report.as, " ", report.away.replace(' FC', '')), h("div", { className: "m-prose" }, function () { var d = window.loadMatchEntry ? window.loadMatchEntry(report.id) : null; var t = d && (d.polishedReport || d.commentary); t = t && String(t).trim(); if (!t) return h("p", null, "Match report to follow, watch this space."); return t.split(/\n+/).map(function (p, i) { return h("p", { key: i }, p); }); }()))) : null, article ? h(Modal, { onClose: () => setArticle(null) }, h("div", { className: "m-glass m-modal__sponsor" }, article.cover ? h("img", { src: article.cover, alt: "", style: { width: '100%', maxHeight: 340, objectFit: 'cover', borderRadius: 14, marginBottom: 18 } }) : null, h("p", { className: "m-eyebrow m-eyebrow--volt" }, article.cat, " \u00b7 ", article.date), h("h2", { className: "m-h2", style: { marginTop: 10 } }, article.title), h("div", { className: "m-prose", style: { marginTop: 16 } }, String(article.body || '').split(/\n+/).filter(Boolean).map((p, i) => h("p", { key: i }, p))))) : null, album ? (function () { var ph = window.galleryPhotos ? window.galleryPhotos(album) : (album.photos || []); if (!ph.length) return null; var idx = ((ai % ph.length) + ph.length) % ph.length; var tags = (album.photoTags && album.photoTags[idx]) || []; return h("div", { className: "m-zoom m-albumbox", onClick: () => setAlbum(null) }, h("button", { className: "m-modal__close", onClick: () => setAlbum(null) }, "\u2715"), ph.length > 1 ? h("button", { className: "m-albumbox__nav m-albumbox__nav--prev", onClick: (e) => { e.stopPropagation(); setAi(idx - 1); } }, "\u2039") : null, h("figure", { className: "m-albumbox__fig", onClick: (e) => e.stopPropagation() }, h("img", { src: ph[idx], alt: "" }), tags.length ? h("figcaption", { className: "m-albumbox__tags" }, tags.join(" \u00b7 ")) : null, h("span", { className: "m-albumbox__count" }, (idx + 1) + " / " + ph.length)), ph.length > 1 ? h("button", { className: "m-albumbox__nav m-albumbox__nav--next", onClick: (e) => { e.stopPropagation(); setAi(idx + 1); } }, "\u203A") : null); })() : null, vid ? h("div", { className: "m-zoom", onClick: () => setVid(null) }, h("button", { className: "m-modal__close", onClick: () => setVid(null) }, "\u2715"), (function () { var u = vid.url || ''; var m = u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([\w-]+)/); if (m) return h("iframe", { src: 'https://www.youtube.com/embed/' + m[1] + '?autoplay=1', style: { width: 'min(92vw, 960px)', aspectRatio: '16 / 9', border: 0, borderRadius: 14 }, allow: 'autoplay; fullscreen', allowFullScreen: true }); return h("video", { src: u, controls: true, autoPlay: true, style: { width: 'min(92vw, 960px)', maxHeight: '82vh', borderRadius: 14, background: '#000' } }); })()) : null, zoom ? h("div", { className: "m-zoom", onClick: () => setZoom(null) }, h("button", { className: "m-modal__close", onClick: () => setZoom(null) }, "\u2715"), h("img", { src: zoom, alt: "" })) : null);
+  return h(React.Fragment, null, h(PageHero, { eyebrow: "The latest", title: h(React.Fragment, null, "Me", h("em", null, "dia")), sub: "Match reports, club news and the matchday gallery." }), h("section", { className: "mp-sec" }, h("div", { className: "m-wrap" }, h("div", { className: "mp-subtabs" }, [['news', 'News'], ['gallery', 'Gallery'], ['videos', 'Videos']].map(([k, l]) => h("button", { key: k, className: `mp-subtab ${tab === k ? 'is-active' : ''}`, onClick: () => setTab(k) }, l))), tab === 'news' ? h(React.Fragment, null, catTabs, newsBody) : tab === 'videos' ? videosBody : h(React.Fragment, null, gcatTabs, galleryBody))), report ? h(Modal, { onClose: () => setReport(null) }, h("div", { className: "m-glass m-modal__sponsor" }, h("p", { className: "m-eyebrow m-eyebrow--volt" }, report.competition || 'League Ten', " \u00b7 ", report.date), h("h2", { className: "m-h2", style: { marginTop: 10 } }, report.home.replace(' FC', ''), " ", report.hs, "-", report.as, " ", report.away.replace(' FC', '')), h("div", { className: "m-prose" }, function () { var d = window.loadMatchEntry ? window.loadMatchEntry(report.id) : null; var t = d && (d.polishedReport || d.commentary); t = t && String(t).trim(); if (!t) return h("p", null, "Match report to follow, watch this space."); return t.split(/\n+/).map(function (p, i) { return h("p", { key: i }, p); }); }()), h("div", { style: { marginTop: 18, textAlign: "center" } }, h(ShareBtn, { what: "report", label: "Share report" })))) : null, article ? h(Modal, { onClose: () => setArticle(null) }, h("div", { className: "m-glass m-modal__sponsor" }, article.cover ? h("img", { src: article.cover, alt: "", style: { width: '100%', maxHeight: 340, objectFit: 'cover', borderRadius: 14, marginBottom: 18 } }) : null, h("p", { className: "m-eyebrow m-eyebrow--volt" }, article.cat, " \u00b7 ", article.date), h("h2", { className: "m-h2", style: { marginTop: 10 } }, article.title), h("div", { className: "m-prose", style: { marginTop: 16 } }, String(article.body || '').split(/\n+/).filter(Boolean).map((p, i) => h("p", { key: i }, p))), h("div", { style: { marginTop: 18, textAlign: "center" } }, h(ShareBtn, { what: "article", label: "Share post" })))) : null, album ? (function () { var ph = window.galleryPhotos ? window.galleryPhotos(album) : (album.photos || []); if (!ph.length) return null; var idx = ((ai % ph.length) + ph.length) % ph.length; var tags = (album.photoTags && album.photoTags[idx]) || []; return h("div", { className: "m-zoom m-albumbox", onClick: () => setAlbum(null) }, h("button", { className: "m-modal__close", onClick: () => setAlbum(null) }, "\u2715"), ph.length > 1 ? h("button", { className: "m-albumbox__nav m-albumbox__nav--prev", onClick: (e) => { e.stopPropagation(); setAi(idx - 1); } }, "\u2039") : null, h("figure", { className: "m-albumbox__fig", onClick: (e) => e.stopPropagation() }, h("img", { src: ph[idx], alt: "" }), tags.length ? h("figcaption", { className: "m-albumbox__tags" }, tags.join(" \u00b7 ")) : null, h("span", { className: "m-albumbox__count" }, (idx + 1) + " / " + ph.length)), ph.length > 1 ? h("button", { className: "m-albumbox__nav m-albumbox__nav--next", onClick: (e) => { e.stopPropagation(); setAi(idx + 1); } }, "\u203A") : null); })() : null, vid ? h("div", { className: "m-zoom", onClick: () => setVid(null) }, h("button", { className: "m-modal__close", onClick: () => setVid(null) }, "\u2715"), (function () { var u = vid.url || ''; var m = u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([\w-]+)/); if (m) return h("iframe", { src: 'https://www.youtube.com/embed/' + m[1] + '?autoplay=1', style: { width: 'min(92vw, 960px)', aspectRatio: '16 / 9', border: 0, borderRadius: 14 }, allow: 'autoplay; fullscreen', allowFullScreen: true }); return h("video", { src: u, controls: true, autoPlay: true, style: { width: 'min(92vw, 960px)', maxHeight: '82vh', borderRadius: 14, background: '#000' } }); })()) : null, zoom ? h("div", { className: "m-zoom", onClick: () => setZoom(null) }, h("button", { className: "m-modal__close", onClick: () => setZoom(null) }, "\u2715"), h("img", { src: zoom, alt: "" })) : null);
 }
 
 /* ══ SPONSORS ═══════════════════════════════════════════════════════════ */

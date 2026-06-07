@@ -11,12 +11,6 @@
       "maxDuration": 10
     }
   },
-  "rewrites": [
-    { "source": "/teams.html", "has": [{ "type": "query", "key": "player" }], "destination": "/api/share" },
-    { "source": "/teams.html", "has": [{ "type": "query", "key": "coach" }], "destination": "/api/share" },
-    { "source": "/media.html", "has": [{ "type": "query", "key": "report" }], "destination": "/api/share" },
-    { "source": "/media.html", "has": [{ "type": "query", "key": "article" }], "destination": "/api/share" }
-  ],
   "headers": [
     {
       "source": "/(.*)",

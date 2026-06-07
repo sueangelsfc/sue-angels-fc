@@ -1272,16 +1272,12 @@ function saStoryImage(spec) {
       function rr(x, y, w, hh, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + hh, r); c.arcTo(x + w, y + hh, x, y + hh, r); c.arcTo(x, y + hh, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
       function load(src) { return new Promise(function (res) { if (!src) return res(null); var im = new Image(); im.crossOrigin = 'anonymous'; im.onload = function () { res(im); }; im.onerror = function () { res(null); }; im.src = src; }); }
       var draw = function () {
-        // palette follows the viewer's current theme (light / dark)
-        var light = document.documentElement.getAttribute('data-theme') === 'light';
-        var P = light
-          ? { bg: '#EAEEF2', glow: 'rgba(214,242,58,0.34)', frame: 'rgba(255,255,255,0.7)', border: 'rgba(86,102,10,0.75)', eyebrow: '#56660A', title: '#07131D', subtitle: '#56660A', accent: '#56660A', footer: 'rgba(20,38,52,0.82)', scrim: '234,238,242' }
-          : { bg: '#04121B', glow: 'rgba(214,242,58,0.18)', frame: '#0A2230', border: 'rgba(214,242,58,0.55)', eyebrow: '#D6F23A', title: '#FFFFFF', subtitle: '#D6F23A', accent: '#D6F23A', footer: 'rgba(255,255,255,0.9)', scrim: '4,18,27' };
-        // background + volt glow
-        c.fillStyle = P.bg; c.fillRect(0, 0, W, H);
-        var g = c.createRadialGradient(W / 2, 380, 80, W / 2, 380, 980);
-        g.addColorStop(0, P.glow); g.addColorStop(1, 'rgba(214,242,58,0)');
-        c.fillStyle = g; c.fillRect(0, 0, W, H);
+        // Every card uses the club's default cover background: a dark teal->navy
+        // radial, identical in light and dark mode.
+        var P = { bg: '#04121B', frame: '#0A2230', border: 'rgba(214,242,58,0.55)', eyebrow: '#D6F23A', title: '#FFFFFF', subtitle: '#D6F23A', accent: '#D6F23A', footer: 'rgba(255,255,255,0.9)', scrim: '4,18,27' };
+        var bg0 = c.createRadialGradient(W / 2, 0, 120, W / 2, 0, 1480);
+        bg0.addColorStop(0, 'rgb(20,56,73)'); bg0.addColorStop(1, 'rgb(4,18,27)');
+        c.fillStyle = bg0; c.fillRect(0, 0, W, H);
         Promise.all([load(spec.badge || 'assets/badge/sue-angels-badge.png'), load(spec.photo), load(spec.homeBadge), load(spec.awayBadge), load(spec.sponsors && spec.sponsors[0]), load(spec.sponsors && spec.sponsors[1]), load(spec.sponsors && spec.sponsors[2])]).then(function (imgs) {
           var badge = imgs[0], photo = imgs[1], homeImg = imgs[2], awayImg = imgs[3];
           var sponsors = [imgs[4], imgs[5], imgs[6]].filter(Boolean);
@@ -1330,8 +1326,8 @@ function saStoryImage(spec) {
             var section = function (label, items, max) {
               if (!items || !items.length) return;
               tracked('4px'); c.fillStyle = '#D6F23A'; c.font = '700 27px "Hanken Grotesk", Arial, sans-serif'; c.fillText(label, W / 2, cy); tracked('0px'); cy += 56;
-              c.fillStyle = '#FFFFFF'; c.font = '600 38px "Hanken Grotesk", Arial, sans-serif';
-              items.slice(0, max).forEach(function (it) { c.fillText(it.name + (it.n > 1 ? '  ×' + it.n : ''), W / 2, cy); cy += 52; });
+              c.fillStyle = '#FFFFFF'; c.font = '700 36px "Hanken Grotesk", Arial, sans-serif';
+              items.slice(0, max).forEach(function (it) { c.fillText(String(it.name).toUpperCase() + (it.n > 1 ? '  ×' + it.n : ''), W / 2, cy); cy += 52; });
               if (items.length > max) { c.fillStyle = 'rgba(255,255,255,0.55)'; c.font = '600 30px "Hanken Grotesk", Arial, sans-serif'; c.fillText('+ ' + (items.length - max) + ' more', W / 2, cy); cy += 50; }
               cy += 40;
             };

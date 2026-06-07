@@ -87,7 +87,7 @@
   // ---- page-level content views -------------------------------------------
   var SECTION = {
     "/fixtures.html": "fixtures", "/results.html": "results", "/table.html": "table",
-    "/schedule.html": "schedule", "/media.html": "media", "/news.html": "news",
+    "/schedule.html": "schedule", "/league.html": "league", "/media.html": "media", "/news.html": "news",
     "/gallery.html": "gallery", "/sponsors.html": "sponsors", "/sepsis.html": "sepsis", "/teams.html": "team",
     "/champions.html": "champions"
   };

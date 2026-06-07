@@ -1282,34 +1282,52 @@ function saStoryImage(spec) {
         var g = c.createRadialGradient(W / 2, 380, 80, W / 2, 380, 980);
         g.addColorStop(0, P.glow); g.addColorStop(1, 'rgba(214,242,58,0)');
         c.fillStyle = g; c.fillRect(0, 0, W, H);
-        Promise.all([load(spec.badge || 'assets/badge/sue-angels-badge.png'), load(spec.photo)]).then(function (imgs) {
-          var badge = imgs[0], photo = imgs[1];
+        Promise.all([load(spec.badge || 'assets/badge/sue-angels-badge.png'), load(spec.photo), load(spec.homeBadge), load(spec.awayBadge)]).then(function (imgs) {
+          var badge = imgs[0], photo = imgs[1], homeImg = imgs[2], awayImg = imgs[3];
           if (badge) { var bs = 150; c.drawImage(badge, W / 2 - bs / 2, 120, bs, bs); }
           c.textAlign = 'center';
           c.fillStyle = P.eyebrow; c.font = '700 34px "Hanken Grotesk", Arial, sans-serif';
           c.fillText(String(spec.eyebrow || "SUE'S ANGELS FC").toUpperCase(), W / 2, 332);
-          // photo frame
           var px = 130, py = 410, pw = W - 260, ph = 940;
-          c.save(); rr(px, py, pw, ph, 48); c.clip();
-          if (photo) {
-            var ar = photo.width / photo.height, far = pw / ph, dw, dh, dx, dy;
-            // Favour the top of the photo (object-position ~50% 20%) so the
-            // player's face stays in frame for full-body pitch shots.
-            if (ar > far) { dh = ph; dw = ph * ar; dx = px - (dw - pw) / 2; dy = py; }
-            else { dw = pw; dh = pw / ar; dx = px; dy = py - (dh - ph) * 0.2; }
-            c.drawImage(photo, dx, dy, dw, dh);
-          } else { c.fillStyle = P.frame; c.fillRect(px, py, pw, ph); if (badge) c.drawImage(badge, W / 2 - 170, py + ph / 2 - 170, 340, 340); }
-          // scrim for legibility at the foot of the photo
-          var sg = c.createLinearGradient(0, py + ph - 240, 0, py + ph);
-          sg.addColorStop(0, 'rgba(' + P.scrim + ',0)'); sg.addColorStop(1, 'rgba(' + P.scrim + ',0.55)');
-          c.fillStyle = sg; c.fillRect(px, py + ph - 240, pw, 240);
-          c.restore();
-          c.strokeStyle = P.border; c.lineWidth = 4; rr(px, py, pw, ph, 48); c.stroke();
-          // title
-          c.fillStyle = P.title; c.font = '700 78px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
-          saWrapText(c, String(spec.title || '').toUpperCase(), W / 2, 1500, W - 150, 86, 2);
-          // subtitle
-          if (spec.subtitle) { c.fillStyle = P.subtitle; c.font = '600 40px "Hanken Grotesk", Arial, sans-serif'; c.fillText(String(spec.subtitle), W / 2, 1600); }
+          var clean = function (s) { return String(s || '').replace(/ FC$/i, '').trim(); };
+          if (spec.kind === 'score') {
+            // scorecard panel: home badge | score | away badge
+            c.fillStyle = P.frame; rr(px, py, pw, ph, 48); c.fill();
+            c.strokeStyle = P.border; c.lineWidth = 4; rr(px, py, pw, ph, 48); c.stroke();
+            var bb = 178, by = py + 168;
+            if (homeImg) c.drawImage(homeImg, px + 70, by, bb, bb);
+            if (awayImg) c.drawImage(awayImg, px + pw - 70 - bb, by, bb, bb);
+            c.fillStyle = P.title; c.font = '700 108px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
+            c.fillText((spec.hs != null ? spec.hs : '') + ' - ' + (spec.as != null ? spec.as : ''), W / 2, by + bb / 2 + 36);
+            c.fillStyle = P.subtitle; c.font = '600 30px "Hanken Grotesk", Arial, sans-serif';
+            c.fillText(clean(spec.home), px + 70 + bb / 2, by + bb + 70);
+            c.fillText(clean(spec.away), px + pw - 70 - bb / 2, by + bb + 70);
+            if (spec.result) {
+              var rc = spec.result === 'w' ? '#2BE38A' : spec.result === 'l' ? '#FF7A7A' : '#E8C45A';
+              c.fillStyle = rc; c.font = '700 56px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
+              c.fillText(spec.result === 'w' ? 'WIN' : spec.result === 'l' ? 'LOSS' : 'DRAW', W / 2, py + ph - 150);
+            }
+          } else {
+            // photo card
+            c.save(); rr(px, py, pw, ph, 48); c.clip();
+            if (photo) {
+              var ar = photo.width / photo.height, far = pw / ph, dw, dh, dx, dy;
+              // Favour the top of the photo so the player's face stays in frame.
+              if (ar > far) { dh = ph; dw = ph * ar; dx = px - (dw - pw) / 2; dy = py; }
+              else { dw = pw; dh = pw / ar; dx = px; dy = py - (dh - ph) * 0.2; }
+              c.drawImage(photo, dx, dy, dw, dh);
+            } else { c.fillStyle = P.frame; c.fillRect(px, py, pw, ph); if (badge) c.drawImage(badge, W / 2 - 170, py + ph / 2 - 170, 340, 340); }
+            var sg = c.createLinearGradient(0, py + ph - 240, 0, py + ph);
+            sg.addColorStop(0, 'rgba(' + P.scrim + ',0)'); sg.addColorStop(1, 'rgba(' + P.scrim + ',0.55)');
+            c.fillStyle = sg; c.fillRect(px, py + ph - 240, pw, 240);
+            c.restore();
+            c.strokeStyle = P.border; c.lineWidth = 4; rr(px, py, pw, ph, 48); c.stroke();
+          }
+          if (spec.kind !== 'score') {
+            c.fillStyle = P.title; c.font = '700 78px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
+            saWrapText(c, String(spec.title || '').toUpperCase(), W / 2, 1500, W - 150, 86, 2);
+          }
+          if (spec.subtitle) { c.fillStyle = P.subtitle; c.font = '600 40px "Hanken Grotesk", Arial, sans-serif'; c.fillText(String(spec.subtitle), W / 2, spec.kind === 'score' ? 1520 : 1600); }
           // accent bar + footer
           c.fillStyle = P.accent; rr(W / 2 - 60, 1700, 120, 8, 4); c.fill();
           c.fillStyle = P.footer; c.font = '600 38px "Hanken Grotesk", Arial, sans-serif';
@@ -2589,7 +2607,7 @@ function Team({
     onClose: () => setCoach(null)
   }, /*#__PURE__*/React.createElement(CoachModalContent, {
     coach: coach
-  }), /*#__PURE__*/React.createElement("div", { style: { marginTop: 16, textAlign: "center" } }, /*#__PURE__*/React.createElement(ShareBtn, { what: "coach", label: "Share coach" }))) : null);
+  }), /*#__PURE__*/React.createElement("div", { style: { marginTop: 16, textAlign: "center" } }, /*#__PURE__*/React.createElement(ShareBtn, { what: "coach", label: "Share coach", story: function () { return { title: coach.name, subtitle: coach.role || 'Coach', photo: coach.photo || 'assets/players/avatar.svg?v=2', footer: 'suesangelsfc.co.uk' }; } }))) : null);
 }
 
 /* ══ SCHEDULE ═══════════════════════════════════════════════════════════ */
@@ -2753,7 +2771,7 @@ function LeagueTable() {
       color: 'var(--m-ink-3)',
       fontStyle: 'italic'
     }
-  }, "Vacancy, to be confirmed"))))))), /*#__PURE__*/React.createElement("div", { style: { marginTop: 18, textAlign: "center" } }, /*#__PURE__*/React.createElement(ShareBtn, { what: "table", label: "Share table", title: "League Ten table · Sue's Angels FC", url: "table.html" })));
+  }, "Vacancy, to be confirmed"))))))), /*#__PURE__*/React.createElement("div", { style: { marginTop: 18, textAlign: "center" } }, /*#__PURE__*/React.createElement(ShareBtn, { what: "table", label: "Share table", title: "League Ten table · Sue's Angels FC", url: "table.html", story: function () { var me = (rows || []).filter(function (r) { return r.us; })[0]; if (!me) return { title: 'League Ten', subtitle: "Sue's Angels FC · 25/26", eyebrow: 'Southern Sunday League', photo: null, footer: 'suesangelsfc.co.uk' }; var pos = me.p === 1 ? 'Champions' : me.p + (me.p === 2 ? 'nd' : me.p === 3 ? 'rd' : 'th') + ' place'; return { title: 'League Ten', subtitle: pos + ' · P' + me.pl + ' W' + me.w + ' D' + me.d + ' L' + me.l, eyebrow: 'Southern Sunday League · 25/26', photo: null, footer: 'suesangelsfc.co.uk' }; } })));
 }
 function Schedule({
   go
@@ -2950,7 +2968,7 @@ function Media({
   };
   const mHero = (slim && mHeroMap[tab]) ? mHeroMap[tab] : { eb: 'The latest', a: 'Me', b: 'dia', sub: 'Match reports, club news and the matchday gallery.' };
 
-  return h(React.Fragment, null, h(PageHero, { eyebrow: mHero.eb, title: h(React.Fragment, null, mHero.a, h("em", null, mHero.b), "."), sub: mHero.sub }), h("section", { className: "mp-sec" }, h("div", { className: "m-wrap" }, slim ? null : h("div", { className: "mp-subtabs" }, [['news', 'News'], ['gallery', 'Gallery'], ['videos', 'Videos']].map(([k, l]) => h("button", { key: k, className: `mp-subtab ${tab === k ? 'is-active' : ''}`, onClick: () => setTab(k) }, l))), tab === 'news' ? h(React.Fragment, null, catTabs, newsBody) : tab === 'videos' ? videosBody : h(React.Fragment, null, gcatTabs, galleryBody))), report ? h(Modal, { onClose: () => setReport(null) }, h("div", { className: "m-glass m-modal__sponsor" }, h("p", { className: "m-eyebrow m-eyebrow--volt" }, report.competition || 'League Ten', " \u00b7 ", report.date), h("h2", { className: "m-h2", style: { marginTop: 10 } }, report.home.replace(' FC', ''), " ", report.hs, "-", report.as, " ", report.away.replace(' FC', '')), h("div", { className: "m-prose" }, function () { var d = window.loadMatchEntry ? window.loadMatchEntry(report.id) : null; var t = d && (d.polishedReport || d.commentary); t = t && String(t).trim(); if (!t) return h("p", null, "Match report to follow, watch this space."); return t.split(/\n+/).map(function (p, i) { return h("p", { key: i }, p); }); }()), h("div", { style: { marginTop: 18, textAlign: "center" } }, h(ShareBtn, { what: "report", label: "Share report" })))) : null, article ? h(Modal, { onClose: () => setArticle(null) }, h("div", { className: "m-glass m-modal__sponsor" }, article.cover ? h("img", { src: article.cover, alt: "", style: { width: '100%', maxHeight: 340, objectFit: 'cover', borderRadius: 14, marginBottom: 18 } }) : null, h("p", { className: "m-eyebrow m-eyebrow--volt" }, article.cat, " \u00b7 ", article.date), h("h2", { className: "m-h2", style: { marginTop: 10 } }, article.title), h("div", { className: "m-prose", style: { marginTop: 16 } }, String(article.body || '').split(/\n+/).filter(Boolean).map((p, i) => h("p", { key: i }, p))), h("div", { style: { marginTop: 18, textAlign: "center" } }, h(ShareBtn, { what: "article", label: "Share post", image: article.cover || null, story: function () { return { title: article.title, subtitle: article.cat || 'News', photo: article.cover || null, footer: 'suesangelsfc.co.uk' }; } })))) : null, album ? (function () { var ph = window.galleryPhotos ? window.galleryPhotos(album) : (album.photos || []); if (!ph.length) return null; var idx = ((ai % ph.length) + ph.length) % ph.length; var tags = (album.photoTags && album.photoTags[idx]) || []; return h("div", { className: "m-zoom m-albumbox", onClick: () => setAlbum(null) }, h("button", { className: "m-modal__close", onClick: () => setAlbum(null) }, "\u2715"), ph.length > 1 ? h("button", { className: "m-albumbox__nav m-albumbox__nav--prev", onClick: (e) => { e.stopPropagation(); setAi(idx - 1); } }, "\u2039") : null, h("figure", { className: "m-albumbox__fig", onClick: (e) => e.stopPropagation() }, h("img", { src: ph[idx], alt: "" }), tags.length ? h("figcaption", { className: "m-albumbox__tags" }, tags.join(" \u00b7 ")) : null, h("span", { className: "m-albumbox__count" }, (idx + 1) + " / " + ph.length)), ph.length > 1 ? h("button", { className: "m-albumbox__nav m-albumbox__nav--next", onClick: (e) => { e.stopPropagation(); setAi(idx + 1); } }, "\u203A") : null); })() : null, vid ? h("div", { className: "m-zoom", onClick: () => setVid(null) }, h("button", { className: "m-modal__close", onClick: () => setVid(null) }, "\u2715"), (function () { var u = vid.url || ''; var m = u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([\w-]+)/); if (m) return h("iframe", { src: 'https://www.youtube.com/embed/' + m[1] + '?autoplay=1', style: { width: 'min(92vw, 960px)', aspectRatio: '16 / 9', border: 0, borderRadius: 14 }, allow: 'autoplay; fullscreen', allowFullScreen: true }); return h("video", { src: u, controls: true, autoPlay: true, style: { width: 'min(92vw, 960px)', maxHeight: '82vh', borderRadius: 14, background: '#000' } }); })()) : null, zoom ? h("div", { className: "m-zoom", onClick: () => setZoom(null) }, h("button", { className: "m-modal__close", onClick: () => setZoom(null) }, "\u2715"), h("img", { src: zoom, alt: "" })) : null);
+  return h(React.Fragment, null, h(PageHero, { eyebrow: mHero.eb, title: h(React.Fragment, null, mHero.a, h("em", null, mHero.b), "."), sub: mHero.sub }), h("section", { className: "mp-sec" }, h("div", { className: "m-wrap" }, slim ? null : h("div", { className: "mp-subtabs" }, [['news', 'News'], ['gallery', 'Gallery'], ['videos', 'Videos']].map(([k, l]) => h("button", { key: k, className: `mp-subtab ${tab === k ? 'is-active' : ''}`, onClick: () => setTab(k) }, l))), tab === 'news' ? h(React.Fragment, null, catTabs, newsBody) : tab === 'videos' ? videosBody : h(React.Fragment, null, gcatTabs, galleryBody))), report ? h(Modal, { onClose: () => setReport(null) }, h("div", { className: "m-glass m-modal__sponsor" }, h("p", { className: "m-eyebrow m-eyebrow--volt" }, report.competition || 'League Ten', " \u00b7 ", report.date), h("h2", { className: "m-h2", style: { marginTop: 10 } }, report.home.replace(' FC', ''), " ", report.hs, "-", report.as, " ", report.away.replace(' FC', '')), h("div", { className: "m-prose" }, function () { var d = window.loadMatchEntry ? window.loadMatchEntry(report.id) : null; var t = d && (d.polishedReport || d.commentary); t = t && String(t).trim(); if (!t) return h("p", null, "Match report to follow, watch this space."); return t.split(/\n+/).map(function (p, i) { return h("p", { key: i }, p); }); }()), h("div", { style: { marginTop: 18, textAlign: "center" } }, h(ShareBtn, { what: "report", label: "Share report", story: function () { var us = /sue|angel/i.test(report.home) ? 'home' : /sue|angel/i.test(report.away) ? 'away' : null; var res = us === 'home' ? (report.hs > report.as ? 'w' : report.hs < report.as ? 'l' : 'd') : us === 'away' ? (report.as > report.hs ? 'w' : report.as < report.hs ? 'l' : 'd') : null; return { kind: 'score', eyebrow: (report.competition || 'League Ten') + ' · ' + (report.date || ''), home: report.home, away: report.away, hs: report.hs, as: report.as, homeBadge: (window.resolveBadge && window.resolveBadge(report.home) || {}).src || null, awayBadge: (window.resolveBadge && window.resolveBadge(report.away) || {}).src || null, result: res, footer: 'suesangelsfc.co.uk' }; } })))) : null, article ? h(Modal, { onClose: () => setArticle(null) }, h("div", { className: "m-glass m-modal__sponsor" }, article.cover ? h("img", { src: article.cover, alt: "", style: { width: '100%', maxHeight: 340, objectFit: 'cover', borderRadius: 14, marginBottom: 18 } }) : null, h("p", { className: "m-eyebrow m-eyebrow--volt" }, article.cat, " \u00b7 ", article.date), h("h2", { className: "m-h2", style: { marginTop: 10 } }, article.title), h("div", { className: "m-prose", style: { marginTop: 16 } }, String(article.body || '').split(/\n+/).filter(Boolean).map((p, i) => h("p", { key: i }, p))), h("div", { style: { marginTop: 18, textAlign: "center" } }, h(ShareBtn, { what: "article", label: "Share post", image: article.cover || null, story: function () { return { title: article.title, subtitle: article.cat || 'News', photo: article.cover || null, footer: 'suesangelsfc.co.uk' }; } })))) : null, album ? (function () { var ph = window.galleryPhotos ? window.galleryPhotos(album) : (album.photos || []); if (!ph.length) return null; var idx = ((ai % ph.length) + ph.length) % ph.length; var tags = (album.photoTags && album.photoTags[idx]) || []; return h("div", { className: "m-zoom m-albumbox", onClick: () => setAlbum(null) }, h("button", { className: "m-modal__close", onClick: () => setAlbum(null) }, "\u2715"), ph.length > 1 ? h("button", { className: "m-albumbox__nav m-albumbox__nav--prev", onClick: (e) => { e.stopPropagation(); setAi(idx - 1); } }, "\u2039") : null, h("figure", { className: "m-albumbox__fig", onClick: (e) => e.stopPropagation() }, h("img", { src: ph[idx], alt: "" }), tags.length ? h("figcaption", { className: "m-albumbox__tags" }, tags.join(" \u00b7 ")) : null, h("span", { className: "m-albumbox__count" }, (idx + 1) + " / " + ph.length)), ph.length > 1 ? h("button", { className: "m-albumbox__nav m-albumbox__nav--next", onClick: (e) => { e.stopPropagation(); setAi(idx + 1); } }, "\u203A") : null); })() : null, vid ? h("div", { className: "m-zoom", onClick: () => setVid(null) }, h("button", { className: "m-modal__close", onClick: () => setVid(null) }, "\u2715"), (function () { var u = vid.url || ''; var m = u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([\w-]+)/); if (m) return h("iframe", { src: 'https://www.youtube.com/embed/' + m[1] + '?autoplay=1', style: { width: 'min(92vw, 960px)', aspectRatio: '16 / 9', border: 0, borderRadius: 14 }, allow: 'autoplay; fullscreen', allowFullScreen: true }); return h("video", { src: u, controls: true, autoPlay: true, style: { width: 'min(92vw, 960px)', maxHeight: '82vh', borderRadius: 14, background: '#000' } }); })()) : null, zoom ? h("div", { className: "m-zoom", onClick: () => setZoom(null) }, h("button", { className: "m-modal__close", onClick: () => setZoom(null) }, "\u2715"), h("img", { src: zoom, alt: "" })) : null);
 }
 
 /* ══ SPONSORS ═══════════════════════════════════════════════════════════ */

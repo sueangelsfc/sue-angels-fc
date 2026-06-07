@@ -1244,10 +1244,11 @@ function ResCard({
 // Slug for share-friendly player URLs, e.g. "Louis Allen" -> "louis-allen".
 function saSlug(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
 function saPlayerName(p) { return p ? ((p.first || '') + ' ' + (p.last || '')).trim() : ''; }
-function ShareBtn({ title, what, label, image }) {
+function ShareBtn({ title, what, label, image, url: urlProp }) {
   var h = React.createElement;
   var [open, setOpen] = useState(false);
   var ref = useRef(null);
+  var shareUrl = function () { try { return urlProp ? new URL(urlProp, location.href).href : location.href; } catch (e) { return location.href; } };
   useEffect(function () {
     if (!open) return;
     var onDoc = function (e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
@@ -1259,7 +1260,7 @@ function ShareBtn({ title, what, label, image }) {
   var track = function (method) { if (window.saTrack) window.saTrack('share', { what: what || 'page', method: method }); };
   var shareTitle = function () { return title || document.title; };
   var copyLink = async function (method, msg) {
-    var url = location.href;
+    var url = shareUrl();
     try { await navigator.clipboard.writeText(url); track(method || 'copy'); alert(msg || 'Link copied. Paste it anywhere you like — Instagram, a story, a chat.'); }
     catch (e) { window.prompt('Copy this link:', url); }
     setOpen(false);
@@ -1285,7 +1286,7 @@ function ShareBtn({ title, what, label, image }) {
   };
   var nativeShare = async function () {
     if (await shareImageFile()) return;
-    var url = location.href;
+    var url = shareUrl();
     try { if (navigator.share) { await navigator.share({ title: shareTitle(), url: url }); track('native'); setOpen(false); return; } }
     catch (e) { if (e && e.name === 'AbortError') { setOpen(false); return; } }
     copyLink('native-fallback');
@@ -1296,7 +1297,7 @@ function ShareBtn({ title, what, label, image }) {
     copyLink(method, copyMsg);                    // desktop: copy the link to paste in
   };
   var openWin = function (u, method) { window.open(u, '_blank', 'noopener,noreferrer'); track(method); setOpen(false); };
-  var u = encodeURIComponent(location.href);
+  var u = encodeURIComponent(shareUrl());
   var t = encodeURIComponent(shareTitle());
   var igMsg = 'Link copied. Open Instagram and paste it into your story, a caption or your bio.';
   var ttMsg = 'Link copied. Open TikTok and paste it into your caption or bio.';
@@ -2560,7 +2561,7 @@ function LeagueTable() {
       color: 'var(--m-ink-3)',
       fontStyle: 'italic'
     }
-  }, "Vacancy, to be confirmed"))))))));
+  }, "Vacancy, to be confirmed"))))))), /*#__PURE__*/React.createElement("div", { style: { marginTop: 18, textAlign: "center" } }, /*#__PURE__*/React.createElement(ShareBtn, { what: "table", label: "Share table", title: "League Ten table · Sue's Angels FC", url: "table.html" })));
 }
 function Schedule({
   go

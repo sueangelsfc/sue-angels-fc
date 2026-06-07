@@ -2237,6 +2237,25 @@ function Team({
       if (pn) { setTab('squad'); setProfile(pn); }
     } catch (e) {}
   }, []);
+  // Keep the URL + page title in sync with the open player profile, so a profile
+  // can be shared with a direct link (teams.html?player=N) and shows the player's
+  // name when shared. Skips the first render so we don't clobber an inbound ?player.
+  const profileFirst = useRef(true);
+  useEffect(() => {
+    if (profileFirst.current) { profileFirst.current = false; return; }
+    try {
+      if (profile != null) {
+        const all = window.derivedSquad ? window.derivedSquad(null, null) : (window.SQUAD || []);
+        const p = (all || []).find(x => x.num === profile);
+        const nm = p ? ((p.first || '') + ' ' + (p.last || '')).trim() : '';
+        window.history.replaceState(null, '', 'teams.html?player=' + profile);
+        document.title = (nm || 'Player') + " · Sue's Angels FC";
+      } else {
+        window.history.replaceState(null, '', 'teams.html');
+        document.title = "Team · Sue's Angels FC";
+      }
+    } catch (e) {}
+  }, [profile]);
   const [season, setSeason] = useState('25/26');
   const seasonKey = season === 'all' ? null : season;
   const allSquad = useMemo(() => window.derivedSquad ? window.derivedSquad(null, seasonKey) : [], [statusTick, season]);
@@ -2571,6 +2590,36 @@ function Media({
   }));
   const reports = (window.getDerivedResults ? window.getDerivedResults() : []).filter(r => r.kind !== 'walkover' && r.hs != null).slice(0, 12).map(r => ({ type: 'report', id: r.id, r: r, date: r.date, sort: pd(r.date) }));
   const feed = articles.concat(reports).sort((a, b) => (b.sort || 0) - (a.sort || 0));
+  // Deep links: open a specific article or match report from ?article= / ?report=
+  // once the (cloud) data has loaded, and keep the URL + title in sync when one is
+  // opened, so reports and articles can be shared with a direct link.
+  const mediaEntry = useRef(false);
+  useEffect(() => {
+    if (mediaEntry.current) return;
+    try {
+      const q = new URLSearchParams(window.location.search);
+      const aid = q.get('article'), rid = q.get('report');
+      if (!aid && !rid) { mediaEntry.current = true; return; }
+      if (aid) { const a = articles.find(x => x.id === aid); if (a) { mediaEntry.current = true; setTab('news'); setArticle(a); } }
+      else if (rid) { const rr = reports.find(x => x.id === rid); if (rr) { mediaEntry.current = true; setTab('news'); setReport(rr.r); } }
+    } catch (e) {}
+  }, [feed.length]);
+  const articleFirst = useRef(true);
+  useEffect(() => {
+    if (articleFirst.current) { articleFirst.current = false; return; }
+    try {
+      if (article) { window.history.replaceState(null, '', 'media.html?article=' + article.id); document.title = (article.title || 'Article') + " · Sue's Angels FC"; }
+      else { window.history.replaceState(null, '', 'media.html'); document.title = "Media · Sue's Angels FC"; }
+    } catch (e) {}
+  }, [article]);
+  const reportFirst = useRef(true);
+  useEffect(() => {
+    if (reportFirst.current) { reportFirst.current = false; return; }
+    try {
+      if (report) { window.history.replaceState(null, '', 'media.html?report=' + report.id); document.title = (report.home ? report.home.replace(' FC', '') + ' v ' + report.away.replace(' FC', '') : 'Match report') + " · Sue's Angels FC"; }
+      else { window.history.replaceState(null, '', 'media.html'); document.title = "Media · Sue's Angels FC"; }
+    } catch (e) {}
+  }, [report]);
 
   const articleCard = it => h("button", { className: "mp-news mp-clickable", key: 'a-' + it.id, onClick: () => setArticle(it) }, (window.getPostCover && window.getPostCover(it.id)) ? maGenCover(window.getPostCover(it.id)) : it.cover ? h("div", { className: "mp-news__cover" }, h("img", { src: it.cover, alt: "" })) : maGenCover({ layout: 'badges', top: it.cat || 'News', left: 'assets/badge/sue-angels-shield.png', right: '', center: '', bottom: it.date || "Sue's Angels FC" }), h("div", { className: "mp-news__body" }, h("span", { className: "m-chip m-chip--volt mp-news__tag" }, it.cat), h("h3", { className: "m-h3" }, it.title), h("p", null, (it.date ? it.date + ' \u00b7 ' : '') + trunc(it.body, 110))));
 

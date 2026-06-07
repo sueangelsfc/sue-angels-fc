@@ -1383,7 +1383,7 @@ window.saPlayerStorySpec = function (num) {
     var squad = window.derivedSquad ? window.derivedSquad(null, null) : [];
     var p = null; for (var i = 0; i < squad.length; i++) { if (squad[i].num === num) { p = squad[i]; break; } }
     if (!p) return null;
-    var nm = saPlayerName(p) || ('Number ' + num);
+    var nm = saPlayerName(p) || "Sue's Angels player";
     var pos = p.gk ? 'Goalkeeper' : (p.mostPlayedPosition || 'Squad');
     var stat = p.gk ? ((p.cleanSheets || 0) + ' clean sheets') : ((p.goals || 0) + ' goals · ' + (p.assists || 0) + ' assists');
     var hasPhoto = !!(window.getPlayerPhoto && window.getPlayerPhoto(num));
@@ -1397,7 +1397,7 @@ window.saReportStorySpec = function (report) {
   try {
     if (!report) return null;
     var d = window.loadMatchEntry ? window.loadMatchEntry(report.id) : null;
-    var nameOf = function (num) { var p = (window.SQUAD || []).filter(function (x) { return x.num === num; })[0]; return p ? ((p.first ? p.first + ' ' : '') + p.last).trim() : ('No. ' + num); };
+    var nameOf = function (num) { var p = (window.SQUAD || []).filter(function (x) { return x.num === num; })[0]; return p ? ((p.first ? p.first + ' ' : '') + p.last).trim() : "Sue's Angels"; };
     var tally = function (arr) { var m = {}, order = []; (arr || []).forEach(function (g) { if (g && g.num != null) { if (m[g.num] == null) { m[g.num] = 0; order.push(g.num); } m[g.num]++; } }); return order.map(function (k) { return { name: nameOf(k), n: m[k] }; }).sort(function (a, b) { return b.n - a.n; }); };
     var us = /sue|angel/i.test(report.home) ? 'home' : /sue|angel/i.test(report.away) ? 'away' : null;
     var res = us === 'home' ? (report.hs > report.as ? 'w' : report.hs < report.as ? 'l' : 'd') : us === 'away' ? (report.as > report.hs ? 'w' : report.as < report.hs ? 'l' : 'd') : null;
@@ -3850,7 +3850,6 @@ function SquadBoard(props) {
             h('div', { className: 'mp-player__stats' }, frontStats.map(function (s, k) { return h('div', { key: k }, h('b', null, hideStats ? '\u2013' : h(CountNum, { value: s[0] })), h('span', null, s[1])); })))),
         h('div', { className: 'mp-player__face mp-player__back' },
           h('div', { className: 'mp-pb__head' },
-            h('span', { className: 'mp-pb__num' }, p.num != null ? p.num : ''),
             h('div', { className: 'mp-pb__id' }, h('b', null, p.first + ' ' + p.last), h('span', null, p.gk ? 'Goalkeeper' : pos))),
           h('div', { className: 'mp-pb__grid' }, backStats.map(function (s, k) { return h('div', { className: 'mp-pb__stat', key: k }, h('b', null, hideStats ? '\u2013' : h(CountNum, { value: s[0] != null ? s[0] : 0 })), h('span', null, s[1])); })),
           h('button', { className: 'm-btn m-btn--volt mp-pb__cta', onClick: function () { onOpen && onOpen(p.num); } }, 'Full profile'))),

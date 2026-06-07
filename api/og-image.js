@@ -56,6 +56,11 @@ async function resolveDataUrl(q) {
     }
     return cleanDataUrl(await supaGet('player_photos', String(num)));
   }
+  // ---- Coach photo (stored under coach:<id> as { photo, bio }) ----
+  if (q.coach != null) {
+    const data = await supaGet('player_photos', 'coach:' + String(q.coach));
+    return data ? cleanDataUrl(data.photo) : null;
+  }
   // ---- Article / post cover ----
   if (q.article != null) {
     const id = String(q.article);

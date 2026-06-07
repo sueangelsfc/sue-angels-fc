@@ -152,12 +152,21 @@ async function resolve(q, pageSrc) {
   // ---- Coach ----
   if (q.coach != null) {
     const id = String(q.coach);
-    const coaches = await supaGet('player_photos', 'roster:coaches');
-    const c = Array.isArray(coaches) ? coaches.find(x => x && String(x.id || x.name) === id) : null;
-    if (c) {
+    let list = extractArray(pageSrc, 'COACHES') || [];
+    const custom = await supaGet('player_photos', 'roster:coaches');
+    if (Array.isArray(custom)) list = list.concat(custom);
+    const c = list.find(x => x && String(x.id || x.name) === id) || null;
+    const data = await supaGet('player_photos', 'coach:' + id); // { photo, bio }
+    const photo = cleanDataUrl(data && data.photo);
+    const bio = (data && data.bio) || (c && c.bio) || '';
+    if (c || photo || bio) {
+      const nm = (c && c.name) || 'Our coach';
+      const role = (c && c.role) || '';
       return {
-        title: (c.name || 'Our coach') + (c.role ? ' — ' + c.role : '') + " · Sue's Angels FC",
-        desc: clip(c.bio || (c.role ? c.role + " at Sue's Angels FC." : "Part of the Sue's Angels FC coaching team."), 200)
+        title: nm + (role ? ' — ' + role : '') + " · Sue's Angels FC",
+        desc: clip(bio || (role ? role + " at Sue's Angels FC." : "Part of the Sue's Angels FC coaching team."), 200),
+        image: photo ? (SITE + '/api/og-image?coach=' + encodeURIComponent(id)) : null,
+        imageAlt: photo ? nm : null
       };
     }
     return { title: "Our coaches · Sue's Angels FC", desc: "Meet the people guiding Sue's Angels FC." };
@@ -212,7 +221,7 @@ export default async function handler(req, res) {
 
   try {
     let pageSrc = '';
-    if (q.player != null || q.report != null) {
+    if (q.player != null || q.report != null || q.coach != null) {
       try { pageSrc = await (await fetch('https://' + host + '/PageShell.js')).text(); } catch (e) {}
     }
     const meta = await resolve(q, pageSrc);

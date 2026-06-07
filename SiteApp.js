@@ -1315,6 +1315,7 @@ function ShareBtn({ title, what, label, image, url: urlProp }) {
 function Home({
   go
 }) {
+  useLeagueTick();
   const h = React.createElement;
   const t = teamTotals();
   const all = allCompTotals();
@@ -2484,7 +2485,18 @@ function Team({
 }
 
 /* ══ SCHEDULE ═══════════════════════════════════════════════════════════ */
+// Re-render when admin-imported league data (table/results/scorers) arrives from
+// the cloud, so the League section updates without a reload.
+function useLeagueTick() {
+  var t = useState(0);
+  useEffect(function () {
+    var f = function () { t[1](function (n) { return n + 1; }); };
+    window.addEventListener('sa-league-changed', f);
+    return function () { window.removeEventListener('sa-league-changed', f); };
+  }, []);
+}
 function LeagueResults() {
+  useLeagueTick();
   var h = React.createElement;
   var Badge = window.TeamBadge;
   var list = window.LEAGUE_RESULTS || [];
@@ -2515,6 +2527,7 @@ function LeagueResults() {
       })));
 }
 function LeagueStatsTable() {
+  useLeagueTick();
   var h = React.createElement;
   var Badge = window.TeamBadge;
   var stats = window.LEAGUE_STATS || { all: [], league: [] };
@@ -2555,6 +2568,7 @@ function League() {
       h("p", { style: { marginTop: 18, textAlign: 'center', color: 'var(--m-ink-3)', fontSize: '0.82rem', lineHeight: 1.6 } }, "Table, results and player stats captured from ", h("a", { href: "https://fulltime.thefa.com/displayTeam.html?divisionseason=636836036&teamID=582566146", target: "_blank", rel: "noopener noreferrer", style: { color: 'var(--m-volt-ink)' } }, "FA Full-Time"), ", the official record for the Southern Sunday Football League. Separate from the club's own match data."))));
 }
 function LeagueTable() {
+  useLeagueTick();
   const [season, setSeason] = useState('25/26');
   const rows = window.RAW_TABLE || [];
   const Badge = window.TeamBadge;

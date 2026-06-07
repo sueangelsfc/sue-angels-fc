@@ -307,6 +307,22 @@
     }
   };
 
+  // LEAGUE OVERRIDES - admin-editable FA-sourced league table / results / scorers,
+  // stored in the player-photo KV store (no extra table needed). When present they
+  // REPLACE the code defaults in PageShell, so the League section can be updated for
+  // a new season from the importer (league-admin.html) without a code change. This
+  // is the FA division data only - separate from the club's own match entries.
+  window.getLeagueOverride = (k) => window.dataStore.playerPhotos.getCached('league:' + k);
+  window.setLeagueOverride = (k, v) => window.dataStore.playerPhotos.set('league:' + k, v);
+  window.clearLeagueOverride = (k) => window.dataStore.playerPhotos.remove('league:' + k);
+  window.applyLeagueOverrides = () => {
+    try {
+      const t = window.getLeagueOverride('table'); if (Array.isArray(t) && t.length) window.RAW_TABLE = t;
+      const r = window.getLeagueOverride('results'); if (Array.isArray(r) && r.length) window.LEAGUE_RESULTS = r;
+      const s = window.getLeagueOverride('scorers'); if (s && (Array.isArray(s.all) || Array.isArray(s.league))) window.LEAGUE_STATS = s;
+    } catch (e) {}
+  };
+
   // PLAYER GALLERY - extra photos per player (beyond the main headshot), stored
   // as an array under 'pg:<num>'. Shown on the player dashboard.
   window.getPlayerGallery = (num) => { const v = window.dataStore.playerPhotos.getCached('pg:' + num); return Array.isArray(v) ? v : []; };

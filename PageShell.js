@@ -1790,11 +1790,14 @@ window.KNOWN_CLUBS = BADGE_REGISTRY.map(function (b) { return b.alt; });
 // Merge any admin-added players/coaches into the live arrays, and re-merge when
 // the cloud cache hydrates or the roster changes.
 if (window.applyCustomRoster) window.applyCustomRoster();
+if (window.applyLeagueOverrides) window.applyLeagueOverrides();
 if (window.dataStore && window.dataStore.playerPhotos && window.dataStore.playerPhotos.subscribe) {
   window.dataStore.playerPhotos.subscribe(() => {
     if (window.applyCustomRoster) window.applyCustomRoster();
+    if (window.applyLeagueOverrides) window.applyLeagueOverrides();
     try {
       window.dispatchEvent(new CustomEvent('sa-roster-changed'));
+      window.dispatchEvent(new CustomEvent('sa-league-changed'));
     } catch (e) {}
   });
 }

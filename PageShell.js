@@ -165,6 +165,22 @@ window.RAW_TABLE = [{
 window.LEAGUE_TOTAL_GAMES = 18;
 window.LEAGUE_PROMOTION_SPOTS = 2;
 
+// League leading scorers across the whole division (FA Fulltime · Southern Sunday
+// Football League · 25/26, season complete). Updated from Full-Time's Stats page.
+// `us: true` flags a Sue's Angels player. Editable later via the admin importer.
+window.LEAGUE_SCORERS = [
+  { pos: 1, name: 'Frazier-Isaías Osunkoya', club: "Sue's Angels FC", g: 25, a: 18, ap: 19, us: true },
+  { pos: 2, name: 'Charlie Dunkley', club: "Sue's Angels FC", g: 18, a: 18, ap: 19, us: true },
+  { pos: 3, name: 'Dwayne Thomas', club: 'Hillside Elite FC Blues', g: 18, a: 20, ap: 21 },
+  { pos: 4, name: 'Stephen Potter', club: "Sue's Angels FC", g: 17, a: 13, ap: 16, us: true },
+  { pos: 5, name: 'Mohammad Idrees Qandahari', club: 'Dynamo London FC', g: 12, a: 6, ap: 7 },
+  { pos: 6, name: 'Rajay Willis', club: "BPR Men's", g: 11, a: 8, ap: 11 },
+  { pos: 7, name: 'Rayan Alhajeri', club: 'Pure Football FC 2.0', g: 10, a: 6, ap: 6 },
+  { pos: 8, name: 'Charlie Green', club: 'Brockwell Violets FC', g: 10, a: 9, ap: 10 },
+  { pos: 9, name: 'Daniel McLane', club: "Sue's Angels FC", g: 9, a: 20, ap: 20, us: true },
+  { pos: 10, name: 'Malachi Mullings', club: "Sue's Angels FC", g: 9, a: 7, ap: 14, us: true }
+];
+
 // ─── Auto-promote played fixtures into results ──────────────────────────
 // Parse a fixture id like 'f20260524-bpr' or 'r20260510-brockwell' into a Date.
 window.getFixtureDate = function (fx) {

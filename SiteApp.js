@@ -1282,56 +1282,87 @@ function saStoryImage(spec) {
         var g = c.createRadialGradient(W / 2, 380, 80, W / 2, 380, 980);
         g.addColorStop(0, P.glow); g.addColorStop(1, 'rgba(214,242,58,0)');
         c.fillStyle = g; c.fillRect(0, 0, W, H);
-        Promise.all([load(spec.badge || 'assets/badge/sue-angels-badge.png'), load(spec.photo), load(spec.homeBadge), load(spec.awayBadge)]).then(function (imgs) {
+        Promise.all([load(spec.badge || 'assets/badge/sue-angels-badge.png'), load(spec.photo), load(spec.homeBadge), load(spec.awayBadge), load(spec.sponsors && spec.sponsors[0]), load(spec.sponsors && spec.sponsors[1]), load(spec.sponsors && spec.sponsors[2])]).then(function (imgs) {
           var badge = imgs[0], photo = imgs[1], homeImg = imgs[2], awayImg = imgs[3];
-          if (badge) { var bs = 150; c.drawImage(badge, W / 2 - bs / 2, 120, bs, bs); }
-          c.textAlign = 'center';
-          c.fillStyle = P.eyebrow; c.font = '700 34px "Hanken Grotesk", Arial, sans-serif';
-          c.fillText(String(spec.eyebrow || "SUE'S ANGELS FC").toUpperCase(), W / 2, 332);
-          var px = 130, py = 410, pw = W - 260, ph = 940;
+          var sponsors = [imgs[4], imgs[5], imgs[6]].filter(Boolean);
           var clean = function (s) { return String(s || '').replace(/ FC$/i, '').trim(); };
+          c.textAlign = 'center';
           if (spec.kind === 'score') {
-            // scorecard panel: home badge | score | away badge
-            c.fillStyle = P.frame; rr(px, py, pw, ph, 48); c.fill();
-            c.strokeStyle = P.border; c.lineWidth = 4; rr(px, py, pw, ph, 48); c.stroke();
-            var bb = 178, by = py + 168;
-            if (homeImg) c.drawImage(homeImg, px + 70, by, bb, bb);
-            if (awayImg) c.drawImage(awayImg, px + pw - 70 - bb, by, bb, bb);
-            c.fillStyle = P.title; c.font = '700 108px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
-            c.fillText((spec.hs != null ? spec.hs : '') + ' - ' + (spec.as != null ? spec.as : ''), W / 2, by + bb / 2 + 36);
-            c.fillStyle = P.subtitle; c.font = '600 30px "Hanken Grotesk", Arial, sans-serif';
-            c.fillText(clean(spec.home), px + 70 + bb / 2, by + bb + 70);
-            c.fillText(clean(spec.away), px + pw - 70 - bb / 2, by + bb + 70);
+            // ---- compact top: badge + comp/date ----
+            if (badge) { var bs = 116; c.drawImage(badge, W / 2 - bs / 2, 72, bs, bs); }
+            c.fillStyle = P.eyebrow; c.font = '700 30px "Hanken Grotesk", Arial, sans-serif';
+            c.fillText(String(spec.eyebrow || "SUE'S ANGELS FC").toUpperCase(), W / 2, 248);
+            // ---- scoreline panel ----
+            var px = 120, py = 296, pw = W - 240, ph = 300;
+            c.fillStyle = P.frame; rr(px, py, pw, ph, 40); c.fill();
+            c.strokeStyle = P.border; c.lineWidth = 4; rr(px, py, pw, ph, 40); c.stroke();
+            var bb = 150, by = py + 42;
+            if (homeImg) c.drawImage(homeImg, px + 78, by, bb, bb);
+            if (awayImg) c.drawImage(awayImg, px + pw - 78 - bb, by, bb, bb);
+            c.fillStyle = P.title; c.font = '700 92px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
+            c.fillText((spec.hs != null ? spec.hs : '') + ' - ' + (spec.as != null ? spec.as : ''), W / 2, by + bb / 2 + 30);
+            c.fillStyle = P.subtitle; c.font = '600 27px "Hanken Grotesk", Arial, sans-serif';
+            c.fillText(clean(spec.home), px + 78 + bb / 2, by + bb + 52);
+            c.fillText(clean(spec.away), px + pw - 78 - bb / 2, by + bb + 52);
+            var cy = py + ph + 66;
             if (spec.result) {
               var rc = spec.result === 'w' ? '#2BE38A' : spec.result === 'l' ? '#FF7A7A' : '#E8C45A';
-              c.fillStyle = rc; c.font = '700 56px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
-              c.fillText(spec.result === 'w' ? 'WIN' : spec.result === 'l' ? 'LOSS' : 'DRAW', W / 2, py + ph - 150);
+              c.fillStyle = rc; c.font = '700 50px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
+              c.fillText(spec.result === 'w' ? 'WIN' : spec.result === 'l' ? 'LOSS' : 'DRAW', W / 2, cy); cy += 64;
             }
+            var meta = []; if (spec.venue) meta.push(spec.venue); if (spec.kick) meta.push('KO ' + spec.kick);
+            if (meta.length) { c.fillStyle = P.footer; c.font = '600 27px "Hanken Grotesk", Arial, sans-serif'; c.fillText(meta.join('  ·  ').toUpperCase(), W / 2, cy); cy += 60; }
+            cy += 22;
+            var section = function (label, items, max) {
+              if (!items || !items.length) return;
+              c.fillStyle = P.eyebrow; c.font = '700 27px "Hanken Grotesk", Arial, sans-serif'; c.fillText(label, W / 2, cy); cy += 52;
+              c.fillStyle = P.title; c.font = '600 37px "Hanken Grotesk", Arial, sans-serif';
+              items.slice(0, max).forEach(function (it) { c.fillText(it.name + (it.n > 1 ? '  ×' + it.n : ''), W / 2, cy); cy += 50; });
+              if (items.length > max) { c.fillStyle = P.subtitle; c.font = '600 30px "Hanken Grotesk", Arial, sans-serif'; c.fillText('+ ' + (items.length - max) + ' more', W / 2, cy); cy += 48; }
+              cy += 30;
+            };
+            section('GOALS', spec.scorers, 5);
+            section('ASSISTS', spec.assists, 4);
+            // ---- sponsors (anchored near the foot) ----
+            if (sponsors.length) {
+              c.fillStyle = P.eyebrow; c.font = '700 26px "Hanken Grotesk", Arial, sans-serif'; c.fillText('PROUDLY BACKED BY', W / 2, 1648);
+              var spw = 208, sph = 92, sgap = 22, stot = sponsors.length * spw + (sponsors.length - 1) * sgap, sx = W / 2 - stot / 2, sy = 1690, spad = 16;
+              sponsors.forEach(function (im) {
+                c.fillStyle = '#FFFFFF'; rr(sx, sy, spw, sph, 14); c.fill();
+                c.strokeStyle = 'rgba(8,22,32,0.10)'; c.lineWidth = 2; rr(sx, sy, spw, sph, 14); c.stroke();
+                var aw = spw - 2 * spad, ah = sph - 2 * spad, iar = im.width / im.height, idw, idh;
+                if (iar > aw / ah) { idw = aw; idh = aw / iar; } else { idh = ah; idw = ah * iar; }
+                c.drawImage(im, sx + (spw - idw) / 2, sy + (sph - idh) / 2, idw, idh);
+                sx += spw + sgap;
+              });
+            }
+            c.fillStyle = P.footer; c.font = '600 36px "Hanken Grotesk", Arial, sans-serif';
+            c.fillText(String(spec.footer || 'suesangelsfc.co.uk'), W / 2, 1854);
           } else {
-            // photo card
-            c.save(); rr(px, py, pw, ph, 48); c.clip();
+            // ---- photo card (players / coaches / articles / table) ----
+            if (badge) { var bs2 = 150; c.drawImage(badge, W / 2 - bs2 / 2, 120, bs2, bs2); }
+            c.fillStyle = P.eyebrow; c.font = '700 34px "Hanken Grotesk", Arial, sans-serif';
+            c.fillText(String(spec.eyebrow || "SUE'S ANGELS FC").toUpperCase(), W / 2, 332);
+            var px2 = 130, py2 = 410, pw2 = W - 260, ph2 = 940;
+            c.save(); rr(px2, py2, pw2, ph2, 48); c.clip();
             if (photo) {
-              var ar = photo.width / photo.height, far = pw / ph, dw, dh, dx, dy;
-              // Favour the top of the photo so the player's face stays in frame.
-              if (ar > far) { dh = ph; dw = ph * ar; dx = px - (dw - pw) / 2; dy = py; }
-              else { dw = pw; dh = pw / ar; dx = px; dy = py - (dh - ph) * 0.2; }
+              var ar = photo.width / photo.height, far = pw2 / ph2, dw, dh, dx, dy;
+              if (ar > far) { dh = ph2; dw = ph2 * ar; dx = px2 - (dw - pw2) / 2; dy = py2; }
+              else { dw = pw2; dh = pw2 / ar; dx = px2; dy = py2 - (dh - ph2) * 0.2; }
               c.drawImage(photo, dx, dy, dw, dh);
-            } else { c.fillStyle = P.frame; c.fillRect(px, py, pw, ph); if (badge) c.drawImage(badge, W / 2 - 170, py + ph / 2 - 170, 340, 340); }
-            var sg = c.createLinearGradient(0, py + ph - 240, 0, py + ph);
+            } else { c.fillStyle = P.frame; c.fillRect(px2, py2, pw2, ph2); if (badge) c.drawImage(badge, W / 2 - 170, py2 + ph2 / 2 - 170, 340, 340); }
+            var sg = c.createLinearGradient(0, py2 + ph2 - 240, 0, py2 + ph2);
             sg.addColorStop(0, 'rgba(' + P.scrim + ',0)'); sg.addColorStop(1, 'rgba(' + P.scrim + ',0.55)');
-            c.fillStyle = sg; c.fillRect(px, py + ph - 240, pw, 240);
+            c.fillStyle = sg; c.fillRect(px2, py2 + ph2 - 240, pw2, 240);
             c.restore();
-            c.strokeStyle = P.border; c.lineWidth = 4; rr(px, py, pw, ph, 48); c.stroke();
-          }
-          if (spec.kind !== 'score') {
+            c.strokeStyle = P.border; c.lineWidth = 4; rr(px2, py2, pw2, ph2, 48); c.stroke();
             c.fillStyle = P.title; c.font = '700 78px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
             saWrapText(c, String(spec.title || '').toUpperCase(), W / 2, 1500, W - 150, 86, 2);
+            if (spec.subtitle) { c.fillStyle = P.subtitle; c.font = '600 40px "Hanken Grotesk", Arial, sans-serif'; c.fillText(String(spec.subtitle), W / 2, 1600); }
+            c.fillStyle = P.accent; rr(W / 2 - 60, 1700, 120, 8, 4); c.fill();
+            c.fillStyle = P.footer; c.font = '600 38px "Hanken Grotesk", Arial, sans-serif';
+            c.fillText(String(spec.footer || 'suesangelsfc.co.uk'), W / 2, 1840);
           }
-          if (spec.subtitle) { c.fillStyle = P.subtitle; c.font = '600 40px "Hanken Grotesk", Arial, sans-serif'; c.fillText(String(spec.subtitle), W / 2, spec.kind === 'score' ? 1520 : 1600); }
-          // accent bar + footer
-          c.fillStyle = P.accent; rr(W / 2 - 60, 1700, 120, 8, 4); c.fill();
-          c.fillStyle = P.footer; c.font = '600 38px "Hanken Grotesk", Arial, sans-serif';
-          c.fillText(String(spec.footer || 'suesangelsfc.co.uk'), W / 2, 1840);
           try { resolve(cv.toDataURL('image/jpeg', 0.92)); } catch (e) { resolve(null); }
         }, function () { resolve(null); });
       };
@@ -1349,6 +1380,33 @@ window.saPlayerStorySpec = function (num) {
     var pos = p.gk ? 'Goalkeeper' : (p.mostPlayedPosition || 'Squad');
     var stat = p.gk ? ((p.cleanSheets || 0) + ' clean sheets') : ((p.goals || 0) + ' goals · ' + (p.assists || 0) + ' assists');
     return { title: nm, subtitle: pos + ' · ' + stat, photo: (window.getPlayerPhoto && window.getPlayerPhoto(num)) || 'assets/players/avatar.svg?v=2', footer: 'suesangelsfc.co.uk' };
+  } catch (e) { return null; }
+};
+// Build a rich match-report scorecard spec: scoreline, venue, kick-off, our
+// goalscorers + assisters (with xN counts) and sponsors. Opponent scorers are
+// not recorded anywhere in the data, so only our side is named.
+window.saReportStorySpec = function (report) {
+  try {
+    if (!report) return null;
+    var d = window.loadMatchEntry ? window.loadMatchEntry(report.id) : null;
+    var nameOf = function (num) { var p = (window.SQUAD || []).filter(function (x) { return x.num === num; })[0]; return p ? ((p.first ? p.first + ' ' : '') + p.last).trim() : ('No. ' + num); };
+    var tally = function (arr) { var m = {}, order = []; (arr || []).forEach(function (g) { if (g && g.num != null) { if (m[g.num] == null) { m[g.num] = 0; order.push(g.num); } m[g.num]++; } }); return order.map(function (k) { return { name: nameOf(k), n: m[k] }; }).sort(function (a, b) { return b.n - a.n; }); };
+    var us = /sue|angel/i.test(report.home) ? 'home' : /sue|angel/i.test(report.away) ? 'away' : null;
+    var res = us === 'home' ? (report.hs > report.as ? 'w' : report.hs < report.as ? 'l' : 'd') : us === 'away' ? (report.as > report.hs ? 'w' : report.as < report.hs ? 'l' : 'd') : null;
+    return {
+      kind: 'score',
+      eyebrow: (report.competition || 'League Ten') + ' · ' + (report.date || ''),
+      home: report.home, away: report.away, hs: report.hs, as: report.as,
+      homeBadge: (window.resolveBadge && window.resolveBadge(report.home) || {}).src || null,
+      awayBadge: (window.resolveBadge && window.resolveBadge(report.away) || {}).src || null,
+      result: res,
+      venue: (report.venue && report.venue !== 'TBC') ? report.venue : null,
+      kick: (report.kick && report.kick !== 'TBC') ? report.kick : null,
+      scorers: d ? tally(d.goals) : [],
+      assists: d ? tally(d.assists) : [],
+      sponsors: ['assets/sponsors/sporting-solutions.png', 'assets/sponsors/hodgson-roofing.png', 'assets/sponsors/staines-rugby.png'],
+      footer: 'suesangelsfc.co.uk'
+    };
   } catch (e) { return null; }
 };
 function ShareBtn({ title, what, label, image, url: urlProp, story }) {
@@ -1415,11 +1473,14 @@ function ShareBtn({ title, what, label, image, url: urlProp, story }) {
   var openWin = function (u, method) { window.open(u, '_blank', 'noopener,noreferrer'); track(method); setOpen(false); };
   var u = encodeURIComponent(shareUrl());
   var t = encodeURIComponent(shareTitle());
-  var igMsg = 'Link copied. Open Instagram and paste it into your story, a caption or your bio.';
+  var igMsg = 'Link copied. In Instagram, add the Link sticker to your story and paste it so people can tap straight through.';
   var ttMsg = 'Link copied. Open TikTok and paste it into your caption or bio.';
+  // Copy the deep-link to the clipboard so it's ready to paste into Instagram's
+  // Link sticker (the only way an IG Story can carry a clickable link).
+  var shareToIg = function () { try { if (navigator.clipboard) navigator.clipboard.writeText(shareUrl()); } catch (e) {} toApp('instagram', igMsg); };
   var items = [
     navigator.share ? { k: 'native', label: 'Share to apps…', fn: nativeShare } : null,
-    { k: 'ig', label: 'Instagram', fn: function () { toApp('instagram', igMsg); } },
+    { k: 'ig', label: 'Instagram', fn: shareToIg },
     { k: 'x', label: 'X (Twitter)', fn: function () { openWin('https://twitter.com/intent/tweet?text=' + t + '&url=' + u, 'x'); } },
     { k: 'tt', label: 'TikTok', fn: function () { toApp('tiktok', ttMsg); } },
     { k: 'wa', label: 'WhatsApp', fn: function () { openWin('https://wa.me/?text=' + t + '%20' + u, 'whatsapp'); } },
@@ -2968,7 +3029,7 @@ function Media({
   };
   const mHero = (slim && mHeroMap[tab]) ? mHeroMap[tab] : { eb: 'The latest', a: 'Me', b: 'dia', sub: 'Match reports, club news and the matchday gallery.' };
 
-  return h(React.Fragment, null, h(PageHero, { eyebrow: mHero.eb, title: h(React.Fragment, null, mHero.a, h("em", null, mHero.b), "."), sub: mHero.sub }), h("section", { className: "mp-sec" }, h("div", { className: "m-wrap" }, slim ? null : h("div", { className: "mp-subtabs" }, [['news', 'News'], ['gallery', 'Gallery'], ['videos', 'Videos']].map(([k, l]) => h("button", { key: k, className: `mp-subtab ${tab === k ? 'is-active' : ''}`, onClick: () => setTab(k) }, l))), tab === 'news' ? h(React.Fragment, null, catTabs, newsBody) : tab === 'videos' ? videosBody : h(React.Fragment, null, gcatTabs, galleryBody))), report ? h(Modal, { onClose: () => setReport(null) }, h("div", { className: "m-glass m-modal__sponsor" }, h("p", { className: "m-eyebrow m-eyebrow--volt" }, report.competition || 'League Ten', " \u00b7 ", report.date), h("h2", { className: "m-h2", style: { marginTop: 10 } }, report.home.replace(' FC', ''), " ", report.hs, "-", report.as, " ", report.away.replace(' FC', '')), h("div", { className: "m-prose" }, function () { var d = window.loadMatchEntry ? window.loadMatchEntry(report.id) : null; var t = d && (d.polishedReport || d.commentary); t = t && String(t).trim(); if (!t) return h("p", null, "Match report to follow, watch this space."); return t.split(/\n+/).map(function (p, i) { return h("p", { key: i }, p); }); }()), h("div", { style: { marginTop: 18, textAlign: "center" } }, h(ShareBtn, { what: "report", label: "Share report", story: function () { var us = /sue|angel/i.test(report.home) ? 'home' : /sue|angel/i.test(report.away) ? 'away' : null; var res = us === 'home' ? (report.hs > report.as ? 'w' : report.hs < report.as ? 'l' : 'd') : us === 'away' ? (report.as > report.hs ? 'w' : report.as < report.hs ? 'l' : 'd') : null; return { kind: 'score', eyebrow: (report.competition || 'League Ten') + ' · ' + (report.date || ''), home: report.home, away: report.away, hs: report.hs, as: report.as, homeBadge: (window.resolveBadge && window.resolveBadge(report.home) || {}).src || null, awayBadge: (window.resolveBadge && window.resolveBadge(report.away) || {}).src || null, result: res, footer: 'suesangelsfc.co.uk' }; } })))) : null, article ? h(Modal, { onClose: () => setArticle(null) }, h("div", { className: "m-glass m-modal__sponsor" }, article.cover ? h("img", { src: article.cover, alt: "", style: { width: '100%', maxHeight: 340, objectFit: 'cover', borderRadius: 14, marginBottom: 18 } }) : null, h("p", { className: "m-eyebrow m-eyebrow--volt" }, article.cat, " \u00b7 ", article.date), h("h2", { className: "m-h2", style: { marginTop: 10 } }, article.title), h("div", { className: "m-prose", style: { marginTop: 16 } }, String(article.body || '').split(/\n+/).filter(Boolean).map((p, i) => h("p", { key: i }, p))), h("div", { style: { marginTop: 18, textAlign: "center" } }, h(ShareBtn, { what: "article", label: "Share post", image: article.cover || null, story: function () { return { title: article.title, subtitle: article.cat || 'News', photo: article.cover || null, footer: 'suesangelsfc.co.uk' }; } })))) : null, album ? (function () { var ph = window.galleryPhotos ? window.galleryPhotos(album) : (album.photos || []); if (!ph.length) return null; var idx = ((ai % ph.length) + ph.length) % ph.length; var tags = (album.photoTags && album.photoTags[idx]) || []; return h("div", { className: "m-zoom m-albumbox", onClick: () => setAlbum(null) }, h("button", { className: "m-modal__close", onClick: () => setAlbum(null) }, "\u2715"), ph.length > 1 ? h("button", { className: "m-albumbox__nav m-albumbox__nav--prev", onClick: (e) => { e.stopPropagation(); setAi(idx - 1); } }, "\u2039") : null, h("figure", { className: "m-albumbox__fig", onClick: (e) => e.stopPropagation() }, h("img", { src: ph[idx], alt: "" }), tags.length ? h("figcaption", { className: "m-albumbox__tags" }, tags.join(" \u00b7 ")) : null, h("span", { className: "m-albumbox__count" }, (idx + 1) + " / " + ph.length)), ph.length > 1 ? h("button", { className: "m-albumbox__nav m-albumbox__nav--next", onClick: (e) => { e.stopPropagation(); setAi(idx + 1); } }, "\u203A") : null); })() : null, vid ? h("div", { className: "m-zoom", onClick: () => setVid(null) }, h("button", { className: "m-modal__close", onClick: () => setVid(null) }, "\u2715"), (function () { var u = vid.url || ''; var m = u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([\w-]+)/); if (m) return h("iframe", { src: 'https://www.youtube.com/embed/' + m[1] + '?autoplay=1', style: { width: 'min(92vw, 960px)', aspectRatio: '16 / 9', border: 0, borderRadius: 14 }, allow: 'autoplay; fullscreen', allowFullScreen: true }); return h("video", { src: u, controls: true, autoPlay: true, style: { width: 'min(92vw, 960px)', maxHeight: '82vh', borderRadius: 14, background: '#000' } }); })()) : null, zoom ? h("div", { className: "m-zoom", onClick: () => setZoom(null) }, h("button", { className: "m-modal__close", onClick: () => setZoom(null) }, "\u2715"), h("img", { src: zoom, alt: "" })) : null);
+  return h(React.Fragment, null, h(PageHero, { eyebrow: mHero.eb, title: h(React.Fragment, null, mHero.a, h("em", null, mHero.b), "."), sub: mHero.sub }), h("section", { className: "mp-sec" }, h("div", { className: "m-wrap" }, slim ? null : h("div", { className: "mp-subtabs" }, [['news', 'News'], ['gallery', 'Gallery'], ['videos', 'Videos']].map(([k, l]) => h("button", { key: k, className: `mp-subtab ${tab === k ? 'is-active' : ''}`, onClick: () => setTab(k) }, l))), tab === 'news' ? h(React.Fragment, null, catTabs, newsBody) : tab === 'videos' ? videosBody : h(React.Fragment, null, gcatTabs, galleryBody))), report ? h(Modal, { onClose: () => setReport(null) }, h("div", { className: "m-glass m-modal__sponsor" }, h("p", { className: "m-eyebrow m-eyebrow--volt" }, report.competition || 'League Ten', " \u00b7 ", report.date), h("h2", { className: "m-h2", style: { marginTop: 10 } }, report.home.replace(' FC', ''), " ", report.hs, "-", report.as, " ", report.away.replace(' FC', '')), h("div", { className: "m-prose" }, function () { var d = window.loadMatchEntry ? window.loadMatchEntry(report.id) : null; var t = d && (d.polishedReport || d.commentary); t = t && String(t).trim(); if (!t) return h("p", null, "Match report to follow, watch this space."); return t.split(/\n+/).map(function (p, i) { return h("p", { key: i }, p); }); }()), h("div", { style: { marginTop: 18, textAlign: "center" } }, h(ShareBtn, { what: "report", label: "Share report", story: function () { return window.saReportStorySpec ? window.saReportStorySpec(report) : null; } })))) : null, article ? h(Modal, { onClose: () => setArticle(null) }, h("div", { className: "m-glass m-modal__sponsor" }, article.cover ? h("img", { src: article.cover, alt: "", style: { width: '100%', maxHeight: 340, objectFit: 'cover', borderRadius: 14, marginBottom: 18 } }) : null, h("p", { className: "m-eyebrow m-eyebrow--volt" }, article.cat, " \u00b7 ", article.date), h("h2", { className: "m-h2", style: { marginTop: 10 } }, article.title), h("div", { className: "m-prose", style: { marginTop: 16 } }, String(article.body || '').split(/\n+/).filter(Boolean).map((p, i) => h("p", { key: i }, p))), h("div", { style: { marginTop: 18, textAlign: "center" } }, h(ShareBtn, { what: "article", label: "Share post", image: article.cover || null, story: function () { return { title: article.title, subtitle: article.cat || 'News', photo: article.cover || null, footer: 'suesangelsfc.co.uk' }; } })))) : null, album ? (function () { var ph = window.galleryPhotos ? window.galleryPhotos(album) : (album.photos || []); if (!ph.length) return null; var idx = ((ai % ph.length) + ph.length) % ph.length; var tags = (album.photoTags && album.photoTags[idx]) || []; return h("div", { className: "m-zoom m-albumbox", onClick: () => setAlbum(null) }, h("button", { className: "m-modal__close", onClick: () => setAlbum(null) }, "\u2715"), ph.length > 1 ? h("button", { className: "m-albumbox__nav m-albumbox__nav--prev", onClick: (e) => { e.stopPropagation(); setAi(idx - 1); } }, "\u2039") : null, h("figure", { className: "m-albumbox__fig", onClick: (e) => e.stopPropagation() }, h("img", { src: ph[idx], alt: "" }), tags.length ? h("figcaption", { className: "m-albumbox__tags" }, tags.join(" \u00b7 ")) : null, h("span", { className: "m-albumbox__count" }, (idx + 1) + " / " + ph.length)), ph.length > 1 ? h("button", { className: "m-albumbox__nav m-albumbox__nav--next", onClick: (e) => { e.stopPropagation(); setAi(idx + 1); } }, "\u203A") : null); })() : null, vid ? h("div", { className: "m-zoom", onClick: () => setVid(null) }, h("button", { className: "m-modal__close", onClick: () => setVid(null) }, "\u2715"), (function () { var u = vid.url || ''; var m = u.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/))([\w-]+)/); if (m) return h("iframe", { src: 'https://www.youtube.com/embed/' + m[1] + '?autoplay=1', style: { width: 'min(92vw, 960px)', aspectRatio: '16 / 9', border: 0, borderRadius: 14 }, allow: 'autoplay; fullscreen', allowFullScreen: true }); return h("video", { src: u, controls: true, autoPlay: true, style: { width: 'min(92vw, 960px)', maxHeight: '82vh', borderRadius: 14, background: '#000' } }); })()) : null, zoom ? h("div", { className: "m-zoom", onClick: () => setZoom(null) }, h("button", { className: "m-modal__close", onClick: () => setZoom(null) }, "\u2715"), h("img", { src: zoom, alt: "" })) : null);
 }
 
 /* ══ SPONSORS ═══════════════════════════════════════════════════════════ */

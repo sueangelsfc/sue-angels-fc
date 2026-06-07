@@ -2293,7 +2293,7 @@ function CoachModalContent({ coach }) {
 function Team({
   go
 }) {
-  const [tab, setTab] = useState('squad');
+  const [tab, setTab] = useState(window.SA_TAB || 'squad');
   const [profile, setProfile] = useState(null);
   const [coach, setCoach] = useState(null);
   const [statusTick, setStatusTick] = useState(0);
@@ -2388,15 +2388,22 @@ function Team({
   const coaches = window.COACHES || [];
   const tt = allCompTotals();
   const sp = setPieceStats();
+  const slim = !!window.SA_SLIM;
+  const heroMap = {
+    squad: { eb: 'First team', a: 'The ', b: 'squad', sub: 'Position-grouped cards for the first team. Tap any player for their full analytics profile.' },
+    leaders: { eb: 'By the numbers', a: 'Player ', b: 'stats', sub: 'Goals, assists and appearances across the season. Tap any player for their full profile.' },
+    coaches: { eb: 'The dugout', a: 'The ', b: 'coaches', sub: "The people guiding Sue's Angels FC." }
+  };
+  const hero = (slim && heroMap[tab]) ? heroMap[tab] : { eb: 'First team', a: 'The ', b: 'squad', sub: 'Position-grouped cards, leaderboards and coaches. Tap any player for their full analytics profile.' };
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(PageHero, {
-    eyebrow: "First team",
-    title: /*#__PURE__*/React.createElement(React.Fragment, null, "The ", /*#__PURE__*/React.createElement("em", null, "squad"), "."),
-    sub: "Position-grouped cards, leaderboards and coaches. Tap any player for their full analytics profile."
+    eyebrow: hero.eb,
+    title: /*#__PURE__*/React.createElement(React.Fragment, null, hero.a, /*#__PURE__*/React.createElement("em", null, hero.b), "."),
+    sub: hero.sub
   }), /*#__PURE__*/React.createElement("section", {
     className: "mp-sec"
   }, /*#__PURE__*/React.createElement("div", {
     className: "m-wrap"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, slim ? null : /*#__PURE__*/React.createElement("div", {
     className: "mp-subtabs"
   }, [['squad', 'First team'], ['leaders', 'Leaderboards'], ['coaches', 'Coaches'], ['stats', 'Team stats']].concat(hasPast ? [['past', 'Past players']] : []).map(([k, l]) => /*#__PURE__*/React.createElement("button", {
     key: k,
@@ -3330,6 +3337,9 @@ const HREF = {
   sepsis: 'sepsis.html',
   champions: 'champions.html',
   team: 'teams.html',
+  squad: 'squad.html',
+  stats: 'stats.html',
+  coaches: 'coaches.html',
   schedule: 'schedule.html',
   league: 'league.html',
   media: 'media.html',
@@ -3345,7 +3355,7 @@ const NAV = [['home', 'Home'], ['about', 'About'], ['sepsis', 'Our Cause'], ['ch
 const NAV_GROUPS = [
   { k: 'home', l: 'Home' },
   { l: 'The Club', items: [['about', 'Our Story'], ['sepsis', 'Our Cause'], ['champions', 'Champions'], ['sponsors', 'Sponsors']] },
-  { l: 'On the Pitch', items: [['team', 'Team'], ['schedule', 'Matches'], ['league', 'League']] },
+  { l: 'On the Pitch', items: [['squad', 'Squad'], ['stats', 'Player Stats'], ['coaches', 'Coaches'], ['schedule', 'Matches'], ['league', 'League']] },
   { l: 'Media', items: [['news', 'News'], ['gallery', 'Gallery'], ['videos', 'Videos']] },
   { k: 'contact', l: 'Contact' }
 ];
@@ -3355,6 +3365,9 @@ const PAGES = {
   sepsis: Sepsis,
   champions: Champions,
   team: Team,
+  squad: Team,
+  stats: Team,
+  coaches: Team,
   schedule: Schedule,
   league: League,
   media: Media,
@@ -3373,6 +3386,9 @@ function currentPage() {
     'champions.html': 'champions',
     'teams.html': 'team',
     'team.html': 'team',
+    'squad.html': 'squad',
+    'stats.html': 'stats',
+    'coaches.html': 'coaches',
     'schedule.html': 'schedule',
     'fixtures.html': 'schedule',
     'results.html': 'schedule',

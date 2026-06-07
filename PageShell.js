@@ -181,6 +181,29 @@ window.LEAGUE_SCORERS = [
   { pos: 10, name: 'Malachi Mullings', club: "Sue's Angels FC", g: 9, a: 7, ap: 14, us: true }
 ];
 
+// Recent League Ten results across the whole division (FA Fulltime · 25/26),
+// most recent first. Lets visitors see how the rest of the league got on, not
+// just Sue's Angels. Editable later via the admin importer.
+window.LEAGUE_RESULTS = [
+  { date: '31 May 26', home: "Sue's Angels FC", hs: 2, as: 0, away: 'Hillside Elite FC Blues' },
+  { date: '24 May 26', home: "BPR Men's", hs: 2, as: 4, away: "Sue's Angels FC" },
+  { date: '24 May 26', home: 'Hillside Elite FC Blues', hs: 2, as: 1, away: "Shepherd's Tuesday" },
+  { date: '17 May 26', home: 'Hillside Elite FC Blues', hs: 2, as: 0, away: 'Brockwell Violets FC' },
+  { date: '10 May 26', home: 'Brockwell Violets FC', hs: 1, as: 3, away: "Sue's Angels FC" },
+  { date: '10 May 26', home: 'Hillside Elite FC Blues', hs: 4, as: 2, away: 'Balham Bteckerz' },
+  { date: '3 May 26', home: "Sue's Angels FC", hs: 6, as: 1, away: 'Dynamo London FC' },
+  { date: '3 May 26', home: 'Hillside Elite FC Blues', hs: 2, as: 0, away: 'Sporting Club Catania' },
+  { date: '26 Apr 26', home: "Sue's Angels FC", hs: 10, as: 1, away: 'Sporting Club Catania' },
+  { date: '26 Apr 26', home: 'Hillside Elite FC Blues', hs: 1, as: 2, away: "BPR Men's" },
+  { date: '19 Apr 26', home: "Sue's Angels FC", hs: 9, as: 0, away: 'Balham Bteckerz' },
+  { date: '19 Apr 26', home: 'Hillside Elite FC Blues', hs: 0, as: 2, away: 'Pure Football FC 2.0' },
+  { date: '12 Apr 26', home: 'Brockwell Violets FC', hs: 9, as: 0, away: 'Pure Football FC 2.0' },
+  { date: '29 Mar 26', home: 'Dynamo London FC', hs: 2, as: 3, away: 'Pure Football FC 2.0' },
+  { date: '29 Mar 26', home: 'Brockwell Violets FC', hs: 3, as: 0, away: "Old Freemen's" },
+  { date: '29 Mar 26', home: "Shepherd's Tuesday", hs: 0, as: 0, away: 'Hillside Elite FC Blues' },
+  { date: '15 Mar 26', home: 'Balham Bteckerz', hs: 3, as: 2, away: 'Dynamo London FC' }
+];
+
 // ─── Auto-promote played fixtures into results ──────────────────────────
 // Parse a fixture id like 'f20260524-bpr' or 'r20260510-brockwell' into a Date.
 window.getFixtureDate = function (fx) {

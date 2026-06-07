@@ -2484,6 +2484,31 @@ function Team({
 }
 
 /* ══ SCHEDULE ═══════════════════════════════════════════════════════════ */
+function LeagueResults() {
+  var h = React.createElement;
+  var Badge = window.TeamBadge;
+  var list = window.LEAGUE_RESULTS || [];
+  if (!list.length) return null;
+  var short = function (n) { return String(n).replace(/\s*FC\b/, '').trim(); };
+  var isUs = function (n) { return String(n).indexOf('Angels') > -1; };
+  return h("div", { className: "m-glass", style: { padding: 'clamp(16px,2.4vw,24px)', marginTop: 18 } },
+    h("span", { className: "m-eyebrow m-eyebrow--volt" }, "Southern Sunday League · 25/26"),
+    h("h3", { className: "m-h3", style: { marginTop: 6, marginBottom: 4 } }, "Around the league"),
+    h("p", { style: { color: 'var(--m-ink-3)', fontSize: '0.82rem', margin: '0 0 12px' } }, "Recent League Ten results across the division."),
+    h("div", { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
+      list.map(function (r, i) {
+        var us = isUs(r.home) || isUs(r.away);
+        return h("div", { key: i, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 12, background: us ? 'rgba(214,242,58,0.07)' : 'var(--m-glass-1)', borderLeft: us ? '2px solid var(--m-volt)' : '2px solid transparent' } },
+          h("span", { style: { fontSize: '0.7rem', color: 'var(--m-ink-3)', width: 56, flex: '0 0 auto' } }, r.date),
+          h("span", { style: { flex: 1, minWidth: 0, textAlign: 'right', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 7, overflow: 'hidden' } },
+            h("span", { style: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: isUs(r.home) ? 700 : 500 } }, short(r.home)),
+            Badge ? h(Badge, { team: r.home, size: 22 }) : null),
+          h("b", { style: { color: 'var(--m-volt-ink)', minWidth: 44, textAlign: 'center', fontVariantNumeric: 'tabular-nums' } }, r.hs + "-" + r.as),
+          h("span", { style: { flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 7, overflow: 'hidden' } },
+            Badge ? h(Badge, { team: r.away, size: 22 }) : null,
+            h("span", { style: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: isUs(r.away) ? 700 : 500 } }, short(r.away))));
+      })));
+}
 function LeagueTable() {
   const [season, setSeason] = useState('25/26');
   const rows = window.RAW_TABLE || [];
@@ -2561,7 +2586,7 @@ function LeagueTable() {
       color: 'var(--m-ink-3)',
       fontStyle: 'italic'
     }
-  }, "Vacancy, to be confirmed"))))))), season === '25/26' ? /*#__PURE__*/React.createElement("div", { className: "m-glass", style: { padding: '8px 8px 4px', overflowX: 'auto', marginTop: 18 } }, /*#__PURE__*/React.createElement("div", { style: { padding: '14px 14px 6px' } }, /*#__PURE__*/React.createElement("span", { className: "m-eyebrow m-eyebrow--volt" }, "Southern Sunday League · 25/26"), /*#__PURE__*/React.createElement("h3", { className: "m-h3", style: { marginTop: 6 } }, "Leading scorers")), /*#__PURE__*/React.createElement("table", { className: "mh-table mh-table--full" }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", { className: "mh-table__crumb" }), /*#__PURE__*/React.createElement("th", null, "#"), /*#__PURE__*/React.createElement("th", null, "Player"), /*#__PURE__*/React.createElement("th", null, "Club"), /*#__PURE__*/React.createElement("th", null, "G"), /*#__PURE__*/React.createElement("th", null, "A"), /*#__PURE__*/React.createElement("th", null, "Apps"))), /*#__PURE__*/React.createElement("tbody", null, (window.LEAGUE_SCORERS || []).map(function (s) { return /*#__PURE__*/React.createElement("tr", { key: s.pos, className: s.us ? 'is-us' : '' }, /*#__PURE__*/React.createElement("td", { className: "mh-table__crumb" }, /*#__PURE__*/React.createElement("span", null)), /*#__PURE__*/React.createElement("td", { className: "mh-table__pos" }, s.pos), /*#__PURE__*/React.createElement("td", null, s.name), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("span", { className: "mh-table__club" }, Badge ? /*#__PURE__*/React.createElement(Badge, { team: s.club, size: 22 }) : null, s.club.replace(' FC', ''))), /*#__PURE__*/React.createElement("td", null, s.g), /*#__PURE__*/React.createElement("td", null, s.a), /*#__PURE__*/React.createElement("td", null, s.ap)); })))) : null, /*#__PURE__*/React.createElement("div", { style: { marginTop: 18, textAlign: "center" } }, /*#__PURE__*/React.createElement(ShareBtn, { what: "table", label: "Share table", title: "League Ten table · Sue's Angels FC", url: "table.html" })));
+  }, "Vacancy, to be confirmed"))))))), season === '25/26' ? /*#__PURE__*/React.createElement("div", { className: "m-glass", style: { padding: '8px 8px 4px', overflowX: 'auto', marginTop: 18 } }, /*#__PURE__*/React.createElement("div", { style: { padding: '14px 14px 6px' } }, /*#__PURE__*/React.createElement("span", { className: "m-eyebrow m-eyebrow--volt" }, "Southern Sunday League · 25/26"), /*#__PURE__*/React.createElement("h3", { className: "m-h3", style: { marginTop: 6 } }, "Leading scorers")), /*#__PURE__*/React.createElement("table", { className: "mh-table mh-table--full" }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", { className: "mh-table__crumb" }), /*#__PURE__*/React.createElement("th", null, "#"), /*#__PURE__*/React.createElement("th", null, "Player"), /*#__PURE__*/React.createElement("th", null, "Club"), /*#__PURE__*/React.createElement("th", null, "G"), /*#__PURE__*/React.createElement("th", null, "A"), /*#__PURE__*/React.createElement("th", null, "Apps"))), /*#__PURE__*/React.createElement("tbody", null, (window.LEAGUE_SCORERS || []).map(function (s) { return /*#__PURE__*/React.createElement("tr", { key: s.pos, className: s.us ? 'is-us' : '' }, /*#__PURE__*/React.createElement("td", { className: "mh-table__crumb" }, /*#__PURE__*/React.createElement("span", null)), /*#__PURE__*/React.createElement("td", { className: "mh-table__pos" }, s.pos), /*#__PURE__*/React.createElement("td", null, s.name), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("span", { className: "mh-table__club" }, Badge ? /*#__PURE__*/React.createElement(Badge, { team: s.club, size: 22 }) : null, s.club.replace(' FC', ''))), /*#__PURE__*/React.createElement("td", null, s.g), /*#__PURE__*/React.createElement("td", null, s.a), /*#__PURE__*/React.createElement("td", null, s.ap)); })))) : null, season === '25/26' ? /*#__PURE__*/React.createElement(LeagueResults) : null, /*#__PURE__*/React.createElement("div", { style: { marginTop: 18, textAlign: "center" } }, /*#__PURE__*/React.createElement(ShareBtn, { what: "table", label: "Share table", title: "League Ten table · Sue's Angels FC", url: "table.html" })));
 }
 function Schedule({
   go

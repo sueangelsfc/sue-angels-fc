@@ -1288,8 +1288,10 @@ function saStoryImage(spec) {
           c.save(); rr(px, py, pw, ph, 48); c.clip();
           if (photo) {
             var ar = photo.width / photo.height, far = pw / ph, dw, dh, dx, dy;
+            // Favour the top of the photo (object-position ~50% 20%) so the
+            // player's face stays in frame for full-body pitch shots.
             if (ar > far) { dh = ph; dw = ph * ar; dx = px - (dw - pw) / 2; dy = py; }
-            else { dw = pw; dh = pw / ar; dx = px; dy = py - (dh - ph) / 2; }
+            else { dw = pw; dh = pw / ar; dx = px; dy = py - (dh - ph) * 0.2; }
             c.drawImage(photo, dx, dy, dw, dh);
           } else { c.fillStyle = '#0A2230'; c.fillRect(px, py, pw, ph); if (badge) c.drawImage(badge, W / 2 - 170, py + ph / 2 - 170, 340, 340); }
           // scrim for legibility at the foot of the photo

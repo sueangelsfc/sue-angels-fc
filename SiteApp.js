@@ -1283,13 +1283,13 @@ function saStoryImage(spec, post) {
           var clean = function (s) { return String(s || '').replace(/ FC$/i, '').trim(); };
           c.textAlign = 'center';
           // bottom zone: sponsors + url, anchored to the foot of the card
-          var FOOT_Y = H - 58, SP_LOGO_Y = H - 252, SP_LABEL_Y = H - 282;
+          var FOOT_Y = H - 54, SP_LOGO_Y = H - 232, SP_LABEL_Y = H - 264;
           var drawFooter = function () {
             if (sponsors.length) {
-              tracked('4px'); c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '700 24px "Hanken Grotesk", Arial, sans-serif'; c.fillText('PROUDLY BACKED BY', W / 2, SP_LABEL_Y); tracked('0px');
-              var spw = 196, sph = 86, sgap = 22, stot = sponsors.length * spw + (sponsors.length - 1) * sgap, sx = W / 2 - stot / 2, sy = SP_LOGO_Y, spad = 14;
+              tracked('4px'); c.fillStyle = 'rgba(255,255,255,0.55)'; c.font = '700 25px "Hanken Grotesk", Arial, sans-serif'; c.fillText('PROUDLY BACKED BY', W / 2, SP_LABEL_Y); tracked('0px');
+              var spw = 258, sph = 138, sgap = 24, stot = sponsors.length * spw + (sponsors.length - 1) * sgap, sx = W / 2 - stot / 2, sy = SP_LOGO_Y, spad = 12;
               sponsors.forEach(function (im) {
-                c.fillStyle = '#FFFFFF'; rr(sx, sy, spw, sph, 12); c.fill();
+                c.fillStyle = '#FFFFFF'; rr(sx, sy, spw, sph, 16); c.fill();
                 var aw = spw - 2 * spad, ah = sph - 2 * spad, iar = im.width / im.height, idw, idh;
                 if (iar > aw / ah) { idw = aw; idh = aw / iar; } else { idh = ah; idw = ah * iar; }
                 c.drawImage(im, sx + (spw - idw) / 2, sy + (sph - idh) / 2, idw, idh);

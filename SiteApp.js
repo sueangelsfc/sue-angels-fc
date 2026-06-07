@@ -661,7 +661,7 @@ function Head({
     className: "m-h2"
   }, title)), link ? /*#__PURE__*/React.createElement("a", {
     className: "m-btn m-btn--ghost",
-    href: ({ 'Champions': 'champions.html', 'All results': 'results.html', 'Full table': 'table.html', 'Every player': 'teams.html', 'All partners': 'sponsors.html', 'Gallery': 'gallery.html' })[link] || '#',
+    href: ({ 'Champions': 'champions.html', 'All results': 'results.html', 'Full table': 'league.html', 'Every player': 'teams.html', 'All partners': 'sponsors.html', 'Gallery': 'gallery.html' })[link] || '#',
     style: {
       padding: '12px 20px'
     }
@@ -2662,15 +2662,15 @@ function Schedule({
   const fixtures = window.getActiveUpcoming ? window.getActiveUpcoming() : [];
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(PageHero, {
     eyebrow: "Matchday",
-    title: /*#__PURE__*/React.createElement(React.Fragment, null, "The ", /*#__PURE__*/React.createElement("em", null, "schedule"), "."),
-    sub: "Every result across league and cups, the full table, and upcoming fixtures."
+    title: /*#__PURE__*/React.createElement(React.Fragment, null, "The ", /*#__PURE__*/React.createElement("em", null, "matches"), "."),
+    sub: "Every result across league and cups, and our upcoming fixtures."
   }), /*#__PURE__*/React.createElement("section", {
     className: "mp-sec"
   }, /*#__PURE__*/React.createElement("div", {
     className: "m-wrap"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mp-subtabs"
-  }, [['results', `Results (${(window.getDerivedResults ? window.getDerivedResults() : []).length})`], ['table', 'League table'], ['fixtures', `Fixtures (${fixtures.length})`]].map(([k, l]) => /*#__PURE__*/React.createElement("button", {
+  }, [['results', `Results (${(window.getDerivedResults ? window.getDerivedResults() : []).length})`], ['fixtures', `Fixtures (${fixtures.length})`]].map(([k, l]) => /*#__PURE__*/React.createElement("button", {
     key: k,
     className: `mp-subtab ${tab === k ? 'is-active' : ''}`,
     onClick: () => setTab(k)
@@ -2698,7 +2698,7 @@ function Schedule({
   }))) : /*#__PURE__*/React.createElement("p", {
     className: "cms-empty",
     style: { margin: '8px 0', color: 'var(--m-ink-3)' }
-  }, "No matches fit these filters.")) : tab === 'table' ? /*#__PURE__*/React.createElement(LeagueTable, null) : fixtures.length ? /*#__PURE__*/React.createElement("div", {
+  }, "No matches fit these filters.")) : fixtures.length ? /*#__PURE__*/React.createElement("div", {
     className: "mp-grid mp-results"
   }, fixtures.map((f, i) => /*#__PURE__*/React.createElement("div", {
     className: "mh-res",
@@ -3322,7 +3322,7 @@ const HREF = {
   contact: 'contact.html',
   join: 'join.html'
 };
-const NAV = [['home', 'Home'], ['about', 'About'], ['sepsis', 'Our Cause'], ['champions', 'Champions'], ['team', 'Team'], ['schedule', 'Schedule'], ['league', 'League'], ['media', 'Media'], ['sponsors', 'Sponsors'], ['contact', 'Contact']];
+const NAV = [['home', 'Home'], ['about', 'About'], ['sepsis', 'Our Cause'], ['champions', 'Champions'], ['team', 'Team'], ['schedule', 'Matches'], ['league', 'League'], ['media', 'Media'], ['sponsors', 'Sponsors'], ['contact', 'Contact']];
 const PAGES = {
   home: Home,
   about: About,
@@ -3350,7 +3350,7 @@ function currentPage() {
     'schedule.html': 'schedule',
     'fixtures.html': 'schedule',
     'results.html': 'schedule',
-    'table.html': 'schedule',
+    'table.html': 'league',
     'league.html': 'league',
     'media.html': 'media',
     'news.html': 'media',

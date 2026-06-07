@@ -21,7 +21,7 @@ window.SUPABASE_CONFIG = {
 
 
 // Analytics + donation links (set these to go live).
-window.SA_GA_ID = '';            // e.g. 'G-XXXXXXXXXX' from Google Analytics
+window.SA_GA_ID = 'G-4KPG5PZK0Z'; // GA4 Measurement ID (Sue's Angels FC property)
 window.SA_DONATE_CLUB_URL = '';  // e.g. Stripe / JustGiving link for club support
 window.SA_DONATE_CAUSE_URL = ''; // e.g. link for sepsis-awareness support
 

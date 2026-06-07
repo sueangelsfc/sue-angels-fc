@@ -1288,56 +1288,69 @@ function saStoryImage(spec) {
           var clean = function (s) { return String(s || '').replace(/ FC$/i, '').trim(); };
           c.textAlign = 'center';
           if (spec.kind === 'score') {
-            // ---- compact top: badge + comp/date ----
-            if (badge) { var bs = 116; c.drawImage(badge, W / 2 - bs / 2, 72, bs, bs); }
-            c.fillStyle = P.eyebrow; c.font = '700 30px "Hanken Grotesk", Arial, sans-serif';
-            c.fillText(String(spec.eyebrow || "SUE'S ANGELS FC").toUpperCase(), W / 2, 248);
-            // ---- scoreline panel ----
-            var px = 120, py = 296, pw = W - 240, ph = 300;
-            c.fillStyle = P.frame; rr(px, py, pw, ph, 40); c.fill();
-            c.strokeStyle = P.border; c.lineWidth = 4; rr(px, py, pw, ph, 40); c.stroke();
-            var bb = 150, by = py + 42;
-            if (homeImg) c.drawImage(homeImg, px + 78, by, bb, bb);
-            if (awayImg) c.drawImage(awayImg, px + pw - 78 - bb, by, bb, bb);
-            c.fillStyle = P.title; c.font = '700 92px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
-            c.fillText((spec.hs != null ? spec.hs : '') + ' - ' + (spec.as != null ? spec.as : ''), W / 2, by + bb / 2 + 30);
-            c.fillStyle = P.subtitle; c.font = '600 27px "Hanken Grotesk", Arial, sans-serif';
-            c.fillText(clean(spec.home), px + 78 + bb / 2, by + bb + 52);
-            c.fillText(clean(spec.away), px + pw - 78 - bb / 2, by + bb + 52);
-            var cy = py + ph + 66;
+            // Always the dark "default media cover" look (identical in light & dark).
+            var bg = c.createRadialGradient(W / 2, 0, 120, W / 2, 0, 1480);
+            bg.addColorStop(0, 'rgb(20,56,73)'); bg.addColorStop(1, 'rgb(4,18,27)');
+            c.fillStyle = bg; c.fillRect(0, 0, W, H);
+            var tracked = function (v) { try { c.letterSpacing = v; } catch (e) {} };
+            var drawBadge = function (im, cx, cyc, sz) { if (!im) return; var ar = im.width / im.height, w = sz, hh = sz; if (ar > 1) hh = sz / ar; else w = sz * ar; c.drawImage(im, cx - w / 2, cyc - hh / 2, w, hh); };
+            // top label
+            tracked('6px'); c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '700 29px "Hanken Grotesk", Arial, sans-serif';
+            c.fillText('FULL TIME', W / 2, 168); tracked('0px');
+            // score row: badges hug the score, centred as a group
+            var sCenterY = 384, badge = 160, gap = 56;
+            c.font = '600 116px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
+            var scoreStr = (spec.hs != null ? spec.hs : '') + '  -  ' + (spec.as != null ? spec.as : '');
+            var sw = c.measureText(scoreStr).width;
+            drawBadge(homeImg, W / 2 - sw / 2 - gap - badge / 2, sCenterY, badge);
+            drawBadge(awayImg, W / 2 + sw / 2 + gap + badge / 2, sCenterY, badge);
+            c.fillStyle = '#FFFFFF'; c.fillText(scoreStr, W / 2, sCenterY + 40);
+            c.fillStyle = 'rgba(255,255,255,0.62)'; c.font = '600 28px "Hanken Grotesk", Arial, sans-serif';
+            c.fillText(clean(spec.home), W / 2 - sw / 2 - gap - badge / 2, sCenterY + badge / 2 + 62);
+            c.fillText(clean(spec.away), W / 2 + sw / 2 + gap + badge / 2, sCenterY + badge / 2 + 62);
+            // competition (volt)
+            var cy = 644;
+            tracked('4px'); c.fillStyle = '#D6F23A'; c.font = '700 28px "Hanken Grotesk", Arial, sans-serif';
+            c.fillText(String(spec.eyebrow || '').toUpperCase(), W / 2, cy); tracked('0px'); cy += 30;
+            // result pill (cover style)
             if (spec.result) {
-              var rc = spec.result === 'w' ? '#2BE38A' : spec.result === 'l' ? '#FF7A7A' : '#E8C45A';
-              c.fillStyle = rc; c.font = '700 50px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
-              c.fillText(spec.result === 'w' ? 'WIN' : spec.result === 'l' ? 'LOSS' : 'DRAW', W / 2, cy); cy += 64;
-            }
+              var rl = spec.result === 'w' ? 'WIN' : spec.result === 'l' ? 'LOSS' : 'DRAW';
+              tracked('3px'); c.font = '700 30px "Hanken Grotesk", Arial, sans-serif';
+              var tw = c.measureText(rl).width + 6, ppw = tw + 66, pph = 62, prx = W / 2 - ppw / 2, pry = cy + 16;
+              var pbg = spec.result === 'w' ? '#D6F23A' : spec.result === 'l' ? 'rgba(255,120,120,0.20)' : 'rgba(255,255,255,0.15)';
+              var ptx = spec.result === 'w' ? '#071D29' : spec.result === 'l' ? '#ffb4b4' : '#ffffff';
+              c.fillStyle = pbg; rr(prx, pry, ppw, pph, pph / 2); c.fill();
+              c.fillStyle = ptx; c.fillText(rl, W / 2, pry + 42); tracked('0px'); cy = pry + pph + 58;
+            } else { cy += 46; }
+            // venue / kick
             var meta = []; if (spec.venue) meta.push(spec.venue); if (spec.kick) meta.push('KO ' + spec.kick);
-            if (meta.length) { c.fillStyle = P.footer; c.font = '600 27px "Hanken Grotesk", Arial, sans-serif'; c.fillText(meta.join('  ·  ').toUpperCase(), W / 2, cy); cy += 60; }
-            cy += 22;
+            if (meta.length) { tracked('3px'); c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '600 26px "Hanken Grotesk", Arial, sans-serif'; c.fillText(meta.join('   ·   ').toUpperCase(), W / 2, cy); tracked('0px'); cy += 74; }
+            cy += 10;
+            // scorers / assists
             var section = function (label, items, max) {
               if (!items || !items.length) return;
-              c.fillStyle = P.eyebrow; c.font = '700 27px "Hanken Grotesk", Arial, sans-serif'; c.fillText(label, W / 2, cy); cy += 52;
-              c.fillStyle = P.title; c.font = '600 37px "Hanken Grotesk", Arial, sans-serif';
-              items.slice(0, max).forEach(function (it) { c.fillText(it.name + (it.n > 1 ? '  ×' + it.n : ''), W / 2, cy); cy += 50; });
-              if (items.length > max) { c.fillStyle = P.subtitle; c.font = '600 30px "Hanken Grotesk", Arial, sans-serif'; c.fillText('+ ' + (items.length - max) + ' more', W / 2, cy); cy += 48; }
-              cy += 30;
+              tracked('4px'); c.fillStyle = '#D6F23A'; c.font = '700 27px "Hanken Grotesk", Arial, sans-serif'; c.fillText(label, W / 2, cy); tracked('0px'); cy += 56;
+              c.fillStyle = '#FFFFFF'; c.font = '600 38px "Hanken Grotesk", Arial, sans-serif';
+              items.slice(0, max).forEach(function (it) { c.fillText(it.name + (it.n > 1 ? '  ×' + it.n : ''), W / 2, cy); cy += 52; });
+              if (items.length > max) { c.fillStyle = 'rgba(255,255,255,0.55)'; c.font = '600 30px "Hanken Grotesk", Arial, sans-serif'; c.fillText('+ ' + (items.length - max) + ' more', W / 2, cy); cy += 50; }
+              cy += 40;
             };
             section('GOALS', spec.scorers, 5);
             section('ASSISTS', spec.assists, 4);
-            // ---- sponsors (anchored near the foot) ----
+            // sponsors
             if (sponsors.length) {
-              c.fillStyle = P.eyebrow; c.font = '700 26px "Hanken Grotesk", Arial, sans-serif'; c.fillText('PROUDLY BACKED BY', W / 2, 1648);
-              var spw = 208, sph = 92, sgap = 22, stot = sponsors.length * spw + (sponsors.length - 1) * sgap, sx = W / 2 - stot / 2, sy = 1690, spad = 16;
+              tracked('4px'); c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '700 25px "Hanken Grotesk", Arial, sans-serif'; c.fillText('PROUDLY BACKED BY', W / 2, 1652); tracked('0px');
+              var spw = 210, sph = 94, sgap = 24, stot = sponsors.length * spw + (sponsors.length - 1) * sgap, sx = W / 2 - stot / 2, sy = 1692, spad = 16;
               sponsors.forEach(function (im) {
                 c.fillStyle = '#FFFFFF'; rr(sx, sy, spw, sph, 14); c.fill();
-                c.strokeStyle = 'rgba(8,22,32,0.10)'; c.lineWidth = 2; rr(sx, sy, spw, sph, 14); c.stroke();
                 var aw = spw - 2 * spad, ah = sph - 2 * spad, iar = im.width / im.height, idw, idh;
                 if (iar > aw / ah) { idw = aw; idh = aw / iar; } else { idh = ah; idw = ah * iar; }
                 c.drawImage(im, sx + (spw - idw) / 2, sy + (sph - idh) / 2, idw, idh);
                 sx += spw + sgap;
               });
             }
-            c.fillStyle = P.footer; c.font = '600 36px "Hanken Grotesk", Arial, sans-serif';
-            c.fillText(String(spec.footer || 'suesangelsfc.co.uk'), W / 2, 1854);
+            c.fillStyle = 'rgba(255,255,255,0.55)'; c.font = '600 36px "Hanken Grotesk", Arial, sans-serif';
+            c.fillText(String(spec.footer || 'suesangelsfc.co.uk'), W / 2, 1858);
           } else {
             // ---- photo card (players / coaches / articles / table) ----
             if (badge) { var bs2 = 150; c.drawImage(badge, W / 2 - bs2 / 2, 120, bs2, bs2); }

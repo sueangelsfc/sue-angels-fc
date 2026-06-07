@@ -1301,7 +1301,7 @@ function saStoryImage(spec, post) {
           };
           if (spec.kind === 'score') {
             var drawBadge = function (im, cx, cyc, sz) { if (!im) return; var ar = im.width / im.height, w = sz, hh = sz; if (ar > 1) hh = sz / ar; else w = sz * ar; c.drawImage(im, cx - w / 2, cyc - hh / 2, w, hh); };
-            var SC = post ? { ftY: 124, scY: 286, badge: 128, gap: 44, scFont: 84, compY: 480, max1: 2, max2: 2 } : { ftY: 168, scY: 384, badge: 160, gap: 56, scFont: 116, compY: 644, max1: 5, max2: 4 };
+            var SC = post ? { ftY: 124, scY: 286, badge: 128, gap: 44, scFont: 84, compY: 480, max1: 3, max2: 3 } : { ftY: 168, scY: 384, badge: 160, gap: 56, scFont: 116, compY: 644, max1: 5, max2: 4 };
             tracked('6px'); c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '700 28px "Hanken Grotesk", Arial, sans-serif';
             c.fillText('FULL TIME', W / 2, SC.ftY); tracked('0px');
             c.font = '600 ' + SC.scFont + 'px "Clash Display", "Hanken Grotesk", Arial, sans-serif';
@@ -1326,7 +1326,7 @@ function saStoryImage(spec, post) {
               c.fillStyle = ptx; c.fillText(rl, W / 2, pry + 38); tracked('0px'); cy = pry + pph + 50;
             } else { cy += 42; }
             var meta = []; if (spec.venue) meta.push(spec.venue); if (spec.kick) meta.push('KO ' + spec.kick);
-            if (meta.length) { tracked('3px'); c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '600 25px "Hanken Grotesk", Arial, sans-serif'; c.fillText(meta.join('   ·   ').toUpperCase(), W / 2, cy); tracked('0px'); cy += 64; }
+            if (meta.length && !post) { tracked('3px'); c.fillStyle = 'rgba(255,255,255,0.5)'; c.font = '600 25px "Hanken Grotesk", Arial, sans-serif'; c.fillText(meta.join('   ·   ').toUpperCase(), W / 2, cy); tracked('0px'); cy += 64; }
             cy += 8;
             var limitY = SP_LABEL_Y - 36;
             var section = function (label, items, max) {
@@ -1353,8 +1353,11 @@ function saStoryImage(spec, post) {
             c.save(); rr(px2, py2, pw2, ph2, 44); c.clip();
             if (photo) {
               var ar = photo.width / photo.height, far = pw2 / ph2, dw, dh, dx, dy;
-              if (ar > far) { dh = ph2; dw = ph2 * ar; dx = px2 - (dw - pw2) / 2; dy = py2; }
-              else { dw = pw2; dh = pw2 / ar; dx = px2; dy = py2 - (dh - ph2) * 0.2; }
+              if (ar > far) { dh = ph2; dw = ph2 * ar; } else { dw = pw2; dh = pw2 / ar; }
+              // Player photos: zoom into the upper body so the face is the focus.
+              if (spec.face) { dw *= 1.34; dh *= 1.34; }
+              dx = px2 - (dw - pw2) / 2;
+              dy = py2 - (dh - ph2) * (spec.face ? 0.1 : 0.2);
               c.drawImage(photo, dx, dy, dw, dh);
             } else { c.fillStyle = P.frame; c.fillRect(px2, py2, pw2, ph2); if (badge) { var bz = Math.min(340, ph2 - 80); c.drawImage(badge, W / 2 - bz / 2, py2 + ph2 / 2 - bz / 2, bz, bz); } }
             var sg = c.createLinearGradient(0, py2 + ph2 - 200, 0, py2 + ph2);
@@ -1383,7 +1386,8 @@ window.saPlayerStorySpec = function (num) {
     var nm = saPlayerName(p) || ('Number ' + num);
     var pos = p.gk ? 'Goalkeeper' : (p.mostPlayedPosition || 'Squad');
     var stat = p.gk ? ((p.cleanSheets || 0) + ' clean sheets') : ((p.goals || 0) + ' goals · ' + (p.assists || 0) + ' assists');
-    return { title: nm, subtitle: pos + ' · ' + stat, photo: (window.getPlayerPhoto && window.getPlayerPhoto(num)) || 'assets/players/avatar.svg?v=2', footer: 'suesangelsfc.co.uk' };
+    var hasPhoto = !!(window.getPlayerPhoto && window.getPlayerPhoto(num));
+    return { title: nm, subtitle: pos + ' · ' + stat, photo: hasPhoto ? window.getPlayerPhoto(num) : 'assets/players/avatar.svg?v=2', face: hasPhoto, footer: 'suesangelsfc.co.uk' };
   } catch (e) { return null; }
 };
 // Build a rich match-report scorecard spec: scoreline, venue, kick-off, our

@@ -1325,7 +1325,7 @@ window.saPlayerStorySpec = function (num) {
     var nm = saPlayerName(p) || ('Number ' + num);
     var pos = p.gk ? 'Goalkeeper' : (p.mostPlayedPosition || 'Squad');
     var stat = p.gk ? ((p.cleanSheets || 0) + ' clean sheets') : ((p.goals || 0) + ' goals · ' + (p.assists || 0) + ' assists');
-    return { title: nm, subtitle: pos + ' · ' + stat, photo: window.getPlayerPhoto ? window.getPlayerPhoto(num) : null, footer: 'suesangelsfc.co.uk' };
+    return { title: nm, subtitle: pos + ' · ' + stat, photo: (window.getPlayerPhoto && window.getPlayerPhoto(num)) || 'assets/players/avatar.svg?v=2', footer: 'suesangelsfc.co.uk' };
   } catch (e) { return null; }
 };
 function ShareBtn({ title, what, label, image, url: urlProp, story }) {

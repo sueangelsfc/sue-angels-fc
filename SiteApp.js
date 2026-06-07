@@ -1,5 +1,5 @@
 function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
-// MockPages.jsx — full interactive preview of every page in the new design system.
+// MockPages.jsx - full interactive preview of every page in the new design system.
 // Real data from the live engine. Tabs: Home, About, Champions, Team, Schedule,
 // Media, Sponsors, Contact. Interactive: sub-tabs, filters, player-profile modal,
 // sponsor modal, gallery lightbox, coach modal, forms, theme toggle. Not production.
@@ -339,7 +339,7 @@ function SetPiecePanel(props) {
           r[2] != null ? h('div', { className: 'mp-sp__stat' }, h('b', { className: 'mp-sp__a' }, r[2]), h('span', null, r[2] === 1 ? 'assist' : 'assists')) : null));
     })));
 }
-// TeamStatsPanel — richer "dashboard" for the Team → Team stats tab: hero
+// TeamStatsPanel - richer "dashboard" for the Team → Team stats tab: hero
 // win-rate ring + W/D/L bar + honours, goals scored-vs-conceded comparison,
 // accented stat tiles, recent-form strip, then the set-piece panel.
 function TeamStatsPanel(props) {
@@ -702,7 +702,7 @@ function Modal({
   }, children));
 }
 
-/* ══ PLAYER PROFILE — the showpiece (parameterised) ═════════════════════ */
+/* ══ PLAYER PROFILE - the showpiece (parameterised) ═════════════════════ */
 function ProfileCard({
   num
 }) {
@@ -1261,12 +1261,12 @@ function ShareBtn({ title, what, label, image, url: urlProp }) {
   var shareTitle = function () { return title || document.title; };
   var copyLink = async function (method, msg) {
     var url = shareUrl();
-    try { await navigator.clipboard.writeText(url); track(method || 'copy'); alert(msg || 'Link copied. Paste it anywhere you like — Instagram, a story, a chat.'); }
+    try { await navigator.clipboard.writeText(url); track(method || 'copy'); alert(msg || 'Link copied. Paste it anywhere you like - Instagram, a story, a chat.'); }
     catch (e) { window.prompt('Copy this link:', url); }
     setOpen(false);
   };
   // Share the preview IMAGE as a file. This is the only way Instagram Stories /
-  // posts and TikTok can actually receive shared content on mobile — a plain URL
+  // posts and TikTok can actually receive shared content on mobile - a plain URL
   // is rejected by those apps. Returns true if the share (or cancel) was handled.
   var shareImageFile = async function () {
     if (!image || !navigator.canShare || typeof File === 'undefined') return false;
@@ -2134,7 +2134,7 @@ function maTrophy() {
      /*#__PURE__*/React.createElement("path", { d: "M7 5H4.5A1.5 1.5 0 0 0 6 8.5M17 5h2.5A1.5 1.5 0 0 1 18 8.5" }),
      /*#__PURE__*/React.createElement("path", { d: "M9.5 14.5 9 18h6l-.5-3.5M8 21h8M10 18v3M14 18v3" }));
 }
-// ManagerAnalytics — season-scoped leadership analytics for the coach modal.
+// ManagerAnalytics - season-scoped leadership analytics for the coach modal.
 // Reads the seasons a manager was in charge (admin-set on the coach record),
 // then derives record, honours, most-used players, best performers and the
 // favourite formation entirely from live match + squad data.
@@ -2264,7 +2264,7 @@ function ManagerAnalytics({ coach }) {
           h('div', { className: 'ma__bar-track' }, h('div', { className: 'ma__bar-fill', style: { width: (on ? (totForm ? kv[1] / totForm * 100 : 0) : 0) + '%' } }))))))) : null);
 }
 
-// CoachModalContent — coach header + a two-slide pager (Profile / Manager stats).
+// CoachModalContent - coach header + a two-slide pager (Profile / Manager stats).
 function CoachModalContent({ coach }) {
   const h = React.createElement;
   const [slide, setSlide] = React.useState(0);
@@ -2547,11 +2547,12 @@ function LeagueStatsTable() {
 function League() {
   var h = React.createElement;
   return h(React.Fragment, null,
-    h(PageHero, { eyebrow: "Southern Sunday Football League", title: h(React.Fragment, null, "The ", h("em", null, "league")), sub: "League Ten 25/26 — the table, every result across the division, and the players topping the charts." }),
+    h(PageHero, { eyebrow: "Southern Sunday Football League", title: h(React.Fragment, null, "The ", h("em", null, "league")), sub: "League Ten 25/26 - the table, every result across the division, and the players topping the charts." }),
     h("section", { className: "mp-sec" }, h("div", { className: "m-wrap" },
       h(LeagueTable),
       h("div", { style: { marginTop: 18 } }, h(LeagueStatsTable)),
-      h("div", { style: { marginTop: 18 } }, h(LeagueResults)))));
+      h("div", { style: { marginTop: 18 } }, h(LeagueResults)),
+      h("p", { style: { marginTop: 18, textAlign: 'center', color: 'var(--m-ink-3)', fontSize: '0.82rem', lineHeight: 1.6 } }, "Table, results and player stats captured from ", h("a", { href: "https://fulltime.thefa.com/displayTeam.html?divisionseason=636836036&teamID=582566146", target: "_blank", rel: "noopener noreferrer", style: { color: 'var(--m-volt-ink)' } }, "FA Full-Time"), ", the official record for the Southern Sunday Football League. Separate from the club's own match data."))));
 }
 function LeagueTable() {
   const [season, setSeason] = useState('25/26');

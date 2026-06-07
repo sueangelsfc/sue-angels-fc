@@ -1,11 +1,11 @@
-/* analytics.js — lightweight, non-invasive event tracking for Sue's Angels FC.
-   • Defines window.saTrack(name, params) — the single tracking entry point.
+/* analytics.js - lightweight, non-invasive event tracking for Sue's Angels FC.
+   • Defines window.saTrack(name, params) - the single tracking entry point.
    • Forwards to Google Analytics (gtag) when window.SA_GA_ID is set, otherwise
      it no-ops gracefully (still queues to dataLayer + fires a `sa-track` DOM
      event, so GA / GTM / any future tool can be wired up later with zero code
      changes here).
    • Auto-tracks the high-value journeys (donations, sponsors, contact, social,
-     outbound, content views) by reading the DOM on click — so it needs NO edits
+     outbound, content views) by reading the DOM on click - so it needs NO edits
      to SiteApp.js.  All work is wrapped so it can never break the page. */
 (function () {
   "use strict";

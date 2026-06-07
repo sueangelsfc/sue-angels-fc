@@ -1,4 +1,4 @@
-// api/og-cover.js — generates the branded match scorecard as a 1200×630 image,
+// api/og-cover.js - generates the branded match scorecard as a 1200×630 image,
 // so a shared match report unfurls with the "auto-generated cover" (badges +
 // scoreline) instead of the generic club card.
 //

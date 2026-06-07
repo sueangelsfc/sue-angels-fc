@@ -1,17 +1,17 @@
-// api/share.js — server-rendered Open Graph / Twitter meta for shared deep links.
+// api/share.js - server-rendered Open Graph / Twitter meta for shared deep links.
 //
 // Social scrapers (WhatsApp, iMessage, Facebook, X, Slack, LinkedIn…) do NOT run
 // JavaScript, so a shared link like /teams.html?player=9 would otherwise unfurl
 // with the generic page card. This function returns the SAME working page, but
 // with the <title>, description and OG/Twitter tags rewritten to describe the
-// specific player, match report, news post or coach — so the link previews well.
+// specific player, match report, news post or coach - so the link previews well.
 //
 // It is invoked ONLY for deep-link URLs, via the conditional `rewrites` in
 // vercel.json (matching ?player / ?coach on teams.html and ?report / ?article on
 // media.html). Normal page loads stay fully static and untouched.
 //
 // Design notes:
-//   • Zero new dependencies, no build step — same plain serverless style as
+//   • Zero new dependencies, no build step - same plain serverless style as
 //     api/claude.js.
 //   • Static squad + season results are read straight from PageShell.js (the
 //     client's own source of truth), so there is no data to keep in sync here.
@@ -19,7 +19,7 @@
 //     Supabase over its public REST endpoint (public SELECT is allowed by RLS).
 //   • The preview IMAGE is left as the existing branded 1200×630 club card.
 //   • On ANY error or unresolved id, the unmodified static page is returned, so
-//     previews are never worse than before — only better when resolution works.
+//     previews are never worse than before - only better when resolution works.
 
 const SUPA_URL = 'https://hvbquuvxcswylyguplfb.supabase.co';
 const SUPA_KEY = 'sb_publishable_2VEdxWZCLW98qItINt6TPQ_r7y_Tcly';
@@ -58,7 +58,7 @@ function getQuery(req) {
 }
 
 // Pull a top-level `window.NAME = [ ... ];` array literal out of PageShell.js and
-// evaluate just that literal (plain objects/strings/numbers/bools — no calls).
+// evaluate just that literal (plain objects/strings/numbers/bools - no calls).
 // String-aware bracket matching so a "]" inside a value can't close it early.
 function extractArray(src, name) {
   let start = src.indexOf('window.' + name + ' = [');
@@ -106,8 +106,8 @@ async function resolve(q, pageSrc) {
     const role = p.gk ? 'Goalkeeper' : (p.pos || p.position || '');
     const photo = cleanDataUrl(await supaGet('player_photos', String(num)));
     return {
-      title: name + ' — #' + num + " · Sue's Angels FC",
-      desc: (role ? role + '. ' : '') + "First-team squad member at Sue's Angels FC — League Ten champions, unbeaten in our inaugural season.",
+      title: name + ' - #' + num + " · Sue's Angels FC",
+      desc: (role ? role + '. ' : '') + "First-team squad member at Sue's Angels FC - League Ten champions, unbeaten in our inaugural season.",
       image: photo ? (SITE + '/api/og-image?player=' + num) : null,
       imageAlt: photo ? name : null
     };
@@ -158,7 +158,7 @@ async function resolve(q, pageSrc) {
       image = SITE + '/api/og-cover?' + params.toString();
     }
     return {
-      title: line + " — Match report · Sue's Angels FC",
+      title: line + " - Match report · Sue's Angels FC",
       desc: (meta ? meta + '. ' : '') + "Read the full match report from Sue's Angels FC.",
       image: image,
       imageAlt: line
@@ -193,7 +193,7 @@ async function resolve(q, pageSrc) {
       const nm = (c && c.name) || 'Our coach';
       const role = (c && c.role) || '';
       return {
-        title: nm + (role ? ' — ' + role : '') + " · Sue's Angels FC",
+        title: nm + (role ? ' - ' + role : '') + " · Sue's Angels FC",
         desc: clip(bio || (role ? role + " at Sue's Angels FC." : "Part of the Sue's Angels FC coaching team."), 200),
         image: photo ? (SITE + '/api/og-image?coach=' + encodeURIComponent(id)) : null,
         imageAlt: photo ? nm : null

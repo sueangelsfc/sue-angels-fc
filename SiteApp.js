@@ -3651,6 +3651,7 @@ const HREF = {
 function Records({ go }) {
   const h = React.createElement;
   const [, force] = useState(0);
+  const [filter, setFilter] = useState('all');
   useEffect(() => {
     const on = () => force((x) => x + 1);
     window.addEventListener('sa-recognition-changed', on);
@@ -3662,11 +3663,13 @@ function Records({ go }) {
   const ORDER = ['first_club_captain', 'most_apps', 'most_goals', 'most_assists', 'most_clean_sheets', 'most_motm', 'most_potm', 'most_season_awards', 'biggest_win', 'win_streak', 'most_goals_match', 'most_assists_match', 'first_goal', 'first_clean_sheet', 'first_win'];
   const oi = (r) => { const i = ORDER.indexOf(r.recordKey); return i < 0 ? 99 : i; };
   const sorted = records.slice().sort((a, b) => oi(a) - oi(b));
-  const playerRecs = sorted.filter((r) => r.group !== 'team');
-  const teamRecs = sorted.filter((r) => r.group === 'team');
+  const FILTERS = [['all', 'All records'], ['player', 'Player'], ['team', 'Team']];
+  const counts = { all: sorted.length, player: sorted.filter((r) => r.group !== 'team').length, team: sorted.filter((r) => r.group === 'team').length };
+  const shown = filter === 'all' ? sorted : sorted.filter((r) => filter === 'team' ? r.group === 'team' : r.group !== 'team');
   const card = (r) => {
+    const numeric = /^\d+$/.test(String(r.value));
     const inner = [
-      h('div', { className: 'rec-card__val', key: 'v' }, r.value),
+      h('div', { className: 'rec-card__val', key: 'v' }, numeric ? h(CountNum, { value: parseInt(r.value, 10) }) : r.value),
       h('div', { className: 'rec-card__t', key: 't' }, r.title),
       r.playerName ? h('div', { className: 'rec-card__who', key: 'w' }, r.playerName) : (r.group === 'team' ? h('div', { className: 'rec-card__who', key: 'w' }, "Sue's Angels FC") : null),
       r.description ? h('p', { className: 'rec-card__desc', key: 'd' }, r.description) : null,
@@ -3678,11 +3681,9 @@ function Records({ go }) {
   return h(React.Fragment, null,
     h(PageHero, { eyebrow: 'Club archive', title: h(React.Fragment, null, 'Club ', h('em', null, 'records'), '.'), sub: 'The numbers, names and firsts that make up Sue’s Angels FC history. Updated live from match data.' }),
     h('section', { className: 'mp-sec' }, h('div', { className: 'm-wrap' },
-      h(Head, { eyebrow: 'Proudly held by', title: 'Player records' }),
-      h('div', { className: 'rec-grid' }, playerRecs.map(card)))),
-    teamRecs.length ? h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
-      h(Head, { eyebrow: 'On the pitch', title: 'Team records' }),
-      h('div', { className: 'rec-grid' }, teamRecs.map(card)))) : null,
+      h(Head, { eyebrow: 'Proudly held by', title: 'Club records' }),
+      h('div', { className: 'rec-filter' }, FILTERS.filter((ff) => counts[ff[0]]).map((ff) => h('button', { key: ff[0], className: 'rec-filter__btn' + (filter === ff[0] ? ' is-active' : ''), onClick: () => setFilter(ff[0]) }, ff[1], h('span', { className: 'rec-filter__n' }, counts[ff[0]])))),
+      h('div', { className: 'rec-grid', key: filter }, shown.map(card)))),
     lead ? h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
       h(Head, { eyebrow: lead.season + ' season', title: 'Leadership group' }),
       h('div', { className: 'm-glass rec-lead' },
@@ -3697,6 +3698,7 @@ function Records({ go }) {
 function Awards({ go }) {
   const h = React.createElement;
   const [, force] = useState(0);
+  const [selId, setSelId] = useState(null);
   useEffect(() => {
     const on = () => force((x) => x + 1);
     window.addEventListener('sa-recognition-changed', on);
@@ -3704,9 +3706,13 @@ function Awards({ go }) {
     return () => { window.removeEventListener('sa-recognition-changed', on); window.removeEventListener('sa-photo-changed', on); };
   }, []);
   const season = window.CURRENT_SEASON || '25/26';
-  const potm = (window.getRecognition ? window.getRecognition('potm') : []).slice().sort((a, b) => String(b.sortISO || '').localeCompare(String(a.sortISO || '')) || String(b.month || '').localeCompare(String(a.month || '')));
+  const MON_ORDER = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
+  const monKey = (p) => { const yrs = String(p.season || '').split('/'); const fh = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec'].indexOf(p.month) > -1; return ((fh ? yrs[0] : yrs[1]) || '') + ('0' + (MON_ORDER.indexOf(p.month) + 1)).slice(-2); };
+  const potm = (window.getRecognition ? window.getRecognition('potm') : []).slice().sort((a, b) => String(monKey(b)).localeCompare(String(monKey(a))));
   const latest = potm[0];
-  const prev = potm.slice(1);
+  const tabsChrono = potm.slice().sort((a, b) => String(monKey(a)).localeCompare(String(monKey(b))));
+  const activeId = (selId && potm.some((p) => p.id === selId)) ? selId : (potm[0] ? potm[0].id : null);
+  const sel = potm.find((p) => p.id === activeId) || potm[0];
   const seasonAwards = (window.getRecognition ? window.getRecognition('season_award') : []).filter((a) => a.season === season);
   const photoFor = (r) => r.imageUrl || (r.playerId && window.getPlayerPhoto ? window.getPlayerPhoto(r.playerId) : null) || null;
   const nameFor = (r) => r.playerName || (r.playerId && window.playerNameByNum ? window.playerNameByNum(r.playerId) : '') || '';
@@ -3720,14 +3726,14 @@ function Awards({ go }) {
     return s;
   };
   const motmList = window.getMotmList ? window.getMotmList(season) : [];
-  const heroCard = (r) => h('div', { className: 'aw-potm m-glass' },
+  const heroCard = (r) => h('div', { className: 'aw-potm m-glass', key: r.id },
     media(photoFor(r), 'aw-potm__media'),
     h('div', { className: 'aw-potm__body' },
       h('p', { className: 'm-eyebrow m-eyebrow--volt' }, (r.month || '') + ' · ' + (r.season || season)),
       h('h3', { className: 'aw-potm__name' }, nameFor(r)),
       r.position ? h('div', { className: 'aw-potm__pos' }, r.position) : null,
       r.reason ? h('p', { className: 'aw-potm__reason' }, r.reason) : null,
-      chips(r).length ? h('div', { className: 'aw-potm__stats' }, chips(r).map((s, i) => h('div', { key: i, className: 'aw-stat' }, h('b', null, s[0]), h('span', null, s[1])))) : null,
+      chips(r).length ? h('div', { className: 'aw-potm__stats' }, chips(r).map((s, i) => h('div', { key: i, className: 'aw-stat' }, h('b', null, h(CountNum, { value: s[0] })), h('span', null, s[1])))) : null,
       r.quote ? h('blockquote', { className: 'aw-quote' }, '“' + r.quote + '”') : null,
       h('div', { className: 'aw-potm__actions' },
         r.playerId ? h('button', { className: 'm-btn m-btn--ghost', onClick: () => { window.location.href = 'teams.html?player=' + r.playerId; } }, 'View profile') : null,
@@ -3747,8 +3753,9 @@ function Awards({ go }) {
     h(PageHero, { eyebrow: 'Recognition', title: h(React.Fragment, null, 'Awards & ', h('em', null, 'honours'), '.'), sub: 'Celebrating the players who made the difference, month by month and across the season.' }),
     h('section', { className: 'mp-sec' }, h('div', { className: 'm-wrap' },
       h(Head, { eyebrow: 'Monthly recognition', title: 'Player of the Month' }),
-      latest ? heroCard(latest) : empty('Player of the Month coming soon', 'Our first monthly winner will be revealed here.'),
-      prev.length ? h(React.Fragment, null, h('p', { className: 'aw-sub' }, 'Previous winners'), h('div', { className: 'aw-mini-grid' }, prev.map(miniCard))) : null)),
+      latest ? h(React.Fragment, null,
+        tabsChrono.length > 1 ? h('div', { className: 'aw-tabs' }, tabsChrono.map((t) => h('button', { key: t.id, className: 'aw-tab' + (t.id === activeId ? ' is-active' : ''), onClick: () => setSelId(t.id) }, h('span', { className: 'aw-tab__m' }, t.month), h('span', { className: 'aw-tab__y' }, t.season)))) : null,
+        heroCard(sel)) : empty('Player of the Month coming soon', 'Our first monthly winner will be revealed here.'))),
     motmList.length ? h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
       h(Head, { eyebrow: 'Every match', title: 'Man of the Match' }),
       h('div', { className: 'aw-motm' }, motmList.map((m, i) => h(m.playerId ? 'button' : 'div', { key: i, className: 'aw-motm__row' + (m.playerId ? ' mp-clickable' : ''), onClick: m.playerId ? () => { window.location.href = 'teams.html?player=' + m.playerId; } : undefined },

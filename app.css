@@ -1572,7 +1572,7 @@ h1, h2, h3, p, span, b, a, li { overflow-wrap: anywhere; }
 .rec-card { text-align: left; padding: 22px 22px 20px; border-radius: 20px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 button.rec-card { cursor: pointer; transition: transform .25s var(--m-ease), border-color .25s var(--m-ease); }
 button.rec-card:hover { transform: translateY(-3px); border-color: rgba(214,242,58,0.5); }
-.rec-card__val { font-family: var(--m-display); font-weight: 600; font-size: clamp(1.7rem, 4vw, 2.3rem); line-height: 1.05; color: var(--m-volt); letter-spacing: -0.01em; word-break: break-word; }
+.rec-card__val { font-family: var(--m-display); font-weight: 600; font-size: clamp(1.7rem, 4vw, 2.3rem); line-height: 1.05; color: var(--m-volt-ink); letter-spacing: -0.01em; word-break: break-word; }
 .rec-card__t { font-weight: 700; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--m-ink-2); margin-top: 8px; }
 .rec-card__who { font-weight: 600; color: var(--m-ink-1); font-size: 0.96rem; margin-top: 2px; }
 .rec-card__desc { color: var(--m-ink-3); font-size: 0.84rem; line-height: 1.5; margin-top: 8px; }
@@ -1582,17 +1582,17 @@ button.rec-card:hover { transform: translateY(-3px); border-color: rgba(214,242,
 .rec-lead__role { display: flex; flex-direction: column; gap: 5px; padding: 16px 18px; border-radius: 16px; background: var(--m-glass-1); border: 1px solid var(--m-edge); }
 .rec-lead__role.is-captain { border-color: rgba(214,242,58,0.45); }
 .rec-lead__label { font-weight: 700; font-size: 0.62rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--m-ink-3); }
-.rec-lead__role.is-captain .rec-lead__label { color: var(--m-volt); }
+.rec-lead__role.is-captain .rec-lead__label { color: var(--m-volt-ink); }
 .rec-lead__name { font-weight: 600; color: var(--m-ink-1); font-size: 1.02rem; text-align: left; background: none; border: 0; padding: 0; }
 button.rec-lead__name { cursor: pointer; transition: color .2s var(--m-ease); }
-button.rec-lead__name:hover { color: var(--m-volt); }
+button.rec-lead__name:hover { color: var(--m-volt-ink); }
 .m-pc__ach .pc-ach__list { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
 .pc-ach__item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border-radius: 12px; background: var(--m-glass-1); border: 1px solid var(--m-edge); }
 .pc-ach__item--record { border-left: 3px solid var(--m-volt); }
 .pc-ach__label { font-weight: 600; color: var(--m-ink-1); font-size: 0.9rem; min-width: 0; }
-.pc-ach__sub { font-weight: 600; color: var(--m-volt); font-size: 0.8rem; white-space: nowrap; }
+.pc-ach__sub { font-weight: 600; color: var(--m-volt-ink); font-size: 0.8rem; white-space: nowrap; }
 .pc-ach__chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.pc-ach__chip { font-weight: 600; font-size: 0.76rem; padding: 6px 12px; border-radius: 999px; background: rgba(214,242,58,0.12); color: var(--m-volt); border: 1px solid rgba(214,242,58,0.28); }
+.pc-ach__chip { font-weight: 600; font-size: 0.76rem; padding: 6px 12px; border-radius: 999px; background: rgba(214,242,58,0.12); color: var(--m-volt-ink); border: 1px solid rgba(214,242,58,0.28); }
 
 /* ══ Awards: Player of the Month + End of Season ═══════════════════════════ */
 .aw-potm { display: grid; grid-template-columns: minmax(0, 300px) 1fr; gap: clamp(18px,3vw,32px); padding: clamp(18px,3vw,26px); margin-top: 22px; align-items: stretch; }
@@ -1607,7 +1607,7 @@ button.rec-lead__name:hover { color: var(--m-volt); }
 .aw-potm__reason { color: var(--m-ink-2); line-height: 1.6; }
 .aw-potm__stats { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
 .aw-stat { display: flex; flex-direction: column; gap: 1px; padding: 8px 14px; border-radius: 12px; background: var(--m-glass-1); border: 1px solid var(--m-edge); min-width: 64px; }
-.aw-stat b { font-family: var(--m-display); font-weight: 600; font-size: 1.3rem; color: var(--m-volt); line-height: 1; }
+.aw-stat b { font-family: var(--m-display); font-weight: 600; font-size: 1.3rem; color: var(--m-volt-ink); line-height: 1; }
 .aw-stat span { font-size: 0.66rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--m-ink-3); }
 .aw-quote { margin: 4px 0 0; padding-left: 14px; border-left: 3px solid var(--m-volt); color: var(--m-ink-1); font-style: italic; line-height: 1.5; }
 .aw-potm__actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: auto; padding-top: 10px; align-items: center; }
@@ -1617,7 +1617,7 @@ button.rec-lead__name:hover { color: var(--m-volt); }
 .aw-mini:hover { transform: translateY(-3px); }
 .aw-mini__media { aspect-ratio: 4/3; }
 .aw-mini__info { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; }
-.aw-mini__month { font-size: 0.66rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--m-volt); font-weight: 700; }
+.aw-mini__month { font-size: 0.66rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--m-volt-ink); font-weight: 700; }
 .aw-mini__name { font-weight: 600; color: var(--m-ink-1); }
 .aw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 16px; margin-top: 22px; }
 .aw-card { text-align: left; padding: 0; overflow: hidden; border-radius: 18px; }
@@ -1628,7 +1628,7 @@ button.aw-card:hover { transform: translateY(-3px); }
 .aw-card__winner { font-family: var(--m-display); font-weight: 600; font-size: 1.3rem; line-height: 1.1; }
 .aw-card__desc { color: var(--m-ink-3); font-size: 0.86rem; line-height: 1.5; }
 .aw-empty { padding: clamp(30px,5vw,48px); text-align: center; margin-top: 22px; }
-.aw-empty__t { font-family: var(--m-display); font-weight: 600; font-size: clamp(1.3rem,3vw,1.7rem); color: var(--m-volt); }
+.aw-empty__t { font-family: var(--m-display); font-weight: 600; font-size: clamp(1.3rem,3vw,1.7rem); color: var(--m-volt-ink); }
 .aw-empty__s { color: var(--m-ink-3); margin-top: 8px; }
 @media (max-width: 640px) { .aw-potm { grid-template-columns: 1fr; } .aw-potm__media { min-height: 0; aspect-ratio: 4/3; } }
 
@@ -1640,5 +1640,22 @@ button.aw-motm__row:hover { border-color: rgba(214,242,58,0.5); }
 .aw-motm__match { font-weight: 600; color: var(--m-ink-1); min-width: 0; font-size: 0.92rem; }
 .aw-motm__match b { color: var(--m-ink-2); font-weight: 700; margin-left: 4px; }
 .aw-motm__date { font-size: 0.76rem; color: var(--m-ink-3); white-space: nowrap; }
-.aw-motm__winner { font-weight: 700; color: var(--m-volt); font-size: 0.9rem; white-space: nowrap; }
+.aw-motm__winner { font-weight: 700; color: var(--m-volt-ink); font-size: 0.9rem; white-space: nowrap; }
 @media (max-width: 560px) { .aw-motm__row { grid-template-columns: 1fr auto; } .aw-motm__date { display: none; } }
+
+/* ══ Recognition: tabs, filters + motion ═══════════════════════════════════ */
+.aw-tabs, .rec-filter { display: flex; gap: 8px; flex-wrap: wrap; margin: 22px 0 0; }
+.aw-tab { display: inline-flex; flex-direction: column; align-items: center; gap: 1px; padding: 9px 16px; border-radius: 14px; border: 1px solid var(--m-edge); background: var(--m-glass-1); color: var(--m-ink-2); cursor: pointer; transition: transform .2s var(--m-ease), border-color .2s var(--m-ease), background .2s var(--m-ease); }
+.aw-tab:hover { transform: translateY(-2px); border-color: var(--m-edge-2); }
+.aw-tab.is-active { background: var(--m-volt); color: var(--m-navy); border-color: transparent; }
+.aw-tab__m { font-weight: 700; font-size: 0.84rem; letter-spacing: 0.02em; }
+.aw-tab__y { font-size: 0.6rem; letter-spacing: 0.08em; opacity: 0.7; }
+.aw-tab.is-active .aw-tab__y { opacity: 0.85; }
+.rec-filter__btn { padding: 9px 16px; border-radius: 9999px; font: 700 0.72rem var(--m-sans); letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; border: 1px solid var(--m-edge); background: var(--m-glass-1); color: var(--m-ink-2); display: inline-flex; align-items: center; gap: 8px; transition: transform .2s var(--m-ease), border-color .2s var(--m-ease); }
+.rec-filter__btn:hover { transform: translateY(-2px); border-color: var(--m-edge-2); }
+.rec-filter__btn.is-active { background: var(--m-volt); color: var(--m-navy); border-color: transparent; }
+.rec-filter__n { font-size: 0.66rem; padding: 1px 7px; border-radius: 9999px; background: rgba(0,0,0,0.18); }
+.rec-filter__btn.is-active .rec-filter__n { background: rgba(7,29,41,0.2); }
+.rec-grid, .aw-potm { animation: rec-fade .4s var(--m-ease); }
+@keyframes rec-fade { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .rec-grid, .aw-potm { animation: none; } }

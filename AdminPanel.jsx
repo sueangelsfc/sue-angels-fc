@@ -604,6 +604,113 @@ function CmsVideos() {
   );
 }
 
+function CmsRecognition() {
+  const [, tick] = React.useState(0);
+  const bump = () => tick((n) => n + 1);
+  const rows = (window.getRecognitionStored ? window.getRecognitionStored() : []).slice().sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+  const squad = (window.SQUAD || []).slice().sort((a, b) => (a.first + a.last).localeCompare(b.first + b.last));
+  const seasons = window.ALL_SEASONS || ['25/26'];
+  const results = (window.getDerivedResults ? window.getDerivedResults() : []);
+  const months = ['August', 'September', 'October', 'November', 'December', 'January', 'February', 'March', 'April', 'May', 'June', 'July'];
+  const awardNames = ['Player of the Season', 'Players’ Player of the Season', 'Manager’s Player of the Season', 'Top Goalscorer', 'Top Assist Provider', 'Golden Glove', 'Goal of the Season', 'Newcomer of the Season', 'Most Improved Player', 'Clubman of the Season', 'Moment of the Season'];
+  const TYPES = [['potm', 'Player of the Month'], ['season_award', 'End of Season award'], ['match_award', 'Match award'], ['milestone', 'Milestone'], ['club_record', 'Club record'], ['leadership', 'Leadership group']];
+  const blank = { type: 'potm', season: window.CURRENT_SEASON || '25/26' };
+  const [f, setF] = React.useState(blank);
+  const set = (k, v) => setF((x) => ({ ...x, [k]: v }));
+  const pname = (num) => (window.playerNameByNum ? window.playerNameByNum(parseInt(num, 10)) : '') || '';
+  const matchLabel = (r) => (r.home || '').replace(' FC', '') + ' ' + (r.hs != null ? r.hs + '-' + r.as : 'v') + ' ' + (r.away || '').replace(' FC', '') + (r.date ? ' · ' + r.date : '');
+  const save = () => {
+    const id = f.id || (f.type + '-' + Date.now());
+    const rec = Object.assign({}, f, { id: id, createdAt: f.createdAt || Date.now(), updatedAt: Date.now() });
+    if (rec.playerId) { rec.playerId = parseInt(rec.playerId, 10); rec.playerName = pname(rec.playerId); }
+    ['clubCaptainPlayerId', 'viceCaptainPlayerId', 'thirdChoiceCaptainPlayerId'].forEach((k) => { if (rec[k]) { rec[k] = parseInt(rec[k], 10); rec[k.replace('PlayerId', 'Name')] = pname(rec[k]); } });
+    ['statApps', 'statGoals', 'statAssists', 'statCleanSheets', 'statMotm'].forEach((k) => { if (rec[k] === '' || rec[k] == null) delete rec[k]; else rec[k] = parseInt(rec[k], 10) || 0; });
+    Promise.resolve(window.saveRecognition(rec)).then(() => { setF(Object.assign({}, blank)); bump(); }).catch(() => { alert('Could not save to the cloud. Add the "recognition" table in Supabase (run schema.sql) so awards sync and persist across devices.'); });
+  };
+  const del = (id) => { if (window.confirm('Delete this entry?')) Promise.resolve(window.deleteRecognition(id)).then(bump).catch(() => {}); };
+  const edit = (r) => { setF(Object.assign({}, r)); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {} };
+  const playerSel = (label, key, optional) => (
+    <label className="rd-field"><span>{label}{optional ? ' (optional)' : ''}</span>
+      <select value={f[key] || ''} onChange={(e) => set(key, e.target.value)}>
+        <option value="">{optional ? 'None / team' : 'Select player'}</option>
+        {squad.map((p) => <option key={p.num} value={p.num}>{p.first} {p.last}</option>)}
+      </select></label>);
+  const seasonSel = (
+    <label className="rd-field"><span>Season</span>
+      <select value={f.season || ''} onChange={(e) => set('season', e.target.value)}>{seasons.map((s) => <option key={s} value={s}>{s}</option>)}</select></label>);
+  const matchSel = (optional) => (
+    <label className="rd-field"><span>Match{optional ? ' (optional)' : ''}</span>
+      <select value={f.matchId || ''} onChange={(e) => set('matchId', e.target.value)}>
+        <option value="">{optional ? 'None' : 'Select match'}</option>
+        {results.map((r) => <option key={r.id} value={r.id}>{matchLabel(r)}</option>)}
+      </select></label>);
+  const imgField = (
+    <label className="rd-field"><span>Image / graphic (optional)</span>{window.MediaUploader ? <window.MediaUploader label={f.imageUrl ? 'Replace image' : 'Upload image'} onPick={(d) => set('imageUrl', d)} /> : null}{f.imageUrl ? <img src={f.imageUrl} alt="" style={{ maxHeight: 80, borderRadius: 8, marginTop: 8 }} /> : null}</label>);
+  let body = null;
+  if (f.type === 'potm') body = (<React.Fragment>
+    <div className="rd-form__row"><label className="rd-field"><span>Month</span><select value={f.month || ''} onChange={(e) => set('month', e.target.value)}><option value="">Select month</option>{months.map((m) => <option key={m} value={m}>{m}</option>)}</select></label>{seasonSel}</div>
+    {playerSel('Winner', 'playerId')}
+    <label className="rd-field"><span>Position (optional)</span><input value={f.position || ''} onChange={(e) => set('position', e.target.value)} placeholder="e.g. Left centre-back" /></label>
+    <label className="rd-field"><span>Reason for winning</span><textarea rows="3" value={f.reason || ''} onChange={(e) => set('reason', e.target.value)} placeholder="Why they won this month" /></label>
+    <div className="rd-form__row"><label className="rd-field"><span>Apps</span><input type="number" value={f.statApps != null ? f.statApps : ''} onChange={(e) => set('statApps', e.target.value)} /></label><label className="rd-field"><span>Goals</span><input type="number" value={f.statGoals != null ? f.statGoals : ''} onChange={(e) => set('statGoals', e.target.value)} /></label></div>
+    <div className="rd-form__row"><label className="rd-field"><span>Assists</span><input type="number" value={f.statAssists != null ? f.statAssists : ''} onChange={(e) => set('statAssists', e.target.value)} /></label><label className="rd-field"><span>Clean sheets</span><input type="number" value={f.statCleanSheets != null ? f.statCleanSheets : ''} onChange={(e) => set('statCleanSheets', e.target.value)} /></label></div>
+    <label className="rd-field"><span>MOTM in month</span><input type="number" value={f.statMotm != null ? f.statMotm : ''} onChange={(e) => set('statMotm', e.target.value)} /></label>
+    <label className="rd-field"><span>Quote (optional)</span><textarea rows="2" value={f.quote || ''} onChange={(e) => set('quote', e.target.value)} /></label>
+    {imgField}
+  </React.Fragment>);
+  else if (f.type === 'season_award') body = (<React.Fragment>
+    <div className="rd-form__row"><label className="rd-field"><span>Award name</span><input list="cms-awardnames" value={f.title || ''} onChange={(e) => set('title', e.target.value)} placeholder="e.g. Player of the Season" /></label>{seasonSel}</div>
+    <datalist id="cms-awardnames">{awardNames.map((n) => <option key={n} value={n} />)}</datalist>
+    {playerSel('Winner', 'playerId', true)}
+    <label className="rd-field"><span>Description (optional)</span><textarea rows="2" value={f.description || ''} onChange={(e) => set('description', e.target.value)} /></label>
+    <label className="rd-field"><span>Quote (optional)</span><textarea rows="2" value={f.quote || ''} onChange={(e) => set('quote', e.target.value)} /></label>
+    {imgField}
+  </React.Fragment>);
+  else if (f.type === 'match_award') body = (<React.Fragment>
+    <div className="rd-form__row"><label className="rd-field"><span>Award</span><select value={f.awardType || ''} onChange={(e) => set('awardType', e.target.value)}><option value="">Select award</option><option value="performance_of_the_match">Performance of the Match</option><option value="goal_contribution_award">Goal Contribution Award</option></select></label>{seasonSel}</div>
+    {matchSel(false)}
+    {playerSel('Winner', 'playerId')}
+    <p className="cms-sec__sub">Man of the Match is already recorded with match data and counts automatically.</p>
+  </React.Fragment>);
+  else if (f.type === 'milestone') body = (<React.Fragment>
+    {playerSel('Player', 'playerId')}
+    <div className="rd-form__row"><label className="rd-field"><span>Milestone</span><input value={f.title || ''} onChange={(e) => set('title', e.target.value)} placeholder="e.g. First Goal" /></label>{seasonSel}</div>
+    <div className="rd-form__row"><label className="rd-field"><span>Date achieved (optional)</span><input value={f.date || ''} onChange={(e) => set('date', e.target.value)} placeholder="e.g. 12 Oct 2025" /></label><label className="rd-field"><span>Value (optional)</span><input value={f.value || ''} onChange={(e) => set('value', e.target.value)} /></label></div>
+    {matchSel(true)}
+    <label className="rd-field"><span>Note (optional)</span><textarea rows="2" value={f.description || ''} onChange={(e) => set('description', e.target.value)} /></label>
+  </React.Fragment>);
+  else if (f.type === 'club_record') body = (<React.Fragment>
+    <div className="rd-form__row"><label className="rd-field"><span>Record title</span><input value={f.title || ''} onChange={(e) => set('title', e.target.value)} placeholder="e.g. First Ever Goal" /></label><label className="rd-field"><span>Holder type</span><select value={f.group || 'player'} onChange={(e) => set('group', e.target.value)}><option value="player">Player</option><option value="team">Team</option></select></label></div>
+    <div className="rd-form__row"><label className="rd-field"><span>Value</span><input value={f.value || ''} onChange={(e) => set('value', e.target.value)} placeholder="e.g. 1-0 v Catania" /></label>{seasonSel}</div>
+    {f.group !== 'team' ? playerSel('Player', 'playerId', true) : null}
+    <label className="rd-field"><span>Note (optional)</span><textarea rows="2" value={f.description || ''} onChange={(e) => set('description', e.target.value)} /></label>
+  </React.Fragment>);
+  else if (f.type === 'leadership') body = (<React.Fragment>
+    {seasonSel}
+    {playerSel('Club captain', 'clubCaptainPlayerId')}
+    {playerSel('Vice-captain (context only)', 'viceCaptainPlayerId', true)}
+    {playerSel('Third-choice captain (context only)', 'thirdChoiceCaptainPlayerId', true)}
+    <label className="rd-field"><span>Note</span><textarea rows="2" value={f.note || ''} onChange={(e) => set('note', e.target.value)} placeholder="Leadership context sentence" /></label>
+    <p className="cms-sec__sub">Only the club captain becomes a record and a profile achievement. Vice and third-choice are saved as context only.</p>
+  </React.Fragment>);
+  const rowLabel = (r) => {
+    if (r.type === 'leadership') return 'Leadership ' + (r.season || '');
+    if (r.type === 'potm') return (r.month || '') + ' ' + (r.season || '') + ' POTM';
+    return r.title || r.awardType || r.type;
+  };
+  return (
+    <div>
+      <div className="cms-sec__head"><div><h2 className="rd-h3">Recognition</h2><p className="cms-sec__sub">Player of the Month, end-of-season awards, match awards, milestones, club records and leadership. Winners you tag also appear on that player&rsquo;s profile. Club records and stat milestones already calculate automatically; use this to add the rest.</p></div></div>
+      <div className="rd-card" style={{ display: 'grid', gap: 12, marginBottom: 16 }}>
+        <label className="rd-field"><span>Type</span><select value={f.type} onChange={(e) => setF({ type: e.target.value, season: f.season || (window.CURRENT_SEASON || '25/26') })}>{TYPES.map((t) => <option key={t[0]} value={t[0]}>{t[1]}</option>)}</select></label>
+        {body}
+        <div className="rd-form__actions">{f.id ? <button className="rd-btn rd-btn--ghost" onClick={() => setF(Object.assign({}, blank))}>Cancel</button> : null}<button className="rd-btn rd-btn--volt" onClick={save}>{f.id ? 'Save changes' : 'Add'}</button></div>
+      </div>
+      {rows.length ? <div className="cms-list">{rows.map((r) => <div className="cms-row" key={r.id}><div><span className="rd-chip rd-chip--volt">{(TYPES.find((t) => t[0] === r.type) || [, r.type])[1]}</span><b className="cms-row__t">{rowLabel(r)}</b></div><div style={{ display: 'flex', gap: 8 }}><span className="cms-row__d">{r.playerName || r.clubCaptainName || ''}</span><button className="rd-btn rd-btn--ghost rd-btn--sm" onClick={() => edit(r)}>Edit</button><button className="rd-btn rd-btn--ghost rd-btn--sm" onClick={() => del(r.id)}>Delete</button></div></div>)}</div> : <p className="cms-empty">No recognition entries yet. The Club Records page already shows auto-calculated records.</p>}
+    </div>
+  );
+}
+
 const CMS_SECTIONS = [
   ['matchdata', 'Match data', CmsMatchData],
   ['fixtures', 'Fixtures', CmsFixtures],
@@ -613,6 +720,7 @@ const CMS_SECTIONS = [
   ['gallery', 'Gallery', CmsGallery],
   ['photos', 'Squad photos', CmsPhotos],
   ['coaches', 'Coaches', CmsCoaches],
+  ['recognition', 'Recognition', CmsRecognition],
   ['sponsors', 'Sponsors', CmsSponsors],
   ['donations', 'Donations', CmsDonations],
   ['hero', 'Hero banner', CmsHero],

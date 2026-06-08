@@ -3663,7 +3663,7 @@ function Records({ go }) {
   const lead = window.getSeasonLeadership ? window.getSeasonLeadership(window.CURRENT_SEASON) : null;
   const playedSeasons = Array.from(new Set((window.getDerivedResults ? window.getDerivedResults() : []).map((r) => window.seasonOf ? window.seasonOf(r) : (window.CURRENT_SEASON || '25/26'))));
   const seasonTabs = ['all'].concat((window.ALL_SEASONS || []).filter((s) => playedSeasons.indexOf(s) > -1));
-  const ORDER = ['first_club_captain', 'most_apps', 'most_goals', 'most_assists', 'most_clean_sheets', 'most_motm', 'most_potm', 'most_season_awards', 'biggest_win', 'most_goals_match', 'win_streak', 'unbeaten_run', 'scoring_streak', 'clean_sheet_streak', 'total_goals', 'total_clean_sheets', 'first_goal', 'first_clean_sheet', 'first_win'];
+  const ORDER = ['first_club_captain', 'most_apps', 'most_goals', 'most_assists', 'most_clean_sheets', 'most_motm', 'most_potm', 'most_season_awards', 'biggest_win', 'win_streak', 'unbeaten_run', 'total_goals', 'first_goal', 'first_clean_sheet', 'first_win'];
   const oi = (r) => { const i = ORDER.indexOf(r.recordKey); return i < 0 ? 99 : i; };
   const sorted = records.slice().sort((a, b) => oi(a) - oi(b));
   const FILTERS = [['all', 'All records'], ['player', 'Player'], ['team', 'Team']];
@@ -3679,6 +3679,7 @@ function Records({ go }) {
       h('div', { className: 'rec-card__t', key: 't' }, r.title),
       r.playerName ? h('div', { className: 'rec-card__who', key: 'w' }, r.playerName) : (r.group === 'team' ? h('div', { className: 'rec-card__who', key: 'w' }, "Sue's Angels FC") : null),
       r.description ? h('p', { className: 'rec-card__desc', key: 'd' }, r.description) : null,
+      r.scope ? h('div', { className: 'rec-card__scope', key: 'sc' }, r.scope) : null,
     ];
     const props = { key: r.id, className: 'rec-card rec-card--in m-glass' + (r.playerId ? ' mp-clickable' : ''), style: { animationDelay: (i * 0.05) + 's' } };
     if (r.playerId) props.onClick = () => { window.location.href = 'teams.html?player=' + r.playerId; };

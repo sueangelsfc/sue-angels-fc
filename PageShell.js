@@ -1993,7 +1993,7 @@ window.tableInsights = function (rows, totalGames, promotionSpots = 2) {
     if (!homeUs && !awayUs) return null;
     if (r.hs == null || r.as == null) return null;
     var ourG = homeUs ? r.hs : r.as, oppG = homeUs ? r.as : r.hs;
-    return { ourG: ourG, oppG: oppG, win: ourG > oppG, margin: ourG - oppG,
+    return { ourG: ourG, oppG: oppG, win: ourG > oppG, margin: ourG - oppG, comp: r.competition || '',
       opp: (homeUs ? r.away : r.home || '').replace(' FC', ''), date: r.date || r.sortISO || '' };
   }
 
@@ -2001,12 +2001,13 @@ window.tableInsights = function (rows, totalGames, promotionSpots = 2) {
   window.autoClubRecords = function (seasonKey) {
     var sk = seasonKey || 'all';
     var sLabel = sk === 'all' ? '' : sk;
+    var ALL = 'All competitions', LGE = 'League Ten';
     var squad = (typeof window.derivedSquad === 'function' ? window.derivedSquad(null, sk) : []) || [];
     var recs = [];
     var pushLeader = function (recordKey, title, key) {
       var sorted = squad.filter(function (p) { return p[key] > 0; }).sort(function (a, b) { return b[key] - a[key] || b.apps - a.apps; });
       var p = sorted[0]; if (!p) return;
-      recs.push({ id: 'auto-' + recordKey, type: 'club_record', recordKey: recordKey, title: title, group: 'player',
+      recs.push({ id: 'auto-' + recordKey, type: 'club_record', recordKey: recordKey, title: title, group: 'player', scope: ALL,
         playerId: p.num, playerName: (p.first ? p.first + ' ' : '') + p.last, value: String(p[key]), season: sLabel, auto: true });
     };
     pushLeader('most_apps', 'Most Appearances', 'apps');
@@ -2018,24 +2019,20 @@ window.tableInsights = function (rows, totalGames, promotionSpots = 2) {
     var results = (typeof window.getDerivedResults === 'function' ? window.getDerivedResults() : []) || [];
     if (sk !== 'all' && window.seasonOf) results = results.filter(function (r) { return window.seasonOf(r) === sk; });
     var sides = results.map(ourSide).filter(Boolean);
-    var pushTeam = function (recordKey, title, value) { if (value != null && value !== '') recs.push({ id: 'auto-' + recordKey, type: 'club_record', recordKey: recordKey, group: 'team', title: title, value: value, season: sLabel, auto: true }); };
-    // Biggest win + highest score
-    var wins = sides.filter(function (s) { return s.win; }).sort(function (a, b) { return b.margin - a.margin || b.ourG - a.ourG; });
-    if (wins[0]) pushTeam('biggest_win', 'Biggest Win', wins[0].ourG + '-' + wins[0].oppG + ' v ' + wins[0].opp);
-    var hi = sides.slice().sort(function (a, b) { return b.ourG - a.ourG; })[0];
-    if (hi && hi.ourG > 0) pushTeam('most_goals_match', 'Most Goals in a Match', hi.ourG + ' v ' + hi.opp);
-    // Runs (chronological)
     var chron = sides.slice().sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); });
-    var streak = function (test) { var run = 0, best = 0; chron.forEach(function (s) { run = test(s) ? run + 1 : 0; if (run > best) best = run; }); return best; };
-    var w = streak(function (s) { return s.win; }); if (w > 0) pushTeam('win_streak', 'Longest Winning Streak', w + (w === 1 ? ' win' : ' wins'));
-    var u = streak(function (s) { return s.ourG >= s.oppG; }); if (u > 1) pushTeam('unbeaten_run', 'Longest Unbeaten Run', u + ' games');
-    var cs = streak(function (s) { return s.oppG === 0; }); if (cs > 1) pushTeam('clean_sheet_streak', 'Longest Clean Sheet Run', cs + ' games');
-    var sc = streak(function (s) { return s.ourG > 0; }); if (sc > 1) pushTeam('scoring_streak', 'Longest Scoring Run', sc + ' games');
-    // Totals
+    var streakOf = function (arr, test) { var run = 0, best = 0; arr.forEach(function (s) { run = test(s) ? run + 1 : 0; if (run > best) best = run; }); return best; };
+    var pushTeam = function (recordKey, title, value, scope) { if (value != null && value !== '') recs.push({ id: 'auto-' + recordKey, type: 'club_record', recordKey: recordKey, group: 'team', title: title, value: value, scope: scope, season: sLabel, auto: true }); };
+    // Biggest win (any competition)
+    var wins = sides.filter(function (s) { return s.win; }).sort(function (a, b) { return b.margin - a.margin || b.ourG - a.ourG; });
+    if (wins[0]) pushTeam('biggest_win', 'Biggest Win', wins[0].ourG + '-' + wins[0].oppG + ' v ' + wins[0].opp, ALL);
+    // Longest winning streak (any competition)
+    var w = streakOf(chron, function (s) { return s.win; }); if (w > 0) pushTeam('win_streak', 'Longest Winning Streak', w + (w === 1 ? ' win' : ' wins'), ALL);
+    // Longest unbeaten run - LEAGUE only (the meaningful one; cup losses don't break it)
+    var lge = chron.filter(function (s) { return /league/i.test(s.comp || ''); });
+    var u = streakOf(lge, function (s) { return s.ourG >= s.oppG; }); if (u > 1) pushTeam('unbeaten_run', 'Longest Unbeaten Run', u + ' games', LGE);
+    // Goals scored (any competition)
     var gf = sides.reduce(function (a, s) { return a + (s.ourG || 0); }, 0);
-    if (gf > 0) pushTeam('total_goals', sk === 'all' ? 'Goals Scored (all-time)' : 'Goals Scored', String(gf));
-    var nc = sides.filter(function (s) { return s.oppG === 0; }).length;
-    if (nc > 0) pushTeam('total_clean_sheets', 'Clean Sheets Kept', String(nc));
+    if (gf > 0) pushTeam('total_goals', sk === 'all' ? 'Goals Scored (all-time)' : 'Goals Scored', String(gf), ALL);
     return recs;
   };
 

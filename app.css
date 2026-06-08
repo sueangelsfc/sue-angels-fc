@@ -1685,3 +1685,7 @@ button.rec-card:hover { box-shadow: 0 24px 50px -26px rgba(214,242,58,0.4); }
 .aw-potm:hover .aw-potm__media img { transform: scale(1.05); }
 .rec-seasons { margin-bottom: 8px; }
 @media (prefers-reduced-motion: reduce) { .rec-card.m-glass:hover, .rec-trophy.m-glass:hover, .aw-card.m-glass:hover, .aw-stat:hover, .aw-motm__row:hover { transform: none; } .aw-potm:hover .aw-potm__media img { transform: none; } }
+
+/* record competition-scope label */
+.rec-card__scope { margin-top: 12px; font-weight: 700; font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--m-ink-3); display: inline-flex; align-items: center; gap: 6px; }
+.rec-card__scope::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--m-volt); flex: 0 0 auto; }

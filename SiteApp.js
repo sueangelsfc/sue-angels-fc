@@ -3644,7 +3644,8 @@ const HREF = {
   sponsors: 'sponsors.html',
   contact: 'contact.html',
   join: 'join.html',
-  records: 'records.html'
+  records: 'records.html',
+  awards: 'awards.html'
 };
 /* ══ RECORDS ════════════════════════════════════════════════════════════════ */
 function Records({ go }) {
@@ -3692,11 +3693,64 @@ function Records({ go }) {
             x[2] ? h('button', { className: 'rec-lead__name mp-clickable', onClick: () => { window.location.href = 'teams.html?player=' + x[2]; } }, x[1]) : h('span', { className: 'rec-lead__name' }, x[1]))))))) : null);
 }
 
+/* ══ AWARDS ═════════════════════════════════════════════════════════════════ */
+function Awards({ go }) {
+  const h = React.createElement;
+  const [, force] = useState(0);
+  useEffect(() => {
+    const on = () => force((x) => x + 1);
+    window.addEventListener('sa-recognition-changed', on);
+    window.addEventListener('sa-photo-changed', on);
+    return () => { window.removeEventListener('sa-recognition-changed', on); window.removeEventListener('sa-photo-changed', on); };
+  }, []);
+  const season = window.CURRENT_SEASON || '25/26';
+  const potm = (window.getRecognition ? window.getRecognition('potm') : []).slice().sort((a, b) => String(b.sortISO || '').localeCompare(String(a.sortISO || '')) || String(b.month || '').localeCompare(String(a.month || '')));
+  const latest = potm[0];
+  const prev = potm.slice(1);
+  const seasonAwards = (window.getRecognition ? window.getRecognition('season_award') : []).filter((a) => a.season === season);
+  const photoFor = (r) => r.imageUrl || (r.playerId && window.getPlayerPhoto ? window.getPlayerPhoto(r.playerId) : null) || null;
+  const nameFor = (r) => r.playerName || (r.playerId && window.playerNameByNum ? window.playerNameByNum(r.playerId) : '') || '';
+  const media = (ph, cls) => h('div', { className: cls + (ph ? '' : ' aw-media--default') }, ph ? h('img', { src: ph, alt: '' }) : h('img', { className: 'aw-badge', src: 'assets/badge/sue-angels-shield.png', alt: '' }));
+  const chips = (r) => { const s = []; if (r.statApps) s.push([r.statApps, 'Apps']); if (r.statGoals) s.push([r.statGoals, 'Goals']); if (r.statAssists) s.push([r.statAssists, 'Assists']); if (r.statCleanSheets) s.push([r.statCleanSheets, 'Clean sheets']); if (r.statMotm) s.push([r.statMotm, 'MOTM']); return s; };
+  const heroCard = (r) => h('div', { className: 'aw-potm m-glass' },
+    media(photoFor(r), 'aw-potm__media'),
+    h('div', { className: 'aw-potm__body' },
+      h('p', { className: 'm-eyebrow m-eyebrow--volt' }, (r.month || '') + ' · ' + (r.season || season)),
+      h('h3', { className: 'aw-potm__name' }, nameFor(r)),
+      r.position ? h('div', { className: 'aw-potm__pos' }, r.position) : null,
+      r.reason ? h('p', { className: 'aw-potm__reason' }, r.reason) : null,
+      chips(r).length ? h('div', { className: 'aw-potm__stats' }, chips(r).map((s, i) => h('div', { key: i, className: 'aw-stat' }, h('b', null, s[0]), h('span', null, s[1])))) : null,
+      r.quote ? h('blockquote', { className: 'aw-quote' }, '“' + r.quote + '”') : null,
+      h('div', { className: 'aw-potm__actions' },
+        r.playerId ? h('button', { className: 'm-btn m-btn--ghost', onClick: () => { window.location.href = 'teams.html?player=' + r.playerId; } }, 'View profile') : null,
+        h(ShareBtn, { what: 'potm', label: 'Share', url: 'awards.html', story: function () { return { title: nameFor(r), subtitle: 'Player of the Month · ' + (r.month || ''), eyebrow: (r.season || season) + ' · Player of the Month', photo: photoFor(r), face: !!photoFor(r), footer: 'suesangelsfc.co.uk' }; } }))));
+  const miniCard = (r) => h('button', { key: r.id, className: 'aw-mini m-glass mp-clickable', onClick: () => { if (r.playerId) window.location.href = 'teams.html?player=' + r.playerId; } },
+    media(photoFor(r), 'aw-mini__media'),
+    h('div', { className: 'aw-mini__info' }, h('span', { className: 'aw-mini__month' }, (r.month || '') + ' ' + (r.season || '')), h('span', { className: 'aw-mini__name' }, nameFor(r))));
+  const awardCard = (a) => h(a.playerId ? 'button' : 'div', { key: a.id, className: 'aw-card m-glass' + (a.playerId ? ' mp-clickable' : ''), onClick: a.playerId ? () => { window.location.href = 'teams.html?player=' + a.playerId; } : undefined },
+    media(photoFor(a), 'aw-card__media'),
+    h('div', { className: 'aw-card__body' },
+      h('p', { className: 'm-eyebrow m-eyebrow--volt' }, a.title),
+      h('h3', { className: 'aw-card__winner' }, nameFor(a) || a.value || ''),
+      a.description ? h('p', { className: 'aw-card__desc' }, a.description) : null,
+      a.quote ? h('blockquote', { className: 'aw-quote' }, '“' + a.quote + '”') : null));
+  const empty = (t, s) => h('div', { className: 'm-glass aw-empty' }, h('p', { className: 'aw-empty__t' }, t), h('p', { className: 'aw-empty__s' }, s));
+  return h(React.Fragment, null,
+    h(PageHero, { eyebrow: 'Recognition', title: h(React.Fragment, null, 'Awards & ', h('em', null, 'honours'), '.'), sub: 'Celebrating the players who made the difference, month by month and across the season.' }),
+    h('section', { className: 'mp-sec' }, h('div', { className: 'm-wrap' },
+      h(Head, { eyebrow: 'Monthly recognition', title: 'Player of the Month' }),
+      latest ? heroCard(latest) : empty('Player of the Month coming soon', 'Our first monthly winner will be revealed here.'),
+      prev.length ? h(React.Fragment, null, h('p', { className: 'aw-sub' }, 'Previous winners'), h('div', { className: 'aw-mini-grid' }, prev.map(miniCard))) : null)),
+    h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
+      h(Head, { eyebrow: season + ' awards night', title: 'End of Season Awards' }),
+      seasonAwards.length ? h('div', { className: 'aw-grid' }, seasonAwards.map(awardCard)) : empty('Awards will be announced after 19 June', 'Our end-of-season honours will appear here after the awards night.'))));
+}
+
 const NAV = [['home', 'Home'], ['about', 'About'], ['sepsis', 'Our Cause'], ['champions', 'Champions'], ['team', 'Team'], ['schedule', 'Matches'], ['league', 'League'], ['media', 'Media'], ['sponsors', 'Sponsors'], ['contact', 'Contact']];
 // Grouped navigation with dropdowns. Items without `items` are direct links.
 const NAV_GROUPS = [
   { k: 'home', l: 'Home' },
-  { l: 'The Club', items: [['about', 'Our Story'], ['sepsis', 'Our Cause'], ['champions', 'Champions'], ['sponsors', 'Sponsors']] },
+  { l: 'The Club', items: [['about', 'Our Story'], ['sepsis', 'Our Cause'], ['champions', 'Champions'], ['awards', 'Awards'], ['sponsors', 'Sponsors']] },
   { l: 'On the Pitch', items: [['squad', 'Squad'], ['stats', 'Player Stats'], ['coaches', 'Coaches'], ['schedule', 'Matches'], ['league', 'League'], ['records', 'Records']] },
   { l: 'Media', items: [['news', 'News'], ['gallery', 'Gallery'], ['videos', 'Videos']] },
   { k: 'contact', l: 'Contact' }
@@ -3719,7 +3773,8 @@ const PAGES = {
   sponsors: Sponsors,
   contact: Contact,
   join: JoinPage,
-  records: Records
+  records: Records,
+  awards: Awards
 };
 function currentPage() {
   const f = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
@@ -3747,7 +3802,8 @@ function currentPage() {
     'sponsors.html': 'sponsors',
     'contact.html': 'contact',
     'join.html': 'join',
-    'records.html': 'records'
+    'records.html': 'records',
+    'awards.html': 'awards'
   };
   return map[f] || map[f + '.html'] || 'home';
 }

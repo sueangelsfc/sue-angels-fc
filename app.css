@@ -1593,3 +1593,41 @@ button.rec-lead__name:hover { color: var(--m-volt); }
 .pc-ach__sub { font-weight: 600; color: var(--m-volt); font-size: 0.8rem; white-space: nowrap; }
 .pc-ach__chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .pc-ach__chip { font-weight: 600; font-size: 0.76rem; padding: 6px 12px; border-radius: 999px; background: rgba(214,242,58,0.12); color: var(--m-volt); border: 1px solid rgba(214,242,58,0.28); }
+
+/* ══ Awards: Player of the Month + End of Season ═══════════════════════════ */
+.aw-potm { display: grid; grid-template-columns: minmax(0, 300px) 1fr; gap: clamp(18px,3vw,32px); padding: clamp(18px,3vw,26px); margin-top: 22px; align-items: stretch; }
+.aw-potm__media, .aw-mini__media, .aw-card__media { position: relative; border-radius: 18px; overflow: hidden; background: var(--m-glass-1); }
+.aw-potm__media { min-height: 300px; }
+.aw-potm__media img, .aw-mini__media img, .aw-card__media img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; display: block; }
+.aw-media--default { display: grid; place-items: center; background: radial-gradient(120% 120% at 50% 0%, rgba(20,56,73,0.6), rgba(4,18,27,0.95)); border: 1px solid rgba(214,242,58,0.25); }
+.aw-media--default .aw-badge { width: 46%; height: auto; object-fit: contain; opacity: 0.9; }
+.aw-potm__body { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.aw-potm__name { font-family: var(--m-display); font-weight: 600; font-size: clamp(1.6rem,4vw,2.2rem); line-height: 1.05; }
+.aw-potm__pos { font-weight: 700; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--m-ink-3); }
+.aw-potm__reason { color: var(--m-ink-2); line-height: 1.6; }
+.aw-potm__stats { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.aw-stat { display: flex; flex-direction: column; gap: 1px; padding: 8px 14px; border-radius: 12px; background: var(--m-glass-1); border: 1px solid var(--m-edge); min-width: 64px; }
+.aw-stat b { font-family: var(--m-display); font-weight: 600; font-size: 1.3rem; color: var(--m-volt); line-height: 1; }
+.aw-stat span { font-size: 0.66rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--m-ink-3); }
+.aw-quote { margin: 4px 0 0; padding-left: 14px; border-left: 3px solid var(--m-volt); color: var(--m-ink-1); font-style: italic; line-height: 1.5; }
+.aw-potm__actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: auto; padding-top: 10px; align-items: center; }
+.aw-sub { font-weight: 700; font-size: 0.7rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--m-ink-2); margin: 30px 0 0; }
+.aw-mini-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr)); gap: 14px; margin-top: 14px; }
+.aw-mini { text-align: left; padding: 0; overflow: hidden; border-radius: 16px; cursor: pointer; transition: transform .25s var(--m-ease); }
+.aw-mini:hover { transform: translateY(-3px); }
+.aw-mini__media { aspect-ratio: 4/3; }
+.aw-mini__info { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; }
+.aw-mini__month { font-size: 0.66rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--m-volt); font-weight: 700; }
+.aw-mini__name { font-weight: 600; color: var(--m-ink-1); }
+.aw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 16px; margin-top: 22px; }
+.aw-card { text-align: left; padding: 0; overflow: hidden; border-radius: 18px; }
+button.aw-card { cursor: pointer; transition: transform .25s var(--m-ease); }
+button.aw-card:hover { transform: translateY(-3px); }
+.aw-card__media { aspect-ratio: 16/10; }
+.aw-card__body { padding: 16px 18px 20px; display: flex; flex-direction: column; gap: 6px; }
+.aw-card__winner { font-family: var(--m-display); font-weight: 600; font-size: 1.3rem; line-height: 1.1; }
+.aw-card__desc { color: var(--m-ink-3); font-size: 0.86rem; line-height: 1.5; }
+.aw-empty { padding: clamp(30px,5vw,48px); text-align: center; margin-top: 22px; }
+.aw-empty__t { font-family: var(--m-display); font-weight: 600; font-size: clamp(1.3rem,3vw,1.7rem); color: var(--m-volt); }
+.aw-empty__s { color: var(--m-ink-3); margin-top: 8px; }
+@media (max-width: 640px) { .aw-potm { grid-template-columns: 1fr; } .aw-potm__media { min-height: 0; aspect-ratio: 4/3; } }

@@ -625,7 +625,7 @@ function CmsRecognition() {
     if (rec.playerId) { rec.playerId = parseInt(rec.playerId, 10); rec.playerName = pname(rec.playerId); }
     ['clubCaptainPlayerId', 'viceCaptainPlayerId', 'thirdChoiceCaptainPlayerId'].forEach((k) => { if (rec[k]) { rec[k] = parseInt(rec[k], 10); rec[k.replace('PlayerId', 'Name')] = pname(rec[k]); } });
     ['statApps', 'statGoals', 'statAssists', 'statCleanSheets', 'statMotm'].forEach((k) => { if (rec[k] === '' || rec[k] == null) delete rec[k]; else rec[k] = parseInt(rec[k], 10) || 0; });
-    Promise.resolve(window.saveRecognition(rec)).then(() => { setF(Object.assign({}, blank)); bump(); }).catch(() => { alert('Could not save to the cloud. Add the "recognition" table in Supabase (run schema.sql) so awards sync and persist across devices.'); });
+    Promise.resolve(window.saveRecognition(rec)).then(() => { setF(Object.assign({}, blank)); bump(); }).catch(() => { alert('Could not save right now — please check your connection and try again.'); });
   };
   const del = (id) => { if (window.confirm('Delete this entry?')) Promise.resolve(window.deleteRecognition(id)).then(bump).catch(() => {}); };
   const edit = (r) => { setF(Object.assign({}, r)); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {} };

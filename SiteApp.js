@@ -1186,7 +1186,22 @@ function ProfileCard({
     className: "m-form__ga"
   }, isGK ? m.conceded === 0 ? 'CS' : `${m.conceded} conc` : m.g || m.a ? `${m.g}G ${m.a}A` : '·'), /*#__PURE__*/React.createElement("div", {
     className: "m-form__opp"
-  }, m.opp))))));
+  }, m.opp)))))
+  , (function () {
+    var h = React.createElement;
+    var rec = window.getPlayerRecognition ? window.getPlayerRecognition(p.num) : null;
+    if (!rec) return null;
+    var items = [];
+    rec.records.forEach(function (r) { items.push(['record', r.title, r.value]); });
+    rec.potm.forEach(function (r) { items.push(['award', 'Player of the Month', ((r.month || '') + ' ' + (r.season || '')).trim()]); });
+    rec.seasonAwards.forEach(function (r) { items.push(['award', r.title, r.season || '']); });
+    var ms = rec.milestones || [];
+    if (!items.length && !ms.length) return null;
+    return h('div', { className: 'm-panel m-pc__ach' },
+      h('p', { className: 'm-panel__t' }, 'Achievements & Milestones'),
+      items.length ? h('div', { className: 'pc-ach__list' }, items.map(function (it, i) { return h('div', { key: 'a' + i, className: 'pc-ach__item pc-ach__item--' + it[0] }, h('span', { className: 'pc-ach__label' }, it[1]), it[2] ? h('span', { className: 'pc-ach__sub' }, it[2]) : null); })) : null,
+      ms.length ? h('div', { className: 'pc-ach__chips' }, ms.map(function (m, i) { return h('span', { key: 'm' + i, className: 'pc-ach__chip' }, m.title); })) : null);
+  })());
 }
 
 /* ══ HOME ═══════════════════════════════════════════════════════════════ */
@@ -3628,14 +3643,61 @@ const HREF = {
   videos: 'videos.html',
   sponsors: 'sponsors.html',
   contact: 'contact.html',
-  join: 'join.html'
+  join: 'join.html',
+  records: 'records.html'
 };
+/* ══ RECORDS ════════════════════════════════════════════════════════════════ */
+function Records({ go }) {
+  const h = React.createElement;
+  const [, force] = useState(0);
+  useEffect(() => {
+    const on = () => force((x) => x + 1);
+    window.addEventListener('sa-recognition-changed', on);
+    window.addEventListener('sa-match-changed', on);
+    return () => { window.removeEventListener('sa-recognition-changed', on); window.removeEventListener('sa-match-changed', on); };
+  }, []);
+  const records = window.getClubRecords ? window.getClubRecords() : [];
+  const lead = window.getSeasonLeadership ? window.getSeasonLeadership(window.CURRENT_SEASON) : null;
+  const ORDER = ['first_club_captain', 'most_apps', 'most_goals', 'most_assists', 'most_clean_sheets', 'most_motm', 'most_potm', 'most_season_awards', 'biggest_win', 'win_streak', 'most_goals_match', 'most_assists_match', 'first_goal', 'first_clean_sheet', 'first_win'];
+  const oi = (r) => { const i = ORDER.indexOf(r.recordKey); return i < 0 ? 99 : i; };
+  const sorted = records.slice().sort((a, b) => oi(a) - oi(b));
+  const playerRecs = sorted.filter((r) => r.group !== 'team');
+  const teamRecs = sorted.filter((r) => r.group === 'team');
+  const card = (r) => {
+    const inner = [
+      h('div', { className: 'rec-card__val', key: 'v' }, r.value),
+      h('div', { className: 'rec-card__t', key: 't' }, r.title),
+      r.playerName ? h('div', { className: 'rec-card__who', key: 'w' }, r.playerName) : (r.group === 'team' ? h('div', { className: 'rec-card__who', key: 'w' }, "Sue's Angels FC") : null),
+      r.description ? h('p', { className: 'rec-card__desc', key: 'd' }, r.description) : null,
+    ];
+    return r.playerId
+      ? h('button', { key: r.id, className: 'rec-card m-glass mp-clickable', onClick: () => { window.location.href = 'teams.html?player=' + r.playerId; } }, inner)
+      : h('div', { key: r.id, className: 'rec-card m-glass' }, inner);
+  };
+  return h(React.Fragment, null,
+    h(PageHero, { eyebrow: 'Club archive', title: h(React.Fragment, null, 'Club ', h('em', null, 'records'), '.'), sub: 'The numbers, names and firsts that make up Sue’s Angels FC history. Updated live from match data.' }),
+    h('section', { className: 'mp-sec' }, h('div', { className: 'm-wrap' },
+      h(Head, { eyebrow: 'Proudly held by', title: 'Player records' }),
+      h('div', { className: 'rec-grid' }, playerRecs.map(card)))),
+    teamRecs.length ? h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
+      h(Head, { eyebrow: 'On the pitch', title: 'Team records' }),
+      h('div', { className: 'rec-grid' }, teamRecs.map(card)))) : null,
+    lead ? h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
+      h(Head, { eyebrow: lead.season + ' season', title: 'Leadership group' }),
+      h('div', { className: 'm-glass rec-lead' },
+        h('p', { className: 'rec-lead__note' }, lead.note),
+        h('div', { className: 'rec-lead__grid' }, [['Club captain', lead.clubCaptainName, lead.clubCaptainPlayerId, true], ['Vice-captain', lead.viceCaptainName, lead.viceCaptainPlayerId, false], ['Third-choice captain', lead.thirdChoiceCaptainName, lead.thirdChoiceCaptainPlayerId, false]].filter((x) => x[1]).map((x, i) =>
+          h('div', { key: i, className: 'rec-lead__role' + (x[3] ? ' is-captain' : '') },
+            h('span', { className: 'rec-lead__label' }, x[0]),
+            x[2] ? h('button', { className: 'rec-lead__name mp-clickable', onClick: () => { window.location.href = 'teams.html?player=' + x[2]; } }, x[1]) : h('span', { className: 'rec-lead__name' }, x[1]))))))) : null);
+}
+
 const NAV = [['home', 'Home'], ['about', 'About'], ['sepsis', 'Our Cause'], ['champions', 'Champions'], ['team', 'Team'], ['schedule', 'Matches'], ['league', 'League'], ['media', 'Media'], ['sponsors', 'Sponsors'], ['contact', 'Contact']];
 // Grouped navigation with dropdowns. Items without `items` are direct links.
 const NAV_GROUPS = [
   { k: 'home', l: 'Home' },
   { l: 'The Club', items: [['about', 'Our Story'], ['sepsis', 'Our Cause'], ['champions', 'Champions'], ['sponsors', 'Sponsors']] },
-  { l: 'On the Pitch', items: [['squad', 'Squad'], ['stats', 'Player Stats'], ['coaches', 'Coaches'], ['schedule', 'Matches'], ['league', 'League']] },
+  { l: 'On the Pitch', items: [['squad', 'Squad'], ['stats', 'Player Stats'], ['coaches', 'Coaches'], ['schedule', 'Matches'], ['league', 'League'], ['records', 'Records']] },
   { l: 'Media', items: [['news', 'News'], ['gallery', 'Gallery'], ['videos', 'Videos']] },
   { k: 'contact', l: 'Contact' }
 ];
@@ -3656,7 +3718,8 @@ const PAGES = {
   videos: Media,
   sponsors: Sponsors,
   contact: Contact,
-  join: JoinPage
+  join: JoinPage,
+  records: Records
 };
 function currentPage() {
   const f = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
@@ -3683,9 +3746,10 @@ function currentPage() {
     'videos.html': 'videos',
     'sponsors.html': 'sponsors',
     'contact.html': 'contact',
-    'join.html': 'join'
+    'join.html': 'join',
+    'records.html': 'records'
   };
-  return map[f] || 'home';
+  return map[f] || map[f + '.html'] || 'home';
 }
 function SiteHeader({
   page

@@ -1926,3 +1926,124 @@ window.tableInsights = function (rows, totalGames, promotionSpots = 2) {
     narrative
   };
 };
+
+/* ══ RECOGNITION ENGINE ═════════════════════════════════════════════════════
+   Awards, milestones, club records and leadership context. Built-in defaults
+   (Jim El Bayati's first-ever captaincy + the 25/26 leadership group) always
+   show; admin-entered rows from the `recognition` store are merged on top.
+   Statistical milestones and records auto-calculate from the live derived
+   stats, with a manual override layer. Leadership is context only: only the
+   club captain becomes a record/achievement, never vice or third-choice. */
+(function () {
+  window.SA_DEFAULT_RECOGNITION = [
+    { id: 'rec-first-captain-2526', type: 'club_record', recordKey: 'first_club_captain',
+      title: 'First Ever Club Captain', season: '25/26',
+      playerId: 10, playerName: 'Jim El Bayati', value: 'Jim El Bayati',
+      description: 'Jim El Bayati was appointed the first club captain in Sue’s Angels FC history, leading the side through the inaugural 25/26 season.',
+      isDefault: true },
+    { id: 'rec-leadership-2526', type: 'leadership', season: '25/26',
+      clubCaptainPlayerId: 10, clubCaptainName: 'Jim El Bayati',
+      viceCaptainPlayerId: 25, viceCaptainName: 'Daniel McLane',
+      thirdChoiceCaptainPlayerId: 2, thirdChoiceCaptainName: 'Andrew Allen',
+      note: 'Jim El Bayati served as club captain, supported by vice-captain Daniel McLane and third-choice captain Andrew Allen.',
+      isDefault: true }
+  ];
+
+  function nameByNum(num) {
+    var p = (window.SQUAD || []).filter(function (x) { return x.num === num; })[0];
+    return p ? ((p.first ? p.first + ' ' : '') + p.last).trim() : null;
+  }
+  window.playerNameByNum = nameByNum;
+
+  // Merge built-in defaults with stored rows (stored overrides default by id).
+  window.getRecognition = function (type) {
+    var byId = {};
+    (window.SA_DEFAULT_RECOGNITION || []).forEach(function (r) { byId[r.id] = r; });
+    var stored = (typeof window.getRecognitionStored === 'function' ? window.getRecognitionStored() : []) || [];
+    stored.forEach(function (r) { if (r && r.id) byId[r.id] = r; });
+    var all = Object.keys(byId).map(function (k) { return byId[k]; });
+    return type ? all.filter(function (r) { return r.type === type; }) : all;
+  };
+
+  window.getSeasonLeadership = function (season) {
+    var s = season || window.CURRENT_SEASON;
+    return window.getRecognition('leadership').filter(function (r) { return r.season === s; })[0] || null;
+  };
+
+  // Threshold milestones derived from a player's all-time stats.
+  window.autoMilestones = function (num) {
+    if (typeof window.derivedPlayerStats !== 'function') return [];
+    var st = window.derivedPlayerStats(num, null, 'all') || {};
+    var out = [];
+    var add = function (kind, label, value) { out.push({ type: 'milestone', milestoneType: kind, value: value, title: label, playerId: num, auto: true }); };
+    [25, 50, 100].forEach(function (t) { if (st.apps >= t) add('apps', t + ' Appearances', t); });
+    [25, 50, 100].forEach(function (t) { if (st.goals >= t) add('goals', t + ' Goals', t); });
+    [25, 50, 100].forEach(function (t) { if (st.assists >= t) add('assists', t + ' Assists', t); });
+    [10, 25, 50].forEach(function (t) { if (st.cleanSheets >= t) add('cleanSheets', t + ' Clean Sheets', t); });
+    return out;
+  };
+
+  // Our perspective on a result (handles home/away), null if not our match.
+  function ourSide(r) {
+    var homeUs = /angel/i.test(r.home || ''), awayUs = /angel/i.test(r.away || '');
+    if (!homeUs && !awayUs) return null;
+    if (r.hs == null || r.as == null) return null;
+    var ourG = homeUs ? r.hs : r.as, oppG = homeUs ? r.as : r.hs;
+    return { ourG: ourG, oppG: oppG, win: ourG > oppG, margin: ourG - oppG,
+      opp: (homeUs ? r.away : r.home || '').replace(' FC', ''), date: r.date || r.sortISO || '' };
+  }
+
+  // Statistical club records derived from the live stats + results.
+  window.autoClubRecords = function () {
+    var squad = (typeof window.derivedSquad === 'function' ? window.derivedSquad(null, 'all') : []) || [];
+    var recs = [];
+    var pushLeader = function (recordKey, title, key) {
+      var sorted = squad.filter(function (p) { return p[key] > 0; }).sort(function (a, b) { return b[key] - a[key] || b.apps - a.apps; });
+      var p = sorted[0]; if (!p) return;
+      recs.push({ id: 'auto-' + recordKey, type: 'club_record', recordKey: recordKey, title: title, group: 'player',
+        playerId: p.num, playerName: (p.first ? p.first + ' ' : '') + p.last, value: String(p[key]), auto: true });
+    };
+    pushLeader('most_apps', 'Most Appearances', 'apps');
+    pushLeader('most_goals', 'Most Goals', 'goals');
+    pushLeader('most_assists', 'Most Assists', 'assists');
+    pushLeader('most_clean_sheets', 'Most Clean Sheets', 'cleanSheets');
+    pushLeader('most_motm', 'Most Man of the Match Awards', 'motm');
+
+    var results = (typeof window.getDerivedResults === 'function' ? window.getDerivedResults() : []) || [];
+    var sides = results.map(ourSide).filter(Boolean);
+    // Biggest win
+    var wins = sides.filter(function (s) { return s.win; }).sort(function (a, b) { return b.margin - a.margin; });
+    if (wins[0]) recs.push({ id: 'auto-biggest_win', type: 'club_record', recordKey: 'biggest_win', group: 'team',
+      title: 'Biggest Win', value: wins[0].ourG + '-' + wins[0].oppG + ' v ' + wins[0].opp, auto: true });
+    // Longest winning streak (chronological)
+    var chron = sides.slice().sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); });
+    var run = 0, best = 0;
+    chron.forEach(function (s) { run = s.win ? run + 1 : 0; if (run > best) best = run; });
+    if (best > 0) recs.push({ id: 'auto-win_streak', type: 'club_record', recordKey: 'win_streak', group: 'team',
+      title: 'Longest Winning Streak', value: best + (best === 1 ? ' win' : ' wins'), auto: true });
+    return recs;
+  };
+
+  // Auto records + manual/default records (manual overrides auto by recordKey).
+  window.getClubRecords = function () {
+    var byKey = {};
+    window.autoClubRecords().forEach(function (r) { byKey[r.recordKey || r.id] = r; });
+    window.getRecognition('club_record').forEach(function (r) { byKey[r.recordKey || r.id] = r; });
+    return Object.keys(byKey).map(function (k) { return byKey[k]; });
+  };
+
+  // Everything attached to one player. Leadership is intentionally NOT included
+  // here (it carries no single playerId), so vice / third-choice captain never
+  // surface as achievements; only the captaincy club_record (playerId set) does.
+  window.getPlayerRecognition = function (num) {
+    var mine = window.getRecognition().filter(function (r) { return r.playerId === num; });
+    return {
+      potm: mine.filter(function (r) { return r.type === 'potm'; }),
+      seasonAwards: mine.filter(function (r) { return r.type === 'season_award'; }),
+      matchAwards: mine.filter(function (r) { return r.type === 'match_award'; }),
+      milestones: (window.autoMilestones(num) || []).concat(mine.filter(function (r) { return r.type === 'milestone'; })),
+      records: window.getClubRecords().filter(function (r) { return r.playerId === num; }),
+      hasAny: false
+    };
+  };
+})();

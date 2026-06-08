@@ -183,6 +183,7 @@
     playerPhotos: makeStore('player_photos', 'sa-player-photo:',  'sa-photo-changed'),
     articles:     makeStore('articles',      'sa-article:',       'sa-articles-changed'),
     gallery:      makeStore('gallery',       'sa-gallery:',       'sa-gallery-changed'),
+    recognition:  makeStore('recognition',   'sa-recognition:',   'sa-recognition-changed'),
   };
 
   // ─── Backwards-compat shims ─────────────────────────────────────────────
@@ -348,6 +349,17 @@
   window.saveGalleryAlbum = (album) => window.dataStore.gallery.set(album.id, album);
   window.deleteGalleryAlbum = (id) => window.dataStore.gallery.remove(id);
   window.subscribeGallery = (fn) => window.dataStore.gallery.subscribe(fn);
+
+  // RECOGNITION - one row per award / milestone / club record / leadership note,
+  // keyed by id; value carries a `type` field. Stored (admin-entered) rows are
+  // merged with built-in defaults in PageShell.js (getRecognition / getClubRecords
+  // / getPlayerRecognition), where the live stats live. Types:
+  //   potm | season_award | match_award | milestone | club_record | leadership
+  window.getRecognitionStored = () =>
+    Object.values(window.dataStore.recognition.getAllCached() || {}).filter((r) => r && r.id);
+  window.saveRecognition = (rec) => window.dataStore.recognition.set(rec.id, rec);
+  window.deleteRecognition = (id) => window.dataStore.recognition.remove(id);
+  window.subscribeRecognition = (fn) => window.dataStore.recognition.subscribe(fn);
 
   console.info(`[dataStore] ready in ${MODE} mode`);
 })();

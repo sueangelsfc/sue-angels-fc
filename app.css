@@ -1566,3 +1566,30 @@ h1, h2, h3, p, span, b, a, li { overflow-wrap: anywhere; }
 }
 
 @media (max-width: 920px) { .sa-nav.is-open { overflow-y: auto; -webkit-overflow-scrolling: touch; } }
+
+/* ══ Recognition: club records + profile achievements ══════════════════════ */
+.rec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 16px; margin-top: 22px; }
+.rec-card { text-align: left; padding: 22px 22px 20px; border-radius: 20px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+button.rec-card { cursor: pointer; transition: transform .25s var(--m-ease), border-color .25s var(--m-ease); }
+button.rec-card:hover { transform: translateY(-3px); border-color: rgba(214,242,58,0.5); }
+.rec-card__val { font-family: var(--m-display); font-weight: 600; font-size: clamp(1.7rem, 4vw, 2.3rem); line-height: 1.05; color: var(--m-volt); letter-spacing: -0.01em; word-break: break-word; }
+.rec-card__t { font-weight: 700; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--m-ink-2); margin-top: 8px; }
+.rec-card__who { font-weight: 600; color: var(--m-ink-1); font-size: 0.96rem; margin-top: 2px; }
+.rec-card__desc { color: var(--m-ink-3); font-size: 0.84rem; line-height: 1.5; margin-top: 8px; }
+.rec-lead { padding: clamp(22px, 3vw, 32px); margin-top: 22px; }
+.rec-lead__note { color: var(--m-ink-2); font-size: 1rem; line-height: 1.6; max-width: 62ch; }
+.rec-lead__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 14px; margin-top: 20px; }
+.rec-lead__role { display: flex; flex-direction: column; gap: 5px; padding: 16px 18px; border-radius: 16px; background: var(--m-glass-1); border: 1px solid var(--m-edge); }
+.rec-lead__role.is-captain { border-color: rgba(214,242,58,0.45); }
+.rec-lead__label { font-weight: 700; font-size: 0.62rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--m-ink-3); }
+.rec-lead__role.is-captain .rec-lead__label { color: var(--m-volt); }
+.rec-lead__name { font-weight: 600; color: var(--m-ink-1); font-size: 1.02rem; text-align: left; background: none; border: 0; padding: 0; }
+button.rec-lead__name { cursor: pointer; transition: color .2s var(--m-ease); }
+button.rec-lead__name:hover { color: var(--m-volt); }
+.m-pc__ach .pc-ach__list { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.pc-ach__item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; border-radius: 12px; background: var(--m-glass-1); border: 1px solid var(--m-edge); }
+.pc-ach__item--record { border-left: 3px solid var(--m-volt); }
+.pc-ach__label { font-weight: 600; color: var(--m-ink-1); font-size: 0.9rem; min-width: 0; }
+.pc-ach__sub { font-weight: 600; color: var(--m-volt); font-size: 0.8rem; white-space: nowrap; }
+.pc-ach__chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.pc-ach__chip { font-weight: 600; font-size: 0.76rem; padding: 6px 12px; border-radius: 999px; background: rgba(214,242,58,0.12); color: var(--m-volt); border: 1px solid rgba(214,242,58,0.28); }

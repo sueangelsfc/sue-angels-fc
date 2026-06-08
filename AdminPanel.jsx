@@ -625,6 +625,7 @@ function CmsRecognition() {
     if (rec.playerId) { rec.playerId = parseInt(rec.playerId, 10); rec.playerName = pname(rec.playerId); }
     ['clubCaptainPlayerId', 'viceCaptainPlayerId', 'thirdChoiceCaptainPlayerId'].forEach((k) => { if (rec[k]) { rec[k] = parseInt(rec[k], 10); rec[k.replace('PlayerId', 'Name')] = pname(rec[k]); } });
     ['statApps', 'statGoals', 'statAssists', 'statCleanSheets', 'statMotm'].forEach((k) => { if (rec[k] === '' || rec[k] == null) delete rec[k]; else rec[k] = parseInt(rec[k], 10) || 0; });
+    if (rec.order === '' || rec.order == null) { delete rec.order; } else { const _o = parseInt(rec.order, 10); if (_o > 0) rec.order = _o; else delete rec.order; }
     Promise.resolve(window.saveRecognition(rec)).then(() => { setF(Object.assign({}, blank)); bump(); }).catch(() => { alert('Could not save right now — please check your connection and try again.'); });
   };
   const del = (id) => { if (window.confirm('Delete this entry?')) Promise.resolve(window.deleteRecognition(id)).then(bump).catch(() => {}); };
@@ -649,6 +650,7 @@ function CmsRecognition() {
   let body = null;
   if (f.type === 'potm') body = (<React.Fragment>
     <div className="rd-form__row"><label className="rd-field"><span>Month</span><select value={f.month || ''} onChange={(e) => set('month', e.target.value)}><option value="">Select month</option>{months.map((m) => <option key={m} value={m}>{m}</option>)}</select></label>{seasonSel}</div>
+    <label className="rd-field"><span>Order in season (optional)</span><input type="number" min="1" value={f.order != null ? f.order : ''} onChange={(e) => set('order', e.target.value)} placeholder="e.g. 1 = first POTM of the season — sets the tab order on the Awards page" /></label>
     {playerSel('Winner', 'playerId')}
     <label className="rd-field"><span>Position (optional)</span><input value={f.position || ''} onChange={(e) => set('position', e.target.value)} placeholder="e.g. Left centre-back" /></label>
     <label className="rd-field"><span>Reason for winning</span><textarea rows="3" value={f.reason || ''} onChange={(e) => set('reason', e.target.value)} placeholder="Why they won this month" /></label>
@@ -699,7 +701,7 @@ function CmsRecognition() {
   </React.Fragment>);
   const rowLabel = (r) => {
     if (r.type === 'leadership') return 'Leadership ' + (r.season || '');
-    if (r.type === 'potm') return (r.month || '') + ' ' + (r.season || '') + ' POTM';
+    if (r.type === 'potm') return (r.order != null && r.order !== '' ? '#' + r.order + ' · ' : '') + (r.month || '') + ' ' + (r.season || '') + ' POTM';
     return r.title || r.awardType || r.type;
   };
   return (

@@ -3726,14 +3726,17 @@ function Awards({ go }) {
   const MON_ORDER = ['aug', 'sep', 'oct', 'nov', 'dec', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul'];
   const monIdx = (m) => MON_ORDER.indexOf(String(m || '').slice(0, 3).toLowerCase());
   const monKey = (p) => { const yrs = String(p.season || '').split('/'); const idx = monIdx(p.month); const fh = idx >= 0 && idx <= 4; return ((fh ? yrs[0] : yrs[1]) || '') + ('0' + (idx + 1)).slice(-2); };
+  // Manual admin "order" wins; entries without one fall back to month order. The
+  // 'A'/'B' prefixes keep manually-ordered POTMs ahead of unordered ones.
+  const orderKey = (p) => { const o = parseInt(p.order, 10); return (o > 0) ? ('A' + ('00000' + o).slice(-6)) : ('B' + monKey(p)); };
   const potmAll = (window.getRecognition ? window.getRecognition('potm') : []);
-  const potm = potmAll.filter((p) => p.season === season).slice().sort((a, b) => String(monKey(b)).localeCompare(String(monKey(a))));
+  const potm = potmAll.filter((p) => p.season === season).slice().sort((a, b) => String(orderKey(b)).localeCompare(String(orderKey(a))));
   const playedSeasons = Array.from(new Set((window.getDerivedResults ? window.getDerivedResults() : []).map((r) => window.seasonOf ? window.seasonOf(r) : (window.CURRENT_SEASON || '25/26'))));
   const recSeasons = Array.from(new Set([].concat(potmAll, (window.getRecognition ? window.getRecognition('season_award') : [])).map((r) => r.season).filter(Boolean)));
   let seasonTabs = (window.ALL_SEASONS || []).filter((s) => s === season || playedSeasons.indexOf(s) > -1 || recSeasons.indexOf(s) > -1);
   if (!seasonTabs.length) seasonTabs = [season];
   const latest = potm[0];
-  const tabsChrono = potm.slice().sort((a, b) => String(monKey(a)).localeCompare(String(monKey(b))));
+  const tabsChrono = potm.slice().sort((a, b) => String(orderKey(a)).localeCompare(String(orderKey(b))));
   const activeId = (selId && potm.some((p) => p.id === selId)) ? selId : (potm[0] ? potm[0].id : null);
   const sel = potm.find((p) => p.id === activeId) || potm[0];
   const seasonAwards = (window.getRecognition ? window.getRecognition('season_award') : []).filter((a) => a.season === season);

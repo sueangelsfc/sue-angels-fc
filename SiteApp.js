@@ -3778,7 +3778,7 @@ function Awards({ go }) {
         heroCard(sel)) : empty('Player of the Month coming soon', 'Our first monthly winner will be revealed here.'))),
     motmList.length ? h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
       h(Head, { eyebrow: 'Every match', title: 'Man of the Match' }),
-      h('div', { className: 'aw-motm' }, motmList.map((m, i) => h(m.playerId ? 'button' : 'div', { key: i, className: 'aw-motm__row' + (m.playerId ? ' mp-clickable' : ''), onClick: m.playerId ? () => { window.location.href = 'teams.html?player=' + m.playerId; } : undefined },
+      h('div', { className: 'aw-motm', style: { maxHeight: 288, overflowY: 'auto', paddingRight: 6, scrollbarWidth: 'thin' } }, motmList.map((m, i) => h(m.playerId ? 'button' : 'div', { key: i, className: 'aw-motm__row' + (m.playerId ? ' mp-clickable' : ''), onClick: m.playerId ? () => { window.location.href = 'teams.html?player=' + m.playerId; } : undefined },
         h('span', { className: 'aw-motm__match' }, m.opp, ' ', h('b', null, m.score)),
         h('span', { className: 'aw-motm__date' }, m.date),
         h('span', { className: 'aw-motm__winner' }, m.playerName)))))) : null,

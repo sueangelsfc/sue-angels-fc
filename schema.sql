@@ -31,13 +31,14 @@ create table if not exists public.team_badges   (key text primary key, data json
 create table if not exists public.player_photos (key text primary key, data jsonb, updated_at timestamptz default now());
 create table if not exists public.articles      (key text primary key, data jsonb, updated_at timestamptz default now());
 create table if not exists public.gallery       (key text primary key, data jsonb, updated_at timestamptz default now());
+create table if not exists public.recognition   (key text primary key, data jsonb, updated_at timestamptz default now());
 
 -- 2) Security (Row-Level Security + policies) --------------------------------
 --    Applied to every content table in one loop so they can't drift apart.
 do $$
 declare
   t text;
-  tables text[] := array['matches','fixtures','team_badges','player_photos','articles','gallery'];
+  tables text[] := array['matches','fixtures','team_badges','player_photos','articles','gallery','recognition'];
 begin
   foreach t in array tables loop
     -- turn RLS on (default-deny once policies are evaluated)
@@ -64,7 +65,7 @@ begin new.updated_at = now(); return new; end $$;
 do $$
 declare
   t text;
-  tables text[] := array['matches','fixtures','team_badges','player_photos','articles','gallery'];
+  tables text[] := array['matches','fixtures','team_badges','player_photos','articles','gallery','recognition'];
 begin
   foreach t in array tables loop
     execute format('drop trigger if exists trg_touch_updated_at on public.%I;', t);

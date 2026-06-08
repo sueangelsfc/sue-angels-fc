@@ -2018,8 +2018,11 @@ window.tableInsights = function (rows, totalGames, promotionSpots = 2) {
 
     var results = (typeof window.getDerivedResults === 'function' ? window.getDerivedResults() : []) || [];
     if (sk !== 'all' && window.seasonOf) results = results.filter(function (r) { return window.seasonOf(r) === sk; });
+    var MON = { Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6, Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12 };
+    var dkey = function (d) { var p = String(d || '').trim().split(' '); return p.length < 3 ? '' : p[2] + ('0' + (MON[p[1]] || 0)).slice(-2) + ('0' + p[0]).slice(-2); };
+    var isLoss = function (r) { if (r.hs == null || r.as == null) return false; var hu = /angel/i.test(r.home || ''); return (hu ? r.hs : r.as) < (hu ? r.as : r.hs); };
     var sides = results.map(ourSide).filter(Boolean);
-    var chron = sides.slice().sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); });
+    var chron = sides.slice().sort(function (a, b) { return String(dkey(a.date)).localeCompare(String(dkey(b.date))); });
     var streakOf = function (arr, test) { var run = 0, best = 0; arr.forEach(function (s) { run = test(s) ? run + 1 : 0; if (run > best) best = run; }); return best; };
     var pushTeam = function (recordKey, title, value, scope) { if (value != null && value !== '') recs.push({ id: 'auto-' + recordKey, type: 'club_record', recordKey: recordKey, group: 'team', title: title, value: value, scope: scope, season: sLabel, auto: true }); };
     // Biggest win (any competition)
@@ -2027,9 +2030,12 @@ window.tableInsights = function (rows, totalGames, promotionSpots = 2) {
     if (wins[0]) pushTeam('biggest_win', 'Biggest Win', wins[0].ourG + '-' + wins[0].oppG + ' v ' + wins[0].opp, ALL);
     // Longest winning streak (any competition)
     var w = streakOf(chron, function (s) { return s.win; }); if (w > 0) pushTeam('win_streak', 'Longest Winning Streak', w + (w === 1 ? ' win' : ' wins'), ALL);
-    // Longest unbeaten run - LEAGUE only (the meaningful one; cup losses don't break it)
-    var lge = chron.filter(function (s) { return /league/i.test(s.comp || ''); });
-    var u = streakOf(lge, function (s) { return s.ourG >= s.oppG; }); if (u > 1) pushTeam('unbeaten_run', 'Longest Unbeaten Run', u + ' games', LGE);
+    // Longest unbeaten run - LEAGUE only. Walkover / awarded wins are recorded
+    // without a score, so they count as unbeaten; only a scored DEFEAT breaks it.
+    var lgeChron = results.filter(function (r) { return /league/i.test(r.competition || ''); }).slice().sort(function (a, b) { return String(dkey(a.date)).localeCompare(String(dkey(b.date))); });
+    var ubRun = 0, ubBest = 0;
+    lgeChron.forEach(function (r) { ubRun = isLoss(r) ? 0 : ubRun + 1; if (ubRun > ubBest) ubBest = ubRun; });
+    if (ubBest > 1) pushTeam('unbeaten_run', 'Longest Unbeaten Run', ubBest + ' games', LGE);
     // Goals scored (any competition)
     var gf = sides.reduce(function (a, s) { return a + (s.ourG || 0); }, 0);
     if (gf > 0) pushTeam('total_goals', sk === 'all' ? 'Goals Scored (all-time)' : 'Goals Scored', String(gf), ALL);

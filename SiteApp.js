@@ -3723,8 +3723,9 @@ function Awards({ go }) {
     window.addEventListener('sa-photo-changed', on);
     return () => { window.removeEventListener('sa-recognition-changed', on); window.removeEventListener('sa-photo-changed', on); };
   }, []);
-  const MON_ORDER = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
-  const monKey = (p) => { const yrs = String(p.season || '').split('/'); const fh = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec'].indexOf(p.month) > -1; return ((fh ? yrs[0] : yrs[1]) || '') + ('0' + (MON_ORDER.indexOf(p.month) + 1)).slice(-2); };
+  const MON_ORDER = ['aug', 'sep', 'oct', 'nov', 'dec', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul'];
+  const monIdx = (m) => MON_ORDER.indexOf(String(m || '').slice(0, 3).toLowerCase());
+  const monKey = (p) => { const yrs = String(p.season || '').split('/'); const idx = monIdx(p.month); const fh = idx >= 0 && idx <= 4; return ((fh ? yrs[0] : yrs[1]) || '') + ('0' + (idx + 1)).slice(-2); };
   const potmAll = (window.getRecognition ? window.getRecognition('potm') : []);
   const potm = potmAll.filter((p) => p.season === season).slice().sort((a, b) => String(monKey(b)).localeCompare(String(monKey(a))));
   const playedSeasons = Array.from(new Set((window.getDerivedResults ? window.getDerivedResults() : []).map((r) => window.seasonOf ? window.seasonOf(r) : (window.CURRENT_SEASON || '25/26'))));

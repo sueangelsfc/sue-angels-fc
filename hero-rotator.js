@@ -5,8 +5,10 @@
    • On theme switch it jumps to a different photo, so dark and light never show
      the same image. */
 (function () {
-  var DEFAULTS = [];
-  for (var i = 1; i <= 12; i++) DEFAULTS.push('assets/hero/banner-' + (i < 10 ? '0' : '') + i + '.jpg');
+  // Only the higher-resolution landscape shots ride the hero, so the banner stays
+  // crisp on large / Retina screens instead of upscaling a low-res portrait photo.
+  // (Natural background blur is kept — these are just sharper, better-composed.)
+  var DEFAULTS = ['assets/hero/banner-02.jpg', 'assets/hero/banner-05.jpg', 'assets/hero/banner-10.jpg', 'assets/hero-team.jpg'];
   function heroImages() { try { var c = window.getHeroImages ? window.getHeroImages() : []; return (c && c.length) ? c : DEFAULTS; } catch (e) { return DEFAULTS; } }
 
   function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.random() * (i + 1) | 0, t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
@@ -18,7 +20,7 @@
   // Prefer a .webp sibling for the local hero banners; fall back to the original
   // .jpg automatically if the browser can't load webp (older Safari/Firefox).
   function webpVariant(url) {
-    return /assets\/hero\/banner-\d+\.jpg$/.test(url) ? url.replace(/\.jpg$/, '.webp') : url;
+    return /assets\/(hero\/banner-\d+|hero-team)\.jpg$/.test(url) ? url.replace(/\.jpg$/, '.webp') : url;
   }
   function load(layer, url, cb) {
     var primary = webpVariant(url);

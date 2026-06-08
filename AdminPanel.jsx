@@ -261,7 +261,7 @@ function CmsSponsors() {
   };
   return (
     <div>
-      <div className="cms-sec__head"><div><h2 className="rd-h3">Sponsors</h2><p className="cms-sec__sub">Sporting Solutions and Hodgson Roofing ship by default. Add new partners here, they appear on the Sponsors page.</p></div>{!form ? <button className="rd-btn rd-btn--volt rd-btn--sm" onClick={() => setForm({ since: '2026' })}>+ Add partner</button> : null}</div>
+      <div className="cms-sec__head"><div><h2 className="rd-h3">Sponsors</h2><p className="cms-sec__sub">Sporting Solutions, Hodgson Roofing and Staines Rugby Club ship by default. Add new partners here, they appear on the Sponsors page.</p></div>{!form ? <button className="rd-btn rd-btn--volt rd-btn--sm" onClick={() => setForm({ since: '2026' })}>+ Add partner</button> : null}</div>
       {form ? (
         <div className="rd-card"><div className="rd-form">
           <label className="rd-field"><span>Partner name</span><input value={form.name || ''} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label>
@@ -276,6 +276,7 @@ function CmsSponsors() {
       <div className="cms-list" style={{ marginTop: 16 }}>
         <div className="cms-row"><div><span className="rd-chip rd-chip--volt">Default</span><b className="cms-row__t">Sporting Solutions Ltd</b></div><span className="cms-row__d">Main kit sponsor</span></div>
         <div className="cms-row"><div><span className="rd-chip rd-chip--volt">Default</span><b className="cms-row__t">Hodgson Roofing</b></div><span className="cms-row__d">Training top sponsor</span></div>
+        <div className="cms-row"><div><span className="rd-chip rd-chip--volt">Default</span><b className="cms-row__t">Staines Rugby Club</b></div><span className="cms-row__d">Ground-share partner</span></div>
         {items.map((s) => (
           <div className="cms-row" key={s.id}><div><span className="rd-chip">Added</span><b className="cms-row__t">{s.name}</b></div><button className="rd-btn rd-btn--ghost rd-btn--sm" onClick={() => window.SponsorsStore.remove(s.id)}>Remove</button></div>
         ))}

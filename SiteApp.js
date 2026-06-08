@@ -3163,6 +3163,7 @@ function Sponsors({
     sub: 'On the matchday shirt every weekend since the inaugural season.',
     loc: 'London & Surrey',
     since: '2025',
+    ig: 'https://instagram.com/sporting_solutions_ltd',
     desc: ['Sporting Solutions Ltd are a London and Surrey-based sports and garden maintenance contractor, specialising in professional outdoor maintenance, sports-surface care and renovation.', 'Sue’s Angels FC are proud to be backed by a company whose work maintains the spaces where sport and community come together.']
   }, {
     logo: 'assets/sponsors/hodgson-roofing.png',
@@ -3171,6 +3172,7 @@ function Sponsors({
     sub: 'NFRC-accredited roofing specialists, on the squad pre-match.',
     loc: 'Harrow & London',
     since: '2026',
+    web: 'https://hodgsonroofing.com',
     desc: ['Hodgson Roofing are NFRC-accredited roofing specialists based in Harrow, serving London and the surrounding areas with new roofs, repairs, flat roofs and lead work.', 'Their backing helps strengthen the club on and off the pitch.']
   }, {
     logo: 'assets/sponsors/staines-rugby.png',
@@ -3179,6 +3181,8 @@ function Sponsors({
     sub: 'Our home at The Reeves, where the Angels train and play.',
     loc: 'The Reeves, Hanworth',
     since: '2025',
+    web: 'https://www.stainesrugby.uk/',
+    ig: 'https://www.instagram.com/stainesrugby/',
     desc: ['Staines Rugby Club, the Swans, was founded in 1926 and marks its centenary in 2026. The club plays at The Reeves in Hanworth, a multi-pitch home it has run since the 1960s, with a proud tradition of community and youth rugby.', 'We are proud to ground-share with Staines RFC, training and playing our home fixtures at The Reeves, and grateful to everyone at the club for making us so welcome.']
   }];
   const benefits = [['01', 'Every matchday', 'Your brand on the kit we play in every weekend.'], ['02', 'Real audience', 'A growing London fanbase reached through reports, tables and player content.'], ['03', 'Tailored deal', 'No fixed tiers, just a package built around your business.'], ['04', "Champions' badge", 'Back a winner: League Ten champions, unbeaten, promoted for 26/27.']];
@@ -3307,7 +3311,7 @@ function Sponsors({
       setDetail(null);
       go('contact');
     }
-  }, "Sponsor enquiry ", /*#__PURE__*/React.createElement(Arrow, null)), (function () { var u = ({ 'Sporting Solutions Ltd': 'https://instagram.com/sporting_solutions_ltd', 'Hodgson Roofing': 'https://hodgsonroofing.com' })[detail.n]; return u ? /*#__PURE__*/React.createElement("a", { className: "m-btn m-btn--ghost", href: u, target: "_blank", rel: "noopener" }, "Visit website") : null; })()))) : null);
+  }, "Sponsor enquiry ", /*#__PURE__*/React.createElement(Arrow, null)), detail.web ? /*#__PURE__*/React.createElement("a", { key: 'web', className: "m-btn m-btn--ghost", href: detail.web, target: "_blank", rel: "noopener" }, "Visit website") : null, detail.ig ? /*#__PURE__*/React.createElement("a", { key: 'ig', className: "m-btn m-btn--ghost", href: detail.ig, target: "_blank", rel: "noopener" }, "Instagram") : null))) : null);
 }
 
 /* ══ CONTACT ════════════════════════════════════════════════════════════ */

@@ -92,3 +92,64 @@ input[type="text"], input[type="email"], input[type="number"], input[type="date"
 
 /* chips */
 .rd-chip { border-radius: 9999px !important; }
+
+/* ════════════════════════════════════════════════════════════════════════
+   PREMIUM POLISH — orange / darker-orange / white, dark + light.
+   Appended last so it refines the base skin above without touching it.
+   ════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --o-orange:      #FF7A1A;   /* primary */
+  --o-orange-2:    #FF9442;   /* glow / hover top */
+  --o-orange-deep: #C9540A;   /* darker orange — depth + pressed */
+  --o-on:          #160A02;   /* text on orange */
+  --volt-ink: var(--o-orange);     /* orange-as-text (dark mode) */
+}
+html[data-theme="light"] { --volt-ink: var(--o-orange-deep); } /* readable on light */
+
+/* page background — refined orange wash */
+html[data-theme="dark"] body.rd-body, body.rd-body {
+  background:
+    radial-gradient(1100px 720px at 86% -16%, rgba(255,122,26,0.20), transparent 56%),
+    radial-gradient(820px 600px at -4% 2%, rgba(255,122,26,0.07), transparent 52%),
+    #08090B !important;
+}
+html[data-theme="light"] body.rd-body {
+  background:
+    radial-gradient(1100px 720px at 86% -16%, rgba(255,122,26,0.16), transparent 54%),
+    radial-gradient(820px 600px at -4% 2%, rgba(255,150,55,0.10), transparent 52%),
+    #F1ECE6 !important;
+}
+
+/* buttons — orange→darker-orange gradient with glow */
+.rd-btn { transition: transform .18s var(--m-ease, ease), box-shadow .18s ease, background .18s ease; }
+.rd-btn--volt { background: linear-gradient(180deg, var(--o-orange-2), var(--o-orange)) !important; color: var(--o-on) !important; box-shadow: 0 12px 28px -12px rgba(255,122,26,0.6) !important; }
+.rd-btn--volt:hover { background: linear-gradient(180deg, var(--o-orange), var(--o-orange-deep)) !important; transform: translateY(-1px); box-shadow: 0 16px 36px -12px rgba(255,122,26,0.78) !important; }
+html[data-theme="light"] .rd-btn--volt { background: linear-gradient(180deg, var(--o-orange-2), var(--o-orange)) !important; color: var(--o-on) !important; }
+html[data-theme="light"] .rd-btn--volt:hover { background: linear-gradient(180deg, var(--o-orange), var(--o-orange-deep)) !important; }
+
+/* section nav — gradient active + hover lift */
+.cms__navbtn { transition: transform .18s ease, border-color .18s ease, background .18s ease; }
+.cms__navbtn:hover { transform: translateY(-1px); border-color: var(--hairline-volt) !important; }
+.cms__navbtn.is-active { background: linear-gradient(180deg, var(--o-orange-2), var(--o-orange)) !important; color: var(--o-on) !important; box-shadow: 0 10px 26px -12px rgba(255,122,26,0.6) !important; }
+
+/* inputs — orange focus ring */
+.rd-field input, .rd-field textarea, .rd-field select,
+input[type="text"], input[type="email"], input[type="number"], input[type="date"], input[type="search"], textarea, select {
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+.rd-field input:focus, .rd-field textarea:focus, .rd-field select:focus,
+input:focus, textarea:focus, select:focus {
+  border-color: var(--hairline-volt) !important; outline: none !important;
+  box-shadow: 0 0 0 3px rgba(255,122,26,0.18) !important;
+}
+
+/* cards + rows — subtle hover + orange hairline */
+.rd-card, .cms-row { transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.cms-row:hover { border-color: var(--hairline-volt) !important; }
+
+/* chips → orange */
+.rd-chip--volt { background: rgba(255,122,26,0.16) !important; color: var(--volt-ink) !important; border: 1px solid rgba(255,122,26,0.32) !important; }
+
+/* accent / eyebrow text → orange (readable both modes) */
+.rd-eyebrow, .cms-sec__head p b, .rd-orange { color: var(--volt-ink) !important; }

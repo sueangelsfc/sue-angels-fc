@@ -3788,7 +3788,7 @@ const NAV_GROUPS = [
   { l: 'The Club', items: [['about', 'Our Story'], ['sepsis', 'Our Cause'], ['champions', 'Champions'], ['awards', 'Awards'], ['sponsors', 'Sponsors']] },
   { l: 'On the Pitch', items: [['squad', 'Squad'], ['stats', 'Player Stats'], ['coaches', 'Coaches'], ['schedule', 'Matches'], ['league', 'League'], ['records', 'Records']] },
   { l: 'Media', items: [['news', 'News'], ['gallery', 'Gallery'], ['videos', 'Videos']] },
-  { k: 'contact', l: 'Contact' }
+  { l: 'Get Involved', items: [['join', 'Join the Club'], ['contact', 'Contact']] }
 ];
 const PAGES = {
   home: Home,

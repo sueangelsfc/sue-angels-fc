@@ -1192,7 +1192,7 @@ function ProfileCard({
     var rec = window.getPlayerRecognition ? window.getPlayerRecognition(p.num) : null;
     if (!rec) return null;
     var items = [];
-    rec.records.forEach(function (r) { items.push(['record', r.title, r.value]); });
+    rec.records.forEach(function (r) { items.push(['record', r.title, r.landmark ? (r.scope || r.value) : r.value]); });
     rec.potm.forEach(function (r) { items.push(['award', 'Player of the Month', ((r.month || '') + ' ' + (r.season || '')).trim()]); });
     rec.seasonAwards.forEach(function (r) { items.push(['award', r.title, r.season || '']); });
     var ms = rec.milestones || [];
@@ -3674,7 +3674,7 @@ function Records({ go }) {
   const card = (r, i) => {
     const numeric = /^\d+$/.test(String(r.value));
     const inner = [
-      h('span', { className: 'rec-card__ic', key: 'ic' }, I[RECICON[r.recordKey] || 'chart']),
+      h('span', { className: 'rec-card__ic', key: 'ic' }, I[r.icon || RECICON[r.recordKey] || 'chart']),
       h('div', { className: 'rec-card__val', key: 'v' }, numeric ? h(CountNum, { value: parseInt(r.value, 10) }) : r.value),
       h('div', { className: 'rec-card__t', key: 't' }, r.title),
       r.playerName ? h('div', { className: 'rec-card__who', key: 'w' }, r.playerName) : (r.group === 'team' ? h('div', { className: 'rec-card__who', key: 'w' }, "Sue's Angels FC") : null),
@@ -3716,16 +3716,20 @@ function Awards({ go }) {
   const h = React.createElement;
   const [, force] = useState(0);
   const [selId, setSelId] = useState(null);
+  const [season, setSeason] = useState(window.CURRENT_SEASON || '25/26');
   useEffect(() => {
     const on = () => force((x) => x + 1);
     window.addEventListener('sa-recognition-changed', on);
     window.addEventListener('sa-photo-changed', on);
     return () => { window.removeEventListener('sa-recognition-changed', on); window.removeEventListener('sa-photo-changed', on); };
   }, []);
-  const season = window.CURRENT_SEASON || '25/26';
   const MON_ORDER = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
   const monKey = (p) => { const yrs = String(p.season || '').split('/'); const fh = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec'].indexOf(p.month) > -1; return ((fh ? yrs[0] : yrs[1]) || '') + ('0' + (MON_ORDER.indexOf(p.month) + 1)).slice(-2); };
-  const potm = (window.getRecognition ? window.getRecognition('potm') : []).slice().sort((a, b) => String(monKey(b)).localeCompare(String(monKey(a))));
+  const potmAll = (window.getRecognition ? window.getRecognition('potm') : []);
+  const potm = potmAll.filter((p) => p.season === season).slice().sort((a, b) => String(monKey(b)).localeCompare(String(monKey(a))));
+  const playedSeasons = Array.from(new Set((window.getDerivedResults ? window.getDerivedResults() : []).map((r) => window.seasonOf ? window.seasonOf(r) : (window.CURRENT_SEASON || '25/26'))));
+  const recSeasons = Array.from(new Set([].concat(potmAll, (window.getRecognition ? window.getRecognition('season_award') : [])).map((r) => r.season).filter(Boolean)));
+  const seasonTabs = (window.ALL_SEASONS || []).filter((s) => playedSeasons.indexOf(s) > -1 || recSeasons.indexOf(s) > -1);
   const latest = potm[0];
   const tabsChrono = potm.slice().sort((a, b) => String(monKey(a)).localeCompare(String(monKey(b))));
   const activeId = (selId && potm.some((p) => p.id === selId)) ? selId : (potm[0] ? potm[0].id : null);
@@ -3766,6 +3770,7 @@ function Awards({ go }) {
   return h(React.Fragment, null,
     h(PageHero, { eyebrow: 'Recognition', title: h(React.Fragment, null, 'Awards & ', h('em', null, 'honours'), '.'), sub: 'Celebrating the players who made the difference, month by month and across the season.' }),
     h('section', { className: 'mp-sec' }, h('div', { className: 'm-wrap' },
+      seasonTabs.length > 1 ? h('div', { className: 'aw-tabs rec-seasons', style: { marginBottom: 18 } }, seasonTabs.map((s) => h('button', { key: s, type: 'button', className: 'aw-tab' + (season === s ? ' is-active' : ''), onClick: () => { setSeason(s); setSelId(null); } }, h('span', { className: 'aw-tab__m' }, s)))) : null,
       h(Head, { eyebrow: 'Monthly recognition', title: 'Player of the Month' }),
       latest ? h(React.Fragment, null,
         tabsChrono.length > 1 ? h('div', { className: 'aw-tabs' }, tabsChrono.map((t) => h('button', { key: t.id, className: 'aw-tab' + (t.id === activeId ? ' is-active' : ''), onClick: () => setSelId(t.id) }, h('span', { className: 'aw-tab__m' }, t.month), h('span', { className: 'aw-tab__y' }, t.season)))) : null,

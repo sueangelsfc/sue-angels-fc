@@ -1997,6 +1997,66 @@ window.tableInsights = function (rows, totalGames, promotionSpots = 2) {
       opp: (homeUs ? r.away : r.home || '').replace(' FC', ''), date: r.date || r.sortISO || '' };
   }
 
+  // First-to-reach landmarks (club firsts), derived chronologically from the
+  // saved match data. Returns club_record-shaped rows so each landmark surfaces
+  // BOTH on the Records page and on the achieving player's profile (via
+  // getPlayerRecognition → getClubRecords). Each threshold is awarded once, to
+  // the FIRST player in club history to cross it, stamped with the match it
+  // happened in. Nothing shows until a threshold is actually reached.
+  window.autoLandmarks = function () {
+    if (typeof window.getAllMatchEntries !== 'function') return [];
+    var results = (typeof window.getDerivedResults === 'function' ? window.getDerivedResults() : []) || [];
+    var MON = { Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6, Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12 };
+    var dkey = function (d) { var p = String(d || '').trim().split(' '); if (p.length < 3) return ''; var y = p[2].length === 2 ? '20' + p[2] : p[2]; return y + ('0' + (MON[p[1]] || 0)).slice(-2) + ('0' + p[0]).slice(-2); };
+    var chron = results.slice().sort(function (a, b) { return String(dkey(a.date)).localeCompare(String(dkey(b.date))); });
+    var entriesById = {};
+    (window.getAllMatchEntries() || []).forEach(function (m) { entriesById[m.id] = m.data; });
+    var nameByNum = function (n) { return (window.playerNameByNum ? window.playerNameByNum(n) : '') || ('#' + n); };
+    var THRESH = { apps: [25, 50, 100], goals: [25, 50, 100], assists: [25, 50], cleanSheets: [10, 25] };
+    var LABEL = { apps: 'Appearances', goals: 'Goals', assists: 'Assists', cleanSheets: 'Clean Sheets' };
+    var ICON = { apps: 'people', goals: 'ball', assists: 'pass', cleanSheets: 'shield' };
+    var totals = {}, done = {}, landmarks = [];
+    var get = function (n) { return totals[n] || (totals[n] = { apps: 0, goals: 0, assists: 0, cleanSheets: 0 }); };
+    chron.forEach(function (r) {
+      var data = entriesById[r.id]; if (!data) return;
+      var season = window.seasonOf ? window.seasonOf(r) : '';
+      var homeUs = /angel/i.test(r.home || '');
+      var opp = (homeUs ? r.away : r.home || '').replace(' FC', '');
+      var scope = (r.date || '') + (opp ? ' v ' + opp : '');
+      var apps = {}, seen = {};
+      (data.starters || []).forEach(function (raw) { var e = normEntry(raw); if (!e || e.num == null || seen[e.num]) return; seen[e.num] = 1; apps[e.num] = 1; });
+      (data.bench || []).forEach(function (raw) { var e = normEntry(raw); if (!e || e.num == null || seen[e.num]) return; seen[e.num] = 1; if (e.positions && e.positions.length) apps[e.num] = 1; });
+      var gper = {}, aper = {}, csper = {};
+      (data.goals || []).forEach(function (g) { if (g && g.num != null) gper[g.num] = (gper[g.num] || 0) + 1; });
+      (data.assists || []).forEach(function (a) { if (a && a.num != null) aper[a.num] = (aper[a.num] || 0) + 1; });
+      if ((data.opponentGoals || []).length === 0) {
+        var gk = {};
+        (data.starters || []).concat(data.bench || []).forEach(function (raw) { var e = normEntry(raw); if (e && e.num != null && e.positions && e.positions.some(function (p) { return /^GK$|^GOAL/i.test(p); })) gk[e.num] = 1; });
+        Object.keys(gk).forEach(function (n) { csper[n] = 1; });
+      }
+      var nums = {};
+      [apps, gper, aper, csper].forEach(function (o) { Object.keys(o).forEach(function (n) { nums[n] = 1; }); });
+      Object.keys(nums).map(Number).sort(function (a, b) { return a - b; }).forEach(function (n) {
+        var t = get(n);
+        if (apps[n]) t.apps += 1;
+        t.goals += gper[n] || 0;
+        t.assists += aper[n] || 0;
+        if (csper[n]) t.cleanSheets += 1;
+        Object.keys(THRESH).forEach(function (metric) {
+          THRESH[metric].forEach(function (thr) {
+            var key = 'first_to_' + thr + '_' + metric;
+            if (done[key] || t[metric] < thr) return;
+            done[key] = 1;
+            landmarks.push({ id: 'auto-' + key, type: 'club_record', recordKey: key, group: 'player',
+              playerId: n, playerName: nameByNum(n), title: 'First to ' + thr + ' ' + LABEL[metric],
+              value: String(thr), scope: scope, season: season, icon: ICON[metric], landmark: true, metric: metric, auto: true });
+          });
+        });
+      });
+    });
+    return landmarks;
+  };
+
   // Statistical club records derived from the live stats + results.
   window.autoClubRecords = function (seasonKey) {
     var sk = seasonKey || 'all';
@@ -2039,6 +2099,11 @@ window.tableInsights = function (rows, totalGames, promotionSpots = 2) {
     // Goals scored (any competition)
     var gf = sides.reduce(function (a, s) { return a + (s.ourG || 0); }, 0);
     if (gf > 0) pushTeam('total_goals', sk === 'all' ? 'Goals Scored (all-time)' : 'Goals Scored', String(gf), ALL);
+    // First-to-reach landmarks. Computed all-time chronologically, then shown in
+    // 'all' view or under the season they were achieved.
+    if (typeof window.autoLandmarks === 'function') {
+      window.autoLandmarks().forEach(function (l) { if (sk === 'all' || l.season === sk) recs.push(l); });
+    }
     return recs;
   };
 

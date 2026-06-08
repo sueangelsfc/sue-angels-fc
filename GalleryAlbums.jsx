@@ -112,25 +112,25 @@ window.AlbumComposer = function ({ onPublished }) {
 
   if (!open) {
     return (
-      <button type="button" className="btn btn--volt btn--sm" onClick={() => setOpen(true)}>
+      <button type="button" className="rd-btn rd-btn--volt rd-btn--sm" onClick={() => setOpen(true)}>
         + New album
       </button>
     );
   }
 
   return (
-    <div className="album-composer">
-      <div className="album-composer__head">
-        <strong>New photo album</strong>
-        <button type="button" className="album-composer__x" onClick={() => { reset(); setOpen(false); }} aria-label="Close">×</button>
+    <div className="rd-card cms-editor">
+      <div className="cms-sec__head" style={{ marginBottom: 6 }}>
+        <div><h2 className="rd-h3" style={{ fontSize: '1.1rem' }}>New photo album</h2></div>
+        <button type="button" className="rd-btn rd-btn--ghost rd-btn--sm" onClick={() => { reset(); setOpen(false); }} aria-label="Close">×</button>
       </div>
-
-      <label className="album-composer__field">
+      <div className="rd-form">
+      <label className="rd-field">
         <span>Album title</span>
         <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Sue's Angels 10–1 Catania · Matchday" />
       </label>
 
-      <label className="album-composer__field">
+      <label className="rd-field">
         <span>Category (becomes a gallery tab)</span>
         <select value={addingCat ? '__new' : category} onChange={(e) => { if (e.target.value === '__new') { setAddingCat(true); setCategory(''); } else { setAddingCat(false); setCategory(e.target.value); } }}>
           <option value="">Select category…</option>
@@ -139,13 +139,14 @@ window.AlbumComposer = function ({ onPublished }) {
         </select>
       </label>
       {addingCat ? (
-        <label className="album-composer__field">
+        <label className="rd-field">
           <span>New category name</span>
           <input value={category} onChange={(e) => setCategory(e.target.value)} onBlur={() => { if (category.trim() && window.addGalleryCat) window.addGalleryCat(category.trim()); }} placeholder="e.g. Training — saved as a future option" autoFocus />
         </label>
       ) : null}
       {category.trim().toLowerCase() === 'matchday' ? (
-        <div className="album-composer__field" style={{ display: 'grid', gap: 8 }}>
+        <div className="rd-field" style={{ display: 'grid', gap: 8 }}>
+          <span>Matchday badges &amp; photo credit</span>
           <datalist id="cms-clubs">{(window.KNOWN_CLUBS || []).map((n) => <option key={n} value={n} />)}</datalist>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
             {homeBadge ? <img src={homeBadge} alt="" style={{ width: 30, height: 30, objectFit: 'contain' }} /> : null}
@@ -161,7 +162,7 @@ window.AlbumComposer = function ({ onPublished }) {
         </div>
       ) : null}
 
-      <div className="album-composer__field">
+      <div className="rd-field">
         <span>Photos <em>({photos.length})</em> — tap one to set the cover · untap it to use the auto cover</span>
         {photos.length > 0 && (
           <div className="album-thumbs">
@@ -183,19 +184,18 @@ window.AlbumComposer = function ({ onPublished }) {
             ))}
           </div>
         )}
+        {window.MediaUploader ? <div style={{ marginTop: photos.length ? 10 : 0 }}><window.MediaUploader label={photos.length ? '+ Add more photos' : '+ Add photos'} onPick={addPhoto} /></div> : null}
       </div>
 
-      <p className="t-meta" style={{ color: 'var(--fg-3)', marginTop: 2 }}>After publishing, open the album in the list below to tag players &amp; coaching staff in each individual photo.</p>
+      <p className="cms-sec__sub" style={{ margin: 0 }}>After publishing, open the album in the list below to tag players &amp; coaching staff in each photo. Select multiple files at once, or add in batches — the cover shows in the gallery grid, and photos upload to the cloud so they appear on every device.</p>
 
-      <div className="album-composer__actions">
-        <window.MediaUploader label={photos.length ? '+ Add more photos' : '+ Add photos'} onPick={addPhoto} />
-        <button type="button" className="btn btn--volt btn--sm" onClick={publish} disabled={!photos.length || busy}>
+      <div className="rd-form__actions">
+        <button type="button" className="rd-btn rd-btn--ghost" onClick={() => { reset(); setOpen(false); }}>Cancel</button>
+        <button type="button" className="rd-btn rd-btn--volt" onClick={publish} disabled={!photos.length || busy}>
           {busy ? (progress || 'Publishing…') : 'Publish album'}
         </button>
       </div>
-      <span className="t-meta" style={{ color: 'var(--fg-3)' }}>
-        Select multiple files at once, or add in batches. The cover is what shows in the gallery grid. Photos upload to the cloud and show on every device.
-      </span>
+      </div>
     </div>
   );
 };

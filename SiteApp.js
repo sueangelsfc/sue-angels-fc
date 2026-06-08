@@ -3729,7 +3729,8 @@ function Awards({ go }) {
   const potm = potmAll.filter((p) => p.season === season).slice().sort((a, b) => String(monKey(b)).localeCompare(String(monKey(a))));
   const playedSeasons = Array.from(new Set((window.getDerivedResults ? window.getDerivedResults() : []).map((r) => window.seasonOf ? window.seasonOf(r) : (window.CURRENT_SEASON || '25/26'))));
   const recSeasons = Array.from(new Set([].concat(potmAll, (window.getRecognition ? window.getRecognition('season_award') : [])).map((r) => r.season).filter(Boolean)));
-  const seasonTabs = (window.ALL_SEASONS || []).filter((s) => playedSeasons.indexOf(s) > -1 || recSeasons.indexOf(s) > -1);
+  let seasonTabs = (window.ALL_SEASONS || []).filter((s) => s === season || playedSeasons.indexOf(s) > -1 || recSeasons.indexOf(s) > -1);
+  if (!seasonTabs.length) seasonTabs = [season];
   const latest = potm[0];
   const tabsChrono = potm.slice().sort((a, b) => String(monKey(a)).localeCompare(String(monKey(b))));
   const activeId = (selId && potm.some((p) => p.id === selId)) ? selId : (potm[0] ? potm[0].id : null);
@@ -3770,7 +3771,7 @@ function Awards({ go }) {
   return h(React.Fragment, null,
     h(PageHero, { eyebrow: 'Recognition', title: h(React.Fragment, null, 'Awards & ', h('em', null, 'honours'), '.'), sub: 'Celebrating the players who made the difference, month by month and across the season.' }),
     h('section', { className: 'mp-sec' }, h('div', { className: 'm-wrap' },
-      seasonTabs.length > 1 ? h('div', { className: 'aw-tabs rec-seasons', style: { marginBottom: 18 } }, seasonTabs.map((s) => h('button', { key: s, type: 'button', className: 'aw-tab' + (season === s ? ' is-active' : ''), onClick: () => { setSeason(s); setSelId(null); } }, h('span', { className: 'aw-tab__m' }, s)))) : null,
+      seasonTabs.length ? h('div', { className: 'aw-tabs rec-seasons', style: { marginBottom: 18 } }, seasonTabs.map((s) => h('button', { key: s, type: 'button', className: 'aw-tab' + (season === s ? ' is-active' : ''), onClick: () => { setSeason(s); setSelId(null); } }, h('span', { className: 'aw-tab__m' }, s)))) : null,
       h(Head, { eyebrow: 'Monthly recognition', title: 'Player of the Month' }),
       latest ? h(React.Fragment, null,
         tabsChrono.length > 1 ? h('div', { className: 'aw-tabs' }, tabsChrono.map((t) => h('button', { key: t.id, className: 'aw-tab' + (t.id === activeId ? ' is-active' : ''), onClick: () => setSelId(t.id) }, h('span', { className: 'aw-tab__m' }, t.month), h('span', { className: 'aw-tab__y' }, t.season)))) : null,

@@ -1946,7 +1946,11 @@ window.tableInsights = function (rows, totalGames, promotionSpots = 2) {
       viceCaptainPlayerId: 25, viceCaptainName: 'Daniel McLane',
       thirdChoiceCaptainPlayerId: 2, thirdChoiceCaptainName: 'Andrew Allen',
       note: 'Jim El Bayati served as club captain, supported by vice-captain Daniel McLane and third-choice captain Andrew Allen.',
-      isDefault: true }
+      isDefault: true },
+    { id: 'trophy-league-ten-2526', type: 'trophy', title: 'League Ten Champions', season: '25/26', value: 'Champions', icon: 'trophy',
+      description: 'Champions of League Ten at the first attempt, unbeaten across the whole season.', isDefault: true },
+    { id: 'trophy-promotion-2526', type: 'trophy', title: 'Promoted to League Eight', season: '25/26', value: 'Promoted', icon: 'medal',
+      description: 'Sealed promotion as champions, stepping up to League Eight for the 26/27 season.', isDefault: true }
   ];
 
   function nameByNum(num) {
@@ -2030,6 +2034,11 @@ window.tableInsights = function (rows, totalGames, promotionSpots = 2) {
     window.autoClubRecords().forEach(function (r) { byKey[r.recordKey || r.id] = r; });
     window.getRecognition('club_record').forEach(function (r) { byKey[r.recordKey || r.id] = r; });
     return Object.keys(byKey).map(function (k) { return byKey[k]; });
+  };
+
+  // Trophies / honours won by the club (newest season first).
+  window.getTrophies = function () {
+    return window.getRecognition('trophy').slice().sort(function (a, b) { return String(b.season || '').localeCompare(String(a.season || '')); });
   };
 
   // Everything attached to one player. Leadership is intentionally NOT included

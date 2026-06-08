@@ -613,7 +613,7 @@ function CmsRecognition() {
   const results = (window.getDerivedResults ? window.getDerivedResults() : []);
   const months = ['August', 'September', 'October', 'November', 'December', 'January', 'February', 'March', 'April', 'May', 'June', 'July'];
   const awardNames = ['Player of the Season', 'Players’ Player of the Season', 'Manager’s Player of the Season', 'Top Goalscorer', 'Top Assist Provider', 'Golden Glove', 'Goal of the Season', 'Newcomer of the Season', 'Most Improved Player', 'Clubman of the Season', 'Moment of the Season'];
-  const TYPES = [['potm', 'Player of the Month'], ['season_award', 'End of Season award'], ['match_award', 'Match award'], ['milestone', 'Milestone'], ['club_record', 'Club record'], ['leadership', 'Leadership group']];
+  const TYPES = [['potm', 'Player of the Month'], ['trophy', 'Trophy / honour'], ['season_award', 'End of Season award'], ['match_award', 'Match award'], ['milestone', 'Milestone'], ['club_record', 'Club record'], ['leadership', 'Leadership group']];
   const blank = { type: 'potm', season: window.CURRENT_SEASON || '25/26' };
   const [f, setF] = React.useState(blank);
   const set = (k, v) => setF((x) => ({ ...x, [k]: v }));
@@ -654,6 +654,12 @@ function CmsRecognition() {
     <label className="rd-field"><span>Reason for winning</span><textarea rows="3" value={f.reason || ''} onChange={(e) => set('reason', e.target.value)} placeholder="Why they won this month" /></label>
     <p className="cms-sec__sub">Appearances, goals, assists, clean sheets and Man of the Match awards for the month pull in automatically from the match data — no need to type them.</p>
     <label className="rd-field"><span>Quote (optional)</span><textarea rows="2" value={f.quote || ''} onChange={(e) => set('quote', e.target.value)} /></label>
+    {imgField}
+  </React.Fragment>);
+  else if (f.type === 'trophy') body = (<React.Fragment>
+    <div className="rd-form__row"><label className="rd-field"><span>Trophy / honour</span><input value={f.title || ''} onChange={(e) => set('title', e.target.value)} placeholder="e.g. League Cup Winners" /></label>{seasonSel}</div>
+    <label className="rd-field"><span>Label (optional)</span><input value={f.value || ''} onChange={(e) => set('value', e.target.value)} placeholder="e.g. Champions" /></label>
+    <label className="rd-field"><span>Description (optional)</span><textarea rows="2" value={f.description || ''} onChange={(e) => set('description', e.target.value)} /></label>
     {imgField}
   </React.Fragment>);
   else if (f.type === 'season_award') body = (<React.Fragment>

@@ -3666,21 +3666,33 @@ function Records({ go }) {
   const FILTERS = [['all', 'All records'], ['player', 'Player'], ['team', 'Team']];
   const counts = { all: sorted.length, player: sorted.filter((r) => r.group !== 'team').length, team: sorted.filter((r) => r.group === 'team').length };
   const shown = filter === 'all' ? sorted : sorted.filter((r) => filter === 'team' ? r.group === 'team' : r.group !== 'team');
-  const card = (r) => {
+  const trophies = window.getTrophies ? window.getTrophies() : [];
+  const RECICON = { first_club_captain: 'medal', most_apps: 'people', most_goals: 'ball', most_assists: 'pass', most_clean_sheets: 'shield', most_motm: 'star', most_potm: 'star', most_season_awards: 'trophy', biggest_win: 'trophy', win_streak: 'pulse' };
+  const card = (r, i) => {
     const numeric = /^\d+$/.test(String(r.value));
     const inner = [
+      h('span', { className: 'rec-card__ic', key: 'ic' }, I[RECICON[r.recordKey] || 'chart']),
       h('div', { className: 'rec-card__val', key: 'v' }, numeric ? h(CountNum, { value: parseInt(r.value, 10) }) : r.value),
       h('div', { className: 'rec-card__t', key: 't' }, r.title),
       r.playerName ? h('div', { className: 'rec-card__who', key: 'w' }, r.playerName) : (r.group === 'team' ? h('div', { className: 'rec-card__who', key: 'w' }, "Sue's Angels FC") : null),
       r.description ? h('p', { className: 'rec-card__desc', key: 'd' }, r.description) : null,
     ];
-    return r.playerId
-      ? h('button', { key: r.id, className: 'rec-card m-glass mp-clickable', onClick: () => { window.location.href = 'teams.html?player=' + r.playerId; } }, inner)
-      : h('div', { key: r.id, className: 'rec-card m-glass' }, inner);
+    const props = { key: r.id, className: 'rec-card rec-card--in m-glass' + (r.playerId ? ' mp-clickable' : ''), style: { animationDelay: (i * 0.05) + 's' } };
+    if (r.playerId) props.onClick = () => { window.location.href = 'teams.html?player=' + r.playerId; };
+    return h(r.playerId ? 'button' : 'div', props, inner);
   };
+  const trophyCard = (t, i) => h('div', { key: t.id, className: 'rec-trophy m-glass rec-card--in', style: { animationDelay: (i * 0.08) + 's' } },
+    h('span', { className: 'rec-trophy__ic' }, I[t.icon || 'trophy']),
+    h('div', { className: 'rec-trophy__body' },
+      h('div', { className: 'rec-trophy__season' }, t.season || ''),
+      h('h3', { className: 'rec-trophy__title' }, t.title),
+      t.description ? h('p', { className: 'rec-trophy__desc' }, t.description) : null));
   return h(React.Fragment, null,
-    h(PageHero, { eyebrow: 'Club archive', title: h(React.Fragment, null, 'Club ', h('em', null, 'records'), '.'), sub: 'The numbers, names and firsts that make up Sue’s Angels FC history. Updated live from match data.' }),
-    h('section', { className: 'mp-sec' }, h('div', { className: 'm-wrap' },
+    h(PageHero, { eyebrow: 'Club archive', title: h(React.Fragment, null, 'Club ', h('em', null, 'records'), '.'), sub: 'The honours, numbers, names and firsts that make up Sue’s Angels FC history. Updated live from match data.' }),
+    trophies.length ? h('section', { className: 'mp-sec' }, h('div', { className: 'm-wrap' },
+      h(Head, { eyebrow: 'Honours', title: 'Trophies won' }),
+      h('div', { className: 'rec-trophies' }, trophies.map(trophyCard)))) : null,
+    h('section', { className: 'mp-sec', style: trophies.length ? { paddingTop: 0 } : null }, h('div', { className: 'm-wrap' },
       h(Head, { eyebrow: 'Proudly held by', title: 'Club records' }),
       h('div', { className: 'rec-filter' }, FILTERS.filter((ff) => counts[ff[0]]).map((ff) => h('button', { key: ff[0], className: 'rec-filter__btn' + (filter === ff[0] ? ' is-active' : ''), onClick: () => setFilter(ff[0]) }, ff[1], h('span', { className: 'rec-filter__n' }, counts[ff[0]])))),
       h('div', { className: 'rec-grid', key: filter }, shown.map(card)))),
@@ -3727,7 +3739,7 @@ function Awards({ go }) {
   };
   const motmList = window.getMotmList ? window.getMotmList(season) : [];
   const heroCard = (r) => h('div', { className: 'aw-potm m-glass', key: r.id },
-    media(photoFor(r), 'aw-potm__media'),
+    h('div', { className: 'aw-potm__mediawrap' }, media(photoFor(r), 'aw-potm__media'), h('span', { className: 'aw-potm__ribbon' }, I.trophy, h('span', null, 'Player of the Month'))),
     h('div', { className: 'aw-potm__body' },
       h('p', { className: 'm-eyebrow m-eyebrow--volt' }, (r.month || '') + ' · ' + (r.season || season)),
       h('h3', { className: 'aw-potm__name' }, nameFor(r)),

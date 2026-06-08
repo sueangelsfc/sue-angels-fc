@@ -1611,14 +1611,6 @@ button.rec-lead__name:hover { color: var(--m-volt-ink); }
 .aw-stat span { font-size: 0.66rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--m-ink-3); }
 .aw-quote { margin: 4px 0 0; padding-left: 14px; border-left: 3px solid var(--m-volt); color: var(--m-ink-1); font-style: italic; line-height: 1.5; }
 .aw-potm__actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: auto; padding-top: 10px; align-items: center; }
-.aw-sub { font-weight: 700; font-size: 0.7rem; letter-spacing: 0.09em; text-transform: uppercase; color: var(--m-ink-2); margin: 30px 0 0; }
-.aw-mini-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr)); gap: 14px; margin-top: 14px; }
-.aw-mini { text-align: left; padding: 0; overflow: hidden; border-radius: 16px; cursor: pointer; transition: transform .25s var(--m-ease); }
-.aw-mini:hover { transform: translateY(-3px); }
-.aw-mini__media { aspect-ratio: 4/3; }
-.aw-mini__info { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; }
-.aw-mini__month { font-size: 0.66rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--m-volt-ink); font-weight: 700; }
-.aw-mini__name { font-weight: 600; color: var(--m-ink-1); }
 .aw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 16px; margin-top: 22px; }
 .aw-card { text-align: left; padding: 0; overflow: hidden; border-radius: 18px; }
 button.aw-card { cursor: pointer; transition: transform .25s var(--m-ease); }
@@ -1676,10 +1668,20 @@ button.aw-motm__row:hover { border-color: rgba(214,242,58,0.5); }
 .rec-card__val { padding-right: 46px; }
 button.rec-card:hover { box-shadow: 0 24px 50px -26px rgba(214,242,58,0.4); }
 .rec-card--in { animation: rec-pop .5s var(--m-ease) both; }
-@keyframes rec-pop { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes rec-pop { from { opacity: 0; } to { opacity: 1; } }
 .aw-potm__mediawrap { position: relative; min-height: 300px; }
 .aw-potm__mediawrap .aw-potm__media { height: 100%; }
 .aw-potm__ribbon { position: absolute; top: 14px; left: 14px; display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px 7px 10px; border-radius: 9999px; background: var(--m-volt); color: var(--m-navy); font: 800 0.66rem var(--m-sans); letter-spacing: 0.04em; text-transform: uppercase; box-shadow: 0 10px 26px -10px rgba(214,242,58,0.7); }
 .aw-potm__ribbon svg { width: 15px; height: 15px; }
 @media (prefers-reduced-motion: reduce) { .rec-card--in { animation: none; } }
 @media (max-width: 640px) { .aw-potm__mediawrap { min-height: 0; } .aw-potm__mediawrap .aw-potm__media { aspect-ratio: 4/3; } }
+
+/* ══ Recognition: hover pop effect ═════════════════════════════════════════ */
+.rec-card, .rec-trophy, .aw-card, .aw-stat, .aw-motm__row, .aw-tab, .rec-filter__btn { transition: transform .22s var(--m-ease), box-shadow .22s var(--m-ease), border-color .22s var(--m-ease); }
+.rec-card.m-glass:hover, .rec-trophy.m-glass:hover, .aw-card.m-glass:hover { transform: translateY(-6px) scale(1.03); box-shadow: 0 30px 62px -22px rgba(214,242,58,0.5); border-color: rgba(214,242,58,0.55); z-index: 2; }
+.aw-stat:hover { transform: translateY(-3px) scale(1.06); border-color: rgba(214,242,58,0.5); }
+.aw-motm__row:hover { transform: translateY(-2px) scale(1.012); }
+.aw-potm__media img { transition: transform .45s var(--m-ease); }
+.aw-potm:hover .aw-potm__media img { transform: scale(1.05); }
+.rec-seasons { margin-bottom: 8px; }
+@media (prefers-reduced-motion: reduce) { .rec-card.m-glass:hover, .rec-trophy.m-glass:hover, .aw-card.m-glass:hover, .aw-stat:hover, .aw-motm__row:hover { transform: none; } .aw-potm:hover .aw-potm__media img { transform: none; } }

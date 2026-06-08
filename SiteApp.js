@@ -3652,22 +3652,25 @@ function Records({ go }) {
   const h = React.createElement;
   const [, force] = useState(0);
   const [filter, setFilter] = useState('all');
+  const [season, setSeason] = useState('all');
   useEffect(() => {
     const on = () => force((x) => x + 1);
     window.addEventListener('sa-recognition-changed', on);
     window.addEventListener('sa-match-changed', on);
     return () => { window.removeEventListener('sa-recognition-changed', on); window.removeEventListener('sa-match-changed', on); };
   }, []);
-  const records = window.getClubRecords ? window.getClubRecords() : [];
+  const records = window.getClubRecords ? window.getClubRecords(season) : [];
   const lead = window.getSeasonLeadership ? window.getSeasonLeadership(window.CURRENT_SEASON) : null;
-  const ORDER = ['first_club_captain', 'most_apps', 'most_goals', 'most_assists', 'most_clean_sheets', 'most_motm', 'most_potm', 'most_season_awards', 'biggest_win', 'win_streak', 'most_goals_match', 'most_assists_match', 'first_goal', 'first_clean_sheet', 'first_win'];
+  const playedSeasons = Array.from(new Set((window.getDerivedResults ? window.getDerivedResults() : []).map((r) => window.seasonOf ? window.seasonOf(r) : (window.CURRENT_SEASON || '25/26'))));
+  const seasonTabs = ['all'].concat((window.ALL_SEASONS || []).filter((s) => playedSeasons.indexOf(s) > -1));
+  const ORDER = ['first_club_captain', 'most_apps', 'most_goals', 'most_assists', 'most_clean_sheets', 'most_motm', 'most_potm', 'most_season_awards', 'biggest_win', 'most_goals_match', 'win_streak', 'unbeaten_run', 'scoring_streak', 'clean_sheet_streak', 'total_goals', 'total_clean_sheets', 'first_goal', 'first_clean_sheet', 'first_win'];
   const oi = (r) => { const i = ORDER.indexOf(r.recordKey); return i < 0 ? 99 : i; };
   const sorted = records.slice().sort((a, b) => oi(a) - oi(b));
   const FILTERS = [['all', 'All records'], ['player', 'Player'], ['team', 'Team']];
   const counts = { all: sorted.length, player: sorted.filter((r) => r.group !== 'team').length, team: sorted.filter((r) => r.group === 'team').length };
   const shown = filter === 'all' ? sorted : sorted.filter((r) => filter === 'team' ? r.group === 'team' : r.group !== 'team');
   const trophies = window.getTrophies ? window.getTrophies() : [];
-  const RECICON = { first_club_captain: 'medal', most_apps: 'people', most_goals: 'ball', most_assists: 'pass', most_clean_sheets: 'shield', most_motm: 'star', most_potm: 'star', most_season_awards: 'trophy', biggest_win: 'trophy', win_streak: 'pulse' };
+  const RECICON = { first_club_captain: 'medal', most_apps: 'people', most_goals: 'ball', most_assists: 'pass', most_clean_sheets: 'shield', most_motm: 'star', most_potm: 'star', most_season_awards: 'trophy', biggest_win: 'trophy', most_goals_match: 'ball', win_streak: 'pulse', unbeaten_run: 'shield', clean_sheet_streak: 'shield', scoring_streak: 'ball', total_goals: 'ball', total_clean_sheets: 'shield' };
   const card = (r, i) => {
     const numeric = /^\d+$/.test(String(r.value));
     const inner = [
@@ -3694,8 +3697,9 @@ function Records({ go }) {
       h('div', { className: 'rec-trophies' }, trophies.map(trophyCard)))) : null,
     h('section', { className: 'mp-sec', style: trophies.length ? { paddingTop: 0 } : null }, h('div', { className: 'm-wrap' },
       h(Head, { eyebrow: 'Proudly held by', title: 'Club records' }),
+      seasonTabs.length > 1 ? h('div', { className: 'aw-tabs rec-seasons' }, seasonTabs.map((s) => h('button', { key: s, className: 'aw-tab' + (season === s ? ' is-active' : ''), onClick: () => setSeason(s) }, h('span', { className: 'aw-tab__m' }, s === 'all' ? 'All time' : s)))) : null,
       h('div', { className: 'rec-filter' }, FILTERS.filter((ff) => counts[ff[0]]).map((ff) => h('button', { key: ff[0], className: 'rec-filter__btn' + (filter === ff[0] ? ' is-active' : ''), onClick: () => setFilter(ff[0]) }, ff[1], h('span', { className: 'rec-filter__n' }, counts[ff[0]])))),
-      h('div', { className: 'rec-grid', key: filter }, shown.map(card)))),
+      h('div', { className: 'rec-grid', key: filter + season }, shown.map(card)))),
     lead ? h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
       h(Head, { eyebrow: lead.season + ' season', title: 'Leadership group' }),
       h('div', { className: 'm-glass rec-lead' },
@@ -3750,9 +3754,6 @@ function Awards({ go }) {
       h('div', { className: 'aw-potm__actions' },
         r.playerId ? h('button', { className: 'm-btn m-btn--ghost', onClick: () => { window.location.href = 'teams.html?player=' + r.playerId; } }, 'View profile') : null,
         h(ShareBtn, { what: 'potm', label: 'Share', url: 'awards.html', story: function () { return { title: nameFor(r), subtitle: 'Player of the Month · ' + (r.month || ''), eyebrow: (r.season || season) + ' · Player of the Month', photo: photoFor(r), face: !!photoFor(r), footer: 'suesangelsfc.co.uk' }; } }))));
-  const miniCard = (r) => h('button', { key: r.id, className: 'aw-mini m-glass mp-clickable', onClick: () => { if (r.playerId) window.location.href = 'teams.html?player=' + r.playerId; } },
-    media(photoFor(r), 'aw-mini__media'),
-    h('div', { className: 'aw-mini__info' }, h('span', { className: 'aw-mini__month' }, (r.month || '') + ' ' + (r.season || '')), h('span', { className: 'aw-mini__name' }, nameFor(r))));
   const awardCard = (a) => h(a.playerId ? 'button' : 'div', { key: a.id, className: 'aw-card m-glass' + (a.playerId ? ' mp-clickable' : ''), onClick: a.playerId ? () => { window.location.href = 'teams.html?player=' + a.playerId; } : undefined },
     media(photoFor(a), 'aw-card__media'),
     h('div', { className: 'aw-card__body' },

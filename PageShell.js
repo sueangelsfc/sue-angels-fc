@@ -2156,13 +2156,16 @@ window.tableInsights = function (rows, totalGames, promotionSpots = 2) {
     num = parseInt(num, 10);
     var s = season || window.CURRENT_SEASON;
     var yrs = String(s || '').split('/');
-    var yy = (FIRST_HALF.indexOf(monthName) > -1 ? yrs[0] : yrs[1]) || '';
+    var _norm = function (m) { return String(m || '').slice(0, 3).toLowerCase(); };
+    var _ORDER3 = ['aug', 'sep', 'oct', 'nov', 'dec', 'jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul'];
+    var _mi = _ORDER3.indexOf(_norm(monthName));
+    var yy = ((_mi >= 0 && _mi <= 4) ? yrs[0] : yrs[1]) || '';
     var isGk = ((window.SQUAD || []).filter(function (x) { return x.num === num; })[0] || {}).gk;
     var st = { apps: 0, goals: 0, assists: 0, motm: 0, cleanSheets: 0 };
     var results = (typeof window.getDerivedResults === 'function' ? window.getDerivedResults() : []) || [];
     results.forEach(function (r) {
       var d = String(r.date || '').trim().split(' ');
-      if (d.length < 3 || d[1] !== monthName || d[2] !== yy) return;
+      if (d.length < 3 || _norm(d[1]) !== _norm(monthName) || d[2] !== yy) return;
       if (window.seasonOf && window.seasonOf(r) !== s) return;
       var e = window.loadMatchEntry ? window.loadMatchEntry(r.id) : null; if (!e) return;
       var feat = featured(e, num);

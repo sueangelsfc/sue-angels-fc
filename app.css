@@ -1631,3 +1631,14 @@ button.aw-card:hover { transform: translateY(-3px); }
 .aw-empty__t { font-family: var(--m-display); font-weight: 600; font-size: clamp(1.3rem,3vw,1.7rem); color: var(--m-volt); }
 .aw-empty__s { color: var(--m-ink-3); margin-top: 8px; }
 @media (max-width: 640px) { .aw-potm { grid-template-columns: 1fr; } .aw-potm__media { min-height: 0; aspect-ratio: 4/3; } }
+
+/* Man of the Match list (awards page) */
+.aw-motm { display: flex; flex-direction: column; gap: 8px; margin-top: 22px; }
+.aw-motm__row { display: grid; grid-template-columns: 1fr auto auto; gap: 14px; align-items: center; text-align: left; padding: 12px 16px; border-radius: 12px; background: var(--m-glass-1); border: 1px solid var(--m-edge); width: 100%; }
+button.aw-motm__row { cursor: pointer; transition: border-color .2s var(--m-ease); }
+button.aw-motm__row:hover { border-color: rgba(214,242,58,0.5); }
+.aw-motm__match { font-weight: 600; color: var(--m-ink-1); min-width: 0; font-size: 0.92rem; }
+.aw-motm__match b { color: var(--m-ink-2); font-weight: 700; margin-left: 4px; }
+.aw-motm__date { font-size: 0.76rem; color: var(--m-ink-3); white-space: nowrap; }
+.aw-motm__winner { font-weight: 700; color: var(--m-volt); font-size: 0.9rem; white-space: nowrap; }
+@media (max-width: 560px) { .aw-motm__row { grid-template-columns: 1fr auto; } .aw-motm__date { display: none; } }

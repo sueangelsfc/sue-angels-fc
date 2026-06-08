@@ -2047,3 +2047,55 @@ window.tableInsights = function (rows, totalGames, promotionSpots = 2) {
     };
   };
 })();
+
+/* ══ RECOGNITION: monthly stats + MOTM list ════════════════════════════════
+   Auto-derive a player's stats for a single month (so Player of the Month only
+   needs a name + month), and the full Man of the Match list from match data. */
+(function () {
+  var MON = { Jan: 1, Feb: 2, Mar: 3, Apr: 4, May: 5, Jun: 6, Jul: 7, Aug: 8, Sep: 9, Oct: 10, Nov: 11, Dec: 12 };
+  var FIRST_HALF = ['Aug', 'Sep', 'Oct', 'Nov', 'Dec']; // calendar year = first half of the season label
+  function featured(e, num) {
+    var f = function (arr) { return (arr || []).some(function (x) { var n = (x && typeof x === 'object') ? x.num : x; return n === num; }); };
+    return f(e.starters) || f(e.bench);
+  }
+  // Stats for ONE player in ONE month of a season, from played match data.
+  window.monthlyPlayerStats = function (num, monthName, season) {
+    num = parseInt(num, 10);
+    var s = season || window.CURRENT_SEASON;
+    var yrs = String(s || '').split('/');
+    var yy = (FIRST_HALF.indexOf(monthName) > -1 ? yrs[0] : yrs[1]) || '';
+    var isGk = ((window.SQUAD || []).filter(function (x) { return x.num === num; })[0] || {}).gk;
+    var st = { apps: 0, goals: 0, assists: 0, motm: 0, cleanSheets: 0 };
+    var results = (typeof window.getDerivedResults === 'function' ? window.getDerivedResults() : []) || [];
+    results.forEach(function (r) {
+      var d = String(r.date || '').trim().split(' ');
+      if (d.length < 3 || d[1] !== monthName || d[2] !== yy) return;
+      if (window.seasonOf && window.seasonOf(r) !== s) return;
+      var e = window.loadMatchEntry ? window.loadMatchEntry(r.id) : null; if (!e) return;
+      var feat = featured(e, num);
+      if (feat) st.apps++;
+      (e.goals || []).forEach(function (g) { if (g && g.num === num) st.goals++; });
+      (e.assists || []).forEach(function (a) { if (a && a.num === num) st.assists++; });
+      if (e.motm === num) st.motm++;
+      if (isGk && feat) { var homeUs = /angel/i.test(r.home || ''); var conc = homeUs ? r.as : r.hs; if (conc === 0) st.cleanSheets++; }
+    });
+    return st;
+  };
+  // Every Man of the Match award, newest first.
+  window.getMotmList = function (season) {
+    var results = (typeof window.getDerivedResults === 'function' ? window.getDerivedResults() : []) || [];
+    var key = function (d) { var p = String(d || '').trim().split(' '); if (p.length < 3) return ''; return p[2] + ('0' + (MON[p[1]] || 0)).slice(-2) + ('0' + p[0]).slice(-2); };
+    var out = [];
+    results.forEach(function (r) {
+      if (season && window.seasonOf && window.seasonOf(r) !== season) return;
+      var e = window.loadMatchEntry ? window.loadMatchEntry(r.id) : null;
+      if (!e || e.motm == null) return;
+      var homeUs = /angel/i.test(r.home || '');
+      out.push({ matchId: r.id, date: r.date || '', sort: key(r.date),
+        opp: String(homeUs ? r.away : r.home || '').replace(' FC', ''),
+        score: homeUs ? (r.hs + '-' + r.as) : (r.as + '-' + r.hs),
+        playerId: e.motm, playerName: window.playerNameByNum ? window.playerNameByNum(e.motm) : ('#' + e.motm) });
+    });
+    return out.sort(function (a, b) { return String(b.sort).localeCompare(String(a.sort)); });
+  };
+})();

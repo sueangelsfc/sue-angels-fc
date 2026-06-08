@@ -3711,7 +3711,15 @@ function Awards({ go }) {
   const photoFor = (r) => r.imageUrl || (r.playerId && window.getPlayerPhoto ? window.getPlayerPhoto(r.playerId) : null) || null;
   const nameFor = (r) => r.playerName || (r.playerId && window.playerNameByNum ? window.playerNameByNum(r.playerId) : '') || '';
   const media = (ph, cls) => h('div', { className: cls + (ph ? '' : ' aw-media--default') }, ph ? h('img', { src: ph, alt: '' }) : h('img', { className: 'aw-badge', src: 'assets/badge/sue-angels-shield.png', alt: '' }));
-  const chips = (r) => { const s = []; if (r.statApps) s.push([r.statApps, 'Apps']); if (r.statGoals) s.push([r.statGoals, 'Goals']); if (r.statAssists) s.push([r.statAssists, 'Assists']); if (r.statCleanSheets) s.push([r.statCleanSheets, 'Clean sheets']); if (r.statMotm) s.push([r.statMotm, 'MOTM']); return s; };
+  const chips = (r) => {
+    const ms = (window.monthlyPlayerStats && r.playerId && r.month) ? window.monthlyPlayerStats(r.playerId, r.month, r.season) : {};
+    const v = (manual, auto) => (r[manual] != null && r[manual] !== '') ? r[manual] : (ms[auto] || 0);
+    const apps = v('statApps', 'apps'), goals = v('statGoals', 'goals'), assists = v('statAssists', 'assists'), cs = v('statCleanSheets', 'cleanSheets'), motm = v('statMotm', 'motm');
+    const s = [];
+    if (apps) s.push([apps, 'Apps']); if (goals) s.push([goals, 'Goals']); if (assists) s.push([assists, 'Assists']); if (cs) s.push([cs, 'Clean sheets']); if (motm) s.push([motm, 'MOTM']);
+    return s;
+  };
+  const motmList = window.getMotmList ? window.getMotmList(season) : [];
   const heroCard = (r) => h('div', { className: 'aw-potm m-glass' },
     media(photoFor(r), 'aw-potm__media'),
     h('div', { className: 'aw-potm__body' },
@@ -3741,6 +3749,12 @@ function Awards({ go }) {
       h(Head, { eyebrow: 'Monthly recognition', title: 'Player of the Month' }),
       latest ? heroCard(latest) : empty('Player of the Month coming soon', 'Our first monthly winner will be revealed here.'),
       prev.length ? h(React.Fragment, null, h('p', { className: 'aw-sub' }, 'Previous winners'), h('div', { className: 'aw-mini-grid' }, prev.map(miniCard))) : null)),
+    motmList.length ? h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
+      h(Head, { eyebrow: 'Every match', title: 'Man of the Match' }),
+      h('div', { className: 'aw-motm' }, motmList.map((m, i) => h(m.playerId ? 'button' : 'div', { key: i, className: 'aw-motm__row' + (m.playerId ? ' mp-clickable' : ''), onClick: m.playerId ? () => { window.location.href = 'teams.html?player=' + m.playerId; } : undefined },
+        h('span', { className: 'aw-motm__match' }, m.opp, ' ', h('b', null, m.score)),
+        h('span', { className: 'aw-motm__date' }, m.date),
+        h('span', { className: 'aw-motm__winner' }, m.playerName)))))) : null,
     h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
       h(Head, { eyebrow: season + ' awards night', title: 'End of Season Awards' }),
       seasonAwards.length ? h('div', { className: 'aw-grid' }, seasonAwards.map(awardCard)) : empty('Awards will be announced after 19 June', 'Our end-of-season honours will appear here after the awards night.'))));

@@ -652,9 +652,7 @@ function CmsRecognition() {
     {playerSel('Winner', 'playerId')}
     <label className="rd-field"><span>Position (optional)</span><input value={f.position || ''} onChange={(e) => set('position', e.target.value)} placeholder="e.g. Left centre-back" /></label>
     <label className="rd-field"><span>Reason for winning</span><textarea rows="3" value={f.reason || ''} onChange={(e) => set('reason', e.target.value)} placeholder="Why they won this month" /></label>
-    <div className="rd-form__row"><label className="rd-field"><span>Apps</span><input type="number" value={f.statApps != null ? f.statApps : ''} onChange={(e) => set('statApps', e.target.value)} /></label><label className="rd-field"><span>Goals</span><input type="number" value={f.statGoals != null ? f.statGoals : ''} onChange={(e) => set('statGoals', e.target.value)} /></label></div>
-    <div className="rd-form__row"><label className="rd-field"><span>Assists</span><input type="number" value={f.statAssists != null ? f.statAssists : ''} onChange={(e) => set('statAssists', e.target.value)} /></label><label className="rd-field"><span>Clean sheets</span><input type="number" value={f.statCleanSheets != null ? f.statCleanSheets : ''} onChange={(e) => set('statCleanSheets', e.target.value)} /></label></div>
-    <label className="rd-field"><span>MOTM in month</span><input type="number" value={f.statMotm != null ? f.statMotm : ''} onChange={(e) => set('statMotm', e.target.value)} /></label>
+    <p className="cms-sec__sub">Appearances, goals, assists, clean sheets and Man of the Match awards for the month pull in automatically from the match data — no need to type them.</p>
     <label className="rd-field"><span>Quote (optional)</span><textarea rows="2" value={f.quote || ''} onChange={(e) => set('quote', e.target.value)} /></label>
     {imgField}
   </React.Fragment>);

@@ -221,37 +221,53 @@
   };
   window.saveAdminFixtures = (list) => window.dataStore.fixtures.set('all', list || []);
 
-  // SUPPORTERS - public newsletter / matchday-update sign-up. Writes directly to
-  // the `supporters` table with the public anon key. The table's RLS allows
-  // anonymous INSERT only (no read), and we send Prefer:return=minimal so the
-  // insert never needs SELECT permission. Returns { ok, duplicate?, reason? }.
+  // SUPPORTERS - public newsletter / matchday-update sign-up. The email is saved
+  // two places: (1) the private `supporters` table in Supabase (the club's own
+  // copy / backup; RLS allows anon INSERT only, no read), and (2) pushed to the
+  // MailerLite list via /api/subscribe so the newsletter can be sent/automated
+  // there. Succeeds if EITHER captured the email. Returns { ok, duplicate?, reason? }.
   window.saAddSupporter = async (email, name, source) => {
     const cfg = (typeof window !== 'undefined' && window.SUPABASE_CONFIG) || {};
     email = String(email || '').trim();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return { ok: false, reason: 'email' };
-    if (!cfg.url || !cfg.anonKey) return { ok: false, reason: 'config' };
-    try {
-      const res = await fetch(cfg.url.replace(/\/+$/, '') + '/rest/v1/supporters', {
-        method: 'POST',
-        headers: {
-          apikey: cfg.anonKey,
-          Authorization: 'Bearer ' + cfg.anonKey,
-          'Content-Type': 'application/json',
-          Prefer: 'return=minimal',
-        },
-        body: JSON.stringify({
-          email,
-          name: (String(name || '').trim() || null),
-          source: source || 'site',
-          consent: true,
-        }),
-      });
-      if (res.status === 201 || res.status === 204) return { ok: true };
-      if (res.status === 409) return { ok: true, duplicate: true }; // already signed up
-      return { ok: false, reason: 'http_' + res.status };
-    } catch (e) {
-      return { ok: false, reason: 'network' };
+
+    let supaOk = false, duplicate = false;
+    // 1) Own copy in Supabase (source of truth / backup).
+    if (cfg.url && cfg.anonKey) {
+      try {
+        const res = await fetch(cfg.url.replace(/\/+$/, '') + '/rest/v1/supporters', {
+          method: 'POST',
+          headers: {
+            apikey: cfg.anonKey,
+            Authorization: 'Bearer ' + cfg.anonKey,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify({
+            email,
+            name: (String(name || '').trim() || null),
+            source: source || 'site',
+            consent: true,
+          }),
+        });
+        if (res.status === 201 || res.status === 204) supaOk = true;
+        else if (res.status === 409) { supaOk = true; duplicate = true; } // already signed up
+      } catch (e) { /* network — fall through to MailerLite */ }
     }
+
+    // 2) Push to the email platform (MailerLite) for sending + automation.
+    let mlOk = false;
+    try {
+      const r = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name: String(name || '').trim() }),
+      });
+      if (r.ok) { const j = await r.json().catch(() => ({})); mlOk = !!(j && j.ok); if (j && j.duplicate) duplicate = true; }
+    } catch (e) { /* function missing / offline — Supabase copy still stands */ }
+
+    if (supaOk || mlOk) return { ok: true, duplicate };
+    return { ok: false, reason: 'failed' };
   };
 
   // TEAM BADGES - used by FixtureEntry.jsx. Old format: single row containing

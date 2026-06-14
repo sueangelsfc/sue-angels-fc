@@ -4267,3 +4267,64 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(function () {});
   });
 }
+
+// SEO: emit SportsEvent structured data for upcoming fixtures so search engines
+// can understand (and potentially surface) the match schedule. Only runs on the
+// fixtures/schedule pages and only for fixtures with a real date; Google renders
+// JS and reads the injected JSON-LD. Re-runs when fixture data changes.
+function saInjectFixtureSchema() {
+  try {
+    var path = (location.pathname || '').toLowerCase();
+    if (path.indexOf('fixtures') === -1 && path.indexOf('schedule') === -1) return;
+    var SITE = 'https://www.suesangelsfc.co.uk';
+    var ups = (window.getActiveUpcoming ? window.getActiveUpcoming() : []) || [];
+    var events = ups.slice(0, 16).map(function (f) {
+      var iso = null;
+      if (window.getFixtureDate) {
+        var dt = window.getFixtureDate(f);
+        if (dt) {
+          var k = String(f.kick || '11:00').split(':');
+          dt.setHours(parseInt(k[0], 10) || 11, parseInt(k[1], 10) || 0, 0, 0);
+          iso = dt.toISOString();
+        }
+      }
+      if (!iso) return null;
+      var home = f.home || '', away = f.away || '';
+      var isHome = home.toLowerCase().indexOf('angels') > -1;
+      var ev = {
+        '@type': 'SportsEvent',
+        name: home.replace(' FC', '') + ' vs ' + away.replace(' FC', ''),
+        startDate: iso,
+        sport: 'Association football',
+        eventStatus: 'https://schema.org/EventScheduled',
+        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+        homeTeam: { '@type': 'SportsTeam', name: home },
+        awayTeam: { '@type': 'SportsTeam', name: away },
+        competitor: [{ '@type': 'SportsTeam', name: home }, { '@type': 'SportsTeam', name: away }],
+        organizer: { '@type': 'SportsTeam', name: "Sue's Angels FC", url: SITE + '/' }
+      };
+      ev.location = isHome
+        ? { '@type': 'Place', name: 'The Reeves', address: { '@type': 'PostalAddress', addressLocality: 'Hanworth', addressRegion: 'London', addressCountry: 'GB' } }
+        : { '@type': 'Place', name: (away.replace(' FC', '') || 'Opposition') + ' ground (away)', address: { '@type': 'PostalAddress', addressRegion: 'London', addressCountry: 'GB' } };
+      return ev;
+    }).filter(Boolean);
+    var prev = document.getElementById('sa-fixture-schema');
+    if (prev) prev.remove();
+    if (!events.length) return;
+    var s = document.createElement('script');
+    s.type = 'application/ld+json';
+    s.id = 'sa-fixture-schema';
+    s.textContent = JSON.stringify({ '@context': 'https://schema.org', '@graph': events });
+    document.head.appendChild(s);
+  } catch (e) {}
+}
+if (typeof window !== 'undefined') {
+  window.addEventListener('load', function () {
+    setTimeout(saInjectFixtureSchema, 1200);
+    setTimeout(saInjectFixtureSchema, 3200);
+  });
+  ['sa-roster-changed', 'sa-media-changed'].forEach(function (evt) {
+    window.addEventListener(evt, function () { setTimeout(saInjectFixtureSchema, 250); });
+  });
+  window.saInjectFixtureSchema = saInjectFixtureSchema;
+}

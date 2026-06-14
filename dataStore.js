@@ -77,7 +77,7 @@
   // ─── Cloud store factory ────────────────────────────────────────────────
   // Backs to a single Supabase table with shape: ( key text primary key, data jsonb,
   // updated_at timestamptz default now() ).
-  function makeCloudStore({ table, prefix, eventName }) {
+  function makeCloudStore({ table, prefix, eventName, lazy }) {
     const cache = lsAllByPrefix(prefix); // hydrate from prior session
     const listeners = new Set();
     let initial = null; // promise that fires once the first cloud sync completes
@@ -113,8 +113,19 @@
       })();
       return initial;
     }
-    // Kick off the initial cloud sync eagerly.
-    hydrateOnce();
+    // Kick off the initial cloud sync. Heavy stores (player_photos is ~1 MB of
+    // base64 headshots) hydrate lazily after first paint so the download does not
+    // compete with the critical render. Repeat visitors already have it cached in
+    // localStorage, so nothing visibly changes for them.
+    if (lazy) {
+      var _go = function () { hydrateOnce(); };
+      var _sched = function () { (typeof requestIdleCallback === 'function') ? requestIdleCallback(_go, { timeout: 3000 }) : setTimeout(_go, 1200); };
+      if (typeof document !== 'undefined' && document.readyState === 'complete') _sched();
+      else if (typeof window !== 'undefined') window.addEventListener('load', _sched, { once: true });
+      else _sched();
+    } else {
+      hydrateOnce();
+    }
 
     return {
       mode: 'cloud',
@@ -169,9 +180,10 @@
     };
   }
 
-  function makeStore(name, prefix, eventName) {
+  function makeStore(name, prefix, eventName, opts) {
+    opts = opts || {};
     return MODE === 'cloud'
-      ? makeCloudStore({ table: name, prefix, eventName })
+      ? makeCloudStore({ table: name, prefix, eventName, lazy: opts.lazy })
       : makeLocalStore({ prefix, eventName });
   }
 
@@ -180,7 +192,7 @@
     matches:      makeStore('matches',       'sa-match:',         'sa-match-changed'),
     fixtures:     makeStore('fixtures',      'sa-fixture:',       'sa-fixtures-changed'),
     teamBadges:   makeStore('team_badges',   'sa-team-badge:',    'sa-team-badges-changed'),
-    playerPhotos: makeStore('player_photos', 'sa-player-photo:',  'sa-photo-changed'),
+    playerPhotos: makeStore('player_photos', 'sa-player-photo:',  'sa-photo-changed', { lazy: true }),
     articles:     makeStore('articles',      'sa-article:',       'sa-articles-changed'),
     gallery:      makeStore('gallery',       'sa-gallery:',       'sa-gallery-changed'),
     recognition:  makeStore('recognition',   'sa-recognition:',   'sa-recognition-changed'),

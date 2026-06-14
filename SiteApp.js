@@ -3558,6 +3558,14 @@ function JoinPage() {
 function Sepsis({ go }) {
   const h = React.createElement;
   const scrollTo = (id) => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: RM() ? 'auto' : 'smooth', block: 'start' }); };
+  // Allow deep-links like sepsis.html#give (e.g. the footer "Donate" link) to
+  // land on the donate section once it has rendered.
+  React.useEffect(function () {
+    if ((location.hash || '').replace('#', '') === 'give') {
+      var t = setTimeout(function () { scrollTo('give'); }, 90);
+      return function () { clearTimeout(t); };
+    }
+  }, []);
   const signs = [
     ['Slurred speech or confusion', 'Sudden disorientation, drowsiness or trouble speaking clearly.'],
     ['Extreme shivering or muscle pain', 'Shaking, fever, or pain that feels far worse than usual.'],
@@ -3578,7 +3586,7 @@ function Sepsis({ go }) {
       sub: 'Sue’s Angels FC was founded in memory of Susan Anne Martin, who we lost to sepsis. We play in her name, and we hope that by sharing what we have learned, we can help other families recognise the signs in time.',
       actions: h(React.Fragment, null,
         h('button', { className: 'm-btn m-btn--volt', onClick: () => scrollTo('signs') }, 'Know the signs ', h(Arrow, null)),
-        h('button', { className: 'm-btn m-btn--ghost', onClick: () => go('contact') }, 'Support the cause')),
+        h('button', { className: 'm-btn m-btn--ghost', onClick: () => scrollTo('give') }, 'Donate in her memory')),
     }),
     h('section', { className: 'mp-sec' }, h('div', { className: 'm-wrap' },
       h('div', { className: 'mp-grid mp-g3' }, [['2025', 'Founded in her memory'], ['48,000', 'Lives lost to sepsis in the UK each year'], ['6', 'Signs that can help save one']].map((s, i) => h('div', { key: i, className: 'm-kpi' }, h('b', null, s[0]), h('span', null, s[1])))))),
@@ -3617,6 +3625,10 @@ function Sepsis({ go }) {
         typeof c[3] === 'string'
           ? h('a', { className: 'm-btn m-btn--ghost', href: c[3], target: '_blank', rel: 'noopener', style: { alignSelf: 'flex-start' } }, c[2])
           : h('button', { className: 'm-btn m-btn--ghost', onClick: c[3], style: { alignSelf: 'flex-start' } }, c[2])))))),
+    h('section', { id: 'give', className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
+      h(Head, { eyebrow: 'Give in her memory', title: 'Donate' }),
+      h('p', { className: 'm-lead', style: { maxWidth: '60ch', marginBottom: 22 } }, 'You can support Sue’s Angels directly, or give to the UK Sepsis Trust in Sue’s memory. Every contribution helps us keep her name on the pitch and her message in the open.'),
+      h(DonateBlock, null))),
     h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
       h('div', { className: 'm-glass', style: { padding: 'clamp(28px,4vw,52px)', textAlign: 'center' } },
         h('p', { className: 'm-eyebrow m-eyebrow--volt', style: { justifyContent: 'center', display: 'inline-flex' } }, 'In her name'),
@@ -3630,6 +3642,7 @@ const HREF = {
   home: 'index.html',
   about: 'about.html',
   sepsis: 'sepsis.html',
+  donate: 'sepsis.html#give',
   champions: 'champions.html',
   team: 'teams.html',
   squad: 'squad.html',
@@ -3943,7 +3956,7 @@ function SiteFooter() {
     ['The Club', [['about', 'Our Story'], ['sepsis', 'Our Cause'], ['champions', 'Champions'], ['sponsors', 'Sponsors']]],
     ['On the Pitch', [['squad', 'Squad'], ['stats', 'Player Stats'], ['coaches', 'Coaches'], ['schedule', 'Matches'], ['league', 'League']]],
     ['Media', [['news', 'News'], ['gallery', 'Gallery'], ['videos', 'Videos']]],
-    ['Get involved', [['join', 'Join'], ['contact', 'Contact']]]
+    ['Get involved', [['join', 'Join'], ['donate', 'Donate'], ['contact', 'Contact']]]
   ];
   var supporting = [['teams.html', 'Full squad page'], ['table.html', 'League table'], ['fixtures.html', 'Fixtures'], ['results.html', 'Results'], ['media.html', 'Media hub']];
   var social = [['Instagram', 'https://instagram.com/suesangelsfc'], ['TikTok', 'https://tiktok.com/@suesangelsfc']];

@@ -1771,7 +1771,7 @@ function TeamBadge({
     return /*#__PURE__*/React.createElement("img", {
       className: `fixture-card__badge${isUs ? ' is-us' : ''} fixture-card__badge--${b.aspect}`,
       src: b.src,
-      alt: b.alt,
+      alt: "",
       loading: "lazy",
       decoding: "async",
       style: style

@@ -4244,3 +4244,13 @@ function PercentileWheel(props) {
       h('span', { className: 'm-wheel__tip-d' }, hm[3])) : null);
 }
 ReactDOM.createRoot(document.getElementById('rd-root')).render(/*#__PURE__*/React.createElement(Site, null));
+
+// Progressive Web App: register the service worker for installability + fast
+// repeat loads + offline fallback. updateViaCache:'none' bypasses the HTTP cache
+// when checking sw.js for updates (since .js is served immutable), so the worker
+// always updates reliably. Failures are swallowed — the site works without it.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(function () {});
+  });
+}

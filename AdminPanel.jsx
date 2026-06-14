@@ -487,7 +487,7 @@ function CoverBuilder({ post, library }) {
   const [spec, setSpec] = React.useState({
     layout: cur.layout || (post.type === 'report' ? 'score' : 'badges'),
     top: cur.top != null ? cur.top : (post.type === 'report' ? 'FULL TIME' : 'ANNOUNCEMENT'),
-    left: cur.left || "assets/badge/sue-angels-shield.png",
+    left: cur.left || "assets/badge/sue-angels-shield.webp",
     right: cur.right || '',
     center: cur.center != null ? cur.center : (post.r ? (post.r.hs + '-' + post.r.as) : ''),
     bottom: cur.bottom != null ? cur.bottom : (post.r ? (post.r.competition || 'League Ten') : ''),
@@ -538,7 +538,7 @@ function CmsCovers() {
   const [, tick] = React.useState(0);
   const bump = () => tick((n) => n + 1);
   const badges = window.getCoverBadges ? window.getCoverBadges() : [];
-  const CLUB = { id: 'club', name: "Sue's Angels", img: 'assets/badge/sue-angels-shield.png' };
+  const CLUB = { id: 'club', name: "Sue's Angels", img: 'assets/badge/sue-angels-shield.webp' };
   const library = [CLUB].concat(badges);
   const saveBadges = (arr) => Promise.resolve(window.saveCoverBadges(arr)).then(() => { try { window.dispatchEvent(new CustomEvent('sa-media-changed')); } catch (e) {} bump(); });
   const [bname, setBname] = React.useState('');

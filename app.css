@@ -2,6 +2,11 @@
 @font-face{font-family:'Clash Display';src:url('assets/fonts/clash-display-500.woff2') format('woff2');font-weight:500;font-style:normal;font-display:optional;}
 @font-face{font-family:'Clash Display';src:url('assets/fonts/clash-display-600.woff2') format('woff2');font-weight:600;font-style:normal;font-display:optional;}
 @font-face{font-family:'Clash Display';src:url('assets/fonts/clash-display-700.woff2') format('woff2');font-weight:700;font-style:normal;font-display:optional;}
+@font-face{font-family:'Hanken Grotesk';src:url('assets/fonts/hanken-400.woff2') format('woff2');font-weight:400;font-style:normal;font-display:optional;}
+@font-face{font-family:'Hanken Grotesk';src:url('assets/fonts/hanken-500.woff2') format('woff2');font-weight:500;font-style:normal;font-display:optional;}
+@font-face{font-family:'Hanken Grotesk';src:url('assets/fonts/hanken-600.woff2') format('woff2');font-weight:600;font-style:normal;font-display:optional;}
+@font-face{font-family:'Hanken Grotesk';src:url('assets/fonts/hanken-700.woff2') format('woff2');font-weight:700;font-style:normal;font-display:optional;}
+@font-face{font-family:'Hanken Grotesk';src:url('assets/fonts/hanken-800.woff2') format('woff2');font-weight:800;font-style:normal;font-display:optional;}
 /* =========================================================================
    SUE'S ANGELS FC — DIRECTION MOCK (v-next)
    Fresh visual identity proposal. NOT wired into production yet.

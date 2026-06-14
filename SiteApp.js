@@ -947,7 +947,7 @@ function ProfileCard({
     alt: `${p.first} ${p.last}`
   }) : /*#__PURE__*/React.createElement("img", {
     className: "m-pc__ghost",
-    src: "assets/badge/sue-angels-shield.png",
+    src: "assets/badge/sue-angels-shield.webp",
     alt: ""
   })), /*#__PURE__*/React.createElement("div", {
     className: "m-pc__id"
@@ -1292,7 +1292,7 @@ function saStoryImage(spec, post) {
         bg0.addColorStop(0, 'rgb(20,56,73)'); bg0.addColorStop(1, 'rgb(4,18,27)');
         c.fillStyle = bg0; c.fillRect(0, 0, W, H);
         var tracked = function (v) { try { c.letterSpacing = v; } catch (e) {} };
-        Promise.all([load(spec.badge || 'assets/badge/sue-angels-badge.png'), load(spec.photo), load(spec.homeBadge), load(spec.awayBadge), load('assets/sponsors/sporting-solutions.png'), load('assets/sponsors/hodgson-roofing.png'), load('assets/sponsors/staines-rugby.png')]).then(function (imgs) {
+        Promise.all([load(spec.badge || 'assets/badge/sue-angels-badge.webp'), load(spec.photo), load(spec.homeBadge), load(spec.awayBadge), load('assets/sponsors/sporting-solutions.webp'), load('assets/sponsors/hodgson-roofing.webp'), load('assets/sponsors/staines-rugby.png')]).then(function (imgs) {
           var badge = imgs[0], photo = imgs[1], homeImg = imgs[2], awayImg = imgs[3];
           var sponsors = [imgs[4], imgs[5], imgs[6]].filter(Boolean);
           var clean = function (s) { return String(s || '').replace(/ FC$/i, '').trim(); };
@@ -1467,7 +1467,7 @@ window.saReportStorySpec = function (report) {
       kick: (report.kick && report.kick !== 'TBC') ? report.kick : null,
       scorers: d ? tally(d.goals) : [],
       assists: d ? tally(d.assists) : [],
-      sponsors: ['assets/sponsors/sporting-solutions.png', 'assets/sponsors/hodgson-roofing.png', 'assets/sponsors/staines-rugby.png'],
+      sponsors: ['assets/sponsors/sporting-solutions.webp', 'assets/sponsors/hodgson-roofing.webp', 'assets/sponsors/staines-rugby.png'],
       footer: 'suesangelsfc.co.uk'
     };
   } catch (e) { return null; }
@@ -1717,7 +1717,7 @@ function Home({
   }, /*#__PURE__*/React.createElement("div", {
     className: "mh-nm2__team"
   }, /*#__PURE__*/React.createElement("img", {
-    src: "assets/badge/sue-angels-shield.png",
+    src: "assets/badge/sue-angels-shield.webp",
     alt: ""
   }), /*#__PURE__*/React.createElement("b", null, session ? session.title || 'Pre-season training' : '26/27 season'))), /*#__PURE__*/React.createElement("div", {
     className: "mh-nm2__rows"
@@ -1930,7 +1930,7 @@ function Home({
     size: 25
   }) : null, r.c.replace(' FC', ''))), /*#__PURE__*/React.createElement("td", null, r.pl), /*#__PURE__*/React.createElement("td", null, r.w), /*#__PURE__*/React.createElement("td", null, r.gd), /*#__PURE__*/React.createElement("td", {
     className: "mh-table__pts"
-  }, r.pts)))))))), /*#__PURE__*/React.createElement("section", { className: "mh-sec", style: { paddingTop: 0 } }, /*#__PURE__*/React.createElement("div", { className: "m-wrap", style: { textAlign: 'center' } }, /*#__PURE__*/React.createElement("p", { className: "m-eyebrow m-eyebrow--volt", style: { justifyContent: 'center', display: 'inline-flex' } }, "Proudly backed by"), /*#__PURE__*/React.createElement("div", { style: { display: 'flex', gap: 'clamp(16px,4vw,40px)', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', margin: '18px 0 22px' } }, [['assets/sponsors/sporting-solutions.png', 'Sporting Solutions Ltd'], ['assets/sponsors/hodgson-roofing.png', 'Hodgson Roofing'], ['assets/sponsors/staines-rugby.png', 'Staines Rugby Club']].map(function (s) { return /*#__PURE__*/React.createElement("div", { key: s[1], style: { background: '#fff', borderRadius: 12, padding: '10px 18px', display: 'flex', alignItems: 'center' } }, /*#__PURE__*/React.createElement("img", { src: s[0], alt: s[1], loading: 'lazy', style: { height: 'clamp(30px,5vw,44px)', width: 'auto', objectFit: 'contain' } })); })), /*#__PURE__*/React.createElement("a", { className: "m-btn m-btn--ghost", href: "sponsors.html" }, "Become a partner"))), /*#__PURE__*/React.createElement(Join, {
+  }, r.pts)))))))), /*#__PURE__*/React.createElement("section", { className: "mh-sec", style: { paddingTop: 0 } }, /*#__PURE__*/React.createElement("div", { className: "m-wrap", style: { textAlign: 'center' } }, /*#__PURE__*/React.createElement("p", { className: "m-eyebrow m-eyebrow--volt", style: { justifyContent: 'center', display: 'inline-flex' } }, "Proudly backed by"), /*#__PURE__*/React.createElement("div", { style: { display: 'flex', gap: 'clamp(16px,4vw,40px)', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', margin: '18px 0 22px' } }, [['assets/sponsors/sporting-solutions.webp', 'Sporting Solutions Ltd'], ['assets/sponsors/hodgson-roofing.webp', 'Hodgson Roofing'], ['assets/sponsors/staines-rugby.png', 'Staines Rugby Club']].map(function (s) { return /*#__PURE__*/React.createElement("div", { key: s[1], style: { background: '#fff', borderRadius: 12, padding: '10px 18px', display: 'flex', alignItems: 'center' } }, /*#__PURE__*/React.createElement("img", { src: s[0], alt: s[1], loading: 'lazy', style: { height: 'clamp(30px,5vw,44px)', width: 'auto', objectFit: 'contain' } })); })), /*#__PURE__*/React.createElement("a", { className: "m-btn m-btn--ghost", href: "sponsors.html" }, "Become a partner"))), /*#__PURE__*/React.createElement(Join, {
     go: go
   }));
 }
@@ -2680,7 +2680,7 @@ function Team({
       src: ph,
       alt: `${p.first} ${p.last}`
     }) : /*#__PURE__*/React.createElement("img", {
-      src: "assets/badge/sue-angels-shield.png",
+      src: "assets/badge/sue-angels-shield.webp",
       alt: ""
     })), /*#__PURE__*/React.createElement("div", {
       className: "mp-player__scrim"
@@ -3079,7 +3079,7 @@ function Media({
     } catch (e) {}
   }, [vid]);
 
-  const articleCard = it => h("button", { className: "mp-news mp-clickable", key: 'a-' + it.id, onClick: () => setArticle(it) }, (window.getPostCover && window.getPostCover(it.id)) ? maGenCover(window.getPostCover(it.id)) : it.cover ? h("div", { className: "mp-news__cover" }, h("img", { src: it.cover, alt: "" })) : maGenCover({ layout: 'badges', top: it.cat || 'News', left: 'assets/badge/sue-angels-shield.png', right: '', center: '', bottom: it.date || "Sue's Angels FC" }), h("div", { className: "mp-news__body" }, h("span", { className: "m-chip m-chip--volt mp-news__tag" }, it.cat), h("h3", { className: "m-h3" }, it.title), h("p", null, (it.date ? it.date + ' \u00b7 ' : '') + trunc(it.body, 110))));
+  const articleCard = it => h("button", { className: "mp-news mp-clickable", key: 'a-' + it.id, onClick: () => setArticle(it) }, (window.getPostCover && window.getPostCover(it.id)) ? maGenCover(window.getPostCover(it.id)) : it.cover ? h("div", { className: "mp-news__cover" }, h("img", { src: it.cover, alt: "" })) : maGenCover({ layout: 'badges', top: it.cat || 'News', left: 'assets/badge/sue-angels-shield.webp', right: '', center: '', bottom: it.date || "Sue's Angels FC" }), h("div", { className: "mp-news__body" }, h("span", { className: "m-chip m-chip--volt mp-news__tag" }, it.cat), h("h3", { className: "m-h3" }, it.title), h("p", null, (it.date ? it.date + ' \u00b7 ' : '') + trunc(it.body, 110))));
 
   const reportCard = it => { const r = it.r; const uh = r.home.includes('Angels'); const us = uh ? r.hs : r.as, th = uh ? r.as : r.hs; const win = us > th; const gspec = window.getPostCover ? window.getPostCover(r.id) : null; const rcover = (window.getArticleCover && window.getArticleCover(r.id)) || null; return h("button", { className: "mp-news mp-clickable", key: 'r-' + r.id, onClick: () => setReport(r) }, gspec ? maGenCover(gspec) : h("div", { className: "mp-news__cover mp-news__cover--score" + (rcover ? " mp-news__cover--shot" : "") }, rcover ? h("img", { className: "mp-news__bg", src: rcover, alt: "" }) : null, rcover ? h("div", { className: "mp-news__scrim2" }) : null, h("span", { className: "mp-news__ft" }, "Full time"), h("div", { className: "mp-news__sc" }, Badge ? h(Badge, { team: r.home, size: 52 }) : null, h("b", null, r.hs, "-", r.as), Badge ? h(Badge, { team: r.away, size: 52 }) : null), h("div", { className: "mp-news__cfoot" }, h("span", { className: "mp-news__comp" }, r.competition || 'League Ten'), h("span", { className: `mp-news__res mp-news__res--${win ? 'w' : us === th ? 'd' : 'l'}` }, win ? 'Win' : us === th ? 'Draw' : 'Loss'))), h("div", { className: "mp-news__body" }, h("span", { className: `m-chip ${win ? 'm-chip--volt' : ''} mp-news__tag` }, r.competition || 'League Ten'), h("h3", { className: "m-h3" }, r.home.replace(' FC', ''), " v ", r.away.replace(' FC', '')), h("p", null, r.date, " \u00b7 ", win ? 'A commanding win' : us === th ? 'Honours even' : 'A hard lesson', " for Sue's Angels. Read the full match report."))); };
 
@@ -3097,13 +3097,13 @@ function Media({
     const matchday = it.category === 'Matchday';
     const cover = window.galleryCover ? window.galleryCover(it) : it.src;
     const coverEl = matchday
-      ? h("div", { className: "mp-news__cover", style: { gap: 10 } }, it.photographer ? h("span", { className: "mp-news__ft", style: { color: 'rgb(214,242,58)', fontSize: '7px' } }, "PICTURES TAKEN BY " + String(it.photographer).toUpperCase()) : null, h("span", { className: "mp-news__ft" }, "MATCHDAY"), h("div", { className: "mp-news__sc" }, h("img", { className: "mp-news__gbadge", src: it.homeBadge || 'assets/badge/sue-angels-shield.png', alt: "" }), h("span", { className: "mp-news__gvs" }, "VS"), it.awayBadge ? h("img", { className: "mp-news__gbadge", src: it.awayBadge, alt: "" }) : null))
-      : h("div", { className: "mp-news__cover" }, cover ? h("img", { src: cover, alt: "" }) : h("img", { className: "gh", src: "assets/badge/sue-angels-shield.png", alt: "" }));
+      ? h("div", { className: "mp-news__cover", style: { gap: 10 } }, it.photographer ? h("span", { className: "mp-news__ft", style: { color: 'rgb(214,242,58)', fontSize: '7px' } }, "PICTURES TAKEN BY " + String(it.photographer).toUpperCase()) : null, h("span", { className: "mp-news__ft" }, "MATCHDAY"), h("div", { className: "mp-news__sc" }, h("img", { className: "mp-news__gbadge", src: it.homeBadge || 'assets/badge/sue-angels-shield.webp', alt: "" }), h("span", { className: "mp-news__gvs" }, "VS"), it.awayBadge ? h("img", { className: "mp-news__gbadge", src: it.awayBadge, alt: "" }) : null))
+      : h("div", { className: "mp-news__cover" }, cover ? h("img", { src: cover, alt: "" }) : h("img", { className: "gh", src: "assets/badge/sue-angels-shield.webp", alt: "" }));
     return h("button", { className: "mp-news mp-clickable", key: i, onClick: () => { setAlbum(it); setAi(0); } }, coverEl, it.category ? h("div", { className: "mp-news__body" }, h("span", { className: "m-chip m-chip--volt mp-news__tag" }, it.category)) : null);
   };
   const galleryBody = shownGallery.length ? h("div", { className: "mp-grid mp-g4" }, shownGallery.map(galleryCard)) : h("div", { className: "m-empty" }, h("b", null, "NO PHOTOS YET"), h("span", null, "MATCHDAY ALBUMS WILL APPEAR HERE"));
   const videos = window.getClubVideos ? window.getClubVideos() : [];
-  const videoCard = (v, i) => h("button", { className: "mp-news mp-clickable", key: v.id || i, onClick: () => setVid(v) }, v.cover ? h("div", { className: "mp-news__cover" }, h("img", { src: v.cover, alt: "" })) : maGenCover({ layout: 'badges', top: v.category || 'VIDEO', left: v.homeBadge || 'assets/badge/sue-angels-shield.png', right: v.awayBadge || '', center: '\u25B6', bottom: v.title || 'Watch' }), h("div", { className: "mp-news__body" }, v.category ? h("span", { className: "m-chip m-chip--volt mp-news__tag" }, v.category) : null, v.title ? h("h3", { className: "m-h3" }, v.title) : null));
+  const videoCard = (v, i) => h("button", { className: "mp-news mp-clickable", key: v.id || i, onClick: () => setVid(v) }, v.cover ? h("div", { className: "mp-news__cover" }, h("img", { src: v.cover, alt: "" })) : maGenCover({ layout: 'badges', top: v.category || 'VIDEO', left: v.homeBadge || 'assets/badge/sue-angels-shield.webp', right: v.awayBadge || '', center: '\u25B6', bottom: v.title || 'Watch' }), h("div", { className: "mp-news__body" }, v.category ? h("span", { className: "m-chip m-chip--volt mp-news__tag" }, v.category) : null, v.title ? h("h3", { className: "m-h3" }, v.title) : null));
   const videosBody = videos.length ? h("div", { className: "mp-grid mp-g3" }, videos.map(videoCard)) : h("div", { className: "m-empty" }, h("b", null, "NO VIDEOS YET"), h("span", null, "MATCH GOALS & CLIPS WILL APPEAR HERE"));
   const slim = !!window.SA_SLIM;
   const mHeroMap = {
@@ -3172,7 +3172,7 @@ function Sponsors({
   const h = React.createElement;
   const [detail, setDetail] = useState(null);
   const partners = [{
-    logo: 'assets/sponsors/sporting-solutions.png',
+    logo: 'assets/sponsors/sporting-solutions.webp',
     n: 'Sporting Solutions Ltd',
     role: 'Main kit sponsor',
     sub: 'On the matchday shirt every weekend since the inaugural season.',
@@ -3181,7 +3181,7 @@ function Sponsors({
     ig: 'https://instagram.com/sporting_solutions_ltd',
     desc: ['Sporting Solutions Ltd are a London and Surrey-based sports and garden maintenance contractor, specialising in professional outdoor maintenance, sports-surface care and renovation.', 'Sue’s Angels FC are proud to be backed by a company whose work maintains the spaces where sport and community come together.']
   }, {
-    logo: 'assets/sponsors/hodgson-roofing.png',
+    logo: 'assets/sponsors/hodgson-roofing.webp',
     n: 'Hodgson Roofing',
     role: 'Warm-up & training top sponsor',
     sub: 'NFRC-accredited roofing specialists, on the squad pre-match.',
@@ -3742,7 +3742,7 @@ function Awards({ go }) {
   const seasonAwards = (window.getRecognition ? window.getRecognition('season_award') : []).filter((a) => a.season === season);
   const photoFor = (r) => r.imageUrl || (r.playerId && window.getPlayerPhoto ? window.getPlayerPhoto(r.playerId) : null) || null;
   const nameFor = (r) => r.playerName || (r.playerId && window.playerNameByNum ? window.playerNameByNum(r.playerId) : '') || '';
-  const media = (ph, cls) => h('div', { className: cls + (ph ? '' : ' aw-media--default') }, ph ? h('img', { src: ph, alt: '' }) : h('img', { className: 'aw-badge', src: 'assets/badge/sue-angels-shield.png', alt: '' }));
+  const media = (ph, cls) => h('div', { className: cls + (ph ? '' : ' aw-media--default') }, ph ? h('img', { src: ph, alt: '' }) : h('img', { className: 'aw-badge', src: 'assets/badge/sue-angels-shield.webp', alt: '' }));
   const chips = (r) => {
     const ms = (window.monthlyPlayerStats && r.playerId && r.month) ? window.monthlyPlayerStats(r.playerId, r.month, r.season) : {};
     const v = (manual, auto) => (r[manual] != null && r[manual] !== '') ? r[manual] : (ms[auto] || 0);
@@ -3886,7 +3886,7 @@ function SiteHeader({
     className: "sa-brand",
     href: "index.html"
   }, /*#__PURE__*/React.createElement("img", {
-    src: "assets/badge/sue-angels-badge.png",
+    src: "assets/badge/sue-angels-badge.webp",
     alt: ""
   }), "Sue's Angels"), /*#__PURE__*/React.createElement("nav", {
     id: "sa-primary-nav",
@@ -3951,7 +3951,7 @@ function SiteFooter() {
   return h("footer", { className: "mh-footer" }, h("div", { className: "m-wrap" },
     h("div", { className: "mh-footer__row", style: { alignItems: 'flex-start' } },
       h("div", null,
-        h("a", { className: "mh-footer__brand", href: "index.html", style: { textDecoration: 'none', color: 'inherit' } }, h("img", { src: "assets/badge/sue-angels-badge.png", alt: "" }), "Sue's Angels FC"),
+        h("a", { className: "mh-footer__brand", href: "index.html", style: { textDecoration: 'none', color: 'inherit' } }, h("img", { src: "assets/badge/sue-angels-badge.webp", alt: "" }), "Sue's Angels FC"),
         h("p", { style: { color: 'var(--m-ink-3)', fontSize: '0.84rem', marginTop: 12, maxWidth: '36ch', lineHeight: 1.6 } }, "Grassroots football in south-west London, founded in memory of Susan Anne Martin. League Ten champions, supporting sepsis awareness.")),
       h("div", { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } }, social.map(function (s) {
         var ic = s[0] === 'Instagram'
@@ -4058,7 +4058,7 @@ function SquadBoard(props) {
       h('div', { className: 'mp-player__inner' },
         h('button', { className: 'mp-player__face mp-player__front mp-clickable', onClick: function () { onOpen && onOpen(p.num); } },
           h('div', { className: 'mp-player__img ' + (ph ? '' : 'mp-player__img--ghost') },
-            ph ? h('img', { src: ph, alt: p.first + ' ' + p.last }) : h('img', { src: 'assets/badge/sue-angels-shield.png', alt: '' })),
+            ph ? h('img', { src: ph, alt: p.first + ' ' + p.last }) : h('img', { src: 'assets/badge/sue-angels-shield.webp', alt: '' })),
           h('div', { className: 'mp-player__scrim' }),
           h('span', { className: 'm-chip m-chip--volt mp-player__pos' }, pos),
           h('div', { className: 'mp-player__body' },

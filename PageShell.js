@@ -1601,67 +1601,67 @@ Object.defineProperty(window, 'SQUAD_BY_ASSISTS', {
 // so minor name variations ("BPR Men's" vs "BPR FC") still resolve to the right file.
 const BADGE_REGISTRY = [{
   match: 'angels',
-  src: 'assets/badge/sue-angels-shield.png',
+  src: 'assets/badge/sue-angels-shield.webp',
   alt: "Sue's Angels FC",
   aspect: 'shield'
 }, {
   match: 'brockwell',
-  src: 'assets/badge/brockwell-violets.png',
+  src: 'assets/badge/brockwell-violets.webp',
   alt: 'Brockwell Violets FC',
   aspect: 'circle'
 }, {
   match: 'hillside',
-  src: 'assets/badge/hillside-elite.png',
+  src: 'assets/badge/hillside-elite.webp',
   alt: 'Hillside Elite FC Blues',
   aspect: 'circle'
 }, {
   match: 'bpr',
-  src: 'assets/badge/bpr-fc.png',
+  src: 'assets/badge/bpr-fc.webp',
   alt: 'BPR FC',
   aspect: 'circle'
 }, {
   match: 'dynamo',
-  src: 'assets/badge/dynamo-london.png',
+  src: 'assets/badge/dynamo-london.webp',
   alt: 'Dynamo London FC',
   aspect: 'circle'
 }, {
   match: 'catania',
-  src: 'assets/badge/sporting-catania.png',
+  src: 'assets/badge/sporting-catania.webp',
   alt: 'Sporting Club Catania',
   aspect: 'circle'
 }, {
   match: 'pure',
-  src: 'assets/badge/pure-fc.png',
+  src: 'assets/badge/pure-fc.webp',
   alt: 'Pure Football FC 2.0',
   aspect: 'shield'
 }, {
   match: 'freemen',
-  src: 'assets/badge/old-freemens.png',
+  src: 'assets/badge/old-freemens.webp',
   alt: "Old Freemen's",
   aspect: 'shield'
 }, {
   match: 'shepherd',
-  src: 'assets/badge/shepherds-tuesday.png',
+  src: 'assets/badge/shepherds-tuesday.webp',
   alt: "Shepherd's Tuesday",
   aspect: 'circle'
 }, {
   match: 'balham',
-  src: 'assets/badge/balham-bteckerz.png',
+  src: 'assets/badge/balham-bteckerz.webp',
   alt: 'Balham Bteckerz',
   aspect: 'circle'
 }, {
   match: 'sheen',
-  src: 'assets/badge/sheen-park-rangers.png',
+  src: 'assets/badge/sheen-park-rangers.webp',
   alt: 'Sheen Park Rangers',
   aspect: 'circle'
 }, {
   match: 'kew',
-  src: 'assets/badge/kew-antigua.png',
+  src: 'assets/badge/kew-antigua.webp',
   alt: 'Kew Antigua',
   aspect: 'shield'
 }, {
   match: 'sutton',
-  src: 'assets/badge/sutton-knights.png',
+  src: 'assets/badge/sutton-knights.webp',
   alt: 'Sutton Knights',
   aspect: 'shield'
 }, {
@@ -1676,74 +1676,74 @@ const BADGE_REGISTRY = [{
   aspect: 'circle'
 }, {
   match: 'junction',
-  src: 'assets/badge/junction-elite.png',
+  src: 'assets/badge/junction-elite.webp',
   alt: 'Junction Elite',
   aspect: 'circle'
 }, {
   match: 'olympique',
-  src: 'assets/badge/olympique-mayonnaise.png',
+  src: 'assets/badge/olympique-mayonnaise.webp',
   alt: 'Olympique Mayonnaise',
   aspect: 'shield'
 }, {
   match: 'little birds',
-  src: 'assets/badge/three-little-birds.png',
+  src: 'assets/badge/three-little-birds.webp',
   alt: 'Three Little Birds FC',
   aspect: 'circle'
 }, {
   match: 'tsm',
-  src: 'assets/badge/tsm-rovers.png',
+  src: 'assets/badge/tsm-rovers.webp',
   alt: 'TSM Rovers FC',
   aspect: 'circle'
 }, {
   match: 'tyne',
-  src: 'assets/badge/tyne-thames.png',
+  src: 'assets/badge/tyne-thames.webp',
   alt: 'Tyne & Thames FC',
   aspect: 'circle'
 },
 // Newly-added 26/27 opponents (uploaded May 2026).
 {
   match: 'barking',
-  src: 'assets/badge/barking-mad.png',
+  src: 'assets/badge/barking-mad.webp',
   alt: 'Barking Mad FC',
   aspect: 'circle'
 }, {
   match: 'clapham',
-  src: 'assets/badge/clapham-chiefs.png',
+  src: 'assets/badge/clapham-chiefs.webp',
   alt: 'Clapham Chiefs FC',
   aspect: 'circle'
 }, {
   match: 'porto',
-  src: 'assets/badge/casa-fc-porto.png',
+  src: 'assets/badge/casa-fc-porto.webp',
   alt: 'FC Porto of London',
   aspect: 'circle'
 }, {
   match: 'bluebirds',
-  src: 'assets/badge/afc-bluebirds.png',
+  src: 'assets/badge/afc-bluebirds.webp',
   alt: 'AFC Bluebirds',
   aspect: 'circle'
 }, {
   match: 'tattenham',
-  src: 'assets/badge/tattenham-rovers.png',
+  src: 'assets/badge/tattenham-rovers.webp',
   alt: 'Tattenham Rovers FC',
   aspect: 'circle'
 }, {
   match: 'woking',
-  src: 'assets/badge/woking-vets.png',
+  src: 'assets/badge/woking-vets.webp',
   alt: 'Woking Vets FC',
   aspect: 'circle'
 }, {
   match: 'argentina',
-  src: 'assets/badge/argentina-fc-london.png',
+  src: 'assets/badge/argentina-fc-london.webp',
   alt: 'Argentina FC London',
   aspect: 'circle'
 }, {
   match: 'larkhall',
-  src: 'assets/badge/larkhall-city.png',
+  src: 'assets/badge/larkhall-city.webp',
   alt: 'Larkhall City FC',
   aspect: 'shield'
 }, {
   match: 'stormers',
-  src: 'assets/badge/barnes-stormers.png',
+  src: 'assets/badge/barnes-stormers.webp',
   alt: 'Barnes Stormers FC',
   aspect: 'circle'
 }];
@@ -1772,6 +1772,8 @@ function TeamBadge({
       className: `fixture-card__badge${isUs ? ' is-us' : ''} fixture-card__badge--${b.aspect}`,
       src: b.src,
       alt: b.alt,
+      loading: "lazy",
+      decoding: "async",
       style: style
     });
   }

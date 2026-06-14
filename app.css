@@ -688,8 +688,8 @@ html[data-theme="light"] .mh-hero__scrim {
   font-size: clamp(3.4rem, 8.5vw, 8rem); margin: 14px 0 0; }
 .mh-title em { font-style: normal; color: var(--m-volt-ink); display: block; }
 .mh-tag { font-family: var(--m-display); font-weight: 600; font-size: clamp(1.15rem, 2.3vw, 1.85rem); letter-spacing: -0.02em; margin: 22px 0 0; }
-.mh-hsub { margin-top: 14px; max-width: 42ch; }
-.mh-routes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 30px; max-width: 580px; }
+.mh-hsub { margin-top: 14px; max-width: 42ch; min-height: 3.1em; }
+.mh-routes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 30px; max-width: 580px; min-height: 118px; }
 .mh-route { display: flex; flex-direction: column; padding: 16px; border-radius: var(--m-radius-sm); background: var(--m-glass-2);
   -webkit-backdrop-filter: blur(18px) saturate(150%); backdrop-filter: blur(18px) saturate(150%); border: 1px solid var(--m-edge); box-shadow: var(--m-shadow-1), inset 0 1px 0 var(--m-hi);
   transition: transform .24s var(--m-ease), border-color .24s; }

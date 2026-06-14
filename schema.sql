@@ -75,3 +75,37 @@ end $$;
 
 -- Done. Verify in Supabase → Authentication → Policies that each table shows
 -- "public read" (SELECT) and "admin write" (ALL, authenticated).
+
+-- ============================================================================
+-- 4) SUPPORTERS (newsletter / matchday-update sign-ups)
+-- ============================================================================
+-- This table is the OPPOSITE of the content tables above: the public may ADD
+-- their own email (sign up), but NOBODY anonymous can READ the list — supporter
+-- emails stay private. You read/export the list from the Supabase dashboard
+-- (Table editor → supporters) or while signed in to the admin.
+create table if not exists public.supporters (
+  id         uuid primary key default gen_random_uuid(),
+  email      text not null,
+  name       text,
+  source     text,
+  consent    boolean not null default true,
+  created_at timestamptz not null default now()
+);
+-- one row per email (case-insensitive); a repeat sign-up is rejected (handled
+-- gracefully by the site as "you're already on the list").
+create unique index if not exists supporters_email_uniq on public.supporters (lower(email));
+
+alter table public.supporters enable row level security;
+
+-- PUBLIC SIGN-UP — anyone may INSERT their own email…
+drop policy if exists "supporters public insert" on public.supporters;
+create policy "supporters public insert" on public.supporters
+  for insert to anon, authenticated with check (true);
+
+-- …but only a signed-in admin may READ the list (anon gets nothing).
+drop policy if exists "supporters admin read" on public.supporters;
+create policy "supporters admin read" on public.supporters
+  for select to authenticated using (true);
+
+-- (No anon SELECT/UPDATE/DELETE policy on purpose → emails are write-only to the
+--  public. The site inserts with Prefer: return=minimal so it never needs read.)

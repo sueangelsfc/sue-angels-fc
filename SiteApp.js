@@ -3166,6 +3166,50 @@ function DonateBlock() {
       h("p", null, "Donate to the UK Sepsis Trust in memory of Susan Anne Martin and help raise awareness."),
       h("span", { className: "mp-donate2__btn mp-donate2__btn--ghost" }, "Donate to the cause", maArrow())));
 }
+// Supporter / newsletter sign-up. Writes to the `supporters` table (public
+// insert, private read) via window.saAddSupporter. props.compact => footer style.
+function SupporterSignup(props) {
+  var h = React.createElement;
+  var source = props.source || 'site', compact = !!props.compact;
+  var es = React.useState(''), email = es[0], setEmail = es[1];
+  var ns = React.useState(''), nm = ns[0], setNm = ns[1];
+  var ks = React.useState(false), consent = ks[0], setConsent = ks[1];
+  var sts = React.useState(''), status = sts[0], setStatus = sts[1];
+  var mss = React.useState(''), msg = mss[0], setMsg = mss[1];
+  function submit(e) {
+    e.preventDefault();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(email).trim())) { setStatus('err'); setMsg('Please enter a valid email address.'); return; }
+    if (!consent) { setStatus('err'); setMsg('Please tick the box so we have your permission to email you.'); return; }
+    setStatus('sending'); setMsg('');
+    (window.saAddSupporter ? window.saAddSupporter(email, nm, source) : Promise.resolve({ ok: false })).then(function (r) {
+      if (r && r.ok) { setStatus('ok'); setMsg(r.duplicate ? 'You’re already on the list — thank you.' : 'Thank you. You’re on the list.'); }
+      else { setStatus('err'); setMsg('Sorry, something went wrong. Please try again shortly.'); }
+    });
+  }
+  var emailField = function (cls) { return h('input', { type: 'email', value: email, required: true, autoComplete: 'email', placeholder: 'you@email.com', onChange: function (e) { setEmail(e.target.value); } }); };
+  var checkbox = function (size) { return h('label', { style: { display: 'flex', gap: size === 'sm' ? 8 : 10, alignItems: 'flex-start', fontSize: size === 'sm' ? '0.74rem' : '0.84rem', color: size === 'sm' ? 'var(--m-ink-3)' : 'var(--m-ink-2)', cursor: 'pointer', lineHeight: 1.5 } },
+    h('input', { type: 'checkbox', checked: consent, onChange: function (e) { setConsent(e.target.checked); }, style: { marginTop: 3, flex: '0 0 auto', accentColor: 'var(--m-volt)' } }),
+    h('span', null, size === 'sm' ? 'Occasional club news by email. Unsubscribe any time.' : 'Keep me posted with occasional Sue’s Angels news and match updates. I agree to my email being stored for this. No spam, unsubscribe any time.')); };
+  if (compact) {
+    if (status === 'ok') return h('p', { style: { font: '600 0.86rem var(--m-sans)', color: 'var(--m-volt-ink)', margin: 0 } }, '✓ ' + msg);
+    return h('form', { onSubmit: submit, style: { display: 'grid', gap: 10, maxWidth: 320 } },
+      h('input', { type: 'email', value: email, required: true, autoComplete: 'email', placeholder: 'Your email', onChange: function (e) { setEmail(e.target.value); }, style: { width: '100%', padding: '11px 13px', borderRadius: 10, border: '1px solid var(--m-edge)', background: 'var(--m-glass-1)', color: 'var(--m-ink-1)', font: '500 15px var(--m-sans)' } }),
+      checkbox('sm'),
+      h('button', { type: 'submit', className: 'm-btn m-btn--volt', disabled: status === 'sending', style: { justifyContent: 'center', padding: '10px 16px' } }, status === 'sending' ? 'Joining…' : 'Join the list'),
+      status === 'err' ? h('p', { style: { color: '#ff9b9b', fontSize: '0.76rem', margin: 0 } }, msg) : null);
+  }
+  if (status === 'ok') return h('div', { className: 'm-glass', style: { padding: 'clamp(22px,3vw,30px)', textAlign: 'center' } },
+    h('p', { className: 'm-eyebrow m-eyebrow--volt', style: { justifyContent: 'center', display: 'inline-flex' } }, 'You’re in'),
+    h('p', { style: { font: '600 1.1rem var(--m-sans)', marginTop: 10 } }, msg),
+    h('p', { style: { color: 'var(--m-ink-3)', fontSize: '0.86rem', marginTop: 6 } }, 'We’ll only send the occasional update. Unsubscribe any time.'));
+  return h('form', { className: 'm-glass mp-form', onSubmit: submit },
+    h('div', { className: 'mp-frow' },
+      h('label', { className: 'mp-field' }, h('span', null, 'Name (optional)'), h('input', { type: 'text', value: nm, autoComplete: 'name', placeholder: 'Your name', onChange: function (e) { setNm(e.target.value); } })),
+      h('label', { className: 'mp-field' }, h('span', null, 'Email'), emailField())),
+    checkbox(),
+    h('button', { type: 'submit', className: 'm-btn m-btn--volt', disabled: status === 'sending', style: { justifyContent: 'center' } }, status === 'sending' ? 'Joining…' : 'Join the list', status === 'sending' ? null : maArrow()),
+    status === 'err' ? h('p', { style: { color: '#ff9b9b', fontSize: '0.84rem', margin: 0 } }, msg) : null);
+}
 function Sponsors({
   go
 }) {
@@ -3629,6 +3673,10 @@ function Sepsis({ go }) {
       h(Head, { eyebrow: 'Give in her memory', title: 'Donate' }),
       h('p', { className: 'm-lead', style: { maxWidth: '60ch', marginBottom: 22 } }, 'You can support Sue’s Angels directly, or give to the UK Sepsis Trust in Sue’s memory. Every contribution helps us keep her name on the pitch and her message in the open.'),
       h(DonateBlock, null))),
+    h('section', { id: 'stay', className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
+      h(Head, { eyebrow: 'Stay close to the club', title: 'Get match updates' }),
+      h('p', { className: 'm-lead', style: { maxWidth: '58ch', marginBottom: 22 } }, 'Join the supporters’ list for the occasional update — fixtures, results and news from Sue’s Angels. We keep it rare, and your email stays private.'),
+      h('div', { style: { maxWidth: 640 } }, h(SupporterSignup, { source: 'cause' })))),
     h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
       h('div', { className: 'm-glass', style: { padding: 'clamp(28px,4vw,52px)', textAlign: 'center' } },
         h('p', { className: 'm-eyebrow m-eyebrow--volt', style: { justifyContent: 'center', display: 'inline-flex' } }, 'In her name'),
@@ -3978,6 +4026,11 @@ function SiteFooter() {
           h("div", { style: { font: '700 0.68rem var(--m-sans)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--m-ink-2)', marginBottom: 8 } }, g[0]),
           g[1].map(function (it) { return h("a", { key: it[0], href: HREF[it[0]], style: linkStyle }, it[1]); }));
       })),
+    h("div", { style: { marginTop: 30, paddingTop: 24, borderTop: '1px solid var(--m-edge)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 270px), 1fr))', gap: 22, alignItems: 'start' } },
+      h("div", null,
+        h("div", { style: { font: '700 0.68rem var(--m-sans)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--m-ink-2)', marginBottom: 8 } }, "Stay in touch"),
+        h("p", { style: { color: 'var(--m-ink-3)', fontSize: '0.84rem', maxWidth: '34ch', lineHeight: 1.6, margin: 0 } }, "Occasional fixtures, results and club news, in memory of Sue. Your email stays private.")),
+      h(SupporterSignup, { compact: true, source: 'footer' })),
     h("div", { style: { marginTop: 26, paddingTop: 18, borderTop: '1px solid var(--m-edge)', display: 'flex', flexWrap: 'wrap', gap: '6px 18px', alignItems: 'center' } },
       h("span", { style: { font: '700 0.64rem var(--m-sans)', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--m-ink-3)' } }, "Also"),
       supporting.map(function (it) { return h("a", { key: it[0], href: it[0], style: { color: 'var(--m-ink-3)', fontSize: '0.8rem', textDecoration: 'none' } }, it[1]); })),

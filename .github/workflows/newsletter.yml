@@ -1,0 +1,56 @@
+name: Monthly newsletter
+
+on:
+  schedule:
+    - cron: "0 8 15 * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: newsletter
+  cancel-in-progress: false
+
+jobs:
+  build-publish-send:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the site
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install --quiet reportlab pillow fonttools brotli
+      - name: Build this month's newsletter (live news + stats)
+        run: python newsletter/build.py
+      - name: Publish the PDF to the website
+        run: |
+          git config user.name  "Newsletter Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add newsletter/sue-angels-newsletter-latest.pdf
+          if git diff --cached --quiet; then
+            echo "No change in the PDF this run."
+          else
+            git commit -m "Newsletter: $(date -u +'%B %Y') issue"
+            git push
+          fi
+      - name: Wait for the PDF to go live on the site
+        run: |
+          URL="https://www.suesangelsfc.co.uk/newsletter/sue-angels-newsletter-latest.pdf"
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "$URL?cb=$i")
+            echo "attempt $i -> $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 10
+          done
+          echo "PDF not live yet, but continuing."
+      - name: Email it to the supporters
+        env:
+          MAILERLITE_API_KEY:  ${{ secrets.MAILERLITE_API_KEY }}
+          MAILERLITE_GROUP_ID: ${{ secrets.MAILERLITE_GROUP_ID }}
+          MAILERLITE_FROM:     ${{ secrets.MAILERLITE_FROM }}
+          SEND_MODE:           ${{ vars.NEWSLETTER_SEND_MODE }}
+        run: python newsletter/send.py

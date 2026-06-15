@@ -1,0 +1,14 @@
+# OS / editor cruft
+.DS_Store
+**/.DS_Store
+.vscode/
+*.log
+
+# Local tooling state (keep launch.json out of the repo)
+.claude/launch.json
+
+# Python (newsletter build)
+__pycache__/
+*.pyc
+.venv/
+venv/

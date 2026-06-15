@@ -948,7 +948,7 @@ window.COACHES = [{
   role: 'FIRST-TEAM MANAGER',
   name: 'Stephen Epathite',
   short: 'Founder & manager',
-  photo: 'assets/players/stephen-epathite.png',
+  photo: 'assets/players/stephen-epathite.webp',
   bio: ["Fulham F.C. supporter Stephen Epathite brings decades of experience and leadership to the game, both on and off the pitch.", "As a player, Stephen represented respected non-league sides including Corinthian-Casuals F.C., Chessington & Hook United F.C., and Uxbridge F.C., building a strong understanding of the semi-professional and grassroots football landscape.", "His managerial journey has seen him take charge across both the men's and women's game, managing clubs such as Crystal Palace F.C. Women, Maidstone United W.F.C., Corinthian-Casuals F.C. Reserves, Cove F.C., Frimley Green F.C., Chessington & Hook United F.C., Staines Lammas F.C., and Banstead Athletic F.C.", "Known for his passion, leadership and deep understanding of player development, Stephen has built a reputation for creating competitive teams with strong togetherness and identity throughout every level of the football pyramid."],
   playedFor: ['Corinthian-Casuals F.C.', 'Chessington & Hook United F.C.', 'Uxbridge F.C.'],
   managed: ['Crystal Palace F.C. Women', 'Maidstone United W.F.C.', 'Corinthian-Casuals F.C. Reserves', 'Cove F.C.', 'Frimley Green F.C.', 'Chessington & Hook United F.C.', 'Staines Lammas F.C.', 'Banstead Athletic F.C.'],

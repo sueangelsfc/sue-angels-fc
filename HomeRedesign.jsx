@@ -89,7 +89,7 @@ function RDHero() {
     <section className="rd-hero rd-hero--photo" ref={heroRef}>
       <div className="rd-hero__photo" aria-hidden="true">
         <img className="rd-hero__img rd-hero__img--dark" src="assets/hero-team.jpg" alt="" />
-        <img className="rd-hero__img rd-hero__img--light" src="assets/hero-team-light.jpg" alt="" />
+        <img className="rd-hero__img rd-hero__img--light" src="assets/hero-team.jpg" alt="" />
       </div>
       <div className="rd-hero__veil" aria-hidden="true" />
       <span className="rd-hero__glowwrap" aria-hidden="true"><span className="rd-hero__glow" ref={heroGlowRef} /></span>

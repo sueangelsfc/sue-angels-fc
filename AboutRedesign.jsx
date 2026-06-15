@@ -48,7 +48,7 @@ function AboutV2() {
   return (
     <RDPage>
       <main>
-        <RDPageHero eyebrow="The story" title={<>Built in<br /><em>her</em> name.</>} sub="Founded in 2025 in memory of Susan Anne Martin. League Ten champions, first season, unbeaten." image="assets/hero-team.jpg" imageLight="assets/hero-team-light.jpg" />
+        <RDPageHero eyebrow="The story" title={<>Built in<br /><em>her</em> name.</>} sub="Founded in 2025 in memory of Susan Anne Martin. League Ten champions, first season, unbeaten." image="assets/hero-team.jpg" imageLight="assets/hero-team.jpg" />
 
         {/* Mission quote */}
         <Reveal as="section" className="rd-section rd-section--tight">

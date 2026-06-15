@@ -2649,13 +2649,13 @@ function Team({
     className: "mp-sec"
   }, /*#__PURE__*/React.createElement("div", {
     className: "m-wrap"
-  }, slim ? null : /*#__PURE__*/React.createElement("div", {
+  }, (function () { var _st = slim ? (((tab === 'squad' || tab === 'past') && hasPast) ? [['squad', 'First team'], ['past', 'Past players']] : null) : [['squad', 'First team'], ['leaders', 'Leaderboards'], ['coaches', 'Coaches'], ['stats', 'Team stats']].concat(hasPast ? [['past', 'Past players']] : []); return _st ? /*#__PURE__*/React.createElement("div", {
     className: "mp-subtabs"
-  }, [['squad', 'First team'], ['leaders', 'Leaderboards'], ['coaches', 'Coaches'], ['stats', 'Team stats']].concat(hasPast ? [['past', 'Past players']] : []).map(([k, l]) => /*#__PURE__*/React.createElement("button", {
+  }, _st.map(([k, l]) => /*#__PURE__*/React.createElement("button", {
     key: k,
     className: `mp-subtab ${tab === k ? 'is-active' : ''}`,
     onClick: () => setTab(k)
-  }, l))), (tab === 'squad' || tab === 'stats' || tab === 'past') ? /*#__PURE__*/React.createElement("div", {
+  }, l))) : null; })(), (tab === 'squad' || tab === 'stats' || tab === 'past') ? /*#__PURE__*/React.createElement("div", {
     className: "mp-subtabs"
   }, [['all', 'All seasons'], ['25/26', '25/26'], ['26/27', '26/27']].map(([sk, sl]) => /*#__PURE__*/React.createElement("button", {
     key: sk,

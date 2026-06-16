@@ -39,7 +39,7 @@ def _fetch_news():
         print('news fetch failed:',e); return []
 NEWS=_fetch_news()
 _now=datetime.datetime.utcnow()
-ISSUE_N=max(1,(_now.year-2026)*12+(_now.month-5)); ISSUE_DATE=_now.strftime('%B %Y')
+ISSUE_N=max(1,(_now.year-2026)*12+(_now.month-6)+1); ISSUE_DATE=_now.strftime('%B %Y')
 PW,PH=A4; MX=54; CW=PW-2*MX
 OUT=os.path.join(ROOT,'newsletter','sue-angels-newsletter-latest.pdf')
 c=canvas.Canvas(OUT,pagesize=A4)

@@ -48,6 +48,21 @@ def api(method, path, body=None):
         return json.load(urllib.request.urlopen(req, timeout=40))
     except urllib.error.HTTPError as e:
         print("MailerLite error", e.code, e.read().decode()[:400]); raise
+    except urllib.error.URLError as e:
+        print("MailerLite network error:", getattr(e, "reason", e)); raise
+
+# Idempotency: never email the same monthly issue twice. If a campaign with
+# this month's subject has already been sent, skip. Protects against a manual
+# trigger on the same day as the schedule, or re-running a finished job.
+try:
+    prior = api("GET", "/campaigns?filter[status]=sent&limit=50")
+    if subject in [(c.get("name") or "") for c in (prior.get("data") or [])]:
+        print("This month's newsletter was already sent - skipping to avoid a duplicate.")
+        raise SystemExit(0)
+except SystemExit:
+    raise
+except Exception as e:
+    print("Could not verify prior sends (continuing):", e)
 
 campaign = {
     "name": subject,
@@ -59,6 +74,9 @@ if GROUP:
 
 res = api("POST", "/campaigns", campaign)
 cid = (res.get("data") or {}).get("id")
+if not cid:
+    print("Campaign create returned no id - aborting:", json.dumps(res)[:300])
+    raise SystemExit(1)
 print("Campaign created:", cid)
 
 if MODE == "draft":

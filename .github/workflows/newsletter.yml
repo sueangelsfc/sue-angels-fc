@@ -48,6 +48,7 @@ jobs:
           done
           echo "PDF not live yet, but continuing."
       - name: Email it to the supporters
+        if: github.event_name == 'schedule'
         env:
           MAILERLITE_API_KEY:  ${{ secrets.MAILERLITE_API_KEY }}
           MAILERLITE_GROUP_ID: ${{ secrets.MAILERLITE_GROUP_ID }}

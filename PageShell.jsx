@@ -312,7 +312,7 @@ window.COACHES = [
     role: 'FIRST-TEAM MANAGER',
     name: 'Stephen Epathite',
     short: 'Founder & manager',
-    photo: 'assets/players/stephen-epathite.png',
+    photo: 'assets/players/stephen-epathite.webp',
     bio: [
       "Fulham F.C. supporter Stephen Epathite brings decades of experience and leadership to the game, both on and off the pitch.",
       "As a player, Stephen represented respected non-league sides including Corinthian-Casuals F.C., Chessington & Hook United F.C., and Uxbridge F.C., building a strong understanding of the semi-professional and grassroots football landscape.",

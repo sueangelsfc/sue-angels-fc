@@ -1952,7 +1952,24 @@ window.tableInsights = function (rows, totalGames, promotionSpots = 2) {
     { id: 'trophy-league-ten-2526', type: 'trophy', title: 'League Ten Champions', season: '25/26', value: 'Champions', icon: 'trophy',
       description: 'Champions of League Ten at the first attempt, unbeaten across the whole season.', isDefault: true },
     { id: 'trophy-promotion-2526', type: 'trophy', title: 'Promoted to League Eight', season: '25/26', value: 'Promoted', icon: 'medal',
-      description: 'Sealed promotion as champions, stepping up to League Eight for the 26/27 season.', isDefault: true }
+      description: 'Sealed promotion as champions, stepping up to League Eight for the 26/27 season.', isDefault: true },
+
+    /* 25/26 End of Season awards (announced after the unbeaten League Ten title).
+       Linked by squad number so names + photos stay consistent with each profile. */
+    { id: 'season-2526-top-assister', type: 'season_award', title: 'Top Assister', season: '25/26', playerId: 9,
+      description: 'Relentless all season. Energy, intelligence and selfless running made him a constant threat, and his assists and link play drove our attacking success.', isDefault: true },
+    { id: 'season-2526-defensive-record', type: 'season_award', title: 'Defensive Record Award', season: '25/26', playerId: 28,
+      description: 'The goalkeeper every championship side needs. Calm, commanding and full of match-winning saves as the Angels set a historic defensive record.', isDefault: true },
+    { id: 'season-2526-goal-of-the-season', type: 'season_award', title: 'Goal of the Season', season: '25/26', playerId: 27,
+      description: 'A stunning strike against Mala Vida, pure quality. A huge part of the season before injury cut it short. We can’t wait to see him back in yellow.', isDefault: true },
+    { id: 'season-2526-top-goalscorer', type: 'season_award', title: 'Top Goalscorer', season: '25/26', playerId: 30,
+      description: 'Goals, goals and more goals. Movement, composure and a finish in him at any moment. When the team needed one, Fraizer usually delivered.', isDefault: true },
+    { id: 'season-2526-clubman', type: 'season_award', title: 'Clubman of the Year', season: '25/26', playerId: 10,
+      description: 'A leader, role model and true club servant. As he closes his playing career he leaves the culture and standards that drive the club. A true legend.', isDefault: true },
+    { id: 'season-2526-players-player', type: 'season_award', title: 'Players’ Player of the Year', season: '25/26', playerId: 25,
+      description: 'Voted for by his teammates. Solid as a rock in defence and a real weapon from set pieces. A warrior who set the standard every single week.', isDefault: true },
+    { id: 'season-2526-managers-player', type: 'season_award', title: 'Manager’s Player of the Year', season: '25/26', playerId: 20,
+      description: 'Consistency, versatility and constant improvement. Right-back, wing-back, even emergency keeper with two clean sheets. Whatever the team needed, Dean delivered.', isDefault: true }
   ];
 
   function nameByNum(num) {

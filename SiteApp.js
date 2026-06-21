@@ -1823,7 +1823,7 @@ function Home({
       justifyContent: 'center'
     },
     onClick: () => go('about')
-  }, "Our story ", /*#__PURE__*/React.createElement(Arrow, null)))))), h("section", { className: "mh-sec" }, h("div", { className: "m-wrap" }, h(Head, { eyebrow: "Who we are", title: "More than a result" }), h("div", { className: "mp-grid mp-g4" }, [["Champions", "League Ten winners", "Played 18, won 18, unbeaten and promoted for 26/27.", "champions", "The season"], ["Community", "A football family", "Built in south-west London, playing for each other every week.", "about", "Our story"], ["Our cause", "Sepsis awareness", "Founded in memory of Susan Anne Martin. Know the signs.", "sepsis", "Our cause"], ["Partners", "Back the badge", "Local businesses on the shirt, and there is room for yours.", "sponsors", "Partner with us"]].map((p, i) => h("button", { key: i, className: "mh-pillar", onClick: () => go(p[3]) }, h("p", { className: "m-eyebrow m-eyebrow--volt" }, p[0]), h("h3", { className: "m-h3" }, p[1]), h("p", { className: "mh-pillar__body" }, p[2]), h("span", { className: "mh-pillar__cta" }, p[4] + " →")))))), /*#__PURE__*/React.createElement("section", {
+  }, "Our story ", /*#__PURE__*/React.createElement(Arrow, null)))))), h("section", { className: "mh-sec" }, h("div", { className: "m-wrap" }, h(Head, { eyebrow: "Who we are", title: "More than a result" }), h("div", { className: "mp-grid mp-g4" }, [["Champions", "League Ten winners", "Played 18, won 18, unbeaten and promoted for 26/27.", "champions", "The season"], ["Community", "A football family", "Built in south-west London, playing for each other every week.", "about", "Our story"], ["Our cause", "Sepsis awareness", "Founded in memory of Susan Anne Martin. Know the signs.", "sepsis", "Our cause"], ["Partners", "Back the badge", "Local businesses on the shirt, and there is room for yours.", "sponsors", "Partner with us"]].map((p, i) => h("button", { key: i, className: "mh-pillar", onClick: () => go(p[3]) }, h("p", { className: "m-eyebrow m-eyebrow--volt" }, p[0]), h("h3", { className: "m-h3" }, p[1]), h("p", { className: "mh-pillar__body" }, p[2]), h("span", { className: "mh-pillar__cta" }, p[4] + " →")))))), (function () { var aw = (window.getRecognition ? window.getRecognition("season_award").filter(function (a) { return a.season === (window.CURRENT_SEASON || "25/26"); }) : []); return aw.length ? h("section", { className: "mh-sec", style: { paddingTop: 0 } }, h("div", { className: "m-wrap" }, h(Head, { eyebrow: (window.CURRENT_SEASON || "25/26") + " End of Season", title: "Award winners" }), h("div", { className: "mp-grid mp-g4", style: { marginTop: 18 } }, aw.map(function (a) { var nm = a.playerName || (a.playerId && window.playerNameByNum ? window.playerNameByNum(a.playerId) : ""); return h("button", { key: a.id, className: "mh-pillar", onClick: function () { location.href = "awards.html"; } }, h("p", { className: "m-eyebrow m-eyebrow--volt" }, a.title), h("h3", { className: "m-h3" }, nm), h("span", { className: "mh-pillar__cta" }, "View →")); })), h("div", { style: { marginTop: 22, textAlign: "center" } }, h("a", { className: "m-btn m-btn--ghost", href: "awards.html" }, "All awards & honours →")))) : null; })(), /*#__PURE__*/React.createElement("section", {
     className: "mh-sec",
     id: "ledger"
   }, /*#__PURE__*/React.createElement("div", {
@@ -3210,6 +3210,36 @@ function SupporterSignup(props) {
     h('button', { type: 'submit', className: 'm-btn m-btn--volt', disabled: status === 'sending', style: { justifyContent: 'center' } }, status === 'sending' ? 'Joining…' : 'Join the list', status === 'sending' ? null : maArrow()),
     status === 'err' ? h('p', { style: { color: '#ff9b9b', fontSize: '0.84rem', margin: 0 } }, msg) : null);
 }
+// Gated sponsorship-pack download: capture the business's email (a warm
+// sponsorship lead) before the PDF downloads. Never blocks the download —
+// even if capture fails, the pack still opens so we never lose the visitor.
+function SponsorPackGate() {
+  var h = React.createElement;
+  var st = React.useState(false), open = st[0], setOpen = st[1];
+  var es = React.useState(''), email = es[0], setEmail = es[1];
+  var ss = React.useState(''), status = ss[0], setStatus = ss[1];
+  var PDF = 'assets/sue-angels-sponsorship-pack.pdf';
+  function dl() { try { var a = document.createElement('a'); a.href = PDF; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); } catch (e) { window.open(PDF, '_blank'); } }
+  function submit(e) {
+    e.preventDefault();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(email).trim())) { setStatus('err'); return; }
+    setStatus('sending');
+    (window.saAddEnquiry ? window.saAddEnquiry({ type: 'Sponsorship pack request', email: email, message: 'Downloaded the sponsorship pack.', source: 'sponsor-pack' }) : Promise.resolve({ ok: false })).then(function () { setStatus('done'); dl(); });
+  }
+  return h(React.Fragment, null,
+    h("button", { className: "m-btn m-btn--ghost", onClick: function () { setOpen(true); } }, "Download the pack"),
+    open ? h(Modal, { onClose: function () { setOpen(false); } }, h("div", { className: "m-glass", style: { padding: 'clamp(22px,3vw,30px)', maxWidth: 440 } },
+      status === 'done'
+        ? h("div", { style: { textAlign: 'center' } }, h("p", { className: "m-eyebrow m-eyebrow--volt", style: { justifyContent: 'center', display: 'inline-flex' } }, "On its way"), h("h3", { className: "m-h3", style: { marginTop: 10 } }, "Thanks — your download has started."), h("p", { style: { color: 'var(--m-ink-3)', marginTop: 8, fontSize: '0.9rem' } }, "If it didn’t open, ", h("a", { href: PDF, target: "_blank", rel: "noopener", style: { color: 'var(--m-volt-ink)' } }, "tap here"), ". We’ll be in touch about partnering."))
+        : h("form", { onSubmit: submit },
+          h("p", { className: "m-eyebrow m-eyebrow--volt" }, "Sponsorship pack"),
+          h("h3", { className: "m-h3", style: { margin: '8px 0 4px' } }, "Where should we send it?"),
+          h("p", { style: { color: 'var(--m-ink-3)', fontSize: '0.9rem', marginBottom: 14 } }, "Pop in your email and the pack downloads right away. We’ll only use it to follow up about partnering with the club."),
+          h("input", { type: 'email', required: true, value: email, placeholder: 'you@company.com', autoComplete: 'email', onChange: function (e) { setEmail(e.target.value); }, style: { width: '100%', padding: '12px 14px', borderRadius: 10, border: '1px solid var(--m-edge)', background: 'var(--m-glass-1)', color: 'var(--m-ink-1)', font: '500 15px var(--m-sans)' } }),
+          status === 'err' ? h("p", { style: { color: '#ff9b9b', fontSize: '0.8rem', margin: '8px 0 0' } }, "Please enter a valid email.") : null,
+          h("button", { type: 'submit', className: "m-btn m-btn--volt", disabled: status === 'sending', style: { marginTop: 14, justifyContent: 'center', width: '100%' } }, status === 'sending' ? 'Preparing…' : 'Get the pack'))
+    )) : null);
+}
 function Sponsors({
   go
 }) {
@@ -3252,12 +3282,7 @@ function Sponsors({
     actions: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
       className: "m-btn m-btn--volt",
       onClick: () => go('contact')
-    }, "Partner with us ", /*#__PURE__*/React.createElement(Arrow, null)), /*#__PURE__*/React.createElement("a", {
-      className: "m-btn m-btn--ghost",
-      href: "assets/sue-angels-sponsorship-pack.pdf",
-      target: "_blank",
-      rel: "noopener"
-    }, "Download the pack"))
+    }, "Partner with us ", /*#__PURE__*/React.createElement(Arrow, null)), /*#__PURE__*/React.createElement(SponsorPackGate, null))
   }), h("section", { className: "mp-sec" }, h("div", { className: "m-wrap" },
     h(Head, { eyebrow: "Why partner", title: "More than a logo on a shirt" }),
     h("p", { className: "m-lead", style: { maxWidth: "64ch", marginBottom: 26 } }, "Sue’s Angels isn’t a typical grassroots side. We are League Ten champions, unbeaten in our first season, built around a cause that matters, with a growing audience that puts local businesses in front of the right people."),
@@ -4077,20 +4102,10 @@ function Site() {
   useEffect(() => {
     document.body.classList.add('m-body');
     window.scrollTo(0, 0);
-    const id = window.SA_GA_ID;
-    if (id && !window.__saga) {
-      window.__saga = 1;
-      const s = document.createElement('script');
-      s.async = true;
-      s.src = 'https://www.googletagmanager.com/gtag/js?id=' + id;
-      document.head.appendChild(s);
-      window.dataLayer = window.dataLayer || [];
-      window.gtag = function () {
-        window.dataLayer.push(arguments);
-      };
-      window.gtag('js', new Date());
-      window.gtag('config', id);
-    }
+    // Analytics (Google Analytics + Meta Pixel) load ONLY after the visitor
+    // accepts cookies. consent.js owns the banner + the actual loading; this
+    // call is a no-op until consent has been granted.
+    if (window.saInitAnalytics) window.saInitAnalytics();
   }, []);
   const page = currentPage();
   const PageComp = PAGES[page] || Home;

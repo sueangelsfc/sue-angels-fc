@@ -3377,20 +3377,31 @@ function Sponsors({
 // Real enquiry delivery. The forms used to discard the message silently; this
 // builds a prefilled email to the club so enquiries actually arrive. Swap to a
 // hosted form service later by changing this one function.
+// Capture the enquiry to the private `enquiries` table so the club has every
+// lead (name, email, message, type) to follow up on - sponsorship, trials, etc.
+// Returns a Promise<{ok}>. Only if the capture is unavailable do we fall back to
+// the visitor's email app, so a lead is never lost. The page success copy adapts
+// to which path was taken.
 function saSendEnquiry(form, label) {
-  try {
-    var inp = form.querySelectorAll('input');
-    var name = inp[0] ? inp[0].value.trim() : '';
-    var email = inp[1] ? inp[1].value.trim() : '';
-    var extra = inp[2] ? inp[2].value.trim() : '';
-    var ta = form.querySelector('textarea');
-    var message = ta ? ta.value.trim() : '';
-    var body = ['Enquiry: ' + label, 'Name: ' + name, 'Email: ' + email];
-    if (extra) body.push('Details: ' + extra);
-    body.push('', message);
-    var href = 'mailto:susangelsfc@gmail.com?subject=' + encodeURIComponent("Sue's Angels FC - " + label + ' enquiry') + '&body=' + encodeURIComponent(body.join('\n'));
-    window.location.href = href;
-  } catch (e) {}
+  var inp = form.querySelectorAll('input');
+  var name = inp[0] ? inp[0].value.trim() : '';
+  var email = inp[1] ? inp[1].value.trim() : '';
+  var extra = inp[2] ? inp[2].value.trim() : '';
+  var ta = form.querySelector('textarea');
+  var message = ta ? ta.value.trim() : '';
+  var capture = window.saAddEnquiry
+    ? window.saAddEnquiry({ type: label, name: name, email: email, phone: extra, message: message, source: 'enquiry' })
+    : Promise.resolve({ ok: false });
+  return capture.then(function (r) {
+    if (r && r.ok) return { ok: true };
+    try {
+      var body = ['Enquiry: ' + label, 'Name: ' + name, 'Email: ' + email];
+      if (extra) body.push('Details: ' + extra);
+      body.push('', message);
+      window.location.href = 'mailto:susangelsfc@gmail.com?subject=' + encodeURIComponent("Sue's Angels FC - " + label + ' enquiry') + '&body=' + encodeURIComponent(body.join('\n'));
+    } catch (e) {}
+    return { ok: false };
+  });
 }
 function Contact() {
   const routes = [['general', 'General', 'Questions, hellos, anything else'], ['sponsor', 'Sponsor enquiry', 'Brand partnerships & backing the club'], ['trial', 'Player trial', 'You want a shot? Tell us about you'], ['media', 'Media volunteer', 'Photo, video, design, editorial, social']];
@@ -3434,8 +3445,7 @@ function Contact() {
     className: "m-glass mp-form",
     onSubmit: e => {
       e.preventDefault();
-      saSendEnquiry(e.target, routes.find(r => r[0] === route)[1]);
-      setSent(true);
+      saSendEnquiry(e.target, routes.find(r => r[0] === route)[1]).then(function (r) { setSent(r && r.ok ? 'ok' : 'mail'); });
     }
   }, sent ? /*#__PURE__*/React.createElement("div", {
     role: "status",
@@ -3448,9 +3458,9 @@ function Contact() {
     style: {
       marginBottom: 12
     }
-  }, "Almost there"), /*#__PURE__*/React.createElement("h3", {
+  }, sent === 'ok' ? "Got it" : "Almost there"), /*#__PURE__*/React.createElement("h3", {
     className: "m-h3"
-  }, "Your enquiry is ready in your email app. Press send and we'll reply within 48 hours.")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+  }, sent === 'ok' ? "Thanks — your enquiry's in. We'll reply within 48 hours." : "Your enquiry is ready in your email app. Press send and we'll reply within 48 hours.")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "m-eyebrow"
   }, routes.find(r => r[0] === route)[1], " enquiry"), /*#__PURE__*/React.createElement("div", {
     className: "mp-frow"
@@ -3520,8 +3530,7 @@ function JoinPage() {
     className: "m-glass mp-form",
     onSubmit: e => {
       e.preventDefault();
-      saSendEnquiry(e.target, routes.find(r => r[0] === route)[1]);
-      setSent(true);
+      saSendEnquiry(e.target, routes.find(r => r[0] === route)[1]).then(function (r) { setSent(r && r.ok ? 'ok' : 'mail'); });
     }
   }, sent ? /*#__PURE__*/React.createElement("div", {
     role: "status",
@@ -3534,9 +3543,9 @@ function JoinPage() {
     style: {
       marginBottom: 12
     }
-  }, "Almost there"), /*#__PURE__*/React.createElement("h3", {
+  }, sent === 'ok' ? "Got it" : "Almost there"), /*#__PURE__*/React.createElement("h3", {
     className: "m-h3"
-  }, "Your enquiry is ready in your email app. Press send and we\u2019ll reply within 48 hours.")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+  }, sent === 'ok' ? "Thanks \u2014 your enquiry\u2019s in. We\u2019ll be in touch soon." : "Your enquiry is ready in your email app. Press send and we\u2019ll reply within 48 hours.")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "m-eyebrow"
   }, routes.find(r => r[0] === route)[1]), /*#__PURE__*/React.createElement("div", {
     className: "mp-frow"

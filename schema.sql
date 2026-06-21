@@ -109,3 +109,39 @@ create policy "supporters admin read" on public.supporters
 
 -- (No anon SELECT/UPDATE/DELETE policy on purpose → emails are write-only to the
 --  public. The site inserts with Prefer: return=minimal so it never needs read.)
+
+-- ============================================================================
+-- 5) ENQUIRIES (contact / sponsorship / trial / volunteer form submissions)
+-- ============================================================================
+-- Same privacy model as supporters: the PUBLIC may ADD an enquiry, but only a
+-- signed-in admin can READ them — so visitor details stay private. You read /
+-- export the leads from the Supabase dashboard (Table editor → enquiries) or
+-- while signed in to the admin. Unlike supporters there is NO unique constraint
+-- (one person may legitimately send several enquiries over time).
+--
+-- WHY: the Contact / Join / Sponsorship forms used to only open the visitor's
+-- email app (a lead was lost if they never pressed send). Now every submission
+-- is captured here so the club can follow up about the club, sponsorship, etc.
+create table if not exists public.enquiries (
+  id         uuid primary key default gen_random_uuid(),
+  type       text,            -- General / Sponsor enquiry / Player trial / Media…
+  name       text,
+  email      text,
+  phone      text,            -- doubles as Company / Position depending on the form
+  message    text,
+  source     text,            -- which form/page it came from
+  created_at timestamptz not null default now()
+);
+create index if not exists enquiries_created_idx on public.enquiries (created_at desc);
+
+alter table public.enquiries enable row level security;
+
+-- PUBLIC SUBMIT — anyone may INSERT an enquiry…
+drop policy if exists "enquiries public insert" on public.enquiries;
+create policy "enquiries public insert" on public.enquiries
+  for insert to anon, authenticated with check (true);
+
+-- …but only a signed-in admin may READ them (anon gets nothing).
+drop policy if exists "enquiries admin read" on public.enquiries;
+create policy "enquiries admin read" on public.enquiries
+  for select to authenticated using (true);

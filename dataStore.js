@@ -270,6 +270,43 @@
     return { ok: false, reason: 'failed' };
   };
 
+  // ENQUIRIES - contact / sponsorship / trial / volunteer form submissions.
+  // Captured to the private `enquiries` table (anon INSERT only, admin READ),
+  // so no lead is lost to the visitor's email app. Unlike supporters there is
+  // no unique constraint - one person may send several enquiries. You read /
+  // export them from Supabase -> Table editor -> enquiries. Returns { ok }.
+  // keepalive:true so the POST completes even if the page navigates away.
+  window.saAddEnquiry = async (payload) => {
+    const cfg = (typeof window !== 'undefined' && window.SUPABASE_CONFIG) || {};
+    payload = payload || {};
+    const email = String(payload.email || '').trim();
+    const message = String(payload.message || '').trim();
+    if (!email && !message) return { ok: false, reason: 'empty' };
+    if (!cfg.url || !cfg.anonKey) return { ok: false, reason: 'noconfig' };
+    try {
+      const res = await fetch(cfg.url.replace(/\/+$/, '') + '/rest/v1/enquiries', {
+        method: 'POST',
+        keepalive: true,
+        headers: {
+          apikey: cfg.anonKey,
+          Authorization: 'Bearer ' + cfg.anonKey,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({
+          type: (String(payload.type || '').trim() || null),
+          name: (String(payload.name || '').trim() || null),
+          email: (email || null),
+          phone: (String(payload.phone || '').trim() || null),
+          message: (message || null),
+          source: (String(payload.source || 'site').trim()),
+        }),
+      });
+      if (res.status === 201 || res.status === 204) return { ok: true };
+      return { ok: false, reason: 'status_' + res.status };
+    } catch (e) { return { ok: false, reason: 'network' }; }
+  };
+
   // TEAM BADGES - used by FixtureEntry.jsx. Old format: single row containing
   // an object keyed by club name. Mirror that.
   window.getTeamBadges = () => {

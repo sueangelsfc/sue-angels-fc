@@ -1,0 +1,79 @@
+{
+  "$schema": "https://design-tokens.org/schema.json",
+  "name": "Sue's Angels FC Design System",
+  "source": "app.css (live tokens)",
+  "color": {
+    "anchor": {
+      "volt": { "value": "#D6F23A", "use": "primary accent — fills, rings, active, key numbers" },
+      "volt-bright": { "value": "#E4FB63", "use": "hover / brighter volt" },
+      "navy": { "value": "#071D29", "use": "deep base / ink on volt" }
+    },
+    "result": { "win": "#2BE38A", "draw": "#F2C744", "loss": "#FF5067", "accent-orange": "#FF9D42" },
+    "dark": {
+      "bg": "#04121B",
+      "ink-1": "#FFFFFF",
+      "ink-2": "rgba(233,242,247,0.74)",
+      "ink-3": "rgba(196,212,222,0.52)",
+      "volt-ink": "#D6F23A",
+      "glass-1": "rgba(255,255,255,0.038)",
+      "glass-2": "rgba(255,255,255,0.062)",
+      "glass-3": "rgba(10,28,40,0.55)",
+      "edge": "rgba(255,255,255,0.12)",
+      "edge-2": "rgba(255,255,255,0.18)"
+    },
+    "light": {
+      "bg": "#EAEEF2",
+      "ink-1": "#07131D",
+      "ink-2": "rgba(20,38,52,0.78)",
+      "ink-3": "rgba(46,66,82,0.62)",
+      "volt-ink": "#56660A",
+      "glass-1": "rgba(255,255,255,0.55)",
+      "glass-2": "rgba(255,255,255,0.74)",
+      "glass-3": "rgba(255,255,255,0.80)",
+      "edge": "rgba(8,22,32,0.12)",
+      "edge-2": "rgba(8,22,32,0.20)"
+    }
+  },
+  "typography": {
+    "display-font": "Clash Display, system-ui, sans-serif",
+    "body-font": "Hanken Grotesk, system-ui, -apple-system, sans-serif",
+    "weights": [500, 600, 700],
+    "hero-title": {
+      "font": "display",
+      "weight": 600,
+      "transform": "uppercase",
+      "line-height": 0.86,
+      "letter-spacing": "-0.04em",
+      "font-size": "clamp(2.8rem, 7vw, 6rem)",
+      "accent": "one word in volt, rest in ink-1"
+    },
+    "eyebrow": { "font": "body", "transform": "uppercase", "letter-spacing": "0.1em", "color": "volt", "size": "small" },
+    "body": { "font": "body", "weight": 500, "size": "16px", "line-height": 1.6 }
+  },
+  "radius": { "lg": "26px", "sm": "16px", "xs": "11px", "pill": "999px" },
+  "layout": { "gutter": "clamp(18px, 4vw, 56px)", "max-width": "1240px" },
+  "motion": {
+    "ease": "cubic-bezier(0.16, 1, 0.3, 1)",
+    "boot-screen": { "hold-ms": 3000, "fade-ms": 1000, "respects-reduced-motion": true }
+  },
+  "elevation": {
+    "shadow-1": "0 18px 46px -28px rgba(0,0,0,0.8)",
+    "shadow-2": "0 28px 70px -32px rgba(0,0,0,0.86)",
+    "shadow-3": "0 40px 100px -36px rgba(0,0,0,0.92)",
+    "blur": { "1": "12px", "2": "20px", "3": "34px" }
+  },
+  "buttons": {
+    "shape": "pill (border-radius 999px)",
+    "transform": "uppercase",
+    "letter-spacing": "0.05em",
+    "primary": { "bg": "volt", "ink": "navy" },
+    "ghost": { "bg": "transparent", "border": "edge", "ink": "current" }
+  },
+  "voice": {
+    "spelling": "British",
+    "em-dashes": false,
+    "league-naming": "League Ten (never Division)",
+    "headings": "UPPERCASE display, sentence-case body",
+    "tone": "confident, warm, restrained volt, cause handled with dignity"
+  }
+}

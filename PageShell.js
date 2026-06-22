@@ -440,22 +440,23 @@ window.daysUntilNextSeason = function (now = new Date()) {
   return Math.max(0, Math.ceil((nextStart - now) / 86400000));
 };
 
-// Pre-season training schedule. First session 24 June 2026 19:00–20:30, then
+// Pre-season training schedule. First session pushed back to 1 July 2026
+// 19:00–20:30 (extreme heat warning over the original 24 June date), then
 // every Sunday 10:00–12:30 at the home ground. getNextSession returns the next
 // session whose end time is still in the future (so it rolls over automatically).
 window.PRESEASON = {
-  firstISO: '2026-06-24T19:00:00',
+  firstISO: '2026-07-01T19:00:00',
   venue: 'Home ground'
 };
 window.getNextSession = function (now = new Date()) {
   const mk = (y, mo, d, h, mi) => new Date(y, mo, d, h, mi, 0, 0);
   const sessions = [{
-    start: mk(2026, 5, 24, 19, 0),
+    start: mk(2026, 6, 1, 19, 0),
     s: '19:00',
     e: '20:30'
   }];
-  // First Sunday strictly after 24 June 2026, then weekly for ~30 weeks.
-  let d = mk(2026, 5, 24, 10, 0);
+  // First Sunday strictly after 1 July 2026, then weekly for ~30 weeks.
+  let d = mk(2026, 6, 1, 10, 0);
   do {
     d.setDate(d.getDate() + 1);
   } while (d.getDay() !== 0);
@@ -955,7 +956,7 @@ window.COACHES = [{
   supports: 'Fulham F.C.'
 }, {
   id: 'louis-allen',
-  role: 'ASSISTANT MANAGER',
+  role: 'FIRST TEAM COACH',
   name: 'Louis Allen',
   short: 'Organisation & matchday prep',
   bio: ["Louis Allen has been a constant presence in the Sue’s Angels FC backroom throughout the 25/26 season, a campaign that ended with the League Ten title and an unbeaten record. His contribution goes far beyond the ninety minutes.", "Known for his meticulous organisation and pre-game preparation, Louis makes sure everything is in place before kick-off so the squad can focus on the football. From logistics to the smallest details, his work behind the scenes has been a big part of why the team has performed so consistently, week in and week out.", "It is his character, though, that sets him apart. A positive, dependable figure who lifts the group and holds everyone to the same standards, Louis embodies the togetherness and culture that have driven the club forward. A valued member of the staff and a key part of the journey."]

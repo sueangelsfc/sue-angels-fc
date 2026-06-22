@@ -430,7 +430,14 @@
 
   // CUSTOM NEWS ARTICLES - admin-written posts (News.jsx composer). Each stored
   // under its own key; value is { id, cat, title, lede, date, sortISO, cover }.
-  window.getCustomArticles = () => Object.values(window.dataStore.articles.getAllCached() || {});
+  window.getCustomArticles = () => {
+    // Built-in defaults (window.SA_DEFAULT_ARTICLES, defined in PageShell.js) merged
+    // with admin-entered articles; a stored row with the same id overrides the default.
+    const byId = {};
+    (window.SA_DEFAULT_ARTICLES || []).forEach((a) => { if (a && a.id) byId[a.id] = a; });
+    Object.values(window.dataStore.articles.getAllCached() || {}).forEach((a) => { if (a && a.id) byId[a.id] = a; });
+    return Object.values(byId);
+  };
   window.saveCustomArticle = (article) => window.dataStore.articles.set(article.id, article);
   window.deleteCustomArticle = (id) => window.dataStore.articles.remove(id);
 

@@ -996,6 +996,33 @@ A dedicated supporter of Chelsea F.C., Luke combines quick reactions with strong
 A passionate supporter of Arsenal F.C., Frazier is capable of changing a game in an instant, whether through his intelligent movement, physical presence, or eye for goal. His relentless work ethic and determination make him a key figure in the squad and a player defenders never enjoy facing.`
 };
 
+// Built-in club articles that always appear on the News / Media feed. Merged with
+// admin-entered articles in getCustomArticles (an admin row with the same id wins,
+// so the club can edit or replace one from the CMS). Use for permanent or
+// announcement posts the club wants guaranteed live.
+window.SA_DEFAULT_ARTICLES = [
+  {
+    id: 'art-preseason-heat-2026',
+    cat: 'News',
+    title: 'Pre-Season Pushed Back a Week as Heatwave Hits',
+    date: '22 Jun 2026',
+    sortISO: '2026-06-22T09:00:00.000Z',
+    cover: null,
+    isDefault: true,
+    lede: `Our first pre-season session of the summer has been moved. Originally planned for Wednesday 24 June, it will now take place a week later, on Wednesday 1 July, 19:00 to 20:30, at the home ground.
+
+The reason is simple, and it is the right one: player welfare comes first. The Met Office has issued an amber extreme heat warning across southern England this week, with temperatures climbing through the mid-30s and forecast to peak at around 38°C on Wednesday, the exact day we were due to be out on the grass. The UK Health Security Agency has issued matching Heat Health Alerts, and with warm, humid nights offering little relief, heat stress is a genuine risk to everyone, not just the most vulnerable.
+
+Asking players to train at full intensity in those conditions is not a risk worth taking. As a club built in memory of someone we loved, looking after each other will always matter more than a date in the diary.
+
+So we wait a week. By Wednesday 1 July the worst of the heat should have passed, and we will get our preparations for the 26/27 campaign under way properly, safely, and together.
+
+While the heat is with us, look after yourselves and each other: drink plenty of water, find the shade in the hottest hours, check in on anyone who might be struggling, and never leave a child or a pet in a parked car.
+
+New date: Wednesday 1 July, 19:00 to 20:30, at the home ground. Sunday sessions (10:00 to 12:30) follow from there. See you on the grass, Angels. Stay safe.`
+  }
+];
+
 // Single source of truth for the 25/26 first-team squad.
 // Stats removed - derived live from saved match entries (see derivedPlayerStats below).
 window.SQUAD = [{

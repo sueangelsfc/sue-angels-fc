@@ -78,7 +78,7 @@ html[data-theme="light"] {
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; background: var(--m-bg); }
+html, body { margin: 0; background: var(--m-bg); overflow-x: hidden; max-width: 100%; }
 /* Fluid root: the whole UI scales continuously with the viewport — bigger on large
    screens, smaller on small ones (everything sized in rem follows this). */
 html { font-size: clamp(15px, 0.3vw + 14px, 18px); -webkit-text-size-adjust: 100%; }
@@ -496,7 +496,7 @@ html[data-theme="light"] { --m-volt-ink: #0A1B27; }
 .mh-nm__cd { color: var(--m-volt-ink) !important; }
 
 /* section scaffold */
-.mh-sec { padding: clamp(56px, 8vw, 120px) 0; position: relative; }
+.mh-sec { padding: clamp(30px, 7vw, 120px) 0; position: relative; }
 .mh-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: clamp(26px, 4vw, 48px); }
 .mh-head h2 { margin-top: 12px; }
 

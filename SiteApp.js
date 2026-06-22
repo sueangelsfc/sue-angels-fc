@@ -3707,7 +3707,7 @@ function Awards({ go }) {
         h('span', { className: 'aw-motm__winner' }, m.playerName)))))) : null,
     h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
       h(Head, { eyebrow: season + ' awards night', title: 'End of Season Awards' }),
-      seasonAwards.length ? h('div', { className: 'aw-grid' }, seasonAwards.map(awardCard)) : empty('Awards will be announced after 19 June', 'Our end-of-season honours will appear here after the awards night.'))));
+      seasonAwards.length ? h('div', { className: 'aw-deck' }, seasonAwards.map(awardCard)) : empty('Awards will be announced after 19 June', 'Our end-of-season honours will appear here after the awards night.'))));
 }
 
 const NAV = [['home', 'Home'], ['about', 'About'], ['sepsis', 'Our Cause'], ['champions', 'Champions'], ['team', 'Team'], ['schedule', 'Matches'], ['league', 'League'], ['media', 'Media'], ['sponsors', 'Sponsors'], ['contact', 'Contact']];

@@ -1700,6 +1700,11 @@ button.rec-lead__name:hover { color: var(--m-volt-ink); }
 .aw-quote { margin: 4px 0 0; padding-left: 14px; border-left: 3px solid var(--m-volt); color: var(--m-ink-1); font-style: italic; line-height: 1.5; }
 .aw-potm__actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: auto; padding-top: 10px; align-items: center; }
 .aw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 16px; margin-top: 22px; }
+/* Award winners as a horizontal sliding deck (front-facing, straight) */
+.aw-deck { display: flex; gap: 16px; overflow-x: auto; overflow-y: hidden; touch-action: pan-x; overscroll-behavior-x: contain; padding: 14px 2px 24px; margin-top: 22px; scroll-snap-type: x mandatory; }
+.aw-deck::-webkit-scrollbar { height: 6px; }
+.aw-deck::-webkit-scrollbar-thumb { background: var(--m-edge-2); border-radius: 4px; }
+.aw-deck .aw-card { flex: 0 0 clamp(238px, 28vw, 296px); scroll-snap-align: start; }
 .aw-card { text-align: left; padding: 0; overflow: hidden; border-radius: 18px; }
 button.aw-card { cursor: pointer; transition: transform .25s var(--m-ease); }
 button.aw-card:hover { transform: translateY(-3px); }

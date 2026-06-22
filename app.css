@@ -517,7 +517,7 @@ html[data-theme="light"] { --m-volt-ink: #0A1B27; }
 @media (max-width: 560px) { .mh-ledger__tiles { grid-template-columns: 1fr 1fr; } }
 
 /* results rail */
-.mh-rail { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 12px; scroll-snap-type: x mandatory; }
+.mh-rail { display: flex; gap: 14px; overflow-x: auto; overflow-y: hidden; touch-action: pan-x; overscroll-behavior-x: contain; padding: 14px 2px 22px; scroll-snap-type: x mandatory; }
 .mh-rail::-webkit-scrollbar { height: 6px; } .mh-rail::-webkit-scrollbar-thumb { background: var(--m-edge-2); border-radius: 4px; }
 .mh-res { flex: 0 0 clamp(244px, 30vw, 300px); scroll-snap-align: start; padding: 20px; border-radius: var(--m-radius-sm);
   background: var(--m-glass-2); border: 1px solid var(--m-edge); box-shadow: var(--m-shadow-1), inset 0 1px 0 var(--m-hi);

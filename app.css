@@ -859,7 +859,7 @@ html[data-theme="light"] .cine__copy { background: rgba(255,255,255,0.42); borde
 html[data-theme="light"] .cine__title em { color: #5f8a05; }
 .cine__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 16px 0 14px; color: inherit; opacity: 0.86; font: 600 0.82rem var(--m-sans); letter-spacing: 0.04em; }
 .cine__meta i { width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: 0.5; display: inline-block; }
-.cine__lead { color: inherit; opacity: 0.82; font: 500 1rem/1.6 var(--m-sans); max-width: 52ch; }
+.cine__lead { color: inherit; opacity: 0.82; font: 500 clamp(0.8rem, 0.35vw + 0.7rem, 0.9rem)/1.6 var(--m-sans); max-width: 52ch; }
 .cine__next { display: inline-flex; align-items: center; gap: 9px; margin-top: 16px; padding: 9px 15px; border-radius: 999px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); font: 600 0.8rem var(--m-sans); color: inherit; }
 html[data-theme="dark"] .cine__next { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); }
 html[data-theme="light"] .cine__next { background: rgba(10,24,34,0.05); border: 1px solid rgba(10,24,34,0.14); }

@@ -3914,7 +3914,7 @@ function SiteFooter() {
 function BackToTop() {
   const [show, setShow] = useState(false);
   useEffect(() => {
-    const on = () => setShow(window.scrollY > 600);
+    const on = () => setShow(window.scrollY > 360);
     on();
     window.addEventListener('scroll', on, {
       passive: true

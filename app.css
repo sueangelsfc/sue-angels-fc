@@ -81,7 +81,7 @@ html[data-theme="light"] {
 html, body { margin: 0; background: var(--m-bg); overflow-x: hidden; max-width: 100%; }
 /* Fluid root: the whole UI scales continuously with the viewport — bigger on large
    screens, smaller on small ones (everything sized in rem follows this). */
-html { font-size: clamp(15px, 0.3vw + 14px, 18px); -webkit-text-size-adjust: 100%; }
+html { font-size: clamp(13.5px, 0.5vw + 11.8px, 18px); -webkit-text-size-adjust: 100%; }
 /* Keep form fields at 16px+ on mobile so iOS doesn't zoom on focus */
 input, textarea, select { font-size: max(16px, 1rem); }
 body.m-body {
@@ -908,12 +908,41 @@ html[data-theme="light"] .cine__next { background: rgba(10,24,34,0.05); border: 
   .cine__cta .m-btn { padding: 9px 15px; font-size: 0.78rem; }
   .cine__cta .m-btn svg { width: 17px; height: 17px; }
 }
-/* Mobile: trim the big display headings + lead so sections feel right-sized */
+/* Mobile: comprehensive scale-down so every section feels phone-sized */
 @media (max-width: 600px) {
-  .m-h2 { font-size: clamp(1.55rem, 6.2vw, 2rem); }
-  .m-h3 { font-size: clamp(1.1rem, 4.4vw, 1.4rem); }
-  .m-lead { font-size: clamp(0.92rem, 3vw, 1.05rem); }
-  .cine__title { font-size: clamp(1.3rem, 6.4vw, 1.58rem); }
+  /* Type */
+  .m-h2 { font-size: clamp(1.3rem, 5.2vw, 1.6rem); }
+  .m-h3 { font-size: clamp(1.02rem, 3.9vw, 1.2rem); }
+  .m-lead { font-size: clamp(0.9rem, 3vw, 1rem); }
+  .cine__title { font-size: clamp(1.25rem, 6.2vw, 1.5rem); }
+  .m-eyebrow { font-size: 0.66rem; letter-spacing: 0.13em; }
+  /* Buttons + chips */
+  .m-btn { padding: 10px 16px; font-size: 0.8rem; gap: 7px; }
+  .m-btn svg { width: 16px; height: 16px; }
+  .m-chip { padding: 5px 11px; font-size: 0.72rem; }
+  /* Section heads + grids */
+  .mh-head { margin-bottom: 14px; gap: 10px; }
+  .mp-grid { gap: 11px; }
+  /* Pillar / award cards */
+  .mh-pillar { padding: 14px 15px; gap: 5px; border-radius: var(--m-radius-sm); }
+  /* Campaign ledger + win-rate ring */
+  .mh-ledger { gap: 13px; }
+  .mh-ledger__hero { padding: 20px 16px; }
+  .mh-bigring { width: clamp(132px, 40vw, 160px); height: clamp(132px, 40vw, 160px); }
+  .mh-bigring__pct { font-size: 2rem; }
+  .mh-ledger__tiles { gap: 10px; }
+  .mh-ltile { padding: 13px 14px; border-radius: var(--m-radius-sm); }
+  .mh-ltile b { font-size: clamp(1.5rem, 7vw, 1.9rem); }
+  .mh-ltile span { margin-top: 6px; font-size: 0.6rem; }
+  /* Join / next-chapter banner */
+  .mh-join { padding: 28px 18px; border-radius: var(--m-radius-sm); }
+  .mh-join p { margin-top: 9px; }
+  .mh-join__ctas { margin-top: 16px; gap: 9px; }
+  /* Hero strip + next-session bar */
+  .cine__next2 { padding: 9px 13px; gap: 8px; margin-bottom: 14px; }
+  .cine__next2__txt { font-size: 0.76rem; }
+  .cine__strip { padding-top: 14px; padding-bottom: 22px; }
+  .cine__selrow { margin-bottom: 12px; }
 }
 .mp-sec { padding: clamp(40px, 6vw, 80px) 0; }
 .mp-grid { display: grid; gap: 16px; }
@@ -1512,7 +1541,8 @@ h1, h2, h3, p, span, b, a, li { overflow-wrap: anywhere; }
   /* compact pill sizing so wrapped tabs/filters fit the viewport */
   .mp-subtab { white-space: nowrap; padding: 7px 13px; font-size: 0.64rem; letter-spacing: 0.03em; }
   /* primary / ghost buttons: trimmed for small screens, still comfortably tappable */
-  .m-btn { padding: 12px 18px; font-size: 0.82rem; }
+  .m-btn { padding: 9px 15px; font-size: 0.78rem; }
+  .m-btn svg { width: 16px; height: 16px; }
   /* position filter pills (Goalkeepers/Defenders/…): match the compact tab pills */
   .mp-posselect { gap: 6px; margin-bottom: 18px; }
   .mp-posselect__btn { padding: 7px 13px; gap: 6px; font-size: 0.64rem; letter-spacing: 0.04em; }

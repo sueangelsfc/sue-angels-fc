@@ -892,7 +892,7 @@ html[data-theme="light"] .cine__next { background: rgba(10,24,34,0.05); border: 
 .cine__next2__cta:hover { color: var(--m-volt-ink); }
 .cine__tag { flex: 0 0 auto; align-self: flex-start; background: var(--m-volt); color: #071D29; font: 700 0.58rem var(--m-sans); letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: 6px; }
 .cine__tlabel--news { align-items: flex-start; }
-.cine__tlabel--news b { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.25; }
+.cine__tlabel--news b { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.25; font-size: clamp(0.62rem, 1.8vw, 0.72rem); font-weight: 700; text-shadow: 0 1px 6px rgba(0,0,0,0.6); }
 .cine__thumb--news .mp-news__cover { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 0; margin: 0; }
 .cine__thumb--news .mp-news__cover img { width: 100%; height: 100%; object-fit: cover; }
 @media (max-width: 680px) { .cine { --ph: clamp(420px, 70vh, 560px); } .cine__thumbs { grid-template-columns: 1fr 1fr; } .cine__thumb:last-child { display: none; } .cine__next2__cta { margin-left: 0; } }
@@ -1547,10 +1547,17 @@ h1, h2, h3, p, span, b, a, li { overflow-wrap: anywhere; }
   .mp-posselect { gap: 6px; margin-bottom: 18px; }
   .mp-posselect__btn { padding: 7px 13px; gap: 6px; font-size: 0.64rem; letter-spacing: 0.04em; }
   .mp-posselect__n { font-size: 0.7rem; }
-  /* league table: let it scroll horizontally rather than crush 8 columns */
-  .mp-ltable, .mh-table--full { display: block; overflow-x: auto; white-space: nowrap;
-    -webkit-overflow-scrolling: touch; }
-  .mp-ltable thead, .mh-table--full thead { } /* keep table semantics intact */
+  /* league + stat tables: shrink to FIT the screen (no horizontal drag space) */
+  .mh-table--full { min-width: 0; width: 100%; }
+  .mh-table--full th, .mh-table--full td { padding: 8px 4px; font-size: clamp(0.62rem, 2.4vw, 0.82rem); white-space: normal; }
+  .mh-table--full th { font-size: clamp(0.44rem, 1.7vw, 0.55rem); letter-spacing: 0.04em; }
+  .mh-table--full .mh-table__club { gap: 5px; }
+  .mh-table--full .mh-table__club img { width: 16px; height: 16px; }
+  .mp-ltable { width: 100%; }
+  .mp-ltable th, .mp-ltable td { padding: 9px 5px; white-space: normal; }
+  .mp-ltable th { font-size: 0.48rem; letter-spacing: 0.04em; }
+  .mp-ltable td { font-size: 0.76rem; }
+  .mp-ltable__name i { margin-right: 4px; }
   /* score-cover badges scale down so the VS/score stays centered */
   .mp-news__gbadge { width: 44px; height: 44px; }
   .mp-news__sc img { max-width: 46px; max-height: 46px; }

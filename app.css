@@ -724,6 +724,22 @@ html[data-theme="light"] .mh-hero__scrim {
 .mh-ocamba__arrow:hover { border-color: var(--m-volt); color: var(--m-volt-ink); transform: translateY(-2px); }
 .mh-ocamba__arrow:active { transform: translateY(0); }
 .mh-ocamba .mh-pillrail { margin: 0; padding-top: 6px; }
+/* Award winner cards — player face + frosted award panel + 3D tilt (data-tilt) */
+.mh-awgrid { gap: clamp(13px, 2vw, 18px); }
+.mh-awcard { position: relative; aspect-ratio: 3 / 4; border-radius: var(--m-radius); overflow: hidden; padding: 0; text-align: left; border: 1px solid var(--m-edge); background: var(--m-glass-2); color: inherit; font: inherit; cursor: pointer; transform-style: preserve-3d; will-change: transform; transition: transform .3s var(--m-ease), box-shadow .4s, border-color .3s; box-shadow: var(--m-shadow-1); }
+.mh-awcard__photo { position: absolute; inset: 0; }
+.mh-awcard__photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%; display: block; transition: transform .6s var(--m-ease); }
+.mh-awcard__fallback { object-fit: contain !important; padding: 24%; opacity: 0.45; }
+.mh-awcard__grad { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(4,15,22,0) 26%, rgba(4,15,22,0.44) 55%, rgba(4,15,22,0.93) 100%); }
+.mh-awcard__body { position: absolute; left: 0; right: 0; bottom: 0; padding: 15px 15px 17px; display: flex; flex-direction: column; gap: 3px; transform: translateZ(30px); }
+.mh-awcard__body .m-eyebrow { color: var(--m-volt); }
+.mh-awcard__name { font-family: var(--m-display); font-weight: 600; line-height: 1.04; letter-spacing: -0.02em; font-size: clamp(1.02rem, 2.1vw, 1.4rem); color: #fff; text-transform: uppercase; }
+.mh-awcard__cta { color: var(--m-volt); font: 700 0.7rem var(--m-sans); letter-spacing: 0.05em; text-transform: uppercase; margin-top: 7px; opacity: 0; transform: translateY(6px); transition: opacity .3s, transform .3s; }
+.mh-awcard:hover { border-color: var(--m-volt); box-shadow: 0 36px 70px -30px rgba(214,242,58,0.42), var(--m-shadow-1); }
+.mh-awcard:hover .mh-awcard__photo img { transform: scale(1.07); }
+.mh-awcard:hover .mh-awcard__cta { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) { .mh-awcard, .mh-awcard__photo img { transition: none; } .mh-awcard { transform: none !important; } }
+@media (max-width: 600px) { .mp-grid.mh-awgrid { grid-template-columns: 1fr 1fr; gap: 10px; } .mh-awcard__body { padding: 11px 12px 13px; } .mh-awcard__cta { opacity: 1; transform: none; } }
 @media (max-width: 760px) { .mh-ocamba { grid-template-columns: 1fr; gap: 6px; align-items: start; } .mh-ocamba__nav { display: none; } }
 @media (prefers-reduced-motion: reduce) { .mh-pillar { transition: none; } .mh-pillar:hover { transform: none; } }
 

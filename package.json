@@ -1,7 +1,13 @@
 {
+  "name": "sue-angels-fc",
+  "version": "1.0.0",
   "private": true,
-  "description": "Serverless function dependencies only. The static site has no build step (vercel.json buildCommand is null); this package.json exists solely so Vercel installs @vercel/og for the api/og-cover image generator.",
-  "dependencies": {
-    "@vercel/og": "^0.6.2"
+  "type": "module",
+  "scripts": {
+    "build:app": "esbuild src/SiteApp.jsx --loader:.jsx=jsx --jsx=transform --jsx-factory=React.createElement --jsx-fragment=React.Fragment --charset=utf8 --legal-comments=none --outfile=SiteApp.js",
+    "watch:app": "npm run build:app -- --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
   }
 }

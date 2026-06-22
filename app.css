@@ -1409,7 +1409,11 @@ html[data-theme="light"] .mh-join { background: radial-gradient(150% 150% at 0% 
 .m-albumbox__nav:hover { background: var(--m-volt); color: var(--m-navy); border-color: transparent; }
 /* light-mode Media readability: solid cards, covers stay dark so white text reads */
 html[data-theme="light"] .mp-news { background: #ffffff; border-color: rgba(8,22,32,0.14); box-shadow: 0 14px 34px -22px rgba(20,44,66,0.28); }
-html[data-theme="light"] .mp-news__cover, html[data-theme="light"] .mp-news__cover--score { background: radial-gradient(120% 120% at 50% 0%, rgba(16,46,62,0.94), rgba(4,16,24,0.98)); }
+/* Theme-aware covers: dark cover in dark mode, light cover in light mode */
+html[data-theme="light"] .mp-news__cover, html[data-theme="light"] .mp-news__cover--score { background: radial-gradient(120% 120% at 50% 0%, rgba(246,249,251,0.97), rgba(220,229,235,0.98)); }
+html[data-theme="light"] .mp-news__sc b { color: #0A1A24; }
+html[data-theme="light"] .mp-news__ft { color: rgba(10,26,36,0.5); }
+html[data-theme="light"] .mp-news__comp { color: var(--m-volt-ink); }
 html[data-theme="light"] .mp-news__body h3 { color: var(--m-ink-1); }
 html[data-theme="light"] .mp-news__body p { color: var(--m-ink-3); }
 

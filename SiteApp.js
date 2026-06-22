@@ -3888,7 +3888,7 @@ function SiteFooter() {
     h("div", { className: "mh-footer__row", style: { alignItems: 'flex-start' } },
       h("div", null,
         h("a", { className: "mh-footer__brand", href: "index.html", style: { textDecoration: 'none', color: 'inherit' } }, h("img", { src: "assets/badge/sue-angels-badge.webp", alt: "" }), "Sue's Angels FC"),
-        h("p", { style: { color: 'var(--m-ink-3)', fontSize: '0.84rem', marginTop: 12, maxWidth: '36ch', lineHeight: 1.6 } }, "South-west London Sunday league, in memory of Susan Anne Martin. League Ten champions for sepsis awareness.")),
+        h("p", { style: { color: 'var(--m-ink-3)', fontSize: '0.76rem', marginTop: 12, maxWidth: '36ch', lineHeight: 1.6 } }, "South-west London Sunday league, in memory of Susan Anne Martin. League Ten champions for sepsis awareness.")),
       h("div", { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } }, social.map(function (s) {
         var ic = s[0] === 'Instagram'
           ? h('svg', { width: 22, height: 22, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true' }, h('rect', { x: 2, y: 2, width: 20, height: 20, rx: 5, ry: 5 }), h('path', { d: 'M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z' }), h('line', { x1: 17.5, y1: 6.5, x2: 17.51, y2: 6.5 }))
@@ -3904,11 +3904,11 @@ function SiteFooter() {
     h("div", { style: { marginTop: 30, paddingTop: 24, borderTop: '1px solid var(--m-edge)', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 270px), 1fr))', gap: 22, alignItems: 'start' } },
       h("div", null,
         h("div", { style: { font: '700 0.68rem var(--m-sans)', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--m-ink-2)', marginBottom: 8 } }, "Stay in touch"),
-        h("p", { style: { color: 'var(--m-ink-3)', fontSize: '0.84rem', maxWidth: '34ch', lineHeight: 1.6, margin: 0 } }, "Occasional fixtures, results and news. Your email stays private.")),
+        h("p", { style: { color: 'var(--m-ink-3)', fontSize: '0.76rem', maxWidth: '34ch', lineHeight: 1.6, margin: 0 } }, "Occasional fixtures, results and news. Your email stays private.")),
       h(SupporterSignup, { compact: true, source: 'footer' })),
     h("div", { style: { marginTop: 26, paddingTop: 18, borderTop: '1px solid var(--m-edge)', display: 'flex', flexWrap: 'wrap', gap: '6px 18px', alignItems: 'center' } },
       h("span", { style: { font: '700 0.64rem var(--m-sans)', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--m-ink-3)' } }, "Also"),
-      supporting.map(function (it) { return h("a", { key: it[0], href: it[0], style: { color: 'var(--m-ink-3)', fontSize: '0.8rem', textDecoration: 'none' } }, it[1]); })),
+      supporting.map(function (it) { return h("a", { key: it[0], href: it[0], style: { color: 'var(--m-ink-3)', fontSize: '0.72rem', letterSpacing: '0.06em', textTransform: 'uppercase', textDecoration: 'none' } }, it[1]); })),
     h("div", { className: "sa-vh" }, h("small", null, "Sunday-league football at The Reeves, Hanworth \xB7 serving Kingston, Sunbury, Staines and south-west London \xB7 founded 2025 in memory of Susan Anne Martin \xB7 League Ten champions 25/26 \xB7 supporting sepsis awareness"))));
 }
 function BackToTop() {

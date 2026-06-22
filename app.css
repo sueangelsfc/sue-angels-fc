@@ -55,7 +55,7 @@
   --m-radius-xs: 11px;
   --m-ease:      cubic-bezier(0.16, 1, 0.3, 1);
   --m-gut:       clamp(18px, 4vw, 56px);
-  --m-max:       1240px;
+  --m-max:       clamp(1240px, 84vw, 1440px);
 }
 
 html[data-theme="light"] {
@@ -79,6 +79,11 @@ html[data-theme="light"] {
 
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--m-bg); }
+/* Fluid root: the whole UI scales continuously with the viewport — bigger on large
+   screens, smaller on small ones (everything sized in rem follows this). */
+html { font-size: clamp(15px, 0.3vw + 14px, 18px); -webkit-text-size-adjust: 100%; }
+/* Keep form fields at 16px+ on mobile so iOS doesn't zoom on focus */
+input, textarea, select { font-size: max(16px, 1rem); }
 body.m-body {
   font-family: var(--m-sans);
   color: var(--m-ink-1);
@@ -709,6 +714,17 @@ html[data-theme="light"] .mh-hero__scrim {
 .mh-pillrail::-webkit-scrollbar-thumb { background: var(--m-edge-2); border-radius: 4px; }
 .mh-pillrail .mh-pillar { flex: 0 0 clamp(258px, 30vw, 330px); scroll-snap-align: start; min-height: 232px; }
 .mh-pillrail .mh-pillar__body::before { content: ''; display: block; width: 28px; height: 2px; background: var(--m-edge-2); margin: 4px 0 14px; }
+/* Ocamba "What We Do" two-column layout: heading + nav left, sliding cards right */
+.mh-ocamba { display: grid; grid-template-columns: minmax(190px, 290px) 1fr; gap: clamp(16px, 3vw, 44px); align-items: center; }
+.mh-ocamba__head { display: flex; flex-direction: column; gap: 12px; }
+.mh-ocamba__head .m-h2 { margin: 0; }
+.mh-ocamba__desc { color: var(--m-ink-2); font: 500 clamp(0.88rem, 1.2vw, 0.96rem)/1.6 var(--m-sans); margin: 2px 0 0; max-width: 32ch; }
+.mh-ocamba__nav { display: flex; gap: 10px; margin-top: 8px; }
+.mh-ocamba__arrow { width: clamp(42px, 7vw, 48px); height: clamp(42px, 7vw, 48px); border-radius: 50%; border: 1px solid var(--m-edge); background: var(--m-glass-1); color: var(--m-ink-1); font-size: 18px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s var(--m-ease), border-color .2s var(--m-ease), color .2s, transform .2s; }
+.mh-ocamba__arrow:hover { border-color: var(--m-volt); color: var(--m-volt-ink); transform: translateY(-2px); }
+.mh-ocamba__arrow:active { transform: translateY(0); }
+.mh-ocamba .mh-pillrail { margin: 0; padding-top: 6px; }
+@media (max-width: 760px) { .mh-ocamba { grid-template-columns: 1fr; gap: 6px; align-items: start; } .mh-ocamba__nav { display: none; } }
 @media (prefers-reduced-motion: reduce) { .mh-pillar { transition: none; } .mh-pillar:hover { transform: none; } }
 
 /* next-match card */

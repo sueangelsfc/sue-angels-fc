@@ -1647,183 +1647,7 @@ function Home({
     l: 'Clean sheets',
     volt: true
   }];
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("section", {
-    className: "mh-hero"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "mh-hero__photo"
-  }, /*#__PURE__*/React.createElement("img", {
-    ref: imgRef,
-    src: "assets/hero-team.webp",
-    fetchpriority: "high",
-    onError: function (e) { if ((e.target.getAttribute('src') || '').indexOf('hero-team.webp') > -1) e.target.src = 'assets/hero-team.jpg'; },
-    alt: ""
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "mh-hero__scrim"
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "m-wrap",
-    ref: dRef
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "mh-htop"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "mh-copy"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "m-eyebrow m-eyebrow--volt"
-  }, "What we do in life echoes in eternity"), /*#__PURE__*/React.createElement("h1", {
-    className: "mh-title"
-  }, "Sue's Angels", /*#__PURE__*/React.createElement("em", null, "FC")), /*#__PURE__*/React.createElement("p", {
-    className: "mh-tag"
-  }, "Built in memory. Driven by purpose."), /*#__PURE__*/React.createElement("p", {
-    className: "m-lead mh-hsub"
-  }, "In memory of Susan Anne Martin. Played ", t.pl, ", won ", t.w, t.l === 0 ? ', unbeaten in League Ten' : '', "."), /*#__PURE__*/React.createElement("div", {
-    className: "mh-routes"
-  }, /*#__PURE__*/React.createElement("button", {
-    className: "mh-route mp-clickable",
-    onClick: () => go('schedule')
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "mh-route__ic"
-  }, I.cal), /*#__PURE__*/React.createElement("b", null, "Fixtures"), /*#__PURE__*/React.createElement("span", null, "Upcoming matches")), /*#__PURE__*/React.createElement("button", {
-    className: "mh-route mp-clickable",
-    onClick: () => go('schedule')
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "mh-route__ic"
-  }, I.trophy), /*#__PURE__*/React.createElement("b", null, "Results"), /*#__PURE__*/React.createElement("span", null, "Scores & reports")), /*#__PURE__*/React.createElement("button", {
-    className: "mh-route mp-clickable",
-    onClick: () => go('media')
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "mh-route__ic"
-  }, I.photo), /*#__PURE__*/React.createElement("b", null, "Gallery"), /*#__PURE__*/React.createElement("span", null, "Matchday photos")))), /*#__PURE__*/React.createElement("div", {
-    className: "mh-nm2"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "mh-nm2__head"
-  }, /*#__PURE__*/React.createElement("span", null, next ? 'Next match' : 'Next session'), I.cal), next ? /*#__PURE__*/React.createElement("div", {
-    className: "mh-nm2__teams"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "mh-nm2__team"
-  }, Badge ? /*#__PURE__*/React.createElement(Badge, {
-    team: next.home,
-    size: 52
-  }) : null, /*#__PURE__*/React.createElement("b", null, next.home.replace(' FC', ''))), /*#__PURE__*/React.createElement("span", {
-    className: "mh-nm2__vs"
-  }, "VS"), /*#__PURE__*/React.createElement("div", {
-    className: "mh-nm2__team"
-  }, Badge ? /*#__PURE__*/React.createElement(Badge, {
-    team: next.away,
-    size: 52
-  }) : null, /*#__PURE__*/React.createElement("b", null, next.away.replace(' FC', '')))) : /*#__PURE__*/React.createElement("div", {
-    className: "mh-nm2__teams",
-    style: {
-      gridTemplateColumns: '1fr'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "mh-nm2__team"
-  }, /*#__PURE__*/React.createElement("img", {
-    src: "assets/badge/sue-angels-shield.webp",
-    alt: ""
-  }), /*#__PURE__*/React.createElement("b", null, session ? session.title || 'Pre-season training' : '26/27 season'))), /*#__PURE__*/React.createElement("div", {
-    className: "mh-nm2__rows"
-  }, next ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "mh-nm2__row"
-  }, I.cal, /*#__PURE__*/React.createElement("span", null, next.date === 'TBC' ? 'Date TBC' : `${next.day || ''} ${next.date} ${next.mon || ''}`.trim())), /*#__PURE__*/React.createElement("div", {
-    className: "mh-nm2__row"
-  }, I.clock, /*#__PURE__*/React.createElement("span", null, !next.kick || next.kick === 'TBC' ? 'Kick-off TBC' : `${next.kick} KO`))) : session ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "mh-nm2__row"
-  }, I.cal, /*#__PURE__*/React.createElement("span", null, session.dayName, " ", session.dateStr)), /*#__PURE__*/React.createElement("div", {
-    className: "mh-nm2__row"
-  }, I.clock, /*#__PURE__*/React.createElement("span", null, session.timeStr)), /*#__PURE__*/React.createElement("div", {
-    className: "mh-nm2__row"
-  }, I.pin, /*#__PURE__*/React.createElement("span", null, session.venue))) : null, cd ? /*#__PURE__*/React.createElement("div", {
-    className: "mh-nm2__cd"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "mh-nm2__dot"
-  }), cd.d > 0 ? cd.d + 'D ' : '', pad(cd.h), "H ", pad(cd.m), "M TO KICK-OFF") : null), /*#__PURE__*/React.createElement("button", {
-    className: "m-btn m-btn--volt",
-    style: {
-      justifyContent: 'center'
-    },
-    onClick: () => go('schedule')
-  }, "View fixtures ", /*#__PURE__*/React.createElement(Arrow, null)))), /*#__PURE__*/React.createElement("div", {
-    className: "mh-dash"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "mh-dcard"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "mh-dcard__head"
-  }, /*#__PURE__*/React.createElement("span", null, "Season record"), I.chart), /*#__PURE__*/React.createElement("div", {
-    className: "mh-dcard__tag"
-  }, "League Ten \xB7 25/26"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 8
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "mh-drow"
-  }, /*#__PURE__*/React.createElement("span", null, "Played"), /*#__PURE__*/React.createElement("b", null, /*#__PURE__*/React.createElement(CountUp, {
-    value: t.pl,
-    on: dOn
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "mh-drow"
-  }, /*#__PURE__*/React.createElement("span", null, "Won"), /*#__PURE__*/React.createElement("b", null, /*#__PURE__*/React.createElement(CountUp, {
-    value: t.w,
-    on: dOn
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "mh-drow"
-  }, /*#__PURE__*/React.createElement("span", null, "Drawn"), /*#__PURE__*/React.createElement("b", null, /*#__PURE__*/React.createElement(CountUp, {
-    value: t.d,
-    on: dOn
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "mh-drow"
-  }, /*#__PURE__*/React.createElement("span", null, "Lost"), /*#__PURE__*/React.createElement("b", null, /*#__PURE__*/React.createElement(CountUp, {
-    value: t.l,
-    on: dOn
-  })))), /*#__PURE__*/React.createElement("div", {
-    className: "mh-dbig"
-  }, /*#__PURE__*/React.createElement("span", null, "Goals scored"), /*#__PURE__*/React.createElement("b", null, /*#__PURE__*/React.createElement(CountUp, {
-    value: t.gf,
-    on: dOn
-  })))), /*#__PURE__*/React.createElement("div", {
-    className: "mh-dcard"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "mh-dcard__head"
-  }, /*#__PURE__*/React.createElement("span", null, "League position"), I.medal), /*#__PURE__*/React.createElement("div", {
-    className: "mh-dpos"
-  }, /*#__PURE__*/React.createElement("b", null, t.pos), /*#__PURE__*/React.createElement("sup", null, ord)), /*#__PURE__*/React.createElement("div", {
-    className: "mh-dcard__tag"
-  }, "League Ten"), /*#__PURE__*/React.createElement("div", {
-    className: "mh-dptrow"
-  }, /*#__PURE__*/React.createElement("span", null, "Points"), /*#__PURE__*/React.createElement("b", null, t.pts, " / ", t.pl * 3)), /*#__PURE__*/React.createElement("div", {
-    className: "mh-dbar"
-  }, /*#__PURE__*/React.createElement("i", {
-    style: {
-      width: dOn ? (t.pl ? t.pts / (t.pl * 3) : 0) * 100 + '%' : 0
-    }
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "mh-dform"
-  }, /*#__PURE__*/React.createElement("span", null, "Form"), /*#__PURE__*/React.createElement("div", {
-    className: "mh-dform__dots"
-  }, form.map((f, i) => /*#__PURE__*/React.createElement("span", {
-    key: i,
-    className: `mh-fdot mh-fdot--${f}`
-  }, f.toUpperCase()))))), /*#__PURE__*/React.createElement("div", {
-    className: "mh-dcard"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "mh-dcard__head"
-  }, /*#__PURE__*/React.createElement("span", null, "Club stats"), I.people), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: 8
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "mh-drow"
-  }, /*#__PURE__*/React.createElement("span", null, "Founded"), /*#__PURE__*/React.createElement("b", null, "2025")), /*#__PURE__*/React.createElement("div", {
-    className: "mh-drow"
-  }, /*#__PURE__*/React.createElement("span", null, "Squad"), /*#__PURE__*/React.createElement("b", null, squad)), /*#__PURE__*/React.createElement("div", {
-    className: "mh-drow"
-  }, /*#__PURE__*/React.createElement("span", null, "Goal difference"), /*#__PURE__*/React.createElement("b", null, t.gd >= 0 ? '+' : '', t.gd))), /*#__PURE__*/React.createElement("div", {
-    className: "mh-dcard__sp"
-  }), /*#__PURE__*/React.createElement("button", {
-    className: "m-btn m-btn--ghost",
-    style: {
-      justifyContent: 'center'
-    },
-    onClick: () => go('about')
-  }, "Our story ", /*#__PURE__*/React.createElement(Arrow, null)))))), h("section", { className: "mh-sec" }, h("div", { className: "m-wrap" }, h(Head, { eyebrow: "Who we are", title: "More than a result" }), h("div", { className: "mp-grid mp-g4" }, [["Champions", "League Ten winners", "Played 18, won 18, unbeaten and promoted for 26/27.", "champions", "The season"], ["Community", "A football family", "Built in south-west London, playing for each other every week.", "about", "Our story"], ["Our cause", "Sepsis awareness", "Founded in memory of Susan Anne Martin. Know the signs.", "sepsis", "Our cause"], ["Partners", "Back the badge", "Local businesses on the shirt, and there is room for yours.", "sponsors", "Partner with us"]].map((p, i) => h("button", { key: i, className: "mh-pillar", onClick: () => go(p[3]) }, h("p", { className: "m-eyebrow m-eyebrow--volt" }, p[0]), h("h3", { className: "m-h3" }, p[1]), h("p", { className: "mh-pillar__body" }, p[2]), h("span", { className: "mh-pillar__cta" }, p[4] + " →")))))), (function () { var aw = (window.getRecognition ? window.getRecognition("season_award").filter(function (a) { return a.season === (window.CURRENT_SEASON || "25/26"); }) : []); return aw.length ? h("section", { className: "mh-sec", style: { paddingTop: 0 } }, h("div", { className: "m-wrap" }, h(Head, { eyebrow: (window.CURRENT_SEASON || "25/26") + " End of Season", title: "Award winners" }), h("div", { className: "mp-grid mp-g4", style: { marginTop: 18 } }, aw.map(function (a) { var nm = a.playerName || (a.playerId && window.playerNameByNum ? window.playerNameByNum(a.playerId) : ""); return h("button", { key: a.id, className: "mh-pillar", onClick: function () { location.href = "awards.html"; } }, h("p", { className: "m-eyebrow m-eyebrow--volt" }, a.title), h("h3", { className: "m-h3" }, nm), h("span", { className: "mh-pillar__cta" }, "View →")); })), h("div", { style: { marginTop: 22, textAlign: "center" } }, h("a", { className: "m-btn m-btn--ghost", href: "awards.html" }, "All awards & honours →")))) : null; })(), /*#__PURE__*/React.createElement("section", {
+  return /*#__PURE__*/React.createElement(React.Fragment, null, h("section", { className: "cine" }, h("div", { className: "cine__photo" }, h("img", { ref: imgRef, src: "assets/hero-team.webp", fetchpriority: "high", alt: "", onError: function (e) { if ((e.target.getAttribute('src') || '').indexOf('hero-team.webp') > -1) e.target.src = 'assets/hero-team.jpg'; } })), h("div", { className: "cine__grad" }), h("div", { className: "m-wrap cine__inner", ref: dRef }, h("div", { className: "cine__copy" }, h("p", { className: "m-eyebrow m-eyebrow--volt" }, "Southern Sunday Football League"), h("h1", { className: "cine__title" }, "Sue's Angels ", h("em", null, "FC")), h("div", { className: "cine__meta" }, h("span", null, "League Ten"), h("i", { "aria-hidden": "true" }), h("span", null, "Season 25/26"), h("i", { "aria-hidden": "true" }), h("span", null, t.l === 0 ? "Champions, Unbeaten" : "Champions")), h("p", { className: "cine__lead" }, "Founded in memory of Susan Anne Martin. Played ", t.pl, ", won ", t.w, ", and crowned champions of League Ten in our very first season."), (next || session) ? h("div", { className: "cine__next" }, I.cal, h("span", null, next ? ("Next match · " + (next.day ? next.day + ' ' : '') + next.date + (next.mon ? ' ' + next.mon : '')) : (session.dayName + " " + session.dateStr + " · " + session.timeStr)), cd ? h("b", null, (cd.d > 0 ? cd.d + 'D ' : '') + pad(cd.h) + "H " + pad(cd.m) + "M") : null) : null, h("div", { className: "cine__cta" }, h("button", { className: "m-btn m-btn--volt", onClick: function () { go('schedule'); } }, "View fixtures ", h(Arrow, null)), h("a", { className: "m-btn m-btn--ghost", href: "join.html" }, "Join the club")))), h("div", { className: "cine__strip" }, h("div", { className: "cine__selrow" }, h("span", { className: "cine__rule" }), h("span", { className: "cine__sel" }, "Season 25/26 ▾"), h("span", { className: "cine__rule" })), (function () { var all = (window.getDerivedResults ? window.getDerivedResults() : []).filter(function (r) { return r.hs != null && r.kind !== 'walkover'; }); all.sort(function (a, b) { return pdate(b.date) - pdate(a.date); }); var rec = all.slice(0, 3); var bn = ['banner-01', 'banner-04', 'banner-07']; return h("div", { className: "cine__thumbs" }, rec.map(function (r, i) { var uh = r.home.indexOf('Angels') > -1; var us = uh ? r.hs : r.as; var th = uh ? r.as : r.hs; var opp = uh ? r.away : r.home; var res = us > th ? 'w' : us === th ? 'd' : 'l'; return h("button", { key: i, className: "cine__thumb mp-clickable", onClick: function () { go('schedule'); } }, h("img", { src: "assets/hero/" + bn[i] + ".webp", alt: "", loading: "lazy" }), h("div", { className: "cine__tlabel" }, h("span", { className: "cine__wdl cine__wdl--" + res }, res.toUpperCase()), Badge ? h(Badge, { team: opp, size: 22 }) : null, h("b", null, us + " · " + th + " " + opp.replace(' FC', '')))); })); })())), h("section", { className: "mh-sec" }, h("div", { className: "m-wrap" }, h(Head, { eyebrow: "Who we are", title: "More than a result" }), h("div", { className: "mp-grid mp-g4" }, [["Champions", "League Ten winners", "Played 18, won 18, unbeaten and promoted for 26/27.", "champions", "The season"], ["Community", "A football family", "Built in south-west London, playing for each other every week.", "about", "Our story"], ["Our cause", "Sepsis awareness", "Founded in memory of Susan Anne Martin. Know the signs.", "sepsis", "Our cause"], ["Partners", "Back the badge", "Local businesses on the shirt, and there is room for yours.", "sponsors", "Partner with us"]].map((p, i) => h("button", { key: i, className: "mh-pillar", onClick: () => go(p[3]) }, h("p", { className: "m-eyebrow m-eyebrow--volt" }, p[0]), h("h3", { className: "m-h3" }, p[1]), h("p", { className: "mh-pillar__body" }, p[2]), h("span", { className: "mh-pillar__cta" }, p[4] + " →")))))), (function () { var aw = (window.getRecognition ? window.getRecognition("season_award").filter(function (a) { return a.season === (window.CURRENT_SEASON || "25/26"); }) : []); return aw.length ? h("section", { className: "mh-sec", style: { paddingTop: 0 } }, h("div", { className: "m-wrap" }, h(Head, { eyebrow: (window.CURRENT_SEASON || "25/26") + " End of Season", title: "Award winners" }), h("div", { className: "mp-grid mp-g4", style: { marginTop: 18 } }, aw.map(function (a) { var nm = a.playerName || (a.playerId && window.playerNameByNum ? window.playerNameByNum(a.playerId) : ""); return h("button", { key: a.id, className: "mh-pillar", onClick: function () { location.href = "awards.html"; } }, h("p", { className: "m-eyebrow m-eyebrow--volt" }, a.title), h("h3", { className: "m-h3" }, nm), h("span", { className: "mh-pillar__cta" }, "View →")); })), h("div", { style: { marginTop: 22, textAlign: "center" } }, h("a", { className: "m-btn m-btn--ghost", href: "awards.html" }, "All awards & honours →")))) : null; })(), /*#__PURE__*/React.createElement("section", {
     className: "mh-sec",
     id: "ledger"
   }, /*#__PURE__*/React.createElement("div", {
@@ -3952,14 +3776,14 @@ function SiteHeader({
 }) {
   const [theme, setTheme] = useState(() => document.documentElement.getAttribute('data-theme') || 'dark');
   const [open, setOpen] = useState(false);
-  const flip = () => {
-    const t = theme === 'dark' ? 'light' : 'dark';
+  const apply = (t) => {
     setTheme(t);
     document.documentElement.setAttribute('data-theme', t);
     try {
       localStorage.setItem('sa-theme', t);
     } catch (e) {}
   };
+  const flip = () => apply(theme === 'dark' ? 'light' : 'dark');
   useEffect(() => {
     if (!open) return;
     const onKey = e => {
@@ -4011,14 +3835,30 @@ function SiteHeader({
     onClick: () => setOpen(false)
   }, g.l))), /*#__PURE__*/React.createElement("div", {
     className: "sa-act"
-  }, /*#__PURE__*/React.createElement("button", {
-    className: "m-toggle",
-    style: {
-      position: 'static'
-    },
-    onClick: flip,
-    "aria-label": "Toggle theme"
-  }, theme === 'dark' ? '☾' : '☀'), /*#__PURE__*/React.createElement("a", {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "sa-themebar",
+    role: "group",
+    "aria-label": "Theme"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "sa-themebar__thumb",
+    "aria-hidden": "true"
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "sa-themebar__seg" + (theme === 'light' ? ' is-on' : ''),
+    onClick: () => apply('light'),
+    "aria-label": "Light mode",
+    "aria-pressed": theme === 'light'
+  }, /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24", width: 17, height: 17, fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true"
+  }, /*#__PURE__*/React.createElement("circle", { cx: 12, cy: 12, r: 4 }), /*#__PURE__*/React.createElement("path", { d: "M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5" }))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "sa-themebar__seg" + (theme === 'dark' ? ' is-on' : ''),
+    onClick: () => apply('dark'),
+    "aria-label": "Dark mode",
+    "aria-pressed": theme === 'dark'
+  }, /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 24 24", width: 17, height: 17, fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true"
+  }, /*#__PURE__*/React.createElement("path", { d: "M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" })))), /*#__PURE__*/React.createElement("a", {
     className: "m-btn m-btn--volt sa-joincta",
     href: "join.html",
     style: {

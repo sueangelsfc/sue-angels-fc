@@ -3617,7 +3617,7 @@ function Media({
     videos: { eb: "Watch", a: "Club ", b: "videos", sub: "Match goals, highlights and clips." }
   };
   const mHero = slim && mHeroMap[tab] ? mHeroMap[tab] : { eb: "The latest", a: "Me", b: "dia", sub: "Match reports, club news and the matchday gallery." };
-  return h(React.Fragment, null, h(PageHero, { eyebrow: mHero.eb, title: h(React.Fragment, null, mHero.a, h("em", null, mHero.b), "."), sub: mHero.sub }), h("section", { className: "mp-sec" }, h("div", { className: "m-wrap" }, slim ? null : h("div", { className: "mp-subtabs" }, [["news", "News"], ["gallery", "Gallery"], ["videos", "Videos"]].map(([k, l]) => h("button", { key: k, className: `mp-subtab ${tab === k ? "is-active" : ""}`, onClick: () => setTab(k) }, l))), tab === "news" ? h(React.Fragment, null, catTabs, newsBody) : tab === "videos" ? videosBody : h(React.Fragment, null, gcatTabs, galleryBody))), report ? h(Modal, { onClose: () => setReport(null) }, h("div", { className: "m-glass m-modal__sponsor" }, h("p", { className: "m-eyebrow m-eyebrow--volt" }, report.competition || "League Ten", " · ", report.date), h("h2", { className: "m-h2", style: { marginTop: 10 } }, report.home.replace(" FC", ""), " ", report.hs, "-", report.as, " ", report.away.replace(" FC", "")), h("div", { className: "m-prose" }, function() {
+  return h(React.Fragment, null, h(PageHero, { eyebrow: mHero.eb, title: h(React.Fragment, null, mHero.a, h("em", null, mHero.b), "."), sub: mHero.sub }), h("section", { className: "mp-sec" }, h("div", { className: "m-wrap" }, slim ? null : h("div", { className: "mp-subtabs" }, [["live", "Live"], ["news", "News"], ["gallery", "Gallery"], ["videos", "Videos"]].map(([k, l]) => h("button", { key: k, className: `mp-subtab ${tab === k ? "is-active" : ""}`, onClick: () => setTab(k) }, l))), tab === "news" ? h(React.Fragment, null, catTabs, newsBody) : tab === "videos" ? videosBody : h(React.Fragment, null, gcatTabs, galleryBody))), report ? h(Modal, { onClose: () => setReport(null) }, h("div", { className: "m-glass m-modal__sponsor" }, h("p", { className: "m-eyebrow m-eyebrow--volt" }, report.competition || "League Ten", " · ", report.date), h("h2", { className: "m-h2", style: { marginTop: 10 } }, report.home.replace(" FC", ""), " ", report.hs, "-", report.as, " ", report.away.replace(" FC", "")), h("div", { className: "m-prose" }, function() {
     var d = window.loadMatchEntry ? window.loadMatchEntry(report.id) : null;
     var t = d && (d.polishedReport || d.commentary);
     t = t && String(t).trim();
@@ -4432,6 +4432,7 @@ const HREF = {
   schedule: "schedule.html",
   league: "league.html",
   media: "media.html",
+  live: "live.html",
   news: "news.html",
   gallery: "gallery.html",
   videos: "videos.html",
@@ -4676,9 +4677,10 @@ const NAV_GROUPS = [
   { k: "home", l: "Home" },
   { l: "The Club", items: [["about", "Our Story"], ["sepsis", "Our Cause"], ["champions", "Champions"], ["awards", "Awards"], ["sponsors", "Sponsors"]] },
   { l: "On the Pitch", items: [["squad", "Squad"], ["stats", "Player Stats"], ["coaches", "Coaches"], ["schedule", "Matches"], ["league", "League"], ["records", "Records"]] },
-  { l: "Media", items: [["news", "News"], ["gallery", "Gallery"], ["videos", "Videos"]] },
+  { l: "Media", items: [["live", "Live"], ["news", "News"], ["gallery", "Gallery"], ["videos", "Videos"]] },
   { l: "Get Involved", items: [["join", "Join the Club"], ["contact", "Contact"]] }
 ];
+function Live(props){var h=React.createElement;var chan=(window.SA_YT_CHANNEL_ID||"").trim();var handle=(window.SA_YT_HANDLE||"suesangelsfc").replace(/^@/,"");var ytUrl="https://www.youtube.com/@"+handle;return h(React.Fragment,null,h(PageHero,{eyebrow:"Watch",title:h(React.Fragment,null,"Live ",h("em",null,"matches")),sub:"Match streams and replays, straight from our YouTube channel."}),h("section",{className:"mh-sec",style:{paddingTop:0}},h("div",{className:"m-wrap"},chan?h("div",{className:"m-glass sa-live__player"},h("iframe",{src:"https://www.youtube-nocookie.com/embed/live_stream?channel="+chan,title:"Sue's Angels FC live stream",allow:"autoplay; encrypted-media; picture-in-picture; web-share",allowFullScreen:true,loading:"lazy"})):h("div",{className:"m-glass sa-live__soon"},h("p",{className:"m-eyebrow m-eyebrow--volt"},"Coming soon"),h("h3",{className:"m-h3"},"Live match streams are on the way"),h("p",{className:"m-lead",style:{marginTop:10,maxWidth:"54ch"}},"We are setting up live streaming on our YouTube channel. Subscribe to be notified the moment we kick off, and to watch every replay back."),h("a",{className:"m-btn m-btn--volt",href:ytUrl,target:"_blank",rel:"noopener",style:{marginTop:20}},"Subscribe on YouTube ",h(Arrow))),h("p",{className:"sa-live__note"},"The match plays here live, then turns into the full replay at full time. ",h("a",{href:ytUrl,target:"_blank",rel:"noopener"},"Open our channel →")))));}
 const PAGES = {
   home: Home,
   about: About,
@@ -4691,6 +4693,7 @@ const PAGES = {
   schedule: Schedule,
   league: League,
   media: Media,
+  live: Live,
   news: Media,
   gallery: Media,
   videos: Media,
@@ -4720,6 +4723,7 @@ function currentPage() {
     "table.html": "league",
     "league.html": "league",
     "media.html": "media",
+    "live.html": "live",
     "news.html": "news",
     "gallery.html": "gallery",
     "videos.html": "videos",
@@ -4854,7 +4858,7 @@ function SiteFooter() {
   var groups = [
     ["The Club", [["about", "Our Story"], ["sepsis", "Our Cause"], ["champions", "Champions"], ["sponsors", "Sponsors"]]],
     ["On the Pitch", [["squad", "Squad"], ["stats", "Player Stats"], ["coaches", "Coaches"], ["schedule", "Matches"], ["league", "League"]]],
-    ["Media", [["news", "News"], ["gallery", "Gallery"], ["videos", "Videos"]]],
+    ["Media", [["live", "Live"], ["news", "News"], ["gallery", "Gallery"], ["videos", "Videos"]]],
     ["Get involved", [["join", "Join"], ["donate", "Donate"], ["contact", "Contact"]]]
   ];
   var supporting = [["teams.html", "Full squad page"], ["table.html", "League table"], ["fixtures.html", "Fixtures"], ["results.html", "Results"], ["media.html", "Media hub"]];

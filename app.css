@@ -1880,3 +1880,10 @@ button.rec-card:hover { box-shadow: 0 24px 50px -26px rgba(214,242,58,0.4); }
 /* record competition-scope label */
 .rec-card__scope { margin-top: 12px; font-weight: 700; font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--m-ink-3); display: inline-flex; align-items: center; gap: 6px; }
 .rec-card__scope::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--m-volt); flex: 0 0 auto; }
+
+/* Live / Watch page */
+.sa-live__player { position: relative; aspect-ratio: 16 / 9; padding: 0; overflow: hidden; border-radius: var(--m-radius); }
+.sa-live__player iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.sa-live__soon { padding: clamp(28px, 5vw, 60px); text-align: center; display: flex; flex-direction: column; align-items: center; }
+.sa-live__note { color: var(--m-ink-3); font-size: 0.86rem; margin-top: 18px; text-align: center; }
+.sa-live__note a { color: var(--m-volt-ink); text-decoration: none; }

@@ -1,3 +1,6 @@
+/* YouTube channel config — set SA_YT_CHANNEL_ID (UC...) to enable the Live embed */
+window.SA_YT_CHANNEL_ID = window.SA_YT_CHANNEL_ID || "";
+window.SA_YT_HANDLE = window.SA_YT_HANDLE || "suesangelsfc";
 // PageHero.jsx - shared compact page header used by every sub-page
 function PageHero({
   eyebrow,

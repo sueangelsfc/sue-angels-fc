@@ -75,7 +75,7 @@ function Join() {
               ))}
               <div className="join-v2__direct">
                 <div className="t-eyebrow" style={{ color: 'var(--fg-3)' }}>OR EMAIL</div>
-                <a href="mailto:susangelsfc@gmail.com">susangelsfc@gmail.com</a>
+                <a href="mailto:suesangelsfc@gmail.com">suesangelsfc@gmail.com</a>
               </div>
             </aside>
 

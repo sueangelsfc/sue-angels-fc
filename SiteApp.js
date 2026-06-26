@@ -3158,7 +3158,7 @@ function Sponsors({
   }, t), /*#__PURE__*/React.createElement("p", null, c)))))), h("section", { className: "mp-sec", style: { paddingTop: 0 } }, h("div", { className: "m-wrap" },
     h(Head, { eyebrow: "Getting involved", title: "How it works" }),
     h("div", { className: "mp-grid mp-g3" }, [["01", "Get in touch", "Tell us a little about your business and what you’d like from a partnership."], ["02", "We build your package", "We tailor the exposure around you, across kit, website, social, matchday and content. No fixed tiers."], ["03", "Your brand goes live", "You join the badge and reach our community every week, on and off the pitch."]].map((s, i) => h("div", { key: i, className: "mp-feat" }, h("div", { className: "mp-feat__n" }, s[0]), h("h3", { className: "m-h3" }, s[1]), h("p", null, s[2])))),
-    h("div", { className: "m-glass", style: { padding: "clamp(24px,4vw,44px)", marginTop: 22, textAlign: "center" } }, h("p", { className: "m-eyebrow m-eyebrow--volt", style: { justifyContent: "center", display: "inline-flex" } }, "Become a partner"), h("h2", { className: "m-h2", style: { marginTop: 10 } }, "Put your brand behind the badge."), h("p", { className: "m-lead", style: { margin: "12px auto 0", maxWidth: "54ch" } }, "Sponsorship, kit, matchday or community partnerships. Let’s build something that works for your business and the club."), h("div", { style: { marginTop: 24, display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" } }, h("button", { className: "m-btn m-btn--volt", onClick: () => go("contact") }, "Make an enquiry ", h(Arrow, null)), h("a", { className: "m-btn m-btn--ghost", href: "mailto:susangelsfc@gmail.com" }, "Email the club"))))), /*#__PURE__*/React.createElement("section", {
+    h("div", { className: "m-glass", style: { padding: "clamp(24px,4vw,44px)", marginTop: 22, textAlign: "center" } }, h("p", { className: "m-eyebrow m-eyebrow--volt", style: { justifyContent: "center", display: "inline-flex" } }, "Become a partner"), h("h2", { className: "m-h2", style: { marginTop: 10 } }, "Put your brand behind the badge."), h("p", { className: "m-lead", style: { margin: "12px auto 0", maxWidth: "54ch" } }, "Sponsorship, kit, matchday or community partnerships. Let’s build something that works for your business and the club."), h("div", { style: { marginTop: 24, display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" } }, h("button", { className: "m-btn m-btn--volt", onClick: () => go("contact") }, "Make an enquiry ", h(Arrow, null)), h("a", { className: "m-btn m-btn--ghost", href: "mailto:suesangelsfc@gmail.com" }, "Email the club"))))), /*#__PURE__*/React.createElement("section", {
     className: "mp-sec",
     style: {
       paddingTop: 0
@@ -3248,7 +3248,7 @@ function saSendEnquiry(form, label) {
       var body = ['Enquiry: ' + label, 'Name: ' + name, 'Email: ' + email];
       if (extra) body.push('Details: ' + extra);
       body.push('', message);
-      window.location.href = 'mailto:susangelsfc@gmail.com?subject=' + encodeURIComponent("Sue's Angels FC - " + label + ' enquiry') + '&body=' + encodeURIComponent(body.join('\n'));
+      window.location.href = 'mailto:suesangelsfc@gmail.com?subject=' + encodeURIComponent("Sue's Angels FC - " + label + ' enquiry') + '&body=' + encodeURIComponent(body.join('\n'));
     } catch (e) {}
     return { ok: false };
   });
@@ -3291,7 +3291,7 @@ function Contact() {
       font: '600 0.9rem var(--m-sans)',
       lineHeight: 1.8
     }
-  }, "susangelsfc@gmail.com", /*#__PURE__*/React.createElement("br", null), "@suesangelsfc \xB7 Instagram"))), /*#__PURE__*/React.createElement("form", {
+  }, "suesangelsfc@gmail.com", /*#__PURE__*/React.createElement("br", null), "@suesangelsfc \xB7 Instagram"))), /*#__PURE__*/React.createElement("form", {
     className: "m-glass mp-form",
     onSubmit: e => {
       e.preventDefault();

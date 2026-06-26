@@ -31,7 +31,7 @@ You curate awards and recognition for Sue's Angels FC (the Awards page).
 - **Staff:** Stephen Epathite (First-Team Manager & founder); Louis Allen and Jim "Jimi" El Bayati (First Team Coaches; Jimi becomes **Assistant Manager from 26/27**). Jim El Bayati was the **first club captain** (Daniel McLane vice, Andrew Allen third-choice).
 - **25/26 award winners:** Top Goalscorer Frazier-Isaías Osunkoya (#30), Top Assister Charlie Dunkley (#9), Players' Player Daniel McLane (#25), Manager's Player Dean Knight (#20), Defensive Record Luke Munns GK (#28), Goal of the Season Malachi Mullings (#27), Clubman Jim El Bayati (#10).
 - **Brand:** volt `#D6F23A`, navy `#0A0F1C`, Clash Display (display) + Hanken Grotesk (body). Tone: confident, warm, British spelling, uppercase display headings, **"League Ten" not "Division", and no em dashes**.
-- **Contact/social:** susangelsfc@gmail.com · Instagram & TikTok @suesangelsfc · live at **www.suesangelsfc.co.uk**.
+- **Contact/social:** suesangelsfc@gmail.com · Instagram & TikTok @suesangelsfc · live at **www.suesangelsfc.co.uk**.
 
 ## The site (how it's built)
 - Static marketing + club-data site: **plain HTML + React via CDN, no bundler, no build step** — files deploy exactly as they sit. Source on GitHub (`sueangelsfc/sue-angels-fc`) → **Vercel auto-deploys on push to `main`**.

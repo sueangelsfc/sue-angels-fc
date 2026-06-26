@@ -31,7 +31,7 @@ function ContactV2() {
                 </div>
                 <div className="rd-direct">
                   <p className="rd-eyebrow rd-eyebrow--plain" style={{ color: 'var(--fg-3)' }}>Direct line</p>
-                  <a href="mailto:susangelsfc@gmail.com">susangelsfc@gmail.com</a>
+                  <a href="mailto:suesangelsfc@gmail.com">suesangelsfc@gmail.com</a>
                   <a href="https://instagram.com/suesangelsfc" target="_blank" rel="noopener">@suesangelsfc · Instagram</a>
                   <a href="https://tiktok.com/@suesangelsfc" target="_blank" rel="noopener">@suesangelsfc · TikTok</a>
                 </div>

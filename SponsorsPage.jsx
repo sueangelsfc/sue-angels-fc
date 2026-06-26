@@ -420,7 +420,7 @@ function SponsorsPage() {
             </div>
             <div className="sp-join__meta">
               <span className="sp-join__role">DIRECT LINE · 26 / 27 OPEN</span>
-              <a href="mailto:susangelsfc@gmail.com" className="sp-join__name">susangelsfc@gmail.com</a>
+              <a href="mailto:suesangelsfc@gmail.com" className="sp-join__name">suesangelsfc@gmail.com</a>
               <p className="sp-join__sub">
                 We&rsquo;ll send a tailored pack — club story, audience, branded kit mock-ups and your projected reach for 26/27.
               </p>
@@ -431,7 +431,7 @@ function SponsorsPage() {
               </ul>
               <div className="sp-join__actions">
                 <a href="contact.html" className="btn btn--volt btn--sm">Open enquiry form →</a>
-                <a href="mailto:susangelsfc@gmail.com" className="btn btn--ghost btn--sm">Email directly</a>
+                <a href="mailto:suesangelsfc@gmail.com" className="btn btn--ghost btn--sm">Email directly</a>
               </div>
             </div>
             <span className="sp-join__arrow" aria-hidden="true">

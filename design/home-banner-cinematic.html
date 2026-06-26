@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en-GB" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sue's Angels FC — Cinematic hero prototype</title>
+<style>
+  @font-face{font-family:'Clash Display';src:url('/assets/fonts/clash-display-600.woff2') format('woff2');font-weight:600;font-display:swap}
+  @font-face{font-family:'Clash Display';src:url('/assets/fonts/clash-display-700.woff2') format('woff2');font-weight:700;font-display:swap}
+  @font-face{font-family:'Hanken Grotesk';src:url('/assets/fonts/hanken-400.woff2') format('woff2');font-weight:400;font-display:swap}
+  @font-face{font-family:'Hanken Grotesk';src:url('/assets/fonts/hanken-500.woff2') format('woff2');font-weight:500;font-display:swap}
+  @font-face{font-family:'Hanken Grotesk';src:url('/assets/fonts/hanken-700.woff2') format('woff2');font-weight:700;font-display:swap}
+  @font-face{font-family:'Helvetica Neue';src:url('/assets/fonts/helveticaneue-400.woff2') format('woff2');font-weight:400;font-display:swap}
+  @font-face{font-family:'Helvetica Neue';src:url('/assets/fonts/helveticaneue-500.woff2') format('woff2');font-weight:500;font-display:swap}
+  @font-face{font-family:'Helvetica Neue';src:url('/assets/fonts/helveticaneue-700.woff2') format('woff2');font-weight:700;font-display:swap}
+  @font-face{font-family:'Helvetica Neue';src:url('/assets/fonts/helveticaneue-900.woff2') format('woff2');font-weight:900;font-display:swap}
+  :root{--volt:#D6F23A;--navy:#04121B;--ink:#fff;--mut:#C9D2E2;--mut2:#8C97AC;--disp:'Helvetica Neue',system-ui,sans-serif;--sans:'Helvetica Neue',system-ui,sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#020A10;font-family:var(--sans);color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:34px 24px;
+    background-image:radial-gradient(1200px 600px at 70% -10%, rgba(40,60,80,.5), transparent 60%)}
+  .stage{width:100%;max-width:1180px;border-radius:26px;overflow:hidden;background:#0A1620;box-shadow:0 50px 120px -40px rgba(0,0,0,.9);border:1px solid rgba(255,255,255,.06)}
+
+  /* cinematic hero */
+  .hero{position:relative;min-height:600px;display:flex;flex-direction:column;justify-content:space-between;
+    background:#0A1620 url('/assets/hero-team.webp') center 28% / cover no-repeat}
+  .hero::before{content:'';position:absolute;inset:0;background:
+    linear-gradient(180deg, rgba(4,18,27,.55) 0%, rgba(4,18,27,.05) 26%, rgba(4,18,27,.55) 70%, rgba(4,18,27,.95) 100%),
+    linear-gradient(90deg, rgba(4,18,27,.85) 0%, rgba(4,18,27,.3) 42%, transparent 70%)}
+  .hero > *{position:relative;z-index:1}
+
+  .top{display:flex;align-items:center;justify-content:space-between;padding:26px 34px}
+  .brand{display:flex;align-items:center;gap:11px}
+  .brand img{width:34px;height:auto;display:block}
+  .brand b{font-family:var(--disp);font-weight:600;letter-spacing:.14em;font-size:15px;text-transform:uppercase}
+  nav{display:flex;gap:30px}
+  nav a{color:rgba(255,255,255,.82);text-decoration:none;font-weight:500;font-size:13px;letter-spacing:.12em;text-transform:uppercase;transition:color .25s}
+  nav a:hover,nav a.on{color:var(--volt)}
+
+  .meatwrap{padding:0 34px 40px;max-width:680px}
+  .eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .eyebrow span{width:30px;height:2px;background:var(--volt)}
+  .eyebrow b{color:var(--volt);font-weight:700;font-size:11px;letter-spacing:.26em;text-transform:uppercase}
+  h1{font-family:var(--disp);font-weight:900;text-transform:uppercase;line-height:.9;letter-spacing:-.02em;font-size:clamp(2.9rem,5.6vw,4.9rem)}
+  h1 em{font-style:normal;color:var(--volt)}
+  .meta{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:16px 0 14px;color:var(--mut);font-weight:600;font-size:13px;letter-spacing:.04em}
+  .meta i{width:4px;height:4px;border-radius:50%;background:var(--mut2);display:inline-block}
+  .lead{color:var(--mut);font-size:15px;line-height:1.6;max-width:50ch}
+  .credits{margin-top:14px;color:var(--mut2);font-size:13px;line-height:1.8}
+  .credits b{color:rgba(255,255,255,.82);font-weight:600}
+  .cta{display:flex;gap:11px;flex-wrap:wrap;margin-top:22px}
+  .btn{display:inline-flex;align-items:center;gap:9px;border-radius:999px;padding:12px 22px;font-weight:700;font-size:14px;letter-spacing:.02em;text-decoration:none;cursor:pointer;border:0}
+  .btn--volt{background:var(--volt);color:#071D29}
+  .btn--ghost{background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.22)}
+  .play{width:26px;height:26px;border-radius:50%;background:rgba(7,29,41,.18);display:flex;align-items:center;justify-content:center}
+  .play svg{width:10px;height:10px;fill:#071D29;margin-left:1px}
+
+  /* selector + thumbnails strip */
+  .strip{background:#0A1620;padding:24px 34px 30px}
+  .selrow{display:flex;align-items:center;gap:18px;margin-bottom:22px}
+  .selrow .rule{flex:1;height:1px;background:rgba(255,255,255,.1)}
+  .sel{display:inline-flex;align-items:center;gap:9px;border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:9px 18px;font-weight:600;font-size:13px;letter-spacing:.04em;color:#fff;background:rgba(255,255,255,.03)}
+  .sel svg{width:11px;height:11px;fill:var(--volt)}
+  .thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .thumb{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:16/9;background:#0E1B26;cursor:pointer;border:1px solid rgba(255,255,255,.06)}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .5s}
+  .thumb:hover img{transform:scale(1.05)}
+  .thumb::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(4,18,27,.9) 100%)}
+  .tlabel{position:absolute;left:12px;right:12px;bottom:11px;z-index:1;display:flex;align-items:center;gap:8px}
+  .tlabel .wdl{background:var(--volt);color:#071D29;font-weight:700;font-size:10px;padding:3px 7px;border-radius:6px}
+  .tlabel img{width:22px;height:22px;object-fit:contain}
+  .tlabel b{font-size:12.5px;font-weight:700}
+  .tlabel span{font-size:10px;color:var(--mut2);letter-spacing:.08em;text-transform:uppercase}
+  @media(max-width:720px){.hero{min-height:520px}.meatwrap{padding:0 22px 30px}.top{padding:20px 22px}nav{display:none}.thumbs{grid-template-columns:1fr 1fr}.thumb:last-child{display:none}}
+</style>
+</head>
+<body>
+  <div class="stage">
+    <section class="hero">
+      <div class="top">
+        <div class="brand"><img src="/assets/badge/sue-angels-shield.webp" alt=""><b>Sue's Angels</b></div>
+        <nav><a class="on" href="#">Squad</a><a href="#">Fixtures</a><a href="#">Champions</a><a href="#">News</a></nav>
+      </div>
+      <div class="meatwrap">
+        <div class="eyebrow"><span></span><b>Southern Sunday Football League</b></div>
+        <h1>Sue's Angels <em>FC</em></h1>
+        <div class="meta"><span>League Ten</span><i></i><span>Season 25/26</span><i></i><span>Champions, Unbeaten</span></div>
+        <p class="lead">Founded in memory of Susan Anne Martin. Played 18, won 18, and crowned champions of League Ten in our very first season. Built in memory. Driven by purpose.</p>
+        <p class="credits"><b>Manager</b> Stephen Epathite &nbsp;·&nbsp; <b>Captain</b> Jim El Bayati &nbsp;·&nbsp; <b>Top scorer</b> Frazier-Isaías Osunkoya</p>
+        <div class="cta">
+          <a class="btn btn--volt"><span class="play"><svg viewBox="0 0 10 10"><path d="M0 0l10 5-10 5z"/></svg></span> Watch the season</a>
+          <a class="btn btn--ghost">View fixtures</a>
+        </div>
+      </div>
+    </section>
+    <section class="strip">
+      <div class="selrow"><div class="rule"></div><div class="sel">Season 25/26 <svg viewBox="0 0 10 10"><path d="M0 2l5 6 5-6z"/></svg></div><div class="rule"></div></div>
+      <div class="thumbs">
+        <div class="thumb"><img src="/assets/hero/banner-01.webp" alt=""><div class="tlabel"><span class="wdl">W</span><img src="/assets/badge/brockwell-violets-badge.webp" alt=""><b>4 · 1 Brockwell Violets</b></div></div>
+        <div class="thumb"><img src="/assets/hero/banner-04.webp" alt=""><div class="tlabel"><span class="wdl">W</span><img src="/assets/badge/hillside-elite-badge.webp" alt=""><b>3 · 0 Hillside Elite</b></div></div>
+        <div class="thumb"><img src="/assets/hero/banner-07.webp" alt=""><div class="tlabel"><span class="wdl">W</span><img src="/assets/badge/bpr-fc-badge.webp" alt=""><b>5 · 2 BPR Men's</b></div></div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

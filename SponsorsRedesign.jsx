@@ -205,7 +205,7 @@ function SponsorsV2() {
               </ul>
               <div className="rd-join__ctas" style={{ justifyContent: 'flex-start' }}>
                 <a href="contact.html" className="rd-btn rd-btn--volt rd-btn--lg">Open enquiry form <RDArrow /></a>
-                <a href="mailto:susangelsfc@gmail.com" className="rd-btn rd-btn--ghost rd-btn--lg">susangelsfc@gmail.com</a>
+                <a href="mailto:suesangelsfc@gmail.com" className="rd-btn rd-btn--ghost rd-btn--lg">suesangelsfc@gmail.com</a>
               </div>
             </div>
           </div>

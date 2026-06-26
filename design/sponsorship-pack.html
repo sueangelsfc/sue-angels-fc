@@ -81,11 +81,26 @@ body{background:#04090f;font-family:var(--body);-webkit-font-smoothing:antialias
 .menu{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .mcat{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:26px 30px}
 .mcat h4{font-family:var(--disp);font-weight:600;font-size:21px;color:var(--volt);letter-spacing:.03em;margin-bottom:8px}
-.mrow{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:13px 0;border-bottom:1px solid var(--line)}
+.mrow{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}
 .mrow:last-child{border-bottom:none}
+.mtxt{display:flex;flex-direction:column;gap:2px}
 .mrow .mn{font-size:18px;color:var(--ink);font-weight:500}
-.mrow .mp{font-family:var(--disp);font-weight:600;font-size:20px;color:#fff;white-space:nowrap}
+.mdesc{font-size:13px;color:var(--mut);font-weight:500;line-height:1.25}
+.mcap{font-size:12px;letter-spacing:.14em;color:var(--mut);font-weight:700;margin:-2px 0 6px}
+.mrow .mp{font-family:var(--disp);font-weight:600;font-size:20px;color:#fff;white-space:nowrap;padding-top:1px}
 .mrow .mp small{color:var(--mut);font-family:var(--body);font-weight:700;font-size:11px;letter-spacing:.1em}
+/* shirt placement page */
+.shirts{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:28px;max-width:660px;margin-left:auto;margin-right:auto}
+.shirtcol{text-align:center}
+.shirtcol .slbl{font-size:14px;letter-spacing:.3em;color:var(--volt);font-weight:700;margin-bottom:8px}
+.shirtcol svg{width:100%;height:auto;max-width:300px}
+.legend{margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:6px 44px}
+.leg{display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+.leg .num{flex:none;width:30px;height:30px;border-radius:50%;background:var(--volt);color:#07131D;font-family:var(--disp);font-weight:600;font-size:16px;display:flex;align-items:center;justify-content:center}
+.leg .lt{flex:1}
+.leg .ln{font-family:var(--disp);font-weight:600;font-size:18px;color:#fff}
+.leg .ld{font-size:13px;color:var(--mut);margin-top:2px;line-height:1.3}
+.leg .lp{font-family:var(--disp);font-weight:600;font-size:18px;color:var(--volt);white-space:nowrap}
 /* contact */
 .cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .cbox{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px}
@@ -154,6 +169,7 @@ body{background:#04090f;font-family:var(--body);-webkit-font-smoothing:antialias
       <div class="ey">PARTNER WITH THE CHAMPIONS</div>
       <h1 class="h1" style="margin-top:30px">PUT YOUR<br>BRAND BEHIND<br>THE <span class="vlt">BADGE.</span></h1>
       <p class="lead" style="margin-top:34px">League Ten champions, unbeaten in our first season, built around a cause that matters. This is who we are, and how your business can be part of it.</p>
+      <p style="margin-top:24px;font-family:var(--disp);font-weight:600;font-size:21px;letter-spacing:.16em;color:var(--volt)">NOW IN LEAGUE EIGHT &middot; 2026/27</p>
     </div>
     <div class="photo"><img src="../assets/hero-team.jpg" alt=""></div>
   </div>
@@ -297,44 +313,83 @@ body{background:#04090f;font-family:var(--body);-webkit-font-smoothing:antialias
   <div class="ft"><span>PITCH-SIDE PARTNER</span><span>SUESANGELSFC.CO.UK</span></div>
 </section>
 
-<!-- ============ PAGE 7 — THE FULL MENU ============ -->
+<!-- ============ PAGE 7 — ON THE SHIRT (placement) ============ -->
+<section class="page" id="pshirt">
+  <div class="pad">
+    <div class="hd"><div class="lk"><img src="../assets/badge/sue-angels-badge-cutout.png" alt=""><span class="nm">SUE'S ANGELS FC</span></div><div class="tag">ON THE SHIRT</div></div>
+    <div style="position:absolute;left:84px;top:198px;right:84px">
+      <div class="ey">WHERE YOUR BRAND GOES</div>
+      <h1 class="h1 sm" style="margin-top:22px">ON THE<br>SHIRT.</h1>
+      <div class="shirts">
+        <div class="shirtcol"><div class="slbl">FRONT</div>
+          <svg viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="kitF" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D6F23A"/><stop offset="1" stop-color="#BFE02C"/></linearGradient></defs>
+            <path d="M70,50 L120,50 C135,50 140,63 150,63 C160,63 165,50 180,50 L230,50 L280,92 L256,140 L232,122 L232,300 L68,300 L68,122 L44,140 L20,92 Z" fill="url(#kitF)" stroke="#0B1E2C" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M120,50 C135,50 140,63 150,63 C160,63 165,50 180,50" fill="none" stroke="#0B1E2C" stroke-width="7"/>
+            <rect x="86" y="126" width="128" height="54" rx="7" fill="rgba(11,30,44,.12)" stroke="#0B1E2C" stroke-width="2" stroke-dasharray="6 4"/>
+            <circle cx="150" cy="153" r="16" fill="#0B1E2C"/><text x="150" y="159" text-anchor="middle" font-family="Clash Display" font-weight="600" font-size="18" fill="#D6F23A">1</text>
+            <rect x="22" y="96" width="40" height="28" rx="5" fill="rgba(11,30,44,.12)" stroke="#0B1E2C" stroke-width="2" stroke-dasharray="5 3"/>
+            <circle cx="42" cy="110" r="13" fill="#0B1E2C"/><text x="42" y="115" text-anchor="middle" font-family="Clash Display" font-weight="600" font-size="14" fill="#D6F23A">2</text>
+            <rect x="238" y="96" width="40" height="28" rx="5" fill="rgba(11,30,44,.12)" stroke="#0B1E2C" stroke-width="2" stroke-dasharray="5 3"/>
+            <circle cx="258" cy="110" r="13" fill="#0B1E2C"/><text x="258" y="115" text-anchor="middle" font-family="Clash Display" font-weight="600" font-size="14" fill="#D6F23A">2</text>
+          </svg>
+        </div>
+        <div class="shirtcol"><div class="slbl">BACK</div>
+          <svg viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="kitB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D6F23A"/><stop offset="1" stop-color="#BFE02C"/></linearGradient></defs>
+            <path d="M70,50 L120,50 C140,58 160,58 180,50 L230,50 L280,92 L256,140 L232,122 L232,300 L68,300 L68,122 L44,140 L20,92 Z" fill="url(#kitB)" stroke="#0B1E2C" stroke-width="3" stroke-linejoin="round"/>
+            <path d="M120,50 C140,58 160,58 180,50" fill="none" stroke="#0B1E2C" stroke-width="7"/>
+            <text x="150" y="220" text-anchor="middle" font-family="Clash Display" font-weight="700" font-size="120" fill="#0B1E2C" opacity="0.12">9</text>
+            <rect x="84" y="78" width="132" height="42" rx="7" fill="rgba(11,30,44,.12)" stroke="#0B1E2C" stroke-width="2" stroke-dasharray="6 4"/>
+            <circle cx="150" cy="99" r="15" fill="#0B1E2C"/><text x="150" y="105" text-anchor="middle" font-family="Clash Display" font-weight="600" font-size="17" fill="#D6F23A">3</text>
+          </svg>
+        </div>
+      </div>
+      <div class="legend">
+        <div class="leg"><span class="num">1</span><div class="lt"><div class="ln">Front of shirt</div><div class="ld">Central chest, the main sponsor spot</div></div><span class="lp">£450 / £750</span></div>
+        <div class="leg"><span class="num">2</span><div class="lt"><div class="ln">Sleeve</div><div class="ld">One available on each arm</div></div><span class="lp">£125 / £200</span></div>
+        <div class="leg"><span class="num">3</span><div class="lt"><div class="ln">Back of shirt</div><div class="ld">Across the top of the back</div></div><span class="lp">£200 / £300</span></div>
+        <div class="leg"><span class="num" style="background:#2a3a44;color:#fff">+</span><div class="lt"><div class="ln">Warm-up shirt</div><div class="ld">Worn during the pre-match warm-up</div></div><span class="lp">£350</span></div>
+      </div>
+      <p style="margin-top:16px;font-size:14px;color:var(--mut);letter-spacing:.03em">Prices shown as one kit / both kits (home &amp; away). Each sleeve is sold separately.</p>
+    </div>
+  </div>
+  <div class="ft"><span>ON THE SHIRT</span><span>SUESANGELSFC.CO.UK/SPONSORS</span></div>
+</section>
+
+<!-- ============ PAGE 8 — THE FULL MENU ============ -->
 <section class="page" id="pmenu">
   <div class="pad">
     <div class="hd"><div class="lk"><img src="../assets/badge/sue-angels-badge-cutout.png" alt=""><span class="nm">SUE'S ANGELS FC</span></div><div class="tag">THE MENU</div></div>
     <div style="position:absolute;left:84px;top:208px;right:84px">
       <div class="ey">BUILD YOUR OWN</div>
       <h1 class="h1 sm" style="margin-top:22px">THE FULL<br>MENU.</h1>
-      <p class="sub" style="margin-top:20px">Every way to put your brand behind the club, priced individually. Mix and match to suit your business and budget.</p>
-      <div class="menu" style="margin-top:28px">
-        <div class="mcat">
-          <h4>ON THE SHIRT</h4>
-          <div style="font-size:12px;letter-spacing:.14em;color:var(--mut);font-weight:700;margin:-2px 0 6px">ONE KIT / BOTH KITS</div>
-          <div class="mrow"><span class="mn">Front of shirt</span><span class="mp">£450 / £750</span></div>
-          <div class="mrow"><span class="mn">Back of shirt</span><span class="mp">£200 / £300</span></div>
-          <div class="mrow"><span class="mn">Sleeve <small style="color:var(--mut);font-weight:600">(each)</small></span><span class="mp">£125 / £200</span></div>
-          <div class="mrow"><span class="mn">Training wear</span><span class="mp">£350</span></div>
-        </div>
+      <p class="sub" style="margin-top:20px">Beyond the shirt, here is everything else you can put your brand behind, priced individually. Mix and match to suit your business and budget.</p>
+      <div class="menu" style="margin-top:26px">
         <div class="mcat">
           <h4>AT THE GROUND</h4>
-          <div class="mrow"><span class="mn">Pitch-side board</span><span class="mp">£175</span></div>
-          <div class="mrow"><span class="mn">Matchday sponsor</span><span class="mp">£75<small> /GAME</small></span></div>
-          <div class="mrow"><span class="mn">Match ball</span><span class="mp">£25<small> /GAME</small></span></div>
+          <div class="mrow"><div class="mtxt"><span class="mn">Pitch-side board</span><span class="mdesc">Your banner pitch-side at The Reeves</span></div><span class="mp">£175</span></div>
+          <div class="mrow"><div class="mtxt"><span class="mn">Matchday sponsor</span><span class="mdesc">A specific game in your name</span></div><span class="mp">£75<small> /GAME</small></span></div>
+          <div class="mrow"><div class="mtxt"><span class="mn">Match ball</span><span class="mdesc">Sponsor the ball for a game</span></div><span class="mp">£25<small> /GAME</small></span></div>
         </div>
         <div class="mcat">
           <h4>BACK A PLAYER</h4>
-          <div class="mrow"><span class="mn">Sponsor a player</span><span class="mp">£120</span></div>
-          <div class="mrow"><span class="mn">Man of the Match</span><span class="mp">£150</span></div>
-          <div class="mrow"><span class="mn">Player of the Month</span><span class="mp">£120</span></div>
-          <div class="mrow"><span class="mn">Goal of the Month</span><span class="mp">£120</span></div>
+          <div class="mcap">FOR THE FULL SEASON</div>
+          <div class="mrow"><div class="mtxt"><span class="mn">Sponsor a player</span><span class="mdesc">Your company name on a player's profile</span></div><span class="mp">£120</span></div>
+          <div class="mrow"><div class="mtxt"><span class="mn">Man of the Match</span><span class="mdesc">Named on every MOTM award</span></div><span class="mp">£150</span></div>
+          <div class="mrow"><div class="mtxt"><span class="mn">Player of the Month</span><span class="mdesc">Named on the monthly award</span></div><span class="mp">£120</span></div>
+          <div class="mrow"><div class="mtxt"><span class="mn">Goal of the Month</span><span class="mdesc">Named on the monthly award</span></div><span class="mp">£120</span></div>
         </div>
-        <div class="mcat">
+        <div class="mcat" style="grid-column:1/-1">
           <h4>ONLINE</h4>
-          <div class="mrow"><span class="mn">Website &amp; social</span><span class="mp">£90</span></div>
-          <div class="mrow"><span class="mn">Match-report sponsor</span><span class="mp">£40<small> /REPORT</small></span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 44px">
+            <div class="mrow"><div class="mtxt"><span class="mn">Website &amp; social</span><span class="mdesc">Logo and link on the website, plus shout-out posts on Instagram &amp; TikTok</span></div><span class="mp">£90</span></div>
+            <div class="mrow"><div class="mtxt"><span class="mn">Match-report sponsor</span><span class="mdesc">Your name on a single game's written report</span></div><span class="mp">£40<small> /REPORT</small></span></div>
+          </div>
         </div>
       </div>
-      <p style="margin-top:20px;font-size:16px;color:var(--mut);letter-spacing:.03em">Prices are per season unless marked. Every option includes a thank-you across our channels, and any combination can be tailored to suit.</p>
-      <div class="kick" style="margin-top:30px">PROUDLY ALREADY BACKED BY</div>
+      <p style="margin-top:18px;font-size:16px;color:var(--mut);letter-spacing:.03em">Prices are per season unless marked. Every option includes a thank-you across our channels, and any combination can be tailored.</p>
+      <div class="kick" style="margin-top:24px">PROUDLY ALREADY BACKED BY</div>
       <div class="chips">
         <span class="chip">SPORTING SOLUTIONS LTD · KIT</span><span class="chip">HODGSON ROOFING · TRAINING</span><span class="chip">STAINES RFC · GROUND-SHARE</span>
       </div>

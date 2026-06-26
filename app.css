@@ -1887,3 +1887,8 @@ button.rec-card:hover { box-shadow: 0 24px 50px -26px rgba(214,242,58,0.4); }
 .sa-live__soon { padding: clamp(28px, 5vw, 60px); text-align: center; display: flex; flex-direction: column; align-items: center; }
 .sa-live__note { color: var(--m-ink-3); font-size: 0.86rem; margin-top: 18px; text-align: center; }
 .sa-live__note a { color: var(--m-volt-ink); text-decoration: none; }
+
+/* Sponsor-a-player: "Sponsored by X" badge on the player profile card */
+.m-pc__sponsor{display:inline-flex;align-items:center;gap:10px;margin-top:14px;padding:7px 14px;border:1px solid rgba(214,242,58,.40);border-radius:12px;background:rgba(214,242,58,.07)}
+.m-pc__sponsor-l{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--m-ink-2,#8294a2);font-weight:700}
+.m-pc__sponsor b{font-family:var(--m-display,'Clash Display');font-weight:600;font-size:.98rem;color:var(--m-volt,#D6F23A);letter-spacing:.01em}

@@ -243,6 +243,10 @@ function CmsPhotos() {
                 </div>
               ) : null}
               {window.MediaUploader ? <window.MediaUploader label={`+ Add photo${gallery.length ? ' (' + gallery.length + ')' : ''}`} onPick={(d) => window.addPlayerPhoto(p.num, d)} /> : null}
+              <label style={{ display: 'block', marginTop: 10, fontSize: 12 }}>
+                <span style={{ display: 'block', marginBottom: 4, letterSpacing: '.04em', color: '#6b7682', fontWeight: 600 }}>Sponsor (shown on profile)</span>
+                <input type="text" defaultValue={window.getPlayerSponsor ? window.getPlayerSponsor(p.num) : ''} placeholder="e.g. Hodgson Roofing" onBlur={(e) => { if (window.setPlayerSponsor) window.setPlayerSponsor(p.num, e.target.value); }} style={{ width: '100%', padding: '7px 10px', borderRadius: 8, border: '1px solid rgba(0,0,0,.18)', fontSize: 13, fontFamily: 'inherit' }} />
+              </label>
             </div>
           );
         })}

@@ -340,6 +340,11 @@
   // just not in the active First-team lists). Keyed by squad number. 'active' clears it.
   window.getPlayerStatus = () => window.dataStore.playerPhotos.getCached('roster:status') || {};
   window.setPlayerStatus = (num, status) => { const m = Object.assign({}, window.getPlayerStatus()); if (status && status !== 'active') m[num] = status; else delete m[num]; return window.dataStore.playerPhotos.set('roster:status', m); };
+  // PLAYER SPONSORS - admin-set company name shown as "Sponsored by X" on a player's
+  // profile. Keyed by squad number. Empty string clears it. (Sponsor-a-player product.)
+  window.getPlayerSponsors = () => window.dataStore.playerPhotos.getCached('roster:sponsor') || {};
+  window.getPlayerSponsor = (num) => (window.getPlayerSponsors()[num] || '');
+  window.setPlayerSponsor = (num, company) => { const m = Object.assign({}, window.getPlayerSponsors()); const c = (company || '').trim(); if (c) m[num] = c; else delete m[num]; return window.dataStore.playerPhotos.set('roster:sponsor', m); };
   // SEASON ROSTER - players confirmed (by the admin) to be part of the 26/27
   // squad. Stored as an array of squad numbers under 'roster:s2627'.
   window.getSeason2627 = () => { const v = window.dataStore.playerPhotos.getCached('roster:s2627'); return Array.isArray(v) ? v : []; };

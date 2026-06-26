@@ -936,6 +936,7 @@ function ProfileCard({
   }];
   const posTop = (p.positionBreakdown || []).slice(0, 5);
   const posMax = posTop.length ? posTop[0][1] : 1;
+  const sponsorName = (window.getPlayerSponsor ? window.getPlayerSponsor(p.num) : '') || '';
   return /*#__PURE__*/React.createElement("div", {
     className: "m-pc m-glass"
   }, /*#__PURE__*/React.createElement("div", {
@@ -963,7 +964,11 @@ function ProfileCard({
     className: "m-chip"
   }, "Top scorer") : null), /*#__PURE__*/React.createElement("h3", {
     className: "m-pc__name"
-  }, p.last, /*#__PURE__*/React.createElement("span", null, p.first)))), /*#__PURE__*/React.createElement("div", {
+  }, p.last, /*#__PURE__*/React.createElement("span", null, p.first)), sponsorName ? /*#__PURE__*/React.createElement("div", {
+    className: "m-pc__sponsor"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "m-pc__sponsor-l"
+  }, "Sponsored by"), /*#__PURE__*/React.createElement("b", null, sponsorName)) : null)), /*#__PURE__*/React.createElement("div", {
     className: "m-pc__filters"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mp-subtabs"

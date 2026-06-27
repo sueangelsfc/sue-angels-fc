@@ -42,6 +42,12 @@ function CmsArticles() {
   return (
     <div>
       <div className="cms-sec__head"><div><h2 className="rd-h3">Articles &amp; news</h2><p className="cms-sec__sub">Write match reports, previews and announcements by hand. Published instantly to the public site.</p></div><button className="rd-btn rd-btn--volt rd-btn--sm" onClick={() => setEdit(null)}>+ New article</button></div>
+      <div style={{ margin: '0 0 18px', padding: '14px 16px', border: '1px solid rgba(0,0,0,.12)', borderRadius: 12, background: 'rgba(214,242,58,.08)' }}>
+        <label style={{ display: 'block', fontSize: 13 }}>
+          <span style={{ display: 'block', marginBottom: 6, fontWeight: 700, letterSpacing: '.03em', color: '#3a4650' }}>Match-report sponsor (shown on every match report)</span>
+          <input type="text" defaultValue={window.getReportSponsor ? window.getReportSponsor() : ''} placeholder="e.g. Hodgson Roofing — leave blank for none" onBlur={(e) => { if (window.setReportSponsor) window.setReportSponsor(e.target.value); }} style={{ width: '100%', padding: '8px 11px', borderRadius: 8, border: '1px solid rgba(0,0,0,.18)', fontSize: 13, fontFamily: 'inherit' }} />
+        </label>
+      </div>
       {arts.length === 0 ? <p className="cms-empty">No articles yet. Write your first one.</p> : (
         <div className="cms-list">
           {arts.sort((a, b) => new Date(b.sortISO || 0) - new Date(a.sortISO || 0)).map((a) => (

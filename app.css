@@ -1892,3 +1892,8 @@ button.rec-card:hover { box-shadow: 0 24px 50px -26px rgba(214,242,58,0.4); }
 .m-pc__sponsor{display:inline-flex;align-items:center;gap:10px;margin-top:14px;padding:7px 14px;border:1px solid rgba(214,242,58,.40);border-radius:12px;background:rgba(214,242,58,.07)}
 .m-pc__sponsor-l{font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--m-ink-2,#8294a2);font-weight:700}
 .m-pc__sponsor b{font-family:var(--m-display,'Clash Display');font-weight:600;font-size:.98rem;color:var(--m-volt,#D6F23A);letter-spacing:.01em}
+
+/* Match-report sponsor: "brought to you by X" ribbon on match reports */
+.m-rsponsor{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:14px 0 4px;padding:11px 18px;border:1px solid rgba(214,242,58,.42);border-radius:13px;background:rgba(214,242,58,.07)}
+.m-rsponsor__l{font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--m-ink-2,#8294a2);font-weight:700}
+.m-rsponsor b{font-family:var(--m-display,'Clash Display');font-weight:600;font-size:1.02rem;color:var(--m-volt,#D6F23A);letter-spacing:.01em}

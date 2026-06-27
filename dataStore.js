@@ -345,6 +345,10 @@
   window.getPlayerSponsors = () => window.dataStore.playerPhotos.getCached('roster:sponsor') || {};
   window.getPlayerSponsor = (num) => (window.getPlayerSponsors()[num] || '');
   window.setPlayerSponsor = (num, company) => { const m = Object.assign({}, window.getPlayerSponsors()); const c = (company || '').trim(); if (c) m[num] = c; else delete m[num]; return window.dataStore.playerPhotos.set('roster:sponsor', m); };
+  // MATCH-REPORT SPONSOR - one season-wide company name shown as a "brought to you by"
+  // ribbon on every match report. Stored as a single string. (Match-report sponsor product.)
+  window.getReportSponsor = () => window.dataStore.playerPhotos.getCached('sponsor:matchreport') || '';
+  window.setReportSponsor = (company) => window.dataStore.playerPhotos.set('sponsor:matchreport', (company || '').trim());
   // SEASON ROSTER - players confirmed (by the admin) to be part of the 26/27
   // squad. Stored as an array of squad numbers under 'roster:s2627'.
   window.getSeason2627 = () => { const v = window.dataStore.playerPhotos.getCached('roster:s2627'); return Array.isArray(v) ? v : []; };

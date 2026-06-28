@@ -404,6 +404,10 @@
   };
   window.getClubVideos = () => { const v = window.dataStore.playerPhotos.getCached('media:videos'); return Array.isArray(v) ? v : []; };
   window.saveClubVideos = (arr) => window.dataStore.playerPhotos.set('media:videos', arr || []);
+  // Video sub-sections — the backend files each video under one of these, and the
+  // public Media → Videos tab shows a sub-tab per section that has clips. Add/rename
+  // freely here (one list, used by both the site and the admin).
+  window.VIDEO_CATEGORIES = ['Match Highlights', 'Match Gallery', 'Interviews', 'Behind the Scenes'];
   window.applyCustomRoster = () => {
     if (Array.isArray(window.SQUAD)) {
       const have = new Set(window.SQUAD.map((p) => p.num));

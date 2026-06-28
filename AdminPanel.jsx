@@ -672,15 +672,15 @@ function CmsVideos() {
   const bump = () => tick((n) => n + 1);
   const vids = window.getClubVideos ? window.getClubVideos() : [];
   const save = (arr) => Promise.resolve(window.saveClubVideos(arr)).then(() => { try { window.dispatchEvent(new CustomEvent('sa-media-changed')); } catch (e) {} bump(); });
-  const [f, setF] = React.useState({ title: '', url: '', category: 'Goals', homeBadge: '', awayBadge: '' });
-  const add = () => { if (!f.url.trim()) return; save(vids.concat([{ id: 'v' + Date.now(), title: f.title.trim(), url: f.url.trim(), category: f.category.trim(), homeBadge: f.homeBadge, awayBadge: f.awayBadge }])); setF({ title: '', url: '', category: 'Goals', homeBadge: '', awayBadge: '' }); };
+  const [f, setF] = React.useState({ title: '', url: '', category: (window.VIDEO_CATEGORIES && window.VIDEO_CATEGORIES[0]) || 'Match Highlights', homeBadge: '', awayBadge: '' });
+  const add = () => { if (!f.url.trim()) return; save(vids.concat([{ id: 'v' + Date.now(), title: f.title.trim(), url: f.url.trim(), category: f.category.trim(), homeBadge: f.homeBadge, awayBadge: f.awayBadge }])); setF({ title: '', url: '', category: (window.VIDEO_CATEGORIES && window.VIDEO_CATEGORIES[0]) || 'Match Highlights', homeBadge: '', awayBadge: '' }); };
   return (
     <div>
-      <div className="cms-sec__head"><div><h2 className="rd-h3">Videos</h2><p className="cms-sec__sub">Add match goals &amp; clips — a YouTube link or a direct .mp4 URL. They appear under Media &rarr; Videos with an auto-generated cover.</p></div></div>
+      <div className="cms-sec__head"><div><h2 className="rd-h3">Videos</h2><p className="cms-sec__sub">Add a clip — a YouTube link or a direct .mp4 URL — and file it under a <b>sub-section</b>. Each section becomes its own tab under Media &rarr; Videos, and the cover auto-generates from the badges.</p></div></div>
       <div className="rd-card" style={{ display: 'grid', gap: 12, marginBottom: 16 }}>
         <label className="rd-field"><span>Title</span><input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} placeholder="e.g. Osunkoya screamer vs Catania" /></label>
         <label className="rd-field"><span>Video URL</span><input value={f.url} onChange={(e) => setF({ ...f, url: e.target.value })} placeholder="YouTube link or .mp4 URL" /></label>
-        <label className="rd-field"><span>Category (cover label)</span><input value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })} placeholder="Goals" /></label>
+        <label className="rd-field"><span>Sub-section</span><select value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })}>{(window.VIDEO_CATEGORIES || ['Match Highlights']).map((c) => <option key={c} value={c}>{c}</option>)}</select></label>
         <datalist id="cms-vclubs">{(window.KNOWN_CLUBS || []).map((n) => <option key={n} value={n} />)}</datalist>
         <div className="rd-form__row">
           <label className="rd-field"><span>Home club (cover badge)</span><input list="cms-vclubs" placeholder="Type a club" onChange={(e) => { var rb = window.resolveBadge ? window.resolveBadge(e.target.value) : null; setF((x) => ({ ...x, homeBadge: (rb && rb.src) || '' })); }} /></label>

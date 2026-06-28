@@ -2927,11 +2927,11 @@ function Media({
   const galleryBody = shownGallery.length ? h("div", { className: "mp-grid mp-g4" }, shownGallery.map(galleryCard)) : h("div", { className: "m-empty" }, h("b", null, "NO PHOTOS YET"), h("span", null, "MATCHDAY ALBUMS WILL APPEAR HERE"));
   const videos = window.getClubVideos ? window.getClubVideos() : [];
   const vcatOf = v => v.category || 'Match Highlights';
-  const vcats = ['all'].concat(videos.map(vcatOf).filter((c, i, ar) => ar.indexOf(c) === i));
-  const vcatTabs = (videos.length && vcats.length > 2) ? h("div", { className: "mp-subtabs", style: { marginTop: -14 } }, vcats.map(c => h("button", { key: c, className: `mp-subtab ${vcat === c ? 'is-active' : ''}`, onClick: () => setVcat(c) }, c === 'all' ? 'All' : c))) : null;
+  const vcats = ['all'].concat(window.VIDEO_CATEGORIES || []);
+  const vcatTabs = h("div", { className: "mp-subtabs", style: { marginTop: -14 } }, vcats.map(c => h("button", { key: c, className: `mp-subtab ${vcat === c ? 'is-active' : ''}`, onClick: () => setVcat(c) }, c === 'all' ? 'All' : c)));
   const shownVideos = vcat === 'all' ? videos : videos.filter(v => vcatOf(v) === vcat);
   const videoCard = (v, i) => h("button", { className: "mp-news mp-clickable", key: v.id || i, onClick: () => setVid(v) }, v.cover ? h("div", { className: "mp-news__cover" }, h("img", { src: v.cover, alt: "" })) : maGenCover({ layout: 'badges', top: v.category || 'VIDEO', left: v.homeBadge || 'assets/badge/sue-angels-shield.webp', right: v.awayBadge || '', center: '\u25B6', bottom: v.title || 'Watch' }), h("div", { className: "mp-news__body" }, v.category ? h("span", { className: "m-chip m-chip--volt mp-news__tag" }, v.category) : null, v.title ? h("h3", { className: "m-h3" }, v.title) : null));
-  const videosBody = shownVideos.length ? h("div", { className: "mp-grid mp-g3" }, shownVideos.map(videoCard)) : h("div", { className: "m-empty" }, h("b", null, "NO VIDEOS YET"), h("span", null, "MATCH GOALS & CLIPS WILL APPEAR HERE"));
+  const videosBody = shownVideos.length ? h("div", { className: "mp-grid mp-g3" }, shownVideos.map(videoCard)) : h("div", { className: "m-empty" }, h("b", null, "NO VIDEOS YET"), h("span", null, vcat === 'all' ? "MATCH GOALS & CLIPS WILL APPEAR HERE" : (String(vcat).toUpperCase() + " COMING SOON")));
   const slim = !!window.SA_SLIM;
   const mHeroMap = {
     news: { eb: 'The latest', a: 'Club ', b: 'news', sub: 'Match reports and club news from Sue\'s Angels FC.' },

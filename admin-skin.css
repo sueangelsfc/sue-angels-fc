@@ -1,155 +1,138 @@
-/* admin-skin.css — retheme the control panel to the new site aesthetic
-   (Clash Display + Hanken Grotesk, navy/volt glass). Loaded LAST in admin.html
-   so it overrides colors_and_type.css + redesign.css without touching them. */
+/* admin-skin.css — control-panel theme: SIMPLE WHITE · BLACK · ORANGE.
+   Loaded LAST in admin.html so it overrides colors_and_type.css + site.css +
+   redesign.css without touching them. Admin-only — the public site keeps its
+   volt-green identity. Clean and flat (no heavy glass), light in both themes. */
 
 :root {
-  /* swap the type families the admin inherits → new site fonts */
+  /* type families the admin inherits → site fonts */
   --font-display: 'Clash Display', system-ui, sans-serif;
   --font-stat:    'Clash Display', system-ui, sans-serif;
   --font-sans:    'Hanken Grotesk', system-ui, -apple-system, sans-serif;
-  /* softer, modern radii to match the new glass */
-  --rd-radius: 22px;
-  --rd-radius-sm: 14px;
-  --radius-lg: 22px;
-  --radius-md: 12px;
+  /* calmer radii */
+  --rd-radius: 16px;
+  --rd-radius-sm: 10px;
+  --radius-lg: 16px;
+  --radius-md: 10px;
 
-  /* ── ADMIN-ONLY palette: ORANGE · SILVER · BLACK ─────────────────────
-     Overrides the shared brand tokens so the control panel stands apart
-     from the public site (which keeps its volt-green identity). */
-  --volt:           #FF7A1A;   /* primary accent → orange */
-  --volt-glow:      #FF9A4D;   /* hover / glow ramp */
-  --volt-deep:      #E2660A;   /* pressed */
-  --volt-on:        #140A02;   /* near-black text on orange */
-  --navy:           #14161A;   /* base surface → charcoal */
-  --navy-deep:      #070708;   /* page bg → near-black */
-  --navy-rise:      #15181D;
-  --navy-rise-2:    #1E232A;
-  --bg:             #070708;
-  --surface-1:      #111318;
-  --surface-2:      #181C22;
-  --surface-3:      #20252D;
-  --fg-1:           #F5F7F9;   /* bright */
-  --fg-2:           #C6CCD4;   /* silver body */
-  --fg-3:           #8E96A0;   /* muted silver */
-  --fg-4:           #565E68;
-  --fg-on-volt:     #140A02;
-  --hairline:       rgba(200,208,216,0.10);
-  --hairline-strong:rgba(200,208,216,0.22);
-  --hairline-volt:  rgba(255,122,26,0.40);
-  --glow-volt-sm:   0 0 24px rgba(255,122,26,0.45);
-  --glow-volt-lg:   0 0 64px rgba(255,122,26,0.55);
+  /* ── orange accent ramp (chosen: classic orange #F26419) ── */
+  --o-orange:      #F26419;   /* primary */
+  --o-orange-2:    #FF7C36;   /* hover (lighter) */
+  --o-orange-deep: #C24E12;   /* pressed / orange-as-text on white */
+  --o-on:          #FFFFFF;   /* text on a solid orange fill */
+
+  /* ── WHITE / BLACK palette (overrides the shared brand tokens) ── */
+  --volt:           #F26419;
+  --volt-glow:      #FF7C36;
+  --volt-deep:      #C24E12;
+  --volt-on:        #FFFFFF;
+  --volt-ink:       #C24E12;   /* orange used as text — readable on white */
+  --navy:           #FFFFFF;
+  --navy-deep:      #FFFFFF;
+  --navy-rise:      #FFFFFF;
+  --navy-rise-2:    #F4F5F6;
+  --bg:             #F6F7F8;
+  --surface-1:      #FFFFFF;
+  --surface-2:      #F4F5F6;
+  --surface-3:      #ECEEF0;
+  --fg-1:           #14171A;   /* near-black */
+  --fg-2:           #3A4047;   /* body */
+  --fg-3:           #6B727A;   /* muted */
+  --fg-4:           #9AA0A8;   /* faint */
+  --fg-on-volt:     #FFFFFF;
+  --hairline:        rgba(20,23,26,0.10);
+  --hairline-strong: rgba(20,23,26,0.18);
+  --hairline-volt:   rgba(242,100,25,0.45);
+  --glow-volt-sm:   0 0 0 rgba(0,0,0,0);
+  --glow-volt-lg:   0 0 0 rgba(0,0,0,0);
+}
+/* keep orange-as-text consistent whichever theme the toggle is on */
+html[data-theme="light"], html[data-theme="dark"] { --volt-ink: var(--o-orange-deep); }
+
+/* ── force the page light in BOTH themes (simple, flat, no glass wash) ── */
+html, html[data-theme="dark"], html[data-theme="light"] { background: #F6F7F8 !important; }
+html[data-theme="dark"] body.rd-body,
+html[data-theme="light"] body.rd-body,
+body.rd-body,
+body {
+  background: #F6F7F8 !important;
+  background-attachment: initial !important;
+  color: var(--fg-1) !important;
 }
 
-/* headings: Clash Display loses the old uppercase-condensed feel */
+/* headings → Clash Display, black, sentence case */
 .rd-h1, .rd-h2, .rd-h3, h1, h2, h3 {
   font-family: 'Clash Display', system-ui, sans-serif !important;
   font-weight: 600 !important;
   text-transform: none !important;
   letter-spacing: -0.02em !important;
+  color: var(--fg-1) !important;
 }
-body, .rd-lead, p, input, textarea, select, button {
+body, .rd-lead, p, label, input, textarea, select, button {
   font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
 }
+.rd-lead, p { color: var(--fg-2); }
 
-/* page background — admin-only ORANGE/SILVER glow on near-black */
-html[data-theme="dark"] body.rd-body, body.rd-body {
-  background:
-    radial-gradient(1100px 680px at 82% -12%, rgba(255,122,26,0.16), transparent 58%),
-    radial-gradient(900px 620px at 4% 6%, rgba(184,192,204,0.12), transparent 56%),
-    #070708 !important;
-  background-attachment: fixed !important;
+/* top nav bar + footer → white with a hairline, no dark glass */
+.rd-header, .nav, header.nav, .rd-footer, footer {
+  background: #FFFFFF !important;
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  border-color: var(--hairline) !important;
+  color: var(--fg-1) !important;
 }
-html[data-theme="light"] body.rd-body {
-  background:
-    radial-gradient(1100px 680px at 82% -12%, rgba(255,122,26,0.22), transparent 56%),
-    radial-gradient(900px 620px at 4% 6%, rgba(150,160,172,0.55), transparent 54%),
-    #E7E9EC !important;
-  background-attachment: fixed !important;
-}
+.nav__wordmark, .nav__link, .nav__icon { color: var(--fg-1) !important; }
+.nav__link:hover { color: var(--o-orange-deep) !important; background: var(--surface-2) !important; }
+.nav__link.is-active { color: var(--o-orange-deep) !important; }
 
-/* glass cards → match new tier-2 glass */
-.rd-card, .cms-gate__card, .cms__nav, .cms-row {
+/* cards / panels / rows → flat white, light border, soft shadow (no blur) */
+.rd-card, .cms-gate__card, .cms__nav, .cms-row, .cms__content {
+  background: #FFFFFF !important;
+  border: 1px solid var(--hairline) !important;
   border-radius: var(--rd-radius) !important;
-  -webkit-backdrop-filter: blur(26px) saturate(150%);
-  backdrop-filter: blur(26px) saturate(150%);
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+  box-shadow: 0 1px 2px rgba(20,23,26,0.04), 0 10px 28px -18px rgba(20,23,26,0.20) !important;
 }
 
-/* pill buttons already align; just ensure volt + radius parity */
-.rd-btn { border-radius: 9999px !important; font-weight: 600 !important; }
-.rd-btn--volt { background: var(--volt) !important; color: #140A02 !important; }
-.rd-btn--volt:hover { background: #FF9A4D !important; }
-html[data-theme="light"] .rd-btn--volt { background: #140A02 !important; color: var(--volt) !important; }
+/* buttons — solid orange, white text */
+.rd-btn { border-radius: 9999px !important; font-weight: 700 !important; transition: background .18s ease, transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+.rd-btn--volt,
+html[data-theme="light"] .rd-btn--volt,
+html[data-theme="dark"] .rd-btn--volt {
+  background: var(--o-orange) !important; color: #FFFFFF !important; border: none !important;
+  box-shadow: 0 10px 22px -12px rgba(242,100,25,0.55) !important;
+}
+.rd-btn--volt:hover { background: var(--o-orange-deep) !important; transform: translateY(-1px); }
+.rd-btn--ghost { background: #FFFFFF !important; color: var(--fg-1) !important; border: 1px solid var(--hairline-strong) !important; }
+.rd-btn--ghost:hover { border-color: var(--o-orange) !important; color: var(--o-orange-deep) !important; }
 
-/* nav buttons in the CMS sidebar */
-.cms__navbtn { border-radius: 12px !important; font-weight: 600 !important; letter-spacing: 0.01em; }
-.cms__navbtn.is-active { background: var(--volt) !important; color: #140A02 !important; }
+/* sidebar section nav */
+.cms__navbtn {
+  border-radius: 10px !important; font-weight: 600 !important; letter-spacing: 0.01em;
+  color: var(--fg-2) !important; background: transparent !important; border: 1px solid transparent !important;
+  transition: background .15s ease, color .15s ease, border-color .15s ease;
+}
+.cms__navbtn:hover { background: var(--surface-2) !important; color: var(--fg-1) !important; transform: none !important; }
+.cms__navbtn.is-active { background: var(--o-orange) !important; color: #FFFFFF !important; border-color: var(--o-orange) !important; box-shadow: none !important; }
 
-/* inputs / fields → rounded glass */
+/* form fields — white, grey border, orange focus ring */
 .rd-field input, .rd-field textarea, .rd-field select,
-input[type="text"], input[type="email"], input[type="number"], input[type="date"], textarea, select {
-  border-radius: 12px !important;
-}
-
-/* chips */
-.rd-chip { border-radius: 9999px !important; }
-
-/* ════════════════════════════════════════════════════════════════════════
-   PREMIUM POLISH — orange / darker-orange / white, dark + light.
-   Appended last so it refines the base skin above without touching it.
-   ════════════════════════════════════════════════════════════════════════ */
-
-:root {
-  --o-orange:      #FF7A1A;   /* primary */
-  --o-orange-2:    #FF9442;   /* glow / hover top */
-  --o-orange-deep: #C9540A;   /* darker orange — depth + pressed */
-  --o-on:          #160A02;   /* text on orange */
-  --volt-ink: var(--o-orange);     /* orange-as-text (dark mode) */
-}
-html[data-theme="light"] { --volt-ink: var(--o-orange-deep); } /* readable on light */
-
-/* page background — refined orange wash */
-html[data-theme="dark"] body.rd-body, body.rd-body {
-  background:
-    radial-gradient(1100px 720px at 86% -16%, rgba(255,122,26,0.20), transparent 56%),
-    radial-gradient(820px 600px at -4% 2%, rgba(255,122,26,0.07), transparent 52%),
-    #08090B !important;
-}
-html[data-theme="light"] body.rd-body {
-  background:
-    radial-gradient(1100px 720px at 86% -16%, rgba(255,122,26,0.16), transparent 54%),
-    radial-gradient(820px 600px at -4% 2%, rgba(255,150,55,0.10), transparent 52%),
-    #F1ECE6 !important;
-}
-
-/* buttons — orange→darker-orange gradient with glow */
-.rd-btn { transition: transform .18s var(--m-ease, ease), box-shadow .18s ease, background .18s ease; }
-.rd-btn--volt { background: linear-gradient(180deg, var(--o-orange-2), var(--o-orange)) !important; color: var(--o-on) !important; box-shadow: 0 12px 28px -12px rgba(255,122,26,0.6) !important; }
-.rd-btn--volt:hover { background: linear-gradient(180deg, var(--o-orange), var(--o-orange-deep)) !important; transform: translateY(-1px); box-shadow: 0 16px 36px -12px rgba(255,122,26,0.78) !important; }
-html[data-theme="light"] .rd-btn--volt { background: linear-gradient(180deg, var(--o-orange-2), var(--o-orange)) !important; color: var(--o-on) !important; }
-html[data-theme="light"] .rd-btn--volt:hover { background: linear-gradient(180deg, var(--o-orange), var(--o-orange-deep)) !important; }
-
-/* section nav — gradient active + hover lift */
-.cms__navbtn { transition: transform .18s ease, border-color .18s ease, background .18s ease; }
-.cms__navbtn:hover { transform: translateY(-1px); border-color: var(--hairline-volt) !important; }
-.cms__navbtn.is-active { background: linear-gradient(180deg, var(--o-orange-2), var(--o-orange)) !important; color: var(--o-on) !important; box-shadow: 0 10px 26px -12px rgba(255,122,26,0.6) !important; }
-
-/* inputs — orange focus ring */
-.rd-field input, .rd-field textarea, .rd-field select,
-input[type="text"], input[type="email"], input[type="number"], input[type="date"], input[type="search"], textarea, select {
+input[type="text"], input[type="email"], input[type="number"], input[type="date"], input[type="search"], input[type="url"], textarea, select {
+  background: #FFFFFF !important; color: var(--fg-1) !important;
+  border: 1px solid var(--hairline-strong) !important; border-radius: 10px !important;
   transition: border-color .16s ease, box-shadow .16s ease;
 }
+.rd-field input::placeholder, textarea::placeholder { color: var(--fg-4) !important; }
 .rd-field input:focus, .rd-field textarea:focus, .rd-field select:focus,
 input:focus, textarea:focus, select:focus {
-  border-color: var(--hairline-volt) !important; outline: none !important;
-  box-shadow: 0 0 0 3px rgba(255,122,26,0.18) !important;
+  border-color: var(--o-orange) !important; outline: none !important;
+  box-shadow: 0 0 0 3px rgba(242,100,25,0.16) !important;
 }
+.rd-field span, label { color: var(--fg-2) !important; }
 
-/* cards + rows — subtle hover + orange hairline */
-.rd-card, .cms-row { transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
-.cms-row:hover { border-color: var(--hairline-volt) !important; }
+/* chips + eyebrows + accent text → orange (readable on white) */
+.rd-chip { border-radius: 9999px !important; }
+.rd-chip--volt { background: rgba(242,100,25,0.12) !important; color: var(--o-orange-deep) !important; border: 1px solid rgba(242,100,25,0.30) !important; }
+.rd-eyebrow, .rd-orange, .cms-sec__head p b, .cms__top .rd-eyebrow { color: var(--o-orange-deep) !important; }
 
-/* chips → orange */
-.rd-chip--volt { background: rgba(255,122,26,0.16) !important; color: var(--volt-ink) !important; border: 1px solid rgba(255,122,26,0.32) !important; }
-
-/* accent / eyebrow text → orange (readable both modes) */
-.rd-eyebrow, .cms-sec__head p b, .rd-orange { color: var(--volt-ink) !important; }
+/* group label above sidebar sub-sections */
+.cms__navgroup { font: 700 10px/1 'Hanken Grotesk', sans-serif; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-4); margin: 16px 8px 6px; }
+.cms__navgroup:first-child { margin-top: 4px; }

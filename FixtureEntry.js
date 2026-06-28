@@ -44,6 +44,29 @@ function saveTeamBadges(obj) {
 }
 window.getTeamBadges = loadTeamBadges;
 
+// One-time cleanup: some opponent badges were uploaded from source images that
+// had a baked-in (white/black) background, so they render boxy. For clubs that
+// now have a clean transparent crest in /assets/badge, repoint the stored entry
+// at that file so it shows with no background everywhere. Runs once per browser.
+(function fixBoxedOpponentBadges() {
+  try {
+    if (localStorage.getItem('sa-badgefix-1')) return;
+    var CLEAN = [
+      { key: 'brentford', src: 'assets/badge/brentford-town-badge.webp', alt: 'Brentford Town' },
+      { key: 'galactico', src: 'assets/badge/galacticos-elect-badge.webp', alt: 'Galacticos Elect' }
+    ];
+    var stored = loadTeamBadges();
+    var changed = false;
+    Object.keys(stored).forEach(function (name) {
+      var s = name.toLowerCase();
+      var hit = CLEAN.find(function (c) { return s.indexOf(c.key) >= 0; });
+      if (hit) { stored[name] = { src: hit.src, alt: hit.alt, aspect: 'circle' }; changed = true; }
+    });
+    if (changed) saveTeamBadges(stored);
+    localStorage.setItem('sa-badgefix-1', '1');
+  } catch (e) {}
+})();
+
 // Patch resolveBadge so it checks the admin store BEFORE the hardcoded
 // registry. Match by simple slug substring so a small naming variation
 // still resolves.

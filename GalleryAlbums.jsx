@@ -28,7 +28,14 @@ window.uploadGalleryImage = async function (dataUrl, path) {
   const store = window.SupabaseStore;
   if (!store) return dataUrl; // local preview — keep inline
   const client = await store.client();
-  const blob = await (await fetch(dataUrl)).blob();
+  // Decode the data: URL to a Blob WITHOUT fetch() — a strict CSP connect-src can
+  // block fetch('data:…') and surface as "Failed to fetch". atob() has no such issue.
+  const comma = dataUrl.indexOf(',');
+  const mime = ((dataUrl.slice(0, comma).match(/data:([^;]+)/)) || [, 'image/jpeg'])[1];
+  const bin = atob(dataUrl.slice(comma + 1));
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  const blob = new Blob([arr], { type: mime });
   const { error } = await client.storage.from('gallery').upload(path, blob, {
     upsert: true,
     contentType: blob.type || 'image/jpeg',

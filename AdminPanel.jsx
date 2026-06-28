@@ -863,6 +863,74 @@ function CmsRecognition() {
 }
 
 // Grouped to mirror the public site's own menu structure. 4th item = group.
+const PIPE_STATUS = ['To contact', 'Contacted', 'In talks', 'Committed', 'Declined'];
+const PIPE_LML = ['Low', 'Med', 'High'];
+const PIPE_STARTER = [
+  { company: 'Currie Motors', contact: 'curriemotors.co.uk', category: 'Car dealer', muscle: 'High', likelihood: 'High', ask: 'Front of shirt / board' },
+  { company: 'Curchods', contact: 'curchods.com', category: 'Estate agent', muscle: 'High', likelihood: 'Med', ask: 'Front of shirt' },
+  { company: 'Saxon Kings', contact: 'info@saxonkings.co.uk', category: 'Estate agent', muscle: 'High', likelihood: 'Med', ask: 'Board / shirt' },
+  { company: 'Gibson Lane', contact: 'Kingston@gibsonlane.co.uk', category: 'Estate agent', muscle: 'High', likelihood: 'Med', ask: 'Board / shirt' },
+  { company: 'JCF Car Clinic', contact: 'jcf@jcfcarclinic.co.uk', category: 'Garage', muscle: 'Med', likelihood: 'Med', ask: 'Sponsor a player' },
+  { company: 'Signature Senior Lifestyle', contact: 'enquiries@signaturesl.co.uk', category: 'Care homes', muscle: 'High', likelihood: 'Med', ask: 'Board / community' },
+  { company: 'Front Foot Drive', contact: 'tr@frontfootdrive.com', category: 'Sports coaching', muscle: 'Low', likelihood: 'High', ask: 'Sponsor a player' },
+  { company: 'The French Table', contact: 'sarah@thefrenchtable.co.uk', category: 'Restaurant', muscle: 'Med', likelihood: 'Med', ask: 'Matchday / base' },
+  { company: 'Maze Accountants', contact: 'admin@mazelimited.co.uk', category: 'Accountant', muscle: 'Med', likelihood: 'Med', ask: 'Sleeve / board' },
+  { company: 'Aspire Building Services', contact: 'enquiries@aspire2build.co.uk', category: 'Builder', muscle: 'Med', likelihood: 'Med', ask: 'Sponsor a player' },
+  { company: 'Strictly Banners', contact: 'ruth@strictlybanners.co.uk', category: 'Signage', muscle: 'Low', likelihood: 'Med', ask: 'Boards (in-kind)' },
+  { company: 'Time & Leisure', contact: 'mike.reed@timeandleisure.co.uk', category: 'Local media', muscle: 'Med', likelihood: 'Med', ask: 'Feature + sponsor' },
+  { company: 'Football Foundation', contact: 'footballfoundation.org.uk', category: 'GRANT', muscle: 'High', likelihood: 'Med', ask: 'Grant up to £25k' },
+  { company: 'Greene King Proud to Pitch In', contact: 'greeneking.co.uk/proud-to-pitch-in', category: 'GRANT', muscle: 'High', likelihood: 'Med', ask: 'Grant up to £3k' },
+  { company: 'Tesco Stronger Starts', contact: 'Groundwork / in-store', category: 'GRANT', muscle: 'Med', likelihood: 'Med', ask: 'Grant up to £1k' },
+];
+function CmsPipeline() {
+  const [, tick] = React.useState(0);
+  const bump = () => tick((n) => n + 1);
+  React.useEffect(() => { const h = () => bump(); window.addEventListener('sa-media-changed', h); return () => window.removeEventListener('sa-media-changed', h); }, []);
+  const leads = window.getSponsorPipeline ? window.getSponsorPipeline() : [];
+  const save = (arr) => Promise.resolve(window.saveSponsorPipeline(arr)).then(() => { try { window.dispatchEvent(new CustomEvent('sa-media-changed')); } catch (e) {} bump(); });
+  const target = window.SPONSOR_TARGET || 4000;
+  const num = (x) => parseFloat(x) || 0;
+  const committed = leads.filter((l) => l.status === 'Committed');
+  const committedSum = committed.reduce((s, l) => s + num(l.amount), 0);
+  const pipelineSum = leads.filter((l) => l.status === 'Contacted' || l.status === 'In talks').reduce((s, l) => s + num(l.amount), 0);
+  const pct = Math.min(100, Math.round((committedSum / target) * 100) || 0);
+  const update = (id, patch) => save(leads.map((l) => l.id === id ? { ...l, ...patch } : l));
+  const remove = (id) => save(leads.filter((l) => l.id !== id));
+  const addBlank = () => save([{ id: 'sp' + Date.now(), company: '', contact: '', category: '', muscle: 'Med', likelihood: 'Med', ask: '', status: 'To contact', amount: '' }].concat(leads));
+  const loadStarter = () => { if (!window.confirm('Add the 15 starter prospects (your top targets + the grant programmes)?')) return; save(leads.concat(PIPE_STARTER.map((p, i) => ({ id: 'sp' + Date.now() + i, status: 'To contact', amount: '', notes: '', ...p })))); };
+  return (
+    <div>
+      <div className="cms-sec__head"><div><h2 className="rd-h3">Sponsorship pipeline</h2><p className="cms-sec__sub">Track every prospect: who you&rsquo;ve contacted, who&rsquo;s committed, and the running total toward your &pound;{target.toLocaleString()} target. Add your own or load the starter list.</p></div></div>
+      <div className="rd-card" style={{ display: 'flex', gap: 24, flexWrap: 'wrap', alignItems: 'center', marginBottom: 16 }}>
+        <div><b style={{ fontSize: 26, color: '#F26419' }}>&pound;{committedSum.toLocaleString()}</b><span style={{ display: 'block', fontSize: 12, color: '#6b7682' }}>committed of &pound;{target.toLocaleString()}</span></div>
+        <div><b style={{ fontSize: 26 }}>&pound;{pipelineSum.toLocaleString()}</b><span style={{ display: 'block', fontSize: 12, color: '#6b7682' }}>in the pipeline</span></div>
+        <div><b style={{ fontSize: 26 }}>{committed.length}/{leads.length}</b><span style={{ display: 'block', fontSize: 12, color: '#6b7682' }}>committed / prospects</span></div>
+        <div style={{ flex: 1, minWidth: 180 }}><div style={{ height: 12, borderRadius: 7, background: 'rgba(20,23,26,.1)', overflow: 'hidden' }}><div style={{ height: '100%', width: pct + '%', background: '#F26419', transition: 'width .3s' }} /></div><span style={{ fontSize: 12, color: '#6b7682' }}>{pct}% to target</span></div>
+      </div>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+        <button className="rd-btn rd-btn--volt rd-btn--sm" onClick={addBlank}>+ Add prospect</button>
+        <button className="rd-btn rd-btn--ghost rd-btn--sm" onClick={loadStarter}>Load starter list (15)</button>
+      </div>
+      {leads.length ? <div className="cms-list">{leads.map((l) => (
+        <div className="cms-album" key={l.id} style={{ display: 'flex', flexDirection: 'column', gap: 0, borderLeft: l.status === 'Committed' ? '3px solid #2e9b4e' : l.status === 'Declined' ? '3px solid #c44' : '3px solid transparent' }}>
+          <div className="cms-row" style={{ gap: 8, flexWrap: 'wrap' }}>
+            <input defaultValue={l.company} placeholder="Company" onBlur={(e) => update(l.id, { company: e.target.value })} style={{ flex: 1, minWidth: 130, fontWeight: 600 }} />
+            <input defaultValue={l.contact} placeholder="Email / website" onBlur={(e) => update(l.id, { contact: e.target.value })} style={{ flex: 1, minWidth: 150 }} />
+            <select value={l.status} onChange={(e) => update(l.id, { status: e.target.value })}>{PIPE_STATUS.map((s) => <option key={s} value={s}>{s}</option>)}</select>
+            <input defaultValue={l.amount} placeholder="&pound;" type="number" onBlur={(e) => update(l.id, { amount: e.target.value })} style={{ width: 84 }} />
+            <button className="rd-btn rd-btn--ghost rd-btn--sm" title="Remove" onClick={() => { if (window.confirm('Remove this prospect?')) remove(l.id); }}>&times;</button>
+          </div>
+          <div className="cms-row" style={{ gap: 8, flexWrap: 'wrap' }}>
+            <input defaultValue={l.category} placeholder="Category" onBlur={(e) => update(l.id, { category: e.target.value })} style={{ minWidth: 110 }} />
+            <label style={{ fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 4 }}>&#128170;<select value={l.muscle} onChange={(e) => update(l.id, { muscle: e.target.value })}>{PIPE_LML.map((s) => <option key={s} value={s}>{s}</option>)}</select></label>
+            <label style={{ fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 4 }}>&#9917;<select value={l.likelihood} onChange={(e) => update(l.id, { likelihood: e.target.value })}>{PIPE_LML.map((s) => <option key={s} value={s}>{s}</option>)}</select></label>
+            <input defaultValue={l.ask} placeholder="Ask (e.g. Front of shirt)" onBlur={(e) => update(l.id, { ask: e.target.value })} style={{ flex: 1, minWidth: 150 }} />
+          </div>
+        </div>
+      ))}</div> : <p className="cms-empty">No prospects yet. Hit &ldquo;Load starter list&rdquo; to begin.</p>}
+    </div>
+  );
+}
 const CMS_SECTIONS = [
   ['hero', 'Hero banner', CmsHero, 'The club'],
   ['recognition', 'Champions & honours', CmsRecognition, 'The club'],
@@ -877,6 +945,7 @@ const CMS_SECTIONS = [
   ['videos', 'Videos', CmsVideos, 'Media'],
   ['covers', 'Post covers', CmsCovers, 'Media'],
   ['sponsors', 'Sponsors', CmsSponsors, 'Partners'],
+  ['pipeline', 'Sponsorship pipeline', CmsPipeline, 'Partners'],
   ['donations', 'Donations', CmsDonations, 'Partners'],
 ];
 const CMS_GROUPS = ['The club', 'The team', 'Matches', 'Media', 'Partners'];

@@ -424,6 +424,11 @@
   // public Media → Videos tab shows a sub-tab per section that has clips. Add/rename
   // freely here (one list, used by both the site and the admin).
   window.VIDEO_CATEGORIES = ['Match Highlights', 'Match Gallery', 'Interviews', 'Behind the Scenes'];
+  // Sponsorship pipeline tracker (admin-only). Each lead: { id, company, contact,
+  // category, muscle, likelihood, ask, status, amount, notes }. Stored in the cloud.
+  window.getSponsorPipeline = () => { const v = window.dataStore.playerPhotos.getCached('sponsors:pipeline'); return Array.isArray(v) ? v : []; };
+  window.saveSponsorPipeline = (arr) => window.dataStore.playerPhotos.set('sponsors:pipeline', arr || []);
+  window.SPONSOR_TARGET = 4000;
   window.applyCustomRoster = () => {
     if (Array.isArray(window.SQUAD)) {
       const have = new Set(window.SQUAD.map((p) => p.num));

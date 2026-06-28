@@ -2652,7 +2652,7 @@ function League() {
 }
 function LeagueTable() {
   useLeagueTick();
-  const [season, setSeason] = useState('25/26');
+  const [season, setSeason] = useState('26/27');
   const rows = window.RAW_TABLE || [];
   const Badge = window.TeamBadge;
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
@@ -2695,12 +2695,12 @@ function LeagueTable() {
     }
   }, /*#__PURE__*/React.createElement("span", {
     className: "m-chip m-chip--volt"
-  }, "Draft line-up"), /*#__PURE__*/React.createElement("p", {
+  }, "Confirmed \xB7 26/27"), /*#__PURE__*/React.createElement("p", {
     className: "m-lead",
     style: {
       marginTop: 12
     }
-  }, "Promoted into League Eight for 26/27. The provisional line-up is below, with one place still to be confirmed. Fixtures and standings land before kick-off.")), /*#__PURE__*/React.createElement("div", {
+  }, "Promoted into League Eight for 26/27. Here are the ten confirmed clubs we will face this season. Kick-off is Sunday 6 September, with fixtures and live standings to follow.")), /*#__PURE__*/React.createElement("div", {
     className: "m-glass",
     style: {
       padding: '8px 8px 4px',
@@ -2710,7 +2710,7 @@ function LeagueTable() {
     className: "mh-table"
   }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
     className: "mh-table__crumb"
-  }), /*#__PURE__*/React.createElement("th", null, "Club"))), /*#__PURE__*/React.createElement("tbody", null, ['Barnes Stormers', 'Bristol City (London) Supporters', 'Haydons Park', 'Junction Elite 4th Team', 'Olympique Mayonnaise', "Sue's Angels FC", 'Three Little Birds FC', 'TSM Rovers FC', 'Tyne & Thames FC'].map(c => /*#__PURE__*/React.createElement("tr", {
+  }), /*#__PURE__*/React.createElement("th", null, "Club"))), /*#__PURE__*/React.createElement("tbody", null, ['Barnes Stormers', 'Bristol City (London) Supporters', 'Brockwell Violets FC', 'Haydons Park', 'Junction Elite 4th Team', 'Pure Football FC 1st Team', "Sue's Angels FC", 'Three Little Birds FC', 'TSM Rovers FC', 'Tyne & Thames FC'].map(c => /*#__PURE__*/React.createElement("tr", {
     key: c,
     className: c.includes('Angels') ? 'is-us is-promo' : ''
   }, /*#__PURE__*/React.createElement("td", {
@@ -2720,15 +2720,7 @@ function LeagueTable() {
   }, Badge ? /*#__PURE__*/React.createElement(Badge, {
     team: c,
     size: 25
-  }) : null, c.replace(' FC', ''))))), /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
-    className: "mh-table__crumb"
-  }, /*#__PURE__*/React.createElement("span", null)), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("span", {
-    className: "mh-table__club",
-    style: {
-      color: 'var(--m-ink-3)',
-      fontStyle: 'italic'
-    }
-  }, "Vacancy, to be confirmed"))))))), /*#__PURE__*/React.createElement("div", { style: { marginTop: 18, textAlign: "center" } }, /*#__PURE__*/React.createElement(ShareBtn, { what: "table", label: "Share table", title: "League Ten table · Sue's Angels FC", url: "table.html", story: function () { return { kind: 'table', eyebrow: 'Southern Sunday League · 25/26', title: 'League Ten Table', rows: (rows || []).map(function (r) { return { pos: r.p, club: String(r.c || '').replace(' FC', ''), pl: r.pl, w: r.w, d: r.d, l: r.l, gd: r.gd, pts: r.pts, us: r.us }; }), footer: 'suesangelsfc.co.uk' }; } })));
+  }) : null, c.replace(' FC', ''))))))))), /*#__PURE__*/React.createElement("div", { style: { marginTop: 18, textAlign: "center" } }, /*#__PURE__*/React.createElement(ShareBtn, { what: "table", label: "Share table", title: "League Ten table · Sue's Angels FC", url: "table.html", story: function () { return { kind: 'table', eyebrow: 'Southern Sunday League · 25/26', title: 'League Ten Table', rows: (rows || []).map(function (r) { return { pos: r.p, club: String(r.c || '').replace(' FC', ''), pl: r.pl, w: r.w, d: r.d, l: r.l, gd: r.gd, pts: r.pts, us: r.us }; }), footer: 'suesangelsfc.co.uk' }; } })));
 }
 function Schedule({
   go

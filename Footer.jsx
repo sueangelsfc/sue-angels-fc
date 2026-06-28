@@ -17,7 +17,7 @@ function Footer() {
             <img src="assets/badge/sue-angels-shield.png" alt="" style={{ width: 'auto', height: 76 }} />
             <div>
               <div className="t-h3" style={{ color: '#fff' }}>SUE&rsquo;S ANGELS FC</div>
-              <div className="t-eyebrow" style={{ color: 'var(--volt)' }}>WHAT WE DO ECHOES IN ETERNITY</div>
+              <div className="t-eyebrow" style={{ color: 'var(--volt)' }}>WHAT WE DO IN LIFE ECHOES IN ETERNITY</div>
             </div>
           </div>
           <div className="footer__cols">

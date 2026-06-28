@@ -134,6 +134,7 @@ function CmsFixtures() {
 function AlbumPhotoTagger({ album }) {
   const photos = window.galleryPhotos ? window.galleryPhotos(album) : (album.photos || []);
   const [sel, setSel] = React.useState(0);
+  const [, setTick] = React.useState(0);
   const photoTags = album.photoTags || [];
   const cur = photoTags[sel] || [];
   const players = (window.SQUAD || []).map((p) => `${p.first} ${p.last}`);
@@ -145,6 +146,34 @@ function AlbumPhotoTagger({ album }) {
     next[sel] = list.includes(name) ? list.filter((x) => x !== name) : [...list, name];
     const union = Array.from(new Set([].concat.apply([], next)));
     window.GalleryStore.update(album.id, { photoTags: next, tags: union });
+  }
+  // Map a tagged name to a profile-photo target (a squad number or a coach id).
+  function profileTargetFor(name) {
+    const p = (window.SQUAD || []).find((x) => `${x.first} ${x.last}` === name);
+    if (p) return { kind: 'player', key: p.num };
+    const c = (window.COACHES || []).find((x) => x.name === name);
+    if (c) return { kind: 'coach', key: c.id };
+    return null;
+  }
+  function profilePhotoOf(t) {
+    if (!t) return '';
+    if (t.kind === 'player') return window.getPlayerPhoto ? (window.getPlayerPhoto(t.key) || '') : '';
+    return window.getCoachData ? (window.getCoachData(t.key).photo || '') : '';
+  }
+  // Make the CURRENT photo this person's profile picture (tap again to clear it).
+  function useAsProfile(name) {
+    const t = profileTargetFor(name);
+    if (!t) return;
+    const url = photos[sel];
+    const clearing = profilePhotoOf(t) === url;
+    if (t.kind === 'player') {
+      window.setPlayerPhoto(t.key, clearing ? '' : url);
+    } else {
+      const d = Object.assign({}, window.getCoachData(t.key));
+      d.photo = clearing ? '' : url;
+      window.setCoachData(t.key, d);
+    }
+    setTick((x) => x + 1);
   }
   if (!photos.length) return <p className="cms-sec__sub">No photos in this album.</p>;
   return (
@@ -180,6 +209,24 @@ function AlbumPhotoTagger({ album }) {
               return <button type="button" key={'c' + i} className={`album-tag album-tag--coach ${on ? 'is-on' : ''}`} onClick={() => toggle(name)}>{name}</button>;
             })}
           </div>
+        </React.Fragment>
+      ) : null}
+      {cur.length ? (
+        <React.Fragment>
+          <div className="album-ptag__grouplbl">Use this photo as a profile picture</div>
+          <div className="album-tags">
+            {cur.map((name) => {
+              const t = profileTargetFor(name);
+              if (!t) return null;
+              const isCur = profilePhotoOf(t) === photos[sel];
+              return (
+                <button type="button" key={'pf' + name} className={`album-tag ${isCur ? 'is-on' : ''}`} onClick={() => useAsProfile(name)}>
+                  {isCur ? '★ ' : ''}{name}{isCur ? ' · profile' : ''}
+                </button>
+              );
+            })}
+          </div>
+          <p className="cms-sec__sub" style={{ margin: '8px 0 0' }}>Only people tagged in <em>this</em> photo show here. If someone is tagged in several photos, open the one you want and tap their name to make it their profile picture. Tap again to clear it.</p>
         </React.Fragment>
       ) : null}
     </div>

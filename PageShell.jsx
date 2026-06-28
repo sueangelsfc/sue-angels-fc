@@ -812,7 +812,7 @@ const BADGE_REGISTRY = [
   { match: 'barking',    src: 'assets/badge/barking-mad.png',           alt: 'Barking Mad FC',           aspect: 'circle' },
   { match: 'clapham',    src: 'assets/badge/clapham-chiefs.png',        alt: 'Clapham Chiefs FC',        aspect: 'circle' },
   { match: 'porto',      src: 'assets/badge/casa-fc-porto.png',         alt: 'FC Porto of London',       aspect: 'circle' },
-  { match: 'bluebirds',  src: 'assets/badge/afc-bluebirds.png',         alt: 'AFC Bluebirds',            aspect: 'circle' },
+  { match: 'bluebirds',  src: 'assets/badge/afc-bluebirds.png',         alt: 'AFC Bluebirds',            aspect: 'shield' },
   { match: 'tattenham',  src: 'assets/badge/tattenham-rovers.png',      alt: 'Tattenham Rovers FC',      aspect: 'circle' },
   { match: 'woking',     src: 'assets/badge/woking-vets.png',           alt: 'Woking Vets FC',           aspect: 'circle' },
   { match: 'argentina',  src: 'assets/badge/argentina-fc-london.png',   alt: 'Argentina FC London',      aspect: 'circle' },

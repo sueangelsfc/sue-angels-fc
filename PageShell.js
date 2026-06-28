@@ -1752,7 +1752,7 @@ const BADGE_REGISTRY = [{
   match: 'bluebirds',
   src: 'assets/badge/afc-bluebirds.webp',
   alt: 'AFC Bluebirds',
-  aspect: 'circle'
+  aspect: 'shield'
 }, {
   match: 'tattenham',
   src: 'assets/badge/tattenham-rovers.webp',

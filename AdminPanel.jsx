@@ -45,7 +45,19 @@ function CmsArticles() {
       <div style={{ margin: '0 0 18px', padding: '14px 16px', border: '1px solid rgba(0,0,0,.12)', borderRadius: 12, background: 'rgba(214,242,58,.08)' }}>
         <label style={{ display: 'block', fontSize: 13 }}>
           <span style={{ display: 'block', marginBottom: 6, fontWeight: 700, letterSpacing: '.03em', color: '#3a4650' }}>Match-report sponsor (shown on every match report)</span>
-          <input type="text" defaultValue={window.getReportSponsor ? window.getReportSponsor() : ''} placeholder="e.g. Hodgson Roofing — leave blank for none" onBlur={(e) => { if (window.setReportSponsor) window.setReportSponsor(e.target.value); }} style={{ width: '100%', padding: '8px 11px', borderRadius: 8, border: '1px solid rgba(0,0,0,.18)', fontSize: 13, fontFamily: 'inherit' }} />
+          {(function () {
+            var defaults = ['Sporting Solutions Ltd', 'Hodgson Roofing', 'Staines Rugby Club'];
+            var custom = (window.SponsorsStore && window.SponsorsStore.list ? window.SponsorsStore.list() : []).map(function (s) { return s.name; }).filter(Boolean);
+            var cur = window.getReportSponsor ? window.getReportSponsor() : '';
+            var opts = defaults.concat(custom);
+            if (cur && opts.indexOf(cur) < 0) opts = [cur].concat(opts);
+            return (
+              <select defaultValue={cur} onChange={(e) => { if (window.setReportSponsor) window.setReportSponsor(e.target.value); }} style={{ width: '100%', padding: '9px 11px', borderRadius: 8, border: '1px solid rgba(0,0,0,.18)', fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
+                <option value="">None — no sponsor on reports</option>
+                {opts.map((o) => <option key={o} value={o}>{o}</option>)}
+              </select>
+            );
+          })()}
         </label>
       </div>
       {arts.length === 0 ? <p className="cms-empty">No articles yet. Write your first one.</p> : (

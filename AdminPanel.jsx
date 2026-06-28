@@ -803,22 +803,24 @@ function CmsRecognition() {
   );
 }
 
+// Grouped to mirror the public site's own menu structure. 4th item = group.
 const CMS_SECTIONS = [
-  ['matchdata', 'Match data', CmsMatchData],
-  ['fixtures', 'Fixtures', CmsFixtures],
-  ['roster', 'Add players/coaches', CmsRoster],
-  ['status', 'Retired / departed', CmsStatus],
-  ['articles', 'Articles', CmsArticles],
-  ['gallery', 'Gallery', CmsGallery],
-  ['photos', 'Squad photos', CmsPhotos],
-  ['coaches', 'Coaches', CmsCoaches],
-  ['recognition', 'Recognition', CmsRecognition],
-  ['sponsors', 'Sponsors', CmsSponsors],
-  ['donations', 'Donations', CmsDonations],
-  ['hero', 'Hero banner', CmsHero],
-  ['covers', 'Post covers', CmsCovers],
-  ['videos', 'Videos', CmsVideos],
+  ['hero', 'Hero banner', CmsHero, 'The club'],
+  ['recognition', 'Champions & honours', CmsRecognition, 'The club'],
+  ['roster', 'Add players/coaches', CmsRoster, 'The team'],
+  ['photos', 'Squad photos', CmsPhotos, 'The team'],
+  ['coaches', 'Coaches', CmsCoaches, 'The team'],
+  ['status', 'Retired / departed', CmsStatus, 'The team'],
+  ['matchdata', 'Match data', CmsMatchData, 'Matches'],
+  ['fixtures', 'Fixtures', CmsFixtures, 'Matches'],
+  ['articles', 'News & articles', CmsArticles, 'Media'],
+  ['gallery', 'Gallery', CmsGallery, 'Media'],
+  ['videos', 'Videos', CmsVideos, 'Media'],
+  ['covers', 'Post covers', CmsCovers, 'Media'],
+  ['sponsors', 'Sponsors', CmsSponsors, 'Partners'],
+  ['donations', 'Donations', CmsDonations, 'Partners'],
 ];
+const CMS_GROUPS = ['The club', 'The team', 'Matches', 'Media', 'Partners'];
 
 function AdminPanel() {
   const admin = window.useAdmin ? window.useAdmin() : false;
@@ -859,7 +861,14 @@ function AdminPanel() {
           </div>
           <div className="cms__layout">
             <aside className="cms__nav">
-              {CMS_SECTIONS.map(([k, l]) => <button key={k} className={`cms__navbtn ${sec === k ? 'is-active' : ''}`} onClick={() => setSec(k)}>{l}</button>)}
+              {CMS_GROUPS.map((g) => (
+                <React.Fragment key={g}>
+                  <div className="cms__navgroup">{g}</div>
+                  {CMS_SECTIONS.filter((s) => s[3] === g).map(([k, l]) => (
+                    <button key={k} className={`cms__navbtn ${sec === k ? 'is-active' : ''}`} onClick={() => setSec(k)}>{l}</button>
+                  ))}
+                </React.Fragment>
+              ))}
             </aside>
             <section className="cms__content"><Active /></section>
           </div>

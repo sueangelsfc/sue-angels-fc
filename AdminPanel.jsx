@@ -300,6 +300,42 @@ function CmsGallery() {
   );
 }
 
+// Gather every gallery photo a given player/coach is tagged in, across all albums.
+function taggedPhotosFor(name) {
+  if (!name) return [];
+  const albums = (window.GalleryStore && window.GalleryStore.list) ? window.GalleryStore.list() : [];
+  const out = [], seen = new Set();
+  for (const al of albums) {
+    const photos = window.galleryPhotos ? window.galleryPhotos(al) : (al.photos || []);
+    const tags = al.photoTags || [];
+    for (let i = 0; i < photos.length; i++) {
+      if ((tags[i] || []).indexOf(name) >= 0 && photos[i] && !seen.has(photos[i])) { seen.add(photos[i]); out.push(photos[i]); }
+    }
+  }
+  return out;
+}
+
+// Reusable: pick a profile picture from ONLY the photos this person is tagged in.
+function TaggedPhotoPicker({ name, current, onPick }) {
+  const [open, setOpen] = React.useState(false);
+  const pics = taggedPhotosFor(name);
+  if (!pics.length) return null;
+  return (
+    <div style={{ marginTop: 8 }}>
+      <button type="button" className="rd-btn rd-btn--ghost rd-btn--sm" onClick={() => setOpen((o) => !o)}>{open ? 'Hide tagged photos' : `Use a tagged photo (${pics.length})`}</button>
+      {open ? (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(62px, 1fr))', gap: 6, marginTop: 8 }}>
+          {pics.map((src, i) => (
+            <button type="button" key={i} title="Use as profile picture" onClick={() => { onPick(src); setOpen(false); }} style={{ padding: 0, border: current === src ? '2px solid #F26419' : '1px solid rgba(0,0,0,.18)', borderRadius: 8, overflow: 'hidden', cursor: 'pointer', aspectRatio: '1', background: '#0b0b0b' }}>
+              <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 function CmsPhotos() {
   const [, tick] = React.useState(0);
   React.useEffect(() => { const h = () => tick((n) => n + 1); window.addEventListener('sa-media-changed', h); return () => window.removeEventListener('sa-media-changed', h); }, []);
@@ -317,6 +353,7 @@ function CmsPhotos() {
               <div className="cms-photo__name">{p.first} {p.last}</div>
               {window.MediaUploader ? <window.MediaUploader label={photo ? 'Replace main' : 'Main photo'} onPick={(d) => window.setPlayerPhoto(p.num, d)} /> : null}
               {photo ? <button className="cms-photo__rm" onClick={() => window.clearPlayerPhoto(p.num)}>Remove main</button> : null}
+              <TaggedPhotoPicker name={`${p.first} ${p.last}`} current={photo} onPick={(url) => { Promise.resolve(window.setPlayerPhoto(p.num, url)).then(() => tick((n) => n + 1)); }} />
               {gallery.length ? (
                 <div className="cms-photo__gal">
                   {gallery.map((g, i) => (
@@ -389,6 +426,7 @@ function CmsCoaches() {
                 <div><b className="cms-row__t">{c.name}</b><span className="cms-row__d" style={{ display: 'block' }}>{c.role}</span></div>
                 {window.MediaUploader ? <span style={{ marginLeft: 'auto' }}><window.MediaUploader label={photo ? 'Replace photo' : 'Upload photo'} onPick={(d) => save(c.id, { photo: d })} /></span> : null}
               </div>
+              <TaggedPhotoPicker name={c.name} current={photo} onPick={(url) => save(c.id, { photo: url })} />
               <label className="rd-field"><span>Bio</span><textarea rows="5" defaultValue={ov.bio || (c.bio || []).join('\n\n')} onBlur={(e) => save(c.id, { bio: e.target.value })} placeholder="One blank line between paragraphs"></textarea></label>
               {(function () {
                 const isMgr = /manager/i.test(c.role || '');

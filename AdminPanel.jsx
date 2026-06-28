@@ -175,6 +175,21 @@ function AlbumPhotoTagger({ album }) {
     }
     setTick((x) => x + 1);
   }
+  // Remove the currently-selected photo from this album.
+  function deletePhoto() {
+    if (!photos.length) return;
+    if (!window.confirm('Remove this photo from the album? This can’t be undone.')) return;
+    const all = window.galleryPhotos(album);
+    const removed = all[sel];
+    const nextPhotos = all.filter((_, k) => k !== sel);
+    const nextTags = (album.photoTags || []).filter((_, k) => k !== sel);
+    const patch = { photos: nextPhotos, photoTags: nextTags, tags: Array.from(new Set([].concat.apply([], nextTags))) };
+    if (album.cover === removed) patch.cover = nextPhotos[0] || '';
+    if (album.src === removed) patch.src = nextPhotos[0] || '';
+    window.GalleryStore.update(album.id, patch);
+    setSel((s) => Math.max(0, Math.min(s, nextPhotos.length - 1)));
+    setTick((x) => x + 1);
+  }
   if (!photos.length) return <p className="cms-sec__sub">No photos in this album.</p>;
   return (
     <div className="album-ptag">
@@ -193,6 +208,7 @@ function AlbumPhotoTagger({ album }) {
         })}
       </div>
       <div className="album-ptag__lbl">Photo {sel + 1} of {photos.length} &middot; {cur.length} tagged</div>
+      <button type="button" onClick={deletePhoto} style={{ display: 'inline-block', margin: '2px 0 12px', padding: '8px 13px', border: '1px solid rgba(255,90,90,.55)', background: 'rgba(255,90,90,.12)', color: '#ff8f8f', borderRadius: 9, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>Remove this photo from album</button>
       <div className="album-ptag__grouplbl">Players</div>
       <div className="album-tags">
         {players.map((name, i) => {

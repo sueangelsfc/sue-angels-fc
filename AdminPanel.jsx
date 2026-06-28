@@ -257,6 +257,7 @@ function CmsGallery() {
     <div>
       <div className="cms-sec__head"><div><h2 className="rd-h3">Photo gallery</h2><p className="cms-sec__sub">Upload matchday albums, many photos per post, with a chosen cover. Set a <b>Category</b> on any album and it becomes a gallery tab. Tag one <b>Matchday</b> to upload both team badges + a photo credit (auto-generates a scorecard cover).</p></div></div>
       {window.AlbumComposer ? <window.AlbumComposer /> : null}
+      <datalist id="cms-galclubs">{(window.KNOWN_CLUBS || []).map((n) => <option key={n} value={n} />)}</datalist>
       {items.length ? (
         <div className="cms-list" style={{ marginTop: 16 }}>
           {items.map((it) => {
@@ -271,20 +272,18 @@ function CmsGallery() {
                   <input defaultValue={it.title || it.caption || ''} placeholder="Album title" onBlur={(e) => window.GalleryStore.update(it.id, { title: e.target.value, caption: e.target.value })} style={{ flex: 1, minWidth: 120 }} />
                   <span className="rd-chip">{count} photo{count === 1 ? '' : 's'}</span>
                   <span className="rd-chip">{tags.length} tagged</span>
+                  <button className="rd-btn rd-btn--ghost rd-btn--sm" title="Move up" onClick={() => window.GalleryStore.reorder(it.id, 'up')}>↑</button>
+                  <button className="rd-btn rd-btn--ghost rd-btn--sm" title="Move down" onClick={() => window.GalleryStore.reorder(it.id, 'down')}>↓</button>
                   <button className={`rd-btn rd-btn--sm ${editing ? 'rd-btn--volt' : 'rd-btn--ghost'}`} onClick={() => setTagId(editing ? null : it.id)}>{editing ? 'Done' : 'Tag photos'}</button>
                   <button className="rd-btn rd-btn--ghost rd-btn--sm" onClick={() => { if (window.confirm('Delete this album? This cannot be undone.')) window.GalleryStore.remove(it.id); }}>Delete</button>
                 </div>
                 <div className="cms-row" style={{ gap: 10, flexWrap: 'wrap' }}>
-                  <input defaultValue={it.category || ''} placeholder="Category → becomes a gallery tab (e.g. Matchday, Training, Celebration)" onBlur={(e) => window.GalleryStore.update(it.id, { category: e.target.value.trim() })} style={{ flex: 1, minWidth: 220 }} />
-                  {(it.category || '').toLowerCase() === 'matchday' ? (
-                    <React.Fragment>
-                      {it.homeBadge ? <img src={it.homeBadge} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} /> : null}
-                      {window.MediaUploader ? <window.MediaUploader label={it.homeBadge ? 'Home badge ✓' : 'Home badge'} onPick={(d) => window.GalleryStore.update(it.id, { homeBadge: d })} /> : null}
-                      {it.awayBadge ? <img src={it.awayBadge} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} /> : null}
-                      {window.MediaUploader ? <window.MediaUploader label={it.awayBadge ? 'Away badge ✓' : 'Away badge'} onPick={(d) => window.GalleryStore.update(it.id, { awayBadge: d })} /> : null}
-                      <input defaultValue={it.photographer || ''} placeholder="Photos by…" onBlur={(e) => window.GalleryStore.update(it.id, { photographer: e.target.value.trim() })} style={{ minWidth: 150 }} />
-                    </React.Fragment>
-                  ) : null}
+                  <input defaultValue={it.category || ''} placeholder="Category → becomes a gallery tab (e.g. Matchday, Training, Celebration)" onBlur={(e) => window.GalleryStore.update(it.id, { category: e.target.value.trim() })} style={{ flex: 1, minWidth: 200 }} />
+                  {it.homeBadge ? <img src={it.homeBadge} alt="" style={{ width: 26, height: 26, objectFit: 'contain' }} /> : null}
+                  <input list="cms-galclubs" defaultValue="" placeholder="Home club" onChange={(e) => { var rb = window.resolveBadge ? window.resolveBadge(e.target.value) : null; if (rb && rb.src) window.GalleryStore.update(it.id, { homeBadge: rb.src }); }} style={{ minWidth: 120 }} />
+                  {it.awayBadge ? <img src={it.awayBadge} alt="" style={{ width: 26, height: 26, objectFit: 'contain' }} /> : null}
+                  <input list="cms-galclubs" defaultValue="" placeholder="Away club" onChange={(e) => { var rb = window.resolveBadge ? window.resolveBadge(e.target.value) : null; if (rb && rb.src) window.GalleryStore.update(it.id, { awayBadge: rb.src }); }} style={{ minWidth: 120 }} />
+                  <input defaultValue={it.photographer || ''} placeholder="Photos by…" onBlur={(e) => window.GalleryStore.update(it.id, { photographer: e.target.value.trim() })} style={{ minWidth: 120 }} />
                 </div>
                 {editing ? (
                   <div className="cms-album__tags" style={{ padding: '10px 4px 14px' }}>
@@ -712,6 +711,8 @@ function CmsVideos() {
   const save = (arr) => Promise.resolve(window.saveClubVideos(arr)).then(() => { try { window.dispatchEvent(new CustomEvent('sa-media-changed')); } catch (e) {} bump(); });
   const [f, setF] = React.useState({ title: '', url: '', category: (window.VIDEO_CATEGORIES && window.VIDEO_CATEGORIES[0]) || 'Match Highlights', homeBadge: '', awayBadge: '' });
   const add = () => { if (!f.url.trim()) return; save(vids.concat([{ id: 'v' + Date.now(), title: f.title.trim(), url: f.url.trim(), category: f.category.trim(), homeBadge: f.homeBadge, awayBadge: f.awayBadge }])); setF({ title: '', url: '', category: (window.VIDEO_CATEGORIES && window.VIDEO_CATEGORIES[0]) || 'Match Highlights', homeBadge: '', awayBadge: '' }); };
+  const updateVideo = (id, patch) => save(vids.map((x) => x.id === id ? { ...x, ...patch } : x));
+  const moveVideo = (id, dir) => { const xs = vids.slice(); const i = xs.findIndex((x) => x.id === id); const j = i + (dir === 'up' ? -1 : 1); if (i < 0 || j < 0 || j >= xs.length) return; const t = xs[i]; xs[i] = xs[j]; xs[j] = t; save(xs); };
   return (
     <div>
       <div className="cms-sec__head"><div><h2 className="rd-h3">Videos</h2><p className="cms-sec__sub">Add a clip — a YouTube link or a direct .mp4 URL — and file it under a <b>sub-section</b>. Each section becomes its own tab under Media &rarr; Videos, and the cover auto-generates from the badges.</p></div></div>
@@ -726,7 +727,24 @@ function CmsVideos() {
         </div>
         <div className="rd-form__actions"><button className="rd-btn rd-btn--volt" onClick={add}>Add video</button></div>
       </div>
-      {vids.length ? <div className="cms-list">{vids.map((v) => <div className="cms-row" key={v.id}><div><b className="cms-row__t">{v.title || v.url}</b><span className="cms-row__d">{v.category}</span></div><button className="rd-btn rd-btn--ghost rd-btn--sm" onClick={() => save(vids.filter((x) => x.id !== v.id))}>Remove</button></div>)}</div> : <p className="cms-empty">No videos yet.</p>}
+      {vids.length ? <div className="cms-list">{vids.map((v) => (
+        <div className="cms-album" key={v.id} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+          <div className="cms-row" style={{ gap: 10, flexWrap: 'wrap' }}>
+            <button className="rd-btn rd-btn--ghost rd-btn--sm" title="Move up" onClick={() => moveVideo(v.id, 'up')}>↑</button>
+            <button className="rd-btn rd-btn--ghost rd-btn--sm" title="Move down" onClick={() => moveVideo(v.id, 'down')}>↓</button>
+            <input defaultValue={v.title || ''} placeholder="Title" onBlur={(e) => updateVideo(v.id, { title: e.target.value })} style={{ flex: 1, minWidth: 140 }} />
+            <select value={v.category || ''} onChange={(e) => updateVideo(v.id, { category: e.target.value })}>{(window.VIDEO_CATEGORIES || ['Match Highlights']).map((c) => <option key={c} value={c}>{c}</option>)}</select>
+            <button className="rd-btn rd-btn--ghost rd-btn--sm" onClick={() => { if (window.confirm('Remove this video?')) save(vids.filter((x) => x.id !== v.id)); }}>Remove</button>
+          </div>
+          <div className="cms-row" style={{ gap: 10, flexWrap: 'wrap' }}>
+            <input defaultValue={v.url || ''} placeholder="YouTube link or .mp4 URL" onBlur={(e) => updateVideo(v.id, { url: e.target.value.trim() })} style={{ flex: 1, minWidth: 200 }} />
+            {v.homeBadge ? <img src={v.homeBadge} alt="" style={{ width: 26, height: 26, objectFit: 'contain' }} /> : null}
+            <input list="cms-vclubs" defaultValue="" placeholder="Home club" onChange={(e) => { var rb = window.resolveBadge ? window.resolveBadge(e.target.value) : null; if (rb && rb.src) updateVideo(v.id, { homeBadge: rb.src }); }} style={{ minWidth: 120 }} />
+            {v.awayBadge ? <img src={v.awayBadge} alt="" style={{ width: 26, height: 26, objectFit: 'contain' }} /> : null}
+            <input list="cms-vclubs" defaultValue="" placeholder="Away club" onChange={(e) => { var rb = window.resolveBadge ? window.resolveBadge(e.target.value) : null; if (rb && rb.src) updateVideo(v.id, { awayBadge: rb.src }); }} style={{ minWidth: 120 }} />
+          </div>
+        </div>
+      ))}</div> : <p className="cms-empty">No videos yet.</p>}
     </div>
   );
 }

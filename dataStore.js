@@ -402,7 +402,23 @@
       } catch (e) { resolve(dataUrl); }
     });
   };
-  window.getClubVideos = () => { const v = window.dataStore.playerPhotos.getCached('media:videos'); return Array.isArray(v) ? v : []; };
+  // Built-in videos shipped in code, so they show without an admin/cloud entry.
+  // (Away game → home badge = opponent, away badge = Sue's Angels.)
+  window.DEFAULT_VIDEOS = [{
+    id: 'vid-william-clark-hillside-251012',
+    title: 'William Clark vs Hillside Elite FC Blues',
+    url: 'https://www.suesangelsfc.co.uk/assets/videos/william-clark-vs-hillside-elite.mp4',
+    category: 'Match Highlights',
+    homeBadge: 'assets/badge/hillside-elite.webp',
+    awayBadge: 'assets/badge/sue-angels-shield.webp'
+  }];
+  window.getClubVideos = () => {
+    const cloud = window.dataStore.playerPhotos.getCached('media:videos');
+    const arr = Array.isArray(cloud) ? cloud.slice() : [];
+    const ids = new Set(arr.map((v) => v && v.id));
+    for (const v of (window.DEFAULT_VIDEOS || [])) if (v && v.id && !ids.has(v.id)) arr.push(v);
+    return arr;
+  };
   window.saveClubVideos = (arr) => window.dataStore.playerPhotos.set('media:videos', arr || []);
   // Video sub-sections — the backend files each video under one of these, and the
   // public Media → Videos tab shows a sub-tab per section that has clips. Add/rename

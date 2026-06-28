@@ -390,9 +390,11 @@ function CmsCoaches() {
                 {window.MediaUploader ? <span style={{ marginLeft: 'auto' }}><window.MediaUploader label={photo ? 'Replace photo' : 'Upload photo'} onPick={(d) => save(c.id, { photo: d })} /></span> : null}
               </div>
               <label className="rd-field"><span>Bio</span><textarea rows="5" defaultValue={ov.bio || (c.bio || []).join('\n\n')} onBlur={(e) => save(c.id, { bio: e.target.value })} placeholder="One blank line between paragraphs"></textarea></label>
-              {/manager/i.test(c.role || '') ? (
+              {(function () {
+                const isMgr = /manager/i.test(c.role || '');
+                return (
                 <div className="rd-field">
-                  <span>Seasons in charge</span>
+                  <span>{isMgr ? 'Seasons in charge' : 'Seasons on staff'}</span>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {(window.ALL_SEASONS || ['25/26']).map((sn) => {
                       const cur = Array.isArray(ov.seasons) ? ov.seasons : [];
@@ -400,9 +402,10 @@ function CmsCoaches() {
                       return (<button key={sn} type="button" className={`rd-btn rd-btn--sm ${on ? 'rd-btn--volt' : 'rd-btn--ghost'}`} onClick={() => save(c.id, { seasons: on ? cur.filter((x) => x !== sn) : [...cur, sn] })}>{sn}</button>);
                     })}
                   </div>
-                  <span className="cms-row__d" style={{ textTransform: 'none', letterSpacing: 0, marginTop: 6 }}>Powers the Manager stats slide on their profile. Leave all off to default to the current season.</span>
+                  <span className="cms-row__d" style={{ textTransform: 'none', letterSpacing: 0, marginTop: 6 }}>{isMgr ? 'Powers the Manager stats slide on their profile. Leave all off to default to the current season.' : 'Marks which seasons this coach was part of the backroom team.'}</span>
                 </div>
-              ) : null}
+                );
+              })()}
             </div>
           );
         })}

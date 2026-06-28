@@ -336,6 +336,17 @@ window.COACHES = [
     ],
     supports: 'Fulham F.C.',
   },
+  {
+    id: 'louis-allen',
+    role: 'FIRST TEAM COACH',
+    name: 'Louis Allen',
+    short: 'Organisation & matchday prep',
+    bio: [
+      "Louis Allen has been a constant presence in the Sue's Angels FC backroom throughout the 25/26 season, a campaign that ended with the League Ten title and an unbeaten record. His contribution goes far beyond the ninety minutes.",
+      "Known for his meticulous organisation and pre-game preparation, Louis makes sure everything is in place before kick-off so the squad can focus on the football. From logistics to the smallest details, his work behind the scenes has been a big part of why the team has performed so consistently, week in and week out.",
+      "It is his character, though, that sets him apart. A positive, dependable figure who lifts the group and holds everyone to the same standards, Louis embodies the togetherness and culture that have driven the club forward. A valued member of the staff and a key part of the journey.",
+    ],
+  },
 ];
 
 // PLAYER_BIOS — written personal biographies keyed by squad number.

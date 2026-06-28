@@ -136,3 +136,28 @@ input:focus, textarea:focus, select:focus {
 /* group label above sidebar sub-sections */
 .cms__navgroup { font: 700 10px/1 'Hanken Grotesk', sans-serif; letter-spacing: 0.14em; text-transform: uppercase; color: var(--fg-4); margin: 16px 8px 6px; }
 .cms__navgroup:first-child { margin-top: 4px; }
+
+/* ════════════════════════════════════════════════════════════════════════
+   VISIBILITY PASS — stronger contrast + light floating admin bar.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* darken muted/secondary text so instructions read clearly on white */
+:root { --fg-3: #5A626B; }
+.cms-sec__sub, .cms-row__d, .rd-lead, .rd-field span, label { color: #474E56 !important; }
+.cms-sec__sub b, .cms-sec__head p b { color: var(--o-orange-deep) !important; }
+
+/* keep page content clear of the fixed admin bar at the bottom */
+body.rd-body { padding-bottom: 108px !important; }
+
+/* floating admin bar → white card, matches the panel */
+.rd-adminbar {
+  background: #FFFFFF !important;
+  border: 1px solid var(--hairline-strong) !important;
+  box-shadow: 0 14px 34px -14px rgba(20,23,26,0.32) !important;
+  color: var(--fg-1) !important;
+}
+.rd-adminbar__tag { color: var(--fg-1) !important; }
+.rd-adminbar__dot { background: var(--o-orange) !important; box-shadow: 0 0 0 3px rgba(242,100,25,0.20) !important; }
+/* "Sign out" (rd-btn--dark) → light outline so it's visible on white */
+.rd-btn--dark { background: #FFFFFF !important; color: var(--fg-1) !important; border: 1px solid var(--hairline-strong) !important; }
+.rd-btn--dark:hover { border-color: var(--o-orange) !important; color: var(--o-orange-deep) !important; }

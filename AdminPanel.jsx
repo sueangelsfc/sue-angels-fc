@@ -149,7 +149,8 @@ function AlbumPhotoTagger({ album }) {
   if (!photos.length) return <p className="cms-sec__sub">No photos in this album.</p>;
   return (
     <div className="album-ptag">
-      <p className="cms-sec__sub" style={{ margin: '0 0 10px' }}>Pick a photo, then tag the players &amp; coaching staff in <em>that</em> photo. Saved instantly.</p>
+      <p className="cms-sec__sub" style={{ margin: '0 0 10px' }}>Pick a photo from the strip, then tag the players &amp; coaching staff in <em>that</em> photo. Saved instantly.</p>
+      {photos[sel] ? <img src={photos[sel]} alt={`Photo ${sel + 1}`} style={{ display: 'block', width: '100%', maxHeight: '64vh', objectFit: 'contain', borderRadius: 12, marginBottom: 12, background: '#0b0b0b' }} /> : null}
       <div className="album-ptag__strip">
         {photos.map((src, i) => {
           const n = (photoTags[i] || []).length;

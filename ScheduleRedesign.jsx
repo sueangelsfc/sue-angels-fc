@@ -20,7 +20,7 @@ function RDResultCard({ r }) {
       <div className="rd-result__top"><span className={`rd-wdl rd-wdl--${res}`}>{res.toUpperCase()}</span><span className="rd-result__date">{r.date}{r.kick ? ` · ${r.kick}` : ''}</span></div>
       <div className={`rd-result__row ${usHome && res === 'w' ? 'rd-result__row--win' : ''}`}>{window.TeamBadge ? <window.TeamBadge team={r.home} size={30} /> : null}<span>{r.home.replace(' FC', '')}</span><b>{r.kind === 'walkover' ? (usHome ? 'W' : ', ') : r.hs}</b></div>
       <div className={`rd-result__row ${!usHome && res === 'w' ? 'rd-result__row--win' : ''}`}>{window.TeamBadge ? <window.TeamBadge team={r.away} size={30} /> : null}<span>{r.away.replace(' FC', '')}</span><b>{r.kind === 'walkover' ? (!usHome ? 'W' : ', ') : r.as}</b></div>
-      {r.kind === 'penalty' && r.pens ? <div className="rd-result__pens">Pens {r.pens.hs}–{r.pens.as}</div> : null}
+      {r.kind === 'penalty' && r.pens ? <div className="rd-result__pens">Pens {r.pens.hs}-{r.pens.as}</div> : null}
       <div className="rd-result__comp">{(r.competition || 'League Ten')} · {(r.venue || (usHome ? 'Home' : 'Away'))}</div>
     </div>
   );
@@ -32,7 +32,7 @@ function RDFixturesTab() {
   const completedName = (st.phase !== 'active' && window.SEASON_INFO) ? window.SEASON_INFO.current.name : null;
   const upcomingName = window.SEASON_INFO ? window.SEASON_INFO.next.name : SEASONS[SEASONS.length - 1];
   const baseSeasonOf = window.seasonOf || (() => window.CURRENT_SEASON);
-  // A completed season (e.g. 25/26) can't have upcoming fixtures — anything still
+  // A completed season (e.g. 25/26) can't have upcoming fixtures, anything still
   // upcoming belongs to the next season, so 25/26 shows 0 and 26/27 shows them.
   const effSeason = (f) => { const s = baseSeasonOf(f) || window.CURRENT_SEASON; return (s === completedName || !s) ? upcomingName : s; };
   const [season, setSeason] = React.useState(completedName ? upcomingName : (window.CURRENT_SEASON || SEASONS[0]));

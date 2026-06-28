@@ -1,6 +1,6 @@
-// MatchEntry.jsx — coach match-data entry form.
+// MatchEntry.jsx, coach match-data entry form.
 //
-// Data shape (persisted via window.saveMatchEntry/loadMatchEntry — which
+// Data shape (persisted via window.saveMatchEntry/loadMatchEntry, which
 // routes through window.dataStore to either Supabase or localStorage):
 // {
 //   starters: [{ num, positions: ['CM','CDM'], subbedOff: false }],   // up to 11 rows, up to 2 positions each
@@ -12,17 +12,17 @@
 //   opponentRedCards: [{ name, minute }],         // opposition reds (free-text name)
 //   penaltiesConceded: 0,                       // team-level count
 //   penaltiesSaved:    [{ num, minute }],       // GK only
-//   penaltiesMissed:   [{ num, minute }],       // outfield — fired the pen, didn't score
+//   penaltiesMissed:   [{ num, minute }],       // outfield, fired the pen, didn't score
 //   motm: num | null,
 //   commentary: '',
 //   savedAt: ISO,
 // }
 
-// Match persistence — routes through window.dataStore. In cloud mode (Supabase
+// Match persistence, routes through window.dataStore. In cloud mode (Supabase
 // configured) saves sync to the matches table and reach every device. In local
 // mode (no config) the data lives only in this browser's localStorage. The
 // helpers below preserve the original synchronous API used throughout the rest
-// of MatchEntry — loadMatch returns immediately from cache, saveMatch fires
+// of MatchEntry, loadMatch returns immediately from cache, saveMatch fires
 // the cloud write in the background but updates the cache optimistically so
 // re-renders see the new data right away.
 function loadMatch(id) {
@@ -231,7 +231,7 @@ function BenchRow({ entry, onChange, onRemove }) {
 }
 
 // Corner / free-kick sub-source. Used two ways:
-//  - set-piece GOALS: corner | freekick (no "open" — only shown when type==='set')
+//  - set-piece GOALS: corner | freekick (no "open", only shown when type==='set')
 //  - ASSISTS: open | corner | freekick (includeOpen) so every assist records its source
 function SetPieceSource({ value, onChange, includeOpen = false }) {
   const opts = includeOpen
@@ -297,7 +297,7 @@ function EventList({ title, items, onAdd, onRemove, onUpdate, goalMode = false, 
 }
 
 function MatchEntry({ matchId, matchLabel }) {
-  // Hooks MUST run in the same order on every render — keep them at the top,
+  // Hooks MUST run in the same order on every render, keep them at the top,
   // BEFORE any conditional return. Earlier this useAdmin call sat inside the
   // `if (!open) { ... }` branch which broke the hook ordering when the form
   // toggled open (Rendered fewer hooks than expected).
@@ -373,7 +373,7 @@ function MatchEntry({ matchId, matchLabel }) {
     ? window.detectAdvancedFormation(livePositions)
     : null;
   const detectedFormation = detResult ? detResult.formation : null;
-  const formationToShow = data.formationOverride || detectedFormation || '—';
+  const formationToShow = data.formationOverride || detectedFormation || '-';
 
   // Goalkeepers in this lineup (for penalty-save warning)
   const lineupGKs = [...data.starters, ...data.bench]
@@ -390,7 +390,7 @@ function MatchEntry({ matchId, matchLabel }) {
   if (!open) {
     // Hide the EDIT MATCH DATA button from non-admin visitors entirely.
     // Coach-entered data still surfaces through the public surfaces (scorers,
-    // MOTM, formation, etc.) — only the editor entrypoint is gated. The admin
+    // MOTM, formation, etc.), only the editor entrypoint is gated. The admin
     // check is hoisted to the top of MatchEntry above to keep hook order
     // stable across re-renders.
     if (!admin) return null;
@@ -440,7 +440,7 @@ function MatchEntry({ matchId, matchLabel }) {
               Registers appearances fast across many fixtures. Positions can be
               added later for formation detection. */}
           <details className="me__quick">
-            <summary>⚡ Quick fill — tick who played</summary>
+            <summary>⚡ Quick fill, tick who played</summary>
             <div className="me__quick-grid">
               {window.SQUAD.map((p) => {
                 const inXI = data.starters.find((s) => s.num === p.num);
@@ -469,7 +469,7 @@ function MatchEntry({ matchId, matchLabel }) {
                 );
               })}
             </div>
-            <p className="me__hint">Ticking adds the player to the XI with no position. Add positions below for formation detection — appearances count either way.</p>
+            <p className="me__hint">Ticking adds the player to the XI with no position. Add positions below for formation detection, appearances count either way.</p>
           </details>
           <MiniPitch starters={data.starters} />
           {data.starters.map((s, i) => ({ s, i })).sort((a, b) => meStarterSortKey(a.s) - meStarterSortKey(b.s) || a.i - b.i).map(({ s, i }) => (
@@ -491,7 +491,7 @@ function MatchEntry({ matchId, matchLabel }) {
         <EventList title="GOALSCORERS" items={data.goals} onAdd={goalOps.add} onUpdate={goalOps.update} onRemove={goalOps.remove} goalMode />
         <EventList title="ASSISTS"     items={data.assists} onAdd={assistOps.add} onUpdate={assistOps.update} onRemove={assistOps.remove} assistMode />
 
-        {/* Opposition goalscorers — free-text name + minute. No squad picker. */}
+        {/* Opposition goalscorers, free-text name + minute. No squad picker. */}
         <section className="me__col">
           <label className="me__lbl">OPPOSITION GOALS <span className="me__count">{data.opponentGoals.length}</span></label>
           {data.opponentGoals.map((og, i) => (
@@ -538,7 +538,7 @@ function MatchEntry({ matchId, matchLabel }) {
         <EventList title="YELLOW CARDS" items={data.yellowCards} onAdd={ycOps.add} onUpdate={ycOps.update} onRemove={ycOps.remove} />
         <EventList title="RED CARDS"   items={data.redCards} onAdd={rcOps.add} onUpdate={rcOps.update} onRemove={rcOps.remove} />
 
-        {/* Opposition red cards — free-text name + minute. No squad picker. */}
+        {/* Opposition red cards, free-text name + minute. No squad picker. */}
         <section className="me__col">
           <label className="me__lbl">OPPOSITION RED CARDS <span className="me__count">{(data.opponentRedCards || []).length}</span></label>
           {(data.opponentRedCards || []).map((orc, i) => (
@@ -582,7 +582,7 @@ function MatchEntry({ matchId, matchLabel }) {
           <div className="me__starter-meta">How many penalties the team gave away.</div>
         </section>
 
-        {/* Clean Sheets — one checkbox per player with a GK position in this lineup.
+        {/* Clean Sheets, one checkbox per player with a GK position in this lineup.
              Hidden entirely if no GK is assigned in starters/bench. Persisted as
              an explicit array so derivedPlayerStats trusts the coach's call. */}
         {lineupGKs.length > 0 && (
@@ -623,7 +623,7 @@ function MatchEntry({ matchId, matchLabel }) {
           </section>
         )}
 
-        {/* Clean-sheet CONTRIBUTIONS — tick every player who helped keep the
+        {/* Clean-sheet CONTRIBUTIONS, tick every player who helped keep the
              clean sheet (back line, keeper, anyone who kept it tight). Stored
              separately from the GK clean-sheet record so future defensive
              analytics can credit the whole unit. Persisted as data.cleanSheetContributors. */}
@@ -639,7 +639,7 @@ function MatchEntry({ matchId, matchLabel }) {
                 const isKeeper = (data.cleanSheets || []).includes(num);
                 const checked = isKeeper || (data.cleanSheetContributors || []).includes(num);
                 return (
-                  <label key={num} className={`me__quick-chip ${checked ? 'is-on' : ''} ${isKeeper ? 'is-locked' : ''}`} title={isKeeper ? 'Auto-selected — goalkeeper kept the clean sheet' : undefined}>
+                  <label key={num} className={`me__quick-chip ${checked ? 'is-on' : ''} ${isKeeper ? 'is-locked' : ''}`} title={isKeeper ? 'Auto-selected, goalkeeper kept the clean sheet' : undefined}>
                     <input
                       type="checkbox"
                       checked={checked}
@@ -659,7 +659,7 @@ function MatchEntry({ matchId, matchLabel }) {
                 );
               })}
             </div>
-            <p className="me__hint">Tick every player who contributed to the clean sheet — captured for future defensive analytics. Leave all unticked if a goal was conceded.</p>
+            <p className="me__hint">Tick every player who contributed to the clean sheet, captured for future defensive analytics. Leave all unticked if a goal was conceded.</p>
           </section>
         )}
 
@@ -716,7 +716,7 @@ function MatchEntry({ matchId, matchLabel }) {
           <label className="me__lbl">MATCH PREVIEW <span className="me__count">{(data.preview || '').trim().split(/\s+/).filter(Boolean).length} words</span></label>
           <textarea
             className="me__textarea"
-            placeholder="Coach&rsquo;s notes BEFORE the game. Tactics, talking points, opposition history, team news. Published as a Match Preview article on Media — stays published even after the fixture is played."
+            placeholder="Coach&rsquo;s notes BEFORE the game. Tactics, talking points, opposition history, team news. Published as a Match Preview article on Media, stays published even after the fixture is played."
             rows="4"
             value={data.preview || ''}
             onChange={(e) => set({ preview: e.target.value })}
@@ -748,7 +748,7 @@ function MatchEntry({ matchId, matchLabel }) {
 
 window.MatchEntry = MatchEntry;
 
-// PolishReportControl — admin tool that rewrites raw coach notes into a
+// PolishReportControl, admin tool that rewrites raw coach notes into a
 // proper match-report article using window.claude.complete. Uses the full
 // structured match data (lineups, scorers, cards, formation, opponent) plus
 // the raw commentary as input so the LLM can write something coherent.
@@ -805,16 +805,16 @@ function PolishReportControl({ data, matchLabel, onApply, onClear }) {
     try {
       const facts = summariseForPrompt();
       const prompt = [
-        'You are the in-house writer for Sue’s Angels FC — a London Sunday-league football club. Treat the role like a passionate club beat writer covering grassroots football for the people who actually play it. Authoritative and well-crafted, but grounded — this is Sunday League, not the Champions League.',
+        'You are the in-house writer for Sue’s Angels FC, a London Sunday-league football club. Treat the role like a passionate club beat writer covering grassroots football for the people who actually play it. Authoritative and well-crafted, but grounded, this is Sunday League, not the Champions League.',
         'Take the coach’s raw notes plus the structured match facts below and write a 700-900 word match report.',
         '',
-        '*** PRIMARY RULE *** The coach’s notes are the foundation of the report. Treat them as source-of-truth eyewitness testimony from inside the dressing room. Build the article AROUND those notes — every key moment, every observation, every talking point must come from what the coach wrote. You may rephrase and expand only enough to make the prose flow; do not invent moments, quotes, narratives, or storylines that the coach did not provide. If a moment or detail is not in the notes or the structured facts, do not include it.',
+        '*** PRIMARY RULE *** The coach’s notes are the foundation of the report. Treat them as source-of-truth eyewitness testimony from inside the dressing room. Build the article AROUND those notes, every key moment, every observation, every talking point must come from what the coach wrote. You may rephrase and expand only enough to make the prose flow; do not invent moments, quotes, narratives, or storylines that the coach did not provide. If a moment or detail is not in the notes or the structured facts, do not include it.',
         '',
         'The structured facts (scorers, assists, cards, lineups, etc.) are factual references you may pull names and numbers from, but the *story* must be driven by the coach’s notes.',
         '',
-        'Voice: speak from inside Sue’s Angels FC — "we", "the club", "the lads" — with the craft of a good club writer. Keep the scale honest. Avoid grandiose national-broadcast language ("cathedral", "operatic", "history of the game"). This is a Sunday-league title, not a continental trophy — the achievement is real and worth celebrating in real, human terms.',
+        'Voice: speak from inside Sue’s Angels FC, "we", "the club", "the lads", with the craft of a good club writer. Keep the scale honest. Avoid grandiose national-broadcast language ("cathedral", "operatic", "history of the game"). This is a Sunday-league title, not a continental trophy, the achievement is real and worth celebrating in real, human terms.',
         'Tone: easy to read, warm, witty when it earns it, football-culture native. Sentences should sing without straining. Mix short, hammered lines with longer flowing ones for rhythm. Plain words, real feelings. UK English. No corporate jargon, no emoji, no quote attributions.',
-        'Structure: lead with the result and what it meant in the context of the season. Build the story chronologically through the key moments the coach mentioned. Pull in scorer call-outs with full names and minutes when known. **You must explicitly list the starting XI and the bench when both are provided** — either as a sentence ("The XI rolled out: … Off the bench: …") or two short paragraphs. Cover defining incidents (cards, set pieces, MOTM’s performance, captaincy). Reflect on what it means for the season. Close with what’s next or what it tells us. 4-7 paragraphs. Plain prose, no headings, no markdown.',
+        'Structure: lead with the result and what it meant in the context of the season. Build the story chronologically through the key moments the coach mentioned. Pull in scorer call-outs with full names and minutes when known. **You must explicitly list the starting XI and the bench when both are provided**, either as a sentence ("The XI rolled out: … Off the bench: …") or two short paragraphs. Cover defining incidents (cards, set pieces, MOTM’s performance, captaincy). Reflect on what it means for the season. Close with what’s next or what it tells us. 4-7 paragraphs. Plain prose, no headings, no markdown.',
         '',
         'Word count requirement: between 700 and 900 words. Do not produce anything shorter than 700 words. Aim for 800.',
         '',
@@ -835,7 +835,7 @@ function PolishReportControl({ data, matchLabel, onApply, onClear }) {
         'COACH NOTES:',
         data.commentary.trim(),
         '',
-        'Write the match report now. Output the prose only — no preamble, no labels.',
+        'Write the match report now. Output the prose only, no preamble, no labels.',
       ].filter(Boolean).join('\n');
 
       const result = await window.claude.complete(prompt);
@@ -871,7 +871,7 @@ function PolishReportControl({ data, matchLabel, onApply, onClear }) {
 
 window.PolishReportControl = PolishReportControl;
 
-// PolishPreviewControl — same flow as PolishReportControl but for the
+// PolishPreviewControl, same flow as PolishReportControl but for the
 // pre-match preview text. Persists as data.polishedPreview.
 function PolishPreviewControl({ data, matchLabel, onApply, onClear }) {
   const [busy, setBusy] = React.useState(false);
@@ -882,14 +882,14 @@ function PolishPreviewControl({ data, matchLabel, onApply, onClear }) {
     setBusy(true); setError(null);
     try {
       const prompt = [
-        'You are the in-house writer for Sue’s Angels FC — a London Sunday-league football club. Treat the role like a passionate club beat writer covering grassroots football for the people who actually play it. Authoritative and well-crafted, but grounded — this is Sunday League, not the Champions League.',
+        'You are the in-house writer for Sue’s Angels FC, a London Sunday-league football club. Treat the role like a passionate club beat writer covering grassroots football for the people who actually play it. Authoritative and well-crafted, but grounded, this is Sunday League, not the Champions League.',
         'Take the coach’s pre-match notes and the fixture facts below and write a 700-900 word match preview.',
         '',
-        '*** PRIMARY RULE *** The coach’s pre-match notes are the foundation of the preview. Treat them as source-of-truth. Build the article AROUND those notes — every talking point, every angle, every line of thinking must come from what the coach wrote. You may rephrase and expand only enough to make the prose flow; do not invent storylines, narratives, or angles the coach did not provide. If a detail is not in the notes or the fixture facts, do not include it.',
+        '*** PRIMARY RULE *** The coach’s pre-match notes are the foundation of the preview. Treat them as source-of-truth. Build the article AROUND those notes, every talking point, every angle, every line of thinking must come from what the coach wrote. You may rephrase and expand only enough to make the prose flow; do not invent storylines, narratives, or angles the coach did not provide. If a detail is not in the notes or the fixture facts, do not include it.',
         '',
-        'Voice: speak from inside Sue’s Angels FC — "we", "the club", "the lads" — with the craft of a good club writer. Keep the scale honest. Avoid grandiose national-broadcast language. This is Sunday League — real stakes, real Sunday mornings, real lads earning Sunday afternoons.',
+        'Voice: speak from inside Sue’s Angels FC, "we", "the club", "the lads", with the craft of a good club writer. Keep the scale honest. Avoid grandiose national-broadcast language. This is Sunday League, real stakes, real Sunday mornings, real lads earning Sunday afternoons.',
         'Tone: easy to read, anticipatory, warm, witty when it earns it, football-culture native. Sentences should sing without straining. Mix short, hammered lines with longer flowing ones for rhythm. Plain words, real feelings. UK English. No corporate jargon, no emoji, no quote attributions.',
-        'Structure: lead with what this fixture means — the context, the opponent, the stakes. Build through the coach’s talking points. Reflect on form and the journey to here. Close with the call to arms or what we’re looking for. 4-7 paragraphs. Plain prose. No headings, no markdown.',
+        'Structure: lead with what this fixture means, the context, the opponent, the stakes. Build through the coach’s talking points. Reflect on form and the journey to here. Close with the call to arms or what we’re looking for. 4-7 paragraphs. Plain prose. No headings, no markdown.',
         '',
         'Word count requirement: between 700 and 900 words. Do not produce anything shorter than 700 words. Aim for 800.',
         '',
@@ -900,7 +900,7 @@ function PolishPreviewControl({ data, matchLabel, onApply, onClear }) {
         'COACH NOTES (PRE-MATCH):',
         data.preview.trim(),
         '',
-        'Write the match preview now. Output the prose only — no preamble, no labels.',
+        'Write the match preview now. Output the prose only, no preamble, no labels.',
       ].filter(Boolean).join('\n');
 
       const result = await window.claude.complete(prompt);
@@ -935,7 +935,7 @@ function PolishPreviewControl({ data, matchLabel, onApply, onClear }) {
 }
 window.PolishPreviewControl = PolishPreviewControl;
 
-// FormationOverrideInput — coach can correct the auto-detected formation.
+// FormationOverrideInput, coach can correct the auto-detected formation.
 // Correction is also saved to formation memory so the same lineup pattern
 // returns the corrected label on future matches.
 function FormationOverrideInput({ value, detected, onSet }) {

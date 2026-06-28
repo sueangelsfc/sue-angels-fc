@@ -1,4 +1,4 @@
-/* hero-rotator.js — rotates the matchday photos through the HOME hero banner only.
+/* hero-rotator.js, rotates the matchday photos through the HOME hero banner only.
    • Layer A always rests at opacity 1 showing the current photo (so the banner is
      visible even if the browser throttles the fade transition).
    • Layer B sits on top and fades in the next photo, then hands it down to A.
@@ -7,7 +7,7 @@
 (function () {
   // Only the higher-resolution landscape shots ride the hero, so the banner stays
   // crisp on large / Retina screens instead of upscaling a low-res portrait photo.
-  // (Natural background blur is kept — these are just sharper, better-composed.)
+  // (Natural background blur is kept, these are just sharper, better-composed.)
   var DEFAULTS = ['assets/hero/banner-02.jpg', 'assets/hero/banner-05.jpg', 'assets/hero/banner-10.jpg', 'assets/hero-team.jpg'];
   function heroImages() { try { var c = window.getHeroImages ? window.getHeroImages() : []; return (c && c.length) ? c : DEFAULTS; } catch (e) { return DEFAULTS; } }
 
@@ -27,7 +27,7 @@
     if (layer.getAttribute('src') === primary && layer.naturalWidth) { cb && cb(); return; }
     layer.onload = function () { cb && cb(); };
     layer.onerror = function () {
-      // webp failed — retry once with the original jpg, then give up gracefully
+      // webp failed, retry once with the original jpg, then give up gracefully
       if (primary !== url && (layer.getAttribute('src') || '').indexOf('.webp') !== -1) {
         layer.onerror = function () { cb && cb(); };
         layer.src = url;
@@ -50,7 +50,7 @@
       if (busy) return;
       busy = true;
       load(B, url, function () {
-        B.style.opacity = '1';       // CSS transition fades it in; if throttled it snaps — still correct
+        B.style.opacity = '1';       // CSS transition fades it in; if throttled it snaps, still correct
         setTimeout(function () {
           A.src = B.getAttribute('src') || url; A.style.opacity = '1';   // inherit the source B actually loaded
           B.style.opacity = '0';

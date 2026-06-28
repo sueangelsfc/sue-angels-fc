@@ -1,13 +1,13 @@
 /* =========================================================================
-   Sue's Angels FC — Colors & Type Foundations
+   Sue's Angels FC, Colors & Type Foundations
    Dark premium football aesthetic. Volt yellow + deep navy.
    ========================================================================= */
 
 /* -- Brand fonts ----------------------------------------------------------
-   Anton        — display, matches the badge wordmark
-   Bebas Neue   — condensed numerals & scoreline display
-   Manrope      — UI / body, athletic-modern, distinctive g/a
-   JetBrains Mono — tabular figures (tables, kickoff times, stats)
+   Anton       , display, matches the badge wordmark
+   Bebas Neue  , condensed numerals & scoreline display
+   Manrope     , UI / body, athletic-modern, distinctive g/a
+   JetBrains Mono, tabular figures (tables, kickoff times, stats)
    ------------------------------------------------------------------------ */
 @import url('https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
@@ -16,16 +16,16 @@
      COLOR SYSTEM
      --------------------------------------------------------------------- */
 
-  /* Brand — Volt + Navy (sampled from the real club badge) */
-  --volt:           #D6F23A;   /* primary accent — sampled from the badge wings */
+  /* Brand, Volt + Navy (sampled from the real club badge) */
+  --volt:           #D6F23A;   /* primary accent, sampled from the badge wings */
   --volt-glow:      #E2FB60;   /* hover / glow ramp */
   --volt-deep:      #B8D425;   /* pressed state */
   --volt-on:        #071D29;   /* text on volt fills (navy) */
 
-  --navy:           #071D29;   /* deep navy — sampled from the badge shield */
-  --navy-deep:      #03121C;   /* near-black — page bg in dark mode */
-  --navy-rise:      #0D2A3B;   /* surface 1 — cards on navy */
-  --navy-rise-2:    #143849;   /* surface 2 — hovered cards / inputs */
+  --navy:           #071D29;   /* deep navy, sampled from the badge shield */
+  --navy-deep:      #03121C;   /* near-black, page bg in dark mode */
+  --navy-rise:      #0D2A3B;   /* surface 1, cards on navy */
+  --navy-rise-2:    #143849;   /* surface 2, hovered cards / inputs */
 
   --white:          #FFFFFF;
   --off-white:      #F2F4F7;
@@ -48,10 +48,10 @@
   --hairline-strong:rgba(255,255,255,0.16);
   --hairline-volt:  rgba(216,255,0,0.32);
 
-  /* Semantic — result indicators */
-  --win:            #25E27B;     /* W — green */
-  --draw:           #F2C744;     /* D — amber */
-  --loss:           #FF4D5E;     /* L — red */
+  /* Semantic, result indicators */
+  --win:            #25E27B;     /* W, green */
+  --draw:           #F2C744;     /* D, amber */
+  --loss:           #FF4D5E;     /* L, red */
   --live:           #FF2D55;     /* LIVE pulse */
   --info:           #4DA3FF;
 
@@ -60,14 +60,14 @@
   --tier-silver:    #B8C3CF;
   --tier-bronze:    #C08358;
 
-  /* Glow & elevation (used sparingly — see VISUAL FOUNDATIONS) */
+  /* Glow & elevation (used sparingly, see VISUAL FOUNDATIONS) */
   --glow-volt-sm:   0 0 16px rgba(214,242,58,0.40);
   --glow-volt-md:   0 0 32px rgba(214,242,58,0.50);
   --glow-volt-lg:   0 0 64px rgba(214,242,58,0.60);
   --shadow-card:    0 1px 0 rgba(255,255,255,0.04) inset, 0 24px 48px -16px rgba(0,0,0,0.55);
   --shadow-sticky:  inset 0 -1px 0 var(--hairline);
 
-  /* Protection gradients — used over imagery to keep text legible */
+  /* Protection gradients, used over imagery to keep text legible */
   --grad-protect-b: linear-gradient(180deg, rgba(3,18,28,0) 0%, rgba(3,18,28,0.4) 40%, rgba(3,18,28,0.95) 100%);
   --grad-protect-t: linear-gradient(0deg, rgba(3,18,28,0) 0%, rgba(3,18,28,0.4) 40%, rgba(3,18,28,0.95) 100%);
   --grad-hero:      linear-gradient(160deg, rgba(3,18,28,0.2) 0%, rgba(3,18,28,0.55) 55%, rgba(3,18,28,0.92) 100%);
@@ -83,7 +83,7 @@
   --font-sans:      'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono:      'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
 
-  /* Sizes — fluid clamps; mobile-first */
+  /* Sizes, fluid clamps; mobile-first */
   --fs-mega:        clamp(64px, 14vw, 220px);   /* hero kicker numerals / banner */
   --fs-display:     clamp(48px, 9vw, 140px);    /* hero headline */
   --fs-h1:          clamp(40px, 6vw, 88px);     /* section openers */
@@ -136,7 +136,7 @@
   --sp-section: clamp(64px, 10vw, 160px);
 
   --radius-none:    0px;
-  --radius-xs:      2px;        /* sharp cards — the default */
+  --radius-xs:      2px;        /* sharp cards, the default */
   --radius-sm:      4px;
   --radius-md:      8px;        /* inputs, small surfaces */
   --radius-lg:      16px;       /* feature cards */
@@ -185,7 +185,7 @@ html, body {
 }
 
 /* =========================================================================
-   SEMANTIC TYPE — drop-in tokens
+   SEMANTIC TYPE, drop-in tokens
    ========================================================================= */
 
 .t-mega,
@@ -255,7 +255,7 @@ html, body {
   color: var(--fg-1);
 }
 
-/* Volt highlight — paint behind / under text */
+/* Volt highlight, paint behind / under text */
 .t-highlight-volt {
   color: var(--volt);
 }
@@ -274,10 +274,10 @@ small { font-size: var(--fs-sm); color: var(--fg-3); }
 code, kbd, samp { font-family: var(--font-mono); }
 
 /* =========================================================================
-   UTILITY COMPONENTS — used by preview cards & UI kit
+   UTILITY COMPONENTS, used by preview cards & UI kit
    ========================================================================= */
 
-/* Pill CTA — black/navy fill with volt label is the signature */
+/* Pill CTA, black/navy fill with volt label is the signature */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -288,7 +288,7 @@ code, kbd, samp { font-family: var(--font-mono); }
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
   padding: 14px 22px;
-  /* Rounded-rectangle CTA (curved corners, not full pill) — applied site-wide
+  /* Rounded-rectangle CTA (curved corners, not full pill), applied site-wide
      per repeated client request: every button shares this shape. */
   border-radius: 10px;
   border: 0;
@@ -337,7 +337,7 @@ code, kbd, samp { font-family: var(--font-mono); }
 .chip--draw { background: var(--draw); color: var(--navy); border-color: transparent; }
 .chip--loss { background: var(--loss); color: var(--white); border-color: transparent; }
 
-/* Card — flat dark surface with subtle hairline */
+/* Card, flat dark surface with subtle hairline */
 .card {
   background: var(--surface-1);
   border: var(--border-1);
@@ -345,7 +345,7 @@ code, kbd, samp { font-family: var(--font-mono); }
   padding: var(--sp-5);
 }
 
-/* Volt accent rule — left rail used on fixtures / news */
+/* Volt accent rule, left rail used on fixtures / news */
 .rule-volt {
   position: relative;
   padding-left: var(--sp-4);

@@ -1,11 +1,11 @@
-// Join.jsx — application routes with real form fields per route.
+// Join.jsx, application routes with real form fields per route.
 function Join() {
   const [route, setRoute] = React.useState('trial');
   const [submitted, setSubmitted] = React.useState(false);
   const onSubmit = (e) => { e.preventDefault(); setSubmitted(true); setTimeout(() => setSubmitted(false), 4000); };
 
   const ROUTES = [
-    { k: 'trial',     l: 'PLAYER TRIALS',   sub: 'Trial for the first team — we usually reply within 48 hours.' },
+    { k: 'trial',     l: 'PLAYER TRIALS',   sub: 'Trial for the first team, we usually reply within 48 hours.' },
     { k: 'volunteer', l: 'VOLUNTEER',       sub: 'Matchday, coaching, ops, kit, transport.' },
     { k: 'media',     l: 'MEDIA TEAM',      sub: 'Photo, video, design, editorial, social.' },
     { k: 'sponsor',   l: 'SPONSOR / PARTNER', sub: 'Back the project for 26/27.' },
@@ -129,7 +129,7 @@ function Join() {
               { q: 'When are trials held?', a: 'Trials for the 26/27 season open over the summer. Submit your application now and we’ll come back with the next available slot.' },
               { q: 'Do I need experience for the media team?', a: 'A portfolio helps but isn’t required. Tell us what you do and we’ll find a way to put you to work.' },
               { q: 'What do volunteers get?', a: 'No pay, but full kit, hospitality on matchdays, and the badge. The intangibles add up.' },
-              { q: 'How do sponsorships work?', a: 'See the Sponsors page. Every partner deal is bespoke — send the enquiry form and we’ll build a proposal for you.' },
+              { q: 'How do sponsorships work?', a: 'See the Sponsors page. Every partner deal is bespoke, send the enquiry form and we’ll build a proposal for you.' },
             ].map((f, i) => (
               <details key={i} className="faq">
                 <summary>{f.q}<span aria-hidden="true">+</span></summary>

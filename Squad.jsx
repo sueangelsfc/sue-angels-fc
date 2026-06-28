@@ -1,4 +1,4 @@
-// Squad.jsx — homepage first-team strip with position filter + interactive cards.
+// Squad.jsx, homepage first-team strip with position filter + interactive cards.
 function PlayerCard({ p, onOpen }) {
   const blanket = window.blanketRole(p);
   const isGK = blanket === 'Goalkeeper';

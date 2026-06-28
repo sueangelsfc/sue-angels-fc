@@ -1,4 +1,4 @@
-/* YouTube channel config — set SA_YT_CHANNEL_ID (UC...) to enable the Live embed */
+/* YouTube channel config, set SA_YT_CHANNEL_ID (UC...) to enable the Live embed */
 window.SA_YT_CHANNEL_ID = window.SA_YT_CHANNEL_ID || "";
 window.SA_YT_HANDLE = window.SA_YT_HANDLE || "suesangelsfc";
 // PageHero.jsx - shared compact page header used by every sub-page
@@ -444,8 +444,8 @@ window.daysUntilNextSeason = function (now = new Date()) {
 };
 
 // Pre-season training schedule. First session pushed back to 1 July 2026
-// 19:00–20:30 (extreme heat warning over the original 24 June date), then
-// every Sunday 10:00–12:30 at the home ground. getNextSession returns the next
+// 19:00-20:30 (extreme heat warning over the original 24 June date), then
+// every Sunday 10:00-12:30 at the home ground. getNextSession returns the next
 // session whose end time is still in the future (so it rolls over automatically).
 window.PRESEASON = {
   firstISO: '2026-07-01T19:00:00',

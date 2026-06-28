@@ -1,4 +1,4 @@
-// Nav.jsx — sticky top navigation with language shifter (Google Translate).
+// Nav.jsx, sticky top navigation with language shifter (Google Translate).
 // The shifter auto-detects the visitor's browser language on first load and
 // drives a hidden Google Translate widget under the hood.
 

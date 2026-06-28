@@ -1,4 +1,4 @@
-// Footer.jsx — dark footer with badge, columns, utility row.
+// Footer.jsx, dark footer with badge, columns, utility row.
 // NOTE: there is NO visible admin entry point. Admins open the login modal via
 // a hidden route only they know (Ctrl/Cmd+Shift+A, or appending ?login=1 to any
 // URL). The public never sees an admin link.

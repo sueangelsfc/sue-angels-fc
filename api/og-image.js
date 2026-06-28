@@ -1,4 +1,4 @@
-// api/og-image.js — exposes the player's photo / a post's cover as a real,
+// api/og-image.js, exposes the player's photo / a post's cover as a real,
 // fetchable image URL so it can be used as the Open Graph preview image.
 //
 // Player photos and article covers are stored as base64 data URLs in Supabase
@@ -50,7 +50,7 @@ async function resolveDataUrl(q) {
       const hit = Array.isArray(custom) ? custom.find(x => x && slug(x) === String(num).toLowerCase()) : null;
       num = hit ? hit.num : null;
       // base-roster slugs are resolved by api/share.js; here we only need the photo,
-      // which for base players is also keyed by number — but we don't know it from a
+      // which for base players is also keyed by number, but we don't know it from a
       // base-roster slug without PageShell, so fall back if unresolved.
       if (num == null) return null;
     }

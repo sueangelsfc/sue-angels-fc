@@ -1,4 +1,4 @@
-// SponsorsPage.jsx — admin-editable Manchester-United-style partners page.
+// SponsorsPage.jsx, admin-editable Manchester-United-style partners page.
 // Default partners ship hardcoded; admin can add more, edit any, or remove.
 
 const DEFAULT_PARTNERS = [
@@ -12,7 +12,7 @@ const DEFAULT_PARTNERS = [
     description: [
       'Sporting Solutions Ltd are a London and Surrey-based sports and garden maintenance contractor, specialising in professional outdoor maintenance, sports-surface care, and renovation work.',
       'Their services include soft landscaping, sports renovations, verti-draining, sports line marking, turf maintenance, grounds care, and general outdoor improvement works. With experience across sports and garden environments, they support clubs, organisations and private clients in keeping their spaces safe, functional and well presented.',
-      'Sue’s Angels FC are proud to be backed by Sporting Solutions Ltd — a company whose work plays an important role in maintaining and improving the spaces where sport, community and teamwork come together.',
+      'Sue’s Angels FC are proud to be backed by Sporting Solutions Ltd, a company whose work plays an important role in maintaining and improving the spaces where sport, community and teamwork come together.',
     ],
     services: ['Soft landscaping', 'Sports renovations', 'Verti-draining', 'Sports line marking', 'Turf maintenance', 'Grounds care', 'Outdoor improvement works'],
     location: 'London & Surrey',
@@ -27,11 +27,11 @@ const DEFAULT_PARTNERS = [
     logo: 'assets/sponsors/hodgson-roofing.png',
     primary: true,
     short: 'Warm-up & training top sponsor',
-    blurb: 'Hodgson Roofing joined the club in February 2026 as the main sponsor of Sue’s Angels FC’s warm-up and training top — the brand the squad wears in every pre-match and midweek session.',
+    blurb: 'Hodgson Roofing joined the club in February 2026 as the main sponsor of Sue’s Angels FC’s warm-up and training top, the brand the squad wears in every pre-match and midweek session.',
     description: [
       'Hodgson Group TA / Hodgson Roofing are roofing specialists based in Harrow, serving clients across London and the surrounding areas.',
       'Their services include new roofs, roof repairs, flat roofs, lead work, Velux installations and general roofing support. As an NFRC-accredited company, Hodgson Roofing deliver professional roofing solutions with a focus on quality workmanship, reliability and customer care.',
-      'Sue’s Angels FC are proud to be supported by Hodgson Roofing — a trusted roofing specialist whose backing helps strengthen the club as we continue to grow both on and off the pitch.',
+      'Sue’s Angels FC are proud to be supported by Hodgson Roofing, a trusted roofing specialist whose backing helps strengthen the club as we continue to grow both on and off the pitch.',
     ],
     services: ['New roofs', 'Roof repairs', 'Flat roofs', 'Lead work', 'Velux installations', 'General roofing'],
     accreditations: ['NFRC Accredited'],
@@ -223,7 +223,7 @@ function PartnerEditor({ partner, onSave, onCancel }) {
   );
 }
 
-// Stats strip — single row of impact numbers that anchors the sponsors page hero.
+// Stats strip, single row of impact numbers that anchors the sponsors page hero.
 function PartnersStatsStrip({ partnerCount, seasonsBacking }) {
   const stats = [
     { value: partnerCount, label: 'OFFICIAL PARTNERS' },
@@ -258,17 +258,17 @@ function PartnersBenefits() {
     {
       n: '02',
       t: 'REAL AUDIENCE',
-      c: 'A growing London fanbase — reached every week through match reports, tables, gallery and player content.',
+      c: 'A growing London fanbase, reached every week through match reports, tables, gallery and player content.',
     },
     {
       n: '03',
       t: 'TAILORED DEAL',
-      c: 'No fixed tiers. Built around your business — kit, signage, content and community activations.',
+      c: 'No fixed tiers. Built around your business, kit, signage, content and community activations.',
     },
     {
       n: '04',
       t: 'CHAMPIONS’ BADGE',
-      c: 'Back a winner. League Ten champions, unbeaten in our first season — and promoted for 26/27.',
+      c: 'Back a winner. League Ten champions, unbeaten in our first season, and promoted for 26/27.',
     },
   ];
   return (
@@ -305,7 +305,7 @@ function SponsorsPage() {
 
   const save = (form) => {
     if (form.id && partners.find((p) => p.id === form.id)) {
-      // Default partner — store the override in the uploaded store, hiding the default.
+      // Default partner, store the override in the uploaded store, hiding the default.
       if (DEFAULT_PARTNERS.find((p) => p.id === form.id)) {
         removeDefault(form.id);
         window.SponsorsStore.add({ ...form });
@@ -329,11 +329,11 @@ function SponsorsPage() {
       <PageHero
         eyebrow="BACK THE PROJECT"
         title={<>SUE&rsquo;S ANGELS FC <em>PARTNERS</em></>}
-        sub="The brands behind the badge — proud partners of Sue's Angels FC, League Ten champions."
+        sub="The brands behind the badge, proud partners of Sue's Angels FC, League Ten champions."
       >
       </PageHero>
 
-      {/* Anchor stats strip — dynamic numbers that sell the project at a glance. */}
+      {/* Anchor stats strip, dynamic numbers that sell the project at a glance. */}
       <PartnersStatsStrip partnerCount={partners.length} seasonsBacking={1} />
 
       <section className="section section--compact sp-home">
@@ -398,7 +398,7 @@ function SponsorsPage() {
         </div>
       </section>
 
-      {/* Why partner — benefit grid. Sits between The Family and the enquiry CTA. */}
+      {/* Why partner, benefit grid. Sits between The Family and the enquiry CTA. */}
       <PartnersBenefits />
 
       <section className="section section--compact section--alt sp-cta-section">
@@ -410,7 +410,7 @@ function SponsorsPage() {
             </div>
           </header>
 
-          {/* Magazine-style enquiry card — mirrors the sp-home__card pattern:
+          {/* Magazine-style enquiry card, mirrors the sp-home__card pattern:
               white "logo plate" on the left (here: large volt envelope icon),
               role/title/sub/checklist in the middle, arrow on the right. */}
           <div className="sp-join">
@@ -422,12 +422,12 @@ function SponsorsPage() {
               <span className="sp-join__role">DIRECT LINE · 26 / 27 OPEN</span>
               <a href="mailto:suesangelsfc@gmail.com" className="sp-join__name">suesangelsfc@gmail.com</a>
               <p className="sp-join__sub">
-                We&rsquo;ll send a tailored pack — club story, audience, branded kit mock-ups and your projected reach for 26/27.
+                We&rsquo;ll send a tailored pack, club story, audience, branded kit mock-ups and your projected reach for 26/27.
               </p>
               <ul className="sp-join__list">
                 <li><span aria-hidden="true">✓</span> Tailored proposal within 48 hours</li>
                 <li><span aria-hidden="true">✓</span> Mock-ups in your own branding</li>
-                <li><span aria-hidden="true">✓</span> Straight to us — no middlemen</li>
+                <li><span aria-hidden="true">✓</span> Straight to us, no middlemen</li>
               </ul>
               <div className="sp-join__actions">
                 <a href="contact.html" className="btn btn--volt btn--sm">Open enquiry form →</a>

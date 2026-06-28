@@ -1,8 +1,8 @@
-// Contact.jsx — routed contact with multi-form
+// Contact.jsx, routed contact with multi-form
 function Contact() {
   const [route, setRoute] = React.useState('general');
   const routes = [
-    { k: 'general',  l: 'General',           sub: 'Anything else — questions, hello, general' },
+    { k: 'general',  l: 'General',           sub: 'Anything else, questions, hello, general' },
     { k: 'sponsor',  l: 'Sponsor enquiry',   sub: 'Backing the club, brand partnerships' },
     { k: 'trial',    l: 'Player trial',      sub: 'You want a shot. Submit your tape.' },
     { k: 'media',    l: 'Media volunteer',   sub: 'Photo, video, design, editorial, social' },

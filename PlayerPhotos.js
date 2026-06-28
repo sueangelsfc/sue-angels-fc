@@ -1,4 +1,4 @@
-// PlayerPhotos.jsx — per-player photo storage + getter helper.
+// PlayerPhotos.jsx, per-player photo storage + getter helper.
 // Photos are stored as data URLs in localStorage under sa-player-photo:<num>.
 // Compressed to ~360px wide, ~90% jpeg quality to keep storage tight.
 
@@ -94,7 +94,7 @@ window.processPlayerPhotoFile = function (file) {
   });
 };
 
-// React hook — re-renders when this player's photo changes anywhere on the page.
+// React hook, re-renders when this player's photo changes anywhere on the page.
 window.usePlayerPhoto = function (num) {
   const [src, setSrc] = React.useState(() => window.getPlayerPhoto(num));
   React.useEffect(() => {
@@ -107,7 +107,7 @@ window.usePlayerPhoto = function (num) {
   return src;
 };
 
-// PhotoUploader — small "Edit photo" pill + hidden file input.
+// PhotoUploader, small "Edit photo" pill + hidden file input.
 function PhotoUploader({
   playerNum,
   compact = false

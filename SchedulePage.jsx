@@ -1,4 +1,4 @@
-// SchedulePage.jsx — combined Fixtures + Results + Table page.
+// SchedulePage.jsx, combined Fixtures + Results + Table page.
 // Three internal tabs: Upcoming / Results / Table.
 
 function SchedulePage() {

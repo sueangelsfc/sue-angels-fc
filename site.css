@@ -167,7 +167,7 @@ body { top: 0 !important; }
   text-shadow: 0 0 14px rgba(214,242,58,0.4);
 }
 
-/* Countdown card — compact, badge-led, with subtle pulse on the digits. */
+/* Countdown card, compact, badge-led, with subtle pulse on the digits. */
 .hero__count {
   background: rgba(5, 11, 23, 0.72);
   backdrop-filter: blur(18px) saturate(140%);
@@ -299,7 +299,7 @@ img.fixture-card__badge { background: transparent; }
 /* -- Result card ----------------------------------------------------------- */
 .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-4); }
 
-/* Horizontal carousel variant — used on the homepage Results section */
+/* Horizontal carousel variant, used on the homepage Results section */
 .result-carousel {
   display: flex; gap: var(--sp-4);
   overflow-x: auto; overflow-y: hidden;
@@ -364,7 +364,7 @@ img.fixture-card__badge { background: transparent; }
 }
 .rr:hover { background: var(--surface-2); transform: translateY(-1px); }
 
-/* Cup row treatments — distinct backgrounds per round so the cup story reads visually. */
+/* Cup row treatments, distinct backgrounds per round so the cup story reads visually. */
 .rr--cup { padding-top: 28px; } /* room for round chip */
 .rr--round-of-32 { background: linear-gradient(90deg, rgba(255,255,255,0.04), var(--surface-1) 60%); border-color: rgba(255,255,255,0.10); }
 .rr--last-16     { background: linear-gradient(90deg, rgba(192,196,204,0.06), var(--surface-1) 60%); border-color: rgba(192,196,204,0.18); }
@@ -517,7 +517,7 @@ img.fixture-card__badge { background: transparent; }
 .sponsor-card--full .sponsor-card__logo { object-fit: cover; }
 .sponsor-card--full { aspect-ratio: 1 / 1; }
 
-/* Big sponsor block on the Sponsors page — bigger, looser grid */
+/* Big sponsor block on the Sponsors page, bigger, looser grid */
 .sponsor-grid--xl { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-4); }
 @media (max-width: 880px) { .sponsor-grid--xl { grid-template-columns: 1fr; } }
 
@@ -826,7 +826,7 @@ img.fixture-card__badge { background: transparent; }
 .sq-roller__dot:hover { background: var(--fg-3); }
 .sq-roller__dot.is-on { background: var(--volt); width: 22px; box-shadow: 0 0 10px rgba(214,242,58,0.5); }
 
-/* Compact homepage player card — neat trading-card style */
+/* Compact homepage player card, neat trading-card style */
 .player-card.is-compact {
   background: var(--surface-1); border: 1px solid var(--hairline);
   border-radius: var(--radius-xs);
@@ -960,7 +960,7 @@ img.fixture-card__badge { background: transparent; }
 @media (max-width: 980px) { .squad-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 520px) { .squad-grid { grid-template-columns: 1fr; } }
 
-/* Homepage compact strip — 4 across on desktop with smaller photo */
+/* Homepage compact strip, 4 across on desktop with smaller photo */
 .squad-grid--compact { grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .squad-grid--compact .player-card__photo { aspect-ratio: 1 / 1; }
 .squad-grid--compact .player-card__num { font-size: 38px; }
@@ -1086,7 +1086,7 @@ img.fixture-card__badge { background: transparent; }
 .leader-filter .filters { padding: 0; margin: 0; }
 
 /* =========================================================================
-   LEADERBOARDS v2 — banded, avatar-led, properly aligned
+   LEADERBOARDS v2, banded, avatar-led, properly aligned
    ========================================================================= */
 .lb2-toolbar {
   display: flex; flex-direction: column; align-items: flex-start;
@@ -1199,7 +1199,7 @@ img.fixture-card__badge { background: transparent; }
 .lb2__td--yc { color: var(--draw); }
 .lb2__td--rc { color: var(--loss); }
 
-/* Player card photo block — no squad-number overlay (squad numbers not confirmed). */
+/* Player card photo block, no squad-number overlay (squad numbers not confirmed). */
 
 /* Avatar circle in leaderboard rows */
 .lb-avatar {
@@ -1573,7 +1573,7 @@ section[id] { scroll-margin-top: 80px; }
 .me__saved { font: 600 10px/1 var(--font-sans); color: var(--fg-3); letter-spacing: 0.12em; text-transform: uppercase; }
 .me__actions { display: flex; gap: 8px; }
 
-/* Position chips inside a Starter or Bench row — horizontal slider rail
+/* Position chips inside a Starter or Bench row, horizontal slider rail
    (swipeable on mobile + desktop) per client request, mirroring the homepage
    carousels. Selected chips stay visible; the rail scrolls rather than wraps. */
 .me__poschips {
@@ -1811,7 +1811,7 @@ section[id] { scroll-margin-top: 80px; }
 }
 .pp__sub { color: var(--fg-2); font-size: var(--fs-body); margin: 8px 0 0; max-width: 640px; }
 
-/* ─── KPI GROUPS — Appearances / Attack / Penalties / Recognition ────────
+/* ─── KPI GROUPS, Appearances / Attack / Penalties / Recognition ────────
    Grouped, banded stat panel. Each group is a labelled block; cells inside
    share a hairline grid. Hero cells glow volt. Hover lifts each cell. */
 .pp-kpi {
@@ -1864,11 +1864,11 @@ section[id] { scroll-margin-top: 80px; }
 .pp-kpi__cell--yc b { color: var(--draw); }
 .pp-kpi__cell--rc b { color: var(--loss); }
 
-/* Headline stat strip — tiled scoreboard.
+/* Headline stat strip, tiled scoreboard.
    Uses the "grid lines via gap + background" trick: a hairline-coloured
    background shows through 1px gaps, so every cell (including wrapped rows
    and the trailing cell) gets clean, even dividers on all four sides.
-   Fixed equal tiles via auto-fill keep the wrap tidy — no stretched lone cell. */
+   Fixed equal tiles via auto-fill keep the wrap tidy, no stretched lone cell. */
 .pp-stats {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
@@ -2054,7 +2054,7 @@ section[id] { scroll-margin-top: 80px; }
 .player-card--btn:hover { transform: translateY(-3px); background: var(--surface-2); border-color: var(--volt); }
 .player-card--btn:focus-visible { outline: 2px solid var(--volt); outline-offset: 2px; }
 
-/* Player profile — tabs */
+/* Player profile, tabs */
 .pp-tabs {
   display: flex; gap: 4px; border-bottom: 1px solid var(--hairline);
   margin-bottom: var(--sp-3); flex-wrap: wrap;
@@ -2169,11 +2169,11 @@ body.is-comfy .result-card,
 body.is-comfy .player-card__info,
 body.is-comfy .stat-tile { padding: var(--sp-6); }
 
-/* Body baseline polish — sharper rendering, smoother transitions site-wide. */
+/* Body baseline polish, sharper rendering, smoother transitions site-wide. */
 html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
 img { image-rendering: -webkit-optimize-contrast; }
 
-/* Admin slot — only visible to admins (AdminMode.jsx). */
+/* Admin slot, only visible to admins (AdminMode.jsx). */
 .admin-slot {
   border: 1px dashed var(--volt);
   border-radius: var(--radius-xs);
@@ -2190,7 +2190,7 @@ img { image-rendering: -webkit-optimize-contrast; }
 .admin-slot__body { display: flex; flex-direction: column; gap: 8px; }
 
 /* =========================================================================
-   v3 PAGES — Champions, Sponsors (MUFC style), News magazine, Join routes,
+   v3 PAGES, Champions, Sponsors (MUFC style), News magazine, Join routes,
    About championship banner
    ========================================================================= */
 
@@ -2343,7 +2343,7 @@ img { image-rendering: -webkit-optimize-contrast; }
 .about-champ__copy p { color: var(--fg-2); margin: 0 0 var(--sp-3); font-size: var(--fs-body); }
 @media (max-width: 720px) { .about-champ { grid-template-columns: 1fr; text-align: left; } .about-champ__badge img { width: 100px; height: 100px; } }
 
-/* SPONSORS — MAN UTD-STYLE PARTNERS PAGE */
+/* SPONSORS, MAN UTD-STYLE PARTNERS PAGE */
 .partner-grid {
   display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-3);
 }
@@ -2413,7 +2413,7 @@ img { image-rendering: -webkit-optimize-contrast; }
 .partner-detail__blurb { color: var(--fg-2); line-height: 1.6; margin: 0; }
 .partner-detail__actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
-/* HOME PAGE — main sponsors block (Sponsors.jsx) */
+/* HOME PAGE, main sponsors block (Sponsors.jsx) */
 .sp-home {
   background:
     radial-gradient(ellipse at top right, rgba(214,242,58,0.05) 0%, transparent 50%),
@@ -2500,7 +2500,7 @@ img { image-rendering: -webkit-optimize-contrast; }
   .sp-home__cta { flex-direction: column; align-items: flex-start; }
 }
 
-/* NEWS — magazine layout */
+/* NEWS, magazine layout */
 .news-card {
   background: var(--surface-1); border: 1px solid var(--hairline);
   border-radius: var(--radius-xs); overflow: hidden;
@@ -2623,7 +2623,7 @@ img { image-rendering: -webkit-optimize-contrast; }
 
 @media (max-width: 720px) { .ad__body { padding: var(--sp-5); } }
 
-/* Match-report graphic — broadcast-style scoreboard graphic per match-report article. */
+/* Match-report graphic, broadcast-style scoreboard graphic per match-report article. */
 .news-card__media--report {
   padding: 0; display: block;
   aspect-ratio: 16/9;
@@ -2703,7 +2703,7 @@ img { image-rendering: -webkit-optimize-contrast; }
     drop-shadow(0 0 24px rgba(214,242,58,0.32))
     drop-shadow(0 12px 24px rgba(0,0,0,0.55));
 }
-/* Shield-shaped badges (Sue's, Pure FC, Old Freemen's) — preserve aspect via height-only sizing. */
+/* Shield-shaped badges (Sue's, Pure FC, Old Freemen's), preserve aspect via height-only sizing. */
 .mr-graphic__badge--shield {
   width: auto;
   height: clamp(70px, 9vw, 112px);
@@ -2789,7 +2789,7 @@ img { image-rendering: -webkit-optimize-contrast; }
 }
 .mr-graphic--preview .mr-graphic__side--us .mr-graphic__team { color: var(--volt); }
 
-/* Sponsor cover graphic — used as the cover image for the SPONSORS feature article. */
+/* Sponsor cover graphic, used as the cover image for the SPONSORS feature article. */
 .sp-cover {
   position: relative; width: 100%; height: 100%;
   display: flex; flex-direction: column; gap: clamp(16px, 2.5vw, 28px);
@@ -2894,7 +2894,7 @@ img { image-rendering: -webkit-optimize-contrast; }
 .news-feed { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-3); }
 @media (max-width: 720px) { .news-feed { grid-template-columns: 1fr; } }
 
-/* JOIN — routes + form layout */
+/* JOIN, routes + form layout */
 .join-v2 {
   display: grid; grid-template-columns: 280px 1fr; gap: var(--sp-5);
   align-items: start;
@@ -2958,7 +2958,7 @@ img { image-rendering: -webkit-optimize-contrast; }
 .join-v2__thanks h3 { font-family: var(--font-display); font-size: clamp(28px, 4vw, 48px); margin: 0; color: var(--fg-1); text-transform: uppercase; }
 .join-v2__thanks p { color: var(--fg-2); margin: 0; }
 
-/* HOME CHAMPIONS strip — under the hero */
+/* HOME CHAMPIONS strip, under the hero */
 .home-champ {
   background: linear-gradient(135deg, var(--volt) 0%, #B5D000 100%);
   color: var(--navy);
@@ -3036,7 +3036,7 @@ img { image-rendering: -webkit-optimize-contrast; }
 .kit-reveal__copy p { color: var(--fg-2); font-size: var(--fs-body); line-height: 1.6; max-width: 480px; margin: 0 0 var(--sp-4); }
 .kit-reveal__copy .kit-reveal__title em { font-style: normal; color: var(--volt); }
 
-/* PAGE HERO — used by every sub-page (Teams, About, Sponsors, etc.) */
+/* PAGE HERO, used by every sub-page (Teams, About, Sponsors, etc.) */
 .page-hero {
   padding: var(--sp-9) 0 var(--sp-7);
   background:
@@ -3097,7 +3097,7 @@ img { image-rendering: -webkit-optimize-contrast; }
 }
 .about-mission__quote em { font-style: normal; color: var(--volt); display: inline-block; margin-top: 10px; }
 
-/* Founding-story block — editorial layout */
+/* Founding-story block, editorial layout */
 .about-story-section {
   background:
     radial-gradient(ellipse at top right, rgba(214,242,58,0.06) 0%, transparent 55%),
@@ -3411,7 +3411,7 @@ img { image-rendering: -webkit-optimize-contrast; }
 
 
 /* ────────────────────────────────────────────────────────────────────────────
-   INTERACTIVITY POLISH — appended block
+   INTERACTIVITY POLISH, appended block
    • Result card: left rail colored per result (W=green, D=draw, L=red)
    • Clean-sheet chips: GK-only checkboxes styled like the goalscorer chips
    • About: value cards + timeline items get hover state matching homepage feel
@@ -3419,7 +3419,7 @@ img { image-rendering: -webkit-optimize-contrast; }
    • JoinCTA: arrow & lift on buttons
    ──────────────────────────────────────────────────────────────────────────── */
 
-/* RESULT CARD — result-colored rail */
+/* RESULT CARD, result-colored rail */
 .result-card { --rc-rail: var(--volt); padding-left: calc(var(--sp-5) + 3px); position: relative; overflow: hidden; }
 .result-card--win  { --rc-rail: var(--win); }
 .result-card--draw { --rc-rail: var(--draw); }
@@ -3431,7 +3431,7 @@ img { image-rendering: -webkit-optimize-contrast; }
 }
 .result-card:hover::before { transform: scaleY(1); opacity: 1; box-shadow: 0 0 14px var(--rc-rail); }
 
-/* CLEAN-SHEET CHIPS — used inside MatchEntry */
+/* CLEAN-SHEET CHIPS, used inside MatchEntry */
 .me__cs-list { display: flex; flex-wrap: wrap; gap: 8px; }
 .me__cs {
   display: inline-flex; align-items: center; gap: 10px;
@@ -3469,7 +3469,7 @@ img { image-rendering: -webkit-optimize-contrast; }
 .me__cs--on .me__cs-tag { color: var(--volt); }
 .me__hint { font: 500 11px/1.4 var(--font-sans); color: var(--fg-3); margin: 8px 0 0; }
 
-/* ABOUT — value cards interactive feel */
+/* ABOUT, value cards interactive feel */
 .value-card { position: relative; overflow: hidden; transform: translateY(0); transition: transform var(--dur-fast), background var(--dur-fast), border-color var(--dur-fast), box-shadow var(--dur-med); }
 .value-card::before {
   content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
@@ -3481,24 +3481,24 @@ img { image-rendering: -webkit-optimize-contrast; }
 .value-card__num { transition: transform var(--dur-med) var(--ease-out), color var(--dur-fast); }
 .value-card:hover .value-card__num { transform: scale(1.08); }
 
-/* ABOUT — timeline item hover */
+/* ABOUT, timeline item hover */
 .timeline__item { transition: padding-left var(--dur-fast), background var(--dur-fast); padding-left: 0; padding-right: var(--sp-3); border-radius: var(--radius-xs); }
 .timeline__item:hover { background: rgba(214,242,58,0.04); padding-left: 14px; }
 .timeline__item::before { transition: transform var(--dur-med) var(--ease-out), box-shadow var(--dur-fast); }
 .timeline__item:hover::before { transform: translateX(-50%) scale(1.5); box-shadow: 0 0 18px rgba(214,242,58,0.55); }
 
-/* ABOUT — championship banner pulse */
+/* ABOUT, championship banner pulse */
 .about-champ { transition: transform var(--dur-med); }
 .about-champ:hover { transform: translateY(-2px); }
 .about-champ__badge img { transition: transform var(--dur-med) var(--ease-out), filter var(--dur-med); }
 .about-champ:hover .about-champ__badge img { transform: scale(1.06) rotate(-2deg); filter: drop-shadow(0 0 36px rgba(214,242,58,0.55)); }
 
-/* HERO — title shimmer on em, dot pulse stronger */
+/* HERO, title shimmer on em, dot pulse stronger */
 .hero__title em { position: relative; }
 .hero:hover .hero__ctas .btn--volt:hover .btn__arrow { transform: translateX(3px); }
 .btn__arrow { transition: transform var(--dur-fast); }
 
-/* JOINCTA — buttons get a sliding arrow and stronger hover */
+/* JOINCTA, buttons get a sliding arrow and stronger hover */
 .join .btn--dark { position: relative; transition: all var(--dur-fast); }
 .join .btn--dark::after {
   content: '\2192'; margin-left: 8px; display: inline-block;
@@ -3511,7 +3511,7 @@ img { image-rendering: -webkit-optimize-contrast; }
 
 
 /* ────────────────────────────────────────────────────────────────────────────
-   HERO — interactive polish
+   HERO, interactive polish
    • Animated volt gradient sweep behind "ECHOES"
    • Continuous breathing glow on the title's volt accents
    • Pulsing badge + champions ribbon
@@ -3530,7 +3530,7 @@ img { image-rendering: -webkit-optimize-contrast; }
   -webkit-mask-image: radial-gradient(ellipse at 30% 50%, #000 0%, transparent 75%);
 }
 
-/* Volt em — breathing glow + gradient sweep */
+/* Volt em, breathing glow + gradient sweep */
 .hero__title em {
   background: linear-gradient(90deg, var(--volt) 0%, var(--volt-glow, #E2FB60) 50%, var(--volt) 100%);
   background-size: 200% 100%;
@@ -3564,7 +3564,7 @@ img { image-rendering: -webkit-optimize-contrast; }
   50%      { box-shadow: 0 0 22px var(--volt), 0 0 36px rgba(214,242,58,0.55); transform: scale(1.15); }
 }
 
-/* CTA — lift + arrow slide + outline glow */
+/* CTA, lift + arrow slide + outline glow */
 .hero__ctas .btn--lg { transition: transform var(--dur-fast), box-shadow var(--dur-med), background var(--dur-fast); position: relative; }
 .hero__ctas .btn--lg:hover { transform: translateY(-3px); }
 .hero__ctas .btn--volt:hover { box-shadow: 0 18px 40px rgba(214,242,58,0.35); }
@@ -3589,7 +3589,7 @@ img { image-rendering: -webkit-optimize-contrast; }
 .hero__count-grid > div { transition: transform var(--dur-fast); }
 .hero__count:hover .hero__count-grid > div { transform: translateY(-2px); }
 
-/* JoinCTA — leave the inherited rules from earlier, just ensure no doubled arrow */
+/* JoinCTA, leave the inherited rules from earlier, just ensure no doubled arrow */
 .join .btn--dark::after { content: ''; margin-left: 0; }
 .join .btn--dark { padding-right: 18px; }
 .join .btn--dark::before {
@@ -3600,7 +3600,7 @@ img { image-rendering: -webkit-optimize-contrast; }
 
 
 /* ────────────────────────────────────────────────────────────────────────────
-   ABOUT PAGE — final overrides + new sections
+   ABOUT PAGE, final overrides + new sections
    • Resets default anchor styling on the champions banner (no purple underlines)
    • Adds: .about-mission__rule, .about-numbers / .about-num, .about-tl carousel,
            .about-close CTA
@@ -3618,7 +3618,7 @@ a.about-champ * { text-decoration: none !important; }
 /* Same for any value-card / about-tl card that might become a link in future */
 .value-card, .about-tl__card { color: inherit; text-decoration: none; }
 
-/* 2. Mission — volt accent rule + tighter typography */
+/* 2. Mission, volt accent rule + tighter typography */
 .about-mission { max-width: 1080px; position: relative; padding-left: 18px; }
 .about-mission__rule {
   position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px;
@@ -3645,7 +3645,7 @@ a.about-champ * { text-decoration: none !important; }
   align-self: flex-start;
 }
 
-/* 3. By the numbers — 6 small animated stat cards */
+/* 3. By the numbers, 6 small animated stat cards */
 .about-numbers {
   display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px;
   margin-top: var(--sp-5);
@@ -3698,7 +3698,7 @@ a.about-champ * { text-decoration: none !important; }
   text-transform: uppercase; margin-top: 2px;
 }
 
-/* 4. VALUE CARDS — small interactive cards (override the older fat version) */
+/* 4. VALUE CARDS, small interactive cards (override the older fat version) */
 .values-grid {
   display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   gap: 14px !important; margin-top: var(--sp-5);
@@ -3782,7 +3782,7 @@ a.about-champ * { text-decoration: none !important; }
   text-transform: uppercase; align-self: flex-start;
 }
 
-/* 5. JOURNEY — horizontal carousel of compact cards */
+/* 5. JOURNEY, horizontal carousel of compact cards */
 .about-tl {
   position: relative;
   padding: var(--sp-5) 40px 0;
@@ -3936,7 +3936,7 @@ a.about-champ * { text-decoration: none !important; }
   .about-close__cta { justify-self: start; }
 }
 
-/* Champions banner — make link feel clickable */
+/* Champions banner, make link feel clickable */
 .about-champ--link {
   display: grid; cursor: pointer;
   transition: transform var(--dur-fast), box-shadow var(--dur-med);
@@ -3958,10 +3958,10 @@ a.about-champ * { text-decoration: none !important; }
 
 
 /* ────────────────────────────────────────────────────────────────────────────
-   TEAMS PAGE — compact-card grid, redesigned team stats, comp filter
+   TEAMS PAGE, compact-card grid, redesigned team stats, comp filter
    ──────────────────────────────────────────────────────────────────────────── */
 
-/* Full squad grid — same compact card style as the homepage carousel */
+/* Full squad grid, same compact card style as the homepage carousel */
 .squad-grid--full {
   display: grid !important;
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
@@ -3978,7 +3978,7 @@ a.about-champ * { text-decoration: none !important; }
   position: relative;
 }
 
-/* Team stats — headline tiles + grouped sub-sections */
+/* Team stats, headline tiles + grouped sub-sections */
 .ts-headline {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -4078,7 +4078,7 @@ a.about-champ * { text-decoration: none !important; }
   color: var(--fg-2); margin-top: 8px;
 }
 
-/* PLAYER PROFILE — competition filter row */
+/* PLAYER PROFILE, competition filter row */
 .pp-comp-filter {
   display: flex; align-items: center; gap: var(--sp-3);
   flex-wrap: wrap;
@@ -4143,7 +4143,7 @@ a.about-champ * { text-decoration: none !important; }
   min-width: 80px;
 }
 
-/* Leaderboard table — extra columns: G/A volt-highlighted */
+/* Leaderboard table, extra columns: G/A volt-highlighted */
 .lb2__td--big.is-on { color: var(--volt); }
 .lb2-groups {
   grid-template-columns: 2fr 0.8fr 1.3fr 1fr 1fr 0.6fr !important;
@@ -4154,7 +4154,7 @@ a.about-champ * { text-decoration: none !important; }
 
 
 /* ────────────────────────────────────────────────────────────────────────────
-   LEADERBOARD POLISH — drop the misaligned group band, lean on column tooltips
+   LEADERBOARD POLISH, drop the misaligned group band, lean on column tooltips
    ──────────────────────────────────────────────────────────────────────────── */
 .lb2-groups { display: none !important; }
 
@@ -4166,7 +4166,7 @@ a.about-champ * { text-decoration: none !important; }
 
 
 /* ────────────────────────────────────────────────────────────────────────────
-   SPONSORS — partner card visual fix
+   SPONSORS, partner card visual fix
    Old layout was 140px / 1fr / auto which squashed the role label so phrases
    like "WARM-UP & TRAINING TOP SPONSOR" wrapped a word per line.
    New: dedicated padding, balanced text wrap, breathable spacing.
@@ -4213,7 +4213,7 @@ a.about-champ * { text-decoration: none !important; }
 
 
 /* ────────────────────────────────────────────────────────────────────────────
-   ABOUT — Club History / On the Field record cards
+   ABOUT, Club History / On the Field record cards
    Sits above the founding-story (off-field) block. Cards aggregate from
    derivedSquad() so they grow into all-time leaders across future seasons.
    ──────────────────────────────────────────────────────────────────────────── */
@@ -4290,7 +4290,7 @@ a.about-champ * { text-decoration: none !important; }
 
 
 /* ────────────────────────────────────────────────────────────────────────────
-   SPONSORS — partner card layout fix v2
+   SPONSORS, partner card layout fix v2
    The earlier override set the OUTER .partner-card to display:grid with 3 cols
    but it only contains ONE child (.partner-card__main button). That child got
    placed in col 1 (120px) and squashed the role text inside.
@@ -4310,7 +4310,7 @@ a.about-champ * { text-decoration: none !important; }
 
 
 /* ────────────────────────────────────────────────────────────────────────────
-   SPONSORS PAGE — dynamic stats, benefits, enquiry CTA
+   SPONSORS PAGE, dynamic stats, benefits, enquiry CTA
    Plus: global anchor reset so no link ever inherits browser purple.
    ──────────────────────────────────────────────────────────────────────────── */
 
@@ -4318,7 +4318,7 @@ a.about-champ * { text-decoration: none !important; }
 a, a:link, a:visited, a:active { color: inherit; text-decoration: none; }
 a:focus-visible { outline: 2px solid var(--volt); outline-offset: 2px; border-radius: 2px; }
 
-/* 2. STATS STRIP — anchor numbers under the hero ────────────────────────── */
+/* 2. STATS STRIP, anchor numbers under the hero ────────────────────────── */
 .sp-stats-section {
   background:
     radial-gradient(ellipse at top, rgba(214,242,58,0.06) 0%, transparent 60%),
@@ -4533,7 +4533,7 @@ a:focus-visible { outline: 2px solid var(--volt); outline-offset: 2px; border-ra
   color: var(--fg-3); text-transform: uppercase;
 }
 
-/* 5. PARTNER GRID — small visual rhythm boost ──────────────────────────── */
+/* 5. PARTNER GRID, small visual rhythm boost ──────────────────────────── */
 .partner-card { animation: spStatEnter 0.55s var(--ease-out) backwards; }
 .partner-card:nth-child(odd)  { animation-delay: 0.04s; }
 .partner-card:nth-child(even) { animation-delay: 0.12s; }
@@ -4550,14 +4550,14 @@ a:focus-visible { outline: 2px solid var(--volt); outline-offset: 2px; border-ra
 
 
 /* ────────────────────────────────────────────────────────────────────────────
-   CHAMPIONS PAGE — fix missing styles
+   CHAMPIONS PAGE, fix missing styles
    The JSX defined .champ-next__count / .champ-next__card / sub-spans without
-   matching CSS rules — every label and value rendered inline and concatenated
+   matching CSS rules, every label and value rendered inline and concatenated
    ("SEASON KICKOFF108DAYS TO GO", "TRIALSOPEN", "DIVISIONTBC", etc).
    Plus polish: visible per-tile accent rails, breathing borders, hover lift.
    ──────────────────────────────────────────────────────────────────────────── */
 
-/* THE NUMBERS — stat tile accents + hover */
+/* THE NUMBERS, stat tile accents + hover */
 .champ-stat { position: relative; }
 .champ-stat__rail {
   position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
@@ -4577,14 +4577,14 @@ a:focus-visible { outline: 2px solid var(--volt); outline-offset: 2px; border-ra
 .champ-stat--draw .champ-stat__v { color: var(--draw); }
 .champ-stat--loss .champ-stat__v { color: var(--loss); }
 
-/* UP NEXT — section background */
+/* UP NEXT, section background */
 .champ-next-section {
   background:
     radial-gradient(ellipse at top right, rgba(214,242,58,0.05) 0%, transparent 55%),
     var(--surface-2);
 }
 
-/* UP NEXT — overall container */
+/* UP NEXT, overall container */
 .champ-next {
   display: grid;
   grid-template-columns: minmax(220px, 280px) 1fr;
@@ -4698,7 +4698,7 @@ a:focus-visible { outline: 2px solid var(--volt); outline-offset: 2px; border-ra
   border-top: 1px solid var(--hairline);
 }
 
-/* RECENT RESULTS — score & sides layout */
+/* RECENT RESULTS, score & sides layout */
 .champ-recent__match {
   display: grid !important;
   grid-template-columns: 1fr auto 1fr !important;
@@ -4738,7 +4738,7 @@ a:focus-visible { outline: 2px solid var(--volt); outline-offset: 2px; border-ra
   white-space: nowrap;
 }
 
-/* CHAMP HERO — improve CTA contrast (the "View every result" button was navy-on-navy) */
+/* CHAMP HERO, improve CTA contrast (the "View every result" button was navy-on-navy) */
 .champ-hero__ctas .btn--dark {
   background: var(--navy);
   color: #fff;
@@ -4750,7 +4750,7 @@ a:focus-visible { outline: 2px solid var(--volt); outline-offset: 2px; border-ra
 
 
 /* ────────────────────────────────────────────────────────────────────────────
-   VOLT BUTTONS — always dark navy text for readability
+   VOLT BUTTONS, always dark navy text for readability
    ──────────────────────────────────────────────────────────────────────────── */
 .btn--volt,
 .btn--volt:link,
@@ -4769,7 +4769,7 @@ a:focus-visible { outline: 2px solid var(--volt); outline-offset: 2px; border-ra
 }
 
 
-/* ─── SPONSOR PAGE — the magazine block (homepage Sponsors) admin variants ── */
+/* ─── SPONSOR PAGE, the magazine block (homepage Sponsors) admin variants ── */
 /* Wrap so we can show edit/remove controls underneath each card in admin mode. */
 .sp-home__card-wrap { display: flex; flex-direction: column; gap: 8px; }
 .sp-home__admin {
@@ -4801,7 +4801,7 @@ button.sp-home__card {
 
 
 /* ────────────────────────────────────────────────────────────────────────────
-   SPONSORS — Join the family card (same magazine pattern as sp-home__card)
+   SPONSORS, Join the family card (same magazine pattern as sp-home__card)
    ──────────────────────────────────────────────────────────────────────────── */
 .sp-join {
   position: relative; overflow: hidden;
@@ -4837,7 +4837,7 @@ button.sp-home__card {
 }
 .sp-join:hover .sp-join__rail { transform: scaleY(1); }
 
-/* Icon plate — same shape as sp-home__logo-plate but with a volt envelope inside */
+/* Icon plate, same shape as sp-home__logo-plate but with a volt envelope inside */
 .sp-join__icon-plate {
   width: 130px; height: 130px;
   background: #FFFFFF; border-radius: var(--radius-xs);
@@ -4898,7 +4898,7 @@ button.sp-home__card {
 }
 
 
-/* ─── JOIN THE FAMILY — fix checklist + badge image inside icon plate ────── */
+/* ─── JOIN THE FAMILY, fix checklist + badge image inside icon plate ────── */
 .sp-join__icon-plate img {
   max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain;
 }
@@ -4908,7 +4908,7 @@ button.sp-home__card {
    inherited. Explicit reset here. */
 
 
-/* ─── CHAMPIONS HERO — ribbon now sits BELOW the badge ─────────────────── */
+/* ─── CHAMPIONS HERO, ribbon now sits BELOW the badge ─────────────────── */
 .champ-hero__crest {
   display: flex; flex-direction: column; align-items: center; gap: 14px;
 }
@@ -4937,7 +4937,7 @@ button.sp-home__card {
   color: var(--fg-1); text-transform: uppercase;
 }
 
-/* ─── SPONSORS — Custom proposal checklist visibility fix ─────────────── */
+/* ─── SPONSORS, Custom proposal checklist visibility fix ─────────────── */
 /* Earlier rules set color: var(--fg-1) on light backgrounds. Force readable
    color regardless of where this list is rendered. */
 .sp-cta__list li {
@@ -4955,7 +4955,7 @@ button.sp-home__card {
 }
 
 
-/* ─── CHAMPIONS HERO BADGE — restack ribbon BELOW the badge ──────────── */
+/* ─── CHAMPIONS HERO BADGE, restack ribbon BELOW the badge ──────────── */
 .champ-hero__badge {
   display: flex !important;
   flex-direction: column !important;
@@ -4991,7 +4991,7 @@ button.sp-home__card {
 }
 
 
-/* ─── HERO CTA BUTTONS — match BACK THE PROJECT style ─────────────────── */
+/* ─── HERO CTA BUTTONS, match BACK THE PROJECT style ─────────────────── */
 /* Both hero buttons same shape (rounded pill), volt and ghost variants. */
 .hero__ctas .btn--lg {
   border-radius: 10px;
@@ -5024,7 +5024,7 @@ button.sp-home__card {
 }
 
 
-/* ─── ABOUT CHAMPIONS BANNER — restack the badge + ribbon vertically ─── */
+/* ─── ABOUT CHAMPIONS BANNER, restack the badge + ribbon vertically ─── */
 .about-champ {
   grid-template-columns: minmax(220px, 260px) 1fr !important;
   gap: var(--sp-7) !important;
@@ -5081,18 +5081,18 @@ button.sp-home__card {
 }
 
 
-/* ─── ABOUT CHAMPS — badge: no tilt on hover, straight scale only ─────── */
+/* ─── ABOUT CHAMPS, badge: no tilt on hover, straight scale only ─────── */
 .about-champ:hover .about-champ__badge img {
   transform: scale(1.06) !important;   /* no rotate */
 }
 
 
-/* ─── SPONSORS — Custom proposal checklist VISIBILITY FIX v2 ───────────
+/* ─── SPONSORS, Custom proposal checklist VISIBILITY FIX v2 ───────────
    The list is .sp-join__list (used inside the Join the Family card).
-   Earlier fix targeted .sp-cta__list — wrong class. Force visibility here. */
+   Earlier fix targeted .sp-cta__list, wrong class. Force visibility here. */
 
 
-/* ─── SPONSORS JOIN — WIDEN the meta column + force readable list ──────
+/* ─── SPONSORS JOIN, WIDEN the meta column + force readable list ──────
    The card was 130px badge + meta + auto arrow. The auto arrow was eating
    space and the meta column was cramped, wrapping items onto multiple lines.
    This pass: drop the arrow column, expand the meta column to take the
@@ -5123,7 +5123,7 @@ button.sp-home__card {
 }
 
 
-/* ─── COACHES TAB — featured manager card + TBA grid ─────────────────── */
+/* ─── COACHES TAB, featured manager card + TBA grid ─────────────────── */
 .coaches-grid {
   display: flex !important;
   flex-direction: column !important;
@@ -5131,7 +5131,7 @@ button.sp-home__card {
   grid-template-columns: none !important;
 }
 
-/* FEATURED MANAGER CARD — magazine layout */
+/* FEATURED MANAGER CARD, magazine layout */
 .coach-feature {
   display: grid;
   grid-template-columns: minmax(260px, 340px) 1fr;
@@ -5247,7 +5247,7 @@ button.sp-home__card {
   .coach-feature__cv { grid-template-columns: 1fr; }
 }
 
-/* TBA GRID — small placeholder cards for backroom roles */
+/* TBA GRID, small placeholder cards for backroom roles */
 .coach-tba-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -5256,7 +5256,7 @@ button.sp-home__card {
 @media (max-width: 880px) { .coach-tba-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 480px) { .coach-tba-grid { grid-template-columns: 1fr; } }
 
-/* ─── PLAYER CARD — bio slot under the stats ──────────────────────────── */
+/* ─── PLAYER CARD, bio slot under the stats ──────────────────────────── */
 .player-card__bio {
   padding-top: 10px;
   border-top: 1px solid var(--hairline);
@@ -5371,7 +5371,7 @@ button.sp-home__card {
 .news-card--lg .ss-cover__num  { font-size: clamp(72px, 9vw, 128px); }
 
 
-/* ─── PLAYER PROFILE — Season Story / Player Bio toggle ─────────────────
+/* ─── PLAYER PROFILE, Season Story / Player Bio toggle ─────────────────
    Replaces the old single "BIO · LIVE" eyebrow with a two-tab switch.
    ──────────────────────────────────────────────────────────────────────── */
 .pp-narrative__head {
@@ -5409,7 +5409,7 @@ button.sp-home__card {
 }
 
 
-/* ─── FOOTER — discreet admin toggle ───────────────────────────────────── */
+/* ─── FOOTER, discreet admin toggle ───────────────────────────────────── */
 .footer__admin-link {
   display: inline-flex; align-items: center; gap: 6px;
   color: var(--fg-3) !important;
@@ -5433,7 +5433,7 @@ button.sp-home__card {
 }
 
 
-/* ─── HOME HERO — Next Match team names BIGGER + interactive ─────────────
+/* ─── HOME HERO, Next Match team names BIGGER + interactive ─────────────
    Bumps club names from 18px to ~28px, badges 28→44px, adds a hover
    "ready" glow that makes the matchup feel alive without overdoing it.
    ──────────────────────────────────────────────────────────────────────── */
@@ -5479,7 +5479,7 @@ button.sp-home__card {
   padding: 12px 0 !important;
 }
 
-/* ─── CHAMPIONS HERO — fix invisible CTA + make stats interactive ───── */
+/* ─── CHAMPIONS HERO, fix invisible CTA + make stats interactive ───── */
 .champ-hero__ctas .btn--dark {
   background: var(--navy);
   color: #FFFFFF !important;
@@ -5501,7 +5501,7 @@ button.sp-home__card {
 .champ-hero__chrome-stat { transition: color var(--dur-fast), transform var(--dur-fast); }
 .champ-hero__chrome-stat:hover { color: var(--navy) !important; transform: translateY(-1px); }
 
-/* The "17 WINS / +77 GD / 51 PTS" hero stat cluster — interactive lift */
+/* The "17 WINS / +77 GD / 51 PTS" hero stat cluster, interactive lift */
 .champ-hero__numbers { display: flex; gap: clamp(20px, 3vw, 36px); align-items: baseline; }
 .champ-hero__numbers > div {
   display: flex; flex-direction: column; align-items: center;
@@ -5511,13 +5511,13 @@ button.sp-home__card {
 .champ-hero__numbers > div:hover { transform: translateY(-2px); }
 
 
-/* Champions UP NEXT — TBC variant (smaller than the days-counter) */
+/* Champions UP NEXT, TBC variant (smaller than the days-counter) */
 .champ-next__count-n--tbc {
   font-size: clamp(48px, 6vw, 72px) !important;
 }
 
 
-/* ─── FIXTURE ADMIN — admin-only "+ ADD FIXTURE" launcher + form ───────── */
+/* ─── FIXTURE ADMIN, admin-only "+ ADD FIXTURE" launcher + form ───────── */
 .fx-admin {
   margin: var(--sp-4) 0 0;
   display: flex; flex-direction: column; gap: var(--sp-4);
@@ -5661,7 +5661,7 @@ button.sp-home__card {
 
 
 /* ────────────────────────────────────────────────────────────────────────────
-   HOME CHAMPIONS STRIP — full rebuild
+   HOME CHAMPIONS STRIP, full rebuild
    Was: flat volt gradient, navy text, invisible "btn--dark" CTA (text styled
    navy on a navy bg by my earlier blanket volt-text rule).
    Now: layered composition with a watermark badge, animated entry numbers,
@@ -5687,7 +5687,7 @@ button.sp-home__card {
   -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 80%);
 }
 
-/* Watermark badge in the bottom-right corner — large, dim, decorative */
+/* Watermark badge in the bottom-right corner, large, dim, decorative */
 .home-champ__watermark {
   position: absolute; right: -60px; bottom: -80px;
   width: 360px; height: 360px;
@@ -5745,7 +5745,7 @@ button.sp-home__card {
   max-width: 560px !important;
 }
 
-/* Numbers cluster — chips that lift on hover, animated count-up entry */
+/* Numbers cluster, chips that lift on hover, animated count-up entry */
 .home-champ__nums {
   display: flex !important;
   gap: 12px !important;
@@ -5785,7 +5785,7 @@ button.sp-home__card {
   margin-top: 6px;
 }
 
-/* CTA — navy pill with WHITE text + volt halo on hover */
+/* CTA, navy pill with WHITE text + volt halo on hover */
 .home-champ__cta {
   display: inline-flex !important;
   align-items: center; gap: 10px;
@@ -5829,7 +5829,7 @@ button.sp-home__card {
 .home-champ__cta * { color: inherit !important; }
 
 
-/* ─── HOME CHAMPIONS CTA — align with the site's standard button style ──
+/* ─── HOME CHAMPIONS CTA, align with the site's standard button style ──
    Earlier rebuild used a custom 3D pill with drop-shadow; that doesn't
    match the rest of the site. Use the standard btn--dark + btn--lg with
    only the colour rules locked so the global volt-text override doesn't
@@ -5845,7 +5845,7 @@ button.sp-home__card {
   font-weight: 800 !important;
   letter-spacing: 0.08em !important;
   font-size: var(--fs-body) !important;
-  /* Subtle elevation so it reads as the primary CTA — not the heavy 3D shadow */
+  /* Subtle elevation so it reads as the primary CTA, not the heavy 3D shadow */
   box-shadow: 0 4px 14px rgba(7,29,41,0.25) !important;
   text-decoration: none;
   display: inline-flex; align-items: center; gap: 8px;
@@ -5870,9 +5870,9 @@ button.sp-home__card {
 }
 
 
-/* ─── HERO NEXT MATCH — fix overflow at full-screen widths ──────────────
+/* ─── HERO NEXT MATCH, fix overflow at full-screen widths ──────────────
    On big screens the right-hand card is narrow for the title bar
-   "SUE'S ANGELS · VS · HILLSIDE ELITE BLUES" — long names like Hillside
+   "SUE'S ANGELS · VS · HILLSIDE ELITE BLUES", long names like Hillside
    were running off the edge. Switch to a balanced 1fr / auto / 1fr grid,
    force two-line wrap on names, and reduce the font size at the top end
    so the away name fits.
@@ -5922,7 +5922,7 @@ button.sp-home__card {
 
 
 /* ────────────────────────────────────────────────────────────────────────────
-   SPONSORS — JOIN THE FAMILY checklist (single source of truth)
+   SPONSORS, JOIN THE FAMILY checklist (single source of truth)
    The list is .sp-join__list. Replaces 5 prior overlapping rule sets that
    were creating wrapping + visibility glitches.
    ──────────────────────────────────────────────────────────────────────── */
@@ -5964,10 +5964,10 @@ button.sp-home__card {
 }
 
 
-/* ─── PLAYER CARD — admin-mode photo upload overlay ───────────────────────
+/* ─── PLAYER CARD, admin-mode photo upload overlay ───────────────────────
    Discreet "Edit photo" pill that sits at the bottom of the photo box on
    every player card in the Teams grid. Only visible in admin mode (and only
-   ever rendered if window.useAdmin returns truthy — visitors don't even get
+   ever rendered if window.useAdmin returns truthy, visitors don't even get
    the markup).
    ──────────────────────────────────────────────────────────────────────── */
 .player-card__admin-photo {
@@ -6022,7 +6022,7 @@ button.sp-home__card {
 }
 
 
-/* ─── TEAM STATS — competition split toggle (All / League / Cups) ─────── */
+/* ─── TEAM STATS, competition split toggle (All / League / Cups) ─────── */
 .ts-split {
   display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap;
   margin-bottom: var(--sp-5);
@@ -6047,7 +6047,7 @@ button.sp-home__card {
 }
 
 
-/* ─── MATCH ENTRY — quick-fill squad ticker ───────────────────────────── */
+/* ─── MATCH ENTRY, quick-fill squad ticker ───────────────────────────── */
 .me__quick {
   background: var(--surface-3); border: 1px solid var(--hairline);
   border-radius: var(--radius-xs); margin-bottom: 10px; overflow: hidden;
@@ -6085,11 +6085,11 @@ button.sp-home__card {
 }
 
 
-/* Joint-apps subline — bold the tied player names in volt */
+/* Joint-apps subline, bold the tied player names in volt */
 .stat-tile .t-meta strong { color: var(--volt); font-weight: 800; }
 
 
-/* Footer columns — headings + links in caps */
+/* Footer columns, headings + links in caps */
 .footer__col .t-eyebrow,
 .footer__col ul li a { text-transform: uppercase; }
 
@@ -6120,10 +6120,10 @@ button.sp-home__card {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   MOBILE TUNING (≤ 600px) — sizing only, no content/logic changes
+   MOBILE TUNING (≤ 600px), sizing only, no content/logic changes
    ═══════════════════════════════════════════════════════════════════════ */
 @media (max-width: 600px) {
-  /* Champions "THE NUMBERS" grid — stop the big stat values overflowing */
+  /* Champions "THE NUMBERS" grid, stop the big stat values overflowing */
   .champ-stat__v { font-size: clamp(30px, 12vw, 46px) !important; word-break: break-word; }
   .champ-stat--hero .champ-stat__v { font-size: clamp(38px, 15vw, 60px) !important; }
   .champ-stats { grid-template-columns: repeat(2, 1fr) !important; }
@@ -6149,8 +6149,8 @@ button.sp-home__card {
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   RESPONSIVE SYSTEM — mobile-first guarantees across all breakpoints
-   Breakpoints: mobile 320–767 · tablet 768–1023 · laptop 1024–1439 · desktop 1440+
+   RESPONSIVE SYSTEM, mobile-first guarantees across all breakpoints
+   Breakpoints: mobile 320-767 · tablet 768-1023 · laptop 1024-1439 · desktop 1440+
    Rules here are defensive: prevent overflow, enforce min sizes, fluid media.
    They sit at the END of the stylesheet so they win on conflicts.
    ═══════════════════════════════════════════════════════════════════════ */
@@ -6161,9 +6161,9 @@ img, video, svg, canvas, iframe { max-width: 100%; height: auto; }
 table { max-width: 100%; }
 .container { width: 100%; }
 
-/* ── MOBILE 320–767 ─────────────────────────────────────────────────── */
+/* ── MOBILE 320-767 ─────────────────────────────────────────────────── */
 @media (max-width: 767px) {
-  :root { --gutter: 18px; }               /* 16–24px internal padding */
+  :root { --gutter: 18px; }               /* 16-24px internal padding */
 
   /* Base text floor: 16px minimum for body copy. */
   body { font-size: 16px; }
@@ -6209,7 +6209,7 @@ table { max-width: 100%; }
   .section { padding: clamp(40px, 9vw, 64px) 0; }
 }
 
-/* ── TABLET 768–1023 ────────────────────────────────────────────────── */
+/* ── TABLET 768-1023 ────────────────────────────────────────────────── */
 @media (min-width: 768px) and (max-width: 1023px) {
   :root { --gutter: 28px; }
   /* Heavy 4-up grids relax to 2-up so cards stay legible. */
@@ -6220,20 +6220,20 @@ table { max-width: 100%; }
   .about-numbers { grid-template-columns: repeat(3, 1fr) !important; }
 }
 
-/* ── LAPTOP 1024–1439 ───────────────────────────────────────────────── */
+/* ── LAPTOP 1024-1439 ───────────────────────────────────────────────── */
 @media (min-width: 1024px) and (max-width: 1439px) {
   :root { --gutter: 40px; }
 }
 
 /* ── DESKTOP 1440+ ──────────────────────────────────────────────────── */
 @media (min-width: 1440px) {
-  :root { --gutter: 48px; }              /* 32–48px side padding */
+  :root { --gutter: 48px; }              /* 32-48px side padding */
   /* Container already caps at 1280px and is centred via .container margin auto. */
 }
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   MOBILE OPTIMISATION v2 — predominately mobile audience
+   MOBILE OPTIMISATION v2, predominately mobile audience
    Overrides the earlier defensive block. Sits last → wins.
    ═══════════════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
@@ -6277,7 +6277,7 @@ table { max-width: 100%; }
   /* Fixture / result cards: comfortable single column with full info. */
   .result-carousel .result-card { flex-basis: 86% !important; }
 
-  /* Tighten container padding to spec (16–24px). */
+  /* Tighten container padding to spec (16-24px). */
   :root { --gutter: 18px; }
 
   /* Leaderboard table stays scrollable, never squashes. */
@@ -6292,7 +6292,7 @@ table { max-width: 100%; }
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   MOBILE OVERFLOW GUARD (≤767px) — keep words/graphics inside the screen.
+   MOBILE OVERFLOW GUARD (≤767px), keep words/graphics inside the screen.
    Desktop layout is untouched (all rules live inside this media query).
    ═══════════════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
@@ -6352,7 +6352,7 @@ table { max-width: 100%; }
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   MOBILE TYPE SCALE (≤767px) — cute · clean · professional
+   MOBILE TYPE SCALE (≤767px), cute · clean · professional
    A single coherent hierarchy. Desktop is untouched.
    Body 16 / sub 15 / eyebrow 10 · headings step down cleanly.
    ═══════════════════════════════════════════════════════════════════════ */
@@ -6366,7 +6366,7 @@ table { max-width: 100%; }
   /* Eyebrow / kicker labels */
   .t-eyebrow      { font-size: 10px; letter-spacing: 0.16em; }
 
-  /* Heading hierarchy — clean steps, nothing oversized */
+  /* Heading hierarchy, clean steps, nothing oversized */
   .hero__title    { font-size: clamp(38px, 11vw, 54px) !important; line-height: 1.0; letter-spacing: -0.01em; }
   .page-hero__title, .ph__title { font-size: clamp(30px, 9.5vw, 46px) !important; line-height: 1.02; }
   .t-h1           { font-size: 30px !important; line-height: 1.05; }
@@ -6377,7 +6377,7 @@ table { max-width: 100%; }
   /* Section headers: title + "see all" link sit calmly */
   .section__head--compact .t-h2 { font-size: 22px !important; }
 
-  /* Mission quote — readable, not shouty */
+  /* Mission quote, readable, not shouty */
   .about-mission__quote { font-size: 22px !important; line-height: 1.18 !important; }
   .about-mission__quote em { font-size: 16px !important; }
 
@@ -6422,11 +6422,11 @@ table { max-width: 100%; }
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   MOBILE FIXES v3 (≤767px) — homepage squad roller + menu + overlap guard
+   MOBILE FIXES v3 (≤767px), homepage squad roller + menu + overlap guard
    Mobile-only. Desktop untouched.
    ═══════════════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
-  /* HOMEPAGE SQUAD CAROUSEL — small cards, horizontal swipe (slider back). */
+  /* HOMEPAGE SQUAD CAROUSEL, small cards, horizontal swipe (slider back). */
   .sq-roller { padding: 0 !important; }
   .sq-roller__nav { display: none !important; }      /* arrows off; swipe instead */
   .sq-roller__viewport { overflow-x: auto !important; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
@@ -6471,10 +6471,10 @@ table { max-width: 100%; }
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   MOBILE FIXES v4 (≤767px) — hero banner clip + CTA buttons. Mobile only.
+   MOBILE FIXES v4 (≤767px), hero banner clip + CTA buttons. Mobile only.
    ═══════════════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
-  /* Hero statement was clipping on the right — make it fit + wrap cleanly. */
+  /* Hero statement was clipping on the right, make it fit + wrap cleanly. */
   .hero__title {
     font-size: clamp(30px, 9vw, 42px) !important;
     line-height: 1.02 !important;
@@ -6494,7 +6494,7 @@ table { max-width: 100%; }
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   MOBILE FIXES v5 (≤767px) — home-champ overlap, fixture card, full-story btn
+   MOBILE FIXES v5 (≤767px), home-champ overlap, fixture card, full-story btn
    Mobile only.
    ═══════════════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
@@ -6535,7 +6535,7 @@ table { max-width: 100%; }
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   MOBILE FIXES v6 (≤767px) — hero CTA buttons compact + contained. Mobile only.
+   MOBILE FIXES v6 (≤767px), hero CTA buttons compact + contained. Mobile only.
    ═══════════════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
   .hero__ctas { flex-direction: column !important; align-items: stretch !important; gap: 8px !important; width: 100%; }
@@ -6552,7 +6552,7 @@ table { max-width: 100%; }
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   RESPONSIVE CONSOLIDATION — final pass. Mobile (≤767) + tablet (768–1023).
+   RESPONSIVE CONSOLIDATION, final pass. Mobile (≤767) + tablet (768-1023).
    Desktop (≥1024) fully untouched. Safety nets so nothing ever overflows.
    ═══════════════════════════════════════════════════════════════════════ */
 
@@ -6580,7 +6580,7 @@ table { max-width: 100%; }
   textarea { min-height: 96px; }
 }
 
-/* ── TABLET 768–1023: relax dense desktop grids to 2-up, keep it premium ── */
+/* ── TABLET 768-1023: relax dense desktop grids to 2-up, keep it premium ── */
 @media (min-width: 768px) and (max-width: 1023px) {
   .footer__cols { grid-template-columns: repeat(2, 1fr); }
   .sp-home__grid { grid-template-columns: repeat(2, 1fr); }
@@ -6591,7 +6591,7 @@ table { max-width: 100%; }
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   MOBILE VISUAL QA (≤767px) — fixture cards, tabs, statement. Mobile only.
+   MOBILE VISUAL QA (≤767px), fixture cards, tabs, statement. Mobile only.
    ═══════════════════════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
 
@@ -6611,7 +6611,7 @@ table { max-width: 100%; }
   .fixture-card__name { font-size: 15px !important; }
   .fixture-card__vs   { margin-left: 34px !important; }
 
-  /* Meta becomes a row of chips — NEVER letter-by-letter. Full width below. */
+  /* Meta becomes a row of chips, NEVER letter-by-letter. Full width below. */
   .fixture-card__meta {
     grid-area: meta;
     display: flex !important; flex-wrap: wrap !important; gap: 6px !important;
@@ -6662,7 +6662,7 @@ table { max-width: 100%; }
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   MOBILE v7 (≤767px) — horizontal scroll rails instead of over-compression.
+   MOBILE v7 (≤767px), horizontal scroll rails instead of over-compression.
    Naturally-horizontal components scroll INSIDE themselves; page stays 100vw.
    Desktop (≥768/1024) untouched.
    ═══════════════════════════════════════════════════════════════════════ */
@@ -6688,7 +6688,7 @@ table { max-width: 100%; }
   .squad-grid--compact::-webkit-scrollbar,
   .sq-roller__track::-webkit-scrollbar { display: none; }
 
-  /* Readable card size — NOT tiny. ~2 cards + a peek of the third. */
+  /* Readable card size, NOT tiny. ~2 cards + a peek of the third. */
   .squad-grid--full > *,
   .squad-grid--compact > *,
   .sq-roller__cell {
@@ -6729,7 +6729,7 @@ table { max-width: 100%; }
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   MOBILE v8 (≤767px) — ONE consistent button standard across the whole site.
+   MOBILE v8 (≤767px), ONE consistent button standard across the whole site.
    Every .btn (and its size/colour variants) shares height, padding, radius,
    weight and label size on mobile, so banners read uniformly. Desktop locked.
    ═══════════════════════════════════════════════════════════════════════ */
@@ -6793,9 +6793,9 @@ table { max-width: 100%; }
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   MOBILE DESIGN SYSTEM v2 (≤767px) — premium type scale, button + spacing
+   MOBILE DESIGN SYSTEM v2 (≤767px), premium type scale, button + spacing
    standards. Supersedes earlier mobile button/type patches. Desktop locked.
-   NOTE: brand display/sans fonts are kept (they ARE the approved identity —
+   NOTE: brand display/sans fonts are kept (they ARE the approved identity -
    swapping to Inter on mobile only would make mobile look like a different
    brand than the locked desktop). Hierarchy is achieved via size/weight.
    ═══════════════════════════════════════════════════════════════════════ */
@@ -6834,7 +6834,7 @@ table { max-width: 100%; }
   .section--compact { padding-top: 32px !important; padding-bottom: 32px !important; }
   .section__head--compact { margin-bottom: 20px !important; }
 
-  /* ---- HERO HEIGHT CAP (420–550px, not full-screen) ---- */
+  /* ---- HERO HEIGHT CAP (420-550px, not full-screen) ---- */
   .hero { min-height: 0 !important; }
   .hero__inner, .hero__content { padding-top: 28px !important; padding-bottom: 28px !important; }
 
@@ -6845,7 +6845,7 @@ table { max-width: 100%; }
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   PDF FEEDBACK FIXES (≤767px) — compact footer, button finish, font fits.
+   PDF FEEDBACK FIXES (≤767px), compact footer, button finish, font fits.
    Buttons are rounded-rectangles site-wide (base .btn now 10px). Desktop
    visuals otherwise untouched.
    ═══════════════════════════════════════════════════════════════════════ */
@@ -6864,7 +6864,7 @@ table { max-width: 100%; }
   .nav__actions .btn--volt { font-size: 13px !important; padding: 9px 14px !important; min-height: 40px !important; }
 
   /* Values cards (about): keep the 01/02/03/04 number + title aligned, never
-     stacked/squashed — give each card a consistent header row. */
+     stacked/squashed, give each card a consistent header row. */
   .value-card__head { display: flex !important; align-items: center !important; gap: 10px !important; }
   .value-card__num { font-size: 22px !important; line-height: 1 !important; flex: 0 0 auto !important; }
   .value-card__icon { flex: 0 0 auto !important; }
@@ -6874,7 +6874,7 @@ table { max-width: 100%; }
 }
 
 
-/* ─── HERO CTA BUTTONS (≤767px) — smaller label, rounded-rectangle ──────── */
+/* ─── HERO CTA BUTTONS (≤767px), smaller label, rounded-rectangle ──────── */
 @media (max-width: 767px) {
   .hero__ctas .btn,
   .hero__ctas .btn--lg {
@@ -6888,7 +6888,7 @@ table { max-width: 100%; }
 }
 
 
-/* ─── LANGUAGE SHIFTER (≤767px) — keep "EN" on one line, never E/N stacked ── */
+/* ─── LANGUAGE SHIFTER (≤767px), keep "EN" on one line, never E/N stacked ── */
 @media (max-width: 767px) {
   .lang-shifter__btn {
     white-space: nowrap !important;
@@ -6903,7 +6903,7 @@ table { max-width: 100%; }
 }
 
 
-/* ─── NAV "JOIN THE CLUB" (≤767px) — remove from top bar, keep in drawer ──
+/* ─── NAV "JOIN THE CLUB" (≤767px), remove from top bar, keep in drawer ──
    Per client request: the top-bar Join button is hidden on mobile; the menu
    drawer already carries a "Join the club" button. The drawer button is a
    rounded-rectangle (curved edges) sized cleanly. */
@@ -6918,7 +6918,7 @@ table { max-width: 100%; }
 }
 
 
-/* ─── NAV HEADER (≤767px) — efficient, balanced spacing ─────────────────── */
+/* ─── NAV HEADER (≤767px), efficient, balanced spacing ─────────────────── */
 @media (max-width: 767px) {
   .nav { height: auto !important; }
   .nav__inner {
@@ -6938,7 +6938,7 @@ table { max-width: 100%; }
 }
 
 
-/* ─── HERO SUB TEXT (≤767px) — smaller so it never clips ────────────────── */
+/* ─── HERO SUB TEXT (≤767px), smaller so it never clips ────────────────── */
 @media (max-width: 767px) {
   .hero__sub {
     font-size: 14px !important; line-height: 1.5 !important;
@@ -6961,7 +6961,7 @@ table { max-width: 100%; }
 }
 
 
-/* ─── HERO CTA BUTTONS (≤767px) — fully contained, no right-edge clipping ── */
+/* ─── HERO CTA BUTTONS (≤767px), fully contained, no right-edge clipping ── */
 @media (max-width: 767px) {
   .hero__ctas {
     display: flex !important; flex-direction: column !important;
@@ -6986,7 +6986,7 @@ table { max-width: 100%; }
 }
 
 
-/* ─── HERO TICKER (≤767px) — clean horizontal slider, no overlap ─────────── */
+/* ─── HERO TICKER (≤767px), clean horizontal slider, no overlap ─────────── */
 @media (max-width: 767px) {
   .hero__ticker { overflow: hidden !important; }
   .hero__ticker-inner {
@@ -7008,8 +7008,8 @@ table { max-width: 100%; }
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   GLOBAL BUTTON STANDARD (all viewports) — rounded rectangle, 11px label.
-   Client request: every button identical — rectangular with visible curved
+   GLOBAL BUTTON STANDARD (all viewports), rounded rectangle, 11px label.
+   Client request: every button identical, rectangular with visible curved
    edges on both sides, text 11px. Applied site-wide (mobile + desktop).
    ═══════════════════════════════════════════════════════════════════════ */
 .btn, .btn--sm, .btn--lg, .btn--volt, .btn--ghost, .btn--dark, .btn--solid,
@@ -7018,7 +7018,7 @@ a.btn, button.btn {
   font-size: 11px !important;
   letter-spacing: 0.08em !important;
 }
-/* Keep mobile overrides consistent too (they previously set 13–16px). */
+/* Keep mobile overrides consistent too (they previously set 13-16px). */
 @media (max-width: 767px) {
   .btn, .btn--sm, .btn--lg, a.btn, button.btn,
   .hero__ctas .btn, .hero__ctas .btn--lg,
@@ -7030,7 +7030,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── HOME CHAMPIONS "THE FULL STORY" (≤767px) — compact text link, not a
+/* ─── HOME CHAMPIONS "THE FULL STORY" (≤767px), compact text link, not a
    giant button. Mirrors the "ALL FIXTURES →" section-more style. ─────────── */
 @media (max-width: 767px) {
   .home-champ__cta {
@@ -7050,7 +7050,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── CHAMPIONS STRIP COPY (≤767px) — smaller so the line fits cleanly ──── */
+/* ─── CHAMPIONS STRIP COPY (≤767px), smaller so the line fits cleanly ──── */
 @media (max-width: 767px) {
   .champ-strip__copy { font-size: 12px !important; line-height: 1.45 !important; }
   .champ-strip__copy strong { font-size: 12px !important; }
@@ -7060,7 +7060,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── "THE FULL STORY →" (≤767px) — keep arrow on same line as the words ── */
+/* ─── "THE FULL STORY →" (≤767px), keep arrow on same line as the words ── */
 @media (max-width: 767px) {
   .home-champ__cta {
     white-space: nowrap !important;
@@ -7074,7 +7074,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── HOME CHAMPIONS NUMBER TILES (≤767px) — smaller, cuter chips ────────── */
+/* ─── HOME CHAMPIONS NUMBER TILES (≤767px), smaller, cuter chips ────────── */
 @media (max-width: 767px) {
   .home-champ__nums { gap: 10px !important; }
   .home-champ__nums > div {
@@ -7087,7 +7087,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── HOME CHAMPIONS "THE FULL STORY" — FINAL override (wins over global .btn)
+/* ─── HOME CHAMPIONS "THE FULL STORY", FINAL override (wins over global .btn)
    Must sit last in the file. Higher specificity (.home-champ scope) + !important
    so it stays a compact editorial text-link on mobile, not a chunky button. ── */
 @media (max-width: 767px) {
@@ -7111,14 +7111,14 @@ a.btn, button.btn {
 }
 
 
-/* ─── STORY MODULE COPY (≤767px) — smaller so it fits cleanly ───────────── */
+/* ─── STORY MODULE COPY (≤767px), smaller so it fits cleanly ───────────── */
 @media (max-width: 767px) {
   .kit-reveal__copy p { font-size: 14px !important; line-height: 1.5 !important; max-width: 100% !important; }
   .kit-reveal__title { font-size: clamp(30px, 9vw, 44px) !important; }
 }
 
 
-/* ─── STORY COPY — FINAL size override (≤767px), highest specificity ─────── */
+/* ─── STORY COPY, FINAL size override (≤767px), highest specificity ─────── */
 @media (max-width: 767px) {
   .kit-reveal .kit-reveal__copy p,
   section.kit-reveal .kit-reveal__copy p {
@@ -7128,7 +7128,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── HOME CHAMPIONS "THE FULL STORY" — compact button (FINAL, wins all) ──── */
+/* ─── HOME CHAMPIONS "THE FULL STORY", compact button (FINAL, wins all) ──── */
 @media (max-width: 767px) {
   .home-champ .home-champ__cta.btn,
   .home-champ a.home-champ__cta {
@@ -7147,7 +7147,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── STORY MODULE (≤767px) — guarantee copy wraps inside the screen ────── */
+/* ─── STORY MODULE (≤767px), guarantee copy wraps inside the screen ────── */
 @media (max-width: 767px) {
   .kit-reveal__grid { grid-template-columns: 1fr !important; gap: 18px !important; }
   .kit-reveal__copy { max-width: 100% !important; min-width: 0 !important; }
@@ -7161,7 +7161,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── HOME CHAMPIONS statrow (≤767px) — full-story button beside 51 PTS ──── */
+/* ─── HOME CHAMPIONS statrow (≤767px), full-story button beside 51 PTS ──── */
 @media (max-width: 767px) {
   .home-champ__statrow {
     display: flex !important; align-items: center !important;
@@ -7183,7 +7183,7 @@ a.btn, button.btn {
   }
   .home-champ .home-champ__statrow .home-champ__cta.btn .home-champ__cta-arrow { color: var(--volt) !important; margin-left: 6px !important; }
 
-  /* STORY copy — bulletproof: stack grid, clip section, wrap + 13px. */
+  /* STORY copy, bulletproof: stack grid, clip section, wrap + 13px. */
   .kit-reveal { overflow: hidden !important; }
   .kit-reveal__grid { grid-template-columns: 1fr !important; }
   .kit-reveal__copy { max-width: 100% !important; min-width: 0 !important; }
@@ -7194,7 +7194,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── STORY MODULE (≤767px) — premium, on-brand, compact ─────────────────── */
+/* ─── STORY MODULE (≤767px), premium, on-brand, compact ─────────────────── */
 @media (max-width: 767px) {
   .kit-reveal__grid { gap: 18px !important; }
   .kit-reveal__photo { aspect-ratio: 16/10 !important; }   /* shorter on mobile, not a tall slab */
@@ -7213,7 +7213,7 @@ a.btn, button.btn {
 .kit-reveal__readmore:hover { border-color: var(--volt); }
 
 
-/* ─── HOME CHAMPIONS (≤767px) — refined, on-brand, interactive ──────────── */
+/* ─── HOME CHAMPIONS (≤767px), refined, on-brand, interactive ──────────── */
 @media (max-width: 767px) {
   .home-champ__statrow { gap: 10px !important; align-items: stretch !important; }
   .home-champ__nums { gap: 8px !important; flex: 1 1 auto; }
@@ -7232,7 +7232,7 @@ a.btn, button.btn {
   .home-champ__nums label { font-size: 8px !important; letter-spacing: 0.16em !important; color: rgba(7,29,41,0.7) !important; margin-top: 4px; }
 
   /* "THE FULL STORY" button: full-width row below the stats, matching height,
-     navy fill, white text, volt arrow — feels deliberate, not oversized. */
+     navy fill, white text, volt arrow, feels deliberate, not oversized. */
   .home-champ__statrow .home-champ__cta.btn {
     flex: 1 1 100% !important; width: 100% !important; max-width: 100% !important;
     justify-content: space-between !important;
@@ -7253,7 +7253,7 @@ a.btn, button.btn {
 }
 
 
-/* ═══ HOME CHAMPIONS — REDESIGN v2 (≤767px). Solid navy stat panel on volt. ═══ */
+/* ═══ HOME CHAMPIONS, REDESIGN v2 (≤767px). Solid navy stat panel on volt. ═══ */
 @media (max-width: 767px) {
   .home-champ .home-champ__statrow {
     display: flex !important; flex-direction: column !important;
@@ -7302,7 +7302,7 @@ a.btn, button.btn {
 }
 
 
-/* ═══ HOME CHAMPIONS — REDESIGN v3 (≤767px). Clean tiles + solid CTA. ═══ */
+/* ═══ HOME CHAMPIONS, REDESIGN v3 (≤767px). Clean tiles + solid CTA. ═══ */
 @media (max-width: 767px) {
   .home-champ .home-champ__statrow {
     display: flex !important; flex-direction: column !important;
@@ -7340,7 +7340,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── HOME CHAMPIONS "THE FULL STORY" (≤767px) — thin full-width bar ─────── */
+/* ─── HOME CHAMPIONS "THE FULL STORY" (≤767px), thin full-width bar ─────── */
 @media (max-width: 767px) {
   .home-champ .home-champ__statrow .home-champ__cta.btn {
     width: 100% !important; max-width: 100% !important;
@@ -7353,7 +7353,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── HOME CHAMPIONS stat tiles (≤767px) — number + label SIDE BY SIDE ───── */
+/* ─── HOME CHAMPIONS stat tiles (≤767px), number + label SIDE BY SIDE ───── */
 @media (max-width: 767px) {
   .home-champ .home-champ__statrow .home-champ__nums {
     grid-template-columns: 1fr !important;   /* one stat per row, full width */
@@ -7370,7 +7370,7 @@ a.btn, button.btn {
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   HOME CHAMPIONS — clean rebuild (hc2). Compact, on-brand, responsive.
+   HOME CHAMPIONS, clean rebuild (hc2). Compact, on-brand, responsive.
    Sits on the existing .home-champ volt background.
    ═══════════════════════════════════════════════════════════════════════ */
 .hc2 { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
@@ -7411,7 +7411,7 @@ a.btn, button.btn {
 .hc2__cta:hover { background: #000; }
 .hc2__cta:active { transform: translateY(1px); }
 
-/* Desktop: place the CTA inline-right, stats under the title — keep it tidy. */
+/* Desktop: place the CTA inline-right, stats under the title, keep it tidy. */
 @media (min-width: 768px) {
   .hc2__cta { align-self: flex-start; min-width: 240px; }
 }
@@ -7429,7 +7429,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── PAGE HERO SUB (≤767px) — smaller so it fits the banner cleanly ─────── */
+/* ─── PAGE HERO SUB (≤767px), smaller so it fits the banner cleanly ─────── */
 @media (max-width: 767px) {
   .page-hero__sub, .ph__sub, .page-hero p {
     font-size: 13px !important; line-height: 1.5 !important;
@@ -7442,14 +7442,14 @@ a.btn, button.btn {
 }
 
 
-/* ─── PENDING SEASON placeholder (≤767px) — smaller copy + tighter title ── */
+/* ─── PENDING SEASON placeholder (≤767px), smaller copy + tighter title ── */
 @media (max-width: 767px) {
   .placeholder__big-title { font-size: clamp(22px, 7vw, 30px) !important; line-height: 1.05 !important; }
   .placeholder__copy { font-size: 12px !important; line-height: 1.55 !important; max-width: 100% !important; }
 }
 
 
-/* ─── RESULTS hero meta — clean chips instead of a run-on dotted line ────── */
+/* ─── RESULTS hero meta, clean chips instead of a run-on dotted line ────── */
 .results-hero__meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .results-hero__metachip {
   font: 800 10px/1 var(--font-sans); letter-spacing: 0.1em; text-transform: uppercase;
@@ -7458,7 +7458,7 @@ a.btn, button.btn {
   padding: 6px 10px; white-space: nowrap;
 }
 
-/* ─── RESULTS competition filter (≤767px) — compact chips ───────────────── */
+/* ─── RESULTS competition filter (≤767px), compact chips ───────────────── */
 @media (max-width: 767px) {
   .results-hero__metachip { font-size: 9px !important; padding: 5px 8px !important; }
   .filters { gap: 6px !important; }
@@ -7466,7 +7466,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── LEAGUE TABLE (≤767px) — stop "PTS" wrapping (S under PT) ───────────── */
+/* ─── LEAGUE TABLE (≤767px), stop "PTS" wrapping (S under PT) ───────────── */
 @media (max-width: 767px) {
   .lt thead th, .lt tbody td { white-space: nowrap !important; }
   .lt__num { width: auto !important; min-width: 30px; padding-left: 6px !important; padding-right: 6px !important; }
@@ -7475,7 +7475,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── SQUAD RAIL "SWIPE →" affordance (≤767px) — shift left, more visible ── */
+/* ─── SQUAD RAIL "SWIPE →" affordance (≤767px), shift left, more visible ── */
 @media (max-width: 767px) {
   .squad-pos-group::after,
   .sq-roller::after {
@@ -7487,7 +7487,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── LEADERBOARD TOOLBAR (≤767px) — compact season/comp filters ─────────── */
+/* ─── LEADERBOARD TOOLBAR (≤767px), compact season/comp filters ─────────── */
 @media (max-width: 767px) {
   .lb2-toolbar { gap: 10px !important; }
   .lb2-toolbar__group { gap: 6px !important; }
@@ -7498,7 +7498,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── LEADERBOARD — freeze the player column while stats scroll sideways ─── */
+/* ─── LEADERBOARD, freeze the player column while stats scroll sideways ─── */
 .lb2__th--pos, .lb2__pos {
   position: sticky; left: 0; z-index: 3;
   background: var(--surface-2);
@@ -7520,8 +7520,8 @@ a.btn, button.btn {
 }
 
 
-/* ─── LEADERBOARD — close gap between pos & name, ease APPS column ───────── */
-/* The pos column is sticky at left:0 and name sticky at left:48px — tighten
+/* ─── LEADERBOARD, close gap between pos & name, ease APPS column ───────── */
+/* The pos column is sticky at left:0 and name sticky at left:48px, tighten
    that offset so the number sits right against the name (no mini gap). */
 .lb2__th--pos, .lb2__pos { width: 34px !important; padding-left: 8px !important; padding-right: 2px !important; }
 .lb2__th--name, .lb2__name { left: 34px !important; padding-left: 8px !important; }
@@ -7535,7 +7535,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── LEADERBOARD — fully close pos↔name gap (align sticky offset exactly) ─ */
+/* ─── LEADERBOARD, fully close pos↔name gap (align sticky offset exactly) ─ */
 .lb2__th--pos, .lb2__pos {
   width: 30px !important; min-width: 30px !important; max-width: 30px !important;
   padding-left: 8px !important; padding-right: 0 !important; box-sizing: border-box !important;
@@ -7547,7 +7547,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── COACH FEATURE BIO (≤767px) — smaller body copy ─────────────────────── */
+/* ─── COACH FEATURE BIO (≤767px), smaller body copy ─────────────────────── */
 @media (max-width: 767px) {
   .coach-feature__bio p,
   .coach-feature__bio p:first-of-type {
@@ -7557,7 +7557,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── PLAYER PROFILE (≤767px) — compact competition filter + smaller bio ─── */
+/* ─── PLAYER PROFILE (≤767px), compact competition filter + smaller bio ─── */
 @media (max-width: 767px) {
   .pp-comp-filter { padding: 8px 12px !important; gap: 8px !important; }
   .pp-comp-filter__lbl { font-size: 9px !important; letter-spacing: 0.12em !important; }
@@ -7569,7 +7569,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── NEWS CARDS (≤767px) — smaller title + lede ─────────────────────────── */
+/* ─── NEWS CARDS (≤767px), smaller title + lede ─────────────────────────── */
 @media (max-width: 767px) {
   .news-card__title { font-size: 16px !important; line-height: 1.2 !important; }
   .news-card--lg .news-card__title { font-size: 19px !important; }
@@ -7578,7 +7578,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── MATCH REPORT COVER (≤767px) — ensure both badges + score read clearly ─ */
+/* ─── MATCH REPORT COVER (≤767px), ensure both badges + score read clearly ─ */
 @media (max-width: 767px) {
   .mr-graphic { padding: 16px 12px !important; }
   .mr-graphic__badge { width: 44px !important; height: 44px !important; }
@@ -7590,7 +7590,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── ARTICLE DETAIL (≤767px) — smaller article body + title ─────────────── */
+/* ─── ARTICLE DETAIL (≤767px), smaller article body + title ─────────────── */
 @media (max-width: 767px) {
   .ad__title { font-size: clamp(24px, 7vw, 34px) !important; line-height: 1.0 !important; }
   .ad__story p { font-size: 14px !important; line-height: 1.6 !important; }
@@ -7600,7 +7600,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── SQUAD SPOTLIGHT cover — role tag bottom-right; no number ever ──────── */
+/* ─── SQUAD SPOTLIGHT cover, role tag bottom-right; no number ever ──────── */
 .ss-cover__num { display: none !important; }
 .ss-cover__role {
   position: absolute; right: 14px; bottom: 14px; z-index: 3;
@@ -7609,11 +7609,11 @@ a.btn, button.btn {
   padding: 6px 10px; border-radius: 9999px;
 }
 
-/* ─── SPONSOR cover foot — centre the text ───────────────────────────────── */
+/* ─── SPONSOR cover foot, centre the text ───────────────────────────────── */
 .sp-cover__foot { justify-content: center !important; text-align: center; gap: 6px 16px; }
 
 
-/* ─── MATCH REPORT / PREVIEW foot (≤767px) — venue + KO always visible ───── */
+/* ─── MATCH REPORT / PREVIEW foot (≤767px), venue + KO always visible ───── */
 @media (max-width: 767px) {
   .mr-graphic__foot {
     display: flex !important; flex-wrap: wrap !important; gap: 6px 10px !important;
@@ -7643,7 +7643,7 @@ a.btn, button.btn {
 .ad__cover-reset:hover { color: var(--volt); border-color: var(--hairline-volt); }
 
 
-/* ─── SQUAD SPOTLIGHT — remove position tag; PLAYER chip bottom-right ────── */
+/* ─── SQUAD SPOTLIGHT, remove position tag; PLAYER chip bottom-right ────── */
 .ss-cover__role { display: none !important; }
 .news-card__media--spotlight .news-card__cat--floating,
 .ad__media--spotlight .news-card__cat--floating {
@@ -7652,7 +7652,7 @@ a.btn, button.btn {
   bottom: 14px !important; right: 14px !important;
 }
 
-/* ─── MATCH REPORT / PREVIEW covers — taller so badges/score/venue/KO show ─ */
+/* ─── MATCH REPORT / PREVIEW covers, taller so badges/score/venue/KO show ─ */
 .news-card__media--report { aspect-ratio: 16/11 !important; }
 .news-card--lg .news-card__media--report { aspect-ratio: 16/10 !important; }
 .ad__media--report { aspect-ratio: 16/11 !important; }
@@ -7669,7 +7669,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── SPONSOR JOIN card — transparent badge plate, nudged left, smaller copy ─ */
+/* ─── SPONSOR JOIN card, transparent badge plate, nudged left, smaller copy ─ */
 .sp-join__icon-plate {
   background: transparent !important; box-shadow: none !important;
   padding: 0 !important; margin-left: -4px;
@@ -7681,20 +7681,20 @@ a.btn, button.btn {
 }
 
 
-/* ─── FOOTER UTILITY ROW (≤767px) — much smaller copyright/links ─────────── */
+/* ─── FOOTER UTILITY ROW (≤767px), much smaller copyright/links ─────────── */
 @media (max-width: 767px) {
   .footer__util .t-meta { font-size: 9px !important; letter-spacing: 0.04em !important; }
   .footer__util-links a { font-size: 9px !important; }
 }
 
 
-/* ─── SPONSOR JOIN checklist — smaller text ──────────────────────────────── */
+/* ─── SPONSOR JOIN checklist, smaller text ──────────────────────────────── */
 .sp-join__list li { font-size: 12px !important; }
 .sp-join__list li > span:first-child { width: 18px !important; height: 18px !important; min-width: 18px !important; font-size: 11px !important; flex: 0 0 18px !important; }
 @media (max-width: 767px) { .sp-join__list li { font-size: 11px !important; } }
 
 
-/* ─── SP-HOME CTA strip — much smaller text + button ─────────────────────── */
+/* ─── SP-HOME CTA strip, much smaller text + button ─────────────────────── */
 .sp-home__cta span { font-size: 10px !important; letter-spacing: 0.1em !important; }
 .sp-home__cta .btn { font-size: 9px !important; min-height: 32px !important; padding: 7px 12px !important; }
 @media (max-width: 767px) {
@@ -7702,7 +7702,7 @@ a.btn, button.btn {
   .sp-home__cta .btn { font-size: 9px !important; min-height: 30px !important; }
 }
 
-/* ─── SPONSOR BENEFIT CARDS — smaller copy ───────────────────────────────── */
+/* ─── SPONSOR BENEFIT CARDS, smaller copy ───────────────────────────────── */
 .sp-benefit__copy { font-size: 12px !important; line-height: 1.45 !important; }
 @media (max-width: 767px) { .sp-benefit__copy { font-size: 11px !important; } }
 
@@ -7712,7 +7712,7 @@ a.btn, button.btn {
 .champ-stats-head, .champ-hero__chrome { padding-left: 0 !important; }
 .champ-hero__numbers { margin-left: 0 !important; padding-left: 0 !important; }
 
-/* About records note — no special centering needed; keep tidy */
+/* About records note, no special centering needed; keep tidy */
 .about-records__note { font-size: 10px !important; }
 
 /* About close sub smaller */
@@ -7737,14 +7737,14 @@ a.btn, button.btn {
 .join-v2__actions .t-meta { font-size: 10px !important; }
 .faq__q, .faq summary { font-size: 13px !important; }
 
-/* ─── ABOUT JOURNEY CAROUSEL — ensure the track actually slides (bug fix) ── */
+/* ─── ABOUT JOURNEY CAROUSEL, ensure the track actually slides (bug fix) ── */
 .about-tl__track { transform: translateX(0); }
 @media (max-width: 767px) {
   .about-tl__card { flex-basis: 82% !important; }
 }
 
 
-/* ─── GALLERY empty-state — smaller text + button ────────────────────────── */
+/* ─── GALLERY empty-state, smaller text + button ────────────────────────── */
 .g-empty span { font-size: 10px !important; letter-spacing: 0.08em !important; line-height: 1.5 !important; }
 .g-empty .btn { font-size: 10px !important; min-height: 34px !important; padding: 8px 12px !important; }
 @media (max-width: 767px) {
@@ -7753,7 +7753,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── FOOTER columns — smaller + more compact ────────────────────────────── */
+/* ─── FOOTER columns, smaller + more compact ────────────────────────────── */
 .footer__col .t-eyebrow { font-size: 9px !important; letter-spacing: 0.12em !important; margin-bottom: 4px; }
 .footer__col a { font-size: 11px !important; padding: 1px 0 !important; }
 .footer__col ul { gap: 2px !important; }
@@ -7765,9 +7765,9 @@ a.btn, button.btn {
 }
 
 
-/* ═══ MATCH PREVIEW GRAPHIC — clean, contained layout (all widths) ═══════════
+/* ═══ MATCH PREVIEW GRAPHIC, clean, contained layout (all widths) ═══════════
    Fixes the broken preview cover (giant overlapping badges + VS/KO collision).
-   Three even columns, small badges, VS centred, KO chip below — no overlap. */
+   Three even columns, small badges, VS centred, KO chip below, no overlap. */
 .mr-graphic--preview .mr-graphic__main {
   grid-template-columns: 1fr auto 1fr !important;
   align-items: center !important; gap: 10px !important;
@@ -7803,7 +7803,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── ABOUT PAGE (≤767px) — ensure long lines fit, no overflow ──────────── */
+/* ─── ABOUT PAGE (≤767px), ensure long lines fit, no overflow ──────────── */
 @media (max-width: 767px) {
   .about-champ__copy p,
   .about-records__note span,
@@ -7820,14 +7820,14 @@ a.btn, button.btn {
 }
 
 
-/* ─── ABOUT JOURNEY header — meta sits under the title, left-aligned ─────── */
+/* ─── ABOUT JOURNEY header, meta sits under the title, left-aligned ─────── */
 .about-journey-section .section__head--compact {
   flex-direction: column !important; align-items: flex-start !important; gap: 4px !important;
 }
 .about-journey-section .section__head--compact > span.t-meta { text-align: left !important; }
 
 
-/* ─── ABOUT JOURNEY (≤767px) — stack ALL events vertically (no carousel) ─── */
+/* ─── ABOUT JOURNEY (≤767px), stack ALL events vertically (no carousel) ─── */
 @media (max-width: 767px) {
   .about-tl { padding: 0 !important; }
   .about-tl__viewport { overflow: visible !important; }
@@ -7848,7 +7848,7 @@ a.btn, button.btn {
 @media (max-width: 767px) { .join-v2__form-sub { font-size: 11px !important; } }
 
 
-/* ─── JOIN FAQ — smaller text + clearer +/× toggle ───────────────────────── */
+/* ─── JOIN FAQ, smaller text + clearer +/× toggle ───────────────────────── */
 .faq summary { font-size: 14px !important; gap: 12px; }
 .faq summary > span { color: var(--navy) !important; background: var(--volt); width: 22px; height: 22px; border-radius: 6px; display: inline-grid; place-items: center; font-size: 16px !important; line-height: 1; flex: 0 0 22px; }
 .faq p { font-size: 12px !important; line-height: 1.55 !important; }
@@ -7858,7 +7858,7 @@ a.btn, button.btn {
   .faq { padding: 14px 0 !important; }
 }
 
-/* Champions UP NEXT — smaller header + count labels */
+/* Champions UP NEXT, smaller header + count labels */
 .champ-next-section .section__head--compact .t-h2 { font-size: 18px !important; line-height: 1.1 !important; }
 .champ-next__count-l { font-size: 10px !important; }
 .champ-next__count-date { font-size: 10px !important; line-height: 1.5 !important; }
@@ -7868,7 +7868,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── ABOUT STORY body — smaller so it fits cleanly ──────────────────────── */
+/* ─── ABOUT STORY body, smaller so it fits cleanly ──────────────────────── */
 .about-story__lede { font-size: 13px !important; line-height: 1.5 !important; }
 .about-story__body p { font-size: 12px !important; line-height: 1.55 !important; }
 .about-story__pull { font-size: 15px !important; line-height: 1.3 !important; }
@@ -7879,7 +7879,7 @@ a.btn, button.btn {
 }
 
 
-/* ─── JOIN FAQ — move +/× toggle to the LEFT, guarantee visible ──────────── */
+/* ─── JOIN FAQ, move +/× toggle to the LEFT, guarantee visible ──────────── */
 .faq summary {
   justify-content: flex-start !important; gap: 12px !important; align-items: center !important;
 }
@@ -7897,7 +7897,7 @@ a.btn, button.btn {
 @media (max-width: 767px) { .champ-next__card-sub { font-size: 10px !important; } }
 
 
-/* ═══ ABOUT PAGE — uniform body text (13px everywhere, non-headings) ═══════ */
+/* ═══ ABOUT PAGE, uniform body text (13px everywhere, non-headings) ═══════ */
 .about-mission__quote,
 .about-mission__quote em,
 .about-num__sub,
@@ -7918,7 +7918,7 @@ a.btn, button.btn {
 .about-mission__quote { line-height: 1.3 !important; }
 
 
-/* ═══ GLOBAL — all non-heading body text 12px (site-wide) ═════════════════
+/* ═══ GLOBAL, all non-heading body text 12px (site-wide) ═════════════════
    Headings (.t-h1/h2/h3/h4, hero/page titles, stat numbers, display type)
    keep their sizes; everything else (paragraphs, ledes, labels, card copy,
    meta, list items, buttons stay as set) normalises to 12px. */
@@ -7940,7 +7940,7 @@ a.btn, button.btn {
 }
 
 
-/* ═══ TEXT WRAPPING — let sub/lead/hero copy wrap cleanly (no nowrap) ═══════ */
+/* ═══ TEXT WRAPPING, let sub/lead/hero copy wrap cleanly (no nowrap) ═══════ */
 .hero__sub, .page-hero__sub, .ph__sub, .placeholder__copy,
 .champ-hero__sub, .join__sub, .about-close__sub, .about-story__lede,
 .about-story__body p, .about-champ__copy p, .champ-next__card-sub,
@@ -7958,7 +7958,7 @@ a.btn, button.btn {
 }
 
 
-/* ═══ ABOUT STORY — bulletproof mobile containment (no right-edge cutoff) ══ */
+/* ═══ ABOUT STORY, bulletproof mobile containment (no right-edge cutoff) ══ */
 @media (max-width: 767px) {
   .about-story { grid-template-columns: 1fr !important; gap: 16px !important; overflow: hidden !important; }
   .about-story__body,
@@ -7979,7 +7979,7 @@ a.btn, button.btn {
 }
 
 
-/* ═══ JOIN HERO SUB — firm containment so it never cuts off right edge ═════ */
+/* ═══ JOIN HERO SUB, firm containment so it never cuts off right edge ═════ */
 .page-hero__sub, .ph__sub {
   max-width: 100% !important; min-width: 0 !important;
   white-space: normal !important; overflow-wrap: anywhere !important;
@@ -7994,7 +7994,7 @@ a.btn, button.btn {
 
 
 /* ═══════════════════════════════════════════════════════════════════════
-   GLOBAL MOBILE/TABLET TEXT CONTAINMENT (≤1023px) — root-cause fix for
+   GLOBAL MOBILE/TABLET TEXT CONTAINMENT (≤1023px), root-cause fix for
    right-edge clipping. Desktop (≥1024px) untouched. Sits last → wins.
    ═══════════════════════════════════════════════════════════════════════ */
 @media (max-width: 1023px) {
@@ -8036,7 +8036,7 @@ a.btn, button.btn {
 }
 
 
-/* ═══ PROSE WORD-BREAK FIX — keep whole words intact (override 'anywhere') ══
+/* ═══ PROSE WORD-BREAK FIX, keep whole words intact (override 'anywhere') ══
    'anywhere' was breaking mid-word near the edge. Prose should only break a
    word as a last resort, so use 'break-word' + normal word-break. Scoped to
    readable body copy; structural containment from the global rule stays. */
@@ -8057,12 +8057,12 @@ a.btn, button.btn {
 }
 
 
-/* ═══ DESKTOP ONLY (≥1024px) — sub-heading 14px + vertical scroll control ══ */
+/* ═══ DESKTOP ONLY (≥1024px), sub-heading 14px + vertical scroll control ══ */
 @media (min-width: 1024px) {
   .page-hero__sub, .ph__sub, .hero__sub { font-size: 14px !important; line-height: 1.6 !important; }
 }
 
-/* Vertical up/down scroll control — desktop only, hidden on mobile/tablet. */
+/* Vertical up/down scroll control, desktop only, hidden on mobile/tablet. */
 .scroll-nav { display: none; }
 @media (min-width: 1024px) {
   .scroll-nav {
@@ -8083,7 +8083,7 @@ a.btn, button.btn {
 }
 
 
-/* ═══ ABOUT JOURNEY (desktop ≥1024px) — horizontal scroll rail, ALL events ══
+/* ═══ ABOUT JOURNEY (desktop ≥1024px), horizontal scroll rail, ALL events ══
    The paged-transform carousel only advanced a fraction of a card, hiding the
    later milestones. Switch desktop to a clean horizontal scroll rail so all 7
    events are reachable. Mobile (≤767px stacked) is untouched. */
@@ -8103,7 +8103,7 @@ a.btn, button.btn {
 }
 
 
-/* ═══ DESKTOP (≥1024px) — restore original mission quote + story sizes ═════
+/* ═══ DESKTOP (≥1024px), restore original mission quote + story sizes ═════
    Several earlier mobile-intended reductions were applied globally and shrank
    desktop. Restore the approved desktop scale here. Mobile (≤1023) untouched. */
 @media (min-width: 1024px) {
@@ -8117,7 +8117,7 @@ a.btn, button.btn {
 }
 
 
-/* ═══ HOMEPAGE "OUR STORY" (kit-reveal) — desktop (≥1024px) sizing ═════════
+/* ═══ HOMEPAGE "OUR STORY" (kit-reveal), desktop (≥1024px) sizing ═════════
    Re-assert a comfortable desktop scale. Mobile (≤767) untouched. */
 @media (min-width: 1024px) {
   .kit-reveal__title { font-size: clamp(48px, 5vw, 72px) !important; line-height: 0.95 !important; }
@@ -8126,12 +8126,12 @@ a.btn, button.btn {
 }
 
 
-/* ═══ DESKTOP (≥1024px) — smaller OUR STORY copy ══════════════════════════ */
+/* ═══ DESKTOP (≥1024px), smaller OUR STORY copy ══════════════════════════ */
 @media (min-width: 1024px) {
   .kit-reveal__copy p { font-size: 15px !important; line-height: 1.55 !important; }
 }
 
-/* ═══ TEAMS · FIRST TEAM (≥1024px) — position groups as horizontal sliders ═
+/* ═══ TEAMS · FIRST TEAM (≥1024px), position groups as horizontal sliders ═
    Mirrors the mobile swipe rails: each position group (GK/DEF/MID/ATT) becomes
    a horizontal scroll rail of player cards. Mobile (≤767) already does this and
    is untouched; this only adds the behaviour on desktop. */
@@ -8151,7 +8151,7 @@ a.btn, button.btn {
 }
 
 
-/* ═══ TEAMS · FIRST TEAM (≥1024px) — match the HOME PAGE squad slider look ══
+/* ═══ TEAMS · FIRST TEAM (≥1024px), match the HOME PAGE squad slider look ══
    Clean horizontal rail per position group: smooth snap, hidden scrollbar,
    a peek of the next card. Mobile (≤767) untouched. */
 @media (min-width: 1024px) {
@@ -8173,7 +8173,7 @@ a.btn, button.btn {
 }
 
 
-/* ═══ TEAMS · FIRST TEAM (≥1024px) — VISIBLE slider track under each rail ══ */
+/* ═══ TEAMS · FIRST TEAM (≥1024px), VISIBLE slider track under each rail ══ */
 @media (min-width: 1024px) {
   .squad-grid--full {
     scrollbar-width: thin !important;
@@ -8192,12 +8192,12 @@ a.btn, button.btn {
 }
 
 
-/* ═══ MOBILE-ONLY (≤767px) — bigger mission quote ═════════════════════════ */
+/* ═══ MOBILE-ONLY (≤767px), bigger mission quote ═════════════════════════ */
 @media (max-width: 767px) {
   .about-mission__quote { font-size: 18px !important; line-height: 1.32 !important; }
 }
 
-/* ═══ TEAMS · FIRST TEAM (≤767px) — replace "SWIPE →" with a volt slider bar ═ */
+/* ═══ TEAMS · FIRST TEAM (≤767px), replace "SWIPE →" with a volt slider bar ═ */
 @media (max-width: 767px) {
   /* Remove the text affordance. */
   .squad-pos-group::after { content: none !important; display: none !important; }
@@ -8217,7 +8217,7 @@ a.btn, button.btn {
 }
 
 
-/* Coach photo admin uploader — bottom-left overlay on the manager photo. */
+/* Coach photo admin uploader, bottom-left overlay on the manager photo. */
 .coach-feature__photo { position: relative; }
 .coach-feature__upload { position: absolute; left: 10px; bottom: 10px; z-index: 3; }
 
@@ -8268,7 +8268,7 @@ a.btn, button.btn {
 @media (max-width: 767px) { .draft-note p { font-size: 13px; } }
 
 
-/* ─── GALLERY ALBUMS — composer + lightbox ───────────────────────────────── */
+/* ─── GALLERY ALBUMS, composer + lightbox ───────────────────────────────── */
 .album-composer { display: flex; flex-direction: column; gap: 12px; width: 100%; background: var(--surface-2); border: 1px solid var(--hairline); border-radius: 12px; padding: 16px; }
 .album-composer__head { display: flex; align-items: center; justify-content: space-between; }
 .album-composer__head strong { font: 800 14px/1 var(--font-sans); letter-spacing: 0.02em; }

@@ -1,4 +1,4 @@
-// Vercel serverless function — proxies a single Claude request to Anthropic.
+// Vercel serverless function, proxies a single Claude request to Anthropic.
 //
 // Public endpoint: /api/claude
 // Method: POST
@@ -14,10 +14,10 @@
 // Cost guard:
 //   • Hard input cap of 8,000 chars (≈ 2,000 tokens) per request.
 //   • Hard output cap of 1,500 tokens.
-//   • Use the cheap model (claude-haiku-4) by default — switch to sonnet
+//   • Use the cheap model (claude-haiku-4) by default, switch to sonnet
 //     for higher quality at ~5x cost if needed.
 
-// Ordered preference if we can't list models — cheapest-first guesses.
+// Ordered preference if we can't list models, cheapest-first guesses.
 const MODEL_FALLBACKS = [
   'claude-haiku-4-5-20251001',
   'claude-3-5-haiku-20241022',
@@ -52,7 +52,7 @@ async function resolveModel(apiKey, requested) {
 }
 
 export default async function handler(req, res) {
-  // CORS — only the club's own site + its Vercel preview deploys may call this,
+  // CORS, only the club's own site + its Vercel preview deploys may call this,
   // so the Anthropic key can't be spent from an arbitrary third-party page.
   const ALLOWED_ORIGINS = [
     'https://www.suesangelsfc.co.uk',
@@ -78,7 +78,7 @@ export default async function handler(req, res) {
   }
 
   let body = req.body;
-  // Vercel sometimes leaves body as raw string — parse defensively.
+  // Vercel sometimes leaves body as raw string, parse defensively.
   if (typeof body === 'string') {
     try { body = JSON.parse(body); } catch (e) { return res.status(400).json({ error: 'Invalid JSON body' }); }
   }

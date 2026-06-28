@@ -1,9 +1,9 @@
-// supabase.js — Supabase client setup + auth hook.
+// supabase.js, Supabase client setup + auth hook.
 //
 // CONFIGURATION
 // ─────────────
 // The site reads its Supabase config from `window.SUPABASE_CONFIG`. Set this
-// in `supabase-config.js` (sibling file) — that file is the ONE place you
+// in `supabase-config.js` (sibling file), that file is the ONE place you
 // edit when wiring up a new Supabase project:
 //
 //   window.SUPABASE_CONFIG = {
@@ -13,7 +13,7 @@
 //   };
 //
 // If the config is missing or empty, the site falls back to localStorage-only
-// mode — exactly how it behaves in the Claude design preview today. No errors.
+// mode, exactly how it behaves in the Claude design preview today. No errors.
 //
 // LOAD ORDER
 // ──────────
@@ -30,7 +30,7 @@
   if (mode === 'local') {
     // No-op store. The dataStore abstraction will see SA_DATA_MODE === 'local'
     // and route every call to localStorage instead.
-    console.info('[Supabase] Not configured — site runs in local (browser-only) mode.');
+    console.info('[Supabase] Not configured, site runs in local (browser-only) mode.');
     window.SupabaseStore = null;
     window.useSupabaseAuth = () => ({ user: null, loading: false });
     return;

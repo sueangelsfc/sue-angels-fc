@@ -1,4 +1,4 @@
-/* chart-anim.js — plays the player-profile chart animations when the mouse comes
+/* chart-anim.js, plays the player-profile chart animations when the mouse comes
    NEAR them (hovering the graph or the wheel), not on open. The charts sit in
    their final state by default; hovering replays the fill from empty → real value
    via the Web Animations API (which runs reliably on the active hover frame). */

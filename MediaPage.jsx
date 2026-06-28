@@ -1,4 +1,4 @@
-// MediaPage.jsx — combined News + Gallery page.
+// MediaPage.jsx, combined News + Gallery page.
 // Two internal tabs: News / Gallery.
 function MediaPage() {
   const tabFromQuery = (() => {

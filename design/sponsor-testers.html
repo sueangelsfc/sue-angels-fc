@@ -1,0 +1,70 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<style>
+@font-face{font-family:'Clash Display';src:url('../assets/fonts/clash-display-600.woff2') format('woff2');font-weight:600}
+@font-face{font-family:'Clash Display';src:url('../assets/fonts/clash-display-500.woff2') format('woff2');font-weight:500}
+@font-face{font-family:'Hanken Grotesk';src:url('../assets/fonts/hanken-400.woff2') format('woff2');font-weight:400}
+@font-face{font-family:'Hanken Grotesk';src:url('../assets/fonts/hanken-600.woff2') format('woff2');font-weight:600}
+:root{--volt:#D6F23A;--ink:#EAF1F6;--mut:#8294A2;--bg:#0B1822;--card:rgba(255,255,255,.045);--line:rgba(255,255,255,.11)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#04090f;font-family:'Hanken Grotesk',sans-serif;-webkit-font-smoothing:antialiased}
+.frame{width:1080px;padding:54px 60px;background:linear-gradient(160deg,#0B1822,#060F18);color:var(--ink);position:relative;overflow:hidden}
+.frame+.frame{border-top:2px solid #04090f}
+.frame::after{content:"";position:absolute;width:480px;height:480px;right:-120px;top:-180px;background:radial-gradient(circle,rgba(214,242,58,.14),transparent 62%);filter:blur(40px)}
+.tag{font-size:13px;letter-spacing:.3em;color:var(--volt);font-weight:600}
+.disp{font-family:'Clash Display',sans-serif;font-weight:600}
+/* sponsor badge shared */
+.spon{display:inline-flex;align-items:center;gap:14px;background:#fff;border-radius:12px;padding:10px 18px}
+.spon img{height:34px}
+.sponlbl{font-size:12px;letter-spacing:.22em;color:var(--mut);font-weight:600;margin-bottom:10px}
+/* PROFILE */
+.pcard{display:grid;grid-template-columns:300px 1fr;gap:40px;align-items:center;position:relative;z-index:1}
+.pphoto{height:360px;border-radius:20px;background:radial-gradient(circle at 50% 30%,rgba(214,242,58,.22),rgba(11,24,34,.4));border:1px solid var(--line);display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
+.pphoto img{height:350px;object-fit:contain}
+.pname{font-size:58px;line-height:.96;letter-spacing:-.01em}
+.pmeta{display:flex;gap:14px;margin:18px 0 26px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:9px 18px;font-size:14px;letter-spacing:.08em;color:var(--ink);font-weight:600}
+.stats{display:flex;gap:40px;margin-bottom:30px}
+.stat .n{font-family:'Clash Display';font-weight:600;color:var(--volt);font-size:40px;line-height:1}
+.stat .l{font-size:13px;letter-spacing:.14em;color:var(--mut);font-weight:600;margin-top:6px}
+/* REPORT */
+.rhead{position:relative;z-index:1}
+.rtitle{font-size:50px;line-height:1.02;letter-spacing:-.01em;margin:14px 0 22px;max-width:860px}
+.ribbon{display:inline-flex;align-items:center;gap:16px;background:rgba(214,242,58,.08);border:1px solid rgba(214,242,58,.5);border-radius:14px;padding:14px 22px;margin-bottom:26px}
+.ribbon .rl{font-size:13px;letter-spacing:.18em;color:var(--volt);font-weight:600}
+.ribbon img{height:30px;background:#fff;border-radius:7px;padding:4px 8px}
+.rbody{font-size:19px;line-height:1.65;color:#B9C6D2;max-width:900px}
+.note{position:absolute;right:60px;bottom:24px;font-size:12px;letter-spacing:.2em;color:#3d4d59;font-weight:600}
+</style></head><body>
+
+<!-- PLAYER PROFILE -->
+<section class="frame">
+  <div class="tag">PLAYER PROFILE</div>
+  <div class="pcard" style="margin-top:24px">
+    <div class="pphoto"><img src="../assets/players/stephen-epathite-cutout.png" alt=""></div>
+    <div>
+      <div class="disp pname">STEPHEN<br>EPATHITE</div>
+      <div class="pmeta"><span class="chip">NO. 9</span><span class="chip">FORWARD</span><span class="chip">CAPTAIN</span></div>
+      <div class="stats">
+        <div class="stat"><div class="n">18</div><div class="l">APPEARANCES</div></div>
+        <div class="stat"><div class="n">24</div><div class="l">GOALS</div></div>
+        <div class="stat"><div class="n">7</div><div class="l">ASSISTS</div></div>
+      </div>
+      <div class="sponlbl">SPONSORED BY</div>
+      <div class="spon"><img src="../assets/sponsors/hodgson-roofing.webp" alt=""></div>
+    </div>
+  </div>
+  <div class="note">SUESANGELSFC.CO.UK</div>
+</section>
+
+<!-- MATCH REPORT -->
+<section class="frame">
+  <div class="rhead">
+    <div class="tag">MATCH REPORT · 31 MAY 2026 · LEAGUE TEN</div>
+    <div class="disp rtitle">Angels sign off unbeaten as Osunkoya and Dunkley down Hillside</div>
+    <div class="ribbon"><span class="rl">THIS MATCH REPORT BROUGHT TO YOU BY</span><img src="../assets/sponsors/hodgson-roofing.webp" alt=""></div>
+    <p class="rbody">Sue's Angels brought the curtain down on a perfect league campaign with a composed 2-0 win over Hillside Elite Blues at The Reeves. Femi Osunkoya broke the deadlock on 34 minutes, sweeping home after a flowing move, before Charlie Dunkley wrapped it up in the second half. Eighteen games, eighteen wins, and a title defended in the only way the Angels know how...</p>
+  </div>
+  <div class="note">SUESANGELSFC.CO.UK/NEWS</div>
+</section>
+
+</body></html>

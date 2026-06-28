@@ -23,10 +23,10 @@ function AboutV2() {
   const t = window.rdLeagueTotals();
   const journey = [
     { y: 'Aug 25', tag: 'Sponsor', t: 'Sporting Solutions', c: 'Sporting Solutions come on board as main kit sponsor, the brand on the front of the matchday shirt every weekend since.' },
-    { y: 'Sep 25', tag: 'Kickoff', t: 'Founded · opening win', c: 'First competitive fixture, 21 September 2025. 5–0 vs Pure Football FC 2.0. The project is alive.' },
-    { y: 'Jan 26', tag: 'Statement', t: '12–0 at Balham', c: 'Travelled to Balham Bteckerz and dropped a dozen. The performance that made the league sit up.' },
+    { y: 'Sep 25', tag: 'Kickoff', t: 'Founded · opening win', c: 'First competitive fixture, 21 September 2025. 5-0 vs Pure Football FC 2.0. The project is alive.' },
+    { y: 'Jan 26', tag: 'Statement', t: '12-0 at Balham', c: 'Travelled to Balham Bteckerz and dropped a dozen. The performance that made the league sit up.' },
     { y: 'Feb 26', tag: 'Sponsor', t: 'Hodgson Roofing', c: 'Hodgson Roofing join the family as warm-up & training top sponsor, the brand the squad wears pre-match.' },
-    { y: 'Apr 26', tag: 'Champions', t: 'Title confirmed', c: 'Beat Sporting Club Catania 10–1 at home on 26 April. League Ten title clinched mathematically with games to play.' },
+    { y: 'Apr 26', tag: 'Champions', t: 'Title confirmed', c: 'Beat Sporting Club Catania 10-1 at home on 26 April. League Ten title clinched mathematically with games to play.' },
     { y: 'May 26', tag: 'Perfect', t: 'Unbeaten. Champions.', c: `${t.pl} played. ${t.w} won. ${t.gf} scored. Inaugural season finished with the title and a 100% record.` },
     { y: 'Sep 26', tag: 'Next', t: 'Promoted · 26/27', c: 'New division. Same standard. Trials open over the summer.' },
   ];
@@ -41,7 +41,7 @@ function AboutV2() {
     rec.mostAssists && { label: 'Most assists', num: rec.mostAssists.assists, who: `${rec.mostAssists.first} ${rec.mostAssists.last}` },
     rec.mostApps && { label: 'Most apps', num: rec.mostApps.apps, who: `${rec.mostApps.first} ${rec.mostApps.last}` },
     rec.cleanSheets && { label: 'Clean sheets', num: rec.cleanSheets.cleanSheets, who: `${rec.cleanSheets.first} ${rec.cleanSheets.last}` },
-    rec.big && { label: 'Biggest win', num: `${rec.big.us}–${rec.big.them}`, who: `vs ${rec.big.opp}` },
+    rec.big && { label: 'Biggest win', num: `${rec.big.us}-${rec.big.them}`, who: `vs ${rec.big.opp}` },
     { label: 'Trophies', num: 1, who: 'League Ten 25/26' },
   ].filter(Boolean);
 

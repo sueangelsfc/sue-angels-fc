@@ -8,7 +8,7 @@
 @font-face{font-family:'Hanken Grotesk';src:url('assets/fonts/hanken-700.woff2') format('woff2');font-weight:700;font-style:normal;font-display:optional;}
 @font-face{font-family:'Hanken Grotesk';src:url('assets/fonts/hanken-800.woff2') format('woff2');font-weight:800;font-style:normal;font-display:optional;}
 /* =========================================================================
-   SUE'S ANGELS FC — DIRECTION MOCK (v-next)
+   SUE'S ANGELS FC, DIRECTION MOCK (v-next)
    Fresh visual identity proposal. NOT wired into production yet.
    Type: Clash Display (display/stats) + Hanken Grotesk (body/UI/tables).
    System: premium glassmorphism, volt + navy, light + dark, motion.
@@ -21,7 +21,7 @@
   --m-sans:    'Hanken Grotesk', system-ui, -apple-system, sans-serif;
 
   /* ── ANCHOR COLOURS (locked) ─────────────────────────────────────── */
-  --m-volt:      #D6F23A;   /* accent — fills, rings, active, key numbers */
+  --m-volt:      #D6F23A;   /* accent, fills, rings, active, key numbers */
   --m-volt-2:    #E4FB63;   /* hover/brighter volt */
   --m-navy:      #071D29;   /* deep base / on-volt ink */
 
@@ -32,7 +32,7 @@
   --m-ink-3:     rgba(196,212,222,0.52);
   --m-volt-ink:  #D6F23A;   /* volt-as-TEXT (bright in dark) */
 
-  /* glass tiers — translucent fills + per-tier blur/edge/shadow */
+  /* glass tiers, translucent fills + per-tier blur/edge/shadow */
   --m-glass-1:   rgba(255,255,255,0.05);
   --m-glass-2:   rgba(255,255,255,0.08);
   --m-glass-3:   rgba(10,28,40,0.55);
@@ -79,7 +79,7 @@ html[data-theme="light"] {
 
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--m-bg); overflow-x: hidden; max-width: 100%; }
-/* Fluid root: the whole UI scales continuously with the viewport — bigger on large
+/* Fluid root: the whole UI scales continuously with the viewport, bigger on large
    screens, smaller on small ones (everything sized in rem follows this). */
 html { font-size: clamp(13.5px, 0.5vw + 11.8px, 18px); -webkit-text-size-adjust: 100%; }
 /* Keep form fields at 16px+ on mobile so iOS doesn't zoom on focus */
@@ -189,7 +189,7 @@ html[data-theme="light"] .m-hero__veil {
 .m-hero__stat span { font: 600 0.7rem var(--m-sans); letter-spacing: 0.14em; text-transform: uppercase; color: var(--m-ink-3); }
 
 /* ══════════════════════════════════════════════════════════════════════
-   PLAYER CARD — the showpiece
+   PLAYER CARD, the showpiece
    ══════════════════════════════════════════════════════════════════════ */
 .m-stage { padding: clamp(50px, 8vw, 110px) 0; }
 .m-stage__head { margin-bottom: clamp(26px, 4vw, 46px); }
@@ -341,13 +341,13 @@ html[data-theme="light"] .m-pitch__lines rect, html[data-theme="light"] .m-pitch
 }
 
 /* =========================================================================
-   REVISIONS — pure bright volt (no dirty olive) + hover dynamism + movement
+   REVISIONS, pure bright volt (no dirty olive) + hover dynamism + movement
    ========================================================================= */
 /* Light: volt-as-TEXT was an olive green (fails clean). Volt stays a bright
    FILL everywhere; text that was volt becomes crisp deep navy in light. */
 html[data-theme="light"] { --m-volt-ink: #0A1B27; }
 
-/* solid, bright volt fills — no low-opacity muddiness */
+/* solid, bright volt fills, no low-opacity muddiness */
 .m-bar__fill { background: linear-gradient(90deg, var(--m-volt), var(--m-volt-2)); box-shadow: 0 0 14px rgba(214,242,58,0.55); }
 .m-pctl__fill { background: linear-gradient(90deg, var(--m-volt), var(--m-volt-2)); box-shadow: 0 0 12px rgba(214,242,58,0.5); }
 .m-ring__arc { filter: drop-shadow(0 0 7px rgba(214,242,58,0.7)); }
@@ -371,7 +371,7 @@ html[data-theme="light"] { --m-volt-ink: #0A1B27; }
 .m-wheel:hover { transform: scale(1.015); }
 .m-wheel__svg { width: 100%; max-width: 430px; height: auto; }
 .m-wheel__ring { stroke: var(--m-edge); stroke-width: 1; stroke-dasharray: 3 5; }
-/* pitch heatmap — warm blobs where the player featured most; intensify on hover */
+/* pitch heatmap, warm blobs where the player featured most; intensify on hover */
 .m-pitch__heat { position: absolute; transform: translate(-50%, -50%); border-radius: 50%; pointer-events: none; z-index: 0;
   background: radial-gradient(circle, hsla(calc((1 - var(--heat, 0)) * 78), 95%, 55%, calc(0.28 + 0.5 * var(--heat, 0))) 0%, transparent 66%);
   mix-blend-mode: screen; filter: blur(3px); transition: filter .35s var(--m-ease), opacity .35s var(--m-ease);
@@ -391,7 +391,7 @@ html[data-theme="light"] { --m-volt-ink: #0A1B27; }
 .m-wheel__pct { font-family: var(--m-display); font-weight: 600; font-size: 19px; fill: var(--m-ink-1); }
 .m-wheel__lbl { font: 700 8.5px var(--m-sans); letter-spacing: 0.09em; text-transform: uppercase; fill: var(--m-ink-3); }
 
-/* Contribution breakdown — hover affordance + tooltip */
+/* Contribution breakdown, hover affordance + tooltip */
 .m-wheel { position: relative; }
 .m-wheel__lblg { cursor: pointer; }
 .m-wheel__lblg .m-wheel__pct, .m-wheel__lblg .m-wheel__lbl { transition: fill .18s var(--m-ease); }
@@ -500,7 +500,7 @@ html[data-theme="light"] { --m-volt-ink: #0A1B27; }
 .mh-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: clamp(26px, 4vw, 48px); }
 .mh-head h2 { margin-top: 12px; }
 
-/* season ledger — focal ring + tiles */
+/* season ledger, focal ring + tiles */
 .mh-ledger { display: grid; grid-template-columns: 360px 1fr; gap: clamp(16px, 3vw, 30px); align-items: stretch; }
 .mh-ledger__hero { padding: clamp(24px, 3vw, 40px); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative; overflow: hidden; }
 .mh-ledger__hero::after { content: ''; position: absolute; inset: -40% 30% auto -40%; height: 80%; background: radial-gradient(closest-side, rgba(214,242,58,0.16), transparent); pointer-events: none; }
@@ -613,7 +613,7 @@ html[data-theme="light"] { --m-volt-ink: #0A1B27; }
 .mh-join p { position: relative; margin: 16px auto 0; max-width: 50ch; color: var(--m-ink-2); }
 .mh-join__ctas { position: relative; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 30px; }
 
-/* footer — soft fading divider, no hard full-width line */
+/* footer, soft fading divider, no hard full-width line */
 .mh-footer { padding: clamp(40px, 6vw, 72px) 0; margin-top: clamp(40px, 6vw, 80px); position: relative; }
 .mh-footer::before { content: ''; position: absolute; top: 0; left: 8%; right: 8%; height: 1px; background: linear-gradient(90deg, transparent, var(--m-edge) 20%, var(--m-edge) 80%, transparent); pointer-events: none; }
 .mh-footer__row { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
@@ -671,7 +671,7 @@ html[data-theme="light"] .mh-hero__scrim {
 .mh-lead--mini { min-height: 0; flex-direction: row; padding: 16px 18px; }
 
 /* =========================================================================
-   RICH HERO (preferred layout — elevated) + FEEDBACK PASS
+   RICH HERO (preferred layout, elevated) + FEEDBACK PASS
    ========================================================================= */
 :root { --m-orange-ink: #FF9D42; }
 html[data-theme="light"] { --m-orange-ink: #B25500; }
@@ -703,7 +703,7 @@ html[data-theme="light"] .mh-hero__scrim {
 .mh-route__ic svg { width: 20px; height: 20px; }
 .mh-route b { font-family: var(--m-display); font-weight: 600; text-transform: uppercase; font-size: 1.02rem; letter-spacing: -0.01em; }
 .mh-route span { font: 500 0.74rem var(--m-sans); color: var(--m-ink-3); margin-top: 3px; }
-/* homepage identity tiles — share the site's card styling + hover lift */
+/* homepage identity tiles, share the site's card styling + hover lift */
 .mh-pillar { display: flex; flex-direction: column; gap: 8px; text-align: left; padding: clamp(20px, 2.5vw, 26px); border-radius: var(--m-radius); background: var(--m-glass-2); border: 1px solid var(--m-edge); box-shadow: var(--m-shadow-1), inset 0 1px 0 var(--m-hi); color: inherit; font: inherit; cursor: pointer; transition: transform .3s var(--m-ease), border-color .3s var(--m-ease), box-shadow .35s; }
 .mh-pillar:hover { transform: translateY(-6px); border-color: var(--m-volt); box-shadow: 0 26px 56px -26px rgba(214,242,58,0.3), var(--m-shadow-1); }
 .mh-pillar__body { color: var(--m-ink-2); flex: 1; margin: 0; }
@@ -724,7 +724,7 @@ html[data-theme="light"] .mh-hero__scrim {
 .mh-ocamba__arrow:hover { border-color: var(--m-volt); color: var(--m-volt-ink); transform: translateY(-2px); }
 .mh-ocamba__arrow:active { transform: translateY(0); }
 .mh-ocamba .mh-pillrail { margin: 0; padding-top: 6px; }
-/* Award winner cards — player face + frosted award panel + 3D tilt (data-tilt) */
+/* Award winner cards, player face + frosted award panel + 3D tilt (data-tilt) */
 .mh-awgrid { gap: clamp(13px, 2vw, 18px); }
 .mh-awcard { position: relative; aspect-ratio: 3 / 4; border-radius: var(--m-radius); overflow: hidden; padding: 0; text-align: left; border: 1px solid var(--m-edge); background: var(--m-glass-2); color: inherit; font: inherit; cursor: pointer; transform-style: preserve-3d; will-change: transform; transition: transform .3s var(--m-ease), box-shadow .4s, border-color .3s; box-shadow: var(--m-shadow-1); }
 .mh-awcard__photo { position: absolute; inset: 0; }
@@ -1139,7 +1139,7 @@ html[data-theme="light"] .ma__honour svg { color: var(--m-volt-ink); }
 .mp-pb__stat span { display: block; margin-top: 5px; font: 600 0.52rem var(--m-sans); letter-spacing: 0.1em; text-transform: uppercase; color: var(--m-ink-3); }
 .mp-pb__cta { width: 100%; justify-content: center; margin-top: 14px; padding: 11px; font-size: 0.82rem; }
 
-/* flip back face — locked dark in BOTH themes so stats stay readable in light mode */
+/* flip back face, locked dark in BOTH themes so stats stay readable in light mode */
 .mp-player__back, html[data-theme="light"] .mp-player__back { background: linear-gradient(170deg, #143f52, #04121c) !important; }
 .mp-player__back .mp-pb__num { color: var(--m-volt) !important; }
 .mp-player__back .mp-pb__id b, .mp-player__back .mp-pb__stat b { color: #fff !important; }
@@ -1189,7 +1189,7 @@ html[data-theme="light"] .mp-sp:hover { border-color: var(--m-volt); box-shadow:
 .mp-sp__nums span { font:700 0.55rem var(--m-sans); letter-spacing:0.08em; text-transform:uppercase; color: var(--m-ink-3); }
 @media (max-width:720px){ .mp-sp__grid { grid-template-columns: repeat(2,1fr); } }
 
-/* past players — split into Retired / Departed sections */
+/* past players, split into Retired / Departed sections */
 .mp-paststack { display: flex; flex-direction: column; }
 .mp-paststack + .mp-paststack { margin-top: clamp(30px, 5vw, 56px); }
 .mp-pasthead { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 0 0 18px; font-family: var(--m-display); font-weight: 600; text-transform: uppercase; letter-spacing: -0.01em; font-size: clamp(1.3rem, 2.4vw, 1.9rem); color: var(--m-ink-1); }
@@ -1431,7 +1431,7 @@ html[data-theme="light"] .mh-join { background: radial-gradient(150% 150% at 0% 
 .m-albumbox__nav:hover { background: var(--m-volt); color: var(--m-navy); border-color: transparent; }
 /* light-mode Media readability: solid cards, covers stay dark so white text reads */
 html[data-theme="light"] .mp-news { background: #ffffff; border-color: rgba(8,22,32,0.14); box-shadow: 0 14px 34px -22px rgba(20,44,66,0.28); }
-/* Covers stay DARK in light mode too — the white badges, "VS", score and volt
+/* Covers stay DARK in light mode too, the white badges, "VS", score and volt
    labels need a dark scorecard behind them to read clearly on a white card. */
 html[data-theme="light"] .mp-news__cover, html[data-theme="light"] .mp-news__cover--score { background: radial-gradient(120% 120% at 50% 0%, rgba(20,56,73,0.9), rgba(4,18,27,0.98)); }
 html[data-theme="light"] .mp-news__sc b { color: #fff; }
@@ -1525,7 +1525,7 @@ html[data-theme="light"] .ts-form__cell--l b { color: #c0392b; }
 @media (prefers-reduced-motion: reduce) { .ts-wdl i, .ts-goals__for, .ts-goals__ag { transition: none; } .ts-form__cell:hover, .mp-sp:hover { transform: none; } }
 
 /* =========================================================================
-   MOBILE HARDENING — site-wide pass (≤760 / ≤600 / ≤430)
+   MOBILE HARDENING, site-wide pass (≤760 / ≤600 / ≤430)
    Prevents horizontal overflow and stacks every dense component cleanly.
    ========================================================================= */
 
@@ -1619,12 +1619,12 @@ h1, h2, h3, p, span, b, a, li { overflow-wrap: anywhere; }
 }
 
 /* =========================================================================
-   MOBILE FIX PASS 2 — results/champions overflow, cover sizing, squad fill
+   MOBILE FIX PASS 2, results/champions overflow, cover sizing, squad fill
    ========================================================================= */
 
-/* Results & fixtures grid: bulletproof responsive — columns never wider than
+/* Results & fixtures grid: bulletproof responsive, columns never wider than
    the screen (min(100%, …)), so it collapses to 1 column on phones with NO
-   horizontal overflow, and gives 2–3 columns on larger screens. */
+   horizontal overflow, and gives 2-3 columns on larger screens. */
 .mp-results { display: grid; gap: 16px;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); }
 /* let result-card team names ellipsis instead of forcing the card wide */

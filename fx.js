@@ -1,4 +1,4 @@
-/* fx.js — delayed volt glow that trails the cursor across hero/CTA panels.
+/* fx.js, delayed volt glow that trails the cursor across hero/CTA panels.
    Event-delegated so it works on React-rendered nodes without recompiling.
    Sets --gx/--gy (eased) on the hovered panel; CSS paints a radial volt glow. */
 (function () {

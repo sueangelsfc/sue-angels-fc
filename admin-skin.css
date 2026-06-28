@@ -1,6 +1,6 @@
-/* admin-skin.css — control-panel theme: SIMPLE WHITE · BLACK · ORANGE.
+/* admin-skin.css, control-panel theme: SIMPLE WHITE · BLACK · ORANGE.
    Loaded LAST in admin.html so it overrides colors_and_type.css + site.css +
-   redesign.css without touching them. Admin-only — the public site keeps its
+   redesign.css without touching them. Admin-only, the public site keeps its
    volt-green identity. Clean and flat (no heavy glass), light in both themes. */
 
 :root {
@@ -25,7 +25,7 @@
   --volt-glow:      #FF7C36;
   --volt-deep:      #C24E12;
   --volt-on:        #FFFFFF;
-  --volt-ink:       #C24E12;   /* orange used as text — readable on white */
+  --volt-ink:       #C24E12;   /* orange used as text, readable on white */
   --navy:           #FFFFFF;
   --navy-deep:      #FFFFFF;
   --navy-rise:      #FFFFFF;
@@ -92,7 +92,7 @@ body, .rd-lead, p, label, input, textarea, select, button {
   box-shadow: 0 1px 2px rgba(20,23,26,0.04), 0 10px 28px -18px rgba(20,23,26,0.20) !important;
 }
 
-/* buttons — solid orange, white text */
+/* buttons, solid orange, white text */
 .rd-btn { border-radius: 9999px !important; font-weight: 700 !important; transition: background .18s ease, transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
 .rd-btn--volt,
 html[data-theme="light"] .rd-btn--volt,
@@ -113,7 +113,7 @@ html[data-theme="dark"] .rd-btn--volt {
 .cms__navbtn:hover { background: var(--surface-2) !important; color: var(--fg-1) !important; transform: none !important; }
 .cms__navbtn.is-active { background: var(--o-orange) !important; color: #FFFFFF !important; border-color: var(--o-orange) !important; box-shadow: none !important; }
 
-/* form fields — white, grey border, orange focus ring */
+/* form fields, white, grey border, orange focus ring */
 .rd-field input, .rd-field textarea, .rd-field select,
 input[type="text"], input[type="email"], input[type="number"], input[type="date"], input[type="search"], input[type="url"], textarea, select {
   background: #FFFFFF !important; color: var(--fg-1) !important;
@@ -138,7 +138,7 @@ input:focus, textarea:focus, select:focus {
 .cms__navgroup:first-child { margin-top: 4px; }
 
 /* ════════════════════════════════════════════════════════════════════════
-   VISIBILITY PASS — stronger contrast + light floating admin bar.
+   VISIBILITY PASS, stronger contrast + light floating admin bar.
    ════════════════════════════════════════════════════════════════════════ */
 
 /* darken muted/secondary text so instructions read clearly on white */

@@ -1,4 +1,4 @@
-// PlayerProfile.jsx — rich, interactive modal player detail panel.
+// PlayerProfile.jsx, rich, interactive modal player detail panel.
 // Tabs: Overview · Form & Trends · Achievements · Match History
 // Includes auto-generated season narrative, animated SVG charts, achievement
 // badges and a chronological performance timeline.
@@ -77,7 +77,7 @@ function generateNarrative(base, stats, matchLog, blanket) {
   const lastOpp = (lastUsHome ? last.r.away : last.r.home).replace(' FC', '');
   const lastUs   = lastUsHome ? last.r.hs : last.r.as;
   const lastThem = lastUsHome ? last.r.as : last.r.hs;
-  const lastScore = last.r.kind === 'walkover' ? last.r.wo : `${lastUs}–${lastThem}`;
+  const lastScore = last.r.kind === 'walkover' ? last.r.wo : `${lastUs}-${lastThem}`;
   const lastContribBits = [];
   if (last.goals > 0) lastContribBits.push(`${last.goals === 1 ? 'a goal' : last.goals + ' goals'}`);
   if (last.asts  > 0) lastContribBits.push(`${last.asts  === 1 ? 'an assist' : last.asts + ' assists'}`);
@@ -106,7 +106,7 @@ function generateNarrative(base, stats, matchLog, blanket) {
 
   if (stats.mostPlayedPosition) {
     if (stats.positionBreakdown.length > 1) {
-      pieces.push(`Most often at ${stats.mostPlayedPosition}, though the gaffer has trusted ${firstName} across ${stats.positionBreakdown.length} positions — the kind of versatility a title run needs.`);
+      pieces.push(`Most often at ${stats.mostPlayedPosition}, though the gaffer has trusted ${firstName} across ${stats.positionBreakdown.length} positions, the kind of versatility a title run needs.`);
     } else {
       pieces.push(`Locked into the ${stats.mostPlayedPosition} role and never let it go.`);
     }
@@ -125,15 +125,15 @@ function generateNarrative(base, stats, matchLog, blanket) {
   }
 
   if (matchLog.length >= 5) {
-    if (winPct === 100)    pieces.push(`Sue’s Angels FC are unbeaten with ${firstName} on the pitch this season — ${matchLog.length} games, ${matchLog.length} wins. Make of that what you will.`);
+    if (winPct === 100)    pieces.push(`Sue’s Angels FC are unbeaten with ${firstName} on the pitch this season, ${matchLog.length} games, ${matchLog.length} wins. Make of that what you will.`);
     else if (winPct >= 80) pieces.push(`A ${winPct}% win rate when ${firstName} features. The numbers speak.`);
   }
 
-  if (stats.motm >= 3)      pieces.push(`${stats.motm} Man of the Match awards on the mantelpiece — the squad recognises what the numbers can’t fully capture.`);
+  if (stats.motm >= 3)      pieces.push(`${stats.motm} Man of the Match awards on the mantelpiece, the squad recognises what the numbers can’t fully capture.`);
   else if (stats.motm > 0)  pieces.push(`${stats.motm === 1 ? 'A Man of the Match award' : `${stats.motm} Man of the Match awards`} already this season.`);
-  if (stats.captained > 0)  pieces.push(`Worn the armband ${stats.captained} ${stats.captained === 1 ? 'time' : 'times'} — trust earned, not given.`);
+  if (stats.captained > 0)  pieces.push(`Worn the armband ${stats.captained} ${stats.captained === 1 ? 'time' : 'times'}, trust earned, not given.`);
   if (stats.penaltiesScored > 0) pieces.push(`${stats.penaltiesScored} from the spot. Ice in the veins.`);
-  if (stats.rc > 0)         pieces.push(`A red card to learn from this season — ${stats.rc === 1 ? 'one' : stats.rc} of them.`);
+  if (stats.rc > 0)         pieces.push(`A red card to learn from this season, ${stats.rc === 1 ? 'one' : stats.rc} of them.`);
   else if (stats.yc + stats.rc === 0 && stats.apps >= 5) pieces.push(`And in ${stats.apps} appearances, not a single card. Disciplined, ruthless.`);
 
   return pieces.join(' ');
@@ -148,7 +148,7 @@ function detectAchievements(stats, matchLog) {
   // Brace
   const braceCount = matchLog.filter((m) => m.goals === 2).length;
   if (braceCount > 0) badges.push({ icon: '⚽⚽', label: 'BRACE COLLECTOR', sub: `${braceCount} ${braceCount === 1 ? 'brace' : 'braces'} this season` });
-  // Iron man — appeared in 80%+ of played matches
+  // Iron man, appeared in 80%+ of played matches
   const totalPlayed = (window.SEASON_RESULTS || []).filter((r) => window.loadMatchEntry && window.loadMatchEntry(r.id)).length;
   if (totalPlayed >= 5 && stats.apps / totalPlayed >= 0.8) badges.push({ icon: '🦾', label: 'IRON MAN', sub: `${stats.apps} of ${totalPlayed} logged games` });
   // Playmaker
@@ -285,7 +285,7 @@ function WinGauge({ w, d, l }) {
   );
 }
 
-// Form ribbon — chronological W/D/L pills (most recent right).
+// Form ribbon, chronological W/D/L pills (most recent right).
 function FormRibbon({ matchLog }) {
   if (matchLog.length === 0) return <div className="pp-empty">No matches yet.</div>;
   const reverse = [...matchLog].reverse(); // oldest first
@@ -312,7 +312,7 @@ function FormRibbon({ matchLog }) {
   );
 }
 
-// Contribution timeline — vertical bars for goals + assists per match (chronological).
+// Contribution timeline, vertical bars for goals + assists per match (chronological).
 function ContributionTimeline({ matchLog }) {
   if (matchLog.length === 0) return <div className="pp-empty">No matches yet.</div>;
   const reverse = [...matchLog].reverse();
@@ -360,8 +360,8 @@ function MatchLogRow({ entry, onSelect }) {
   const compShort = (r.competition || '').includes('League') ? 'LG' : (r.round || 'CUP');
   let scoreText;
   if (r.kind === 'walkover') scoreText = r.wo;
-  else if (r.kind === 'penalty' && r.pens) scoreText = `${r.hs}–${r.as} (p ${r.pens.hs}–${r.pens.as})`;
-  else scoreText = `${r.hs}–${r.as}`;
+  else if (r.kind === 'penalty' && r.pens) scoreText = `${r.hs}-${r.as} (p ${r.pens.hs}-${r.pens.as})`;
+  else scoreText = `${r.hs}-${r.as}`;
 
   return (
     <div className={`pp-log pp-log--${entry.result.toLowerCase()}`}>
@@ -395,12 +395,12 @@ function MatchLogRow({ entry, onSelect }) {
 // ─── Main modal component ────────────────────────────────────────────────
 function PlayerProfile({ playerNum, onClose }) {
   const [tab, setTab] = React.useState('overview');
-  // Story toggle inside the BIO/SEASON STORY card — viewers can flip between
+  // Story toggle inside the BIO/SEASON STORY card, viewers can flip between
   // the auto-generated season narrative and a manually-written player bio.
   const [storyMode, setStoryMode] = React.useState('season');
-  // Competition filter — applies to stats + match log + narrative + form bar.
+  // Competition filter, applies to stats + match log + narrative + form bar.
   const [comp, setComp] = React.useState('all');
-  // Season filter — defaults to the current season. 'all' aggregates lifetime.
+  // Season filter, defaults to the current season. 'all' aggregates lifetime.
   const [season, setSeason] = React.useState(window.CURRENT_SEASON || '25/26');
   if (!playerNum) return null;
   const base = window.SQUAD.find((p) => p.num === playerNum);
@@ -465,7 +465,7 @@ function PlayerProfile({ playerNum, onClose }) {
           </div>
         </header>
 
-        {/* Competition + Season filters — League / Cup / All + 25/26 / All */}
+        {/* Competition + Season filters, League / Cup / All + 25/26 / All */}
         <div className="pp-comp-filter">
           <span className="pp-comp-filter__lbl t-eyebrow">SEASON</span>
           <div className="filters">
@@ -536,7 +536,7 @@ function PlayerProfile({ playerNum, onClose }) {
           }
         </div>
 
-        {/* KPI strip — grouped into clean labelled blocks rather than one long
+        {/* KPI strip, grouped into clean labelled blocks rather than one long
             ragged row. Each group is a titled cluster; the headline number in
             each group is volt. Conditional metrics only appear when non-zero. */}
         <div className="pp-kpi">

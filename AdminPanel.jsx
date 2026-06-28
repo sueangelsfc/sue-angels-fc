@@ -53,7 +53,7 @@ function CmsArticles() {
             if (cur && opts.indexOf(cur) < 0) opts = [cur].concat(opts);
             return (
               <select defaultValue={cur} onChange={(e) => { if (window.setReportSponsor) window.setReportSponsor(e.target.value); }} style={{ width: '100%', padding: '9px 11px', borderRadius: 8, border: '1px solid rgba(0,0,0,.18)', fontSize: 13, fontFamily: 'inherit', background: '#fff' }}>
-                <option value="">None — no sponsor on reports</option>
+                <option value="">None, no sponsor on reports</option>
                 {opts.map((o) => <option key={o} value={o}>{o}</option>)}
               </select>
             );
@@ -94,14 +94,14 @@ function CmsMatchData() {
     const c = isFixture ? null : completeness(item);
     const label = isFixture
       ? `${item.home} vs ${item.away} · ${item.day || ''} ${item.date || ''} ${item.mon || ''} · ${item.comp || ''}`
-      : `${item.home} ${item.kind === 'walkover' ? item.wo : (item.hs + '–' + item.as)} ${item.away} · ${item.date} · ${item.competition || ''}`;
+      : `${item.home} ${item.kind === 'walkover' ? item.wo : (item.hs + '-' + item.as)} ${item.away} · ${item.date} · ${item.competition || ''}`;
     const open = openId === item.id;
     return (
       <div className="cms-match" key={item.id}>
         <button className="cms-match__head" onClick={() => setOpenId(open ? null : item.id)}>
           <span className="cms-match__lbl">{label}</span>
           {c ? <span className="cms-prog">{[['XI', c.hasXI], ['Goals', c.scorersOk], ['MOTM', c.hasMOTM]].map(([l, ok]) => <span key={l} className={`cms-prog__pill ${ok ? 'is-ok' : 'is-miss'}`}>{l}</span>)}</span> : null}
-          <span className="cms-match__chev">{open ? '–' : 'Edit'}</span>
+          <span className="cms-match__chev">{open ? '-' : 'Edit'}</span>
         </button>
         {!isFixture && window.MediaUploader ? <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', flexWrap: 'wrap' }}>{(window.getArticleCover && window.getArticleCover(item.id)) ? <img src={window.getArticleCover(item.id)} alt="" style={{ width: 72, height: 44, objectFit: 'cover', borderRadius: 8, border: '1px solid rgba(255,255,255,0.14)' }} /> : null}<window.MediaUploader label={(window.getArticleCover && window.getArticleCover(item.id)) ? 'Replace report cover' : 'Add report cover'} onPick={(d) => { Promise.resolve(window.setArticleCover(item.id, d)).then(() => { try { window.dispatchEvent(new CustomEvent('sa-media-changed')); } catch (e) {} force((n) => n + 1); }); }} />{(window.getArticleCover && window.getArticleCover(item.id)) ? <button className="rd-btn rd-btn--ghost rd-btn--sm" onClick={() => { Promise.resolve(window.setArticleCover(item.id, '')).then(() => { try { window.dispatchEvent(new CustomEvent('sa-media-changed')); } catch (e) {} force((n) => n + 1); }); }}>Remove cover</button> : null}<span className="cms-row__d" style={{ textTransform: 'none', letterSpacing: 0 }}>Fills the match-report card on the Media page.</span></div> : null}
         {open && window.MatchEntry ? <div className="cms-match__body"><window.MatchEntry matchId={item.id} matchLabel={label} /></div> : null}
@@ -588,7 +588,7 @@ function CmsHero() {
   const shown = usingCustom ? imgs : defaults;
   return (
     <div>
-      <div className="cms-sec__head"><div><h2 className="rd-h3">Hero banner photos</h2><p className="cms-sec__sub">The rotating photos behind the homepage hero. {usingCustom ? 'Your photos are live — the defaults are hidden.' : 'Currently showing the 12 default photos. Add your own to take over the rotation.'} Reload the homepage to see changes.</p></div></div>
+      <div className="cms-sec__head"><div><h2 className="rd-h3">Hero banner photos</h2><p className="cms-sec__sub">The rotating photos behind the homepage hero. {usingCustom ? 'Your photos are live, the defaults are hidden.' : 'Currently showing the 12 default photos. Add your own to take over the rotation.'} Reload the homepage to see changes.</p></div></div>
       <div className="rd-card" style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         {window.MediaUploader ? <window.MediaUploader label="Add a hero photo" onPick={(d) => save([...imgs, d])} /> : null}
         {usingCustom ? <button className="rd-btn rd-btn--ghost rd-btn--sm" onClick={() => save([])}>Restore default photos</button> : null}
@@ -674,7 +674,7 @@ function CmsCovers() {
   const posts = articles.concat(reports);
   return (
     <div>
-      <div className="cms-sec__head"><div><h2 className="rd-h3">Post covers</h2><p className="cms-sec__sub">Build a badge / scorecard cover for any Media post. Add badges to your library, then pick them per post. Match reports already auto-generate — use this to customise or to give articles a cover.</p></div></div>
+      <div className="cms-sec__head"><div><h2 className="rd-h3">Post covers</h2><p className="cms-sec__sub">Build a badge / scorecard cover for any Media post. Add badges to your library, then pick them per post. Match reports already auto-generate, use this to customise or to give articles a cover.</p></div></div>
       <div className="rd-card" style={{ marginBottom: 18 }}>
         <p className="rd-eyebrow">Badge library</p>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'flex-start', marginTop: 10 }}>
@@ -695,7 +695,7 @@ function CmsCovers() {
         <div className="cms-match" key={p.id}>
           <button className="cms-match__head" onClick={() => setOpenId(openId === p.id ? null : p.id)}>
             <span className="cms-match__lbl">{p.title} · <span style={{ opacity: 0.6 }}>{p.sub}</span></span>
-            <span className="cms-match__chev">{(window.getPostCover && window.getPostCover(p.id)) ? '✓ Custom' : (openId === p.id ? '–' : 'Cover')}</span>
+            <span className="cms-match__chev">{(window.getPostCover && window.getPostCover(p.id)) ? '✓ Custom' : (openId === p.id ? '-' : 'Cover')}</span>
           </button>
           {openId === p.id ? <CoverBuilder post={p} library={library} /> : null}
         </div>
@@ -715,7 +715,7 @@ function CmsVideos() {
   const moveVideo = (id, dir) => { const xs = vids.slice(); const i = xs.findIndex((x) => x.id === id); const j = i + (dir === 'up' ? -1 : 1); if (i < 0 || j < 0 || j >= xs.length) return; const t = xs[i]; xs[i] = xs[j]; xs[j] = t; save(xs); };
   return (
     <div>
-      <div className="cms-sec__head"><div><h2 className="rd-h3">Videos</h2><p className="cms-sec__sub">Add a clip — a YouTube link or a direct .mp4 URL — and file it under a <b>sub-section</b>. Each section becomes its own tab under Media &rarr; Videos, and the cover auto-generates from the badges.</p></div></div>
+      <div className="cms-sec__head"><div><h2 className="rd-h3">Videos</h2><p className="cms-sec__sub">Add a clip, a YouTube link or a direct .mp4 URL, and file it under a <b>sub-section</b>. Each section becomes its own tab under Media &rarr; Videos, and the cover auto-generates from the badges.</p></div></div>
       <div className="rd-card" style={{ display: 'grid', gap: 12, marginBottom: 16 }}>
         <label className="rd-field"><span>Title</span><input value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} placeholder="e.g. Osunkoya screamer vs Catania" /></label>
         <label className="rd-field"><span>Video URL</span><input value={f.url} onChange={(e) => setF({ ...f, url: e.target.value })} placeholder="YouTube link or .mp4 URL" /></label>
@@ -771,7 +771,7 @@ function CmsRecognition() {
     ['clubCaptainPlayerId', 'viceCaptainPlayerId', 'thirdChoiceCaptainPlayerId'].forEach((k) => { if (rec[k]) { rec[k] = parseInt(rec[k], 10); rec[k.replace('PlayerId', 'Name')] = pname(rec[k]); } });
     ['statApps', 'statGoals', 'statAssists', 'statCleanSheets', 'statMotm'].forEach((k) => { if (rec[k] === '' || rec[k] == null) delete rec[k]; else rec[k] = parseInt(rec[k], 10) || 0; });
     if (rec.order === '' || rec.order == null) { delete rec.order; } else { const _o = parseInt(rec.order, 10); if (_o > 0) rec.order = _o; else delete rec.order; }
-    Promise.resolve(window.saveRecognition(rec)).then(() => { setF(Object.assign({}, blank)); bump(); }).catch(() => { alert('Could not save right now — please check your connection and try again.'); });
+    Promise.resolve(window.saveRecognition(rec)).then(() => { setF(Object.assign({}, blank)); bump(); }).catch(() => { alert('Could not save right now, please check your connection and try again.'); });
   };
   const del = (id) => { if (window.confirm('Delete this entry?')) Promise.resolve(window.deleteRecognition(id)).then(bump).catch(() => {}); };
   const edit = (r) => { setF(Object.assign({}, r)); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {} };
@@ -795,11 +795,11 @@ function CmsRecognition() {
   let body = null;
   if (f.type === 'potm') body = (<React.Fragment>
     <div className="rd-form__row"><label className="rd-field"><span>Month</span><select value={f.month || ''} onChange={(e) => set('month', e.target.value)}><option value="">Select month</option>{months.map((m) => <option key={m} value={m}>{m}</option>)}</select></label>{seasonSel}</div>
-    <label className="rd-field"><span>Order in season (optional)</span><input type="number" min="1" value={f.order != null ? f.order : ''} onChange={(e) => set('order', e.target.value)} placeholder="e.g. 1 = first POTM of the season — sets the tab order on the Awards page" /></label>
+    <label className="rd-field"><span>Order in season (optional)</span><input type="number" min="1" value={f.order != null ? f.order : ''} onChange={(e) => set('order', e.target.value)} placeholder="e.g. 1 = first POTM of the season, sets the tab order on the Awards page" /></label>
     {playerSel('Winner', 'playerId')}
     <label className="rd-field"><span>Position (optional)</span><input value={f.position || ''} onChange={(e) => set('position', e.target.value)} placeholder="e.g. Left centre-back" /></label>
     <label className="rd-field"><span>Reason for winning</span><textarea rows="3" value={f.reason || ''} onChange={(e) => set('reason', e.target.value)} placeholder="Why they won this month" /></label>
-    <p className="cms-sec__sub">Appearances, goals, assists, clean sheets and Man of the Match awards for the month pull in automatically from the match data — no need to type them.</p>
+    <p className="cms-sec__sub">Appearances, goals, assists, clean sheets and Man of the Match awards for the month pull in automatically from the match data, no need to type them.</p>
     <label className="rd-field"><span>Quote (optional)</span><textarea rows="2" value={f.quote || ''} onChange={(e) => set('quote', e.target.value)} /></label>
     {imgField}
   </React.Fragment>);

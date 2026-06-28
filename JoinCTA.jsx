@@ -1,4 +1,4 @@
-// JoinCTA.jsx — bottom volt block with multi-CTA, links to /join.html for the full form page
+// JoinCTA.jsx, bottom volt block with multi-CTA, links to /join.html for the full form page
 function JoinCTA() {
   return (
     <section id="join-cta" className="section section--compact join">

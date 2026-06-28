@@ -1,11 +1,11 @@
-// AdminMode.jsx — site-wide admin gate.
+// AdminMode.jsx, site-wide admin gate.
 //
 // SECURITY MODEL
 // ──────────────
 // • CLOUD mode (live site, Supabase configured): admin mode is ONLY on when a
 //   visitor is signed in via Supabase Auth AND their email matches
 //   SUPABASE_CONFIG.adminEmail. There is NO ?admin=1 / hotkey backdoor in cloud
-//   mode — the public cannot turn admin on. The footer "Admin" link opens a
+//   mode, the public cannot turn admin on. The footer "Admin" link opens a
 //   login form. Even if someone forced the flag, Supabase RLS rejects every
 //   write from a non-authenticated session, so live data stays safe.
 // • LOCAL mode (design preview, no Supabase): falls back to the simple
@@ -35,7 +35,7 @@
     if (existing) existing.remove();
     if (!window.__sa_admin) return;
     if (!document.body) return;
-    return; // floating "ADMIN ON · LOG OUT" pill removed — admins use the control panel Sign out
+    return; // floating "ADMIN ON · LOG OUT" pill removed, admins use the control panel Sign out
     const el = document.createElement('button');
     el.id = 'sa-admin-pill';
     el.textContent = CLOUD ? 'ADMIN ON · LOG OUT' : 'ADMIN ON · ⌘⇧A';
@@ -89,7 +89,7 @@
       } catch (e) {}
       emit();
     };
-    // Footer link calls window.openAdmin() — in local mode just toggle.
+    // Footer link calls window.openAdmin(), in local mode just toggle.
     window.openAdmin = function () {
       window.setAdmin(!window.__sa_admin);
     };
@@ -300,7 +300,7 @@
     return on;
   };
 
-  // AdminSlot — wraps any admin-only edit UI. Hidden for visitors.
+  // AdminSlot, wraps any admin-only edit UI. Hidden for visitors.
   window.AdminSlot = function ({
     title,
     children

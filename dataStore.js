@@ -252,7 +252,7 @@
         });
         if (res.status === 201 || res.status === 204) supaOk = true;
         else if (res.status === 409) { supaOk = true; duplicate = true; } // already signed up
-      } catch (e) { /* network — fall through to MailerLite */ }
+      } catch (e) { /* network, fall through to MailerLite */ }
     }
 
     // 2) Push to the email platform (MailerLite) for sending + automation.
@@ -264,7 +264,7 @@
         body: JSON.stringify({ email, name: String(name || '').trim() }),
       });
       if (r.ok) { const j = await r.json().catch(() => ({})); mlOk = !!(j && j.ok); if (j && j.duplicate) duplicate = true; }
-    } catch (e) { /* function missing / offline — Supabase copy still stands */ }
+    } catch (e) { /* function missing / offline, Supabase copy still stands */ }
 
     if (supaOk || mlOk) return { ok: true, duplicate };
     return { ok: false, reason: 'failed' };
@@ -420,7 +420,7 @@
     return arr;
   };
   window.saveClubVideos = (arr) => window.dataStore.playerPhotos.set('media:videos', arr || []);
-  // Video sub-sections — the backend files each video under one of these, and the
+  // Video sub-sections, the backend files each video under one of these, and the
   // public Media → Videos tab shows a sub-tab per section that has clips. Add/rename
   // freely here (one list, used by both the site and the admin).
   window.VIDEO_CATEGORIES = ['Match Highlights', 'Match Gallery', 'Interviews', 'Behind the Scenes'];

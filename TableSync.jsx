@@ -1,18 +1,18 @@
-// TableSync.jsx — hourly auto-fetch of the FA Fulltime league table.
+// TableSync.jsx, hourly auto-fetch of the FA Fulltime league table.
 //
-// IMPORTANT — CORS LIMITATION:
+// IMPORTANT, CORS LIMITATION:
 // FA Fulltime (https://fulltime.thefa.com) does NOT serve a public JSON API
 // and does NOT set CORS headers, so a browser cannot fetch their page
 // directly from this domain. We work around it with a public read-only CORS
 // proxy (allorigins.win) as a best-effort. The proxy occasionally rate-limits
-// or goes down — when it does, we fall back to the hardcoded RAW_TABLE.
+// or goes down, when it does, we fall back to the hardcoded RAW_TABLE.
 //
 // FOR PRODUCTION (Wix Studio): replace `PROXIED_URL` with a Wix backend
 // function (corvid web module) that performs the fetch server-side. That
 // removes the proxy dependency and lets you parse the HTML on your own
 // infrastructure on a one-hour Wix scheduled job.
 
-// IMPORTANT — TWO MODES:
+// IMPORTANT, TWO MODES:
 //
 // (1) PRODUCTION (Wix Studio):
 //   - Deploy wix-backend/ to your Wix site (see wix-backend/README.md).
@@ -42,7 +42,7 @@ const STALE_MS   = 24 * 60 * 60 * 1000; // 1 day max before falling back
 function parseFulltimeHtml(html) {
   try {
     const doc = new DOMParser().parseFromString(html, 'text/html');
-    // FA Fulltime markup uses several possible class names — try a few.
+    // FA Fulltime markup uses several possible class names, try a few.
     const table = doc.querySelector('table.standings, table.leagueTable, table.fixturesAndResults, table[summary*="standings" i]')
               || Array.from(doc.querySelectorAll('table')).find((t) => /pos|points/i.test(t.textContent || ''));
     if (!table) return null;
@@ -131,7 +131,7 @@ window.startTableSync = function () {
   setInterval(run, REFRESH_MS);
 };
 
-// React hook — returns the current RAW_TABLE and re-renders on sa-table-updated.
+// React hook, returns the current RAW_TABLE and re-renders on sa-table-updated.
 window.useLeagueTable = function () {
   const [table, setTable] = React.useState(window.RAW_TABLE);
   React.useEffect(() => {

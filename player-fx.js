@@ -1,5 +1,5 @@
 /* player-fx.js
-   1) Invisible backend — Cmd/Ctrl+Shift+A opens the CMS (admin.html). No visible link.
+   1) Invisible backend, Cmd/Ctrl+Shift+A opens the CMS (admin.html). No visible link.
    2) Squad cards cycle through each player's tagged photos (main headshot + the
       player's gallery added in the CMS) every 5 minutes, with a soft crossfade. */
 (function () {
@@ -48,7 +48,7 @@
   setInterval(rotate, 300000); // every 5 minutes
 })();
 
-/* admin logout — floating "Sign out" button, only visible when signed in */
+/* admin logout, floating "Sign out" button, only visible when signed in */
 (function () {
   function isAdmin() { try { return window.__sa_admin === true || localStorage.getItem('sa-admin') === '1'; } catch (e) { return false; } }
   function mount() {

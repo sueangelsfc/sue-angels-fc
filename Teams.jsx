@@ -42,7 +42,7 @@ function PlayerCardFull({ p, onOpen }) {
         )}
         {admin && window.PhotoUploader && (
           // The whole pill bar sits in a corner overlay. Clicking pops the
-          // hidden file input — we stop propagation so the surrounding card
+          // hidden file input, we stop propagation so the surrounding card
           // doesn't also fire its onOpen handler.
           <div className="player-card__admin-photo" onClick={(e) => e.stopPropagation()}>
             <PhotoUploader playerNum={p.num} compact />
@@ -64,7 +64,7 @@ function PlayerCardFull({ p, onOpen }) {
             </div>
           ))}
         </div>
-        {/* Bio slot — populated when window.PLAYER_BIOS[p.num] is set. Leaving
+        {/* Bio slot, populated when window.PLAYER_BIOS[p.num] is set. Leaving
             the element in the DOM so the card height is consistent across the
             squad as bios get added one at a time. */}
         <div className="player-card__bio">
@@ -168,14 +168,14 @@ function StatLeaderRow({ rank, p, value, label }) {
 function EmptyLeader({ label }) {
   return (
     <div className="leader-row" style={{ opacity: 0.6 }}>
-      <span className="leader-row__rank">—</span>
+      <span className="leader-row__rank">-</span>
       <span className="leader-row__name" style={{ color: 'var(--fg-3)' }}>No data yet</span>
       <span className="leader-row__l">{label}</span>
     </div>
   );
 }
 
-// Leaderboards — sortable stats table with avatar column.
+// Leaderboards, sortable stats table with avatar column.
 // Columns are bucketed: Player / Apps / Goals (subtotals) / Creativity / Discipline.
 function LeaderRowPhoto({ num }) {
   const photo = window.usePlayerPhoto ? window.usePlayerPhoto(num) : null;
@@ -397,9 +397,9 @@ function Teams() {
 
   const formation = window.detectFormation ? window.detectFormation() : null;
 
-  // Team stats tiles — grouped by theme. Each tile renders with a position-coded
+  // Team stats tiles, grouped by theme. Each tile renders with a position-coded
   // accent so the grid feels alive, not a wall of numbers.
-  // (Total apps removed — the headline is matches + squad + per-player work.)
+  // (Total apps removed, the headline is matches + squad + per-player work.)
   const statsAttack = [
     { l: 'GOALS',           v: totalGoals,    accent: 'volt' },
     { l: 'ASSISTS',         v: totalAssists,  accent: 'volt' },
@@ -464,7 +464,7 @@ function Teams() {
                 return { ...g, players };
               });
               const leftover = squad.filter((p) => !placed.has(p.num));
-              if (leftover.length) sections.push({ key: 'other', label: 'SQUAD', short: '—', players: leftover });
+              if (leftover.length) sections.push({ key: 'other', label: 'SQUAD', short: '-', players: leftover });
               return sections.filter((s) => s.players.length > 0).map((s) => (
                 <div key={s.key} className="squad-pos-group">
                   <div className="squad-pos-divider">
@@ -503,7 +503,7 @@ function Teams() {
         <section className="section" style={{ paddingTop: 'var(--sp-6)' }}>
           <div className="container">
 
-            {/* Competition split toggle — All / League / Cups (cups combined) */}
+            {/* Competition split toggle, All / League / Cups (cups combined) */}
             <div className="ts-split">
               <span className="t-eyebrow ts-split__lbl">COMPETITION</span>
               <div className="ts-split__seg">
@@ -538,7 +538,7 @@ function Teams() {
               )}
             </div>
 
-            {/* Attack vs Defence — grouped tile sets */}
+            {/* Attack vs Defence, grouped tile sets */}
             <div className="ts-section">
               <header className="ts-section__head">
                 <span className="t-eyebrow" style={{ color: 'var(--volt)' }}>ATTACK</span>

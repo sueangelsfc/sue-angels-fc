@@ -1,14 +1,14 @@
-// About.jsx — club story page (championship-era refresh).
+// About.jsx, club story page (championship-era refresh).
 //
 // Sections (top → bottom):
 //   1. PageHero (eyebrow + headline + sub)
-//   2. Mission — display quote with a volt rule
-//   3. By the numbers — 6 small stat cards, animated counters, live from match data
-//   4. Founding story — editorial two-col with dedication card
-//   5. Champions banner — clickable card; resets default <a> underline/color
-//   6. Club values — 4 small interactive cards with click-to-reveal detail
-//   7. The journey — HORIZONTAL CAROUSEL of compact milestone cards
-//   8. Closing CTA — trials + sponsor enquiry
+//   2. Mission, display quote with a volt rule
+//   3. By the numbers, 6 small stat cards, animated counters, live from match data
+//   4. Founding story, editorial two-col with dedication card
+//   5. Champions banner, clickable card; resets default <a> underline/color
+//   6. Club values, 4 small interactive cards with click-to-reveal detail
+//   7. The journey, HORIZONTAL CAROUSEL of compact milestone cards
+//   8. Closing CTA, trials + sponsor enquiry
 function About() {
   // Pull live league stats so this never drifts.
   const usRow = (window.RAW_TABLE || []).find((r) => r.us)
@@ -21,7 +21,7 @@ function About() {
   const totalCleans = squad.reduce((n, p) => Math.max(n, p.cleanSheets || 0), 0);
   const totalSquad  = (window.SQUAD || []).length;
 
-  // Small SVG icons for the value cards. Stroked, ~22px — keeps cards cute.
+  // Small SVG icons for the value cards. Stroked, ~22px, keeps cards cute.
   const ICON = {
     discipline: (
       <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
@@ -55,11 +55,11 @@ function About() {
   ];
 
   const timeline = [
-    { y: 'AUG 25', tag: 'SPONSOR',    t: 'SPORTING SOLUTIONS',     c: 'Sporting Solutions come on board as main kit sponsor — the brand on the front of the matchday shirt every weekend since.' },
-    { y: 'SEP 25', tag: 'KICKOFF',    t: 'FOUNDED · OPENING WIN',  c: 'First competitive fixture, 21 September 2025. 5–0 vs Pure Football FC 2.0. The project is alive.' },
-    { y: 'JAN 26', tag: 'STATEMENT',  t: '12–0 AT BALHAM',         c: 'Travelled to Balham Bteckerz and dropped a dozen on them. The performance that made the league sit up.' },
-    { y: 'FEB 26', tag: 'SPONSOR',    t: 'HODGSON ROOFING',        c: 'Hodgson Roofing join the family as warm-up & training top sponsor — the brand the squad wears pre-match.' },
-    { y: 'APR 26', tag: 'CHAMPIONS',  t: 'CHAMPIONS · CONFIRMED',  c: 'Beat Sporting Club Catania 10–1 at home on 26 April. League Ten title clinched mathematically with games to play.' },
+    { y: 'AUG 25', tag: 'SPONSOR',    t: 'SPORTING SOLUTIONS',     c: 'Sporting Solutions come on board as main kit sponsor, the brand on the front of the matchday shirt every weekend since.' },
+    { y: 'SEP 25', tag: 'KICKOFF',    t: 'FOUNDED · OPENING WIN',  c: 'First competitive fixture, 21 September 2025. 5-0 vs Pure Football FC 2.0. The project is alive.' },
+    { y: 'JAN 26', tag: 'STATEMENT',  t: '12-0 AT BALHAM',         c: 'Travelled to Balham Bteckerz and dropped a dozen on them. The performance that made the league sit up.' },
+    { y: 'FEB 26', tag: 'SPONSOR',    t: 'HODGSON ROOFING',        c: 'Hodgson Roofing join the family as warm-up & training top sponsor, the brand the squad wears pre-match.' },
+    { y: 'APR 26', tag: 'CHAMPIONS',  t: 'CHAMPIONS · CONFIRMED',  c: 'Beat Sporting Club Catania 10-1 at home on 26 April. League Ten title clinched mathematically with games to play.' },
     { y: 'MAY 26', tag: 'PERFECT',    t: 'UNBEATEN. CHAMPIONS.',   c: `${usRow.pl} played. ${usRow.w} won. ${usRow.gf} scored. Inaugural season finished with the title and a 100% record.` },
     { y: 'SEP 26', tag: 'NEXT',       t: 'PROMOTED · 26/27 BEGINS', c: 'New division. Same standard. Trials open over the summer.' },
   ];
@@ -81,7 +81,7 @@ function About() {
         sub="A Sunday-league club in London, founded in 2025 in memory of Susan Anne Martin. League Ten champions, unbeaten, in our very first season."
       />
 
-      {/* Mission — quote with volt rule */}
+      {/* Mission, quote with volt rule */}
       <section className="section section--compact">
         <div className="container">
           <div className="about-mission">
@@ -118,7 +118,7 @@ function About() {
         </div>
       </section>
 
-      {/* On the field — club records (separated from the off-field founding story below).
+      {/* On the field, club records (separated from the off-field founding story below).
           As new seasons are added these records auto-grow into all-time leaders. */}
       <section className="section section--compact about-records-section">
         <div className="container">
@@ -145,11 +145,11 @@ function About() {
                 const usHome = r.home.includes('Angels');
                 const us = usHome ? r.hs : r.as;
                 const them = usHome ? r.as : r.hs;
-                return { r, margin: us - them, score: `${us}–${them}`, opp: (usHome ? r.away : r.home).replace(' FC', '') };
+                return { r, margin: us - them, score: `${us}-${them}`, opp: (usHome ? r.away : r.home).replace(' FC', '') };
               })
               .filter((m) => m.margin > 0)
               .sort((a, b) => b.margin - a.margin)[0];
-            // Trophies — manually curated; will grow.
+            // Trophies, manually curated; will grow.
             const trophies = ['LEAGUE TEN 25/26'];
 
             const records = [
@@ -188,12 +188,12 @@ function About() {
           })()}
 
           <p className="about-records__note">
-            <span>OFF THE FIELD — SUE&rsquo;S STORY, WHY WE PLAY.</span>
+            <span>OFF THE FIELD, SUE&rsquo;S STORY, WHY WE PLAY.</span>
           </p>
         </div>
       </section>
 
-      {/* Founding story — editorial two-col */}
+      {/* Founding story, editorial two-col */}
       <section className="section section--compact about-story-section">
         <div className="container">
           <div className="about-story">
@@ -228,7 +228,7 @@ function About() {
         </div>
       </section>
 
-      {/* Champions banner — clickable */}
+      {/* Champions banner, clickable */}
       <section className="section section--compact section--alt">
         <div className="container">
           <a href="champions.html" className="about-champ about-champ--link">
@@ -245,7 +245,7 @@ function About() {
         </div>
       </section>
 
-      {/* Club values — small interactive cards */}
+      {/* Club values, small interactive cards */}
       <section className="section section--compact">
         <div className="container">
           <header className="section__head section__head--compact">
@@ -280,7 +280,7 @@ function About() {
         </div>
       </section>
 
-      {/* The journey — horizontal carousel */}
+      {/* The journey, horizontal carousel */}
       <section className="section section--compact section--alt about-journey-section">
         <div className="container">
           <header className="section__head section__head--compact">
@@ -356,7 +356,7 @@ function About() {
             <div className="about-close__copy">
               <div className="t-eyebrow" style={{ color: 'var(--volt)' }}>26 / 27 STARTS SOON</div>
               <h2 className="about-close__title">CARRY THE BADGE FORWARD.</h2>
-              <p className="about-close__sub">Trials, volunteering, media and sponsorship — all open. Step in.</p>
+              <p className="about-close__sub">Trials, volunteering, media and sponsorship, all open. Step in.</p>
             </div>
             <div className="about-close__cta">
               <a href="join.html" className="btn btn--volt">Trial for the squad →</a>

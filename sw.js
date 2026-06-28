@@ -1,4 +1,4 @@
-/* Sue's Angels FC — service worker (conservative, anti-stale).
+/* Sue's Angels FC, service worker (conservative, anti-stale).
    Strategy:
      - Navigations (HTML): network-first. Online visitors ALWAYS get fresh HTML
        (which references the current ?v= assets); the cached copy is used only

@@ -1,8 +1,8 @@
-// ClaudeClient.jsx — polyfills `window.claude.complete` for production.
+// ClaudeClient.jsx, polyfills `window.claude.complete` for production.
 //
 // Inside Claude's design preview, `window.claude.complete(prompt)` already
 // exists and is provided by the host. In production (Vercel / Netlify) it
-// doesn't — so we install a shim that POSTs to our serverless endpoint and
+// doesn't, so we install a shim that POSTs to our serverless endpoint and
 // returns the same shape (a string of the completion text).
 //
 // We only install the shim when it isn't already defined, so this is a no-op

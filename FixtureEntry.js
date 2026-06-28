@@ -1,7 +1,7 @@
-// FixtureEntry.jsx — admin-only "+ ADD FIXTURE" launcher.
+// FixtureEntry.jsx, admin-only "+ ADD FIXTURE" launcher.
 //
 // User-facing flow:
-//   1. Visitor sees nothing — entire component returns null without admin mode.
+//   1. Visitor sees nothing, entire component returns null without admin mode.
 //   2. Admin (window.useAdmin === true) sees a volt "+ ADD FIXTURE" pill at the
 //      top of the Fixtures page (and on the Schedule page's Upcoming tab).
 //   3. Clicking opens a slim form: Opponent, Date, Kick-off, Venue, Location,
@@ -19,10 +19,10 @@
 // - id is auto-derived: `f<YYYYMMDD>-<opp-slug>`.
 // - We always store one of home/away as "Sue's Angels FC" so the join code
 //   in Hero/FixturesPage works without special-casing.
-// - "loc" is the human label ("Home" / "Away") — used by the location filter.
+// - "loc" is the human label ("Home" / "Away"), used by the location filter.
 
 // ────────────────────────────────────────────────────────────────────────────
-// Team badge upload helpers — store admin-uploaded opponent badges keyed by
+// Team badge upload helpers, store admin-uploaded opponent badges keyed by
 // the slug of their full club name. Sue's Angels FC always uses the existing
 // asset, never the admin store. resolveBadge is patched to prefer admin
 // entries when present.
@@ -225,7 +225,7 @@ function dayOf(iso) {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// FixtureAddForm — collapsible form. Hidden until admin clicks "+ ADD FIXTURE".
+// FixtureAddForm, collapsible form. Hidden until admin clicks "+ ADD FIXTURE".
 // ────────────────────────────────────────────────────────────────────────────
 function FixtureAddForm({
   onClose,
@@ -454,7 +454,7 @@ function FixtureAddForm({
   }, ROUND_OPTIONS.map(r => /*#__PURE__*/React.createElement("option", {
     key: r,
     value: r
-  }, r || '— optional —')))), /*#__PURE__*/React.createElement("div", {
+  }, r || '- optional -')))), /*#__PURE__*/React.createElement("div", {
     className: "fx-add__field fx-add__field--wide"
   }, /*#__PURE__*/React.createElement("span", null, "OPPOSITION BADGE ", /*#__PURE__*/React.createElement("em", {
     className: "fx-add__hint"
@@ -512,7 +512,7 @@ function FixtureAddForm({
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// FixtureAdminPanel — wraps the launcher + the form. Admin-only.
+// FixtureAdminPanel, wraps the launcher + the form. Admin-only.
 // Also renders an "admin fixtures" mini list so the manager can review/remove
 // fixtures they've added without touching code.
 // ────────────────────────────────────────────────────────────────────────────

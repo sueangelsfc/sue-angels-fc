@@ -1,4 +1,4 @@
-// Sponsors.jsx — home-page main sponsors module. Redesigned as a magazine block
+// Sponsors.jsx, home-page main sponsors module. Redesigned as a magazine block
 // with logo plate + role tag + partner-since line. Click-through to the full page.
 function Sponsors() {
   const items = [

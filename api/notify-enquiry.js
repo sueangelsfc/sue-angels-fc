@@ -1,8 +1,8 @@
-// api/notify-enquiry.js — emails the club inbox when a business downloads the
+// api/notify-enquiry.js, emails the club inbox when a business downloads the
 // sponsorship pack (or sends an enquiry), so leads land in the inbox instead of
 // sitting silently in the database.
 //
-// ACTIVATION (one-time, by the club — no keys ever go in the repo):
+// ACTIVATION (one-time, by the club, no keys ever go in the repo):
 //   1. Sign up free at resend.com USING THE CLUB EMAIL (suesangelsfc@gmail.com).
 //   2. Create an API key, then in Vercel → Project → Settings → Environment
 //      Variables add:  RESEND_API_KEY = <the key>   (and redeploy).
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
   const KEY = process.env.RESEND_API_KEY;
   const TO = (process.env.NOTIFY_TO || 'suesangelsfc@gmail.com').split(',').map((s) => s.trim()).filter(Boolean);
   const FROM = process.env.NOTIFY_FROM || "Sue's Angels FC <onboarding@resend.dev>";
-  if (!KEY) { res.status(200).json({ ok: false, reason: 'no-key' }); return; } // not activated yet — no-op
+  if (!KEY) { res.status(200).json({ ok: false, reason: 'no-key' }); return; } // not activated yet, no-op
 
   let body = req.body;
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }

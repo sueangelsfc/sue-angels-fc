@@ -1,4 +1,4 @@
-// MockPages.jsx — full interactive preview of every page in the new design system.
+// MockPages.jsx, full interactive preview of every page in the new design system.
 // Real data from the live engine. Tabs: Home, About, Champions, Team, Schedule,
 // Media, Sponsors, Contact. Interactive: sub-tabs, filters, player-profile modal,
 // sponsor modal, gallery lightbox, coach modal, forms, theme toggle. Not production.
@@ -93,7 +93,7 @@ function Modal({ onClose, wide, children }) {
   return (<div className="m-modal" onClick={onClose}><button className="m-modal__close" aria-label="Close" onClick={onClose}>✕</button><div className="m-modal__panel" style={wide ? { width: 'min(1060px,100%)' } : { width: 'min(680px,100%)' }} onClick={(e) => e.stopPropagation()}>{children}</div></div>);
 }
 
-/* ══ PLAYER PROFILE — the showpiece (parameterised) ═════════════════════ */
+/* ══ PLAYER PROFILE, the showpiece (parameterised) ═════════════════════ */
 function ProfileCard({ num }) {
   const data = useMemo(() => {
     const squad = window.derivedSquad ? window.derivedSquad(null, '25/26') : [];

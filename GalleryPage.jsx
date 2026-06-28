@@ -1,4 +1,4 @@
-// GalleryPage.jsx — visual storytelling hub
+// GalleryPage.jsx, visual storytelling hub
 function GalleryPage() {
   const [filter, setFilter] = React.useState('all');
   const tiles = [

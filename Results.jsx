@@ -1,4 +1,4 @@
-// Results.jsx — recent results carousel (homepage).
+// Results.jsx, recent results carousel (homepage).
 // Reads MOTM + scorers from coach-entered MatchEntry data when present.
 
 function formatScorerLine(data) {
@@ -50,7 +50,7 @@ function ResultCard({ r }) {
           ) : (
             <React.Fragment>
               <span className={usHome && won ? 'is-volt' : ''}>{r.hs}</span>
-              <span className="result-card__dash">–</span>
+              <span className="result-card__dash">-</span>
               <span className={!usHome && won ? 'is-volt' : ''}>{r.as}</span>
             </React.Fragment>
           )}

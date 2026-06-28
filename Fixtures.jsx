@@ -1,4 +1,4 @@
-// Fixtures.jsx — upcoming matches row. Sourced from window.UPCOMING_FIXTURES.
+// Fixtures.jsx, upcoming matches row. Sourced from window.UPCOMING_FIXTURES.
 function FixtureCard({ fx }) {
   const matchData = window.loadMatchEntry ? window.loadMatchEntry(fx.id) : null;
   return (
@@ -37,7 +37,7 @@ function FixturePlaceholder({ label }) {
     <article className="fixture-card fixture-card--placeholder">
       <div className="fixture-card__rail" style={{ opacity: 0.25 }} />
       <div className="fixture-card__date">
-        <div className="fixture-card__day" style={{ color: 'var(--fg-4)' }}>—</div>
+        <div className="fixture-card__day" style={{ color: 'var(--fg-4)' }}>-</div>
         <div className="fixture-card__mon">{label}</div>
       </div>
       <div className="fixture-card__teams">

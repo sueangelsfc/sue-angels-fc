@@ -1,10 +1,10 @@
-// TablePage.jsx — full League Ten standings with promotion intelligence.
+// TablePage.jsx, full League Ten standings with promotion intelligence.
 // Sources data from window.RAW_TABLE.
 const TOTAL_GAMES = window.LEAGUE_TOTAL_GAMES || 18;
 const PROMOTION_SPOTS = window.LEAGUE_PROMOTION_SPOTS || 2;
 const RAW_TABLE = window.RAW_TABLE;
 
-// 26/27 DRAFT CONSTITUTION — confirmed opponents (one vacancy still open).
+// 26/27 DRAFT CONSTITUTION, confirmed opponents (one vacancy still open).
 // Marked as a draft; fixtures + final line-up to be confirmed before kick-off.
 const DRAFT_2627 = [
   'Barnes Stormers',
@@ -33,7 +33,7 @@ function TablePage() {
         title={<>THE <em>TABLE</em></>}
         sub={season === '25/26'
           ? 'Live League Ten standings. Positions, promotion places and the title race update automatically as each result comes in.'
-          : 'Draft constitution for the 26/27 campaign. Opponents confirmed below — final line-up and fixtures still to be confirmed.'}
+          : 'Draft constitution for the 26/27 campaign. Opponents confirmed below, final line-up and fixtures still to be confirmed.'}
       >
         <span className="t-meta" style={{ color: 'var(--fg-3)' }}>
           {season === '25/26'
@@ -56,7 +56,7 @@ function TablePage() {
           <div className="container">
             <div className="draft-note">
               <span className="draft-note__chip">DRAFT</span>
-              <p>The 26/27 draft constitution sees the Angels promoted into a new division against a fresh group of opponents. The line-up below is provisional — <strong>one vacancy is still to be filled</strong> and fixtures will be confirmed before kick-off.</p>
+              <p>The 26/27 draft constitution sees the Angels promoted into a new division against a fresh group of opponents. The line-up below is provisional, <strong>one vacancy is still to be filled</strong> and fixtures will be confirmed before kick-off.</p>
             </div>
             <div className="table-wrap card" style={{ padding: 0, overflow: 'hidden', marginTop: 'var(--sp-4)' }}>
               <table className="lt lt--full">
@@ -76,17 +76,17 @@ function TablePage() {
                     <tr key={club} className={`lt__row ${club.includes('Angels') ? 'is-us' : ''}`}>
                       <td className="lt__pos">{i + 1}</td>
                       <td className="lt__club"><TeamBadge team={club} size={20} />{club}</td>
-                      <td className="lt__num">—</td>
-                      <td className="lt__num">—</td>
-                      <td className="lt__num">—</td>
-                      <td className="lt__num">—</td>
-                      <td className="lt__num lt__pts">—</td>
+                      <td className="lt__num">-</td>
+                      <td className="lt__num">-</td>
+                      <td className="lt__num">-</td>
+                      <td className="lt__num">-</td>
+                      <td className="lt__num lt__pts">-</td>
                     </tr>
                   ))}
                   <tr className="lt__row lt__row--vacancy">
                     <td className="lt__pos">{DRAFT_2627.length + 1}</td>
-                    <td className="lt__club" style={{ fontStyle: 'italic', color: 'var(--fg-3)' }}>Vacancy — to be confirmed</td>
-                    <td className="lt__num">—</td><td className="lt__num">—</td><td className="lt__num">—</td><td className="lt__num">—</td><td className="lt__num lt__pts">—</td>
+                    <td className="lt__club" style={{ fontStyle: 'italic', color: 'var(--fg-3)' }}>Vacancy, to be confirmed</td>
+                    <td className="lt__num">-</td><td className="lt__num">-</td><td className="lt__num">-</td><td className="lt__num">-</td><td className="lt__num lt__pts">-</td>
                   </tr>
                 </tbody>
               </table>
@@ -107,9 +107,9 @@ function TablePage() {
               </div>
               <div className="champ-banner__copy">
                 <span className="t-eyebrow" style={{ color: 'var(--navy)', opacity: 0.7 }}>CONFIRMED 26 APRIL 26</span>
-                <h2 className="champ-banner__title">{insights.champion.c.toUpperCase()} — LEAGUE TEN CHAMPIONS</h2>
+                <h2 className="champ-banner__title">{insights.champion.c.toUpperCase()}, LEAGUE TEN CHAMPIONS</h2>
                 <p className="champ-banner__sub">
-                  Title clinched at home against Sporting Club Catania (10–1) — {insights.champion.pts} pts and out of reach with games to spare. Promoted as champions.
+                  Title clinched at home against Sporting Club Catania (10-1), {insights.champion.pts} pts and out of reach with games to spare. Promoted as champions.
                 </p>
               </div>
             </div>
@@ -160,7 +160,7 @@ function TablePage() {
                         </td>
                       </tr>
                       {isLastPromotion && (
-                        <tr className="lt__divider"><td colSpan="11"><span>PROMOTION LINE — TOP {PROMOTION_SPOTS} PROMOTED</span></td></tr>
+                        <tr className="lt__divider"><td colSpan="11"><span>PROMOTION LINE, TOP {PROMOTION_SPOTS} PROMOTED</span></td></tr>
                       )}
                     </React.Fragment>
                   );

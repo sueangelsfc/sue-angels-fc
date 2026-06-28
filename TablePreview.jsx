@@ -1,4 +1,4 @@
-// TablePreview.jsx — compact league table preview with promotion intelligence.
+// TablePreview.jsx, compact league table preview with promotion intelligence.
 const PREVIEW_TABLE = [
   { p: 1,  c: "Sue's Angels FC",         pl: 16, w: 16, d: 0, l: 0,  gd: '+75', pts: 48, us: true },
   { p: 2,  c: 'Brockwell Violets FC',    pl: 18, w: 10, d: 3, l: 5,  gd: '+26', pts: 33 },
@@ -31,7 +31,7 @@ function TablePreview() {
           <div className="champ-strip">
             <span className="champ-strip__chip">CHAMPIONS</span>
             <span className="champ-strip__copy">
-              <strong>Title clinched 26 April 26.</strong> 10–1 home win over Sporting Catania made it mathematically impossible to catch.
+              <strong>Title clinched 26 April 26.</strong> 10-1 home win over Sporting Catania made it mathematically impossible to catch.
             </span>
           </div>
         )}

@@ -1,10 +1,10 @@
-// api/subscribe.js — adds a supporter to the club's MailerLite list, so the
+// api/subscribe.js, adds a supporter to the club's MailerLite list, so the
 // newsletter can be sent and automated from MailerLite.
 //
 // WHY A SERVER FUNCTION: the MailerLite API token is a SECRET and must never be
 // shipped in the browser. This function holds it (Vercel env var) and the public
 // sign-up form calls this endpoint. The email is ALSO saved to Supabase by the
-// client (private backup) — this is the push to the sending platform.
+// client (private backup), this is the push to the sending platform.
 //
 // ── ONE-TIME SETUP ──────────────────────────────────────────────────────────
 //   1. Create a free MailerLite account (mailerlite.com).

@@ -1,4 +1,4 @@
-/* gallery-fx.js — clicking a gallery album opens a left-to-right swipe carousel
+/* gallery-fx.js, clicking a gallery album opens a left-to-right swipe carousel
    of its photos (cover EXCLUDED), tap a photo to enlarge. Standalone (no recompile):
    intercepts the album card click in capture phase and reads the live GalleryStore. */
 (function () {

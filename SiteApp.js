@@ -1556,7 +1556,7 @@ function ShareBtn({ title, what, label, image, url: urlProp, story }) {
     { k: 'fb', label: 'Facebook', fn: function () { openWin('https://www.facebook.com/sharer/sharer.php?u=' + u, 'facebook'); } },
     { k: 'copy', label: 'Copy link', fn: function () { copyLink('copy'); } }
   ].filter(Boolean);
-  return h('div', { className: 'sa-share', ref: ref }, h('button', { type: 'button', className: 'm-btn m-btn--ghost', 'aria-haspopup': 'menu', 'aria-expanded': open ? 'true' : 'false', onClick: function () { setOpen(function (v) { return !v; }); }, style: { display: 'inline-flex', alignItems: 'center', gap: 8 } }, label || 'Share', h('svg', { viewBox: '0 0 24 24', width: 15, height: 15, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true' }, h('path', { d: 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8' }), h('polyline', { points: '16 6 12 2 8 6' }), h('line', { x1: 12, y1: 2, x2: 12, y2: 15 }))), open ? h('div', { className: 'sa-share__menu', role: 'menu' }, (story ? [h('div', { key: 'fmt', style: { display: 'flex', gap: 6, padding: '8px 10px 10px' }, onClick: function (e) { e.stopPropagation(); } }, [['story', 'Story · 9:16'], ['post', 'Post · 4:5']].map(function (f) { return h('button', { key: f[0], type: 'button', onClick: function () { setFmt(f[0]); }, style: { flex: 1, padding: '7px 8px', borderRadius: 8, border: '1px solid ' + (fmt === f[0] ? 'var(--m-volt)' : 'var(--m-edge-2)'), background: fmt === f[0] ? 'var(--m-volt)' : 'transparent', color: fmt === f[0] ? 'var(--m-navy)' : 'var(--m-ink-2)', font: '600 0.72rem var(--m-sans)', cursor: 'pointer' } }, f[1]); }))] : []).concat(items.map(function (it) { return h('button', { key: it.k, type: 'button', role: 'menuitem', className: 'sa-share__item', onClick: it.fn }, it.label); })).concat(story ? [h('div', { key: 'ighint', style: { padding: '9px 12px 5px', marginTop: 4, borderTop: '1px solid var(--m-edge)', font: '500 0.64rem/1.45 var(--m-sans)', color: 'var(--m-ink-3)' } }, 'Instagram Story link: add the Link sticker and paste — your link is auto-copied.')] : [])) : null);
+  return h('div', { className: 'sa-share', ref: ref }, h('button', { type: 'button', className: 'm-btn m-btn--ghost', 'aria-haspopup': 'menu', 'aria-expanded': open ? 'true' : 'false', onClick: function () { setOpen(function (v) { return !v; }); }, style: { display: 'inline-flex', alignItems: 'center', gap: 8 } }, label || 'Share', h('svg', { viewBox: '0 0 24 24', width: 15, height: 15, fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true' }, h('path', { d: 'M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8' }), h('polyline', { points: '16 6 12 2 8 6' }), h('line', { x1: 12, y1: 2, x2: 12, y2: 15 }))), open ? h('div', { className: 'sa-share__menu', role: 'menu' }, (story ? [h('div', { key: 'fmt', style: { display: 'flex', gap: 6, padding: '8px 10px 10px' }, onClick: function (e) { e.stopPropagation(); } }, [['story', 'Story · 9:16'], ['post', 'Post · 4:5']].map(function (f) { return h('button', { key: f[0], type: 'button', onClick: function () { setFmt(f[0]); }, style: { flex: 1, padding: '7px 8px', borderRadius: 8, border: '1px solid ' + (fmt === f[0] ? 'var(--m-volt)' : 'var(--m-edge-2)'), background: fmt === f[0] ? 'var(--m-volt)' : 'transparent', color: fmt === f[0] ? 'var(--m-navy)' : 'var(--m-ink-2)', font: '600 0.72rem var(--m-sans)', cursor: 'pointer' } }, f[1]); }))] : []).concat(items.map(function (it) { return h('button', { key: it.k, type: 'button', role: 'menuitem', className: 'sa-share__item', onClick: it.fn }, it.label); })).concat(story ? [h('div', { key: 'ighint', style: { padding: '9px 12px 5px', marginTop: 4, borderTop: '1px solid var(--m-edge)', font: '500 0.64rem/1.45 var(--m-sans)', color: 'var(--m-ink-3)' } }, 'Instagram Story link: add the Link sticker and paste, your link is auto-copied.')] : [])) : null);
 }
 function Home({
   go
@@ -2636,7 +2636,7 @@ function LeagueStatsTable() {
           h("td", null, s.name),
           h("td", null, h("span", { className: "mh-table__club" }, Badge ? h(Badge, { team: s.club, size: 22 }) : null, s.club.replace(' FC', ''))),
           h("td", null, s.g),
-          h("td", null, s.a == null ? '–' : s.a),
+          h("td", null, s.a == null ? '-' : s.a),
           h("td", null, s.ap));
       }))));
 }
@@ -3009,7 +3009,7 @@ function SupporterSignup(props) {
     if (!consent) { setStatus('err'); setMsg('Please tick the box so we have your permission to email you.'); return; }
     setStatus('sending'); setMsg('');
     (window.saAddSupporter ? window.saAddSupporter(email, nm, source) : Promise.resolve({ ok: false })).then(function (r) {
-      if (r && r.ok) { setStatus('ok'); setMsg(r.duplicate ? 'You’re already on the list — thank you.' : 'Thank you. You’re on the list.'); }
+      if (r && r.ok) { setStatus('ok'); setMsg(r.duplicate ? 'You’re already on the list, thank you.' : 'Thank you. You’re on the list.'); }
       else { setStatus('err'); setMsg('Sorry, something went wrong. Please try again shortly.'); }
     });
   }
@@ -3038,7 +3038,7 @@ function SupporterSignup(props) {
     status === 'err' ? h('p', { style: { color: '#ff9b9b', fontSize: '0.84rem', margin: 0 } }, msg) : null);
 }
 // Gated sponsorship-pack download: capture the business's email (a warm
-// sponsorship lead) before the PDF downloads. Never blocks the download —
+// sponsorship lead) before the PDF downloads. Never blocks the download -
 // even if capture fails, the pack still opens so we never lose the visitor.
 function SponsorPackGate() {
   var h = React.createElement;
@@ -3059,13 +3059,13 @@ function SponsorPackGate() {
   }
   return h(React.Fragment, null,
     h("button", { className: "m-btn m-btn--ghost", onClick: function () { setOpen(true); } }, "Download the pack"),
-    open ? h(Modal, { onClose: function () { setOpen(false); } }, h("div", { className: "m-glass", style: { padding: 'clamp(22px,3vw,30px)', maxWidth: 440 } },
+    open ? h(Modal, { onClose: function () { setOpen(false); } }, h("div", { className: "m-glass", style: { padding: 'clamp(24px,3vw,36px)', width: 'min(94vw, 520px)', maxWidth: 520, boxSizing: 'border-box' } },
       status === 'done'
-        ? h("div", { style: { textAlign: 'center' } }, h("p", { className: "m-eyebrow m-eyebrow--volt", style: { justifyContent: 'center', display: 'inline-flex' } }, "On its way"), h("h3", { className: "m-h3", style: { marginTop: 10 } }, "Thanks — your download has started."), h("p", { style: { color: 'var(--m-ink-3)', marginTop: 8, fontSize: '0.9rem' } }, "If it didn’t open, ", h("a", { href: PDF, target: "_blank", rel: "noopener", style: { color: 'var(--m-volt-ink)' } }, "tap here"), ". We’ll be in touch about partnering."))
+        ? h("div", { style: { textAlign: 'center' } }, h("p", { className: "m-eyebrow m-eyebrow--volt", style: { justifyContent: 'center', display: 'inline-flex' } }, "On its way"), h("h3", { className: "m-h3", style: { marginTop: 10 } }, "Thanks, your download has started."), h("p", { style: { color: 'var(--m-ink-3)', marginTop: 8, fontSize: '0.9rem' } }, "If it didn’t open, ", h("a", { href: PDF, target: "_blank", rel: "noopener", style: { color: 'var(--m-volt-ink)' } }, "tap here"), ". We’ll be in touch about partnering."))
         : h("form", { onSubmit: submit },
           h("p", { className: "m-eyebrow m-eyebrow--volt" }, "Sponsorship pack"),
           h("h3", { className: "m-h3", style: { margin: '8px 0 4px' } }, "Get the pack instantly"),
-          h("p", { style: { color: 'var(--m-ink-3)', fontSize: '0.9rem', marginBottom: 14 } }, "Drop your email and the pack downloads straight to your device — nothing to wait for in your inbox. We’ll only use your email to follow up about partnering."),
+          h("p", { style: { color: 'var(--m-ink-3)', fontSize: '0.9rem', marginBottom: 14 } }, "Drop your email and the pack downloads straight to your device, nothing to wait for in your inbox. We’ll only use your email to follow up about partnering."),
           h("input", { type: 'email', required: true, value: email, placeholder: 'you@company.com', autoComplete: 'email', onChange: function (e) { setEmail(e.target.value); }, style: { width: '100%', padding: '12px 14px', borderRadius: 10, border: '1px solid var(--m-edge)', background: 'var(--m-glass-1)', color: 'var(--m-ink-1)', font: '500 15px var(--m-sans)' } }),
           status === 'err' ? h("p", { style: { color: '#ff9b9b', fontSize: '0.8rem', margin: '8px 0 0' } }, "Please enter a valid email.") : null,
           h("button", { type: 'submit', className: "m-btn m-btn--volt", disabled: status === 'sending', style: { marginTop: 14, justifyContent: 'center', width: '100%' } }, status === 'sending' ? 'Preparing…' : 'Get the pack'))
@@ -3316,7 +3316,7 @@ function Contact() {
     }
   }, sent === 'ok' ? "Got it" : "Almost there"), /*#__PURE__*/React.createElement("h3", {
     className: "m-h3"
-  }, sent === 'ok' ? "Thanks — your enquiry's in. We'll reply within 48 hours." : "Your enquiry is ready in your email app. Press send and we'll reply within 48 hours.")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+  }, sent === 'ok' ? "Thanks, your enquiry's in. We'll reply within 48 hours." : "Your enquiry is ready in your email app. Press send and we'll reply within 48 hours.")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "m-eyebrow"
   }, routes.find(r => r[0] === route)[1], " enquiry"), /*#__PURE__*/React.createElement("div", {
     className: "mp-frow"
@@ -3401,7 +3401,7 @@ function JoinPage() {
     }
   }, sent === 'ok' ? "Got it" : "Almost there"), /*#__PURE__*/React.createElement("h3", {
     className: "m-h3"
-  }, sent === 'ok' ? "Thanks \u2014 your enquiry\u2019s in. We\u2019ll be in touch soon." : "Your enquiry is ready in your email app. Press send and we\u2019ll reply within 48 hours.")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+  }, sent === 'ok' ? "Thanks, your enquiry\u2019s in. We\u2019ll be in touch soon." : "Your enquiry is ready in your email app. Press send and we\u2019ll reply within 48 hours.")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "m-eyebrow"
   }, routes.find(r => r[0] === route)[1]), /*#__PURE__*/React.createElement("div", {
     className: "mp-frow"
@@ -3540,7 +3540,7 @@ function Sepsis({ go }) {
       h(DonateBlock, null))),
     h('section', { id: 'stay', className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
       h(Head, { eyebrow: 'Stay close to the club', title: 'Get match updates' }),
-      h('p', { className: 'm-lead', style: { maxWidth: '58ch', marginBottom: 22 } }, 'Join the supporters’ list for the occasional update — fixtures, results and news from Sue’s Angels. We keep it rare, and your email stays private.'),
+      h('p', { className: 'm-lead', style: { maxWidth: '58ch', marginBottom: 22 } }, 'Join the supporters’ list for the occasional update, fixtures, results and news from Sue’s Angels. We keep it rare, and your email stays private.'),
       h('div', { style: { maxWidth: 640 } }, h(SupporterSignup, { source: 'cause' })))),
     h('section', { className: 'mp-sec', style: { paddingTop: 0 } }, h('div', { className: 'm-wrap' },
       h('div', { className: 'm-glass', style: { padding: 'clamp(28px,4vw,52px)', textAlign: 'center' } },
@@ -4189,7 +4189,7 @@ ReactDOM.createRoot(document.getElementById('rd-root')).render(/*#__PURE__*/Reac
 // Progressive Web App: register the service worker for installability + fast
 // repeat loads + offline fallback. updateViaCache:'none' bypasses the HTTP cache
 // when checking sw.js for updates (since .js is served immutable), so the worker
-// always updates reliably. Failures are swallowed — the site works without it.
+// always updates reliably. Failures are swallowed, the site works without it.
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () {
     navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(function () {});

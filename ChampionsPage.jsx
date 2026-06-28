@@ -1,4 +1,4 @@
-// ChampionsPage.jsx — celebration of the 25/26 League Ten title.
+// ChampionsPage.jsx, celebration of the 25/26 League Ten title.
 // All numbers DERIVE from the actual results + fixtures so the page stays
 // honest as games are played or added.
 
@@ -68,7 +68,7 @@ function ChampionsPage() {
   const winPct = played > 0 ? Math.round((wins / played) * 100) : 0;
   const total = played + remaining;
 
-  // Form ribbon — chronological W/D/L from the season (oldest left, newest right).
+  // Form ribbon, chronological W/D/L from the season (oldest left, newest right).
   const formSequence = [...allResults].reverse().map((r) => {
     if (r.kind === 'walkover') return 'W';
     const usHome = r.home.includes('Angels');
@@ -97,15 +97,15 @@ function ChampionsPage() {
   const stats = [
     { v: played,                       l: 'PLAYED',          tooltip: `${played} of ${total} league fixtures` },
     { v: wins,                         l: 'WON',             accent: 'win',  tooltip: `${winPct}% win rate · ${walkovers ? walkovers + ' walkover' + (walkovers === 1 ? '' : 's') : 'all played'}` },
-    { v: draws,                        l: 'DRAWN',           accent: 'draw', zeroIsGood: losses === 0 && draws === 0, tooltip: draws === 0 ? 'Unbeaten — never gave a point away' : null },
-    { v: losses,                       l: 'LOST',            accent: 'loss', zeroIsGood: losses === 0, tooltip: losses === 0 ? 'Perfect record — never lost a league match' : null },
+    { v: draws,                        l: 'DRAWN',           accent: 'draw', zeroIsGood: losses === 0 && draws === 0, tooltip: draws === 0 ? 'Unbeaten, never gave a point away' : null },
+    { v: losses,                       l: 'LOST',            accent: 'loss', zeroIsGood: losses === 0, tooltip: losses === 0 ? 'Perfect record, never lost a league match' : null },
     { v: gf,                           l: 'GOALS FOR',       accent: 'win',  tooltip: sortedByGoals ? `Best: ${sortedByGoals.scored}-${sortedByGoals.r.home.includes('Angels') ? sortedByGoals.r.as : sortedByGoals.r.hs} vs ${(sortedByGoals.r.home.includes('Angels') ? sortedByGoals.r.away : sortedByGoals.r.home).replace(' FC', '')}` : null },
     { v: ga,                           l: 'GOALS AGAINST',   accent: 'loss' },
     { v: (gd >= 0 ? '+' : '') + gd,    l: 'GOAL DIFFERENCE', accent: 'volt' },
     { v: winPct + '%',                 l: 'WIN RATE',        accent: 'volt' },
   ];
 
-  // 26/27 starts mid-September — use the 13th as a rolling marker.
+  // 26/27 starts mid-September, use the 13th as a rolling marker.
   const { days: daysToKickoff, target: kickoffDate } = useDaysUntil('2026-09-13');
   const kickoffStr = kickoffDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -121,7 +121,7 @@ function ChampionsPage() {
               <em>{losses === 0 ? 'UNBEATEN' : `${wins} FROM ${played}`}</em>
             </h1>
             <p className="champ-hero__sub">
-              {played} of {total} games played and the title is already ours, clinched on 26 April with a 10–1 win over Sporting Club Catania.
+              {played} of {total} games played and the title is already ours, clinched on 26 April with a 10-1 win over Sporting Club Catania.
             </p>
           </div>
           <div className="champ-hero__badge">
@@ -130,7 +130,7 @@ function ChampionsPage() {
         </div>
       </section>
 
-      {/* THE NUMBERS — perfect season with animated tiles + form ribbon */}
+      {/* THE NUMBERS, perfect season with animated tiles + form ribbon */}
       <section className="section section--compact">
         <div className="container">
           <header className="section__head section__head--compact">
@@ -147,7 +147,7 @@ function ChampionsPage() {
         </div>
       </section>
 
-      {/* RECENT LEAGUE RESULTS — interactive rows */}
+      {/* RECENT LEAGUE RESULTS, interactive rows */}
       <section className="section section--compact section--alt">
         <div className="container">
           <header className="section__head section__head--compact">
@@ -187,7 +187,7 @@ function ChampionsPage() {
                         ? <span className="champ-recent__wo">{r.wo}</span>
                         : <React.Fragment>
                             <span className={usHome && won ? 'is-volt' : ''}>{r.hs}</span>
-                            <span className="champ-recent__dash">–</span>
+                            <span className="champ-recent__dash">-</span>
                             <span className={!usHome && won ? 'is-volt' : ''}>{r.as}</span>
                           </React.Fragment>}
                     </span>
@@ -206,7 +206,7 @@ function ChampionsPage() {
         </div>
       </section>
 
-      {/* UP NEXT — 26/27 countdown, dynamic mini cards */}
+      {/* UP NEXT, 26/27 countdown, dynamic mini cards */}
       <section className="section section--compact champ-next-section">
         <div className="container">
           <header className="section__head section__head--compact">
@@ -218,12 +218,12 @@ function ChampionsPage() {
 {/* sized smaller via CSS below */}
 
           <div className="champ-next">
-            {/* Kickoff date — TBC until the 26/27 schedule confirms */}
+            {/* Kickoff date, TBC until the 26/27 schedule confirms */}
             <div className="champ-next__count">
               <span className="champ-next__count-eye">SEASON KICKOFF</span>
               <span className="champ-next__count-n champ-next__count-n--tbc">TBC</span>
               <span className="champ-next__count-l">DATE TO BE CONFIRMED</span>
-              <span className="champ-next__count-date">26 / 27 SCHEDULE PENDING — SUMMER DATES TO FOLLOW</span>
+              <span className="champ-next__count-date">26 / 27 SCHEDULE PENDING, SUMMER DATES TO FOLLOW</span>
             </div>
 
             {/* Mini status cards */}

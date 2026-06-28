@@ -1,4 +1,4 @@
-/* consent.js — GDPR cookie-consent banner for Sue's Angels FC.
+/* consent.js, GDPR cookie-consent banner for Sue's Angels FC.
    Nothing third-party (Google Analytics, Meta Pixel) loads until the visitor
    accepts. This is the single owner of analytics loading.
 
@@ -8,9 +8,9 @@
        - Meta (Facebook) Pixel if window.SA_META_PIXEL_ID is set
      Both no-op gracefully when their ID is empty, so this is safe to ship
      before either is configured.
-   • window.saInitAnalytics() — idempotent loader; SiteApp.js calls it on mount,
+   • window.saInitAnalytics(), idempotent loader; SiteApp.js calls it on mount,
      and it only does anything once consent is 'granted'.
-   • window.saOpenConsent() — re-open the banner (e.g. a footer "Cookies" link).
+   • window.saOpenConsent(), re-open the banner (e.g. a footer "Cookies" link).
    All work is wrapped so it can never throw and break the page. */
 (function () {
   "use strict";

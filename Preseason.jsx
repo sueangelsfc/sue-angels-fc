@@ -1,4 +1,4 @@
-// PreseasonHub.jsx — 26/27 preseason landing block for the homepage.
+// PreseasonHub.jsx, 26/27 preseason landing block for the homepage.
 // Renders only when getSeasonState() returns 'between' or 'next'.
 function PreseasonHub() {
   if (!window.getSeasonState) return null;
@@ -41,7 +41,7 @@ function PreseasonHub() {
   );
 }
 
-// Story — founding-story module for the homepage. Replaces the old kit reveal.
+// Story, founding-story module for the homepage. Replaces the old kit reveal.
 function KitReveal() {
   return (
     <section className="section section--compact kit-reveal">

@@ -1,4 +1,4 @@
-// Hero.jsx — cinematic full-bleed hero with stadium silhouette + live countdown.
+// Hero.jsx, cinematic full-bleed hero with stadium silhouette + live countdown.
 function StadiumBackdrop() {
   return (
     <svg className="hero__svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
@@ -206,7 +206,7 @@ function Hero() {
             const latestStr = latest
               ? (latest.kind === 'walkover'
                   ? `${latest.kind === 'walkover' && latest.wo === 'H-W' ? 'W H-W' : 'W A-W'} vs ${(latest.home.includes('Angels') ? latest.away : latest.home).replace(' FC','')} · ${latest.date}`
-                  : `${(latest.home.includes('Angels') ? latest.hs : latest.as)}–${(latest.home.includes('Angels') ? latest.as : latest.hs)} (${latest.home.includes('Angels') ? 'H' : 'A'}) vs ${(latest.home.includes('Angels') ? latest.away : latest.home).replace(' FC','')} · ${latest.date}`)
+                  : `${(latest.home.includes('Angels') ? latest.hs : latest.as)}-${(latest.home.includes('Angels') ? latest.as : latest.hs)} (${latest.home.includes('Angels') ? 'H' : 'A'}) vs ${(latest.home.includes('Angels') ? latest.away : latest.home).replace(' FC','')} · ${latest.date}`)
               : 'No results yet';
             return (
               <React.Fragment>

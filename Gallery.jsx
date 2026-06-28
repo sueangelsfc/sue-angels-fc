@@ -1,4 +1,4 @@
-// Gallery.jsx — homepage matchday preview. Renders as an editorial photo mosaic
+// Gallery.jsx, homepage matchday preview. Renders as an editorial photo mosaic
 // (1 hero + 4 satellites). Admins can upload; visitors see styled placeholders
 // until the season's first photo set lands.
 function Gallery() {
@@ -98,7 +98,7 @@ function Gallery() {
 
         {!hasPhotos && (
           <div className="g-empty">
-            <span>NO PHOTOS YET. DROP THE SEASON’S BEST SHOTS HERE — KIT, GOALS, CELEBRATIONS.</span>
+            <span>NO PHOTOS YET. DROP THE SEASON’S BEST SHOTS HERE, KIT, GOALS, CELEBRATIONS.</span>
             <a href="join.html" className="btn btn--ghost btn--sm">Join the media team →</a>
           </div>
         )}

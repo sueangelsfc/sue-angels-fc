@@ -1,4 +1,4 @@
-// MediaStore.jsx — generic admin-uploaded image storage for Gallery + Sponsors.
+// MediaStore.jsx, generic admin-uploaded image storage for Gallery + Sponsors.
 // Photos are compressed to a configurable max-edge and stored as JPEG/PNG data
 // URLs in localStorage. Each store has its own key prefix.
 
@@ -32,7 +32,7 @@ function makeStore(prefix) {
   const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) { return []; } };
   const write = (items) => {
     try { localStorage.setItem(KEY, JSON.stringify(items)); }
-    catch (e) { alert('Storage full — try fewer/smaller images.'); }
+    catch (e) { alert('Storage full, try fewer/smaller images.'); }
     window.dispatchEvent(new CustomEvent('sa-media-changed', { detail: { prefix } }));
   };
   return {
@@ -54,7 +54,7 @@ window.SponsorsStore = makeStore('sponsors');
 // ── Cloud-backed gallery override ────────────────────────────────────────────
 // When dataStore is present (cloud OR local), route the gallery through it so
 // albums sync to every device via Supabase on the live site. Each album is its
-// OWN row (keyed by id) — like player photos — so uploads stay reliable and one
+// OWN row (keyed by id), like player photos, so uploads stay reliable and one
 // album can't bloat a shared row. Cloud-write failures surface as an alert
 // instead of silently rolling back, so problems are obvious.
 if (typeof window !== 'undefined' && window.dataStore && window.dataStore.gallery) {
@@ -64,11 +64,11 @@ if (typeof window !== 'undefined' && window.dataStore && window.dataStore.galler
     console.error('[gallery] save failed', e);
     const msg = (e && e.message) || String(e);
     if (/payload|413|too large|size/i.test(msg)) {
-      alert('Could not save — the album is too large. Try fewer or smaller photos per album.');
+      alert('Could not save, the album is too large. Try fewer or smaller photos per album.');
     } else if (/auth|jwt|permission|policy|row-level|401|403/i.test(msg)) {
-      alert('Could not save — please sign in as admin again, then retry.');
+      alert('Could not save, please sign in as admin again, then retry.');
     } else if (/relation|table|does not exist|404/i.test(msg)) {
-      alert('Could not save — the gallery database table is missing. Run the updated schema.sql in Supabase.');
+      alert('Could not save, the gallery database table is missing. Run the updated schema.sql in Supabase.');
     } else {
       alert('Could not save the album: ' + msg);
     }
@@ -107,7 +107,7 @@ if (typeof window !== 'undefined' && window.dataStore && window.dataStore.galler
   if (window.subscribeGallery) window.subscribeGallery(ping);
 }
 
-// React hook — re-renders when a given store changes.
+// React hook, re-renders when a given store changes.
 window.useMediaStore = function (store, prefix) {
   const [items, setItems] = React.useState(() => store.list());
   React.useEffect(() => {
@@ -118,7 +118,7 @@ window.useMediaStore = function (store, prefix) {
   return items;
 };
 
-// Generic admin upload pill — used by both Gallery + Sponsors admin slots.
+// Generic admin upload pill, used by both Gallery + Sponsors admin slots.
 window.MediaUploader = function ({ onPick, label = 'Upload image', accept = 'image/*' }) {
   const inputRef = React.useRef(null);
   const [busy, setBusy] = React.useState(false);

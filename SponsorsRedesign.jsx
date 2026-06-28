@@ -10,7 +10,7 @@ const RD_DEFAULT_PARTNERS = [
     description: [
       'Sporting Solutions Ltd are a London and Surrey-based sports and garden maintenance contractor, specialising in professional outdoor maintenance, sports-surface care, and renovation work.',
       'Their services include soft landscaping, sports renovations, verti-draining, sports line marking, turf maintenance, grounds care, and general outdoor improvement works. With experience across sports and garden environments, they support clubs, organisations and private clients in keeping their spaces safe, functional and well presented.',
-      'Sue\u2019s Angels FC are proud to be backed by Sporting Solutions Ltd \u2014 a company whose work plays an important role in maintaining and improving the spaces where sport, community and teamwork come together.',
+      'Sue\u2019s Angels FC are proud to be backed by Sporting Solutions Ltd, a company whose work plays an important role in maintaining and improving the spaces where sport, community and teamwork come together.',
     ],
     services: ['Soft landscaping', 'Sports renovations', 'Verti-draining', 'Sports line marking', 'Turf maintenance', 'Grounds care', 'Outdoor improvement works'],
     location: 'London & Surrey', instagram: 'sporting_solutions_ltd', contact: 'Direct message via Instagram for enquiries',
@@ -19,11 +19,11 @@ const RD_DEFAULT_PARTNERS = [
   {
     id: 'p-hodgson', name: 'Hodgson Roofing', logo: 'assets/sponsors/hodgson-roofing.png',
     primary: true, short: 'Warm-up & training top sponsor',
-    blurb: 'Hodgson Roofing joined the club in February 2026 as the main sponsor of Sue\u2019s Angels FC\u2019s warm-up and training top \u2014 the brand the squad wears in every pre-match and midweek session.',
+    blurb: 'Hodgson Roofing joined the club in February 2026 as the main sponsor of Sue\u2019s Angels FC\u2019s warm-up and training top, the brand the squad wears in every pre-match and midweek session.',
     description: [
       'Hodgson Group TA / Hodgson Roofing are roofing specialists based in Harrow, serving clients across London and the surrounding areas.',
       'Their services include new roofs, roof repairs, flat roofs, lead work, Velux installations and general roofing support. As an NFRC-accredited company, Hodgson Roofing deliver professional roofing solutions with a focus on quality workmanship, reliability and customer care.',
-      'Sue\u2019s Angels FC are proud to be supported by Hodgson Roofing \u2014 a trusted roofing specialist whose backing helps strengthen the club as we continue to grow both on and off the pitch.',
+      'Sue\u2019s Angels FC are proud to be supported by Hodgson Roofing, a trusted roofing specialist whose backing helps strengthen the club as we continue to grow both on and off the pitch.',
     ],
     services: ['New roofs', 'Roof repairs', 'Flat roofs', 'Lead work', 'Velux installations', 'General roofing'],
     accreditations: ['NFRC Accredited'], location: 'Harrow & London', address: '203 Headstone Lane, Harrow, United Kingdom',
@@ -88,7 +88,7 @@ function SponsorsV2() {
   if (window.useMediaStore && window.SponsorsStore) window.useMediaStore(window.SponsorsStore, 'sponsors');
   const partners = rdGetPartners();
   const [detail, setDetail] = React.useState(null);
-  // Season credibility strip — derived live from match data, never hardcoded.
+  // Season credibility strip, derived live from match data, never hardcoded.
   const t = window.rdLeagueTotals ? window.rdLeagueTotals() : null;
   const recStat = t
     ? (t.l === 0

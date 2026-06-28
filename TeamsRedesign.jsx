@@ -92,7 +92,7 @@ function RDNum({ value, suffix = '', prefix = '' }) {
 }
 
 // ── athlete-profile building blocks (real-data only) ──────────────────────────
-// Auto tagline derived purely from tracked stats — no invented data.
+// Auto tagline derived purely from tracked stats, no invented data.
 function rdAutoTagline(base, s, ctx) {
   if (s.apps === 0) return 'Awaiting a first appearance this season.';
   if (base.gk) {
@@ -142,7 +142,7 @@ function RDImpact({ label, value, max, on }) {
   );
 }
 
-// Form — last 10 results + per-game contribution bars.
+// Form, last 10 results + per-game contribution bars.
 function RDForm({ log }) {
   const last = log.slice(0, 10).reverse(); // chronological L→R
   const maxC = Math.max(1, ...last.map((m) => m.goals + m.asts));
@@ -253,7 +253,7 @@ function RDPlayerProfile({ num, onClose }) {
   const gallery = window.getPlayerGallery ? window.getPlayerGallery(num) : [];
   // total team matches in the active filter → availability %.
   // Walkovers are excluded: the win was granted with no game played, so no
-  // player could appear in one — counting them would unfairly lower availability.
+  // player could appear in one, counting them would unfairly lower availability.
   const teamMatches = (() => {
     const src = window.getDerivedResults ? window.getDerivedResults() : (window.SEASON_RESULTS || []);
     return src.filter((r) => r.kind !== 'walkover')
@@ -269,7 +269,7 @@ function RDPlayerProfile({ num, onClose }) {
     : [ ['Goals', s.goals, ''], ['Assists', s.assists, ''], ['G+A', s.goalInvolvements, ''], ['Win %', winPct, '%'] ];
   const rings = base.gk
     ? [ { label: 'Clean sheets', value: s.cleanSheets, pct: s.cleanSheets / Math.max(1, s.gkApps), sub: `${s.cleanSheets} of ${s.gkApps || 0} in goal` }, { label: 'Win rate', value: winPct, suffix: '%', pct: winPct / 100, sub: `${W}W ${D}D ${L}L` }, { label: 'Availability', value: availability, suffix: '%', pct: availability / 100, sub: `${s.apps} / ${teamMatches} games` }, { label: 'MOTM', value: s.motm, pct: s.motm / Math.max(1, mx.mo), sub: `${s.motm} award${s.motm === 1 ? '' : 's'}` } ]
-    : [ { label: 'Goals', value: s.goals, pct: s.goals / mx.g, sub: s.apps ? `${(s.goals / s.apps).toFixed(2)} per game` : '\u2014' }, { label: 'Assists', value: s.assists, pct: s.assists / mx.a, sub: s.apps ? `${(s.assists / s.apps).toFixed(2)} per game` : '\u2014' }, { label: 'Win rate', value: winPct, suffix: '%', pct: winPct / 100, sub: `${W}W ${D}D ${L}L` }, { label: 'Availability', value: availability, suffix: '%', pct: availability / 100, sub: `${s.apps} / ${teamMatches} games` } ];
+    : [ { label: 'Goals', value: s.goals, pct: s.goals / mx.g, sub: s.apps ? `${(s.goals / s.apps).toFixed(2)} per game` : '-' }, { label: 'Assists', value: s.assists, pct: s.assists / mx.a, sub: s.apps ? `${(s.assists / s.apps).toFixed(2)} per game` : '-' }, { label: 'Win rate', value: winPct, suffix: '%', pct: winPct / 100, sub: `${W}W ${D}D ${L}L` }, { label: 'Availability', value: availability, suffix: '%', pct: availability / 100, sub: `${s.apps} / ${teamMatches} games` } ];
   const impacts = base.gk
     ? [ ['Appearances', s.apps, mx.ap], ['Starts', s.started, mx.ap], ['Clean sheets', s.cleanSheets, Math.max(1, mx.ap)], ['MOTM', s.motm, Math.max(1, mx.mo)] ]
     : [ ['Goals', s.goals, mx.g], ['Assists', s.assists, mx.a], ['Goal involvements', s.goalInvolvements, mx.g + mx.a], ['MOTM', s.motm, Math.max(1, mx.mo)], ['Starts', s.started, mx.ap] ];
@@ -372,8 +372,8 @@ function RDPlayerProfile({ num, onClose }) {
             <p className="rd-eyebrow rd-eyebrow--plain" style={{ color: 'var(--fg-3)' }}>Position &amp; role</p>
             <RDPitch breakdown={s.positionBreakdown} main={s.mostPlayedPosition} />
             <div className="rd-rolemeta">
-              <div><span>Main position</span><b>{s.mostPlayedPosition || '\u2014'}</b></div>
-              <div><span>Other roles</span><b>{s.positionBreakdown.slice(1, 4).map(([p]) => p).join(', ') || '\u2014'}</b></div>
+              <div><span>Main position</span><b>{s.mostPlayedPosition || '-'}</b></div>
+              <div><span>Other roles</span><b>{s.positionBreakdown.slice(1, 4).map(([p]) => p).join(', ') || '-'}</b></div>
             </div>
             {s.penaltyAttempts > 0 ? <p className="rd-pp__note" style={{ marginTop: 12 }}>Penalties · {s.penaltiesScored}/{s.penaltyAttempts} converted ({s.penaltyConversion}%)</p> : null}
           </div>
@@ -395,7 +395,7 @@ function RDPlayerProfile({ num, onClose }) {
               {log.length === 0 ? <p style={{ color: 'var(--fg-3)' }}>No matches logged in this filter.</p> : log.map((m, i) => {
                 const usHome = m.r.home.includes('Angels');
                 const opp = (usHome ? m.r.away : m.r.home).replace(' FC', '');
-                const score = m.r.kind === 'walkover' ? m.r.wo : `${m.r.hs}–${m.r.as}`;
+                const score = m.r.kind === 'walkover' ? m.r.wo : `${m.r.hs}-${m.r.as}`;
                 return (
                   <div className="rd-pp__logrow" key={i}>
                     <span className={`rd-wdl rd-wdl--${m.result.toLowerCase()}`}>{m.result}</span>
@@ -432,7 +432,7 @@ function RDPlayerCard({ p, onOpen }) {
   const pos = p.gk ? 'GK' : (s.mostPlayedPosition || 'SQUAD');
   const role = p.gk ? 'Goalkeeper'
     : (window.blanketRole ? window.blanketRole({ ...p, mostPlayedPosition: s.mostPlayedPosition, positionBreakdown: s.positionBreakdown }) : 'Outfield');
-  // back-of-card stat set — richer than the front
+  // back-of-card stat set, richer than the front
   const back = p.gk
     ? [['Apps', s.apps], ['Clean sheets', s.cleanSheets], ['Conceded', s.goalsConceded], ['MOTM', s.motm || 0]]
     : [['Apps', s.apps], ['Goals', s.goals], ['Assists', s.assists], ['G+A', s.goalInvolvements], ['MOTM', s.motm || 0], ['Captained', s.captained || 0]];

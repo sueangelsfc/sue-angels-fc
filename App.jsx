@@ -1,4 +1,4 @@
-// App.jsx — top-level composition. Hero up top, then matchday data,
+// App.jsx, top-level composition. Hero up top, then matchday data,
 // then the championship celebration block, then media + kit + sponsors + CTA.
 function App() {
   return (
@@ -23,7 +23,7 @@ function App() {
   );
 }
 
-// HomeChampions — compact championship celebration strip below the hero.
+// HomeChampions, compact championship celebration strip below the hero.
 // Numbers derive live from window.SEASON_RESULTS (league only) so they stay in
 // sync with the Results tab as new fixtures roll in.
 function HomeChampions() {

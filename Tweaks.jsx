@@ -1,4 +1,4 @@
-// Tweaks.jsx — exposes a curated set of brand tweaks for Sue's Angels FC.
+// Tweaks.jsx, exposes a curated set of brand tweaks for Sue's Angels FC.
 // Reads TWEAK_DEFAULTS from window (set in the host HTML's EDITMODE block).
 function SueTweaks() {
   const defaults = window.TWEAK_DEFAULTS || {

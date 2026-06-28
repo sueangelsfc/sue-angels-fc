@@ -1,4 +1,4 @@
-// ResultsPage.jsx — full 25/26 season results from window.SEASON_RESULTS.
+// ResultsPage.jsx, full 25/26 season results from window.SEASON_RESULTS.
 // Includes both League Ten and the Dylan Rigobert Trophy cup run.
 // Cup rounds (Final / Semi Final / Quarter Final / Last 16 / Round of 32) get
 // distinct row treatment so the cup story reads visually.
@@ -69,10 +69,10 @@ function ResultRow({ r }) {
         </div>
         <div className="rr__score">
           <span className={usHome && result === 'W' && !hasPens ? 'is-volt' : (usHome && result === 'L' && !hasPens ? 'is-loss' : '')}>{r.hs}</span>
-          <span className="rr__dash">–</span>
+          <span className="rr__dash">-</span>
           <span className={!usHome && result === 'W' && !hasPens ? 'is-volt' : (!usHome && result === 'L' && !hasPens ? 'is-loss' : '')}>{r.as}</span>
           {hasPens && (
-            <span className="rr__pens">PENS <strong className={result === 'W' ? 'is-volt' : 'is-loss'}>{r.pens.hs}{'–'}{r.pens.as}</strong></span>
+            <span className="rr__pens">PENS <strong className={result === 'W' ? 'is-volt' : 'is-loss'}>{r.pens.hs}{'-'}{r.pens.as}</strong></span>
           )}
         </div>
         <div className="rr__side rr__side--right">
@@ -122,7 +122,7 @@ function ResultDetails({ r, data }) {
   const captain = data.captain && findP(data.captain);
 
   // If there's literally nothing to show, render nothing.
-  // NOTE: commentary is intentionally NOT shown here — it lives only on the
+  // NOTE: commentary is intentionally NOT shown here, it lives only on the
   // Media › News match-report graphic.
   if (!scorers.length && !assists.length && !oppGoals.length && !yc.length && !rc.length && !oppRc.length && !motm && !captain && !data.formation) return null;
 
@@ -261,21 +261,21 @@ function ResultsPage() {
       eyebrow: 'DYLAN RIGOBERT TROPHY · 25/26',
       title: <>CUP <em>FINALISTS</em></>,
       sub: `${drtS ? drtS.played : 0} cup matches. ${drtS ? drtS.w : 0} won (Round of 32 → Last 16 → Quarter Final → Semi Final), beaten in the final. ${drtS ? drtS.gf : 0} scored, ${drtS ? drtS.ga : 0} conceded. ${drtS ? drtS.winPct : 0}% win rate.`,
-      meta: `DRT RUN · 5–1 → 6–0 → 7–0 → 3–0 → 0–3 (F)`,
+      meta: `DRT RUN · 5-1 → 6-0 → 7-0 → 3-0 → 0-3 (F)`,
     },
     ccup: {
       eyebrow: "CHIPOTLE UK CHAIRMAN'S CUP · 25/26",
       title: <>CCUP <em>LAST 16</em></>,
-      sub: `${ccupS ? ccupS.played : 0} cup matches. ${ccupS ? ccupS.w : 0} won, ${ccupS ? ccupS.l : 0} lost — knocked out at the Last 16 on penalties after a 2–2 draw with Kew Antigua. ${ccupS ? ccupS.gf : 0} scored, ${ccupS ? ccupS.ga : 0} conceded.`,
-      meta: `CCUP RUN · 2–0 → 1–0 → 2–1 → 2–2 (Pens 3–4)`,
+      sub: `${ccupS ? ccupS.played : 0} cup matches. ${ccupS ? ccupS.w : 0} won, ${ccupS ? ccupS.l : 0} lost, knocked out at the Last 16 on penalties after a 2-2 draw with Kew Antigua. ${ccupS ? ccupS.gf : 0} scored, ${ccupS ? ccupS.ga : 0} conceded.`,
+      meta: `CCUP RUN · 2-0 → 1-0 → 2-1 → 2-2 (Pens 3-4)`,
     },
     mlip: (() => {
       const s = statsByKey.mlip;
       return {
         eyebrow: 'SUPREME TROPHIES MARCUS LIPTON CUP · 25/26',
         title: <>MLIP <em>2ND ROUND</em></>,
-        sub: `${s ? s.played : 0} cup matches. ${s ? s.w : 0} won, ${s ? s.l : 0} lost — knocked out at the 2nd Round by Argentina FC 1st Team. ${s ? s.gf : 0} scored, ${s ? s.ga : 0} conceded.`,
-        meta: `MLIP RUN · 2–1 → 0–2 (KO)`,
+        sub: `${s ? s.played : 0} cup matches. ${s ? s.w : 0} won, ${s ? s.l : 0} lost, knocked out at the 2nd Round by Argentina FC 1st Team. ${s ? s.gf : 0} scored, ${s ? s.ga : 0} conceded.`,
+        meta: `MLIP RUN · 2-1 → 0-2 (KO)`,
       };
     })(),
     cc: (() => {
@@ -283,8 +283,8 @@ function ResultsPage() {
       return {
         eyebrow: 'SURREY FA SUNDAY LOWER JUNIOR COUNTY CUP · 25/26',
         title: <>SURREY FA <em>CUP</em></>,
-        sub: `${s ? s.played : 0} cup matches. ${s ? s.w : 0} won, ${s ? s.l : 0} lost — knocked out at the Quarter Final by Sheen Park Rangers. ${s ? s.gf : 0} scored, ${s ? s.ga : 0} conceded.`,
-        meta: `CC RUN · 7–1 → 7–0 → 3–0 → 0–3 (QF)`,
+        sub: `${s ? s.played : 0} cup matches. ${s ? s.w : 0} won, ${s ? s.l : 0} lost, knocked out at the Quarter Final by Sheen Park Rangers. ${s ? s.gf : 0} scored, ${s ? s.ga : 0} conceded.`,
+        meta: `CC RUN · 7-1 → 7-0 → 3-0 → 0-3 (QF)`,
       };
     })(),
   }[filter] || { eyebrow: '', title: '', sub: '', meta: '' };
@@ -317,7 +317,7 @@ function ResultsPage() {
       >
       </PageHero>
 
-      {/* Tab filter — generated from window.COMPETITIONS */}
+      {/* Tab filter, generated from window.COMPETITIONS */}
       <div className="container" style={{ marginTop: 'var(--sp-5)' }}>
         <div className="filters">
           {COMPETITIONS.map((comp) => {
@@ -361,7 +361,7 @@ function ResultsPage() {
                   <div style={{ paddingLeft: 16, paddingRight: 16, paddingBottom: 8 }}>
                     <MatchEntry
                       matchId={r.id}
-                      matchLabel={`${r.home} ${r.kind === 'walkover' ? r.wo : (r.hs + '–' + r.as)} ${r.away} · ${r.date} · ${r.competition || ''}${r.round ? ' · ' + r.round : ''}`}
+                      matchLabel={`${r.home} ${r.kind === 'walkover' ? r.wo : (r.hs + '-' + r.as)} ${r.away} · ${r.date} · ${r.competition || ''}${r.round ? ' · ' + r.round : ''}`}
                     />
                   </div>
                 )}

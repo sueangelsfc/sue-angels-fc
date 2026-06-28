@@ -1,4 +1,4 @@
-// Statement.jsx — oversized brand statement with tweakable variants.
+// Statement.jsx, oversized brand statement with tweakable variants.
 function Statement() {
   const [variant, setVariant] = React.useState(() => document.body.dataset.statement || 'echoes');
   React.useEffect(() => {

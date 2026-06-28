@@ -1,4 +1,4 @@
-// ChampionsRedesign.jsx — title celebration + full season stats (v2 glass).
+// ChampionsRedesign.jsx, title celebration + full season stats (v2 glass).
 const { Reveal, RDArrow, RDPage } = window;
 
 // animated progress-ring tile (matches the player-profile rings)
@@ -59,7 +59,7 @@ function ChampionsV2() {
   ];
   const insights = [
     t.l === 0 ? ['trophy', 'Unbeaten champions', `${t.pl} league games, ${t.l} defeats`] : ['trophy', 'League Ten champions', `${t.w} wins from ${t.pl}`],
-    ['pulse', `${t.gf} goals scored`, `${gpg.toFixed(1)} per game — best in the division`],
+    ['pulse', `${t.gf} goals scored`, `${gpg.toFixed(1)} per game, best in the division`],
     ['shield', `${t.ga} conceded`, `${cleanSheets} clean sheet${cleanSheets === 1 ? '' : 's'} kept`],
   ];
 
@@ -80,7 +80,7 @@ function ChampionsV2() {
           </div>
         </section>
 
-        {/* The numbers — premium rings + record + insights */}
+        {/* The numbers, premium rings + record + insights */}
         <Reveal as="section" className="rd-section rd-section--tight">
           <div className="rd-container">
             <div className="rd-section__head"><div><p className="rd-eyebrow">League Ten · 25/26</p><h2 className="rd-h2">The season in numbers</h2></div></div>

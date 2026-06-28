@@ -27,7 +27,7 @@ function rdCollectArticles() {
     if (!text) continue;
     const usHome = r.home.includes('Angels');
     const us = usHome ? r.hs : r.as, them = usHome ? r.as : r.hs;
-    out.push({ kind: 'report', id: 'mr-' + r.id, cat: 'Match Report', r, data, title: `${r.kind === 'walkover' ? r.wo : `${us}–${them}`} ${usHome ? '(H)' : '(A)'} vs ${(usHome ? r.away : r.home).replace(' FC', '')}`, lede: text, date: r.date, sort: rdParseDate(r.date) });
+    out.push({ kind: 'report', id: 'mr-' + r.id, cat: 'Match Report', r, data, title: `${r.kind === 'walkover' ? r.wo : `${us}-${them}`} ${usHome ? '(H)' : '(A)'} vs ${(usHome ? r.away : r.home).replace(' FC', '')}`, lede: text, date: r.date, sort: rdParseDate(r.date) });
   }
   // 3) Coach-written previews (data.preview), NO AI.
   const lookup = {};
@@ -44,7 +44,7 @@ function rdCollectArticles() {
   return out;
 }
 
-function rdTrunc(s, n) { if (!s) return ''; return s.length <= n ? s : s.slice(0, n).replace(/[\s,;:.!?, –]+\S*$/, '') + '…'; }
+function rdTrunc(s, n) { if (!s) return ''; return s.length <= n ? s : s.slice(0, n).replace(/[\s,;:.!?, -]+\S*$/, '') + '…'; }
 
 // score-card cover for match reports/previews
 function RDScoreCover({ a }) {
@@ -57,7 +57,7 @@ function RDScoreCover({ a }) {
         <span className="rd-score-cover__ft">Full time</span>
         <div className="rd-score-cover__row">
           {window.TeamBadge ? <window.TeamBadge team={r.home} size={34} /> : null}
-          <b>{r.kind === 'walkover' ? r.wo : `${r.hs}–${r.as}`}</b>
+          <b>{r.kind === 'walkover' ? r.wo : `${r.hs}-${r.as}`}</b>
           {window.TeamBadge ? <window.TeamBadge team={r.away} size={34} /> : null}
         </div>
         <span className="rd-score-cover__comp">{r.competition || 'League Ten'}</span>

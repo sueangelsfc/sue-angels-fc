@@ -1,11 +1,11 @@
-// News.jsx — magazine-style news feed with auto-generated match-report graphics.
+// News.jsx, magazine-style news feed with auto-generated match-report graphics.
 //
 // Coach-entered commentary on the Results page flows EXCLUSIVELY here as the
 // lede of a "MATCH REPORT" article. Each match report uses a custom
 // SVG-based graphic that names the home/away teams and shows the score.
 
 // Renders an <img> for whichever team is on this side, falling back to a placeholder.
-// Used by both MatchReportGraphic and MatchPreviewGraphic — they share styles.
+// Used by both MatchReportGraphic and MatchPreviewGraphic, they share styles.
 function MrTeamBadge({ team }) {
   const meta = window.resolveBadge ? window.resolveBadge(team) : null;
   if (meta) {
@@ -14,7 +14,7 @@ function MrTeamBadge({ team }) {
   return <div className="mr-graphic__badge mr-graphic__badge--placeholder" />;
 }
 
-// Match-preview graphic — same layout language as MatchReportGraphic but for a
+// Match-preview graphic, same layout language as MatchReportGraphic but for a
 // fixture that hasn't been played yet. Shows both badges, the KO time, venue,
 // and competition. Falls back gracefully if the opposition badge isn't known.
 function MatchPreviewGraphic({ fx }) {
@@ -54,7 +54,7 @@ function MatchPreviewGraphic({ fx }) {
   );
 }
 
-// SquadSpotlightGraphic — magazine cover for `kind: 'player'` articles.
+// SquadSpotlightGraphic, magazine cover for `kind: 'player'` articles.
 // Uses the player's uploaded photo (window.getPlayerPhoto) when present,
 // falls back to the avatar SVG so the article still has a graphic before
 // any photo lands. Headline tag (GOAL MACHINE, IRON MAN, etc.) is rendered
@@ -81,7 +81,7 @@ function SquadSpotlightGraphic({ player, headline }) {
   );
 }
 
-// SponsorCoverGraphic — magazine-style cover for sponsor feature articles.
+// SponsorCoverGraphic, magazine-style cover for sponsor feature articles.
 // Renders both sponsor logos side by side on a navy bg with volt accents.
 function SponsorCoverGraphic({ partners }) {
   const items = partners && partners.length ? partners : [];
@@ -127,7 +127,7 @@ function MatchReportGraphic({ r, data }) {
     const them = usHome ? r.as : r.hs;
     result = us > them ? 'W' : us === them ? 'D' : 'L';
   }
-  const subtag = hasPens ? `Pens ${r.pens.hs}–${r.pens.as}` : null;
+  const subtag = hasPens ? `Pens ${r.pens.hs}-${r.pens.as}` : null;
   const motm = data && data.motm && (window.SQUAD || []).find((x) => x.num === data.motm);
   const captain = data && data.captain && (window.SQUAD || []).find((x) => x.num === data.captain);
 
@@ -139,7 +139,7 @@ function MatchReportGraphic({ r, data }) {
         <span className={`mr-graphic__chip mr-graphic__chip--${result.toLowerCase()}`}>{result}</span>
       </div>
       <div className="mr-graphic__main">
-        {/* LEFT — always HOME team */}
+        {/* LEFT, always HOME team */}
         <div className={`mr-graphic__side ${usHome ? 'mr-graphic__side--us' : ''}`}>
           <MrTeamBadge team={r.home} />
           <span className="mr-graphic__team">{homeName}</span>
@@ -151,13 +151,13 @@ function MatchReportGraphic({ r, data }) {
           ) : (
             <div className="mr-graphic__score-nums">
               <span className={`mr-graphic__num ${usHome && result === 'W' ? 'is-volt' : (!usHome && result === 'L' ? 'is-volt' : '')}`}>{r.hs}</span>
-              <span className="mr-graphic__dash">{'–'}</span>
+              <span className="mr-graphic__dash">{'-'}</span>
               <span className={`mr-graphic__num ${!usHome && result === 'W' ? 'is-volt' : (usHome && result === 'L' ? 'is-volt' : '')}`}>{r.as}</span>
             </div>
           )}
           {subtag && <span className="mr-graphic__pens">{subtag}</span>}
         </div>
-        {/* RIGHT — always AWAY team */}
+        {/* RIGHT, always AWAY team */}
         <div className={`mr-graphic__side ${!usHome ? 'mr-graphic__side--us' : ''}`}>
           <MrTeamBadge team={r.away} />
           <span className="mr-graphic__team">{awayName}</span>
@@ -168,7 +168,7 @@ function MatchReportGraphic({ r, data }) {
         <span>{r.date}</span>
         {r.kick && <span>KO {r.kick}</span>}
         {r.venue && <span>{r.venue.toUpperCase()}</span>}
-        {motm && <span className="mr-graphic__motm">MOTM {'—'} {motm.first[0]}. {motm.last}</span>}
+        {motm && <span className="mr-graphic__motm">MOTM {'-'} {motm.first[0]}. {motm.last}</span>}
         {captain && <span className="mr-graphic__cap">(C) {captain.first[0]}. {captain.last}</span>}
       </div>
     </div>
@@ -177,7 +177,7 @@ function MatchReportGraphic({ r, data }) {
 
 // Build a storytelling-style lede from match facts + coach notes.
 // Written in elite-sports-journalist voice. Used when a match has commentary
-// but hasn't been AI-polished yet — and as the basis for the polish prompt.
+// but hasn't been AI-polished yet, and as the basis for the polish prompt.
 function buildStorytellingLede(r, data) {
   const usHome = r.home.includes('Angels');
   const opp = (usHome ? r.away : r.home).replace(' FC', '');
@@ -205,20 +205,20 @@ function buildStorytellingLede(r, data) {
     lines.push(`Three points for nothing. ${opp} couldn’t raise a side and the points came back with us before a ball had been kicked${venue ? ' at ' + venue : ''}.`);
   } else if (result === 'W') {
     const margin = us - them;
-    if (margin >= 5) lines.push(`Total dominance ${where}. Sue’s Angels FC ripped ${opp} apart ${us}–${them}${venue ? ' at ' + venue : ''}${kick ? ' in front of a ' + kick + ' kick-off' : ''}, a statement performance from the very first whistle.`);
-    else if (margin >= 3) lines.push(`This was the night the project announced itself again. Sue’s Angels FC beat ${opp} ${us}–${them}${venue ? ' at ' + venue : ''} — emphatic, clinical, and another reminder of where this team is going.`);
-    else lines.push(`Three points, dug out the hard way. Sue’s Angels FC came past ${opp} ${us}–${them}${venue ? ' at ' + venue : ''} — not their cleanest performance, but the result is what counts.`);
+    if (margin >= 5) lines.push(`Total dominance ${where}. Sue’s Angels FC ripped ${opp} apart ${us}-${them}${venue ? ' at ' + venue : ''}${kick ? ' in front of a ' + kick + ' kick-off' : ''}, a statement performance from the very first whistle.`);
+    else if (margin >= 3) lines.push(`This was the night the project announced itself again. Sue’s Angels FC beat ${opp} ${us}-${them}${venue ? ' at ' + venue : ''}, emphatic, clinical, and another reminder of where this team is going.`);
+    else lines.push(`Three points, dug out the hard way. Sue’s Angels FC came past ${opp} ${us}-${them}${venue ? ' at ' + venue : ''}, not their cleanest performance, but the result is what counts.`);
   } else if (result === 'L') {
-    lines.push(`A night the badge will want to forget. ${opp} took it ${them}–${us}${venue ? ' at ' + venue : ''}${hasPens ? ', edging Sue’s Angels FC on penalties after the regulation finish' : ''}. The room knows the response is coming.`);
+    lines.push(`A night the badge will want to forget. ${opp} took it ${them}-${us}${venue ? ' at ' + venue : ''}${hasPens ? ', edging Sue’s Angels FC on penalties after the regulation finish' : ''}. The room knows the response is coming.`);
   } else {
-    lines.push(`A point each, when both sides knew there was more on offer. Sue’s Angels FC and ${opp} traded blows for ${us}–${them}${venue ? ' at ' + venue : ''} — a draw with the texture of a missed opportunity.`);
+    lines.push(`A point each, when both sides knew there was more on offer. Sue’s Angels FC and ${opp} traded blows for ${us}-${them}${venue ? ' at ' + venue : ''}, a draw with the texture of a missed opportunity.`);
   }
 
   if (scorers.length) {
     if (scorers.length === 1) lines.push(`${scorers[0]} got the goal that mattered.`);
     else lines.push(`Goals from ${scorers.join(', ')}.`);
   }
-  if (motm) lines.push(`${motm.first} ${motm.last} walked off with the Man of the Match award — deservedly so.`);
+  if (motm) lines.push(`${motm.first} ${motm.last} walked off with the Man of the Match award, deservedly so.`);
   if (data.commentary && data.commentary.trim()) lines.push(data.commentary.trim());
 
   return lines.join(' ');
@@ -228,14 +228,14 @@ function generateArticles() {
   const articles = [];
   const insights = window.TABLE_INSIGHTS ? window.TABLE_INSIGHTS() : null;
 
-  // CHAMPIONS — render as a hero match-report from the title-clinching fixture
-  // (10–1 vs Sporting Club Catania, 26 Apr 26). Falls back to a banner if the
+  // CHAMPIONS, render as a hero match-report from the title-clinching fixture
+  // (10-1 vs Sporting Club Catania, 26 Apr 26). Falls back to a banner if the
   // fixture row can't be found.
   const allResults0 = window.getDerivedResults ? window.getDerivedResults() : (window.SEASON_RESULTS || []);
   const cataniaResult = allResults0.find((r) => r.id === 'r20260426-catania');
   const cataniaData = (cataniaResult && window.loadMatchEntry) ? (window.loadMatchEntry('r20260426-catania') || {}) : {};
   if (insights && insights.champion && insights.champion.us && cataniaResult) {
-    const fallbackReport = "Title clinched at home. Sue’s Angels FC tore Sporting Club Catania apart 10–1 on 26 April 26 — the win that confirmed the League Ten crown with games still to play.\n\nFrom the first whistle the room knew what this was. Inaugural season, top of the table all year, and the maths within reach. Catania put up a fight in the early minutes; the response was ten goals in front of our own supporters.\n\nThis was Sunday League football played with intent. The wide men found space, the back line stayed honest, and every chance was finished. By the time the celebrations started, the league was over as a contest.\n\nUnbeaten across the campaign, promoted into the next division, and the badge worn with the swagger of champions. The first chapter — written.";
+    const fallbackReport = "Title clinched at home. Sue’s Angels FC tore Sporting Club Catania apart 10-1 on 26 April 26, the win that confirmed the League Ten crown with games still to play.\n\nFrom the first whistle the room knew what this was. Inaugural season, top of the table all year, and the maths within reach. Catania put up a fight in the early minutes; the response was ten goals in front of our own supporters.\n\nThis was Sunday League football played with intent. The wide men found space, the back line stayed honest, and every chance was finished. By the time the celebrations started, the league was over as a contest.\n\nUnbeaten across the campaign, promoted into the next division, and the badge worn with the swagger of champions. The first chapter, written.";
     const lede = (cataniaData.polishedReport && cataniaData.polishedReport.trim())
               || (cataniaData.commentary    && cataniaData.commentary.trim())
               || fallbackReport;
@@ -253,12 +253,12 @@ function generateArticles() {
     });
   }
 
-  // Match reports from saved match data — sorted by fixture date.
+  // Match reports from saved match data, sorted by fixture date.
   const months = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
   const parse = (s) => { const m = /^(\d{1,2})\s+(\w{3})\s+(\d{2})$/.exec((s||'').trim()); return m ? new Date(2000 + parseInt(m[3]), months[m[2]] || 0, parseInt(m[1])) : new Date(0); };
   const allResults = allResults0;
   for (const r of allResults) {
-    // Skip the Catania title-clincher — already pushed as the CHAMPIONS hero above.
+    // Skip the Catania title-clincher, already pushed as the CHAMPIONS hero above.
     if (r.id === 'r20260426-catania' && articles.some((a) => a.isChampionsArticle)) continue;
     const data = window.loadMatchEntry ? window.loadMatchEntry(r.id) : null;
     // Prefer the polished match-report; fall back to raw commentary; skip if neither.
@@ -277,16 +277,16 @@ function generateArticles() {
       kind: 'match-report',
       r, data,
       cat: 'MATCH REPORT',
-      title: `${r.kind === 'walkover' ? r.wo : `${us}–${them}`} ${usHome ? '(H)' : '(A)'} VS ${opp.replace(' FC', '').toUpperCase()}`,
+      title: `${r.kind === 'walkover' ? r.wo : `${us}-${them}`} ${usHome ? '(H)' : '(A)'} VS ${opp.replace(' FC', '').toUpperCase()}`,
       lede,
       date: r.date, sortDate: parse(r.date),
     });
   }
 
-  // Match PREVIEW articles — sourced from match-entry data.preview (coach’s
+  // Match PREVIEW articles, sourced from match-entry data.preview (coach’s
   // pre-match notes). Persist forever, even after fixture date has passed.
   // Built from BOTH upcoming fixtures AND played results (since fixtures
-  // auto-promote into results once the date passes — the preview survives).
+  // auto-promote into results once the date passes, the preview survives).
   const fixtureLookup = {};
   for (const f of (window.UPCOMING_FIXTURES || [])) fixtureLookup[f.id] = f;
   for (const r of (window.SEASON_RESULTS || []))     fixtureLookup[r.id] = r;
@@ -314,7 +314,7 @@ function generateArticles() {
     articles.push({
       kind: 'preview',
       cat: 'MATCH PREVIEW',
-      title: `PREVIEW — ${opp.toUpperCase()} (${usHome ? 'H' : 'A'})`,
+      title: `PREVIEW, ${opp.toUpperCase()} (${usHome ? 'H' : 'A'})`,
       lede: (data.polishedPreview && data.polishedPreview.trim()) || data.preview.trim(),
       date: fx.date && fx.mon ? `${fx.day} ${fx.date} ${fx.mon}` : (fx.date || ''),
       sortDate: sortDate || new Date(0),
@@ -354,28 +354,28 @@ function generateArticles() {
       break; // results are sorted desc, first match they appeared in is the most recent
     }
 
-    // Opening paragraph — cinematic hook by archetype.
+    // Opening paragraph, cinematic hook by archetype.
     let opener;
     if (headline === 'GOAL MACHINE') {
-      opener = `When Sue’s Angels FC needed a moment, they looked at ${fullName}. The ${role} answered — every single time. ${p.goals} goals in ${p.apps} ${p.apps === 1 ? 'game' : 'games'} on a title-winning run, the kind of return that wins you League Ten and gets your name shouted from the touchline.`;
+      opener = `When Sue’s Angels FC needed a moment, they looked at ${fullName}. The ${role} answered, every single time. ${p.goals} goals in ${p.apps} ${p.apps === 1 ? 'game' : 'games'} on a title-winning run, the kind of return that wins you League Ten and gets your name shouted from the touchline.`;
     } else if (headline === 'CREATIVE FORCE') {
-      opener = `Champions are built around players who make the others look better. ${fullName} has been that player for Sue’s Angels FC. ${p.assists} assists this season, ${p.goals} ${p.goals === 1 ? 'goal' : 'goals'} of ${firstName}’s own — the connective tissue of the title-winning campaign.`;
+      opener = `Champions are built around players who make the others look better. ${fullName} has been that player for Sue’s Angels FC. ${p.assists} assists this season, ${p.goals} ${p.goals === 1 ? 'goal' : 'goals'} of ${firstName}’s own, the connective tissue of the title-winning campaign.`;
     } else if (headline === 'IRON MAN') {
-      opener = `Reliability is its own talent. ${fullName} has played ${p.apps} matches in a title-winning campaign — the sort of consistency that doesn’t make headlines until you realise the same name keeps showing up on the team-sheet. ${p.last} has shown up. Every time.`;
+      opener = `Reliability is its own talent. ${fullName} has played ${p.apps} matches in a title-winning campaign, the sort of consistency that doesn’t make headlines until you realise the same name keeps showing up on the team-sheet. ${p.last} has shown up. Every time.`;
     } else if (headline === 'MOTM REGULAR') {
       opener = `${p.motm} times this season the Sue’s Angels FC dressing room has gathered after a win and pointed to the same shirt. ${fullName} has worn it every time. That kind of consistency from a ${role} is what separates good seasons from title-winning ones.`;
     } else {
-      opener = `Every champion side has a name that doesn’t shout, just delivers. For Sue’s Angels FC this season, ${fullName} has been that name. ${p.apps} ${p.apps === 1 ? 'appearance' : 'appearances'}, ${p.goals} ${p.goals === 1 ? 'goal' : 'goals'}, ${p.assists} ${p.assists === 1 ? 'assist' : 'assists'} — quietly, unmistakably, a key contributor to a League Ten title.`;
+      opener = `Every champion side has a name that doesn’t shout, just delivers. For Sue’s Angels FC this season, ${fullName} has been that name. ${p.apps} ${p.apps === 1 ? 'appearance' : 'appearances'}, ${p.goals} ${p.goals === 1 ? 'goal' : 'goals'}, ${p.assists} ${p.assists === 1 ? 'assist' : 'assists'}, quietly, unmistakably, a key contributor to a League Ten title.`;
     }
 
-    // Recent-form paragraph — references the actual last match they featured in.
+    // Recent-form paragraph, references the actual last match they featured in.
     let recentLine = null;
     if (lastMatch) {
       const lr = lastMatch.r;
       const usHome = lr.home.includes('Angels');
       const opp = (usHome ? lr.away : lr.home).replace(' FC', '');
       const us = usHome ? lr.hs : lr.as; const them = usHome ? lr.as : lr.hs;
-      const lrScore = lr.kind === 'walkover' ? lr.wo : `${us}–${them}`;
+      const lrScore = lr.kind === 'walkover' ? lr.wo : `${us}-${them}`;
       const lrWon = lr.kind === 'walkover' ? true : us > them;
       const contribBits = [];
       if (lastMatch.goalsHere > 0) contribBits.push(`${lastMatch.goalsHere === 1 ? 'a goal' : lastMatch.goalsHere + ' goals'}`);
@@ -383,7 +383,7 @@ function generateArticles() {
       if (lastMatch.motmHere)      contribBits.push('the Man of the Match award');
       const contrib = contribBits.length ? ` with ${contribBits.join(', ')}` : '';
       const role2 = lastMatch.role === 'started' ? 'started' : 'came off the bench';
-      recentLine = `${firstName} ${role2} most recently in the ${lrScore} ${lrWon ? 'win' : 'result'} ${usHome ? 'at home' : 'away'} against ${opp}${contrib} — the kind of contribution that keeps the engine running.`;
+      recentLine = `${firstName} ${role2} most recently in the ${lrScore} ${lrWon ? 'win' : 'result'} ${usHome ? 'at home' : 'away'} against ${opp}${contrib}, the kind of contribution that keeps the engine running.`;
     }
 
     // Position paragraph.
@@ -393,16 +393,16 @@ function generateArticles() {
       if (positionsCovered > 1) {
         posLine = `${firstName}’s natural home has been at ${p.mostPlayedPosition}, where ${firstName} has done the bulk of the damage, but the gaffer has trusted ${firstName} across ${positionsCovered} different positions when the shape has needed it. That kind of versatility is what title runs are built on.`;
       } else {
-        posLine = `Locked into the ${p.mostPlayedPosition} role from day one and never let it go. Owning a position in a title-winning side isn’t a small thing — it’s the kind of trust you earn week after week.`;
+        posLine = `Locked into the ${p.mostPlayedPosition} role from day one and never let it go. Owning a position in a title-winning side isn’t a small thing, it’s the kind of trust you earn week after week.`;
       }
     } else {
-      posLine = `Used wherever the manager has needed reinforcements — the kind of player who makes a squad deeper, sharper, harder to beat.`;
+      posLine = `Used wherever the manager has needed reinforcements, the kind of player who makes a squad deeper, sharper, harder to beat.`;
     }
 
     // Extras paragraph (MOTM count, captaincy, penalties, discipline).
     const extras = [];
-    if (p.motm > 0 && headline !== 'MOTM REGULAR') extras.push(`${p.motm === 1 ? 'A Man of the Match award already on the mantelpiece' : `${p.motm} Man of the Match awards`} — the squad recognises what the numbers can’t fully capture.`);
-    if (p.captained > 0) extras.push(`${firstName} has worn the captain’s armband ${p.captained} ${p.captained === 1 ? 'time' : 'times'} this season — trust earned the only way it matters.`);
+    if (p.motm > 0 && headline !== 'MOTM REGULAR') extras.push(`${p.motm === 1 ? 'A Man of the Match award already on the mantelpiece' : `${p.motm} Man of the Match awards`}, the squad recognises what the numbers can’t fully capture.`);
+    if (p.captained > 0) extras.push(`${firstName} has worn the captain’s armband ${p.captained} ${p.captained === 1 ? 'time' : 'times'} this season, trust earned the only way it matters.`);
     if (p.penaltiesScored > 0) extras.push(`${p.penaltiesScored} from the spot. Ice in the veins.`);
     if (p.yc + p.rc === 0 && p.apps >= 5) extras.push(`And in ${p.apps} appearances, not a single card. Disciplined, intelligent, ruthless.`);
     const extrasLine = extras.length ? extras.join(' ') : null;
@@ -422,7 +422,7 @@ function generateArticles() {
     articles.push({
       kind: 'player',
       cat: 'PLAYER',
-      title: `${p.first.toUpperCase()} ${p.last.toUpperCase()} — ${headline}`,
+      title: `${p.first.toUpperCase()} ${p.last.toUpperCase()}, ${headline}`,
       headline,
       lede: (polished && polished.trim()) || rawLede,
       rawLede,
@@ -434,12 +434,12 @@ function generateArticles() {
     });
   }
 
-  // Sponsor feature — both main partners, with a custom cover graphic on the card.
+  // Sponsor feature, both main partners, with a custom cover graphic on the card.
   articles.push({
     kind: 'sponsor-feature',
     cat: 'SPONSORS',
     title: 'THE BRANDS BEHIND THE BADGE',
-    lede: 'Two main partners carried Sue’s Angels FC through the inaugural campaign. Sporting Solutions on the front of the matchday shirt since August 2025. Hodgson Roofing on the warm-up and training top since February 2026. Both partners are still on board for 26/27 — and enquiries are open for new brands to join them.\n\nSporting Solutions Ltd are London and Surrey-based sports and garden maintenance contractors, specialising in sports-surface care, line marking, verti-draining, soft landscaping and grounds maintenance. They have backed the club every match since the opening fixture in September 2025.\n\nHodgson Roofing — Hodgson Group TA — are NFRC-accredited roofing specialists based in Harrow, serving London and the surrounding areas. New roofs, repairs, flat roofs, lead work, Velux installs. On board since February 2026 as the warm-up and training top sponsor.\n\nIf you want to put your brand on the kit, the matchday or the website for 26/27 — the sponsors page has the full pack.',
+    lede: 'Two main partners carried Sue’s Angels FC through the inaugural campaign. Sporting Solutions on the front of the matchday shirt since August 2025. Hodgson Roofing on the warm-up and training top since February 2026. Both partners are still on board for 26/27, and enquiries are open for new brands to join them.\n\nSporting Solutions Ltd are London and Surrey-based sports and garden maintenance contractors, specialising in sports-surface care, line marking, verti-draining, soft landscaping and grounds maintenance. They have backed the club every match since the opening fixture in September 2025.\n\nHodgson Roofing, Hodgson Group TA, are NFRC-accredited roofing specialists based in Harrow, serving London and the surrounding areas. New roofs, repairs, flat roofs, lead work, Velux installs. On board since February 2026 as the warm-up and training top sponsor.\n\nIf you want to put your brand on the kit, the matchday or the website for 26/27, the sponsors page has the full pack.',
     date: 'Ongoing', sortDate: new Date(2025, 7, 1), mood: 'd',
     partners: [
       { name: 'Sporting Solutions', logo: 'assets/sponsors/sporting-solutions.png', short: 'MAIN KIT SPONSOR · AUG 25' },
@@ -449,7 +449,7 @@ function generateArticles() {
 
   // Sort with intent:
   // 1. Hero banner (if present) first
-  // 2. All match reports together, strictly by FIXTURE DATE (descending) —
+  // 2. All match reports together, strictly by FIXTURE DATE (descending) -
   //    never by save/polish time.
   // 3. Everything else by its own sortDate, descending.
   articles.sort((a, b) => {
@@ -496,7 +496,7 @@ function NewsCard({ a, size = 'sm', onOpen }) {
 function truncate(s, n) {
   if (!s) return '';
   if (s.length <= n) return s;
-  return s.slice(0, n).replace(/[\s,;:.!?—–]+\S*$/, '') + '…';
+  return s.slice(0, n).replace(/[\s,;:.!?--]+\S*$/, '') + '…';
 }
 
 function PlayerPolishControl({ a, onPolished }) {
@@ -513,14 +513,14 @@ function PlayerPolishControl({ a, onPolished }) {
       const blanket = window.blanketRole ? window.blanketRole(p) : 'Squad';
       const positionList = (p.positionBreakdown || []).map(([pos, n]) => `${pos} (${n})`).join(', ');
       const prompt = [
-        'You are the in-house writer for Sue’s Angels FC — a London Sunday-league football club. Treat the role like a passionate club beat writer covering grassroots football for the people who actually play it. Authoritative and well-crafted, but grounded — this is Sunday League, not the Champions League.',
+        'You are the in-house writer for Sue’s Angels FC, a London Sunday-league football club. Treat the role like a passionate club beat writer covering grassroots football for the people who actually play it. Authoritative and well-crafted, but grounded, this is Sunday League, not the Champions League.',
         'Take the structured player facts below and write a 700-900 word player spotlight article.',
         '',
         '*** PRIMARY RULE *** Stick strictly to the player facts provided. Do not invent stats, moments, biography or backstory not present in the data. Build the article AROUND the facts you have.',
         '',
-        'Voice: speak from inside Sue’s Angels FC — "we", "the club", "the lads" — with the craft of a good club feature writer. Refer to the player by full name first, then surname/first-name interchangeably. Keep the scale honest — this is grassroots football.',
+        'Voice: speak from inside Sue’s Angels FC, "we", "the club", "the lads", with the craft of a good club feature writer. Refer to the player by full name first, then surname/first-name interchangeably. Keep the scale honest, this is grassroots football.',
         'Tone: easy to read, warm, character-driven, football-culture native. Sentences should sing without straining. Plain words, real feelings. UK English. No corporate jargon, no emoji, no quotes.',
-        'Structure: lead with the headline angle. Build through their season — the numbers, position(s) played, defining contributions. Reflect on what they’ve meant to Sue’s Angels FC’s League Ten title-winning campaign. Close with what comes next. 4-7 paragraphs. Plain prose. No headings, no markdown.',
+        'Structure: lead with the headline angle. Build through their season, the numbers, position(s) played, defining contributions. Reflect on what they’ve meant to Sue’s Angels FC’s League Ten title-winning campaign. Close with what comes next. 4-7 paragraphs. Plain prose. No headings, no markdown.',
         '',
         'Word count requirement: between 700 and 900 words. Do not produce anything shorter than 700 words. Aim for 800.',
         '',
@@ -536,12 +536,12 @@ function PlayerPolishControl({ a, onPolished }) {
         p.captained > 0 ? `Times worn the captain’s armband: ${p.captained}` : '',
         positionList ? `Positions covered: ${positionList}` : '',
         p.mostPlayedPosition ? `Most-played position: ${p.mostPlayedPosition}` : '',
-        p.yc + p.rc === 0 && p.apps >= 5 ? 'Disciplinary record: spotless — zero cards' : '',
+        p.yc + p.rc === 0 && p.apps >= 5 ? 'Disciplinary record: spotless, zero cards' : '',
         p.yc > 0 || p.rc > 0 ? `Cards: ${p.yc} yellow, ${p.rc} red` : '',
         '',
         'CONTEXT: Sue’s Angels FC are League Ten champions of the 25/26 season, finishing the season unbeaten across the league campaign. The season ran from September 2025 to May 2026. The club was founded in 2025.',
         '',
-        'Write the player feature now. Output the prose only — no preamble, no labels.',
+        'Write the player feature now. Output the prose only, no preamble, no labels.',
       ].filter(Boolean).join('\n');
 
       const result = await window.claude.complete(prompt);
@@ -718,7 +718,7 @@ function ArticleDetail({ a: aInitial, onClose }) {
   );
 }
 
-// ─── ArticleComposer — admin-only "write a news article" modal ─────────────
+// ─── ArticleComposer, admin-only "write a news article" modal ─────────────
 // Saves to the cloud (dataStore.articles) so posts appear for everyone. Offers
 // an optional AI draft (window.claude.complete) from a one-line brief.
 const ARTICLE_CATEGORIES = ['News', 'Announcement', 'Community', 'Charity', 'Match Report', 'Club', 'Player'];
@@ -744,7 +744,7 @@ function ArticleComposer({ existing, onClose }) {
       const prompt = [
         "You are the club writer for Sue's Angels FC, a London Sunday-league football club, League Ten champions 25/26.",
         "Write a polished, warm but professional news article based on the brief below.",
-        "Return ONLY the article body — 3 to 5 short paragraphs, no headline, no markdown.",
+        "Return ONLY the article body, 3 to 5 short paragraphs, no headline, no markdown.",
         title ? `Headline (for context): ${title}` : '',
         `Category: ${effectiveCat}`,
         `Brief: ${brief.trim()}`,
@@ -789,7 +789,7 @@ function ArticleComposer({ existing, onClose }) {
 
         {canAI && (
           <div className="composer__ai">
-            <label className="composer__label">AI draft <span>— give a sentence or two, we write it</span></label>
+            <label className="composer__label">AI draft <span>- give a sentence or two, we write it</span></label>
             <textarea className="composer__input composer__input--brief" rows={2} placeholder="e.g. We're hosting a charity match on 12 July to raise sepsis awareness, all welcome" value={brief} onChange={(e) => setBrief(e.target.value)} />
             <button type="button" className="btn btn--ghost composer__ai-btn" onClick={draft} disabled={busy}>
               {busy ? 'Writing…' : '✨ Generate draft'}

@@ -66,7 +66,7 @@ function JoinV2() {
               {faqs.map((f, i) => (
                 <div className={`rd-faq__item ${open === i ? 'is-open' : ''}`} key={i}>
                   <button className="rd-faq__q" onClick={() => setOpen(open === i ? -1 : i)}>
-                    <span>{f.q}</span><span className="rd-faq__icn" aria-hidden="true">{open === i ? '–' : '+'}</span>
+                    <span>{f.q}</span><span className="rd-faq__icn" aria-hidden="true">{open === i ? '-' : '+'}</span>
                   </button>
                   {open === i ? <p className="rd-faq__a">{f.a}</p> : null}
                 </div>

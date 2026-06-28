@@ -1,5 +1,5 @@
-// FixturesPage.jsx — full fixtures with 25/26 vs 26/27 season tabs.
-// 25/26 ran to 31 May 2026. 26/27 kicks off in September 2026 — schedule pending.
+// FixturesPage.jsx, full fixtures with 25/26 vs 26/27 season tabs.
+// 25/26 ran to 31 May 2026. 26/27 kicks off in September 2026, schedule pending.
 function compIsLeague(c) { return (c || '').toLowerCase().includes('league'); }
 
 function FxCard({ fx }) {
@@ -99,7 +99,7 @@ function FixturesPage() {
     state.phase === 'active'
       ? `${currentFixtures.length} fixture${currentFixtures.length === 1 ? '' : 's'} left in 25/26. The 26/27 schedule lands over the summer.`
       : state.phase === 'between'
-        ? `25/26 complete. 26/27 kicks off in September — schedule pending.`
+        ? `25/26 complete. 26/27 kicks off in September, schedule pending.`
         : `26/27 season in progress.`;
 
   return (

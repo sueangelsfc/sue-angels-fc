@@ -1,4 +1,4 @@
-// middleware.js — Vercel Edge Middleware (no dependencies, no build step).
+// middleware.js, Vercel Edge Middleware (no dependencies, no build step).
 //
 // Vercel's vercel.json `rewrites` run AFTER the static filesystem, so a request
 // to an existing file (teams.html / media.html) is served statically and a
@@ -7,7 +7,7 @@
 // them to api/share.js, which returns the same page with rich Open Graph tags
 // for the specific player / report / post / coach.
 //
-// Everything else — including these two pages loaded WITHOUT a deep-link param —
+// Everything else, including these two pages loaded WITHOUT a deep-link param -
 // passes straight through to the static file untouched.
 
 export const config = { matcher: ['/teams.html', '/media.html'] };

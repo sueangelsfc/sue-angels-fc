@@ -1,7 +1,7 @@
-// GalleryAlbums.jsx — album support for the photo gallery.
+// GalleryAlbums.jsx, album support for the photo gallery.
 // An album is a single gallery post holding many photos with a chosen cover:
 //   { id, title, caption, cover (dataUrl), photos: [dataUrl, …], date }
-// Back-compat: legacy single-photo items have { src } and no photos[] —
+// Back-compat: legacy single-photo items have { src } and no photos[] -
 // galleryCover()/galleryPhotos() normalise both shapes so old uploads still show.
 
 // ── Normalisers ──────────────────────────────────────────────────────────────
@@ -26,9 +26,9 @@ window.galleryCount = function (item) {
 // returns the data URL so the design preview still works.
 window.uploadGalleryImage = async function (dataUrl, path) {
   const store = window.SupabaseStore;
-  if (!store) return dataUrl; // local preview — keep inline
+  if (!store) return dataUrl; // local preview, keep inline
   const client = await store.client();
-  // Decode the data: URL to a Blob WITHOUT fetch() — a strict CSP connect-src can
+  // Decode the data: URL to a Blob WITHOUT fetch(), a strict CSP connect-src can
   // block fetch('data:…') and surface as "Failed to fetch". atob() has no such issue.
   const comma = dataUrl.indexOf(',');
   const mime = ((dataUrl.slice(0, comma).match(/data:([^;]+)/)) || [, 'image/jpeg'])[1];
@@ -105,9 +105,9 @@ window.AlbumComposer = function ({ onPublished }) {
       console.error('[gallery] publish failed', err);
       const msg = (err && err.message) || String(err);
       if (/bucket|not found|404/i.test(msg)) {
-        alert('Upload failed — the gallery storage bucket is missing. Run the storage SQL in Supabase (I gave you the script).');
+        alert('Upload failed, the gallery storage bucket is missing. Run the storage SQL in Supabase (I gave you the script).');
       } else if (/auth|jwt|permission|policy|row-level|401|403|unauthorized/i.test(msg)) {
-        alert('Upload failed — please sign in as admin again, then retry.');
+        alert('Upload failed, please sign in as admin again, then retry.');
       } else {
         alert('Upload failed: ' + msg);
       }
@@ -134,7 +134,7 @@ window.AlbumComposer = function ({ onPublished }) {
       <div className="rd-form">
       <label className="rd-field">
         <span>Album title</span>
-        <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Sue's Angels 10–1 Catania · Matchday" />
+        <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Sue's Angels 10-1 Catania · Matchday" />
       </label>
 
       <label className="rd-field">
@@ -148,7 +148,7 @@ window.AlbumComposer = function ({ onPublished }) {
       {addingCat ? (
         <label className="rd-field">
           <span>New category name</span>
-          <input value={category} onChange={(e) => setCategory(e.target.value)} onBlur={() => { if (category.trim() && window.addGalleryCat) window.addGalleryCat(category.trim()); }} placeholder="e.g. Training — saved as a future option" autoFocus />
+          <input value={category} onChange={(e) => setCategory(e.target.value)} onBlur={() => { if (category.trim() && window.addGalleryCat) window.addGalleryCat(category.trim()); }} placeholder="e.g. Training, saved as a future option" autoFocus />
         </label>
       ) : null}
       {category.trim().toLowerCase() === 'matchday' ? (
@@ -170,7 +170,7 @@ window.AlbumComposer = function ({ onPublished }) {
       ) : null}
 
       <div className="rd-field">
-        <span>Photos <em>({photos.length})</em> — tap one to set the cover · untap it to use the auto cover</span>
+        <span>Photos <em>({photos.length})</em>, tap one to set the cover · untap it to use the auto cover</span>
         {photos.length > 0 && (
           <div className="album-thumbs">
             {photos.map((p, i) => (
@@ -194,7 +194,7 @@ window.AlbumComposer = function ({ onPublished }) {
         {window.MediaUploader ? <div style={{ marginTop: photos.length ? 10 : 0 }}><window.MediaUploader label={photos.length ? '+ Add more photos' : '+ Add photos'} onPick={addPhoto} /></div> : null}
       </div>
 
-      <p className="cms-sec__sub" style={{ margin: 0 }}>After publishing, open the album in the list below to tag players &amp; coaching staff in each photo. Select multiple files at once, or add in batches — the cover shows in the gallery grid, and photos upload to the cloud so they appear on every device.</p>
+      <p className="cms-sec__sub" style={{ margin: 0 }}>After publishing, open the album in the list below to tag players &amp; coaching staff in each photo. Select multiple files at once, or add in batches, the cover shows in the gallery grid, and photos upload to the cloud so they appear on every device.</p>
 
       <div className="rd-form__actions">
         <button type="button" className="rd-btn rd-btn--ghost" onClick={() => { reset(); setOpen(false); }}>Cancel</button>
@@ -265,7 +265,7 @@ window.AlbumLightbox = function ({ album, onClose }) {
               return (
               <div className="rd-album__cellwrap" key={i}>
               <button className="rd-album__cell" onClick={() => setZoom(i)} aria-label={`Enlarge photo ${i + 1}`}>
-                <img src={p} alt={`${title} — photo ${i + 1}`} loading="lazy" />
+                <img src={p} alt={`${title}, photo ${i + 1}`} loading="lazy" />
                 <span className="rd-album__cellzoom" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></svg>
                 </span>
@@ -302,7 +302,7 @@ window.AlbumLightbox = function ({ album, onClose }) {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
           </button>
           {many && <button className="rd-zoom__nav rd-zoom__nav--prev" onClick={(e) => { e.stopPropagation(); setZoom((i) => (i - 1 + photos.length) % photos.length); }} aria-label="Previous">‹</button>}
-          <img className="rd-zoom__img" src={photos[zoom]} alt={`${title} — photo ${zoom + 1}`} onClick={(e) => e.stopPropagation()} />
+          <img className="rd-zoom__img" src={photos[zoom]} alt={`${title}, photo ${zoom + 1}`} onClick={(e) => e.stopPropagation()} />
           {many && <button className="rd-zoom__nav rd-zoom__nav--next" onClick={(e) => { e.stopPropagation(); setZoom((i) => (i + 1) % photos.length); }} aria-label="Next">›</button>}
           <span className="rd-zoom__count">{zoom + 1} / {photos.length}</span>
           {album.photoTags && (album.photoTags[zoom] || []).length ? (

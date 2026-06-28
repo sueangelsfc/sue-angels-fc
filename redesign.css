@@ -1,5 +1,5 @@
 /* =========================================================================
-   SUE'S ANGELS FC — REDESIGN LAYER (v2 anchor)
+   SUE'S ANGELS FC, REDESIGN LAYER (v2 anchor)
    "Premier League club meets modern sports media."
    Reuses colors_and_type.css tokens (volt / navy / white / black).
    Granger-inspired: bold editorial type, rounded premium cards, dashboard
@@ -9,11 +9,11 @@
 
 :root {
   /* ── TYPE SYSTEM (locked) ──────────────────────────────────────────────
-     Primary  : Geist   — headlines, section titles, stats, names, nav, CTAs
-     Secondary: Manrope — body, articles, tables, bios, long-form, CMS
+     Primary  : Geist  , headlines, section titles, stats, names, nav, CTAs
+     Secondary: Manrope, body, articles, tables, bios, long-form, CMS
      Tracking : -5% on display, slightly looser on body for readability      */
   --font-display: 'Geist', system-ui, -apple-system, sans-serif;   /* override Anton */
-  --font-stat:    'Geist', system-ui, sans-serif;                  /* override Bebas — numbers in Geist 700 */
+  --font-stat:    'Geist', system-ui, sans-serif;                  /* override Bebas, numbers in Geist 700 */
   --font-ui:      'Geist', system-ui, sans-serif;
   --font-sans:    'Manrope', system-ui, -apple-system, sans-serif; /* body / long-form */
   --rd-track-display: -0.05em;
@@ -83,7 +83,7 @@ body.rd-body {
 .rd-section__head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: clamp(28px, 4vw, 56px); }
 .rd-section__head h2 { margin-top: 12px; }
 
-/* ---- buttons (navy text on volt — locked club rule) --------------------- */
+/* ---- buttons (navy text on volt, locked club rule) --------------------- */
 .rd-btn {
   display: inline-flex; align-items: center; gap: 10px; cursor: pointer;
   font: 700 14px/1 var(--font-sans); letter-spacing: 0.04em; text-transform: uppercase;
@@ -144,7 +144,7 @@ body.rd-body {
   background: radial-gradient(420px 200px at 80% -10%, rgba(214,242,58,0.10), transparent 70%);
 }
 
-/* image placeholder slot — premium, replaceable later via CMS */
+/* image placeholder slot, premium, replaceable later via CMS */
 .rd-slot {
   position: relative; border-radius: var(--rd-radius); overflow: hidden;
   background:
@@ -161,7 +161,7 @@ body.rd-body {
 .rd-slot img.rd-slot__photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
 
 /* =========================================================================
-   HEADER — logo-led, premium, glass
+   HEADER, logo-led, premium, glass
    ========================================================================= */
 .rd-header { position: sticky; top: 14px; z-index: 80; padding-inline: var(--rd-gut); margin-bottom: clamp(-30px, -3vw, -10px); }
 .rd-header__bar {
@@ -192,7 +192,7 @@ body.rd-body {
 .rd-btn--pill { background: transparent; color: var(--fg-1); border: 1px solid var(--rd-line-2); border-radius: 9999px; font-weight: 600; }
 .rd-btn--pill:hover { background: var(--rd-volt); color: var(--rd-navy-ink); border-color: transparent; transform: translateY(-1px); }
 
-/* Language shifter — modernised to match the capsule header */
+/* Language shifter, modernised to match the capsule header */
 .lang-shifter { position: relative; }
 .lang-shifter__btn { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; background: rgba(255,255,255,0.05); border: 1px solid var(--rd-line-2); color: var(--fg-2); border-radius: 9999px; padding: 8px 11px; font: 700 11px/1 var(--font-ui); letter-spacing: 0.06em; text-transform: uppercase; transition: .15s var(--rd-ease); }
 .lang-shifter__btn:hover { color: var(--fg-1); background: rgba(255,255,255,0.1); }
@@ -222,7 +222,7 @@ body.rd-body {
 }
 
 /* =========================================================================
-   HERO — bold editorial + live countdown
+   HERO, bold editorial + live countdown
    ========================================================================= */
 .rd-hero { position: relative; overflow: hidden; padding-top: clamp(36px, 6vw, 72px); padding-bottom: clamp(40px, 6vw, 90px); }
 .rd-hero__bg { position: absolute; inset: 0; z-index: 0; display: flex; align-items: center; justify-content: flex-end; pointer-events: none; perspective: 1000px; }
@@ -238,7 +238,7 @@ body.rd-body {
 .rd-count__session span { font: 500 12px/1.3 var(--font-sans); color: var(--fg-3); }
 
 /* =========================================================================
-   SMALL-SCREEN SCALING REFINEMENTS — keep type + spacing in proportion
+   SMALL-SCREEN SCALING REFINEMENTS, keep type + spacing in proportion
    ========================================================================= */
 @media (max-width: 480px) {
   :root { --rd-gut: 16px; }
@@ -314,7 +314,7 @@ body.rd-body {
 }
 
 /* =========================================================================
-   DASHBOARD STAT STRIP (season in numbers) — from screenshot 7
+   DASHBOARD STAT STRIP (season in numbers), from screenshot 7
    ========================================================================= */
 .rd-dash { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; }
 .rd-dash__main { background: var(--rd-card); border: 1px solid var(--rd-line); border-radius: var(--rd-radius); padding: clamp(22px, 2.6vw, 34px); }
@@ -347,7 +347,7 @@ body.rd-body {
 @media (max-width: 560px) { .rd-dash__tiles { grid-template-columns: 1fr 1fr; } }
 
 /* =========================================================================
-   RESULTS RAIL — premium horizontal scroll cards
+   RESULTS RAIL, premium horizontal scroll cards
    ========================================================================= */
 .rd-rail { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 12px; scroll-snap-type: x mandatory; scroll-padding-inline: var(--rd-gut); -webkit-overflow-scrolling: touch; }
 .rd-rail::-webkit-scrollbar { height: 6px; }
@@ -389,7 +389,7 @@ body.rd-body {
 }
 
 /* =========================================================================
-   SQUAD CAROUSEL — premium player cards
+   SQUAD CAROUSEL, premium player cards
    ========================================================================= */
 .rd-squad-rail { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 14px; scroll-snap-type: x mandatory; scroll-padding-inline: var(--rd-gut); -webkit-overflow-scrolling: touch; }
 .rd-squad-rail::-webkit-scrollbar { height: 6px; }
@@ -487,7 +487,7 @@ body.rd-body {
 @media (max-width: 760px) { .rd-gallery { grid-template-columns: 1fr 1fr; grid-auto-rows: 120px; } .rd-gallery .rd-slot:nth-child(1) { grid-column: span 2; } }
 
 /* =========================================================================
-   CLUB STORY / SUE'S STORY — editorial split
+   CLUB STORY / SUE'S STORY, editorial split
    ========================================================================= */
 .rd-story { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px, 4vw, 56px); align-items: center; }
 .rd-story__visual { aspect-ratio: 5/4; }
@@ -533,7 +533,7 @@ body.rd-body {
 @media (prefers-reduced-motion: reduce) { .rd-reveal { opacity: 1; transform: none; transition: none; } .rd-hero__visual img.rd-hero__badge { animation: none; } }
 
 /* =========================================================================
-   STAT NUMBERS — Geist 700, dominant, tabular (locked type system)
+   STAT NUMBERS, Geist 700, dominant, tabular (locked type system)
    ========================================================================= */
 .rd-hero__stat b, .rd-count__cell b, .rd-tile__num, .rd-ring__pct b,
 .rd-ring-card__foot b, .rd-result__row b, .rd-player__stat b {
@@ -543,13 +543,13 @@ body.rd-body {
 .rd-tile__num small { font-weight: 600; letter-spacing: 0; }
 
 /* =========================================================================
-   INTERIOR PAGES — page hero, tabs, forms, prose, generic stat grid
+   INTERIOR PAGES, page hero, tabs, forms, prose, generic stat grid
    ========================================================================= */
 .rd-pagehero { position: relative; overflow: hidden; padding-top: clamp(60px, 9vw, 132px); padding-bottom: clamp(44px, 7vw, 96px); border-bottom: 1px solid var(--rd-line); isolation: isolate; }
 .rd-pagehero::before { content: ''; position: absolute; inset: 0; z-index: -2; background: radial-gradient(900px 460px at 18% -20%, rgba(20,56,73,0.85), transparent 60%), radial-gradient(700px 420px at 92% 8%, rgba(214,242,58,0.10), transparent 62%); }
 .rd-pagehero__bg { position: absolute; inset: 0; z-index: -1; pointer-events: none; display: flex; align-items: center; justify-content: flex-end; padding-right: clamp(0px, 4vw, 80px); }
 .rd-pagehero__mark { height: clamp(180px, 38vw, 420px); width: auto; opacity: 0.06; filter: grayscale(1) brightness(2); transform: translateX(8%); }
-/* full-bleed photo backdrop — optional; falls back to gradient + badge mark */
+/* full-bleed photo backdrop, optional; falls back to gradient + badge mark */
 .rd-pagehero__photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .rd-pagehero__photo--light { display: none; }
 .rd-pagehero__veil { position: absolute; inset: 0; background: linear-gradient(100deg, rgba(3,18,28,0.9) 0%, rgba(3,18,28,0.62) 46%, rgba(3,18,28,0.3) 100%), linear-gradient(0deg, rgba(3,18,28,0.85), transparent 46%); }
@@ -687,7 +687,7 @@ body.rd-body {
 @media (prefers-reduced-motion: reduce) { .rd-champ-hero__badge { animation: none; } }
 
 /* =========================================================================
-   TEAMS — squad groups, leaderboard, coaches, player dashboard
+   TEAMS, squad groups, leaderboard, coaches, player dashboard
    ========================================================================= */
 .rd-squad-groups { display: flex; flex-direction: column; gap: clamp(28px, 4vw, 48px); }
 .rd-squad-group__head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
@@ -853,7 +853,7 @@ body.rd-body {
 }
 
 /* =========================================================================
-   SCHEDULE — fixtures, results grid, empty state, draft table
+   SCHEDULE, fixtures, results grid, empty state, draft table
    ========================================================================= */
 .rd-tab__n { display: inline-block; margin-left: 6px; font-size: 11px; opacity: 0.7; }
 .rd-results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
@@ -878,7 +878,7 @@ body.rd-body {
 .rd-draft-note p { font: 500 14px/1.55 var(--font-sans); color: var(--fg-2); letter-spacing: var(--rd-track-body); }
 
 /* =========================================================================
-   MEDIA — news cards, score covers, article modal, gallery
+   MEDIA, news cards, score covers, article modal, gallery
    ========================================================================= */
 .rd-news-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
 .rd-article { cursor: pointer; text-align: left; padding: 0; }
@@ -908,7 +908,7 @@ body.rd-body {
 .rd-gtile { cursor: pointer; padding: 0; border: 1px solid var(--rd-line); }
 .rd-gtile__count { position: absolute; top: 10px; right: 10px; z-index: 2; background: rgba(5,11,23,0.78); color: var(--fg-1); font: 700 12px/1 var(--font-ui); padding: 6px 9px; border-radius: 999px; }
 
-/* gallery horizontal slider — uniform tiles, click to enlarge */
+/* gallery horizontal slider, uniform tiles, click to enlarge */
 .rd-gallery-rail { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 14px; scroll-snap-type: x mandatory; scroll-padding-inline: var(--rd-gut); -webkit-overflow-scrolling: touch; }
 .rd-gallery-rail::-webkit-scrollbar { height: 6px; }
 .rd-gallery-rail::-webkit-scrollbar-thumb { background: var(--rd-line-2); border-radius: 4px; }
@@ -918,7 +918,7 @@ body.rd-body {
 @media (max-width: 600px) { .rd-gtile--rail { width: 78vw; } }
 
 /* =========================================================================
-   ALBUM VIEWER — uniform horizontal slider + tap-to-enlarge zoom
+   ALBUM VIEWER, uniform horizontal slider + tap-to-enlarge zoom
    ========================================================================= */
 .rd-album { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: clamp(14px, 3vw, 40px); background: rgba(3,11,18,0.82); backdrop-filter: blur(16px) saturate(120%); animation: rd-album-fade .28s var(--rd-ease); }
 @keyframes rd-album-fade { from { opacity: 0; } to { opacity: 1; } }
@@ -1064,13 +1064,13 @@ a.rd-album__tagchip:hover { border-color: var(--volt); color: var(--volt); }
 .rd-pp__gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; margin-bottom: 16px; }
 .rd-pp__gallery img { width: 100%; aspect-ratio: 4/5; object-fit: cover; object-position: top center; border-radius: 12px; }
 
-/* floating admin bar — always-visible control panel + sign out when logged in */
+/* floating admin bar, always-visible control panel + sign out when logged in */
 .rd-adminbar { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 95; display: flex; align-items: center; gap: 10px; background: rgba(7,29,41,0.94); backdrop-filter: blur(16px); border: 1px solid var(--rd-line-2); border-radius: 9999px; padding: 8px 8px 8px 16px; box-shadow: var(--rd-shadow); }
 .rd-adminbar__tag { display: inline-flex; align-items: center; gap: 8px; font: 700 11px/1 var(--font-ui); letter-spacing: 0.1em; text-transform: uppercase; color: var(--fg-2); margin-right: 2px; }
 .rd-adminbar__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--rd-volt); box-shadow: 0 0 0 4px rgba(214,242,58,0.18); }
 @media (max-width: 480px) { .rd-adminbar { left: 12px; right: 12px; transform: none; justify-content: center; flex-wrap: wrap; } }
 
-/* player dashboard motion — radar pops in, bars fill, ring draws */
+/* player dashboard motion, radar pops in, bars fill, ring draws */
 .rd-radar { animation: rd-radarpop .7s var(--rd-ease) both; transform-origin: center; }
 @keyframes rd-radarpop { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: none; } }
 .rd-pbar__fill { transition: width .9s var(--rd-ease); }
@@ -1097,7 +1097,7 @@ a.rd-album__tagchip:hover { border-color: var(--volt); color: var(--volt); }
 .rd-video-play { width: 56px; height: 56px; border-radius: 50%; background: var(--rd-volt); color: var(--rd-navy-ink); display: grid; place-items: center; font-size: 20px; padding-left: 3px; transition: transform .2s var(--rd-ease); }
 .rd-video-link:hover .rd-video-play { transform: scale(1.08); }
 
-/* season-complete empty state — animated badge + rising stats */
+/* season-complete empty state, animated badge + rising stats */
 .rd-complete__badge { height: clamp(80px, 14vw, 130px); width: auto; margin: 0 auto 18px; display: block; filter: drop-shadow(0 18px 40px rgba(0,0,0,0.5)); animation: rd-float 6s ease-in-out infinite; }
 .rd-complete__stats { display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(18px, 4vw, 44px); margin-top: 28px; }
 .rd-complete__stat { display: flex; flex-direction: column; gap: 4px; animation: rd-rise .6s var(--rd-ease) both; }
@@ -1107,7 +1107,7 @@ a.rd-album__tagchip:hover { border-color: var(--volt); color: var(--volt); }
 @media (prefers-reduced-motion: reduce) { .rd-complete__badge { animation: none; } .rd-complete__stat { animation: none; } }
 
 /* =========================================================================
-   RESPONSIVE HARDENING — tablet + mobile safety across components
+   RESPONSIVE HARDENING, tablet + mobile safety across components
    ========================================================================= */
 *, *::before, *::after { min-width: 0; }
 img, svg, video, iframe { max-width: 100%; }
@@ -1137,7 +1137,7 @@ img, svg, video, iframe { max-width: 100%; }
 }
 
 /* =========================================================================
-   DYNAMIC STAGGER — cards rise + fade in sequence as a section reveals
+   DYNAMIC STAGGER, cards rise + fade in sequence as a section reveals
    ========================================================================= */
 @media (prefers-reduced-motion: no-preference) {
   .rd-reveal :is(.rd-statgrid, .rd-cards, .rd-sponsors, .rd-news, .rd-results-grid, .rd-dash__tiles, .rd-gallery, .rd-rail, .rd-squad-rail) > * {
@@ -1156,7 +1156,7 @@ img, svg, video, iframe { max-width: 100%; }
 }
 
 /* =========================================================================
-   RESPONSIVE REFINEMENTS — tablet + small-phone column control
+   RESPONSIVE REFINEMENTS, tablet + small-phone column control
    ========================================================================= */
 @media (max-width: 1024px) {
   .rd-hero__grid { gap: clamp(22px, 3.2vw, 40px); }
@@ -1171,7 +1171,7 @@ img, svg, video, iframe { max-width: 100%; }
 }
 
 /* =========================================================================
-   PREMIUM INTERACTION LAYER — hover lifts, volt glow, motion, feedback
+   PREMIUM INTERACTION LAYER, hover lifts, volt glow, motion, feedback
    ========================================================================= */
 .rd-card, .rd-tile, .rd-fixture, .rd-result, .rd-player, .rd-sponsor, .rd-feature, .rd-article, .rd-coach {
   transition: transform .28s var(--rd-ease), border-color .28s var(--rd-ease), box-shadow .35s var(--rd-ease), background-color .28s var(--rd-ease);
@@ -1215,7 +1215,7 @@ a:focus-visible, button:focus-visible, .rd-tab:focus-visible, input:focus-visibl
 @media (max-width: 760px) { .cms__layout { grid-template-columns: 1fr; } .cms__nav { position: static; flex-direction: row; flex-wrap: wrap; } .cms__navbtn { flex: 1 1 auto; text-align: center; } }
 
 /* =========================================================================
-   HOME HERO v3 — cinematic team photo + glass panels
+   HOME HERO v3, cinematic team photo + glass panels
    ========================================================================= */
 .rd-hero--photo { min-height: min(100svh, 920px); display: flex; align-items: stretch; padding-top: clamp(96px, 13vh, 150px); padding-bottom: clamp(26px, 4vw, 48px); overflow: hidden; }
 .rd-hero--photo .rd-hero__photo { position: absolute; inset: 0; z-index: 0; }
@@ -1350,7 +1350,7 @@ html[data-theme="light"] .rd-hero__img--dark { display: none; }
 html[data-theme="light"] .rd-hero__img--light { display: block; }
 
 /* =========================================================================
-   FROSTED GLASS LAYER (v3) — elite "graphic glass" depth, applied site-wide.
+   FROSTED GLASS LAYER (v3), elite "graphic glass" depth, applied site-wide.
    Lifts the .rd-hcard treatment (real backdrop-blur + edge highlight + ambient
    shadow) onto every surface. Fully token-driven so light + dark stay in sync.
    Only TOP-LEVEL panels are blurred; nested sub-cards keep a single glass layer
@@ -1381,7 +1381,7 @@ html[data-theme="light"] {
   border-color: var(--rd-glass-edge);
   box-shadow: var(--rd-glass-shadow), inset 0 1px 0 var(--rd-glass-hi);
 }
-/* nested accents — keep crisp (no second blur), just a refined edge + top sheen */
+/* nested accents, keep crisp (no second blur), just a refined edge + top sheen */
 .rd-insight, .rd-champ-record__cell {
   border-color: var(--rd-glass-edge);
   box-shadow: inset 0 1px 0 var(--rd-glass-hi);
@@ -1404,7 +1404,7 @@ html[data-theme="light"] {
   backdrop-filter: blur(12px) saturate(140%);
   -webkit-backdrop-filter: blur(12px) saturate(140%);
 }
-/* respect users who reduce transparency — fall back to solid-ish panels */
+/* respect users who reduce transparency, fall back to solid-ish panels */
 @media (prefers-reduced-transparency: reduce) {
   .rd-card, .rd-tile, .rd-feature, .rd-result, .rd-fixture, .rd-sponsor,
   .rd-route, .rd-faq__item, .rd-table-card, .rd-draft-note, .rd-direct,
@@ -1415,7 +1415,7 @@ html[data-theme="light"] {
 }
 
 /* =========================================================================
-   LIGHT MODE — Apple-clean. Volt stays the accent; club navy for ink.
+   LIGHT MODE, Apple-clean. Volt stays the accent; club navy for ink.
    ========================================================================= */
 html[data-theme="light"] {
   --rd-bg:        #EEF1F4;
@@ -1454,7 +1454,7 @@ html[data-theme="light"] .rd-nm,
 html[data-theme="light"] .rd-hcard,
 html[data-theme="light"] .rd-hroute { border-color: rgba(8,20,35,0.12); }
 html[data-theme="light"] .rd-nm, html[data-theme="light"] .rd-hcard { box-shadow: var(--rd-shadow); }
-/* navy makes the volt pop — primary CTAs invert to navy bg + bright volt in light mode */
+/* navy makes the volt pop, primary CTAs invert to navy bg + bright volt in light mode */
 html[data-theme="light"] .rd-btn--volt { background: var(--navy); color: var(--volt); box-shadow: 0 12px 30px -14px rgba(7,29,41,0.55); }
 html[data-theme="light"] .rd-btn--volt svg { color: var(--volt); }
 html[data-theme="light"] .rd-btn--volt:hover { background: #0E3142; color: var(--volt-glow); box-shadow: 0 16px 40px -14px rgba(7,29,41,0.6); }
@@ -1488,7 +1488,7 @@ html[data-theme="light"] .rd-album__cellno,
 html[data-theme="light"] .rd-zoom__count,
 html[data-theme="light"] .rd-video-link,
 html[data-theme="light"] .rd-player__flipbtn { color: #fff; }
-/* light-mode hero veil — lighten the photo so dark text reads */
+/* light-mode hero veil, lighten the photo so dark text reads */
 html[data-theme="light"] .rd-hero--photo .rd-hero__veil {
   background:
     linear-gradient(98deg, rgba(238,241,244,0.95) 0%, rgba(238,241,244,0.8) 30%, rgba(238,241,244,0.32) 58%, rgba(238,241,244,0.5) 80%, rgba(238,241,244,0.88) 100%),

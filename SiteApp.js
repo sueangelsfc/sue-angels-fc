@@ -3051,7 +3051,11 @@ function SponsorPackGate() {
     e.preventDefault();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(email).trim())) { setStatus('err'); return; }
     setStatus('sending');
-    (window.saAddEnquiry ? window.saAddEnquiry({ type: 'Sponsorship pack request', email: email, message: 'Downloaded the sponsorship pack.', source: 'sponsor-pack' }) : Promise.resolve({ ok: false })).then(function () { setStatus('done'); dl(); });
+    (window.saAddEnquiry ? window.saAddEnquiry({ type: 'Sponsorship pack request', email: email, message: 'Downloaded the sponsorship pack.', source: 'sponsor-pack' }) : Promise.resolve({ ok: false })).then(function () {
+      // Best-effort: ping the club inbox with who just grabbed the pack. Never blocks the download.
+      try { fetch('/api/notify-enquiry', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email, type: 'Sponsorship pack request', source: 'sponsor-pack' }) }); } catch (e) {}
+      setStatus('done'); dl();
+    });
   }
   return h(React.Fragment, null,
     h("button", { className: "m-btn m-btn--ghost", onClick: function () { setOpen(true); } }, "Download the pack"),
@@ -3060,8 +3064,8 @@ function SponsorPackGate() {
         ? h("div", { style: { textAlign: 'center' } }, h("p", { className: "m-eyebrow m-eyebrow--volt", style: { justifyContent: 'center', display: 'inline-flex' } }, "On its way"), h("h3", { className: "m-h3", style: { marginTop: 10 } }, "Thanks — your download has started."), h("p", { style: { color: 'var(--m-ink-3)', marginTop: 8, fontSize: '0.9rem' } }, "If it didn’t open, ", h("a", { href: PDF, target: "_blank", rel: "noopener", style: { color: 'var(--m-volt-ink)' } }, "tap here"), ". We’ll be in touch about partnering."))
         : h("form", { onSubmit: submit },
           h("p", { className: "m-eyebrow m-eyebrow--volt" }, "Sponsorship pack"),
-          h("h3", { className: "m-h3", style: { margin: '8px 0 4px' } }, "Where should we send it?"),
-          h("p", { style: { color: 'var(--m-ink-3)', fontSize: '0.9rem', marginBottom: 14 } }, "Pop in your email and the pack downloads right away. We’ll only use it to follow up about partnering with the club."),
+          h("h3", { className: "m-h3", style: { margin: '8px 0 4px' } }, "Get the pack instantly"),
+          h("p", { style: { color: 'var(--m-ink-3)', fontSize: '0.9rem', marginBottom: 14 } }, "Drop your email and the pack downloads straight to your device — nothing to wait for in your inbox. We’ll only use your email to follow up about partnering."),
           h("input", { type: 'email', required: true, value: email, placeholder: 'you@company.com', autoComplete: 'email', onChange: function (e) { setEmail(e.target.value); }, style: { width: '100%', padding: '12px 14px', borderRadius: 10, border: '1px solid var(--m-edge)', background: 'var(--m-glass-1)', color: 'var(--m-ink-1)', font: '500 15px var(--m-sans)' } }),
           status === 'err' ? h("p", { style: { color: '#ff9b9b', fontSize: '0.8rem', margin: '8px 0 0' } }, "Please enter a valid email.") : null,
           h("button", { type: 'submit', className: "m-btn m-btn--volt", disabled: status === 'sending', style: { marginTop: 14, justifyContent: 'center', width: '100%' } }, status === 'sending' ? 'Preparing…' : 'Get the pack'))

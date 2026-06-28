@@ -12,6 +12,9 @@
     },
     "api/og-image.js": {
       "maxDuration": 10
+    },
+    "api/notify-enquiry.js": {
+      "maxDuration": 10
     }
   },
   "headers": [

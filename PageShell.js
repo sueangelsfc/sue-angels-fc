@@ -2135,10 +2135,10 @@ window.tableInsights = function (rows, totalGames, promotionSpots = 2) {
     var sides = results.map(ourSide).filter(Boolean);
     var chron = sides.slice().sort(function (a, b) { return String(dkey(a.date)).localeCompare(String(dkey(b.date))); });
     var streakOf = function (arr, test) { var run = 0, best = 0; arr.forEach(function (s) { run = test(s) ? run + 1 : 0; if (run > best) best = run; }); return best; };
-    var pushTeam = function (recordKey, title, value, scope) { if (value != null && value !== '') recs.push({ id: 'auto-' + recordKey, type: 'club_record', recordKey: recordKey, group: 'team', title: title, value: value, scope: scope, season: sLabel, auto: true }); };
+    var pushTeam = function (recordKey, title, value, scope, description) { if (value != null && value !== '') recs.push({ id: 'auto-' + recordKey, type: 'club_record', recordKey: recordKey, group: 'team', title: title, value: value, scope: scope, description: description, season: sLabel, auto: true }); };
     // Biggest win (any competition)
     var wins = sides.filter(function (s) { return s.win; }).sort(function (a, b) { return b.margin - a.margin || b.ourG - a.ourG; });
-    if (wins[0]) pushTeam('biggest_win', 'Biggest Win', wins[0].ourG + '-' + wins[0].oppG + ' v ' + wins[0].opp, ALL);
+    if (wins[0]) pushTeam('biggest_win', 'Biggest Win', wins[0].ourG + '-' + wins[0].oppG, ALL, 'v ' + wins[0].opp);
     // Longest winning streak (any competition)
     var w = streakOf(chron, function (s) { return s.win; }); if (w > 0) pushTeam('win_streak', 'Longest Winning Streak', w + (w === 1 ? ' win' : ' wins'), ALL);
     // Longest unbeaten run - LEAGUE only. Walkover / awarded wins are recorded

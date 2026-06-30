@@ -9,6 +9,7 @@ This is how the firm gets smarter every day. The CEO **reads this in full at the
 
 ## Anti-patterns (what to never repeat)
 - Don't re-audit the whole SEO foundation from scratch each day; it's solid. Go straight to the specific known gaps (see Day 1 follow-up).
+- **Do NOT build public self-serve sponsorship tiers / a sponsorship pay-wall.** Sponsorship is handled PRIVATELY via a pack shown to potential investors. Public pricing would undercut those conversations. Monetisation work should target OTHER avenues (supporter membership, matchday photo sales, merch, online player subs, event tickets, productising the platform for other clubs).
 
 ## What moved the business most (ranked, updated weekly)
 - (none yet)

@@ -5,7 +5,7 @@ Each staff member is a specialised subagent (Agent tool `subagent_type`). Cumula
 | Staff (agent) | Speciality | Cumulative score | Runs | Role |
 |---|---|---|---|---|
 | growth-manager | Leads, sponsorship funnel, conversion, retargeting | 0 | 0 | Staff |
-| seo-optimizer | Meta, JSON-LD, sitemap, canonical/OG, titles | 0 | 0 | Staff |
+| seo-optimizer | Meta, JSON-LD, sitemap, canonical/OG, titles | 32 | 1 | Staff |
 | site-health-auditor | Performance, WebP, accessibility, mobile overflow | 0 | 0 | Staff |
 | social-card-maker | Branded OG / share cards (1200x630) | 0 | 0 | Staff |
 | news-writer | Club news articles & announcements | 0 | 0 | Staff |

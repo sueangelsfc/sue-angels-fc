@@ -16,4 +16,11 @@ Format:
 
 ---
 
-(No entries yet. Day 1 is the first scheduled run.)
+## Day 1 — 2026-06-30
+- Objective: Make the club more findable in Google + AI search by fixing the biggest on-page SEO/AEO gap.
+- Branch: ceo/day-1-seo-visibility (pushed, awaiting review)
+- Shipped: Expanded 4 too-short meta descriptions (champions, join, about, squad) to 120-155 chars, synced across meta/OG/Twitter/JSON-LD (16 edits).
+- Verified: sync check all 4 spots per page; json.loads on every JSON-LD block passes; CEO re-checked only 4 files changed, no dashes.
+- Cost note: cheap, 1 staff agent (~42k tokens), single pass, no CSS/version churn.
+- Staff scores: seo-optimizer=32/40 (I7·Q9·E9).
+- Venture added: Grassroots club SEO/AEO retainer (productise today's work).

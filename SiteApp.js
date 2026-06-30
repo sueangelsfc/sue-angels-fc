@@ -2531,7 +2531,7 @@ function Team({
     onClick: () => setCoach(c)
   }, /*#__PURE__*/React.createElement("img", {
     className: "mp-coach__ph",
-    src: c.photo || 'assets/players/avatar.svg',
+    src: (window.getCoachData && window.getCoachData(c.id).photo) || c.photo || 'assets/players/avatar.svg',
     alt: "",
     onError: e => {
       e.target.src = 'assets/players/avatar.svg';

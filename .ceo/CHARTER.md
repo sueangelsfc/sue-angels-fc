@@ -41,6 +41,18 @@ Rule of thumb: the CEO prepares outward actions to one click from "send"; a huma
 - No secrets in the repo. Don't touch Supabase/Stripe keys. Don't break `admin.html`.
 - Spend deliberately: the firm prizes **cheap and efficient**. Don't spawn more staff than the task needs. Note rough effort in the ledger.
 
+## Skills the firm invokes (work smarter, not from scratch)
+Before doing work the hard way, reach for an installed skill. Default tools of the trade:
+- **superpowers** — use `brainstorming` before any new feature, `systematic-debugging` for bugs, `test-driven-development` where tests fit, and `verification-before-completion` before claiming anything is done. This enforces the "never assume, verify" rule.
+- **deep-research** / **firecrawl-deep-research** — for any factual research (grants, funders, competitors, market). Cited and fact-checked, so we never repeat the wrong-assumption mistake.
+- **advisor-debate** — pressure-test any offer, campaign, or important copy before it ships.
+- **claude-mem** — long-term memory; record durable learnings so intelligence compounds beyond this firm's own ledger.
+- **web-performance-optimization**, **football-seo-schema**, **schema-generator** — for site speed and structured-data (SportsEvent) work.
+- **frontend-design**, **ui-ux-pro-max**, **football-brand-system**, **brand-guidelines**, **theme-factory** — for design/brand work; keep the premium, on-brand look.
+- **image-gen** / **canvas-design** — for graphics and visual assets.
+- **skill-creator** — when a club workflow repeats, capture it as a bespoke skill so the firm gets permanently smarter (e.g. `grassroots-grant-application`).
+Rule: if a skill exists for the task, invoke it. Don't reinvent what a skill already does well.
+
 ## Scoring staff (0–10 each run they work)
 Score every staff member you used this run on:
 - **Impact** (did it move the business?) ×2

@@ -3,6 +3,13 @@
 
 ---
 
+> **CORRECTION (read first):** Sue's Angels FC is a **MEN'S** Sunday-league club, NOT a women's club. An earlier draft of this pack wrongly assumed women's. Effect on this document:
+> - **STRUCK — not eligible:** Grant 1 (Lionesses HERe to Play) and Grant 4 (Barclays Female Coaches for Girls) are women/girls only. Ignore them unless the club launches a women's/girls' side.
+> - **Reframe:** anywhere this pack says "women's participation", read it as **men's participation, men's mental health & wellbeing through sport, and community cohesion** — the fundable angle for this club, alongside the sepsis-awareness cause.
+> - **Revised realistic year-one range:** ~£3,000–£12,000 (Awards for All is the biggest single cheque). New top 3 to apply first: **Awards for All**, **Sport England Movement Fund**, **Football Foundation Goalpost/equipment grants**.
+
+---
+
 > **IMPORTANT FLAG BEFORE APPLYING TO ANYTHING**
 > The club's home ground is in Hanworth, which sits in the **London Borough of Hounslow** and likely falls under **London FA** (not Surrey FA). Confirm your county FA affiliation with the league secretary. Several grant eligibility checks and local authority grants depend on knowing this. If you affiliate via Surrey FA (some clubs near the boundary do), note that separately.
 
@@ -83,13 +90,13 @@
 
 ---
 
-Sue's Angels FC is a grassroots women's football club based in Hanworth, South West London, founded in 2025 in memory of Susan Anne Martin, who was taken by sepsis. From its first day, the club has carried two purposes: to give women in the local community a place to play competitive, organised football, and to keep Susan's name alive by raising awareness of sepsis, a condition that kills around 48,000 people in the UK every year and remains widely misunderstood by the public.
+Sue's Angels FC is a grassroots men's Sunday-league football club based in Hanworth, South West London, founded in 2025 in memory of Susan Anne Martin, who was taken by sepsis. From its first day, the club has carried two purposes: to give men in the local community a place to play competitive, organised football and to support their wellbeing and mental health through the game, and to keep Susan's name alive by raising awareness of sepsis, a condition that kills around 48,000 people in the UK every year and remains widely misunderstood by the public.
 
 In our inaugural 2025/26 season, playing in League Ten of the Southern Sunday Football League, Sue's Angels FC won every single match. Eighteen played, eighteen won, unbeaten. The club has been promoted to League Eight for 2026/27, an achievement no other team in the league's recent history has matched in a debut campaign. That record is not just a sporting result; it is proof that a community can build something meaningful from grief, and do it with excellence. The players, coaches and volunteers who make this club run have given up Sunday mornings, weekday evenings and hours of personal time to create something that stands for more than results on a pitch.
 
-We are now entering our second season with a growing squad, a committed coaching staff and a clear set of goals: to deepen our roots in Hanworth, to welcome more women into the game who have never played before, and to use matchdays and club events to share information about sepsis recognition and prevention. Our players bring the message into their own networks, their workplaces and their families. We also carry Susan's memory with dignity and warmth, believing, as we say as a club, that what we do in life echoes in eternity.
+We are now entering our second season with a growing squad, a committed coaching staff and a clear set of goals: to deepen our roots in Hanworth, to welcome more men into the game, including those returning to football after years away or using it to look after their mental health, and to use matchdays and club events to share information about sepsis recognition and prevention. Our players bring the message into their own networks, their workplaces and their families. We also carry Susan's memory with dignity and warmth, believing, as we say as a club, that what we do in life echoes in eternity.
 
-The funding we are seeking will allow us to [insert specific project here — e.g. purchase match-quality kit and equipment / fund a full season of pitch hire and referee costs / run a sepsis awareness matchday event series / support a Level 1 coaching qualification for a new female coach]. Every pound spent here goes directly into giving women in South West London a safe, welcoming and competitive space to play football, and into honouring a woman whose life deserved to be remembered.
+The funding we are seeking will allow us to [insert specific project here — e.g. purchase match-quality kit and equipment / fund a full season of pitch hire and referee costs / run a sepsis awareness matchday event series / support a Level 1 coaching qualification for a new female coach]. Every pound spent here goes directly into giving men in South West London a safe, welcoming and competitive space to play football and look after their wellbeing, and into honouring a woman whose life deserved to be remembered.
 
 ---
 

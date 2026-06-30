@@ -34,6 +34,7 @@ The CEO may use these to bring eyes back to the site, under strict guardrails be
 Rule of thumb: the CEO prepares outward actions to one click from "send"; a human presses send. Never publish to an external audience without that approval.
 
 ## Hard guardrails (never break these)
+- **NEVER ASSUME. Verify or ask.** Stewart's standing instruction. Before stating any fact about the club, the business, or the user (demographic, location, audience, status, intent), verify it against the site/repo (grep, read the file). If it cannot be verified there, ASK Stewart a direct question — do NOT fill the gap with a plausible guess. Every staff brief must tell the agent to flag unknowns and return questions rather than invent. A wrong assumption (e.g. "women's club" when it's men's) wastes real work; one question prevents it.
 - **Never push to `main`. Never auto-deploy to the live site.** Do all work on a branch named `ceo/day-<N>-<short-slug>`. Push the branch; leave it for the owner to review/merge.
 - Obey `CLAUDE.md`: edit `SiteApp.js` (not the `.jsx`); if you touch `app.css`, bump `app.css?v=N` on **every** HTML file to the same N; no em or en dashes anywhere; British spelling; brand tone; no new colours outside the token set; keep the mobile `min(100%, …)` minmax pattern.
 - Keep each change small, verifiable, and reversible. If you can't verify it, don't claim it works.

@@ -49,7 +49,7 @@
 
 - **Amount:** £1,500
 - **What it covers:** Kit, match balls, bibs, league fees, referee costs, insurance, coaching courses and DBS checks for new team staff
-- **Why this club fits:** The fund is specifically for launching a **new affiliated women's or girls' team for the 2026/27 season**. Sue's Angels FC is a newly affiliated grassroots women's team beginning its second season. The club needs to confirm with the Football Foundation whether the existing team qualifies as "new for 26/27" (given promotion from League Ten is a new team entry at League Eight level) or whether the fund targets first-time affiliated clubs only. Contact the Football Foundation directly at enquiries@footballfoundation.org.uk to clarify before applying.
+- **NOT ELIGIBLE — STRUCK:** This fund is for **women's or girls' teams only**. Sue's Angels FC is a men's club, so it does not qualify. Only revisit this if the club ever launches a women's/girls' side. Replaced in the "apply first" order by the Football Foundation Goalpost/equipment grants (open to all affiliated clubs).
 - **Eligibility requirement:** Must be registered on the Football Foundation portal. Registration is free and requires the club's county FA affiliation number.
 - **Match funding:** None required for this grant.
 - **Application difficulty:** Low. Short online form via the Football Foundation portal.
@@ -62,7 +62,7 @@
 
 - **Amount:** £300 to £20,000 (up to 2 years)
 - **What it covers:** Activity and participation costs, equipment, community events, running costs. This fund is explicitly not sport-only — it backs projects that bring communities together and help people reach their potential.
-- **Why this club fits:** This is the strongest fit for the club's full story. The memorial and sepsis awareness angle is a community health and wellbeing project, not just a sports project. A well-written application can frame the club as a community space that uses football to build connection, honour a life, and raise awareness of a preventable killer. The unbeaten debut season demonstrates delivery capacity. Women's participation in sport aligns with the fund's equality priorities. Smaller income groups are prioritised — this club, as a new organisation, will score well there.
+- **Why this club fits:** This is the strongest fit for the club's full story. The memorial and sepsis awareness angle is a community health and wellbeing project, not just a sports project. A well-written application can frame the club as a community space that uses football to build connection, honour a life, and raise awareness of a preventable killer. The unbeaten debut season demonstrates delivery capacity. Men's mental health and wellbeing through sport, plus community cohesion around a shared cause, align with the fund's priorities. Smaller income groups are prioritised — this club, as a new organisation, will score well there.
 - **Key eligibility requirements:** Must not be an individual. Must have a bank account requiring at least two signatories. Must be a constituted not-for-profit group. Does **not** need to be a registered charity.
 - **Match funding:** None required.
 - **Application difficulty:** Medium. Requires a clear project description, outcomes, and a simple budget. The Case for Support in Section 3 of this document is written to serve this application.
@@ -76,10 +76,10 @@
 
 - **Amount:** £300 to £15,000
 - **What it covers:** Getting more people physically active, reducing inactivity, tackling inequalities. Covers activity costs, basic equipment, running costs.
-- **Why this club fits:** Sport England's Movement Fund prioritises tackling long-standing inequalities in physical activity. Women's grassroots football remains a clear target area. The sepsis memorial angle adds a community health dimension. As a brand-new club with zero historical Sport England funding, this club starts with a clean record.
+- **Why this club fits:** Sport England's Movement Fund prioritises tackling long-standing inequalities in physical activity. Getting inactive adult men moving, and using football to support mental health and wellbeing, are clear target areas. The sepsis memorial angle adds a community health dimension. As a brand-new club with zero historical Sport England funding, this club starts with a clean record.
 - **Key eligibility requirements:** Must have at least three non-related trustees or directors who do not live together, with equally distributed voting rights. For grants over £10,000, the club must meet Tier 1 of the Code for Sports Governance. For grants under £10,000, a constitution and bank account are the main requirements.
 - **Match funding:** None required below £10,000.
-- **Application difficulty:** Medium. An online application form with outcome-focused questions. Start with a clear project budget and three measurable outcomes (e.g. number of new women players engaged, sessions delivered, sepsis awareness events run).
+- **Application difficulty:** Medium. An online application form with outcome-focused questions. Start with a clear project budget and three measurable outcomes (e.g. number of new or returning male players engaged, sessions delivered, sepsis awareness events run).
 - **Practical tip:** Apply for under £10,000 in the first application. Once the club has a track record with Sport England, a larger follow-on grant is easier to secure.
 - **Direct link:** [sportengland.org/funding-and-campaigns/our-funding/movement-fund](https://www.sportengland.org/funding-and-campaigns/our-funding/movement-fund)
 
@@ -126,7 +126,7 @@ Go through this before submitting any application. Items marked [GATHER] need th
 ### Story and Evidence
 - [ ] **Club logo / crest** [CONFIRM] — Required for grant applications and any marketing material submitted with them.
 - [ ] **Brief summary of the club's story** [CONFIRM] — The Case for Support in Section 3 of this document covers this. Adapt it per application.
-- [ ] **Evidence of need / community impact** [GATHER] — Gather any data available: number of players registered, number of women who had not played football before joining, sessions held per week, any community events run. Even basic numbers strengthen an application significantly.
+- [ ] **Evidence of need / community impact** [GATHER] — Gather any data available: number of players registered, number of men who had not played organised football before joining or returned after years away, sessions held per week, any community events run. Even basic numbers strengthen an application significantly.
 - [ ] **Connection to sepsis awareness activity** [CONFIRM] — Be specific about what the club has done or plans to do. Examples: a dedicated sepsis awareness matchday, a social media campaign, distributing UK Sepsis Trust leaflets, fundraising for Sepsis Research FEAT. Funders respond better to concrete plans than broad intentions.
 
 ---

@@ -1206,7 +1206,7 @@ html[data-theme="light"] .mp-sp:hover { border-color: var(--m-volt); box-shadow:
 .mp-feat { padding: clamp(20px, 2.2vw, 28px); border-radius: var(--m-radius); background: var(--m-glass-2); border: 1px solid var(--m-edge); box-shadow: var(--m-shadow-1), inset 0 1px 0 var(--m-hi); transition: transform .26s var(--m-ease), border-color .26s; }
 .mp-feat:hover { transform: translateY(-5px); border-color: var(--m-volt); }
 .mp-feat__n { font-family: var(--m-display); font-weight: 600; font-size: 1.5rem; color: var(--m-volt-ink); }
-.mp-feat h3 { margin: 12px 0 8px; }
+.mp-feat h3 { margin: 12px 0 8px; font-size: clamp(1.1rem, 1.55vw, 1.4rem); overflow-wrap: break-word; word-break: normal; hyphens: auto; }
 .mp-feat p { color: var(--m-ink-3); font-size: 0.9rem; line-height: 1.55; }
 
 .mp-rail { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; }

@@ -40,16 +40,26 @@ Score every staff member you used this run on:
 - **Efficiency** (value for the effort spent?) ×1
 Record per-staff scores in `LEDGER.md` and add to their cumulative total in `STAFF.md`.
 
+## Compounding intelligence (this is how the firm "grows each day")
+Intelligence does not appear by magic; it accumulates because every run **reads** the prior days' lessons and **adds** a new one. Each run you must read `PLAYBOOK.md` first and apply its standing lessons and anti-patterns, then write at least one new lesson back. The firm gets smarter when (a) it repeats what worked, (b) it never repeats a logged mistake, and (c) it raises the bar slightly each week (e.g. management reviewing staff output). Treat `PLAYBOOK.md` as your memory between days.
+
+## Self-check & self-heal ("without issues" is a discipline, not a wish)
+Issues are inevitable; *unhandled* issues are not. At the **start** of every run, before doing new work:
+- `git status` and `git branch`. If a previous run left uncommitted changes, an unmerged half-finished branch, or you're not on a clean `main`, **resolve that first**: stash/inspect, finish or abandon cleanly, return to a known-good state. Do not pile new work on a broken state.
+- Confirm the four state files (`CHARTER`, `STAFF`, `LEDGER`, `VENTURES`, `PLAYBOOK`) are present and readable. If any is missing or malformed, repair it before continuing.
+At the **end** of every run, before notifying: verify the branch pushed cleanly, the guardrails held (no em dashes, app.css version bumped if touched, on a branch not main), and the change actually verifies. If anything failed, **log it to the INCIDENTS LOG in `PLAYBOOK.md` with the fix and a new prevention rule**, and only claim what genuinely worked. Never report success you didn't verify.
+
 ## Each normal run, do this in order
-1. Read `CHARTER.md`, `LEDGER.md`, `STAFF.md`, `VENTURES.md`. Work out today's day number.
-2. State today's objective in one sentence and why it's the highest-leverage move now.
+1. Read `CHARTER.md`, `PLAYBOOK.md`, `LEDGER.md`, `STAFF.md`, `VENTURES.md`. Run the **start-of-run self-check** above. Work out today's day number.
+2. State today's objective in one sentence and why it's the highest-leverage move now. Let `PLAYBOOK.md`'s lessons shape the choice.
 3. Create branch `ceo/day-<N>-<slug>`. Delegate the work to 1–3 staff subagents (management first if any exist). Keep scope tight.
 4. Verify the change (the relevant agent or `deploy-verifier` confirms it; no live deploy).
 5. Commit on the branch, push it. Do **not** merge.
 6. Score the staff you used. Append to `LEDGER.md`, update totals in `STAFF.md`.
 7. Add at least one fresh idea or update to `VENTURES.md` (a business/feature worth building).
-8. Write `.ceo/reports/day-<N>.md`: objective, what shipped, branch name, staff scores, cost note, tomorrow's likely focus.
-9. Notify the owner with a 3–5 line summary.
+8. **Run the end-of-run self-check** above. Append at least one new lesson to `PLAYBOOK.md` (and log any incident with its fix + prevention rule).
+9. Write `.ceo/reports/day-<N>.md`: objective, what shipped, branch name, staff scores, cost note, today's lesson, tomorrow's likely focus.
+10. Notify the owner with a 3–5 line summary.
 
 ## Day 7 — board meeting (replaces normal work)
 1. Read all `day-*.md` reports, `LEDGER.md`, `STAFF.md`, `VENTURES.md`.

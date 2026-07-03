@@ -443,26 +443,19 @@ window.daysUntilNextSeason = function (now = new Date()) {
   return Math.max(0, Math.ceil((nextStart - now) / 86400000));
 };
 
-// Pre-season training schedule. First session pushed back to 1 July 2026
-// 19:00-20:30 (extreme heat warning over the original 24 June date), then
-// every Sunday 10:00-12:30 at the home ground. getNextSession returns the next
-// session whose end time is still in the future (so it rolls over automatically).
+// Pre-season training schedule. Starts Sunday 19 July 2026 10:00-12:30 at The
+// Reeves, then every Sunday 10:00-12:30 plus every Wednesday 19:00-20:30 from
+// 22 July. getNextSession returns the next session whose end time is still in
+// the future (so it rolls over automatically).
 window.PRESEASON = {
-  firstISO: '2026-07-01T19:00:00',
-  venue: 'Home ground'
+  firstISO: '2026-07-19T10:00:00',
+  venue: 'The Reeves, Hanworth'
 };
 window.getNextSession = function (now = new Date()) {
   const mk = (y, mo, d, h, mi) => new Date(y, mo, d, h, mi, 0, 0);
-  const sessions = [{
-    start: mk(2026, 6, 1, 19, 0),
-    s: '19:00',
-    e: '20:30'
-  }];
-  // First Sunday strictly after 1 July 2026, then weekly for ~30 weeks.
-  let d = mk(2026, 6, 1, 10, 0);
-  do {
-    d.setDate(d.getDate() + 1);
-  } while (d.getDay() !== 0);
+  const sessions = [];
+  // Sundays 10:00-12:30 weekly from 19 July 2026, ~30 weeks.
+  let d = mk(2026, 6, 19, 10, 0);
   for (let i = 0; i < 30; i++) {
     sessions.push({
       start: mk(d.getFullYear(), d.getMonth(), d.getDate(), 10, 0),
@@ -470,6 +463,16 @@ window.getNextSession = function (now = new Date()) {
       e: '12:30'
     });
     d.setDate(d.getDate() + 7);
+  }
+  // Wednesdays 19:00-20:30 weekly from 22 July 2026, ~30 weeks.
+  let w = mk(2026, 6, 22, 19, 0);
+  for (let i = 0; i < 30; i++) {
+    sessions.push({
+      start: mk(w.getFullYear(), w.getMonth(), w.getDate(), 19, 0),
+      s: '19:00',
+      e: '20:30'
+    });
+    w.setDate(w.getDate() + 7);
   }
   sessions.sort((a, b) => a.start - b.start);
   for (const ss of sessions) {

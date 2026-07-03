@@ -3364,7 +3364,7 @@ function JoinPage() {
   const [route, setRoute] = useState('trial');
   const [sent, setSent] = useState(false);
   const [open, setOpen] = useState(0);
-  const faqs = [['When are trials held?', 'Summer dates for 26/27 are being confirmed. Register your interest and we’ll be in touch with times and venue.'], ['Do I need experience for the media team?', 'No. If you can shoot on a phone, edit, design or write, there’s a role for you, and we’ll help you grow.'], ['What do volunteers get?', 'A proper football family, matchday access, and a genuine role in a club going places.'], ['How do sponsorships work?', 'No fixed tiers. We tailor a package to your business across kit, signage, content and community.']];
+  const faqs = [['When are trials held?', 'Pre-season training starts Sunday 19 July at The Reeves, Hanworth, then every Wednesday from 22 July and every Sunday. New players are welcome to trial at any session, so register your interest and come down.'], ['Do I need experience for the media team?', 'No. If you can shoot on a phone, edit, design or write, there’s a role for you, and we’ll help you grow.'], ['What do volunteers get?', 'A proper football family, matchday access, and a genuine role in a club going places.'], ['How do sponsorships work?', 'No fixed tiers. We tailor a package to your business across kit, signage, content and community.']];
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(PageHero, {
     eyebrow: "Get involved",
     title: /*#__PURE__*/React.createElement(React.Fragment, null, "Join the ", /*#__PURE__*/React.createElement("em", null, "club"), "."),

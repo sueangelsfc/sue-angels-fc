@@ -36,6 +36,13 @@ Open any `.html` directly in a browser (it pulls React + Supabase from CDNs). Fo
 ## How to deploy
 Push to the GitHub repo → Vercel auto-deploys (project Root Directory = repo root, Framework = "Other", no build command). After deploy, hard-refresh / open in a private window to dodge the CDN/browser cache. `vercel.json` is included.
 
+## Project tooling (USE THESE — they encode the recurring footguns)
+- **`./scripts/bump.sh <asset>`** — cache-bust an asset across every page atomically (`--list` shows current versions). Never hand-run sed for `?v=` bumps.
+- **`./scripts/drift-check.sh`** — verifies `PageShell.js` (public) and `PageShell.jsx` (admin) agree on COACHES / SQUAD / BADGE_REGISTRY. The two files are separate sources of truth and HAVE drifted (hid a coach in the admin; showed a coach as a player). Any edit to shared data must go in BOTH files.
+- **`./scripts/ship.sh "msg"`** — full deploy: syntax checks → drift check → commit → push → polls the live site until asset versions match local.
+- **Pre-push hook** (`git config core.hooksPath scripts/hooks`, already set) blocks pushes with js/jsx drift or mixed `?v=` versions.
+- **Skills** (`.claude/skills/`): `responsive-sweep` (overflow audit of all pages at 320/375/768 after any CSS change), `badge-pipeline` (process any crest image → transparent, named, sized, both formats, registry aspect, deployed).
+
 ## Things that have caused bugs (avoid repeating)
 1. **Stale cache** — always bump `app.css?v=` AND any `*.js?v=` across all HTML when editing those assets.
 2. **Editing `SiteApp.jsx` expecting it to ship** — it doesn't; `SiteApp.js` is what loads.

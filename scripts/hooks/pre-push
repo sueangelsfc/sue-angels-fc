@@ -1,0 +1,20 @@
+#!/bin/bash
+# pre-push guard — blocks pushes that would ship the project's two classic bugs:
+#   1. js/jsx shared-data drift (admin and public disagreeing on COACHES/SQUAD/badges)
+#   2. mixed ?v= cache versions across pages (some pages serving stale assets)
+# Enable once with:  git config core.hooksPath scripts/hooks
+set -e
+cd "$(git rev-parse --show-toplevel)"
+
+echo "[pre-push] drift check…"
+./scripts/drift-check.sh >/dev/null || { echo "[pre-push] BLOCKED: PageShell.js/.jsx drift. Run ./scripts/drift-check.sh"; exit 1; }
+
+echo "[pre-push] version consistency…"
+# An asset name appearing with more than one distinct ?v= across pages = stale-cache bug.
+MIXED=$(grep -rhoE "[A-Za-z_-]+\.(js|css)\?v=[0-9]+" *.html | sort -u | cut -d'?' -f1 | sort | uniq -d)
+if [ -n "$MIXED" ]; then
+  echo "[pre-push] BLOCKED: mixed cache versions for: $MIXED"
+  echo "           Fix with ./scripts/bump.sh <asset>"
+  exit 1
+fi
+echo "[pre-push] OK"

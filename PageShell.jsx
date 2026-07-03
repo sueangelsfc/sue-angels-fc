@@ -393,7 +393,7 @@ A passionate supporter of Arsenal F.C., Frazier is capable of changing a game in
 window.SQUAD = [
   { num:  1, last: 'Adio',         first: 'Abiola',          gk: false },
   { num:  2, last: 'Allen',        first: 'Andrew',          gk: false },
-  { num:  3, last: 'Allen',        first: 'Louis',           gk: false },
+  // Louis Allen (was #3) moved to window.COACHES — first-team coach, not a player.
   { num:  4, last: 'Brabrook',     first: 'Michael',         gk: false },
   { num:  5, last: 'Brown',        first: 'Kafele',          gk: false },
   { num:  6, last: 'Brumpton',     first: 'Elis',            gk: false },

@@ -1234,7 +1234,7 @@ html[data-theme="light"] .mp-sp:hover { border-color: var(--m-volt); box-shadow:
 .mp-route:hover { transform: translateX(3px); } .mp-route.is-active { border-color: var(--m-volt); background: rgba(214,242,58,0.07); }
 .mp-route b { display: block; font-family: var(--m-display); font-weight: 600; text-transform: uppercase; font-size: 0.95rem; color: var(--m-volt-ink); }
 /* admin logout button */
-#sa-logout { position: fixed; top: 16px; right: 16px; z-index: 140; font: 700 12px/1 var(--m-sans,sans-serif); letter-spacing: 0.08em; text-transform: uppercase; padding: 10px 16px; border-radius: 999px; border: 1px solid var(--m-edge,rgba(255,255,255,0.18)); background: rgba(6,18,28,0.85); color: #fff; cursor: pointer; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 10px 30px -12px rgba(0,0,0,0.6); transition: background .18s, color .18s, transform .18s; }
+#sa-logout { position: fixed; bottom: 16px; left: 16px; z-index: 140; font: 700 12px/1 var(--m-sans,sans-serif); letter-spacing: 0.08em; text-transform: uppercase; padding: 10px 16px; border-radius: 999px; border: 1px solid var(--m-edge,rgba(255,255,255,0.18)); background: rgba(6,18,28,0.85); color: #fff; cursor: pointer; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 10px 30px -12px rgba(0,0,0,0.6); transition: background .18s, color .18s, transform .18s; }
 #sa-logout:hover { background: var(--m-volt,#D6F23A); color: var(--m-navy,#071D29); transform: translateY(-1px); }
 
 /* gallery album carousel (gallery-fx.js) */

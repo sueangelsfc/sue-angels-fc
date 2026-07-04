@@ -62,17 +62,43 @@
 <p>The club is named in memory of Susan Anne Martin, who died of sepsis. Through its <a href="sepsis.html">Our Cause</a> work the club helps raise awareness of the condition, supported by the <a href="https://sepsistrust.org" rel="nofollow noopener">UK Sepsis Trust</a> and grassroots football through <a href="https://www.englandfootball.com/" rel="nofollow noopener">England Football</a>.</p>
 </div></div>
   <style>
-    @keyframes saBoot{0%,100%{opacity:.4;transform:scale(.95)}50%{opacity:1;transform:scale(1)}}
+    @keyframes saBeat{0%,100%{transform:scale(1)}50%{transform:scale(1.055)}}
     #sa-boot{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#0A0F1C;opacity:1;transition:opacity 1s ease;will-change:opacity}
-    #sa-boot img{width:88px;height:auto;animation:saBoot 1.4s ease-in-out infinite}
+    #sa-boot .sa-crest{position:relative;width:132px;height:152px}
+    #sa-boot .sa-crest.is-beating{animation:saBeat 1.7s ease-in-out infinite}
+    #sa-boot .sa-shard{position:absolute;top:0;left:0;width:132px;height:152px;will-change:transform,opacity}
     #sa-boot.sa-boot--hide{opacity:0}
-    @media (prefers-reduced-motion: reduce){#sa-boot img{animation:none}}
   </style>
-  <div id="sa-boot" aria-hidden="true"><img src="assets/badge/sue-angels-shield.webp" alt="" width="88" height="101"/></div>
+  <div id="sa-boot" aria-hidden="true"><div class="sa-crest"></div></div>
   <script>
   (function(){
     var boot=document.getElementById('sa-boot'); if(!boot) return;
-    var start=Date.now(), MIN=3000, MAX=7000, FADE=1000, done=false;
+    var crest=boot.querySelector('.sa-crest');
+    var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Build the crest from 40 shards (5 cols x 8 rows), each a clipped copy of the badge.
+    var SRC='assets/badge/sue-angels-shield.webp', COLS=5, ROWS=8, maxEnd=0;
+    for(var r=0;r<ROWS;r++){ for(var c=0;c<COLS;c++){
+      var img=document.createElement('img'); img.className='sa-shard'; img.src=SRC; img.alt='';
+      img.style.clipPath='inset('+(r/ROWS*100)+'% '+((COLS-1-c)/COLS*100)+'% '+((ROWS-1-r)/ROWS*100)+'% '+(c/COLS*100)+'%)';
+      if(reduce){ img.style.opacity='1'; }
+      else{
+        var a=Math.random()*6.2832, d=75+Math.random()*80;
+        var dx=Math.cos(a)*d, dy=Math.sin(a)*d, rot=(Math.random()*2-1)*40, sc=0.5+Math.random()*0.3;
+        var dur=1.9+Math.random()*1.2, del=Math.random()*2.1; if(del+dur>maxEnd) maxEnd=del+dur;
+        img.style.opacity='0';
+        img.style.transform='translate('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px) rotate('+rot.toFixed(1)+'deg) scale('+sc.toFixed(2)+')';
+        img.style.transition='transform '+dur.toFixed(2)+'s cubic-bezier(.16,.72,.16,1) '+del.toFixed(2)+'s, opacity '+(dur*0.55).toFixed(2)+'s ease '+del.toFixed(2)+'s';
+      }
+      crest.appendChild(img);
+    }}
+    if(!reduce){
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){
+        var sh=crest.querySelectorAll('.sa-shard');
+        for(var i=0;i<sh.length;i++){ sh[i].style.opacity='1'; sh[i].style.transform='none'; }
+      });});
+      setTimeout(function(){ crest.classList.add('is-beating'); }, Math.round((maxEnd-0.6)*1000));
+    }
+    var start=Date.now(), MIN=11500, MAX=15000, FADE=1000, done=false;
     function hide(){
       if(done) return; done=true;
       boot.classList.add('sa-boot--hide');

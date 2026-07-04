@@ -3885,6 +3885,29 @@ function SiteHeader({
 }
 function SiteFooter() {
   var h = React.createElement;
+  // Freshness signal: newest of (last logged result, last news post) so returning
+  // visitors and sponsors can see the club is actively maintained. Falls back to
+  // nothing if neither source has a parseable date, so it never shows a wrong value.
+  var fresh = (function () {
+    try {
+      var times = [], MM = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      var rs = (window.getDerivedResults && window.getDerivedResults()) || [];
+      if (rs[0] && rs[0].date) {
+        var m = /(\d{1,2})\s+([A-Za-z]{3})\s+(\d{2})/.exec(rs[0].date);
+        if (m) { var mi = MM.indexOf(m[2].charAt(0).toUpperCase() + m[2].slice(1, 3).toLowerCase()); if (mi >= 0) times.push(+new Date(2000 + +m[3], mi, +m[1])); }
+      }
+      var arts = (window.getCustomArticles && window.getCustomArticles()) || [];
+      arts.forEach(function (a) { var d = a && (a.sortISO || a.date); if (d) { var t = +new Date(d); if (t) times.push(t); } });
+      var now = Date.now();
+      times = times.filter(function (t) { return t && t <= now + 864e5; });
+      if (!times.length) return null;
+      var last = Math.max.apply(null, times), days = Math.floor((now - last) / 864e5), rel;
+      if (days <= 0) rel = 'today'; else if (days === 1) rel = 'yesterday';
+      else if (days < 7) rel = days + ' days ago'; else if (days < 21) rel = Math.round(days / 7) + ' weeks ago';
+      else rel = new Date(last).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+      return { rel: rel, full: new Date(last).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) };
+    } catch (e) { return null; }
+  })();
   var groups = [
     ['The Club', [['about', 'Our Story'], ['sepsis', 'Our Cause'], ['champions', 'Champions'], ['sponsors', 'Sponsors']]],
     ['On the Pitch', [['squad', 'Squad'], ['stats', 'Player Stats'], ['coaches', 'Coaches'], ['schedule', 'Matches'], ['league', 'League']]],
@@ -3918,7 +3941,10 @@ function SiteFooter() {
       h(SupporterSignup, { compact: true, source: 'footer' })),
     h("div", { style: { marginTop: 26, paddingTop: 18, borderTop: '1px solid var(--m-edge)', display: 'flex', flexWrap: 'wrap', gap: '6px 18px', alignItems: 'center' } },
       h("span", { style: { font: '700 0.64rem var(--m-sans)', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--m-ink-3)' } }, "Also"),
-      supporting.map(function (it) { return h("a", { key: it[0], href: it[0], style: { color: 'var(--m-ink-3)', fontSize: '0.72rem', letterSpacing: '0.06em', textTransform: 'uppercase', textDecoration: 'none' } }, it[1]); })),
+      supporting.map(function (it) { return h("a", { key: it[0], href: it[0], style: { color: 'var(--m-ink-3)', fontSize: '0.72rem', letterSpacing: '0.06em', textTransform: 'uppercase', textDecoration: 'none' } }, it[1]); }),
+      fresh && h("span", { title: 'Content last updated ' + fresh.full, style: { marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 7, font: '600 0.68rem var(--m-sans)', color: 'var(--m-ink-3)' } },
+        h("span", { 'aria-hidden': 'true', style: { width: 7, height: 7, borderRadius: '50%', background: 'var(--m-volt)', boxShadow: '0 0 0 3px color-mix(in srgb, var(--m-volt) 24%, transparent)' } }),
+        "Updated ", h("strong", { style: { color: 'var(--m-ink-2)', fontWeight: 700 } }, fresh.rel))),
     h("div", { className: "sa-vh" }, h("small", null, "Sunday-league football at The Reeves, Hanworth \xB7 serving Kingston, Sunbury, Staines and south-west London \xB7 founded 2025 in memory of Susan Anne Martin \xB7 League Ten champions 25/26 \xB7 supporting sepsis awareness"))));
 }
 function BackToTop() {

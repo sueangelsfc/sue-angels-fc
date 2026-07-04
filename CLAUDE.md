@@ -8,7 +8,7 @@ A static marketing + club-data website for **Sue's Angels FC** (a London Sunday-
 ## Runtime architecture (read before editing)
 - **Per-page HTML.** One `.html` file per route: `index, about, champions, teams, schedule, results, fixtures, table, media, news, gallery, sponsors, contact, join` (+ `404`, `admin`). Each public page loads, in order: Google/Fontshare fonts → `app.css` → React 18 + ReactDOM (UMD, pinned) → the data/util scripts → `SiteApp.js`, then renders into `#rd-root`.
 - **`SiteApp.js` is the whole public app.** It contains every page component plus `SiteHeader`, `SiteFooter`, `BackToTop`, and a router that picks the component by URL filename. Focused entry pages set `window.SA_TAB` before mount (e.g. `results.html` sets the Schedule page's active tab to `results`).
-- **Source vs build:** `SiteApp.jsx` is the JSX **source**; `SiteApp.js` is the **compiled** output (Babel `preset-react`, `runtime: classic`, so it keeps using the global `React`). **The site loads `SiteApp.js`, NOT the jsx.** In practice this project has been edited by hand-writing `React.createElement(...)` directly in `SiteApp.js` (the `.jsx` has drifted and is NOT authoritative). **Always edit `SiteApp.js`.** If you prefer to work in JSX, re-sync `SiteApp.jsx` → recompile → overwrite `SiteApp.js`, but verify nothing regresses.
+- **Single source of truth:** `SiteApp.js` is the one and only public app file — **edit it directly**, hand-writing `React.createElement(...)` in the existing style. There is no `.jsx` twin any more (the old drifted `SiteApp.jsx` and ~38 other pre-consolidation per-page `.jsx` files were removed; recover from git history if ever needed). The only `.jsx` files that remain are the 11 the CMS loads at runtime (see below).
 - **`admin.html` is the CMS.** It is intentionally on the **legacy** stack: `site.css` + `AdminPanel.jsx` (transpiled in-browser by Babel standalone). It drives all live content. Don't break it.
 
 ## Data layer (`dataStore.js`)
@@ -45,7 +45,7 @@ Push to the GitHub repo → Vercel auto-deploys (project Root Directory = repo r
 
 ## Things that have caused bugs (avoid repeating)
 1. **Stale cache** — always bump `app.css?v=` AND any `*.js?v=` across all HTML when editing those assets.
-2. **Editing `SiteApp.jsx` expecting it to ship** — it doesn't; `SiteApp.js` is what loads.
+2. **Only 11 `.jsx` files are live** (the ones `admin.html` loads via Babel). Public pages load compiled `.js`. Don't re-add per-page `.jsx` component files — they're dead weight and caused source-of-truth confusion; that whole class was removed.
 3. **Wrong Vercel Root Directory** — must point at the folder containing `index.html`.
 4. **Horizontal overflow on mobile** — never let a grid column exceed `100%`; use the `min(100%, …)` minmax pattern; let long team names ellipsis (`min-width:0` on flex children).
 

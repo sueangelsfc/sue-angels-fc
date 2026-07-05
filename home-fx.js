@@ -218,49 +218,7 @@
     /* ======================================================================
        4) CURSOR — volt dot + trailing ring (fine pointers only)
        ====================================================================== */
-    if (FINE && !TOUCH) (function cursor() {
-      document.documentElement.classList.add('fx-cursor-on');
-      // The ball: the club's own football icon, spinning with your movement.
-      var ball = document.createElement('div'); ball.className = 'fx-cur fx-cur--ball';
-      ball.innerHTML = '<span class="spin">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">' +
-        '<circle cx="12" cy="12" r="9"></circle>' +
-        '<polygon points="12,7 16.5,10.2 14.8,15.4 9.2,15.4 7.5,10.2" fill="currentColor"></polygon>' +
-        '<line x1="12" y1="7" x2="12" y2="3"></line><line x1="16.5" y1="10.2" x2="20.5" y2="8.5"></line>' +
-        '<line x1="14.8" y1="15.4" x2="17.5" y2="19"></line><line x1="9.2" y1="15.4" x2="6.5" y2="19"></line>' +
-        '<line x1="7.5" y1="10.2" x2="3.5" y2="8.5"></line></svg></span>';
-      var ring = document.createElement('div'); ring.className = 'fx-cur fx-cur--ring';
-      ball.setAttribute('aria-hidden', 'true'); ring.setAttribute('aria-hidden', 'true');
-      document.body.appendChild(ring); document.body.appendChild(ball);
-      var spinEl = ball.querySelector('.spin');
-      g.set([ball, ring], { xPercent: 0, yPercent: 0, x: -100, y: -100 });
-      var dx = g.quickTo(ball, 'x', { duration: 0.09, ease: 'power2' }),
-          dy = g.quickTo(ball, 'y', { duration: 0.09, ease: 'power2' }),
-          rx = g.quickTo(ring, 'x', { duration: 0.38, ease: 'power3' }),
-          ry = g.quickTo(ring, 'y', { duration: 0.38, ease: 'power3' });
-      // Roll physics: horizontal movement spins the ball; friction slows it.
-      var rot = 0, spinV = 0, lastPX = null;
-      window.addEventListener('pointermove', function (e) {
-        dx(e.clientX); dy(e.clientY); rx(e.clientX); ry(e.clientY);
-        if (lastPX !== null) spinV += (e.clientX - lastPX) * 0.22;
-        lastPX = e.clientX;
-      }, { passive: true });
-      g.ticker.add(function () {
-        spinV *= 0.9;
-        if (Math.abs(spinV) > 0.01) { rot += spinV; g.set(spinEl, { rotation: rot }); }
-      });
-      var HOT = 'a,button,[role="button"],.m-btn,.fx-tilt,[data-tilt],input[type="submit"],label,summary';
-      document.addEventListener('mouseover', function (e) {
-        if (e.target.closest && e.target.closest(HOT)) { ring.classList.add('is-hover'); ball.classList.add('is-hover'); }
-      });
-      document.addEventListener('mouseout', function (e) {
-        if (e.target.closest && e.target.closest(HOT)) { ring.classList.remove('is-hover'); ball.classList.remove('is-hover'); }
-      });
-      window.addEventListener('pointerdown', function () { ring.classList.add('is-down'); ball.classList.add('is-down'); });
-      window.addEventListener('pointerup', function () { ring.classList.remove('is-down'); ball.classList.remove('is-down'); });
-      document.addEventListener('mouseleave', function () { g.to([ball, ring], { autoAlpha: 0, duration: 0.2 }); });
-      document.addEventListener('mouseenter', function () { g.to([ball, ring], { autoAlpha: 1, duration: 0.2 }); });
-    })();
+    /* (Custom cursor removed at the club's request — normal mouse restored.) */
 
     /* ======================================================================
        5) SECTIONS — each arrives with its own signature
@@ -308,7 +266,14 @@
       var n = cards.length;
       if (n < 3) return null;
 
-      grid.classList.add('fx-car');
+      grid.classList.add('fx-car', 'fx-grab');
+      // The legacy tilt layer (fx.js [data-tilt]) writes style.transform directly
+      // and would fight the carousel's gsap transforms — that fight is visible
+      // as shaking. Strip the attribute so exactly one system drives each card.
+      cards.forEach(function (c) {
+        c.removeAttribute('data-tilt');
+        c.querySelectorAll('[data-tilt]').forEach(function (el) { el.removeAttribute('data-tilt'); });
+      });
       var sec = grid.closest('.mh-sec'); if (sec) sec.classList.add('fx-car-section');
       grid.setAttribute('tabindex', '0');
       grid.setAttribute('role', 'region');
@@ -328,8 +293,8 @@
           card.style.zIndex = String(100 - a * 10);
           g[animate ? 'to' : 'set'](card, {
             xPercent: -50, x: o * STEP, z: -a * DEPTH, rotationY: o * TURN,
-            scale: 1 - a * 0.07, opacity: a > 2 ? 0 : 1 - a * 0.1,
-            duration: 0.9, ease: EXPO, overwrite: 'auto'
+            scale: o === 0 ? 1.06 : 1 - a * 0.07, opacity: a > 2 ? 0 : 1 - a * 0.1,
+            duration: 1.05, ease: EXPO, overwrite: 'auto'
           });
         });
         if (count) count.textContent = (cur + 1) + ' / ' + n;
@@ -380,13 +345,11 @@
           if (Math.abs(dragMoved) > 12) { e.preventDefault(); e.stopPropagation(); return; }
           if (off(i) !== 0) { e.preventDefault(); e.stopPropagation(); go(i, true); } // side card: bring to front
         }, true);
-        card.addEventListener('pointerenter', function () { // focused card pops toward you
-          if (off(i) === 0 && !dragging) g.to(card, { z: 90, scale: 1.06, duration: 0.5, ease: 'back.out(1.4)', overwrite: 'auto' });
-        });
-        card.addEventListener('pointerleave', function () {
-          if (off(i) === 0) g.to(card, { z: 0, scale: 1, duration: 0.6, ease: EXPO, overwrite: 'auto' });
-        });
+        // Hover response is CSS-only (glow deepens, image brightens) — no
+        // geometry changes under the pointer, so it cannot judder.
       });
+      grid.addEventListener('pointerdown', function () { grid.classList.add('fx-grabbing'); });
+      window.addEventListener('pointerup', function () { grid.classList.remove('fx-grabbing'); });
       grid.addEventListener('keydown', function (e) {
         if (e.key === 'ArrowRight') { e.preventDefault(); next(true); }
         if (e.key === 'ArrowLeft') { e.preventDefault(); prev(true); }

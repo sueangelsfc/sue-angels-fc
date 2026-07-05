@@ -61,9 +61,18 @@ html[data-theme="light"] .fx-cur--ring.is-hover{background:rgba(214,242,58,.35);
 .fx-car{position:relative!important;display:block!important;height:clamp(500px,60vh,620px);
   perspective:1500px;transform-style:preserve-3d;touch-action:pan-y;outline:none}
 .fx-car > *{position:absolute!important;top:14px;left:50%;width:min(330px,74vw);
-  will-change:transform;backface-visibility:hidden}
-.fx-car > *.is-center{box-shadow:0 30px 70px -24px rgba(0,0,0,.65),0 0 0 1.5px rgba(214,242,58,.55),
-  0 0 44px -6px rgba(214,242,58,.28)}
+  will-change:transform;backface-visibility:hidden;
+  box-shadow:0 18px 46px -26px rgba(0,0,0,.55);
+  transition:box-shadow .6s cubic-bezier(.22,.68,.16,1)}
+.fx-car > *.is-center{box-shadow:
+  0 36px 84px -26px rgba(0,0,0,.72),
+  0 0 0 2px rgba(214,242,58,.95),
+  0 0 34px -2px rgba(214,242,58,.62),
+  0 0 110px 8px rgba(214,242,58,.36);
+  animation:fx-car-glow 2.8s ease-in-out infinite}
+@keyframes fx-car-glow{
+  0%,100%{box-shadow:0 36px 84px -26px rgba(0,0,0,.72),0 0 0 2px rgba(214,242,58,.9),0 0 30px -2px rgba(214,242,58,.55),0 0 96px 6px rgba(214,242,58,.3)}
+  50%{box-shadow:0 36px 84px -26px rgba(0,0,0,.72),0 0 0 2px rgba(214,242,58,1),0 0 44px 0 rgba(214,242,58,.75),0 0 130px 12px rgba(214,242,58,.44)}}
 .fx-car:focus-visible{outline:2px solid #D6F23A;outline-offset:6px;border-radius:18px}
 
 .fx-car-nav{display:inline-flex;align-items:center;gap:12px;margin-left:auto}
@@ -77,8 +86,65 @@ html[data-theme="light"] .fx-cur--ring.is-hover{background:rgba(214,242,58,.35);
   color:currentColor;opacity:.65;min-width:44px;text-align:center}
 html[data-theme="light"] .fx-car-btn{border-color:rgba(7,29,41,.45);color:#071D29}
 html[data-theme="light"] .fx-car-btn:hover{background:#071D29;color:#D6F23A}
-html[data-theme="light"] .fx-car > *.is-center{box-shadow:0 30px 70px -24px rgba(7,29,41,.4),
-  0 0 0 1.5px rgba(122,140,16,.65),0 0 44px -6px rgba(158,211,43,.3)}
+html[data-theme="light"] .fx-car > *.is-center{animation:fx-car-glow-lt 2.8s ease-in-out infinite}
+@keyframes fx-car-glow-lt{
+  0%,100%{box-shadow:0 34px 78px -26px rgba(7,29,41,.42),0 0 0 2px rgba(214,242,58,.95),0 0 28px 0 rgba(214,242,58,.6),0 0 90px 6px rgba(198,226,40,.42)}
+  50%{box-shadow:0 34px 78px -26px rgba(7,29,41,.42),0 0 0 2px rgba(214,242,58,1),0 0 44px 2px rgba(214,242,58,.85),0 0 120px 12px rgba(198,226,40,.6)}}
+
+/* ============================================================================
+   THE UNBEATEN RUN — scrubbable season rewind (section injected by home-fx.js)
+   ========================================================================== */
+.fx-rw{position:relative;border-radius:var(--m-radius,22px);background:var(--m-glass-2,rgba(255,255,255,.05));
+  border:1px solid var(--m-edge,rgba(255,255,255,.12));padding:clamp(20px,2.6vw,34px);
+  -webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4)}
+.fx-rw-top{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:8px}
+.fx-rw-md{font-size:11px;font-weight:700;letter-spacing:.26em;text-transform:uppercase;opacity:.55;margin-bottom:10px}
+.fx-rw-line{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  font-family:var(--m-display,'Clash Display');font-weight:600;text-transform:uppercase;
+  font-size:clamp(18px,2.4vw,30px);letter-spacing:-.01em;min-height:40px}
+.fx-rw-line img{height:32px;width:auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35))}
+.fx-rw-line .sc{font-variant-numeric:tabular-nums;padding:2px 12px;border-radius:12px;
+  background:rgba(214,242,58,.16);color:inherit}
+.fx-rw-date{font-size:12.5px;opacity:.55;margin-top:8px}
+.fx-rw-pts{text-align:right;min-width:120px}
+.fx-rw-pts b{display:block;font-family:var(--m-display,'Clash Display');font-weight:600;
+  font-size:clamp(40px,4.6vw,58px);line-height:1;font-variant-numeric:tabular-nums}
+.fx-rw-pts span{font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;opacity:.5}
+.fx-rw-chart{display:block;width:100%;height:auto;margin:14px 0 6px}
+.fx-rw-chart .track{fill:none;stroke:currentColor;opacity:.14;stroke-width:1.6}
+.fx-rw-chart .prog{fill:none;stroke:#D6F23A;stroke-width:2.2;stroke-linecap:round;
+  filter:drop-shadow(0 0 6px rgba(214,242,58,.5))}
+.fx-rw-chart .dot{fill:#D6F23A;filter:drop-shadow(0 0 8px rgba(214,242,58,.9))}
+.fx-rw input[type="range"]{-webkit-appearance:none;appearance:none;width:100%;height:30px;background:transparent;
+  cursor:pointer;margin:4px 0 2px;--fill:0%}
+.fx-rw input[type="range"]::-webkit-slider-runnable-track{height:5px;border-radius:99px;
+  background:linear-gradient(90deg,#D6F23A var(--fill),rgba(128,140,150,.28) var(--fill))}
+.fx-rw input[type="range"]::-moz-range-track{height:5px;border-radius:99px;background:rgba(128,140,150,.28)}
+.fx-rw input[type="range"]::-moz-range-progress{height:5px;border-radius:99px;background:#D6F23A}
+.fx-rw input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:99px;
+  background:#D6F23A;border:2px solid #071D29;margin-top:-10.5px;
+  box-shadow:0 0 0 4px rgba(214,242,58,.25),0 6px 16px -6px rgba(0,0,0,.5)}
+.fx-rw input[type="range"]::-moz-range-thumb{width:24px;height:24px;border-radius:99px;background:#D6F23A;
+  border:2px solid #071D29;box-shadow:0 0 0 4px rgba(214,242,58,.25)}
+.fx-rw input[type="range"]:focus-visible{outline:2px solid #D6F23A;outline-offset:4px;border-radius:99px}
+.fx-rw-ticks{display:flex;justify-content:space-between;gap:4px;margin-top:10px}
+.fx-rw-ticks button{width:12px;height:12px;border-radius:99px;background:rgba(128,140,150,.32);
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1),background .25s;cursor:pointer;padding:0}
+.fx-rw-ticks button.lit{background:var(--m-win,#25E27B)}
+.fx-rw-ticks button.lit.d{background:var(--m-draw,#F2C744)}
+.fx-rw-ticks button.lit.l{background:var(--m-loss,#FF4D5E)}
+.fx-rw-ticks button.cur{transform:scale(1.5);box-shadow:0 0 0 3px rgba(214,242,58,.35)}
+.fx-rw-ticks button:hover{transform:scale(1.35)}
+.fx-rw-champ{display:inline-flex;align-items:center;gap:10px;margin-top:16px;padding:10px 18px;border-radius:99px;
+  background:#D6F23A;color:#071D29;font-weight:800;font-size:13.5px;letter-spacing:.12em;text-transform:uppercase;
+  opacity:0;transform:scale(.82) translateY(8px);transition:opacity .5s,transform .55s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 14px 34px -12px rgba(214,242,58,.55)}
+.fx-rw-champ img{height:22px;width:auto}
+.fx-rw.is-done .fx-rw-champ{opacity:1;transform:scale(1) translateY(0)}
+@media (max-width:600px){
+  .fx-rw-pts{text-align:left}
+  .fx-rw-ticks button{width:9px;height:9px}
+}
 
 /* ============================================================================
    Cards — cursor glare + press feel (transforms applied by JS tilt)

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -18,14 +18,15 @@
   <link rel="preconnect" href="https://hvbquuvxcswylyguplfb.supabase.co" crossorigin />
   <link rel="preload" href="assets/fonts/hanken-400.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="assets/fonts/clash-display-600.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="app.css?v=84" />
+  <link rel="stylesheet" href="v2.css?v=3" />
   <link rel="preload" as="image" href="assets/hero-team.webp" fetchpriority="high" />
-  <script>(function(){try{var t=localStorage.getItem('sa-theme');document.documentElement.setAttribute('data-theme',t||'dark');}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();</script>
+  <script>(function(){try{var t=localStorage.getItem('sa-theme');document.documentElement.setAttribute('data-theme',t||'light');}catch(e){document.documentElement.setAttribute('data-theme','light');}})();</script>
+  <style>/* critical: no flash before v2.css arrives */html{background:#DFE6EC}html[data-theme="dark"]{background:#03070C}</style>
   <!-- sa-seo:start -->
   <link rel="canonical" href="https://www.suesangelsfc.co.uk/" />
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <meta name="author" content="Sue's Angels FC" />
-  <meta name="theme-color" content="#04121B" />
+  <meta name="theme-color" content="#DFE6EC" />
   <meta name="format-detection" content="telephone=no" />
   <link rel="apple-touch-icon" href="assets/badge/sue-angels-badge.png" />
   <link rel="manifest" href="manifest.json" />
@@ -41,7 +42,9 @@
   <!-- sa-seo:end -->
 </head>
 <body>
-  <div id="rd-root"><div id="sa-aeo" style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:normal;border:0;">
+  <div id="rd-root"></div>
+  <!-- AEO/SEO prose, outside the React root so it survives mount -->
+  <div id="sa-aeo" style="position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:normal;border:0;">
 <h1>Sue's Angels FC: Sunday League Football Club in Kingston</h1>
 <p>Welcome to the official website of Sue's Angels FC, a grassroots men's Sunday-league football club from Kingston upon Thames. Founded in 2025 in memory of Susan Anne Martin, the Angels were crowned League Ten champions and won promotion in their very first season. This site is home to the club's fixtures, results, squad, statistics, photos and the cause at its heart.</p>
 
@@ -60,82 +63,23 @@
 <p>Local businesses can support the club through shirt, training-kit and matchday sponsorship, with packages explained on the <a href="sponsors.html">sponsors</a> page, where supporters can also donate to the club online.</p>
 <h3>Why do Sue's Angels FC raise awareness of sepsis?</h3>
 <p>The club is named in memory of Susan Anne Martin, who died of sepsis. Through its <a href="sepsis.html">Our Cause</a> work the club helps raise awareness of the condition, supported by the <a href="https://sepsistrust.org" rel="nofollow noopener">UK Sepsis Trust</a> and grassroots football through <a href="https://www.englandfootball.com/" rel="nofollow noopener">England Football</a>.</p>
-</div></div>
-  <style>
-    @keyframes saBeat{0%,100%{transform:scale(1)}50%{transform:scale(1.055)}}
-    #sa-boot{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#0A0F1C;opacity:1;transition:opacity 1s ease;will-change:opacity}
-    #sa-boot .sa-crest{position:relative;width:88px;height:101px}
-    #sa-boot .sa-crest.is-beating{animation:saBeat 1.7s ease-in-out infinite}
-    #sa-boot .sa-shard{position:absolute;top:0;left:0;width:88px;height:101px;will-change:transform,opacity}
-    #sa-boot.sa-boot--hide{opacity:0}
-  </style>
-  <div id="sa-boot" aria-hidden="true"><div class="sa-crest"></div></div>
-  <script>
-  (function(){
-    var boot=document.getElementById('sa-boot'); if(!boot) return;
-    var crest=boot.querySelector('.sa-crest');
-    var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    // Build the crest from 40 shards (5 cols x 8 rows), each a clipped copy of the badge.
-    var SRC='assets/badge/sue-angels-shield.webp', COLS=5, ROWS=8, maxEnd=0;
-    for(var r=0;r<ROWS;r++){ for(var c=0;c<COLS;c++){
-      var img=document.createElement('img'); img.className='sa-shard'; img.src=SRC; img.alt='';
-      img.style.clipPath='inset('+(r/ROWS*100)+'% '+((COLS-1-c)/COLS*100)+'% '+((ROWS-1-r)/ROWS*100)+'% '+(c/COLS*100)+'%)';
-      if(reduce){ img.style.opacity='1'; }
-      else{
-        var a=Math.random()*6.2832, d=50+Math.random()*52;
-        var dx=Math.cos(a)*d, dy=Math.sin(a)*d, rot=(Math.random()*2-1)*40, sc=0.5+Math.random()*0.3;
-        var dur=1.9+Math.random()*1.2, del=Math.random()*2.1; if(del+dur>maxEnd) maxEnd=del+dur;
-        img.style.opacity='0';
-        img.style.transform='translate('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px) rotate('+rot.toFixed(1)+'deg) scale('+sc.toFixed(2)+')';
-        img.style.transition='transform '+dur.toFixed(2)+'s cubic-bezier(.16,.72,.16,1) '+del.toFixed(2)+'s, opacity '+(dur*0.55).toFixed(2)+'s ease '+del.toFixed(2)+'s';
-      }
-      crest.appendChild(img);
-    }}
-    if(!reduce){
-      requestAnimationFrame(function(){ requestAnimationFrame(function(){
-        var sh=crest.querySelectorAll('.sa-shard');
-        for(var i=0;i<sh.length;i++){ sh[i].style.opacity='1'; sh[i].style.transform='none'; }
-      });});
-      setTimeout(function(){ crest.classList.add('is-beating'); }, Math.round((maxEnd-0.6)*1000));
-    }
-    var start=Date.now(), MIN=8800, MAX=12000, FADE=1000, done=false;
-    function hide(){
-      if(done) return; done=true;
-      boot.classList.add('sa-boot--hide');
-      setTimeout(function(){ if(boot && boot.parentNode) boot.parentNode.removeChild(boot); }, FADE+60);
-    }
-    // Ready once the homepage app has rendered its hero into #rd-root.
-    function ready(){ return !!document.querySelector('#rd-root .mh-hero, #rd-root header, #rd-root .mh-hero__photo'); }
-    function tick(){
-      var e=Date.now()-start;
-      if(e>=MAX || (ready() && e>=MIN)){ hide(); return; }
-      requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
-  })();
-  </script>
+  </div>
+
+  <!-- data layer (untouched Supabase plumbing) -->
   <script defer src="react.18.3.1.min.js"></script>
   <script defer src="react-dom.18.3.1.min.js"></script>
   <script defer src="supabase-config.js?v=21"></script>
   <script defer src="supabase.js?v=19"></script>
   <script defer src="dataStore.js?v=33"></script>
-  <script defer src="Nav.js?v=19"></script>
   <script defer src="PageShell.js?v=44"></script>
-  <script defer src="AdminMode.js?v=20"></script>
-  <script defer src="PlayerPhotos.js?v=19"></script>
-  <script defer src="MediaStore.js?v=19"></script>
   <script defer src="FixtureEntry.js?v=20"></script>
-  
-  <script defer src="SiteApp.js?v=115"></script>
-  <script src="chart-anim.js?v=19" defer></script>
-  <script src="hero-rotator.js?v=21" defer></script>
-  <script src="fx.js?v=20" defer></script>
-  <script src="gallery-fx.js?v=20" defer></script>
-  <script src="player-fx.js?v=20" defer></script>
+
+  <!-- motion + the new homepage -->
+  <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script defer src="home-v2.js?v=2"></script>
+
   <script src="analytics.js?v=3" defer></script>
   <script src="consent.js?v=1" defer></script>
-  <style id="__om-edit-overrides">
-.mp-grid > button.mp-news:nth-child(1) .mp-news__cover img { border-radius: 26px !important; opacity: 0.3 !important; }
-  </style>
 </body>
 </html>

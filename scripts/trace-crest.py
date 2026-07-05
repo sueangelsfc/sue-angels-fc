@@ -34,12 +34,21 @@ NAVY = "#071D29"
 VOLT = "#D6F23A"
 
 
+H = 512  # canvas height; potrace emits y-up maths coords, SVG wants y-down.
+
+
 def pt(p):
-    """potracer Point -> (x, y), tolerant of tuple or object form."""
+    """potracer Point -> (x, y) flipped to y-down SVG space.
+
+    Flipping here (rather than a transform attribute) keeps path orientation
+    consistent with standard SVG winding, which three.js SVGLoader relies on
+    to classify solids vs holes. Raw potrace coords render fine in 2D but
+    invert solid/hole classification when extruded."""
     try:
-        return float(p.x), float(p.y)
+        x, y = float(p.x), float(p.y)
     except AttributeError:
-        return float(p[0]), float(p[1])
+        x, y = float(p[0]), float(p[1])
+    return x, H - y
 
 
 def trace_to_d(mask, turdsize=8, opttolerance=0.2):
@@ -97,6 +106,7 @@ def main():
 
     print("shield px:", int(shield.sum()), "| volt px:", int(volt.sum()))
     print("wrote sue-angels-crest-silhouette.svg + sue-angels-crest-marks.svg (+ mask previews)")
+    print("note: y-axis flipped to SVG space; solids/holes classify correctly in three.js")
 
 
 if __name__ == "__main__":

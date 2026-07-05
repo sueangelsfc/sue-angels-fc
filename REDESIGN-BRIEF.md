@@ -168,6 +168,100 @@ still deliver. Read it in full before designing.
 
 ---
 
+## SIGNATURE DIRECTION (explicit requests from the club)
+
+These are not suggestions — the club has asked for them by name.
+
+### The hero — a 3D animated crest, not squad photos
+
+The current hero uses team photography. **Replace it with a bespoke, award-winning 3D animation of
+the club crest.** The crest is the emotional core of the brand (a shield with the volt angel, halo,
+wings, "SUE'S ANGELS", EST 2025, and the motto *"What we do in life echoes in eternity"*). Make it the
+hero moment: think the crest building itself, the shield extruding/rotating with real depth and
+lighting while the volt angel, wings and text lift out and settle in staggered layers; particles /
+light shafts / a living volt-on-navy field behind it; parallax and pointer-reactive tilt; a cinematic
+GSAP timeline on load that resolves into a calm, interactive resting state. Three.js is the right tool
+here. It should feel like the Nothing / Rivian / Apple product-reveal tier, and it should carry the
+club's meaning (remembrance, ascension) — not be 3D for its own sake.
+
+**Vectors are prepared for exactly this** (see assets below): `sue-angels-crest-silhouette.svg`
+(the shield outline — extrude / bevel / mask / 3D geometry) and `sue-angels-crest-marks.svg` (the volt
+angel + wings + halo + text as a separate, overlay-aligned layer to animate independently). Both share
+a `0 0 512 512` space so they recombine perfectly.
+
+### Profile cards — modernise them
+
+The player cards and the player-profile modal are a showpiece (see `SITEMAP.md` §Team). Make them feel
+distinctly **modern and premium**: tactile depth, pointer-reactive 3D tilt / glare, smooth spring
+motion, elegant data viz (the rings, sparklines, pitch position, last-10 form), refined typographic
+hierarchy, satisfying open/close transitions. They must **degrade gracefully where a player has no
+photo** (photos are cloud-fed and sparse — see assets).
+
+---
+
+## ASSETS — what you have, and what you don't
+
+Design to reality, not to placeholders.
+
+**You have:**
+- **Crest** — raster (`sue-angels-badge*.png/.webp/.jpg`, transparent `-cutout`, `-shield`) **and now
+  two prepared vectors** for the 3D hero: `assets/badge/sue-angels-crest-silhouette.svg` and
+  `assets/badge/sue-angels-crest-marks.svg` (regen with `scripts/trace-crest.py`).
+- **Opponent crests** — ~35 clubs in `assets/badge/` (png + webp), used by the badge registry.
+- **Hero photography** — 12 shots in `assets/hero/` (`banner-01..12`, jpg + webp).
+- **Fonts** — self-hosted woff2 in `assets/fonts/` (Clash Display ×4, Hanken ×5). See the typography
+  rule — you may replace these, but a new premium face must be licensed + self-hosted here.
+- **UI icons** — SVG in `assets/icons/` (trophy, whistle, pitch, football, captain, shirt) — animatable.
+- **OG / sponsors / sponsorship pack** — in `assets/og/`, `assets/sponsors/`, root PDF.
+
+**You DON'T have (plan around it):**
+- **Player photography is thin and cloud-fed.** Only one real player cutout ships in `assets/players/`;
+  the rest live in Supabase (`player_photos`) and coverage is incomplete. Any design that leans on a
+  full set of player portraits will break — provide a strong crest/monogram fallback.
+- **No full-colour vector of the crest.** The two SVGs above are a silhouette + a volt-marks trace
+  (great for motion/3D). A pixel-faithful full-colour vector redraw, if ever wanted, is a manual
+  designer job — flag it and I/the club can commission it.
+- **The crest raster is 512×512.** Fine as a Three.js texture; for a giant sharp hero, prefer the SVGs
+  (resolution-independent) over upscaling the PNG.
+
+---
+
+## THE BACKEND IS IN SCOPE TOO (read this before touching data or admin)
+
+The club has said **the backend also needs redesigning** — so understand it before you change it. It
+is two distinct layers; treat them differently:
+
+**A. The data layer (the club's real content) — KEEP or deliberately MIGRATE, never lose.**
+- Storage is **Supabase (Postgres + Auth)**. Every content table uses one generic shape:
+  `(key text primary key, data jsonb, updated_at timestamptz)`. Tables: `matches`, `fixtures`,
+  `team_badges`, `player_photos`, `articles`, `gallery`, `recognition`, plus `supporters` and
+  `enquiries` (schema in `schema.sql`).
+- **Row-Level Security** is the safety model: content tables are **public-read, admin-write** (writes
+  require a signed-in user); `supporters` + `enquiries` are **public-insert, admin-read only** (visitor
+  emails/leads stay private). Do not weaken this.
+- The browser talks to Supabase through **`dataStore.js`** — a `window.*` getter/setter abstraction
+  with a **localStorage cache and optimistic writes**. Crucially it has a **`local` fallback**: with no
+  Supabase config it runs entirely on localStorage (that's the preview mode). Auth + client live in
+  `supabase.js` / `supabase-config.js`; admin is gated by a single email.
+- **Because the data is a simple key→jsonb map, it is portable.** A rebuilt front end can keep calling
+  the same tables, or you can design a cleaner schema and write a migration — but the club must not lose
+  content or the ability to edit it.
+
+**B. The admin CMS (the editing UI) — this is the part most worth reinventing.**
+- `admin.html` + 11 `.jsx` files (`AdminPanel.jsx`, `MatchEntry.jsx`, `FixtureEntry.jsx`,
+  `GalleryAlbums.jsx`, `MediaStore.jsx`, `Nav.jsx`, `PlayerPhotos.jsx`, `TableSync.jsx`, etc.) run on a
+  **legacy in-browser Babel** stack — deliberately old, and the club edits everything through it. A
+  redesign can rebuild this into a modern admin dashboard, **but it must still write through the same
+  auth + RLS rules to the same data** (or the migration in A), and stay dead simple for a non-technical
+  club admin to use on a phone.
+
+**C. Serverless API (`api/`, Vercel functions) — rework as needed, don't drop silently.**
+- `api/og-image.js`, `api/og-cover.js`, `api/share.js` (share/OG-image generation), `api/subscribe.js`
+  (newsletter), `api/notify-enquiry.js` (lead notifications), `api/claude.js`. Keep the capabilities
+  (OG images, enquiry capture, subscribe) working under whatever stack you choose.
+
+---
+
 ## HARD CONSTRAINTS — a "full rebuild" may change everything EXCEPT these
 
 Even though you're free to change the stack, the site is live with real users, real content, and

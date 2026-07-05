@@ -138,6 +138,21 @@ emoji. "League Ten / League Eight" — never "Division".
 - **Colours:** volt yellow `#D6F23A` (accent) · navy `#071D29` (ink/base) · light bg `#EAEEF2` ·
   result colours win `#25E27B` / draw `#F2C744` / loss `#FF4D5E`.
 - **Type:** Clash Display (headlines/stats) + Hanken Grotesk (body/UI). Self-hosted in `assets/fonts`.
+  You may change the pairing, but honour the typography rule below.
+
+### Typography rule — NO generic "AI default" fonts
+
+The type is a large part of why a site reads as elite vs. templated. **Do not** reach for the
+default, overused, "AI-generated" typefaces: **Inter, Roboto, Open Sans, Lato, Montserrat, Poppins,
+Nunito, Space Grotesk (as everything), or the raw system stack.** These are the tell of a generic
+build and are banned here.
+
+Instead choose **distinctive, premium, characterful** typefaces with a real point of view — the kind
+Apple/Stripe/Linear/Nothing/Rivian-tier sites use (bespoke or high-craft display faces, expressive
+grotesks, a considered serif/sans contrast). The current Clash Display + Hanken Grotesk pairing is a
+good baseline of the *bar* to clear or beat. Whatever is chosen must be **properly licensed for web,
+self-hosted** in `assets/fonts` (no hotlinking that leaks a generic Google-Fonts look), preloaded,
+and subset for performance.
 - **Feel:** premium glassmorphism, light **and** dark mode, subtle motion.
 - Full token set + design explorations: `design/DESIGN.md`, `design/design-tokens.json`, and the
   standalone concept HTML files in `design/`.

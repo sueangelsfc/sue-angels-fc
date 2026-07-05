@@ -2,6 +2,8 @@
 
 Project instructions for Claude Code. Read this first; it is the source of truth for how this site is built, how to change it safely, and how to deploy.
 
+> **Doing a redesign / rebuild?** Start with [`REDESIGN-BRIEF.md`](REDESIGN-BRIEF.md) — it frames the full-rebuild scope, links every live page to study first, and lists the hard constraints (keep the Supabase/CMS content layer, existing routes, and Vercel deploy working). Come back here for the current implementation details.
+
 ## What this is
 A static marketing + club-data website for **Sue's Angels FC** (a London Sunday-league football club). Live at **suesangelsfc.co.uk**, hosted on **Vercel**, source on **GitHub** (`sueangelsfc/sue-angels-fc`). Plain HTML + React-via-CDN. **No bundler, no framework, no build step** — files deploy exactly as they sit in the repo.
 

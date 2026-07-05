@@ -382,7 +382,35 @@
       { opacity: 0, y: 64, rotationX: 16, transformPerspective: 900, transformOrigin: '50% 0%' },
       { opacity: 1, y: 0, rotationX: 0, ease: 'back.out(1.15)' });
 
-    enter('.mh-ledger > *', { opacity: 0, y: 44, scale: 0.97 }, { opacity: 1, y: 0, scale: 1 });
+    /* THE CAMPAIGN — the whole ledger POPS into the page: the hero card
+       overshoots up, the win-rate ring punches to full size as the number
+       lands (a triumphant arrival, not a flat stop), then the eight stat
+       tiles cascade in with a springy overshoot. */
+    (function campaignIn() {
+      var ledger = document.querySelector('.mh-ledger');
+      if (!ledger) { enter('.mh-ledger > *', { opacity: 0, y: 44, scale: 0.97 }, { opacity: 1, y: 0, scale: 1 }); return; }
+      var hero = ledger.querySelector('.mh-ledger__hero');
+      var tiles = ledger.querySelectorAll('.mh-ltile');
+      var ring = ledger.querySelector('.mh-bigring');
+      var pct = ledger.querySelector('.mh-bigring__pct');
+      var chip = ledger.querySelector('.mh-ledger__hero .m-chip');
+      if (hero) g.set(hero, { opacity: 0, y: 68, scale: 0.82, transformOrigin: '50% 64%' });
+      if (tiles.length) g.set(tiles, { opacity: 0, y: 52, scale: 0.74, transformOrigin: '50% 100%' });
+      if (ring) g.set(ring, { scale: 0.78, transformOrigin: '50% 50%' });
+      if (pct) g.set(pct, { scale: 0.62, opacity: 0, transformOrigin: '50% 50%' });
+      if (chip) g.set(chip, { opacity: 0, y: 16 });
+      ST.create({
+        trigger: ledger, start: 'top 82%', once: true,
+        onEnter: function () {
+          var tl = g.timeline();
+          if (hero) tl.to(hero, { opacity: 1, y: 0, scale: 1, duration: 0.95, ease: 'back.out(1.7)' }, 0);
+          if (ring) tl.to(ring, { scale: 1, duration: 1.1, ease: 'back.out(2.4)' }, 0.12);
+          if (pct) tl.to(pct, { scale: 1, opacity: 1, duration: 0.7, ease: 'back.out(3)' }, 0.48);
+          if (chip) tl.to(chip, { opacity: 1, y: 0, duration: 0.5, ease: EXPO }, 0.62);
+          if (tiles.length) tl.to(tiles, { opacity: 1, y: 0, scale: 1, duration: 0.72, ease: 'back.out(1.9)', stagger: 0.075 }, 0.28);
+        }
+      });
+    })();
     enter('.mh-rail > *', { opacity: 0, x: 90 }, { opacity: 1, x: 0, stagger: 0.08 });
     enter('.mh-join > *', { opacity: 0, y: 30, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, ease: 'back.out(1.05)' });
 

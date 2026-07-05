@@ -520,16 +520,9 @@ html[data-theme="light"] { --m-volt-ink: #0A1B27; }
 .mh-ltile--volt b { color: var(--m-volt-ink); }
 
 /* --- The Campaign: WOW layer --- */
-.mh-bigring svg { position: relative; z-index: 2; }
+.mh-bigring svg { position: relative; z-index: 2; overflow: visible; }
 .mh-bigring__txt { z-index: 3; }
-.mh-bigring::before { content: ''; position: absolute; inset: 0; border-radius: 50%; z-index: 1; pointer-events: none;
-  background: conic-gradient(from 0deg, transparent 0 246deg, rgba(214,242,58,0.45) 316deg, rgba(214,242,58,0.95) 352deg, transparent 360deg);
-  -webkit-mask: radial-gradient(closest-side, transparent 68%, #000 72%, #000 94%, transparent 99%);
-          mask: radial-gradient(closest-side, transparent 68%, #000 72%, #000 94%, transparent 99%);
-  animation: mh-ring-sweep 3.8s linear infinite; }
-@keyframes mh-ring-sweep { to { transform: rotate(360deg); } }
-.mh-bigring__a { stroke: url(#mhRingGrad); animation: mh-ring-pulse 2.8s ease-in-out infinite; }
-@keyframes mh-ring-pulse { 0%, 100% { filter: drop-shadow(0 0 7px rgba(214,242,58,0.45)); } 50% { filter: drop-shadow(0 0 18px rgba(214,242,58,0.9)); } }
+.mh-bigring__a { stroke: url(#mhRingGrad); filter: drop-shadow(0 0 10px rgba(214,242,58,0.55)); }
 .mh-bigring__pct { text-shadow: 0 0 32px rgba(214,242,58,0.22); }
 .mh-ledger__hero > * { position: relative; z-index: 1; }
 .mh-ledger__hero::before { content: ''; position: absolute; inset: auto -28% -46% -28%; height: 72%; z-index: 0; pointer-events: none;
@@ -538,11 +531,9 @@ html[data-theme="light"] { --m-volt-ink: #0A1B27; }
 .mh-ltile--volt { border-color: rgba(214,242,58,0.30); background: linear-gradient(180deg, rgba(214,242,58,0.075), var(--m-glass-2)); overflow: hidden; }
 .mh-ltile--volt b { color: var(--m-volt-ink); text-shadow: 0 0 26px rgba(214,242,58,0.30); }
 .mh-ltile--volt::before { content: ''; position: absolute; inset: 0; border-radius: inherit; z-index: 2; pointer-events: none;
-  background: linear-gradient(115deg, transparent 38%, rgba(255,255,255,0.16) 50%, transparent 62%);
-  background-size: 240% 100%; background-position: 210% 0; animation: mh-sheen 6.5s ease-in-out infinite; }
-@keyframes mh-sheen { 0%, 60% { background-position: 210% 0; } 86%, 100% { background-position: -80% 0; } }
+  background: linear-gradient(115deg, transparent 42%, rgba(255,255,255,0.09) 50%, transparent 58%); }
 @media (prefers-reduced-motion: reduce) {
-  .mh-bigring::before, .mh-bigring__a, .mh-ledger__hero::before, .mh-ltile--volt::before { animation: none; }
+  .mh-ledger__hero::before { animation: none; }
 }
 
 @media (max-width: 820px) { .mh-ledger { grid-template-columns: 1fr; } .mh-ledger__tiles { grid-template-columns: repeat(4, 1fr); } }

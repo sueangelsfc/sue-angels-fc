@@ -3,6 +3,12 @@
 Paste the block below into a fresh Fable 5 session opened in this repo
 (`~/Desktop/sue-angels-fc`).
 
+**Effort: run this session at `ultracode` (the highest tier).** This is a reinvention with hard
+reasoning (stack choice, the 3D-crest hero, and the Supabase/CMS data migration) where a shallow
+decision is costly and quality is the whole point. The single step to think hardest about is
+**redesigning the backend without losing the club's live content or its ability to edit it** — treat
+that as keep-or-deliberately-migrate, never lose.
+
 ---
 
 You are redesigning the **Sue's Angels FC** website — a live football club site — from the ground up.

@@ -279,7 +279,7 @@
       grid.setAttribute('aria-roledescription', 'carousel');
       grid.setAttribute('aria-label', 'Award winners');
 
-      var CW = Math.min(300, Math.round(window.innerWidth * 0.78));
+      var CW = Math.min(210, Math.round(window.innerWidth * 0.56));
       var STEP = MOBILE ? CW : 250, DEPTH = MOBILE ? 70 : 175, TURN = MOBILE ? -8 : -16, FADE = MOBILE ? 1 : 2;
       var cur = 0, entered = false, timer = null, dragging = false, dragMoved = 0;
       var count = null, dots = null;

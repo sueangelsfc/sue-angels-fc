@@ -100,8 +100,8 @@ html[data-theme="light"] .fx-car-dot{background:rgba(7,29,41,.22)}
 html[data-theme="light"] .fx-car-dot.is-on{background:#071D29}
 /* Mobile — the coverflow becomes a swipeable single-card carousel that fits the screen */
 @media (max-width:760px){
-  .fx-car{height:clamp(400px,110vw,500px);perspective:1100px;touch-action:pan-y}
-  .fx-car > *{width:min(300px,78vw);top:6px}
+  .fx-car{height:clamp(300px,82vw,400px);perspective:1050px;touch-action:pan-y}
+  .fx-car > *{width:min(210px,56vw);top:6px}
   .fx-car-nav{display:none}
   .fx-car-dots{display:flex}
 }

@@ -1,28 +1,85 @@
-/* home-fx.css — styles for the homepage experience layer (home-fx.js).
+/* home-fx.css v2 — styles for the homepage experience layer (home-fx.js).
    Loaded ONLY by index.html, after app.css. Nothing here hides content:
    if home-fx.js (or the GSAP CDN) never runs, these rules are inert. */
 
-/* Volt embers canvas: sits above the hero photo, beneath the gradient,
-   glass copy card and strip (which are z-index 1 and 2 in app.css). */
+/* ============================================================================
+   Volt embers canvas — above the hero photo, beneath gradient/copy (z1/z2)
+   ========================================================================== */
 .fx-embers{
   position:absolute;top:0;left:0;width:100%;height:var(--ph);
   z-index:1;pointer-events:none;mix-blend-mode:screen;
 }
-html[data-theme="light"] .fx-embers{opacity:.55}
+html[data-theme="light"] .fx-embers{opacity:.75}
 
-/* Header: deepen the floating glass bar once the page is scrolling. */
-.sa-header{transition:box-shadow .45s var(--m-ease,cubic-bezier(.16,.72,.16,1)),transform .45s var(--m-ease,cubic-bezier(.16,.72,.16,1))}
-.sa-header.fx-scrolled{
-  box-shadow:0 18px 44px -18px rgba(4,12,18,.5);
-  transform:translateY(-2px);
-}
+/* ============================================================================
+   Nav — meaningful motion: solidify when scrolling, hide down / reveal up.
+   IMPORTANT: .sa-header centres with translateX(-50%); always preserve it.
+   ========================================================================== */
+.sa-header{transition:transform .5s cubic-bezier(.16,.72,.16,1),box-shadow .4s,background .4s}
+.sa-header.fx-nav-solid{box-shadow:0 20px 48px -20px rgba(4,12,18,.55), inset 0 1px 0 var(--m-hi)}
+.sa-header.fx-nav-hide{transform:translateX(-50%) translateY(-140%)}
 
-/* Results rail: drag affordance (desktop only; JS adds the classes). */
+/* Scroll progress hairline pinned to the very top of the viewport. */
+.fx-progress{position:fixed;top:0;left:0;right:0;height:3px;z-index:90;pointer-events:none;
+  background:linear-gradient(90deg,#D6F23A,#9ED32B);transform-origin:left center;transform:scaleX(0)}
+
+/* ============================================================================
+   Custom cursor (desktop, fine pointers only — JS gates it)
+   ========================================================================== */
+html.fx-cursor-on, html.fx-cursor-on body, html.fx-cursor-on a,
+html.fx-cursor-on button, html.fx-cursor-on [role="button"]{cursor:none}
+html.fx-cursor-on input, html.fx-cursor-on textarea, html.fx-cursor-on select{cursor:auto}
+.fx-cur{position:fixed;top:0;left:0;z-index:200;pointer-events:none;will-change:transform}
+.fx-cur--dot{width:7px;height:7px;border-radius:99px;background:#D6F23A;
+  box-shadow:0 0 12px rgba(214,242,58,.9);margin:-3.5px 0 0 -3.5px}
+.fx-cur--ring{width:34px;height:34px;border-radius:99px;border:1.5px solid rgba(214,242,58,.75);
+  margin:-17px 0 0 -17px;transition:width .25s,height .25s,margin .25s,border-color .25s,background .25s}
+.fx-cur--ring.is-hover{width:52px;height:52px;margin:-26px 0 0 -26px;
+  background:rgba(214,242,58,.12);border-color:#D6F23A}
+.fx-cur--ring.is-down{width:26px;height:26px;margin:-13px 0 0 -13px}
+html[data-theme="light"] .fx-cur--dot{background:#071D29;box-shadow:0 0 10px rgba(7,29,41,.5)}
+html[data-theme="light"] .fx-cur--ring{border-color:rgba(7,29,41,.6)}
+html[data-theme="light"] .fx-cur--ring.is-hover{background:rgba(214,242,58,.35);border-color:#071D29}
+
+/* ============================================================================
+   Section headings — volt underline drawn after the heading slides in
+   ========================================================================== */
+.fx-underline{display:block;height:3px;width:min(120px,26%);margin-top:10px;border-radius:99px;
+  background:linear-gradient(90deg,#D6F23A,rgba(214,242,58,.25));
+  transform:scaleX(0);transform-origin:left center}
+
+/* ============================================================================
+   Cards — cursor glare + press feel (transforms applied by JS tilt)
+   ========================================================================== */
+.fx-tilt{position:relative;will-change:transform}
+.fx-tilt::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(340px circle at var(--glx,50%) var(--gly,50%),rgba(255,255,255,.16),transparent 55%);
+  opacity:0;transition:opacity .35s}
+.fx-tilt:hover::after{opacity:1}
+html[data-theme="light"] .fx-tilt::after{
+  background:radial-gradient(340px circle at var(--glx,50%) var(--gly,50%),rgba(255,255,255,.5),transparent 55%)}
+
+/* ============================================================================
+   Buttons — volt shine sweep on hover (CSS-only, all .m-btn on the page)
+   ========================================================================== */
+.m-btn{position:relative;overflow:hidden}
+.m-btn::before{content:"";position:absolute;top:0;bottom:0;left:-70%;width:45%;
+  background:linear-gradient(105deg,transparent,rgba(255,255,255,.38),transparent);
+  transform:skewX(-18deg);transition:left .6s cubic-bezier(.16,.72,.16,1);pointer-events:none}
+.m-btn:hover::before{left:125%}
+.m-btn:active{transform:scale(.965)}
+
+/* Results table — rows answer the cursor */
+.mh-table-wrap tbody tr{transition:transform .3s cubic-bezier(.16,.72,.16,1),background .3s}
+.mh-table-wrap tbody tr:hover{transform:translateX(6px)}
+
+/* Results rail — drag affordance */
 .mh-rail.fx-grab{cursor:grab}
+html.fx-cursor-on .mh-rail.fx-grab{cursor:none}
 .mh-rail.fx-grabbing{cursor:grabbing;scroll-snap-type:none;user-select:none}
 .mh-rail.fx-grabbing *{pointer-events:none}
 
-/* Back-to-top: scroll progress ring drawn around the existing button. */
+/* Back-to-top — scroll progress ring around the existing button */
 .sa-totop{position:relative}
 .fx-ring{position:absolute;inset:-5px;width:calc(100% + 10px);height:calc(100% + 10px);
   transform:rotate(-90deg);pointer-events:none}
@@ -30,13 +87,14 @@ html[data-theme="light"] .fx-embers{opacity:.55}
 .fx-ring__track{stroke:rgba(214,242,58,.18)}
 .fx-ring__bar{stroke:#D6F23A;stroke-linecap:round;transition:stroke-dashoffset .15s linear}
 
-/* Magnetic buttons move via transform; keep them crisp. */
-.cine__copy .m-btn,.sa-act .m-btn--volt,.mh-join .m-btn{will-change:transform}
-
-/* The hero photo pans/parallaxes slightly beyond its frame; hide spill. */
+/* Hero photo pans/zooms beyond its frame; contain the spill. */
 .cine__photo{overflow:hidden}
 .cine__photo img{transform-origin:50% 40%}
 
+/* Char-split hero title */
+.fx-ch{display:inline-block;will-change:transform}
+
 @media (prefers-reduced-motion:reduce){
-  .fx-embers,.fx-ring{display:none}
+  .fx-embers,.fx-ring,.fx-progress,.fx-cur{display:none!important}
+  .m-btn::before{display:none}
 }

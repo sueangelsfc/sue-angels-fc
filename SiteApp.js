@@ -1671,7 +1671,9 @@ function Home({
     className: "mh-bigring"
   }, /*#__PURE__*/React.createElement("svg", {
     viewBox: "0 0 220 220"
-  }, /*#__PURE__*/React.createElement("circle", {
+  }, /*#__PURE__*/React.createElement("defs", null, /*#__PURE__*/React.createElement("linearGradient", {
+    id: "mhRingGrad", x1: "0", y1: "0", x2: "1", y2: "1"
+  }, /*#__PURE__*/React.createElement("stop", { offset: "0", stopColor: "#8FE000" }), /*#__PURE__*/React.createElement("stop", { offset: "0.55", stopColor: "#D6F23A" }), /*#__PURE__*/React.createElement("stop", { offset: "1", stopColor: "#F2FFB0" }))), /*#__PURE__*/React.createElement("circle", {
     className: "mh-bigring__c",
     cx: "110",
     cy: "110",

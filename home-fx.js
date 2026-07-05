@@ -259,7 +259,6 @@
        gets the flip-up entrance instead.
        ------------------------------------------------------------------ */
     function buildAwardsCarousel() {
-      if (MOBILE) return null;
       var grid = document.querySelector('.mp-grid.mp-g4');
       if (!grid) return null;
       var cards = Array.prototype.slice.call(grid.children);
@@ -280,9 +279,10 @@
       grid.setAttribute('aria-roledescription', 'carousel');
       grid.setAttribute('aria-label', 'Award winners');
 
-      var STEP = 250, DEPTH = 175, TURN = -16;
+      var CW = Math.min(300, Math.round(window.innerWidth * 0.78));
+      var STEP = MOBILE ? CW : 250, DEPTH = MOBILE ? 70 : 175, TURN = MOBILE ? -8 : -16, FADE = MOBILE ? 1 : 2;
       var cur = 0, entered = false, timer = null, dragging = false, dragMoved = 0;
-      var count = null;
+      var count = null, dots = null;
 
       function off(i) { var d = (i - cur) % n; if (d > n / 2) d -= n; if (d < -n / 2) d += n; return d; }
 
@@ -293,11 +293,13 @@
           card.style.zIndex = String(100 - a * 10);
           g[animate ? 'to' : 'set'](card, {
             xPercent: -50, x: o * STEP, z: -a * DEPTH, rotationY: o * TURN,
-            scale: o === 0 ? 1.06 : 1 - a * 0.07, opacity: a > 2 ? 0 : 1 - a * 0.1,
+            scale: o === 0 ? (MOBILE ? 1.02 : 1.06) : 1 - a * (MOBILE ? 0.12 : 0.07),
+            opacity: a > FADE ? 0 : (a === 0 ? 1 : (MOBILE ? 0.5 : 1 - a * 0.1)),
             duration: 1.05, ease: EXPO, overwrite: 'auto'
           });
         });
         if (count) count.textContent = (cur + 1) + ' / ' + n;
+        if (dots) for (var di = 0; di < dots.children.length; di++) dots.children[di].classList.toggle('is-on', di === cur);
       }
       function go(i, user) { cur = ((i % n) + n) % n; layout(true); if (user) start(); }
       function next(user) { go(cur + 1, user); }
@@ -322,6 +324,18 @@
         nav.appendChild(mk(1, 'Next award', 'M2 8h11M9 3.5 13.5 8 9 12.5'));
         head.appendChild(nav);
       }
+
+      // Dots — primary affordance on mobile (CSS reveals them under 760px).
+      dots = document.createElement('div');
+      dots.className = 'fx-car-dots';
+      cards.forEach(function (c, i) {
+        var d = document.createElement('button');
+        d.type = 'button'; d.className = 'fx-car-dot';
+        d.setAttribute('aria-label', 'Go to award ' + (i + 1));
+        d.addEventListener('click', function () { go(i, true); });
+        dots.appendChild(d);
+      });
+      grid.insertAdjacentElement('afterend', dots);
 
       // Autoplay: gentle, pauses while you look or focus.
       function start() { stop(); timer = setInterval(function () { if (!document.hidden && entered) next(false); }, 4600); }

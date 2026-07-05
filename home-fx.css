@@ -1,0 +1,42 @@
+/* home-fx.css — styles for the homepage experience layer (home-fx.js).
+   Loaded ONLY by index.html, after app.css. Nothing here hides content:
+   if home-fx.js (or the GSAP CDN) never runs, these rules are inert. */
+
+/* Volt embers canvas: sits above the hero photo, beneath the gradient,
+   glass copy card and strip (which are z-index 1 and 2 in app.css). */
+.fx-embers{
+  position:absolute;top:0;left:0;width:100%;height:var(--ph);
+  z-index:1;pointer-events:none;mix-blend-mode:screen;
+}
+html[data-theme="light"] .fx-embers{opacity:.55}
+
+/* Header: deepen the floating glass bar once the page is scrolling. */
+.sa-header{transition:box-shadow .45s var(--m-ease,cubic-bezier(.16,.72,.16,1)),transform .45s var(--m-ease,cubic-bezier(.16,.72,.16,1))}
+.sa-header.fx-scrolled{
+  box-shadow:0 18px 44px -18px rgba(4,12,18,.5);
+  transform:translateY(-2px);
+}
+
+/* Results rail: drag affordance (desktop only; JS adds the classes). */
+.mh-rail.fx-grab{cursor:grab}
+.mh-rail.fx-grabbing{cursor:grabbing;scroll-snap-type:none;user-select:none}
+.mh-rail.fx-grabbing *{pointer-events:none}
+
+/* Back-to-top: scroll progress ring drawn around the existing button. */
+.sa-totop{position:relative}
+.fx-ring{position:absolute;inset:-5px;width:calc(100% + 10px);height:calc(100% + 10px);
+  transform:rotate(-90deg);pointer-events:none}
+.fx-ring circle{fill:none;stroke-width:2}
+.fx-ring__track{stroke:rgba(214,242,58,.18)}
+.fx-ring__bar{stroke:#D6F23A;stroke-linecap:round;transition:stroke-dashoffset .15s linear}
+
+/* Magnetic buttons move via transform; keep them crisp. */
+.cine__copy .m-btn,.sa-act .m-btn--volt,.mh-join .m-btn{will-change:transform}
+
+/* The hero photo pans/parallaxes slightly beyond its frame; hide spill. */
+.cine__photo{overflow:hidden}
+.cine__photo img{transform-origin:50% 40%}
+
+@media (prefers-reduced-motion:reduce){
+  .fx-embers,.fx-ring{display:none}
+}

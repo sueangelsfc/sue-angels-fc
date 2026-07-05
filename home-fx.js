@@ -220,29 +220,46 @@
        ====================================================================== */
     if (FINE && !TOUCH) (function cursor() {
       document.documentElement.classList.add('fx-cursor-on');
-      var dot = document.createElement('div'); dot.className = 'fx-cur fx-cur--dot';
+      // The ball: the club's own football icon, spinning with your movement.
+      var ball = document.createElement('div'); ball.className = 'fx-cur fx-cur--ball';
+      ball.innerHTML = '<span class="spin">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">' +
+        '<circle cx="12" cy="12" r="9"></circle>' +
+        '<polygon points="12,7 16.5,10.2 14.8,15.4 9.2,15.4 7.5,10.2" fill="currentColor"></polygon>' +
+        '<line x1="12" y1="7" x2="12" y2="3"></line><line x1="16.5" y1="10.2" x2="20.5" y2="8.5"></line>' +
+        '<line x1="14.8" y1="15.4" x2="17.5" y2="19"></line><line x1="9.2" y1="15.4" x2="6.5" y2="19"></line>' +
+        '<line x1="7.5" y1="10.2" x2="3.5" y2="8.5"></line></svg></span>';
       var ring = document.createElement('div'); ring.className = 'fx-cur fx-cur--ring';
-      dot.setAttribute('aria-hidden', 'true'); ring.setAttribute('aria-hidden', 'true');
-      document.body.appendChild(ring); document.body.appendChild(dot);
-      g.set([dot, ring], { xPercent: 0, yPercent: 0, x: -100, y: -100 });
-      var dx = g.quickTo(dot, 'x', { duration: 0.08, ease: 'power2' }),
-          dy = g.quickTo(dot, 'y', { duration: 0.08, ease: 'power2' }),
+      ball.setAttribute('aria-hidden', 'true'); ring.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(ring); document.body.appendChild(ball);
+      var spinEl = ball.querySelector('.spin');
+      g.set([ball, ring], { xPercent: 0, yPercent: 0, x: -100, y: -100 });
+      var dx = g.quickTo(ball, 'x', { duration: 0.09, ease: 'power2' }),
+          dy = g.quickTo(ball, 'y', { duration: 0.09, ease: 'power2' }),
           rx = g.quickTo(ring, 'x', { duration: 0.38, ease: 'power3' }),
           ry = g.quickTo(ring, 'y', { duration: 0.38, ease: 'power3' });
+      // Roll physics: horizontal movement spins the ball; friction slows it.
+      var rot = 0, spinV = 0, lastPX = null;
       window.addEventListener('pointermove', function (e) {
         dx(e.clientX); dy(e.clientY); rx(e.clientX); ry(e.clientY);
+        if (lastPX !== null) spinV += (e.clientX - lastPX) * 0.22;
+        lastPX = e.clientX;
       }, { passive: true });
+      g.ticker.add(function () {
+        spinV *= 0.9;
+        if (Math.abs(spinV) > 0.01) { rot += spinV; g.set(spinEl, { rotation: rot }); }
+      });
       var HOT = 'a,button,[role="button"],.m-btn,.fx-tilt,[data-tilt],input[type="submit"],label,summary';
       document.addEventListener('mouseover', function (e) {
-        if (e.target.closest && e.target.closest(HOT)) ring.classList.add('is-hover');
+        if (e.target.closest && e.target.closest(HOT)) { ring.classList.add('is-hover'); ball.classList.add('is-hover'); }
       });
       document.addEventListener('mouseout', function (e) {
-        if (e.target.closest && e.target.closest(HOT)) ring.classList.remove('is-hover');
+        if (e.target.closest && e.target.closest(HOT)) { ring.classList.remove('is-hover'); ball.classList.remove('is-hover'); }
       });
-      window.addEventListener('pointerdown', function () { ring.classList.add('is-down'); });
-      window.addEventListener('pointerup', function () { ring.classList.remove('is-down'); });
-      document.addEventListener('mouseleave', function () { g.to([dot, ring], { autoAlpha: 0, duration: 0.2 }); });
-      document.addEventListener('mouseenter', function () { g.to([dot, ring], { autoAlpha: 1, duration: 0.2 }); });
+      window.addEventListener('pointerdown', function () { ring.classList.add('is-down'); ball.classList.add('is-down'); });
+      window.addEventListener('pointerup', function () { ring.classList.remove('is-down'); ball.classList.remove('is-down'); });
+      document.addEventListener('mouseleave', function () { g.to([ball, ring], { autoAlpha: 0, duration: 0.2 }); });
+      document.addEventListener('mouseenter', function () { g.to([ball, ring], { autoAlpha: 1, duration: 0.2 }); });
     })();
 
     /* ======================================================================
@@ -275,9 +292,119 @@
     }
 
     enter('.mh-ocamba > *', { opacity: 0, y: 26 }, { opacity: 1, y: 0 });
-    enter('.mp-grid.mp-g4 > *',
+
+    /* ------------------------------------------------------------------
+       AWARD WINNERS — 3D coverflow carousel (desktop). The focused card
+       sits forward with a volt glow and pops toward you on hover; the
+       rest recede in perspective. Drag, arrows, buttons or autoplay to
+       move. On mobile (or if anything is missing) the grid stays and
+       gets the flip-up entrance instead.
+       ------------------------------------------------------------------ */
+    function buildAwardsCarousel() {
+      if (MOBILE) return null;
+      var grid = document.querySelector('.mp-grid.mp-g4');
+      if (!grid) return null;
+      var cards = Array.prototype.slice.call(grid.children);
+      var n = cards.length;
+      if (n < 3) return null;
+
+      grid.classList.add('fx-car');
+      var sec = grid.closest('.mh-sec'); if (sec) sec.classList.add('fx-car-section');
+      grid.setAttribute('tabindex', '0');
+      grid.setAttribute('role', 'region');
+      grid.setAttribute('aria-roledescription', 'carousel');
+      grid.setAttribute('aria-label', 'Award winners');
+
+      var STEP = 250, DEPTH = 175, TURN = -16;
+      var cur = 0, entered = false, timer = null, dragging = false, dragMoved = 0;
+      var count = null;
+
+      function off(i) { var d = (i - cur) % n; if (d > n / 2) d -= n; if (d < -n / 2) d += n; return d; }
+
+      function layout(animate) {
+        cards.forEach(function (card, i) {
+          var o = off(i), a = Math.abs(o);
+          card.classList.toggle('is-center', o === 0);
+          card.style.zIndex = String(100 - a * 10);
+          g[animate ? 'to' : 'set'](card, {
+            xPercent: -50, x: o * STEP, z: -a * DEPTH, rotationY: o * TURN,
+            scale: 1 - a * 0.07, opacity: a > 2 ? 0 : 1 - a * 0.1,
+            duration: 0.9, ease: EXPO, overwrite: 'auto'
+          });
+        });
+        if (count) count.textContent = (cur + 1) + ' / ' + n;
+      }
+      function go(i, user) { cur = ((i % n) + n) % n; layout(true); if (user) start(); }
+      function next(user) { go(cur + 1, user); }
+      function prev(user) { go(cur - 1, user); }
+
+      // Prev / next + counter, slotted into the section heading row.
+      var head = sec && sec.querySelector('.mh-head');
+      if (head) {
+        var nav = document.createElement('div');
+        nav.className = 'fx-car-nav';
+        var mk = function (dir, label, path) {
+          var b = document.createElement('button');
+          b.type = 'button'; b.className = 'fx-car-btn'; b.setAttribute('aria-label', label);
+          b.innerHTML = '<svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="' + path +
+            '" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+          b.addEventListener('click', function () { dir > 0 ? next(true) : prev(true); });
+          return b;
+        };
+        count = document.createElement('span'); count.className = 'fx-car-count';
+        nav.appendChild(mk(-1, 'Previous award', 'M14 8H3M7 3.5 2.5 8 7 12.5'));
+        nav.appendChild(count);
+        nav.appendChild(mk(1, 'Next award', 'M2 8h11M9 3.5 13.5 8 9 12.5'));
+        head.appendChild(nav);
+      }
+
+      // Autoplay: gentle, pauses while you look or focus.
+      function start() { stop(); timer = setInterval(function () { if (!document.hidden && entered) next(false); }, 4600); }
+      function stop() { if (timer) { clearInterval(timer); timer = null; } }
+      grid.addEventListener('pointerenter', stop);
+      grid.addEventListener('pointerleave', function () { if (!dragging) start(); });
+      grid.addEventListener('focusin', stop);
+      grid.addEventListener('focusout', function () { start(); });
+
+      // Drag to move; a drag never counts as a click.
+      var downX = 0;
+      grid.addEventListener('pointerdown', function (e) { dragging = true; dragMoved = 0; downX = e.clientX; });
+      window.addEventListener('pointermove', function (e) { if (dragging) dragMoved = e.clientX - downX; }, { passive: true });
+      window.addEventListener('pointerup', function () {
+        if (!dragging) return;
+        dragging = false;
+        if (dragMoved <= -55) next(true); else if (dragMoved >= 55) prev(true);
+      });
+      cards.forEach(function (card, i) {
+        card.addEventListener('click', function (e) {
+          if (Math.abs(dragMoved) > 12) { e.preventDefault(); e.stopPropagation(); return; }
+          if (off(i) !== 0) { e.preventDefault(); e.stopPropagation(); go(i, true); } // side card: bring to front
+        }, true);
+        card.addEventListener('pointerenter', function () { // focused card pops toward you
+          if (off(i) === 0 && !dragging) g.to(card, { z: 90, scale: 1.06, duration: 0.5, ease: 'back.out(1.4)', overwrite: 'auto' });
+        });
+        card.addEventListener('pointerleave', function () {
+          if (off(i) === 0) g.to(card, { z: 0, scale: 1, duration: 0.6, ease: EXPO, overwrite: 'auto' });
+        });
+      });
+      grid.addEventListener('keydown', function (e) {
+        if (e.key === 'ArrowRight') { e.preventDefault(); next(true); }
+        if (e.key === 'ArrowLeft') { e.preventDefault(); prev(true); }
+      });
+
+      // Entrance: the deck fans out of the void, then begins to turn.
+      g.set(cards, { xPercent: -50, x: 0, z: -420, opacity: 0, scale: 0.7 });
+      ST.create({
+        trigger: grid, start: 'top 80%', once: true,
+        onEnter: function () { entered = true; layout(true); start(); }
+      });
+      return true;
+    }
+    var CAR = buildAwardsCarousel();
+    if (!CAR) enter('.mp-grid.mp-g4 > *',
       { opacity: 0, y: 64, rotationX: 16, transformPerspective: 900, transformOrigin: '50% 0%' },
       { opacity: 1, y: 0, rotationX: 0, ease: 'back.out(1.15)' });
+
     enter('.mh-ledger > *', { opacity: 0, y: 44, scale: 0.97 }, { opacity: 1, y: 0, scale: 1 });
     enter('.mh-rail > *', { opacity: 0, x: 90 }, { opacity: 1, x: 0, stagger: 0.08 });
     enter('.mh-join > *', { opacity: 0, y: 30, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, ease: 'back.out(1.05)' });
@@ -306,7 +433,8 @@
        6) TOUCHABLE CARDS — 3D tilt + glare (skips fx.js's own [data-tilt])
        ====================================================================== */
     if (!TOUCH) {
-      var cards = document.querySelectorAll('.mp-grid.mp-g4 > *, .mh-rail > *');
+      // Carousel cards are gsap-positioned in 3D; tilt would fight them.
+      var cards = document.querySelectorAll(CAR ? '.mh-rail > *' : '.mp-grid.mp-g4 > *, .mh-rail > *');
       cards.forEach(function (card) {
         if (card.hasAttribute('data-tilt')) return; // fx.js already owns it
         card.classList.add('fx-tilt');

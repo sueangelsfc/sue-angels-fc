@@ -30,15 +30,21 @@ html.fx-cursor-on, html.fx-cursor-on body, html.fx-cursor-on a,
 html.fx-cursor-on button, html.fx-cursor-on [role="button"]{cursor:none}
 html.fx-cursor-on input, html.fx-cursor-on textarea, html.fx-cursor-on select{cursor:auto}
 .fx-cur{position:fixed;top:0;left:0;z-index:200;pointer-events:none;will-change:transform}
-.fx-cur--dot{width:7px;height:7px;border-radius:99px;background:#D6F23A;
-  box-shadow:0 0 12px rgba(214,242,58,.9);margin:-3.5px 0 0 -3.5px}
-.fx-cur--ring{width:34px;height:34px;border-radius:99px;border:1.5px solid rgba(214,242,58,.75);
-  margin:-17px 0 0 -17px;transition:width .25s,height .25s,margin .25s,border-color .25s,background .25s}
-.fx-cur--ring.is-hover{width:52px;height:52px;margin:-26px 0 0 -26px;
-  background:rgba(214,242,58,.12);border-color:#D6F23A}
-.fx-cur--ring.is-down{width:26px;height:26px;margin:-13px 0 0 -13px}
-html[data-theme="light"] .fx-cur--dot{background:#071D29;box-shadow:0 0 10px rgba(7,29,41,.5)}
-html[data-theme="light"] .fx-cur--ring{border-color:rgba(7,29,41,.6)}
+.fx-cur--ball{width:24px;height:24px;margin:-12px 0 0 -12px;color:#D6F23A}
+.fx-cur--ball .spin{display:block;width:100%;height:100%;will-change:transform}
+.fx-cur--ball svg{display:block;width:100%;height:100%;
+  filter:drop-shadow(0 0 8px rgba(214,242,58,.75));
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.fx-cur--ball.is-hover svg{transform:scale(1.35)}
+.fx-cur--ball.is-down svg{transform:scale(.85)}
+.fx-cur--ring{width:40px;height:40px;border-radius:99px;border:1.5px solid rgba(214,242,58,.6);
+  margin:-20px 0 0 -20px;transition:width .25s,height .25s,margin .25s,border-color .25s,background .25s}
+.fx-cur--ring.is-hover{width:58px;height:58px;margin:-29px 0 0 -29px;
+  background:rgba(214,242,58,.1);border-color:#D6F23A}
+.fx-cur--ring.is-down{width:30px;height:30px;margin:-15px 0 0 -15px}
+html[data-theme="light"] .fx-cur--ball{color:#071D29}
+html[data-theme="light"] .fx-cur--ball svg{filter:drop-shadow(0 0 6px rgba(7,29,41,.4))}
+html[data-theme="light"] .fx-cur--ring{border-color:rgba(7,29,41,.55)}
 html[data-theme="light"] .fx-cur--ring.is-hover{background:rgba(214,242,58,.35);border-color:#071D29}
 
 /* ============================================================================
@@ -47,6 +53,32 @@ html[data-theme="light"] .fx-cur--ring.is-hover{background:rgba(214,242,58,.35);
 .fx-underline{display:block;height:3px;width:min(120px,26%);margin-top:10px;border-radius:99px;
   background:linear-gradient(90deg,#D6F23A,rgba(214,242,58,.25));
   transform:scaleX(0);transform-origin:left center}
+
+/* ============================================================================
+   Award winners — 3D coverflow carousel (desktop; JS gates + drives it)
+   ========================================================================== */
+.fx-car-section{overflow:clip}
+.fx-car{position:relative!important;display:block!important;height:clamp(500px,60vh,620px);
+  perspective:1500px;transform-style:preserve-3d;touch-action:pan-y;outline:none}
+.fx-car > *{position:absolute!important;top:14px;left:50%;width:min(330px,74vw);
+  will-change:transform;backface-visibility:hidden}
+.fx-car > *.is-center{box-shadow:0 30px 70px -24px rgba(0,0,0,.65),0 0 0 1.5px rgba(214,242,58,.55),
+  0 0 44px -6px rgba(214,242,58,.28)}
+.fx-car:focus-visible{outline:2px solid #D6F23A;outline-offset:6px;border-radius:18px}
+
+.fx-car-nav{display:inline-flex;align-items:center;gap:12px;margin-left:auto}
+.fx-car-btn{width:46px;height:46px;border-radius:99px;display:grid;place-items:center;
+  border:1.5px solid rgba(214,242,58,.55);color:#D6F23A;background:transparent;
+  transition:background .3s,transform .3s cubic-bezier(.34,1.56,.64,1),color .3s;cursor:pointer}
+.fx-car-btn:hover{background:#D6F23A;color:#071D29;transform:translateY(-2px)}
+.fx-car-btn:active{transform:scale(.94)}
+.fx-car-btn svg{width:17px;height:17px;display:block}
+.fx-car-count{font-variant-numeric:tabular-nums;font-size:13px;letter-spacing:.16em;
+  color:currentColor;opacity:.65;min-width:44px;text-align:center}
+html[data-theme="light"] .fx-car-btn{border-color:rgba(7,29,41,.45);color:#071D29}
+html[data-theme="light"] .fx-car-btn:hover{background:#071D29;color:#D6F23A}
+html[data-theme="light"] .fx-car > *.is-center{box-shadow:0 30px 70px -24px rgba(7,29,41,.4),
+  0 0 0 1.5px rgba(122,140,16,.65),0 0 44px -6px rgba(158,211,43,.3)}
 
 /* ============================================================================
    Cards — cursor glare + press feel (transforms applied by JS tilt)

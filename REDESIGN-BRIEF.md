@@ -168,6 +168,21 @@ still deliver. Read it in full before designing.
 
 ---
 
+## LICENCE TO GO FURTHER
+
+This brief is a floor, not a ceiling. **You are trusted and encouraged to do anything better** than
+what is written here. If you see a stronger layout, a smarter interaction, a more beautiful component,
+a better information architecture, a cleaner data model, a nicer admin flow, a feature that would
+delight supporters — **do it, or propose it.** Improve anything you touch. Bring ideas the brief didn't
+think of. The named directions below are the club's must-haves; everything else is open to your
+judgement and craft.
+
+The only lines you may not cross without a deliberate plan are the **HARD CONSTRAINTS** further down
+(don't lose the club's live content/ability to edit it, keep routes/SEO, keep it accessible, fast and
+mobile-safe, keep the deploy working). Inside those lines, exceed the brief wherever you can.
+
+---
+
 ## SIGNATURE DIRECTION (explicit requests from the club)
 
 These are not suggestions — the club has asked for them by name.

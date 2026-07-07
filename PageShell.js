@@ -1651,6 +1651,11 @@ const BADGE_REGISTRY = [{
   alt: "Sue's Angels FC",
   aspect: 'shield'
 }, {
+  match: 'brentford',
+  src: 'assets/badge/brentford-town-badge.webp',
+  alt: 'Brentford Town FC',
+  aspect: 'circle'
+}, {
   match: 'brockwell',
   src: 'assets/badge/brockwell-violets.webp',
   alt: 'Brockwell Violets FC',

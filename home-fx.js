@@ -138,6 +138,7 @@
        2) EMBERS — the cause, alive over the hero
        ====================================================================== */
     (function embers() {
+      return; // volt-dot embers removed from the hero banner at the club's request
       var host = document.querySelector('.cine__photo');
       if (!host) return;
       var cv = document.createElement('canvas');

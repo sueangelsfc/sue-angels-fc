@@ -805,6 +805,7 @@ Object.defineProperty(window, 'SQUAD_BY_ASSISTS', { get: () => window.derivedSqu
 // so minor name variations ("BPR Men's" vs "BPR FC") still resolve to the right file.
 const BADGE_REGISTRY = [
   { match: 'angels',     src: 'assets/badge/sue-angels-shield.png',     alt: "Sue's Angels FC",          aspect: 'shield' },
+  { match: 'brentford',  src: 'assets/badge/brentford-town-badge.png',  alt: 'Brentford Town FC',        aspect: 'circle' },
   { match: 'brockwell',  src: 'assets/badge/brockwell-violets.png',     alt: 'Brockwell Violets FC',     aspect: 'circle' },
   { match: 'hillside',   src: 'assets/badge/hillside-elite.png',        alt: 'Hillside Elite FC Blues',  aspect: 'circle' },
   { match: 'bpr',        src: 'assets/badge/bpr-fc.png',                alt: 'BPR FC',                   aspect: 'circle' },

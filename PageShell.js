@@ -945,7 +945,18 @@ window.COMPETITIONS = [{
 
 // Upcoming fixtures. 25/26 season complete (unbeaten - Hillside 2-0 was the
 // final game). 26/27 schedule publishes over the summer.
-window.UPCOMING_FIXTURES = [];
+window.UPCOMING_FIXTURES = [
+  {
+    id: 'fx-20260816-brentford-town',
+    home: 'Brentford Town',
+    away: "Sue's Angels",
+    date: '16 Aug 26',
+    kick: '10:30',
+    comp: 'Friendly',
+    competition: 'Friendly',
+    ven: 'Carville Park North, Brentford TW8 9QT',
+  },
+];
 
 // Coaching staff. Add new entries here as the backroom team grows. Each entry
 // can carry a `photo` (relative path), a multi-paragraph `bio` array, a

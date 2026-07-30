@@ -139,8 +139,12 @@ export function home(d) {
               <span class="ncard__cover">
                 ${a.cover
                   ? `<img src="${attr(a.cover)}" alt="" width="420" height="236" loading="lazy" decoding="async">`
-                  : `<span class="ncard__nocover">${crest()}</span>`}
-                <span class="ncard__pill">${esc(a.category)}</span>
+                  : `<span class="ncard__nocover" data-variant="${(a.slug || '').length % 4}">
+                       <span class="ncard__nocat">${esc(a.category)}</span>
+                       <span class="ncard__nodate">${esc(a.date)}</span>
+                       ${crest('ncard__nocrest')}
+                     </span>`}
+                ${a.cover ? `<span class="ncard__pill">${esc(a.category)}</span>` : ''}
               </span>
               <span class="ncard__title">${esc(a.title)}</span>
               <span class="ncard__meta">${esc(a.date)}</span>

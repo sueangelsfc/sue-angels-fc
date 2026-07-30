@@ -47,7 +47,7 @@ let js = bundle('scripts', jsFiles);
 
 // Font URLs are written relative in source so the file reads naturally;
 // rewrite to absolute for the deployed bundle at the root.
-css = css.replace(/url\('assets\/fonts\//g, "url('/assets/fonts/");
+css = css.replace(/url\('assets\//g, "url('/assets/");
 
 const crypto = await import('node:crypto');
 const assetV = crypto.createHash('sha256').update(css + js).digest('hex').slice(0, 8);

@@ -94,31 +94,31 @@ export function clubCrest(name, badges, size = '') {
 
 /* ---- Navigation - defined once ---------------------------------------- */
 export const NAV = [
-  { label: 'Club', children: [
-    { label: 'Our story', href: '/about.html', note: 'How the Angels began' },
-    { label: 'Our cause', href: '/sepsis.html', note: 'Sepsis awareness' },
-    { label: 'Champions', href: '/champions.html', note: 'The unbeaten season' },
-    { label: 'Awards', href: '/awards.html', note: 'Honours and recognition' },
-    { label: 'Club records', href: '/records.html', note: 'The archive' },
+  { label: 'The Club', children: [
+    { label: 'Our Story', href: '/about.html' },
+    { label: 'Our Cause', href: '/sepsis.html' },
+    { label: 'Champions', href: '/champions.html' },
+    { label: 'Awards', href: '/awards.html' },
+    { label: 'Sponsors', href: '/sponsors.html' },
   ] },
-  { label: 'Team', children: [
-    { label: 'Squad', href: '/squad.html', note: 'The first team' },
-    { label: 'Coaches', href: '/coaches.html', note: 'The staff' },
-    { label: 'Player stats', href: '/stats.html', note: 'Goals, assists, appearances' },
-  ] },
-  { label: 'Matches', children: [
-    { label: 'Fixtures', href: '/fixtures.html', note: 'What is coming up' },
-    { label: 'Results', href: '/results.html', note: 'Every result' },
-    { label: 'League table', href: '/league.html', note: 'The division' },
-    { label: 'Live', href: '/live.html', note: 'Streams and replays' },
+  { label: 'On the Pitch', children: [
+    { label: 'Squad', href: '/squad.html' },
+    { label: 'Player Stats', href: '/stats.html' },
+    { label: 'Coaches', href: '/coaches.html' },
+    { label: 'Matches', href: '/fixtures.html' },
+    { label: 'League', href: '/league.html' },
+    { label: 'Records', href: '/records.html' },
   ] },
   { label: 'Media', children: [
-    { label: 'News', href: '/news.html', note: 'Club announcements' },
-    { label: 'Gallery', href: '/gallery.html', note: 'Matchday photography' },
-    { label: 'Videos', href: '/videos.html', note: 'Highlights' },
+    { label: 'Live', href: '/live.html' },
+    { label: 'News', href: '/news.html' },
+    { label: 'Gallery', href: '/gallery.html' },
+    { label: 'Videos', href: '/videos.html' },
   ] },
-  { label: 'Sponsors', href: '/sponsors.html' },
-  { label: 'Contact', href: '/contact.html' },
+  { label: 'Get Involved', children: [
+    { label: 'Join the Club', href: '/join.html' },
+    { label: 'Contact', href: '/contact.html' },
+  ] },
 ];
 
 const isCurrent = (href, path) => href === path;
@@ -207,20 +207,19 @@ export function footer() {
     `<a class="icon-btn icon-btn--sm" href="${attr(s.href)}" rel="me noopener" target="_blank" aria-label="${attr(s.label)}">${icon(s.icon)}</a>`).join('');
 
   const cols = [
-    { h: 'Club', links: [
-      ['Our story', '/about.html'], ['Our cause', '/sepsis.html'],
-      ['Champions', '/champions.html'], ['Awards', '/awards.html'], ['Club records', '/records.html'],
+    { h: 'The Club', links: [
+      ['Our Story', '/about.html'], ['Our Cause', '/sepsis.html'],
+      ['Champions', '/champions.html'], ['Awards', '/awards.html'], ['Sponsors', '/sponsors.html'],
     ] },
-    { h: 'Team', links: [
-      ['Squad', '/squad.html'], ['Coaches', '/coaches.html'], ['Player stats', '/stats.html'],
+    { h: 'On the Pitch', links: [
+      ['Squad', '/squad.html'], ['Player Stats', '/stats.html'], ['Coaches', '/coaches.html'],
+      ['Matches', '/fixtures.html'], ['League', '/league.html'], ['Records', '/records.html'],
     ] },
-    { h: 'Matches', links: [
-      ['Fixtures', '/fixtures.html'], ['Results', '/results.html'],
-      ['League table', '/league.html'], ['Live', '/live.html'],
+    { h: 'Media', links: [
+      ['Live', '/live.html'], ['News', '/news.html'], ['Gallery', '/gallery.html'], ['Videos', '/videos.html'],
     ] },
-    { h: 'More', links: [
-      ['News', '/news.html'], ['Gallery', '/gallery.html'], ['Videos', '/videos.html'],
-      ['Sponsors', '/sponsors.html'], ['Join', '/join.html'], ['Contact', '/contact.html'],
+    { h: 'Get Involved', links: [
+      ['Join the Club', '/join.html'], ['Contact', '/contact.html'],
     ] },
   ].map((c) => `<div class="ftr__col">
       <h2>${esc(c.h)}</h2>
@@ -311,10 +310,11 @@ ${schemaTags}
 </head>
 <body${bodyClass ? ` class="${attr(bodyClass)}"` : ''}>
 <div class="atmos" aria-hidden="true">
-  <span class="atmos__blob atmos__blob--a"></span>
-  <span class="atmos__blob atmos__blob--b"></span>
-  <span class="atmos__blob atmos__blob--c"></span>
-  <span class="atmos__blob atmos__blob--d"></span>
+  <span class="atmos__art">
+    <span class="atmos__blob atmos__blob--a"></span>
+    <span class="atmos__blob atmos__blob--b"></span>
+    <span class="atmos__blob atmos__blob--c"></span>
+  </span>
   <span class="atmos__veil"></span>
 </div>
 ${bare ? body : `<a class="skip" href="#main">Skip to content</a>

@@ -162,79 +162,96 @@ strong, b { font-weight: var(--weight-semi); }
   background: var(--atmos-base);
 }
 
+/* The art must keep moving, but it cannot sit ON the reading column or type
+   loses contrast. This mask holds it to the edges and corners and fades it out
+   through the centre, which is also how the reference frames it: orange
+   bleeding in from the sides, content sitting on near-black. */
+.atmos__art {
+  position: absolute;
+  inset: 0;
+  -webkit-mask-image:
+    radial-gradient(115% 78% at 50% 46%, transparent 34%, #000 82%),
+    linear-gradient(#000, #000);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    radial-gradient(115% 78% at 50% 46%, transparent 34%, #000 82%),
+    linear-gradient(#000, #000);
+  mask-composite: intersect;
+}
+
+/* The approved orange/black and orange/white gradient artwork IS the field.
+   Two oversized copies drift, rotate and breathe on long co-prime durations
+   (71s / 97s), so the composite never lands in the same place twice - which is
+   the point: the orange must move through the whole site, never static. */
 .atmos__blob {
   position: absolute;
+  inset: -55%;
   display: block;
-  border-radius: 50%;
+  background-image: var(--atmos-art);
+  background-size: cover;
+  background-position: center;
   will-change: transform;
-  background: radial-gradient(circle at 50% 50%, var(--blob) 0%, var(--blob-mid) 38%, transparent 66%);
+  transform-origin: 52% 48%;
 }
-
-/* Each core sits well OUTSIDE the viewport, so only the soft tail reaches in.
-   That is what keeps the middle of the page true black instead of a brown
-   wash, and it is why no veil is needed. */
 .atmos__blob--a {
-  width: 66vmax; height: 66vmax;
-  top: -42vmax; left: -30vmax;
-  --blob: var(--atmos-1);
-  --blob-mid: var(--atmos-2);
-  animation: atmos-a 46s var(--ease-in-out) infinite;
+  opacity: 0.92;
+  animation: atmos-drift-a 71s linear infinite;
 }
 .atmos__blob--b {
-  width: 54vmax; height: 54vmax;
-  top: -34vmax; right: -26vmax;
-  --blob: var(--atmos-1);
-  --blob-mid: var(--atmos-3);
-  animation: atmos-b 58s var(--ease-in-out) infinite;
+  opacity: 0.5;
+  mix-blend-mode: screen;
+  animation: atmos-drift-b 97s linear infinite reverse;
 }
+/* Two further layers give the mass some depth without another image request. */
 .atmos__blob--c {
-  width: 72vmax; height: 72vmax;
-  bottom: -50vmax; left: -26vmax;
-  --blob: var(--atmos-2);
-  --blob-mid: var(--atmos-3);
-  animation: atmos-c 52s var(--ease-in-out) infinite;
+  inset: -70%;
+  opacity: 0.34;
+  mix-blend-mode: screen;
+  animation: atmos-drift-c 127s linear infinite;
 }
-.atmos__blob--d {
-  width: 48vmax; height: 48vmax;
-  bottom: -32vmax; right: -22vmax;
-  --blob: var(--atmos-1);
-  --blob-mid: var(--atmos-3);
-  animation: atmos-d 38s var(--ease-in-out) infinite;
+.atmos__blob--d { display: none; }
+
+@keyframes atmos-drift-a {
+  0%   { transform: translate3d(-3%, -2%, 0) rotate(0deg) scale(1.06); }
+  25%  { transform: translate3d(3%, 3%, 0) rotate(90deg) scale(1.18); }
+  50%  { transform: translate3d(2%, -3%, 0) rotate(180deg) scale(1.04); }
+  75%  { transform: translate3d(-4%, 2%, 0) rotate(270deg) scale(1.16); }
+  100% { transform: translate3d(-3%, -2%, 0) rotate(360deg) scale(1.06); }
+}
+@keyframes atmos-drift-b {
+  0%   { transform: translate3d(4%, 3%, 0) rotate(0deg) scale(1.22); }
+  33%  { transform: translate3d(-5%, -2%, 0) rotate(120deg) scale(1.06); }
+  66%  { transform: translate3d(1%, 5%, 0) rotate(240deg) scale(1.3); }
+  100% { transform: translate3d(4%, 3%, 0) rotate(360deg) scale(1.22); }
+}
+@keyframes atmos-drift-c {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg) scale(1.1); }
+  50%  { transform: translate3d(-6%, 4%, 0) rotate(-180deg) scale(1.34); }
+  100% { transform: translate3d(0, 0, 0) rotate(-360deg) scale(1.1); }
 }
 
-/* Drift stays modest: the cores are off-screen, so a large translate would
-   swing the bloom across the content instead of hugging the edge. */
-@keyframes atmos-a {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  33%      { transform: translate3d(5vw, 4vh, 0) scale(1.10); }
-  66%      { transform: translate3d(2vw, 8vh, 0) scale(0.95); }
-}
-@keyframes atmos-b {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1.04); }
-  40%      { transform: translate3d(-6vw, 5vh, 0) scale(0.94); }
-  70%      { transform: translate3d(-2vw, 1vh, 0) scale(1.12); }
-}
-@keyframes atmos-c {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  30%      { transform: translate3d(5vw, -5vh, 0) scale(1.08); }
-  65%      { transform: translate3d(-4vw, -2vh, 0) scale(0.93); }
-}
-@keyframes atmos-d {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(0.97); }
-  50%      { transform: translate3d(-5vw, -6vh, 0) scale(1.14); }
+/* Concentric arcs and a faint column grid, the quiet structure behind the
+   bands. Drawn in CSS so they cost nothing. */
+.atmos__veil {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background-image:
+    radial-gradient(circle at 88% 18%, transparent 0 30%, var(--atmos-line) 30% calc(30% + 1px), transparent calc(30% + 1px)),
+    radial-gradient(circle at 88% 18%, transparent 0 44%, var(--atmos-line) 44% calc(44% + 1px), transparent calc(44% + 1px)),
+    radial-gradient(circle at 88% 18%, transparent 0 60%, var(--atmos-line) 60% calc(60% + 1px), transparent calc(60% + 1px)),
+    linear-gradient(90deg, var(--atmos-line) 0 1px, transparent 1px);
+  background-size: 200% 200%, 200% 200%, 200% 200%, 14.28% 100%;
+  background-repeat: no-repeat, no-repeat, no-repeat, repeat-x;
+  opacity: 0.8;
 }
 
-/* .atmos__veil is retained as a no-op element so older generated pages do not
-   break, but it paints nothing: a black veil over saturated orange is exactly
-   what produced the brown murk. */
-.atmos__veil { display: none; }
-
-/* Fine tooth of grain keeps the large soft fields from banding. */
+/* Fine grain, so the large soft fields never band. */
 .atmos::after {
   content: '';
   position: absolute;
   inset: 0;
-  opacity: 0.34;
+  opacity: 0.3;
   mix-blend-mode: soft-light;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
 }

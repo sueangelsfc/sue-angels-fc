@@ -191,10 +191,9 @@
      more veil: the blob cores sit outside the viewport so only their soft
      falloff reaches in, the centre of the page stays genuinely black, and
      there is no veil at all. */
-  --atmos-1: rgb(var(--brand-rgb) / 0.42);
-  --atmos-2: rgb(var(--brand-rgb) / 0.18);
-  --atmos-3: rgb(var(--brand-rgb) / 0.10);
+  --atmos-art: url('assets/brand/gradient-dark.webp');
   --atmos-base: var(--ink-000);
+  --atmos-line: #FFFFFF0A;
 }
 
 /* ==========================================================================
@@ -250,10 +249,9 @@
   --shadow-float: 0 28px 60px -24px #14100D33;
   --shadow-brand: 0 18px 46px -18px rgb(var(--brand-rgb) / 0.38);
 
-  --atmos-1: rgb(var(--brand-rgb) / 0.34);
-  --atmos-2: rgb(var(--brand-rgb) / 0.14);
-  --atmos-3: rgb(var(--brand-rgb) / 0.07);
+  --atmos-art: url('assets/brand/gradient-light.webp');
   --atmos-base: var(--ink-900);
+  --atmos-line: #14100D0F;
 }
 
 /* System preference drives the default when the visitor has not chosen.
@@ -300,9 +298,8 @@
     --shadow-float: 0 28px 60px -24px #14100D33;
     --shadow-brand: 0 18px 46px -18px rgb(var(--brand-rgb) / 0.38);
 
-    --atmos-1: rgb(var(--brand-rgb) / 0.34);
-    --atmos-2: rgb(var(--brand-rgb) / 0.14);
-    --atmos-3: rgb(var(--brand-rgb) / 0.07);
+    --atmos-art: url('assets/brand/gradient-light.webp');
     --atmos-base: var(--ink-900);
+    --atmos-line: #14100D0F;
   }
 }

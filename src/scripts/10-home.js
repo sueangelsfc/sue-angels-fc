@@ -66,3 +66,58 @@
     sync();
   });
 })();
+
+/* ==========================================================================
+   AWARD COVERFLOW
+   Rotates which card is at the front. The cards are real links stacked with
+   CSS transforms, so with this file blocked they remain a readable stack and
+   every one is still reachable by keyboard.
+   ========================================================================== */
+(function () {
+  'use strict';
+  var flows = Array.prototype.slice.call(document.querySelectorAll('[data-coverflow]'));
+  flows.forEach(function (root) {
+    var cards = Array.prototype.slice.call(root.querySelectorAll('[data-cf-card]'));
+    if (cards.length < 2) return;
+    var prev = root.querySelector('[data-cf-prev]');
+    var next = root.querySelector('[data-cf-next]');
+    var at = 0;
+
+    function paint() {
+      cards.forEach(function (c, i) {
+        // Offset from the active card, wrapped, drives the --i depth variable.
+        var off = (i - at + cards.length) % cards.length;
+        c.style.setProperty('--i', off);
+        c.setAttribute('data-active', off === 0 ? 'true' : 'false');
+        // Cards behind the front one are not tab stops.
+        c.setAttribute('tabindex', off === 0 ? '0' : '-1');
+        c.setAttribute('aria-hidden', off === 0 ? 'false' : 'true');
+      });
+    }
+    if (prev) prev.addEventListener('click', function () { at = (at - 1 + cards.length) % cards.length; paint(); });
+    if (next) next.addEventListener('click', function () { at = (at + 1) % cards.length; paint(); });
+    root.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowLeft' && prev) { e.preventDefault(); prev.click(); }
+      if (e.key === 'ArrowRight' && next) { e.preventDefault(); next.click(); }
+    });
+    paint();
+  });
+})();
+
+/* Carousel progress bar under the results rail. */
+(function () {
+  'use strict';
+  Array.prototype.slice.call(document.querySelectorAll('[data-carousel-bar]')).forEach(function (bar) {
+    var wrap = bar.closest('.carousel');
+    var rail = wrap && wrap.querySelector('[data-carousel-rail]');
+    if (!rail) return;
+    function sync() {
+      var max = rail.scrollWidth - rail.clientWidth;
+      var pct = max > 0 ? rail.scrollLeft / max : 0;
+      bar.style.transform = 'translateX(' + (pct * ((100 / 0.22) - 100)) + '%)';
+    }
+    rail.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync);
+    sync();
+  });
+})();

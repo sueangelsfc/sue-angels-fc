@@ -1,20 +1,46 @@
-#!/bin/bash
-# pre-push guard — blocks pushes that would ship the project's two classic bugs:
-#   1. js/jsx shared-data drift (admin and public disagreeing on COACHES/SQUAD/badges)
-#   2. mixed ?v= cache versions across pages (some pages serving stale assets)
-# Enable once with:  git config core.hooksPath scripts/hooks
-set -e
-cd "$(git rev-parse --show-toplevel)"
+#!/usr/bin/env bash
+# Pre-push guard. Encodes the footguns that can actually bite THIS build.
+#
+# The old hook checked PageShell.js/.jsx drift. Both files are retired: the
+# shell is now defined once in src/lib/html.mjs, so that class of drift is
+# structurally impossible and the check was failing on missing files.
+set -u
 
-echo "[pre-push] drift check…"
-./scripts/drift-check.sh >/dev/null || { echo "[pre-push] BLOCKED: PageShell.js/.jsx drift. Run ./scripts/drift-check.sh"; exit 1; }
+fail=0
+say() { printf '[pre-push] %s\n' "$1"; }
 
-echo "[pre-push] version consistency…"
-# An asset name appearing with more than one distinct ?v= across pages = stale-cache bug.
-MIXED=$(grep -rhoE "[A-Za-z_-]+\.(js|css)\?v=[0-9]+" *.html | sort -u | cut -d'?' -f1 | sort | uniq -d)
-if [ -n "$MIXED" ]; then
-  echo "[pre-push] BLOCKED: mixed cache versions for: $MIXED"
-  echo "           Fix with ./scripts/bump.sh <asset>"
+# 1. Generated output must match src/. Editing src/ without rebuilding is the
+#    single easiest way to ship nothing.
+if ! node src/build.mjs >/dev/null 2>&1; then
+  say "BLOCKED: the generator failed. Run: npm run build"
   exit 1
 fi
-echo "[pre-push] OK"
+if ! git diff --quiet -- '*.html' sa.css sa.js control.js sitemap.xml robots.txt manifest.webmanifest 2>/dev/null; then
+  say "BLOCKED: generated output is stale. Run: npm run build && git add -A"
+  git diff --stat -- '*.html' sa.css sa.js control.js | tail -5
+  fail=1
+fi
+
+# 2. Derived statistics must still reconcile with the published league table.
+if ! node src/lib/verify-dataset.mjs >/dev/null 2>&1; then
+  say "BLOCKED: derived stats no longer match the published league table."
+  say "Run: npm run verify"
+  fail=1
+fi
+
+# 3. The full suite.
+if ! node src/test/run.mjs >/dev/null 2>&1; then
+  say "BLOCKED: tests failed. Run: npm test"
+  node src/test/run.mjs 2>&1 | tail -12
+  fail=1
+fi
+
+# 4. No service-role key may ever be pushed.
+if git grep -qIl -e 'service_role' -e 'sb_secret_' -- ':!*.md' ':!scripts/hooks/*' ':!src/test/*' 2>/dev/null; then
+  say "BLOCKED: a service-role key reference is present in tracked files."
+  git grep -Il -e 'service_role' -e 'sb_secret_' -- ':!*.md' ':!scripts/hooks/*' ':!src/test/*' | head
+  fail=1
+fi
+
+[ "$fail" -eq 0 ] && say "checks passed"
+exit "$fail"

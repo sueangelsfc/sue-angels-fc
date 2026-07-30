@@ -88,6 +88,41 @@ export const POSITION_LABEL = {
   LW: 'Left wing', RW: 'Right wing', ST: 'Striker', CF: 'Centre forward', SS: 'Second striker',
 };
 
+/* Current partners, recovered from the deployed site. Sponsor logos are the
+   partners' own marks and are never recoloured or restyled. */
+export const SPONSORS = [
+  { name: 'Sporting Solutions', tier: 'Front-of-shirt partner', logo: '/assets/sponsors/sporting-solutions.webp' },
+  { name: "Bloomin' Marvellous", tier: 'Club partner', logo: '/assets/sponsors/bloomin-marvellous.png' },
+  { name: 'Hodgson Roofing', tier: 'Club partner', logo: '/assets/sponsors/hodgson-roofing.webp' },
+  { name: 'Staines Rugby', tier: 'Club partner', logo: '/assets/sponsors/staines-rugby.png' },
+  { name: 'HLO', tier: 'Club partner', logo: '/assets/sponsors/hlo.svg' },
+];
+
+/* Questions the club actually gets asked, for the homepage FAQ. Answered
+   plainly, and marked up so they can earn an FAQ rich result. */
+export const FAQS = [
+  {
+    q: 'Can I join the club?',
+    a: 'Yes. We look at players across every position ahead of each season, and we also need media volunteers and helpers. Send us your position, your age and where you have played and we will come back to you about a trial.',
+  },
+  {
+    q: 'Where do you play?',
+    a: 'Our home matches are at The Reeves Sports Club in London, kicking off on Sunday mornings. Away fixtures move around the division.',
+  },
+  {
+    q: 'What league are you in?',
+    a: 'We won League Ten of the Southern Sunday Football League unbeaten in our first season, so we go up into League Eight next.',
+  },
+  {
+    q: 'Why is the club called Sue’s Angels?',
+    a: 'The club was founded in 2025 in memory of Susan Anne Martin, who we lost to sepsis. We play in her name and use the club to raise awareness of the signs of sepsis.',
+  },
+  {
+    q: 'How can my business get involved?',
+    a: 'We work with partners on shirt, matchday and player sponsorship, and we shape each package around what the partner actually wants. Get in touch and we will put something specific together.',
+  },
+];
+
 /* Sponsorship packages. Deliberately no prices - the brief forbids inventing
    commercial promises, and no published rate card exists. */
 export const SPONSOR_TIERS = [

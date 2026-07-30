@@ -75,11 +75,24 @@
   var mq = window.matchMedia('(prefers-color-scheme: light)');
   on(mq, 'change', function () { if (!root.getAttribute('data-theme')) syncToggle(); });
 
-  /* ---- Header stuck state --------------------------------------------- */
+  /* ---- Header stuck state ---------------------------------------------
+     On the homepage the header sits over a tall dark hero, so it must keep
+     its light-on-dark treatment until the hero has actually scrolled past.
+     Switching at 12px would turn the links dark while still over the photo. */
   var hdr = $('[data-header]');
   if (hdr) {
-    var onScroll = function () { hdr.classList.toggle('is-stuck', window.scrollY > 12); };
+    var heroFrame = $('.hx__frame');
+    var onScroll = function () {
+      hdr.classList.toggle('is-stuck', window.scrollY > 12);
+      if (!heroFrame) return;
+      // Transparent treatment only while the hero is genuinely behind the
+      // header. Flipping on raw scrollY would darken the links while they
+      // were still sitting on the photograph.
+      var past = heroFrame.offsetTop + heroFrame.offsetHeight - hdr.offsetHeight - 8;
+      hdr.classList.toggle('is-over-hero', window.scrollY <= past);
+    };
     on(window, 'scroll', onScroll, { passive: true });
+    on(window, 'resize', onScroll);
     onScroll();
   }
 

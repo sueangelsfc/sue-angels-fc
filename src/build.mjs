@@ -200,13 +200,15 @@ const routes = [
 ];
 
 for (const r of routes) {
-  const { body } = r.tpl();
+  const out = r.tpl();
   write(r.file, page({
     title: r.title,
     description: r.description,
     path: `/${r.file}`,
-    body,
-    schema: r.schema || [],
+    body: out.body,
+    bodyClass: out.bodyClass || '',
+    // A template may contribute its own structured data (the homepage FAQ).
+    schema: [...(r.schema || []), ...(out.faqSchema ? [out.faqSchema] : [])],
     noindex: r.noindex,
     assetV,
   }));

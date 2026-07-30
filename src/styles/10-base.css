@@ -2,45 +2,24 @@
    BASE - reset, self-hosted type, atmosphere, layout primitives
    ========================================================================== */
 
+/* Two variable fonts, one file each: 147KB total covers every weight and,
+   for Archivo, every width. Static instances would have needed nine files. */
 @font-face {
-  font-family: 'Clash Display';
-  src: url('assets/fonts/clash-display-400.woff2') format('woff2');
-  font-weight: 400; font-style: normal; font-display: swap;
+  font-family: 'Archivo';
+  src: url('assets/fonts/Archivo-Variable.woff2') format('woff2-variations'),
+       url('assets/fonts/Archivo-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-style: normal;
+  font-display: swap;
 }
 @font-face {
-  font-family: 'Clash Display';
-  src: url('assets/fonts/clash-display-500.woff2') format('woff2');
-  font-weight: 500; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Clash Display';
-  src: url('assets/fonts/clash-display-600.woff2') format('woff2');
-  font-weight: 600; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Clash Display';
-  src: url('assets/fonts/clash-display-700.woff2') format('woff2');
-  font-weight: 700; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Hanken Grotesk';
-  src: url('assets/fonts/hanken-400.woff2') format('woff2');
-  font-weight: 400; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Hanken Grotesk';
-  src: url('assets/fonts/hanken-500.woff2') format('woff2');
-  font-weight: 500; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Hanken Grotesk';
-  src: url('assets/fonts/hanken-600.woff2') format('woff2');
-  font-weight: 600; font-style: normal; font-display: swap;
-}
-@font-face {
-  font-family: 'Hanken Grotesk';
-  src: url('assets/fonts/hanken-700.woff2') format('woff2');
-  font-weight: 700; font-style: normal; font-display: swap;
+  font-family: 'Geist';
+  src: url('assets/fonts/Geist-Variable.woff2') format('woff2-variations'),
+       url('assets/fonts/Geist-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
 }
 
 /* ---- Reset ------------------------------------------------------------- */
@@ -87,9 +66,12 @@ h1, h2, h3, h4, h5, h6, .display {
   line-height: var(--lh-snug);
   letter-spacing: var(--tracking-display);
   text-wrap: balance;
+  font-stretch: var(--width-title);
 }
-h1 { font-size: var(--step-6); line-height: var(--lh-tight); }
-h2 { font-size: var(--step-4); }
+/* The big headlines run expanded; smaller headings stay closer to normal so
+   they do not fight the body text. */
+h1 { font-size: var(--step-6); line-height: var(--lh-tight); font-stretch: var(--width-hero); }
+h2 { font-size: var(--step-4); font-stretch: var(--width-hero); }
 h3 { font-size: var(--step-2); }
 h4 { font-size: var(--step-1); }
 h5, h6 { font-size: var(--step-0); }
@@ -117,10 +99,14 @@ strong, b { font-weight: var(--weight-semi); }
 }
 .eyebrow--muted { color: var(--text-subtle); }
 
-/* Tabular numerals wherever numbers must align (scores, tables, stats) */
-.tnum, table, .score, .stat__value {
+/* Tabular numerals wherever numbers must align (scores, tables, stats).
+   Numerals also drop back to normal width: expanded figures do not line up
+   in a column even with tabular spacing on. */
+.tnum, table, .score, .stat__value, .fixture__score, .scoreboard__score,
+.ribbon__v, .record__v, .lineup__n, .player__num {
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
+  font-stretch: var(--width-num);
 }
 
 /* ---- Focus ------------------------------------------------------------- */

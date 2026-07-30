@@ -90,11 +90,19 @@
   --glass-sat:       1.6;
 
   /* ---- Typography ---------------------------------------------------
-     Clash Display for display/numerals, Hanken Grotesk for body and UI.
-     Both self-hosted in assets/fonts. */
-  --font-display: 'Clash Display', 'Arial Narrow', system-ui, sans-serif;
-  --font-body: 'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+     Archivo (variable weight AND width) for display, Geist (variable) for
+     body and UI. Both self-hosted as single variable files.
+
+     The width axis is the flagship typographic move: headlines run expanded
+     for stadium energy, while numbers stay at normal width so tabular
+     figures in tables and stat readouts still align. */
+  --font-display: 'Archivo', 'Arial Narrow', system-ui, sans-serif;
+  --font-body: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --width-hero: 116%;   /* hero and section headlines */
+  --width-title: 107%;  /* card titles, sub-headings */
+  --width-num: 100%;    /* tables and stat readouts */
 
   /* Modular scale, fluid. One token per step - no ad-hoc font sizes. */
   --step--2: clamp(0.694rem, 0.68rem + 0.07vw, 0.75rem);

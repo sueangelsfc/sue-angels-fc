@@ -3,20 +3,47 @@
   "buildCommand": null,
   "outputDirectory": ".",
   "framework": null,
+  "trailingSlash": false,
   "functions": {
-    "api/claude.js": {
-      "maxDuration": 30
-    },
-    "api/share.js": {
-      "maxDuration": 10
-    },
-    "api/og-image.js": {
-      "maxDuration": 10
-    },
-    "api/notify-enquiry.js": {
-      "maxDuration": 10
-    }
+    "api/notify-enquiry.js": { "maxDuration": 10 },
+    "api/subscribe.js": { "maxDuration": 10 },
+    "api/og-cover.js": { "maxDuration": 10 },
+    "api/og-image.js": { "maxDuration": 10 },
+    "api/share.js": { "maxDuration": 10 },
+    "api/claude.js": { "maxDuration": 30 }
   },
+  "redirects": [
+    { "source": "/schedule", "destination": "/fixtures.html", "permanent": true },
+    { "source": "/schedule.html", "destination": "/fixtures.html", "permanent": true },
+    { "source": "/fixtures", "destination": "/fixtures.html", "permanent": true },
+    { "source": "/results", "destination": "/results.html", "permanent": true },
+    { "source": "/table", "destination": "/league.html", "permanent": true },
+    { "source": "/table.html", "destination": "/league.html", "permanent": true },
+    { "source": "/league", "destination": "/league.html", "permanent": true },
+    { "source": "/teams", "destination": "/squad.html", "permanent": true },
+    { "source": "/teams.html", "destination": "/squad.html", "permanent": true },
+    { "source": "/squad", "destination": "/squad.html", "permanent": true },
+    { "source": "/media", "destination": "/news.html", "permanent": true },
+    { "source": "/media.html", "destination": "/news.html", "permanent": true },
+    { "source": "/news", "destination": "/news.html", "permanent": true },
+    { "source": "/about", "destination": "/about.html", "permanent": true },
+    { "source": "/sepsis", "destination": "/sepsis.html", "permanent": true },
+    { "source": "/champions", "destination": "/champions.html", "permanent": true },
+    { "source": "/awards", "destination": "/awards.html", "permanent": true },
+    { "source": "/records", "destination": "/records.html", "permanent": true },
+    { "source": "/stats", "destination": "/stats.html", "permanent": true },
+    { "source": "/coaches", "destination": "/coaches.html", "permanent": true },
+    { "source": "/gallery", "destination": "/gallery.html", "permanent": true },
+    { "source": "/videos", "destination": "/videos.html", "permanent": true },
+    { "source": "/live", "destination": "/live.html", "permanent": true },
+    { "source": "/sponsors", "destination": "/sponsors.html", "permanent": true },
+    { "source": "/join", "destination": "/join.html", "permanent": true },
+    { "source": "/contact", "destination": "/contact.html", "permanent": true },
+    { "source": "/admin", "destination": "/control.html", "permanent": false },
+    { "source": "/admin.html", "destination": "/control.html", "permanent": false },
+    { "source": "/content.html", "destination": "/control.html", "permanent": true },
+    { "source": "/league-admin.html", "destination": "/control.html", "permanent": true }
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -26,34 +53,38 @@
         { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), browsing-topics=()" },
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
         { "key": "X-DNS-Prefetch-Control", "value": "on" },
-        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://translate.google.com https://translate.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.fontshare.com https://cdn.fontshare.com https://translate.googleapis.com; font-src 'self' data: https://fonts.gstatic.com https://cdn.fontshare.com; img-src 'self' data: blob: https:; media-src 'self' https:; connect-src 'self' data: blob: https://*.supabase.co wss://*.supabase.co https://*.google-analytics.com https://*.googletagmanager.com https://*.fontshare.com https://fonts.googleapis.com https://fonts.gstatic.com https://api.mailerlite.com https://*.facebook.com; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://www.google.com https://www.facebook.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests" }
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://hvbquuvxcswylyguplfb.supabase.co; media-src 'self'; connect-src 'self' https://hvbquuvxcswylyguplfb.supabase.co wss://hvbquuvxcswylyguplfb.supabase.co; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests" }
       ]
     },
     {
-      "source": "/(.*).js",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
+      "source": "/sa.css",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
     },
     {
-      "source": "/(.*).css",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
-      ]
+      "source": "/sa.js",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/assets/fonts/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
     },
     {
       "source": "/assets/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=604800, stale-while-revalidate=86400" }
-      ]
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800, stale-while-revalidate=86400" }]
     },
     {
-      "source": "/sw.js",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
-        { "key": "Service-Worker-Allowed", "value": "/" }
-      ]
+      "source": "/media/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800, stale-while-revalidate=86400" }]
+    },
+    {
+      "source": "/(.*).html",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }]
+    },
+    {
+      "source": "/control.html",
+      "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }]
     }
   ]
 }

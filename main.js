@@ -20,13 +20,25 @@
   var burger = document.querySelector('.hx__burger');
   var mnav = document.getElementById('mnav');
   if (burger && mnav) {
+    /* `inert` is what actually keeps the closed overlay's 19 links out of the
+       tab order AND out of the accessibility tree. aria-hidden alone left
+       focusable children inside a hidden subtree (WCAG 4.1.2). The CSS
+       visibility:hidden covers browsers without inert support. */
     var setMenu = function (open) {
       burger.setAttribute('aria-expanded', String(open));
       burger.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
       mnav.classList.toggle('is-open', open);
-      mnav.setAttribute('aria-hidden', String(!open));
+      if ('inert' in HTMLElement.prototype) mnav.inert = !open;
+      else mnav.setAttribute('aria-hidden', String(!open));
       document.body.style.overflow = open ? 'hidden' : '';
+      if (open) {
+        var first = mnav.querySelector('a, button');
+        if (first) first.focus();
+      } else if (mnav.contains(document.activeElement) || document.activeElement === document.body) {
+        burger.focus();
+      }
     };
+    if ('inert' in HTMLElement.prototype) { mnav.inert = true; mnav.removeAttribute('aria-hidden'); }
     burger.addEventListener('click', function () {
       setMenu(burger.getAttribute('aria-expanded') !== 'true');
     });
@@ -35,6 +47,15 @@
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && burger.getAttribute('aria-expanded') === 'true') setMenu(false);
+    });
+    /* keep Tab inside the overlay while it is open */
+    mnav.addEventListener('keydown', function (e) {
+      if (e.key !== 'Tab' || !mnav.classList.contains('is-open')) return;
+      var f = mnav.querySelectorAll('a[href], button:not([disabled])');
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     });
   }
 
@@ -67,7 +88,18 @@
       if (!e.target.closest('.hx__navgrp')) closeAll(null);
     });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') closeAll(null);
+      if (e.key !== 'Escape') return;
+      /* The panel also opens on :focus-within, which is what lets a keyboard
+         user reach it by tabbing. That means simply dropping .is-open leaves
+         it open under the focus still sitting inside it — so move focus back
+         to the trigger first, then close. */
+      var inside = document.activeElement && document.activeElement.closest
+        ? document.activeElement.closest('.hx__navgrp') : null;
+      if (inside) {
+        var t = inside.querySelector('.hx__navtrig');
+        if (t) t.focus();
+      }
+      closeAll(null);
     });
   })();
 
@@ -647,6 +679,7 @@
   }
 
   function submit(form, endpoint, extra, okText) {
+    if (form.classList.contains('is-sending')) return;   /* Enter key can re-fire past a disabled button */
     var input = form.querySelector('input[type=email], input[type=text]');
     var email = ((input && input.value) || '').trim();
     var btn = form.querySelector('button');
@@ -679,7 +712,7 @@
           msg.textContent = d.duplicate ? "You're already on the list. Thank you." : okText;
         } else {
           msg.className = 'formmsg is-err';
-          msg.textContent = 'Something went wrong. Please try again, or email hello@suesangelsfc.co.uk.';
+          msg.textContent = 'Something went wrong. Please try again, or email suesangelsfc@gmail.com.';
         }
       })
       .catch(function () {
@@ -704,14 +737,84 @@
     var enq = document.querySelectorAll('form[data-enquiry]');
     for (var j = 0; j < enq.length; j++) {
       (function (f) {
-        var src = f.getAttribute('data-enquiry');
         f.removeAttribute('onsubmit');
-        f.addEventListener('submit', function (e) {
-          e.preventDefault();
-          submit(f, '/api/notify-enquiry', { type: 'Sponsorship pack request', source: src }, "Thanks. We'll send your pack over shortly.");
-        });
+        f.addEventListener('submit', function (e) { e.preventDefault(); submitEnquiry(f); });
       })(enq[j]);
     }
+  }
+
+  /* Enquiry forms (contact, join, sponsorship).
+
+     Two destinations, and the submit succeeds if EITHER lands — the same
+     belt-and-braces the newsletter uses:
+       1. the club's own `enquiries` table via saAddEnquiry() — the durable
+          record the control panel's Inbox reads. This is the important one:
+          it works with no third-party keys configured.
+       2. /api/notify-enquiry — an email alert so a lead is noticed today.
+          This is a graceful no-op until RESEND_API_KEY is set, which is why
+          it must never be the only destination.
+
+     Fields are read by name, so a form can carry as much or as little as it
+     wants; only a valid email (or a message) is required. */
+  function submitEnquiry(form) {
+    if (form.classList.contains('is-sending')) return;
+    var val = function (n) {
+      var el = form.querySelector('[name=' + n + ']');
+      return ((el && el.value) || '').trim();
+    };
+    var email = val('email');
+    var message = val('message');
+    var btn = form.querySelector('button[type=submit], button:not([type])');
+    var msg = ensureMsg(form);
+
+    if (!EMAIL_RE.test(email)) {
+      msg.className = 'formmsg is-err';
+      msg.textContent = 'Please enter a valid email address so we can reply.';
+      var ie = form.querySelector('[name=email]'); if (ie) ie.focus();
+      return;
+    }
+    if (form.hasAttribute('data-enquiry-requires-message') && !message) {
+      msg.className = 'formmsg is-err';
+      msg.textContent = 'Please add a short message.';
+      var im = form.querySelector('[name=message]'); if (im) im.focus();
+      return;
+    }
+
+    var payload = {
+      type: form.getAttribute('data-enquiry-type') || 'Website enquiry',
+      source: form.getAttribute('data-enquiry') || 'site',
+      name: val('name'), email: email, phone: val('phone'), message: message
+    };
+    if (val('role')) payload.message = (payload.message ? payload.message + '\n\n' : '') + 'Preferred role: ' + val('role');
+
+    form.classList.add('is-sending');
+    if (btn) btn.disabled = true;
+    msg.className = 'formmsg';
+    msg.textContent = 'Sending…';
+
+    var toDb = (typeof window.saAddEnquiry === 'function')
+      ? window.saAddEnquiry(payload).then(function (r) { return !!(r && r.ok); }).catch(function () { return false; })
+      : Promise.resolve(false);
+
+    var toEmail = fetch('/api/notify-enquiry', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(function (r) { return r.ok; }).catch(function () { return false; });
+
+    Promise.all([toDb, toEmail]).then(function (r) {
+      form.classList.remove('is-sending');
+      if (btn) btn.disabled = false;
+      if (r[0] || r[1]) {
+        form.classList.add('is-done');
+        msg.className = 'formmsg is-ok';
+        msg.textContent = form.getAttribute('data-enquiry-ok')
+          || "Thank you. We've got it and we'll come back to you soon.";
+        form.reset();
+      } else {
+        msg.className = 'formmsg is-err';
+        msg.textContent = 'Something went wrong. Please try again, or email suesangelsfc@gmail.com.';
+      }
+    });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire);

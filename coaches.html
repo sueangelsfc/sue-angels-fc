@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script>try{var m=localStorage.getItem('sa-mode');if(m==='light'||(!m&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: light)').matches))void 0;}catch(e){}</script>
-  <script>try{if(sessionStorage.getItem('sa-booted')==='1'){document.documentElement.classList.add('booted');}else{sessionStorage.setItem('sa-booted','1');}}catch(e){}</script>
+  <script>document.documentElement.classList.add('js');try{if(sessionStorage.getItem('sa-booted')==='1'){document.documentElement.classList.add('booted');}else{sessionStorage.setItem('sa-booted','1');}}catch(e){}</script>
   <title>Coaches &amp; Management · Sue's Angels FC</title>
   <meta name="description" content="Meet the Sue's Angels FC management team: first-team manager and founder Stephen Epathite and first-team coach Louis Allen, the staff behind the League Ten title." />
   <meta name="theme-color" content="#090B0D" media="(prefers-color-scheme: dark)" />
@@ -24,7 +24,7 @@
 
   <link rel="preload" href="fonts/Archivo-Variable.woff2" as="font" type="font/woff2" crossorigin />
   <link rel="preload" href="fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin />
-  <link rel="stylesheet" href="styles.css?v=83" />
+  <link rel="stylesheet" href="styles.css?v=84" />
 
   <script type="application/ld+json">
   {
@@ -37,7 +37,7 @@
   }
   </script>
 </head>
-<body>
+<body id="top">
   <div id="boot" class="boot" aria-hidden="true">
     <img class="boot__crest" src="assets/badge/sue-angels-badge-star.webp" alt="" width="136" height="168" />
     <span class="boot__bar" aria-hidden="true"></span>
@@ -45,7 +45,7 @@
   <a class="skip" href="#main">Skip to content</a>
 
   <!-- mobile navigation overlay -->
-  <div class="mnav" id="mnav" aria-hidden="true">
+  <div class="mnav" id="mnav" inert>
     <nav class="mnav__nav" aria-label="Mobile">
       <a class="mnav__home" href="index.html">Home</a>
       <div class="mnav__grid">
@@ -100,40 +100,40 @@
     <nav class="hx__mainnav" aria-label="Main">
       <a class="hx__navtop" href="index.html">Home</a>
       <div class="hx__navgrp">
-        <button class="hx__navtop hx__navtrig" type="button" aria-expanded="false" aria-haspopup="true">The Club <svg class="hx__chev" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-        <div class="hx__dd" role="menu">
-          <a role="menuitem" href="about.html">Our Story</a>
-          <a role="menuitem" href="sepsis.html">Our Cause</a>
-          <a role="menuitem" href="champions.html">Champions</a>
-          <a role="menuitem" href="awards.html">Awards</a>
-          <a role="menuitem" href="sponsors.html">Sponsors</a>
+        <button class="hx__navtop hx__navtrig" type="button" aria-expanded="false">The Club <svg class="hx__chev" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="hx__dd">
+          <a href="about.html">Our Story</a>
+          <a href="sepsis.html">Our Cause</a>
+          <a href="champions.html">Champions</a>
+          <a href="awards.html">Awards</a>
+          <a href="sponsors.html">Sponsors</a>
         </div>
       </div>
       <div class="hx__navgrp">
-        <button class="hx__navtop hx__navtrig" type="button" aria-expanded="false" aria-haspopup="true">On the Pitch <svg class="hx__chev" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-        <div class="hx__dd" role="menu">
-          <a role="menuitem" href="squad.html">Squad</a>
-          <a role="menuitem" href="stats.html">Player Stats</a>
-          <a role="menuitem" href="coaches.html" aria-current="page">Coaches</a>
-          <a role="menuitem" href="schedule.html">Matches</a>
-          <a role="menuitem" href="league.html">League</a>
-          <a role="menuitem" href="records.html">Records</a>
+        <button class="hx__navtop hx__navtrig" type="button" aria-expanded="false">On the Pitch <svg class="hx__chev" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="hx__dd">
+          <a href="squad.html">Squad</a>
+          <a href="stats.html">Player Stats</a>
+          <a href="coaches.html" aria-current="page">Coaches</a>
+          <a href="schedule.html">Matches</a>
+          <a href="league.html">League</a>
+          <a href="records.html">Records</a>
         </div>
       </div>
       <div class="hx__navgrp">
-        <button class="hx__navtop hx__navtrig" type="button" aria-expanded="false" aria-haspopup="true">Media <svg class="hx__chev" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-        <div class="hx__dd" role="menu">
-          <a role="menuitem" href="live.html">Live</a>
-          <a role="menuitem" href="news.html">News</a>
-          <a role="menuitem" href="gallery.html">Gallery</a>
-          <a role="menuitem" href="videos.html">Videos</a>
+        <button class="hx__navtop hx__navtrig" type="button" aria-expanded="false">Media <svg class="hx__chev" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="hx__dd">
+          <a href="live.html">Live</a>
+          <a href="news.html">News</a>
+          <a href="gallery.html">Gallery</a>
+          <a href="videos.html">Videos</a>
         </div>
       </div>
       <div class="hx__navgrp">
-        <button class="hx__navtop hx__navtrig" type="button" aria-expanded="false" aria-haspopup="true">Get Involved <svg class="hx__chev" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-        <div class="hx__dd" role="menu">
-          <a role="menuitem" href="join.html">Join the Club</a>
-          <a role="menuitem" href="contact.html">Contact</a>
+        <button class="hx__navtop hx__navtrig" type="button" aria-expanded="false">Get Involved <svg class="hx__chev" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="hx__dd">
+          <a href="join.html">Join the Club</a>
+          <a href="contact.html">Contact</a>
         </div>
       </div>
     </nav>
@@ -153,7 +153,7 @@
     </div>
   </header>
 
-  <main id="main">
+  <main tabindex="-1" id="main">
 
     <!-- page hero -->
     <section class="sec sec--pagetitle">
@@ -338,6 +338,6 @@
   <script src="PageShell.js" defer></script>
   <script src="match-context.js?v=1" defer></script>
   <script src="live.js?v=1" defer></script>
-  <script src="main.js?v=27" defer></script>
+  <script src="main.js?v=28" defer></script>
 </body>
 </html>

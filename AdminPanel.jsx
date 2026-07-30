@@ -931,6 +931,352 @@ function CmsPipeline() {
     </div>
   );
 }
+/* ───────────────────────────────────────────────────────────────────────────
+   Enquiries & supporters.
+
+   These two tables are the only ones the public writes to and the club must
+   read. RLS allows anon INSERT and blocks anon SELECT, so the rows are
+   invisible until someone signs in — which means this panel is the ONLY way
+   to see a lead without opening the Supabase dashboard.
+
+   Reads go through the Supabase SDK client (window.SupabaseStore.client()),
+   not the raw REST helper in data.js: the SDK attaches the signed-in user's
+   JWT, and the database policy — not this component — is what actually
+   grants the read.
+
+   `status` and `notes` are optional columns. They only exist after
+   migrations/001_enquiry_status.sql has been run, so every use is
+   feature-detected and the panel works fully without them.
+   ─────────────────────────────────────────────────────────────────────────── */
+function CmsEnquiries() {
+  const [tab, setTab] = React.useState('enquiries');
+  const [rows, setRows] = React.useState(null);      // null = loading
+  const [err, setErr] = React.useState(null);
+  const [q, setQ] = React.useState('');
+  const [type, setType] = React.useState('');
+  const [busy, setBusy] = React.useState(null);
+
+  const load = React.useCallback(() => {
+    setRows(null); setErr(null);
+    if (!window.SupabaseStore || !window.SupabaseStore.client) {
+      setErr('Not connected to the database. This panel needs the live Supabase config.');
+      setRows([]); return;
+    }
+    window.SupabaseStore.client()
+      .then((c) => c.from(tab).select('*').order('created_at', { ascending: false }).limit(1000))
+      .then((r) => {
+        if (r.error) throw r.error;
+        setRows(r.data || []);
+      })
+      .catch((e) => {
+        setErr((e && e.message) || 'Could not load. Check you are signed in as the club admin.');
+        setRows([]);
+      });
+  }, [tab]);
+
+  React.useEffect(() => { load(); }, [load]);
+
+  const hasStatus = !!(rows && rows.length && Object.prototype.hasOwnProperty.call(rows[0], 'status'));
+
+  const setStatus = (row, value) => {
+    if (!hasStatus) return;
+    setBusy(row.id);
+    window.SupabaseStore.client()
+      .then((c) => c.from(tab).update({ status: value }).eq('id', row.id))
+      .then((r) => { if (r.error) throw r.error; setRows((rs) => rs.map((x) => (x.id === row.id ? { ...x, status: value } : x))); })
+      .catch((e) => setErr((e && e.message) || 'Could not update the status.'))
+      .then(() => setBusy(null));
+  };
+
+  const remove = (row) => {
+    const who = row.email || row.name || 'this entry';
+    if (!window.confirm('Permanently delete ' + who + '? This cannot be undone.')) return;
+    setBusy(row.id);
+    window.SupabaseStore.client()
+      .then((c) => c.from(tab).delete().eq('id', row.id))
+      .then((r) => { if (r.error) throw r.error; setRows((rs) => rs.filter((x) => x.id !== row.id)); })
+      .catch((e) => setErr((e && e.message) || 'Could not delete — the database policy may not allow it.'))
+      .then(() => setBusy(null));
+  };
+
+  const types = React.useMemo(
+    () => [...new Set((rows || []).map((r) => r.type).filter(Boolean))].sort(),
+    [rows]);
+
+  const shown = React.useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    return (rows || []).filter((r) => {
+      if (type && r.type !== type) return false;
+      if (!needle) return true;
+      return ['name', 'email', 'phone', 'message', 'source', 'type']
+        .some((k) => String(r[k] || '').toLowerCase().includes(needle));
+    });
+  }, [rows, q, type]);
+
+  const exportCsv = () => {
+    if (!shown.length) return;
+    const cols = Object.keys(shown[0]);
+    const esc = (v) => {
+      const s = v == null ? '' : String(v);
+      return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    };
+    const csv = [cols.join(',')].concat(shown.map((r) => cols.map((c) => esc(r[c])).join(','))).join('\r\n');
+    const url = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "sues-angels-" + tab + "-" + new Date().toISOString().slice(0, 10) + '.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const when = (iso) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return isNaN(d) ? '' : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+      + ' · ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const TABS = [['enquiries', 'Enquiries'], ['supporters', 'Newsletter supporters']];
+
+  return (
+    <div>
+      <div className="cms-sec__head">
+        <div>
+          <h2 className="rd-h3">Enquiries &amp; supporters</h2>
+          <p className="cms-sec__sub">
+            Everything the public sends in: contact messages, trial and volunteer applications,
+            sponsorship enquiries and newsletter sign-ups. Only visible to a signed-in admin.
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="rd-btn rd-btn--ghost rd-btn--sm" onClick={load}>Refresh</button>
+          <button className="rd-btn rd-btn--volt rd-btn--sm" onClick={exportCsv} disabled={!shown.length}>Export CSV</button>
+        </div>
+      </div>
+
+      <div className="cms-tabs" role="tablist" style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        {TABS.map(([k, label]) => (
+          <button key={k} role="tab" aria-selected={tab === k}
+                  className={'rd-btn rd-btn--sm ' + (tab === k ? 'rd-btn--volt' : 'rd-btn--ghost')}
+                  onClick={() => { setTab(k); setQ(''); setType(''); }}>
+            {label}{rows && tab === k ? ' (' + rows.length + ')' : ''}
+          </button>
+        ))}
+      </div>
+
+      <div className="rd-card" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', marginBottom: 14 }}>
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, email, message…"
+               aria-label="Search" style={{ flex: 1, minWidth: 200 }} />
+        {tab === 'enquiries' && types.length ? (
+          <select value={type} onChange={(e) => setType(e.target.value)} aria-label="Filter by type">
+            <option value="">All types</option>
+            {types.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+        ) : null}
+        <span className="cms-sec__sub" style={{ margin: 0 }}>
+          {rows === null ? 'Loading…' : shown.length + ' of ' + rows.length}
+        </span>
+      </div>
+
+      {err ? (
+        <div className="rd-card" style={{ borderColor: 'var(--loss)', marginBottom: 14 }}>
+          <p style={{ color: 'var(--loss)', font: '600 13px var(--font-sans)', margin: 0 }}>{err}</p>
+        </div>
+      ) : null}
+
+      {rows === null ? (
+        <div className="rd-card"><p className="cms-empty">Loading…</p></div>
+      ) : !shown.length ? (
+        <div className="rd-card">
+          <p className="cms-empty">
+            {rows.length
+              ? 'Nothing matches that search.'
+              : (tab === 'enquiries'
+                  ? 'No enquiries yet. Messages from the contact, join and sponsorship forms land here.'
+                  : 'No newsletter sign-ups yet. The footer form and the join page feed this list.')}
+          </p>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gap: 10 }}>
+          {shown.map((r) => (
+            <div className="rd-card" key={r.id} style={{ opacity: busy === r.id ? 0.55 : 1 }}>
+              <div className="cms-row" style={{ gap: 10, flexWrap: 'wrap', alignItems: 'baseline' }}>
+                <b style={{ fontSize: 15 }}>{r.name || '(no name)'}</b>
+                {r.type ? <span className="rd-chip">{r.type}</span> : null}
+                {r.source ? <span className="cms-sec__sub" style={{ margin: 0 }}>via {r.source}</span> : null}
+                <span className="cms-sec__sub" style={{ margin: 0, marginLeft: 'auto' }}>{when(r.created_at)}</span>
+              </div>
+              <div className="cms-row" style={{ gap: 12, flexWrap: 'wrap', marginTop: 6 }}>
+                {r.email ? <a href={'mailto:' + r.email}>{r.email}</a> : null}
+                {r.phone ? <a href={'tel:' + r.phone}>{r.phone}</a> : null}
+                {typeof r.consent !== 'undefined' ? <span className="cms-sec__sub" style={{ margin: 0 }}>consent: {r.consent ? 'yes' : 'no'}</span> : null}
+              </div>
+              {r.message ? <p style={{ margin: '10px 0 0', whiteSpace: 'pre-wrap', fontSize: 14 }}>{r.message}</p> : null}
+              <div className="cms-row" style={{ gap: 8, marginTop: 12, flexWrap: 'wrap', alignItems: 'center' }}>
+                {hasStatus ? (
+                  <select value={r.status || 'new'} onChange={(e) => setStatus(r, e.target.value)} aria-label="Status">
+                    {['new', 'in progress', 'replied', 'closed'].map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                ) : null}
+                {r.email ? (
+                  <a className="rd-btn rd-btn--ghost rd-btn--sm" href={'mailto:' + r.email}>Reply</a>
+                ) : null}
+                <button className="rd-btn rd-btn--ghost rd-btn--sm" style={{ marginLeft: 'auto' }}
+                        onClick={() => remove(r)} disabled={busy === r.id}>Delete</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {rows && rows.length && !hasStatus ? (
+        <p className="cms-sec__sub" style={{ marginTop: 14 }}>
+          Tip: run <code>migrations/001_enquiry_status.sql</code> in the Supabase SQL editor to add
+          status tracking and private notes to enquiries. Everything else here works without it.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   League administration.
+
+   The division table shipped in PageShell.js is the baseline; the CMS can
+   override it per season without a code change (getLeagueOverride('table')).
+   Clearing the override falls back to the baseline rather than to an empty
+   table, so a bad import can always be undone.
+   ─────────────────────────────────────────────────────────────────────────── */
+function CmsLeague() {
+  const BLANK = { p: 0, c: '', pl: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: '0', pts: 0 };
+  const baseline = () => (window.RAW_TABLE || []).map((r) => ({ ...r }));
+  const stored = () => {
+    const v = window.getLeagueOverride ? window.getLeagueOverride('table') : null;
+    return Array.isArray(v) && v.length ? v.map((r) => ({ ...r })) : null;
+  };
+  const [rows, setRows] = React.useState(() => stored() || baseline());
+  const [overriding, setOverriding] = React.useState(() => !!stored());
+  const [msg, setMsg] = React.useState(null);
+  const [importing, setImporting] = React.useState(false);
+  const [raw, setRaw] = React.useState('');
+
+  const COLS = [['p', '#'], ['c', 'Club'], ['pl', 'P'], ['w', 'W'], ['d', 'D'], ['l', 'L'],
+                ['gf', 'GF'], ['ga', 'GA'], ['gd', 'GD'], ['pts', 'Pts']];
+
+  const recalc = (list) => list.map((r) => {
+    const gf = Number(r.gf) || 0, ga = Number(r.ga) || 0, diff = gf - ga;
+    return { ...r, gd: (diff > 0 ? '+' : '') + diff };
+  }).sort((a, b) => (Number(b.pts) || 0) - (Number(a.pts) || 0)
+                 || (Number(String(b.gd).replace('+', '')) || 0) - (Number(String(a.gd).replace('+', '')) || 0))
+    .map((r, i) => ({ ...r, p: i + 1 }));
+
+  const edit = (i, k, v) => setRows((rs) => rs.map((r, n) => (n === i ? { ...r, [k]: k === 'c' ? v : (v === '' ? '' : Number(v)) } : r)));
+
+  const save = () => {
+    const next = recalc(rows);
+    setRows(next);
+    Promise.resolve(window.setLeagueOverride('table', next)).then(() => {
+      window.RAW_TABLE = next;
+      setOverriding(true);
+      setMsg('Saved. The League page now shows this table.');
+      setTimeout(() => setMsg(null), 4000);
+    }).catch(() => setMsg('Could not save — check you are signed in.'));
+  };
+
+  const revert = () => {
+    if (!window.confirm('Discard the saved override and go back to the table shipped in the code?')) return;
+    Promise.resolve(window.clearLeagueOverride('table')).then(() => {
+      const b = baseline();
+      setRows(b); window.RAW_TABLE = b; setOverriding(false);
+      setMsg('Override cleared. Back to the built-in table.');
+      setTimeout(() => setMsg(null), 4000);
+    });
+  };
+
+  const doImport = () => {
+    const text = raw.trim();
+    if (!text) return;
+    let list = null;
+    try {
+      const j = JSON.parse(text);
+      if (Array.isArray(j)) list = j;
+    } catch (e) {
+      // tab/comma separated: Club, P, W, D, L, GF, GA, Pts
+      list = text.split(/\n+/).map((line) => {
+        const cells = line.split(/\t|\s*,\s*/).map((x) => x.trim()).filter((x) => x !== '');
+        if (cells.length < 8) return null;
+        const nums = cells.slice(-7).map(Number);
+        return { c: cells.slice(0, cells.length - 7).join(' '), pl: nums[0], w: nums[1], d: nums[2], l: nums[3], gf: nums[4], ga: nums[5], pts: nums[6] };
+      }).filter(Boolean);
+    }
+    if (!list || !list.length) { setMsg('Could not read that. Paste JSON, or one club per line: Club, P, W, D, L, GF, GA, Pts'); return; }
+    setRows(recalc(list.map((r) => ({ ...BLANK, ...r, us: /sue'?s angels/i.test(r.c || '') || undefined }))));
+    setImporting(false); setRaw('');
+    setMsg('Imported ' + list.length + ' clubs. Review, then Save to publish.');
+  };
+
+  return (
+    <div>
+      <div className="cms-sec__head">
+        <div>
+          <h2 className="rd-h3">League table</h2>
+          <p className="cms-sec__sub">
+            The division standings shown on the League page. {overriding
+              ? 'You are currently overriding the table shipped in the code.'
+              : 'Currently showing the table shipped in the code.'} Goal difference and
+            position are recalculated on save.
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="rd-btn rd-btn--ghost rd-btn--sm" onClick={() => setImporting((v) => !v)}>{importing ? 'Cancel import' : 'Import'}</button>
+          {overriding ? <button className="rd-btn rd-btn--ghost rd-btn--sm" onClick={revert}>Revert</button> : null}
+          <button className="rd-btn rd-btn--volt rd-btn--sm" onClick={save}>Save table</button>
+        </div>
+      </div>
+
+      {msg ? <div className="rd-card" style={{ marginBottom: 14 }}><p style={{ margin: 0, fontSize: 13, fontWeight: 600 }}>{msg}</p></div> : null}
+
+      {importing ? (
+        <div className="rd-card" style={{ marginBottom: 14, display: 'grid', gap: 10 }}>
+          <label className="rd-field">
+            <span>Paste the table</span>
+            <textarea rows="8" value={raw} onChange={(e) => setRaw(e.target.value)}
+                      placeholder={"One club per line:\nSue's Angels FC, 18, 18, 0, 0, 90, 11, 54\n\n…or paste a JSON array of rows."}></textarea>
+          </label>
+          <div className="rd-form__actions"><button className="rd-btn rd-btn--volt" onClick={doImport}>Read it</button></div>
+        </div>
+      ) : null}
+
+      <div className="rd-card" style={{ overflowX: 'auto' }}>
+        <table className="cms-table" style={{ width: '100%', minWidth: 640, borderCollapse: 'collapse', fontSize: 13 }}>
+          <thead>
+            <tr>{COLS.map(([k, label]) => <th key={k} style={{ textAlign: k === 'c' ? 'left' : 'center', padding: '8px 6px', whiteSpace: 'nowrap' }}>{label}</th>)}<th></th></tr>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={i} style={{ borderTop: '1px solid rgba(128,128,128,.22)' }}>
+                {COLS.map(([k]) => (
+                  <td key={k} style={{ padding: '5px 4px' }}>
+                    {k === 'p' || k === 'gd'
+                      ? <span style={{ display: 'block', textAlign: 'center', fontWeight: 700 }}>{r[k]}</span>
+                      : <input value={r[k] == null ? '' : r[k]} onChange={(e) => edit(i, k, e.target.value)}
+                               aria-label={k}
+                               style={{ width: k === 'c' ? '100%' : 48, minWidth: k === 'c' ? 150 : 0, textAlign: k === 'c' ? 'left' : 'center', padding: '5px 6px' }} />}
+                  </td>
+                ))}
+                <td><button className="rd-btn rd-btn--ghost rd-btn--sm" title="Remove club"
+                            onClick={() => setRows((rs) => rs.filter((_, n) => n !== i))}>&times;</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <button className="rd-btn rd-btn--ghost rd-btn--sm" style={{ marginTop: 12 }}
+                onClick={() => setRows((rs) => rs.concat([{ ...BLANK, p: rs.length + 1 }]))}>+ Add club</button>
+      </div>
+    </div>
+  );
+}
+
 const CMS_SECTIONS = [
   ['hero', 'Hero banner', CmsHero, 'The club'],
   ['recognition', 'Champions & honours', CmsRecognition, 'The club'],
@@ -940,6 +1286,7 @@ const CMS_SECTIONS = [
   ['status', 'Retired / departed', CmsStatus, 'The team'],
   ['matchdata', 'Match data', CmsMatchData, 'Matches'],
   ['fixtures', 'Fixtures', CmsFixtures, 'Matches'],
+  ['league', 'League table', CmsLeague, 'Matches'],
   ['articles', 'News & articles', CmsArticles, 'Media'],
   ['gallery', 'Gallery', CmsGallery, 'Media'],
   ['videos', 'Videos', CmsVideos, 'Media'],
@@ -947,8 +1294,9 @@ const CMS_SECTIONS = [
   ['sponsors', 'Sponsors', CmsSponsors, 'Partners'],
   ['pipeline', 'Sponsorship pipeline', CmsPipeline, 'Partners'],
   ['donations', 'Donations', CmsDonations, 'Partners'],
+  ['enquiries', 'Enquiries & supporters', CmsEnquiries, 'Inbox'],
 ];
-const CMS_GROUPS = ['The club', 'The team', 'Matches', 'Media', 'Partners'];
+const CMS_GROUPS = ['The club', 'The team', 'Matches', 'Media', 'Partners', 'Inbox'];
 
 function AdminPanel() {
   const admin = window.useAdmin ? window.useAdmin() : false;

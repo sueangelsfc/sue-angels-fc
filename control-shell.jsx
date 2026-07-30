@@ -307,7 +307,20 @@ function ControlPanel() {
       c.n != null ? h('span', { className: 'cp-nav__n' }, c.n) : null);
   };
 
-  const user = (window.SA_AUTH && window.SA_AUTH.user && window.SA_AUTH.user()) || null;
+  // Who is signed in. data.js exposes SA_AUTH; control.html loads the React
+  // stack instead, so fall back to reading the session off the SDK client.
+  const [who, setWho] = React.useState(
+    () => (window.SA_AUTH && window.SA_AUTH.user && window.SA_AUTH.user()) || null);
+  React.useEffect(() => {
+    if (who || !window.SupabaseStore || !window.SupabaseStore.client) return;
+    let live = true;
+    window.SupabaseStore.client()
+      .then((c) => c.auth.getSession())
+      .then((r) => { if (live && r && r.data && r.data.session) setWho(r.data.session.user); })
+      .catch(() => {});
+    return () => { live = false; };
+  }, [who, admin]);
+  const user = who;
 
   return h('div', { className: 'cp' + (navOpen ? ' is-navopen' : '') },
 

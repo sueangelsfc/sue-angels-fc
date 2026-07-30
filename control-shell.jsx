@@ -47,6 +47,7 @@ const ICON_FOR = {
   photos: P.camera, coaches: P.whistle, status: P.out, matchdata: P.pitch,
   fixtures: P.cal, articles: P.news, gallery: P.images, videos: P.video,
   covers: P.cover, sponsors: P.handshake, pipeline: P.funnel, donations: P.coin,
+  league: P.trophy, enquiries: P.news, status: P.out,
 };
 
 /* ---------- derived club state for the dashboard ------------------------ */
@@ -101,8 +102,12 @@ const opponentOf = m => /angels/i.test(m.home || '') ? m.away : m.home;
 const strip = s => String(s || '').replace(' FC', '');
 
 /* ---------- dashboard --------------------------------------------------- */
-function Dashboard({ go }) {
-  const s = React.useMemo(clubState, []);
+function Dashboard({ go, tick }) {
+  /* Recompute on every tick. With an empty dependency array the KPIs, the
+     completion meter and the "needs attention" list froze at mount, so an
+     admin who logged a lineup and came back saw the old numbers and redid
+     the work. The shell already bumps `tick` on sa-match-changed. */
+  const s = React.useMemo(clubState, [tick]);
   const pct = s.rows.length ? Math.round((s.logged / s.rows.length) * 100) : 0;
   const kpi = (k, v, d, accent) => h('div', { className: 'cp-kpi' + (accent ? ' cp-kpi--accent' : ''), key: k },
     h('p', { className: 'cp-kpi__k' }, k),
@@ -255,9 +260,21 @@ function ControlPanel() {
   React.useEffect(() => {
     const onKey = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setCmd(v => !v); }
+      if (e.key === 'Escape') { setCmd(false); setNavOpen(false); }
+    };
+    /* Closing the tab or reloading loses in-progress edits just as surely as
+       switching section does. */
+    const onLeave = (e) => {
+      if (!window.SA_CP_DIRTY) return;
+      e.preventDefault();
+      e.returnValue = '';
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('beforeunload', onLeave);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('beforeunload', onLeave);
+    };
   }, []);
 
   const SECTIONS = window.CMS_SECTIONS || [];
@@ -295,7 +312,17 @@ function ControlPanel() {
   const paletteItems = [{ key: 'dashboard', label: 'Dashboard', group: 'Overview' }]
     .concat(SECTIONS.map(x => ({ key: x[0], label: x[1], group: x[3] })));
 
-  const go = (k) => { setSec(k); setNavOpen(false); setCmd(false); window.scrollTo({ top: 0, behavior: 'auto' }); };
+  /* Leaving a section unmounts its editor and discards its local state. A
+     half-entered match — lineup, per-goal detail, clean sheets — is the most
+     expensive data in the product, so warn before throwing it away.
+     Editors opt in by setting window.SA_CP_DIRTY = true. */
+  const go = (k) => {
+    if (window.SA_CP_DIRTY && k !== sec &&
+        !window.confirm('You have unsaved changes in this section. Leave anyway?')) return;
+    window.SA_CP_DIRTY = false;
+    setSec(k); setNavOpen(false); setCmd(false);
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  };
 
   const navBtn = (k, label) => {
     const c = counts[k] || {};
@@ -372,7 +399,7 @@ function ControlPanel() {
                 h('h1', { className: 'cp-head__t' }, 'Club overview'),
                 h('p', { className: 'cp-head__d' },
                   'Everything that needs your attention, and the shape of the season so far.')),
-              h(Dashboard, { go }))
+              h(Dashboard, { go, tick }))
           : (Active ? h(Active, null) : h('p', { className: 'cms-empty' }, 'Section unavailable.')))),
 
     cmd ? h(Palette, { items: paletteItems, onPick: go, onClose: () => setCmd(false) }) : null);

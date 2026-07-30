@@ -13,7 +13,7 @@
   @font-face { font-family:'Geist'; src:url('fonts/Geist-Variable.woff2') format('woff2'); font-weight:100 900; font-display:swap; }
   @font-face { font-family:'Archivo'; src:url('fonts/Archivo-Variable.woff2') format('woff2'); font-weight:100 900; font-stretch:62% 125%; font-display:swap; }
 </style>
-<link rel="stylesheet" href="control.css?v=5" />
+<link rel="stylesheet" href="control.css?v=6" />
 </head>
 <body>
 <div id="cp-root"></div>
@@ -23,8 +23,13 @@
      and keeps working exactly as before. -->
 <script>window.SA_CONTROL_SHELL = true;</script>
 
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin></script>
+<!-- React from the repo, not a CDN, and the production build rather than the
+     development one: the club can still edit the site if unpkg is unreachable,
+     and pitch-side on a phone this is ~1.3MB less to download and parse.
+     Babel standalone stays on the CDN for now — the 11 .jsx editors are still
+     transpiled in the browser (see the note in CLAUDE.md). -->
+<script src="react.18.3.1.min.js"></script>
+<script src="react-dom.18.3.1.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin></script>
 
 <!-- real data layer + real Supabase auth, shared with the live site -->
@@ -49,6 +54,6 @@
 <script src="match-context.js"></script>
 <script src="report-writer.js"></script>
 
-<script type="text/babel" src="control-shell.jsx?v=3"></script>
+<script type="text/babel" src="control-shell.jsx?v=4"></script>
 </body>
 </html>

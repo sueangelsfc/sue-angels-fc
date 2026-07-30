@@ -2463,7 +2463,8 @@ a.tbl__row:hover { background: rgba(255, 255, 255, 0.045); }
   padding: 20px 22px; background: rgba(255, 255, 255, 0.028);
   transition: transform 0.45s var(--ease-out-expo), border-color 0.3s;
 }
-.causestat:hover { transform: translateY(-3px); border-color: rgba(var(--volt-rgb), 0.3); }
+/* No hover lift. These are facts to read on the page about Sue's death, not
+   cards to play with — a springy response is the wrong register here. */
 .causestat b {
   display: block; font-family: var(--display); font-weight: 850;
   font-size: clamp(2rem, 3.4vw, 2.7rem); letter-spacing: -0.03em; line-height: 1;
@@ -2496,7 +2497,10 @@ a.tbl__row:hover { background: rgba(255, 255, 255, 0.045); }
   background: rgba(255, 255, 255, 0.028);
   transition: transform 0.45s var(--ease-out-expo), border-color 0.3s, background 0.3s, box-shadow 0.35s;
 }
-.sign:hover { transform: translateY(-5px); border-color: rgba(var(--volt-rgb), 0.4); background: rgba(255, 255, 255, 0.045);
+/* The six warning signs are the one thing on this site someone might need to
+   recall under pressure. They are for reading, so they get emphasis (the
+   letter mark below) rather than a lift that implies they are clickable. */
+.sign:hover { border-color: rgba(var(--volt-rgb), 0.4); background: rgba(255, 255, 255, 0.045);
   box-shadow: 0 22px 48px -24px rgba(0, 0, 0, 0.6), 0 0 28px -14px rgba(var(--volt-rgb), 0.42); }
 .sign__k {
   width: 54px; height: 54px; display: grid; place-items: center; border-radius: 14px;

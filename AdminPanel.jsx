@@ -351,12 +351,12 @@ function CmsPhotos() {
               <div className="cms-photo__img">{photo ? <img src={photo} alt={`${p.first} ${p.last}`} /> : <span>{p.first[0]}{p.last[0]}</span>}</div>
               <div className="cms-photo__name">{p.first} {p.last}</div>
               {window.MediaUploader ? <window.MediaUploader label={photo ? 'Replace main' : 'Main photo'} onPick={(d) => window.setPlayerPhoto(p.num, d)} /> : null}
-              {photo ? <button className="cms-photo__rm" onClick={() => window.clearPlayerPhoto(p.num)}>Remove main</button> : null}
+              {photo ? <button className="cms-photo__rm" onClick={() => { if (window.confirm('Remove ' + (p.name || 'this player') + "'s main photo?")) window.clearPlayerPhoto(p.num); }}>Remove main</button> : null}
               <TaggedPhotoPicker name={`${p.first} ${p.last}`} current={photo} onPick={(url) => { Promise.resolve(window.setPlayerPhoto(p.num, url)).then(() => tick((n) => n + 1)); }} />
               {gallery.length ? (
                 <div className="cms-photo__gal">
                   {gallery.map((g, i) => (
-                    <span className="cms-photo__galitem" key={i}><img src={g} alt="" /><button onClick={() => window.removePlayerPhotoAt(p.num, i)} aria-label="Remove">&times;</button></span>
+                    <span className="cms-photo__galitem" key={i}><img src={g} alt="" /><button onClick={() => { if (window.confirm('Remove this photo from the gallery?')) window.removePlayerPhotoAt(p.num, i); }} aria-label="Remove">&times;</button></span>
                   ))}
                 </div>
               ) : null}
@@ -400,7 +400,7 @@ function CmsSponsors() {
         <div className="cms-row"><div><span className="rd-chip rd-chip--volt">Default</span><b className="cms-row__t">Hodgson Roofing</b></div><span className="cms-row__d">Training top sponsor</span></div>
         <div className="cms-row"><div><span className="rd-chip rd-chip--volt">Default</span><b className="cms-row__t">Staines Rugby Club</b></div><span className="cms-row__d">Ground-share partner</span></div>
         {items.map((s) => (
-          <div className="cms-row" key={s.id}><div><span className="rd-chip">Added</span><b className="cms-row__t">{s.name}</b></div><button className="rd-btn rd-btn--ghost rd-btn--sm" onClick={() => window.SponsorsStore.remove(s.id)}>Remove</button></div>
+          <div className="cms-row" key={s.id}><div><span className="rd-chip">Added</span><b className="cms-row__t">{s.name}</b></div><button className="rd-btn rd-btn--ghost rd-btn--sm" onClick={() => { if (window.confirm('Remove sponsor ' + (s.name || '') + '?')) window.SponsorsStore.remove(s.id); }}>Remove</button></div>
         ))}
       </div>
     </div>
@@ -492,7 +492,7 @@ function CmsRoster() {
           <div className="rd-form__actions"><span className="rd-form__note">{players.length} added by you</span><button className="rd-btn rd-btn--volt" onClick={addPlayer}>Add player</button></div>
         </div>
       </div>
-      {players.length ? <div className="cms-list" style={{ marginBottom: 24 }}>{players.map((p) => (<div className="cms-row" key={p.num}><div><span className="rd-chip">#{p.num}</span><b className="cms-row__t">{p.first} {p.last}</b>{p.gk ? <span className="cms-row__d">GK</span> : null}</div><button className="rd-btn rd-btn--ghost rd-btn--sm" onClick={() => removePlayer(p.num)}>Remove</button></div>))}</div> : null}
+      {players.length ? <div className="cms-list" style={{ marginBottom: 24 }}>{players.map((p) => (<div className="cms-row" key={p.num}><div><span className="rd-chip">#{p.num}</span><b className="cms-row__t">{p.first} {p.last}</b>{p.gk ? <span className="cms-row__d">GK</span> : null}</div><button className="rd-btn rd-btn--ghost rd-btn--sm" onClick={() => { if (window.confirm('Remove #' + p.num + ' ' + (p.first || '') + ' ' + (p.last || '') + ' from the squad?')) removePlayer(p.num); }}>Remove</button></div>))}</div> : null}
       <div className="rd-card">
         <div className="rd-form">
           <p className="rd-eyebrow">New coach / staff</p>
@@ -503,7 +503,7 @@ function CmsRoster() {
           <div className="rd-form__actions"><span className="rd-form__note">{coaches.length} added by you</span><button className="rd-btn rd-btn--volt" onClick={addCoach}>Add coach</button></div>
         </div>
       </div>
-      {coaches.length ? <div className="cms-list" style={{ marginTop: 16 }}>{coaches.map((c) => (<div className="cms-row" key={c.id}><div><b className="cms-row__t">{c.name}</b><span className="cms-row__d">{c.role}</span></div><button className="rd-btn rd-btn--ghost rd-btn--sm" onClick={() => removeCoach(c.id)}>Remove</button></div>))}</div> : null}
+      {coaches.length ? <div className="cms-list" style={{ marginTop: 16 }}>{coaches.map((c) => (<div className="cms-row" key={c.id}><div><b className="cms-row__t">{c.name}</b><span className="cms-row__d">{c.role}</span></div><button className="rd-btn rd-btn--ghost rd-btn--sm" onClick={() => { if (window.confirm('Remove ' + (c.name || 'this coach') + ' from the staff?')) removeCoach(c.id); }}>Remove</button></div>))}</div> : null}
     </div>
   );
 }
@@ -599,7 +599,7 @@ function CmsHero() {
           <div key={i} className="rd-card" style={{ padding: 8 }}>
             <img src={src} alt="" style={{ width: '100%', aspectRatio: '16/10', objectFit: 'cover', borderRadius: 8, display: 'block' }} />
             {usingCustom
-              ? <button className="rd-btn rd-btn--ghost rd-btn--sm" style={{ marginTop: 8, width: '100%' }} onClick={() => save(imgs.filter((_, k) => k !== i))}>Remove</button>
+              ? <button className="rd-btn rd-btn--ghost rd-btn--sm" style={{ marginTop: 8, width: '100%' }} onClick={() => { if (window.confirm('Remove this hero photo?')) save(imgs.filter((_, k) => k !== i)); }}>Remove</button>
               : <span className="cms-row__d" style={{ display: 'block', marginTop: 8, textAlign: 'center', textTransform: 'none', letterSpacing: 0 }}>Default</span>}
           </div>
         ))}
@@ -682,7 +682,7 @@ function CmsCovers() {
             <div key={b.id} style={{ textAlign: 'center', width: 78 }}>
               <img src={b.img} alt="" style={{ width: 48, height: 48, objectFit: 'contain' }} />
               <span className="cms-row__d" style={{ display: 'block', fontSize: 10, textTransform: 'none', letterSpacing: 0 }}>{b.name}</span>
-              {b.id !== 'club' ? <button className="rd-btn rd-btn--ghost rd-btn--sm" style={{ padding: '2px 8px', fontSize: 10, marginTop: 4 }} onClick={() => saveBadges(badges.filter((x) => x.id !== b.id))}>Remove</button> : null}
+              {b.id !== 'club' ? <button className="rd-btn rd-btn--ghost rd-btn--sm" style={{ padding: '2px 8px', fontSize: 10, marginTop: 4 }} onClick={() => { if (window.confirm('Remove this badge?')) saveBadges(badges.filter((x) => x.id !== b.id)); }}>Remove</button> : null}
             </div>
           ))}
         </div>

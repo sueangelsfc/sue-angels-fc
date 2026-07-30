@@ -78,6 +78,34 @@
   border-color: var(--border-brand);
 }
 
+/* Text-bearing glass. Clear glass is right for a nav pill or a stat tile, but
+   it loses its edge over a busy field once it carries paragraphs. This variant
+   raises the tint and firms the rim so the panel keeps a definite boundary and
+   the type stays crisp - without abandoning the material. */
+.glass--reading {
+  background:
+    linear-gradient(155deg, #FFFFFF1F 0%, #FFFFFF12 42%, #FFFFFF0A 100%),
+    color-mix(in srgb, var(--surface) 82%, transparent);
+  border-color: var(--border-strong);
+  box-shadow: var(--glass-inner), var(--shadow-lg);
+}
+.glass--reading::after { opacity: 0.4; }
+:root[data-theme='light'] .glass--reading {
+  background:
+    linear-gradient(155deg, #FFFFFFCC 0%, #FFFFFFA6 42%, #FFFFFF8A 100%),
+    color-mix(in srgb, var(--surface) 88%, transparent);
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) .glass--reading {
+    background:
+      linear-gradient(155deg, #FFFFFFCC 0%, #FFFFFFA6 42%, #FFFFFF8A 100%),
+      color-mix(in srgb, var(--surface) 88%, transparent);
+  }
+}
+@supports not (background: color-mix(in srgb, red 50%, transparent)) {
+  .glass--reading { background: var(--surface-2); }
+}
+
 /* Interactive glass: lifts and brightens. */
 .glass--interactive {
   cursor: pointer;

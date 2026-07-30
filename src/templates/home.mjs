@@ -112,7 +112,7 @@ export function home(d) {
               </div>
             </div>
           </div>
-          <aside class="hxc glass glass--lg" aria-label="Next match">${nextCard}</aside>
+          <aside class="hxc glass glass--lg glass--reading" aria-label="Next match">${nextCard}</aside>
         </div>
       </div>
     </div>
@@ -184,7 +184,7 @@ export function home(d) {
           </div>
         </article>
 
-        <article class="bento__card bento__card--text glass glass--warm">
+        <article class="bento__card bento__card--text glass glass--reading">
           <span class="bento__label">Sepsis awareness</span>
           <blockquote class="bento__quote">“${esc(CLUB.memorial.motto)}”</blockquote>
           <p class="bento__metatxt">We lost Sue to sepsis. Around 48,000 lives are lost to it in
@@ -404,7 +404,7 @@ export function home(d) {
   /* ================= CLOSING CTA ================= */
   const ctaBand = `<section class="sec sec--cta" aria-labelledby="cta-h">
     <div class="wrap wrap--wide">
-      <div class="cta2 glass glass--xl glass--warm">
+      <div class="cta2 glass glass--xl glass--reading">
         <span class="cta2__glow" aria-hidden="true"></span>
         <span class="cta2__badge">${crest()}</span>
         <p class="eyebrow">${esc(CLUB.nextDivision)} · New season</p>

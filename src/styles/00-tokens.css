@@ -182,14 +182,19 @@
   --rail-w: 74px;
 
   /* ---- Atmosphere: the theme's ambient field -------------------------
-     Big orange masses drifting over true black. Strong on purpose: the
-     orange stays visually dominant, as the brand direction requires. The
-     veil is what keeps white body text above AA over an orange peak. */
-  --atmos-1: #FF5A12;
-  --atmos-2: rgb(var(--brand-rgb) / 0.55);
-  --atmos-3: #FF8A3Cbb;
+     Orange bloom CONFINED TO THE PAGE EDGES over true black.
+
+     The earlier version used fully saturated masses across the whole canvas
+     with a ~70% black veil on top for contrast. Saturated orange under a
+     black veil reads as brown, so every band sat on a murky wash and cards
+     lost their edges. The fix is to confine the orange rather than to add
+     more veil: the blob cores sit outside the viewport so only their soft
+     falloff reaches in, the centre of the page stays genuinely black, and
+     there is no veil at all. */
+  --atmos-1: rgb(var(--brand-rgb) / 0.42);
+  --atmos-2: rgb(var(--brand-rgb) / 0.18);
+  --atmos-3: rgb(var(--brand-rgb) / 0.10);
   --atmos-base: var(--ink-000);
-  --atmos-veil: linear-gradient(to bottom, #000000A6, #000000B8 40%, #000000A6);
 }
 
 /* ==========================================================================
@@ -245,11 +250,10 @@
   --shadow-float: 0 28px 60px -24px #14100D33;
   --shadow-brand: 0 18px 46px -18px rgb(var(--brand-rgb) / 0.38);
 
-  --atmos-1: #FF5A12;
-  --atmos-2: rgb(var(--brand-rgb) / 0.62);
-  --atmos-3: #FFA268CC;
+  --atmos-1: rgb(var(--brand-rgb) / 0.34);
+  --atmos-2: rgb(var(--brand-rgb) / 0.14);
+  --atmos-3: rgb(var(--brand-rgb) / 0.07);
   --atmos-base: var(--ink-900);
-  --atmos-veil: linear-gradient(to bottom, #FFF8F3B3, #FFF8F3C2 40%, #FFF8F3B3);
 }
 
 /* System preference drives the default when the visitor has not chosen.
@@ -296,10 +300,9 @@
     --shadow-float: 0 28px 60px -24px #14100D33;
     --shadow-brand: 0 18px 46px -18px rgb(var(--brand-rgb) / 0.38);
 
-    --atmos-1: #FF5A12;
-    --atmos-2: rgb(var(--brand-rgb) / 0.62);
-    --atmos-3: #FFA268CC;
+    --atmos-1: rgb(var(--brand-rgb) / 0.34);
+    --atmos-2: rgb(var(--brand-rgb) / 0.14);
+    --atmos-3: rgb(var(--brand-rgb) / 0.07);
     --atmos-base: var(--ink-900);
-    --atmos-veil: linear-gradient(to bottom, #FFF8F3B3, #FFF8F3C2 40%, #FFF8F3B3);
   }
 }

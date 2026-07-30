@@ -45,7 +45,7 @@ export function about(d) {
           honestly, and a squad that people want to be part of.</p>
         </div>
         <div class="stack">
-          <div class="quote glass glass--lg">
+          <div class="quote glass glass--lg glass--reading">
             <blockquote>“${esc(CLUB.memorial.motto)}”</blockquote>
             <cite>The words on our crest</cite>
           </div>
@@ -64,7 +64,7 @@ export function about(d) {
 
 /* ======================= OUR CAUSE / SEPSIS ======================= */
 export function sepsis() {
-  const signs = SEPSIS.adultSigns.map((s) => `<div class="sign glass">
+  const signs = SEPSIS.adultSigns.map((s) => `<div class="sign glass glass--reading">
     <span class="sign__letter" aria-hidden="true">${esc(s.letter)}</span>
     <h3 class="sign__title">${esc(s.title)}</h3>
     <p class="sign__body">${esc(s.body)}</p>
@@ -139,19 +139,19 @@ export function sepsis() {
     <div class="wrap wrap--wide">
       ${sectionHead({ index: '03', eyebrow: 'Get involved', title: '<span id="help-h">Three ways to help</span>' })}
       <div class="paths">
-        <article class="path glass">
+        <article class="path glass glass--reading">
           <span class="path__n">01</span>
           <h3 class="path__title">Know and share the signs</h3>
           <p class="path__body">The signs above can save a life. Take a moment to learn them, and share them with the people you love.</p>
           <button class="btn btn--glass btn--sm" type="button" data-share aria-label="Share this page">Share this page</button>
         </article>
-        <article class="path glass">
+        <article class="path glass glass--reading">
           <span class="path__n">02</span>
           <h3 class="path__title">Support the ${esc(CLUB.charity.name)}</h3>
           <p class="path__body">They support families, fund research and raise awareness across the country. You can find out more or give on their website.</p>
           <a class="btn btn--glass btn--sm" href="${attr(CLUB.charity.url)}" rel="noopener" target="_blank">Visit sepsistrust.org ${icon('external')}</a>
         </article>
-        <article class="path glass">
+        <article class="path glass glass--reading">
           <span class="path__n">03</span>
           <h3 class="path__title">Stand with the club</h3>
           <p class="path__body">Back Sue’s Angels as a sponsor, partner or volunteer, and help us carry her message a little further.</p>
@@ -655,7 +655,7 @@ export function live(d) {
 
 /* ======================= SPONSORS ======================= */
 export function sponsors(d) {
-  const tiers = SPONSOR_TIERS.map((t) => `<article class="tier glass">
+  const tiers = SPONSOR_TIERS.map((t) => `<article class="tier glass glass--reading">
     <h3 class="tier__name">${esc(t.name)}</h3>
     <p style="color:var(--text-muted);font-size:var(--step--1)">${esc(t.body)}</p>
     <ul class="tier__list">${t.items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>
@@ -691,7 +691,7 @@ export function sponsors(d) {
   </section>
   <section class="section" id="enquire">
     <div class="wrap wrap--narrow">
-      <div class="glass glass--lg" style="padding:var(--space-7) var(--space-6)">
+      <div class="glass glass--lg glass--reading" style="padding:var(--space-7) var(--space-6)">
         ${sectionHead({ index: '02', eyebrow: 'Talk to us', title: 'Sponsorship enquiry' })}
         ${enquiryForm({ type: 'sponsorship', requireMessage: true, ok: 'Thank you. We will come back to you about sponsorship within a few days.' })}
       </div>
@@ -754,7 +754,7 @@ export function enquiryForm({ type = 'general', requireMessage = false, ok = 'Th
 
 /* ======================= JOIN ======================= */
 export function join() {
-  const paths = JOIN_PATHS.map((p) => `<article class="path glass">
+  const paths = JOIN_PATHS.map((p) => `<article class="path glass glass--reading">
     <span class="path__n">${esc(p.n)}</span>
     <h3 class="path__title">${esc(p.title)}</h3>
     <p class="path__body">${esc(p.body)}</p>
@@ -765,7 +765,7 @@ export function join() {
     const meta = JOIN_PATHS.find((p) => p.type === t);
     return `<section class="section" id="${attr(t)}">
       <div class="wrap wrap--narrow">
-        <div class="glass glass--lg" style="padding:var(--space-7) var(--space-6)">
+        <div class="glass glass--lg glass--reading" style="padding:var(--space-7) var(--space-6)">
           ${sectionHead({ eyebrow: meta.n, title: esc(meta.title) })}
           <p style="color:var(--text-muted);margin-bottom:var(--space-6)">${esc(meta.body)}</p>
           ${enquiryForm({ type: t, requireMessage: true, ok: 'Thank you. We have your details and will be in touch.' })}
@@ -802,7 +802,7 @@ export function contact() {
   <section class="section section--flush">
     <div class="wrap wrap--wide">
       <div class="split split--wide-left">
-        <div class="glass glass--lg" style="padding:var(--space-7) var(--space-6)">
+        <div class="glass glass--lg glass--reading" style="padding:var(--space-7) var(--space-6)">
           <h2 class="sr-only">Send us a message</h2>
           ${enquiryForm({ type: 'general', showType: true, requireMessage: true, ok: 'Thank you. Your message has reached the club and we will reply as soon as we can.' })}
         </div>

@@ -1,0 +1,7 @@
+{
+  "_note": "Public runtime config only. The Supabase anon (publishable) key is designed to be exposed in browser code; every protection comes from row-level security and storage policies. NEVER put a service-role key here.",
+  "supabase": {
+    "url": "https://hvbquuvxcswylyguplfb.supabase.co",
+    "anonKey": "sb_publishable_2VEdxWZCLW98qItINt6TPQ_r7y_Tcly"
+  }
+}

@@ -222,6 +222,18 @@ strong, b { font-weight: var(--weight-semi); }
 
 .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 
+/* The crest ships as one cached external SVG at its natural 512px. Wherever
+   it is dropped into a sized container it must fill that container instead of
+   rendering at 512px. */
+.brand__crest img, .ftr__crest img, .memorial__crest img,
+.hero__crest img, .state__crest img, .crest img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.memorial__crest, .ftr__crest, .state__crest, .hero__crest { display: block; }
+
 /* Wide content must scroll inside its own box, never the page. */
 .scroll-x {
   overflow-x: auto;
@@ -250,15 +262,25 @@ strong, b { font-weight: var(--weight-semi); }
 }
 .echo__ghost {
   position: absolute;
-  inset: 0;
+  /* Anchored to the top-left and left to size itself off its own text.
+     inset:0 would stretch each ghost across the whole box and read as a bar
+     rather than a repeat of the word. */
+  inset-block-start: 0;
+  inset-inline-start: 0;
   z-index: -1;
   color: var(--brand);
+  white-space: nowrap;
   pointer-events: none;
   user-select: none;
 }
-.echo__ghost:nth-of-type(1) { opacity: 0.20; transform: translate(0.10em, -0.055em); }
-.echo__ghost:nth-of-type(2) { opacity: 0.11; transform: translate(0.20em, -0.11em); }
-.echo__ghost:nth-of-type(3) { opacity: 0.055; transform: translate(0.30em, -0.165em); }
+.echo__ghost:nth-of-type(1) { opacity: 0.22; transform: translate(0.085em, -0.05em); }
+.echo__ghost:nth-of-type(2) { opacity: 0.12; transform: translate(0.17em, -0.10em); }
+.echo__ghost:nth-of-type(3) { opacity: 0.06; transform: translate(0.255em, -0.15em); }
+@media (max-width: 700px) {
+  /* At small sizes the offsets collide with the live word, so thin the echo. */
+  .echo__ghost:nth-of-type(2), .echo__ghost:nth-of-type(3) { display: none; }
+  .echo__ghost:nth-of-type(1) { opacity: 0.16; }
+}
 
 /* ---- Index rail -------------------------------------------------------
    A thin numbered spine down the page edge, like a match programme's

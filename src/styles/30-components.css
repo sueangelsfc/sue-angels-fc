@@ -375,8 +375,18 @@
   color: var(--text-subtle);
 }
 
-/* Club crest slot. Opponent crests are square; the club's own shield is
-   portrait, so it must contain (never stretch) inside the square box. */
+/* Inline icon. An SVG with no intrinsic size falls back to 300x150, so every
+   icon is sized here off the current text size. */
+.ico {
+  width: 1.05em;
+  height: 1.05em;
+  flex: 0 0 auto;
+  display: inline-block;
+  vertical-align: -0.16em;
+}
+
+/* Club crest slot. Opponent crests are square or circular; the club's own
+   shield is portrait, so it must contain (never stretch) inside the box. */
 .crest {
   flex: 0 0 auto;
   display: grid;
@@ -389,9 +399,16 @@
 .crest img { width: 100%; height: 100%; object-fit: contain; }
 .crest--lg { width: 60px; height: 60px; }
 .crest--sm { width: 30px; height: 30px; }
-/* The club's own portrait shield letterboxes smaller than square opponent
-   crests inside the same box, so nudge its optical mass back up. */
-.crest img[src*='sue-angels'], .crest img[src*='crest.svg'] { transform: scale(1.14); }
+.crest[data-aspect='circle'] { border-radius: var(--radius-circle); }
+.crest--letter {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  color: var(--text-subtle);
+  font-size: var(--step-0);
+}
+/* A portrait shield letterboxes smaller than a square crest inside the same
+   box, so nudge its optical mass back up to match. */
+.crest img[src*='sue-angels'], .crest img[src*='crest-mark'] { transform: scale(1.13); }
 
 /* ---- Scoreboard (match centre hero) ----------------------------------- */
 .scoreboard { padding: var(--space-6); border-radius: var(--radius-2xl); }

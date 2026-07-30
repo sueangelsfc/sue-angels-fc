@@ -1,0 +1,22 @@
+{
+  "name": "Sue's Angels FC",
+  "short_name": "Sue’s Angels",
+  "description": "Sue's Angels FC, founded in memory of Susan Anne Martin.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#FF7034",
+  "icons": [
+    {
+      "src": "/assets/brand/badge.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/brand/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

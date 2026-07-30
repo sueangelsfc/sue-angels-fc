@@ -1,7 +1,14 @@
 {
+  "name": "sue-angels-fc",
   "private": true,
-  "description": "Serverless function dependencies only. The static site has no build step (vercel.json buildCommand is null); this package.json exists solely so Vercel installs @vercel/og for the api/og-cover image generator.",
-  "dependencies": {
-    "@vercel/og": "^0.6.2"
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Sue's Angels FC platform. Static output, generated locally and committed; Vercel needs no build step.",
+  "scripts": {
+    "build": "node src/build.mjs",
+    "check": "node src/build.mjs --check",
+    "verify": "node src/lib/verify-dataset.mjs",
+    "test": "node src/test/run.mjs",
+    "serve": "npx --yes serve@14 -l 4321 ."
   }
 }

@@ -15,8 +15,8 @@
 
   /* ---- atmosphere ---- */
   .glow{ position:absolute; inset:0;
-    background:radial-gradient(58% 40% at 50% 12%, rgba(214,242,58,.16), transparent 66%),
-               radial-gradient(70% 50% at 50% 108%, rgba(214,242,58,.10), transparent 70%); }
+    background:radial-gradient(58% 40% at 50% 12%, rgba(255, 106, 42,.16), transparent 66%),
+               radial-gradient(70% 50% at 50% 108%, rgba(255, 106, 42,.10), transparent 70%); }
   .grain{ position:absolute; inset:0; opacity:.08; mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
   /* blueprint concentric circles */
@@ -27,12 +27,12 @@
   .etick{ position:absolute; top:50%; transform:translateY(-50%); display:flex;
           flex-direction:column; align-items:center; gap:8px; z-index:1 }
   .etick i{ width:2px; height:18px; background:rgba(255,255,255,.2); display:block }
-  .etick b{ width:7px; height:7px; border:1.5px solid rgba(214,242,58,.6); display:block }
+  .etick b{ width:7px; height:7px; border:1.5px solid rgba(255, 106, 42,.6); display:block }
   .etick.l{ left:44px } .etick.r{ right:44px }
   .frame{ position:absolute; inset:38px; border:1.5px solid rgba(255,255,255,.13); border-radius:32px; }
   /* corner crosshairs */
   .xh{ position:absolute; width:26px; height:26px; }
-  .xh::before,.xh::after{ content:''; position:absolute; background:rgba(214,242,58,.6) }
+  .xh::before,.xh::after{ content:''; position:absolute; background:rgba(255, 106, 42,.6) }
   .xh::before{ left:11px; top:0; width:2px; height:26px }
   .xh::after{ top:11px; left:0; height:2px; width:26px }
   .xh.tl{ left:60px; top:60px } .xh.tr{ right:60px; top:60px }
@@ -46,12 +46,12 @@
             font-size:20px; letter-spacing:.44em; text-transform:uppercase; color:rgba(233,242,247,.62); }
   .eyebrow i{ width:52px; height:1.5px; background:rgba(255,255,255,.28); display:block }
   .crest{ width:118px; height:118px; object-fit:contain; margin:26px 0 14px;
-          filter:drop-shadow(0 0 36px rgba(214,242,58,.34)); }
+          filter:drop-shadow(0 0 36px rgba(255, 106, 42,.34)); }
   .club{ font-family:'Hanken'; font-weight:700; font-size:18px; letter-spacing:.36em;
          text-transform:uppercase; color:rgba(233,242,247,.52); }
   h1{ font-family:'Clash Display'; font-weight:700; font-size:104px; line-height:.9;
       letter-spacing:-.02em; margin-top:14px; text-transform:uppercase; }
-  h1 .v{ color:#D6F23A }
+  h1 .v{ color:#FF6A2A }
 
   /* ---- fixtures ---- */
   .fixtures{ width:100%; margin-top:34px; }
@@ -60,11 +60,11 @@
   .fx:last-child{ border-bottom:1.5px solid rgba(255,255,255,.1); }
   .fx__date{ width:132px; text-align:left; flex:0 0 auto; }
   .fx__dow{ font-family:'Hanken'; font-weight:700; font-size:15px; letter-spacing:.16em;
-            text-transform:uppercase; color:#D6F23A; margin-bottom:2px; }
+            text-transform:uppercase; color:#FF6A2A; margin-bottom:2px; }
   .fx__day{ font-family:'Clash Display'; font-weight:600; font-size:33px; letter-spacing:-.01em; }
   .fx__ha{ flex:0 0 auto; width:86px; text-align:center; font-family:'Hanken'; font-weight:700;
            font-size:13px; letter-spacing:.14em; text-transform:uppercase; padding:8px 0; border-radius:100px; }
-  .fx__ha--home{ background:rgba(214,242,58,.15); color:#D6F23A; border:1.5px solid rgba(214,242,58,.45); }
+  .fx__ha--home{ background:rgba(255, 106, 42,.15); color:#FF6A2A; border:1.5px solid rgba(255, 106, 42,.45); }
   .fx__ha--away{ background:rgba(255,255,255,.05); color:rgba(233,242,247,.66); border:1.5px solid rgba(255,255,255,.15); }
   .fx__opp{ flex:1; text-align:left; font-family:'Clash Display'; font-weight:600;
             font-size:37px; letter-spacing:-.015em; white-space:nowrap; }
@@ -74,7 +74,7 @@
   /* ---- venue ---- */
   .venue{ margin-top:26px; font-family:'Hanken'; font-weight:600; font-size:18px;
           letter-spacing:.06em; color:rgba(233,242,247,.62); }
-  .venue b{ color:#D6F23A; font-weight:700 }
+  .venue b{ color:#FF6A2A; font-weight:700 }
 
   /* ---- sponsors ---- */
   .backed{ margin-top:auto; font-family:'Hanken'; font-weight:700; font-size:15px;

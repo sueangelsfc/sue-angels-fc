@@ -43,11 +43,11 @@
     });
     Object.assign(el.style, {
       position: 'fixed', right: '14px', bottom: '14px', zIndex: 9999,
-      background: '#D6F23A', color: '#0A1426', border: '0', borderRadius: '9999px',
+      background: '#FF6A2A', color: '#0A1426', border: '0', borderRadius: '9999px',
       padding: '8px 14px',
       font: '900 11px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer',
-      boxShadow: '0 8px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(214,242,58,0.4)',
+      boxShadow: '0 8px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(255, 106, 42, 0.4)',
     });
     document.body.appendChild(el);
   }
@@ -137,10 +137,10 @@
       });
       overlay.innerHTML = `
         <form id="sa-login-form" style="
-          width:100%;max-width:360px;background:#0B1622;border:1px solid rgba(214,242,58,0.35);
+          width:100%;max-width:360px;background:#0B1622;border:1px solid rgba(255, 106, 42, 0.35);
           border-radius:14px;padding:26px;box-shadow:0 24px 60px rgba(0,0,0,0.6);
           font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-          <div style="font:900 10px/1 sans-serif;letter-spacing:0.22em;color:#D6F23A;text-transform:uppercase;margin-bottom:6px;">CLUB ADMIN</div>
+          <div style="font:900 10px/1 sans-serif;letter-spacing:0.22em;color:#FF6A2A;text-transform:uppercase;margin-bottom:6px;">CLUB ADMIN</div>
           <div style="font:800 22px/1.05 sans-serif;color:#fff;letter-spacing:-0.01em;margin-bottom:18px;">Sign in to manage</div>
           <input id="sa-email" type="email" placeholder="Email" autocomplete="username" style="
             width:100%;box-sizing:border-box;margin-bottom:10px;padding:12px 14px;border-radius:9px;
@@ -156,7 +156,7 @@
           <div id="sa-login-err" style="display:none;color:#FB7185;font:600 12px/1.4 sans-serif;margin-bottom:12px;"></div>
           <div style="display:flex;gap:8px;">
             <button type="submit" id="sa-login-go" style="
-              flex:1;padding:12px;border:0;border-radius:9px;background:#D6F23A;color:#071D29;
+              flex:1;padding:12px;border:0;border-radius:9px;background:#FF6A2A;color:#071D29;
               font:900 12px/1 sans-serif;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">Sign in</button>
             <button type="button" id="sa-login-x" style="
               padding:12px 16px;border:1px solid rgba(255,255,255,0.16);border-radius:9px;background:transparent;

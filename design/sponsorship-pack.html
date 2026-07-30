@@ -14,9 +14,9 @@
 @font-face{font-family:'Hanken Grotesk';src:url('../assets/fonts/hanken-600.woff2') format('woff2');font-weight:600;font-display:swap}
 @font-face{font-family:'Hanken Grotesk';src:url('../assets/fonts/hanken-700.woff2') format('woff2');font-weight:700;font-display:swap}
 :root{
-  --volt:#D6F23A; --ink:#EAF1F6; --ink2:#AEBDC9; --mut:#7E8E9C;
+  --volt:#FF6A2A; --ink:#EAF1F6; --ink2:#AEBDC9; --mut:#7E8E9C;
   --bg1:#0B1822; --bg2:#060F18; --card:rgba(255,255,255,.045);
-  --line:rgba(255,255,255,.11); --voltline:rgba(214,242,58,.55);
+  --line:rgba(255,255,255,.11); --voltline:rgba(255, 106, 42,.55);
   --disp:'Clash Display',sans-serif; --body:'Hanken Grotesk',sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
@@ -27,7 +27,7 @@ body{background:#04090f;font-family:var(--body);-webkit-font-smoothing:antialias
 .page{position:relative;width:1080px;height:1527px;overflow:hidden;
   background:linear-gradient(160deg,var(--bg1),var(--bg2));color:var(--ink)}
 .page::after{content:"";position:absolute;width:640px;height:640px;right:-160px;top:-220px;
-  background:radial-gradient(circle,rgba(214,242,58,.16),transparent 62%);filter:blur(40px);pointer-events:none}
+  background:radial-gradient(circle,rgba(255, 106, 42,.16),transparent 62%);filter:blur(40px);pointer-events:none}
 .pad{position:absolute;inset:0;padding:84px}
 /* header / footer */
 .hd{display:flex;align-items:center;justify-content:space-between}
@@ -54,7 +54,7 @@ body{background:#04090f;font-family:var(--body);-webkit-font-smoothing:antialias
 .box{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:34px}
 .box h3{font-family:var(--disp);font-weight:600;font-size:27px;margin-bottom:14px}
 .box p{font-size:19px;line-height:1.55;color:var(--ink2)}
-.callout{background:rgba(214,242,58,.06);border:1px solid var(--voltline);border-radius:22px;padding:38px}
+.callout{background:rgba(255, 106, 42,.06);border:1px solid var(--voltline);border-radius:22px;padding:38px}
 .callout h3{font-family:var(--disp);font-weight:600;font-size:28px;color:var(--volt);margin-bottom:16px;letter-spacing:.01em}
 .callout p{font-size:20px;line-height:1.6;color:var(--ink)}
 .list{list-style:none;display:flex;flex-direction:column;gap:0}
@@ -71,7 +71,7 @@ body{background:#04090f;font-family:var(--body);-webkit-font-smoothing:antialias
 .tiers{display:flex;flex-direction:column;gap:16px}
 .tier{display:grid;grid-template-columns:1fr auto;align-items:center;gap:24px;
   background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px 32px}
-.tier.feat{border-color:var(--voltline);background:rgba(214,242,58,.06)}
+.tier.feat{border-color:var(--voltline);background:rgba(255, 106, 42,.06)}
 .tier .tname{font-family:var(--disp);font-weight:600;font-size:25px}
 .tier .tdesc{font-size:16px;color:var(--ink2);margin-top:6px;line-height:1.4;max-width:620px}
 .tier .price{font-family:var(--disp);font-weight:600;font-size:30px;color:var(--volt);white-space:nowrap;text-align:right}
@@ -136,7 +136,7 @@ body{background:#04090f;font-family:var(--body);-webkit-font-smoothing:antialias
 .banner .bwrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
 .banner::after{content:"";position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(115deg,rgba(255,255,255,.10) 0%,transparent 22%,rgba(0,0,0,.18) 60%,transparent 78%,rgba(255,255,255,.07) 100%)}
-.banner .edge{position:absolute;inset:0;border:2px solid rgba(214,242,58,.85);border-radius:6px;pointer-events:none}
+.banner .edge{position:absolute;inset:0;border:2px solid rgba(255, 106, 42,.85);border-radius:6px;pointer-events:none}
 .eyelet{position:absolute;width:22px;height:22px;border-radius:50%;
   background:radial-gradient(circle at 38% 35%,#e9eef2,#9aa6b0 55%,#3a444d);
   box-shadow:inset 0 0 0 4px #0d1c27, 0 1px 2px rgba(0,0,0,.6)}
@@ -323,25 +323,25 @@ body{background:#04090f;font-family:var(--body);-webkit-font-smoothing:antialias
       <div class="shirts">
         <div class="shirtcol"><div class="slbl">FRONT</div>
           <svg viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg">
-            <defs><linearGradient id="kitF" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D6F23A"/><stop offset="1" stop-color="#BFE02C"/></linearGradient></defs>
+            <defs><linearGradient id="kitF" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF6A2A"/><stop offset="1" stop-color="#E85D1F"/></linearGradient></defs>
             <path d="M70,50 L120,50 C135,50 140,63 150,63 C160,63 165,50 180,50 L230,50 L280,92 L256,140 L232,122 L232,300 L68,300 L68,122 L44,140 L20,92 Z" fill="url(#kitF)" stroke="#0B1E2C" stroke-width="3" stroke-linejoin="round"/>
             <path d="M120,50 C135,50 140,63 150,63 C160,63 165,50 180,50" fill="none" stroke="#0B1E2C" stroke-width="7"/>
             <rect x="86" y="126" width="128" height="54" rx="7" fill="rgba(11,30,44,.12)" stroke="#0B1E2C" stroke-width="2" stroke-dasharray="6 4"/>
-            <circle cx="150" cy="153" r="16" fill="#0B1E2C"/><text x="150" y="159" text-anchor="middle" font-family="Clash Display" font-weight="600" font-size="18" fill="#D6F23A">1</text>
+            <circle cx="150" cy="153" r="16" fill="#0B1E2C"/><text x="150" y="159" text-anchor="middle" font-family="Clash Display" font-weight="600" font-size="18" fill="#FF6A2A">1</text>
             <rect x="22" y="96" width="40" height="28" rx="5" fill="rgba(11,30,44,.12)" stroke="#0B1E2C" stroke-width="2" stroke-dasharray="5 3"/>
-            <circle cx="42" cy="110" r="13" fill="#0B1E2C"/><text x="42" y="115" text-anchor="middle" font-family="Clash Display" font-weight="600" font-size="14" fill="#D6F23A">2</text>
+            <circle cx="42" cy="110" r="13" fill="#0B1E2C"/><text x="42" y="115" text-anchor="middle" font-family="Clash Display" font-weight="600" font-size="14" fill="#FF6A2A">2</text>
             <rect x="238" y="96" width="40" height="28" rx="5" fill="rgba(11,30,44,.12)" stroke="#0B1E2C" stroke-width="2" stroke-dasharray="5 3"/>
-            <circle cx="258" cy="110" r="13" fill="#0B1E2C"/><text x="258" y="115" text-anchor="middle" font-family="Clash Display" font-weight="600" font-size="14" fill="#D6F23A">2</text>
+            <circle cx="258" cy="110" r="13" fill="#0B1E2C"/><text x="258" y="115" text-anchor="middle" font-family="Clash Display" font-weight="600" font-size="14" fill="#FF6A2A">2</text>
           </svg>
         </div>
         <div class="shirtcol"><div class="slbl">BACK</div>
           <svg viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg">
-            <defs><linearGradient id="kitB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D6F23A"/><stop offset="1" stop-color="#BFE02C"/></linearGradient></defs>
+            <defs><linearGradient id="kitB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF6A2A"/><stop offset="1" stop-color="#E85D1F"/></linearGradient></defs>
             <path d="M70,50 L120,50 C140,58 160,58 180,50 L230,50 L280,92 L256,140 L232,122 L232,300 L68,300 L68,122 L44,140 L20,92 Z" fill="url(#kitB)" stroke="#0B1E2C" stroke-width="3" stroke-linejoin="round"/>
             <path d="M120,50 C140,58 160,58 180,50" fill="none" stroke="#0B1E2C" stroke-width="7"/>
             <text x="150" y="220" text-anchor="middle" font-family="Clash Display" font-weight="700" font-size="120" fill="#0B1E2C" opacity="0.12">9</text>
             <rect x="84" y="78" width="132" height="42" rx="7" fill="rgba(11,30,44,.12)" stroke="#0B1E2C" stroke-width="2" stroke-dasharray="6 4"/>
-            <circle cx="150" cy="99" r="15" fill="#0B1E2C"/><text x="150" y="105" text-anchor="middle" font-family="Clash Display" font-weight="600" font-size="17" fill="#D6F23A">3</text>
+            <circle cx="150" cy="99" r="15" fill="#0B1E2C"/><text x="150" y="105" text-anchor="middle" font-family="Clash Display" font-weight="600" font-size="17" fill="#FF6A2A">3</text>
           </svg>
         </div>
       </div>

@@ -64,11 +64,11 @@
       'border:1px solid rgba(255,255,255,0.10);border-radius:18px;padding:16px 18px;box-shadow:0 24px 60px -24px rgba(0,0,0,0.7)">' +
         '<p style="margin:0;flex:1 1 280px;min-width:240px;color:#C9D2E2;font:500 13.5px/1.55 ' +
         "'Hanken Grotesk',system-ui,sans-serif" + '">We use cookies to understand traffic and improve the site. ' +
-        'You can accept or decline. <a href="sepsis.html" style="color:#D6F23A;text-decoration:underline">More about the club</a>.</p>' +
+        'You can accept or decline. <a href="sepsis.html" style="color:#FF6A2A;text-decoration:underline">More about the club</a>.</p>' +
         '<div style="display:flex;gap:10px;flex:0 0 auto">' +
           '<button id="sa-consent-no" style="cursor:pointer;border:1px solid rgba(255,255,255,0.18);background:transparent;color:#C9D2E2;' +
           'font:700 13px ' + "'Hanken Grotesk',system-ui,sans-serif" + ';padding:10px 16px;border-radius:999px">Decline</button>' +
-          '<button id="sa-consent-yes" style="cursor:pointer;border:0;background:#D6F23A;color:#0A0F1C;' +
+          '<button id="sa-consent-yes" style="cursor:pointer;border:0;background:#FF6A2A;color:#0A0F1C;' +
           'font:700 13px ' + "'Hanken Grotesk',system-ui,sans-serif" + ';padding:10px 18px;border-radius:999px">Accept</button>' +
         '</div>' +
       '</div>';

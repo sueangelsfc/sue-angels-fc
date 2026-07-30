@@ -230,7 +230,7 @@ function FixtureAddForm({ onClose, editing }) {
   const [seasonSel, setSeasonSel] = React.useState((window.getSeasonState && window.getSeasonState().phase !== 'active' && window.SEASON_INFO) ? window.SEASON_INFO.next.name : (window.CURRENT_SEASON || '25/26'));
   const [dateTBC, setDateTBC] = React.useState(false);
   const [kickTBC, setKickTBC] = React.useState(false);
-  const tbcBtn = (on) => ({ marginLeft: 8, fontSize: 10, padding: '2px 8px', borderRadius: 9999, border: '1px solid rgba(214,242,58,0.45)', background: on ? '#D6F23A' : 'transparent', color: on ? '#061A27' : 'inherit', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 });
+  const tbcBtn = (on) => ({ marginLeft: 8, fontSize: 10, padding: '2px 8px', borderRadius: 9999, border: '1px solid rgba(255, 106, 42, 0.45)', background: on ? '#FF6A2A' : 'transparent', color: on ? '#061A27' : 'inherit', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 });
   React.useEffect(() => {
     if (!editing) return;
     const oppName = (editing.home && editing.home.includes('Angels')) ? editing.away : editing.home;

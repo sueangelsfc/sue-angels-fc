@@ -42,7 +42,7 @@ function CmsArticles() {
   return (
     <div>
       <div className="cms-sec__head"><div><h2 className="rd-h3">Articles &amp; news</h2><p className="cms-sec__sub">Write match reports, previews and announcements by hand. Published instantly to the public site.</p></div><button className="rd-btn rd-btn--volt rd-btn--sm" onClick={() => setEdit(null)}>+ New article</button></div>
-      <div style={{ margin: '0 0 18px', padding: '14px 16px', border: '1px solid rgba(0,0,0,.12)', borderRadius: 12, background: 'rgba(214,242,58,.08)' }}>
+      <div style={{ margin: '0 0 18px', padding: '14px 16px', border: '1px solid rgba(0,0,0,.12)', borderRadius: 12, background: 'rgba(255, 106, 42, .08)' }}>
         <label style={{ display: 'block', fontSize: 13 }}>
           <span style={{ display: 'block', marginBottom: 6, fontWeight: 700, letterSpacing: '.03em', color: '#3a4650' }}>Match-report sponsor (shown on every match report)</span>
           {(function () {
@@ -637,7 +637,7 @@ function CoverBuilder({ post, library }) {
           {spec.right ? <img src={spec.right} alt="" style={{ width: 46, height: 46, objectFit: 'contain' }} /> : null}
         </div>
         <div style={{ textAlign: 'center' }}>
-          <span style={{ fontWeight: 700, fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#d6f23a', display: 'block' }}>{spec.bottom}</span>
+          <span style={{ fontWeight: 700, fontSize: 9, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#FF6A2A', display: 'block' }}>{spec.bottom}</span>
           {resLabel ? <span style={{ fontSize: 9, letterSpacing: '0.12em', opacity: 0.85 }}>{resLabel}</span> : null}
         </div>
       </div>

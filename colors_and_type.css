@@ -17,7 +17,7 @@
      --------------------------------------------------------------------- */
 
   /* Brand, Volt + Navy (sampled from the real club badge) */
-  --volt:           #D6F23A;   /* primary accent, sampled from the badge wings */
+  --volt:           #FF6A2A;   /* primary accent, sampled from the badge wings */
   --volt-glow:      #E2FB60;   /* hover / glow ramp */
   --volt-deep:      #B8D425;   /* pressed state */
   --volt-on:        #071D29;   /* text on volt fills (navy) */
@@ -61,9 +61,9 @@
   --tier-bronze:    #C08358;
 
   /* Glow & elevation (used sparingly, see VISUAL FOUNDATIONS) */
-  --glow-volt-sm:   0 0 16px rgba(214,242,58,0.40);
-  --glow-volt-md:   0 0 32px rgba(214,242,58,0.50);
-  --glow-volt-lg:   0 0 64px rgba(214,242,58,0.60);
+  --glow-volt-sm:   0 0 16px rgba(255, 106, 42, 0.40);
+  --glow-volt-md:   0 0 32px rgba(255, 106, 42, 0.50);
+  --glow-volt-lg:   0 0 64px rgba(255, 106, 42, 0.60);
   --shadow-card:    0 1px 0 rgba(255,255,255,0.04) inset, 0 24px 48px -16px rgba(0,0,0,0.55);
   --shadow-sticky:  inset 0 -1px 0 var(--hairline);
 

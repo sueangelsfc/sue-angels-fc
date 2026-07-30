@@ -19,7 +19,7 @@
 
 /* ---- tokens ----------------------------------------------------------------- */
 :root{
-  --v-volt:#D6F23A;
+  --v-volt:#FF6A2A;
   --v-navy:#071D29;
   --v-navy-2:#0B2836;
   --v-win:#1FB768;--v-draw:#D9A81F;--v-loss:#E14453;
@@ -238,7 +238,7 @@ html[data-theme="dark"] :focus-visible{outline-color:var(--v-volt)}
 
 .v-card--navy{background:var(--v-navy);color:#fff;padding:clamp(24px,2.6vw,34px);
   display:flex;flex-direction:column;gap:14px}
-.v-card--navy .icon{width:44px;height:44px;border-radius:14px;background:rgba(214,242,58,.14);
+.v-card--navy .icon{width:44px;height:44px;border-radius:14px;background:rgba(255, 106, 42, .14);
   display:grid;place-items:center;margin-bottom:6px}
 .v-card--navy .icon img{width:26px;height:auto}
 .v-card--navy h3{margin:0;font-family:var(--v-display);font-weight:500;font-size:clamp(21px,2vw,27px);
@@ -301,7 +301,7 @@ html[data-theme="dark"] :focus-visible{outline-color:var(--v-volt)}
 .v-next{border-radius:var(--v-r-lg);background:var(--v-navy);color:#fff;padding:clamp(24px,2.6vw,34px);
   display:flex;flex-direction:column;gap:12px;position:relative;overflow:hidden}
 .v-next::after{content:"";position:absolute;right:-30%;bottom:-42%;width:88%;aspect-ratio:1;border-radius:50%;
-  background:radial-gradient(circle,rgba(214,242,58,.2),transparent 65%)}
+  background:radial-gradient(circle,rgba(255, 106, 42, .2),transparent 65%)}
 .v-next .tag{font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:rgba(255,255,255,.55)}
 .v-next h3{margin:2px 0 4px;font-family:var(--v-display);font-weight:600;letter-spacing:-.01em;
   font-size:clamp(26px,2.6vw,36px);line-height:1.12}

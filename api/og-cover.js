@@ -13,7 +13,7 @@ import { ImageResponse } from '@vercel/og';
 
 export const config = { runtime: 'edge' };
 
-const BG = '#04121B', VOLT = '#D6F23A', INK = '#EAF2F1', INK2 = '#9FB0B8';
+const BG = '#04121B', VOLT = '#FF6A2A', INK = '#EAF2F1', INK2 = '#9FB0B8';
 const FALLBACK = 'https://www.suesangelsfc.co.uk/assets/og-cover.jpg';
 
 function el(type, style, children) { return { type, props: { style, children } }; }

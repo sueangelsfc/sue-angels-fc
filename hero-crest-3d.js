@@ -51,7 +51,7 @@ function mountFallback(host) {
     '<div class="v-hero__fallback" aria-hidden="true">' +
       '<div class="v-hero__fallback-stack">' +
         '<img src="assets/badge/sue-angels-badge-cutout.webp" alt="" ' +
-             'style="filter:drop-shadow(0 0 34px rgba(214,242,58,.28)) drop-shadow(0 18px 44px rgba(0,0,0,.5))" />' +
+             'style="filter:drop-shadow(0 0 34px rgba(255, 106, 42, .28)) drop-shadow(0 18px 44px rgba(0,0,0,.5))" />' +
       '</div>' +
     '</div>';
   document.documentElement.classList.add('no-motion-hero');

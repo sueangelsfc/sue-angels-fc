@@ -743,14 +743,18 @@ b { font-weight: 700; }
 .ghost--light { -webkit-text-stroke-color: rgba(7, 29, 41, 0.08); }
 .ghost--navy { -webkit-text-stroke-color: rgba(7, 29, 41, 0.14); }
 
-/* scroll reveal */
-.rv {
+/* Scroll reveal.
+   Scoped to html.js — a class set by an inline script in every page head —
+   so the hidden state only exists when scripts are actually running. If
+   main.js is blocked, fails or never loads, these sections simply render
+   rather than staying invisible forever. */
+html.js .rv {
   opacity: 0;
   transform: translateY(26px);
   transition: opacity 0.75s var(--ease-out-expo), transform 0.75s var(--ease-out-expo);
   transition-delay: var(--d, 0s);
 }
-.rv.is-in { opacity: 1; transform: translateY(0); }
+html.js .rv.is-in { opacity: 1; transform: translateY(0); }
 
 /* buttons */
 .btn {
@@ -2149,7 +2153,7 @@ a.tbl__row:hover { background: rgba(255, 255, 255, 0.045); }
 .tbl__row--runner .tbl__club { color: var(--fg) !important; }
 .tbl__row--runner:hover { background: linear-gradient(90deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05)); }
 /* row reveal + pts count-up */
-.tbl__row:not(.tbl__head-row) { opacity: 0; transform: translateY(12px); transition: opacity 0.6s var(--ease-out-quint), transform 0.6s var(--ease-out-quint); }
+html.js .tbl__row:not(.tbl__head-row) { opacity: 0; transform: translateY(12px); transition: opacity 0.6s var(--ease-out-quint), transform 0.6s var(--ease-out-quint); }
 .tbl.is-in .tbl__row:not(.tbl__head-row) { opacity: 1; transform: none; }
 .tbl.is-in .tbl__row:nth-child(2) { transition-delay: 0.05s; }
 .tbl.is-in .tbl__row:nth-child(3) { transition-delay: 0.11s; }
@@ -2747,8 +2751,8 @@ html[data-brand="volt"] {
   --navy-deep: #04121B;      /* dark canvas */
   --navy-2: #0A2433;
   --volt: var(--volt);           /* legacy volt accent */
-  --volt-rgb: 214, 242, 58;
-  --volt-2: #E4FB63;
+  --volt-rgb: 255, 106, 42;
+  --volt-2: #FF7D42;
   --volt-ink: #56660A;
 }
 
@@ -4533,8 +4537,6 @@ html[data-theme="light"] .sec--pagehero::before {
    html.js — a class only set by an inline script — means CSS
    alone can never hide content.
    ============================================================ */
-html:not(.js) .rv,
-html:not(.js) .tbl__row { opacity: 1 !important; transform: none !important; }
 
 /* ============================================================
    Enquiry forms · contact + join.

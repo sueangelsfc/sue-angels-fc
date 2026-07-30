@@ -176,8 +176,8 @@
           if (p.y < -12 || p.x < -14 || p.x > W + 14) { spawn(i); continue; }
           var a = p.a * (0.5 + 0.5 * Math.sin(p.t));
           ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.2832);
-          ctx.fillStyle = 'rgba(214,242,58,' + a.toFixed(3) + ')';
-          ctx.shadowColor = 'rgba(214,242,58,0.9)'; ctx.shadowBlur = 8;
+          ctx.fillStyle = 'rgba(255, 106, 42,' + a.toFixed(3) + ')';
+          ctx.shadowColor = 'rgba(255, 106, 42, 0.9)'; ctx.shadowBlur = 8;
           ctx.fill();
         }
         ctx.shadowBlur = 0;
@@ -427,8 +427,8 @@
             opacity: 1, y: 0, duration: 0.7, ease: EXPO, stagger: 0.06,
             onComplete: function () {
               g.fromTo(rows[0],
-                { boxShadow: 'inset 0 0 0 0 rgba(214,242,58,0)' },
-                { boxShadow: 'inset 0 0 0 2px rgba(214,242,58,.85)', duration: 0.45, yoyo: true, repeat: 1, ease: 'power2.inOut' });
+                { boxShadow: 'inset 0 0 0 0 rgba(255, 106, 42, 0)' },
+                { boxShadow: 'inset 0 0 0 2px rgba(255, 106, 42, .85)', duration: 0.45, yoyo: true, repeat: 1, ease: 'power2.inOut' });
             }
           });
         }

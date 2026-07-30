@@ -9,7 +9,7 @@ h2{font-weight:600;letter-spacing:.04em;text-transform:uppercase;font-size:15px;
 .card{width:100%;max-width:1100px}
 canvas{width:100%;height:auto;border-radius:14px;display:block;border:1px solid rgba(255,255,255,.1)}
 .av{max-width:300px}
-button{margin-top:14px;background:#D6F23A;color:#071D29;border:0;border-radius:999px;padding:13px 26px;font-family:inherit;font-weight:700;font-size:15px;letter-spacing:.03em;text-transform:uppercase;cursor:pointer}
+button{margin-top:14px;background:#FF6A2A;color:#071D29;border:0;border-radius:999px;padding:13px 26px;font-family:inherit;font-weight:700;font-size:15px;letter-spacing:.03em;text-transform:uppercase;cursor:pointer}
 button:hover{filter:brightness(1.05)}
 small{color:#8C97AC;display:block;margin-top:8px;font-size:12px;letter-spacing:.03em}
 </style></head><body>
@@ -24,35 +24,35 @@ function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);
 function banner(){
  var cv=document.getElementById('banner'),c=cv.getContext('2d'),W=2560,H=1440;
  var g=c.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0c1f2c');g.addColorStop(.55,'#071521');g.addColorStop(1,'#04101a');c.fillStyle=g;c.fillRect(0,0,W,H);
- var rg=c.createRadialGradient(1950,250,80,1950,250,1250);rg.addColorStop(0,'rgba(214,242,58,.20)');rg.addColorStop(1,'rgba(214,242,58,0)');c.fillStyle=rg;c.fillRect(0,0,W,H);
+ var rg=c.createRadialGradient(1950,250,80,1950,250,1250);rg.addColorStop(0,'rgba(255, 106, 42,.20)');rg.addColorStop(1,'rgba(255, 106, 42,0)');c.fillStyle=rg;c.fillRect(0,0,W,H);
  var rg2=c.createRadialGradient(420,1200,60,420,1200,1100);rg2.addColorStop(0,'rgba(32,84,108,.55)');rg2.addColorStop(1,'rgba(32,84,108,0)');c.fillStyle=rg2;c.fillRect(0,0,W,H);
  // hairline volt rule
- c.fillStyle='#D6F23A';c.fillRect(640,612,86,5);
+ c.fillStyle='#FF6A2A';c.fillRect(640,612,86,5);
  var cy=720;
  // crest
  var ch=336,cw=crest.width/crest.height*ch,cx=632;
  c.drawImage(crest,cx,cy-ch/2,cw,ch);
  var tx=cx+cw+74;
  // eyebrow
- c.font="600 38px 'Clash Display'";c.fillStyle='#D6F23A';c.textBaseline='alphabetic';
+ c.font="600 38px 'Clash Display'";c.fillStyle='#FF6A2A';c.textBaseline='alphabetic';
  c.save();c.letterSpacing='8px';c.fillText('SOUTHERN SUNDAY FOOTBALL LEAGUE',tx+4,cy-118);c.restore();
  // wordmark
  c.textBaseline='alphabetic';c.font="700 150px 'Clash Display'";
  var a="SUE'S ANGELS ",b="FC";
  c.fillStyle='#fff';c.fillText(a,tx,cy+6);
- var aw=c.measureText(a).width;c.fillStyle='#D6F23A';c.fillText(b,tx+aw,cy+6);
+ var aw=c.measureText(a).width;c.fillStyle='#FF6A2A';c.fillText(b,tx+aw,cy+6);
  // tagline
  c.font="600 41px 'Clash Display'";c.fillStyle='#C9D2E2';
  c.save();c.letterSpacing='3px';c.fillText('LEAGUE TEN CHAMPIONS · SOUTH-WEST LONDON',tx+3,cy+86);c.restore();
  // url chip
- c.font="700 34px 'Clash Display'";c.fillStyle='#D6F23A';
+ c.font="700 34px 'Clash Display'";c.fillStyle='#FF6A2A';
  c.save();c.letterSpacing='2px';c.fillText('SUESANGELSFC.CO.UK',tx+3,cy+150);c.restore();
 }
 function avatar(){
  var cv=document.getElementById('avatar'),c=cv.getContext('2d'),S=800;
  var rg=c.createRadialGradient(400,330,40,400,420,560);rg.addColorStop(0,'#173b4e');rg.addColorStop(1,'#04101a');c.fillStyle=rg;c.fillRect(0,0,S,S);
  // volt ring
- c.beginPath();c.arc(400,400,372,0,7);c.lineWidth=12;c.strokeStyle='rgba(214,242,58,.85)';c.shadowColor='rgba(214,242,58,.6)';c.shadowBlur=24;c.stroke();c.shadowBlur=0;
+ c.beginPath();c.arc(400,400,372,0,7);c.lineWidth=12;c.strokeStyle='rgba(255, 106, 42,.85)';c.shadowColor='rgba(255, 106, 42,.6)';c.shadowBlur=24;c.stroke();c.shadowBlur=0;
  // crest centred
  var ch=470,cw=crest.width/crest.height*ch;
  c.drawImage(crest,400-cw/2,400-ch/2-6,cw,ch);

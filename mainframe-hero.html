@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sue's Angels FC · Get Involved</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+          display: ['"Mories Display"', 'serif'],
+        },
+      },
+    },
+  };
+</script>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/framer-motion@11.11.17/dist/framer-motion.js"></script>
+
+<style>
+  /* Mories Display (caps-only) for the wordmark */
+  @font-face { font-family:'Mories Display'; src:url('./assets/fonts/mories/mories-display.otf') format('opentype'); font-weight:100 900; font-style:normal; font-display:swap; }
+
+  :root { --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif; --ink:#141414; }
+  html, body { background:#F26A1E; }
+  body { font-family: var(--font-sans); }
+
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+  .animate-blink { animation: blink 1s step-end infinite; }
+
+  /* lift the left side of the shirt so black type stays legible (desktop) */
+  .left-scrim {
+    background: linear-gradient(90deg,
+      rgba(255,246,238,0.80) 0%, rgba(255,246,238,0.52) 34%, rgba(255,246,238,0.12) 56%, rgba(255,246,238,0) 68%);
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+  const _origError = console.error;
+  console.error = (...a) => { if (typeof a[0] === 'string' && a[0].includes('key')) return; _origError(...a); };
+
+  const FM = window.Motion || window.FramerMotion || {};
+  const motion = FM.motion;
+  const AnimatePresence = FM.AnimatePresence;
+
+  const SHIRT = "./assets/hero/hero-shirt.jpg";
+  const HERO_TEXT = "we'd love to\nhave you here!";
+  const OPTIONS = ["Player", "Volunteer", "Sponsor", "Supporter"];
+
+  const Check = ({ className }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 6L9 17l-5-5" />
+    </svg>
+  );
+  const ArrowRight = ({ className }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14" /><path d="M13 6l6 6-6 6" />
+    </svg>
+  );
+  const StarMark = ({ className }) => (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 2l2.9 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 7.1-1.01L12 2z" />
+    </svg>
+  );
+
+  /* --------------------------- useTypewriter --------------------------- */
+  function useTypewriter(text, speed = 38, startDelay = 600) {
+    const [displayed, setDisplayed] = React.useState("");
+    const [done, setDone] = React.useState(false);
+    React.useEffect(() => {
+      let i = 0;
+      let interval;
+      setDisplayed("");
+      setDone(false);
+      const start = setTimeout(() => {
+        interval = setInterval(() => {
+          i += 1;
+          setDisplayed(text.slice(0, i));
+          if (i >= text.length) { clearInterval(interval); setDone(true); }
+        }, speed);
+      }, startDelay);
+      return () => { clearTimeout(start); clearInterval(interval); };
+    }, [text, speed, startDelay]);
+    return { displayed, done };
+  }
+
+  /* ------------------------------ Navbar ------------------------------ */
+  function Navbar({ open, setOpen }) {
+    const links = ["Home", "Fixtures", "Squad", "The Cause"];
+    const bar = "w-6 h-[2px] bg-black transition-all duration-300";
+    return (
+      <React.Fragment>
+        <header className="fixed top-0 inset-x-0 z-20 px-5 sm:px-8 py-4 sm:py-5 flex flex-row justify-between items-center bg-transparent">
+          <div className="flex flex-row gap-2.5 items-center">
+            <img src="./assets/badge/sue-angels-badge-black.png" alt="Sue's Angels FC crest" className="h-10 sm:h-12 w-auto select-none" />
+            <span className="font-display text-[22px] sm:text-[28px] tracking-tight text-black select-none leading-none">SUE'S ANGELS</span>
+          </div>
+
+          <nav className="hidden md:flex flex-row items-center text-[19px] text-black">
+            {links.map((l, i) => (
+              <React.Fragment key={l}>
+                <a href="#" className="hover:opacity-60 transition-opacity">{l}</a>
+                {i < links.length - 1 && <span className="opacity-40">,&nbsp;</span>}
+              </React.Fragment>
+            ))}
+          </nav>
+
+          <a href="#" className="hidden md:inline-flex items-center gap-1.5 bg-black text-white rounded-full px-5 py-2.5 text-[15px] font-medium hover:opacity-80 transition-opacity">
+            Join the club <ArrowRight className="w-4 h-4" />
+          </a>
+
+          <button onClick={() => setOpen(v => !v)} aria-label="Toggle menu" className="md:hidden flex flex-col gap-[5px] items-center justify-center">
+            <span className={bar + (open ? " rotate-45 translate-y-[7px]" : "")} />
+            <span className={bar + (open ? " opacity-0" : "")} />
+            <span className={bar + (open ? " -rotate-45 -translate-y-[7px]" : "")} />
+          </button>
+        </header>
+
+        <div className={"md:hidden fixed inset-0 z-[15] bg-[#F26A1E]/97 backdrop-blur-sm transition-opacity duration-300 flex flex-col items-center justify-center gap-8 " + (open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none")}>
+          {[...links, "Join the club"].map(l => (
+            <a key={l} href="#" onClick={() => setOpen(false)} className="text-3xl text-black hover:opacity-60 transition-opacity">{l}</a>
+          ))}
+        </div>
+      </React.Fragment>
+    );
+  }
+
+  /* ---------------------------- Shirt background ---------------------------- */
+  function ShirtBackground() {
+    return (
+      <div className="order-last lg:order-none relative lg:absolute lg:inset-0 lg:z-0 overflow-hidden pointer-events-none w-full aspect-square md:aspect-video lg:aspect-auto lg:h-full bg-[#F26A1E]">
+        <img src={SHIRT} alt="Sue's Angels FC shirt and embroidered crest" className="w-full h-full object-cover object-right lg:object-right-bottom" />
+      </div>
+    );
+  }
+
+  /* ---------------------------- Involvement Pills ---------------------------- */
+  function InvolvementPills() {
+    const [picks, setPicks] = React.useState([]);
+    const toggle = (o) => setPicks(s => s.includes(o) ? s.filter(x => x !== o) : [...s, o]);
+    const activeCls = "bg-black text-white shadow-md shadow-black/10 transform";
+    const inactiveCls = "bg-white/75 text-black border border-black/10 hover:bg-white";
+    return (
+      <div>
+        <h2 className="text-2xl font-semibold tracking-tight mb-2 text-black">How do you want to get involved?</h2>
+        <p className="text-black/60 mb-8">Select all that apply</p>
+
+        <div className="flex flex-wrap gap-3">
+          {OPTIONS.map(o => {
+            const active = picks.includes(o);
+            return (
+              <motion.button key={o} onClick={() => toggle(o)} whileTap={{ scale: 0.96 }}
+                className={"inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-colors " + (active ? activeCls : inactiveCls)}>
+                <AnimatePresence>
+                  {active && (
+                    <motion.span key="c" initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0, opacity: 0 }} transition={{ type: "spring", stiffness: 300, damping: 20 }} className="inline-flex">
+                      <Check className="w-4 h-4" />
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+                {o}
+              </motion.button>
+            );
+          })}
+        </div>
+
+        <div className="mt-6">
+          <AnimatePresence mode="wait">
+            {picks.length === 0 ? (
+              <motion.p key="empty" initial={{ opacity: 0 }} animate={{ opacity: 0.55 }} exit={{ opacity: 0 }} className="italic text-xs text-black">
+                Please click to select how you'd like to get involved.
+              </motion.p>
+            ) : (
+              <motion.div key="active" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                <div className="bg-white/80 border border-black/10 rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-4 max-w-2xl">
+                  <span className="text-sm text-black">
+                    Ready to get involved as: <strong className="font-semibold">{picks.join(", ")}</strong>
+                  </span>
+                  <button className="inline-flex items-center gap-1.5 text-black uppercase text-xs font-semibold tracking-wide whitespace-nowrap hover:opacity-70 transition-opacity">
+                    Let's Go <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    );
+  }
+
+  /* -------------------------------- App -------------------------------- */
+  function App() {
+    const [open, setOpen] = React.useState(false);
+    const { displayed, done } = useTypewriter(HERO_TEXT);
+
+    return (
+      <div className="relative bg-[#F26A1E] text-black font-sans selection:bg-black selection:text-[#F26A1E] antialiased overflow-x-hidden flex flex-col lg:block lg:min-h-screen">
+        <Navbar open={open} setOpen={setOpen} />
+        <ShirtBackground />
+
+        <div className="relative z-10 flex flex-col order-first lg:order-none w-full bg-[#F26A1E] lg:bg-transparent pb-8 lg:pb-0 lg:min-h-screen">
+          <div className="hidden lg:block absolute inset-0 left-scrim pointer-events-none" />
+          <main id="join-hero" className="relative w-full max-w-7xl mx-auto px-6 py-12 flex-1 flex flex-col justify-center">
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
+              <p className="text-sm font-semibold tracking-[0.22em] uppercase text-black/70 mb-6">Get Involved</p>
+              <h1 className="text-5xl md:text-6xl lg:text-[76px] font-normal tracking-tight text-black leading-[1.08] mb-8 select-none w-full whitespace-pre-wrap">
+                {displayed}
+                {!done && <span className="inline-block w-[2px] h-[1.1em] bg-black align-middle ml-[2px] animate-blink" />}
+              </h1>
+            </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}>
+              <p className="text-lg md:text-xl text-black/70 leading-relaxed font-normal mb-14 max-w-2xl">
+                Whether you want to play, volunteer, sponsor,<br /> or cheer from the sideline, there's a place for you at Sue's Angels FC.
+              </p>
+            </motion.div>
+
+            <InvolvementPills />
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

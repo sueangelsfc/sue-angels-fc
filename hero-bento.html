@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sue's Angels FC · Matchday HQ</title>
+<meta name="robots" content="noindex" />
+<meta name="description" content="Sue's Angels FC — a men's Sunday-league side from south-west London. Champions in year one, promoted unbeaten, playing every match for sepsis awareness." />
+<style>
+/* =========================================================================
+   Sue's Angels FC — Liquid-glass bento hero (all-local design, live CMS data)
+   Type: Clash Display (display) + Hanken Grotesk (body/UI)
+   ========================================================================= */
+@font-face{font-family:'Clash Display';src:url('assets/fonts/clash-display-500.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap;}
+@font-face{font-family:'Clash Display';src:url('assets/fonts/clash-display-600.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap;}
+@font-face{font-family:'Clash Display';src:url('assets/fonts/clash-display-700.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap;}
+@font-face{font-family:'Hanken Grotesk';src:url('assets/fonts/hanken-400.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap;}
+@font-face{font-family:'Hanken Grotesk';src:url('assets/fonts/hanken-500.woff2') format('woff2');font-weight:500;font-style:normal;font-display:swap;}
+@font-face{font-family:'Hanken Grotesk';src:url('assets/fonts/hanken-600.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap;}
+@font-face{font-family:'Hanken Grotesk';src:url('assets/fonts/hanken-700.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap;}
+@font-face{font-family:'Hanken Grotesk';src:url('assets/fonts/hanken-800.woff2') format('woff2');font-weight:800;font-style:normal;font-display:swap;}
+
+:root{
+  --volt:#D6F23A; --volt-2:#E4FB63; --navy:#071D29;
+  --bg:#050E15; --bg-2:#081C28;
+  --ink-1:#FFFFFF; --ink-2:rgba(233,242,247,.72); --ink-3:rgba(196,212,222,.5);
+  --glass:rgba(255,255,255,.045); --glass-2:rgba(255,255,255,.07);
+  --edge:rgba(255,255,255,.12); --edge-hi:rgba(255,255,255,.42);
+  --stroke:rgba(255,255,255,.09);
+  --win:#2BE38A;
+  --display:'Clash Display',system-ui,sans-serif;
+  --sans:'Hanken Grotesk',system-ui,-apple-system,sans-serif;
+  --r:26px; --r-sm:16px; --r-xs:11px; --r-pill:999px;
+  --ease:cubic-bezier(.16,1,.3,1);
+  --gut:clamp(16px,3.4vw,40px);
+  --max:1180px;
+  --shadow:0 30px 80px -34px rgba(0,0,0,.85);
+  --card-glow:0 0 0 1px var(--stroke), 0 30px 70px -40px rgba(0,0,0,.9);
+}
+html[data-theme="light"]{
+  --bg:#E9EEF1; --bg-2:#DFE7EC;
+  --ink-1:#08161F; --ink-2:rgba(10,26,36,.72); --ink-3:rgba(10,26,36,.5);
+  --glass:rgba(255,255,255,.5); --glass-2:rgba(255,255,255,.68);
+  --edge:rgba(9,26,36,.1); --edge-hi:rgba(255,255,255,.9);
+  --stroke:rgba(9,26,36,.08);
+  --navy:#071D29;
+  --shadow:0 30px 70px -38px rgba(20,45,60,.5);
+  --card-glow:0 0 0 1px var(--stroke), 0 26px 60px -42px rgba(20,45,60,.55);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-text-size-adjust:100%;overflow-x:hidden;}
+body{
+  font-family:var(--sans); color:var(--ink-1); background:var(--bg);
+  min-height:100vh; overflow-x:hidden; line-height:1.5;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  letter-spacing:-.01em;
+}
+img{display:block;max-width:100%;}
+a{color:inherit;text-decoration:none;}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;}
+:focus-visible{outline:2px solid var(--volt);outline-offset:3px;border-radius:6px;}
+
+/* ---------- Ambient background ---------- */
+.bg{position:fixed;inset:0;z-index:-2;overflow:hidden;background:
+  radial-gradient(120% 90% at 78% -8%, #0d2b3c 0%, var(--bg-2) 42%, var(--bg) 78%);}
+html[data-theme="light"] .bg{background:
+  radial-gradient(120% 90% at 78% -8%, #f3f7f9 0%, var(--bg-2) 44%, var(--bg) 82%);}
+/* full-bleed hero photo behind the glass (swap banner-03 for any assets/hero/banner-01..12.webp) */
+.bg::before{content:'';position:absolute;inset:0;z-index:0;
+  background:linear-gradient(180deg,rgba(7,12,22,.5),rgba(7,12,22,.8)),
+    radial-gradient(120% 90% at 82% -6%,rgba(214,242,58,.13),transparent 46%),
+    center/cover no-repeat url('assets/hero/banner-03.webp');}
+html[data-theme="light"] .bg::before{
+  background:linear-gradient(180deg,rgba(231,236,241,.7),rgba(231,236,241,.9)),
+    radial-gradient(120% 90% at 82% -6%,rgba(214,242,58,.2),transparent 44%),
+    center/cover no-repeat url('assets/hero/banner-03.webp');}
+.orb{position:absolute;border-radius:50%;filter:blur(60px);opacity:.42;will-change:transform;}
+.orb-1{width:min(52vw,560px);aspect-ratio:1;top:-8%;left:6%;
+  background:radial-gradient(circle,rgba(214,242,58,.16),transparent 68%);
+  animation:drift-a 22s var(--ease) infinite;}
+.orb-2{width:min(46vw,500px);aspect-ratio:1;bottom:-14%;right:2%;
+  background:radial-gradient(circle,rgba(43,227,138,.12),transparent 70%);
+  animation:drift-b 27s var(--ease) infinite;}
+.grain{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+@keyframes drift-a{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(40px,50px,0)}}
+@keyframes drift-b{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(-46px,-30px,0)}}
+
+/* ---------- Shell (flex column so cards centre and the photo breathes) ---------- */
+.shell{max-width:var(--max);margin:0 auto;padding:clamp(16px,2.4vw,26px) var(--gut) clamp(24px,4vw,44px);
+  display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;justify-content:space-between;}
+
+/* ---------- Liquid glass base ---------- */
+.glass{position:relative;background:var(--glass);border-radius:var(--r);
+  -webkit-backdrop-filter:blur(22px) saturate(1.4);backdrop-filter:blur(22px) saturate(1.4);
+  box-shadow:var(--card-glow),inset 0 1px 1px rgba(255,255,255,.14);overflow:hidden;}
+.glass::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1.3px;pointer-events:none;
+  background:linear-gradient(150deg,var(--edge-hi),rgba(255,255,255,.04) 32%,rgba(255,255,255,0) 55%,var(--edge) 100%);
+  -webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;}
+
+/* ================= HEADER (3 glass pills) ================= */
+.top{display:flex;align-items:center;gap:12px;margin-bottom:clamp(16px,2.6vw,26px);}
+.pill{border-radius:var(--r-pill);padding:9px 12px;display:flex;align-items:center;}
+.brand{gap:11px;padding-right:18px;}
+.brand img{width:38px;height:38px;object-fit:contain;filter:drop-shadow(0 3px 8px rgba(0,0,0,.5));}
+.brand b{font-family:var(--display);font-weight:700;font-size:15px;letter-spacing:.2px;line-height:1;}
+.brand small{display:block;font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-3);margin-top:3px;}
+.nav{flex:1;justify-content:center;gap:2px;padding:7px 8px;}
+.nav a{position:relative;padding:8px 15px;border-radius:var(--r-pill);font-size:13.5px;font-weight:500;color:var(--ink-2);transition:color .3s var(--ease),background .3s var(--ease);white-space:nowrap;}
+.nav a:hover,.nav a.on{color:var(--ink-1);}
+.nav a.on{background:var(--glass-2);}
+.nav a::after{content:'';position:absolute;left:15px;right:15px;bottom:4px;height:2px;border-radius:2px;background:var(--volt);transform:scaleX(0);transform-origin:center;transition:transform .35s var(--ease);}
+.nav a:hover::after{transform:scaleX(.7);}
+.actions{gap:8px;padding:7px 7px 7px 14px;}
+.tgl{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:var(--ink-2);transition:background .3s,color .3s,transform .5s var(--ease);}
+.tgl:hover{background:var(--glass-2);color:var(--ink-1);transform:rotate(35deg);}
+.tgl svg{width:18px;height:18px;}
+/* theme-driven icon swap (script tracks theme via data-theme) */
+html[data-theme="dark"] #icoSun{display:none;} html[data-theme="dark"] #icoMoon{display:block;}
+html[data-theme="light"] #icoMoon{display:none;} html[data-theme="light"] #icoSun{display:block;}
+.cta{display:inline-flex;align-items:center;gap:7px;background:var(--volt);color:var(--navy);font-weight:700;font-size:13.5px;padding:11px 17px;border-radius:var(--r-pill);letter-spacing:-.01em;transition:transform .4s var(--ease),box-shadow .4s var(--ease),background .3s;box-shadow:0 8px 24px -8px rgba(214,242,58,.55);}
+.cta:hover{background:var(--volt-2);transform:translateY(-2px);box-shadow:0 14px 30px -8px rgba(214,242,58,.7);}
+.cta svg{width:14px;height:14px;}
+
+/* ================= BENTO GRID ================= */
+.bento{display:grid;grid-template-columns:1.14fr .86fr;grid-template-rows:minmax(206px,auto) minmax(146px,auto);gap:clamp(10px,1.1vw,14px);align-items:stretch;}
+.card{padding:clamp(22px,2.6vw,34px);display:flex;flex-direction:column;}
+
+/* --- Headline card --- */
+.hl{grid-column:1;grid-row:1;justify-content:center;gap:16px;min-height:clamp(220px,30vh,300px);padding:clamp(20px,2.2vw,30px);overflow:visible;}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3);}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--volt);box-shadow:0 0 12px 2px rgba(214,242,58,.8);animation:pulse 2.4s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+.hl h1{font-family:var(--display);font-weight:700;font-size:clamp(32px,4.4vw,60px);line-height:.92;letter-spacing:-.03em;}
+.hl h1 .glow{color:var(--volt);position:relative;}
+.hl h1 .glow::after{content:'';position:absolute;left:-4%;right:-4%;top:6%;bottom:6%;background:radial-gradient(60% 120% at 50% 50%,rgba(214,242,58,.28),transparent 70%);z-index:-1;filter:blur(14px);}
+.hl p{font-size:clamp(13.5px,1vw,15px);color:var(--ink-2);max-width:42ch;line-height:1.58;}
+.hl .row{display:flex;flex-wrap:wrap;align-items:center;gap:12px;}
+.ghost{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:var(--r-pill);font-weight:600;font-size:14px;color:var(--ink-1);background:var(--glass-2);box-shadow:inset 0 0 0 1px var(--edge);transition:transform .4s var(--ease),background .3s;}
+.ghost:hover{background:var(--glass);transform:translateY(-2px);}
+.ghost svg{width:14px;height:14px;color:var(--volt);}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px;}
+.chip{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);padding:7px 12px;border-radius:var(--r-pill);background:var(--glass-2);box-shadow:inset 0 0 0 1px var(--edge);}
+.chip svg{width:13px;height:13px;color:var(--volt);}
+
+/* --- About card --- */
+.about{grid-column:1;grid-row:2;gap:14px;justify-content:center;min-height:clamp(140px,18vh,180px);padding:clamp(18px,1.9vw,24px);}
+.about .lbl{font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--volt);}
+.about p{font-size:14.5px;color:var(--ink-2);line-height:1.62;max-width:52ch;}
+.link{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:13.5px;color:var(--ink-1);width:fit-content;}
+.link u{text-decoration:none;box-shadow:inset 0 -2px 0 var(--volt);padding-bottom:2px;transition:box-shadow .35s var(--ease);}
+.link:hover u{box-shadow:inset 0 -14px 0 rgba(214,242,58,.25);}
+.link svg{width:14px;height:14px;transition:transform .4s var(--ease);}
+.link:hover svg{transform:translate(3px,-3px);}
+
+/* --- Frosted cards (fixture + news) --- */
+.frost{position:relative;color:#fff;padding:0;overflow:hidden;isolation:isolate;}
+.frost .media{position:absolute;inset:0;z-index:-3;}
+.frost .media img{width:100%;height:100%;object-fit:cover;transform:scale(1.06);
+  filter:blur(11px) saturate(.55) brightness(.72);
+  transition:filter 1s var(--ease),transform 1.4s var(--ease);}
+.frost .veil{position:absolute;inset:0;z-index:-2;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  background:linear-gradient(180deg,rgba(5,14,21,.42) 0%,rgba(5,14,21,.28) 40%,rgba(5,14,21,.72) 100%);
+  transition:opacity .9s var(--ease),backdrop-filter .9s var(--ease);}
+.frost .scrim{position:absolute;inset:0;z-index:-1;background:linear-gradient(180deg,transparent 30%,rgba(4,11,17,.86) 100%);}
+.frost .inner{position:relative;z-index:1;padding:clamp(16px,1.9vw,24px);display:flex;flex-direction:column;height:100%;}
+.frost .edge-glow{position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:2;
+  box-shadow:inset 0 0 0 1px rgba(214,242,58,0);transition:box-shadow .8s var(--ease);}
+@media (hover:hover){
+  .frost:hover .media img{filter:blur(0) saturate(1.05) brightness(.92);transform:scale(1.02);}
+  .frost:hover .veil{opacity:0;-webkit-backdrop-filter:blur(0);backdrop-filter:blur(0);}
+  .frost:hover .edge-glow{box-shadow:inset 0 0 0 1px rgba(214,242,58,.55),inset 0 0 32px -6px rgba(214,242,58,.35);}
+  .frost:hover .reveal-tag{opacity:0;transform:translateY(4px);}
+}
+/* touch: reveal a clearer resting state so nothing is hover-gated */
+@media (hover:none){
+  .frost .media img{filter:blur(2px) saturate(.85) brightness(.82);}
+  .frost .veil{opacity:.55;}
+  .reveal-tag{display:none;}
+}
+/* news card uses a background-image layer (hydrated cover) instead of <img> */
+.news .media{background:center/cover no-repeat;background-image:url('assets/hero/hero-dressing-room.jpg');
+  filter:blur(11px) saturate(.55) brightness(.72);transform:scale(1.06);
+  transition:filter 1s var(--ease),transform 1.4s var(--ease);}
+@media (hover:hover){.news:hover .media{filter:blur(0) saturate(1.05) brightness(.92);transform:scale(1.02);}}
+@media (hover:none){.news .media{filter:blur(2px) saturate(.85) brightness(.82);}}
+.reveal-tag{position:absolute;top:16px;right:18px;z-index:3;font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.6);display:inline-flex;align-items:center;gap:6px;transition:opacity .5s var(--ease),transform .5s var(--ease);}
+.reveal-tag svg{width:12px;height:12px;}
+
+/* --- Fixture card --- */
+.fx{grid-column:2;grid-row:1;min-height:clamp(220px,30vh,300px);}
+.fx .inner{justify-content:space-between;gap:18px;}
+.fx-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.tag{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--volt);}
+.tag small{display:block;color:rgba(255,255,255,.62);font-weight:500;letter-spacing:.14em;margin-top:5px;}
+.count{display:flex;gap:6px;flex-shrink:0;}
+.count .u,.cd-unit{min-width:38px;text-align:center;background:rgba(255,255,255,.08);border-radius:12px;padding:8px 3px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);}
+.count .u b,.cd-num{font-family:var(--display);font-weight:600;font-size:17px;line-height:1;display:block;font-variant-numeric:tabular-nums;color:#fff;}
+.count .u span{font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-top:4px;display:block;}
+.match{display:flex;align-items:center;justify-content:center;gap:clamp(14px,2.4vw,30px);padding:6px 0;}
+.team{display:flex;flex-direction:column;align-items:center;gap:10px;flex:1;min-width:0;}
+.team img{width:clamp(42px,4.6vw,58px);height:clamp(42px,4.6vw,58px);object-fit:contain;filter:drop-shadow(0 8px 18px rgba(0,0,0,.55));}
+.team b{font-family:var(--display);font-weight:600;font-size:14px;text-align:center;line-height:1.1;}
+.vs{font-family:var(--display);font-weight:600;font-size:15px;color:var(--volt);opacity:.9;flex-shrink:0;}
+.fx-meta{display:flex;flex-direction:column;gap:9px;}
+.metarow{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.82);}
+.metarow svg{width:15px;height:15px;color:var(--volt);flex-shrink:0;}
+.fx-cta{display:inline-flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px;background:rgba(255,255,255,.06);padding:13px 16px;border-radius:14px;font-weight:600;font-size:13.5px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);transition:background .3s,transform .4s var(--ease);}
+.fx-cta:hover{background:rgba(214,242,58,.14);transform:translateY(-2px);}
+.fx-cta svg{width:15px;height:15px;color:var(--volt);}
+
+/* --- News card --- */
+.news{grid-column:2;grid-row:2;min-height:clamp(140px,18vh,180px);}
+.news .inner{justify-content:flex-end;gap:12px;}
+.news .kicker{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--volt);}
+.news h3{font-family:var(--display);font-weight:600;font-size:clamp(19px,1.7vw,24px);line-height:1.08;letter-spacing:-.01em;max-width:22ch;}
+.news .foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:4px;}
+.news .date{font-size:12px;color:rgba(255,255,255,.6);}
+.news .read{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:13px;color:#fff;}
+.news .read svg{width:14px;height:14px;color:var(--volt);transition:transform .4s var(--ease);}
+.news:hover .read svg{transform:translate(3px,-3px);}
+
+/* ================= SPONSORS ================= */
+.sponsors{margin-top:clamp(12px,1.6vw,18px);display:flex;align-items:center;gap:clamp(20px,4vw,56px);flex-wrap:wrap;justify-content:center;padding:20px clamp(20px,3vw,40px);}
+.sponsors .plabel{font-size:10.5px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3);white-space:nowrap;}
+.sponsors .logos{display:flex;align-items:center;gap:clamp(24px,4vw,52px);flex-wrap:wrap;justify-content:center;}
+.sponsors img{height:26px;width:auto;object-fit:contain;opacity:.48;filter:brightness(0) invert(1);transition:opacity .4s var(--ease),filter .4s var(--ease),transform .4s var(--ease);}
+html[data-theme="light"] .sponsors img{filter:brightness(0);opacity:.45;}
+.sponsors img:hover{opacity:1;filter:none;transform:scale(1.05);}
+/* light-theme contrast: volt-as-text on light glass needs to darken */
+html[data-theme="light"] .about .lbl{color:#3f5906;}
+html[data-theme="light"] .eyebrow{color:rgba(10,26,36,.62);}
+html[data-theme="light"] .hl h1 .glow{color:#5c7a08;}
+html[data-theme="light"] .hl h1 .glow::after{background:radial-gradient(60% 120% at 50% 50%,rgba(214,242,58,.5),transparent 70%);}
+
+/* ================= LOAD CHOREOGRAPHY ================= */
+@keyframes rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:translateY(0)}}
+.anim{opacity:0;animation:rise .9s var(--ease) forwards;}
+.d1{animation-delay:.05s}.d2{animation-delay:.14s}.d3{animation-delay:.23s}
+.d4{animation-delay:.34s}.d5{animation-delay:.45s}.d6{animation-delay:.56s}.d7{animation-delay:.66s}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width:900px){
+  .shell{min-height:0;}
+  .bento{grid-template-columns:1fr;grid-template-rows:none;}
+  .hl,.about,.fx,.news{grid-column:1;grid-row:auto;min-height:0;}
+  .hl{min-height:clamp(260px,44vh,360px);}
+  .fx{min-height:320px;}
+  .about,.news{min-height:160px;}
+  /* wireframe reading order: headline, fixture, about, news */
+  .hl{order:1}.fx{order:2}.about{order:3}.news{order:4}
+}
+@media (max-width:760px){
+  .nav{display:none;}
+  .brand small{display:none;}
+  .top{gap:10px;}
+}
+@media (max-width:560px){
+  .brand{padding-right:12px;}
+  .brand b{font-size:14px;}
+  .actions .cta span{display:none;}
+  .actions .cta{padding:11px;}
+  .count .u{min-width:36px;}
+  .reveal-tag{display:none;}
+}
+@media (prefers-reduced-motion:reduce){
+  .orb,.eyebrow .dot{animation:none;}
+  .anim{animation:none;opacity:1;}
+  .frost .media img,.frost .veil,.news .media,*{transition-duration:.001ms !important;}
+}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"><span class="orb orb-1"></span><span class="orb orb-2"></span></div>
+<div class="grain" aria-hidden="true"></div>
+
+<main class="shell">
+
+  <!-- ===================== HEADER ===================== -->
+  <header class="top">
+    <a class="pill brand glass anim d1" href="index.html" aria-label="Sue's Angels FC home">
+      <img src="assets/badge/sue-angels-badge-cutout.webp" alt="Sue's Angels FC crest"
+           onerror="this.onerror=null;this.src='assets/badge/sue-angels-badge-cutout.png'"/>
+      <span><b>SUE'S ANGELS FC</b><small>South-West London</small></span>
+    </a>
+
+    <nav class="pill nav glass anim d2" aria-label="Primary">
+      <a href="index.html" class="on">Home</a>
+      <a href="squad.html">Squad</a>
+      <a href="fixtures.html">Fixtures</a>
+      <a href="table.html">Table</a>
+      <a href="news.html">News</a>
+      <a href="sponsors.html">Sponsors</a>
+    </nav>
+
+    <div class="pill actions glass anim d3">
+      <button class="tgl" id="themeBtn" type="button" aria-label="Switch theme" aria-pressed="false">
+        <svg id="icoMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg id="icoSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4"/></svg>
+      </button>
+      <a class="cta join" href="join.html">
+        <span>Join the club</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- ===================== BENTO ===================== -->
+  <section class="bento">
+
+    <!-- Headline -->
+    <div class="card hl glass anim d3">
+      <span class="eyebrow"><span class="dot"></span>Men's Sunday League · Playing for a cause</span>
+      <h1>CHAMPIONS<br/>IN <span class="glow">YEAR ONE.</span></h1>
+      <p>Sue's Angels are a men's Sunday-league side from south-west London — promoted unbeaten in our debut season, and playing every fixture for sepsis awareness.</p>
+      <div class="row">
+        <a class="cta join" href="join.html">Join the club
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+        </a>
+        <a class="ghost" href="about.html">Our story
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+      </div>
+      <div class="chips">
+        <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3"/></svg>League Ten Champions</span>
+        <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>Promoted to League Eight</span>
+        <span class="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 11 3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Unbeaten Season</span>
+      </div>
+    </div>
+
+    <!-- Next fixture (frosted → clears on hover) · hydrated from live CMS -->
+    <a class="card fx glass frost anim d4" href="fixtures.html" aria-label="Next fixture — open match details">
+      <div class="media"><img src="assets/hero/celebration.jpg" alt=""
+        onerror="this.onerror=null;this.src='assets/hero/banner-05.webp'"/></div>
+      <div class="veil"></div><div class="scrim"></div><div class="edge-glow"></div>
+      <span class="reveal-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>Hover to clear</span>
+      <div class="inner">
+        <div class="fx-top">
+          <span class="tag">Next Fixture<small>Pre-season Friendly</small></span>
+          <div class="count" id="countdown" aria-hidden="true">
+            <span class="u"><b class="cd-num" data-cd="d">–</b><span>days</span></span>
+            <span class="u"><b class="cd-num" data-cd="h">–</b><span>hrs</span></span>
+            <span class="u"><b class="cd-num" data-cd="m">–</b><span>min</span></span>
+            <span class="u"><b class="cd-num" data-cd="s">–</b><span>sec</span></span>
+          </div>
+        </div>
+        <div class="match">
+          <span class="team">
+            <img id="homeBadge" src="assets/badge/brentford-town-badge.webp" alt="Home crest"
+                 onerror="this.onerror=null;this.src='assets/badge/sue-angels-shield.png'"/>
+            <b id="homeName">Brentford Town</b>
+          </span>
+          <span class="vs">VS</span>
+          <span class="team">
+            <img id="awayBadge" src="assets/badge/sue-angels-badge-cutout.webp" alt="Away crest"
+                 onerror="this.onerror=null;this.src='assets/badge/sue-angels-shield.png'"/>
+            <b id="awayName">Sue's Angels</b>
+          </span>
+        </div>
+        <div class="fx-meta">
+          <div class="metarow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span id="fixWhen">Sunday 16 August 2026 · KO 10:30</span></div>
+          <div class="metarow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg><span id="fixWhere">Carville Park North, Brentford TW8 9QT</span></div>
+        </div>
+        <span class="fx-cta">Match details
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </span>
+      </div>
+    </a>
+
+    <!-- About -->
+    <div class="card about glass anim d5">
+      <span class="lbl">// The club</span>
+      <p>Founded on a promise and built on grit, Sue's Angels play fearless, front-foot football. From League Ten newcomers to unbeaten champions in a single season — and we wear the sepsis cause on our sleeve, home and away.</p>
+      <a class="link" href="about.html"><u>More about us</u>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+      </a>
+    </div>
+
+    <!-- Latest news (frosted) · hydrated from live CMS -->
+    <a id="newsCard" class="card news glass frost anim d6" href="news.html" aria-label="Latest club news">
+      <div class="media" id="newsShot"></div>
+      <div class="veil"></div><div class="scrim"></div><div class="edge-glow"></div>
+      <div class="inner">
+        <span class="kicker">Latest · Club News</span>
+        <h3 id="newsTitle">Pre-season locked in: Angels to open against Brentford Town</h3>
+        <div class="foot">
+          <span class="date" id="newsDate">July 2026</span>
+          <span class="read">Read story
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>
+          </span>
+        </div>
+      </div>
+    </a>
+
+  </section>
+
+  <!-- ===================== SPONSORS ===================== -->
+  <footer class="sponsors glass anim d7">
+    <span class="plabel">Proudly backed by</span>
+    <div class="logos">
+      <img src="assets/sponsors/hlo.svg" alt="HLO" />
+      <img src="assets/sponsors/hodgson-roofing.webp" alt="Hodgson Roofing" onerror="this.onerror=null;this.src='assets/sponsors/hodgson-roofing.png'"/>
+      <img src="assets/sponsors/sporting-solutions.webp" alt="Sporting Solutions" onerror="this.onerror=null;this.src='assets/sponsors/sporting-solutions.png'"/>
+      <img src="assets/sponsors/staines-rugby-cut.png" alt="Staines Rugby" />
+    </div>
+  </footer>
+
+</main>
+
+<!-- Live content layer — same Supabase scripts the production site uses -->
+<script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="supabase-config.js?v=21"></script>
+<script src="supabase.js?v=19"></script>
+<script src="dataStore.js?v=33"></script>
+<script src="PageShell.js?v=48"></script>
+<script src="FixtureEntry.js?v=20"></script>
+<script src="PlayerPhotos.js?v=19"></script>
+
+<script>
+(function(){
+  var root=document.documentElement;
+  /* theme toggle (persists) */
+  var KEY='sa-theme', btn=document.getElementById('themeBtn');
+  try{var s=localStorage.getItem(KEY); if(s) root.setAttribute('data-theme',s);}catch(e){}
+  function sync(){btn.setAttribute('aria-pressed', String(root.getAttribute('data-theme')!=='dark'));}
+  sync();
+  btn.addEventListener('click',function(){var n=root.getAttribute('data-theme')==='dark'?'light':'dark';root.setAttribute('data-theme',n);try{localStorage.setItem(KEY,n);}catch(e){}sync();});
+  /* ---------- LIVE DATA — same source as suesangelsfc.co.uk ---------- */
+  var FALLBACK_FIXTURE={home:'Brentford Town',homeBadge:'assets/badge/brentford-town-badge.webp',away:"Sue's Angels",awayBadge:'assets/badge/sue-angels-badge-cutout.webp',comp:'Pre-season Friendly',kick:'10:30',ven:'Carville Park North, Brentford TW8 9QT',kickoff:new Date('2026-08-16T10:30:00+01:00')};
+  function badgeFor(name,explicit){if(explicit)return explicit;if(window.resolveBadge){var b=window.resolveBadge(name);if(b)return (typeof b==='string'?b:(b.src||b.badge));}return 'assets/badge/sue-angels-shield.webp';}
+  function resolveNextFixture(){
+    try{
+      var up=window.getActiveUpcoming?window.getActiveUpcoming():[];
+      up=up.slice().sort(function(a,b){var ka=window.getFixtureKickoff?window.getFixtureKickoff(a):null,kb=window.getFixtureKickoff?window.getFixtureKickoff(b):null;return (ka?ka.getTime():9e15)-(kb?kb.getTime():9e15);});
+      if(up.length){var f=up[0],d=window.getFixtureDate?window.getFixtureDate(f):null;
+        return {home:f.home,away:f.away,comp:f.comp||'League',kick:f.kick||'',ven:f.ven||'',kickoff:(window.getFixtureKickoff?window.getFixtureKickoff(f):d),live:true};}
+    }catch(e){}
+    return FALLBACK_FIXTURE;
+  }
+  function fmtDate(dt){return dt?dt.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',year:'numeric'}).replace(',',''):'';}
+  function fmtTime(dt){return dt?dt.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}):'';}
+  var koTarget=FALLBACK_FIXTURE.kickoff, $=function(id){return document.getElementById(id);};
+  function paintFixture(){
+    var f=resolveNextFixture();
+    if($('homeName'))$('homeName').textContent=f.home||'';
+    if($('awayName'))$('awayName').textContent=f.away||'';
+    if($('homeBadge'))$('homeBadge').src=badgeFor(f.home,f.homeBadge);
+    if($('awayBadge'))$('awayBadge').src=badgeFor(f.away,f.awayBadge);
+    var w=[]; if(f.comp)w.push(f.comp); if(f.kickoff)w.push(fmtDate(f.kickoff));
+    var t=f.kick||fmtTime(f.kickoff); if(t)w.push('KO '+t);
+    if($('fixWhen'))$('fixWhen').textContent=w.join(' · ');
+    if($('fixWhere'))$('fixWhere').textContent=f.ven||'';
+    if(f.kickoff)koTarget=f.kickoff;
+  }
+  function paintNews(){
+    var arts=(window.getCustomArticles?window.getCustomArticles():[]).filter(function(a){return a&&a.title;});
+    arts.sort(function(a,b){return (b.sortISO?Date.parse(b.sortISO):0)-(a.sortISO?Date.parse(a.sortISO):0);});
+    if(!arts.length)return;
+    var a=arts[0];
+    if($('newsTitle'))$('newsTitle').textContent=a.title;
+    if($('newsDate')&&a.sortISO)$('newsDate').textContent=new Date(a.sortISO).toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+    if($('newsCard'))$('newsCard').href='news.html?article='+(a.id||'');
+    var cover=(window.getArticleCover?window.getArticleCover(a.id):null)||a.cover||null;
+    if($('newsShot')&&cover&&typeof cover==='string')$('newsShot').style.backgroundImage="url('"+cover+"')";
+  }
+  function hydrate(){paintFixture();paintNews();}
+  hydrate();
+  var runs=0,hv=setInterval(function(){runs++;hydrate();if(runs>=10)clearInterval(hv);},500); // Supabase loads async
+  /* countdown bound to the resolved kick-off */
+  var nodes={};['d','h','m','s'].forEach(function(k){nodes[k]=document.querySelector('[data-cd="'+k+'"]');});
+  function pad(n){return (n<10?'0':'')+n;}
+  function tick(){
+    var diff=koTarget.getTime()-Date.now();
+    if(diff<=0){var cd=$('countdown');if(cd)cd.innerHTML='<span class="cd-unit" style="min-width:auto;padding:9px 16px"><span class="cd-num">Kick-off!</span></span>';clearInterval(iv);return;}
+    var s=Math.floor(diff/1000);
+    if(nodes.d){nodes.d.textContent=pad(Math.floor(s/86400));nodes.h.textContent=pad(Math.floor(s%86400/3600));nodes.m.textContent=pad(Math.floor(s%3600/60));nodes.s.textContent=pad(s%60);}
+  }
+  tick(); var iv=setInterval(tick,1000);
+  /* magnetic pull on primary CTAs */
+  if(window.matchMedia('(hover:hover) and (pointer:fine)').matches && !window.matchMedia('(prefers-reduced-motion:reduce)').matches){
+    document.querySelectorAll('.join, .btn-primary').forEach(function(el){
+      el.addEventListener('mousemove',function(e){var r=el.getBoundingClientRect(),x=(e.clientX-r.left-r.width/2)/r.width,y=(e.clientY-r.top-r.height/2)/r.height;el.style.transform='translate('+(x*6).toFixed(1)+'px,'+(y*6-2).toFixed(1)+'px)';});
+      el.addEventListener('mouseleave',function(){el.style.transform='';});
+    });
+  }
+})();
+</script>
+</body>
+</html>

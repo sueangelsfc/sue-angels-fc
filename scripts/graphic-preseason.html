@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face{ font-family:'Clash Display'; src:url('../assets/fonts/clash-display-700.woff2') format('woff2'); font-weight:700 }
+  @font-face{ font-family:'Clash Display'; src:url('../assets/fonts/clash-display-600.woff2') format('woff2'); font-weight:600 }
+  @font-face{ font-family:'Hanken'; src:url('../assets/fonts/hanken-500.woff2') format('woff2'); font-weight:500 }
+  @font-face{ font-family:'Hanken'; src:url('../assets/fonts/hanken-700.woff2') format('woff2'); font-weight:700 }
+  *{ margin:0; padding:0; box-sizing:border-box }
+  body{ width:1080px; height:1350px; overflow:hidden;
+        font-family:'Hanken',sans-serif; color:#fff;
+        background:#04121B; position:relative; }
+  .glow1{ position:absolute; inset:0;
+    background:radial-gradient(60% 44% at 50% 84%, rgba(214,242,58,.22), transparent 70%),
+               radial-gradient(46% 34% at 16% 10%, rgba(214,242,58,.08), transparent 70%); }
+  .grain{ position:absolute; inset:0; opacity:.09; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .frame{ position:absolute; inset:40px; border:1.5px solid rgba(255,255,255,.14); border-radius:34px; }
+  .wrap{ position:relative; height:100%; display:flex; flex-direction:column;
+         align-items:center; text-align:center; padding:96px 90px; }
+  .crest{ width:150px; height:150px; object-fit:contain; margin-bottom:30px;
+          filter:drop-shadow(0 0 40px rgba(214,242,58,.35)); }
+  .club{ font-family:'Hanken'; font-weight:700; font-size:22px; letter-spacing:.42em;
+         text-transform:uppercase; color:rgba(233,242,247,.55); }
+  .pill{ margin-top:auto; display:inline-flex; align-items:center; gap:14px;
+         background:rgba(214,242,58,.12); border:1.5px solid rgba(214,242,58,.5);
+         color:#D6F23A; font-family:'Hanken'; font-weight:700; font-size:24px;
+         letter-spacing:.28em; text-transform:uppercase; padding:15px 30px; border-radius:100px; }
+  .dot{ width:11px; height:11px; border-radius:50%; background:#D6F23A; box-shadow:0 0 16px #D6F23A }
+  h1{ font-family:'Clash Display'; font-weight:700; font-size:150px; line-height:.92;
+      letter-spacing:-.02em; margin:34px 0 6px; text-transform:uppercase; }
+  h1 .v{ color:#D6F23A }
+  .when{ margin-top:38px; display:flex; align-items:stretch; gap:0;
+         border:1.5px solid rgba(255,255,255,.16); border-radius:26px; overflow:hidden;
+         background:rgba(255,255,255,.04); }
+  .when div{ padding:26px 44px; }
+  .when .lab{ font-family:'Hanken'; font-weight:700; font-size:17px; letter-spacing:.2em;
+              text-transform:uppercase; color:rgba(233,242,247,.5); margin-bottom:8px }
+  .when .val{ font-family:'Clash Display'; font-weight:600; font-size:52px; letter-spacing:-.01em }
+  .when .sep{ width:1.5px; background:rgba(255,255,255,.16); padding:0 }
+  .sub{ margin-top:34px; font-family:'Hanken'; font-weight:500; font-size:27px;
+        color:rgba(233,242,247,.7); line-height:1.5; max-width:640px }
+  .foot{ margin-top:auto; font-family:'Hanken'; font-weight:700; font-size:19px;
+         letter-spacing:.32em; text-transform:uppercase; color:rgba(233,242,247,.4) }
+</style>
+</head>
+<body>
+  <div class="glow1"></div>
+  <div class="grain"></div>
+  <div class="frame"></div>
+  <div class="wrap">
+    <img class="crest" src="../assets/badge/sue-angels-badge.png">
+    <div class="club">Sue's Angels FC · Champions 25/26</div>
+
+    <div class="pill"><span class="dot"></span> Pre-season begins</div>
+    <h1>Next<br><span class="v">Sunday</span></h1>
+
+    <div class="when">
+      <div><div class="lab">Starts</div><div class="val">10:00</div></div>
+      <div class="sep"></div>
+      <div><div class="lab">Finishes</div><div class="val">12:00</div></div>
+    </div>
+
+    <div class="sub">First session of the 2026/27 pre-season.<br>Boots on, lads. Let's go again.</div>
+
+    <div class="foot">Sue's Angels FC · Est. 2025</div>
+  </div>
+</body>
+</html>

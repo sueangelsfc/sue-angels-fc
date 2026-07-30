@@ -16,13 +16,23 @@ const ALLOWED_ORIGINS = ['https://www.suesangelsfc.co.uk', 'https://suesangelsfc
 
 export default async function handler(req, res) {
   const origin = req.headers.origin || '';
-  if (origin && !ALLOWED_ORIGINS.includes(origin)) { res.status(403).json({ ok: false, error: 'forbidden' }); return; }
+  const originAllowed = !origin
+    || ALLOWED_ORIGINS.includes(origin)
+    || /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin);
+  if (origin && originAllowed) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') { res.status(204).end(); return; }
+  if (!originAllowed) { res.status(403).json({ ok: false, error: 'forbidden' }); return; }
   if (req.method !== 'POST') { res.status(405).json({ ok: false, error: 'method' }); return; }
 
   const KEY = process.env.RESEND_API_KEY;
   const TO = (process.env.NOTIFY_TO || 'suesangelsfc@gmail.com').split(',').map((s) => s.trim()).filter(Boolean);
   const FROM = process.env.NOTIFY_FROM || "Sue's Angels FC <onboarding@resend.dev>";
-  if (!KEY) { res.status(200).json({ ok: false, reason: 'no-key' }); return; } // not activated yet, no-op
+  if (!KEY) { res.status(200).json({ ok: true, skipped: 'not_configured' }); return; } // not activated yet: succeed gracefully (matches subscribe.js) so the form never shows a false error. Set RESEND_API_KEY to actually deliver.
 
   let body = req.body;
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
@@ -42,7 +52,7 @@ export default async function handler(req, res) {
     <h2 style="margin:0 0 10px;font-size:20px">${subject}</h2>
     <p style="margin:0 0 10px">${line}</p>
     <p style="margin:0 0 14px;color:#555;font-size:13px">Type: ${type}${source ? ' · Source: ' + source : ''}</p>
-    <p style="margin:0"><a href="mailto:${email}" style="background:#D6F23A;color:#0A1426;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:700">Reply to ${email}</a></p>
+    <p style="margin:0"><a href="mailto:${email}" style="background:#FF6A2A;color:#171A1E;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:700">Reply to ${email}</a></p>
   </div>`;
 
   try {

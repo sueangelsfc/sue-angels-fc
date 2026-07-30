@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face{ font-family:'Clash Display'; src:url('../assets/fonts/clash-display-700.woff2') format('woff2'); font-weight:700 }
+  @font-face{ font-family:'Clash Display'; src:url('../assets/fonts/clash-display-600.woff2') format('woff2'); font-weight:600 }
+  @font-face{ font-family:'Clash Display'; src:url('../assets/fonts/clash-display-500.woff2') format('woff2'); font-weight:500 }
+  @font-face{ font-family:'Hanken'; src:url('../assets/fonts/hanken-500.woff2') format('woff2'); font-weight:500 }
+  @font-face{ font-family:'Hanken'; src:url('../assets/fonts/hanken-600.woff2') format('woff2'); font-weight:600 }
+  @font-face{ font-family:'Hanken'; src:url('../assets/fonts/hanken-700.woff2') format('woff2'); font-weight:700 }
+  *{ margin:0; padding:0; box-sizing:border-box }
+  body{ width:1080px; height:1350px; overflow:hidden;
+        font-family:'Hanken',sans-serif; color:#fff; background:#04121B; position:relative; }
+
+  /* ---- atmosphere ---- */
+  .glow{ position:absolute; inset:0;
+    background:radial-gradient(58% 40% at 50% 12%, rgba(214,242,58,.16), transparent 66%),
+               radial-gradient(70% 50% at 50% 108%, rgba(214,242,58,.10), transparent 70%); }
+  .grain{ position:absolute; inset:0; opacity:.08; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  /* blueprint concentric circles */
+  .rings{ position:absolute; inset:0; opacity:.6; }
+  .rings span{ position:absolute; border:1.5px solid rgba(255,255,255,.06); border-radius:50%;
+               top:43%; transform:translateY(-50%); }
+  /* edge tick marks (blueprint) */
+  .etick{ position:absolute; top:50%; transform:translateY(-50%); display:flex;
+          flex-direction:column; align-items:center; gap:8px; z-index:1 }
+  .etick i{ width:2px; height:18px; background:rgba(255,255,255,.2); display:block }
+  .etick b{ width:7px; height:7px; border:1.5px solid rgba(214,242,58,.6); display:block }
+  .etick.l{ left:44px } .etick.r{ right:44px }
+  .frame{ position:absolute; inset:38px; border:1.5px solid rgba(255,255,255,.13); border-radius:32px; }
+  /* corner crosshairs */
+  .xh{ position:absolute; width:26px; height:26px; }
+  .xh::before,.xh::after{ content:''; position:absolute; background:rgba(214,242,58,.6) }
+  .xh::before{ left:11px; top:0; width:2px; height:26px }
+  .xh::after{ top:11px; left:0; height:2px; width:26px }
+  .xh.tl{ left:60px; top:60px } .xh.tr{ right:60px; top:60px }
+  .xh.bl{ left:60px; bottom:60px } .xh.br{ right:60px; bottom:60px }
+
+  .wrap{ position:relative; z-index:2; height:100%; display:flex; flex-direction:column;
+         align-items:center; text-align:center; padding:78px 78px 62px; }
+
+  /* ---- header ---- */
+  .eyebrow{ display:flex; align-items:center; gap:20px; font-family:'Hanken'; font-weight:700;
+            font-size:20px; letter-spacing:.44em; text-transform:uppercase; color:rgba(233,242,247,.62); }
+  .eyebrow i{ width:52px; height:1.5px; background:rgba(255,255,255,.28); display:block }
+  .crest{ width:118px; height:118px; object-fit:contain; margin:26px 0 14px;
+          filter:drop-shadow(0 0 36px rgba(214,242,58,.34)); }
+  .club{ font-family:'Hanken'; font-weight:700; font-size:18px; letter-spacing:.36em;
+         text-transform:uppercase; color:rgba(233,242,247,.52); }
+  h1{ font-family:'Clash Display'; font-weight:700; font-size:104px; line-height:.9;
+      letter-spacing:-.02em; margin-top:14px; text-transform:uppercase; }
+  h1 .v{ color:#D6F23A }
+
+  /* ---- fixtures ---- */
+  .fixtures{ width:100%; margin-top:34px; }
+  .fx{ display:flex; align-items:center; gap:22px; padding:17px 6px;
+       border-top:1.5px solid rgba(255,255,255,.1); }
+  .fx:last-child{ border-bottom:1.5px solid rgba(255,255,255,.1); }
+  .fx__date{ width:132px; text-align:left; flex:0 0 auto; }
+  .fx__dow{ font-family:'Hanken'; font-weight:700; font-size:15px; letter-spacing:.16em;
+            text-transform:uppercase; color:#D6F23A; margin-bottom:2px; }
+  .fx__day{ font-family:'Clash Display'; font-weight:600; font-size:33px; letter-spacing:-.01em; }
+  .fx__ha{ flex:0 0 auto; width:86px; text-align:center; font-family:'Hanken'; font-weight:700;
+           font-size:13px; letter-spacing:.14em; text-transform:uppercase; padding:8px 0; border-radius:100px; }
+  .fx__ha--home{ background:rgba(214,242,58,.15); color:#D6F23A; border:1.5px solid rgba(214,242,58,.45); }
+  .fx__ha--away{ background:rgba(255,255,255,.05); color:rgba(233,242,247,.66); border:1.5px solid rgba(255,255,255,.15); }
+  .fx__opp{ flex:1; text-align:left; font-family:'Clash Display'; font-weight:600;
+            font-size:37px; letter-spacing:-.015em; white-space:nowrap; }
+  .fx__badge{ flex:0 0 auto; width:58px; height:58px; object-fit:contain; }
+  .fx__ph{ flex:0 0 auto; width:58px; height:58px; }
+
+  /* ---- venue ---- */
+  .venue{ margin-top:26px; font-family:'Hanken'; font-weight:600; font-size:18px;
+          letter-spacing:.06em; color:rgba(233,242,247,.62); }
+  .venue b{ color:#D6F23A; font-weight:700 }
+
+  /* ---- sponsors ---- */
+  .backed{ margin-top:auto; font-family:'Hanken'; font-weight:700; font-size:15px;
+           letter-spacing:.34em; text-transform:uppercase; color:rgba(233,242,247,.42); margin-bottom:16px; }
+  .sponsors{ display:flex; gap:16px; }
+  .sp{ width:104px; height:104px; background:#fff; border-radius:24px; display:grid;
+       place-items:center; padding:20px; }
+  .sp img{ max-width:100%; max-height:100%; object-fit:contain; }
+
+  /* ---- footer ---- */
+  .foot{ width:100%; margin-top:30px; display:flex; align-items:center; justify-content:space-between;
+         font-family:'Hanken'; font-weight:700; font-size:19px; letter-spacing:.04em;
+         color:rgba(233,242,247,.66); }
+  .foot .ig{ display:flex; align-items:center; gap:11px }
+  .foot svg{ width:24px; height:24px }
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+  <div class="grain"></div>
+  <div class="rings">
+    <span style="width:1060px;height:1060px;left:-290px"></span>
+    <span style="width:1060px;height:1060px;right:-290px"></span>
+    <span style="width:640px;height:640px;left:50%;margin-left:-320px"></span>
+  </div>
+  <div class="frame"></div>
+  <div class="xh tl"></div><div class="xh tr"></div><div class="xh bl"></div><div class="xh br"></div>
+  <div class="etick l"><i></i><b></b><i></i></div>
+  <div class="etick r"><i></i><b></b><i></i></div>
+
+  <div class="wrap">
+    <div class="eyebrow"><i></i> Pre-season 2026/27 <i></i></div>
+    <img class="crest" src="../assets/badge/sue-angels-badge.png">
+    <div class="club">Sue's Angels FC</div>
+    <h1>The <span class="v">fixtures</span></h1>
+
+    <div class="fixtures">
+      <div class="fx">
+        <div class="fx__date"><div class="fx__dow">Sun</div><div class="fx__day">2 Aug</div></div>
+        <div class="fx__ha fx__ha--away">Away</div>
+        <div class="fx__opp">Pure Football</div>
+        <img class="fx__badge" src="../assets/badge/pure-fc.png">
+      </div>
+      <div class="fx">
+        <div class="fx__date"><div class="fx__dow">Sun</div><div class="fx__day">9 Aug</div></div>
+        <div class="fx__ha fx__ha--away">Away</div>
+        <div class="fx__opp">Galacticos</div>
+        <img class="fx__badge" src="../assets/badge/galacticos-elect-badge.png">
+      </div>
+      <div class="fx">
+        <div class="fx__date"><div class="fx__dow">Wed</div><div class="fx__day">12 Aug</div></div>
+        <div class="fx__ha fx__ha--home">Home</div>
+        <div class="fx__opp">Kingsmeadow United</div>
+        <img class="fx__badge" src="../assets/badge/kingsmeadow-united.png">
+      </div>
+      <div class="fx">
+        <div class="fx__date"><div class="fx__dow">Sun</div><div class="fx__day">16 Aug</div></div>
+        <div class="fx__ha fx__ha--away">Away</div>
+        <div class="fx__opp">Brentford Town</div>
+        <img class="fx__badge" src="../assets/badge/brentford-town-badge.png">
+      </div>
+      <div class="fx">
+        <div class="fx__date"><div class="fx__dow">Sun</div><div class="fx__day">23 Aug</div></div>
+        <div class="fx__ha fx__ha--away">Away</div>
+        <div class="fx__opp">Kew Antigua</div>
+        <img class="fx__badge" src="../assets/badge/kew-antigua.png">
+      </div>
+      <div class="fx">
+        <div class="fx__date"><div class="fx__dow">Sun</div><div class="fx__day">30 Aug</div></div>
+        <div class="fx__ha fx__ha--home">Home</div>
+        <div class="fx__opp">BPR</div>
+        <img class="fx__badge" src="../assets/badge/bpr-fc.png">
+      </div>
+    </div>
+
+    <div class="venue">Home games at <b>The Reeves</b>, Snakey Lane, Feltham TW13 7NB</div>
+
+    <div class="backed">Proudly backed by</div>
+    <div class="sponsors">
+      <div class="sp"><img src="../assets/sponsors/sporting-solutions.png"></div>
+      <div class="sp"><img src="../assets/sponsors/hodgson-roofing.png"></div>
+      <div class="sp"><img src="../assets/sponsors/staines-rugby.png"></div>
+    </div>
+
+    <div class="foot">
+      <span class="ig"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>@suesangelsfc</span>
+      <span>suesangelsfc.co.uk</span>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Squad · Sue's Angels FC</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<!-- keep our current font (Inter), per brief -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { heading: ['Inter','sans-serif'], body: ['Inter','sans-serif'] },
+    colors: { volt: '#D6F23A', navy: '#0A0F1C' }
+  } } };
+</script>
+<style>
+  :root { --volt: #D6F23A; --navy: #0A0F1C; }
+  html, body { background: #0A0F1C; color: #fff; font-family: 'Inter', sans-serif; }
+  * { -webkit-font-smoothing: antialiased; }
+
+  /* --- Liquid glass (per brief) --- */
+  .liquid-glass, .liquid-glass-strong {
+    background: rgba(255,255,255,0.02);
+    background-blend-mode: luminosity;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.10);
+    position: relative; overflow: hidden;
+  }
+  .liquid-glass { -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+  .liquid-glass-strong {
+    -webkit-backdrop-filter: blur(50px); backdrop-filter: blur(50px);
+    box-shadow: 4px 4px 4px rgba(0,0,0,0.05), inset 0 1px 1px rgba(255,255,255,0.15);
+  }
+  .liquid-glass::before, .liquid-glass-strong::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1.4px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+  }
+  .liquid-glass::before {
+    background: linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%, rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%, rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
+  }
+  .liquid-glass-strong::before {
+    background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 20%, rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%, rgba(255,255,255,0.2) 80%, rgba(255,255,255,0.5) 100%);
+  }
+  /* volt-tinted strong glass for the primary CTA */
+  .volt-glass::before { background: linear-gradient(180deg, rgba(214,242,58,0.6), rgba(214,242,58,0.15) 40%, rgba(214,242,58,0.15) 60%, rgba(214,242,58,0.6)); }
+
+  .head-it { font-family: 'Inter', sans-serif; font-style: italic; font-weight: 600; letter-spacing: -0.03em; }
+  .subtab { padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; color: rgba(255,255,255,.7); transition: color .25s, background .25s; white-space: nowrap; }
+  .subtab:hover { color: #fff; }
+  .subtab.is-on { background: #D6F23A; color: #0A0F1C; box-shadow: 0 6px 20px -8px rgba(214,242,58,.6); }
+  /* --- luxe layer: boot, cursor, scroll bar, focus, polish --- */
+  #boot { position: fixed; inset: 0; z-index: 9999; background: #0A0F1C; display: flex; align-items: center; justify-content: center; transition: opacity .8s ease; }
+  #boot.hide { opacity: 0; pointer-events: none; }
+  #boot img { width: 118px; height: 118px; object-fit: contain; animation: bootPulse 1.6s ease-in-out infinite; filter: drop-shadow(0 0 34px rgba(214,242,58,.45)); }
+  @keyframes bootPulse { 0%,100% { transform: scale(1); opacity: .85; } 50% { transform: scale(1.08); opacity: 1; } }
+  #scrollbar { position: fixed; top: 0; left: 0; height: 2.5px; background: #D6F23A; z-index: 9998; width: 0; box-shadow: 0 0 10px rgba(214,242,58,.6); }
+  .has-cursor, .has-cursor a, .has-cursor button, .has-cursor [role="button"] { cursor: none; }
+  .cur-dot { position: fixed; top: 0; left: 0; width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: #D6F23A; pointer-events: none; z-index: 10000; mix-blend-mode: difference; }
+  .cur-ring { position: fixed; top: 0; left: 0; width: 34px; height: 34px; margin: -17px; border: 1.5px solid rgba(214,242,58,.55); border-radius: 50%; pointer-events: none; z-index: 10000; transition: width .25s, height .25s, margin .25s, border-color .25s, background .25s; }
+  .cur-ring.big { width: 58px; height: 58px; margin: -29px; border-color: rgba(214,242,58,.9); background: rgba(214,242,58,.08); }
+  a:focus-visible, button:focus-visible, [role="button"]:focus-visible { outline: 2px solid #D6F23A; outline-offset: 3px; border-radius: 4px; }
+  @media (prefers-reduced-motion: reduce) { #boot img { animation: none; } }
+  @media (hover: none) { .has-cursor, .has-cursor a, .has-cursor button { cursor: auto; } .cur-dot, .cur-ring { display: none; } }
+  /* ---- volt accent + glow pass ---- */
+  .head-it.text-volt, .text-volt.head-it { text-shadow: 0 0 28px rgba(214,242,58,.28); }
+  /* nav link hover underline */
+  header nav a { position: relative; }
+  header nav a::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: 5px; height: 1.5px; background: #D6F23A; border-radius: 2px; transform: scaleX(0); transform-origin: left; transition: transform .3s cubic-bezier(.22,.68,.16,1); box-shadow: 0 0 8px rgba(214,242,58,.7); }
+  header nav a:hover::after { transform: scaleX(1); }
+  /* primary CTA glow (anchor buttons, not chips) */
+  a.bg-volt { box-shadow: 0 8px 34px -10px rgba(214,242,58,.55); }
+  a.bg-volt:hover { box-shadow: 0 10px 40px -8px rgba(214,242,58,.75); }
+  /* nav crest glow */
+  header a[href="index.html"] img { filter: drop-shadow(0 0 10px rgba(214,242,58,.28)); }
+  /* card hover volt corner glow */
+  .res-card, .cap-card { position: relative; }
+  .res-card::after, .cap-card::after { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; opacity: 0; transition: opacity .45s; background: radial-gradient(70% 45% at 82% 100%, rgba(214,242,58,.12), transparent 60%); z-index: 0; }
+  .res-card:hover::after, .cap-card:hover::after { opacity: 1; }
+  /* ledger row hover volt tint */
+  .divide-y > div:hover { background: linear-gradient(90deg, transparent, rgba(214,242,58,.05)); }
+  /* section ambient volt glow (decorative) */
+  .volt-amb { position: absolute; border-radius: 50%; filter: blur(90px); pointer-events: none; z-index: 0; background: rgba(214,242,58,.05); }
+  .cap-card { transition: transform .4s cubic-bezier(.22,.68,.16,1), box-shadow .45s; }
+  .cap-card:hover { transform: translateY(-6px); box-shadow: 0 30px 60px -30px rgba(214,242,58,.28); }
+  /* ambient life */
+  @keyframes lg-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  .lg-float { animation: lg-float 5s ease-in-out infinite; }
+  @keyframes orb-a { 0%,100% { transform: translate(0,0); } 50% { transform: translate(50px,-34px); } }
+  @keyframes orb-b { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-40px,30px); } }
+  .orb { position: absolute; border-radius: 50%; filter: blur(64px); pointer-events: none; }
+  .num-tile { transition: transform .35s cubic-bezier(.22,.68,.16,1), box-shadow .4s; }
+  .num-tile:hover { transform: translateY(-5px); box-shadow: 0 24px 50px -28px rgba(214,242,58,.35); }
+  .res-card { transition: transform .3s cubic-bezier(.22,.68,.16,1), box-shadow .4s; }
+  .res-card:hover { transform: translateY(-5px); box-shadow: 0 22px 46px -26px rgba(0,0,0,.6); }
+  .tbl-row { transition: background .3s, transform .3s; }
+  .tbl-row:hover { background: rgba(255,255,255,.045); transform: translateX(5px); }
+  @media (prefers-reduced-motion: reduce) { .lg-float, .orb { animation: none; } }
+  /* Award coverflow */
+  .aw-stage { perspective: 1200px; }
+  .aw-card { position: absolute; left: 50%; top: 0; width: min(300px, 70vw); aspect-ratio: 3/4; border-radius: 24px; overflow: hidden;
+    transition: transform .85s cubic-bezier(.22,.68,.16,1), opacity .6s, box-shadow .6s; will-change: transform; cursor: pointer;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,.12); }
+  .aw-card::before { content:''; position:absolute; inset:0; border-radius:inherit; padding:1.4px; z-index:2; pointer-events:none;
+    -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite:xor; mask-composite:exclude;
+    background:linear-gradient(180deg, rgba(255,255,255,.4), rgba(255,255,255,.05) 40%, rgba(255,255,255,.05) 60%, rgba(255,255,255,.4)); }
+  .aw-card img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .aw-card.is-center { box-shadow: 0 0 0 1.5px rgba(214,242,58,.85), 0 26px 70px -24px rgba(214,242,58,.55); animation: aw-glow 2.8s ease-in-out infinite; cursor: default; }
+  @keyframes aw-glow { 0%,100% { box-shadow: 0 0 0 1.5px rgba(214,242,58,.7), 0 26px 60px -26px rgba(214,242,58,.4); } 50% { box-shadow: 0 0 0 1.5px rgba(214,242,58,1), 0 30px 84px -20px rgba(214,242,58,.7); } }
+  .aw-btn { width: 46px; height: 46px; border-radius: 999px; border: 1.5px solid rgba(255,255,255,.18); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: border-color .3s, background .3s, transform .2s; }
+  .aw-btn:hover { border-color: #D6F23A; background: rgba(255,255,255,.06); transform: scale(1.06); }
+  .aw-dot { width: 8px; height: 8px; border-radius: 999px; background: rgba(214,242,58,.28); transition: width .35s cubic-bezier(.22,.68,.16,1), background .3s; }
+  .aw-dot.is-on { width: 30px; background: #D6F23A; }
+  .aw-halo { position: absolute; left: 50%; top: 45%; width: 520px; height: 520px; transform: translate(-50%,-50%); border-radius: 50%; pointer-events: none; z-index: 0; filter: blur(34px); background: radial-gradient(closest-side, rgba(214,242,58,.24), rgba(214,242,58,.08) 46%, transparent 72%); animation: aw-halo 3.2s ease-in-out infinite; }
+  @keyframes aw-halo { 0%,100% { opacity:.55; transform:translate(-50%,-50%) scale(.9);} 50%{opacity:1; transform:translate(-50%,-50%) scale(1.06);} }
+  .aw-cta { opacity:0; transform:translateY(6px); transition:opacity .35s, transform .35s; }
+  .aw-card.is-center .aw-cta { opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce) { .aw-card, .aw-card.is-center, .aw-halo { animation: none; } }
+
+  /* ---- player profile modal ---- */
+  .pm-overlay { position: fixed; inset: 0; z-index: 200; background: rgba(6,10,20,.75); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); display: flex; align-items: flex-start; justify-content: center; padding: 20px 14px 48px; overflow-y: auto; animation: pm-fade .35s ease; }
+  @keyframes pm-fade { from { opacity: 0; } to { opacity: 1; } }
+  .pm-panel { width: min(1060px, 100%); margin: auto; position: relative; animation: pm-rise .55s cubic-bezier(.22,.68,.16,1); }
+  @keyframes pm-rise { from { opacity: 0; transform: translateY(26px) scale(.98); } to { opacity: 1; transform: none; } }
+  .pm-x { position: absolute; top: 14px; right: 14px; z-index: 5; width: 40px; height: 40px; border-radius: 999px; display: flex; align-items: center; justify-content: center; font-size: 17px; color: #fff; border: 1.5px solid rgba(255,255,255,.18); background: rgba(10,15,28,.55); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); transition: border-color .3s, background .3s, transform .2s; }
+  .pm-x:hover { border-color: #D6F23A; transform: scale(1.06); }
+  .pm-pitch { position: relative; width: 100%; aspect-ratio: 4/5; max-width: 290px; margin: 6px auto 0; border-radius: 16px; overflow: hidden; background: linear-gradient(180deg, rgba(20,41,63,.55), rgba(7,29,41,.55)); }
+  .pm-pitch__lines { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .pm-pitch__lines rect, .pm-pitch__lines line, .pm-pitch__lines circle { fill: none; stroke: rgba(255,255,255,.15); stroke-width: .5; }
+  .pm-pitch__heat { position: absolute; transform: translate(-50%,-50%); border-radius: 50%; background: radial-gradient(closest-side, rgba(214,242,58,calc(.14 + var(--heat)*.34)), transparent 70%); pointer-events: none; }
+  .pm-pitch__node { position: absolute; transform: translate(-50%,-50%); border-radius: 50%; background: #D6F23A; color: #0A0F1C; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 9px; font-weight: 800; box-shadow: 0 4px 14px -4px rgba(214,242,58,.7); }
+  .pm-pitch__node small { font-size: 7px; font-weight: 700; opacity: .82; }
+  .pm-form { display: flex; gap: 6px; flex-wrap: wrap; }
+  .pm-fc { flex: 1; min-width: 44px; text-align: center; }
+  .pm-fc__r { border-radius: 8px; font-size: 12px; font-weight: 800; padding: 5px 0; }
+  .pm-fc__r--w { background: #D6F23A; color: #0A0F1C; }
+  .pm-fc__r--d { background: rgba(255,255,255,.14); color: #fff; }
+  .pm-fc__r--l { background: rgba(255,107,107,.18); color: #ffb4b4; }
+  .pm-fc__g { font-size: 10px; color: rgba(255,255,255,.6); margin-top: 4px; }
+  .pm-fc__o { font-size: 10px; color: rgba(255,255,255,.4); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pm-split { width: 100%; border-collapse: collapse; }
+  .pm-split th, .pm-split td { text-align: right; padding: 8px 6px; font-size: 13px; border-bottom: 1px solid rgba(255,255,255,.08); }
+  .pm-split th:first-child, .pm-split td:first-child { text-align: left; }
+  .pm-split th { color: rgba(255,255,255,.45); font-weight: 600; text-transform: uppercase; font-size: 10px; letter-spacing: .08em; }
+  .pm-split td { color: rgba(255,255,255,.82); }
+  .pm-split__hl { color: #D6F23A !important; font-weight: 700; }
+  .pm-ach { display: flex; flex-direction: column; gap: 8px; }
+  .pm-ach__row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 14px; border-radius: 12px; background: rgba(214,242,58,.06); border: 1px solid rgba(214,242,58,.16); }
+  .pm-ach__row--award { background: rgba(255,255,255,.04); border-color: rgba(255,255,255,.10); }
+  .pm-ach__chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 4px; }
+  .pm-ach__chip { font-size: 11px; font-weight: 600; color: rgba(255,255,255,.8); padding: 5px 11px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); }
+
+  /* scrims as classes so the theme can flip them */
+  .hero-scrim { position: absolute; inset: 0; z-index: 1; background: linear-gradient(to bottom, rgba(10,15,28,.85), rgba(10,15,28,.55) 50%, #0A0F1C); }
+  .cap-scrim  { position: absolute; inset: 0; z-index: 1; background: rgba(10,15,28,.80); }
+
+</style>
+<script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/framer-motion@10.18.0/dist/framer-motion.js"></script>
+</head>
+<body>
+<div id="boot"><img src="assets/badge/sue-angels-badge-cutout.webp" alt="" /></div><div id="scrollbar"></div>
+<div id="root"></div>
+<script src="supabase-config.js?v=21"></script>
+<script src="supabase.js?v=19"></script>
+<script src="dataStore.js?v=33"></script>
+<script src="PageShell.js?v=48"></script>
+<script src="FixtureEntry.js?v=20"></script>
+<script src="PlayerPhotos.js?v=19"></script>
+<script>
+(function () {
+  'use strict';
+  var h = React.createElement;
+  var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
+  var FM = window.Motion || window.FramerMotion || {};
+  var MOTION = FM.motion || null; var HAS_FM = !!MOTION;
+  function mEl(tag, props) {
+    var kids = Array.prototype.slice.call(arguments, 2);
+    if (HAS_FM) return h.apply(null, [MOTION[tag], props].concat(kids));
+    var rest = {}; for (var k in props) { if (['initial','animate','whileInView','viewport','transition','whileHover','whileTap','exit'].indexOf(k) === -1) rest[k] = props[k]; }
+    return h.apply(null, [tag, rest].concat(kids));
+  }
+  var ArrowUpRight = function (p) { return h('svg', { width: p&&p.s||18, height: p&&p.s||18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, h('path', { d: 'M7 17L17 7' }), h('path', { d: 'M7 7h10v10' })); };
+  var RISE = { initial: { filter: 'blur(10px)', opacity: 0, y: 20 }, animate: { filter: 'blur(0px)', opacity: 1, y: 0 } };
+  function rise(d) { return { initial: RISE.initial, animate: RISE.animate, transition: { duration: 0.8, delay: d, ease: 'easeOut' } }; }
+
+  var NAV = [['The Club','about.html'],['Fixtures','fixtures.html'],['Results','results.html'],['Media','media.html'],['Contact','contact.html']];
+  function Navbar() {
+    return h('header', { className: 'fixed top-4 left-0 right-0 z-50 px-5 lg:px-16 flex flex-row justify-between items-center' },
+      h('a', { href: 'index.html', className: 'flex items-center gap-3' },
+        h('span', { className: 'liquid-glass h-12 w-12 rounded-full flex items-center justify-center' }, h('img', { src: 'assets/badge/sue-angels-badge-cutout.webp', alt: '', className: 'h-8 w-8 object-contain' })),
+        h('span', { className: 'hidden sm:flex flex-col leading-none' },
+          h('span', { className: 'text-[15px] font-semibold tracking-tight' }, "Sue's Angels FC"),
+          h('span', { className: 'text-[9px] uppercase tracking-[0.22em] text-volt mt-1' }, 'Champions 25/26'))),
+      h('nav', { className: 'hidden md:flex liquid-glass rounded-full px-1.5 py-1.5 items-center gap-1' },
+        NAV.map(function (l) { return h('a', { key: l[0], href: l[1], className: 'px-3.5 py-2 text-sm font-medium text-white/90 rounded-full hover:bg-white/10 transition-colors' }, l[0]); })),
+      h('a', { href: 'join.html', className: 'flex items-center gap-1.5 bg-volt text-navy rounded-full px-4 sm:px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity' }, 'Join the club', h(ArrowUpRight, { s: 15 })));
+  }
+
+  function posGroup(pos, gk) {
+    var p = pos || '';
+    if (gk || /^GK/.test(p)) return 'Goalkeepers';
+    if (/CB|LB|RB|WB|SW|^DF/.test(p)) return 'Defenders';
+    if (/DM|CM|AM|LM|RM|MF/.test(p)) return 'Midfielders';
+    if (/ST|CF|SS|LW|RW|FW/.test(p)) return 'Forwards';
+    return 'Squad';
+  }
+
+  /* ══ Player profile (ported from live ProfileCard, restyled) ══ */
+  var MON = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
+  function pdate(str){ var m=/(\d{1,2})\s+(\w{3})\s+(\d{2})/.exec(str||''); return m?new Date(2000+ +m[3], MON[m[2]]||0, +m[1]):new Date(0); }
+  function nnum(e){ return typeof e==='number'?e:(e&&e.num); }
+  function npos(e){ return e&&Array.isArray(e.positions)?e.positions:[]; }
+  function seasonCompTotals(season){
+    var sOf = window.seasonOf || function(){ return window.CURRENT_SEASON; };
+    var results = (window.getDerivedResults?window.getDerivedResults():[]).filter(function(r){ return (!season||season==='all')?true:((sOf(r)||window.CURRENT_SEASON)===season); });
+    var pl=0,w=0,d=0,l=0,gf=0,ga=0,cs=0;
+    for (var i=0;i<results.length;i++){ var r=results[i], usHome=r.home.indexOf('Angels')>-1;
+      if (r.kind==='walkover'){ pl++; w++; continue; }
+      var us=usHome?r.hs:r.as, them=usHome?r.as:r.hs;
+      if (us==null||them==null) continue;
+      pl++; gf+=us; ga+=them; if(them===0)cs++;
+      if (r.kind==='penalty'&&r.pens){ var uP=usHome?r.pens.hs:r.pens.as, tP=usHome?r.pens.as:r.pens.hs; if(uP>tP)w++; else l++; }
+      else if(us>them)w++; else if(us===them)d++; else l++;
+    }
+    return { pl:pl,w:w,d:d,l:l,gf:gf,ga:ga,gd:gf-ga,cs:cs,winPct:pl?Math.round(w/pl*100):0 };
+  }
+  function matchLog(num, compMatcher, seasonKey){
+    var results = (window.getDerivedResults?window.getDerivedResults():[]).slice();
+    if (compMatcher) results = results.filter(function(r){ return compMatcher(r.competition); });
+    if (seasonKey && seasonKey!=='all'){ var sOf = window.seasonOf || function(){ return window.CURRENT_SEASON; }; results = results.filter(function(r){ return (sOf(r)||window.CURRENT_SEASON)===seasonKey; }); }
+    var entries = window.getAllMatchEntries ? window.getAllMatchEntries() : [];
+    var byId = {}; entries.forEach(function(o){ byId[o.id]=o.data; });
+    var rows = results.map(function(r){ return { r:r, d:pdate(r.date) }; }).sort(function(a,b){ return a.d-b.d; });
+    var out = [];
+    for (var i=0;i<rows.length;i++){ var r=rows[i].r;
+      if (r.kind==='walkover') continue;
+      var data = byId[r.id]; if(!data) continue;
+      var startE = (data.starters||[]).find(function(e){ return nnum(e)===num; });
+      var subE = (data.bench||[]).find(function(e){ return nnum(e)===num; });
+      var entry = startE || subE;
+      if (!startE && !(subE && npos(subE).length>0)) continue;
+      var g = (data.goals||[]).filter(function(x){ return x.num===num; }).length;
+      var a = (data.assists||[]).filter(function(x){ return x.num===num; }).length;
+      var posList = npos(entry);
+      var isGk = posList.some(function(pp){ return /^GK|^GOAL/i.test(pp); });
+      var isDef = isGk || posList.some(function(pp){ return /CB|LB|RB|WB|BACK|DEF|^D/i.test(pp); });
+      var usHome = r.home.indexOf('Angels')>-1;
+      var us = usHome?r.hs:r.as, th = usHome?r.as:r.hs;
+      var teamConc = th;
+      var conceded = isGk ? teamConc : null;
+      var csTeam = th===0;
+      var csContribs = data.cleanSheetContributors || [];
+      var csKeepers = data.cleanSheets || [];
+      var csPart = csTeam && (csKeepers.indexOf(num)>-1 || csContribs.indexOf(num)>-1);
+      out.push({ date:r.date, opp:(usHome?r.away:r.home).replace(' FC',''), g:g, a:a, res: us>th?'w':us===th?'d':'l', isGk:isGk, def:isDef, teamConc:teamConc, conceded:conceded, csTeam:csTeam, csPart:csPart });
+    }
+    return out;
+  }
+  var POS_XY = { GK:[50,90],CB:[50,80],SW:[50,85],RCB:[64,81],LCB:[36,81],RB:[82,74],LB:[18,74],RWB:[85,64],LWB:[15,64],CDM:[50,65],DM:[50,65],RDM:[64,66],LDM:[36,66],CM:[50,50],RCM:[64,51],LCM:[36,51],RM:[82,48],LM:[18,48],CAM:[50,36],AM:[50,36],RAM:[66,37],LAM:[34,37],RW:[80,30],LW:[20,30],SS:[50,28],CF:[50,22],ST:[50,16] };
+
+  function Ico(name){
+    var d = {
+      ball: 'M12 3a9 9 0 100 18 9 9 0 000-18zM12 8l3.5 2.5-1.3 4h-4.4l-1.3-4z',
+      trophy: 'M7 4h10v3a5 5 0 01-10 0zM5 4h2M17 4h2M9 20h6M12 13v7',
+      pass: 'M4 12h11M12 7l6 5-6 5',
+      star: 'M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 17l-5.2 2.6 1-5.8-4.3-4.1 5.9-.9z',
+      shield: 'M12 3l7 3v6c0 4-3 6.8-7 8.5C8 18.8 5 16 5 12V6z',
+      pulse: 'M3 12h4l2-6 4 12 2-6h6'
+    };
+    return h('svg',{width:17,height:17,viewBox:'0 0 24 24',fill:'none',stroke:'#D6F23A',strokeWidth:1.7,strokeLinecap:'round',strokeLinejoin:'round'}, h('path',{d:d[name]||d.star}));
+  }
+  function useMounted(){ var st=useState(false); useEffect(function(){ var t=setTimeout(function(){ st[1](true); },70); return function(){ clearTimeout(t); }; },[]); return st[0]; }
+
+  function pmPanel(title){ var kids=Array.prototype.slice.call(arguments,1); return h('div',{className:'liquid-glass rounded-[1.25rem] p-6'}, title?h('p',{className:'text-[11px] uppercase tracking-widest text-volt mb-4'}, title):null, kids); }
+
+  function Ring(props){
+    var R=32, C=2*Math.PI*R; var on=useMounted();
+    var pct=Math.max(0,Math.min(1,props.pct||0));
+    return h('div',{className:'flex flex-col items-center text-center'},
+      h('div',{className:'relative',style:{width:92,height:92}},
+        h('svg',{width:92,height:92,viewBox:'0 0 92 92',style:{transform:'rotate(-90deg)'}},
+          h('circle',{cx:46,cy:46,r:R,fill:'none',stroke:'rgba(255,255,255,.10)',strokeWidth:7}),
+          h('circle',{cx:46,cy:46,r:R,fill:'none',stroke:'#D6F23A',strokeWidth:7,strokeLinecap:'round',strokeDasharray:C,strokeDashoffset:on?C*(1-pct):C,style:{transition:'stroke-dashoffset 1.1s cubic-bezier(.22,.68,.16,1)'}})),
+        h('div',{className:'absolute inset-0 flex items-center justify-center head-it text-lg text-white'}, props.value)),
+      h('div',{className:'text-[10px] uppercase tracking-widest text-white/55 mt-3 leading-tight'}, props.label),
+      props.sub?h('div',{className:'text-[10px] text-white/40 mt-0.5'}, props.sub):null);
+  }
+  function Bar(props){ var on=useMounted(); return h('div',{className:'mb-3'},
+    h('div',{className:'flex items-center justify-between mb-1.5'}, h('span',{className:'text-sm text-white/70'}, props.name), h('span',{className:'head-it text-base text-white tabular-nums'}, props.val)),
+    h('div',{className:'h-2 rounded-full bg-white/10 overflow-hidden'}, h('div',{className:'h-full rounded-full '+(props.soft?'bg-white/40':'bg-volt'),style:{width:on?(Math.max(0,Math.min(1,props.pct))*100+'%'):'0%',transition:'width 1.1s cubic-bezier(.22,.68,.16,1)'}}))); }
+
+  function SparkChart(props){
+    var log=props.log||[], isGK=props.isGK, isDef=props.isDef;
+    var tlog = isGK ? log.filter(function(m){ return m.conceded!=null; }) : log;
+    var W=520,H=120,pad=10, cum=0;
+    var series = tlog.map(function(m){ return cum += isGK?(m.conceded===0?1:0):isDef?(m.csPart?1:0):(m.g+m.a); });
+    var maxCum=Math.max(1,cum);
+    var pts = series.map(function(v,i){ return [pad+(series.length<=1?0:i/(series.length-1)*(W-2*pad)), H-pad-v/maxCum*(H-2*pad)]; });
+    var line = pts.map(function(q,i){ return (i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1); }).join(' ');
+    var area = pts.length? line+' L '+pts[pts.length-1][0].toFixed(1)+' '+(H-pad)+' L '+pts[0][0].toFixed(1)+' '+(H-pad)+' Z' : '';
+    var on=useMounted();
+    if(!pts.length) return h('p',{className:'text-sm text-white/40'}, 'No featured matches yet.');
+    return h('svg',{viewBox:'0 0 '+W+' '+H,preserveAspectRatio:'none',style:{width:'100%',height:120}},
+      h('defs',null, h('linearGradient',{id:'pmspk',x1:0,y1:0,x2:0,y2:1}, h('stop',{offset:'0%',stopColor:'rgba(214,242,58,.32)'}), h('stop',{offset:'100%',stopColor:'rgba(214,242,58,0)'}))),
+      area?h('path',{d:area,fill:'url(#pmspk)',opacity:on?1:0,style:{transition:'opacity .9s ease'}}):null,
+      line?h('path',{d:line,fill:'none',stroke:'#D6F23A',strokeWidth:2.5,strokeLinecap:'round',strokeLinejoin:'round',style:{strokeDasharray:2400,strokeDashoffset:on?0:2400,transition:'stroke-dashoffset 1.5s ease'}}):null,
+      pts.map(function(q,i){ return h('circle',{key:i,cx:q[0],cy:q[1],r:2.4,fill:'#D6F23A',opacity:on?1:0,style:{transition:'opacity .4s ease '+(0.6+i*0.03)+'s'}}); }));
+  }
+
+  function ProfileCard(props){
+    var num = props.num;
+    var allSeasons = ['all'].concat(window.ALL_SEASONS||['25/26']);
+    var ss = useState(window.CURRENT_SEASON||'25/26'), season=ss[0], setSeason=ss[1];
+    var cc = useState('all'), comp=cc[0], setComp=cc[1];
+    useEffect(function(){ setComp('all'); },[season]);
+    var seasonKey = season==='all'?null:season;
+    var compList = window.COMPETITIONS||[{key:'all',label:'All',match:function(){ return true; }}];
+    var matcher = comp==='all'?null:((compList.find(function(c){ return c.key===comp; })||{}).match);
+    var availComps=[{key:'all',label:'All'}].concat(compList.filter(function(c){ return c.key!=='all'; }).filter(function(c){ return window.derivedPlayerStats?((window.derivedPlayerStats(num,c.match,seasonKey).apps||0)>0):false; }).map(function(c){ return {key:c.key,label:c.label}; }));
+
+    var squad = window.derivedSquad?window.derivedSquad(matcher,seasonKey):[];
+    var p = squad.find(function(x){ return x.num===num; })||squad[0];
+    if(!p) return h('p',{className:'text-white/60 p-8 text-center'}, 'No data for this player in the selected filter.');
+    var log = matchLog(p.num, matcher, seasonKey);
+    var teamPlayed = (window.getDerivedResults?window.getDerivedResults():[]).filter(function(r){ if(matcher&&!matcher(r.competition))return false; if(seasonKey&&seasonKey!=='all'){ var sOf=window.seasonOf||function(){ return window.CURRENT_SEASON; }; if((sOf(r)||window.CURRENT_SEASON)!==seasonKey)return false; } return r.kind!=='walkover'; }).length;
+    var wins = log.filter(function(m){ return m.res==='w'; }).length;
+    var teamGf = (seasonCompTotals(season).gf)||0;
+    var goalShare = teamGf?Math.round(p.goals/teamGf*100):0;
+    function rankIn(key){ return squad.slice().sort(function(a,b){ return (b[key]||0)-(a[key]||0); }).findIndex(function(x){ return x.num===p.num; })+1; }
+    var comps = (window.COMPETITIONS||[]).filter(function(c){ return c.key!=='all'; }).map(function(c){ return {label:c.label, s:window.derivedPlayerStats(p.num,c.match,seasonKey)}; }).filter(function(c){ return c.s.apps>0; });
+    var openPlay = p.goals - (p.penaltiesScored||0) - (p.setPiecesScored||0);
+    var isGK = !!(p.gk || posGroup(p.mostPlayedPosition,p.gk)==='Goalkeepers');
+    var goalRank=rankIn('goals'), assistRank=rankIn('assists'), motmRank=rankIn('motm'), csRank=rankIn('cleanSheets');
+    var gkApps = p.gkApps || p.apps;
+    var conceded = p.goalsConceded||0, cs=p.cleanSheets||0;
+    var cpg = gkApps?conceded/gkApps:0, csRate = gkApps?cs/gkApps:0, pensSaved=p.penaltiesSaved||0;
+    var gpg = p.apps?p.goalInvolvements/p.apps:0;
+    var isDef = !isGK && posGroup(p.mostPlayedPosition,p.gk)==='Defenders';
+    var csContribs = log.filter(function(m){ return m.csPart; }).length;
+    var csInvolve = p.apps?csContribs/p.apps:0;
+    var rings = isGK ? [
+      {label:'Clean sheet %',value:Math.round(csRate*100)+'%',pct:csRate,sub:cs+' of '+gkApps},
+      {label:'Conceded / game',value:cpg.toFixed(2),pct:1-Math.min(1,cpg/3),sub:conceded+' in '+gkApps},
+      {label:'Win involvement',value:(teamPlayed?Math.round(wins/teamPlayed*100):0)+'%',pct:teamPlayed?wins/teamPlayed:0,sub:wins+' of '+teamPlayed},
+      {label:'Availability',value:(teamPlayed?Math.round(p.apps/teamPlayed*100):0)+'%',pct:teamPlayed?p.apps/teamPlayed:0,sub:p.apps+' of '+teamPlayed}
+    ] : [
+      {label:'G+A / game',value:gpg.toFixed(2),pct:Math.min(1,gpg/2),sub:p.goalInvolvements+' in '+p.apps},
+      {label:'Win involvement',value:(teamPlayed?Math.round(wins/teamPlayed*100):0)+'%',pct:teamPlayed?wins/teamPlayed:0,sub:wins+' of '+teamPlayed},
+      {label:'Availability',value:(teamPlayed?Math.round(p.apps/teamPlayed*100):0)+'%',pct:teamPlayed?p.apps/teamPlayed:0,sub:p.apps+' of '+teamPlayed},
+      isDef ? {label:'Clean sheet involve.',value:(p.apps?Math.round(csInvolve*100):0)+'%',pct:csInvolve,sub:csContribs+' of '+p.apps} : {label:'MOTM rate',value:(p.apps?Math.round(p.motm/p.apps*100):0)+'%',pct:p.apps?p.motm/p.apps:0,sub:p.motm+' awards'}
+    ];
+    var kpis = isGK ? [
+      {v:p.apps,l:'Apps'},{v:cs,l:'Clean sheets',volt:true},{v:conceded,l:'Conceded'},{v:pensSaved,l:'Pens saved',volt:true},{v:p.motm,l:'MOTM'},{v:(p.yc||0)+(p.rc||0),l:'Cards'}
+    ] : [
+      {v:p.apps,l:'Apps'},{v:p.goals,l:'Goals',volt:true},{v:p.assists,l:'Assists',volt:true}, isDef?{v:csContribs,l:'Clean sheets',volt:true}:{v:p.goalInvolvements,l:'G+A'}, {v:p.motm,l:'MOTM'},{v:(p.yc||0)+(p.rc||0),l:'Cards'}
+    ];
+    var impact = isGK ? [
+      {ic:'shield',v:Math.round(csRate*100)+'%',t:'Clean sheet rate',s:cs+' of '+gkApps},
+      {ic:'trophy',v:'#'+csRank,t:'Clean sheet rank',s:'in the squad'},
+      {ic:'pulse',v:cpg.toFixed(2),t:'Conceded / game',s:conceded+' conceded'},
+      {ic:'star',v:'#'+motmRank,t:'MOTM rank',s:p.motm+' awards'}
+    ] : [
+      {ic:'ball',v:goalShare+'%',t:'Share of club goals',s:p.goals+' of '+teamGf},
+      {ic:'trophy',v:'#'+goalRank,t:'Goalscoring rank',s:goalRank===1?'club top scorer':'in the squad'},
+      {ic:'pass',v:'#'+assistRank,t:'Assist rank',s:'in the squad'},
+      {ic:'star',v:'#'+motmRank,t:'MOTM rank',s:p.motm+' awards'}
+    ];
+    var teamTot = squad.reduce(function(acc,x){ acc.goals+=x.goals||0; acc.assists+=x.assists||0; acc.gi+=x.goalInvolvements||0; acc.motm+=x.motm||0; acc.cs+=x.cleanSheets||0; acc.apps+=x.apps||0; return acc; }, {goals:0,assists:0,gi:0,motm:0,cs:0,apps:0});
+    var contrib = isGK ? [
+      {name:'Clean sheets',pct:teamTot.cs?cs/teamTot.cs:0,val:(teamTot.cs?Math.round(cs/teamTot.cs*100):0)+'%'},
+      {name:'Appearances',pct:teamTot.apps?p.apps/teamTot.apps:0,val:(teamTot.apps?Math.round(p.apps/teamTot.apps*100):0)+'%'},
+      {name:'MOTM awards',pct:teamTot.motm?p.motm/teamTot.motm:0,val:(teamTot.motm?Math.round(p.motm/teamTot.motm*100):0)+'%'}
+    ] : [
+      {name:'Goals',pct:teamTot.goals?p.goals/teamTot.goals:0,val:goalShare+'%'},
+      {name:'Assists',pct:teamTot.assists?p.assists/teamTot.assists:0,val:(teamTot.assists?Math.round(p.assists/teamTot.assists*100):0)+'%'},
+      {name:'Goal involvements',pct:teamTot.gi?p.goalInvolvements/teamTot.gi:0,val:(teamTot.gi?Math.round(p.goalInvolvements/teamTot.gi*100):0)+'%'},
+      {name:'MOTM awards',pct:teamTot.motm?p.motm/teamTot.motm:0,val:(teamTot.motm?Math.round(p.motm/teamTot.motm*100):0)+'%'}
+    ];
+    var dist = [{name:'Open play',val:openPlay},{name:'Penalties',val:p.penaltiesScored||0},{name:'Set pieces',val:p.setPiecesScored||0}];
+    var posTop = (p.positionBreakdown||[]).slice(0,5);
+    var posMax = posTop.length?posTop[0][1]:1;
+    var photo = window.getPlayerPhoto?window.getPlayerPhoto(p.num):null;
+    var sponsorName = (window.getPlayerSponsor?window.getPlayerSponsor(p.num):'')||'';
+    var rec = window.getPlayerRecognition?window.getPlayerRecognition(p.num):null;
+
+    // ---- header chips ----
+    var chips = [ h('span',{key:'pos',className:'bg-volt text-navy text-[11px] font-bold uppercase tracking-wide rounded-full px-3 py-1'}, isGK?'Goalkeeper':(p.mostPlayedPosition||'Squad')) ];
+    if (p.captained) chips.push(h('span',{key:'cap',className:'liquid-glass text-[11px] font-semibold uppercase tracking-wide text-white/90 rounded-full px-3 py-1'}, 'Captain'));
+    if (isGK && csRank===1) chips.push(h('span',{key:'cs',className:'liquid-glass text-[11px] font-semibold uppercase tracking-wide text-white/90 rounded-full px-3 py-1'}, 'Most clean sheets'));
+    else if (!isGK && goalRank===1) chips.push(h('span',{key:'ts',className:'liquid-glass text-[11px] font-semibold uppercase tracking-wide text-white/90 rounded-full px-3 py-1'}, 'Top scorer'));
+
+    // ---- achievements ----
+    var achEl = null;
+    if (rec) {
+      var items = [];
+      (rec.records||[]).forEach(function(r){ items.push(['record', r.title, r.landmark?(r.scope||r.value):r.value]); });
+      (rec.potm||[]).forEach(function(r){ items.push(['award','Player of the Month', ((r.month||'')+' '+(r.season||'')).trim()]); });
+      (rec.seasonAwards||[]).forEach(function(r){ items.push(['award', r.title, r.season||'']); });
+      var ms = rec.milestones||[];
+      if (items.length || ms.length) {
+        achEl = pmPanel('Achievements & Milestones',
+          items.length ? h('div',{className:'pm-ach'}, items.map(function(it,i){ return h('div',{key:'a'+i,className:'pm-ach__row'+(it[0]==='award'?' pm-ach__row--award':'')}, h('span',{className:'text-sm font-semibold text-white'}, it[1]), it[2]?h('span',{className:'text-xs text-white/55'}, it[2]):null); })) : null,
+          ms.length ? h('div',{className:'pm-ach__chips'}, ms.map(function(m,i){ return h('span',{key:'m'+i,className:'pm-ach__chip'}, m.title); })) : null);
+      }
+    }
+
+    return h('div',{className:'liquid-glass-strong rounded-[1.75rem] p-5 md:p-8'},
+      // header
+      h('div',{className:'flex flex-col sm:flex-row gap-5 sm:gap-6 items-start'},
+        h('div',{className:'relative w-28 h-32 sm:w-32 sm:h-36 rounded-2xl overflow-hidden liquid-glass shrink-0 lg-float'},
+          photo?h('img',{src:photo,alt:p.first+' '+p.last,className:'w-full h-full object-cover object-top'})
+               :h('div',{className:'w-full h-full flex items-center justify-center',style:{background:'radial-gradient(100% 100% at 50% 0%, #14293F, #071D29)'}}, h('img',{src:'assets/badge/sue-angels-shield.webp',alt:'',className:'w-16 h-16 opacity-70'}))),
+        h('div',{className:'flex-1 min-w-0 pr-10'},
+          h('div',{className:'flex flex-wrap items-center gap-2 mb-3'}, chips),
+          h('h2',{className:'leading-[0.9]'}, h('span',{className:'block head-it text-2xl md:text-3xl text-white tracking-[-1px]'}, p.last), h('span',{className:'block text-white/55 text-lg mt-1'}, p.first)),
+          sponsorName?h('div',{className:'mt-3 text-xs text-white/50'}, 'Sponsored by ', h('b',{className:'text-white/85'}, sponsorName)):null)),
+      // filters
+      h('div',{className:'flex flex-wrap gap-3 mt-6'},
+        h('div',{className:'liquid-glass rounded-full p-1.5 inline-flex gap-1 flex-wrap'}, allSeasons.map(function(sv){ return h('button',{key:sv,type:'button',className:'subtab'+(season===sv?' is-on':''),onClick:function(){ setSeason(sv); }}, sv==='all'?'All seasons':sv); })),
+        availComps.length>1 ? h('div',{className:'liquid-glass rounded-full p-1.5 inline-flex gap-1 flex-wrap'}, availComps.map(function(c){ return h('button',{key:c.key,type:'button',className:'subtab'+(comp===c.key?' is-on':''),onClick:function(){ setComp(c.key); }}, c.label); })) : null),
+      // KPI tiles
+      h('div',{className:'grid grid-cols-3 sm:grid-cols-6 gap-3 mt-6'}, kpis.map(function(k,i){ return h('div',{key:i,className:'liquid-glass rounded-2xl p-3.5 md:p-4'}, h('div',{className:'head-it text-3xl md:text-[2rem] leading-none tabular-nums '+(k.volt?'text-volt':'text-white')}, k.v), h('div',{className:'text-[10px] uppercase tracking-widest text-white/50 mt-2 leading-tight'}, k.l)); })),
+      // rings
+      h('div',{className:'grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 liquid-glass rounded-[1.25rem] p-6'}, rings.map(function(r,i){ return h(Ring,{key:i,label:r.label,value:r.value,pct:r.pct,sub:r.sub}); })),
+      // breakdown + impact
+      h('div',{className:'grid md:grid-cols-2 gap-4 mt-4'},
+        isGK ? pmPanel('Defensive record',
+            h(Bar,{name:'Clean sheets',val:cs,pct:csRate}),
+            h(Bar,{name:'Conceded in',val:(gkApps-cs),pct:gkApps?(gkApps-cs)/gkApps:0}),
+            h(Bar,{name:'Shutout rate',val:Math.round(csRate*100)+'%',pct:csRate,soft:true}))
+          : pmPanel('Goal breakdown',
+            dist.map(function(dd,i){ return h(Bar,{key:i,name:dd.name,val:dd.val,pct:p.goals?dd.val/p.goals:0}); }),
+            h(Bar,{name:'Goals vs assists',val:p.goals+'·'+p.assists,pct:p.goalInvolvements?p.goals/p.goalInvolvements:0,soft:true})),
+        pmPanel('Season impact',
+          h('div',{className:'flex flex-col gap-3'}, impact.map(function(r,i){ return h('div',{key:i,className:'flex items-center gap-3'},
+            h('span',{className:'w-9 h-9 rounded-xl bg-volt/10 flex items-center justify-center shrink-0'}, Ico(r.ic)),
+            h('div',{className:'flex-1 min-w-0'}, h('div',{className:'head-it text-lg text-white leading-none'}, r.v), h('div',{className:'text-xs text-white/55 mt-0.5'}, r.t)),
+            h('span',{className:'text-[11px] text-white/40 text-right'}, r.s)); })))),
+      // sparkline + contribution / pitch
+      h('div',{className:'grid md:grid-cols-2 gap-4 mt-4'},
+        pmPanel(isGK?((p.goals||p.assists)?'Cumulative clean sheets & contributions':'Cumulative clean sheets'):'Cumulative goal involvements',
+          h(SparkChart,{log:log,isGK:isGK,isDef:isDef}),
+          h('p',{className:'text-[11px] uppercase tracking-widest text-volt mb-4 mt-6'}, 'Contribution vs the team'),
+          contrib.map(function(cb,i){ return h(Bar,{key:i,name:cb.name,val:cb.val,pct:cb.pct}); })),
+        pmPanel('Where they play',
+          h('div',{className:'pm-pitch'},
+            h('svg',{className:'pm-pitch__lines',viewBox:'0 0 100 125',preserveAspectRatio:'none'},
+              h('rect',{x:3,y:3,width:94,height:119,rx:3}), h('line',{x1:3,y1:62.5,x2:97,y2:62.5}), h('circle',{cx:50,cy:62.5,r:11}), h('rect',{x:28,y:3,width:44,height:20}), h('rect',{x:28,y:102,width:44,height:20})),
+            posTop.map(function(pr,i){ var xy=POS_XY[pr[0]]||[50,50]; var heat=posMax?pr[1]/posMax:0; var size=80+heat*135; return h('span',{key:'h'+i,className:'pm-pitch__heat',style:{left:xy[0]+'%',top:xy[1]+'%',width:size,height:size,'--heat':heat}}); }),
+            posTop.map(function(pr,i){ var xy=POS_XY[pr[0]]||[50,50]; var sz=22+pr[1]/posMax*16; return h('span',{key:i,className:'pm-pitch__node',style:{left:xy[0]+'%',top:xy[1]+'%',width:sz,height:sz}}, pr[0], h('small',null, pr[1]+'×')); })),
+          posTop.length?null:h('p',{className:'text-sm text-white/40 mt-2'}, 'No position data yet.'))),
+      // by competition
+      comps.length ? h('div',{className:'mt-4'}, pmPanel('By competition · '+(season==='all'?'all seasons':season),
+        h('table',{className:'pm-split'},
+          h('thead',null, isGK ? h('tr',null,h('th',null,'Competition'),h('th',null,'Apps'),h('th',null,'CS'),h('th',null,'Conc'),h('th',null,'MOTM')) : h('tr',null,h('th',null,'Competition'),h('th',null,'Apps'),h('th',null,'G'),h('th',null,'A'),h('th',null,'MOTM'))),
+          h('tbody',null, comps.map(function(c,i){ return isGK ? h('tr',{key:i},h('td',null,c.label),h('td',null,c.s.apps),h('td',{className:'pm-split__hl'},c.s.cleanSheets),h('td',null,c.s.goalsConceded),h('td',null,c.s.motm)) : h('tr',{key:i},h('td',null,c.label),h('td',null,c.s.apps),h('td',{className:'pm-split__hl'},c.s.goals),h('td',{className:'pm-split__hl'},c.s.assists),h('td',null,c.s.motm)); })))) ) : null,
+      // last N form
+      h('div',{className:'mt-4'}, pmPanel('Last '+Math.min(10,(isGK?log.filter(function(m){return m.conceded!=null;}):log).length)+' featured',
+        h('div',{className:'pm-form'}, (isGK?log.filter(function(m){return m.conceded!=null;}):log).slice(-10).map(function(m,i){ return h('div',{key:i,className:'pm-fc'},
+          h('div',{className:'pm-fc__r pm-fc__r--'+m.res}, m.res.toUpperCase()),
+          h('div',{className:'pm-fc__g'}, isGK?(m.conceded===0?'CS':m.conceded+' conc'):(m.g||m.a?(m.g+'G '+m.a+'A'):'·')),
+          h('div',{className:'pm-fc__o'}, m.opp)); })))),
+      // achievements
+      achEl ? h('div',{className:'mt-4'}, achEl) : null);
+  }
+
+  function ProfileModal(props){
+    useEffect(function(){
+      var prev=document.body.style.overflow; document.body.style.overflow='hidden';
+      function k(e){ if(e.key==='Escape') props.onClose(); }
+      window.addEventListener('keydown',k);
+      return function(){ document.body.style.overflow=prev; window.removeEventListener('keydown',k); };
+    },[]);
+    return h('div',{className:'pm-overlay',onClick:props.onClose},
+      h('div',{className:'pm-panel',onClick:function(e){ e.stopPropagation(); }},
+        h('button',{className:'pm-x','aria-label':'Close profile',onClick:props.onClose}, '✕'),
+        h(ProfileCard,{num:props.num})));
+  }
+
+  function PlayerCard(props) {
+    var p = props.p, chips = props.chips || [];
+    var ph = window.getPlayerPhoto ? window.getPlayerPhoto(p.num) : null;
+    var role = p.gk ? 'Goalkeeper' : (p.mostPlayedPosition || 'Squad');
+    return mEl('button', Object.assign({ type: 'button', onClick: function () { props.onOpen && props.onOpen(p.num); }, className: 'res-card group relative rounded-[1.25rem] overflow-hidden liquid-glass aspect-[3/4] flex text-left w-full' }, { initial: RISE.initial, whileInView: RISE.animate, viewport: { once: true, amount: 0.2 }, transition: { duration: 0.5, delay: (props.i % 4) * 0.05, ease: 'easeOut' } }),
+      ph ? h('img', { src: ph, alt: p.first + ' ' + p.last, loading: 'lazy', className: 'absolute inset-0 w-full h-full object-cover object-top transition-transform duration-[900ms] group-hover:scale-[1.05]' })
+         : h('div', { className: 'absolute inset-0 flex items-center justify-center', style: { background: 'radial-gradient(100% 100% at 50% 0%, #14293F, #071D29)' } }, h('img', { src: 'assets/badge/sue-angels-shield.webp', alt: '', className: 'w-24 h-24 object-contain opacity-70' })),
+      h('div', { className: 'absolute inset-0', style: { background: 'linear-gradient(to top, rgba(10,15,28,.97), rgba(10,15,28,.12) 58%, transparent)' } }),
+      h('div', { className: 'relative mt-auto p-4 md:p-5 w-full' },
+        h('div', { className: 'flex flex-wrap items-center gap-1.5 mb-2.5' },
+          h('span', { className: 'bg-volt text-navy text-[10px] font-bold uppercase tracking-wide rounded-full px-2.5 py-1' }, role),
+          chips.map(function (c) { return h('span', { key: c, className: 'liquid-glass text-[10px] font-semibold uppercase tracking-wide text-white/90 rounded-full px-2.5 py-1' }, c); })),
+        h('h3', { className: 'leading-[0.95]' },
+          h('span', { className: 'block text-white/60 text-sm font-medium' }, p.first),
+          h('span', { className: 'block head-it text-2xl md:text-[26px] text-white tracking-[-1px]' }, p.last)),
+        h('div', { className: 'flex items-center gap-3.5 mt-2.5 text-[11px] text-white/55' },
+          h('span', null, h('b', { className: 'text-white' }, p.apps || 0), ' apps'),
+          p.goals ? h('span', null, h('b', { className: 'text-white' }, p.goals), ' goals') : null,
+          p.assists ? h('span', null, h('b', { className: 'text-white' }, p.assists), ' assists') : null)));
+  }
+  function Squad(props) {
+    var all = window.derivedSquad ? window.derivedSquad(null, props.season === 'all' ? null : props.season) : [];
+    var status = window.getPlayerStatus ? window.getPlayerStatus() : {};
+    var active = all.filter(function (p) { return !status[p.num]; });
+    if (!active.length) return null;
+    var topScorer = active.slice().sort(function (a, b) { return (b.goals || 0) - (a.goals || 0); })[0];
+    var topAssist = active.slice().sort(function (a, b) { return (b.assists || 0) - (a.assists || 0); })[0];
+    var order = ['Goalkeepers', 'Defenders', 'Midfielders', 'Forwards', 'Squad'];
+    var map = {};
+    active.forEach(function (p) { var g = posGroup(p.mostPlayedPosition, p.gk); (map[g] = map[g] || []).push(p); });
+    Object.keys(map).forEach(function (g) { map[g].sort(function (x, y) { return (y.goalInvolvements || 0) - (x.goalInvolvements || 0) || (y.apps || 0) - (x.apps || 0); }); });
+    var groups = order.filter(function (g) { return map[g] && map[g].length; }).map(function (g) { return [g, map[g]]; });
+    if (props.pos && props.pos !== 'all') groups = groups.filter(function (g) { return g[0] === props.pos; });
+    function chipsFor(p) { var c = []; if (p.captained) c.push('Captain'); if (topScorer && p.num === topScorer.num && topScorer.goals) c.push('Top scorer'); else if (topAssist && p.num === topAssist.num && topAssist.assists) c.push('Most assists'); return c; }
+    return h('div', { className: 'flex flex-col gap-16' },
+      groups.map(function (grp) {
+        return h('div', { key: grp[0] },
+          h('div', { className: 'flex items-center gap-4 mb-6' },
+            h('h2', { className: 'head-it text-2xl md:text-3xl text-white tracking-[-1px]' }, grp[0]),
+            h('span', { className: 'flex-1 h-px bg-white/10' }),
+            h('span', { className: 'text-xs text-white/40 tabular-nums' }, grp[1].length + (grp[1].length === 1 ? ' player' : ' players'))),
+          h('div', { className: 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5' },
+            grp[1].map(function (p, i) { return h(PlayerCard, { key: p.num, p: p, i: i, chips: chipsFor(p), onOpen: props.onOpen }); })));
+      }));
+  }
+  function Coaches() {
+    var coaches = window.COACHES || [];
+    if (!coaches.length) return null;
+    return h('div', { className: 'mt-20' },
+      h('div', { className: 'flex items-center gap-4 mb-8' },
+        h('h2', { className: 'head-it text-3xl md:text-4xl text-white tracking-[-1px]' }, 'The dugout'),
+        h('span', { className: 'flex-1 h-px bg-white/10' })),
+      h('div', { className: 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5' },
+        coaches.map(function (c, i) {
+          return mEl('a', Object.assign({ key: c.id || i, href: 'teams.html?coach=' + encodeURIComponent(c.id || c.name), className: 'res-card group relative rounded-[1.25rem] overflow-hidden liquid-glass aspect-[3/4] flex' }, { initial: RISE.initial, whileInView: RISE.animate, viewport: { once: true, amount: 0.2 }, transition: { duration: 0.5, delay: (i % 4) * 0.05, ease: 'easeOut' } }),
+            c.photo ? h('img', { src: c.photo, alt: c.name, loading: 'lazy', className: 'absolute inset-0 w-full h-full object-cover object-top transition-transform duration-[900ms] group-hover:scale-[1.05]' })
+                    : h('div', { className: 'absolute inset-0 flex items-center justify-center', style: { background: 'radial-gradient(100% 100% at 50% 0%, #14293F, #071D29)' } }, h('img', { src: 'assets/badge/sue-angels-shield.webp', alt: '', className: 'w-24 h-24 object-contain opacity-70' })),
+            h('div', { className: 'absolute inset-0', style: { background: 'linear-gradient(to top, rgba(10,15,28,.97), rgba(10,15,28,.12) 58%, transparent)' } }),
+            h('div', { className: 'relative mt-auto p-4 md:p-5' },
+              h('span', { className: 'inline-block bg-volt text-navy text-[10px] font-bold uppercase tracking-wide rounded-full px-2.5 py-1 mb-2.5' }, c.role || 'Coach'),
+              h('h3', { className: 'head-it text-2xl text-white tracking-[-1px] leading-none' }, c.name)));
+        })));
+  }
+
+
+  function Leaderboard(props) {
+    var boards = [
+      { t: 'Top scorers', key: 'goals', unit: 'goals' },
+      { t: 'Most assists', key: 'assists', unit: 'assists' },
+      { t: 'Most appearances', key: 'apps', unit: 'apps' }
+    ];
+    function list(key) { return (window.derivedSquad ? window.derivedSquad(null, props.season === 'all' ? null : props.season) : []).filter(function (p) { return (p[key] || 0) > 0; }).sort(function (a, b) { return (b[key] || 0) - (a[key] || 0) || (b.apps || 0) - (a.apps || 0); }).slice(0, 5); }
+    return h('div', { className: 'grid md:grid-cols-3 gap-6' },
+      boards.map(function (b) {
+        var rows = list(b.key);
+        return mEl('div', Object.assign({ key: b.key, className: 'liquid-glass rounded-[1.25rem] p-6' }, { initial: RISE.initial, whileInView: RISE.animate, viewport: { once: true, amount: 0.2 }, transition: { duration: 0.6, ease: 'easeOut' } }),
+          h('div', { className: 'text-[11px] uppercase tracking-widest text-volt mb-5' }, b.t),
+          rows.length ? h('div', { className: 'flex flex-col divide-y divide-white/10' },
+            rows.map(function (p, i) {
+              var ph = window.getPlayerPhoto ? window.getPlayerPhoto(p.num) : null;
+              return h('button', { key: p.num, type: 'button', onClick: function () { props.onOpen && props.onOpen(p.num); }, className: 'flex items-center gap-3 py-3 group w-full text-left' },
+                h('span', { className: 'head-it text-xl w-6 ' + (i === 0 ? 'text-volt' : 'text-white/35') }, i + 1),
+                ph ? h('img', { src: ph, alt: '', className: 'h-9 w-9 rounded-full object-cover object-top' }) : h('span', { className: 'h-9 w-9 rounded-full bg-white/10 flex items-center justify-center' }, h('img', { src: 'assets/badge/sue-angels-badge-cutout.webp', alt: '', className: 'h-5 w-5' })),
+                h('span', { className: 'flex-1 text-sm font-medium text-white group-hover:text-volt transition-colors truncate' }, p.first + ' ' + p.last),
+                h('span', { className: 'head-it text-2xl text-white tabular-nums' }, p[b.key] || 0));
+            })) : h('p', { className: 'text-sm text-white/40' }, 'No data yet.'));
+      }));
+  }
+  function TeamStats() {
+    var r = (window.RAW_TABLE || []).filter(function (x) { return x.us; })[0] || { pl: 18, w: 18, d: 0, l: 0, gf: 90, ga: 11, gd: '+79' };
+    var wr = r.pl ? Math.round(r.w / r.pl * 100) : 0;
+    var gd = parseInt(String(r.gd).replace('+', ''), 10);
+    var cells = [ { v: r.pl, l: 'Played' }, { v: r.w, l: 'Won', volt: true }, { v: r.d, l: 'Drawn' }, { v: r.l, l: 'Lost' }, { v: r.gf, l: 'Goals for', volt: true }, { v: r.ga, l: 'Conceded' }, { v: gd, l: 'Goal diff', pre: (gd < 0 ? '' : '+') }, { v: wr, l: 'Win rate', suf: '%', volt: true } ];
+    return h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5' },
+      cells.map(function (x, i) {
+        return mEl('div', Object.assign({ key: x.l, className: 'res-card liquid-glass rounded-[1.25rem] p-6 md:p-7' }, { initial: RISE.initial, whileInView: RISE.animate, viewport: { once: true, amount: 0.3 }, transition: { duration: 0.55, delay: (i % 4) * 0.06, ease: 'easeOut' } }),
+          h('div', { className: 'head-it text-4xl md:text-5xl tracking-[-1px] leading-none ' + (x.volt ? 'text-volt' : 'text-white') }, (x.pre || '') + x.v + (x.suf || '')),
+          h('div', { className: 'text-[11px] uppercase tracking-widest text-white/50 mt-3' }, x.l));
+      }));
+  }
+  function Footer() {
+    var cols = [
+      { hh: 'Club', links: [['The Club','about.html'],['Champions','champions.html'],['Our cause','sepsis.html'],['Squad','teams.html']] },
+      { hh: 'Matchday', links: [['Fixtures','fixtures.html'],['Results','results.html'],['Table','table.html'],['Media','media.html']] },
+      { hh: 'Get involved', links: [['Join the club','join.html'],['Sponsor us','sponsors.html'],['Contact','contact.html']] }
+    ];
+    return h('footer', { className: 'relative bg-navy border-t border-white/10 pt-16 pb-10 px-6 md:px-16 lg:px-20' },
+      h('div', { className: 'max-w-7xl mx-auto' },
+        h('div', { className: 'grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]' },
+          h('div', null,
+            h('a', { href: 'index.html', className: 'flex items-center gap-3 mb-4' },
+              h('img', { src: 'assets/badge/sue-angels-badge-cutout.webp', alt: '', className: 'h-11 w-11 object-contain' }),
+              h('div', { className: 'leading-none' }, h('div', { className: 'font-semibold text-white text-lg' }, "Sue's Angels FC"), h('div', { className: 'text-[10px] uppercase tracking-[0.22em] text-volt mt-1' }, 'Champions · Est. 2025'))),
+            h('p', { className: 'text-sm text-white/55 leading-relaxed max-w-xs' }, 'A south-west London Sunday-league club, founded in memory of Susan Anne Martin.')),
+          cols.map(function (c) {
+            return h('div', { key: c.hh },
+              h('div', { className: 'text-[11px] uppercase tracking-widest text-white/40 mb-4' }, c.hh),
+              h('nav', { className: 'flex flex-col gap-2.5' }, c.links.map(function (l) { return h('a', { key: l[0], href: l[1], className: 'text-sm text-white/70 hover:text-white transition-colors w-fit' }, l[0]); })));
+          })),
+        h('div', { className: 'mt-14 pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4' },
+          h('p', { className: 'text-xs text-white/40' }, '© 2026 Sue’s Angels FC. All rights reserved.'),
+          h('p', { className: 'head-it text-sm text-white/50 italic' }, 'What we do in life echoes in eternity.'))));
+  }
+
+  function App() {
+    var poll = useState(0), setPoll = poll[1];
+    useEffect(function () { var n = 0, iv = setInterval(function () { n++; setPoll(n); if (n > 6) clearInterval(iv); }, 500); return function () { clearInterval(iv); }; }, []);
+    var t = useState('squad'), tab = t[0], setTab = t[1];
+    var se = useState('25/26'), season = se[0], setSeason = se[1];
+    var ps = useState('all'), pos = ps[0], setPos = ps[1];
+    var pf = useState(null), profile = pf[0], setProfile = pf[1];
+    function openPlayer(n) { setProfile(n); }
+    var POS = [['all','All positions'],['Goalkeepers','Goalkeepers'],['Defenders','Defenders'],['Midfielders','Midfielders'],['Forwards','Forwards']];
+    var status = window.getPlayerStatus ? window.getPlayerStatus() : {};
+    var hasPast = Object.keys(status).length > 0;
+    var TABS = [['squad','First team'],['leaders','Leaderboards'],['coaches','Coaches'],['stats','Team stats']].concat(hasPast ? [['past','Past players']] : []);
+    var SEASONS = [['all','All seasons'],['25/26','25/26'],['26/27','26/27']];
+    var showSeason = (tab === 'squad' || tab === 'stats' || tab === 'past');
+    var titleMap = { squad: 'The squad.', leaders: 'Player stats.', coaches: 'The coaches.', stats: 'Team stats.', past: 'Past players.' };
+    var subMap = { squad: 'Position-grouped cards for the first team. Tap any player for their full profile.', leaders: 'Goals, assists and appearances across the season.', coaches: "The people guiding Sue's Angels FC.", stats: 'The numbers behind the champions season.', past: 'The players who have retired or moved on from the club.' };
+    return h('div', { className: 'relative bg-navy text-white antialiased overflow-x-hidden min-h-screen' },
+      h(Navbar),
+      h('section', { className: 'relative pt-36 pb-8 px-6 md:px-16 lg:px-20 overflow-hidden' },
+        h('div', { className: 'orb hidden md:block z-0', style: { width: '460px', height: '460px', background: 'rgba(214,242,58,0.08)', top: '4%', right: '6%', animation: 'orb-a 18s ease-in-out infinite' }, 'aria-hidden': true }),
+        h('div', { className: 'relative max-w-7xl mx-auto' },
+          h('p', { className: 'text-sm text-white/70 mb-5' }, '// First team'),
+          h('h1', { className: 'head-it text-4xl md:text-5xl lg:text-6xl leading-[1.03] tracking-[-1.5px] text-white mb-4' }, titleMap[tab]),
+          h('p', { className: 'text-white/70 max-w-xl font-light' }, subMap[tab]))),
+      h('section', { className: 'relative px-6 md:px-16 lg:px-20 pb-24' },
+        h('div', { className: 'max-w-7xl mx-auto' },
+          // TAB SLIDER
+          h('div', { className: 'liquid-glass rounded-full p-1.5 inline-flex gap-1 flex-wrap mb-4' },
+            TABS.map(function (x) { return h('button', { key: x[0], type: 'button', className: 'subtab' + (tab === x[0] ? ' is-on' : ''), onClick: function () { setTab(x[0]); } }, x[1]); })),
+          // SEASON SLIDER
+          showSeason ? h('div', { className: 'liquid-glass rounded-full p-1.5 inline-flex gap-1 ml-0 md:ml-3 mb-4' },
+            SEASONS.map(function (x) { return h('button', { key: x[0], type: 'button', className: 'subtab' + (season === x[0] ? ' is-on' : ''), onClick: function () { setSeason(x[0]); } }, x[1]); })) : null,
+          tab === 'squad' ? h('div', { className: 'flex flex-wrap' },
+            h('div', { className: 'liquid-glass rounded-full p-1.5 inline-flex gap-1 flex-wrap mb-4' },
+              POS.map(function (x) { return h('button', { key: x[0], type: 'button', className: 'subtab' + (pos === x[0] ? ' is-on' : ''), onClick: function () { setPos(x[0]); } }, x[1]); }))) : null,
+          h('div', { className: 'mt-8' },
+            tab === 'squad' ? h(Squad, { season: season, pos: pos, onOpen: openPlayer, key: 's' + season + pos })
+            : tab === 'leaders' ? h(Leaderboard, { season: season, onOpen: openPlayer })
+            : tab === 'coaches' ? h(Coaches)
+            : tab === 'stats' ? h(TeamStats)
+            : tab === 'past' ? h(PastPlayers, { season: season, status: status, onOpen: openPlayer, key: 'p' + season })
+            : null))),
+      h(Footer),
+      profile != null ? h(ProfileModal, { num: profile, onClose: function () { setProfile(null); } }) : null);
+  }
+  function PastPlayers(props) {
+    var all = window.derivedSquad ? window.derivedSquad(null, props.season === 'all' ? null : props.season) : [];
+    var status = props.status || {};
+    var retired = all.filter(function (p) { return status[p.num] === 'retired'; });
+    var departed = all.filter(function (p) { return status[p.num] === 'departed'; });
+    if (!retired.length && !departed.length) return h('div', { className: 'liquid-glass rounded-[1.25rem] p-10 text-center' }, h('p', { className: 'head-it text-2xl text-white mb-1' }, 'Full squad'), h('p', { className: 'text-sm text-white/50' }, 'No retired or departed players this season.'));
+    function block(title, arr) { return arr.length ? h('div', { className: 'mb-12' }, h('h2', { className: 'head-it text-2xl text-white mb-6' }, title), h('div', { className: 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5' }, arr.map(function (p, i) { return h(PlayerCard, { key: p.num, p: p, i: i, chips: [], onOpen: props.onOpen }); }))) : null; }
+    return h('div', null, block('Retired', retired), block('Departed', departed));
+  }
+    ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+})();
+</script>
+<script>
+(function () {
+  'use strict';
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Boot: fade out once loaded (min hold for polish), safety timeout
+  var boot = document.getElementById('boot');
+  function hideBoot() { if (boot && !boot.classList.contains('hide')) { boot.classList.add('hide'); setTimeout(function () { if (boot && boot.parentNode) boot.parentNode.removeChild(boot); }, 900); } }
+  window.addEventListener('load', function () { setTimeout(hideBoot, reduce ? 400 : 2200); });
+  setTimeout(hideBoot, 5500);
+  // Scroll progress bar
+  var bar = document.getElementById('scrollbar');
+  function onScroll() { var st = window.scrollY || document.documentElement.scrollTop; var h = document.documentElement.scrollHeight - window.innerHeight; if (bar) bar.style.width = (h > 0 ? (st / h) * 100 : 0) + '%'; }
+  window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  // Custom cursor (fine pointers only)
+  if (!reduce && window.matchMedia && window.matchMedia('(pointer: fine)').matches) {
+    document.documentElement.classList.add('has-cursor');
+    var dot = document.createElement('div'); dot.className = 'cur-dot';
+    var ring = document.createElement('div'); ring.className = 'cur-ring';
+    document.body.appendChild(dot); document.body.appendChild(ring);
+    var mx = -100, my = -100, rx = -100, ry = -100, raf;
+    window.addEventListener('mousemove', function (e) { mx = e.clientX; my = e.clientY; dot.style.transform = 'translate(' + mx + 'px,' + my + 'px)'; }, { passive: true });
+    (function loop() { rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18; ring.style.transform = 'translate(' + rx.toFixed(1) + 'px,' + ry.toFixed(1) + 'px)'; raf = requestAnimationFrame(loop); })();
+    document.addEventListener('mouseover', function (e) { if (e.target.closest && e.target.closest('a,button,[role="button"],.aw-card,input,textarea')) ring.classList.add('big'); });
+    document.addEventListener('mouseout', function (e) { if (e.target.closest && e.target.closest('a,button,[role="button"],.aw-card,input,textarea')) ring.classList.remove('big'); });
+  }
+})();
+</script>
+</body>
+</html>

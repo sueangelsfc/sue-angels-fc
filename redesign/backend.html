@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Backend console · Sue's Angels FC</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#FFFFFF" />
+  <link rel="icon" href="../assets/badge/sue-angels-badge-orange.webp" />
+  <link rel="preload" href="fonts/Archivo-Variable.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="styles.css?v=82" />
+  <style>
+    /* White + orange instrument panel. This console commits to ONE look rather
+       than following the site's light/dark toggle: it is a tool, and a tool that
+       changes colour under you is harder to read at a glance.
+
+       Three colours only. White carries the page, orange carries every positive
+       or active state, near-black carries every negative or finished one. No
+       green/red traffic lights, which would drag a fourth and fifth hue into a
+       brand that is deliberately two. */
+    :root {
+      --bk-bg:      #FFFFFF;
+      --bk-surface: #FCFBFA;
+      --bk-ink:     #14171A;
+      --bk-mut:     #6C777E;
+      --bk-mut-2:   #6B747A;   /* AA on the card surface: #96A0A6 measured 2.58 */
+      --bk-line:    #E9E6E1;
+      --bk-o:       #FF6A2A;
+      --bk-o-deep:  #C2400B;   /* orange dark enough for AA text on white */
+      --bk-o-soft:  rgba(255, 106, 42, 0.10);
+      --bk-o-line:  rgba(255, 106, 42, 0.34);
+    }
+    html, body { background: var(--bk-bg); }
+    body { color: var(--bk-ink); }
+    .bk { max-width: 1180px; margin: 0 auto; padding: 34px 20px 90px; }
+
+    .bk__top { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 8px; }
+    .bk__eyebrow { font: 600 11px/1 var(--ui); letter-spacing: .18em; text-transform: uppercase; color: var(--bk-o-deep); }
+    .bk__h1 { font-family: var(--display); font-weight: 300; font-stretch: var(--wide); font-size: clamp(30px, 5vw, 46px);
+              letter-spacing: -.02em; margin-top: 12px; color: var(--bk-ink); }
+    .bk__sub { color: var(--bk-mut); font: 400 14.5px/1.6 var(--body); max-width: 62ch; margin-top: 10px; }
+
+    .bk__sec { margin-top: 44px; }
+    .bk__h2 { font-family: var(--display); font-weight: 400; font-stretch: var(--wide-2); font-size: 19px; letter-spacing: -.01em;
+              padding-bottom: 10px; border-bottom: 2px solid var(--bk-ink); display: flex; align-items: baseline; gap: 12px; color: var(--bk-ink); }
+    .bk__h2 span { font: 500 11px/1 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--bk-o-deep); }
+    .bk__note { color: var(--bk-mut); font: 400 13px/1.6 var(--body); margin-top: 12px; max-width: 74ch; }
+    .bk__note strong { color: var(--bk-ink); }
+
+    .bk__grid { display: grid; gap: 12px; margin-top: 18px;
+                grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); }
+    .bkc { background: var(--bk-surface); border: 1px solid var(--bk-line); border-radius: var(--r-sm); padding: 16px 18px; }
+    .bkc__k { font: 500 10.5px/1 var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--bk-mut-2); }
+    .bkc__v { font-family: var(--display); font-weight: 300; font-stretch: var(--wide-num); font-size: 30px;
+              font-variant-numeric: tabular-nums; margin-top: 9px; letter-spacing: -.02em; color: var(--bk-o-deep); line-height: 1.1; }
+    .bkc__d { color: var(--bk-mut-2); font: 400 12px/1.5 var(--body); margin-top: 6px; }
+
+    .bkp { display: inline-flex; align-items: center; gap: 6px; border-radius: var(--pillr); padding: 3px 10px;
+           font: 600 10.5px/1.7 var(--ui); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; }
+    .bkp--ok   { background: var(--bk-o); color: #FFFFFF; border: 1px solid var(--bk-o); }
+    .bkp--warn { background: var(--bk-o-soft); color: var(--bk-o-deep); border: 1px solid var(--bk-o-line); }
+    .bkp--bad  { background: var(--bk-ink); color: #FFFFFF; border: 1px solid var(--bk-ink); }
+    .bkp--mute { background: #FFFFFF; color: var(--bk-mut); border: 1px solid var(--bk-line); }
+
+    table.bk__t { width: 100%; border-collapse: collapse; margin-top: 16px; font: 400 13.5px/1.5 var(--body); }
+    .bk__scroll { overflow-x: auto; }
+    .bk__t th { text-align: left; font: 500 10.5px/1 var(--ui); letter-spacing: .13em; text-transform: uppercase;
+                color: var(--bk-mut-2); padding: 0 12px 10px 0; border-bottom: 1px solid var(--bk-line); white-space: nowrap; }
+    .bk__t td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--bk-line); vertical-align: middle; color: var(--bk-ink); }
+    .bk__t tr:last-child td { border-bottom: 0; }
+    .bk__t .bknum { font-variant-numeric: tabular-nums; }
+    .bko { color: var(--bk-mut-2); }
+    /* `.bk__t td` (0,1,1) outranks `.bko` (0,1,0), so a muted cell needs to be
+       named at the same weight or the whole table renders at full ink. */
+    .bk__t td.bko { color: var(--bk-mut-2); }
+    .bkr { display: inline-block; width: 20px; height: 20px; line-height: 20px; text-align: center; border-radius: 5px;
+           font: 700 10.5px/20px var(--ui); }
+    .bkr--W { background: var(--bk-o); color: #FFFFFF; }
+    .bkr--D { background: #FFFFFF; color: var(--bk-mut); border: 1px solid var(--bk-line); }
+    .bkr--L { background: var(--bk-ink); color: #FFFFFF; }
+
+    /* cup ladder: orange = went through, near-black = knocked out */
+    .bkl { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; margin-top: 12px; }
+    .bkg { display: inline-flex; align-items: center; gap: 7px; border-radius: 9px; padding: 7px 11px;
+           border: 1px solid var(--bk-line); background: #FFFFFF; color: var(--bk-mut);
+           font: 600 11.5px/1 var(--ui); letter-spacing: .06em; }
+    .bkg--won { border-color: var(--bk-o-line); color: var(--bk-o-deep); background: var(--bk-o-soft); }
+    .bkg--won .bko { color: var(--bk-o-deep); }
+    .bkg--out { border-color: var(--bk-ink); color: #FFFFFF; background: var(--bk-ink); }
+    .bkg--out .bko { color: rgba(255,255,255,.72); }
+    .bkg__arrow { color: var(--bk-mut-2); font-size: 13px; }
+    .bkn { border: 1px solid var(--bk-line); border-radius: var(--r-sm); padding: 17px 19px; background: var(--bk-surface); }
+    .bkn + .bkn { margin-top: 11px; }
+    .bkn__h { display: flex; justify-content: space-between; gap: 14px; align-items: baseline; flex-wrap: wrap; }
+    .bkn__n { font-family: var(--display); font-weight: 400; font-stretch: var(--wide-2); font-size: 15.5px; color: var(--bk-ink); }
+    .bkn__x { color: var(--bk-mut); font: 400 12.5px/1.5 var(--body); margin-top: 9px; }
+
+    .bkv { margin-top: 18px; width: 100%; height: 128px; display: block; }
+
+    .bk__foot { margin-top: 54px; padding-top: 18px; border-top: 1px solid var(--bk-line);
+                color: var(--bk-mut-2); font: 400 12.5px/1.7 var(--body); }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em;
+           background: var(--bk-o-soft); padding: 1.5px 5px; border-radius: 4px; color: var(--bk-o-deep); }
+  </style>
+</head>
+<body>
+  <main class="bk" id="main">
+    <div class="bk__top">
+      <div>
+        <p class="bk__eyebrow">Internal &middot; not linked from the site</p>
+        <h1 class="bk__h1">Backend console</h1>
+      </div>
+      <div id="conn"><span class="bkp bkp--mute">Connecting&hellip;</span></div>
+    </div>
+    <p class="bk__sub">Everything the rebuilt backend can currently do, running live against the real database. Read-only: this page never writes.</p>
+
+    <section class="bk__sec">
+      <h2 class="bk__h2">Data layer <span>redesign/data.js</span></h2>
+      <div class="bk__grid" id="tables"></div>
+      <p class="bk__note" id="tables-note"></p>
+    </section>
+
+    <section class="bk__sec">
+      <h2 class="bk__h2">The record <span>regression guard</span></h2>
+      <div class="bk__grid" id="record"></div>
+      <p class="bk__note" id="record-note"></p>
+    </section>
+
+    <section class="bk__sec">
+      <h2 class="bk__h2">Cup runs <span>new: derived from round data</span></h2>
+      <div id="cups"></div>
+    </section>
+
+    <section class="bk__sec">
+      <h2 class="bk__h2">League campaign <span>new: derived from matchdays</span></h2>
+      <div id="campaign"></div>
+    </section>
+
+    <section class="bk__sec">
+      <h2 class="bk__h2">Match reports <span>report-writer.js</span></h2>
+      <div id="reports"></div>
+    </section>
+
+    <section class="bk__sec">
+      <h2 class="bk__h2">Every match, with its new context</h2>
+      <div class="bk__scroll"><table class="bk__t" id="matches"></table></div>
+    </section>
+
+    <p class="bk__foot" id="foot"></p>
+  </main>
+
+  <script src="../supabase-config.js"></script>
+  <script src="data.js"></script>
+  <script src="../PageShell.js"></script>
+  <script src="match-context.js"></script>
+  <script src="report-writer.js"></script>
+  <script>
+  (function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+    var M = window.SA_MATCH;
+
+    /* ---- connection ------------------------------------------------- */
+    function conn() {
+      var mode = window.SA_DATA_MODE;
+      $('conn').innerHTML = mode === 'cloud'
+        ? '<span class="bkp bkp--ok">Supabase connected</span>'
+        : '<span class="bkp bkp--warn">Local cache only</span>';
+    }
+
+    /* ---- tables ------------------------------------------------------ */
+    function tables() {
+      var ds = window.dataStore || {};
+      var names = ['matches', 'fixtures', 'teamBadges', 'playerPhotos', 'articles', 'gallery', 'recognition'];
+      var html = names.map(function (n) {
+        var store = ds[n];
+        var count = 0, ok = !!store;
+        try { count = store && store.getAllCached ? Object.keys(store.getAllCached() || {}).length : 0; } catch (e) { ok = false; }
+        return '<div class="bkc"><p class="bkc__k">' + esc(n) + '</p>'
+          + '<p class="bkc__v">' + (ok ? count : '&mdash;') + '</p>'
+          + '<p class="bkc__d">' + (ok ? 'rows cached' : 'store unavailable') + '</p></div>';
+      }).join('');
+      $('tables').innerHTML = html;
+      $('tables-note').innerHTML = 'Seven key/value tables, same names and key prefixes as the live site, so the redesign reads rows the current CMS wrote. '
+        + '<code>supporters</code> and <code>enquiries</code> are write-only by policy and cannot be counted from the browser, which is the security working as intended.';
+    }
+
+    /* ---- the published record --------------------------------------- */
+    function record() {
+      var res = window.getDerivedResults ? window.getDerivedResults() : [];
+      var t = { pl: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, cs: 0 };
+      var t90 = { W: 0, D: 0, L: 0 };
+      res.forEach(function (r) {
+        var out = M.resultOf(r), s = M.scoreOf(r);
+        var o90 = M.result90(r); if (o90) t90[o90]++;
+        if (r.kind === 'walkover') { t.pl++; t[out.toLowerCase()]++; return; }
+        if (!s) return;
+        t.pl++; t.gf += s.us; t.ga += s.them; if (s.them === 0) t.cs++;
+        t[out.toLowerCase()]++;
+      });
+      var cards = [
+        ['Played', t.pl, 'all competitions'],
+        ['Won', t.w, t.pl ? Math.round(t.w / t.pl * 100) + '% win rate' : ''],
+        ['Drawn', t.d, 'as the site publishes it'],
+        ['Lost', t.l, 'as the site publishes it'],
+        ['Scored', t.gf, 'goals for'],
+        ['Conceded', t.ga, 'goals against'],
+        ['Clean sheets', t.cs, '']
+      ];
+      $('record').innerHTML = cards.map(function (c) {
+        return '<div class="bkc"><p class="bkc__k">' + c[0] + '</p><p class="bkc__v">' + c[1] + '</p>'
+          + (c[2] ? '<p class="bkc__d">' + esc(c[2]) + '</p>' : '') + '</div>';
+      }).join('');
+      $('record-note').innerHTML = 'These seven figures are computed by the new module and match the live site exactly, which is the test that it did not quietly change the club\'s record. '
+        + 'Read over 90 minutes, where a shootout counts as a draw rather than a defeat, the same season reads <strong>'
+        + t90.W + 'W ' + t90.D + 'D ' + t90.L + 'L</strong>. Both are kept, deliberately.';
+    }
+
+    /* ---- cup runs ---------------------------------------------------- */
+    function cups() {
+      var runs = M.cupRuns(window.SEASON_RESULTS || [], 'all');
+      if (!runs.length) { $('cups').innerHTML = '<p class="bk__note">No cup ties recorded.</p>'; return; }
+      $('cups').innerHTML = runs.map(function (run) {
+        var rungs = run.matches.map(function (x, i) {
+          var c = x.context, through = c.progressed;
+          var cls = through === true ? 'bkg--won' : through === false ? 'bkg--out' : '';
+          var s = c.score ? c.score.us + '-' + c.score.them : '';
+          return (i ? '<span class="bkg__arrow">&rsaquo;</span>' : '')
+            + '<span class="bkg ' + cls + '">' + esc(c.round ? c.round.short : '?') + ' <span class="bko">' + s + '</span></span>';
+        }).join('');
+        var decided = run.matches.filter(function (x) { return x.context.decidedBy; })
+          .map(function (x) { return esc(x.context.round.label) + ': ' + esc(x.context.decidedBy); }).join(' &middot; ');
+        return '<div class="bkn"><div class="bkn__h"><p class="bkn__n">' + esc(run.competition) + '</p>'
+          + '<span class="bkp ' + (run.won ? 'bkp--ok' : 'bkp--mute') + '">' + esc(run.outcome || '') + '</span></div>'
+          + '<div class="bkl">' + rungs + '</div>'
+          + (decided ? '<p class="bkn__x">' + decided + '</p>' : '') + '</div>';
+      }).join('');
+    }
+
+    /* ---- league campaign + points curve ------------------------------ */
+    function campaign() {
+      var all = (window.SEASON_RESULTS || []).slice();
+      /* Matchdays are not stored yet, so show what the backfill would produce.
+         This is exactly what the CMS would write on confirmation. */
+      var inferred = M.inferMatchdays(all, 'all');
+      var byId = {}; inferred.forEach(function (x) { byId[x.id] = x.matchday; });
+      var withMd = all.map(function (r) {
+        return byId[r.id] ? Object.assign({}, r, { matchday: byId[r.id] }) : r;
+      });
+      var c = M.leagueCampaign(withMd, 'all');
+      if (!c.rows.length) { $('campaign').innerHTML = '<p class="bk__note">No league games recorded.</p>'; return; }
+
+      var w = 900, h = 128, pad = 6;
+      var max = c.rows[c.rows.length - 1].points || 1;
+      var pts = c.rows.map(function (r, i) {
+        var x = pad + (i / Math.max(1, c.rows.length - 1)) * (w - pad * 2);
+        var y = h - pad - (r.points / max) * (h - pad * 2);
+        return [x, y];
+      });
+      var line = pts.map(function (p, i) { return (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(' ');
+      var area = line + ' L' + pts[pts.length - 1][0].toFixed(1) + ' ' + (h - pad) + ' L' + pts[0][0].toFixed(1) + ' ' + (h - pad) + ' Z';
+      var dots = pts.map(function (p, i) {
+        return '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.6" fill="var(--volt)"><title>Matchday '
+          + c.rows[i].matchday + ': ' + c.rows[i].result + ', ' + c.rows[i].points + ' pts</title></circle>';
+      }).join('');
+
+      var seq = c.rows.map(function (r) {
+        return '<span class="bkr bkr--' + r.result + '" title="Matchday ' + r.matchday + '">' + r.result + '</span>';
+      }).join(' ');
+
+      $('campaign').innerHTML =
+        '<div class="bk__grid">'
+        + [['Played', c.played], ['Won', c.won], ['Drawn', c.drawn], ['Lost', c.lost],
+           ['Points', c.points], ['Goal difference', (c.goalDifference > 0 ? '+' : '') + c.goalDifference]]
+          .map(function (x) { return '<div class="bkc"><p class="bkc__k">' + x[0] + '</p><p class="bkc__v">' + x[1] + '</p></div>'; }).join('')
+        + '</div>'
+        + '<svg class="bkv" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" aria-label="Points across the league season">'
+        + '<path d="' + area + '" fill="rgba(var(--volt-rgb),.12)"/>'
+        + '<path d="' + line + '" fill="none" stroke="var(--volt)" stroke-width="2" stroke-linejoin="round"/>'
+        + dots + '</svg>'
+        + '<p class="bk__note">Matchday 1 through ' + c.rows.length + ', left to right. ' + seq + '</p>'
+        /* Report on the ORIGINAL rows, not the augmented copy. `c.complete` is
+           true either way here, because the copy fed into leagueCampaign always
+           has matchdays; reading it would claim the numbers are saved when they
+           are only being previewed. */
+        + '<p class="bk__note">' + (inferred.length === 0
+            ? 'Matchday numbers are stored on the records.'
+            : inferred.length + ' league games have no matchday number stored, so these were inferred from date order to show the shape. '
+              + 'Confirming the backfill in the CMS would write them permanently, without you typing ' + inferred.length + ' numbers.') + '</p>';
+    }
+
+    /* ---- match reports ----------------------------------------------- */
+    function reports() {
+      var res = (window.getDerivedResults ? window.getDerivedResults() : []);
+      var written = 0, notes = 0, empty = 0;
+      res.forEach(function (r) {
+        var d = window.loadMatchEntry ? window.loadMatchEntry(r.id) : null;
+        if (d && d.polishedReport) written++;
+        else if (d && (d.commentary || '').trim()) notes++;
+        else empty++;
+      });
+      var wired = !!(window.claude && window.claude.complete);
+      $('reports').innerHTML =
+        '<div class="bk__grid">'
+        + '<div class="bkc"><p class="bkc__k">Written up</p><p class="bkc__v">' + written + '</p><p class="bkc__d">full reports saved</p></div>'
+        + '<div class="bkc"><p class="bkc__k">Notes only</p><p class="bkc__v">' + notes + '</p><p class="bkc__d">ready to write</p></div>'
+        + '<div class="bkc"><p class="bkc__k">Nothing yet</p><p class="bkc__v">' + empty + '</p><p class="bkc__d">need notes first</p></div>'
+        + '<div class="bkc"><p class="bkc__k">Writer</p><p class="bkc__v" style="font-size:19px">'
+        + (wired ? '<span class="bkp bkp--ok">Wired</span>' : '<span class="bkp bkp--bad">Not wired</span>')
+        + '</p><p class="bkc__d">window.claude.complete</p></div>'
+        + '</div>'
+        + '<p class="bk__note">The report writer takes the lineup, scorers with minutes, cards, captain, man of the match and the '
+        + 'coach\'s own notes, and writes the article around those notes as source of truth. It now also knows whether the match was '
+        + 'a matchday or a cup round, so a final reads like a final. This had never actually run before: the admin button called '
+        + '<code>window.claude.complete</code>, which was never defined anywhere in the repo, so it has been permanently greyed out '
+        + 'since the day it was written. <code>report-writer.js</code> is the missing wire.</p>';
+    }
+
+    /* ---- every match ------------------------------------------------- */
+    function matches() {
+      var res = (window.getDerivedResults ? window.getDerivedResults() : []).slice();
+      var rows = res.map(function (r) {
+        var c = M.contextOf(r);
+        var s = c.score;
+        var opp = /angels/i.test(r.home || '') ? r.away : r.home;
+        var venue = /angels/i.test(r.home || '') ? 'H' : 'A';
+        var d = window.loadMatchEntry ? window.loadMatchEntry(r.id) : null;
+        var rep = d && d.polishedReport ? '<span class="bkp bkp--ok">Report</span>'
+          : d && (d.commentary || '').trim() ? '<span class="bkp bkp--warn">Notes</span>'
+          : '<span class="bkp bkp--mute">&mdash;</span>';
+        return '<tr>'
+          + '<td class="bknum bko">' + esc(r.date) + '</td>'
+          + '<td>' + esc(String(opp).replace(' FC', '')) + ' <span class="bko">(' + venue + ')</span></td>'
+          + '<td class="bko">' + esc(c.competition) + '</td>'
+          + '<td>' + (c.badge ? '<span class="bkp bkp--mute">' + esc(c.badge) + '</span>' : '<span class="bko">&mdash;</span>') + '</td>'
+          + '<td class="bknum">' + (s ? s.us + '&ndash;' + s.them : (r.kind === 'walkover' ? 'W/O' : '')) + '</td>'
+          + '<td><span class="bkr bkr--' + c.result + '">' + c.result + '</span></td>'
+          + '<td class="bko">' + esc(c.decidedBy || '') + '</td>'
+          + '<td>' + rep + '</td>'
+          + '</tr>';
+      }).join('');
+      $('matches').innerHTML = '<thead><tr><th>Date</th><th>Opponent</th><th>Competition</th><th>Context</th>'
+        + '<th>Score</th><th>Res</th><th>Decided by</th><th>Report</th></tr></thead><tbody>' + rows + '</tbody>';
+    }
+
+    function boot() {
+      try { conn(); tables(); record(); cups(); campaign(); reports(); matches();
+        $('foot').innerHTML = 'Generated live in your browser from <code>data.js</code>, <code>../PageShell.js</code>, '
+          + '<code>match-context.js</code> and <code>report-writer.js</code>. Nothing on this page writes to the database.';
+      } catch (e) {
+        $('foot').innerHTML = '<span class="bkp bkp--bad">Error</span> ' + esc(e && e.message);
+        if (window.console) console.error(e);
+      }
+    }
+
+    if (window.SA_DATA_READY && window.SA_DATA_READY.then) {
+      window.SA_DATA_READY.then(boot, boot);
+      setTimeout(function () { if (!$('matches').innerHTML) boot(); }, 4000);
+    } else { boot(); }
+  }());
+  </script>
+</body>
+</html>

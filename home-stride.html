@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sue's Angels FC — Champions of Grassroots Football</title>
+<style>
+  /* ---- self-hosted club type (no generic AI fonts) ---- */
+  @font-face{font-family:'Clash Display';src:url('assets/fonts/clash-display-700.woff2') format('woff2');font-weight:700;font-display:swap}
+  @font-face{font-family:'Clash Display';src:url('assets/fonts/clash-display-600.woff2') format('woff2');font-weight:600;font-display:swap}
+  @font-face{font-family:'Clash Display';src:url('assets/fonts/clash-display-500.woff2') format('woff2');font-weight:500;font-display:swap}
+  @font-face{font-family:'Hanken';src:url('assets/fonts/hanken-800.woff2') format('woff2');font-weight:800;font-display:swap}
+  @font-face{font-family:'Hanken';src:url('assets/fonts/hanken-700.woff2') format('woff2');font-weight:700;font-display:swap}
+  @font-face{font-family:'Hanken';src:url('assets/fonts/hanken-600.woff2') format('woff2');font-weight:600;font-display:swap}
+  @font-face{font-family:'Hanken';src:url('assets/fonts/hanken-500.woff2') format('woff2');font-weight:500;font-display:swap}
+
+  :root{
+    --orange:#FF6E1F; --orange-deep:#EA5D14;
+    --ink:#17130E; --ink-soft:#6b6157;
+    --bg:#0B0805; --line:rgba(255,255,255,.14);
+    --glass:rgba(255,255,255,.07); --glass-line:rgba(255,255,255,.16);
+    --card:#ffffff;
+    --disp:'Clash Display',sans-serif;
+    --body:'Hanken',-apple-system,BlinkMacSystemFont,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{font-family:var(--body);color:#fff;background:var(--bg);overflow-x:hidden;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+  .hero{position:relative;width:100%;min-height:100vh;overflow:hidden;padding:26px clamp(20px,3.2vw,46px) 22px;display:flex;flex-direction:column;
+    background:
+      radial-gradient(58% 46% at 50% -4%, rgba(255,110,31,.34), transparent 60%),
+      radial-gradient(70% 60% at 50% 118%, rgba(255,110,31,.10), transparent 62%),
+      linear-gradient(180deg,#150d06 0%, #0d0805 52%, #070402 100%);}
+  .hero::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:0;background:radial-gradient(120% 100% at 50% 120%, rgba(4,2,0,.6), transparent 55%);mix-blend-mode:multiply}
+  .hero::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:5;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");mix-blend-mode:overlay}
+  .canvas{position:relative;z-index:3;width:100%;max-width:1400px;margin:0 auto;flex:1;display:flex;flex-direction:column}
+
+  header{display:flex;align-items:center;justify-content:space-between;gap:18px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand img{width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 4px 14px rgba(255,110,31,.4))}
+  .brand .name{font-family:var(--disp);font-weight:600;font-size:22px;letter-spacing:-.01em;line-height:1}
+  .brand .name small{display:block;font-family:var(--body);font-weight:600;font-size:10.5px;letter-spacing:.32em;color:rgba(255,255,255,.5);margin-top:3px}
+  .menu{display:inline-flex;align-items:center;gap:9px;padding:11px 20px;border-radius:100px;background:var(--glass);border:1px solid var(--glass-line);color:#fff;font-family:var(--body);font-size:15px;font-weight:500;cursor:pointer;backdrop-filter:blur(6px);transition:.2s}
+  .menu:hover{background:rgba(255,110,31,.16);border-color:rgba(255,110,31,.45)}
+  .menu .caret{opacity:.7;font-size:11px;transition:transform .3s}
+  .menu[aria-expanded="true"] .caret{transform:rotate(180deg)}
+  .top-right{display:flex;align-items:center;gap:12px}
+  .icon-btn{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--glass);border:1px solid var(--glass-line);color:#fff;cursor:pointer;transition:.2s}
+  .icon-btn:hover{background:rgba(255,110,31,.22);border-color:rgba(255,110,31,.5);transform:translateY(-1px)}
+  .icon-btn svg{width:18px;height:18px}
+  .btn-join{display:inline-block;text-align:center;text-decoration:none;padding:13px 24px;border-radius:100px;border:0;cursor:pointer;background:var(--orange);color:var(--ink);font-family:var(--body);font-weight:700;font-size:15px;transition:.2s;box-shadow:0 10px 26px rgba(255,110,31,.34)}
+  .btn-join:hover{transform:translateY(-1px);background:#ff7f38;box-shadow:0 14px 32px rgba(255,110,31,.46)}
+
+  .composition{flex:1;margin-top:26px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto 1fr auto;gap:14px 24px}
+  .tags,.intro,.fixture,.cluster,.sponsor,.subscribe,.subscribe input{min-width:0}
+
+  .tags{display:flex;flex-wrap:wrap;gap:10px;grid-column:1;grid-row:1;align-self:start}
+  .tag{display:inline-flex;align-items:center;gap:8px;padding:8px 15px 8px 12px;border-radius:100px;background:var(--glass);border:1px solid var(--glass-line);font-size:13.5px;font-weight:500;backdrop-filter:blur(4px)}
+  .tag .dot{width:6px;height:6px;border-radius:50%;background:var(--orange);box-shadow:0 0 8px var(--orange)}
+
+  .intro{grid-column:1;grid-row:2;align-self:start;max-width:580px;margin-top:6px}
+  .intro h1{font-family:var(--disp);font-weight:600;font-size:clamp(40px,4.6vw,68px);line-height:1.0;letter-spacing:-.02em;text-transform:uppercase}
+  .intro h1 .hl{color:var(--orange)}
+  .intro p{margin-top:20px;max-width:430px;font-size:15.5px;font-weight:500;line-height:1.6;color:rgba(255,255,255,.74)}
+  .subscribe{margin-top:28px;display:flex;align-items:center;gap:8px;padding:7px 7px 7px 22px;border-radius:100px;max-width:440px;background:var(--glass);border:1px solid var(--glass-line);backdrop-filter:blur(6px)}
+  .subscribe input{flex:1;border:0;background:transparent;color:#fff;font-family:var(--body);font-size:15px;outline:none}
+  .subscribe input::placeholder{color:rgba(255,255,255,.55)}
+  .subscribe button{padding:13px 26px;border:0;border-radius:100px;cursor:pointer;background:var(--orange);color:var(--ink);font-family:var(--body);font-weight:700;font-size:14.5px;transition:.2s}
+  .subscribe button:hover{background:#ff7f38}
+
+  .fixture{grid-column:2;grid-row:1 / span 2;justify-self:end;align-self:start;width:min(350px,100%);background:var(--card);color:var(--ink);border-radius:28px;padding:22px 22px 20px;box-shadow:0 30px 70px rgba(0,0,0,.5)}
+  .fixture .chip{display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:100px;background:#fff4ec;color:var(--orange-deep);font-size:12px;font-weight:700;letter-spacing:.02em}
+  .fixture .chip .lv{width:6px;height:6px;border-radius:50%;background:var(--orange);animation:pulse 1.8s ease-in-out infinite}
+  .fixture h3{margin-top:16px;font-family:var(--disp);font-size:27px;line-height:1.22;font-weight:600;letter-spacing:-.01em}
+  .fixture h3 .mut{color:#c2bab0;font-weight:500}
+  .fixture .cta{margin-top:20px;width:100%;padding:15px;border:0;border-radius:100px;cursor:pointer;text-decoration:none;background:var(--ink);color:#fff;font-family:var(--body);font-weight:600;font-size:15px;transition:.2s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+  .fixture .cta:hover{background:#2a2119}
+  .fixture .cta svg{width:16px;height:16px}
+
+  .cluster{grid-column:1;grid-row:3;align-self:end;display:flex;flex-direction:column;gap:18px}
+  .fields{display:flex;align-items:center;gap:14px}
+  .thumbs{display:flex}
+  .thumbs .th{width:52px;height:52px;border-radius:14px;margin-left:-12px;border:2px solid rgba(255,255,255,.85);background-size:cover;background-position:center;box-shadow:0 6px 16px rgba(0,0,0,.4)}
+  .thumbs .th:first-child{margin-left:0}
+  .th.t1{background-image:url('assets/hero/celebration.jpg'),linear-gradient(135deg,#ff8a3d,#c24a10)}
+  .th.t2{background-image:url('assets/hero/hero-dressing-room.jpg'),linear-gradient(135deg,#3a3128,#17130e)}
+  .th.t3{background-image:linear-gradient(135deg,#ff6e1f,#a83f0d)}
+  .th.t4{background-image:linear-gradient(135deg,#2a2119,#0b0805)}
+  .fields .more{padding:9px 16px;border-radius:100px;background:var(--glass);border:1px solid var(--glass-line);font-size:13px;font-weight:500;white-space:nowrap}
+  .edge{display:flex;align-items:center;gap:14px}
+  .edge .burst{width:46px;height:46px;flex:0 0 46px;display:grid;place-items:center;border-radius:50%;background:rgba(255,110,31,.14);border:1px solid rgba(255,110,31,.4)}
+  .edge .burst img{width:26px;height:26px;object-fit:contain}
+  .edge span{font-family:var(--disp);font-size:22px;font-weight:600;line-height:1.2;max-width:280px}
+
+  .sponsor{grid-column:2;grid-row:3;justify-self:end;align-self:end;width:min(370px,100%);background:var(--card);color:var(--ink);border-radius:24px;padding:22px 24px;box-shadow:0 30px 70px rgba(0,0,0,.5)}
+  .sponsor .head{font-family:var(--disp);font-size:16px;font-weight:600}
+  .sponsor .body{margin-top:14px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+  .price .lab{font-size:12.5px;color:var(--ink-soft);font-weight:600}
+  .price .amt{font-family:var(--disp);font-size:44px;font-weight:600;letter-spacing:-.02em;line-height:1;margin-top:4px;color:var(--ink)}
+  .price .amt small{font-size:15px;font-weight:500;color:var(--ink-soft)}
+  .feats{list-style:none;font-size:13.5px;color:#4a4038;display:flex;flex-direction:column;gap:9px;padding-top:4px}
+  .feats li{display:flex;align-items:center;gap:8px}
+  .feats li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--orange)}
+
+  .athlete{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:min(46vw,560px);height:90%;z-index:1;pointer-events:none;display:flex;align-items:flex-end;justify-content:center}
+  .athlete::before{content:"";position:absolute;bottom:3%;left:50%;transform:translateX(-50%);width:88%;height:84%;background:radial-gradient(closest-side,rgba(255,110,31,.40),transparent 70%);filter:blur(10px);z-index:0}
+  .crest-ghost{position:absolute;bottom:22%;left:50%;transform:translateX(-50%);width:58%;opacity:.13;filter:grayscale(.15) drop-shadow(0 0 34px rgba(255,110,31,.55));z-index:0}
+  .athlete .player{position:relative;z-index:1;width:100%;height:100%;object-fit:contain;object-position:bottom center;filter:drop-shadow(0 24px 40px rgba(0,0,0,.62))}
+  /* soft floor grounding under the player */
+  .athlete .floor{position:absolute;bottom:2%;left:50%;transform:translateX(-50%);width:64%;height:38px;background:radial-gradient(closest-side,rgba(0,0,0,.55),transparent 75%);filter:blur(3px);z-index:0}
+
+  footer{position:relative;z-index:3;width:100%;max-width:1400px;margin:22px auto 0;display:flex;align-items:center;justify-content:space-between;gap:24px;padding-top:6px}
+  .contact{display:flex;align-items:center;gap:14px;font-size:14px;color:rgba(255,255,255,.8)}
+  .contact .socials{display:flex;gap:8px}
+  .contact .socials a{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--glass);border:1px solid var(--glass-line);color:#fff;transition:.2s}
+  .contact .socials a:hover{background:rgba(255,110,31,.22);border-color:rgba(255,110,31,.5)}
+  .contact .socials svg{width:15px;height:15px}
+  .logos{display:flex;align-items:center;gap:30px;opacity:.62;flex-wrap:wrap;justify-content:center}
+  .logos span{font-family:var(--disp);font-weight:600;font-size:15px;letter-spacing:.01em;white-space:nowrap;color:#fff}
+  .email{font-size:14px;color:rgba(255,255,255,.8);white-space:nowrap}
+  .email b{font-weight:700;color:#fff}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+  header,.tags,.intro,.fixture,.cluster,.sponsor,.athlete,footer{animation:fadeUp .7s cubic-bezier(.2,.7,.2,1) both}
+  .tags{animation-delay:.06s}.intro{animation-delay:.12s}.athlete{animation-delay:.2s}
+  .fixture{animation-delay:.26s}.cluster{animation-delay:.34s}.sponsor{animation-delay:.4s}footer{animation-delay:.46s}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+
+  /* ---- keyboard focus ---- */
+  a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--orange);outline-offset:3px;border-radius:10px}
+
+  /* ---- subscribe success ---- */
+  .subok{width:100%;text-align:center;padding:11px 10px;font-weight:600;font-size:15px;color:var(--orange);animation:fadeUp .4s ease both}
+
+  /* ---- overlay navigation ---- */
+  .navsheet{position:fixed;inset:0;z-index:60;display:flex;overflow-y:auto;opacity:0;transition:opacity .34s ease;
+    background:radial-gradient(64% 52% at 50% -2%, rgba(255,110,31,.22), transparent 60%), rgba(8,5,3,.9);
+    -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+  .navsheet.open{opacity:1}
+  .navsheet[hidden]{display:none}
+  .navsheet__inner{margin:auto;width:100%;max-width:1400px;padding:96px clamp(20px,3.2vw,46px) 72px;display:flex;flex-direction:column;gap:22px}
+  .navsheet__crest{width:52px;height:52px;object-fit:contain;filter:drop-shadow(0 4px 16px rgba(255,110,31,.42))}
+  .navsheet__close{position:fixed;top:26px;right:clamp(20px,3.2vw,46px);width:48px;height:48px;border-radius:50%;border:1px solid var(--glass-line);background:var(--glass);color:#fff;font-size:22px;line-height:1;cursor:pointer;display:grid;place-items:center;transition:.2s;z-index:2}
+  .navsheet__close:hover{background:rgba(255,110,31,.2);border-color:rgba(255,110,31,.5);transform:rotate(90deg)}
+  .navsheet__links{display:flex;flex-direction:column}
+  .navsheet__links a{display:flex;align-items:baseline;gap:16px;padding:5px 0;font-family:var(--disp);font-weight:600;font-size:clamp(26px,3.4vw,42px);letter-spacing:-.02em;line-height:1.08;color:#fff;text-decoration:none;text-transform:uppercase;opacity:0;transform:translateY(14px);transition:color .2s,opacity .3s ease,transform .3s ease}
+  .navsheet__links a span{font-family:var(--body);font-size:13px;font-weight:600;letter-spacing:.14em;color:var(--orange);transform:translateY(-.5em)}
+  .navsheet__links a:hover{color:var(--orange)}
+  .navsheet.open .navsheet__links a{opacity:1;transform:none;transition-delay:var(--d,0s)}
+  .navsheet__foot{margin-top:12px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+  .navsheet__socials{display:flex;gap:10px}
+
+  @media (max-width:1040px){
+    .hero{min-height:auto}
+    .composition{grid-template-columns:1fr;grid-template-rows:none;gap:22px}
+    .tags,.intro,.fixture,.cluster,.sponsor{grid-column:1;grid-row:auto;justify-self:stretch;width:auto;max-width:none}
+    .fixture,.sponsor{width:100%}
+    .tags{order:0}.intro{order:1}
+    .athlete{position:relative;bottom:auto;left:auto;transform:none;order:2;width:100%;height:320px;margin:4px auto 0}
+    .fixture{order:3}.sponsor{order:4}.cluster{order:5}
+    footer{flex-direction:column;align-items:flex-start;gap:18px}
+    .logos{gap:22px;justify-content:flex-start}
+  }
+  @media (max-width:560px){
+    .top-right .btn-join{display:none}
+    .brand .name{font-size:19px}
+    .subscribe{flex-wrap:wrap;border-radius:22px;padding:14px}
+    .subscribe input{flex:1 1 100%;margin-bottom:8px}
+    .subscribe button{flex:1 1 100%}
+    .fixture h3{font-size:24px}
+    .fields{flex-wrap:wrap}
+    .fields .more{white-space:normal}
+  }
+</style>
+</head>
+<body>
+  <section class="hero">
+    <div class="canvas">
+      <header>
+        <div class="brand">
+          <img src="assets/badge/sue-angels-badge-orange.webp" alt="Sue's Angels FC crest">
+          <div class="name">Sue's Angels<small>FOOTBALL CLUB</small></div>
+        </div>
+        <button class="menu" id="menuBtn" type="button" aria-expanded="false" aria-controls="navsheet">Menu <span class="caret">▾</span></button>
+        <div class="top-right">
+          <a class="icon-btn" href="https://instagram.com/suesangelsfc" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>
+          </a>
+          <a class="icon-btn" href="#" aria-label="X">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.6l-5.2-6.8L5.3 22H2l8.1-9.3L1.4 2H8l4.7 6.2L18.9 2Zm-1.2 18h1.8L7.4 3.9H5.5L17.7 20Z"/></svg>
+          </a>
+          <a class="btn-join" href="join.html">Join the Club</a>
+        </div>
+      </header>
+
+      <div class="composition">
+        <div class="tags">
+          <span class="tag"><span class="dot"></span>Champions 25/26</span>
+          <span class="tag"><span class="dot"></span>Est. 2025</span>
+          <span class="tag"><span class="dot"></span>Sepsis Awareness</span>
+        </div>
+
+        <div class="intro">
+          <h1><span class="hl">Champions</span> of<br>Grassroots Football</h1>
+          <p>Sue's Angels FC — a men's Sunday-league side from Feltham, playing for each other and raising awareness for sepsis. New season, same fire.</p>
+          <form class="subscribe" onsubmit="return false">
+            <input type="email" placeholder="Get fixtures &amp; club news" aria-label="Email address">
+            <button type="submit">Subscribe</button>
+          </form>
+        </div>
+
+        <aside class="fixture">
+          <span class="chip"><span class="lv"></span>Next fixture · Pre-season</span>
+          <h3>Away to <span>Pure Football</span>, <span class="mut">Sunday</span> 2 Aug</h3>
+          <a class="cta" href="fixtures.html">View all fixtures
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+        </aside>
+
+        <div class="cluster">
+          <div class="fields">
+            <div class="thumbs"><div class="th t1"></div><div class="th t2"></div><div class="th t3"></div><div class="th t4"></div></div>
+            <span class="more">Home at The Reeves, Feltham</span>
+          </div>
+          <div class="edge">
+            <span class="burst"><img src="assets/badge/sue-angels-badge-orange.webp" alt=""></span>
+            <span>More Than Football.<br>This One's For Sue.</span>
+          </div>
+        </div>
+
+        <aside class="sponsor">
+          <div class="head">Become a Sponsor</div>
+          <div class="body">
+            <div class="price">
+              <div class="lab">Partnerships from</div>
+              <div class="amt">£250<small>/season</small></div>
+            </div>
+            <ul class="feats">
+              <li>Pitch-side banner</li>
+              <li>Shirt &amp; web logo</li>
+              <li>Matchday shout-outs</li>
+            </ul>
+          </div>
+        </aside>
+
+        <div class="athlete">
+          <img class="crest-ghost" src="assets/badge/sue-angels-badge-orange.webp" alt="" aria-hidden="true">
+          <span class="floor" aria-hidden="true"></span>
+          <img class="player" src="assets/hero/celebration-cut.png" alt="Sue's Angels player roaring in celebration">
+        </div>
+      </div>
+
+      <footer>
+        <div class="contact">
+          <span>Contact us</span>
+          <span class="socials">
+            <a href="https://instagram.com/suesangelsfc" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg></a>
+            <a href="#" aria-label="X"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.6l-5.2-6.8L5.3 22H2l8.1-9.3L1.4 2H8l4.7 6.2L18.9 2Zm-1.2 18h1.8L7.4 3.9H5.5L17.7 20Z"/></svg></a>
+            <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 8.5V6.7c0-.8.2-1.2 1.3-1.2H17V2.3C16.6 2.2 15.6 2 14.4 2 11.9 2 10.3 3.5 10.3 6.3v2.2H8v3.2h2.3V22h3.4v-10.3h2.5l.4-3.2H14Z"/></svg></a>
+          </span>
+        </div>
+        <div class="logos">
+          <span>Sporting Solutions</span><span>Hodgson Roofing</span><span>HLO</span><span>Staines Rugby</span>
+        </div>
+        <div class="email">Email: <b>hello@suesangelsfc.co.uk</b></div>
+      </footer>
+    </div>
+  </section>
+
+  <!-- overlay navigation -->
+  <div class="navsheet" id="navsheet" hidden>
+    <button class="navsheet__close" id="navClose" type="button" aria-label="Close menu">✕</button>
+    <div class="navsheet__inner">
+      <img class="navsheet__crest" src="assets/badge/sue-angels-badge-orange.webp" alt="" aria-hidden="true">
+      <nav class="navsheet__links" aria-label="Primary">
+        <a href="index.html" style="--d:.06s"><span>01</span> Home</a>
+        <a href="about.html" style="--d:.10s"><span>02</span> Our Story</a>
+        <a href="champions.html" style="--d:.14s"><span>03</span> Champions</a>
+        <a href="squad.html" style="--d:.18s"><span>04</span> Squad</a>
+        <a href="schedule.html" style="--d:.22s"><span>05</span> Matches</a>
+        <a href="news.html" style="--d:.26s"><span>06</span> News</a>
+        <a href="gallery.html" style="--d:.30s"><span>07</span> Gallery</a>
+        <a href="sponsors.html" style="--d:.34s"><span>08</span> Sponsors</a>
+        <a href="contact.html" style="--d:.38s"><span>09</span> Contact</a>
+      </nav>
+      <div class="navsheet__foot">
+        <a class="btn-join" href="join.html">Join the Club</a>
+        <div class="navsheet__socials">
+          <a class="icon-btn" href="https://instagram.com/suesangelsfc" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg></a>
+          <a class="icon-btn" href="#" aria-label="X"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.6l-5.2-6.8L5.3 22H2l8.1-9.3L1.4 2H8l4.7 6.2L18.9 2Zm-1.2 18h1.8L7.4 3.9H5.5L17.7 20Z"/></svg></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    var btn=document.getElementById('menuBtn'),sheet=document.getElementById('navsheet'),closeBtn=document.getElementById('navClose');
+    function open(){sheet.hidden=false;requestAnimationFrame(function(){sheet.classList.add('open');});btn.setAttribute('aria-expanded','true');document.body.style.overflow='hidden';var f=sheet.querySelector('a');if(f)f.focus();}
+    function close(){sheet.classList.remove('open');btn.setAttribute('aria-expanded','false');document.body.style.overflow='';setTimeout(function(){sheet.hidden=true;},340);btn.focus();}
+    btn.addEventListener('click',open);
+    closeBtn.addEventListener('click',close);
+    sheet.addEventListener('click',function(e){if(e.target===sheet)close();});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!sheet.hidden)close();});
+    var form=document.querySelector('.subscribe');
+    form.addEventListener('submit',function(e){
+      e.preventDefault();
+      var inp=form.querySelector('input');
+      if(!inp.value.trim()){inp.focus();return;}
+      form.innerHTML='<span class="subok">You’re in — fixtures &amp; club news incoming.</span>';
+    });
+  })();
+  </script>
+</body>
+</html>

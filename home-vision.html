@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en-GB" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sue's Angels FC — Champions in our very first season.</title>
+<meta name="theme-color" content="#04121B">
+<!-- HERO ONLY — matches the reference mockup. Video bg, impressive nav, club colours, dark/light. Font: General Sans (fallback Hanken Grotesk). -->
+<style>
+@import url('https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&display=swap');
+@font-face{font-family:'Hanken Grotesk';src:url('assets/fonts/hanken-500.woff2') format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'Hanken Grotesk';src:url('assets/fonts/hanken-700.woff2') format('woff2');font-weight:700;font-display:swap}
+
+:root{
+  --volt:#D6F23A; --volt-2:#E4FB63; --volt-ink:#0A1B12;
+  --font:'General Sans','Hanken Grotesk',system-ui,sans-serif;
+  --e-expo:cubic-bezier(.19,1,.22,1); --e-quint:cubic-bezier(.23,1,.32,1); --e-std:cubic-bezier(.4,0,.2,1);
+  --pad:clamp(18px,4vw,56px);
+}
+html[data-theme="dark"]{
+  --bg:#04121B; --ink-1:#fff; --ink-2:rgba(233,242,247,.72); --ink-3:rgba(196,212,222,.5);
+  --volt-text:#D6F23A; --line:rgba(255,255,255,.12); --glass:rgba(255,255,255,.06); --glass-2:rgba(255,255,255,.1);
+  --card:rgba(9,22,33,.5); --nav-solid:rgba(4,18,27,.6);
+  --scrim:linear-gradient(90deg,rgba(4,18,27,.95),rgba(4,18,27,.74) 36%,rgba(4,18,27,.22) 70%,rgba(4,18,27,.6)),linear-gradient(0deg,rgba(4,18,27,.72),transparent 42%);
+  --vfilter:saturate(.95) brightness(.72);
+}
+html[data-theme="light"]{
+  --bg:#EAEEF2; --ink-1:#07131D; --ink-2:rgba(20,38,52,.78); --ink-3:rgba(46,66,82,.55);
+  --volt-text:#56660A; --line:rgba(10,27,40,.14); --glass:rgba(255,255,255,.55); --glass-2:rgba(255,255,255,.72);
+  --card:rgba(255,255,255,.72); --nav-solid:rgba(234,238,242,.72);
+  --scrim:linear-gradient(90deg,rgba(234,238,242,.94),rgba(234,238,242,.74) 36%,rgba(234,238,242,.34) 70%,rgba(234,238,242,.66)),linear-gradient(0deg,rgba(234,238,242,.82),transparent 42%);
+  --vfilter:saturate(1.02) brightness(1.16) contrast(.9);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{overflow-x:hidden;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink-1);font-family:var(--font);line-height:1.55;-webkit-font-smoothing:antialiased;transition:background .5s var(--e-std),color .5s var(--e-std)}
+img{display:block;max-width:100%}a{color:inherit;text-decoration:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--font);font-weight:600;font-size:.92rem;border:0;border-radius:9999px;padding:13px 24px;cursor:pointer;transition:transform .4s var(--e-expo),background .3s,box-shadow .3s}
+.btn--volt{background:var(--volt);color:var(--volt-ink)}.btn--volt:hover{background:var(--volt-2);transform:translateY(-2px);box-shadow:0 12px 32px rgba(214,242,58,.3)}
+
+/* ============ NAV ============ */
+.nav{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:18px;
+  padding:clamp(14px,2vw,20px) var(--pad);opacity:0;transform:translateY(-14px);animation:navIn .9s var(--e-expo) .1s forwards;
+  transition:background .45s var(--e-std),border-color .45s,padding .45s var(--e-expo)}
+.nav.solid{background:var(--nav-solid);backdrop-filter:blur(20px) saturate(1.2);border-bottom:1px solid var(--line);padding-top:10px;padding-bottom:10px}
+.nav.hide{transform:translateY(-130%)!important}
+@keyframes navIn{to{opacity:1;transform:none}}
+.brand{display:flex;align-items:center;gap:12px}
+.brand img{width:44px;transition:transform .5s var(--e-expo)}.brand:hover img{transform:rotate(-8deg) scale(1.05)}
+.brand b{display:block;font-weight:700;font-size:1.18rem;letter-spacing:-.01em;line-height:1.05}
+.brand small{display:block;font-size:.64rem;font-weight:600;letter-spacing:.18em;color:var(--volt-text);margin-top:3px}
+.nav__links{display:flex;align-items:center;gap:2px;padding:6px;border:1px solid var(--line);border-radius:9999px;background:var(--glass);backdrop-filter:blur(12px)}
+.nav__links a{position:relative;padding:9px 18px;border-radius:9999px;font-size:.92rem;font-weight:500;color:var(--ink-2);transition:color .3s,background .3s}
+.nav__links a:hover{color:var(--ink-1);background:var(--glass-2)}
+.nav__c{display:flex;align-items:center;gap:16px}
+.nav__ghost{font-size:.92rem;font-weight:500;color:var(--ink-2)}.nav__ghost:hover{color:var(--ink-1)}
+.themebtn{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--glass);cursor:pointer;display:grid;place-items:center;color:var(--ink-1);font-size:.9rem;transition:.3s}
+.themebtn:hover{border-color:var(--volt)}
+.themebtn .moon{display:none}html[data-theme="light"] .themebtn .moon{display:block}html[data-theme="light"] .themebtn .sun{display:none}
+@media(max-width:1000px){.nav__links{display:none}.nav__ghost{display:none}}
+
+/* ============ HERO ============ */
+.hero{position:relative;min-height:100svh;display:flex;align-items:center;padding:clamp(120px,15vh,150px) var(--pad) clamp(40px,6vh,60px);overflow:hidden}
+.hero__v{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 30%;z-index:0;filter:var(--vfilter);transition:filter .5s var(--e-std);animation:kb 40s var(--e-std) infinite alternate}
+@keyframes kb{from{transform:scale(1.04)}to{transform:scale(1.13)}}
+.hero__scrim{position:absolute;inset:0;z-index:1;background:var(--scrim);transition:background .5s var(--e-std)}
+.hero__in{position:relative;z-index:3;width:100%;max-width:680px}
+.hero__in>*{opacity:0;transform:translateY(20px);animation:rise .9s var(--e-expo) forwards}
+.hero__in>*:nth-child(1){animation-delay:.15s}.hero__in>*:nth-child(2){animation-delay:.26s}.hero__in>*:nth-child(3){animation-delay:.36s}
+.hero__in>*:nth-child(4){animation-delay:.48s}.hero__in>*:nth-child(5){animation-delay:.62s}
+@keyframes rise{to{opacity:1;transform:none}}
+h1{font-family:var(--font);font-weight:600;font-size:clamp(2.6rem,5.6vw,4.5rem);line-height:1.02;letter-spacing:-.025em;margin-bottom:18px}
+.eyebrow{display:flex;align-items:center;gap:12px;font-size:.74rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);margin-bottom:18px}
+.eyebrow::before{content:"";width:26px;height:2px;background:var(--volt);flex:0 0 auto}
+.eyebrow b{color:var(--volt-text);font-weight:600}
+.sub{max-width:46ch;color:var(--ink-2);font-size:clamp(1.02rem,1.3vw,1.18rem);margin-bottom:28px}
+.sub u{text-decoration-color:var(--volt);text-underline-offset:3px;text-decoration-thickness:2px;color:var(--ink-1)}
+
+/* next match card */
+.nm{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 24px;backdrop-filter:blur(16px);margin-bottom:34px;box-shadow:0 24px 60px rgba(0,0,0,.28)}
+.nm__lab{font-size:.72rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:16px}
+.nm__lab b{color:var(--volt-text)}
+.nm__teams{display:flex;align-items:center;gap:16px;margin-bottom:14px}
+.nm__team{display:flex;align-items:center;gap:12px;font-weight:600;font-size:clamp(1.05rem,1.7vw,1.4rem)}
+.nm__team img{width:42px;height:42px;object-fit:contain}
+.nm__vs{color:var(--ink-3);font-size:.9rem;font-weight:500}
+.nm__meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.92rem;color:var(--ink-3);align-items:center}
+.nm__meta b{color:var(--ink-1);font-weight:600}
+.nm__meta .dot{width:4px;height:4px;border-radius:50%;background:var(--ink-3);display:inline-block}
+
+/* what brings you */
+.brings h2{font-family:var(--font);font-weight:600;font-size:clamp(1.3rem,2.2vw,1.7rem);letter-spacing:-.02em;margin-bottom:8px}
+.brings>p{color:var(--ink-2);margin-bottom:20px}
+.brings__pills{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.pill{padding:11px 20px;border:1px solid var(--line);border-radius:9999px;background:var(--glass);backdrop-filter:blur(8px);color:var(--ink-1);font-family:var(--font);font-weight:500;font-size:.92rem;cursor:pointer;transition:.3s var(--e-expo)}
+.pill:hover{border-color:var(--ink-2);transform:translateY(-2px)}
+.pill.on{background:var(--volt);color:var(--volt-ink);border-color:var(--volt)}
+.brings__note{font-size:.86rem;font-style:italic;color:var(--ink-3)}
+
+@media(prefers-reduced-motion:reduce){*{animation:none!important}.hero__in>*{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav" id="nav">
+  <a class="brand" href="index.html"><img src="assets/badge/sue-angels-badge.webp" alt="crest"><span><b>Sue's Angels FC</b><small>CHAMPIONS 25/26</small></span></a>
+  <nav class="nav__links">
+    <a href="about.html">The Club</a><a href="fixtures.html">Fixtures</a><a href="results.html">Results</a><a href="media.html">Media</a>
+  </nav>
+  <div class="nav__c">
+    <button class="themebtn" id="theme" aria-label="Toggle dark / light mode"><span class="sun">☀</span><span class="moon">☾</span></button>
+    <a class="nav__ghost" href="contact.html">Get in touch</a>
+    <a class="btn btn--volt" href="join.html">Join the club</a>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <video class="hero__v" autoplay muted loop playsinline preload="metadata" poster="assets/videos/hero-shirt-poster.jpg">
+    <source src="assets/videos/hero-shirt.mp4" type="video/mp4"></video>
+  <div class="hero__scrim"></div>
+
+  <div class="hero__in">
+    <h1>champions in our<br>very first season.</h1>
+    <p class="eyebrow"><b>Est. 2025</b> · In memory of Susan Anne Martin</p>
+    <p class="sub">Champions of League Ten, <u>unbeaten</u> in the league and promoted at the first attempt.</p>
+
+    <div class="nm">
+      <div class="nm__lab"><b>Next match</b> · Away · Friendly</div>
+      <div class="nm__teams">
+        <span class="nm__team"><img src="assets/badge/brentford-town-badge.webp" alt="">Brentford Town</span>
+        <span class="nm__vs">vs</span>
+        <span class="nm__team"><img src="assets/badge/sue-angels-badge.webp" alt="">Sue's Angels</span>
+      </div>
+      <div class="nm__meta"><b>Sunday 16th August</b><span class="dot"></span>Kick-off 10:30<span class="dot"></span>Carville Park North, Brentford TW8 9QT</div>
+    </div>
+
+    <div class="brings">
+      <h2>What brings you to the club?</h2>
+      <p>Pick what you are after and we will point you the right way.</p>
+      <div class="brings__pills" id="pills">
+        <button class="pill">Play for us</button>
+        <button class="pill">Sponsor the club</button>
+        <button class="pill">Come watch a match</button>
+        <button class="pill">Arrange a friendly</button>
+        <button class="pill">Support the cause</button>
+      </div>
+      <p class="brings__note">Pick one or more to get started.</p>
+    </div>
+  </div>
+</section>
+
+<script>
+/* theme toggle (persists) */
+(function(){const root=document.documentElement,btn=document.getElementById('theme');
+  const s=localStorage.getItem('sa-theme');if(s)root.setAttribute('data-theme',s);
+  btn.addEventListener('click',()=>{const n=root.getAttribute('data-theme')==='dark'?'light':'dark';
+    root.setAttribute('data-theme',n);localStorage.setItem('sa-theme',n);
+    document.querySelector('meta[name=theme-color]').setAttribute('content',n==='dark'?'#04121B':'#EAEEF2');});})();
+
+/* nav scroll state */
+(function(){const n=document.getElementById('nav');let last=scrollY;
+  function u(){const y=scrollY;n.classList.toggle('solid',y>40);
+    if(y>240&&y>last+2)n.classList.add('hide');else if(y<last-2||y<=40)n.classList.remove('hide');last=y;}
+  addEventListener('scroll',()=>requestAnimationFrame(u),{passive:true});u();})();
+
+/* selectable pills */
+document.querySelectorAll('#pills .pill').forEach(p=>p.addEventListener('click',()=>{
+  p.classList.toggle('on');
+  const n=document.querySelectorAll('#pills .pill.on').length;
+  const note=document.querySelector('.brings__note');
+  note.textContent=n?`${n} selected — hit “Join the club” and we’ll point you the right way.`:'Pick one or more to get started.';
+}));
+</script>
+</body>
+</html>

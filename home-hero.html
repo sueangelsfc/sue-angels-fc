@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en-GB" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sue's Angels FC — Home (26/27 prototype)</title>
+<link rel="icon" href="assets/badge/sue-angels-badge-cutout.png">
+<link href="https://api.fontshare.com/v2/css?f[]=tusker-grotesk@500,600,700,800&f[]=satoshi@400,500,600,700&display=swap" rel="stylesheet">
+<script>
+  if ((localStorage.getItem('sa-theme') || 'dark') === 'light') document.documentElement.classList.remove('dark');
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { darkMode:'class', theme:{ extend:{
+    fontFamily:{ sans:['Satoshi','system-ui','sans-serif'], display:['"Tusker Grotesk"','"Clash Display"','system-ui','sans-serif'] },
+    colors:{ volt:'#D6F23A', navy:'#04121B' },
+  }}};
+</script>
+<style>
+  html{ background:#04121B }
+  html:not(.dark){ background:#E8ECEF }
+
+  /* ---------- liquid glass ---------- */
+  .lg{ position:relative; backdrop-filter:blur(26px) saturate(1.6); -webkit-backdrop-filter:blur(26px) saturate(1.6);
+       background:linear-gradient(135deg, rgba(255,255,255,.13), rgba(255,255,255,.05));
+       border:1px solid rgba(255,255,255,.18);
+       box-shadow:0 18px 50px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.42), inset 0 -1px 0 rgba(255,255,255,.06); }
+  html:not(.dark) .lg{ background:linear-gradient(135deg, rgba(255,255,255,.72), rgba(255,255,255,.42));
+       border-color:rgba(4,18,27,.08); box-shadow:0 18px 50px rgba(4,18,27,.14), inset 0 1px 0 rgba(255,255,255,.95); }
+  .lg::before{ content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+       background:radial-gradient(130% 90% at 10% 0%, rgba(255,255,255,.32), rgba(255,255,255,0) 45%); }
+  .lg:hover{ border-color:rgba(214,242,58,.35); transition:border-color .4s }
+
+  .ticket{ -webkit-mask:
+      radial-gradient(circle 10px at 0 71.5%, transparent 96%, black),
+      radial-gradient(circle 10px at 100% 71.5%, transparent 96%, black);
+    -webkit-mask-composite: source-in; mask:
+      radial-gradient(circle 10px at 0 71.5%, transparent 96%, black),
+      radial-gradient(circle 10px at 100% 71.5%, transparent 96%, black);
+    mask-composite: intersect; }
+
+  /* ---------- entrances (CSS only, no library) ---------- */
+  @keyframes rise { from{ opacity:0; transform:translateY(22px) } to{ opacity:1; transform:none } }
+  .rise{ animation:rise .85s cubic-bezier(.22,1,.36,1) both; animation-delay:var(--d,0s) }
+  @keyframes bloom { from{ opacity:0; transform:scale(.965) } to{ opacity:1; transform:scale(1) } }
+  .bloom{ animation:bloom 1s cubic-bezier(.22,1,.36,1) both; animation-delay:var(--d,0s) }
+
+  .grain::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.08;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  ::selection{ background:#D6F23A; color:#04121B }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="module">
+import React, { useState, useEffect, useRef } from "https://esm.sh/react@18.3.1";
+import { createRoot } from "https://esm.sh/react-dom@18.3.1/client";
+import htm from "https://esm.sh/htm@3.1.1";
+const h = htm.bind(React.createElement);
+
+const HERO_IMAGES = ["banner-05","banner-02","banner-10","banner-07","banner-04","banner-11"];
+const MATCH = new Date("2026-08-16T10:30:00");
+const TRAINING = new Date("2026-07-25T10:00:00");
+const PARTNERS = [["sporting-solutions","Sporting Solutions"],["hodgson-roofing","Hodgson Roofing"],["staines-rugby-cut","Staines Rugby"]];
+const links = ["The Club","Fixtures","Results","Table","Media"];
+
+const Sun = () => h`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4"/></svg>`;
+const Moon = () => h`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>`;
+const Arr = () => h`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>`;
+
+function useCountdown(t){
+  const calc=()=>Math.max(0,t-Date.now());
+  const [ms,setMs]=useState(calc);
+  useEffect(()=>{const id=setInterval(()=>setMs(calc),1000);return ()=>clearInterval(id)},[]);
+  const s=Math.floor(ms/1000);
+  return {d:Math.floor(s/86400),h:Math.floor(s/3600)%24,m:Math.floor(s/60)%60,s:s%60};
+}
+
+function Navbar({ theme, toggle }) {
+  const [open, setOpen] = useState(false);
+  return h`
+    <header className="relative z-40 px-4 sm:px-8 pt-4 sm:pt-5">
+      <div className="lg rounded-full flex items-center gap-2 pl-2 pr-2 py-2 max-w-5xl mx-auto">
+        <a href="#" className="flex items-center gap-2.5 select-none shrink-0">
+          <span className="flex items-center justify-center w-10 h-10 rounded-full bg-navy/60 dark:bg-white/10 border border-white/15 shadow-inner">
+            <img src="assets/badge/sue-angels-badge-cutout.png" alt="" className="w-7 h-7 object-contain" />
+          </span>
+          <span className="hidden lg:flex flex-col leading-tight pr-3">
+            <span className="text-[13px] font-semibold tracking-tight text-white">Sue's Angels FC</span>
+            <span className="text-[8px] tracking-[0.24em] uppercase text-volt font-semibold">Champions 25/26</span>
+          </span>
+        </a>
+        <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
+          ${links.map((l,i)=>h`<a key=${l} href="#"
+            className=${"text-[12.5px] font-medium rounded-full px-4 py-1.5 transition-all " +
+              (i===1 ? "bg-volt text-navy font-semibold shadow-[0_0_18px_rgba(214,242,58,.35)]"
+                     : "text-white/65 hover:text-white hover:bg-white/10")}>${l}</a>`)}
+        </nav>
+        <div className="flex items-center gap-1.5 shrink-0 ml-auto md:ml-0">
+          <button onClick=${toggle} aria-label="Toggle theme"
+            className="flex items-center justify-center w-9 h-9 rounded-full text-white/80 hover:text-volt bg-white/8 border border-white/12 transition-colors">
+            ${theme==="dark" ? h`<${Sun} />` : h`<${Moon} />`}
+          </button>
+          <a href="#" className="hidden sm:inline-block text-[12.5px] font-bold bg-volt text-navy rounded-full px-5 py-2 hover:brightness-105 transition">Join the club</a>
+          <button onClick=${()=>setOpen(!open)} aria-label="Menu" className="md:hidden relative z-40 flex flex-col justify-center items-center gap-[4px] w-9 h-9 text-white">
+            <span className=${"w-5 h-[2px] bg-current transition-all duration-300 " + (open?"rotate-45 translate-y-[6px]":"")}></span>
+            <span className=${"w-5 h-[2px] bg-current transition-all duration-300 " + (open?"opacity-0":"")}></span>
+            <span className=${"w-5 h-[2px] bg-current transition-all duration-300 " + (open?"-rotate-45 -translate-y-[6px]":"")}></span>
+          </button>
+        </div>
+      </div>
+      <div className=${"md:hidden fixed inset-0 z-30 bg-navy/95 backdrop-blur-md flex flex-col items-center justify-center gap-6 transition-opacity duration-300 " + (open?"opacity-100 pointer-events-auto":"opacity-0 pointer-events-none")}>
+        ${links.map((l)=>h`<a key=${l} href="#" onClick=${()=>setOpen(false)} className="text-2xl font-display text-white">${l}</a>`)}
+        <a href="#" className="mt-2 text-base font-bold bg-volt text-navy rounded-full px-7 py-3">Join the club</a>
+      </div>
+    </header>`;
+}
+
+function MatchTicket(){
+  const t=useCountdown(MATCH);
+  const cell=(n,l)=>h`<div className="flex flex-col items-center flex-1">
+    <span className="font-display text-[26px] font-semibold tabular-nums leading-none text-white">${String(n).padStart(2,"0")}</span>
+    <span className="text-[8px] tracking-[0.2em] uppercase text-white/45 mt-1.5">${l}</span>
+  </div>`;
+  const team=(img,name,sub)=>h`<div className="flex items-center gap-3 min-w-0">
+    <img src=${img} alt="" className="w-10 h-10 object-contain shrink-0" />
+    <div className="min-w-0"><div className="text-[14.5px] font-semibold text-white leading-tight">${name}</div>
+    <div className="text-[10px] tracking-[0.14em] uppercase text-white/40">${sub}</div></div>
+  </div>`;
+  return h`
+    <div className="lg ticket rounded-[26px] rounded-tr-[8px] p-6 w-full text-white">
+      <div className="flex items-center justify-between mb-5">
+        <span className="text-[10px] tracking-[0.22em] uppercase font-bold text-volt">Matchday</span>
+        <span className="text-[9px] tracking-[0.16em] uppercase px-2.5 py-1 rounded-full bg-white/10 border border-white/15 text-white/85">Friendly · Away</span>
+      </div>
+      <div className="flex flex-col gap-3 mb-5">
+        ${team("assets/badge/brentford-town-badge.png","Brentford Town FC","Home")}
+        <div className="flex items-center gap-3 pl-1.5">
+          <span className="text-[10px] font-bold text-volt tracking-[0.2em]">VS</span>
+          <span className="flex-1 h-px bg-white/10"></span>
+        </div>
+        ${team("assets/badge/sue-angels-badge-cutout.png","Sue's Angels FC","Away")}
+      </div>
+      <div className="flex items-start gap-1 mb-5 rounded-2xl bg-black/20 border border-white/8 px-3 py-3.5">
+        ${cell(t.d,"days")}<span className="text-white/25 text-lg mt-0.5">:</span>${cell(t.h,"hrs")}<span className="text-white/25 text-lg mt-0.5">:</span>${cell(t.m,"min")}<span className="text-white/25 text-lg mt-0.5">:</span>${cell(t.s,"sec")}
+      </div>
+      <div className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1.5 text-[12px] mb-6">
+        <span className="text-white/45 uppercase tracking-[0.14em] text-[9.5px] pt-0.5">Date</span><span className="font-semibold">Sunday 16 August 2026</span>
+        <span className="text-white/45 uppercase tracking-[0.14em] text-[9.5px] pt-0.5">Kick-off</span><span className="font-semibold">10:30</span>
+        <span className="text-white/45 uppercase tracking-[0.14em] text-[9.5px] pt-0.5">Venue</span><span className="font-semibold">Carville Park North, Brentford TW8 9QT</span>
+      </div>
+      <div className="border-t border-dashed border-white/20 pt-4 -mx-6 px-6 flex items-center justify-between">
+        <span className="text-[10px] tracking-[0.18em] uppercase text-white/45">Admission free · All welcome</span>
+        <a href="#" className="flex items-center gap-1.5 text-[10px] tracking-[0.16em] uppercase font-bold text-volt hover:gap-2.5 transition-all">Add to calendar <${Arr} /></a>
+      </div>
+    </div>`;
+}
+
+function TrainingStrip(){
+  const t=useCountdown(TRAINING);
+  return h`
+    <div className="lg rounded-full rounded-bl-[8px] px-5 py-3.5 w-full flex items-center justify-between gap-3 text-white">
+      <div className="flex items-center gap-2.5 min-w-0">
+        <span className="w-1.5 h-1.5 rounded-full bg-volt animate-pulse shrink-0"></span>
+        <span className="text-[10px] tracking-[0.18em] uppercase font-bold text-volt shrink-0">Pre-season</span>
+        <span className="text-[11.5px] text-white/60 truncate">Sat 25 July · 10:00</span>
+      </div>
+      <span className="text-[12px] font-display font-semibold tabular-nums shrink-0">${t.d}d ${String(t.h).padStart(2,"0")}h ${String(t.m).padStart(2,"0")}m</span>
+    </div>`;
+}
+
+function App(){
+  const [theme,setTheme]=useState(()=>localStorage.getItem("sa-theme")||"dark");
+  const [m,setM]=useState({x:0,y:0});
+  const [slide,setSlide]=useState(0);
+  const raf=useRef(0), target=useRef({x:0,y:0});
+  useEffect(()=>{document.documentElement.classList.toggle("dark",theme==="dark");localStorage.setItem("sa-theme",theme)},[theme]);
+  useEffect(()=>{
+    const onMove=e=>{ target.current={ x:(e.clientX/window.innerWidth-.5)*2, y:(e.clientY/window.innerHeight-.5)*2 }; };
+    const tick=()=>{ setM(p=>{ const nx=p.x+(target.current.x-p.x)*.06, ny=p.y+(target.current.y-p.y)*.06;
+      return (Math.abs(nx-p.x)<.0004 && Math.abs(ny-p.y)<.0004) ? p : {x:nx,y:ny}; }); raf.current=requestAnimationFrame(tick); };
+    window.addEventListener("mousemove",onMove); raf.current=requestAnimationFrame(tick);
+    return ()=>{ window.removeEventListener("mousemove",onMove); cancelAnimationFrame(raf.current); };
+  },[]);
+  useEffect(()=>{ const id=setInterval(()=>setSlide(s=>(s+1)%HERO_IMAGES.length),4200); return ()=>clearInterval(id); },[]);
+
+  return h`
+    <div className="relative min-h-screen w-full overflow-x-hidden font-sans antialiased bg-[#E8ECEF] dark:bg-navy transition-colors duration-300">
+      <!-- clean brand background: no video, no blur wash -->
+      <div className="grain absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(55%_42%_at_72%_16%,rgba(214,242,58,.10),transparent_72%)]"></div>
+      </div>
+
+      <${Navbar} theme=${theme} toggle=${()=>setTheme(theme==="dark"?"light":"dark")} />
+
+      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-8 pt-6 lg:pt-2">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 lg:gap-10 items-start">
+
+          <!-- left: copy + stage -->
+          <div className="relative min-w-0">
+            <div className="rise flex items-center gap-3 mb-4 lg:mt-6" style=${{"--d":".05s"}}>
+              <span className="h-px w-9 bg-volt"></span>
+              <span className="text-[10px] tracking-[0.3em] uppercase font-semibold text-volt">Est. 2025 — London Sunday League</span>
+            </div>
+            <h1 className="rise font-display font-medium leading-[1.03] tracking-tight text-[1.7rem] sm:text-4xl lg:text-[2.7rem] max-w-xl text-navy dark:text-white" style=${{"--d":".12s"}}>
+              Champions in our <span className="text-[#56660A] dark:text-volt">very first</span> season.
+            </h1>
+            <p className="rise mt-4 max-w-md text-[13.5px] sm:text-[14.5px] leading-relaxed text-navy/65 dark:text-white/65" style=${{"--d":".2s"}}>
+              A men's Sunday-league side born in memory of Susan Anne Martin, taken by sepsis. Unbeaten in League Ten, promoted at the first attempt.
+            </p>
+
+            <!-- hero image gallery: crossfading club photos -->
+            <div className="bloom relative mt-6 h-[42vh] sm:h-[52vh] lg:h-[58vh] min-h-[320px] w-full rounded-[28px] overflow-hidden border border-black/10 dark:border-white/12 shadow-2xl shadow-black/30" style=${{"--d":".3s"}}>
+              ${HERO_IMAGES.map((s,i)=>h`
+                <picture key=${s}>
+                  <source srcset=${"assets/hero/"+s+".webp"} type="image/webp" />
+                  <img src=${"assets/hero/"+s+".jpg"} alt="Sue's Angels FC"
+                    className=${"absolute inset-0 w-full h-full object-cover transition-opacity ease-out duration-[1400ms] "+(i===slide?"opacity-100":"opacity-0")}
+                    style=${{ transform:`scale(1.07) translate(${m.x*8}px, ${m.y*6}px)` }} />
+                </picture>`)}
+              <div className="absolute inset-0 bg-gradient-to-t from-navy/45 via-transparent to-transparent pointer-events-none"></div>
+              <div className="absolute bottom-4 left-4 flex items-center gap-1.5">
+                ${HERO_IMAGES.map((s,i)=>h`<span key=${s} className=${"h-1 rounded-full transition-all duration-500 "+(i===slide?"w-7 bg-volt":"w-3 bg-white/45")}></span>`)}
+              </div>
+            </div>
+          </div>
+
+          <!-- right: ticket + training + partners -->
+          <div className="flex flex-col gap-3 lg:pt-10 pb-8 lg:pb-0 min-w-0">
+            <div className="rise" style=${{"--d":".3s"}}><${MatchTicket} /></div>
+            <div className="rise" style=${{"--d":".42s"}}><${TrainingStrip} /></div>
+            <div className="rise flex items-center gap-3 flex-wrap px-1 pt-2" style=${{"--d":".54s"}}>
+              <span className="text-[9px] tracking-[0.22em] uppercase font-semibold text-navy/45 dark:text-white/40 w-full sm:w-auto">Proudly backed by</span>
+              ${PARTNERS.map(([f,name])=>h`<span key=${f} title=${name} className="flex items-center justify-center w-11 h-11 rounded-2xl bg-white/90 shadow-lg shadow-black/20 border border-black/5 p-1.5">
+                <img src=${"assets/sponsors/"+f+".png"} alt=${name} className="w-full h-full object-contain" />
+              </span>`)}
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>`;
+}
+
+createRoot(document.getElementById("root")).render(h`<${App} />`);
+</script>
+</body>
+</html>

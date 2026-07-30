@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sue's Angels FC · Champions in year one</title>
+<meta name="robots" content="noindex" />
+<!-- 1. Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<!-- Tailwind (Play CDN — prototype build, no bundler in this repo) -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] } } }
+  };
+</script>
+<style>
+  :root { --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+  html { font-family: var(--font-sans); }
+  /* Club colour themes — navy #0A0F1C base, volt #D6F23A accent */
+  html, html[data-theme="dark"] {
+    --bg: #0A0F1C; --bg-80: rgba(10,15,28,.8); --bg-95: rgba(10,15,28,.95); --bg-25: rgba(10,15,28,.25);
+    --ink: #FFFFFF; --ink-2: rgba(255,255,255,.65); --ink-3: rgba(255,255,255,.5);
+    --panel: rgba(255,255,255,.05); --panel-2: rgba(255,255,255,.1); --edge: rgba(255,255,255,.13);
+    --volt-text: #D6F23A;
+  }
+  html[data-theme="light"] {
+    --bg: #F5F6F1; --bg-80: rgba(245,246,241,.85); --bg-95: rgba(245,246,241,.95); --bg-25: rgba(245,246,241,.25);
+    --ink: #071D29; --ink-2: rgba(7,29,41,.72); --ink-3: rgba(7,29,41,.55);
+    --panel: rgba(7,29,41,.05); --panel-2: rgba(7,29,41,.09); --edge: rgba(7,29,41,.15);
+    --volt-text: #D6F23A;
+  }
+  /* Light mode: volt text stays true VOLT, carried on a navy chip for
+     legibility — the club's signature volt-on-navy pairing. */
+  html[data-theme="light"] .text-\[var\(--volt-text\)\] {
+    background: #071D29; padding: 2px 9px; border-radius: 999px; width: fit-content;
+  }
+  html, body { background: var(--bg); }
+  /* 1. Global blink animation for the typewriter cursor */
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+  .animate-blink { animation: blink 1s step-end infinite; }
+  /* Hero still: slow Ken Burns drift */
+  @keyframes hero-drift { from { transform: scale(1.06) translateX(0.8%); } to { transform: scale(1.0) translateX(0); } }
+  .hero-still { animation: hero-drift 14s ease-out both; }
+  @media (prefers-reduced-motion: reduce) { .hero-still { animation: none; } }
+  /* CSS fallbacks if the Framer Motion UMD fails to load */
+  @keyframes drop-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
+  .fallback-drop { animation: drop-in .6s cubic-bezier(.22,.68,.16,1) both; }
+  .fallback-drop-2 { animation: drop-in .6s cubic-bezier(.22,.68,.16,1) .1s both; }
+  @keyframes chk-spring { 0% { transform: scale(0); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+  .fallback-chk { animation: chk-spring .4s cubic-bezier(.2,1.4,.4,1) both; }
+  @keyframes banner-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .fallback-banner { animation: banner-in .35s ease-out both; }
+  /* Scroll reveal — sections rise + fade as they enter view */
+  .reveal { opacity: 0; transform: translateY(28px); transition: opacity .8s cubic-bezier(.22,.68,.16,1), transform .8s cubic-bezier(.22,.68,.16,1); }
+  .reveal.is-in { opacity: 1; transform: none; }
+  /* Volt numbers stay true volt in light mode, carried on a navy chip */
+  .voltnum { color: #D6F23A; }
+  html[data-theme="light"] .voltnum { background: #071D29; padding: .04em .3em; border-radius: .22em; display: inline-block; }
+  .campaign-grid { display: grid; gap: 2rem; align-items: center; }
+  @media (min-width: 1024px) { .campaign-grid { grid-template-columns: 320px 1fr; } }
+  .stat-tile { transition: transform .3s cubic-bezier(.22,.68,.16,1), border-color .3s; }
+  .stat-tile:hover { transform: translateY(-5px); border-color: rgba(214,242,58,.5); }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+  /* Perfect-season win blocks */
+  .wblock { opacity: .12; transform: scale(.6); transition: opacity .35s, transform .5s cubic-bezier(.2,1.5,.4,1); }
+  .wblock.on { opacity: 1; transform: none; }
+  .wblock.on:hover { transform: translateY(-5px) scale(1.08); }
+  /* Achievement marquee */
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  .marquee { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+  .marquee-track { display: flex; width: max-content; animation: marquee 30s linear infinite; }
+  .marquee:hover .marquee-track { animation-play-state: paused; }
+  .marq-solid { color: #D6F23A; }
+  .marq-outline { color: transparent; -webkit-text-stroke: 1.5px var(--ink-3); }
+  /* SEPSIS flip cards */
+  .flip { perspective: 900px; cursor: pointer; }
+  .flip-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .55s cubic-bezier(.22,.68,.16,1); }
+  .flip.is-flipped .flip-inner { transform: rotateY(180deg); }
+  .flip-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 18px; }
+  .flip-back { transform: rotateY(180deg); }
+  /* Cursor spotlight over the cause section */
+  .spotlight::after { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+    background: radial-gradient(560px circle at var(--mx, 50%) var(--my, 40%), rgba(214,242,58,.09), transparent 60%); }
+  /* 3D tilt honour cards */
+  .tilt-card { transition: transform .25s ease-out, border-color .3s, box-shadow .35s; will-change: transform; }
+  .tilt-card:hover { border-color: rgba(214,242,58,.55); box-shadow: 0 24px 50px -28px rgba(214,242,58,.4); }
+  /* Sponsor placeholder shimmer */
+  @keyframes shimmer { 0%, 55% { background-position: 200% 0; } 100% { background-position: -120% 0; } }
+  .shimmer { background-image: linear-gradient(110deg, transparent 42%, rgba(214,242,58,.14) 50%, transparent 58%); background-size: 220% 100%; animation: shimmer 4.5s ease-in-out infinite; }
+  .tabnum { font-variant-numeric: tabular-nums; }
+  @media (prefers-reduced-motion: reduce) { .marquee-track, .shimmer { animation: none; } .wblock { opacity: 1; transform: none; } }
+  /* Stat cloud — the cluster drifts with the cursor, items at differing depths */
+  .cloud-item { display: inline-block; transform: translate(calc(var(--dx, 0px) * var(--d, 1)), calc(var(--dy, 0px) * var(--d, 1))); will-change: transform; white-space: nowrap; }
+  .cloud-line { display: flex; align-items: baseline; justify-content: center; gap: .55em; }
+  @media (prefers-reduced-motion: reduce) { .cloud-item { transform: none; } }
+  /* Matchday tester — hero's lagged cursor-follow applied to photography */
+  .pan-stage { perspective: 1100px; }
+  .pan-photo { transform: translate3d(var(--px, 0px), var(--pyy, 0px), 0) rotateX(var(--tilt, 0deg)) scale(1.12); will-change: transform; }
+  @media (prefers-reduced-motion: reduce) { .pan-photo { transform: scale(1.12); } }
+  /* Who we are — expanding photo panels */
+  .acc { display: flex; gap: 14px; }
+  .acc-panel { position: relative; flex: 1 1 0; height: 520px; border-radius: 28px; overflow: hidden; border: 1px solid var(--edge); transition: flex-grow .7s cubic-bezier(.22,.68,.16,1); display: block; }
+  .acc-panel:hover, .acc-panel:focus-visible { flex-grow: 2.7; }
+  .acc-panel img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: grayscale(.75) brightness(.72); transform: scale(1.07); transition: filter .6s, transform .9s cubic-bezier(.22,.68,.16,1); }
+  .acc-panel:hover img { filter: none; transform: scale(1); }
+  .acc-desc { opacity: 0; transform: translateY(8px); transition: opacity .45s .12s, transform .45s .12s; }
+  .acc-panel:hover .acc-desc { opacity: 1; transform: none; }
+  @media (max-width: 820px) { .acc { flex-direction: column; } .acc-panel { height: 150px; } .acc-panel:hover { flex-grow: 1.6; } }
+  /* Results rail */
+  .rail { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 6px 2px 14px; scrollbar-width: none; }
+  .rail::-webkit-scrollbar { display: none; }
+  .rail-card { scroll-snap-align: start; min-width: 290px; transition: transform .3s cubic-bezier(.22,.68,.16,1), border-color .3s; }
+  .rail-card:hover { transform: translateY(-6px); border-color: rgba(214,242,58,.5); }
+  .who-card { transition: transform .35s cubic-bezier(.22,.68,.16,1), border-color .35s, box-shadow .4s; }
+  .who-card:hover { transform: translateY(-6px); border-color: rgba(214,242,58,.55); box-shadow: 0 22px 48px -26px rgba(214,242,58,.35); }
+  /* The Campaign: cursor-lit tiles + drawing ring */
+  .camp-tile { position: relative; overflow: hidden; transition: transform .3s cubic-bezier(.22,.68,.16,1), border-color .3s; }
+  .camp-tile::after { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity .45s; pointer-events: none;
+    background: radial-gradient(240px circle at var(--tx, 50%) var(--ty, 50%), rgba(214,242,58,.17), transparent 65%); }
+  .camp-tile:hover { transform: translateY(-5px); border-color: rgba(214,242,58,.5); }
+  .camp-tile:hover::after { opacity: 1; }
+  .camp-arc { transition: stroke-dashoffset 1.7s cubic-bezier(.22,.68,.16,1); filter: drop-shadow(0 0 10px rgba(214,242,58,.55)); }
+  .camp-aura { animation: halo-pulse 3.6s ease-in-out infinite; }
+  /* League table life */
+  .lt-bar { height: 5px; width: 0; border-radius: 999px; background: linear-gradient(90deg, rgba(214,242,58,.25), #D6F23A); transition: width 1.2s cubic-bezier(.22,.68,.16,1) .3s; }
+  .reveal.is-in .lt-bar { width: var(--w, 0px); }
+  .lt-crest { display: inline-flex; transition: transform .3s cubic-bezier(.2,1.4,.4,1); }
+  .lt-row:hover .lt-crest { transform: scale(1.18); }
+  .lt-crest-us { filter: drop-shadow(0 0 8px rgba(214,242,58,.5)); }
+  .lt-row.camp-tile:hover { transform: translateX(6px); }
+  /* League table */
+  .lt-row { transition: background .3s, transform .3s; }
+  .lt-row:hover { transform: translateX(6px); }
+  .lt-us { background: linear-gradient(90deg, rgba(214,242,58,.14), transparent 70%); box-shadow: inset 3px 0 0 #D6F23A; }
+  /* Countdown: slot-roll digits, parallax tiles, drifting watermark */
+  @keyframes cd-roll { from { transform: translateY(58%); opacity: 0; filter: blur(3px); } 60% { opacity: 1; } to { transform: none; opacity: 1; filter: none; } }
+  .cd-roll { display: inline-block; animation: cd-roll .5s cubic-bezier(.2,1.2,.3,1); }
+  .cd-tile { transform: translate(calc(var(--gx, 0) * var(--gd, 10) * 1px), calc(var(--gy, 0) * var(--gd, 10) * 1px)); transition: transform .7s cubic-bezier(.22,.68,.16,1), border-color .3s, box-shadow .4s; }
+  .cd-tile:hover { border-color: rgba(214,242,58,.55); box-shadow: 0 18px 44px -22px rgba(214,242,58,.45); }
+  .cd-mark { transform: translate(calc(-50% + var(--gx, 0) * -30px), calc(-50% + var(--gy, 0) * -16px)); transition: transform .9s cubic-bezier(.22,.68,.16,1); }
+  @media (prefers-reduced-motion: reduce) { .cd-roll { animation: none; } .cd-tile, .cd-mark { transition: none; } }
+  /* News desk */
+  .news-feat { display: block; }
+  .news-feat .news-img { transition: transform 1.1s cubic-bezier(.22,.68,.16,1); }
+  .news-feat:hover .news-img { transform: scale(1.045); }
+  .news-crest { transition: transform .9s cubic-bezier(.22,.68,.16,1); }
+  .news-feat:hover .news-crest { transform: translate(-50%, -50%) scale(1.07); }
+  .news-row { transition: transform .35s cubic-bezier(.22,.68,.16,1), background .3s; }
+  .news-row:hover { transform: translateX(10px); background: linear-gradient(90deg, var(--panel), transparent); }
+  .news-row .news-arrow { opacity: 0; transform: translateX(-8px); transition: opacity .3s, transform .3s; }
+  .news-row:hover .news-arrow { opacity: 1; transform: none; }
+  .news-glass { transition: transform .4s cubic-bezier(.22,.68,.16,1), border-color .4s, box-shadow .45s; }
+  .news-glass:hover { transform: translateY(-6px); border-color: rgba(214,242,58,.5); box-shadow: 0 28px 56px -30px rgba(0,0,0,.7); }
+  /* Award winners coverflow */
+  .aw-stage { perspective: 1200px; }
+  .aw-card { position: absolute; left: 50%; top: 0; width: min(320px, 72vw); aspect-ratio: 3/4; border-radius: 26px; overflow: hidden; border: 1px solid var(--edge);
+    transition: transform .85s cubic-bezier(.22,.68,.16,1), opacity .6s, box-shadow .6s; will-change: transform; cursor: pointer; }
+  .aw-card img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .aw-card.is-center { box-shadow: 0 0 0 1.5px rgba(214,242,58,.8), 0 26px 70px -24px rgba(214,242,58,.55); animation: aw-glow 2.8s ease-in-out infinite; cursor: default; }
+  @keyframes aw-glow { 0%,100% { box-shadow: 0 0 0 1.5px rgba(214,242,58,.7), 0 26px 60px -26px rgba(214,242,58,.4); } 50% { box-shadow: 0 0 0 1.5px rgba(214,242,58,1), 0 30px 84px -20px rgba(214,242,58,.7); } }
+  .aw-btn { width: 46px; height: 46px; border-radius: 999px; border: 1.5px solid var(--edge); color: var(--ink); display: flex; align-items: center; justify-content: center; font-size: 18px; transition: border-color .3s, background .3s, transform .2s; }
+  .aw-btn:hover { border-color: #D6F23A; background: var(--panel-2); transform: scale(1.06); }
+  /* Section heading accent line (live-site signature) */
+  .hline { display: block; width: 104px; height: 3px; margin-top: 16px; border-radius: 999px;
+    background: linear-gradient(90deg, #D6F23A, rgba(214,242,58,0));
+    transform: scaleX(0); transform-origin: left;
+    transition: transform 1.1s cubic-bezier(.22,.68,.16,1) .3s;
+    animation: hline-breathe 3.4s ease-in-out infinite; }
+  .reveal.is-in .hline { transform: scaleX(1); }
+  .hline-c { margin-left: auto; margin-right: auto; transform-origin: center;
+    background: linear-gradient(90deg, rgba(214,242,58,0), #D6F23A, rgba(214,242,58,0)); }
+  @keyframes hline-breathe { 0%, 100% { opacity: .8; } 50% { opacity: 1; filter: drop-shadow(0 0 7px rgba(214,242,58,.9)); } }
+  @media (prefers-reduced-motion: reduce) { .hline { transform: scaleX(1); transition: none; animation: none; } }
+  .aw-dragging .aw-card { transition: opacity .6s, box-shadow .6s; }
+  .aw-card img { transition: transform .8s cubic-bezier(.22,.68,.16,1); }
+  .aw-card.is-center:hover img { transform: scale(1.06); }
+  .aw-card.is-center:hover { transform-origin: center; }
+  .aw-cta { opacity: 0; transform: translateY(6px); transition: opacity .35s, transform .35s; }
+  .aw-card.is-center:hover .aw-cta { opacity: 1; transform: none; }
+  .aw-dot { width: 8px; height: 8px; border-radius: 999px; background: rgba(214,242,58,.28); transition: width .35s cubic-bezier(.22,.68,.16,1), background .3s; }
+  .aw-dot.is-on { width: 30px; background: #D6F23A; }
+  .aw-dot:hover { background: rgba(214,242,58,.6); }
+  .aw-halo { position: absolute; left: 50%; top: 45%; width: 560px; height: 560px; transform: translate(-50%,-50%) scale(.92);
+    border-radius: 50%; pointer-events: none; z-index: 0; filter: blur(34px);
+    background: radial-gradient(closest-side, rgba(214,242,58,.30), rgba(214,242,58,.09) 46%, transparent 72%);
+    animation: halo-pulse 3.2s ease-in-out infinite; }
+  @keyframes halo-pulse { 0%, 100% { opacity: .55; transform: translate(-50%,-50%) scale(.9); } 50% { opacity: 1; transform: translate(-50%,-50%) scale(1.06); } }
+  @media (prefers-reduced-motion: reduce) { .aw-halo { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .aw-card { transition: none; animation: none; } .aw-card.is-center { animation: none; } }
+</style>
+<!-- React 18 UMD (pinned, same pattern as the rest of the site) -->
+<script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<!-- Framer Motion UMD (graceful: page falls back to CSS animation if absent) -->
+<script src="https://unpkg.com/framer-motion@10.18.0/dist/framer-motion.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<!-- Live content layer: same Supabase-backed data scripts the production site uses -->
+<script src="supabase-config.js?v=21"></script>
+<script src="supabase.js?v=19"></script>
+<script src="dataStore.js?v=33"></script>
+<script src="PageShell.js?v=48"></script>
+<script src="PlayerPhotos.js?v=19"></script>
+<script>
+(function () {
+  'use strict';
+  var h = React.createElement;
+  var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
+
+  /* Framer Motion via UMD; if the CDN failed, mEl renders plain tags and the
+     CSS fallback classes take over. */
+  var FM = window.Motion || window.FramerMotion || {};
+  var MOTION = FM.motion || null;
+  var AnimatePresence = FM.AnimatePresence || function (props) { return props.children || null; };
+  var HAS_FM = !!(MOTION && AnimatePresence);
+  function mEl(tag, props) {
+    var kids = Array.prototype.slice.call(arguments, 2);
+    if (HAS_FM) return h.apply(null, [MOTION[tag], props].concat(kids));
+    var rest = {};
+    for (var k in props) {
+      if (['initial', 'animate', 'exit', 'transition', 'whileHover', 'whileTap', 'layout'].indexOf(k) === -1) rest[k] = props[k];
+    }
+    return h.apply(null, [tag, rest].concat(kids));
+  }
+
+  var VIDEO_SRC = 'assets/videos/hero-rail.mp4'; // the dressing room rail — scrub with the mouse
+
+  /* 6. useTypewriter — builds the string slice by slice */
+  function useTypewriter(text, speed, startDelay) {
+    speed = speed || 38; startDelay = startDelay === undefined ? 600 : startDelay;
+    var s = useState(0), n = s[0], setN = s[1];
+    useEffect(function () {
+      var iv;
+      var t0 = setTimeout(function () {
+        iv = setInterval(function () {
+          setN(function (x) {
+            if (x >= text.length) { clearInterval(iv); return x; }
+            return x + 1;
+          });
+        }, speed);
+      }, startDelay);
+      return function () { clearTimeout(t0); clearInterval(iv); };
+    }, [text]);
+    return { displayed: text.slice(0, n), done: n >= text.length };
+  }
+
+  /* 3. Background video — spec architecture: full-bleed object-cover with
+     native delta scrubbing (mouse movement pans along the dressing-room
+     rail, seeked listener keeps tracking smooth). Mobile autoplays. */
+  function BackgroundVideo() {
+    var ref = useRef(null);
+
+    // Desktop mouse-scrubbing hook (spec-exact)
+    useEffect(function () {
+      var video = ref.current; if (!video) return;
+      var prevX = null, target = 0, seeking = false;
+      function apply() {
+        if (seeking || !video.duration) return;
+        seeking = true;
+        video.currentTime = target;
+      }
+      function onSeeked() { seeking = false; apply(); }
+      function onMove(e) {
+        if (window.innerWidth < 1024) return; // scrubbing disabled on mobile frames
+        if (!video.duration) return;
+        if (prevX === null) { prevX = e.clientX; return; }
+        var delta = e.clientX - prevX;
+        prevX = e.clientX;
+        target = Math.min(Math.max(0, target + (delta / window.innerWidth) * 0.8 * video.duration), video.duration - 0.05);
+        apply();
+      }
+      window.addEventListener('mousemove', onMove);
+      video.addEventListener('seeked', onSeeked);
+      return function () {
+        window.removeEventListener('mousemove', onMove);
+        video.removeEventListener('seeked', onSeeked);
+      };
+    }, []);
+
+    // Mobile autoplay hook
+    useEffect(function () {
+      var video = ref.current; if (!video) return;
+      if (window.innerWidth < 1024) {
+        video.autoplay = true;
+        video.loop = true;
+        var p = video.play();
+        if (p && p.catch) p.catch(function () {});
+      }
+    }, []);
+
+    return h('div', {
+      className: 'order-last lg:order-none relative lg:absolute lg:inset-0 lg:z-0 overflow-hidden pointer-events-none w-full aspect-square md:aspect-video lg:aspect-auto lg:h-full bg-neutral-50 lg:bg-transparent'
+    },
+      h('video', {
+        ref: ref, muted: true, playsInline: true, preload: 'auto',
+        src: VIDEO_SRC,
+        className: 'w-full h-full object-cover object-right lg:object-right-bottom'
+      }),
+      /* Club scrim so the copy stays readable */
+      h('div', { className: 'hidden lg:block absolute inset-0 bg-gradient-to-r from-[var(--bg)] from-25% via-[var(--bg-80)] via-45% to-transparent transition-colors duration-300' }),
+      h('div', { className: 'hidden lg:block absolute bottom-0 left-0 right-0 h-36 bg-gradient-to-t from-[var(--bg)] to-transparent transition-colors duration-300' }));
+  }
+
+  /* 4. Interactive Navbar */
+  var NAV_LINKS = [
+    { label: 'The Club', href: 'about.html' },
+    { label: 'Fixtures', href: 'fixtures.html' },
+    { label: 'Results', href: 'results.html' },
+    { label: 'Media', href: 'media.html' }
+  ];
+  function ThemeToggle(props) {
+    var theme = props.theme, setTheme = props.setTheme;
+    return h('button', {
+      type: 'button', 'aria-label': theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
+      className: 'w-9 h-9 rounded-full border border-[var(--edge)] bg-[var(--panel)] text-[var(--ink)] flex items-center justify-center hover:bg-[var(--panel-2)] transition-colors text-[15px]',
+      onClick: function () { setTheme(theme === 'dark' ? 'light' : 'dark'); }
+    }, theme === 'dark' ? '\u2600' : '\u263E');
+  }
+
+  function Navbar(props) {
+    var open = props.open, setOpen = props.setOpen;
+    return h('header', { className: 'fixed top-0 inset-x-0 z-10 px-5 sm:px-8 py-4 sm:py-5 flex flex-row justify-between items-center bg-gradient-to-b from-[var(--bg-80)] to-transparent' },
+      // Logo
+      h('a', { href: 'index.html', className: 'flex flex-row items-center gap-2.5' },
+        h('img', { src: 'assets/badge/sue-angels-badge-cutout.webp', alt: '', className: 'w-9 h-9 sm:w-11 sm:h-11 object-contain select-none drop-shadow-[0_0_12px_rgba(214,242,58,0.25)]' }),
+        h('span', { className: 'flex flex-col leading-none select-none' },
+          h('span', { className: 'text-[17px] sm:text-[19px] tracking-tight text-[var(--ink)] font-semibold' }, "Sue's Angels FC"),
+          h('span', { className: 'text-[9px] sm:text-[10px] uppercase tracking-[0.22em] text-[var(--volt-text)] mt-1' }, 'Champions 25/26'))
+      ),
+      // Desktop nav links — glass pill rail
+      h('nav', { className: 'hidden md:flex items-center gap-1 bg-[var(--panel)] border border-[var(--edge)] rounded-full px-2 py-1.5 backdrop-blur-md' },
+        NAV_LINKS.map(function (l) {
+          return h('a', {
+            key: l.label, href: l.href,
+            className: 'px-4 py-1.5 rounded-full text-[15px] font-medium text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--panel-2)] transition-colors'
+          }, l.label);
+        })
+      ),
+      // Desktop CTAs
+      h('div', { className: 'hidden md:flex items-center gap-5' },
+        h(ThemeToggle, { theme: props.theme, setTheme: props.setTheme }),
+        h('a', { href: 'contact.html', className: 'text-[14px] font-medium text-[var(--ink-3)] hover:text-[var(--ink)] transition-colors' }, 'Get in touch'),
+        h('a', { href: 'join.html', className: 'text-[14px] font-semibold text-[#071D29] bg-[#D6F23A] hover:bg-[#e4fb62] rounded-full px-5 py-2.5 transition-colors shadow-[0_8px_24px_-10px_rgba(214,242,58,0.6)]' }, 'Join the club')
+      ),
+      // Mobile: theme toggle + hamburger
+      h('div', { className: 'md:hidden flex items-center gap-2' },
+        h(ThemeToggle, { theme: props.theme, setTheme: props.setTheme }),
+        h('button', {
+        type: 'button', 'aria-label': open ? 'Close menu' : 'Open menu', 'aria-expanded': open,
+        className: 'flex flex-col justify-center items-center gap-[5px] w-10 h-10',
+        onClick: function () { setOpen(!open); }
+      },
+        h('span', { className: 'w-6 h-[2px] bg-[var(--ink)] transition-all duration-300 ' + (open ? 'rotate-45 translate-y-[7px]' : '') }),
+        h('span', { className: 'w-6 h-[2px] bg-[var(--ink)] transition-all duration-300 ' + (open ? 'opacity-0' : '') }),
+        h('span', { className: 'w-6 h-[2px] bg-[var(--ink)] transition-all duration-300 ' + (open ? '-rotate-45 -translate-y-[7px]' : '') })
+      ))
+    );
+  }
+
+  function MobileOverlay(props) {
+    var open = props.open, setOpen = props.setOpen;
+    return h('div', {
+      className: 'md:hidden fixed inset-0 z-[9] bg-[var(--bg-95)] backdrop-blur-sm transition-opacity duration-300 flex flex-col items-center justify-center gap-8 ' +
+        (open ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none')
+    },
+      NAV_LINKS.map(function (l) {
+        return h('a', { key: l.label, href: l.href, className: 'text-[28px] text-[var(--ink)] hover:opacity-60 transition-opacity', onClick: function () { setOpen(false); } }, l.label);
+      }),
+      h('a', { href: 'join.html', className: 'text-[17px] font-semibold text-[#071D29] bg-[#D6F23A] rounded-full px-8 py-3.5 mt-6', onClick: function () { setOpen(false); } }, 'Join the club'),
+      h('a', { href: 'contact.html', className: 'text-[16px] text-[var(--ink-3)] hover:text-[var(--ink)] transition-colors mt-1', onClick: function () { setOpen(false); } }, 'Get in touch')
+    );
+  }
+
+  /* Check icon (lucide-style) */
+  function CheckIcon() {
+    return h('svg', { viewBox: '0 0 24 24', width: 15, height: 15, 'aria-hidden': true },
+      h('path', { d: 'M20 6L9 17l-5-5', fill: 'none', stroke: 'currentColor', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round' }));
+  }
+
+  /* 8. Multi-select service pills */
+  var SERVICES = ['Play for us', 'Sponsor the club', 'Come watch a match', 'Arrange a friendly', 'Support the cause'];
+  var SERVICE_LINKS = { 'Play for us': 'join.html', 'Sponsor the club': 'sponsors.html', 'Come watch a match': 'fixtures.html', 'Arrange a friendly': 'contact.html', 'Support the cause': 'sepsis.html' };
+  function ServicePicker() {
+    var s = useState([]), services = s[0], setServices = s[1];
+    function toggle(name) {
+      setServices(function (cur) {
+        return cur.indexOf(name) > -1 ? cur.filter(function (x) { return x !== name; }) : cur.concat(name);
+      });
+    }
+    return h('div', null,
+      h('h2', { className: 'text-lg font-semibold tracking-tight mb-1.5' }, 'What brings you to the club?'),
+      h('p', { className: 'opacity-85 text-[var(--ink-3)] text-sm mb-4' }, 'Pick what you are after and we will point you the right way'),
+      h('div', { className: 'flex flex-wrap gap-3' },
+        SERVICES.map(function (name) {
+          var active = services.indexOf(name) > -1;
+          return mEl('button', {
+            key: name, type: 'button', 'aria-pressed': active,
+            whileTap: { scale: 0.96 },
+            onClick: function () { toggle(name); },
+            className: 'inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-medium transition-colors duration-200 cursor-pointer ' +
+              (active
+                ? 'bg-[#D6F23A] text-[#071D29] shadow-md shadow-lime-400/20 transform'
+                : 'bg-[var(--panel)] text-[var(--ink)] border border-[var(--edge)] hover:bg-[var(--panel-2)]')
+          },
+            active ? mEl('span', {
+              className: 'inline-flex ' + (HAS_FM ? '' : 'fallback-chk'),
+              initial: { scale: 0 }, animate: { scale: 1 },
+              transition: { type: 'spring', stiffness: 300, damping: 20 }
+            }, h(CheckIcon)) : null,
+            name);
+        })
+      ),
+      /* Contingent feedback status banner */
+      h('div', { className: 'mt-5 min-h-[44px]', 'aria-live': 'polite' },
+        h(AnimatePresence, { mode: 'wait' },
+          services.length === 0
+            ? mEl('p', {
+                key: 'empty',
+                className: 'italic text-xs' + (HAS_FM ? '' : ' fallback-banner'),
+                initial: { opacity: 0 }, animate: { opacity: 0.5 }, exit: { opacity: 0 },
+                style: HAS_FM ? undefined : { opacity: 0.5 }
+              }, 'Pick one or more to get started.')
+            : mEl('div', {
+                key: 'active',
+                className: 'overflow-hidden' + (HAS_FM ? '' : ' fallback-banner'),
+                initial: { opacity: 0, height: 0 },
+                animate: { opacity: 1, height: 'auto' },
+                exit: { opacity: 0, height: 0 },
+                transition: { type: 'spring', stiffness: 260, damping: 26 }
+              },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-4 bg-[var(--panel)] border border-[var(--edge)] rounded-2xl px-5 py-4' },
+                  h('span', { className: 'text-sm text-[var(--ink)]' }, 'Sorted, on the list: ' + services.join(', ')),
+                  h('a', { href: SERVICE_LINKS[services[0]] || 'contact.html', className: 'flex items-center gap-1.5 text-[var(--volt-text)] uppercase text-xs font-semibold tracking-wide hover:opacity-60 transition-opacity' },
+                    "Let's Go", h('span', { 'aria-hidden': true }, '→'))
+                ))
+        )
+      )
+    );
+  }
+
+  /* Next game card — NEXT_FIXTURE mirrors the fixture-entry fields, so when
+     this page goes live the object is simply fed from the club's fixture data. */
+  var NEXT_FIXTURE = {
+    opponent: 'Brentford Town',
+    competition: 'Friendly',
+    homeAway: 'Away',
+    date: 'Sunday 16th August',
+    kickOff: '10:30',
+    venue: 'Carville Park North, Brentford TW8 9QT'
+  };
+  function NextGame() {
+    return h('div', { className: 'inline-flex flex-col gap-2.5 bg-[var(--panel)] border border-[var(--edge)] rounded-2xl px-5 py-3.5 mb-6 backdrop-blur-sm' },
+      h('div', { className: 'flex items-center gap-3' },
+        h('span', { className: 'text-[var(--volt-text)] uppercase text-xs font-semibold tracking-widest' }, 'Next match'),
+        h('span', { className: 'text-[var(--ink-3)] uppercase text-xs font-semibold tracking-widest' }, '· ' + NEXT_FIXTURE.homeAway),
+        h('span', { className: 'text-[var(--ink-3)] uppercase text-xs font-semibold tracking-widest' }, '· ' + NEXT_FIXTURE.competition)
+      ),
+      h('div', { className: 'flex items-center gap-4 sm:gap-5' },
+        h('div', { className: 'flex items-center gap-2.5' },
+          h('img', { src: 'assets/badge/brentford-town-badge.webp', alt: 'Brentford Town badge', className: 'w-10 h-10 sm:w-12 sm:h-12 object-contain' }),
+          h('span', { className: 'text-lg sm:text-xl font-medium text-[var(--ink)]' }, 'Brentford Town')
+        ),
+        h('span', { className: 'text-[var(--ink-3)] text-sm font-medium' }, 'vs'),
+        h('div', { className: 'flex items-center gap-2.5' },
+          h('img', { src: 'assets/badge/sue-angels-badge-cutout.webp', alt: "Sue's Angels badge", className: 'w-10 h-10 sm:w-12 sm:h-12 object-contain' }),
+          h('span', { className: 'text-lg sm:text-xl font-medium text-[var(--ink)]' }, "Sue's Angels")
+        )
+      ),
+      h('div', { className: 'flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-[var(--ink-2)]' },
+        h('span', { className: 'text-[var(--ink)] font-medium' }, NEXT_FIXTURE.date),
+        h('span', null, 'Kick-off ' + NEXT_FIXTURE.kickOff),
+        h('span', null, NEXT_FIXTURE.venue)
+      )
+    );
+  }
+
+  /* 6-7. Headline + description */
+  function Hero() {
+    var tw = useTypewriter("champions in our\nvery first season.", 38, 600);
+    return h('main', { id: 'spade-hero', className: 'w-full max-w-7xl mx-auto px-6 pb-10 pt-24 lg:pt-20 lg:pb-6 flex-1 flex flex-col justify-center' },
+      mEl('div', {
+        className: HAS_FM ? '' : 'fallback-drop',
+        initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.6 }
+      },
+        h('h1', { className: 'text-3xl md:text-4xl lg:text-[42px] font-medium tracking-tight text-[var(--ink)] leading-[1.05] mb-4 select-none w-full whitespace-pre-wrap', 'aria-label': "Sue's Angels FC. Champions in our very first season." },
+          tw.displayed,
+          !tw.done ? h('span', { className: 'inline-block w-[2px] h-[1.1em] bg-[#D6F23A] align-middle ml-[2px] animate-blink', 'aria-hidden': true }) : null)
+      ),
+      mEl('div', {
+        className: HAS_FM ? '' : 'fallback-drop-2',
+        initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.6, delay: 0.1 }
+      },
+        h('div', { className: 'mb-5 max-w-md' },
+          h('p', { className: 'flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] font-semibold text-[var(--volt-text)] mb-2.5' },
+            h('span', { className: 'inline-block w-4 h-[2px] bg-[#D6F23A] rounded-full', 'aria-hidden': true }),
+            'Est. 2025 · In memory of Susan Anne Martin'),
+          h('p', { className: 'text-[15px] md:text-base text-[var(--ink-2)] leading-relaxed font-normal' },
+            'Champions of League Ten, ',
+            h('span', { className: 'text-[var(--ink)] font-medium' }, 'unbeaten'),
+            ' in the league and promoted at the first attempt.'))
+      ),
+      mEl('div', {
+        className: HAS_FM ? '' : 'fallback-drop-2',
+        initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.6, delay: 0.15 }
+      }, h(NextGame)),
+      mEl('div', {
+        className: HAS_FM ? '' : 'fallback-drop-2',
+        initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.6, delay: 0.25 }
+      }, h(ServicePicker))
+    );
+  }
+
+  /* ---------- Interactive helpers (IntersectionObserver, framework-free) ---------- */
+  function Reveal(props) {
+    var ref = useRef(null);
+    useEffect(function () {
+      var el = ref.current; if (!el) return;
+      if (!('IntersectionObserver' in window)) { el.classList.add('is-in'); return; }
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) { el.classList.add('is-in'); io.unobserve(el); } });
+      }, { threshold: 0.15 });
+      io.observe(el); return function () { io.disconnect(); };
+    }, []);
+    return h(props.as || 'div', {
+      ref: ref, className: 'reveal ' + (props.className || ''),
+      style: props.delay ? { transitionDelay: props.delay + 'ms' } : undefined
+    }, props.children);
+  }
+
+  function CountUp(props) {
+    var val = props.value, dur = props.duration || 1300;
+    var st = useState(0), n = st[0], setN = st[1];
+    var ref = useRef(null), started = useRef(false);
+    useEffect(function () {
+      var el = ref.current; if (!el) return;
+      function run() {
+        if (started.current) return; started.current = true;
+        var t0 = null;
+        (function step(ts) {
+          if (!t0) t0 = ts;
+          var p = Math.min((ts - t0) / dur, 1), e = 1 - Math.pow(1 - p, 3);
+          setN(Math.round(e * val));
+          if (p < 1) requestAnimationFrame(step);
+        })(performance.now());
+      }
+      if (!('IntersectionObserver' in window)) { setN(val); return; }
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) run(); });
+      }, { threshold: 0.4 });
+      io.observe(el); return function () { io.disconnect(); };
+    }, [val]);
+    return h('span', { ref: ref }, (props.prefix || '') + n + (props.suffix || ''));
+  }
+
+  function WinRing() {
+    var ref = useRef(null), st = useState(false), on = st[0], setOn = st[1];
+    useEffect(function () {
+      var el = ref.current; if (!el) return;
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) { setOn(true); io.unobserve(el); } });
+      }, { threshold: 0.4 });
+      io.observe(el); return function () { io.disconnect(); };
+    }, []);
+    var R = 90, C = 2 * Math.PI * R, off = C * (1 - (on ? 0.88 : 0));
+    return h('div', { ref: ref, className: 'relative w-[220px] h-[220px] mx-auto' },
+      h('svg', { viewBox: '0 0 220 220', className: 'w-full h-full -rotate-90' },
+        h('circle', { cx: 110, cy: 110, r: R, fill: 'none', stroke: 'var(--edge)', strokeWidth: 14 }),
+        h('circle', { cx: 110, cy: 110, r: R, fill: 'none', stroke: '#D6F23A', strokeWidth: 14, strokeLinecap: 'round', strokeDasharray: C, strokeDashoffset: off, style: { transition: 'stroke-dashoffset 1.6s cubic-bezier(.22,.68,.16,1)', filter: 'drop-shadow(0 0 10px rgba(214,242,58,.5))' } })),
+      h('div', { className: 'absolute inset-0 flex flex-col items-center justify-center' },
+        h('div', { className: 'text-5xl font-semibold' }, h('span', { className: 'voltnum' }, h(CountUp, { value: 88, suffix: '%' }))),
+        h('div', { className: 'text-[11px] uppercase tracking-widest text-[var(--ink-3)] mt-1' }, 'Win rate')));
+  }
+
+  function Eyebrow(props) {
+    return h('p', { className: 'text-[var(--volt-text)] uppercase text-xs font-semibold tracking-widest mb-3 inline-flex items-center gap-2' },
+      h('span', { className: 'inline-block w-5 h-[2px] bg-[#D6F23A] rounded-full', 'aria-hidden': true }),
+      props.children);
+  }
+  function HLine(props) {
+    return h('span', { className: 'hline' + (props && props.center ? ' hline-c' : ''), 'aria-hidden': true });
+  }
+
+  /* ---------- Sections — each with its own signature interaction ---------- */
+
+  /* NEWS DESK — glass-panel article cards (Airbnb-listing style). Each card
+     is a full-bleed club cover with a frosted panel: title + category chip,
+     excerpt, tag pills, and a pill button. Default crest cover, always.
+     Content live from the CMS (getCustomArticles). */
+  function NewsCard(props) {
+    var a = props.a;
+    function stripHtml(x) { return (x || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(); }
+    var excerpt = stripHtml(a.excerpt || a.summary || a.body || a.intro || '');
+    if (excerpt.length > 120) excerpt = excerpt.slice(0, 118).replace(/\s+\S*$/, '') + '…';
+    var custom = (window.getArticleCover ? window.getArticleCover(a.id) : null) || a.cover || null;
+    var hasCustom = custom && typeof custom === 'string';
+    var href = 'news.html?article=' + (a.id || '');
+    return h('a', { href: href, className: 'news-glass group relative rounded-[26px] overflow-hidden border border-[var(--edge)] flex flex-col min-h-[440px]' },
+      /* cover */
+      hasCustom
+        ? h('img', { src: custom, alt: '', className: 'absolute inset-0 w-full h-full object-cover transition-transform duration-[1100ms] group-hover:scale-[1.05]' })
+        : h('div', { className: 'absolute inset-0 transition-transform duration-[1100ms] group-hover:scale-[1.05]' },
+            h('div', { className: 'absolute inset-0 bg-[radial-gradient(120%_90%_at_75%_10%,#12263C,#0A1626_50%,#071D29)]' }),
+            h('div', { className: 'absolute inset-0 bg-[radial-gradient(46%_38%_at_50%_38%,rgba(214,242,58,0.18),transparent_70%)]' }),
+            h('img', { src: 'assets/badge/sue-angels-badge-cutout.webp', alt: '', className: 'absolute left-1/2 top-[34%] -translate-x-1/2 -translate-y-1/2 w-32 object-contain drop-shadow-[0_0_28px_rgba(214,242,58,0.4)]' })),
+      h('div', { className: 'absolute inset-0 bg-gradient-to-t from-[#0A0F1C]/95 via-[#0A0F1C]/30 to-transparent' }),
+      /* frosted content panel */
+      h('div', { className: 'relative mt-auto m-3 p-5 rounded-[20px] bg-white/[0.07] border border-white/10 backdrop-blur-md' },
+        h('div', { className: 'flex items-start justify-between gap-3 mb-2.5' },
+          h('h3', { className: 'text-xl font-semibold text-white leading-tight' }, a.title),
+          h('span', { className: 'shrink-0 text-[10px] font-bold uppercase tracking-wide bg-[#D6F23A] text-[#071D29] rounded-full px-3 py-1.5 whitespace-nowrap' }, a.cat || 'News')),
+        excerpt ? h('p', { className: 'text-[13px] text-white/65 leading-relaxed mb-4' }, excerpt) : null,
+        h('div', { className: 'flex items-center gap-2 mb-4' },
+          a.date ? h('span', { className: 'text-[11px] font-medium text-white/80 bg-white/10 rounded-full px-3 py-1.5' }, a.date) : null,
+          h('span', { className: 'text-[11px] font-medium text-white/60 bg-white/[0.06] rounded-full px-3 py-1.5' }, 'Club news')),
+        h('span', { className: 'flex items-center justify-center gap-2 w-full bg-white text-[#071D29] rounded-full py-3 font-semibold text-sm group-hover:bg-[#D6F23A] transition-colors' },
+          'Read the story', h('span', { className: 'transition-transform duration-300 group-hover:translate-x-1', 'aria-hidden': true }, '→'))));
+  }
+  function NewsDesk() {
+    useClubData();
+    var arts = (window.getCustomArticles ? window.getCustomArticles() : []).filter(function (a) { return a && a.title; });
+    arts.sort(function (a, b) {
+      return (b.sortISO ? Date.parse(b.sortISO) : 0) - (a.sortISO ? Date.parse(a.sortISO) : 0);
+    });
+    if (!arts.length) return null;
+    var show = arts.slice(0, 3);
+    return h('section', { className: 'relative pt-8 pb-24 px-6 -mt-4' },
+      h('div', { className: 'max-w-7xl mx-auto' },
+        h(Reveal, { className: 'flex items-end justify-between flex-wrap gap-4 mb-10' },
+          h('div', null,
+            h(Eyebrow, null, 'Media news'),
+            h('h2', { className: 'text-2xl md:text-[32px] font-semibold tracking-tight text-[var(--ink)]' }, 'The latest from the club.'), h(HLine)),
+          h('a', { href: 'news.html', className: 'aw-btn !w-auto px-6 gap-2 text-[14px] font-semibold uppercase tracking-widest' }, 'All news', h('span', { 'aria-hidden': true }, '→'))),
+        h('div', { className: 'grid md:grid-cols-2 lg:grid-cols-3 gap-5' },
+          show.map(function (a, i) {
+            return h(Reveal, { key: a.id || i, delay: i * 90 }, h(NewsCard, { a: a }));
+          }))));
+  }
+
+  /* AWARD WINNERS — 3D coverflow, hands-on: live drag, wheel, arrow keys,
+     dots, click-a-card, autoplay. Volt halo behind the centre card. Live CMS. */
+  function AwardsDeck() {
+    useClubData();
+    var season = window.CURRENT_SEASON || '25/26';
+    var aw = window.getRecognition ? window.getRecognition('season_award').filter(function (a) { return a.season === season; }) : [];
+    var st = useState(0), cur = st[0], setCur = st[1];
+    var dg = useState(0), dragX = dg[0], setDragX = dg[1];
+    var hov = useRef(false), down = useRef(null), moved = useRef(false), wheelAt = useRef(0);
+    var n = aw.length;
+    var STEP = 240;
+    useEffect(function () {
+      if (n < 2) return;
+      var iv = setInterval(function () {
+        if (!hov.current && down.current === null) setCur(function (c) { return (c + 1) % n; });
+      }, 4600);
+      return function () { clearInterval(iv); };
+    }, [n]);
+    if (n < 3) return null;
+    function go(delta) { setCur(function (c) { return (c + delta + n) % n; }); }
+    function off(i) { var o = i - cur; if (o > n / 2) o -= n; if (o < -n / 2) o += n; return o; }
+    function release(clientX) {
+      if (down.current === null) return;
+      var dx = clientX - down.current;
+      down.current = null;
+      setDragX(0);
+      var steps = Math.round(-dx / (STEP * 0.55));
+      if (steps !== 0) go(steps);
+    }
+    return h('section', { className: 'relative pt-6 pb-20 px-6 -mt-8 overflow-hidden' },
+      h('div', { className: 'max-w-7xl mx-auto' },
+        h(Reveal, { className: 'flex items-end justify-between flex-wrap gap-4 mb-9' },
+          h('div', null,
+            h(Eyebrow, null, season + ' End of Season'),
+            h('h2', { className: 'text-2xl md:text-[32px] font-semibold tracking-tight text-[var(--ink)]' }, 'Award winners.'), h(HLine)),
+          h('div', { className: 'flex items-center gap-4' },
+            h('button', { type: 'button', className: 'aw-btn', 'aria-label': 'Previous winner', onClick: function () { go(-1); } }, '←'),
+            h('span', { className: 'text-sm text-[var(--ink-3)] tabnum min-w-[52px] text-center' }, (cur + 1) + ' / ' + n),
+            h('button', { type: 'button', className: 'aw-btn', 'aria-label': 'Next winner', onClick: function () { go(1); } }, '→'))),
+        h(Reveal, { delay: 100 },
+          h('div', {
+            className: 'aw-stage relative mx-auto select-none' + (down.current !== null ? ' aw-dragging' : ''),
+            style: { height: 'min(460px, 100vw)', touchAction: 'pan-y', cursor: down.current !== null ? 'grabbing' : 'grab', outline: 'none' },
+            tabIndex: 0, role: 'region', 'aria-label': 'Award winners carousel, use arrow keys',
+            onMouseEnter: function () { hov.current = true; }, onMouseLeave: function (e) { hov.current = false; release(e.clientX); },
+            onPointerDown: function (e) { down.current = e.clientX; moved.current = false; },
+            onPointerMove: function (e) {
+              if (down.current === null) return;
+              var dx = e.clientX - down.current;
+              if (Math.abs(dx) > 6) moved.current = true;
+              setDragX(dx);
+            },
+            onPointerUp: function (e) { release(e.clientX); },
+            onKeyDown: function (e) {
+              if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+              if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+            },
+            onWheel: function (e) {
+              var d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : (e.shiftKey ? e.deltaY : 0);
+              if (!d) return;
+              e.preventDefault();
+              var now = Date.now();
+              if (now - wheelAt.current < 350) return;
+              if (Math.abs(d) > 12) { wheelAt.current = now; go(d > 0 ? 1 : -1); }
+            }
+          },
+            h('div', { className: 'aw-halo', 'aria-hidden': true }),
+            aw.map(function (a, i) {
+              var o = off(i);
+              var fo = o + (down.current !== null ? -dragX / STEP : 0);
+              var ao = Math.abs(fo);
+              var nm = a.playerName || (a.playerId && window.playerNameByNum ? window.playerNameByNum(a.playerId) : '');
+              var ph = a.imageUrl || (a.playerId && window.getPlayerPhoto ? window.getPlayerPhoto(a.playerId) : null);
+              var isC = o === 0 && down.current === null;
+              return h('div', {
+                key: a.id || i,
+                className: 'aw-card' + (isC ? ' is-center' : ''),
+                style: {
+                  transform: 'translateX(calc(-50% + ' + (fo * STEP).toFixed(1) + 'px)) translateZ(' + (-ao * 130).toFixed(1) + 'px) rotateY(' + (fo * -13).toFixed(2) + 'deg) scale(' + (ao < 0.5 ? 1.04 - ao * 0.08 : 1 - ao * 0.05) + ')',
+                  zIndex: 50 - Math.round(ao), opacity: ao > 2.2 ? 0 : 1 - ao * 0.14, pointerEvents: ao > 2.2 ? 'none' : 'auto'
+                },
+                onClick: function () {
+                  if (moved.current) return;
+                  if (o !== 0) setCur(i);
+                  else if (a.playerId) location.href = 'teams.html?player=' + a.playerId;
+                },
+                role: 'group', 'aria-label': (a.title || 'Award') + ': ' + nm
+              },
+                ph ? h('img', { src: ph, alt: nm, draggable: false })
+                   : h('div', { className: 'w-full h-full bg-[radial-gradient(100%_100%_at_50%_0%,#12263C,#071D29)] flex items-center justify-center' },
+                       h('img', { src: 'assets/badge/sue-angels-badge-cutout.webp', alt: '', className: 'w-28 h-28 object-contain opacity-90', draggable: false })),
+                h('div', { className: 'absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#0A0F1C]/95 via-[#0A0F1C]/40 to-transparent pt-16 p-5' },
+                  h('p', { className: 'text-[#D6F23A] uppercase text-[10px] font-bold tracking-[0.18em] mb-1.5' }, a.title || 'Award'),
+                  h('h3', { className: 'text-xl font-semibold text-white uppercase tracking-tight' }, nm),
+                  isC && a.playerId ? h('span', { className: 'aw-cta inline-flex items-center gap-1.5 text-[#D6F23A] text-[11px] font-semibold uppercase tracking-widest mt-2' }, 'View profile', h('span', { 'aria-hidden': true }, '→')) : null));
+            }))),
+        h(Reveal, { delay: 140, className: 'flex items-center justify-center gap-2.5 mt-8' },
+          aw.map(function (a, i) {
+            return h('button', {
+              key: 'dot' + i, type: 'button', 'aria-label': 'Go to winner ' + (i + 1),
+              className: 'aw-dot' + (i === cur ? ' is-on' : ''),
+              onClick: function () { setCur(i); }
+            });
+          })),
+        h(Reveal, { delay: 180, className: 'text-center mt-7' },
+          h('a', { href: 'awards.html', className: 'inline-flex items-center gap-2 text-[var(--ink)] font-medium border-b-2 border-[#D6F23A] pb-1 hover:opacity-70 transition-opacity' }, 'All awards & honours', h('span', { 'aria-hidden': true }, '→')))));
+  }
+
+  /* THE CAMPAIGN — season ledger. Gradient win-rate ring draws itself on
+     scroll with a counting percentage; every stat tile carries a volt glow
+     that follows the cursor. */
+  var CAMP_STATS = [
+    { v: 33, l: 'Played' }, { v: 29, l: 'Won', volt: true }, { v: 0, l: 'Drawn' }, { v: 4, l: 'Lost' },
+    { v: 137, l: 'Goals for', volt: true }, { v: 25, l: 'Against' }, { v: 112, l: 'Goal diff', pre: '+' }, { v: 14, l: 'Clean sheets', volt: true }
+  ];
+  function CampRing() {
+    var ref = useRef(null), st = useState(false), on = st[0], setOn = st[1];
+    useEffect(function () {
+      var el = ref.current; if (!el) return;
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) { setOn(true); io.unobserve(el); } });
+      }, { threshold: 0.4 });
+      io.observe(el); return function () { io.disconnect(); };
+    }, []);
+    var R = 92, C = 2 * Math.PI * R;
+    return h('div', { ref: ref, className: 'relative w-[230px] h-[230px]' },
+      h('div', { className: 'camp-aura absolute inset-[-30%] rounded-full pointer-events-none', style: { background: 'radial-gradient(closest-side, rgba(214,242,58,.22), transparent 70%)', filter: 'blur(26px)' }, 'aria-hidden': true }),
+      h('svg', { viewBox: '0 0 220 220', className: 'relative w-full h-full -rotate-90' },
+        h('defs', null, h('linearGradient', { id: 'campGrad', x1: '0', y1: '0', x2: '1', y2: '1' },
+          h('stop', { offset: '0', stopColor: '#8FE000' }),
+          h('stop', { offset: '0.55', stopColor: '#D6F23A' }),
+          h('stop', { offset: '1', stopColor: '#F2FFB0' }))),
+        h('circle', { cx: 110, cy: 110, r: R, fill: 'none', stroke: 'var(--edge)', strokeWidth: 15 }),
+        h('circle', { className: 'camp-arc', cx: 110, cy: 110, r: R, fill: 'none', stroke: 'url(#campGrad)', strokeWidth: 15, strokeLinecap: 'round',
+          strokeDasharray: C, strokeDashoffset: C * (1 - (on ? 0.88 : 0)) })),
+      h('div', { className: 'absolute inset-0 flex flex-col items-center justify-center' },
+        h('div', { className: 'text-5xl font-semibold tracking-tight' }, h('span', { className: 'voltnum' }, h(CountUp, { value: 88, suffix: '%', duration: 1700 }))),
+        h('div', { className: 'text-[11px] uppercase tracking-widest text-[var(--ink-3)] mt-1.5' }, 'Win rate')));
+  }
+  function Campaign() {
+    function lightUp(e) {
+      var el = e.currentTarget, r = el.getBoundingClientRect();
+      el.style.setProperty('--tx', ((e.clientX - r.left) / r.width * 100) + '%');
+      el.style.setProperty('--ty', ((e.clientY - r.top) / r.height * 100) + '%');
+    }
+    return h('section', { className: 'relative py-24 px-6' },
+      h('div', { className: 'max-w-7xl mx-auto' },
+        h(Reveal, { className: 'flex items-end justify-between flex-wrap gap-4 mb-12' },
+          h('div', null,
+            h(Eyebrow, null, 'All competitions · 25/26'),
+            h('h2', { className: 'text-2xl md:text-[32px] font-semibold tracking-tight text-[var(--ink)]' }, 'The campaign.'), h(HLine)),
+          h('a', { href: 'champions.html', className: 'aw-btn !w-auto px-6 gap-2 text-[14px] font-semibold uppercase tracking-widest' }, 'Champions', h('span', { 'aria-hidden': true }, '→'))),
+        h('div', { className: 'campaign-grid' },
+          h(Reveal, null,
+            h('div', { className: 'camp-tile bg-[var(--panel)] border border-[var(--edge)] rounded-3xl p-9 h-full flex flex-col items-center justify-center gap-7', onMouseMove: lightUp },
+              h(CampRing),
+              h('span', { className: 'bg-[#D6F23A] text-[#071D29] text-[12px] font-bold uppercase tracking-wider rounded-full px-4 py-2' }, '29W 0D 4L · All comps'))),
+          h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-4' },
+            CAMP_STATS.map(function (x, i) {
+              return h(Reveal, { key: x.l, delay: i * 60 },
+                h('div', { className: 'camp-tile bg-[var(--panel)] border border-[var(--edge)] rounded-2xl p-6 h-full', onMouseMove: lightUp },
+                  h('div', { className: 'text-3xl md:text-4xl font-semibold tracking-tight' },
+                    x.volt ? h('span', { className: 'voltnum' }, h(CountUp, { value: x.v, prefix: x.pre || '' }))
+                           : h('span', { className: 'text-[var(--ink)]' }, h(CountUp, { value: x.v, prefix: x.pre || '' }))),
+                  h('div', { className: 'text-[11px] uppercase tracking-widest text-[var(--ink-3)] mt-2.5' }, x.l)));
+            })))));
+  }
+
+  /* THE STORY SO FAR — a cloud of the club's historic numbers around the
+     crest; the whole cluster follows the cursor with a lagged, liquid ease
+     (reference: agency client-cloud hero). Touch devices get the static stack. */
+  function StatCloud() {
+    var ref = useRef(null);
+    useEffect(function () {
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var el = ref.current; if (!el) return;
+      var sec = el.parentElement;
+      var cx = 0, cy = 0, tx = 0, ty = 0, raf;
+      function loop() {
+        raf = requestAnimationFrame(loop);
+        cx += (tx - cx) * 0.055; cy += (ty - cy) * 0.055;
+        el.style.setProperty('--dx', cx.toFixed(1) + 'px');
+        el.style.setProperty('--dy', cy.toFixed(1) + 'px');
+      }
+      function onMove(e) {
+        var r = sec.getBoundingClientRect();
+        tx = (e.clientX - (r.left + r.width / 2)) * 0.42;
+        ty = (e.clientY - (r.top + r.height / 2)) * 0.42;
+      }
+      function onLeave() { tx = 0; ty = 0; }
+      sec.addEventListener('mousemove', onMove);
+      sec.addEventListener('mouseleave', onLeave);
+      raf = requestAnimationFrame(loop);
+      return function () {
+        sec.removeEventListener('mousemove', onMove);
+        sec.removeEventListener('mouseleave', onLeave);
+        cancelAnimationFrame(raf);
+      };
+    }, []);
+    function it(txt, cls, d) {
+      return h('span', { className: 'cloud-item ' + cls, style: { '--d': d } }, txt);
+    }
+    var INK = 'text-[var(--ink)]', DIM = 'text-[var(--ink-3)]', VOLT = 'voltnum';
+    return h('section', { className: 'relative overflow-hidden py-24 px-6', style: { minHeight: '82vh', display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+      h('p', { className: 'absolute top-10 left-1/2 -translate-x-1/2 text-[var(--volt-text)] uppercase text-xs font-semibold tracking-widest' }, 'The story so far'),
+      h('div', { ref: ref, className: 'flex flex-col items-center select-none', style: { lineHeight: 1.28 } },
+        h('div', { className: 'cloud-line' },
+          it('Est. 2025', 'text-sm md:text-base font-medium ' + DIM, 1.135),
+          it('CHAMPIONS', 'text-4xl md:text-6xl font-semibold tracking-tight ' + INK, 0.955)),
+        h('div', { className: 'cloud-line' },
+          it('of League Ten', 'text-xl md:text-3xl font-medium ' + INK, 1.067),
+          it('· Season 25/26', 'text-sm md:text-base ' + DIM, 1.18)),
+        h('div', { className: 'cloud-line', style: { margin: '0.4em 0' } },
+          it('Unbeaten', 'text-2xl md:text-4xl font-semibold marq-outline uppercase tracking-tight', 1.09),
+          h('span', { className: 'cloud-item', style: { '--d': 0.91 } },
+            h('img', { src: 'assets/badge/sue-angels-badge-cutout.webp', alt: "Sue's Angels crest", className: 'w-20 h-20 md:w-28 md:h-28 object-contain drop-shadow-[0_0_22px_rgba(214,242,58,0.35)]' })),
+          it('18 / 18', 'text-2xl md:text-4xl font-semibold ' + VOLT, 1.045),
+          it('league wins', 'text-base md:text-xl font-medium ' + DIM, 1.157)),
+        h('div', { className: 'cloud-line' },
+          it('137', 'text-3xl md:text-5xl font-semibold ' + VOLT, 1.022),
+          it('goals scored', 'text-lg md:text-2xl font-medium ' + INK, 1.113),
+          it('· 14 clean sheets', 'text-base md:text-xl ' + DIM, 1.18)),
+        h('div', { className: 'cloud-line' },
+          it('+112', 'text-2xl md:text-4xl font-semibold ' + INK, 1.09),
+          it('goal difference', 'text-sm md:text-base ' + DIM, 1.202),
+          it('88%', 'text-3xl md:text-5xl font-semibold ' + VOLT, 0.978),
+          it('win rate', 'text-lg md:text-2xl font-medium ' + INK, 1.135)),
+        h('div', { className: 'cloud-line', style: { marginTop: '0.35em' } },
+          it('The Invincibles', 'text-xl md:text-3xl font-semibold marq-outline uppercase tracking-tight', 1.067),
+          it('PROMOTED', 'text-2xl md:text-4xl font-semibold tracking-tight ' + INK, 1.0),
+          it('to League Eight', 'text-sm md:text-lg ' + DIM, 1.157))));
+  }
+
+  /* OUR CAUSE — cursor spotlight + the six signs of sepsis as flip cards */
+  var SIGNS = [
+    ['S', 'Slurred speech or confusion'],
+    ['E', 'Extreme shivering or muscle pain'],
+    ['P', 'Passing no urine in a day'],
+    ['S', 'Severe breathlessness'],
+    ['I', 'It feels like you are going to die'],
+    ['S', 'Skin mottled or discoloured']
+  ];
+  function SignCard(props) {
+    var st = useState(false), open = st[0], setOpen = st[1];
+    return h('div', {
+      className: 'flip aspect-[3/4] ' + (open ? 'is-flipped' : ''),
+      role: 'button', tabIndex: 0, 'aria-pressed': open,
+      'aria-label': 'Sepsis sign: ' + props.sign[1],
+      onClick: function () { setOpen(!open); },
+      onKeyDown: function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(!open); } },
+      onMouseEnter: function () { setOpen(true); },
+      onMouseLeave: function () { setOpen(false); }
+    },
+      h('div', { className: 'flip-inner w-full h-full' },
+        h('div', { className: 'flip-face bg-[var(--panel)] border border-[var(--edge)] flex items-center justify-center' },
+          h('span', { className: 'voltnum text-5xl md:text-6xl font-semibold' }, props.sign[0])),
+        h('div', { className: 'flip-face flip-back bg-[#D6F23A] text-[#071D29] flex items-center justify-center p-4 text-center' },
+          h('span', { className: 'text-sm md:text-[15px] font-semibold leading-snug' }, props.sign[1]))));
+  }
+  function Cause() {
+    var ref = useRef(null);
+    function onMove(e) {
+      var el = ref.current; if (!el) return;
+      var r = el.getBoundingClientRect();
+      el.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+      el.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+    }
+    return h('section', { className: 'relative py-24 px-6' },
+      h('div', { ref: ref, onMouseMove: onMove, className: 'spotlight relative max-w-7xl mx-auto bg-[var(--panel)] border border-[var(--edge)] rounded-[36px] p-8 md:p-14 overflow-hidden' },
+        h('div', { className: 'grid lg:grid-cols-2 gap-12 items-center' },
+          h(Reveal, null,
+            h(Eyebrow, null, 'Our cause'),
+            h('h2', { className: 'text-2xl md:text-[32px] font-semibold tracking-tight text-[var(--ink)] mb-6' }, 'More than a football club.'),
+            h('p', { className: 'text-[15px] text-[var(--ink-2)] leading-relaxed mb-5' }, "Sue's Angels was founded in 2025 in memory of Susan Anne Martin, taken by sepsis. Every shirt, every matchday and every season carries her legacy forward."),
+            h('p', { className: 'text-xl md:text-2xl font-medium text-[var(--ink)] italic mb-8' }, '"What we do in life echoes in eternity."'),
+            h('a', { href: 'sepsis.html', className: 'inline-flex items-center gap-2 text-[var(--ink)] font-medium border-b-2 border-[#D6F23A] pb-1 hover:opacity-70 transition-opacity' }, 'Learn about our cause', h('span', { 'aria-hidden': true }, '→'))),
+          h(Reveal, { delay: 120 },
+            h('p', { className: 'text-sm uppercase tracking-widest text-[var(--ink-3)] mb-4' }, 'Know the six signs · flip them'),
+            h('div', { className: 'grid grid-cols-3 gap-3' },
+              SIGNS.map(function (sg, i) { return h(SignCard, { key: i, sign: sg }); })),
+            h('p', { className: 'text-xs text-[var(--ink-3)] mt-4' }, 'Sepsis claims around 48,000 lives in the UK every year. Just ask: could it be sepsis?')))));
+  }
+
+  /* A SEASON OF FIRSTS — volt marquee + 3D tilt honour cards */
+  function Marquee() {
+    var items = ['Champions', 'Unbeaten', 'Promoted', 'Est. 2025', 'League Eight loading'];
+    function run(key) {
+      return h('div', { key: key, className: 'flex items-center shrink-0', 'aria-hidden': key === 'b' },
+        items.map(function (t, i) {
+          return h('span', { key: i, className: 'flex items-center' },
+            h('span', { className: 'text-5xl md:text-7xl font-semibold tracking-tight uppercase whitespace-nowrap px-6 ' + (i % 2 ? 'marq-outline' : 'marq-solid') }, t),
+            h('span', { className: 'text-3xl md:text-5xl marq-solid', 'aria-hidden': true }, '✱'));
+        }));
+    }
+    return h('div', { className: 'marquee py-2 select-none' }, h('div', { className: 'marquee-track' }, run('a'), run('b')));
+  }
+  function TiltCard(props) {
+    var ref = useRef(null);
+    function move(e) {
+      var el = ref.current; if (!el) return;
+      var r = el.getBoundingClientRect();
+      var px = (e.clientX - r.left) / r.width - 0.5, py = (e.clientY - r.top) / r.height - 0.5;
+      el.style.transform = 'perspective(800px) rotateY(' + (px * 9).toFixed(2) + 'deg) rotateX(' + (-py * 9).toFixed(2) + 'deg) translateY(-4px)';
+    }
+    function leave() { if (ref.current) ref.current.style.transform = ''; }
+    return h('div', { ref: ref, onMouseMove: move, onMouseLeave: leave, className: 'tilt-card bg-[var(--panel)] border border-[var(--edge)] rounded-3xl p-8' }, props.children);
+  }
+  var HONOURS = [
+    ['Champions', 'League Ten winners at the first time of asking. The title came home in year one.'],
+    ['The Invincibles', 'Played 18, won 18. Nobody took a single league point off the Angels.'],
+    ['Promoted', 'Straight up to League Eight for 26/27. New league, same purpose.']
+  ];
+  function Firsts() {
+    return h('section', { className: 'relative py-24 overflow-hidden' },
+      h(Reveal, { className: 'mb-14' }, h(Marquee)),
+      h('div', { className: 'max-w-7xl mx-auto px-6' },
+        h('div', { className: 'grid md:grid-cols-3 gap-5' },
+          HONOURS.map(function (o, i) {
+            return h(Reveal, { key: o[0], delay: i * 90 },
+              h(TiltCard, null,
+                h('div', { className: 'voltnum text-2xl font-semibold mb-6' }, '0' + (i + 1)),
+                h('h3', { className: 'text-2xl font-semibold text-[var(--ink)] mb-3' }, o[0]),
+                h('p', { className: 'text-[var(--ink-2)] leading-relaxed' }, o[1])));
+          }))));
+  }
+
+  /* NEXT CHAPTER — scoreboard countdown to the League Eight opener.
+     Slot-roll digits tick like a stadium board, the tiles parallax with the
+     cursor at different depths, and a giant 26/27 watermark drifts behind. */
+  function NextChapter() {
+    var target = new Date('2026-09-06T10:30:00+01:00').getTime();
+    var st = useState(Math.max(0, target - Date.now())), ms = st[0], setMs = st[1];
+    var secRef = useRef(null);
+    useEffect(function () {
+      var iv = setInterval(function () { setMs(Math.max(0, target - Date.now())); }, 1000);
+      return function () { clearInterval(iv); };
+    }, []);
+    function onMove(e) {
+      var el = secRef.current; if (!el) return;
+      var r = el.getBoundingClientRect();
+      el.style.setProperty('--gx', ((e.clientX - r.left) / r.width - 0.5).toFixed(3));
+      el.style.setProperty('--gy', ((e.clientY - r.top) / r.height - 0.5).toFixed(3));
+    }
+    function onLeave() {
+      var el = secRef.current; if (!el) return;
+      el.style.setProperty('--gx', 0); el.style.setProperty('--gy', 0);
+    }
+    var cells = [
+      [Math.floor(ms / 864e5), 'Days', 8], [Math.floor(ms / 36e5) % 24, 'Hours', 14],
+      [Math.floor(ms / 6e4) % 60, 'Minutes', 20], [Math.floor(ms / 1e3) % 60, 'Seconds', 26]
+    ];
+    return h('section', { ref: secRef, onMouseMove: onMove, onMouseLeave: onLeave, className: 'relative pt-4 pb-24 px-6 -mt-10 overflow-hidden' },
+      h('span', { className: 'cd-mark absolute left-1/2 top-1/2 text-[26vw] leading-none font-semibold tracking-tight marq-outline select-none pointer-events-none opacity-[0.14]', 'aria-hidden': true }, '26/27'),
+      h('div', { className: 'relative max-w-7xl mx-auto text-center' },
+        h(Reveal, null,
+          h(Eyebrow, null, 'Next chapter'),
+          h('h2', { className: 'text-2xl md:text-[32px] font-semibold tracking-tight text-[var(--ink)] mb-4' }, 'League Eight is coming.'),
+          h(HLine, { center: true }),
+          h('p', { className: 'text-[15px] text-[var(--ink-2)] mb-10 mt-5' }, 'The 26/27 season starts Sunday 6 September. New league, same purpose.')),
+        h(Reveal, { delay: 120, className: 'flex items-stretch justify-center gap-3 md:gap-5 flex-wrap' },
+          cells.map(function (c) {
+            var val = String(c[0]).padStart(2, '0');
+            return h('div', { key: c[1], className: 'cd-tile bg-[var(--panel)] border border-[var(--edge)] rounded-2xl px-6 md:px-9 py-6 min-w-[92px] md:min-w-[130px] backdrop-blur-sm', style: { '--gd': c[2] }, role: 'timer' },
+              h('div', { className: 'text-4xl md:text-5xl font-semibold tabnum overflow-hidden' },
+                h('span', { className: 'voltnum' },
+                  val.split('').map(function (d, i) {
+                    return h('span', { key: i + '-' + d, className: 'cd-roll' }, d);
+                  }))),
+              h('div', { className: 'text-[10px] md:text-xs uppercase tracking-widest text-[var(--ink-3)] mt-2' }, c[1]));
+          })),
+        h(Reveal, { delay: 200, className: 'mt-10' },
+          h('a', { href: 'fixtures.html', className: 'inline-flex items-center gap-2 text-[var(--ink)] font-medium border-b-2 border-[#D6F23A] pb-1 hover:opacity-70 transition-opacity' }, 'See the 26/27 fixtures', h('span', { 'aria-hidden': true }, '→')))));
+  }
+
+  /* PARTNERS + JOIN — magnetic CTAs */
+  function Magnetic(props) {
+    var ref = useRef(null);
+    function move(e) {
+      var el = ref.current; if (!el) return;
+      var r = el.getBoundingClientRect();
+      var dx = (e.clientX - r.left - r.width / 2) / r.width, dy = (e.clientY - r.top - r.height / 2) / r.height;
+      el.style.transform = 'translate(' + (dx * 12).toFixed(1) + 'px,' + (dy * 8).toFixed(1) + 'px)';
+    }
+    function leave() { if (ref.current) ref.current.style.transform = ''; }
+    return h('a', { ref: ref, href: props.href, onMouseMove: move, onMouseLeave: leave, className: props.className + ' transition-transform duration-200 will-change-transform' }, props.children);
+  }
+  function JoinBand() {
+    return h('section', { className: 'relative py-10 px-6' },
+      h(Reveal, { className: 'max-w-7xl mx-auto' },
+        h('div', { className: 'relative overflow-hidden rounded-[36px] bg-[#D6F23A] text-[#071D29] px-8 py-16 md:py-24 text-center' },
+          h('h2', { className: 'text-3xl md:text-[42px] font-semibold tracking-tight mb-4' }, 'Play for the Angels.'),
+          h('p', { className: 'text-base text-[#071D29]/80 max-w-lg mx-auto mb-8' }, 'New players welcome. Pre-season is underway ahead of the League Eight campaign. Come train with us.'),
+          h('div', { className: 'flex flex-wrap items-center justify-center gap-4' },
+            h(Magnetic, { href: 'join.html', className: 'bg-[#071D29] text-white rounded-full px-9 py-4 font-semibold hover:opacity-90' }, 'Join the club'),
+            h(Magnetic, { href: 'contact.html', className: 'border-2 border-[#071D29]/30 rounded-full px-9 py-4 font-semibold hover:border-[#071D29]' }, 'Get in touch')))));
+  }
+  function SiteFooter() {
+    var links = [['The Club', 'about.html'], ['Fixtures', 'fixtures.html'], ['Results', 'results.html'], ['Media', 'media.html'], ['Sponsors', 'sponsors.html'], ['Join', 'join.html']];
+    return h('footer', { className: 'relative border-t border-[var(--edge)] py-14 px-6' },
+      h('div', { className: 'max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8' },
+        h('a', { href: 'index.html', className: 'flex items-center gap-2.5' },
+          h('img', { src: 'assets/badge/sue-angels-badge-cutout.webp', alt: '', className: 'w-10 h-10 object-contain' }),
+          h('div', { className: 'leading-none' },
+            h('div', { className: 'font-semibold text-[var(--ink)]' }, "Sue's Angels FC"),
+            h('div', { className: 'text-[10px] uppercase tracking-[0.22em] text-[var(--volt-text)] mt-1' }, 'Est. 2025'))),
+        h('nav', { className: 'flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[var(--ink-2)]' },
+          links.map(function (l) { return h('a', { key: l[0], href: l[1], className: 'hover:text-[var(--ink)] transition-colors' }, l[0]); })),
+        h('p', { className: 'text-xs text-[var(--ink-3)] text-center md:text-right' }, 'What we do in life echoes in eternity.')));
+  }
+
+  /* MATCHDAY — tester section: the hero's dynamic (lagged two-axis cursor
+     follow) applied to a full-bleed matchday photograph. Mouse X pans the
+     shot, mouse Y tilts it, one rAF loop eases both — identical feel to the
+     hero video. Touch and reduced-motion get the still image. */
+  function Matchday() {
+    var ref = useRef(null);
+    useEffect(function () {
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var img = ref.current; if (!img) return;
+      var stage = img.closest('.pan-stage');
+      var px = 0, py = 0, tl = 0, tx = 0, ty = 0, tt = 0, raf;
+      function loop() {
+        raf = requestAnimationFrame(loop);
+        px += (tx - px) * 0.08; py += (ty - py) * 0.08; tl += (tt - tl) * 0.08;
+        img.style.setProperty('--px', px.toFixed(1) + 'px');
+        img.style.setProperty('--pyy', py.toFixed(1) + 'px');
+        img.style.setProperty('--tilt', tl.toFixed(2) + 'deg');
+      }
+      function onMove(e) {
+        var r = stage.getBoundingClientRect();
+        var fx = (e.clientX - r.left) / r.width - 0.5;
+        var fy = (e.clientY - r.top) / r.height - 0.5;
+        tx = -fx * 70; ty = -fy * 34; tt = -fy * 5;
+      }
+      function onLeave() { tx = 0; ty = 0; tt = 0; }
+      stage.addEventListener('mousemove', onMove);
+      stage.addEventListener('mouseleave', onLeave);
+      raf = requestAnimationFrame(loop);
+      return function () {
+        stage.removeEventListener('mousemove', onMove);
+        stage.removeEventListener('mouseleave', onLeave);
+        cancelAnimationFrame(raf);
+      };
+    }, []);
+    return h('section', { className: 'relative py-24 px-6' },
+      h('div', { className: 'max-w-7xl mx-auto' },
+        h(Reveal, null,
+          h(Eyebrow, null, 'Matchdays'),
+          h('h2', { className: 'text-2xl md:text-[32px] font-semibold tracking-tight text-[var(--ink)] mb-10' }, 'Built on Sunday mornings.'), h(HLine)),
+        h(Reveal, { delay: 100 },
+          h('div', { className: 'pan-stage relative rounded-[36px] overflow-hidden border border-[var(--edge)]', style: { height: '68vh', minHeight: '460px' } },
+            h('img', { ref: ref, src: 'assets/hero-team.webp', alt: "Sue's Angels team at The Reeves", className: 'pan-photo absolute inset-0 w-full h-full object-cover', onError: function (e) { e.target.src = 'assets/hero-team.jpg'; } }),
+            h('div', { className: 'absolute inset-0 bg-gradient-to-t from-[#0A0F1C]/75 via-transparent to-transparent pointer-events-none' }),
+            h('div', { className: 'absolute bottom-0 left-0 right-0 p-8 md:p-12 flex flex-wrap items-end justify-between gap-6' },
+              h('div', null,
+                h('p', { className: 'text-[#D6F23A] uppercase text-xs font-semibold tracking-widest mb-2' }, 'The Reeves · Hanworth'),
+                h('p', { className: 'text-2xl md:text-4xl font-semibold text-white max-w-xl leading-tight' }, 'Every photo, every result, every Sunday.')),
+              h('a', { href: 'gallery.html', className: 'bg-[#D6F23A] text-[#071D29] rounded-full px-7 py-3.5 font-semibold hover:opacity-90 transition-opacity whitespace-nowrap' }, 'Open the gallery'))))));
+  }
+
+  /* Poll the cloud data layer briefly so live results appear once loaded */
+  function useClubData() {
+    var st = useState(0), tick = st[0], setTick = st[1];
+    useEffect(function () {
+      var n = 0;
+      var iv = setInterval(function () {
+        n++; setTick(n);
+        var rs = window.getDerivedResults ? window.getDerivedResults() : [];
+        if ((rs.length && n > 2) || n > 20) clearInterval(iv);
+      }, 600);
+      return function () { clearInterval(iv); };
+    }, []);
+    return tick;
+  }
+  function Crest(props) {
+    if (window.TeamBadge) return h(window.TeamBadge, { team: props.team, size: props.size || 26 });
+    return h('span', { className: 'inline-block rounded-full bg-[var(--panel-2)]', style: { width: props.size || 26, height: props.size || 26 } });
+  }
+
+  /* WHO WE ARE — the live site's pillar rail, upgraded: split editorial
+     layout, drag-scroll snap rail, photo-reveal hover cards, volt progress. */
+  var PILLARS = [
+    { k: 'Champions', t: 'League Ten winners', d: 'Played 18, won 18, unbeaten and promoted for 26/27.', href: 'champions.html', cta: 'The season', img: 'assets/hero/banner-05.webp' },
+    { k: 'Community', t: 'A football family', d: 'Built in south-west London, playing for each other every week.', href: 'about.html', cta: 'Our story', img: 'assets/hero/banner-07.webp' },
+    { k: 'Our cause', t: 'Sepsis awareness', d: 'Founded in memory of Susan Anne Martin. Know the signs.', href: 'sepsis.html', cta: 'Our cause', img: 'assets/hero/banner-09.webp' },
+    { k: 'Partners', t: 'Back the badge', d: 'Local businesses on the shirt, and there is room for yours.', href: 'sponsors.html', cta: 'Partner with us', img: 'assets/hero/banner-11.webp' }
+  ];
+  function WhoWeAre() {
+    var railRef = useRef(null);
+    var pr = useState(0), prog = pr[0], setProg = pr[1];
+    var drag = useRef(null), moved = useRef(false);
+    function onScroll() {
+      var el = railRef.current; if (!el) return;
+      var max = el.scrollWidth - el.clientWidth;
+      setProg(max > 0 ? el.scrollLeft / max : 0);
+    }
+    function by(dir) {
+      var el = railRef.current; if (el) el.scrollBy({ left: dir * 390, behavior: 'smooth' });
+    }
+    return h('section', { className: 'relative pt-4 pb-24 px-6' },
+      h('div', { className: 'max-w-7xl mx-auto grid lg:grid-cols-[340px_1fr] gap-10 lg:gap-14 items-start' },
+        /* Left rail: intro + controls */
+        h(Reveal, null,
+          h(Eyebrow, null, 'Who we are'),
+          h('h2', { className: 'text-3xl md:text-[40px] font-semibold tracking-tight uppercase leading-[0.98] text-[var(--ink)]' }, 'More', h('br'), 'than a', h('br'), 'result'),
+          h(HLine),
+          h('p', { className: 'text-[15px] text-[var(--ink-2)] leading-relaxed mt-5 max-w-sm' }, 'A club built in memory and driven by purpose. Champions on the pitch, and a family off it.'),
+          h('div', { className: 'flex items-center gap-3 mt-8' },
+            h('button', { type: 'button', className: 'aw-btn', 'aria-label': 'Scroll back', onClick: function () { by(-1); } }, '←'),
+            h('button', { type: 'button', className: 'aw-btn', 'aria-label': 'Scroll forward', onClick: function () { by(1); } }, '→'))),
+        /* Card rail */
+        h(Reveal, { delay: 120, className: 'min-w-0' },
+          h('div', {
+            ref: railRef, onScroll: onScroll,
+            className: 'rail !pb-2', style: { cursor: drag.current ? 'grabbing' : 'grab' },
+            tabIndex: 0, role: 'group', 'aria-label': 'Club pillars, scrollable',
+            onPointerDown: function (e) { var el = railRef.current; drag.current = { x: e.clientX, sl: el.scrollLeft }; moved.current = false; },
+            onPointerMove: function (e) {
+              if (!drag.current) return;
+              var dx = e.clientX - drag.current.x;
+              if (Math.abs(dx) > 6) moved.current = true;
+              railRef.current.scrollLeft = drag.current.sl - dx;
+            },
+            onPointerUp: function () { drag.current = null; },
+            onPointerLeave: function () { drag.current = null; },
+            onKeyDown: function (e) {
+              if (e.key === 'ArrowRight') { e.preventDefault(); by(1); }
+              if (e.key === 'ArrowLeft') { e.preventDefault(); by(-1); }
+            }
+          },
+            PILLARS.map(function (p2, i) {
+              return h('a', {
+                key: p2.k, href: p2.href,
+                onClick: function (e) { if (moved.current) e.preventDefault(); },
+                className: 'who-card group relative shrink-0 snap-start rounded-3xl border border-[var(--edge)] bg-[var(--panel)] p-7 md:p-8 overflow-hidden flex flex-col',
+                style: { width: 'min(360px, 82vw)', minHeight: '340px' }
+              },
+                h('img', { src: p2.img, alt: '', loading: 'lazy', draggable: false, className: 'absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-25 transition-opacity duration-700', onError: function (e) { e.target.src = p2.img.replace('.webp', '.jpg'); } }),
+                h('div', { className: 'absolute inset-0 bg-gradient-to-t from-[#0A0F1C]/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700' }),
+                h('span', { className: 'relative marq-outline text-4xl font-semibold absolute top-6 right-7', 'aria-hidden': true, style: { position: 'absolute' } }, '0' + (i + 1)),
+                h('p', { className: 'relative text-[var(--volt-text)] uppercase text-[11px] font-semibold tracking-widest inline-flex items-center gap-2 mb-4' },
+                  h('span', { className: 'inline-block w-4 h-[2px] bg-[#D6F23A] rounded-full', 'aria-hidden': true }), p2.k),
+                h('h3', { className: 'relative text-3xl font-semibold uppercase tracking-tight leading-none text-[var(--ink)] mb-4 max-w-[11ch]' }, p2.t),
+                h('p', { className: 'relative text-[var(--ink-2)] leading-relaxed' }, p2.d),
+                h('span', { className: 'relative mt-auto pt-6 inline-flex items-center gap-2 text-[var(--volt-text)] font-semibold' },
+                  p2.cta,
+                  h('span', { className: 'transition-transform duration-300 group-hover:translate-x-1.5', 'aria-hidden': true }, '→')));
+            })),
+          /* Volt progress */
+          h('div', { className: 'relative h-[3px] rounded-full bg-[var(--edge)] mt-5 overflow-hidden' },
+            h('div', { className: 'absolute inset-y-0 left-0 rounded-full bg-[#D6F23A] transition-[width] duration-300', style: { width: (28 + prog * 72) + '%' } })))));
+  }
+
+  /* RECENT RESULTS — live data, drag rail, verdict-lit cards */
+  function ResultsRail() {
+    useClubData();
+    var results = (window.getDerivedResults ? window.getDerivedResults() : []).slice(0, 8);
+    function verdict(r) {
+      var us = /sue/i;
+      var hUs = us.test(r.home || ''), hs = +r.hs, as = +r.as;
+      if (hs === as) return 'D';
+      var won = hUs ? hs > as : as > hs;
+      return won ? 'W' : 'L';
+    }
+    if (!results.length) return null;
+    return h('section', { className: 'relative pt-8 pb-20 px-6 -mt-6' },
+      h('div', { className: 'max-w-7xl mx-auto' },
+        h(Reveal, { className: 'flex items-end justify-between flex-wrap gap-4 mb-10' },
+          h('div', null,
+            h(Eyebrow, null, 'Match centre'),
+            h('h2', { className: 'text-2xl md:text-[32px] font-semibold tracking-tight text-[var(--ink)]' }, 'Recent results.'), h(HLine)),
+          h('a', { href: 'results.html', className: 'text-[var(--ink)] font-medium border-b-2 border-[#D6F23A] pb-1 hover:opacity-70 transition-opacity' }, 'All results →')),
+        h(Reveal, { delay: 100 },
+          h('div', { className: 'rail', tabIndex: 0, role: 'group', 'aria-label': 'Recent results, scrollable' },
+            results.map(function (r, i) {
+              var v = verdict(r);
+              var tone = v === 'W' ? '#D6F23A' : (v === 'L' ? '#ff7a7a' : 'rgba(255,255,255,.5)');
+              return h('a', { key: r.id || i, href: 'results.html', className: 'rail-card bg-[var(--panel)] border border-[var(--edge)] rounded-2xl p-5 block' },
+                h('div', { className: 'flex items-center justify-between mb-4' },
+                  h('span', { className: 'text-[11px] uppercase tracking-widest text-[var(--ink-3)]' }, (r.date || '') + ' · ' + ((r.competition || 'League').replace(/League Ten.*/i, 'League Ten'))),
+                  h('span', { className: 'text-xs font-bold rounded-full px-2.5 py-1', style: { background: tone, color: '#071D29' } }, v)),
+                [[r.home, r.hs], [r.away, r.as]].map(function (line, j) {
+                  return h('div', { key: j, className: 'flex items-center gap-2.5 py-1' },
+                    h(Crest, { team: line[0], size: 24 }),
+                    h('span', { className: 'flex-1 truncate text-[15px] font-medium text-[var(--ink)]' }, line[0]),
+                    h('span', { className: 'text-lg font-semibold tabnum ' + (v !== 'D' && ((j === 0) === /sue/i.test(r.home || '')) === (v === 'W') ? 'voltnum' : 'text-[var(--ink-2)]') }, line[1]));
+                }));
+            })))));
+  }
+
+  /* THE TABLE — the final League Ten standings with life in it: volt
+     points bars race across each row, points count up, positions carry
+     medal rings, the champions row glows, rows light under the cursor. */
+  function LeagueTable() {
+    var rows = (window.RAW_TABLE || []).slice(0, 6);
+    if (!rows.length) return null;
+    var maxPts = Math.max.apply(null, rows.map(function (r) { return +r.pts || 0; }));
+    function lightUp(e) {
+      var el = e.currentTarget, r = el.getBoundingClientRect();
+      el.style.setProperty('--tx', ((e.clientX - r.left) / r.width * 100) + '%');
+      el.style.setProperty('--ty', ((e.clientY - r.top) / r.height * 100) + '%');
+    }
+    return h('section', { className: 'relative pt-8 pb-24 px-6 -mt-4' },
+      h('div', { className: 'max-w-7xl mx-auto' },
+        h(Reveal, { className: 'flex items-end justify-between flex-wrap gap-4 mb-10' },
+          h('div', null,
+            h(Eyebrow, null, 'League Ten · Final'),
+            h('h2', { className: 'text-2xl md:text-[32px] font-semibold tracking-tight text-[var(--ink)]' }, 'How it finished.'), h(HLine)),
+          h('a', { href: 'table.html', className: 'aw-btn !w-auto px-6 gap-2 text-[14px] font-semibold uppercase tracking-widest' }, 'Full table', h('span', { 'aria-hidden': true }, '→'))),
+        h(Reveal, { delay: 100, className: 'bg-[var(--panel)] border border-[var(--edge)] rounded-3xl overflow-hidden' },
+          h('div', { className: 'hidden md:grid grid-cols-[52px_1fr_repeat(5,60px)_150px] gap-2 px-6 py-3.5 text-[11px] uppercase tracking-widest text-[var(--ink-3)] border-b border-[var(--edge)]' },
+            ['#', 'Club', 'P', 'W', 'D', 'L', 'GD', 'Points'].map(function (x, i) { return h('span', { key: i, className: i > 1 ? 'text-center' : '' }, x); })),
+          rows.map(function (r, i) {
+            /* Positions: 1 volt (champions, us) · 2 orange (promoted too) · rest plain */
+            var pos = r.us
+              ? h('span', { className: 'w-8 h-8 rounded-full bg-[#D6F23A] text-[#071D29] font-bold flex items-center justify-center text-sm' }, r.p)
+              : (r.p === 2
+                ? h('span', { className: 'w-8 h-8 rounded-full bg-[#FF8A3D] text-[#071D29] font-bold flex items-center justify-center text-sm' }, r.p)
+                : h('span', { className: 'w-8 h-8 flex items-center justify-center tabnum text-[var(--ink-3)]' }, r.p));
+            return h(Reveal, { key: r.p, delay: i * 70 },
+              h('div', {
+                className: 'lt-row camp-tile !rounded-none relative grid grid-cols-[40px_1fr_64px] md:grid-cols-[52px_1fr_repeat(5,60px)_150px] gap-2 items-center px-4 md:px-6 py-4 border-b border-[var(--edge)] last:border-0 ' + (r.us ? 'lt-us' : ''),
+                onMouseMove: lightUp
+              },
+                pos,
+                h('span', { className: 'flex items-center gap-3 min-w-0' },
+                  h('span', { className: 'lt-crest' + (r.us ? ' lt-crest-us' : '') }, h(Crest, { team: r.c, size: 28 })),
+                  h('span', { className: 'truncate font-medium text-[var(--ink)]' }, r.c),
+                  r.us ? h('span', { className: 'text-[10px] font-bold bg-[#D6F23A] text-[#071D29] rounded-full px-2.5 py-0.5 whitespace-nowrap' }, 'CHAMPIONS') : null),
+                h('span', { className: 'hidden md:block text-center tabnum text-[var(--ink-2)]' }, r.pl),
+                h('span', { className: 'hidden md:block text-center tabnum text-[var(--ink-2)]' }, r.w),
+                h('span', { className: 'hidden md:block text-center tabnum text-[var(--ink-2)]' }, r.d),
+                h('span', { className: 'hidden md:block text-center tabnum text-[var(--ink-2)]' }, r.l),
+                h('span', { className: 'hidden md:block text-center tabnum text-[var(--ink-2)]' }, r.gd),
+                h('span', { className: 'flex items-center gap-3 justify-end md:pr-1' },
+                  h('span', { className: 'lt-bar hidden md:block', style: { '--w': ((+r.pts / maxPts) * 84) + 'px' } }),
+                  h('span', { className: 'font-semibold tabnum text-lg ' + (r.us ? 'voltnum' : 'text-[var(--ink)]') }, h(CountUp, { value: +r.pts || 0, duration: 1100 })))));
+          }))));
+  }
+
+  /* 2 + 5. Page structure */
+  function App() {
+    var s = useState(false), open = s[0], setOpen = s[1];
+    var t = useState(function () {
+      try { return localStorage.getItem('sa-theme') || 'dark'; } catch (e) { return 'dark'; }
+    }), theme = t[0], setTheme = t[1];
+    useEffect(function () {
+      document.documentElement.setAttribute('data-theme', theme);
+      try { localStorage.setItem('sa-theme', theme); } catch (e) {}
+    }, [theme]);
+    return h('div', { className: 'relative bg-[var(--bg)] text-[var(--ink)] font-sans selection:bg-[#D6F23A] selection:text-[#071D29] antialiased overflow-x-hidden transition-colors duration-300' },
+      h(Navbar, { open: open, setOpen: setOpen, theme: theme, setTheme: setTheme }),
+      h(MobileOverlay, { open: open, setOpen: setOpen }),
+      /* HERO — the background video lives (and is confined) here */
+      h('div', { className: 'relative flex flex-col lg:block lg:min-h-screen' },
+        h(BackgroundVideo),
+        h('div', { className: 'relative z-10 flex flex-col order-first lg:order-none w-full bg-[var(--bg)] lg:bg-transparent pb-8 lg:pb-0 lg:min-h-screen transition-colors duration-300' },
+          h(Hero))),
+      /* REST OF THE PAGE — solid background, above nothing */
+      h('div', { className: 'relative z-10 bg-[var(--bg)] transition-colors duration-300' },
+        h(NextChapter),
+        h(NewsDesk),
+        h(AwardsDeck),
+        h(WhoWeAre),
+        h(Campaign),
+        h(ResultsRail),
+        h(LeagueTable),
+        h(Matchday),
+        h(JoinBand),
+        h(SiteFooter))
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+})();
+</script>
+</body>
+</html>

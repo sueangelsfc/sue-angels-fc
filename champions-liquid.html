@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Champions · Sue's Angels FC</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<!-- keep our current font (Inter), per brief -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { theme: { extend: {
+    fontFamily: { heading: ['Inter','sans-serif'], body: ['Inter','sans-serif'] },
+    colors: { volt: '#D6F23A', navy: '#0A0F1C' }
+  } } };
+</script>
+<style>
+  :root { --volt: #D6F23A; --navy: #0A0F1C; }
+  html, body { background: #0A0F1C; color: #fff; font-family: 'Inter', sans-serif; }
+  * { -webkit-font-smoothing: antialiased; }
+
+  /* --- Liquid glass (per brief) --- */
+  .liquid-glass, .liquid-glass-strong {
+    background: rgba(255,255,255,0.02);
+    background-blend-mode: luminosity;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.10);
+    position: relative; overflow: hidden;
+  }
+  .liquid-glass { -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+  .liquid-glass-strong {
+    -webkit-backdrop-filter: blur(50px); backdrop-filter: blur(50px);
+    box-shadow: 4px 4px 4px rgba(0,0,0,0.05), inset 0 1px 1px rgba(255,255,255,0.15);
+  }
+  .liquid-glass::before, .liquid-glass-strong::before {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; padding: 1.4px;
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none;
+  }
+  .liquid-glass::before {
+    background: linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%, rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%, rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
+  }
+  .liquid-glass-strong::before {
+    background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.2) 20%, rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%, rgba(255,255,255,0.2) 80%, rgba(255,255,255,0.5) 100%);
+  }
+  /* volt-tinted strong glass for the primary CTA */
+  .volt-glass::before { background: linear-gradient(180deg, rgba(214,242,58,0.6), rgba(214,242,58,0.15) 40%, rgba(214,242,58,0.15) 60%, rgba(214,242,58,0.6)); }
+
+  .head-it { font-family: 'Inter', sans-serif; font-style: italic; font-weight: 600; letter-spacing: -0.03em; }
+  .subtab { padding: 8px 16px; border-radius: 999px; font-size: 13px; font-weight: 600; color: rgba(255,255,255,.7); transition: color .25s, background .25s; white-space: nowrap; }
+  .subtab:hover { color: #fff; }
+  .subtab.is-on { background: #D6F23A; color: #0A0F1C; box-shadow: 0 6px 20px -8px rgba(214,242,58,.6); }
+  /* --- luxe layer: boot, cursor, scroll bar, focus, polish --- */
+  #boot { position: fixed; inset: 0; z-index: 9999; background: #0A0F1C; display: flex; align-items: center; justify-content: center; transition: opacity .8s ease; }
+  #boot.hide { opacity: 0; pointer-events: none; }
+  #boot img { width: 118px; height: 118px; object-fit: contain; animation: bootPulse 1.6s ease-in-out infinite; filter: drop-shadow(0 0 34px rgba(214,242,58,.45)); }
+  @keyframes bootPulse { 0%,100% { transform: scale(1); opacity: .85; } 50% { transform: scale(1.08); opacity: 1; } }
+  #scrollbar { position: fixed; top: 0; left: 0; height: 2.5px; background: #D6F23A; z-index: 9998; width: 0; box-shadow: 0 0 10px rgba(214,242,58,.6); }
+  .has-cursor, .has-cursor a, .has-cursor button, .has-cursor [role="button"] { cursor: none; }
+  .cur-dot { position: fixed; top: 0; left: 0; width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: #D6F23A; pointer-events: none; z-index: 10000; mix-blend-mode: difference; }
+  .cur-ring { position: fixed; top: 0; left: 0; width: 34px; height: 34px; margin: -17px; border: 1.5px solid rgba(214,242,58,.55); border-radius: 50%; pointer-events: none; z-index: 10000; transition: width .25s, height .25s, margin .25s, border-color .25s, background .25s; }
+  .cur-ring.big { width: 58px; height: 58px; margin: -29px; border-color: rgba(214,242,58,.9); background: rgba(214,242,58,.08); }
+  a:focus-visible, button:focus-visible, [role="button"]:focus-visible { outline: 2px solid #D6F23A; outline-offset: 3px; border-radius: 4px; }
+  @media (prefers-reduced-motion: reduce) { #boot img { animation: none; } }
+  @media (hover: none) { .has-cursor, .has-cursor a, .has-cursor button { cursor: auto; } .cur-dot, .cur-ring { display: none; } }
+  /* ---- volt accent + glow pass ---- */
+  .head-it.text-volt, .text-volt.head-it { text-shadow: 0 0 28px rgba(214,242,58,.28); }
+  /* nav link hover underline */
+  header nav a { position: relative; }
+  header nav a::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: 5px; height: 1.5px; background: #D6F23A; border-radius: 2px; transform: scaleX(0); transform-origin: left; transition: transform .3s cubic-bezier(.22,.68,.16,1); box-shadow: 0 0 8px rgba(214,242,58,.7); }
+  header nav a:hover::after { transform: scaleX(1); }
+  /* primary CTA glow (anchor buttons, not chips) */
+  a.bg-volt { box-shadow: 0 8px 34px -10px rgba(214,242,58,.55); }
+  a.bg-volt:hover { box-shadow: 0 10px 40px -8px rgba(214,242,58,.75); }
+  /* nav crest glow */
+  header a[href="index.html"] img { filter: drop-shadow(0 0 10px rgba(214,242,58,.28)); }
+  /* card hover volt corner glow */
+  .res-card, .cap-card { position: relative; }
+  .res-card::after, .cap-card::after { content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit; opacity: 0; transition: opacity .45s; background: radial-gradient(70% 45% at 82% 100%, rgba(214,242,58,.12), transparent 60%); z-index: 0; }
+  .res-card:hover::after, .cap-card:hover::after { opacity: 1; }
+  /* ledger row hover volt tint */
+  .divide-y > div:hover { background: linear-gradient(90deg, transparent, rgba(214,242,58,.05)); }
+  /* section ambient volt glow (decorative) */
+  .volt-amb { position: absolute; border-radius: 50%; filter: blur(90px); pointer-events: none; z-index: 0; background: rgba(214,242,58,.05); }
+  .cap-card { transition: transform .4s cubic-bezier(.22,.68,.16,1), box-shadow .45s; }
+  .cap-card:hover { transform: translateY(-6px); box-shadow: 0 30px 60px -30px rgba(214,242,58,.28); }
+  /* ambient life */
+  @keyframes lg-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  .lg-float { animation: lg-float 5s ease-in-out infinite; }
+  @keyframes orb-a { 0%,100% { transform: translate(0,0); } 50% { transform: translate(50px,-34px); } }
+  @keyframes orb-b { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-40px,30px); } }
+  .orb { position: absolute; border-radius: 50%; filter: blur(64px); pointer-events: none; }
+  .num-tile { transition: transform .35s cubic-bezier(.22,.68,.16,1), box-shadow .4s; }
+  .num-tile:hover { transform: translateY(-5px); box-shadow: 0 24px 50px -28px rgba(214,242,58,.35); }
+  .res-card { transition: transform .3s cubic-bezier(.22,.68,.16,1), box-shadow .4s; }
+  .res-card:hover { transform: translateY(-5px); box-shadow: 0 22px 46px -26px rgba(0,0,0,.6); }
+  .tbl-row { transition: background .3s, transform .3s; }
+  .tbl-row:hover { background: rgba(255,255,255,.045); transform: translateX(5px); }
+  @media (prefers-reduced-motion: reduce) { .lg-float, .orb { animation: none; } }
+  /* Award coverflow */
+  .aw-stage { perspective: 1200px; }
+  .aw-card { position: absolute; left: 50%; top: 0; width: min(300px, 70vw); aspect-ratio: 3/4; border-radius: 24px; overflow: hidden;
+    transition: transform .85s cubic-bezier(.22,.68,.16,1), opacity .6s, box-shadow .6s; will-change: transform; cursor: pointer;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,.12); }
+  .aw-card::before { content:''; position:absolute; inset:0; border-radius:inherit; padding:1.4px; z-index:2; pointer-events:none;
+    -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite:xor; mask-composite:exclude;
+    background:linear-gradient(180deg, rgba(255,255,255,.4), rgba(255,255,255,.05) 40%, rgba(255,255,255,.05) 60%, rgba(255,255,255,.4)); }
+  .aw-card img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .aw-card.is-center { box-shadow: 0 0 0 1.5px rgba(214,242,58,.85), 0 26px 70px -24px rgba(214,242,58,.55); animation: aw-glow 2.8s ease-in-out infinite; cursor: default; }
+  @keyframes aw-glow { 0%,100% { box-shadow: 0 0 0 1.5px rgba(214,242,58,.7), 0 26px 60px -26px rgba(214,242,58,.4); } 50% { box-shadow: 0 0 0 1.5px rgba(214,242,58,1), 0 30px 84px -20px rgba(214,242,58,.7); } }
+  .aw-btn { width: 46px; height: 46px; border-radius: 999px; border: 1.5px solid rgba(255,255,255,.18); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: border-color .3s, background .3s, transform .2s; }
+  .aw-btn:hover { border-color: #D6F23A; background: rgba(255,255,255,.06); transform: scale(1.06); }
+  .aw-dot { width: 8px; height: 8px; border-radius: 999px; background: rgba(214,242,58,.28); transition: width .35s cubic-bezier(.22,.68,.16,1), background .3s; }
+  .aw-dot.is-on { width: 30px; background: #D6F23A; }
+  .aw-halo { position: absolute; left: 50%; top: 45%; width: 520px; height: 520px; transform: translate(-50%,-50%); border-radius: 50%; pointer-events: none; z-index: 0; filter: blur(34px); background: radial-gradient(closest-side, rgba(214,242,58,.24), rgba(214,242,58,.08) 46%, transparent 72%); animation: aw-halo 3.2s ease-in-out infinite; }
+  @keyframes aw-halo { 0%,100% { opacity:.55; transform:translate(-50%,-50%) scale(.9);} 50%{opacity:1; transform:translate(-50%,-50%) scale(1.06);} }
+  .aw-cta { opacity:0; transform:translateY(6px); transition:opacity .35s, transform .35s; }
+  .aw-card.is-center .aw-cta { opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce) { .aw-card, .aw-card.is-center, .aw-halo { animation: none; } }
+
+  /* scrims as classes so the theme can flip them */
+  .hero-scrim { position: absolute; inset: 0; z-index: 1; background: linear-gradient(to bottom, rgba(10,15,28,.85), rgba(10,15,28,.55) 50%, #0A0F1C); }
+  .cap-scrim  { position: absolute; inset: 0; z-index: 1; background: rgba(10,15,28,.80); }
+
+</style>
+<script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/framer-motion@10.18.0/dist/framer-motion.js"></script>
+</head>
+<body>
+<div id="boot"><img src="assets/badge/sue-angels-badge-cutout.webp" alt="" /></div><div id="scrollbar"></div>
+<div id="root"></div>
+<script src="supabase-config.js?v=21"></script>
+<script src="supabase.js?v=19"></script>
+<script src="dataStore.js?v=33"></script>
+<script src="PageShell.js?v=48"></script>
+<script src="FixtureEntry.js?v=20"></script>
+<script src="PlayerPhotos.js?v=19"></script>
+<script>
+(function () {
+  'use strict';
+  var h = React.createElement;
+  var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
+  var FM = window.Motion || window.FramerMotion || {};
+  var MOTION = FM.motion || null; var HAS_FM = !!MOTION;
+  function mEl(tag, props) {
+    var kids = Array.prototype.slice.call(arguments, 2);
+    if (HAS_FM) return h.apply(null, [MOTION[tag], props].concat(kids));
+    var rest = {}; for (var k in props) { if (['initial','animate','whileInView','viewport','transition','whileHover','whileTap','exit'].indexOf(k) === -1) rest[k] = props[k]; }
+    return h.apply(null, [tag, rest].concat(kids));
+  }
+  var ArrowUpRight = function (p) { return h('svg', { width: p&&p.s||18, height: p&&p.s||18, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }, h('path', { d: 'M7 17L17 7' }), h('path', { d: 'M7 7h10v10' })); };
+  var RISE = { initial: { filter: 'blur(10px)', opacity: 0, y: 20 }, animate: { filter: 'blur(0px)', opacity: 1, y: 0 } };
+  function rise(d) { return { initial: RISE.initial, animate: RISE.animate, transition: { duration: 0.8, delay: d, ease: 'easeOut' } }; }
+
+  var NAV = [['The Club','about.html'],['Fixtures','fixtures.html'],['Results','results.html'],['Media','media.html'],['Contact','contact.html']];
+  function Navbar() {
+    return h('header', { className: 'fixed top-4 left-0 right-0 z-50 px-5 lg:px-16 flex flex-row justify-between items-center' },
+      h('a', { href: 'index.html', className: 'flex items-center gap-3' },
+        h('span', { className: 'liquid-glass h-12 w-12 rounded-full flex items-center justify-center' }, h('img', { src: 'assets/badge/sue-angels-badge-cutout.webp', alt: '', className: 'h-8 w-8 object-contain' })),
+        h('span', { className: 'hidden sm:flex flex-col leading-none' },
+          h('span', { className: 'text-[15px] font-semibold tracking-tight' }, "Sue's Angels FC"),
+          h('span', { className: 'text-[9px] uppercase tracking-[0.22em] text-volt mt-1' }, 'Champions 25/26'))),
+      h('nav', { className: 'hidden md:flex liquid-glass rounded-full px-1.5 py-1.5 items-center gap-1' },
+        NAV.map(function (l) { return h('a', { key: l[0], href: l[1], className: 'px-3.5 py-2 text-sm font-medium text-white/90 rounded-full hover:bg-white/10 transition-colors' }, l[0]); })),
+      h('a', { href: 'join.html', className: 'flex items-center gap-1.5 bg-volt text-navy rounded-full px-4 sm:px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity' }, 'Join the club', h(ArrowUpRight, { s: 15 })));
+  }
+
+  function Footer() {
+    var cols = [
+      { hh: 'Club', links: [['The Club','about.html'],['Champions','champions.html'],['Our cause','sepsis.html'],['Squad','teams.html']] },
+      { hh: 'Matchday', links: [['Fixtures','fixtures.html'],['Results','results.html'],['Table','table.html'],['Media','media.html']] },
+      { hh: 'Get involved', links: [['Join the club','join.html'],['Sponsor us','sponsors.html'],['Contact','contact.html']] }
+    ];
+    return h('footer', { className: 'relative bg-navy border-t border-white/10 pt-16 pb-10 px-6 md:px-16 lg:px-20' },
+      h('div', { className: 'max-w-7xl mx-auto' },
+        h('div', { className: 'grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1fr]' },
+          h('div', null,
+            h('a', { href: 'index.html', className: 'flex items-center gap-3 mb-4' },
+              h('img', { src: 'assets/badge/sue-angels-badge-cutout.webp', alt: '', className: 'h-11 w-11 object-contain' }),
+              h('div', { className: 'leading-none' }, h('div', { className: 'font-semibold text-white text-lg' }, "Sue's Angels FC"), h('div', { className: 'text-[10px] uppercase tracking-[0.22em] text-volt mt-1' }, 'Champions · Est. 2025'))),
+            h('p', { className: 'text-sm text-white/55 leading-relaxed max-w-xs' }, 'A south-west London Sunday-league club, founded in memory of Susan Anne Martin.')),
+          cols.map(function (c) {
+            return h('div', { key: c.hh },
+              h('div', { className: 'text-[11px] uppercase tracking-widest text-white/40 mb-4' }, c.hh),
+              h('nav', { className: 'flex flex-col gap-2.5' }, c.links.map(function (l) { return h('a', { key: l[0], href: l[1], className: 'text-sm text-white/70 hover:text-white transition-colors w-fit' }, l[0]); })));
+          })),
+        h('div', { className: 'mt-14 pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4' },
+          h('p', { className: 'text-xs text-white/40' }, '© 2026 Sue’s Angels FC. All rights reserved.'),
+          h('p', { className: 'head-it text-sm text-white/50 italic' }, 'What we do in life echoes in eternity.'))));
+  }
+
+  function Head(props) {
+    return mEl('div', Object.assign({ className: 'mb-9' }, rise(0)),
+      h('p', { className: 'text-[11px] uppercase tracking-widest text-volt mb-3' }, props.eyebrow),
+      h('h2', { className: 'head-it text-2xl md:text-3xl text-white tracking-[-1px]' }, props.title));
+  }
+
+
+  function useMounted() { var st = useState(false); useEffect(function () { var t = setTimeout(function () { st[1](true); }, 80); return function () { clearTimeout(t); }; }, []); return st[0]; }
+  function Ring(props) {
+    var R = 40, C = 2 * Math.PI * R; var on = useMounted();
+    var pct = Math.max(0, Math.min(1, props.pct || 0));
+    return mEl('div', Object.assign({ className: 'num-tile liquid-glass rounded-[1.25rem] p-6 flex flex-col items-center text-center' }, { initial: RISE.initial, whileInView: RISE.animate, viewport: { once: true, amount: 0.3 }, transition: { duration: 0.6, delay: (props.i % 4) * 0.06, ease: 'easeOut' } }),
+      h('div', { className: 'relative', style: { width: 112, height: 112 } },
+        h('svg', { width: 112, height: 112, viewBox: '0 0 112 112', style: { transform: 'rotate(-90deg)' } },
+          h('circle', { cx: 56, cy: 56, r: R, fill: 'none', stroke: 'rgba(255,255,255,.10)', strokeWidth: 8 }),
+          h('circle', { cx: 56, cy: 56, r: R, fill: 'none', stroke: '#D6F23A', strokeWidth: 8, strokeLinecap: 'round', strokeDasharray: C, strokeDashoffset: on ? C * (1 - pct) : C, style: { transition: 'stroke-dashoffset 1.2s cubic-bezier(.22,.68,.16,1)' } })),
+        h('div', { className: 'absolute inset-0 flex items-center justify-center head-it text-2xl text-white' }, props.value)),
+      h('div', { className: 'text-[11px] uppercase tracking-widest text-white/55 mt-4' }, props.label),
+      props.sub ? h('div', { className: 'text-[11px] text-white/40 mt-1' }, props.sub) : null);
+  }
+  function Ico(name) {
+    var d = { trophy: 'M7 4h10v5a5 5 0 01-10 0zM7 5H4.5A1.5 1.5 0 006 8.5M17 5h2.5A1.5 1.5 0 0118 8.5M9.5 14.5 9 18h6l-.5-3.5M8 21h8', pulse: 'M3 12h4l2-6 4 12 2-6h6', shield: 'M12 3l7 3v6c0 4-3 6.8-7 8.5C8 18.8 5 16 5 12V6z' };
+    return h('svg', { width: 20, height: 20, viewBox: '0 0 24 24', fill: 'none', stroke: '#D6F23A', strokeWidth: 1.7, strokeLinecap: 'round', strokeLinejoin: 'round' }, h('path', { d: d[name] || d.trophy }));
+  }
+  function ResultCard(props) {
+    var r = props.r, Badge = window.TeamBadge;
+    var usHome = r.home.indexOf('Angels') > -1;
+    var us = usHome ? r.hs : r.as, th = usHome ? r.as : r.hs;
+    var res = 'l'; if (r.kind === 'walkover') res = 'w'; else if (us > th) res = 'w'; else if (us === th) res = 'd';
+    var cls = res === 'w' ? 'bg-volt text-navy' : res === 'd' ? 'bg-white/15 text-white' : 'bg-[rgba(255,107,107,0.18)] text-[#ffb4b4]';
+    function row(team, score, win) { return h('div', { className: 'flex items-center gap-2.5 py-1' }, Badge ? h(Badge, { team: team, size: 24 }) : null, h('span', { className: 'flex-1 min-w-0 truncate text-sm ' + (win ? 'text-volt font-semibold' : 'text-white/85') }, team.replace(' FC', '')), h('b', { className: 'head-it text-lg tabular-nums ' + (win ? 'text-volt' : 'text-white') }, score)); }
+    return h('div', { className: 'res-card liquid-glass rounded-[1.25rem] p-5 shrink-0 w-[290px] snap-start' },
+      h('div', { className: 'flex items-center justify-between mb-3' }, h('span', { className: 'text-[11px] font-bold rounded-full px-2.5 py-1 ' + cls }, r.kind === 'walkover' ? 'W/O' : res.toUpperCase()), h('span', { className: 'text-xs text-white/45' }, r.date)),
+      row(r.home, r.kind === 'walkover' ? (usHome ? 'W' : '-') : r.hs, usHome && res === 'w'),
+      row(r.away, r.kind === 'walkover' ? (!usHome ? 'W' : '-') : r.as, !usHome && res === 'w'),
+      h('div', { className: 'text-[11px] text-white/40 mt-3 pt-3 border-t border-white/10' }, (r.competition || 'League Ten') + ' · ' + (usHome ? 'Home' : 'Away')));
+  }
+  function App() {
+    var poll = useState(0), setPoll = poll[1];
+    useEffect(function () { var n = 0, iv = setInterval(function () { n++; setPoll(n); if (n > 6) clearInterval(iv); }, 500); return function () { clearInterval(iv); }; }, []);
+    var rows = window.RAW_TABLE || [];
+    var t = rows.find(function (r) { return r.us; }) || { pl: 18, w: 18, d: 0, l: 0, gf: 90, ga: 11, gd: 79, pts: 54 };
+    var gdN = parseInt(String(t.gd).replace('+', ''), 10);
+    var winPct = t.pl ? Math.round(t.w / t.pl * 100) : 0;
+    var gpg = t.pl ? t.gf / t.pl : 0;
+    var maxPts = t.pl * 3;
+    var league = (window.getDerivedResults ? window.getDerivedResults() : []).filter(function (r) { return (r.competition || '').toLowerCase().indexOf('league') > -1; });
+    var cs = 0; league.forEach(function (r) { var uh = r.home.indexOf('Angels') > -1; var th = uh ? r.as : r.hs; if (r.kind !== 'walkover' && th === 0) cs++; });
+    var rings = [
+      { label: 'Win rate', value: winPct + '%', pct: winPct / 100, sub: t.w + 'W ' + t.d + 'D ' + t.l + 'L' },
+      { label: 'Points won', value: t.pts, pct: maxPts ? t.pts / maxPts : 0, sub: 'of ' + maxPts },
+      { label: 'Goals / game', value: gpg.toFixed(1), pct: Math.min(1, gpg / 4), sub: t.gf + ' in ' + t.pl },
+      { label: 'Clean sheets', value: cs, pct: t.pl ? cs / t.pl : 0, sub: 'in ' + t.pl }
+    ];
+    var record = [['Played', t.pl], ['Won', t.w], ['Drawn', t.d], ['Lost', t.l], ['Goals for', t.gf], ['Against', t.ga], ['Goal diff', (gdN >= 0 ? '+' : '') + gdN], ['Points', t.pts]];
+    var insights = [['trophy', t.l === 0 ? 'Unbeaten champions' : 'League Ten champions', t.pl + ' league games, ' + t.l + ' defeats'], ['pulse', t.gf + ' goals scored', gpg.toFixed(1) + ' per game, the best in the division'], ['shield', t.ga + ' conceded', cs + ' clean sheet' + (cs === 1 ? '' : 's') + ' kept']];
+    return h('div', { className: 'relative bg-navy text-white antialiased overflow-x-hidden min-h-screen' },
+      h(Navbar),
+      h('section', { className: 'relative pt-36 pb-14 px-6 md:px-16 lg:px-20 overflow-hidden' },
+        h('div', { className: 'orb hidden md:block z-0', style: { width: '520px', height: '520px', background: 'rgba(214,242,58,0.10)', top: '0%', right: '2%', animation: 'orb-a 18s ease-in-out infinite' }, 'aria-hidden': true }),
+        h('div', { className: 'relative max-w-7xl mx-auto' },
+          mEl('p', Object.assign({ className: 'text-sm text-white/70 mb-5' }, rise(0)), '// League Ten · 25/26'),
+          mEl('h1', Object.assign({ className: 'head-it text-4xl md:text-5xl lg:text-6xl leading-[1.03] tracking-[-1.5px] text-white mb-5' }, rise(0.08)), 'Champ', h('span', { className: 'text-volt' }, 'ions'), '.'),
+          mEl('p', Object.assign({ className: 'text-white/70 max-w-2xl font-light text-lg' }, rise(0.16)), (t.l === 0 ? 'Unbeaten in our inaugural season. ' : '') + t.pl + ' played · ' + t.w + ' won · ' + t.gf + ' scored · ' + t.ga + ' conceded.'),
+          mEl('div', Object.assign({ className: 'mt-8' }, rise(0.24)), h('a', { href: 'table.html', className: 'inline-flex items-center gap-1.5 bg-volt text-navy rounded-full px-6 py-3 text-sm font-semibold hover:opacity-90 transition-opacity' }, 'League results', h(ArrowUpRight, { s: 15 }))))),
+      h('section', { className: 'relative px-6 md:px-16 lg:px-20 pb-16' },
+        h('div', { className: 'max-w-7xl mx-auto' },
+          h(Head, { eyebrow: 'League Ten · 25/26', title: 'The season in numbers' }),
+          h('div', { className: 'grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5' }, rings.map(function (r, i) { return h(Ring, { key: i, i: i, label: r.label, value: r.value, pct: r.pct, sub: r.sub }); })),
+          h('div', { className: 'grid md:grid-cols-2 gap-5 mt-5' },
+            h('div', { className: 'liquid-glass rounded-[1.25rem] p-6 md:p-7' },
+              h('p', { className: 'text-[11px] uppercase tracking-widest text-volt mb-5' }, 'Final league record'),
+              h('div', { className: 'grid grid-cols-4 gap-3' }, record.map(function (rc) { return h('div', { key: rc[0], className: 'text-center' }, h('div', { className: 'head-it text-2xl md:text-3xl text-white tabular-nums leading-none' }, rc[1]), h('div', { className: 'text-[10px] uppercase tracking-widest text-white/50 mt-2' }, rc[0])); }))),
+            h('div', { className: 'liquid-glass rounded-[1.25rem] p-6 md:p-7' },
+              h('p', { className: 'text-[11px] uppercase tracking-widest text-volt mb-5' }, 'What it took'),
+              h('div', { className: 'flex flex-col gap-4' }, insights.map(function (it, i) { return h('div', { key: i, className: 'flex items-center gap-3.5' }, h('span', { className: 'w-10 h-10 rounded-xl bg-volt/10 flex items-center justify-center shrink-0' }, Ico(it[0])), h('div', { className: 'flex-1 min-w-0' }, h('div', { className: 'head-it text-lg text-white leading-none' }, it[1]), h('div', { className: 'text-xs text-white/55 mt-1' }, it[2]))); })))))),
+      league.length ? h('section', { className: 'relative px-6 md:px-16 lg:px-20 pb-16' },
+        h('div', { className: 'max-w-7xl mx-auto' },
+          h(Head, { eyebrow: 'Every game', title: 'League results' }),
+          h('div', { className: 'flex gap-5 overflow-x-auto pb-4 -mx-6 px-6 md:mx-0 md:px-0 snap-x', style: { scrollbarWidth: 'none' } }, league.slice(0, 10).map(function (r, i) { return h(ResultCard, { key: r.id || i, r: r }); })))) : null,
+      h('section', { className: 'relative px-6 md:px-16 lg:px-20 py-10 md:py-16' },
+        h('div', { className: 'max-w-7xl mx-auto' },
+          mEl('div', Object.assign({ className: 'liquid-glass-strong rounded-[2rem] p-10 md:p-16 text-center relative overflow-hidden' }, { initial: RISE.initial, whileInView: RISE.animate, viewport: { once: true, amount: 0.3 }, transition: { duration: 0.8, ease: 'easeOut' } }),
+            h('div', { className: 'aw-halo', style: { top: '32%' } }),
+            h('p', { className: 'text-[11px] uppercase tracking-widest text-volt mb-4 relative' }, 'Season 26/27'),
+            h('h2', { className: 'head-it text-3xl md:text-4xl text-white tracking-[-1px] leading-[0.95] mb-5 relative' }, 'Defend the ', h('span', { className: 'text-volt' }, 'title'), '.'),
+            h('p', { className: 'text-white/65 max-w-md mx-auto font-light mb-8 relative' }, 'Promoted to League Eight. New division, same standard. Trials are open for the new season.'),
+            h('div', { className: 'flex flex-wrap gap-3 justify-center relative' },
+              h('a', { href: 'join.html', className: 'flex items-center gap-1.5 bg-volt text-navy rounded-full px-7 py-3.5 text-sm font-semibold hover:opacity-90 transition-opacity' }, 'Join the club', h(ArrowUpRight, { s: 15 })),
+              h('a', { href: 'table.html', className: 'liquid-glass text-white rounded-full px-7 py-3.5 text-sm font-semibold hover:bg-white/10 transition-colors' }, 'See the table'))))),
+      h(Footer));
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+})();
+</script>
+<script>
+(function () {
+  'use strict';
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Boot: fade out once loaded (min hold for polish), safety timeout
+  var boot = document.getElementById('boot');
+  function hideBoot() { if (boot && !boot.classList.contains('hide')) { boot.classList.add('hide'); setTimeout(function () { if (boot && boot.parentNode) boot.parentNode.removeChild(boot); }, 900); } }
+  window.addEventListener('load', function () { setTimeout(hideBoot, reduce ? 400 : 2200); });
+  setTimeout(hideBoot, 5500);
+  // Scroll progress bar
+  var bar = document.getElementById('scrollbar');
+  function onScroll() { var st = window.scrollY || document.documentElement.scrollTop; var h = document.documentElement.scrollHeight - window.innerHeight; if (bar) bar.style.width = (h > 0 ? (st / h) * 100 : 0) + '%'; }
+  window.addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  // Custom cursor (fine pointers only)
+  if (!reduce && window.matchMedia && window.matchMedia('(pointer: fine)').matches) {
+    document.documentElement.classList.add('has-cursor');
+    var dot = document.createElement('div'); dot.className = 'cur-dot';
+    var ring = document.createElement('div'); ring.className = 'cur-ring';
+    document.body.appendChild(dot); document.body.appendChild(ring);
+    var mx = -100, my = -100, rx = -100, ry = -100, raf;
+    window.addEventListener('mousemove', function (e) { mx = e.clientX; my = e.clientY; dot.style.transform = 'translate(' + mx + 'px,' + my + 'px)'; }, { passive: true });
+    (function loop() { rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18; ring.style.transform = 'translate(' + rx.toFixed(1) + 'px,' + ry.toFixed(1) + 'px)'; raf = requestAnimationFrame(loop); })();
+    document.addEventListener('mouseover', function (e) { if (e.target.closest && e.target.closest('a,button,[role="button"],.aw-card,input,textarea')) ring.classList.add('big'); });
+    document.addEventListener('mouseout', function (e) { if (e.target.closest && e.target.closest('a,button,[role="button"],.aw-card,input,textarea')) ring.classList.remove('big'); });
+  }
+})();
+</script>
+</body>
+</html>

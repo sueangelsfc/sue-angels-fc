@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stride — Refine Your Running Performance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* palette pulled from the screenshot */
+    --blue-glow:#5aa2e8;
+    --blue-mid:#2b7fd4;
+    --blue:#1668b8;
+    --blue-deep:#0c4d90;
+    --blue-edge:#083c72;
+    --ink:#16233d;          /* dark card text */
+    --ink-soft:#5f6b80;     /* muted card text */
+    --line:rgba(255,255,255,.28);
+    --glass:rgba(255,255,255,.12);
+    --glass-line:rgba(255,255,255,.34);
+    --card:#ffffff;
+    --radius:26px;
+    --ff:'Poppins',-apple-system,BlinkMacSystemFont,sans-serif;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    font-family:var(--ff);
+    color:#fff;
+    background:#0c4d90;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  /* ============ HERO STAGE ============ */
+  .hero{
+    position:relative;
+    width:100%;
+    min-height:100vh;
+    overflow:hidden;
+    padding:26px clamp(20px,3.2vw,46px) 22px;
+    background:
+      radial-gradient(115% 82% at 50% 4%, var(--blue-glow) 0%, var(--blue-mid) 26%, var(--blue) 52%, var(--blue-deep) 76%, var(--blue-edge) 100%);
+    display:flex;
+    flex-direction:column;
+  }
+  /* faint atmospheric vignette + soft light bloom behind athlete */
+  .hero::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:
+      radial-gradient(46% 40% at 50% 26%, rgba(255,255,255,.16), transparent 70%),
+      radial-gradient(120% 90% at 50% 120%, rgba(4,28,58,.55), transparent 60%);
+    z-index:0;
+  }
+  .canvas{
+    position:relative;z-index:2;
+    width:100%;max-width:1400px;margin:0 auto;
+    flex:1;display:flex;flex-direction:column;
+  }
+
+  /* ============ HEADER ============ */
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:18px;
+  }
+  .brand{
+    display:flex;align-items:center;gap:2px;
+    font-weight:700;font-size:26px;letter-spacing:-.01em;
+  }
+  .brand .chev{color:rgba(255,255,255,.55);letter-spacing:-3px;margin:0 1px}
+  .brand .x{
+    display:inline-grid;place-items:center;width:26px;height:26px;margin-left:2px;
+    background:#fff;color:var(--blue);border-radius:8px;font-size:17px;font-weight:700;
+  }
+  nav.menu{
+    display:inline-flex;align-items:center;gap:9px;
+    padding:11px 20px;border-radius:100px;
+    background:var(--glass);border:1px solid var(--glass-line);
+    font-size:15px;font-weight:500;backdrop-filter:blur(6px);
+  }
+  nav.menu .caret{opacity:.7;font-size:11px}
+  .top-right{display:flex;align-items:center;gap:12px}
+  .icon-btn{
+    width:44px;height:44px;border-radius:50%;
+    display:grid;place-items:center;
+    background:var(--glass);border:1px solid var(--glass-line);
+    color:#fff;cursor:pointer;transition:background .2s,transform .2s;
+  }
+  .icon-btn:hover{background:rgba(255,255,255,.22);transform:translateY(-1px)}
+  .icon-btn svg{width:18px;height:18px}
+  .btn-member{
+    padding:13px 24px;border-radius:100px;border:0;cursor:pointer;
+    background:#fff;color:var(--ink);font-family:var(--ff);
+    font-weight:600;font-size:15px;transition:transform .2s,box-shadow .2s;
+    box-shadow:0 8px 22px rgba(4,28,58,.22);
+  }
+  .btn-member:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(4,28,58,.30)}
+
+  /* ============ MAIN COMPOSITION ============ */
+  .composition{
+    position:relative;flex:1;margin-top:26px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    grid-template-rows:auto 1fr auto;
+    gap:14px 24px;
+  }
+  .tags,.intro,.trainer,.coaching,.subcard,.subscribe,.subscribe input{min-width:0}
+
+  /* pills row */
+  .tags{display:flex;flex-wrap:wrap;gap:10px;grid-column:1;grid-row:1;align-self:start}
+  .tag{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:8px 15px 8px 12px;border-radius:100px;
+    background:var(--glass);border:1px solid var(--glass-line);
+    font-size:13.5px;font-weight:400;backdrop-filter:blur(4px);
+  }
+  .tag .dot{width:6px;height:6px;border-radius:50%;background:#fff;opacity:.85}
+
+  /* headline block */
+  .intro{grid-column:1;grid-row:2;align-self:start;max-width:560px;margin-top:6px}
+  .intro h1{
+    font-weight:600;font-size:clamp(38px,4.4vw,64px);line-height:1.04;
+    letter-spacing:-.02em;
+  }
+  .intro p{
+    margin-top:20px;max-width:420px;
+    font-size:15.5px;font-weight:300;line-height:1.6;color:rgba(255,255,255,.82);
+  }
+  .subscribe{
+    margin-top:28px;display:flex;align-items:center;gap:8px;
+    padding:7px 7px 7px 22px;border-radius:100px;max-width:430px;
+    background:var(--glass);border:1px solid var(--glass-line);backdrop-filter:blur(6px);
+  }
+  .subscribe input{
+    flex:1;border:0;background:transparent;color:#fff;
+    font-family:var(--ff);font-size:15px;outline:none;
+  }
+  .subscribe input::placeholder{color:rgba(255,255,255,.6)}
+  .subscribe button{
+    padding:13px 26px;border:0;border-radius:100px;cursor:pointer;
+    background:#fff;color:var(--ink);font-family:var(--ff);font-weight:600;font-size:14.5px;
+    transition:transform .2s}
+  .subscribe button:hover{transform:translateX(1px)}
+
+  /* trainer card top-right */
+  .trainer{
+    grid-column:2;grid-row:1 / span 2;justify-self:end;align-self:start;
+    width:min(340px,100%);
+    background:var(--card);color:var(--ink);border-radius:28px;
+    padding:22px 22px 20px;
+    box-shadow:0 26px 60px rgba(6,30,60,.28);
+  }
+  .trainer .chip{
+    display:inline-block;padding:6px 13px;border-radius:100px;
+    background:#eef2f7;color:var(--ink-soft);font-size:12px;font-weight:500;
+  }
+  .trainer h3{
+    margin-top:16px;font-size:26px;line-height:1.28;font-weight:600;letter-spacing:-.01em;
+  }
+  .trainer h3 .mut{color:#b9c1cd;font-weight:500}
+  .trainer .cta{
+    margin-top:20px;width:100%;padding:15px;border:0;border-radius:100px;cursor:pointer;
+    background:var(--ink);color:#fff;font-family:var(--ff);font-weight:500;font-size:15px;
+    transition:background .2s,transform .2s;
+  }
+  .trainer .cta:hover{background:#25324c;transform:translateY(-1px)}
+
+  /* coaching cluster bottom-left */
+  .coaching{grid-column:1;grid-row:3;align-self:end;display:flex;flex-direction:column;gap:18px}
+  .fields{display:flex;align-items:center;gap:14px}
+  .thumbs{display:flex}
+  .thumbs .th{
+    width:52px;height:52px;border-radius:14px;margin-left:-12px;
+    border:2px solid rgba(255,255,255,.85);background-size:cover;background-position:center;
+    box-shadow:0 6px 16px rgba(4,28,58,.3);
+  }
+  .thumbs .th:first-child{margin-left:0}
+  .th.f1{background:linear-gradient(135deg,#2f8f4e,#1c5f34)}
+  .th.f2{background:linear-gradient(135deg,#3a7bd5,#1b4a86)}
+  .th.f3{background:linear-gradient(135deg,#c9772f,#8a4a18)}
+  .th.f4{background:linear-gradient(135deg,#4aa3a0,#256a68)}
+  .fields .more{
+    padding:9px 16px;border-radius:100px;
+    background:var(--glass);border:1px solid var(--glass-line);
+    font-size:13px;font-weight:400;white-space:nowrap;
+  }
+  .edge{display:flex;align-items:center;gap:14px}
+  .edge .burst{
+    width:44px;height:44px;flex:0 0 44px;display:grid;place-items:center;
+    border-radius:50%;background:rgba(255,255,255,.12);border:1px solid var(--glass-line);
+  }
+  .edge .burst svg{width:22px;height:22px}
+  .edge span{font-size:21px;font-weight:500;line-height:1.25;max-width:260px}
+
+  /* subscription card bottom-right */
+  .subcard{
+    grid-column:2;grid-row:3;justify-self:end;align-self:end;
+    width:min(360px,100%);
+    background:var(--card);color:var(--ink);border-radius:24px;padding:22px 24px;
+    box-shadow:0 26px 60px rgba(6,30,60,.28);
+  }
+  .subcard .head{font-size:15px;font-weight:600;color:var(--ink)}
+  .subcard .body{margin-top:14px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+  .price .lab{font-size:12.5px;color:var(--ink-soft);font-weight:500}
+  .price .amt{font-size:44px;font-weight:600;letter-spacing:-.02em;line-height:1;margin-top:4px}
+  .price .amt small{font-size:15px;font-weight:500;color:var(--ink-soft)}
+  .feats{list-style:none;font-size:13.5px;color:#41506a;display:flex;flex-direction:column;gap:9px;padding-top:4px}
+  .feats li{display:flex;align-items:center;gap:8px}
+  .feats li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--blue)}
+
+  /* ============ ATHLETE ============ */
+  .athlete{
+    position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);
+    width:min(46vw,560px);height:92%;z-index:1;pointer-events:none;
+    display:flex;align-items:flex-end;justify-content:center;
+  }
+  .athlete svg{width:100%;height:100%;filter:drop-shadow(0 30px 50px rgba(3,22,48,.45))}
+
+  /* ============ FOOTER ============ */
+  footer{
+    position:relative;z-index:2;width:100%;max-width:1400px;margin:22px auto 0;
+    display:flex;align-items:center;justify-content:space-between;gap:24px;
+    padding-top:6px;
+  }
+  .contact{display:flex;align-items:center;gap:14px;font-size:14px;color:rgba(255,255,255,.85)}
+  .contact .socials{display:flex;gap:8px}
+  .contact .socials a{
+    width:34px;height:34px;border-radius:50%;display:grid;place-items:center;
+    background:var(--glass);border:1px solid var(--glass-line);color:#fff;
+    transition:background .2s}
+  .contact .socials a:hover{background:rgba(255,255,255,.24)}
+  .contact .socials svg{width:15px;height:15px}
+  .logos{display:flex;align-items:center;gap:34px;opacity:.72}
+  .logos svg,.logos span{fill:#fff}
+  .logos .adi{font-weight:700;font-size:19px;letter-spacing:-.02em}
+  .logos .ua{font-weight:700;font-size:14px;letter-spacing:.14em}
+  .email{font-size:14px;color:rgba(255,255,255,.85)}
+  .email b{font-weight:600;color:#fff}
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width:1040px){
+    .hero{min-height:auto}
+    .composition{
+      grid-template-columns:minmax(0,1fr);
+      grid-template-rows:none;
+      gap:22px;
+    }
+    .tags,.intro,.trainer,.coaching,.subcard{grid-column:1;grid-row:auto;justify-self:stretch;width:auto;max-width:none}
+    .trainer,.subcard{width:100%}
+    .intro{order:1}
+    .tags{order:0}
+    .athlete{
+      position:relative;bottom:auto;left:auto;transform:none;
+      order:2;width:100%;height:340px;margin:4px auto 0;
+    }
+    .trainer{order:3}
+    .subcard{order:4}
+    .coaching{order:5;align-self:stretch}
+    footer{flex-direction:column;align-items:flex-start;gap:18px}
+    .logos{gap:26px}
+  }
+  @media (max-width:560px){
+    .top-right .btn-member{display:none}
+    .brand{font-size:22px}
+    .subscribe{flex-wrap:wrap;border-radius:22px;padding:14px}
+    .subscribe input{flex:1 1 100%;margin-bottom:8px}
+    .subscribe button{flex:1 1 100%}
+    .trainer h3{font-size:23px}
+    .fields{flex-wrap:wrap}
+    .fields .more{white-space:normal}
+    footer{gap:14px}
+    .logos{gap:20px}
+  }
+</style>
+</head>
+<body>
+  <section class="hero">
+    <div class="canvas">
+
+      <!-- HEADER -->
+      <header>
+        <div class="brand">Stride<span class="chev">»»</span><span class="x">x</span></div>
+        <nav class="menu">Menu <span class="caret">▾</span></nav>
+        <div class="top-right">
+          <button class="icon-btn" aria-label="X">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.6 8.7L23 22h-6.6l-5.2-6.8L5.3 22H2l8.1-9.3L1.4 2H8l4.7 6.2L18.9 2Zm-1.2 18h1.8L7.4 3.9H5.5L17.7 20Z"/></svg>
+          </button>
+          <button class="icon-btn" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg>
+          </button>
+          <button class="btn-member">Be a Member</button>
+        </div>
+      </header>
+
+      <!-- COMPOSITION -->
+      <div class="composition">
+
+        <!-- tag pills -->
+        <div class="tags">
+          <span class="tag"><span class="dot"></span>Healthy eating</span>
+          <span class="tag"><span class="dot"></span>Discipline</span>
+          <span class="tag"><span class="dot"></span>Motivation</span>
+        </div>
+
+        <!-- headline -->
+        <div class="intro">
+          <h1>Refine Your<br>Running Performance</h1>
+          <p>Boost your endurance, speed, and technique with every run. Stay strong, stay fast, stay motivated.</p>
+          <form class="subscribe" onsubmit="return false">
+            <input type="email" placeholder="Subscribe to newsletter" aria-label="Email">
+            <button type="submit">Subscribe</button>
+          </form>
+        </div>
+
+        <!-- trainer card -->
+        <aside class="trainer">
+          <span class="chip">Your personal trainer</span>
+          <h3>Help You Stay Fit, <span class="mut">Active And</span> Motivated <span>24/7</span></h3>
+          <button class="cta">Start running today</button>
+        </aside>
+
+        <!-- coaching cluster -->
+        <div class="coaching">
+          <div class="fields">
+            <div class="thumbs">
+              <div class="th f1"></div><div class="th f2"></div><div class="th f3"></div><div class="th f4"></div>
+            </div>
+            <span class="more">+30 Exclusives Sports Fields</span>
+          </div>
+          <div class="edge">
+            <span class="burst">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M19.1 4.9 4.9 19.1"/></svg>
+            </span>
+            <span>Get the Edge with<br>Elite Coaching</span>
+          </div>
+        </div>
+
+        <!-- subscription card -->
+        <aside class="subcard">
+          <div class="head">Subscription</div>
+          <div class="body">
+            <div class="price">
+              <div class="lab">Monthly</div>
+              <div class="amt">$99<small>/Month</small></div>
+            </div>
+            <ul class="feats">
+              <li>22 Sessions</li>
+              <li>Personal coach</li>
+              <li>Tracking tools</li>
+            </ul>
+          </div>
+        </aside>
+
+      </div>
+
+      <!-- ATHLETE (placeholder cut-out — swap in the real PNG) -->
+      <div class="athlete" aria-hidden="true">
+        <svg viewBox="0 0 400 640" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="fig" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#123a68"/>
+              <stop offset="1" stop-color="#0a2745"/>
+            </linearGradient>
+          </defs>
+          <!-- ball -->
+          <circle cx="300" cy="34" r="30" fill="#e07b3e"/>
+          <path d="M300 4v60M270 34h60M279 12c14 12 14 32 0 44M321 12c-14 12-14 32 0 44" stroke="#b45e28" stroke-width="2.4" fill="none"/>
+          <!-- figure skeleton drawn as thick round strokes -->
+          <g stroke="url(#fig)" fill="none" stroke-linecap="round">
+            <!-- torso -->
+            <path d="M200 150 L196 340" stroke-width="58"/>
+            <!-- right arm reaching to ball -->
+            <path d="M228 165 L282 96 L300 40" stroke-width="30"/>
+            <!-- left arm out -->
+            <path d="M172 168 L112 210 L82 262" stroke-width="30"/>
+            <!-- right leg forward, bent -->
+            <path d="M212 336 L250 442 L226 536" stroke-width="40"/>
+            <!-- left leg back, extended -->
+            <path d="M182 340 L150 476 L120 590" stroke-width="40"/>
+            <!-- shoes -->
+            <path d="M226 536 L206 552" stroke-width="26"/>
+            <path d="M120 590 L102 604" stroke-width="26"/>
+          </g>
+          <!-- head -->
+          <circle cx="206" cy="96" r="40" fill="url(#fig)"/>
+        </svg>
+      </div>
+
+      <!-- FOOTER -->
+      <footer>
+        <div class="contact">
+          <span>Contact us</span>
+          <span class="socials">
+            <a href="#" aria-label="Telegram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 2.7 11.6c-1 .4-1 1.8.1 2.1l4.9 1.5 1.9 5.9c.3.9 1.4 1 1.9.3l2.6-3.1 4.9 3.6c.7.5 1.7.1 1.9-.7L23 5.4c.2-.9-.7-1.5-1.5-1.1ZM9.4 14.6l8.4-5.2-6.9 6.1c-.2.2-.4.5-.4.8l-.3 2.4-.8-4.1Z"/></svg></a>
+            <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg></a>
+            <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 8.5V6.7c0-.8.2-1.2 1.3-1.2H17V2.3C16.6 2.2 15.6 2 14.4 2 11.9 2 10.3 3.5 10.3 6.3v2.2H8v3.2h2.3V22h3.4v-10.3h2.5l.4-3.2H14Z"/></svg></a>
+          </span>
+        </div>
+        <div class="logos">
+          <svg width="52" height="20" viewBox="0 0 52 20" aria-label="Nike"><path d="M4 15.5C7 13 11 10.5 15 8.7c6-2.7 12-4.4 18-5.6-1.7 1.4-4 2.8-8.5 4.7C18 10.4 12 12.9 8 14.2c-1.6.5-2.9.9-4 1.3Z"/></svg>
+          <span class="adi">adidas</span>
+          <span class="ua">UNDER ARMOUR</span>
+        </div>
+        <div class="email">Email: <b>info@stridex.com</b></div>
+      </footer>
+
+    </div>
+  </section>
+</body>
+</html>

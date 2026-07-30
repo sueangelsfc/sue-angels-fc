@@ -1007,4 +1007,14 @@ function AdminPanel() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById('rd-root')).render(<AdminPanel />);
+// Expose the section registry so an alternative shell can host these exact
+// components instead of duplicating 5,000 lines of working editor logic.
+// redesign/control.html sets SA_CONTROL_SHELL before this file loads and mounts
+// its own chrome; admin.html sets nothing and keeps self-mounting as before.
+window.CMS_SECTIONS = CMS_SECTIONS;
+window.CMS_GROUPS = CMS_GROUPS;
+window.AdminPanel = AdminPanel;
+
+if (!window.SA_CONTROL_SHELL) {
+  ReactDOM.createRoot(document.getElementById('rd-root')).render(<AdminPanel />);
+}

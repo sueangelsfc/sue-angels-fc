@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 108" role="img" aria-label="HLO">
+  <title>HLO</title>
+  <!-- green house mark + framing baseline (brand accent) -->
+  <g fill="none" stroke="#6BBE45" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 58 L44 32 L68 58"/>
+    <path d="M27 50 V80"/>
+    <path d="M86 84 H276"/>
+    <path d="M276 84 V58"/>
+  </g>
+  <!-- HLO wordmark -->
+  <g fill="#1C1C1C">
+    <rect x="92" y="34" width="11" height="44"/>
+    <rect x="119" y="34" width="11" height="44"/>
+    <rect x="92" y="50" width="38" height="10"/>
+    <rect x="146" y="34" width="11" height="44"/>
+    <rect x="146" y="68" width="32" height="10"/>
+  </g>
+  <circle cx="214" cy="56" r="21" fill="none" stroke="#1C1C1C" stroke-width="11"/>
+</svg>

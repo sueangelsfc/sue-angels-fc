@@ -17,6 +17,19 @@
       "maxDuration": 10
     }
   },
+  "redirects": [
+    { "source": "/fixtures", "destination": "/schedule.html", "permanent": true },
+    { "source": "/fixtures.html", "destination": "/schedule.html", "permanent": true },
+    { "source": "/table", "destination": "/league.html", "permanent": true },
+    { "source": "/table.html", "destination": "/league.html", "permanent": true },
+    { "source": "/teams", "destination": "/squad.html", "permanent": true },
+    { "source": "/teams.html", "destination": "/squad.html", "permanent": true },
+    { "source": "/media", "destination": "/news.html", "permanent": true },
+    { "source": "/media.html", "destination": "/news.html", "permanent": true },
+    { "source": "/admin", "destination": "/control.html", "permanent": false },
+    { "source": "/content.html", "destination": "/control.html", "permanent": true },
+    { "source": "/league-admin.html", "destination": "/control.html", "permanent": true }
+  ],
   "headers": [
     {
       "source": "/(.*)",

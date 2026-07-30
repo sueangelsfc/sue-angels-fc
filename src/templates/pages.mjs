@@ -278,6 +278,7 @@ export function stats(d) {
   })}
   <section class="section section--flush">
     <div class="wrap wrap--wide">
+      <h2 class="sr-only">Leaderboards</h2>
       <div class="grid grid--4">
         ${lb('goals', 'Goals')}
         ${lb('assists', 'Assists')}
@@ -554,6 +555,7 @@ export function news(d) {
   </section>
   <section class="section">
     <div class="wrap wrap--wide">
+      <h2 class="sr-only">All articles</h2>
       ${d.articles.length
         ? `<div class="grid grid--wide" data-filter-list>
             ${d.articles.map((a) => `<div data-competition="${attr(a.category)}">${articleCard(a, { glass: true })}</div>`).join('')}
@@ -602,6 +604,7 @@ export function videos(d) {
   })}
   <section class="section section--flush">
     <div class="wrap wrap--wide">
+      <h2 class="sr-only">Club videos</h2>
       ${emptyState({
         title: 'Videos are published on YouTube',
         body: 'Highlights from the unbeaten season are on the club channel. Clips get embedded here as they are catalogued in the control panel.',
@@ -623,6 +626,7 @@ export function live(d) {
   })}
   <section class="section section--flush">
     <div class="wrap wrap--wide">
+      <h2 class="sr-only">Live coverage</h2>
       <div class="split">
         <div>
           ${emptyState({
@@ -735,8 +739,8 @@ export function enquiryForm({ type = 'general', requireMessage = false, ok = 'Th
       <p class="field__error" data-error-for="message" hidden></p>
     </div>
     <div class="field form-grid__full">
-      <label class="check">
-        <input type="checkbox" name="consent" required>
+      <label class="check" for="ef-consent-${attr(type)}">
+        <input id="ef-consent-${attr(type)}" type="checkbox" name="consent" required>
         <span>I am happy for Sue’s Angels FC to contact me about this enquiry.</span>
       </label>
       <p class="field__error" data-error-for="consent" hidden></p>
@@ -777,7 +781,12 @@ export function join() {
     title: 'Join the Angels.',
     lede: 'Players, media volunteers, helpers and sponsors. There is more than one way in.',
   })}
-  <section class="section section--flush"><div class="wrap wrap--wide"><div class="paths">${paths}</div></div></section>
+  <section class="section section--flush">
+    <div class="wrap wrap--wide">
+      <h2 class="sr-only">Ways to join</h2>
+      <div class="paths">${paths}</div>
+    </div>
+  </section>
   ${forms}` };
 }
 
@@ -794,6 +803,7 @@ export function contact() {
     <div class="wrap wrap--wide">
       <div class="split split--wide-left">
         <div class="glass glass--lg" style="padding:var(--space-7) var(--space-6)">
+          <h2 class="sr-only">Send us a message</h2>
           ${enquiryForm({ type: 'general', showType: true, requireMessage: true, ok: 'Thank you. Your message has reached the club and we will reply as soon as we can.' })}
         </div>
         <div class="stack">

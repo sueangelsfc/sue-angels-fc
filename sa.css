@@ -268,7 +268,7 @@
     --text: #14100D;
     --text-muted: #5A5048;
     --text-subtle: #7A6E64;
-    --text-on-brand: #FFFFFF;
+    --text-on-brand: #1A0A02;
     --brand-text: var(--brand-800);
 
     --border: #14100D14;
@@ -2072,7 +2072,7 @@ table.data .cell-club { max-width: 210px; overflow: hidden; text-overflow: ellip
 .ftr__brand { display: flex; flex-direction: column; gap: var(--space-4); }
 .ftr__crest { width: 62px; color: var(--brand); }
 .ftr__mission { font-size: var(--step--1); color: var(--text-muted); max-width: 34ch; }
-.ftr__col h3 {
+.ftr__col h2 {
   font-family: var(--font-body);
   font-size: var(--step--2);
   letter-spacing: var(--tracking-caps);
@@ -2538,7 +2538,7 @@ html.js .reveal.is-in { opacity: 1; transform: none; }
   align-items: end;
 }
 @media (min-width: 1000px) {
-  .hx__foot { grid-template-columns: minmax(0, 1fr) minmax(340px, 400px); gap: var(--space-8); }
+  .hx__foot { grid-template-columns: minmax(0, 1fr) minmax(min(100%, 340px), 400px); gap: var(--space-8); }
 }
 .hx__left { display: flex; flex-direction: column; gap: var(--space-5); max-width: 52ch; }
 .hx__about { color: #FFFFFFD9; font-size: var(--step-0); line-height: 1.55; }
@@ -2829,7 +2829,7 @@ html.js .reveal.is-in { opacity: 1; transform: none; }
 }
 .bento__card--tall .bento__label { color: var(--brand-300); }
 .bento__h3 { font-family: var(--font-display); font-size: var(--step-3); line-height: var(--lh-snug); }
-.bento__table { display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: var(--space-3); margin: var(--space-2) 0 0; }
+.bento__table { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 72px), 1fr)); gap: var(--space-3); margin: var(--space-2) 0 0; }
 .bento__table dt { font-size: var(--step--2); text-transform: uppercase; letter-spacing: var(--tracking-wide); opacity: 0.72; }
 .bento__table dd { font-family: var(--font-display); font-size: var(--step-2); font-weight: var(--weight-bold); margin: 0; font-variant-numeric: tabular-nums; font-stretch: var(--width-num); }
 .bento__link {

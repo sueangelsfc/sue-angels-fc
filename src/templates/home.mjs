@@ -107,7 +107,7 @@ export function home(d) {
               <span class="hx__sponsorlabel">Proudly backed by</span>
               <div class="hx__chips">
                 ${SPONSORS.slice(0, 4).map((s) => `<a class="hx__chip" href="/sponsors.html" aria-label="${attr(`${s.name}, ${s.tier}`)}">
-                  <img src="${attr(s.logo)}" alt="${attr(s.name)}" loading="lazy" decoding="async">
+                  <img src="${attr(s.logo)}" alt="${attr(s.name)}" width="118" height="34" loading="lazy" decoding="async">
                 </a>`).join('')}
               </div>
             </div>

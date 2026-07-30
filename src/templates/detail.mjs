@@ -110,6 +110,7 @@ export function matchPage(m, d) {
   <section class="section" style="padding-block-start:var(--space-6)">
     <div class="wrap wrap--wide">
       ${crumbs([{ label: 'Home', href: '/' }, { label: 'Results', href: '/results.html' }, { label: m.title, href: `/matches/${m.slug}.html` }])}
+      <h1 class="sr-only">${esc(m.title)}, ${esc(m.competition)}, ${esc(fmtDate(m.date, { long: true }))}</h1>
       <div class="stack" style="margin-top:var(--space-6)">
         <div class="row row--between">
           <div class="row row--tight">

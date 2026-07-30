@@ -223,7 +223,7 @@ export function footer() {
       ['Sponsors', '/sponsors.html'], ['Join', '/join.html'], ['Contact', '/contact.html'],
     ] },
   ].map((c) => `<div class="ftr__col">
-      <h3>${esc(c.h)}</h3>
+      <h2>${esc(c.h)}</h2>
       <ul role="list">${c.links.map(([l, h]) => `<li><a href="${attr(h)}">${esc(l)}</a></li>`).join('')}</ul>
     </div>`).join('');
 
@@ -238,7 +238,7 @@ export function footer() {
           </div>
           ${cols}
           <div class="ftr__col ftr__sub">
-            <h3>Newsletter</h3>
+            <h2>Newsletter</h2>
             <p style="font-size:var(--step--2);color:var(--text-muted)">Team news, results and the cause. Once a month, no noise.</p>
             <form class="ftr__subform" data-subscribe novalidate>
               <label class="sr-only" for="ftr-email">Email address</label>

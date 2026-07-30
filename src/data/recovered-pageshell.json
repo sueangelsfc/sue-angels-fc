@@ -1,0 +1,2224 @@
+{
+  "SQUAD": [
+    {
+      "num": 1,
+      "last": "Adio",
+      "first": "Abiola",
+      "gk": false
+    },
+    {
+      "num": 2,
+      "last": "Allen",
+      "first": "Andrew",
+      "gk": false
+    },
+    {
+      "num": 4,
+      "last": "Brabrook",
+      "first": "Michael",
+      "gk": false
+    },
+    {
+      "num": 5,
+      "last": "Brown",
+      "first": "Kafele",
+      "gk": false
+    },
+    {
+      "num": 6,
+      "last": "Brumpton",
+      "first": "Elis",
+      "gk": false
+    },
+    {
+      "num": 7,
+      "last": "Clark",
+      "first": "William",
+      "gk": false
+    },
+    {
+      "num": 8,
+      "last": "Cowie",
+      "first": "Joshua",
+      "gk": false
+    },
+    {
+      "num": 9,
+      "last": "Dunkley",
+      "first": "Charlie",
+      "gk": false
+    },
+    {
+      "num": 10,
+      "last": "El Bayati",
+      "first": "Jim",
+      "gk": false
+    },
+    {
+      "num": 11,
+      "last": "Epathite",
+      "first": "Richard",
+      "gk": false
+    },
+    {
+      "num": 13,
+      "last": "Fernandes",
+      "first": "Christopher",
+      "gk": false
+    },
+    {
+      "num": 14,
+      "last": "Fisher",
+      "first": "Jake",
+      "gk": false
+    },
+    {
+      "num": 15,
+      "last": "Fisher",
+      "first": "James",
+      "gk": false
+    },
+    {
+      "num": 16,
+      "last": "Horrill",
+      "first": "Kieron",
+      "gk": false
+    },
+    {
+      "num": 17,
+      "last": "Inman",
+      "first": "Alfie James",
+      "gk": false
+    },
+    {
+      "num": 18,
+      "last": "Jackson",
+      "first": "Danny",
+      "gk": false
+    },
+    {
+      "num": 19,
+      "last": "Jones",
+      "first": "David",
+      "gk": false
+    },
+    {
+      "num": 20,
+      "last": "Knight",
+      "first": "Dean",
+      "gk": false
+    },
+    {
+      "num": 21,
+      "last": "Lloyd",
+      "first": "Jon",
+      "gk": false
+    },
+    {
+      "num": 22,
+      "last": "Lloyd",
+      "first": "Leo",
+      "gk": false
+    },
+    {
+      "num": 23,
+      "last": "Luwawa",
+      "first": "Stewart",
+      "gk": false
+    },
+    {
+      "num": 24,
+      "last": "McKinson",
+      "first": "Lee",
+      "gk": false
+    },
+    {
+      "num": 25,
+      "last": "McLane",
+      "first": "Daniel",
+      "gk": false
+    },
+    {
+      "num": 26,
+      "last": "Mullings",
+      "first": "Kyrell",
+      "gk": false
+    },
+    {
+      "num": 27,
+      "last": "Mullings",
+      "first": "Malachi",
+      "gk": false
+    },
+    {
+      "num": 28,
+      "last": "Munns",
+      "first": "Luke",
+      "gk": true
+    },
+    {
+      "num": 29,
+      "last": "Nur",
+      "first": "Samakab",
+      "gk": false
+    },
+    {
+      "num": 30,
+      "last": "Osunkoya",
+      "first": "Frazier-Isaías",
+      "gk": false
+    },
+    {
+      "num": 31,
+      "last": "Potter",
+      "first": "Stephen",
+      "gk": false
+    },
+    {
+      "num": 32,
+      "last": "Rand",
+      "first": "Daniel",
+      "gk": false
+    },
+    {
+      "num": 33,
+      "last": "Rodway-Brown",
+      "first": "Alex",
+      "gk": false
+    },
+    {
+      "num": 34,
+      "last": "Sheehan",
+      "first": "Sean",
+      "gk": false
+    },
+    {
+      "num": 35,
+      "last": "Thilaganathan",
+      "first": "Jeev",
+      "gk": false
+    },
+    {
+      "num": 36,
+      "last": "Tomassi",
+      "first": "Ross",
+      "gk": false
+    }
+  ],
+  "COACHES": [
+    {
+      "id": "stephen-epathite",
+      "role": "FIRST-TEAM MANAGER",
+      "name": "Stephen Epathite",
+      "short": "Founder & manager",
+      "photo": "assets/players/stephen-epathite.webp",
+      "bio": [
+        "Fulham F.C. supporter Stephen Epathite brings decades of experience and leadership to the game, both on and off the pitch.",
+        "As a player, Stephen represented respected non-league sides including Corinthian-Casuals F.C., Chessington & Hook United F.C., and Uxbridge F.C., building a strong understanding of the semi-professional and grassroots football landscape.",
+        "His managerial journey has seen him take charge across both the men's and women's game, managing clubs such as Crystal Palace F.C. Women, Maidstone United W.F.C., Corinthian-Casuals F.C. Reserves, Cove F.C., Frimley Green F.C., Chessington & Hook United F.C., Staines Lammas F.C., and Banstead Athletic F.C.",
+        "Known for his passion, leadership and deep understanding of player development, Stephen has built a reputation for creating competitive teams with strong togetherness and identity throughout every level of the football pyramid."
+      ],
+      "playedFor": [
+        "Corinthian-Casuals F.C.",
+        "Chessington & Hook United F.C.",
+        "Uxbridge F.C."
+      ],
+      "managed": [
+        "Crystal Palace F.C. Women",
+        "Maidstone United W.F.C.",
+        "Corinthian-Casuals F.C. Reserves",
+        "Cove F.C.",
+        "Frimley Green F.C.",
+        "Chessington & Hook United F.C.",
+        "Staines Lammas F.C.",
+        "Banstead Athletic F.C."
+      ],
+      "supports": "Fulham F.C."
+    },
+    {
+      "id": "louis-allen",
+      "role": "FIRST TEAM COACH",
+      "name": "Louis Allen",
+      "short": "Organisation & matchday prep",
+      "bio": [
+        "Louis Allen has been a constant presence in the Sue’s Angels FC backroom throughout the 25/26 season, a campaign that ended with the League Ten title and an unbeaten record. His contribution goes far beyond the ninety minutes.",
+        "Known for his meticulous organisation and pre-game preparation, Louis makes sure everything is in place before kick-off so the squad can focus on the football. From logistics to the smallest details, his work behind the scenes has been a big part of why the team has performed so consistently, week in and week out.",
+        "It is his character, though, that sets him apart. A positive, dependable figure who lifts the group and holds everyone to the same standards, Louis embodies the togetherness and culture that have driven the club forward. A valued member of the staff and a key part of the journey."
+      ]
+    }
+  ],
+  "PLAYER_BIOS": {
+    "2": "A highly experienced midfielder with an excellent understanding of the game, Andrew Allen brings leadership, composure, and technical quality to the heart of the team. Throughout his football journey, he has represented Chessington & Hook United F.C., Cove F.C., Staines Lammas F.C., CB Hounslow United F.C. and Old Isleworthians F.C.\n\nA loyal supporter of Manchester United F.C., Andrew is known for his calm presence on the ball, ability to dictate play, and willingness to put the team first. His experience and football intelligence make him an invaluable figure both on and off the pitch.",
+    "9": "Charlie Dunkley is a dynamic and clinical striker whose game is built around intelligent movement, relentless work rate, and a natural eye for goal.\n\nHaving previously represented Wembley F.C., Atlantis F.C., and West London Saracens, Charlie has developed valuable experience across the grassroots and non-league game, consistently demonstrating his ability to lead the line and make an impact in the final third.\n\nA lifelong supporter of Arsenal F.C., Charlie brings a positive mentality and attacking intent to every match. Whether finishing chances inside the box, pressing defenders from the front, or creating opportunities for teammates, he is a constant threat to opposition defences.\n\nKnown for his determination, team-first attitude, and instinctive finishing ability, Charlie continues to be an important attacking presence and a player capable of changing games with a single moment of quality.",
+    "10": "As club captain, Jimi El Bayati leads by example through his professionalism, consistency, and commitment to the team. A natural leader, he sets high standards both on and off the pitch and plays a crucial role in maintaining the culture and identity of Sue's Angels FC.\n\nKnown for his composure under pressure and strong communication, Jimi brings the squad together and helps drive the team forward in pursuit of success. His leadership has been instrumental in creating a united and ambitious group capable of competing at the highest level possible.",
+    "23": "A hardworking and versatile midfielder, Stewart Luwawa brings energy, determination, and leadership to the centre of the pitch. Having represented Walton & Hersham F.C., Ashford Town (Middlesex) F.C. and Cove F.C., he has gained valuable experience across a variety of competitive environments.\n\nA lifelong supporter of Manchester United F.C., Stewart is known for his commitment, work rate, and desire to drive standards both on and off the pitch. His willingness to battle for every ball and contribute to the team makes him an important part of the Sue's Angels FC setup.",
+    "28": "Luke Munns is a commanding goalkeeper whose shot-stopping ability, confidence under pressure, and strong communication provide a solid foundation for the team. Having previously played for Ashford Town (Middlesex) F.C. and CB Hounslow United F.C., he has developed into a reliable and dependable presence between the posts.\n\nA dedicated supporter of Chelsea F.C., Luke combines quick reactions with strong decision-making and a calm mentality. Whether making crucial saves or organising the defence, he consistently plays an important role in the team's success.",
+    "30": "A powerful and explosive forward, Frazier-Isaías Osunkoya combines pace, strength, and clinical finishing to make him a constant threat in the final third. Having previously represented Metropolitan Police F.C. and Peña Sport F.C., he brings valuable experience and a winning mentality to Sue's Angels FC.\n\nA passionate supporter of Arsenal F.C., Frazier is capable of changing a game in an instant, whether through his intelligent movement, physical presence, or eye for goal. His relentless work ethic and determination make him a key figure in the squad and a player defenders never enjoy facing."
+  },
+  "POSITIONS": [
+    "GK",
+    "CB",
+    "LCB",
+    "RCB",
+    "SW",
+    "LB",
+    "RB",
+    "LWB",
+    "RWB",
+    "CDM",
+    "LDM",
+    "RDM",
+    "CM",
+    "LCM",
+    "RCM",
+    "CAM",
+    "LAM",
+    "RAM",
+    "LM",
+    "RM",
+    "LW",
+    "RW",
+    "ST",
+    "CF",
+    "SS"
+  ],
+  "COMPETITIONS": [
+    {
+      "key": "all",
+      "label": "All"
+    },
+    {
+      "key": "league",
+      "label": "League Ten"
+    },
+    {
+      "key": "drt",
+      "label": "Dylan Rigobert Trophy"
+    },
+    {
+      "key": "ccup",
+      "label": "Chairman’s Cup"
+    },
+    {
+      "key": "mlip",
+      "label": "Marcus Lipton Cup"
+    },
+    {
+      "key": "cc",
+      "label": "Surrey FA Cup"
+    }
+  ],
+  "UPCOMING_FIXTURES": [],
+  "SEASON_RESULTS": [
+    {
+      "id": "f20260531-hillside",
+      "date": "31 May 26",
+      "kick": "11:00",
+      "home": "Sue's Angels FC",
+      "away": "Hillside Elite FC Blues",
+      "hs": 2,
+      "as": 0,
+      "kind": "score",
+      "competition": "League Ten",
+      "venue": "The Reeves Sports Club"
+    },
+    {
+      "id": "f20260524-bpr",
+      "date": "24 May 26",
+      "kick": "11:00",
+      "home": "BPR Men's",
+      "away": "Sue's Angels FC",
+      "hs": 2,
+      "as": 4,
+      "kind": "score",
+      "competition": "League Ten",
+      "venue": "The Reeves Sports Club"
+    },
+    {
+      "id": "r20260517-portolondon-drt",
+      "date": "17 May 26",
+      "kick": "11:00",
+      "home": "FC Porto of London",
+      "away": "Sue's Angels FC",
+      "hs": 3,
+      "as": 0,
+      "kind": "score",
+      "competition": "Dylan Rigobert Trophy",
+      "round": "Final"
+    },
+    {
+      "id": "r20260510-brockwell",
+      "date": "10 May 26",
+      "kick": "12:00",
+      "home": "Brockwell Violets FC",
+      "away": "Sue's Angels FC",
+      "hs": 1,
+      "as": 3,
+      "kind": "score",
+      "competition": "League Ten",
+      "venue": "Prince Georges Playing Fields"
+    },
+    {
+      "id": "r20260503-dynamo",
+      "date": "03 May 26",
+      "kick": "11:00",
+      "home": "Sue's Angels FC",
+      "away": "Dynamo London FC",
+      "hs": 6,
+      "as": 1,
+      "kind": "score",
+      "competition": "League Ten"
+    },
+    {
+      "id": "r20260426-catania",
+      "date": "26 Apr 26",
+      "kick": "11:00",
+      "home": "Sue's Angels FC",
+      "away": "Sporting Club Catania",
+      "hs": 10,
+      "as": 1,
+      "kind": "score",
+      "competition": "League Ten"
+    },
+    {
+      "id": "r20260419-balham-h",
+      "date": "19 Apr 26",
+      "kick": "11:00",
+      "home": "Sue's Angels FC",
+      "away": "Balham Bteckerz",
+      "hs": 9,
+      "as": 0,
+      "kind": "score",
+      "competition": "League Ten"
+    },
+    {
+      "id": "r20260412-kew-ccup",
+      "date": "12 Apr 26",
+      "kick": "10:00",
+      "home": "Kew Antigua",
+      "away": "Sue's Angels FC",
+      "hs": 2,
+      "as": 2,
+      "pens": {
+        "hs": 4,
+        "as": 3
+      },
+      "kind": "penalty",
+      "competition": "Chipotle UK Chairman's Cup",
+      "round": "Last 16"
+    },
+    {
+      "id": "r20260329-bluebirds-ccup",
+      "date": "29 Mar 26",
+      "kick": "11:00",
+      "home": "Sue's Angels FC",
+      "away": "AFC Bluebirds",
+      "hs": 2,
+      "as": 1,
+      "kind": "score",
+      "competition": "Chipotle UK Chairman's Cup",
+      "round": "Round of 32"
+    },
+    {
+      "id": "r20260322-hillside-drt",
+      "date": "22 Mar 26",
+      "kick": "11:00",
+      "home": "Sue's Angels FC",
+      "away": "Hillside Elite FC Blues",
+      "hs": 3,
+      "as": 0,
+      "kind": "score",
+      "competition": "Dylan Rigobert Trophy",
+      "round": "Semi Final"
+    },
+    {
+      "id": "r20260315-barkingmad-ccup",
+      "date": "15 Mar 26",
+      "kick": "10:30",
+      "home": "Barking Mad",
+      "away": "Sue's Angels FC",
+      "hs": 0,
+      "as": 1,
+      "kind": "score",
+      "competition": "Chipotle UK Chairman's Cup",
+      "round": "Round of 64"
+    },
+    {
+      "id": "r20260308-clapham-ccup",
+      "date": "08 Mar 26",
+      "kick": "10:30",
+      "home": "Clapham Chiefs",
+      "away": "Sue's Angels FC",
+      "hs": 0,
+      "as": 2,
+      "kind": "score",
+      "competition": "Chipotle UK Chairman's Cup",
+      "round": "First Round"
+    },
+    {
+      "id": "r20260301-freemens",
+      "date": "01 Mar 26",
+      "kick": "12:30",
+      "home": "Old Freemen's",
+      "away": "Sue's Angels FC",
+      "kind": "walkover",
+      "wo": "A-W",
+      "competition": "League Ten"
+    },
+    {
+      "id": "r20260301-shepherds-a",
+      "date": "01 Mar 26",
+      "kick": "10:30",
+      "home": "Shepherd's Tuesday",
+      "away": "Sue's Angels FC",
+      "hs": 1,
+      "as": 5,
+      "kind": "score",
+      "competition": "League Ten"
+    },
+    {
+      "id": "r20260222-sheen-cc",
+      "date": "22 Feb 26",
+      "kick": "10:30",
+      "home": "Sue's Angels FC",
+      "away": "Sheen Park Rangers",
+      "hs": 0,
+      "as": 3,
+      "kind": "score",
+      "competition": "Surrey FA Sunday Lower Junior County Cup",
+      "round": "Quarter Final"
+    },
+    {
+      "id": "r20260208-barnes-drt",
+      "date": "08 Feb 26",
+      "kick": "12:30",
+      "home": "Sue's Angels FC",
+      "away": "Barnes Stormers FC",
+      "hs": 7,
+      "as": 0,
+      "kind": "score",
+      "competition": "Dylan Rigobert Trophy",
+      "round": "Quarter Final"
+    },
+    {
+      "id": "r20260201-bpr",
+      "date": "01 Feb 26",
+      "kick": "10:30",
+      "home": "Sue's Angels FC",
+      "away": "BPR Men's",
+      "hs": 4,
+      "as": 2,
+      "kind": "score",
+      "competition": "League Ten"
+    },
+    {
+      "id": "r20260118-balham-a",
+      "date": "18 Jan 26",
+      "kick": "12:30",
+      "home": "Balham Bteckerz",
+      "away": "Sue's Angels FC",
+      "hs": 0,
+      "as": 12,
+      "kind": "score",
+      "competition": "League Ten"
+    },
+    {
+      "id": "r20260125-tattenham-cc",
+      "date": "25 Jan 26",
+      "kick": "10:30",
+      "home": "Tattenham Rovers 1st",
+      "away": "Sue's Angels FC",
+      "hs": 0,
+      "as": 3,
+      "kind": "score",
+      "competition": "Surrey FA Sunday Lower Junior County Cup",
+      "round": "Last 16"
+    },
+    {
+      "id": "r20260111-larkhall-drt",
+      "date": "11 Jan 26",
+      "kick": "10:30",
+      "home": "Sue's Angels FC",
+      "away": "Larkhall City FC",
+      "hs": 6,
+      "as": 0,
+      "kind": "score",
+      "competition": "Dylan Rigobert Trophy",
+      "round": "Last 16"
+    },
+    {
+      "id": "r20251214-brockwell-drt",
+      "date": "14 Dec 25",
+      "kick": "10:30",
+      "home": "Sue's Angels FC",
+      "away": "Brockwell Violets FC",
+      "hs": 5,
+      "as": 1,
+      "kind": "score",
+      "competition": "Dylan Rigobert Trophy",
+      "round": "Round of 32"
+    },
+    {
+      "id": "r20251207-woking-cc",
+      "date": "07 Dec 25",
+      "kick": "10:30",
+      "home": "Woking Veterans Sundays",
+      "away": "Sue's Angels FC",
+      "hs": 0,
+      "as": 7,
+      "kind": "score",
+      "competition": "Surrey FA Sunday Lower Junior County Cup",
+      "round": "Round of 32"
+    },
+    {
+      "id": "r20251130-argentina-mlip",
+      "date": "30 Nov 25",
+      "kick": "14:00",
+      "home": "Argentina FC 1st Team",
+      "away": "Sue's Angels FC",
+      "hs": 2,
+      "as": 0,
+      "kind": "score",
+      "competition": "Supreme Trophies Marcus Lipton Cup",
+      "round": "2nd Round"
+    },
+    {
+      "id": "r20251123-catania",
+      "date": "23 Nov 25",
+      "kick": "10:30",
+      "home": "Sporting Club Catania",
+      "away": "Sue's Angels FC",
+      "kind": "walkover",
+      "wo": "A-W",
+      "competition": "League Ten"
+    },
+    {
+      "id": "r20251116-sutton-cc",
+      "date": "16 Nov 25",
+      "kick": "10:30",
+      "home": "Sue's Angels FC",
+      "away": "Sutton Knights B",
+      "hs": 7,
+      "as": 1,
+      "kind": "score",
+      "competition": "Surrey FA Sunday Lower Junior County Cup",
+      "round": "Round of 64"
+    },
+    {
+      "id": "r20251109-pure",
+      "date": "09 Nov 25",
+      "kick": "12:30",
+      "home": "Pure Football FC 2.0",
+      "away": "Sue's Angels FC",
+      "hs": 1,
+      "as": 7,
+      "kind": "score",
+      "competition": "League Ten"
+    },
+    {
+      "id": "r20251102-shepherds-h",
+      "date": "02 Nov 25",
+      "kick": "10:30",
+      "home": "Sue's Angels FC",
+      "away": "Shepherd's Tuesday",
+      "kind": "walkover",
+      "wo": "H-W",
+      "competition": "League Ten"
+    },
+    {
+      "id": "r20251026-malavida-mlip",
+      "date": "26 Oct 25",
+      "kick": "10:30",
+      "home": "Mala Vida FC",
+      "away": "Sue's Angels FC",
+      "hs": 1,
+      "as": 2,
+      "kind": "score",
+      "competition": "Supreme Trophies Marcus Lipton Cup",
+      "round": "1st Round"
+    },
+    {
+      "id": "r20251019-freemens",
+      "date": "19 Oct 25",
+      "kick": "10:30",
+      "home": "Sue's Angels FC",
+      "away": "Old Freemen's",
+      "hs": 7,
+      "as": 2,
+      "kind": "score",
+      "competition": "League Ten"
+    },
+    {
+      "id": "r20251012-hillside",
+      "date": "12 Oct 25",
+      "kick": "10:30",
+      "home": "Hillside Elite FC Blues",
+      "away": "Sue's Angels FC",
+      "hs": 0,
+      "as": 5,
+      "kind": "score",
+      "competition": "League Ten"
+    },
+    {
+      "id": "r20251005-brockwell-h",
+      "date": "05 Oct 25",
+      "kick": "10:30",
+      "home": "Sue's Angels FC",
+      "away": "Brockwell Violets FC",
+      "hs": 6,
+      "as": 0,
+      "kind": "score",
+      "competition": "League Ten"
+    },
+    {
+      "id": "r20250928-dynamo-a",
+      "date": "28 Sep 25",
+      "kick": "10:30",
+      "home": "Dynamo London FC",
+      "away": "Sue's Angels FC",
+      "hs": 0,
+      "as": 5,
+      "kind": "score",
+      "competition": "League Ten"
+    },
+    {
+      "id": "r20250921-pure-h",
+      "date": "21 Sep 25",
+      "kick": "10:30",
+      "home": "Sue's Angels FC",
+      "away": "Pure Football FC 2.0",
+      "hs": 5,
+      "as": 0,
+      "kind": "score",
+      "competition": "League Ten"
+    }
+  ],
+  "RAW_TABLE": [
+    {
+      "p": 1,
+      "c": "Sue's Angels FC",
+      "pl": 18,
+      "w": 18,
+      "d": 0,
+      "l": 0,
+      "gf": 90,
+      "ga": 11,
+      "gd": "+79",
+      "pts": 54,
+      "us": true
+    },
+    {
+      "p": 2,
+      "c": "Brockwell Violets FC",
+      "pl": 18,
+      "w": 10,
+      "d": 3,
+      "l": 5,
+      "gf": 54,
+      "ga": 28,
+      "gd": "+26",
+      "pts": 33
+    },
+    {
+      "p": 3,
+      "c": "Hillside Elite FC Blues",
+      "pl": 18,
+      "w": 9,
+      "d": 4,
+      "l": 5,
+      "gf": 33,
+      "ga": 24,
+      "gd": "+9",
+      "pts": 31
+    },
+    {
+      "p": 4,
+      "c": "BPR Men's",
+      "pl": 18,
+      "w": 8,
+      "d": 4,
+      "l": 6,
+      "gf": 44,
+      "ga": 38,
+      "gd": "+6",
+      "pts": 28
+    },
+    {
+      "p": 5,
+      "c": "Dynamo London FC",
+      "pl": 18,
+      "w": 7,
+      "d": 5,
+      "l": 6,
+      "gf": 36,
+      "ga": 40,
+      "gd": "-4",
+      "pts": 26
+    },
+    {
+      "p": 6,
+      "c": "Sporting Club Catania",
+      "pl": 18,
+      "w": 7,
+      "d": 1,
+      "l": 10,
+      "gf": 23,
+      "ga": 35,
+      "gd": "-12",
+      "pts": 22
+    },
+    {
+      "p": 7,
+      "c": "Pure Football FC 2.0",
+      "pl": 18,
+      "w": 6,
+      "d": 2,
+      "l": 10,
+      "gf": 34,
+      "ga": 64,
+      "gd": "-30",
+      "pts": 20
+    },
+    {
+      "p": 8,
+      "c": "Old Freemen's",
+      "pl": 18,
+      "w": 5,
+      "d": 2,
+      "l": 11,
+      "gf": 28,
+      "ga": 36,
+      "gd": "-8",
+      "pts": 17
+    },
+    {
+      "p": 9,
+      "c": "Shepherd's Tuesday",
+      "pl": 18,
+      "w": 5,
+      "d": 2,
+      "l": 11,
+      "gf": 28,
+      "ga": 36,
+      "gd": "-8",
+      "pts": 17
+    },
+    {
+      "p": 10,
+      "c": "Balham Bteckerz",
+      "pl": 18,
+      "w": 3,
+      "d": 1,
+      "l": 14,
+      "gf": 20,
+      "ga": 78,
+      "gd": "-58",
+      "pts": 10
+    }
+  ],
+  "LEAGUE_STATS": {
+    "all": [
+      {
+        "pos": 1,
+        "name": "Frazier-Isaías Osunkoya",
+        "club": "Sue's Angels FC",
+        "g": 25,
+        "a": 18,
+        "ap": 19,
+        "us": true
+      },
+      {
+        "pos": 2,
+        "name": "Charlie Dunkley",
+        "club": "Sue's Angels FC",
+        "g": 18,
+        "a": 18,
+        "ap": 19,
+        "us": true
+      },
+      {
+        "pos": 3,
+        "name": "Dwayne Thomas",
+        "club": "Hillside Elite FC Blues",
+        "g": 18,
+        "a": 20,
+        "ap": 21
+      },
+      {
+        "pos": 4,
+        "name": "Stephen Potter",
+        "club": "Sue's Angels FC",
+        "g": 17,
+        "a": 13,
+        "ap": 16,
+        "us": true
+      },
+      {
+        "pos": 5,
+        "name": "Mohammad Idrees Qandahari",
+        "club": "Dynamo London FC",
+        "g": 12,
+        "a": 6,
+        "ap": 7
+      },
+      {
+        "pos": 6,
+        "name": "Rajay Willis",
+        "club": "BPR Men's",
+        "g": 11,
+        "a": 8,
+        "ap": 11
+      },
+      {
+        "pos": 7,
+        "name": "Rayan Alhajeri",
+        "club": "Pure Football FC 2.0",
+        "g": 10,
+        "a": 6,
+        "ap": 6
+      },
+      {
+        "pos": 8,
+        "name": "Charlie Green",
+        "club": "Brockwell Violets FC",
+        "g": 10,
+        "a": 9,
+        "ap": 10
+      },
+      {
+        "pos": 9,
+        "name": "Daniel McLane",
+        "club": "Sue's Angels FC",
+        "g": 9,
+        "a": 20,
+        "ap": 20,
+        "us": true
+      },
+      {
+        "pos": 10,
+        "name": "Malachi Mullings",
+        "club": "Sue's Angels FC",
+        "g": 9,
+        "a": 7,
+        "ap": 14,
+        "us": true
+      },
+      {
+        "pos": 11,
+        "name": "Oluwatimilehin Otudeko",
+        "club": "Brockwell Violets FC",
+        "g": 9,
+        "a": 7,
+        "ap": 8
+      },
+      {
+        "pos": 12,
+        "name": "Andrew Allen",
+        "club": "Sue's Angels FC",
+        "g": 8,
+        "a": 8,
+        "ap": 23,
+        "us": true
+      },
+      {
+        "pos": 13,
+        "name": "Jason Pingisi",
+        "club": "BPR Men's",
+        "g": 8,
+        "a": 8,
+        "ap": 16
+      },
+      {
+        "pos": 14,
+        "name": "Jordan El-Balawi",
+        "club": "Brockwell Violets FC",
+        "g": 7,
+        "a": 4,
+        "ap": 6
+      },
+      {
+        "pos": 15,
+        "name": "Vishay Unauth",
+        "club": "Sporting Club Catania",
+        "g": 7,
+        "a": 3,
+        "ap": 17
+      },
+      {
+        "pos": 16,
+        "name": "Romeo Chris-Collins Ahouzan",
+        "club": "Sporting Club Catania",
+        "g": 6,
+        "a": 3,
+        "ap": 12
+      },
+      {
+        "pos": 17,
+        "name": "William Clark",
+        "club": "Sue's Angels FC",
+        "g": 6,
+        "a": 8,
+        "ap": 12,
+        "us": true
+      },
+      {
+        "pos": 18,
+        "name": "Philip Coe",
+        "club": "Brockwell Violets FC",
+        "g": 6,
+        "a": 15,
+        "ap": 15
+      },
+      {
+        "pos": 19,
+        "name": "Danny Jackson",
+        "club": "Sue's Angels FC",
+        "g": 6,
+        "a": 6,
+        "ap": 10,
+        "us": true
+      },
+      {
+        "pos": 20,
+        "name": "Stewart Luwawa",
+        "club": "Sue's Angels FC",
+        "g": 6,
+        "a": 3,
+        "ap": 24,
+        "us": true
+      },
+      {
+        "pos": 21,
+        "name": "Callum Mabey",
+        "club": "BPR Men's",
+        "g": 6,
+        "a": 1,
+        "ap": 18
+      },
+      {
+        "pos": 22,
+        "name": "Rory Mannion",
+        "club": "Hillside Elite FC Blues",
+        "g": 6,
+        "a": 13,
+        "ap": 13
+      },
+      {
+        "pos": 23,
+        "name": "Osman Payet Conteh",
+        "club": "Dynamo London FC",
+        "g": 6,
+        "a": 6,
+        "ap": 8
+      },
+      {
+        "pos": 24,
+        "name": "Ayub Ali",
+        "club": "Pure Football FC 2.0",
+        "g": 5,
+        "a": 9,
+        "ap": 9
+      },
+      {
+        "pos": 25,
+        "name": "Josh Bolton",
+        "club": "Shepherd's Tuesday",
+        "g": 5,
+        "a": 16,
+        "ap": 16
+      }
+    ],
+    "league": [
+      {
+        "pos": 1,
+        "name": "Frazier-Isaías Osunkoya",
+        "club": "Sue's Angels FC",
+        "g": 18,
+        "a": 11,
+        "ap": 11,
+        "us": true
+      },
+      {
+        "pos": 2,
+        "name": "Charlie Dunkley",
+        "club": "Sue's Angels FC",
+        "g": 14,
+        "a": 9,
+        "ap": 10,
+        "us": true
+      },
+      {
+        "pos": 3,
+        "name": "Dwayne Thomas",
+        "club": "Hillside Elite FC Blues",
+        "g": 14,
+        "a": null,
+        "ap": 14
+      },
+      {
+        "pos": 4,
+        "name": "Stephen Potter",
+        "club": "Sue's Angels FC",
+        "g": 13,
+        "a": 10,
+        "ap": 11,
+        "us": true
+      },
+      {
+        "pos": 5,
+        "name": "Rajay Willis",
+        "club": "BPR Men's",
+        "g": 11,
+        "a": 8,
+        "ap": 10
+      },
+      {
+        "pos": 6,
+        "name": "Rayan Alhajeri",
+        "club": "Pure Football FC 2.0",
+        "g": 10,
+        "a": 6,
+        "ap": 6
+      },
+      {
+        "pos": 7,
+        "name": "Charlie Green",
+        "club": "Brockwell Violets FC",
+        "g": 8,
+        "a": 7,
+        "ap": 7
+      },
+      {
+        "pos": 8,
+        "name": "Oluwatimilehin Otudeko",
+        "club": "Brockwell Violets FC",
+        "g": 8,
+        "a": 6,
+        "ap": 7
+      },
+      {
+        "pos": 9,
+        "name": "Jordan El-Balawi",
+        "club": "Brockwell Violets FC",
+        "g": 7,
+        "a": 3,
+        "ap": 5
+      },
+      {
+        "pos": 10,
+        "name": "Jason Pingisi",
+        "club": "BPR Men's",
+        "g": 7,
+        "a": 8,
+        "ap": 13
+      },
+      {
+        "pos": 11,
+        "name": "Andrew Allen",
+        "club": "Sue's Angels FC",
+        "g": 6,
+        "a": 7,
+        "ap": 14,
+        "us": true
+      },
+      {
+        "pos": 12,
+        "name": "William Clark",
+        "club": "Sue's Angels FC",
+        "g": 6,
+        "a": 3,
+        "ap": 7,
+        "us": true
+      },
+      {
+        "pos": 13,
+        "name": "Philip Coe",
+        "club": "Brockwell Violets FC",
+        "g": 6,
+        "a": 14,
+        "ap": 14
+      },
+      {
+        "pos": 14,
+        "name": "Stewart Luwawa",
+        "club": "Sue's Angels FC",
+        "g": 6,
+        "a": 3,
+        "ap": 14,
+        "us": true
+      },
+      {
+        "pos": 15,
+        "name": "Callum Mabey",
+        "club": "BPR Men's",
+        "g": 6,
+        "a": 1,
+        "ap": 15
+      },
+      {
+        "pos": 16,
+        "name": "Rory Mannion",
+        "club": "Hillside Elite FC Blues",
+        "g": 6,
+        "a": 8,
+        "ap": 8
+      },
+      {
+        "pos": 17,
+        "name": "Malachi Mullings",
+        "club": "Sue's Angels FC",
+        "g": 6,
+        "a": 6,
+        "ap": 7,
+        "us": true
+      },
+      {
+        "pos": 18,
+        "name": "Osman Payet Conteh",
+        "club": "Dynamo London FC",
+        "g": 6,
+        "a": 5,
+        "ap": 7
+      },
+      {
+        "pos": 19,
+        "name": "Mohammad Idrees Qandahari",
+        "club": "Dynamo London FC",
+        "g": 6,
+        "a": 2,
+        "ap": 2
+      },
+      {
+        "pos": 20,
+        "name": "Romeo Chris-Collins Ahouzan",
+        "club": "Sporting Club Catania",
+        "g": 5,
+        "a": 2,
+        "ap": 10
+      },
+      {
+        "pos": 21,
+        "name": "Christian Chatterton",
+        "club": "Old Freemen's",
+        "g": 5,
+        "a": 10,
+        "ap": 10
+      },
+      {
+        "pos": 22,
+        "name": "Kagiso Mello",
+        "club": "Brockwell Violets FC",
+        "g": 5,
+        "a": 8,
+        "ap": 10
+      },
+      {
+        "pos": 23,
+        "name": "Josiah Miles",
+        "club": "BPR Men's",
+        "g": 5,
+        "a": 1,
+        "ap": 11
+      },
+      {
+        "pos": 24,
+        "name": "Vishay Unauth",
+        "club": "Sporting Club Catania",
+        "g": 5,
+        "a": 3,
+        "ap": 14
+      },
+      {
+        "pos": 25,
+        "name": "Melchizdec Marston",
+        "club": "Hillside Elite FC Blues",
+        "g": 5,
+        "a": 1,
+        "ap": 15
+      }
+    ]
+  },
+  "LEAGUE_RESULTS": [
+    {
+      "date": "31 May 26",
+      "home": "Sue's Angels FC",
+      "hs": 2,
+      "as": 0,
+      "away": "Hillside Elite FC Blues"
+    },
+    {
+      "date": "24 May 26",
+      "home": "BPR Men's",
+      "hs": 2,
+      "as": 4,
+      "away": "Sue's Angels FC"
+    },
+    {
+      "date": "24 May 26",
+      "home": "Hillside Elite FC Blues",
+      "hs": 2,
+      "as": 1,
+      "away": "Shepherd's Tuesday"
+    },
+    {
+      "date": "17 May 26",
+      "home": "Hillside Elite FC Blues",
+      "hs": 2,
+      "as": 0,
+      "away": "Brockwell Violets FC"
+    },
+    {
+      "date": "10 May 26",
+      "home": "Brockwell Violets FC",
+      "hs": 1,
+      "as": 3,
+      "away": "Sue's Angels FC"
+    },
+    {
+      "date": "10 May 26",
+      "home": "Hillside Elite FC Blues",
+      "hs": 4,
+      "as": 2,
+      "away": "Balham Bteckerz"
+    },
+    {
+      "date": "3 May 26",
+      "home": "Sue's Angels FC",
+      "hs": 6,
+      "as": 1,
+      "away": "Dynamo London FC"
+    },
+    {
+      "date": "3 May 26",
+      "home": "Hillside Elite FC Blues",
+      "hs": 2,
+      "as": 0,
+      "away": "Sporting Club Catania"
+    },
+    {
+      "date": "26 Apr 26",
+      "home": "Sue's Angels FC",
+      "hs": 10,
+      "as": 1,
+      "away": "Sporting Club Catania"
+    },
+    {
+      "date": "26 Apr 26",
+      "home": "Hillside Elite FC Blues",
+      "hs": 1,
+      "as": 2,
+      "away": "BPR Men's"
+    },
+    {
+      "date": "19 Apr 26",
+      "home": "Sue's Angels FC",
+      "hs": 9,
+      "as": 0,
+      "away": "Balham Bteckerz"
+    },
+    {
+      "date": "19 Apr 26",
+      "home": "Hillside Elite FC Blues",
+      "hs": 0,
+      "as": 2,
+      "away": "Pure Football FC 2.0"
+    },
+    {
+      "date": "12 Apr 26",
+      "home": "Brockwell Violets FC",
+      "hs": 9,
+      "as": 0,
+      "away": "Pure Football FC 2.0"
+    },
+    {
+      "date": "29 Mar 26",
+      "home": "Dynamo London FC",
+      "hs": 2,
+      "as": 3,
+      "away": "Pure Football FC 2.0"
+    },
+    {
+      "date": "29 Mar 26",
+      "home": "Brockwell Violets FC",
+      "hs": 3,
+      "as": 0,
+      "away": "Old Freemen's"
+    },
+    {
+      "date": "29 Mar 26",
+      "home": "Shepherd's Tuesday",
+      "hs": 0,
+      "as": 0,
+      "away": "Hillside Elite FC Blues"
+    },
+    {
+      "date": "15 Mar 26",
+      "home": "Balham Bteckerz",
+      "hs": 3,
+      "as": 2,
+      "away": "Dynamo London FC"
+    },
+    {
+      "date": "15 Mar 26",
+      "home": "Old Freemen's",
+      "away": "Sporting Club Catania",
+      "wo": "away"
+    },
+    {
+      "date": "15 Mar 26",
+      "home": "Brockwell Violets FC",
+      "hs": 2,
+      "as": 5,
+      "away": "Shepherd's Tuesday"
+    },
+    {
+      "date": "8 Mar 26",
+      "home": "Brockwell Violets FC",
+      "hs": 2,
+      "as": 2,
+      "away": "Dynamo London FC"
+    },
+    {
+      "date": "8 Mar 26",
+      "home": "Shepherd's Tuesday",
+      "hs": 3,
+      "as": 2,
+      "away": "Old Freemen's"
+    },
+    {
+      "date": "8 Mar 26",
+      "home": "Sporting Club Catania",
+      "away": "BPR Men's",
+      "wo": "home"
+    },
+    {
+      "date": "1 Mar 26",
+      "home": "Old Freemen's",
+      "away": "Sue's Angels FC",
+      "wo": "away"
+    },
+    {
+      "date": "1 Mar 26",
+      "home": "Shepherd's Tuesday",
+      "hs": 1,
+      "as": 5,
+      "away": "Sue's Angels FC"
+    },
+    {
+      "date": "1 Mar 26",
+      "home": "Sporting Club Catania",
+      "hs": 1,
+      "as": 2,
+      "away": "Brockwell Violets FC"
+    },
+    {
+      "date": "22 Feb 26",
+      "home": "Brockwell Violets FC",
+      "hs": 6,
+      "as": 0,
+      "away": "Balham Bteckerz"
+    },
+    {
+      "date": "22 Feb 26",
+      "home": "Shepherd's Tuesday",
+      "hs": 1,
+      "as": 2,
+      "away": "Dynamo London FC"
+    },
+    {
+      "date": "8 Feb 26",
+      "home": "Pure Football FC 2.0",
+      "hs": 3,
+      "as": 3,
+      "away": "Balham Bteckerz"
+    },
+    {
+      "date": "1 Feb 26",
+      "home": "Pure Football FC 2.0",
+      "hs": 0,
+      "as": 4,
+      "away": "Sporting Club Catania"
+    },
+    {
+      "date": "1 Feb 26",
+      "home": "Sue's Angels FC",
+      "hs": 4,
+      "as": 2,
+      "away": "BPR Men's"
+    },
+    {
+      "date": "25 Jan 26",
+      "home": "Balham Bteckerz",
+      "hs": 2,
+      "as": 10,
+      "away": "BPR Men's"
+    },
+    {
+      "date": "25 Jan 26",
+      "home": "Pure Football FC 2.0",
+      "hs": 0,
+      "as": 7,
+      "away": "Brockwell Violets FC"
+    },
+    {
+      "date": "25 Jan 26",
+      "home": "Sporting Club Catania",
+      "away": "Old Freemen's",
+      "wo": "away"
+    },
+    {
+      "date": "18 Jan 26",
+      "home": "Balham Bteckerz",
+      "hs": 0,
+      "as": 12,
+      "away": "Sue's Angels FC"
+    },
+    {
+      "date": "18 Jan 26",
+      "home": "Pure Football FC 2.0",
+      "hs": 0,
+      "as": 4,
+      "away": "Hillside Elite FC Blues"
+    },
+    {
+      "date": "18 Jan 26",
+      "home": "Brockwell Violets FC",
+      "hs": 6,
+      "as": 0,
+      "away": "Sporting Club Catania"
+    },
+    {
+      "date": "11 Jan 26",
+      "home": "BPR Men's",
+      "hs": 4,
+      "as": 2,
+      "away": "Pure Football FC 2.0"
+    },
+    {
+      "date": "11 Jan 26",
+      "home": "Old Freemen's",
+      "hs": 3,
+      "as": 5,
+      "away": "Dynamo London FC"
+    },
+    {
+      "date": "4 Jan 26",
+      "home": "Dynamo London FC",
+      "hs": 7,
+      "as": 4,
+      "away": "BPR Men's"
+    },
+    {
+      "date": "14 Dec 25",
+      "home": "Balham Bteckerz",
+      "hs": 1,
+      "as": 3,
+      "away": "Sporting Club Catania"
+    },
+    {
+      "date": "14 Dec 25",
+      "home": "Pure Football FC 2.0",
+      "hs": 3,
+      "as": 2,
+      "away": "Shepherd's Tuesday"
+    },
+    {
+      "date": "14 Dec 25",
+      "home": "BPR Men's",
+      "hs": 2,
+      "as": 6,
+      "away": "Hillside Elite FC Blues"
+    },
+    {
+      "date": "7 Dec 25",
+      "home": "Old Freemen's",
+      "away": "BPR Men's",
+      "wo": "away"
+    },
+    {
+      "date": "7 Dec 25",
+      "home": "Sporting Club Catania",
+      "hs": 1,
+      "as": 3,
+      "away": "Shepherd's Tuesday"
+    },
+    {
+      "date": "30 Nov 25",
+      "home": "Shepherd's Tuesday",
+      "hs": 4,
+      "as": 0,
+      "away": "Balham Bteckerz"
+    },
+    {
+      "date": "23 Nov 25",
+      "home": "Pure Football FC 2.0",
+      "hs": 0,
+      "as": 3,
+      "away": "BPR Men's"
+    },
+    {
+      "date": "23 Nov 25",
+      "home": "Dynamo London FC",
+      "hs": 2,
+      "as": 0,
+      "away": "Old Freemen's"
+    },
+    {
+      "date": "23 Nov 25",
+      "home": "Sporting Club Catania",
+      "away": "Sue's Angels FC",
+      "wo": "away"
+    },
+    {
+      "date": "16 Nov 25",
+      "home": "Balham Bteckerz",
+      "hs": 0,
+      "as": 3,
+      "away": "Shepherd's Tuesday"
+    },
+    {
+      "date": "16 Nov 25",
+      "home": "BPR Men's",
+      "hs": 1,
+      "as": 1,
+      "away": "Brockwell Violets FC"
+    },
+    {
+      "date": "16 Nov 25",
+      "home": "Old Freemen's",
+      "hs": 3,
+      "as": 3,
+      "away": "Pure Football FC 2.0"
+    },
+    {
+      "date": "16 Nov 25",
+      "home": "Hillside Elite FC Blues",
+      "hs": 0,
+      "as": 0,
+      "away": "Dynamo London FC"
+    },
+    {
+      "date": "9 Nov 25",
+      "home": "Old Freemen's",
+      "hs": 1,
+      "as": 4,
+      "away": "Brockwell Violets FC"
+    },
+    {
+      "date": "9 Nov 25",
+      "home": "Pure Football FC 2.0",
+      "hs": 1,
+      "as": 7,
+      "away": "Sue's Angels FC"
+    },
+    {
+      "date": "9 Nov 25",
+      "home": "Dynamo London FC",
+      "hs": 1,
+      "as": 0,
+      "away": "Sporting Club Catania"
+    },
+    {
+      "date": "9 Nov 25",
+      "home": "Shepherd's Tuesday",
+      "hs": 1,
+      "as": 1,
+      "away": "BPR Men's"
+    },
+    {
+      "date": "2 Nov 25",
+      "home": "Balham Bteckerz",
+      "hs": 2,
+      "as": 5,
+      "away": "Old Freemen's"
+    },
+    {
+      "date": "2 Nov 25",
+      "home": "Dynamo London FC",
+      "hs": 2,
+      "as": 0,
+      "away": "Brockwell Violets FC"
+    },
+    {
+      "date": "2 Nov 25",
+      "home": "Sue's Angels FC",
+      "away": "Shepherd's Tuesday",
+      "wo": "home"
+    },
+    {
+      "date": "26 Oct 25",
+      "home": "Old Freemen's",
+      "hs": 2,
+      "as": 0,
+      "away": "Balham Bteckerz"
+    },
+    {
+      "date": "26 Oct 25",
+      "home": "Dynamo London FC",
+      "hs": 2,
+      "as": 2,
+      "away": "Hillside Elite FC Blues"
+    },
+    {
+      "date": "26 Oct 25",
+      "home": "Sporting Club Catania",
+      "hs": 2,
+      "as": 1,
+      "away": "Pure Football FC 2.0"
+    },
+    {
+      "date": "19 Oct 25",
+      "home": "Balham Bteckerz",
+      "hs": 2,
+      "as": 8,
+      "away": "Pure Football FC 2.0"
+    },
+    {
+      "date": "19 Oct 25",
+      "home": "BPR Men's",
+      "hs": 2,
+      "as": 2,
+      "away": "Dynamo London FC"
+    },
+    {
+      "date": "19 Oct 25",
+      "home": "Shepherd's Tuesday",
+      "hs": 0,
+      "as": 4,
+      "away": "Brockwell Violets FC"
+    },
+    {
+      "date": "19 Oct 25",
+      "home": "Sporting Club Catania",
+      "hs": 1,
+      "as": 3,
+      "away": "Hillside Elite FC Blues"
+    },
+    {
+      "date": "19 Oct 25",
+      "home": "Sue's Angels FC",
+      "hs": 7,
+      "as": 2,
+      "away": "Old Freemen's"
+    },
+    {
+      "date": "12 Oct 25",
+      "home": "Dynamo London FC",
+      "hs": 1,
+      "as": 3,
+      "away": "Balham Bteckerz"
+    },
+    {
+      "date": "12 Oct 25",
+      "home": "Pure Football FC 2.0",
+      "hs": 1,
+      "as": 4,
+      "away": "Old Freemen's"
+    },
+    {
+      "date": "12 Oct 25",
+      "home": "Brockwell Violets FC",
+      "hs": 4,
+      "as": 4,
+      "away": "BPR Men's"
+    },
+    {
+      "date": "12 Oct 25",
+      "home": "Hillside Elite FC Blues",
+      "hs": 0,
+      "as": 5,
+      "away": "Sue's Angels FC"
+    },
+    {
+      "date": "12 Oct 25",
+      "home": "Shepherd's Tuesday",
+      "hs": 0,
+      "as": 4,
+      "away": "Sporting Club Catania"
+    },
+    {
+      "date": "5 Oct 25",
+      "home": "Balham Bteckerz",
+      "hs": 0,
+      "as": 2,
+      "away": "Hillside Elite FC Blues"
+    },
+    {
+      "date": "5 Oct 25",
+      "home": "BPR Men's",
+      "hs": 2,
+      "as": 1,
+      "away": "Old Freemen's"
+    },
+    {
+      "date": "5 Oct 25",
+      "home": "Shepherd's Tuesday",
+      "hs": 2,
+      "as": 4,
+      "away": "Pure Football FC 2.0"
+    },
+    {
+      "date": "5 Oct 25",
+      "home": "Sue's Angels FC",
+      "hs": 6,
+      "as": 0,
+      "away": "Brockwell Violets FC"
+    },
+    {
+      "date": "28 Sep 25",
+      "home": "Dynamo London FC",
+      "hs": 0,
+      "as": 5,
+      "away": "Sue's Angels FC"
+    },
+    {
+      "date": "21 Sep 25",
+      "home": "Balham Bteckerz",
+      "hs": 0,
+      "as": 1,
+      "away": "Brockwell Violets FC"
+    },
+    {
+      "date": "21 Sep 25",
+      "home": "BPR Men's",
+      "hs": 3,
+      "as": 1,
+      "away": "Sporting Club Catania"
+    },
+    {
+      "date": "21 Sep 25",
+      "home": "Dynamo London FC",
+      "hs": 2,
+      "as": 1,
+      "away": "Shepherd's Tuesday"
+    },
+    {
+      "date": "21 Sep 25",
+      "home": "Hillside Elite FC Blues",
+      "hs": 2,
+      "as": 1,
+      "away": "Old Freemen's"
+    },
+    {
+      "date": "21 Sep 25",
+      "home": "Sue's Angels FC",
+      "hs": 5,
+      "as": 0,
+      "away": "Pure Football FC 2.0"
+    },
+    {
+      "date": "14 Sep 25",
+      "home": "Old Freemen's",
+      "hs": 2,
+      "as": 2,
+      "away": "Hillside Elite FC Blues"
+    },
+    {
+      "date": "14 Sep 25",
+      "home": "Pure Football FC 2.0",
+      "hs": 3,
+      "as": 1,
+      "away": "Dynamo London FC"
+    },
+    {
+      "date": "14 Sep 25",
+      "home": "BPR Men's",
+      "hs": 2,
+      "as": 1,
+      "away": "Shepherd's Tuesday"
+    },
+    {
+      "date": "14 Sep 25",
+      "home": "Sporting Club Catania",
+      "hs": 3,
+      "as": 1,
+      "away": "Balham Bteckerz"
+    },
+    {
+      "date": "7 Sep 25",
+      "home": "Old Freemen's",
+      "hs": 2,
+      "as": 0,
+      "away": "Shepherd's Tuesday"
+    },
+    {
+      "date": "7 Sep 25",
+      "home": "Brockwell Violets FC",
+      "hs": 2,
+      "as": 1,
+      "away": "Hillside Elite FC Blues"
+    },
+    {
+      "date": "7 Sep 25",
+      "home": "Sporting Club Catania",
+      "hs": 2,
+      "as": 2,
+      "away": "Dynamo London FC"
+    },
+    {
+      "date": "7 Sep 25",
+      "home": "BPR Men's",
+      "hs": 0,
+      "as": 1,
+      "away": "Balham Bteckerz"
+    }
+  ],
+  "SEASON_INFO": {
+    "current": {
+      "name": "25/26",
+      "startISO": "2025-09-01",
+      "endISO": "2026-05-31",
+      "league": "League Ten",
+      "status": "CHAMPIONS"
+    },
+    "next": {
+      "name": "26/27",
+      "startISO": "2026-09-01",
+      "endISO": "2027-05-31",
+      "league": "TBC",
+      "status": "PENDING"
+    }
+  },
+  "PRESEASON": {
+    "firstISO": "2026-07-19T10:00:00",
+    "venue": "The Reeves, Hanworth"
+  },
+  "CURRENT_SEASON": "25/26",
+  "ALL_SEASONS": [
+    "25/26",
+    "26/27"
+  ],
+  "SA_DEFAULT_ARTICLES": [
+    {
+      "id": "art-preseason-heat-2026",
+      "cat": "News",
+      "title": "Pre-Season Pushed Back a Week as Heatwave Hits",
+      "date": "22 Jun 2026",
+      "sortISO": "2026-06-22T09:00:00.000Z",
+      "cover": null,
+      "isDefault": true,
+      "lede": "Our first pre-season session of the summer has been moved. Originally planned for Wednesday 24 June, it will now take place a week later, on Wednesday 1 July, 19:00 to 20:30, at the home ground.\n\nThe reason is simple, and it is the right one: player welfare comes first. The Met Office has issued an amber extreme heat warning across southern England this week, with temperatures climbing through the mid-30s and forecast to peak at around 38°C on Wednesday, the exact day we were due to be out on the grass. The UK Health Security Agency has issued matching Heat Health Alerts, and with warm, humid nights offering little relief, heat stress is a genuine risk to everyone, not just the most vulnerable.\n\nAsking players to train at full intensity in those conditions is not a risk worth taking. As a club built in memory of someone we loved, looking after each other will always matter more than a date in the diary.\n\nSo we wait a week. By Wednesday 1 July the worst of the heat should have passed, and we will get our preparations for the 26/27 campaign under way properly, safely, and together.\n\nWhile the heat is with us, look after yourselves and each other: drink plenty of water, find the shade in the hottest hours, check in on anyone who might be struggling, and never leave a child or a pet in a parked car.\n\nNew date: Wednesday 1 July, 19:00 to 20:30, at the home ground. Sunday sessions (10:00 to 12:30) follow from there. See you on the grass, Angels. Stay safe."
+    }
+  ],
+  "SA_DEFAULT_RECOGNITION": [
+    {
+      "id": "rec-first-captain-2526",
+      "type": "club_record",
+      "recordKey": "first_club_captain",
+      "title": "First Ever Club Captain",
+      "season": "25/26",
+      "playerId": 10,
+      "playerName": "Jim El Bayati",
+      "value": "Jim El Bayati",
+      "description": "Jim El Bayati was appointed the first club captain in Sue’s Angels FC history, leading the side through the inaugural 25/26 season.",
+      "isDefault": true
+    },
+    {
+      "id": "rec-leadership-2526",
+      "type": "leadership",
+      "season": "25/26",
+      "clubCaptainPlayerId": 10,
+      "clubCaptainName": "Jim El Bayati",
+      "viceCaptainPlayerId": 25,
+      "viceCaptainName": "Daniel McLane",
+      "thirdChoiceCaptainPlayerId": 2,
+      "thirdChoiceCaptainName": "Andrew Allen",
+      "note": "Jim El Bayati served as club captain, supported by vice-captain Daniel McLane and third-choice captain Andrew Allen.",
+      "isDefault": true
+    },
+    {
+      "id": "trophy-league-ten-2526",
+      "type": "trophy",
+      "title": "League Ten Champions",
+      "season": "25/26",
+      "value": "Champions",
+      "icon": "trophy",
+      "description": "Champions of League Ten at the first attempt, unbeaten across the whole season.",
+      "isDefault": true
+    },
+    {
+      "id": "trophy-promotion-2526",
+      "type": "trophy",
+      "title": "Promoted to League Eight",
+      "season": "25/26",
+      "value": "Promoted",
+      "icon": "medal",
+      "description": "Sealed promotion as champions, stepping up to League Eight for the 26/27 season.",
+      "isDefault": true
+    },
+    {
+      "id": "season-2526-top-assister",
+      "type": "season_award",
+      "title": "Top Assister",
+      "season": "25/26",
+      "playerId": 9,
+      "description": "Relentless all season. Energy, intelligence and selfless running made him a constant threat, and his assists and link play drove our attacking success.",
+      "isDefault": true
+    },
+    {
+      "id": "season-2526-defensive-record",
+      "type": "season_award",
+      "title": "Defensive Record Award",
+      "season": "25/26",
+      "playerId": 28,
+      "description": "The goalkeeper every championship side needs. Calm, commanding and full of match-winning saves as the Angels set a historic defensive record.",
+      "isDefault": true
+    },
+    {
+      "id": "season-2526-goal-of-the-season",
+      "type": "season_award",
+      "title": "Goal of the Season",
+      "season": "25/26",
+      "playerId": 27,
+      "description": "A stunning strike against Mala Vida, pure quality. A huge part of the season before injury cut it short. We can’t wait to see him back in yellow.",
+      "isDefault": true
+    },
+    {
+      "id": "season-2526-top-goalscorer",
+      "type": "season_award",
+      "title": "Top Goalscorer",
+      "season": "25/26",
+      "playerId": 30,
+      "description": "Goals, goals and more goals. Movement, composure and a finish in him at any moment. When the team needed one, Fraizer usually delivered.",
+      "isDefault": true
+    },
+    {
+      "id": "season-2526-clubman",
+      "type": "season_award",
+      "title": "Clubman of the Year",
+      "season": "25/26",
+      "playerId": 10,
+      "description": "A leader, role model and true club servant. As he closes his playing career he leaves the culture and standards that drive the club. A true legend.",
+      "isDefault": true
+    },
+    {
+      "id": "season-2526-players-player",
+      "type": "season_award",
+      "title": "Players’ Player of the Year",
+      "season": "25/26",
+      "playerId": 25,
+      "description": "Voted for by his teammates. Solid as a rock in defence and a real weapon from set pieces. A warrior who set the standard every single week.",
+      "isDefault": true
+    },
+    {
+      "id": "season-2526-managers-player",
+      "type": "season_award",
+      "title": "Manager’s Player of the Year",
+      "season": "25/26",
+      "playerId": 20,
+      "description": "Consistency, versatility and constant improvement. Right-back, wing-back, even emergency keeper with two clean sheets. Whatever the team needed, Dean delivered.",
+      "isDefault": true
+    }
+  ],
+  "KNOWN_CLUBS": [
+    "Sue's Angels FC",
+    "Brockwell Violets FC",
+    "Hillside Elite FC Blues",
+    "BPR FC",
+    "Dynamo London FC",
+    "Sporting Club Catania",
+    "Pure Football FC 2.0",
+    "Old Freemen's",
+    "Shepherd's Tuesday",
+    "Balham Bteckerz",
+    "Sheen Park Rangers",
+    "Kew Antigua",
+    "Sutton Knights",
+    "Bristol City (London) Supporters",
+    "Haydons Park",
+    "Junction Elite",
+    "Olympique Mayonnaise",
+    "Three Little Birds FC",
+    "TSM Rovers FC",
+    "Tyne & Thames FC",
+    "Barking Mad FC",
+    "Clapham Chiefs FC",
+    "FC Porto of London",
+    "AFC Bluebirds",
+    "Tattenham Rovers FC",
+    "Woking Vets FC",
+    "Argentina FC London",
+    "Larkhall City FC",
+    "Barnes Stormers FC"
+  ],
+  "LEAGUE_TOTAL_GAMES": 18,
+  "LEAGUE_PROMOTION_SPOTS": 2,
+  "SA_YT_CHANNEL_ID": "",
+  "SA_YT_HANDLE": "suesangelsfc",
+  "BADGES": {
+    "Sue's Angels FC": {
+      "match": "angels",
+      "src": "assets/badge/sue-angels-shield.webp",
+      "alt": "Sue's Angels FC",
+      "aspect": "shield"
+    },
+    "Brockwell Violets FC": {
+      "match": "brockwell",
+      "src": "assets/badge/brockwell-violets.webp",
+      "alt": "Brockwell Violets FC",
+      "aspect": "circle"
+    },
+    "Hillside Elite FC Blues": {
+      "match": "hillside",
+      "src": "assets/badge/hillside-elite.webp",
+      "alt": "Hillside Elite FC Blues",
+      "aspect": "circle"
+    },
+    "BPR FC": {
+      "match": "bpr",
+      "src": "assets/badge/bpr-fc.webp",
+      "alt": "BPR FC",
+      "aspect": "circle"
+    },
+    "Dynamo London FC": {
+      "match": "dynamo",
+      "src": "assets/badge/dynamo-london.webp",
+      "alt": "Dynamo London FC",
+      "aspect": "circle"
+    },
+    "Sporting Club Catania": {
+      "match": "catania",
+      "src": "assets/badge/sporting-catania.webp",
+      "alt": "Sporting Club Catania",
+      "aspect": "circle"
+    },
+    "Pure Football FC 2.0": {
+      "match": "pure",
+      "src": "assets/badge/pure-fc.webp",
+      "alt": "Pure Football FC 2.0",
+      "aspect": "shield"
+    },
+    "Old Freemen's": {
+      "match": "freemen",
+      "src": "assets/badge/old-freemens.webp",
+      "alt": "Old Freemen's",
+      "aspect": "shield"
+    },
+    "Shepherd's Tuesday": {
+      "match": "shepherd",
+      "src": "assets/badge/shepherds-tuesday.webp",
+      "alt": "Shepherd's Tuesday",
+      "aspect": "circle"
+    },
+    "Balham Bteckerz": {
+      "match": "balham",
+      "src": "assets/badge/balham-bteckerz.webp",
+      "alt": "Balham Bteckerz",
+      "aspect": "circle"
+    },
+    "Sheen Park Rangers": {
+      "match": "sheen",
+      "src": "assets/badge/sheen-park-rangers.webp",
+      "alt": "Sheen Park Rangers",
+      "aspect": "circle"
+    },
+    "Kew Antigua": {
+      "match": "kew",
+      "src": "assets/badge/kew-antigua.webp",
+      "alt": "Kew Antigua",
+      "aspect": "shield"
+    },
+    "Sutton Knights": {
+      "match": "sutton",
+      "src": "assets/badge/sutton-knights.webp",
+      "alt": "Sutton Knights",
+      "aspect": "shield"
+    },
+    "Bristol City (London) Supporters": {
+      "match": "bristol",
+      "src": "assets/badge/bristol-city.png",
+      "alt": "Bristol City (London) Supporters",
+      "aspect": "shield"
+    },
+    "Haydons Park": {
+      "match": "haydons",
+      "src": "assets/badge/haydons-park.png",
+      "alt": "Haydons Park",
+      "aspect": "circle"
+    },
+    "Junction Elite": {
+      "match": "junction",
+      "src": "assets/badge/junction-elite.webp",
+      "alt": "Junction Elite",
+      "aspect": "circle"
+    },
+    "Olympique Mayonnaise": {
+      "match": "olympique",
+      "src": "assets/badge/olympique-mayonnaise.webp",
+      "alt": "Olympique Mayonnaise",
+      "aspect": "shield"
+    },
+    "Three Little Birds FC": {
+      "match": "little birds",
+      "src": "assets/badge/three-little-birds.webp",
+      "alt": "Three Little Birds FC",
+      "aspect": "circle"
+    },
+    "TSM Rovers FC": {
+      "match": "tsm",
+      "src": "assets/badge/tsm-rovers.webp",
+      "alt": "TSM Rovers FC",
+      "aspect": "circle"
+    },
+    "Tyne & Thames FC": {
+      "match": "tyne",
+      "src": "assets/badge/tyne-thames.webp",
+      "alt": "Tyne & Thames FC",
+      "aspect": "circle"
+    },
+    "Barking Mad FC": {
+      "match": "barking",
+      "src": "assets/badge/barking-mad.webp",
+      "alt": "Barking Mad FC",
+      "aspect": "circle"
+    },
+    "Clapham Chiefs FC": {
+      "match": "clapham",
+      "src": "assets/badge/clapham-chiefs.webp",
+      "alt": "Clapham Chiefs FC",
+      "aspect": "circle"
+    },
+    "FC Porto of London": {
+      "match": "porto",
+      "src": "assets/badge/casa-fc-porto.webp",
+      "alt": "FC Porto of London",
+      "aspect": "circle"
+    },
+    "AFC Bluebirds": {
+      "match": "bluebirds",
+      "src": "assets/badge/afc-bluebirds.webp",
+      "alt": "AFC Bluebirds",
+      "aspect": "shield"
+    },
+    "Tattenham Rovers FC": {
+      "match": "tattenham",
+      "src": "assets/badge/tattenham-rovers.webp",
+      "alt": "Tattenham Rovers FC",
+      "aspect": "circle"
+    },
+    "Woking Vets FC": {
+      "match": "woking",
+      "src": "assets/badge/woking-vets.webp",
+      "alt": "Woking Vets FC",
+      "aspect": "circle"
+    },
+    "Argentina FC London": {
+      "match": "argentina",
+      "src": "assets/badge/argentina-fc-london.webp",
+      "alt": "Argentina FC London",
+      "aspect": "circle"
+    },
+    "Larkhall City FC": {
+      "match": "larkhall",
+      "src": "assets/badge/larkhall-city.webp",
+      "alt": "Larkhall City FC",
+      "aspect": "shield"
+    },
+    "Barnes Stormers FC": {
+      "match": "stormers",
+      "src": "assets/badge/barnes-stormers.webp",
+      "alt": "Barnes Stormers FC",
+      "aspect": "circle"
+    }
+  }
+}

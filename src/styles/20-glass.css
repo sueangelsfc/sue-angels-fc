@@ -1,0 +1,125 @@
+/* ==========================================================================
+   CLEAR FROSTED GLASS
+   A physically-believable clear glass, not a smoky rectangle. Five stacked
+   effects make it read as real material:
+
+     1. tint          low-alpha fill so the background stays visible
+     2. backdrop      localised blur + saturation boost (refraction)
+     3. double rim    bright top edge, dark bottom edge - glass thickness
+     4. specular      a soft diagonal sweep of reflected light
+     5. float shadow  the panel sits above the page, not on it
+
+   Used SELECTIVELY: nav, buttons, feature panels, match highlights,
+   overlays, modals, dropdowns, media controls, auth, dashboard tiles,
+   footer. Dense tables and long forms deliberately use calmer, opaque
+   surfaces (.panel) because glass hurts sustained reading.
+   ========================================================================== */
+
+.glass {
+  position: relative;
+  isolation: isolate;
+  background:
+    linear-gradient(155deg, var(--glass-tint-2) 0%, var(--glass-tint) 42%, transparent 100%),
+    var(--glass-refract);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  border: 1px solid var(--glass-rim-light);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--glass-inner), var(--shadow-float);
+}
+
+/* The fine second rim, inset from the first. Two hairlines a pixel apart is
+   what separates "glass with thickness" from "div with a border". */
+.glass::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  border: 1px solid var(--glass-rim-dark);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Specular sweep - light catching the curve of the top-left edge. */
+.glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    112deg,
+    var(--glass-specular) 0%,
+    transparent 26%,
+    transparent 74%,
+    rgb(var(--brand-rgb) / 0.07) 100%
+  );
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ---- Variants ---------------------------------------------------------- */
+.glass--lg { border-radius: var(--radius-2xl); }
+.glass--xl { border-radius: var(--radius-3xl); }
+.glass--pill { border-radius: var(--radius-pill); }
+.glass--sm { border-radius: var(--radius-md); }
+
+/* Heavier blur for overlays that must separate from busy content beneath. */
+.glass--deep {
+  -webkit-backdrop-filter: blur(var(--glass-blur-lg)) saturate(var(--glass-sat));
+  backdrop-filter: blur(var(--glass-blur-lg)) saturate(var(--glass-sat));
+}
+
+/* Restrained orange refraction, for panels that should carry brand warmth. */
+.glass--warm {
+  background:
+    linear-gradient(155deg, var(--glass-tint-2) 0%, var(--glass-tint) 42%, transparent 100%),
+    rgb(var(--brand-rgb) / 0.16);
+  border-color: var(--border-brand);
+}
+
+/* Interactive glass: lifts and brightens. */
+.glass--interactive {
+  cursor: pointer;
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    border-color var(--dur-base) var(--ease-out);
+}
+.glass--interactive:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-brand);
+  box-shadow: var(--glass-inner), var(--shadow-lg), var(--shadow-brand);
+}
+.glass--interactive:active { transform: translateY(-1px); }
+
+/* ---- Calm opaque surface ----------------------------------------------
+   The counterpart to glass. Anything text-dense uses this. */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+.panel--2 { background: var(--surface-2); }
+.panel--3 { background: var(--surface-3); }
+.panel--inset { background: var(--surface-inset); box-shadow: none; }
+.panel--flush { border-radius: 0; border-inline: 0; }
+
+/* ---- Graceful degradation ---------------------------------------------
+   Without backdrop-filter the tint alone is too transparent to read text
+   against, so fall back to a solid surface. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .glass {
+    background: var(--surface-2);
+    border-color: var(--border-strong);
+  }
+  .glass::after { opacity: 0.3; }
+}
+
+/* Blur is expensive to composite. On small screens, and whenever the visitor
+   asks for reduced motion (often a proxy for "reduce visual load"), thin it
+   out rather than dropping the material entirely. */
+@media (max-width: 640px) {
+  :root { --glass-blur: 14px; --glass-blur-lg: 20px; }
+}

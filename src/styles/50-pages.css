@@ -1,0 +1,277 @@
+/* ==========================================================================
+   PAGE COMPOSITIONS
+   Deliberately varied editorial layouts. The homepage in particular is not a
+   repeating stack of cards - each band has its own structure and pacing.
+   ========================================================================== */
+
+/* ---- Home hero -------------------------------------------------------
+   Asymmetric: oversized echoed wordmark on the left, live match state on
+   the right, crest bleeding behind. */
+.hero { position: relative; padding-block: var(--space-8) var(--space-9); overflow: hidden; }
+.hero__grid {
+  display: grid;
+  gap: var(--space-7);
+  grid-template-columns: 1fr;
+  align-items: center;
+}
+@media (min-width: 1000px) {
+  .hero__grid { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: var(--space-8); }
+}
+.hero__eyebrow { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; margin-block-end: var(--space-5); }
+.hero__title {
+  font-size: var(--step-8);
+  line-height: 0.88;
+  letter-spacing: -0.035em;
+  text-transform: uppercase;
+  margin-block-end: var(--space-5);
+}
+.hero__title em { font-style: normal; color: var(--brand); display: block; }
+.hero__lede { font-size: var(--step-1); color: var(--text-muted); max-width: 46ch; line-height: 1.5; }
+.hero__cta { display: flex; gap: var(--space-3); flex-wrap: wrap; margin-block-start: var(--space-6); }
+
+/* Crest ghosted behind the hero - the echo at architectural scale. */
+.hero__crest {
+  position: absolute;
+  inset-block-start: -8%;
+  inset-inline-end: -12%;
+  width: min(58vw, 640px);
+  color: var(--brand);
+  opacity: 0.055;
+  pointer-events: none;
+  z-index: -1;
+}
+@media (max-width: 999px) { .hero__crest { inset-inline-end: -28%; width: 88vw; opacity: 0.045; } }
+
+/* Season ribbon: the honour line under the hero */
+.ribbon {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-4) var(--space-6);
+  border-radius: var(--radius-pill);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.ribbon::-webkit-scrollbar { display: none; }
+.ribbon__item { display: flex; align-items: baseline; gap: var(--space-2); white-space: nowrap; }
+.ribbon__v {
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-weight: var(--weight-bold);
+  color: var(--brand-text);
+  font-variant-numeric: tabular-nums;
+}
+.ribbon__l { font-size: var(--step--2); color: var(--text-subtle); letter-spacing: var(--tracking-wide); text-transform: uppercase; }
+.ribbon__sep { width: 1px; height: 26px; background: var(--border-strong); flex: 0 0 auto; }
+
+/* ---- Split editorial band (image one side, prose the other) ---------- */
+.split { display: grid; gap: var(--space-7); align-items: center; }
+@media (min-width: 900px) {
+  .split { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8); }
+  .split--reverse > :first-child { order: 2; }
+  .split--wide-left { grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr); }
+}
+.split__media { position: relative; border-radius: var(--radius-2xl); overflow: hidden; }
+.split__media img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.split__media--tall img { aspect-ratio: 3 / 4; }
+
+/* ---- Feature strip: one dominant item, two supporting -------------- */
+.feature-strip { display: grid; gap: var(--space-5); }
+@media (min-width: 940px) {
+  .feature-strip { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+  .feature-strip__side { display: grid; gap: var(--space-5); align-content: start; }
+}
+
+/* ---- Memorial band (the cause) ---------------------------------------
+   The quietest, most deliberate band on the site. Centred, generous, no
+   competing elements. */
+.memorial { padding-block: var(--space-10); text-align: center; position: relative; }
+.memorial__crest { width: 88px; margin-inline: auto; color: var(--brand); opacity: 0.9; margin-block-end: var(--space-6); }
+.memorial__name {
+  font-family: var(--font-display);
+  font-size: var(--step-6);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-display);
+}
+.memorial__dates { font-size: var(--step--1); color: var(--text-subtle); letter-spacing: var(--tracking-caps); text-transform: uppercase; margin-block-start: var(--space-3); }
+.memorial__body { max-width: 56ch; margin-inline: auto; margin-block-start: var(--space-6); color: var(--text-muted); font-size: var(--step-1); line-height: 1.6; }
+.memorial__motto {
+  margin-block-start: var(--space-7);
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  color: var(--brand-text);
+  letter-spacing: var(--tracking-display);
+}
+
+/* ---- Sepsis signs grid ---------------------------------------------- */
+.signs { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); counter-reset: sign; }
+.sign { padding: var(--space-5); border-radius: var(--radius-xl); display: flex; flex-direction: column; gap: var(--space-2); }
+.sign__letter {
+  font-family: var(--font-display);
+  font-size: var(--step-5);
+  font-weight: var(--weight-bold);
+  line-height: 1;
+  color: var(--brand);
+}
+.sign__title { font-family: var(--font-display); font-size: var(--step-1); }
+.sign__body { font-size: var(--step--1); color: var(--text-muted); }
+.medical-note {
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-inset);
+  font-size: var(--step--1);
+  color: var(--text-muted);
+}
+.medical-note strong { color: var(--text); }
+
+/* ---- League table wrapper -------------------------------------------- */
+.ltable { position: relative; }
+.ltable__legend { display: flex; gap: var(--space-4); flex-wrap: wrap; margin-block-start: var(--space-4); font-size: var(--step--2); color: var(--text-subtle); }
+.ltable__key { display: flex; align-items: center; gap: var(--space-2); }
+.ltable__swatch { width: 12px; height: 12px; border-radius: 3px; background: var(--brand); flex: 0 0 auto; }
+
+/* ---- Player profile -------------------------------------------------- */
+.pprofile { display: grid; gap: var(--space-7); }
+@media (min-width: 900px) { .pprofile { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); align-items: start; } }
+.pprofile__shot { position: relative; border-radius: var(--radius-2xl); overflow: hidden; background: var(--surface-3); }
+.pprofile__shot img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; object-position: top center; }
+.pprofile__num {
+  position: absolute;
+  inset-block-end: var(--space-4);
+  inset-inline-start: var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--step-7);
+  font-weight: var(--weight-bold);
+  line-height: 1;
+  color: var(--brand);
+  text-shadow: 0 4px 24px #000000BF;
+}
+.pprofile__statgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 116px), 1fr)); gap: var(--space-3); }
+
+/* ---- Awards / honours ----------------------------------------------- */
+.honour {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+}
+.honour__mark {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 48px; height: 48px;
+  border-radius: var(--radius-circle);
+  background: rgb(var(--brand-rgb) / 0.14);
+  color: var(--brand-text);
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--step--1);
+}
+.honour__body { min-width: 0; }
+.honour__title { font-family: var(--font-display); font-size: var(--step-1); }
+.honour__meta { font-size: var(--step--2); color: var(--text-subtle); }
+
+/* ---- Records list --------------------------------------------------- */
+.record {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline;
+  gap: var(--space-4);
+  padding: var(--space-4) 0;
+  border-block-end: 1px solid var(--border);
+}
+.record__v {
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  font-weight: var(--weight-bold);
+  color: var(--brand-text);
+  font-variant-numeric: tabular-nums;
+  min-width: 3ch;
+}
+.record__l { font-size: var(--step--1); }
+.record__who { font-size: var(--step--2); color: var(--text-subtle); text-align: right; }
+
+/* ---- Article / match report prose ----------------------------------- */
+.article__head { padding-block: var(--space-7) var(--space-6); }
+.article__title { font-size: var(--step-5); }
+.article__meta { display: flex; gap: var(--space-4); flex-wrap: wrap; font-size: var(--step--1); color: var(--text-subtle); margin-block-start: var(--space-4); }
+.article__cover { border-radius: var(--radius-2xl); overflow: hidden; margin-block-end: var(--space-7); }
+.article__cover img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+.article__body { font-size: var(--step-0); line-height: var(--lh-body); }
+.article__body > * + * { margin-block-start: var(--space-4); }
+.article__body h2 { font-size: var(--step-2); margin-block-start: var(--space-7); }
+.article__body h3 { font-size: var(--step-1); margin-block-start: var(--space-6); }
+.article__body blockquote {
+  padding-inline-start: var(--space-5);
+  border-inline-start: 3px solid var(--brand);
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  line-height: var(--lh-snug);
+}
+
+/* ---- Line-up / formation -------------------------------------------- */
+.lineup { display: grid; gap: var(--space-5); }
+@media (min-width: 780px) { .lineup { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.lineup__group { display: flex; flex-direction: column; gap: var(--space-2); }
+.lineup__glabel { font-size: var(--step--2); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--brand-text); font-weight: var(--weight-semi); }
+.lineup__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface-inset);
+  font-size: var(--step--1);
+}
+.lineup__n {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  min-width: 26px; height: 26px;
+  border-radius: var(--radius-xs);
+  background: rgb(var(--brand-rgb) / 0.16);
+  color: var(--brand-text);
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  font-size: var(--step--2);
+  font-variant-numeric: tabular-nums;
+}
+.lineup__pos { margin-inline-start: auto; font-size: var(--step--2); color: var(--text-subtle); }
+
+/* ---- Live page ------------------------------------------------------ */
+.live-embed { position: relative; aspect-ratio: 16 / 9; border-radius: var(--radius-2xl); overflow: hidden; background: var(--ink-000); }
+.live-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+/* ---- Join / recruitment paths --------------------------------------- */
+.paths { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
+.path { padding: var(--space-6); border-radius: var(--radius-xl); display: flex; flex-direction: column; gap: var(--space-3); }
+.path__n {
+  font-family: var(--font-display);
+  font-size: var(--step--1);
+  color: var(--brand-text);
+  letter-spacing: var(--tracking-wide);
+}
+.path__title { font-family: var(--font-display); font-size: var(--step-2); }
+.path__body { font-size: var(--step--1); color: var(--text-muted); flex: 1; }
+
+/* ---- Sponsor tiers -------------------------------------------------- */
+.tiers { display: grid; gap: var(--space-5); grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); }
+.tier { padding: var(--space-6); border-radius: var(--radius-xl); display: flex; flex-direction: column; gap: var(--space-4); }
+.tier__name { font-family: var(--font-display); font-size: var(--step-2); }
+.tier__list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-2); font-size: var(--step--1); color: var(--text-muted); }
+.tier__list li { display: flex; gap: var(--space-2); align-items: flex-start; }
+.tier__list li::before { content: ''; flex: 0 0 auto; width: 6px; height: 6px; margin-block-start: 0.55em; border-radius: 50%; background: var(--brand); }
+
+/* ---- Form layout --------------------------------------------------- */
+.form-grid { display: grid; gap: var(--space-4); }
+@media (min-width: 640px) { .form-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .form-grid__full { grid-column: 1 / -1; } }
+
+/* ---- Print --------------------------------------------------------- */
+@media print {
+  .atmos, .hdr, .ftr, .mnav, .skip, .toasts, .consent { display: none !important; }
+  body { background: #fff; color: #000; }
+  .glass, .panel { background: #fff !important; border: 1px solid #ccc !important; box-shadow: none !important; backdrop-filter: none !important; }
+  a { text-decoration: underline; }
+}

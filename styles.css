@@ -4591,3 +4591,7 @@ html[data-theme="light"] .sec--pagehero::before {
   .enqform__row { grid-template-columns: 1fr; }
   .enqform button[type="submit"] { justify-self: stretch; width: 100%; }
 }
+
+/* Long club names ("Hillside Elite FC Blues", "Sporting Club Catania") must
+   never push the league table sideways on a phone. */
+.tbl__club { min-width: 0; overflow: hidden; text-overflow: ellipsis; }

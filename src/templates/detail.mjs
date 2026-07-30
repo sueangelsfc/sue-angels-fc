@@ -20,7 +20,7 @@ export function playerPage(p, d) {
   const bioBlock = p.bio
     ? `<div class="prose">${(Array.isArray(p.bio) ? p.bio : [p.bio]).map((t) => `<p>${esc(t)}</p>`).join('')}</div>`
     : `<p style="color:var(--text-subtle);font-size:var(--step--1)">
-         A profile for ${esc(p.name)} has not been written yet. Squad members&rsquo; own words go here as we collect them.
+         A profile for ${esc(p.name)} has not been written yet. Squad members’ own words go here as we collect them.
        </p>`;
 
   const tiles = [
@@ -45,7 +45,7 @@ export function playerPage(p, d) {
         </div>
         <div class="stack stack--lg">
           <div>
-            <p class="eyebrow">${esc(p.position)}${p.status !== 'active' ? ` &middot; ${esc(p.status)}` : ''}</p>
+            <p class="eyebrow">${esc(p.position)}${p.status !== 'active' ? ` · ${esc(p.status)}` : ''}</p>
             <h1 style="font-size:var(--step-6);margin-block:var(--space-2) var(--space-4)">${esc(p.name)}</h1>
             ${p.positionsPlayed?.length ? `<div class="row row--tight">
               ${p.positionsPlayed.slice(0, 5).map((c) => `<span class="chip" style="pointer-events:none">${esc(c)}</span>`).join('')}
@@ -56,7 +56,7 @@ export function playerPage(p, d) {
           </div>
           ${bioBlock}
           <p style="font-size:var(--step--2);color:var(--text-subtle)">
-            Figures cover all competitions in ${esc(d.currentSeason)} and are derived from the club&rsquo;s
+            Figures cover all competitions in ${esc(d.currentSeason)} and are derived from the club’s
             match records. ${esc(p.minutesNote || '')}
           </p>
         </div>
@@ -119,7 +119,7 @@ export function matchPage(m, d) {
           </div>
           <p style="font-size:var(--step--1);color:var(--text-subtle)">
             ${icon('calendar')} ${esc(fmtDate(m.date, { weekday: true, long: true }))}
-            ${m.kick ? ` &middot; ${icon('clock')} ${esc(m.kick)}` : ''}
+            ${m.kick ? ` · ${icon('clock')} ${esc(m.kick)}` : ''}
           </p>
         </div>
         ${scoreboard(m, d.badges)}
@@ -166,8 +166,8 @@ export function matchPage(m, d) {
             <h3 style="font-size:var(--step-1);margin-bottom:var(--space-4)">Match statistics</h3>
             ${statRow('Goals', m.hs, m.as)}
             ${statRow('Goals logged to a scorer', goalsFor, (dtl.opponentGoals || []).length)}
-            ${statRow('Assists logged', (dtl.assists || []).length, '&mdash;')}
-            ${statRow('Yellow cards', (dtl.yellowCards || []).length, '&mdash;')}
+            ${statRow('Assists logged', (dtl.assists || []).length, '—')}
+            ${statRow('Yellow cards', (dtl.yellowCards || []).length, '—')}
             ${statRow('Red cards', (dtl.redCards || []).length, (dtl.opponentRedCards || []).length)}
           </div>` : ''}
 
@@ -178,7 +178,7 @@ export function matchPage(m, d) {
                 const pl = d.players.find((p) => p.num === Number(num));
                 return `<div class="row row--between" style="font-size:var(--step--1)">
                   <span class="truncate">${pl ? `<a href="/players/${attr(pl.slug)}.html" style="text-decoration:none">${esc(pl.name)}</a>` : esc(d.nameFor(Number(num)))}</span>
-                  <strong class="tnum">${n > 1 ? `&times;${n}` : '1'}</strong>
+                  <strong class="tnum">${n > 1 ? `×${n}` : '1'}</strong>
                 </div>`;
               }).join('')}
             </div>
@@ -251,7 +251,7 @@ export function albumPage(g, d) {
     <div class="wrap wrap--wide">
       ${crumbs([{ label: 'Home', href: '/' }, { label: 'Gallery', href: '/gallery.html' }, { label: g.title, href: `/gallery/${g.slug}.html` }])}
       <div class="phero__inner" style="margin-top:var(--space-6)">
-        <span class="eyebrow">${esc(g.category)}${g.photographer ? ` &middot; ${esc(g.photographer)}` : ''}</span>
+        <span class="eyebrow">${esc(g.category)}${g.photographer ? ` · ${esc(g.photographer)}` : ''}</span>
         <h1 style="font-size:var(--step-4)">${esc(g.title)}</h1>
         <p class="phero__lede">${esc(photos.length)} photographs.</p>
       </div>

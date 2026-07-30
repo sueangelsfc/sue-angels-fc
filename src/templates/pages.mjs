@@ -21,14 +21,14 @@ export function about(d) {
     crumbs: trail({ label: 'Our story', href: '/about.html' }),
     eyebrow: 'The club',
     title: 'Built in her name.',
-    lede: `Sue&rsquo;s Angels FC is a London Sunday-league football club founded in ${esc(CLUB.founded)} in memory of ${esc(CLUB.memorial.name)}.`,
+    lede: `Sue’s Angels FC is a London Sunday-league football club founded in ${esc(CLUB.founded)} in memory of ${esc(CLUB.memorial.name)}.`,
   })}
   <section class="section section--flush">
     <div class="wrap wrap--wide">
       <div class="split split--wide-left">
         <div class="prose">
           <p style="font-size:var(--step-1);color:var(--text)">Everything about this club begins with one person.</p>
-          <p>Sue&rsquo;s Angels FC was founded in ${esc(CLUB.founded)} in memory of ${esc(CLUB.memorial.name)},
+          <p>Sue’s Angels FC was founded in ${esc(CLUB.founded)} in memory of ${esc(CLUB.memorial.name)},
           so that her name stays part of something good, week after week. We lost Sue to sepsis. It is a loss her
           family and friends carry every day, and it is the reason this club exists.</p>
           <p>We play for her, and we talk openly about sepsis so that fewer people have to go through the same thing.</p>
@@ -40,13 +40,13 @@ export function about(d) {
           scoring ${esc(all.goalsFor)} goals. Three of those league wins came as walkovers when the
           opposition could not field a side.</p>
           <h2>What we are building</h2>
-          <p>A club that competes properly on a Sunday, looks after its players, and keeps Sue&rsquo;s
+          <p>A club that competes properly on a Sunday, looks after its players, and keeps Sue’s
           message in the open. That means a real matchday: photography, match reports, statistics kept
           honestly, and a squad that people want to be part of.</p>
         </div>
         <div class="stack">
           <div class="quote glass glass--lg">
-            <blockquote>&ldquo;${esc(CLUB.memorial.motto)}&rdquo;</blockquote>
+            <blockquote>“${esc(CLUB.memorial.motto)}”</blockquote>
             <cite>The words on our crest</cite>
           </div>
           <div class="grid grid--2">
@@ -75,7 +75,7 @@ export function sepsis() {
     crumbs: trail({ label: 'Our cause', href: '/sepsis.html' }),
     eyebrow: 'Our cause',
     title: `For ${esc(CLUB.memorial.name.split(' ')[0])}.`,
-    lede: `Sue&rsquo;s Angels FC was founded in memory of ${esc(CLUB.memorial.name)}, who we lost to sepsis. We play in her name, and we share what we have learned so other families can recognise the signs in time.`,
+    lede: `Sue’s Angels FC was founded in memory of ${esc(CLUB.memorial.name)}, who we lost to sepsis. We play in her name, and we share what we have learned so other families can recognise the signs in time.`,
   })}
 
   <section class="section section--flush">
@@ -154,7 +154,7 @@ export function sepsis() {
         <article class="path glass">
           <span class="path__n">03</span>
           <h3 class="path__title">Stand with the club</h3>
-          <p class="path__body">Back Sue&rsquo;s Angels as a sponsor, partner or volunteer, and help us carry her message a little further.</p>
+          <p class="path__body">Back Sue’s Angels as a sponsor, partner or volunteer, and help us carry her message a little further.</p>
           <a class="btn btn--glass btn--sm" href="/join.html">Get involved</a>
         </article>
       </div>
@@ -173,7 +173,7 @@ export function champions(d) {
   return { body: `
   ${pageHero({
     crumbs: trail({ label: 'Champions', href: '/champions.html' }),
-    eyebrow: `${esc(d.currentSeason)} &middot; ${esc(CLUB.division)}`,
+    eyebrow: `${esc(d.currentSeason)} · ${esc(CLUB.division)}`,
     title: 'Champions.<br>Unbeaten.',
     lede: `Eighteen league games, eighteen wins, ${esc(ls.goalsFor)} goals scored and ${esc(ls.goalsAgainst)} conceded. Promoted into ${esc(CLUB.nextDivision)}.`,
   })}
@@ -195,9 +195,9 @@ export function champions(d) {
   <section class="section">
     <div class="wrap wrap--wide">
       ${sectionHead({ index: '01', eyebrow: 'How it finished', title: `${esc(CLUB.division)} final table` })}
-      ${leagueTable(d.table, { caption: `${CLUB.league} &middot; ${CLUB.division} &middot; ${d.currentSeason} final standings` })}
+      ${leagueTable(d.table, { caption: `${CLUB.league} · ${CLUB.division} · ${d.currentSeason} final standings` })}
       <div class="ltable__legend">
-        <span class="ltable__key"><span class="ltable__swatch"></span> Sue&rsquo;s Angels FC</span>
+        <span class="ltable__key"><span class="ltable__swatch"></span> Sue’s Angels FC</span>
         ${d.promotionSpots ? `<span>Top ${esc(d.promotionSpots)} promoted</span>` : ''}
       </div>
     </div>
@@ -218,8 +218,8 @@ export function champions(d) {
           <div class="panel" style="padding:var(--space-5)">
             <h3 style="font-size:var(--step-1);margin-bottom:var(--space-3)">${esc(c.competition)}</h3>
             <p style="color:var(--text-muted);font-size:var(--step--1)">
-              Played ${esc(c.played)} &middot; Won ${esc(c.won)} &middot; Drawn ${esc(c.drawn)} &middot; Lost ${esc(c.lost)}
-              <br>Goals ${esc(c.goalsFor)}&ndash;${esc(c.goalsAgainst)}
+              Played ${esc(c.played)} · Won ${esc(c.won)} · Drawn ${esc(c.drawn)} · Lost ${esc(c.lost)}
+              <br>Goals ${esc(c.goalsFor)}–${esc(c.goalsAgainst)}
             </p>
           </div>`).join('')}
       </div>
@@ -249,7 +249,7 @@ export function squad(d) {
     crumbs: trail({ label: 'Squad', href: '/squad.html' }),
     eyebrow: 'The first team',
     title: 'The squad.',
-    lede: 'Positions are taken from where each player actually lined up across the season&rsquo;s match records. Tap any player for their full profile.',
+    lede: 'Positions are taken from where each player actually lined up across the season’s match records. Tap any player for their full profile.',
     meta: [`${esc(d.squad.length)} squad members`, `${esc(d.players.filter((p) => p.apps > 0).length)} with appearances`],
   })}
   ${groups}` };
@@ -274,7 +274,7 @@ export function stats(d) {
     crumbs: trail({ label: 'Player stats', href: '/stats.html' }),
     eyebrow: 'Performance',
     title: 'Player statistics.',
-    lede: 'Every figure below is derived from the club&rsquo;s own match records, across all competitions.',
+    lede: 'Every figure below is derived from the club’s own match records, across all competitions.',
   })}
   <section class="section section--flush">
     <div class="wrap wrap--wide">
@@ -293,7 +293,7 @@ export function stats(d) {
         <label class="sr-only" for="stat-search">Search players</label>
         <input class="input" id="stat-search" type="search" placeholder="Search a player" data-table-filter="#stats-table" style="max-width:280px">
       </div>
-      <div id="stats-table">${statsTable(rows, { caption: `All competitions &middot; ${d.currentSeason}` })}</div>
+      <div id="stats-table">${statsTable(rows, { caption: `All competitions · ${d.currentSeason}` })}</div>
       <p style="margin-top:var(--space-4);font-size:var(--step--2);color:var(--text-subtle)">
         Appearances count starts. Sunday-league match returns do not record minutes played or
         substitute appearances, so neither is shown rather than estimated.
@@ -370,7 +370,7 @@ export function results(d) {
   const blocks = seasons.map((s) => `<section class="section" aria-labelledby="s-${attr(s.season.replace('/', '-'))}">
     <div class="wrap wrap--wide">
       ${sectionHead({
-        eyebrow: `Played ${s.played} &middot; Won ${s.won} &middot; Drawn ${s.drawn} &middot; Lost ${s.lost}`,
+        eyebrow: `Played ${s.played} · Won ${s.won} · Drawn ${s.drawn} · Lost ${s.lost}`,
         title: `<span id="s-${attr(s.season.replace('/', '-'))}">${esc(s.season)} season</span>`,
       })}
       <div class="grid grid--wide" data-filter-list>
@@ -386,7 +386,7 @@ export function results(d) {
     title: 'Results.',
     lede: 'Every Angels result across league and cups. Tap any match for line-ups, goals and the report.',
   })}
-  <section class="section section--flush"><div class="wrap wrap--wide">${chips}</div></section>
+  <section class="section section--strip"><div class="wrap wrap--wide">${chips}</div></section>
   ${blocks}` };
 }
 
@@ -398,13 +398,13 @@ export function league(d) {
     crumbs: trail({ label: 'League table', href: '/league.html' }),
     eyebrow: esc(CLUB.league),
     title: `${esc(CLUB.division)}.`,
-    lede: `The full ${esc(d.currentSeason)} table, every result across the division, and the league&rsquo;s leading scorers.`,
+    lede: `The full ${esc(d.currentSeason)} table, every result across the division, and the league’s leading scorers.`,
   })}
   <section class="section section--flush">
     <div class="wrap wrap--wide">
-      ${leagueTable(d.table, { caption: `${CLUB.division} &middot; ${d.currentSeason} final standings` })}
+      ${leagueTable(d.table, { caption: `${CLUB.division} · ${d.currentSeason} final standings` })}
       <div class="ltable__legend">
-        <span class="ltable__key"><span class="ltable__swatch"></span> Sue&rsquo;s Angels FC</span>
+        <span class="ltable__key"><span class="ltable__swatch"></span> Sue’s Angels FC</span>
         ${d.promotionSpots ? `<span>Top ${esc(d.promotionSpots)} promoted</span>` : ''}
       </div>
     </div>
@@ -414,7 +414,7 @@ export function league(d) {
       ${sectionHead({ index: '01', eyebrow: 'Across the division', title: 'Leading scorers' })}
       <div class="table-wrap scroll-x">
         <table class="data">
-          <caption>${esc(CLUB.division)} leading scorers &middot; ${esc(d.currentSeason)}</caption>
+          <caption>${esc(CLUB.division)} leading scorers · ${esc(d.currentSeason)}</caption>
           <thead><tr>
             <th scope="col">#</th><th scope="col">Player</th><th scope="col">Club</th>
             <th scope="col">Goals</th><th scope="col">Assists</th><th scope="col">Apps</th>
@@ -430,7 +430,7 @@ export function league(d) {
         </table>
       </div>
       <p style="margin-top:var(--space-4);font-size:var(--step--2);color:var(--text-subtle)">
-        This chart counts league games only, so it will read lower than the club&rsquo;s
+        This chart counts league games only, so it will read lower than the club’s
         <a href="/stats.html">all-competitions statistics</a>.
       </p>
     </div>
@@ -446,7 +446,7 @@ export function records(d) {
     crumbs: trail({ label: 'Club records', href: '/records.html' }),
     eyebrow: 'The archive',
     title: 'Club records.',
-    lede: 'Every record below is computed from the club&rsquo;s match records, so it updates itself as results are added.',
+    lede: 'Every record below is computed from the club’s match records, so it updates itself as results are added.',
   })}
   <section class="section section--flush">
     <div class="wrap wrap--wide">
@@ -520,7 +520,7 @@ export function awards(d) {
           <span class="honour__mark" aria-hidden="true">${i + 1}</span>
           <div class="honour__body">
             <p class="honour__title truncate">${esc(p.name)}</p>
-            <p class="honour__meta">${esc(p.motm)} ${p.motm === 1 ? 'award' : 'awards'} &middot; ${esc(p.apps)} appearances</p>
+            <p class="honour__meta">${esc(p.motm)} ${p.motm === 1 ? 'award' : 'awards'} · ${esc(p.apps)} appearances</p>
           </div>
         </a>`).join('')}
       </div>
@@ -544,7 +544,7 @@ export function news(d) {
     title: 'News.',
     lede: 'Match reports, club announcements and the stories behind the badge.',
   })}
-  <section class="section section--flush">
+  <section class="section section--strip">
     <div class="wrap wrap--wide">
       <div class="chip-row" role="group" aria-label="Filter by category">
         <button class="chip is-active" type="button" data-filter="all" aria-pressed="true">All</button>
@@ -582,7 +582,7 @@ export function gallery(d) {
                 : '<div style="aspect-ratio:16/9;background:var(--surface-3)"></div>'}
               <div class="media-card__overlay">
                 <p style="font-family:var(--font-display);font-size:var(--step-1)">${esc(g.title)}</p>
-                <p style="font-size:var(--step--2);opacity:.8">${esc(g.photoCount)} photographs${g.photographer ? ` &middot; ${esc(g.photographer)}` : ''}</p>
+                <p style="font-size:var(--step--2);opacity:.8">${esc(g.photoCount)} photographs${g.photographer ? ` · ${esc(g.photographer)}` : ''}</p>
               </div>
             </a>`).join('')}
           </div>`
@@ -737,7 +737,7 @@ export function enquiryForm({ type = 'general', requireMessage = false, ok = 'Th
     <div class="field form-grid__full">
       <label class="check">
         <input type="checkbox" name="consent" required>
-        <span>I am happy for Sue&rsquo;s Angels FC to contact me about this enquiry.</span>
+        <span>I am happy for Sue’s Angels FC to contact me about this enquiry.</span>
       </label>
       <p class="field__error" data-error-for="consent" hidden></p>
     </div>
@@ -773,7 +773,7 @@ export function join() {
   return { body: `
   ${pageHero({
     crumbs: trail({ label: 'Join', href: '/join.html' }),
-    eyebrow: `${esc(CLUB.nextDivision)} &middot; New season`,
+    eyebrow: `${esc(CLUB.nextDivision)} · New season`,
     title: 'Join the Angels.',
     lede: 'Players, media volunteers, helpers and sponsors. There is more than one way in.',
   })}

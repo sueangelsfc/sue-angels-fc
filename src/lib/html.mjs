@@ -61,8 +61,12 @@ export function icon(name, cls = '') {
    (80% of a homepage, and 909KB on one player page). As an <img> the browser
    fetches it once and reuses it across every page.
 
-   The mark is brand orange in both themes, so it needs no currentColor. */
-const CREST_SRC = '/assets/brand/crest-mark.svg';
+   Note: assets/badge/sue-angels-crest-marks.svg is an INVERTED mask (a
+   full-canvas rectangle with the crest subtracted via evenodd), so filling it
+   paints the background and voids the crest. The real crest raster is used
+   instead - it is the actual brand asset, reads on black and on warm white,
+   and at 31KB it is fetched once and cached for the whole site. */
+const CREST_SRC = '/assets/brand/crest.webp';
 export function crest(cls = '', label = '') {
   const a11y = label ? `alt="${attr(label)}"` : 'alt="" aria-hidden="true"';
   return `<img class="${attr(cls)}" src="${CREST_SRC}" ${a11y} width="512" height="512" loading="lazy" decoding="async">`;
@@ -171,8 +175,8 @@ function brandLockup() {
   return `<a class="brand" href="/" aria-label="${attr(CLUB.name)}, home">
     <span class="brand__crest">${crestEager()}</span>
     <span class="brand__text">
-      <span class="brand__name">Sue&rsquo;s Angels</span>
-      <span class="brand__sub">Est. 2025 &middot; For Sue</span>
+      <span class="brand__name">Sue’s Angels</span>
+      <span class="brand__sub">Est. 2025 · For Sue</span>
     </span>
   </a>`;
 }
@@ -266,7 +270,7 @@ const THEME_BOOT = `(function(){var d=document.documentElement;d.classList.add('
 export function page({
   title, description, path, body, css = 'sa.css', js = 'sa.js',
   ogImage = '/assets/social/og-default.png', schema = [], bodyClass = '',
-  noindex = false, assetV = 1,
+  noindex = false, assetV = 1, bare = false,
 }) {
   const canonical = `${CLUB.site}${path === '/index.html' ? '/' : path}`;
   const schemaTags = schema.length
@@ -297,7 +301,7 @@ ${noindex ? '<meta name="robots" content="noindex,follow">' : ''}
 <meta name="twitter:title" content="${attr(title)}">
 <meta name="twitter:description" content="${attr(description)}">
 <meta name="twitter:image" content="${attr(CLUB.site + ogImage)}">
-<link rel="icon" href="/assets/brand/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/brand/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preload" href="/assets/fonts/Archivo-Variable.woff2" as="font" type="font/woff2" crossorigin>
@@ -306,15 +310,21 @@ ${noindex ? '<meta name="robots" content="noindex,follow">' : ''}
 ${schemaTags}
 </head>
 <body${bodyClass ? ` class="${attr(bodyClass)}"` : ''}>
-<div class="atmos" aria-hidden="true"></div>
-<a class="skip" href="#main">Skip to content</a>
+<div class="atmos" aria-hidden="true">
+  <span class="atmos__blob atmos__blob--a"></span>
+  <span class="atmos__blob atmos__blob--b"></span>
+  <span class="atmos__blob atmos__blob--c"></span>
+  <span class="atmos__blob atmos__blob--d"></span>
+  <span class="atmos__veil"></span>
+</div>
+${bare ? body : `<a class="skip" href="#main">Skip to content</a>
 ${header(path)}
 <main id="main">
 ${body}
 </main>
 ${footer()}
-<div class="toasts" data-toasts role="region" aria-label="Notifications" aria-live="polite"></div>
-<script src="/${js}?v=${assetV}" defer></script>
+<div class="toasts" data-toasts role="region" aria-label="Notifications" aria-live="polite"></div>`}
+<script src="/${bare ? js : `${js}?v=${assetV}`}" defer></script>
 </body>
 </html>`;
 }

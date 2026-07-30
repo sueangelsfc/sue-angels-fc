@@ -1,0 +1,128 @@
+/* ==========================================================================
+   CONTROL PANEL
+   Calm and dense. It uses the club's tokens so it feels like Sue's Angels,
+   but glass is reserved for the auth card and dialogs: dense tables and long
+   forms sit on flat opaque surfaces because that is what stays readable.
+   ========================================================================== */
+
+/* ---- Auth gate ---- */
+.cp-gate {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: var(--gutter);
+}
+.cp-gate__card { width: min(100%, 420px); padding: var(--space-7) var(--space-6); text-align: center; }
+.cp-gate__crest { display: block; width: 64px; margin: 0 auto var(--space-5); }
+.cp-gate__crest img { width: 100%; height: auto; }
+.cp-gate__title { font-size: var(--step-3); }
+.cp-gate__sub { color: var(--text-subtle); font-size: var(--step--1); margin-block-end: var(--space-6); }
+.cp-gate__form { display: flex; flex-direction: column; gap: var(--space-4); text-align: left; }
+.cp-gate__note {
+  margin-block: var(--space-5) var(--space-3);
+  font-size: var(--step--2);
+  color: var(--text-subtle);
+  line-height: 1.5;
+}
+
+/* ---- Shell ---- */
+.cp { display: grid; min-height: 100svh; }
+@media (min-width: 900px) { .cp { grid-template-columns: 264px minmax(0, 1fr); } }
+
+.cp-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  background: var(--surface);
+  border-inline-end: 1px solid var(--border);
+}
+@media (max-width: 899px) {
+  .cp-side {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: 120;
+    width: min(84vw, 300px);
+    transform: translateX(-102%);
+    transition: transform var(--dur-base) var(--ease-out);
+    overflow-y: auto;
+    box-shadow: var(--shadow-xl);
+  }
+  .cp-side.is-open { transform: none; }
+}
+
+.cp-side__brand { display: flex; align-items: center; gap: var(--space-3); text-decoration: none; }
+.cp-side__crest { width: 34px; flex: 0 0 auto; }
+.cp-side__crest img { width: 100%; height: auto; }
+.cp-side__brand b { display: block; font-family: var(--font-display); font-size: var(--step--1); }
+.cp-side__brand small { display: block; font-size: var(--step--2); color: var(--text-subtle); }
+
+.cp-nav { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.cp-nav__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--step--1);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--dur-instant) var(--ease-out), color var(--dur-instant) var(--ease-out);
+}
+.cp-nav__item:hover { background: var(--surface-inset); color: var(--text); }
+.cp-nav__item.is-active { background: rgb(var(--brand-rgb) / 0.14); color: var(--brand-text); font-weight: var(--weight-semi); }
+.cp-nav__item.is-active .ico { color: var(--brand); }
+.cp-nav__count {
+  margin-inline-start: auto;
+  min-width: 20px;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--brand);
+  color: var(--text-on-brand);
+  font-size: var(--step--2);
+  font-weight: var(--weight-bold);
+  text-align: center;
+}
+
+.cp-side__foot { margin-block-start: auto; display: flex; flex-direction: column; gap: var(--space-3); }
+.cp-who { display: flex; align-items: center; gap: var(--space-3); font-size: var(--step--2); }
+.cp-who__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-subtle); flex: 0 0 auto; }
+.cp-who b { display: block; overflow: hidden; text-overflow: ellipsis; }
+.cp-who small { color: var(--text-subtle); }
+
+/* ---- Main ---- */
+.cp-main { display: flex; flex-direction: column; min-width: 0; }
+.cp-top {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg);
+  border-block-end: 1px solid var(--border);
+}
+.cp-top__title { font-size: var(--step-2); margin-inline-end: auto; }
+.cp-top__actions { display: flex; align-items: center; gap: var(--space-2); }
+@media (min-width: 900px) { #cp-menu { display: none; } }
+#cp-menu .ico { transform: rotate(180deg); }
+
+.cp-body { padding: var(--space-6) var(--space-5); flex: 1; min-width: 0; }
+.cp-panel[hidden] { display: none; }
+.cp-panel__loading { display: flex; flex-direction: column; gap: var(--space-3); max-width: 520px; }
+
+/* The panel background is flat, never glass: these views are dense tables. */
+.cp .panel { background: var(--surface); }
+.cp table.data { font-size: var(--step--2); }
+.cp table.data th, .cp table.data td { padding: var(--space-2) var(--space-3); }
+
+/* The control panel is a working tool, so the drifting background would be a
+   distraction. Hold it still and quiet here. */
+.cp-gate ~ .atmos, body:has(.cp) .atmos { opacity: 0.5; }
+body:has(.cp) .atmos__blob { animation: none; }

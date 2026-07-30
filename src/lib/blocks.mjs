@@ -18,7 +18,7 @@ export function fixtureCard(m, badges, { glass = false, href = true } = {}) {
   const middle = m.played
     ? m.isWalkover
       ? `<span class="fixture__vs" title="Awarded as a walkover">W/O</span>`
-      : `<span class="fixture__score">${esc(m.hs)}<span aria-hidden="true">&ndash;</span>${esc(m.as)}</span>`
+      : `<span class="fixture__score">${esc(m.hs)}<span aria-hidden="true">–</span>${esc(m.as)}</span>`
     : `<span class="fixture__vs">v</span>`;
 
   const inner = `
@@ -36,11 +36,11 @@ export function fixtureCard(m, badges, { glass = false, href = true } = {}) {
     </div>
     <div class="fixture__when">
       ${icon('calendar', '')}<span>${esc(fmtDate(m.date, { weekday: true }))}</span>
-      ${m.kick ? `<span aria-hidden="true">&middot;</span>${icon('clock', '')}<span>${esc(m.kick)}</span>` : ''}
+      ${m.kick ? `<span aria-hidden="true">·</span>${icon('clock', '')}<span>${esc(m.kick)}</span>` : ''}
     </div>
     ${m.venue || m.resultNote ? `<div class="fixture__foot">
       ${m.venue ? `<span class="truncate">${icon('pin', '')} ${esc(m.venue)}</span>` : '<span></span>'}
-      ${m.resultNote ? `<span>${esc(m.resultNote)}</span>` : (m.played ? '<span>Match centre &rarr;</span>' : '')}
+      ${m.resultNote ? `<span>${esc(m.resultNote)}</span>` : (m.played ? '<span>Match centre →</span>' : '')}
     </div>` : ''}`;
 
   const cls = `fixture ${glass ? 'glass glass--interactive' : 'panel'}`;
@@ -53,14 +53,14 @@ export function fixtureCard(m, badges, { glass = false, href = true } = {}) {
 export function scoreboard(m, badges) {
   // Exactly one crest box per side: our own inline shield, or the opponent's.
   const teamBox = (name, isUs) => isUs
-    ? `<div class="scoreboard__team"><span class="crest crest--lg">${crest()}</span><span class="scoreboard__name">Sue&rsquo;s Angels FC</span></div>`
+    ? `<div class="scoreboard__team"><span class="crest crest--lg">${crest()}</span><span class="scoreboard__name">Sue’s Angels FC</span></div>`
     : `<div class="scoreboard__team">${clubCrest(name, badges, 'crest--lg')}<span class="scoreboard__name">${esc(name)}</span></div>`;
 
   const centre = m.played
     ? m.isWalkover
       ? `<div style="text-align:center"><span class="scoreboard__score">W/O</span><p class="eyebrow eyebrow--muted" style="margin-top:var(--space-2)">Walkover</p></div>`
       : `<div style="text-align:center">
-           <span class="scoreboard__score">${esc(m.hs)}<span style="opacity:.4">&ndash;</span>${esc(m.as)}</span>
+           <span class="scoreboard__score">${esc(m.hs)}<span style="opacity:.4">–</span>${esc(m.as)}</span>
            ${m.decidedOnPenalties ? '<p class="eyebrow eyebrow--muted" style="margin-top:var(--space-2)">On penalties</p>' : ''}
          </div>`
     : `<div style="text-align:center"><span class="scoreboard__score" style="font-size:var(--step-4)">v</span></div>`;
@@ -196,7 +196,7 @@ export function lineupBlock(m, nameFor) {
 
   return `<div class="lineup">
     <div class="lineup__group">
-      <span class="lineup__glabel">Starting eleven${d.formation ? ` &middot; ${esc(d.formation)}` : ''}</span>
+      <span class="lineup__glabel">Starting eleven${d.formation ? ` · ${esc(d.formation)}` : ''}</span>
       ${starters}
     </div>
     ${bench ? `<div class="lineup__group">
@@ -211,7 +211,7 @@ export function timelineBlock(events) {
   if (!events.length) return '';
   return `<div class="timeline">
     ${events.map((e) => `<div class="tl-item" data-kind="${attr(e.kind)}">
-      <span class="tl-item__min">${esc(e.min ? `${e.min}'` : '&mdash;')}</span>
+      <span class="tl-item__min">${esc(e.min ? `${e.min}'` : '—')}</span>
       <span class="tl-item__text">${esc(e.text)}</span>
     </div>`).join('')}
   </div>`;
@@ -234,7 +234,7 @@ export function articleCard(a, { glass = false } = {}) {
 /* ---- Recognition / honour ------------------------------------------- */
 export function honourRow(r, nameFor) {
   const who = r.player != null ? nameFor(r.player) : r.name || r.winner || '';
-  const label = r.type === 'potm' ? `Player of the Month${r.month ? ` &middot; ${esc(r.month)}` : ''}`
+  const label = r.type === 'potm' ? `Player of the Month${r.month ? ` · ${esc(r.month)}` : ''}`
     : r.type === 'season' ? 'End of season'
     : r.title || r.label || 'Recognition';
   const mark = r.type === 'potm' ? 'POTM' : r.type === 'season' ? 'EOS' : '★';

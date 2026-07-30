@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Control panel · Sue&#39;s Angels FC</title>
+<meta name="description" content="Administrative control panel.">
+<link rel="canonical" href="https://www.suesangelsfc.co.uk/control.html">
+<meta name="robots" content="noindex,follow">
+<script>(function(){var d=document.documentElement;d.classList.add('js');try{var t=localStorage.getItem('sa-theme');if(t==='light'||t==='dark'){d.setAttribute('data-theme',t)}}catch(e){}})();</script>
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#FFF8F3" media="(prefers-color-scheme: light)">
+<meta name="color-scheme" content="dark light">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Sue&#39;s Angels FC">
+<meta property="og:title" content="Control panel · Sue&#39;s Angels FC">
+<meta property="og:description" content="Administrative control panel.">
+<meta property="og:url" content="https://www.suesangelsfc.co.uk/control.html">
+<meta property="og:image" content="https://www.suesangelsfc.co.uk/assets/social/og-default.png">
+<meta property="og:locale" content="en_GB">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Control panel · Sue&#39;s Angels FC">
+<meta name="twitter:description" content="Administrative control panel.">
+<meta name="twitter:image" content="https://www.suesangelsfc.co.uk/assets/social/og-default.png">
+<link rel="icon" href="/assets/brand/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="preload" href="/assets/fonts/Archivo-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/sa.css?v=5afe7265">
+
+</head>
+<body class="is-control">
+<div class="atmos" aria-hidden="true">
+  <span class="atmos__blob atmos__blob--a"></span>
+  <span class="atmos__blob atmos__blob--b"></span>
+  <span class="atmos__blob atmos__blob--c"></span>
+  <span class="atmos__blob atmos__blob--d"></span>
+  <span class="atmos__veil"></span>
+</div>
+
+  <!-- ============ AUTH GATE ============ -->
+  <div class="cp-gate" id="cp-gate">
+    <div class="cp-gate__card glass glass--lg">
+      <span class="cp-gate__crest"><img class="" src="/assets/brand/crest.webp" alt="Sue&#39;s Angels FC crest" width="512" height="512" loading="lazy" decoding="async"></span>
+      <h1 class="cp-gate__title">Control panel</h1>
+      <p class="cp-gate__sub">Sue&#39;s Angels FC</p>
+
+      <form class="cp-gate__form" id="cp-login" novalidate>
+        <div class="field">
+          <label class="field__label" for="cp-email">Email</label>
+          <input class="input" id="cp-email" name="email" type="email" autocomplete="username"
+                 inputmode="email" required>
+        </div>
+        <div class="field">
+          <label class="field__label" for="cp-pass">Password</label>
+          <input class="input" id="cp-pass" name="password" type="password"
+                 autocomplete="current-password" required>
+        </div>
+        <p class="field__error" id="cp-login-error" role="alert" hidden></p>
+        <button class="btn btn--primary btn--block" type="submit" id="cp-login-btn">Sign in</button>
+      </form>
+
+      <p class="cp-gate__note">
+        Access is granted by the club administrator registry in the database, not by
+        this page. Signing in with an account that is not registered will read the
+        club data but will not be able to change anything.
+      </p>
+      <a class="btn btn--quiet btn--sm" href="/">Back to the website</a>
+    </div>
+  </div>
+
+  <!-- ============ APP ============ -->
+  <div class="cp" id="cp-app" hidden>
+    <aside class="cp-side">
+      <a class="cp-side__brand" href="/">
+        <span class="cp-side__crest"><img class="" src="/assets/brand/crest.webp" alt="" aria-hidden="true" width="512" height="512" loading="lazy" decoding="async"></span>
+        <span>
+          <b>Sue’s Angels</b>
+          <small>Control panel</small>
+        </span>
+      </a>
+      <nav aria-label="Control panel sections">
+        <ul class="cp-nav" role="list"><li>
+    <button class="cp-nav__item" type="button" data-module="dashboard">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Dashboard</span>
+      <span class="cp-nav__count" data-count-for="dashboard" hidden></span>
+    </button>
+  </li><li>
+    <button class="cp-nav__item" type="button" data-module="fixtures">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg><span>Fixtures</span>
+      <span class="cp-nav__count" data-count-for="fixtures" hidden></span>
+    </button>
+  </li><li>
+    <button class="cp-nav__item" type="button" data-module="results">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l7.5 3v6c0 4.6-3.1 7.9-7.5 9.4C7.6 19.9 4.5 16.6 4.5 12V6L12 3z"/></svg><span>Results and reports</span>
+      <span class="cp-nav__count" data-count-for="results" hidden></span>
+    </button>
+  </li><li>
+    <button class="cp-nav__item" type="button" data-module="squad">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 5.2a3.4 3.4 0 0 1 0 6.6M18 20a6.4 6.4 0 0 0-2.3-4.9"/></svg><span>Squad and staff</span>
+      <span class="cp-nav__count" data-count-for="squad" hidden></span>
+    </button>
+  </li><li>
+    <button class="cp-nav__item" type="button" data-module="news">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 5h11v14H4z"/><path d="M15 9h5v8a2 2 0 0 1-2 2h-3"/><path d="M7 9h5M7 12h5M7 15h3"/></svg><span>News</span>
+      <span class="cp-nav__count" data-count-for="news" hidden></span>
+    </button>
+  </li><li>
+    <button class="cp-nav__item" type="button" data-module="media">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.8l1.2-2h6.9l1.2 2h1.9A2.5 2.5 0 0 1 21 8.5v9A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5v-9z"/><circle cx="12" cy="12.6" r="3.4"/></svg><span>Gallery and video</span>
+      <span class="cp-nav__count" data-count-for="media" hidden></span>
+    </button>
+  </li><li>
+    <button class="cp-nav__item" type="button" data-module="recognition">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7 4h10v4a5 5 0 0 1-10 0V4z"/><path d="M17 5h2.5a2.5 2.5 0 0 1-2.5 4M7 5H4.5A2.5 2.5 0 0 0 7 9"/><path d="M12 13v3M9 20h6M10 16h4"/></svg><span>Recognition</span>
+      <span class="cp-nav__count" data-count-for="recognition" hidden></span>
+    </button>
+  </li><li>
+    <button class="cp-nav__item" type="button" data-module="league">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>League table</span>
+      <span class="cp-nav__count" data-count-for="league" hidden></span>
+    </button>
+  </li><li>
+    <button class="cp-nav__item" type="button" data-module="sponsors">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 20s-7-4.4-7-9.4A4 4 0 0 1 12 7a4 4 0 0 1 7 3.6c0 5-7 9.4-7 9.4z"/></svg><span>Sponsors</span>
+      <span class="cp-nav__count" data-count-for="sponsors" hidden></span>
+    </button>
+  </li><li>
+    <button class="cp-nav__item" type="button" data-module="inbox">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="M3 7l9 6 9-6"/></svg><span>Inbox</span>
+      <span class="cp-nav__count" data-count-for="inbox" hidden></span>
+    </button>
+  </li><li>
+    <button class="cp-nav__item" type="button" data-module="settings">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3l7.5 3v6c0 4.6-3.1 7.9-7.5 9.4C7.6 19.9 4.5 16.6 4.5 12V6L12 3z"/></svg><span>Settings</span>
+      <span class="cp-nav__count" data-count-for="settings" hidden></span>
+    </button>
+  </li></ul>
+      </nav>
+      <div class="cp-side__foot">
+        <div class="cp-who">
+          <span class="cp-who__dot" data-role-dot></span>
+          <span>
+            <b data-who-email>—</b>
+            <small data-who-role>checking access</small>
+          </span>
+        </div>
+        <button class="btn btn--ghost btn--sm btn--block" type="button" id="cp-signout">Sign out</button>
+      </div>
+    </aside>
+
+    <main class="cp-main">
+      <header class="cp-top">
+        <button class="icon-btn" type="button" id="cp-menu" aria-label="Show sections"
+                aria-expanded="false"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9 6l6 6-6 6"/></svg></button>
+        <h1 class="cp-top__title" data-cp-title>Dashboard</h1>
+        <div class="cp-top__actions">
+          <span class="badge badge--neutral" data-conn>Connecting</span>
+          <button class="tsw" type="button" data-theme-toggle aria-label="Switch theme">
+            <svg class="ico tsw__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="ico tsw__moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+          </button>
+          <a class="btn btn--ghost btn--sm" href="/" target="_blank" rel="noopener">View site <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 4h6v6M20 4l-8.5 8.5"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
+        </div>
+      </header>
+      <div class="cp-body"><section class="cp-panel" id="panel-dashboard"
+      role="tabpanel" aria-label="Dashboard" hidden>
+    <div class="cp-panel__loading" data-panel-loading>
+      <div class="skeleton skeleton--title"></div>
+      <div class="skeleton skeleton--text"></div>
+      <div class="skeleton skeleton--text"></div>
+    </div>
+    <div data-panel-body></div>
+  </section><section class="cp-panel" id="panel-fixtures"
+      role="tabpanel" aria-label="Fixtures" hidden>
+    <div class="cp-panel__loading" data-panel-loading>
+      <div class="skeleton skeleton--title"></div>
+      <div class="skeleton skeleton--text"></div>
+      <div class="skeleton skeleton--text"></div>
+    </div>
+    <div data-panel-body></div>
+  </section><section class="cp-panel" id="panel-results"
+      role="tabpanel" aria-label="Results and reports" hidden>
+    <div class="cp-panel__loading" data-panel-loading>
+      <div class="skeleton skeleton--title"></div>
+      <div class="skeleton skeleton--text"></div>
+      <div class="skeleton skeleton--text"></div>
+    </div>
+    <div data-panel-body></div>
+  </section><section class="cp-panel" id="panel-squad"
+      role="tabpanel" aria-label="Squad and staff" hidden>
+    <div class="cp-panel__loading" data-panel-loading>
+      <div class="skeleton skeleton--title"></div>
+      <div class="skeleton skeleton--text"></div>
+      <div class="skeleton skeleton--text"></div>
+    </div>
+    <div data-panel-body></div>
+  </section><section class="cp-panel" id="panel-news"
+      role="tabpanel" aria-label="News" hidden>
+    <div class="cp-panel__loading" data-panel-loading>
+      <div class="skeleton skeleton--title"></div>
+      <div class="skeleton skeleton--text"></div>
+      <div class="skeleton skeleton--text"></div>
+    </div>
+    <div data-panel-body></div>
+  </section><section class="cp-panel" id="panel-media"
+      role="tabpanel" aria-label="Gallery and video" hidden>
+    <div class="cp-panel__loading" data-panel-loading>
+      <div class="skeleton skeleton--title"></div>
+      <div class="skeleton skeleton--text"></div>
+      <div class="skeleton skeleton--text"></div>
+    </div>
+    <div data-panel-body></div>
+  </section><section class="cp-panel" id="panel-recognition"
+      role="tabpanel" aria-label="Recognition" hidden>
+    <div class="cp-panel__loading" data-panel-loading>
+      <div class="skeleton skeleton--title"></div>
+      <div class="skeleton skeleton--text"></div>
+      <div class="skeleton skeleton--text"></div>
+    </div>
+    <div data-panel-body></div>
+  </section><section class="cp-panel" id="panel-league"
+      role="tabpanel" aria-label="League table" hidden>
+    <div class="cp-panel__loading" data-panel-loading>
+      <div class="skeleton skeleton--title"></div>
+      <div class="skeleton skeleton--text"></div>
+      <div class="skeleton skeleton--text"></div>
+    </div>
+    <div data-panel-body></div>
+  </section><section class="cp-panel" id="panel-sponsors"
+      role="tabpanel" aria-label="Sponsors" hidden>
+    <div class="cp-panel__loading" data-panel-loading>
+      <div class="skeleton skeleton--title"></div>
+      <div class="skeleton skeleton--text"></div>
+      <div class="skeleton skeleton--text"></div>
+    </div>
+    <div data-panel-body></div>
+  </section><section class="cp-panel" id="panel-inbox"
+      role="tabpanel" aria-label="Inbox" hidden>
+    <div class="cp-panel__loading" data-panel-loading>
+      <div class="skeleton skeleton--title"></div>
+      <div class="skeleton skeleton--text"></div>
+      <div class="skeleton skeleton--text"></div>
+    </div>
+    <div data-panel-body></div>
+  </section><section class="cp-panel" id="panel-settings"
+      role="tabpanel" aria-label="Settings" hidden>
+    <div class="cp-panel__loading" data-panel-loading>
+      <div class="skeleton skeleton--title"></div>
+      <div class="skeleton skeleton--text"></div>
+      <div class="skeleton skeleton--text"></div>
+    </div>
+    <div data-panel-body></div>
+  </section></div>
+    </main>
+  </div>
+
+  <div class="toasts" data-toasts role="region" aria-label="Notifications" aria-live="polite"></div>
+<script src="/control.js?v=a64b195b" defer></script>
+</body>
+</html>

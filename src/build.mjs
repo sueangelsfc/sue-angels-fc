@@ -17,6 +17,7 @@ import { teamSummary, fmtDate } from './lib/stats.mjs';
 import { home } from './templates/home.mjs';
 import * as P from './templates/pages.mjs';
 import { playerPage, matchPage, articlePage, albumPage } from './templates/detail.mjs';
+import { control } from './templates/control.mjs';
 
 const ROOT = process.cwd();
 const CHECK = process.argv.includes('--check');
@@ -59,13 +60,14 @@ js = `window.SA_SUPABASE=${JSON.stringify(cfg.supabase)};window.SA_EMAIL=${JSON.
 write('sa.css', css);
 write('sa.js', js);
 
-/* ---- Crest path for inline SVG ---- */
-const crestSvg = fs.readFileSync(path.join(ROOT, 'assets', 'brand', 'crest.svg'), 'utf8');
-const crestPath = (crestSvg.match(/ d="([^"]+)"/) || [])[1];
-if (!crestPath) throw new Error('Could not read the crest path from assets/brand/crest.svg');
-// Trim coordinate precision: the traced path carries 2dp, which is far more
-// than a 512px viewBox can express. 1dp is visually identical and smaller.
-const leanPath = crestPath.replace(/(\d+)\.(\d)\d/g, '$1.$2').replace(/\.0(?=[,\s LMCZ])/g, '');
+/* The control panel gets its own JS bundle: none of it belongs on a public
+   page, and keeping it separate keeps sa.js small. */
+const adminFiles = fs.readdirSync(path.join(ROOT, 'src', 'admin')).filter((f) => f.endsWith('.js')).sort();
+let adminJs = bundle('admin', adminFiles);
+adminJs = `window.SA_SUPABASE=${JSON.stringify(cfg.supabase)};window.SA_EMAIL=${JSON.stringify(CLUB.email)};\n${adminJs}`;
+const adminV = crypto.createHash('sha256').update(adminJs).digest('hex').slice(0, 8);
+write('control.js', adminJs);
+
 
 /* ---- Data ---- */
 const d = buildDataset();
@@ -214,6 +216,23 @@ for (const r of routes) {
   }));
 }
 
+/* ---- Control panel ----
+   noindex, and it renders its own shell rather than the public header/footer. */
+{
+  const { body } = { body: control() };
+  write('control.html', page({
+    title: `Control panel · ${CLUB.name}`,
+    description: 'Administrative control panel.',
+    path: '/control.html',
+    body,
+    bodyClass: 'is-control',
+    js: `control.js?v=${adminV}`,
+    noindex: true,
+    assetV,
+    bare: true,
+  }));
+}
+
 /* ---- Player profiles ---- */
 const profilePlayers = d.players.filter((p) => !p.unknown);
 for (const p of profilePlayers) {
@@ -297,8 +316,10 @@ for (const g of d.galleries) {
 }
 
 /* ---- Sitemap, robots, manifest ---- */
+// 404 and the control panel are noindex, so neither belongs in the sitemap.
+const NO_SITEMAP = new Set(['404.html', 'control.html']);
 const urls = written
-  .filter((f) => f.endsWith('.html') && f !== '404.html')
+  .filter((f) => f.endsWith('.html') && !NO_SITEMAP.has(f))
   .map((f) => (f === 'index.html' ? '/' : `/${f}`));
 
 const today = (d.articles[0]?.updatedAt || new Date().toISOString()).slice(0, 10);
@@ -325,19 +346,14 @@ write('manifest.webmanifest', JSON.stringify({
   background_color: '#000000',
   theme_color: '#FF7034',
   icons: [
-    { src: '/assets/brand/badge.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+    { src: '/assets/brand/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+    { src: '/assets/brand/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
     { src: '/assets/brand/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
   ],
 }, null, 2));
 
-/* The one crest asset every page references. Brand orange on transparent, so
-   it reads correctly in both themes and the browser caches it once. */
-write('assets/brand/crest-mark.svg',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"><path fill="#FF7034" fill-rule="evenodd" d="${leanPath}"/></svg>`);
-
-/* Favicon: the same crest on a black rounded tile. */
-write('assets/brand/favicon.svg',
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="96" fill="#000"/><path fill="#FF7034" fill-rule="evenodd" d="${leanPath}"/></svg>`);
+/* Favicons and the crest itself are real raster assets generated from the
+   brand crest (see scripts/make-icons.py). Nothing to emit here. */
 
 /* ---- Report ---- */
 const kinds = written.reduce((acc, f) => {

@@ -182,12 +182,14 @@
   --rail-w: 74px;
 
   /* ---- Atmosphere: the theme's ambient field -------------------------
-     Recreates the orange-into-black gradient language responsively rather
-     than stretching one bitmap across every page. */
-  --atmos-1: rgb(var(--brand-rgb) / 0.30);
-  --atmos-2: rgb(var(--brand-rgb) / 0.10);
-  --atmos-3: #FF9A5E1A;
+     Big orange masses drifting over true black. Strong on purpose: the
+     orange stays visually dominant, as the brand direction requires. The
+     veil is what keeps white body text above AA over an orange peak. */
+  --atmos-1: #FF5A12;
+  --atmos-2: rgb(var(--brand-rgb) / 0.55);
+  --atmos-3: #FF8A3Cbb;
   --atmos-base: var(--ink-000);
+  --atmos-veil: linear-gradient(to bottom, #000000A6, #000000B8 40%, #000000A6);
 }
 
 /* ==========================================================================
@@ -243,10 +245,11 @@
   --shadow-float: 0 28px 60px -24px #14100D33;
   --shadow-brand: 0 18px 46px -18px rgb(var(--brand-rgb) / 0.38);
 
-  --atmos-1: rgb(var(--brand-rgb) / 0.34);
-  --atmos-2: rgb(var(--brand-rgb) / 0.12);
-  --atmos-3: #FFD9C21F;
+  --atmos-1: #FF5A12;
+  --atmos-2: rgb(var(--brand-rgb) / 0.62);
+  --atmos-3: #FFA268CC;
   --atmos-base: var(--ink-900);
+  --atmos-veil: linear-gradient(to bottom, #FFF8F3B3, #FFF8F3C2 40%, #FFF8F3B3);
 }
 
 /* System preference drives the default when the visitor has not chosen.
@@ -293,10 +296,11 @@
     --shadow-float: 0 28px 60px -24px #14100D33;
     --shadow-brand: 0 18px 46px -18px rgb(var(--brand-rgb) / 0.38);
 
-    --atmos-1: rgb(var(--brand-rgb) / 0.34);
-    --atmos-2: rgb(var(--brand-rgb) / 0.12);
-    --atmos-3: #FFD9C21F;
+    --atmos-1: #FF5A12;
+    --atmos-2: rgb(var(--brand-rgb) / 0.62);
+    --atmos-3: #FFA268CC;
     --atmos-base: var(--ink-900);
+    --atmos-veil: linear-gradient(to bottom, #FFF8F3B3, #FFF8F3C2 40%, #FFF8F3B3);
   }
 }
 
@@ -446,28 +450,109 @@ strong, b { font-weight: var(--weight-semi); }
 .skip:focus { transform: translateY(0); }
 
 /* ---- Atmosphere -------------------------------------------------------
-   The orange-into-black (or orange-into-warm-white) field, rebuilt with
-   layered radial gradients so it scales to any viewport and costs no bitmap.
-   Fixed to the viewport so scrolling feels like moving through one space. */
+   Big soft orange masses that drift and breathe behind the whole site:
+   orange into true black in dark mode, orange into warm white in light.
+
+   Built from four radial-gradient blobs rather than one bitmap, so it scales
+   to any viewport, costs no image request, and can move. Each blob animates
+   on transform and opacity only, which the compositor handles on the GPU
+   without repainting the page.
+
+   Fixed to the viewport, so scrolling feels like moving through one space. */
 .atmos {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  background:
-    radial-gradient(58vw 46vw at 8% -6%, var(--atmos-1), transparent 68%),
-    radial-gradient(46vw 40vw at 96% 6%, var(--atmos-2), transparent 66%),
-    radial-gradient(70vw 52vw at 50% 108%, var(--atmos-3), transparent 72%),
-    var(--atmos-base);
+  overflow: hidden;
+  background: var(--atmos-base);
 }
-/* Fine tooth of grain keeps the large flat fields from banding. */
+
+.atmos__blob {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  will-change: transform;
+  /* The gradient stop does the softening, so no expensive blur filter. */
+  background: radial-gradient(circle at 50% 50%, var(--blob) 0%, var(--blob-mid) 42%, transparent 72%);
+}
+
+/* Four masses on different sizes, positions, paths and speeds so the field
+   never repeats a recognisable loop. Slow: 34-58s per cycle. */
+.atmos__blob--a {
+  width: 78vmax; height: 78vmax;
+  top: -30vmax; left: -22vmax;
+  --blob: var(--atmos-1);
+  --blob-mid: var(--atmos-2);
+  animation: atmos-a 44s var(--ease-in-out) infinite;
+}
+.atmos__blob--b {
+  width: 62vmax; height: 62vmax;
+  top: -14vmax; right: -20vmax;
+  --blob: var(--atmos-1);
+  --blob-mid: var(--atmos-2);
+  animation: atmos-b 58s var(--ease-in-out) infinite;
+}
+.atmos__blob--c {
+  width: 86vmax; height: 86vmax;
+  bottom: -40vmax; left: -14vmax;
+  --blob: var(--atmos-1);
+  --blob-mid: var(--atmos-3);
+  animation: atmos-c 50s var(--ease-in-out) infinite;
+}
+.atmos__blob--d {
+  width: 54vmax; height: 54vmax;
+  bottom: -22vmax; right: -14vmax;
+  --blob: var(--atmos-2);
+  --blob-mid: var(--atmos-3);
+  animation: atmos-d 34s var(--ease-in-out) infinite;
+}
+
+/* Drift plus a gentle scale: the scale is the "breathing". */
+@keyframes atmos-a {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33%      { transform: translate3d(12vw, 8vh, 0) scale(1.14); }
+  66%      { transform: translate3d(4vw, 16vh, 0) scale(0.94); }
+}
+@keyframes atmos-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1.06); }
+  40%      { transform: translate3d(-14vw, 12vh, 0) scale(0.92); }
+  70%      { transform: translate3d(-6vw, 2vh, 0) scale(1.18); }
+}
+@keyframes atmos-c {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  30%      { transform: translate3d(10vw, -12vh, 0) scale(1.10); }
+  65%      { transform: translate3d(-8vw, -6vh, 0) scale(0.9); }
+}
+@keyframes atmos-d {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(0.96); }
+  50%      { transform: translate3d(-12vw, -14vh, 0) scale(1.2); }
+}
+
+/* Veil over the blobs. Without it, white body text can land on a saturated
+   orange peak and drop below AA. This keeps the movement clearly visible
+   while holding text contrast. */
+.atmos__veil {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background: var(--atmos-veil);
+}
+
+/* Fine tooth of grain keeps the large soft fields from banding. */
 .atmos::after {
   content: '';
   position: absolute;
   inset: 0;
-  opacity: 0.5;
+  opacity: 0.42;
   mix-blend-mode: soft-light;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.42'/%3E%3C/svg%3E");
+}
+
+/* Movement is decorative, so it stops entirely on request. The field stays,
+   simply held still. */
+@media (prefers-reduced-motion: reduce) {
+  .atmos__blob { animation: none !important; }
 }
 
 /* ---- Layout primitives ------------------------------------------------ */
@@ -483,6 +568,8 @@ strong, b { font-weight: var(--weight-semi); }
 .section { padding-block: var(--space-9); position: relative; }
 .section--tight { padding-block: var(--space-7); }
 .section--flush { padding-block-start: 0; }
+/* A short strip (filter chips) should not leave a full band of space below. */
+.section--strip { padding-block: var(--space-5) 0; }
 
 /* Every responsive grid uses this minmax pattern. A column can never exceed
    100% of the track, which is what prevents horizontal overflow on mobile. */
@@ -2858,3 +2945,132 @@ html.js .reveal.is-in { opacity: 1; transform: none; }
 .is-home .hdr.is-over-hero .burger:focus-visible {
   box-shadow: 0 0 0 2px #000, 0 0 0 4px #fff;
 }
+
+/* ==========================================================================
+   CONTROL PANEL
+   Calm and dense. It uses the club's tokens so it feels like Sue's Angels,
+   but glass is reserved for the auth card and dialogs: dense tables and long
+   forms sit on flat opaque surfaces because that is what stays readable.
+   ========================================================================== */
+
+/* ---- Auth gate ---- */
+.cp-gate {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: var(--gutter);
+}
+.cp-gate__card { width: min(100%, 420px); padding: var(--space-7) var(--space-6); text-align: center; }
+.cp-gate__crest { display: block; width: 64px; margin: 0 auto var(--space-5); }
+.cp-gate__crest img { width: 100%; height: auto; }
+.cp-gate__title { font-size: var(--step-3); }
+.cp-gate__sub { color: var(--text-subtle); font-size: var(--step--1); margin-block-end: var(--space-6); }
+.cp-gate__form { display: flex; flex-direction: column; gap: var(--space-4); text-align: left; }
+.cp-gate__note {
+  margin-block: var(--space-5) var(--space-3);
+  font-size: var(--step--2);
+  color: var(--text-subtle);
+  line-height: 1.5;
+}
+
+/* ---- Shell ---- */
+.cp { display: grid; min-height: 100svh; }
+@media (min-width: 900px) { .cp { grid-template-columns: 264px minmax(0, 1fr); } }
+
+.cp-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  background: var(--surface);
+  border-inline-end: 1px solid var(--border);
+}
+@media (max-width: 899px) {
+  .cp-side {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: 120;
+    width: min(84vw, 300px);
+    transform: translateX(-102%);
+    transition: transform var(--dur-base) var(--ease-out);
+    overflow-y: auto;
+    box-shadow: var(--shadow-xl);
+  }
+  .cp-side.is-open { transform: none; }
+}
+
+.cp-side__brand { display: flex; align-items: center; gap: var(--space-3); text-decoration: none; }
+.cp-side__crest { width: 34px; flex: 0 0 auto; }
+.cp-side__crest img { width: 100%; height: auto; }
+.cp-side__brand b { display: block; font-family: var(--font-display); font-size: var(--step--1); }
+.cp-side__brand small { display: block; font-size: var(--step--2); color: var(--text-subtle); }
+
+.cp-nav { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.cp-nav__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--step--1);
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--dur-instant) var(--ease-out), color var(--dur-instant) var(--ease-out);
+}
+.cp-nav__item:hover { background: var(--surface-inset); color: var(--text); }
+.cp-nav__item.is-active { background: rgb(var(--brand-rgb) / 0.14); color: var(--brand-text); font-weight: var(--weight-semi); }
+.cp-nav__item.is-active .ico { color: var(--brand); }
+.cp-nav__count {
+  margin-inline-start: auto;
+  min-width: 20px;
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--brand);
+  color: var(--text-on-brand);
+  font-size: var(--step--2);
+  font-weight: var(--weight-bold);
+  text-align: center;
+}
+
+.cp-side__foot { margin-block-start: auto; display: flex; flex-direction: column; gap: var(--space-3); }
+.cp-who { display: flex; align-items: center; gap: var(--space-3); font-size: var(--step--2); }
+.cp-who__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-subtle); flex: 0 0 auto; }
+.cp-who b { display: block; overflow: hidden; text-overflow: ellipsis; }
+.cp-who small { color: var(--text-subtle); }
+
+/* ---- Main ---- */
+.cp-main { display: flex; flex-direction: column; min-width: 0; }
+.cp-top {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg);
+  border-block-end: 1px solid var(--border);
+}
+.cp-top__title { font-size: var(--step-2); margin-inline-end: auto; }
+.cp-top__actions { display: flex; align-items: center; gap: var(--space-2); }
+@media (min-width: 900px) { #cp-menu { display: none; } }
+#cp-menu .ico { transform: rotate(180deg); }
+
+.cp-body { padding: var(--space-6) var(--space-5); flex: 1; min-width: 0; }
+.cp-panel[hidden] { display: none; }
+.cp-panel__loading { display: flex; flex-direction: column; gap: var(--space-3); max-width: 520px; }
+
+/* The panel background is flat, never glass: these views are dense tables. */
+.cp .panel { background: var(--surface); }
+.cp table.data { font-size: var(--step--2); }
+.cp table.data th, .cp table.data td { padding: var(--space-2) var(--space-3); }
+
+/* The control panel is a working tool, so the drifting background would be a
+   distraction. Hold it still and quiet here. */
+.cp-gate ~ .atmos, body:has(.cp) .atmos { opacity: 0.5; }
+body:has(.cp) .atmos__blob { animation: none; }

@@ -39,7 +39,7 @@ export function home(d) {
 
   /* ================= HERO ================= */
   const nextCard = next ? `
-    <p class="hxc__label">Next match${next.competition ? ` &middot; ${esc(next.competition)}` : ''}</p>
+    <p class="hxc__label">Next match${next.competition ? ` · ${esc(next.competition)}` : ''}</p>
     <div class="hxc__fixture">
       <div class="hxc__side">
         <span class="hxc__crest">${next.weAreHome ? crest() : ''}</span>
@@ -61,7 +61,7 @@ export function home(d) {
     </dl>
     <div class="hxc__count">
       <span>Countdown</span>
-      <strong data-countdown="${attr(next.isoDateTime || next.iso || '')}" aria-live="off">&mdash;</strong>
+      <strong data-countdown="${attr(next.isoDateTime || next.iso || '')}" aria-live="off">—</strong>
     </div>
     <a class="btn btn--primary btn--block" href="/fixtures.html">View fixtures</a>`
   : `
@@ -168,7 +168,7 @@ export function home(d) {
 
       <div class="bento">
         <article class="bento__card bento__card--tall glass">
-          <img class="bento__img" src="/assets/hero/team.webp" alt="Sue&rsquo;s Angels players together"
+          <img class="bento__img" src="/assets/hero/team.webp" alt="Sue’s Angels players together"
                width="640" height="800" loading="lazy" decoding="async">
           <span class="bento__shade" aria-hidden="true"></span>
           <div class="bento__body">
@@ -177,7 +177,7 @@ export function home(d) {
             <dl class="bento__table">
               <div><dt>Played</dt><dd>${esc(league.played)}</dd></div>
               <div><dt>Won</dt><dd>${esc(league.won)}</dd></div>
-              <div><dt>Goals</dt><dd>${esc(league.goalsFor)}&ndash;${esc(league.goalsAgainst)}</dd></div>
+              <div><dt>Goals</dt><dd>${esc(league.goalsFor)}–${esc(league.goalsAgainst)}</dd></div>
               <div><dt>Points</dt><dd>${esc(ourRow?.points ?? league.points)}</dd></div>
             </dl>
             <a class="bento__link" href="/champions.html">The unbeaten season ${icon('arrow')}</a>
@@ -186,7 +186,7 @@ export function home(d) {
 
         <article class="bento__card bento__card--text glass glass--warm">
           <span class="bento__label">Sepsis awareness</span>
-          <blockquote class="bento__quote">&ldquo;${esc(CLUB.memorial.motto)}&rdquo;</blockquote>
+          <blockquote class="bento__quote">“${esc(CLUB.memorial.motto)}”</blockquote>
           <p class="bento__metatxt">We lost Sue to sepsis. Around 48,000 lives are lost to it in
             the UK every year, and spotting it early is what makes the difference. That is why we
             keep talking about it.</p>
@@ -237,7 +237,7 @@ export function home(d) {
                 <span class="awc__body">
                   <span class="awc__cat">${esc(p.motm)} Player of the Match ${p.motm === 1 ? 'award' : 'awards'}</span>
                   <span class="awc__name">${esc(p.first)}<br>${esc(p.last)}</span>
-                  <span class="awc__line">${esc(p.goals)}G &middot; ${esc(p.assists)}A &middot; ${esc(p.apps)} apps</span>
+                  <span class="awc__line">${esc(p.goals)}G · ${esc(p.assists)}A · ${esc(p.apps)} apps</span>
                 </span>
               </a>
             </li>`;
@@ -300,7 +300,7 @@ export function home(d) {
           <p class="cmp__tag">Scored</p>
           <p class="cmp__num">${esc(all.goalsFor)}</p>
           <p class="cmp__lbl">${esc(all.goalsPerGame)} a game</p>
-          <p class="cmp__foot2">Conceded ${esc(all.goalsAgainst)} &middot; ${esc(all.concededPerGame)} a game</p>
+          <p class="cmp__foot2">Conceded ${esc(all.goalsAgainst)} · ${esc(all.concededPerGame)} a game</p>
         </article>
 
         <article class="cmp__card glass">
@@ -407,7 +407,7 @@ export function home(d) {
       <div class="cta2 glass glass--xl glass--warm">
         <span class="cta2__glow" aria-hidden="true"></span>
         <span class="cta2__badge">${crest()}</span>
-        <p class="eyebrow">${esc(CLUB.nextDivision)} &middot; New season</p>
+        <p class="eyebrow">${esc(CLUB.nextDivision)} · New season</p>
         <h2 id="cta-h">Pull on the shirt.</h2>
         <p class="cta2__sub">We are looking at players across every position, media volunteers who
           want real matchday work, and partners who want to stand behind a club with a cause at

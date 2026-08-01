@@ -39,9 +39,9 @@
       @keyframes saBeat{0%,100%{transform:scale(1)}50%{transform:scale(1.055)}}
       #sa-boot{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
         background:#090B0D;opacity:1;transition:opacity .9s ease;will-change:opacity}
-      #sa-boot .sa-crest{position:relative;width:118px;height:118px}
+      #sa-boot .sa-crest{position:relative;width:116px;height:144px}
       #sa-boot .sa-crest.is-beating{animation:saBeat 1.7s ease-in-out infinite}
-      #sa-boot .sa-shard{position:absolute;top:0;left:0;width:118px;height:118px;will-change:transform,opacity}
+      #sa-boot .sa-shard{position:absolute;top:0;left:0;width:116px;height:144px;will-change:transform,opacity}
       #sa-boot.sa-boot--hide{opacity:0;pointer-events:none}
       @media (prefers-reduced-motion: reduce){#sa-boot{transition:none}}
     </style>
@@ -50,11 +50,12 @@
       var boot=document.getElementById('sa-boot'); if(!boot) return;
       var crest=boot.querySelector('.sa-crest');
       var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      /* The ORANGE crest. sue-angels-shield.webp is the retired lime badge, and
-         the loader assembled it in the old brand's colours in front of a black
-         and orange site. This is the same file the header lockup uses, so it is
-         already cached by the time anyone sees it twice. */
-      var SRC='/assets/brand/crest.webp', COLS=5, ROWS=8, maxEnd=0;
+      /* The badge WITH the championship star. Not crest.webp, which is the
+         same crest without it, and not sue-angels-shield.webp, which is the
+         retired lime badge the original loader pointed at and which assembled
+         the old brand in front of the new site. The star is the League Ten
+         title and it is the first thing a visitor should see. */
+      var SRC='/assets/badge/sue-angels-badge-star.webp', COLS=5, ROWS=8, maxEnd=0;
       for(var r=0;r<ROWS;r++){ for(var c=0;c<COLS;c++){
         var img=document.createElement('img'); img.className='sa-shard'; img.src=SRC; img.alt='';
         img.style.clipPath='inset('+(r/ROWS*100)+'% '+((COLS-1-c)/COLS*100)+'% '+((ROWS-1-r)/ROWS*100)+'% '+(c/COLS*100)+'%)';
@@ -69,16 +70,21 @@
         }
         crest.appendChild(img);
       }}
+      /* The badge breathes BEATS times before the site appears. Derived from
+         the animation rather than typed in: the shards finish assembling at
+         maxEnd, the heartbeat is BEAT seconds a cycle, so the hold is however
+         long that adds up to. Change either number and the timing follows. */
+      var BEAT=1.7, BEATS=4.5, beatStart=Math.max(maxEnd-0.5,0);
       if(!reduce){
         requestAnimationFrame(function(){ requestAnimationFrame(function(){
           var sh=crest.querySelectorAll('.sa-shard');
           for(var i=0;i<sh.length;i++){ sh[i].style.opacity='1'; sh[i].style.transform='none'; }
         });});
-        setTimeout(function(){ crest.classList.add('is-beating'); }, Math.round(Math.max(maxEnd-0.5,0)*1000));
+        setTimeout(function(){ crest.classList.add('is-beating'); }, Math.round(beatStart*1000));
       }
-      /* Long enough to watch the crest come together, and no longer. Reduced
-         motion skips the assembly, so it skips the wait too. */
-      var MIN=reduce?280:2200, MAX=4200, start=Date.now(), done=false;
+      /* Reduced motion gets neither the assembly nor the wait for it. */
+      var MIN=reduce?280:Math.round((beatStart+BEAT*BEATS)*1000);
+      var MAX=MIN+2500, start=Date.now(), done=false;
       function hide(){
         if(done) return; done=true;
         boot.classList.add('sa-boot--hide');

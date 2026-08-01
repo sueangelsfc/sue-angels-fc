@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<title>Sponsorship pack · Sue's Angels FC</title>
+<!-- ==========================================================================
+     SPONSORSHIP PACK — print source
+
+     Rendered to assets/sue-angels-sponsorship-pack.pdf by scripts/make-pack.mjs
+     (headless Chrome, print-to-pdf). The previous pack existed only as a
+     committed binary, so nothing could be corrected without rebuilding it from
+     scratch. This is the source.
+
+     26/27 changes:
+       - Orange and black throughout, replacing the retired lime and navy.
+       - The home kit is fully sponsored, so it is off the menu entirely. Page
+         seven prices the AWAY shirt only, at the single-kit rate, plus warm-up
+         and training.
+       - The away kit is not designed yet. The drawing is a black prototype and
+         says so, rather than implying a kit that does not exist.
+       - Bloomin' Marvellous added as main kit sponsor.
+
+     A4 at 96dpi is 794x1123. Every page is exactly that, with margin:0 on
+     @page, so nothing is scaled or clipped on the way out.
+     ========================================================================== -->
+<style>
+@font-face{
+  font-family: 'Geist';
+  src: url('/assets/fonts/Geist-Variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: block;
+}
+
+:root{
+  --bg: #0A0B0D;
+  --panel: rgba(255, 255, 255, 0.045);
+  --line: rgba(255, 255, 255, 0.11);
+  --orange: #FF6A2A;
+  --orange-2: #FF8A4F;
+  /* Dark ink on orange. White on this orange is 2.76:1 and fails AA. */
+  --on-orange: #171A1E;
+  --fg: #F7F5F2;
+  --mut: #A7ADB4;
+  --dim: #868D95;
+  --paper: #F2F0ED;
+  --paper-ink: #14161A;
+}
+
+*,*::before,*::after{box-sizing: border-box; margin: 0; padding: 0;}
+
+@page{ size: A4; margin: 0; }
+
+html,body{background: var(--bg);}
+body{
+  font-family: 'Geist', system-ui, sans-serif;
+  color: var(--fg);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.page{
+  position: relative;
+  width: 794px; height: 1123px;
+  padding: 54px 60px;
+  overflow: hidden;
+  background: var(--bg);
+  page-break-after: always;
+  break-after: page;
+  display: flex; flex-direction: column;
+}
+.page:last-child{page-break-after: auto; break-after: auto;}
+
+/* Two orange masses per page, placed differently each time so the pack does
+   not look like nine copies of one template. */
+.page::before,
+.page::after{
+  content: ''; position: absolute; border-radius: 50%; pointer-events: none;
+  filter: blur(70px);
+}
+.page::before{
+  width: 620px; height: 620px; right: -230px; top: -240px;
+  background: radial-gradient(circle, rgba(255,106,42,0.30), transparent 66%);
+}
+.page::after{
+  width: 520px; height: 520px; left: -220px; bottom: -220px;
+  background: radial-gradient(circle, rgba(255,106,42,0.16), transparent 68%);
+}
+.page--alt::before{ right: auto; left: -240px; top: -180px; }
+.page--alt::after{ left: auto; right: -200px; bottom: -240px; }
+
+/* ---- Furniture -------------------------------------------------------- */
+.hd{position: relative; z-index: 2; display: flex; align-items: center;
+  justify-content: space-between; gap: 20px;}
+.hd__brand{display: flex; align-items: center; gap: 13px;}
+.hd__brand img{width: 34px; height: auto;}
+.hd__brand b{font-size: 14.5px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase;}
+.hd__tag{font-size: 8.5px; font-weight: 600; letter-spacing: 0.24em;
+  text-transform: uppercase; color: var(--dim);}
+
+.ft{position: relative; z-index: 2; margin-top: auto;
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  padding-top: 16px; border-top: 1px solid var(--line);
+  font-size: 8.5px; font-weight: 600; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--dim);}
+
+.body{position: relative; z-index: 2; flex: 1; display: flex;
+  flex-direction: column; padding-top: 52px;}
+
+.eyebrow{display: flex; align-items: center; gap: 12px;
+  font-size: 9.5px; font-weight: 700; letter-spacing: 0.26em;
+  text-transform: uppercase; color: var(--orange);}
+.eyebrow::before{content: ''; width: 26px; height: 2px; background: var(--orange);}
+
+h1,h2,h3{font-weight: 700; letter-spacing: -0.03em; line-height: 0.98;}
+h1{font-size: 62px; margin-top: 22px; text-transform: uppercase;}
+h2{font-size: 46px; margin-top: 20px; text-transform: uppercase;}
+h1 em,h2 em{font-style: normal; color: var(--orange);}
+
+.lede{margin-top: 22px; max-width: 46ch; font-size: 15.5px; line-height: 1.62;
+  color: var(--fg);}
+.sub{margin-top: 16px; max-width: 60ch; font-size: 12.5px; line-height: 1.68;
+  color: var(--mut);}
+.flag{margin-top: 22px; font-size: 11px; font-weight: 700; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--orange);}
+
+.panel{border: 1px solid var(--line); border-radius: 16px; background: var(--panel);
+  padding: 22px 24px;}
+.panel h3{font-size: 15px; letter-spacing: -0.01em; text-transform: uppercase;
+  color: var(--fg); line-height: 1.1;}
+.panel--hi{border-color: rgba(255,106,42,0.42);
+  background: linear-gradient(140deg, rgba(255,106,42,0.14), rgba(255,255,255,0.03) 70%);}
+.panel--hi h3{color: var(--orange);}
+.panel p{margin-top: 12px; font-size: 12.5px; line-height: 1.66; color: var(--mut);}
+
+.tiles{display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;}
+.tile{border: 1px solid var(--line); border-radius: 16px; background: var(--panel);
+  padding: 22px 20px;}
+.tile b{display: block; font-size: 42px; font-weight: 700; letter-spacing: -0.045em;
+  line-height: 1; color: var(--orange);}
+.tile span{display: block; margin-top: 12px; font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim); line-height: 1.5;}
+
+.shot{margin-top: auto; border-radius: 16px; overflow: hidden;
+  border: 1px solid var(--line);}
+.shot img{width: 100%; height: 300px; object-fit: cover; display: block;}
+
+.ticks{list-style: none; margin-top: 14px;}
+.ticks li{position: relative; padding: 11px 0 11px 20px; font-size: 12.5px;
+  line-height: 1.5; color: var(--fg); border-top: 1px solid var(--line);}
+.ticks li:first-child{border-top: 0; padding-top: 4px;}
+.ticks li::before{content: ''; position: absolute; left: 0; top: 19px;
+  width: 9px; height: 2px; border-radius: 1px; background: var(--orange);}
+.ticks li:first-child::before{top: 12px;}
+
+.chips{display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;}
+.chip{border: 1px solid var(--line); border-radius: 999px; padding: 8px 14px;
+  font-size: 8.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--mut);}
+.chip--on{border-color: rgba(255,106,42,0.42); color: var(--orange);}
+
+.k{font-size: 8.5px; font-weight: 700; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--dim);}
+
+/* ---- Page 7: the kit spec, drawn on paper ------------------------------
+   A black shirt on a black page is not a drawing. The spec sits on a pale
+   panel so the away kit reads the way a spec sheet should. */
+.spec{margin-top: 26px; border-radius: 18px; background: var(--paper);
+  color: var(--paper-ink); padding: 26px 28px 22px;}
+.spec__head{display: flex; align-items: baseline; justify-content: space-between;
+  gap: 16px; padding-bottom: 18px; border-bottom: 1px solid rgba(20,22,26,0.12);}
+.spec__head b{font-size: 13px; font-weight: 700; letter-spacing: 0.02em;
+  text-transform: uppercase;}
+.spec__head span{font-size: 8.5px; font-weight: 700; letter-spacing: 0.18em;
+  text-transform: uppercase; color: rgba(20,22,26,0.52);}
+.spec__views{display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  padding: 20px 0 8px; justify-items: center;}
+.spec__view{text-align: center;}
+.spec__view span{display: block; margin-bottom: 8px; font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase; color: rgba(20,22,26,0.52);}
+
+.rate{margin-top: 20px;}
+.rate__row{display: grid; grid-template-columns: 26px 1fr auto; gap: 14px;
+  align-items: center; padding: 12px 0; border-top: 1px solid var(--line);}
+.rate__row:first-child{border-top: 0;}
+.rate__n{display: grid; place-items: center; width: 22px; height: 22px;
+  border-radius: 50%; background: var(--orange); color: var(--on-orange);
+  font-size: 10.5px; font-weight: 700;}
+.rate__n--x{background: rgba(255,255,255,0.10); color: var(--fg);}
+.rate__t b{display: block; font-size: 13px; font-weight: 700; letter-spacing: -0.01em;}
+.rate__t span{display: block; margin-top: 3px; font-size: 10.5px; color: var(--dim);}
+.rate__p{font-size: 17px; font-weight: 700; letter-spacing: -0.02em; color: var(--orange);}
+.rate__p i{font-style: normal; font-size: 9px; font-weight: 600; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--dim);}
+.note{margin-top: 14px; font-size: 10.5px; line-height: 1.6; color: var(--dim);}
+
+/* ---- Page 8: the menu -------------------------------------------------- */
+.menu{display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 24px;}
+.menu__card{border: 1px solid var(--line); border-radius: 16px; background: var(--panel);
+  padding: 20px 22px;}
+.menu__card > b{display: block; font-size: 14px; font-weight: 700;
+  letter-spacing: -0.01em; text-transform: uppercase; color: var(--orange);}
+.menu__card > i{display: block; margin-top: 5px; font-style: normal; font-size: 8.5px;
+  font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim);}
+.line{display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: baseline;
+  padding: 11px 0; border-top: 1px solid var(--line);}
+.line:nth-of-type(1){border-top: 0;}
+.menu__card > .line:first-of-type{margin-top: 12px;}
+.line b{font-size: 12.5px; font-weight: 600; letter-spacing: -0.005em;}
+.line span{display: block; margin-top: 3px; font-size: 10px; color: var(--dim);}
+.line em{font-style: normal; font-size: 15px; font-weight: 700; letter-spacing: -0.02em;
+  color: var(--orange); white-space: nowrap;}
+.line em i{font-style: normal; font-size: 8.5px; font-weight: 600; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--dim);}
+
+/* ---- Page 6: the board ------------------------------------------------- */
+.pitch{margin-top: 26px; border-radius: 18px; overflow: hidden;
+  border: 1px solid var(--line); height: 330px; position: relative;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.028) 0 46px, transparent 46px 92px),
+    linear-gradient(180deg, #1B2A18, #0F1A0E);}
+.board{position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: 430px; padding: 22px 26px; text-align: center;
+  border-radius: 12px; border: 1px solid rgba(255,106,42,0.5);
+  background: linear-gradient(150deg, #14161A, #0A0B0D);
+  box-shadow: 0 26px 60px -20px rgba(0,0,0,0.85);}
+.board img{width: 34px; height: auto; margin: 0 auto 12px;}
+.board b{display: block; font-size: 26px; font-weight: 700; letter-spacing: -0.03em;
+  text-transform: uppercase; line-height: 1.02;}
+.board span{display: block; margin-top: 10px; font-size: 9px; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--orange);}
+.board i{display: block; margin-top: 8px; font-style: normal; font-size: 8.5px;
+  font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim);}
+.post{position: absolute; top: 40px; bottom: 40px; width: 5px; border-radius: 3px;
+  background: linear-gradient(180deg, #9AA3AB, #5C646C);}
+
+/* ---- Page 9: contact --------------------------------------------------- */
+.cards{display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 40px;}
+.card{border: 1px solid var(--line); border-radius: 16px; background: var(--panel);
+  padding: 20px;}
+.card span{display: block; font-size: 8.5px; font-weight: 700; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--dim);}
+.card b{display: block; margin-top: 10px; font-size: 13px; font-weight: 600;
+  letter-spacing: -0.01em; color: var(--orange); word-break: break-word;}
+</style>
+</head>
+<body>
+
+<!-- ============================ 1 · COVER ============================ -->
+<section class="page">
+  <div class="hd">
+    <span class="hd__brand">
+      <img src="/assets/badge/sue-angels-badge-star.webp" alt="" />
+      <b>Sue's Angels FC</b>
+    </span>
+    <span class="hd__tag">Sponsorship pack · 2026/27</span>
+  </div>
+  <div class="body">
+    <p class="eyebrow">Partner with the champions</p>
+    <h1>Put your<br />brand behind<br />the <em>badge.</em></h1>
+    <p class="lede">League Ten champions, unbeaten in our first season, built around a
+      cause that matters. This is who we are, and how your business can be part of it.</p>
+    <p class="flag">Now in League Eight · 2026/27</p>
+    <div class="shot">
+      <img src="/assets/hero/team.webp" alt="" />
+    </div>
+  </div>
+  <div class="ft"><span>suesangelsfc.co.uk</span><span>In memory of Susan Anne Martin</span></div>
+</section>
+
+<!-- ============================ 2 · THE CLUB ============================ -->
+<section class="page page--alt">
+  <div class="hd">
+    <span class="hd__brand">
+      <img src="/assets/badge/sue-angels-badge-star.webp" alt="" />
+      <b>Sue's Angels FC</b>
+    </span>
+    <span class="hd__tag">The club</span>
+  </div>
+  <div class="body">
+    <p class="eyebrow">Who we are</p>
+    <h2>A club with<br />a <em>reason.</em></h2>
+    <p class="lede">Sue's Angels FC is a London Sunday-league football club, founded in 2025
+      in memory of Susan Anne Martin. We play out of The Reeves in Hanworth, and in our very
+      first season we won League Ten, unbeaten, and earned promotion for 2026/27.</p>
+    <p class="sub">More than a results machine, the club is a football family. It was built to
+      bring people together, to honour Sue's memory, and to support sepsis awareness in
+      everything we put her name to. "What we do in life echoes in eternity" is not a slogan
+      to us. It is the reason the club exists.</p>
+    <div class="tiles" style="margin-top: 42px;">
+      <div class="tile"><b>2025</b><span>Founded in her memory</span></div>
+      <div class="tile"><b>1st</b><span>Season. Champions.</span></div>
+      <div class="tile"><b>SW</b><span>London &amp; Surrey roots</span></div>
+    </div>
+  </div>
+  <div class="ft"><span>The club</span><span>suesangelsfc.co.uk</span></div>
+</section>
+
+<!-- ============================ 3 · ON THE PITCH ============================ -->
+<section class="page">
+  <div class="hd">
+    <span class="hd__brand">
+      <img src="/assets/badge/sue-angels-badge-star.webp" alt="" />
+      <b>Sue's Angels FC</b>
+    </span>
+    <span class="hd__tag">On the pitch</span>
+  </div>
+  <div class="body">
+    <p class="eyebrow">League Ten champions · 25/26</p>
+    <h2>Unbeaten.<br /><em>Promoted.</em></h2>
+    <p class="lede">An inaugural season with a perfect league record, the title secured with
+      games to spare, and promotion to League Eight for 2026/27. Your brand backs a winning,
+      rising club.</p>
+    <div class="tiles" style="margin-top: 40px;">
+      <div class="tile"><b>{{played}}</b><span>Played</span></div>
+      <div class="tile"><b>{{won}}</b><span>Won</span></div>
+      <div class="tile"><b>{{winPct}}%</b><span>League record</span></div>
+    </div>
+    <div class="tiles" style="margin-top: 14px; grid-template-columns: 1fr 1fr;">
+      <div class="panel">
+        <h3>Statement wins</h3>
+        <p>{{bigWin}}. {{bigHome}}. The performances that
+          made the league take notice.</p>
+      </div>
+      <div class="panel">
+        <h3>The best defence in the division</h3>
+        <p>{{conceded}} goals conceded in {{played}} games, {{gaGap}} fewer than any other side in
+          League Ten, and {{cleanSheets}} clean sheets.</p>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>Champions 25/26</span><span>suesangelsfc.co.uk</span></div>
+</section>
+
+<!-- ============================ 4 · OUR CAUSE ============================ -->
+<section class="page page--alt">
+  <div class="hd">
+    <span class="hd__brand">
+      <img src="/assets/badge/sue-angels-badge-star.webp" alt="" />
+      <b>Sue's Angels FC</b>
+    </span>
+    <span class="hd__tag">Our cause</span>
+  </div>
+  <div class="body">
+    <p class="eyebrow">In her name</p>
+    <h2>Playing for<br />something<br /><em>bigger.</em></h2>
+    <p class="lede">The club was founded in memory of Susan Anne Martin, who we lost to sepsis.
+      Awareness is the part we can play. We keep Sue's memory and the sepsis message alive
+      through how we show up, on matchdays and in the community.</p>
+    <p class="sub">For a local business, partnering with Sue's Angels is a chance to stand
+      behind a genuine cause, and to be seen doing it. As the club grows, so does the reach of
+      that message.</p>
+    <div class="panel panel--hi" style="margin-top: 40px;">
+      <h3>Supporting sepsis awareness</h3>
+      <p>Sepsis is the body's extreme response to an infection, and it can become life
+        threatening within hours. The UK Sepsis Trust estimates it claims around 48,000 lives
+        in the UK every year, many of them preventable with early treatment. Knowing the signs
+        saves lives, and we help spread the word.</p>
+    </div>
+  </div>
+  <div class="ft"><span>In memory of Susan Anne Martin</span><span>suesangelsfc.co.uk/sepsis</span></div>
+</section>
+
+<!-- ============================ 5 · BRAND EXPOSURE ============================ -->
+<section class="page">
+  <div class="hd">
+    <span class="hd__brand">
+      <img src="/assets/badge/sue-angels-badge-star.webp" alt="" />
+      <b>Sue's Angels FC</b>
+    </span>
+    <span class="hd__tag">Brand exposure</span>
+  </div>
+  <div class="body">
+    <p class="eyebrow">Where your brand appears</p>
+    <h2>Real, local<br /><em>reach.</em></h2>
+    <p class="lede">A growing audience across matchdays, social media and the web puts local
+      businesses in front of the right people, week after week.</p>
+    <div class="tiles" style="margin-top: 36px; grid-template-columns: 1fr 1fr; align-items: start;">
+      <div class="panel">
+        <h3>On and off the pitch</h3>
+        <ul class="ticks">
+          <li>Your brand on the matchday kit, every weekend</li>
+          <li>Your banner pitch-side at The Reeves, Hanworth</li>
+          <li>Logo and link on suesangelsfc.co.uk</li>
+          <li>Features across Instagram and TikTok</li>
+          <li>Visibility in match reports, tables and player content</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Our home audience</h3>
+        <p style="margin-bottom: 12px;">Rooted in south-west London and Surrey, reaching:</p>
+        <div class="chips">
+          <span class="chip">Kingston upon Thames</span>
+          <span class="chip">Hanworth</span>
+          <span class="chip">Sunbury</span>
+          <span class="chip">Staines</span>
+          <span class="chip">South-west London</span>
+        </div>
+        <p class="k" style="margin-top: 18px;">Channels</p>
+        <div class="chips">
+          <span class="chip">instagram.com/suesangelsfc</span>
+          <span class="chip">tiktok.com/@suesangelsfc</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ft"><span>Brand exposure</span><span>suesangelsfc.co.uk</span></div>
+</section>
+
+<!-- ============================ 6 · PITCH-SIDE ============================ -->
+<section class="page page--alt">
+  <div class="hd">
+    <span class="hd__brand">
+      <img src="/assets/badge/sue-angels-badge-star.webp" alt="" />
+      <b>Sue's Angels FC</b>
+    </span>
+    <span class="hd__tag">Pitch-side</span>
+  </div>
+  <div class="body">
+    <p class="eyebrow">Your brand, pitch-side</p>
+    <h2>Seen at every<br />home <em>game.</em></h2>
+    <div class="pitch">
+      <span class="post" style="left: 96px;"></span>
+      <span class="post" style="right: 96px;"></span>
+      <span class="board">
+        <img src="/assets/badge/sue-angels-badge-star.webp" alt="" />
+        <b>Your business here</b>
+        <span>Proud partner of Sue's Angels FC</span>
+        <i>The Reeves · Hanworth</i>
+      </span>
+    </div>
+    <p class="sub" style="margin-top: 26px; max-width: 62ch;">A weatherproof banner displayed
+      pitch-side at The Reeves every matchday, in front of players, families and visiting
+      clubs. Board production and fitting are included in your first season.</p>
+  </div>
+  <div class="ft"><span>Pitch-side partner</span><span>suesangelsfc.co.uk</span></div>
+</section>
+
+<!-- ============================ 7 · ON THE AWAY SHIRT ============================ -->
+<section class="page">
+  <div class="hd">
+    <span class="hd__brand">
+      <img src="/assets/badge/sue-angels-badge-star.webp" alt="" />
+      <b>Sue's Angels FC</b>
+    </span>
+    <span class="hd__tag">On the shirt</span>
+  </div>
+  <div class="body">
+    <p class="eyebrow">Where your brand goes</p>
+    <h2>On the away<br /><em>shirt.</em></h2>
+    <p class="sub" style="margin-top: 16px; max-width: 62ch;">The home shirt is fully sponsored
+      for 26/27. Everything below is on the away kit, the warm-up top and the training kit.</p>
+
+    <div class="spec">
+      <div class="spec__head">
+        <b>Away kit · 26/27</b>
+        <span>Black prototype · design to be confirmed</span>
+      </div>
+      <div class="spec__views">
+        <div class="spec__view">
+          <span>Front</span>
+          <svg width="188" height="176" viewBox="0 0 188 176" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Away shirt, front, showing the chest and sleeve sponsor positions">
+            <path d="M62 12 L94 24 L126 12 L166 34 L152 62 L136 54 L136 164 L52 164 L52 54 L36 62 L22 34 Z"
+                  fill="#14161A" stroke="#FF6A2A" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M78 14 Q94 34 110 14" fill="none" stroke="#FF6A2A" stroke-width="2.5"/>
+            <rect x="64" y="80" width="60" height="26" rx="3" fill="none" stroke="#FF6A2A" stroke-width="1.6" stroke-dasharray="5 4"/>
+            <circle cx="94" cy="93" r="10" fill="#FF6A2A"/>
+            <text x="94" y="97" text-anchor="middle" font-family="Geist, sans-serif" font-size="12" font-weight="700" fill="#14161A">1</text>
+            <rect x="26" y="40" width="20" height="16" rx="3" fill="none" stroke="#FF6A2A" stroke-width="1.4" stroke-dasharray="4 3"/>
+            <circle cx="36" cy="48" r="8" fill="#FF6A2A"/>
+            <text x="36" y="52" text-anchor="middle" font-family="Geist, sans-serif" font-size="10" font-weight="700" fill="#14161A">2</text>
+            <rect x="142" y="40" width="20" height="16" rx="3" fill="none" stroke="#FF6A2A" stroke-width="1.4" stroke-dasharray="4 3"/>
+            <circle cx="152" cy="48" r="8" fill="#FF6A2A"/>
+            <text x="152" y="52" text-anchor="middle" font-family="Geist, sans-serif" font-size="10" font-weight="700" fill="#14161A">2</text>
+          </svg>
+        </div>
+        <div class="spec__view">
+          <span>Back</span>
+          <svg width="188" height="176" viewBox="0 0 188 176" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Away shirt, back, showing the upper-back sponsor position">
+            <path d="M62 12 L94 24 L126 12 L166 34 L152 62 L136 54 L136 164 L52 164 L52 54 L36 62 L22 34 Z"
+                  fill="#14161A" stroke="#FF6A2A" stroke-width="2.5" stroke-linejoin="round"/>
+            <path d="M78 14 Q94 26 110 14" fill="none" stroke="#FF6A2A" stroke-width="2.5"/>
+            <rect x="58" y="44" width="72" height="22" rx="3" fill="none" stroke="#FF6A2A" stroke-width="1.6" stroke-dasharray="5 4"/>
+            <circle cx="94" cy="55" r="10" fill="#FF6A2A"/>
+            <text x="94" y="59" text-anchor="middle" font-family="Geist, sans-serif" font-size="12" font-weight="700" fill="#14161A">3</text>
+            <text x="94" y="132" text-anchor="middle" font-family="Geist, sans-serif" font-size="52" font-weight="700" fill="#FF6A2A" opacity="0.22">9</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="rate">
+      <div class="rate__row">
+        <span class="rate__n">1</span>
+        <span class="rate__t"><b>Front of away shirt</b><span>Central chest, the main sponsor spot</span></span>
+        <span class="rate__p">£450</span>
+      </div>
+      <div class="rate__row">
+        <span class="rate__n">2</span>
+        <span class="rate__t"><b>Sleeve</b><span>One available on each arm, sold separately</span></span>
+        <span class="rate__p">£125</span>
+      </div>
+      <div class="rate__row">
+        <span class="rate__n">3</span>
+        <span class="rate__t"><b>Back of away shirt</b><span>Across the top of the back</span></span>
+        <span class="rate__p">£200</span>
+      </div>
+      <div class="rate__row">
+        <span class="rate__n rate__n--x">+</span>
+        <span class="rate__t"><b>Warm-up shirt</b><span>Worn during the pre-match warm-up</span></span>
+        <span class="rate__p">£350</span>
+      </div>
+      <div class="rate__row">
+        <span class="rate__n rate__n--x">+</span>
+        <span class="rate__t"><b>Training kit</b><span>Training shirt and shorts, separate from the matchday top</span></span>
+        <span class="rate__p">£300</span>
+      </div>
+    </div>
+    <p class="note">Prices are per season. The away kit design is being finalised; the drawing
+      above shows sponsor positions, not the finished shirt.</p>
+  </div>
+  <div class="ft"><span>On the shirt</span><span>suesangelsfc.co.uk/sponsors</span></div>
+</section>
+
+<!-- ============================ 8 · THE FULL MENU ============================ -->
+<section class="page page--alt">
+  <div class="hd">
+    <span class="hd__brand">
+      <img src="/assets/badge/sue-angels-badge-star.webp" alt="" />
+      <b>Sue's Angels FC</b>
+    </span>
+    <span class="hd__tag">The menu</span>
+  </div>
+  <div class="body">
+    <p class="eyebrow">Build your own</p>
+    <h2>The full<br /><em>menu.</em></h2>
+    <p class="sub" style="max-width: 62ch;">Beyond the shirt, here is everything else you can
+      put your brand behind, priced individually. Mix and match to suit your business and
+      budget.</p>
+
+    <div class="menu">
+      <div class="menu__card">
+        <b>At the ground</b>
+        <div class="line"><span><b>Pitch-side board</b><span>Your banner pitch-side at The Reeves</span></span><em>£175</em></div>
+        <div class="line"><span><b>Matchday sponsor</b><span>A specific game in your name</span></span><em>£75<i> /game</i></em></div>
+        <div class="line"><span><b>Match ball</b><span>Sponsor the ball for a game</span></span><em>£25<i> /game</i></em></div>
+      </div>
+      <div class="menu__card">
+        <b>Back a player</b>
+        <i>For the full season</i>
+        <div class="line"><span><b>Sponsor a player</b><span>Your company name on a player's profile</span></span><em>£120</em></div>
+        <div class="line"><span><b>Man of the Match</b><span>Named on every MOTM award</span></span><em>£150</em></div>
+        <div class="line"><span><b>Player of the Month</b><span>Named on the monthly award</span></span><em>£120</em></div>
+        <div class="line"><span><b>Goal of the Month</b><span>Named on the monthly award</span></span><em>£120</em></div>
+      </div>
+    </div>
+
+    <div class="menu__card" style="margin-top: 14px;">
+      <b>Match reports</b>
+      <div class="line" style="margin-top: 12px;"><span><b>Match-report sponsor</b><span>Your name on every written match report we publish, across the whole season</span></span><em>£150<i> /season</i></em></div>
+    </div>
+
+    <p class="note" style="margin-top: 16px;">Prices are per season unless marked. Every option
+      includes a thank-you across our channels, and any combination can be tailored.</p>
+
+    <p class="k" style="margin-top: 24px;">Proudly already backed by</p>
+    <div class="chips">
+      <span class="chip chip--on">Bloomin' Marvellous · Main kit</span>
+      <span class="chip">Sporting Solutions Ltd · Founding kit</span>
+      <span class="chip">Hodgson Roofing · Training</span>
+      <span class="chip">Staines RFC · Ground-share</span>
+    </div>
+  </div>
+  <div class="ft"><span>Sponsorship menu</span><span>suesangelsfc.co.uk/sponsors</span></div>
+</section>
+
+<!-- ============================ 9 · LET'S TALK ============================ -->
+<section class="page">
+  <div class="hd">
+    <span class="hd__brand">
+      <img src="/assets/badge/sue-angels-badge-star.webp" alt="" />
+      <b>Sue's Angels FC</b>
+    </span>
+    <span class="hd__tag">Let's talk</span>
+  </div>
+  <div class="body" style="justify-content: center;">
+    <p class="eyebrow">Become a partner</p>
+    <h1>Let's build<br />something<br /><em>together.</em></h1>
+    <p class="lede">Tell us a little about your business and what you would like from a
+      partnership. We will tailor a package around you, and your brand can be live with the
+      club in no time.</p>
+    <div class="cards">
+      <div class="card"><span>Email</span><b>suesangelsfc@gmail.com</b></div>
+      <div class="card"><span>Website</span><b>suesangelsfc.co.uk</b></div>
+      <div class="card"><span>Social</span><b>@suesangelsfc</b></div>
+    </div>
+  </div>
+  <div class="ft"><span>In memory of Susan Anne Martin</span><span>What we do in life echoes in eternity</span></div>
+</section>
+
+</body>
+</html>

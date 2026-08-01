@@ -2,17 +2,10 @@
    BASE - reset, self-hosted type, atmosphere, layout primitives
    ========================================================================== */
 
-/* Two variable fonts, one file each: 147KB total covers every weight and,
-   for Archivo, every width. Static instances would have needed nine files. */
-@font-face {
-  font-family: 'Archivo';
-  src: url('assets/fonts/Archivo-Variable.woff2') format('woff2-variations'),
-       url('assets/fonts/Archivo-Variable.woff2') format('woff2');
-  font-weight: 100 900;
-  font-stretch: 62% 125%;
-  font-style: normal;
-  font-display: swap;
-}
+/* One variable font, one file: 57KB covers every weight. Static instances
+   would have needed nine files. Archivo was retired when display switched to
+   Geist; its file is still in assets/fonts/ if the width axis is ever
+   wanted back. */
 @font-face {
   font-family: 'Geist';
   src: url('assets/fonts/Geist-Variable.woff2') format('woff2-variations'),

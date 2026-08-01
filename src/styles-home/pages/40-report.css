@@ -1,0 +1,85 @@
+/* ==========================================================================
+   MATCH REPORT (/matches/<id>.html)
+
+   The scoreboard is the page's headline, so it is set as big as a hero and
+   the badges are given room. Everything below is quiet by comparison.
+   ========================================================================== */
+.is-report .pageaura{--pa-mul: 0.3;}
+
+.mr-hero{padding: clamp(20px, 4vw, 44px) 0 clamp(16px, 2.4vw, 30px);}
+.mr-board{display: grid; align-items: center; gap: clamp(14px, 3vw, 40px);
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  margin-top: clamp(14px, 2.4vw, 26px);
+  padding: clamp(22px, 3.4vw, 44px) clamp(16px, 3vw, 40px);
+  border-radius: 26px; border: 1px solid var(--line-d);
+  background: linear-gradient(160deg, rgba(var(--volt-rgb), 0.1), rgba(var(--sink), 0.6) 70%);}
+.mr-board__side{display: grid; justify-items: center; gap: 12px; text-align: center; min-width: 0;}
+.mr-board__side b{font-family: var(--display); font-weight: 400;
+  font-size: clamp(14px, 1.8vw, 20px); letter-spacing: -0.018em; color: var(--ink-2);}
+.mr-board__side b.is-us{color: var(--fg); font-weight: 500;}
+.mr-badge{width: clamp(46px, 7vw, 76px); height: auto; object-fit: contain;}
+.mr-board__score{font-family: var(--display); font-weight: 500;
+  font-size: clamp(34px, 7vw, 76px); line-height: 1; letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums; color: var(--fg); white-space: nowrap;}
+.mr-board__score abbr{text-decoration: none; font-size: 0.5em; letter-spacing: 0.04em;}
+
+.mr-meta{display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  margin-top: 18px; font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3);}
+/* Won, drawn and lost differ by weight and fill, never by a second hue. */
+.mr-meta__res{padding: 6px 12px; border-radius: var(--pillr);
+  border: 1px solid var(--line-d); color: var(--ink-2);}
+.mr-meta__res--w{background: var(--volt); border-color: var(--volt);
+  color: var(--text-on-brand); font-weight: 800;}
+.mr-meta__res--d{border-color: rgba(var(--lift), 0.3); color: var(--fg);}
+.mr-meta__res--l{opacity: 0.62;}
+.mr-note{margin-top: 12px; font-size: 13.5px; color: var(--ink-3);}
+
+/* ---- Goals, assists, motm ------------------------------------------------ */
+.mr-cols{display: grid; gap: 10px; margin-top: clamp(18px, 2.4vw, 26px);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));}
+.mr-col{padding: 20px 22px; border-radius: 18px;
+  border: 1px solid var(--line-d); background: var(--slab);}
+.mr-col__h{margin: 0; font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.mr-list{list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 7px;}
+.mr-list li{font-family: var(--display); font-weight: 400; font-size: 15.5px;
+  letter-spacing: -0.014em; color: var(--fg);}
+.mr-col__none{margin: 12px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--ink-3);}
+.mr-motm{margin: 12px 0 0; font-family: var(--display); font-weight: 500; font-size: 17px;
+  letter-spacing: -0.02em; color: var(--fg);}
+.mr-col__cap{margin: 8px 0 0; font-size: 13px; color: var(--ink-3);}
+
+/* ---- Team sheet ----------------------------------------------------------- */
+.mr-sheet{margin-top: 10px; padding: 22px; border-radius: 18px;
+  border: 1px solid var(--line-d); background: var(--slab);}
+.mr-xi{list-style: none; margin: 14px 0 0; padding: 0;
+  display: grid; gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr));}
+.mr-xi li{display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  padding: 9px 13px; border-radius: 11px; background: rgba(var(--lift), 0.03);}
+.mr-xi b{font-family: var(--display); font-weight: 400; font-size: 14.5px;
+  letter-spacing: -0.012em; color: var(--fg);}
+.mr-xi i{font-style: normal; font-family: var(--ui); font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);}
+.mr-bench{margin: 14px 0 0; font-size: 13.5px; line-height: 1.6; color: var(--ink-2);}
+.mr-bench span{font-family: var(--ui); font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); margin-right: 8px;}
+.mr-sheet__note{margin: 14px 0 0; font-size: 12.5px; line-height: 1.6; color: var(--ink-3);}
+
+.mr-back__row{display: flex; flex-wrap: wrap; gap: 10px;}
+
+@media (max-width: 620px){
+  .mr-board{gap: 10px; padding: 22px 12px;}
+  .mr-board__side b{font-size: 12.5px;}
+}
+
+/* ---- Match video ---------------------------------------------------------
+   A 16:9 box reserved before the iframe loads, so a lazily-loaded embed does
+   not shove the page down when it arrives. The frame fills it. */
+.mr-embed{position: relative; margin-top: clamp(16px, 2.4vw, 24px);
+  aspect-ratio: 16 / 9; overflow: hidden;
+  border-radius: 20px; border: 1px solid var(--line-d);
+  background: rgba(var(--sink), 0.6);}
+.mr-embed iframe{position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
+  display: block;}

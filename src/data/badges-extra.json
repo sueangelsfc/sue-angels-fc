@@ -1,0 +1,24 @@
+{
+  "_source": "Badge files already in assets/badge/ that the recovered BADGES registry never listed",
+  "_note": "The registry maps a club name to { match, src, alt, aspect }. `match` is the lowercase needle oppBadge() falls back to when the full club name does not match exactly, so a fixture listed under a slightly different spelling still resolves. Kingsmeadow United's crest was supplied by the club as a flat white square; the white is knocked back to transparent so it sits on the dark card like every other badge.",
+  "badges": {
+    "Brentford Town": {
+      "match": "brentford",
+      "src": "assets/badge/brentford-town-badge.webp",
+      "alt": "Brentford Town",
+      "aspect": "circle"
+    },
+    "Galacticos Elect": {
+      "match": "galacticos",
+      "src": "assets/badge/galacticos-elect-badge.webp",
+      "alt": "Galacticos Elect",
+      "aspect": "circle"
+    },
+    "Kingsmeadow United": {
+      "match": "kingsmeadow",
+      "src": "assets/badge/kingsmeadow-united.webp",
+      "alt": "Kingsmeadow United FC",
+      "aspect": "shield"
+    }
+  }
+}

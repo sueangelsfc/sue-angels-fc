@@ -1,0 +1,282 @@
+/* ==========================================================================
+   OUR CAUSE (/sepsis.html)
+
+   The signs are the part of this page someone may be reading in a hurry, on a
+   phone, while worried about somebody. So they are the plainest thing here:
+   generous type, high contrast, no decoration competing with the words, and
+   nothing that depends on hover to be readable.
+   ========================================================================== */
+
+/* ---- Hero -------------------------------------------------------------- */
+.cz-hero{padding: clamp(20px, 4vw, 48px) 0 clamp(24px, 4vw, 44px);}
+.cz-hero__grid{display: grid; gap: clamp(28px, 4vw, 64px);
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr);
+  align-items: center;}
+.cz-hero__title{margin: 12px 0 0;
+  font-family: var(--display); font-weight: 300;
+  font-size: clamp(48px, 7vw, 96px); line-height: 0.94; letter-spacing: -0.035em;
+  color: var(--fg);}
+.cz-hero__lede{margin: 20px 0 0; max-width: 50ch;
+  font-size: clamp(15px, 1.4vw, 18px); line-height: 1.68; color: var(--ink-2);}
+.cz-hero__btns{display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px;}
+
+.cz-plate{display: grid; justify-items: center; gap: 14px;
+  padding: clamp(24px, 2.6vw, 34px);
+  border-radius: 26px; border: 1px solid var(--line-d);
+  text-align: center;}
+.cz-plate__crest{width: clamp(92px, 8vw, 124px); height: auto;
+  filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.5));}
+.cz-plate__name{margin: 4px 0 0;
+  font-family: var(--display); font-weight: 500; font-size: 17px;
+  letter-spacing: -0.01em; color: var(--fg);}
+.cz-plate__motto{margin: 0; max-width: 24ch;
+  font-size: 13.5px; line-height: 1.55; color: var(--ink-3);}
+
+/* ---- 01 The numbers ---------------------------------------------------- */
+.cz-figs{list-style: none; margin: clamp(20px, 3vw, 28px) 0 0; padding: 0;
+  display: grid; gap: 14px; grid-template-columns: repeat(3, minmax(0, 1fr));}
+.cz-fig{display: flex; flex-direction: column;
+  padding: 24px 22px;
+  border-radius: 20px; border: 1px solid var(--line-d);}
+/* Proportional figures: tabular digits make display-size numbers look loose. */
+.cz-fig b{font-family: var(--display); font-weight: 300;
+  font-size: clamp(34px, 4.4vw, 52px); line-height: 1; letter-spacing: -0.035em;
+  font-variant-numeric: proportional-nums; color: var(--fg);}
+.cz-fig span{margin-top: 12px;
+  font-family: var(--ui); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--volt-text);
+  line-height: 1.5;}
+.cz-fig i{margin-top: 7px; font-style: normal;
+  font-size: 11.5px; color: var(--ink-3);}
+
+/* ---- 02 Why we exist --------------------------------------------------- */
+.cz-story__grid{display: grid; gap: clamp(24px, 4vw, 52px);
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  align-items: center; margin-top: clamp(18px, 2.6vw, 26px);}
+.cz-story__panel{position: relative;
+  padding: clamp(26px, 4vw, 46px);
+  border-radius: 26px; border: 1px solid var(--line-d);
+  background: linear-gradient(140deg, rgba(var(--volt-rgb), 0.10), rgba(var(--sink), 0.5) 66%);}
+.cz-story__quote{margin: 0 0 20px; max-width: 22ch;
+  font-family: var(--display); font-weight: 300;
+  font-size: clamp(23px, 3.2vw, 38px); line-height: 1.1; letter-spacing: -0.026em;
+  color: var(--fg);}
+.cz-story__panel p{margin: 14px 0 0; max-width: 58ch;
+  font-size: 15px; line-height: 1.7; color: var(--ink-2);}
+.cz-story__fig{margin: 0;}
+.cz-story__fig img{width: 100%; height: auto; display: block;
+  border-radius: 22px; border: 1px solid var(--line-d);
+  object-fit: cover; aspect-ratio: 4 / 3;}
+.cz-story__fig figcaption{margin-top: 12px;
+  font-family: var(--ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3);}
+
+/* ---- 03 What sepsis is ------------------------------------------------- */
+.cz-what__grid{display: grid; gap: clamp(20px, 4vw, 56px);
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  align-items: start; margin-top: clamp(16px, 2.4vw, 24px);}
+.cz-what__body p{margin: 0 0 16px; max-width: 62ch;
+  font-size: clamp(15px, 1.35vw, 17px); line-height: 1.72; color: var(--ink-2);}
+.cz-what__body a{color: var(--volt-text); text-decoration: underline;
+  text-underline-offset: 3px; text-decoration-thickness: 1px;}
+.cz-what__body a:hover{color: var(--fg);}
+
+/* ---- 04 The signs ------------------------------------------------------
+   The one part of the site somebody might read while frightened. Bigger type
+   than the rest of the page, and no hover-dependent behaviour anywhere. */
+.cz-signs__head{max-width: 60ch;}
+.cz-signs__sub{margin: 14px 0 0;
+  font-size: clamp(15px, 1.35vw, 17px); line-height: 1.68; color: var(--ink-2);}
+.cz-signs__grid{list-style: none; margin: clamp(22px, 3vw, 32px) 0 0; padding: 0;
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));}
+/* Each card LEADS with its letter, so reading down the list spells SEPSIS,
+   which is how the Trust teaches it. Tucked in the corner the letters were
+   decoration nobody assembled; set out as a row of boxes they read as
+   alphabet bricks. As the first thing in each row they do the actual job. */
+.cz-sign{position: relative;
+  display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px;
+  align-items: start;
+  padding: 22px 24px;
+  border-radius: 18px;
+  border: 1px solid var(--line-d);
+  background: rgba(255, 255, 255, 0.026);
+  transition: border-color 0.3s, background 0.3s;}
+.cz-sign:hover{border-color: rgba(var(--volt-rgb), 0.3);
+  background: rgba(var(--volt-rgb), 0.05);}
+.cz-sign__letter{display: block; width: 1.05em;
+  font-family: var(--display); font-weight: 300;
+  font-size: clamp(38px, 4.4vw, 52px); line-height: 0.9; letter-spacing: -0.03em;
+  color: var(--volt); text-align: center;}
+.cz-sign__title{margin: 0; max-width: 20ch;
+  font-family: var(--display); font-weight: 500;
+  font-size: 17px; line-height: 1.25; letter-spacing: -0.012em; color: var(--fg);}
+.cz-sign__body{margin: 10px 0 0; max-width: 40ch;
+  font-size: 14px; line-height: 1.6; color: var(--ink-2);}
+
+.cz-child{margin-top: 14px;
+  padding: clamp(24px, 3vw, 32px);
+  border-radius: 22px; border: 1px solid var(--line-d);}
+.cz-child__eyebrow{margin: 0;
+  font-family: var(--ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--volt-text);}
+.cz-child__lead{margin: 14px 0 0;
+  font-family: var(--display); font-weight: 500; font-size: 17px; color: var(--fg);}
+.cz-child__list{margin: 14px 0 0; padding: 0 0 0 20px;
+  columns: 2; column-gap: 34px;
+  font-size: 14.5px; line-height: 1.9; color: var(--ink-2);}
+.cz-child__note{margin: 16px 0 0; font-size: 13px; color: var(--ink-3);}
+
+/* The disclaimer sits WITH the signs, not at the foot of the page where it
+   would go unread. */
+.cz-note{margin-top: 14px;
+  padding: clamp(20px, 2.6vw, 28px);
+  border-radius: 20px;
+  border: 1px solid rgba(var(--volt-rgb), 0.34);
+  border-left-width: 3px;
+  background: rgba(var(--volt-rgb), 0.06);}
+.cz-note__lead{margin: 0;
+  font-size: clamp(15px, 1.3vw, 16.5px); line-height: 1.6; font-weight: 500; color: var(--fg);}
+.cz-note__small{margin: 12px 0 0; max-width: 84ch;
+  font-size: 13px; line-height: 1.65; color: var(--ink-3);}
+
+/* ---- 05 Three ways to help --------------------------------------------- */
+.cz-help__grid{list-style: none; margin: clamp(20px, 3vw, 30px) 0 0; padding: 0;
+  display: grid; gap: 14px; grid-template-columns: repeat(3, minmax(0, 1fr));}
+.cz-helpcard{display: flex; flex-direction: column;
+  padding: clamp(24px, 2.6vw, 30px);
+  border-radius: 20px; border: 1px solid var(--line-d);
+  transition: transform 0.4s var(--ease-out-expo), border-color 0.3s;}
+.cz-helpcard:hover{transform: translateY(-4px); border-color: rgba(var(--volt-rgb), 0.36);}
+.cz-helpcard h3{margin: 0; max-width: 18ch;
+  font-family: var(--display); font-weight: 500;
+  font-size: 19px; line-height: 1.2; letter-spacing: -0.014em; color: var(--fg);}
+.cz-helpcard p{margin: 12px 0 0; max-width: 40ch;
+  font-size: 14px; line-height: 1.65; color: var(--ink-2);}
+/* One rule, and no padding-top. That 22px was meant as spacing above the
+   button but it landed on the button's own padding, so its top padding was
+   22px against a bottom of 11px and the label and arrow sat 5.5px below
+   centre. Spacing belongs on the margin. */
+.cz-helpcard .btn{margin-top: auto; align-self: flex-start;}
+
+/* ---- 06 Donate ---------------------------------------------------------- */
+.cz-donate__head{max-width: 66ch;}
+.cz-donate__sub{margin: 14px 0 0;
+  font-size: clamp(15px, 1.35vw, 17px); line-height: 1.68; color: var(--ink-2);}
+.cz-donate__grid{list-style: none; margin: clamp(20px, 3vw, 30px) 0 0; padding: 0;
+  display: grid; gap: 14px; grid-template-columns: 1fr 1fr;}
+.cz-give{display: flex; flex-direction: column;
+  padding: clamp(26px, 3vw, 34px);
+  border-radius: 22px; border: 1px solid var(--line-d);}
+.cz-give--club{background: linear-gradient(150deg, rgba(var(--volt-rgb), 0.14), rgba(var(--sink), 0.5) 68%);}
+.cz-give__ico{display: grid; place-items: center;
+  width: 40px; height: 40px; border-radius: 12px;
+  background: rgba(var(--volt-rgb), 0.16); color: var(--volt);
+  border: 1px solid rgba(var(--volt-rgb), 0.3);}
+.cz-give h3{margin: 18px 0 0;
+  font-family: var(--display); font-weight: 500;
+  font-size: 21px; letter-spacing: -0.016em; color: var(--fg);}
+.cz-give p{margin: 12px 0 0; max-width: 44ch;
+  font-size: 14.5px; line-height: 1.65; color: var(--ink-2);}
+.cz-give .btn{margin-top: 24px; align-self: flex-start;}
+.cz-give__small{margin-top: 14px !important;
+  font-size: 12px !important; color: var(--ink-3) !important;}
+
+.cz-cta .cta2__glass{text-align: center;}
+
+@media (max-width: 980px){
+  .cz-hero__grid,
+  .cz-story__grid,
+  .cz-what__grid{grid-template-columns: 1fr;}
+  .cz-plate{justify-self: start; width: min(100%, 420px);}
+  .cz-help__grid{grid-template-columns: 1fr;}
+  .cz-donate__grid{grid-template-columns: 1fr;}
+}
+@media (max-width: 700px){
+  .cz-figs{grid-template-columns: 1fr;}
+  /* Two columns of short lines is harder to read than one on a phone. */
+  .cz-child__list{columns: 1;}
+}
+@media (max-width: 620px){
+  .cz-hero__btns .btn{width: 100%; justify-content: center;}
+}
+
+/* The atmosphere is dimmed hard on this page and nowhere else. Someone may be
+   reading the signs while frightened about a person they love, and the field's
+   bright filaments were sweeping straight through the copy. The background
+   here is allowed to be the quietest on the site. */
+.is-cause .pageaura{--pa-mul: 0.4;}
+.is-cause .geo{opacity: 0.18;}
+
+/* ---- The call buttons ---------------------------------------------------
+   The two numbers are the most useful thing on the page in the moment they
+   are needed, so they are controls rather than text: real tel: links, sized
+   as tap targets, sitting directly under the instruction. */
+/* Squared off to match the cards below rather than floating as two lozenges,
+   and the phone glyph says what the control does before the number does. */
+.cz-call{display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0 0;}
+.cz-call__btn{display: inline-flex; align-items: center; gap: 14px;
+  min-height: 62px; padding: 12px 22px 12px 18px;
+  border-radius: 16px;
+  background: rgba(var(--volt-rgb), 0.11);
+  border: 1px solid rgba(var(--volt-rgb), 0.34);
+  transition: background 0.25s, border-color 0.25s;}
+.cz-call__btn:hover{background: rgba(var(--volt-rgb), 0.18);
+  border-color: rgba(var(--volt-rgb), 0.62);}
+.cz-call__ico{display: grid; place-items: center; flex: 0 0 auto;
+  width: 34px; height: 34px; border-radius: 10px;
+  background: var(--volt); color: var(--text-on-brand);}
+.cz-call__t{display: grid; gap: 1px;}
+.cz-call__t b{font-family: var(--display); font-weight: 500; font-size: 20px;
+  line-height: 1.1; letter-spacing: -0.014em; color: var(--fg);}
+.cz-call__t i{font-style: normal;
+  font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--volt-text);}
+.cz-child__lead a{color: var(--volt-text); text-decoration: underline;
+  text-underline-offset: 3px;}
+
+@media (max-width: 620px){
+  /* Full width, because this is the one control on the site somebody might be
+     reaching for in a hurry. */
+  .cz-call{flex-direction: column;}
+  .cz-call__btn{width: 100%;}
+}
+@media (prefers-reduced-motion: reduce){
+  .cz-call__btn{transition: none;}
+}
+
+/* ---- The question -------------------------------------------------------
+   The one sentence somebody should leave with. It was a clause inside the
+   disclaimer, which is the last place anyone reads. */
+.cz-ask{margin-top: 14px;
+  padding: clamp(26px, 4vw, 40px);
+  border-radius: 22px;
+  border: 1px solid rgba(var(--volt-rgb), 0.3);
+  background: linear-gradient(150deg, rgba(var(--volt-rgb), 0.13), rgba(var(--sink), 0.5) 70%);}
+.cz-ask__k{margin: 0;
+  font-family: var(--ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--volt-text);}
+.cz-ask__q{margin: 12px 0 0;
+  font-family: var(--display); font-weight: 300;
+  font-size: clamp(28px, 4.6vw, 54px); line-height: 1.06; letter-spacing: -0.03em;
+  color: var(--fg);}
+.cz-ask__body{margin: 16px 0 0; max-width: 56ch;
+  font-size: 15px; line-height: 1.65; color: var(--ink-2);}
+
+/* ---- Print --------------------------------------------------------------
+   Somebody may want the signs on a fridge or a noticeboard. Printing the
+   whole page wastes paper on a hero, a photograph and a donate panel, so the
+   print stylesheet keeps the signs, the numbers to call and the disclaimer,
+   and drops everything else. */
+@media print{
+  .cz-hero, .cz-facts, .cz-story, .cz-what,
+  .cz-help, .cz-donate, .cz-cta,
+  .pageaura, .geo, .gridlines, .pghead, .ft2, .mnav{display: none !important;}
+  .cz-signs{padding: 0 !important;}
+  .cz-signs__grid{grid-template-columns: 1fr 1fr !important; gap: 8px !important;}
+  .cz-sign, .cz-child, .cz-note, .cz-ask{
+    border: 1px solid #999 !important; background: none !important;
+    box-shadow: none !important; break-inside: avoid;}
+  /* The call buttons are useless on paper, but the numbers are not. */
+  .cz-call__btn{border: 1px solid #999 !important; background: none !important;}
+}

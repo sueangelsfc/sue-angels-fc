@@ -1,4 +1,4 @@
-window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"sb_publishable_2VEdxWZCLW98qItINt6TPQ_r7y_Tcly"};window.SA_EMAIL="suesangelsfc@gmail.com";
+window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"sb_publishable_2VEdxWZCLW98qItINt6TPQ_r7y_Tcly"};window.SA_EMAIL="suesangelsfc@gmail.com";window.SA_SEED={"club":"Sue's Angels FC","division":"League Eight","venue":"The Reeves, Hanworth","competitions":["Chipotle UK Chairman's Cup","Dylan Rigobert Trophy","League Eight","League Ten","Pre-season friendly","Supreme Trophies Marcus Lipton Cup","Surrey FA Sunday Lower Junior County Cup"],"clubs":["AFC Bluebirds","Argentina FC 1st Team","BPR FC","BPR Men's","Balham Bteckerz","Barking Mad","Barnes Stormers FC","Brentford Town","Brockwell Violets FC","Clapham Chiefs","Dynamo London FC","FC Porto of London","Galacticos Elect","Hillside Elite FC Blues","Kew Antigua","Kingsmeadow United","Larkhall City FC","Mala Vida FC","Old Freemen's","Pure Football FC 2.0","Sheen Park Rangers","Shepherd's Tuesday","Sporting Club Catania","Sutton Knights B","Tattenham Rovers 1st","Woking Veterans Sundays"],"baselineFixtures":[{"id":"f20260802-pure","date":"02 Aug 2026","home":"Pure Football FC 2.0","away":"Sue's Angels FC"},{"id":"f20260809-galacticos","date":"09 Aug 2026","home":"Galacticos Elect","away":"Sue's Angels FC"},{"id":"f20260812-kingsmeadow","date":"12 Aug 2026","home":"Sue's Angels FC","away":"Kingsmeadow United"},{"id":"f20260816-brentford","date":"16 Aug 2026","home":"Brentford Town","away":"Sue's Angels FC"},{"id":"f20260823-kew","date":"23 Aug 2026","home":"Kew Antigua","away":"Sue's Angels FC"},{"id":"f20260830-bpr","date":"30 Aug 2026","home":"Sue's Angels FC","away":"BPR FC"}]};
 /* ==========================================================================
    CONTROL PANEL DATA LAYER
    Thin wrapper over Supabase Auth + REST. Every write is attributed and, for
@@ -135,6 +135,24 @@ window.CP = (function () {
     });
   }
 
+  /* A write that changed NOTHING is a failed write, and it does not look like
+     one over the wire. PostgREST answers a statement that ran but matched no
+     rows with 200 and an empty array, and a bare 204 tells you only that the
+     statement executed. Both used to resolve here as success, so the panel
+     said "Saved" and the club believed something was stored that was not.
+
+     `return=representation` is requested precisely so there is something to
+     count. If nothing comes back, say so instead of celebrating. */
+  function verifyWrote(res, what) {
+    var n = Array.isArray(res) ? res.length : (res ? 1 : 0);
+    if (n > 0) return res;
+    throw new Error(
+      'The server accepted the request but changed no rows, so ' + what + ' was not saved. '
+      + 'This is usually row-level security refusing the write: check the account is in '
+      + 'admin_users and that migration 002 has been run.'
+    );
+  }
+
   function upsert(table, key, data) {
     if (!state.isAdmin) return Promise.reject(new Error('You do not have permission to change club data.'));
     return rest(
@@ -143,6 +161,7 @@ window.CP = (function () {
       [{ key: key, data: data, updated_at: new Date().toISOString() }],
       'return=representation,resolution=merge-duplicates'
     ).then(function (res) {
+      verifyWrote(res, '"' + key + '"');
       audit('upsert', table, key);
       return res;
     });
@@ -152,6 +171,7 @@ window.CP = (function () {
     if (!state.isAdmin) return Promise.reject(new Error('You do not have permission to delete club data.'));
     return rest('DELETE', table + '?key=eq.' + encodeURIComponent(key), undefined, 'return=representation')
       .then(function (res) {
+        verifyWrote(res, '"' + key + '"');
         audit('delete', table, key);
         return res;
       });
@@ -487,18 +507,214 @@ window.CP = (function () {
     };
   }
 
-  M.fixtures = kvModule({
-    key: 'fixtures', table: 'fixtures', noun: 'fixtures stored', singular: 'fixture',
-    addLabel: 'Add fixture',
-    emptyBody: 'Add the new season fixtures here and they appear on the website immediately, including the next-match card on the home page.',
-    template: { date: '', kick: '11:00', home: "Sue's Angels FC", away: '', competition: 'League Eight', venue: '', kind: 'fixture' },
-    headers: ['Key', 'Date', 'Home', 'Away', 'Competition'],
-    cells: function (r) {
-      var d = r.data || {};
-      return [esc(r.key), esc(d.date), esc(d.home), esc(d.away), esc(d.competition)];
-    },
-    describe: function (r) { return (r.data && (r.data.home + ' v ' + r.data.away)) || r.key; },
-  });
+  /* ==========================================================================
+     FIXTURES
+
+     This was a raw JSON editor, like every other module. To add one match a
+     volunteer had to invent a row key in the site's own id format, then type
+
+       {"date":"","kick":"11:00","home":"Sue's Angels FC","away":"",
+        "competition":"League Eight","venue":"","kind":"fixture"}
+
+     by hand, with a JSON parse error as the only feedback. The table has nil
+     rows and the season starts tomorrow, which is the review this design
+     already failed.
+
+     Now it is a form. The key is derived, "us" comes from the generator so
+     the club's own name is never typed, and the opponent and competition are
+     pickers built from clubs the record already knows, because a misspelt
+     opponent silently loses that club's badge on the website.
+     ========================================================================== */
+  var SEED = window.SA_SEED || {};
+  var US = SEED.club || "Sue's Angels FC";
+
+  /* The site's row-key format: f + YYYYMMDD + a slug of the opponent. Derived
+     rather than asked for, because it is a format, not a decision. */
+  function fixtureKey(iso, opponent) {
+    var slug = String(opponent || 'tbc').toLowerCase()
+      .replace(/\b(fc|afc|cf|united|town|club)\b/g, '')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').split('-')[0] || 'tbc';
+    return 'f' + String(iso || '').replace(/-/g, '') + '-' + slug;
+  }
+
+  /* The site prints `date` as written, so it is stored in the same "02 Aug
+     2026" form the rest of the record uses rather than an ISO string. */
+  var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function prettyDate(iso) {
+    var p = String(iso || '').split('-');
+    if (p.length !== 3) return '';
+    return p[2] + ' ' + (MONTHS[Number(p[1]) - 1] || '') + ' ' + p[0];
+  }
+
+  function optionList(id, values) {
+    return '<datalist id="' + id + '">' +
+      (values || []).map(function (v) { return '<option value="' + esc(v) + '"></option>'; }).join('') +
+      '</datalist>';
+  }
+
+  M.fixtures = function (host) {
+    return CP.readAll('fixtures').then(function (rows) {
+      var list = (rows || []).slice().sort(function (a, b) {
+        return String(a.key).localeCompare(String(b.key));
+      });
+      var have = {};
+      list.forEach(function (r) { have[r.key] = true; });
+      var missing = (SEED.baselineFixtures || []).filter(function (f) { return !have[f.id]; });
+
+      host.innerHTML =
+        /* The six pre-season fixtures are already transcribed in the site's
+           code baseline and shown on the website from there. Until they are
+           real rows nobody can edit them without a deploy. */
+        (missing.length
+          ? '<div class="panel" style="padding:var(--space-5);margin-bottom:var(--space-5);border-color:var(--warning)">' +
+            '<h3 style="font-size:var(--step-1);margin-bottom:var(--space-2)">' +
+              esc(missing.length) + ' fixture' + (missing.length === 1 ? '' : 's') + ' are not in the database yet</h3>' +
+            '<p style="font-size:var(--step--1);color:var(--text-muted);max-width:70ch">' +
+              'The website is showing these from the code baseline, which means they cannot be ' +
+              'edited here and a change needs a developer. Import them once and they become ' +
+              'ordinary rows you control.</p>' +
+            '<p style="margin-top:var(--space-3);font-size:var(--step--2);color:var(--text-subtle)">' +
+              esc(missing.map(function (f) { return f.date + ' ' + f.home + ' v ' + f.away; }).join(' · ')) + '</p>' +
+            '<button class="btn btn--primary" style="margin-top:var(--space-4)" data-import>' +
+              'Import ' + esc(missing.length) + ' fixtures</button>' +
+          '</div>'
+          : '') +
+
+        '<div class="panel" style="padding:var(--space-5);margin-bottom:var(--space-5)">' +
+          '<h3 style="font-size:var(--step-1);margin-bottom:var(--space-4)">Add a fixture</h3>' +
+          '<div class="grid grid--2" style="gap:var(--space-4)">' +
+            '<div class="field"><label class="field__label" for="fx-date">Date</label>' +
+              '<input class="input" id="fx-date" type="date"></div>' +
+            '<div class="field"><label class="field__label" for="fx-kick">Kick-off</label>' +
+              '<input class="input" id="fx-kick" type="time" value="11:00"></div>' +
+            '<div class="field"><label class="field__label" for="fx-opp">Opponent</label>' +
+              '<input class="input" id="fx-opp" list="fx-clubs" placeholder="Start typing a club"></div>' +
+            '<div class="field"><label class="field__label" for="fx-comp">Competition</label>' +
+              '<input class="input" id="fx-comp" list="fx-comps" value="' + esc(SEED.division || '') + '"></div>' +
+            '<div class="field"><label class="field__label" for="fx-ha">Home or away</label>' +
+              '<select class="select" id="fx-ha">' +
+                '<option value="home">Home</option><option value="away">Away</option>' +
+                '<option value="neutral">Neutral ground</option></select></div>' +
+            '<div class="field"><label class="field__label" for="fx-venue">Venue</label>' +
+              '<input class="input" id="fx-venue" placeholder="' + esc(SEED.venue || '') + '"></div>' +
+          '</div>' +
+          optionList('fx-clubs', SEED.clubs) + optionList('fx-comps', SEED.competitions) +
+          '<p class="field__error" data-fx-err hidden style="margin-top:var(--space-3)"></p>' +
+          '<div class="row" style="margin-top:var(--space-4);gap:var(--space-3);align-items:center">' +
+            '<button class="btn btn--primary" data-fx-add>Add fixture</button>' +
+            '<span style="font-size:var(--step--2);color:var(--text-subtle)" data-fx-preview></span>' +
+          '</div>' +
+        '</div>' +
+
+        (list.length
+          ? table(['Date', 'Fixture', 'Competition', 'Kick-off', ''], list.map(function (r) {
+            var f = r.data || {};
+            return '<tr data-key="' + esc(r.key) + '">' +
+              '<td>' + esc(f.date || '') + '</td>' +
+              '<td><b>' + esc(f.home || '') + '</b> v <b>' + esc(f.away || '') + '</b><br>' +
+                '<span style="font-size:var(--step--2);color:var(--text-subtle)">' + esc(r.key) + '</span></td>' +
+              '<td>' + esc(f.competition || '') + '</td>' +
+              '<td>' + esc(f.kick || '') + '</td>' +
+              '<td><button class="btn btn--ghost btn--sm" data-del>Remove</button></td>' +
+            '</tr>';
+          }).join(''))
+          : empty('No fixtures stored', 'Add one above and it appears on the website immediately, including the next-match card on the home page.'));
+
+      var err = $('[data-fx-err]', host);
+      var preview = $('[data-fx-preview]', host);
+
+      function readForm() {
+        var iso = $('#fx-date', host).value;
+        var opp = $('#fx-opp', host).value.trim();
+        var ha = $('#fx-ha', host).value;
+        var weAreHome = ha === 'home';
+        return {
+          iso: iso,
+          opponent: opp,
+          key: fixtureKey(iso, opp),
+          row: {
+            kind: 'fixture',
+            date: prettyDate(iso),
+            iso: iso,
+            kick: $('#fx-kick', host).value || '',
+            home: weAreHome ? US : opp,
+            away: weAreHome ? opp : US,
+            competition: $('#fx-comp', host).value.trim(),
+            venue: $('#fx-venue', host).value.trim() || (weAreHome ? (SEED.venue || '') : ''),
+            neutral: ha === 'neutral' || undefined,
+          },
+        };
+      }
+
+      /* The derived key is shown as it is typed, so the format is visible
+         rather than surprising. */
+      function paintPreview() {
+        var f = readForm();
+        preview.textContent = f.iso && f.opponent ? 'Saves as ' + f.key : '';
+      }
+      ['#fx-date', '#fx-opp', '#fx-ha'].forEach(function (sel) {
+        var el = $(sel, host);
+        if (el) el.addEventListener('input', paintPreview);
+      });
+
+      host.addEventListener('click', function (e) {
+        if (e.target.matches('[data-import]')) {
+          if (!guard()) return;
+          e.target.setAttribute('data-loading', 'true');
+          /* Sequential, not parallel: a partial import is far easier to reason
+             about when the rows land in order. */
+          missing.reduce(function (chain, f) {
+            return chain.then(function () {
+              return CP.upsert('fixtures', f.id, {
+                kind: 'fixture', date: f.date, home: f.home, away: f.away,
+                competition: f.competition || 'Pre-season friendly',
+                kick: f.kick || '', venue: f.venue || '',
+              });
+            });
+          }, Promise.resolve()).then(function () {
+            toast('Imported ' + missing.length + ' fixtures', 'success');
+            refresh('fixtures');
+          }).catch(function (e2) {
+            toast(e2.message, 'error');
+            e.target.removeAttribute('data-loading');
+          });
+          return;
+        }
+
+        if (e.target.matches('[data-fx-add]')) {
+          if (!guard()) return;
+          var f = readForm();
+          if (!f.iso) { err.textContent = 'Pick a date.'; err.hidden = false; return; }
+          if (!f.opponent) { err.textContent = 'Name the opponent.'; err.hidden = false; return; }
+          if (have[f.key]) { err.textContent = 'A fixture with the key ' + f.key + ' already exists.'; err.hidden = false; return; }
+          err.hidden = true;
+          CP.upsert('fixtures', f.key, f.row).then(function () {
+            toast('Fixture added', 'success');
+            refresh('fixtures');
+          }).catch(function (e2) { err.textContent = e2.message; err.hidden = false; });
+          return;
+        }
+
+        if (e.target.matches('[data-del]')) {
+          if (!guard()) return;
+          var row = e.target.closest('tr[data-key]');
+          var key = row.getAttribute('data-key');
+          confirmAction({
+            title: 'Remove this fixture?',
+            body: 'It disappears from the website immediately.',
+            detail: key,
+            confirmLabel: 'Remove',
+          }).then(function (yes) {
+            if (!yes) return;
+            CP.remove('fixtures', key).then(function () {
+              toast('Fixture removed', 'success');
+              refresh('fixtures');
+            }).catch(function (e2) { toast(e2.message, 'error'); });
+          });
+        }
+      });
+    });
+  };
 
   M.results = kvModule({
     key: 'results', table: 'matches', noun: 'match records', singular: 'match record',
@@ -559,6 +775,260 @@ window.CP = (function () {
     describe: function (r) { return (r.data && r.data.title) || r.key; },
   });
 
+
+  /* ---- Photo tagger: name the players in a given photograph -------------
+     The album editor is raw JSON by design, which is right for a document
+     with a varied shape, but it is the wrong tool for going through 175
+     photographs and saying who is in each one. This does that specific job:
+     the photograph on screen, the squad as buttons, click to tag.
+
+     photoTags is an ARRAY running parallel to photos: entry i names who is
+     in photo i, empty where nobody is. That is the shape the club's existing
+     448 tagged photographs are already stored in, so this reads and writes
+     the same thing rather than a second competing format.
+
+     Nothing else in the record is touched, so the JSON editor and this can be
+     used on the same album without either losing the other's work. */
+  M.phototag = function (host) {
+    return Promise.all([CP.readAll('gallery'), CP.readAll('player_photos')]).then(function (r) {
+      var albums = r[0] || [];
+      var roster = [];
+      (r[1] || []).forEach(function (row) {
+        if (row.key.indexOf('roster') !== 0) return;
+        var d = row.data || {};
+        var list = d.players || d.roster || (Array.isArray(d) ? d : []);
+        list.forEach(function (p) {
+          var name = p && (p.name || ((p.first || '') + ' ' + (p.last || '')).trim());
+          if (name) roster.push(name);
+        });
+      });
+      /* The album's own tag list is the fallback squad when the roster record
+         is not readable, so the tool still works signed out. */
+      /* Everyone already tagged anywhere is a candidate too, so the button
+         list matches the names the club has been using rather than a
+         different spelling from the roster record. */
+      albums.forEach(function (a) {
+        var da = a.data || {};
+        (da.tags || []).forEach(function (t) { roster.push(t); });
+        var pt = da.photoTags;
+        if (Array.isArray(pt)) pt.forEach(function (list) { (list || []).forEach(function (t) { roster.push(t); }); });
+      });
+      roster = roster.filter(function (v, i, arr) { return arr.indexOf(v) === i; }).sort();
+
+      if (!albums.length) {
+        host.innerHTML = empty('No albums yet', 'Create an album under Gallery and video first.');
+        return;
+      }
+
+      host.innerHTML =
+        '<div class="panel" style="padding:var(--space-5);margin-bottom:var(--space-5)">' +
+          '<h3 style="font-size:var(--step-1);margin-bottom:var(--space-3)">Tag players in a photograph</h3>' +
+          '<p style="font-size:var(--step--1);color:var(--text-muted);margin-bottom:var(--space-4)">' +
+            'Pick an album, step through the photographs and click a name to tag them. ' +
+            'Tagged names appear under that photograph on the website and link to the player&rsquo;s profile.</p>' +
+          '<label class="field"><span class="field__label">Album</span>' +
+            '<select class="input" data-album>' +
+              albums.map(function (a, i) {
+                var d = a.data || {};
+                return '<option value="' + i + '">' + esc(d.title || a.key) +
+                  ' (' + ((d.photos || []).length) + ')</option>';
+              }).join('') +
+            '</select></label>' +
+        '</div>' +
+        '<div data-tagger></div>';
+
+      var pane = $('[data-tagger]', host);
+      var sel = $('[data-album]', host);
+      var idx = 0;
+      var album, photos, tags, dirty = false;
+
+      function load() {
+        album = albums[+sel.value];
+        photos = ((album.data || {}).photos || []).filter(Boolean);
+        /* Normalise whatever is stored into an array as long as the album,
+           so a short or missing list does not drop tags off the end. */
+        var raw = (album.data || {}).photoTags;
+        tags = [];
+        for (var i = 0; i < photos.length; i++) {
+          var at = Array.isArray(raw) ? raw[i]
+            : (raw && typeof raw === 'object') ? raw[String(i)] : null;
+          /* A tag is either a plain name or a detailed record. Read as
+             objects throughout so the editor has somewhere to put role,
+             focus and rating; plain names are written back out as plain
+             names, so an album nobody has refined stays byte-identical. */
+          tags.push((at || []).map(function (t) {
+            return typeof t === 'string'
+              ? { name: t, role: 'present' }
+              : { name: t.name, role: t.role === 'subject' ? 'subject' : 'present',
+                  focus: t.focus || null, rating: t.rating || null, note: t.note || '' };
+          }));
+        }
+        idx = 0; dirty = false;
+        paint();
+      }
+
+      function currentTags() { return tags[idx] || []; }
+
+      function paint() {
+        if (!photos.length) {
+          pane.innerHTML = empty('No photographs in this album', 'Add photographs to the album first.');
+          return;
+        }
+        var mine = currentTags();
+        var tagged = tags.filter(function (t) { return t && t.length; }).length;
+        pane.innerHTML =
+          '<div class="panel" style="padding:var(--space-5)">' +
+            '<div class="row row--between" style="margin-bottom:var(--space-4)">' +
+              '<p style="font-size:var(--step--1);color:var(--text-muted)">Photograph ' +
+                esc(idx + 1) + ' of ' + esc(photos.length) + ' &middot; ' + esc(tagged) + ' tagged</p>' +
+              '<div class="row row--tight">' +
+                '<button class="btn btn--ghost btn--sm" data-prev>Previous</button>' +
+                '<button class="btn btn--ghost btn--sm" data-next>Next</button>' +
+                '<button class="btn btn--primary btn--sm" data-save' + (dirty ? '' : ' disabled') + '>Save album</button>' +
+              '</div>' +
+            '</div>' +
+            '<img src="' + esc(photos[idx]) + '" alt="" ' +
+              'style="width:100%;max-height:52vh;object-fit:contain;border-radius:var(--radius-sm);background:var(--surface-inset)" />' +
+            '<p style="margin:var(--space-4) 0 var(--space-2);font-size:var(--step--1);color:var(--text-muted)">' +
+              'In this photograph' + (mine.length ? '' : ': nobody tagged yet') + '</p>' +
+            '<div class="row row--tight" style="flex-wrap:wrap;gap:6px">' +
+              roster.map(function (n) {
+                var on = false;
+                mine.forEach(function (t) { if (t.name === n) on = true; });
+                return '<button class="btn btn--sm ' + (on ? 'btn--primary' : 'btn--ghost') +
+                  '" data-tag="' + esc(n) + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(n) + '</button>';
+              }).join('') +
+            '</div>' +
+            /* Precision lives here: for each person already tagged in this
+               frame, say whether the photograph is OF them, where they are in
+               it, and how good it is. That is what lets the website pick
+               pictures for a player on its own. */
+            (mine.length
+              ? '<div style="margin-top:var(--space-5);border-top:1px solid var(--border);padding-top:var(--space-4)">' +
+                  '<p style="font-size:var(--step--1);color:var(--text-muted);margin-bottom:var(--space-3)">' +
+                    'Mark someone as the <strong>subject</strong> and this photograph becomes usable as their picture ' +
+                    'across the site. Click the image to set where they are in the frame so any crop keeps them in it.</p>' +
+                  mine.map(function (t, ti) {
+                    return '<div class="row row--between" style="gap:var(--space-3);padding:var(--space-3) 0;flex-wrap:wrap">' +
+                      '<strong style="font-size:var(--step--1)">' + esc(t.name) + '</strong>' +
+                      '<div class="row row--tight" style="flex-wrap:wrap;gap:6px">' +
+                        '<button class="btn btn--sm ' + (t.role === 'subject' ? 'btn--primary' : 'btn--ghost') +
+                          '" data-role="' + ti + '">' + (t.role === 'subject' ? 'Subject' : 'In shot') + '</button>' +
+                        '<button class="btn btn--sm ' + (t.focus ? 'btn--primary' : 'btn--ghost') +
+                          '" data-focus="' + ti + '">' +
+                          (t.focus ? 'Focus ' + Math.round(t.focus[0]) + ',' + Math.round(t.focus[1]) : 'Set focus') + '</button>' +
+                        [1, 2, 3, 4, 5].map(function (r) {
+                          return '<button class="btn btn--sm ' + (t.rating === r ? 'btn--primary' : 'btn--ghost') +
+                            '" data-rate="' + ti + ':' + r + '" title="Rate ' + r + '">' + r + '</button>';
+                        }).join('') +
+                      '</div>' +
+                    '</div>';
+                  }).join('') +
+                '</div>'
+              : '') +
+          '</div>';
+
+        $('[data-prev]', pane).addEventListener('click', function () {
+          idx = (idx - 1 + photos.length) % photos.length; paint();
+        });
+        $('[data-next]', pane).addEventListener('click', function () {
+          idx = (idx + 1) % photos.length; paint();
+        });
+        $$('[data-tag]', pane).forEach(function (b) {
+          b.addEventListener('click', function () {
+            var n = b.getAttribute('data-tag');
+            var mineNow = (tags[idx] || []).slice();
+            var at = -1;
+            for (var j = 0; j < mineNow.length; j++) if (mineNow[j].name === n) at = j;
+            if (at >= 0) mineNow.splice(at, 1);
+            else mineNow.push({ name: n, role: 'present', focus: null, rating: null, note: '' });
+            tags[idx] = mineNow;
+            dirty = true;
+            paint();
+          });
+        });
+        $$('[data-role]', pane).forEach(function (b) {
+          b.addEventListener('click', function () {
+            var t = tags[idx][+b.getAttribute('data-role')];
+            t.role = t.role === 'subject' ? 'present' : 'subject';
+            dirty = true; paint();
+          });
+        });
+        $$('[data-rate]', pane).forEach(function (b) {
+          b.addEventListener('click', function () {
+            var parts = b.getAttribute('data-rate').split(':');
+            var t = tags[idx][+parts[0]];
+            var r = +parts[1];
+            t.rating = t.rating === r ? null : r;
+            dirty = true; paint();
+          });
+        });
+        /* Focus is set by clicking the photograph itself: far quicker and far
+           more accurate than typing two percentages. */
+        var focusFor = null;
+        $$('[data-focus]', pane).forEach(function (b) {
+          b.addEventListener('click', function () {
+            focusFor = +b.getAttribute('data-focus');
+            var t = tags[idx][focusFor];
+            if (t.focus) { t.focus = null; dirty = true; focusFor = null; paint(); return; }
+            b.textContent = 'Click the photo';
+          });
+        });
+        var shot = $('img', pane);
+        if (shot) shot.addEventListener('click', function (e) {
+          if (focusFor === null) return;
+          var r = shot.getBoundingClientRect();
+          tags[idx][focusFor].focus = [
+            Math.round(((e.clientX - r.left) / r.width) * 100),
+            Math.round(((e.clientY - r.top) / r.height) * 100),
+          ];
+          focusFor = null; dirty = true; paint();
+        });
+
+        var saveBtn = $('[data-save]', pane);
+        if (saveBtn) saveBtn.addEventListener('click', function () {
+          /* Merge onto the record rather than replacing it: the album carries
+             photos, a cover, badges and a credit, and none of that belongs to
+             this tool. */
+          /* A tag with nothing set beyond a name is written back as a plain
+             string, exactly as it was stored. Only a refined tag becomes an
+             object, so refining one photograph does not rewrite the other
+             six hundred. */
+          var payload = tags.map(function (list) {
+            return (list || []).map(function (t) {
+              if (t.role !== 'subject' && !t.focus && !t.rating && !t.note) return t.name;
+              var o = { name: t.name, role: t.role };
+              if (t.focus) o.focus = t.focus;
+              if (t.rating) o.rating = t.rating;
+              if (t.note) o.note = t.note;
+              return o;
+            });
+          });
+          var next = Object.assign({}, album.data || {}, { photoTags: payload });
+          saveBtn.disabled = true;
+          saveBtn.textContent = 'Saving';
+          CP.upsert('gallery', album.key, next).then(function () {
+            album.data = next; dirty = false;
+            saveBtn.textContent = 'Saved';
+            setTimeout(paint, 700);
+          }).catch(function (e) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save album';
+            alert('Could not save: ' + (e && e.message ? e.message : e));
+          });
+        });
+      }
+
+      sel.addEventListener('change', function () {
+        if (dirty && !window.confirm('Unsaved tags on this album will be lost. Switch anyway?')) {
+          return;
+        }
+        load();
+      });
+      load();
+    });
+  };
+
   M.recognition = kvModule({
     key: 'recognition', table: 'recognition', noun: 'recognition entries', singular: 'entry',
     addLabel: 'Add recognition',
@@ -570,6 +1040,113 @@ window.CP = (function () {
     },
     describe: function (r) { return r.key; },
   });
+
+  /* ==========================================================================
+     VIDEOS
+
+     The website has rendered match video on three pages for a while: the
+     videos page, the live page and each match report, all keyed off
+     `videoId` on a match. Nothing in this panel could write that field. The
+     only way to attach a video was to open Results, find the right match and
+     hand-type "videoId" into its raw JSON, which is not a thing anybody
+     should have to know. A video was reported as uploaded and it was not,
+     because there was no upload to do.
+
+     So: one row per match, paste a link, done. It writes videoId onto the
+     match record the site already reads, so a saved video appears on all
+     three pages with no further work.
+     ========================================================================== */
+
+  /* Accepts anything somebody might paste out of YouTube: the share link, the
+     address bar, an embed URL, a Short, or the bare id. Returns the id or ''.
+     An 11-character id is the format YouTube has used throughout. */
+  function youtubeId(input) {
+    var s = String(input || '').trim();
+    if (!s) return '';
+    if (/^[\w-]{11}$/.test(s)) return s;
+    var m = s.match(/(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/|\/live\/)([\w-]{11})/);
+    return m ? m[1] : '';
+  }
+
+  /* "r20251123-catania" carries the date and the opponent already; this makes
+     it readable without another round trip for data the panel does not hold. */
+  function matchLabel(key) {
+    var m = String(key).match(/^[a-z](\d{4})(\d{2})(\d{2})-(.+)$/);
+    if (!m) return key;
+    var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var opp = m[4].replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+    return opp + ' · ' + Number(m[3]) + ' ' + (MON[Number(m[2]) - 1] || '') + ' ' + m[1];
+  }
+
+  M.videos = function (host) {
+    return CP.readAll('matches').then(function (rows) {
+      var list = (rows || []).slice().sort(function (a, b) {
+        return String(b.key).localeCompare(String(a.key));
+      });
+      if (!list.length) {
+        host.innerHTML = empty('No matches stored', 'Add a result first and it will appear here.');
+        return;
+      }
+      var withVideo = list.filter(function (r) { return (r.data || {}).videoId; }).length;
+
+      host.innerHTML =
+        '<div class="panel" style="padding:var(--space-5);margin-bottom:var(--space-5)">' +
+          '<h3 style="font-size:var(--step-1);margin-bottom:var(--space-3)">Match video</h3>' +
+          '<p style="font-size:var(--step--1);color:var(--text-muted);max-width:66ch">' +
+            'Paste a YouTube link against a match and it appears on the videos page, the live ' +
+            'page and that match’s own report. Any YouTube address works: the share link, ' +
+            'the one in the address bar, an embed link, a Short, or just the id.</p>' +
+          '<p style="font-size:var(--step--1);color:var(--text-muted);margin-top:var(--space-2)">' +
+            '<b>' + esc(withVideo) + '</b> of <b>' + esc(list.length) + '</b> matches have a video.</p>' +
+        '</div>' +
+        table(['Match', 'YouTube link or id', 'Video', ''],
+        list.map(function (r) {
+          var vid = (r.data || {}).videoId || '';
+          return '<tr data-key="' + esc(r.key) + '">' +
+            '<td><b>' + esc(matchLabel(r.key)) + '</b><br>' +
+              '<span style="font-size:var(--step--2);color:var(--text-subtle)">' + esc(r.key) + '</span></td>' +
+            '<td><input class="input" data-vid value="' + esc(vid) + '" placeholder="https://youtu.be/…"></td>' +
+            '<td data-thumb>' + (vid
+              ? '<a href="https://www.youtube.com/watch?v=' + esc(vid) + '" target="_blank" rel="noopener">'
+                + '<img src="https://i.ytimg.com/vi/' + esc(vid) + '/default.jpg" alt="" width="80" height="60" '
+                + 'style="border-radius:6px;display:block"></a>'
+              : '<span style="color:var(--text-subtle);font-size:var(--step--2)">None</span>') + '</td>' +
+            '<td><button class="btn btn--primary btn--sm" data-save>Save</button>' +
+              (vid ? ' <button class="btn btn--ghost btn--sm" data-clear>Clear</button>' : '') + '</td>' +
+          '</tr>';
+        }).join(''));
+
+      /* One write path for both buttons: `id` empty means remove the field
+         rather than storing an empty string the site would treat as a video. */
+      function write(row, id) {
+        var key = row.getAttribute('data-key');
+        var rec = list.filter(function (x) { return x.key === key; })[0];
+        var next = {};
+        Object.keys(rec.data || {}).forEach(function (k) { if (k !== 'videoId') next[k] = rec.data[k]; });
+        if (id) next.videoId = id;
+        return CP.upsert('matches', key, next).then(function () {
+          rec.data = next;
+          toast(id ? 'Video saved' : 'Video removed', 'success');
+          refresh('videos');
+        }).catch(function (e) { toast(e.message, 'error'); });
+      }
+
+      host.addEventListener('click', function (e) {
+        var row = e.target.closest && e.target.closest('tr[data-key]');
+        if (!row) return;
+        if (e.target.matches('[data-clear]')) { if (guard()) write(row, ''); return; }
+        if (!e.target.matches('[data-save]')) return;
+        if (!guard()) return;
+        var raw = $('[data-vid]', row).value;
+        var id = youtubeId(raw);
+        if (raw.trim() && !id) {
+          toast('That does not look like a YouTube link or id.', 'error');
+          return;
+        }
+        write(row, id);
+      });
+    });
+  };
 
   M.league = kvModule({
     key: 'league', table: 'team_badges', noun: 'opponent badge records', singular: 'badge record',

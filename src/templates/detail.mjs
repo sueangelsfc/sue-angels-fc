@@ -195,7 +195,7 @@ export function matchPage(m, d) {
 
           <div class="glass" style="padding:var(--space-5)">
             <p class="eyebrow" style="margin-bottom:var(--space-3)">Share</p>
-            <button class="btn btn--glass btn--sm btn--block" type="button" data-share>Share this match</button>
+            <button class="btn btn--sm btn--block" type="button" data-share>Share this match</button>
           </div>
         </div>
       </div>
@@ -227,7 +227,7 @@ export function articlePage(a, d) {
         ${paras.map((p) => `<p>${esc(p.trim())}</p>`).join('')}
       </div>
       <div class="row" style="margin-top:var(--space-7)">
-        <button class="btn btn--glass btn--sm" type="button" data-share>Share this article</button>
+        <button class="btn btn--sm" type="button" data-share>Share this article</button>
         <a class="btn btn--quiet btn--sm" href="/news.html">All news</a>
       </div>
     </div>

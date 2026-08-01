@@ -1,0 +1,5 @@
+{
+  "_note": "Pinned photographs: the 'unless specifically stated' override. A player listed here always uses the photograph named, whatever the tags say. Use it when one picture is simply the right one and you do not want the automatic pick second-guessing it.",
+  "_shape": "player slug -> either a photograph URL, or { url, focus: [x, y] } to also pin how it is cropped.",
+  "pins": {}
+}

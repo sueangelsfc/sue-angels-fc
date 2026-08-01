@@ -422,4 +422,31 @@
     var srcs = buttons.map(function (b) { return b.getAttribute('data-full'); });
     buttons.forEach(function (b, idx) { on(b, 'click', function () { openLightbox(srcs, idx); }); });
   });
+
+  /* ---- Join: route cards preset the enquiry menu ----------------------
+     Pure enhancement. The cards are anchors to #enquire and the menu is a
+     real <select> inside the form, so with this script dead the page still
+     works: you land on the form and pick your route. All this adds is
+     choosing it for you, and putting the cursor in the first field.
+
+     Deliberately not preventDefault: the browser's own jump to #enquire is
+     what respects prefers-reduced-motion, and duplicating it here with
+     scrollIntoView would override that. */
+  var joinSelect = $('[data-join-select]');
+  if (joinSelect) {
+    $$('[data-join-route]').forEach(function (card) {
+      on(card, 'click', function () {
+        var want = card.getAttribute('data-join-route');
+        var match = false;
+        $$('option', joinSelect).forEach(function (o) { if (o.value === want) match = true; });
+        if (!match) return;
+        joinSelect.value = want;
+        /* Focus lands on the first thing left to fill in, not on the menu we
+           just answered. Deferred past the hash jump so the browser does not
+           scroll twice. */
+        var first = $('#jn-name');
+        if (first) setTimeout(function () { first.focus({ preventScroll: true }); }, 340);
+      });
+    });
+  }
 })();

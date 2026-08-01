@@ -11,12 +11,33 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { buildDataset } from './lib/dataset.mjs';
-import { page, esc } from './lib/html.mjs';
+import { page, esc, CLUB_ID } from './lib/html.mjs';
 import { CLUB, SEPSIS } from './lib/club.mjs';
-import { teamSummary, fmtDate } from './lib/stats.mjs';
+import { teamSummary, fmtDate, isUs } from './lib/stats.mjs';
 import { home } from './templates/home.mjs';
 import * as P from './templates/pages.mjs';
-import { playerPage, matchPage, articlePage, albumPage } from './templates/detail.mjs';
+import { about } from './templates/about.mjs';
+import { cause } from './templates/cause.mjs';
+import { champions } from './templates/champions.mjs';
+import { awards } from './templates/awards.mjs';
+import { sponsors } from './templates/sponsors.mjs';
+import { squad } from './templates/squad.mjs';
+import { stats } from './templates/stats.mjs';
+import { coaches } from './templates/coaches.mjs';
+import { results, fixtures } from './templates/results.mjs';
+import { league } from './templates/league.mjs';
+import { records } from './templates/records.mjs';
+import { live } from './templates/live.mjs';
+import { news, newsArticle, articleSlug } from './templates/news.mjs';
+import { matchReport } from './templates/report.mjs';
+import { gallery, galleryAlbum, splitTitle } from './templates/gallery.mjs';
+import { videos } from './templates/videos.mjs';
+import { join } from './templates/join.mjs';
+import { contact } from './templates/contact.mjs';
+import { notFound } from './templates/notfound.mjs';
+import { PENDING_ROUTES, isLive, groupLive } from './lib/routes.mjs';
+import { matchPage, articlePage, albumPage } from './templates/detail.mjs';
+import { playerPage } from './templates/player.mjs';
 import { control } from './templates/control.mjs';
 
 const ROOT = process.cwd();
@@ -45,12 +66,32 @@ const jsFiles = fs.readdirSync(path.join(ROOT, 'src', 'scripts')).filter((f) => 
 let css = bundle('styles', cssFiles);
 let js = bundle('scripts', jsFiles);
 
+/* The homepage is art-directed end to end and shares almost no component CSS
+   with the rest of the site, so it ships its own sheet. Splitting the two
+   made BOTH smaller than the single sheet that used to serve both.
+
+   That sheet then split again. `src/styles-home/*.css` is the core every
+   rebuilt page wears (tokens, shell, header, footer); `pages/*.css` is one
+   band file per route, and a page links only its own. Concatenated, the
+   twelve band files were 42KB gzipped that every page downloaded to use one
+   of them, and the budget had been raised twice to keep pace. Linked
+   separately the core caches once across the whole visit and first paint
+   halves. */
+const homeCssFiles = fs.readdirSync(path.join(ROOT, 'src', 'styles-home')).filter((f) => f.endsWith('.css')).sort();
+let homeCss = bundle('styles-home', homeCssFiles);
+
+const pageCssDir = path.join(ROOT, 'src', 'styles-home', 'pages');
+const pageCssFiles = fs.readdirSync(pageCssDir).filter((f) => f.endsWith('.css')).sort();
+
 // Font URLs are written relative in source so the file reads naturally;
 // rewrite to absolute for the deployed bundle at the root.
-css = css.replace(/url\('assets\//g, "url('/assets/");
+const absAssets = (s) => s.replace(/url\('assets\//g, "url('/assets/");
+css = absAssets(css);
+homeCss = absAssets(homeCss);
 
 const crypto = await import('node:crypto');
 const assetV = crypto.createHash('sha256').update(css + js).digest('hex').slice(0, 8);
+const homeV = crypto.createHash('sha256').update(homeCss + js).digest('hex').slice(0, 8);
 
 /* Inject runtime config the client needs (public values only - the anon key
    is designed to be public and all protection comes from RLS). */
@@ -58,51 +99,102 @@ const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'runtime.j
 js = `window.SA_SUPABASE=${JSON.stringify(cfg.supabase)};window.SA_EMAIL=${JSON.stringify(CLUB.email)};\n${js}`;
 
 write('sa.css', css);
+write('home.css', homeCss);
 write('sa.js', js);
 
-/* The control panel gets its own JS bundle: none of it belongs on a public
-   page, and keeping it separate keeps sa.js small. */
-const adminFiles = fs.readdirSync(path.join(ROOT, 'src', 'admin')).filter((f) => f.endsWith('.js')).sort();
-let adminJs = bundle('admin', adminFiles);
-adminJs = `window.SA_SUPABASE=${JSON.stringify(cfg.supabase)};window.SA_EMAIL=${JSON.stringify(CLUB.email)};\n${adminJs}`;
-const adminV = crypto.createHash('sha256').update(adminJs).digest('hex').slice(0, 8);
-write('control.js', adminJs);
-
+/* One sheet per page band, each independently hashed so editing the league
+   page cannot bust the cache on the other eleven. `26-campaign.css` ships as
+   `p-campaign.css`: the number is only there to order the source folder. */
+const pageCss = new Map();
+for (const f of pageCssFiles) {
+  const name = `p-${f.replace(/^\d+-/, '')}`;
+  const body = absAssets(fs.readFileSync(path.join(pageCssDir, f), 'utf8'));
+  write(name, body);
+  pageCss.set(f.replace(/^\d+-|\.css$/g, ''), {
+    href: name,
+    v: crypto.createHash('sha256').update(body).digest('hex').slice(0, 8),
+  });
+}
+/* Which band each route wears. Kept here rather than in the templates so the
+   whole mapping is legible in one place, and so a route that forgets its band
+   fails loudly below rather than rendering unstyled. */
+const PAGE_CSS = {
+  'index.html': 'campaign',
+  'about.html': 'about',
+  'sepsis.html': 'cause',
+  'champions.html': 'champions',
+  'awards.html': 'awards',
+  'sponsors.html': 'sponsors',
+  'squad.html': 'squad',
+  'stats.html': 'stats',
+  'coaches.html': 'coaches',
+  'fixtures.html': 'matches',
+  'results.html': 'matches',
+  'league.html': 'league',
+  'records.html': 'records',
+  'live.html': 'media',
+  'news.html': 'media',
+  'news/': 'media',
+  'matches/': 'report',
+  'gallery.html': 'gallery',
+  'videos.html': 'media',
+  'gallery/': 'gallery',
+  'players/': 'player',
+  'join.html': 'join',
+  'contact.html': 'contact',
+  '404.html': 'notfound',
+};
+const bandFor = (file) => {
+  const key = PAGE_CSS[file];
+  if (!key) return null;
+  const rec = pageCss.get(key);
+  if (!rec) throw new Error(`page band "${key}" for ${file} has no stylesheet in src/styles-home/pages`);
+  return rec;
+};
 
 /* ---- Data ---- */
 const d = buildDataset();
 const all = teamSummary(d.played);
 const ourRow = d.table.find((r) => r.us);
 
+/* The control panel gets its own JS bundle: none of it belongs on a public
+   page, and keeping it separate keeps sa.js small. */
+const adminFiles = fs.readdirSync(path.join(ROOT, 'src', 'admin')).filter((f) => f.endsWith('.js')).sort();
+let adminJs = bundle('admin', adminFiles);
+/* The panel gets three things the generator already knows and it otherwise
+   could not: the club's own name (so a fixture form can tell "us" from "them"
+   without the operator typing it), the competitions and opponents already in
+   the record (so those become pickers instead of free text that misspells a
+   club and breaks its badge), and the pre-season fixtures transcribed in the
+   code baseline but never entered as rows, so the panel can offer to import
+   them in one action instead of six hand-typed JSON documents. */
+const adminSeed = {
+  club: CLUB.name,
+  division: CLUB.nextDivision,
+  venue: `${CLUB.venue.shortName}, ${CLUB.venue.district}`,
+  competitions: [...new Set([CLUB.nextDivision, CLUB.division,
+    ...d.played.map((m) => m.competition), 'Pre-season friendly'])].filter(Boolean).sort(),
+  clubs: [...new Set(d.matches.flatMap((m) => [m.home, m.away]))]
+    .filter((n) => n && !isUs(n)).sort(),
+  baselineFixtures: JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'fixtures-2627.json'), 'utf8')).fixtures || [],
+};
+adminJs = `window.SA_SUPABASE=${JSON.stringify(cfg.supabase)};window.SA_EMAIL=${JSON.stringify(CLUB.email)};window.SA_SEED=${JSON.stringify(adminSeed)};\n${adminJs}`;
+const adminV = crypto.createHash('sha256').update(adminJs).digest('hex').slice(0, 8);
+write('control.js', adminJs);
+
 /* ---- Schema.org --------------------------------------------------------
    SportsTeam for the club, SportsEvent per match, Article per news item,
    BreadcrumbList on detail routes. */
-const orgSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'SportsTeam',
-  name: CLUB.name,
-  alternateName: CLUB.nickname,
-  sport: 'Association football',
-  foundingDate: String(CLUB.founded),
-  url: CLUB.site,
-  logo: `${CLUB.site}/assets/brand/badge.png`,
-  email: CLUB.email,
-  memberOf: { '@type': 'SportsOrganization', name: CLUB.league },
-  location: {
-    '@type': 'Place',
-    name: CLUB.venue.name,
-    address: { '@type': 'PostalAddress', addressLocality: CLUB.venue.locality, addressCountry: CLUB.venue.country },
-  },
-  sameAs: CLUB.socials.map((s) => s.href),
+/* The club node itself now lives in html.mjs and ships on EVERY page with a
+   stable @id, so a crawler on a player profile or a match report can tie it
+   back to the club. All that is left here is the part that belongs on the
+   home page alone: the squad and the coaching staff, forty Person entries
+   that would otherwise be repeated on all 100 pages for no extra signal.
+   These are merged INTO the canonical club node rather than sitting beside it
+   as a second, competing SportsTeam. */
+const clubExtra = {
   coach: d.coaches.map((c) => ({ '@type': 'Person', name: c.name, jobTitle: c.role })),
   athlete: d.squad.slice(0, 40).map((p) => ({ '@type': 'Person', name: p.name, url: `${CLUB.site}/players/${p.slug}.html` })),
-};
-
-const websiteSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'WebSite',
-  name: CLUB.name,
-  url: CLUB.site,
 };
 
 const breadcrumb = (items) => ({
@@ -131,77 +223,190 @@ const matchSchema = (m) => ({
   superEvent: { '@type': 'SportsOrganization', name: m.competition },
 });
 
+/* ---- Which routes are live ----
+   The gate itself lives in src/lib/routes.mjs so the test suite reads the
+   same list. The control panel is deliberately outside it: it is the admin
+   app on its own bundle, not part of the public rebuild. */
+
 /* ---- Static routes ---- */
 const R = d.pages || {};
-const meta = (slug, fallbackTitle, fallbackDesc) => ({
+/* Detail routes generate their description from data, so it cannot simply be
+   written to length the way the DESC map above is. This keeps them in the same
+   120 to 155 band: append the next top-up clause while it is too short, and
+   trim at a word boundary when it is too long. Truncating mid-word is what
+   made one news description read "...and the club will trav". */
+/* ---- Share cards --------------------------------------------------------
+   Which 1200x630 card each route unfurls with, and what it says for anyone
+   reading it through a screen reader on the platform that unfurled it.
+
+   Every page used to share one og-default.png, so a link to the squad, a
+   match report and the sponsorship page all looked identical in a message.
+   Cards are generated by tools/social-cards.mjs and committed; that script is
+   not part of `npm run build` because it needs Chrome and the copy changes
+   about twice a season. */
+const OG = {
+  'index.html': ['og-home', 'Sue’s Angels FC: League Ten champions, played 18, won 18, unbeaten and promoted'],
+  'about.html': ['og-about', 'Built in her name: Sue’s Angels FC, founded 2025 in memory of Susan Anne Martin'],
+  'sepsis.html': ['og-sepsis', 'Sue’s Angels FC play for sepsis awareness. 48,000 lives lost a year in the UK'],
+  'champions.html': ['og-champions', 'Champions, unbeaten: 18 played, 18 won, 90 scored, 54 points'],
+  'awards.html': ['og-awards', 'Sue’s Angels FC awards and honours, and the best defensive record in League Ten history'],
+  'sponsors.html': ['og-sponsors', 'Back the Angels: shirt, matchday and player sponsorship at Sue’s Angels FC'],
+  'squad.html': ['og-squad', 'The Sue’s Angels FC squad: every player and every profile'],
+  'stats.html': ['og-stats', 'Sue’s Angels FC player statistics: goals, assists and appearances'],
+  'coaches.html': ['og-coaches', 'The coaching staff behind an unbeaten Sue’s Angels FC season'],
+  'fixtures.html': ['og-fixtures', 'Sue’s Angels FC fixtures: League Eight, Sunday mornings at The Reeves'],
+  'results.html': ['og-results', 'Every Sue’s Angels FC result: 33 matches across league and cups'],
+  'league.html': ['og-league', 'Sue’s Angels FC top of the League Ten table with 54 points from 18 games'],
+  'records.html': ['og-records', 'Sue’s Angels FC club records: goals, runs, clean sheets and club firsts'],
+  'live.html': ['og-live', 'Sue’s Angels FC live and on replay, free to watch'],
+  'news.html': ['og-news', 'Club news from Sue’s Angels FC: match reports and announcements'],
+  'gallery.html': ['og-gallery', 'The Sue’s Angels FC gallery: 606 photographs across seven matchdays'],
+  'videos.html': ['og-videos', 'Goals and highlights from Sue’s Angels FC'],
+  'join.html': ['og-join', 'Join Sue’s Angels FC: play, volunteer, shoot or sponsor'],
+  'contact.html': ['og-contact', 'Contact Sue’s Angels FC at The Reeves, Hanworth'],
+  '404.html': ['og-404', 'Off target: that page does not exist on the Sue’s Angels FC website'],
+};
+const ogCard = (name) => `/assets/social/${name}.jpg`;
+
+/* "1 starts" read like a bug because it was one. */
+const plural = (n, word) => `${n} ${word}${Number(n) === 1 ? '' : 's'}`;
+
+function fitDesc(primary, ...topUps) {
+  const clean = (t) => String(t).replace(/\s+/g, ' ').trim();
+  let out = clean(primary);
+  /* Only take a top-up that FITS. Appending one and then trimming produced
+     "Sue's Angels FC played at a…", a clause cut mid-thought, which is worse
+     than simply being a few characters shorter. */
+  const unused = [];
+  for (const t of topUps) {
+    const c = clean(t);
+    if (out.length >= 120) { unused.push(c); continue; }
+    if (out.length + 1 + c.length <= 155) out = `${out} ${c}`;
+    else unused.push(c);
+  }
+  /* Still short and nothing fitted whole: take the SHORTEST leftover, which is
+     the one most likely to survive intact. Taking the first instead is what
+     left twelve match pages reading "Sue's Angels FC played at a…". */
+  if (out.length < 120 && unused.length) {
+    out = `${out} ${unused.slice().sort((a, b) => a.length - b.length)[0]}`;
+  }
+  if (out.length > 155) {
+    const cut = out.slice(0, 154);
+    const sp = cut.lastIndexOf(' ');
+    out = `${(sp > 100 ? cut.slice(0, sp) : cut).replace(/[\s,;:.-]+$/, '')}…`;
+  }
+  return out;
+}
+
+/* ---- Meta descriptions, all of them, in one place -----------------------
+   Every one is 120 to 155 characters. Shorter and the search engine pads the
+   snippet with whatever text it scrapes off the page; longer and it truncates
+   mid-sentence. Several also name the town, because "Sunday league football
+   Hanworth" is a real search in a way that "Sunday league football" is not.
+   The same string is reused for og:description, twitter:description and the
+   JSON-LD description, so the three can never disagree. */
+const DESC = {
+  home: "London Sunday-league football club playing for sepsis awareness in memory of Susan Anne Martin. League Ten champions, unbeaten in our first season.",
+  about: "How Sue's Angels FC began in 2025 in memory of Susan Anne Martin, and how a club built on one family's loss won its league unbeaten at the first try.",
+  champions: "How Sue's Angels FC won League Ten unbeaten in 25/26: played 18, won 18, 90 goals scored, 11 conceded, 54 points and promotion to League Eight.",
+  coaches: "The coaching staff behind Sue's Angels FC, the people who took a brand new Hanworth Sunday-league side to the League Ten title without losing a game.",
+  join: "Play, volunteer, shoot or sponsor. Sue's Angels FC welcome new players and helpers for 26/27 at The Reeves in Hanworth. One form, reply in 48 hours.",
+  live: "Watch Sue's Angels FC live and on replay. Match streams, highlights and every result from a Hanworth Sunday-league club, free and with no sign-up.",
+  records: "Every Sue's Angels FC club record: most goals, most appearances, clean sheets, the longest winning runs, the biggest wins and the club's firsts.",
+  sepsis: "Sue's Angels FC was founded in memory of Susan Anne Martin, who we lost to sepsis. Why we play, the signs of sepsis to know, and how to help.",
+  squad: "Every player in the Sue's Angels FC first-team squad, grouped by position, with goals, assists and appearances on each player's own profile.",
+  stats: "Sue's Angels FC player statistics for 25/26: goals, assists and appearances for every player, derived from the club's own match records.",
+  contact: "How to reach Sue's Angels FC: the club email, Instagram, and The Reeves in Hanworth where we play our home matches on Sunday mornings.",
+  fixtures: "Upcoming Sue's Angels FC fixtures across League Eight and the cups. Home matches are Sunday mornings at The Reeves in Hanworth, free to watch.",
+  results: "Every Sue's Angels FC result from the unbeaten League Ten title season, across league and cups, each with its own line-up and match report.",
+  league: "The full League Ten 25/26 table Sue's Angels FC won unbeaten, every result across the division, and the competition's leading goalscorers.",
+  awards: "Sue's Angels FC awards and honours: Player of the Month, the 25/26 end of season winners, and the best defensive record in League Ten history.",
+  sponsors: "Meet the businesses backing Sue's Angels FC, and how your company can sponsor a London Sunday-league club playing for sepsis awareness.",
+  news: "Match reports, club announcements and the stories behind the badge, straight from Sue's Angels FC in Hanworth, south-west London.",
+  gallery: "Matchday photography from Sue's Angels FC: 606 photographs across seven albums, shot by the people who give up their Sundays for the club.",
+  videos: "Goals, highlights and clips from Sue's Angels FC, the Hanworth Sunday-league club that won League Ten unbeaten in its first season.",
+};
+
+/* The description written HERE wins; the recovered one from the old site is
+   the fallback for a route that has not been given its own yet.
+
+   It used to be the other way round, which meant ten pages shipped whatever
+   the retired site happened to say. Those ran from 74 to 158 characters:
+   too short and a search engine pads the snippet with whatever text it finds
+   on the page, too long and it truncates mid-sentence. The band that survives
+   intact is roughly 120 to 155, and the test suite now enforces it so this
+   cannot quietly drift back. */
+const meta = (slug, fallbackTitle, desc) => ({
   title: R[slug]?.title || fallbackTitle,
-  description: R[slug]?.desc || fallbackDesc,
+  description: DESC[slug] || desc || R[slug]?.desc || '',
 });
 
 const routes = [
   { file: 'index.html', tpl: () => home(d), ...meta('home', `${CLUB.name} - ${CLUB.division} Champions`,
       `London Sunday-league football club, founded in memory of ${CLUB.memorial.name}. ${CLUB.division} champions, unbeaten in our inaugural season.`),
-    schema: [orgSchema, websiteSchema] },
+    clubExtra },
 
-  { file: 'about.html', tpl: () => P.about(d), ...meta('about', `Our story · ${CLUB.name}`,
+  { file: 'about.html', tpl: () => about(d), ...meta('about', `Our story · ${CLUB.name}`,
       `The story of ${CLUB.name}, built in memory of ${CLUB.memorial.name}, supporting sepsis awareness.`) },
 
-  { file: 'sepsis.html', tpl: () => P.sepsis(d), ...meta('sepsis', `Our cause: sepsis awareness · ${CLUB.name}`,
+  { file: 'sepsis.html', tpl: () => cause(d), ...meta('sepsis', `Our cause: sepsis awareness · ${CLUB.name}`,
       `${CLUB.name} was founded in memory of ${CLUB.memorial.name}, who we lost to sepsis. Why we play, the signs of sepsis to know, and how to support the cause.`) },
 
-  { file: 'champions.html', tpl: () => P.champions(d), ...meta('champions', `Champions · ${CLUB.name}`,
+  { file: 'champions.html', tpl: () => champions(d), ...meta('champions', `Champions · ${CLUB.name}`,
       `${CLUB.division} champions ${d.currentSeason}: the season in numbers, unbeaten and promoted.`) },
 
-  { file: 'awards.html', tpl: () => P.awards(d), ...meta('awards', `Awards · ${CLUB.name}`,
-      `${CLUB.name} Player of the Month and end of season awards, celebrating the players who made the difference.`) },
+  { file: 'awards.html', tpl: () => awards(d), ...meta('awards', `Awards · ${CLUB.name}`,
+      `${CLUB.name} Player of the Month, Man of the Match and end of season awards, plus the best defensive record in ${CLUB.division} history.`) },
 
-  { file: 'squad.html', tpl: () => P.squad(d), ...meta('squad', `Squad · ${CLUB.name}`,
+  { file: 'squad.html', tpl: () => squad(d), ...meta('squad', `Squad · ${CLUB.name}`,
       `The ${CLUB.name} first-team squad, grouped by position. Tap any player for their full performance profile.`) },
 
-  { file: 'stats.html', tpl: () => P.stats(d), ...meta('stats', `Player stats · ${CLUB.name}`,
+  { file: 'stats.html', tpl: () => stats(d), ...meta('stats', `Player stats · ${CLUB.name}`,
       `${CLUB.name} player stats: goals, assists and appearances across the season, derived from our own match records.`) },
 
-  { file: 'coaches.html', tpl: () => P.coaches(d), ...meta('coaches', `Coaches · ${CLUB.name}`,
+  { file: 'coaches.html', tpl: () => coaches(d), ...meta('coaches', `Coaches · ${CLUB.name}`,
       `Meet the coaching staff guiding ${CLUB.name}, the people shaping our ${CLUB.division} champions on and off the pitch.`) },
 
-  { file: 'fixtures.html', tpl: () => P.fixtures(d), ...meta('fixtures', `Fixtures · ${CLUB.name}`,
-      `Upcoming ${CLUB.name} fixtures across league and cups, with dates, kick-off times and venues.`) },
+  { file: 'fixtures.html', tpl: () => fixtures(d), ...meta('fixtures', `Fixtures · ${CLUB.name}`,
+      `Upcoming ${CLUB.name} fixtures across league and cups. Each one moves to the results page once it has been played.`) },
 
-  { file: 'results.html', tpl: () => P.results(d), ...meta('results', `Results · ${CLUB.name}`,
+  { file: 'results.html', tpl: () => results(d), ...meta('results', `Results · ${CLUB.name}`,
       `Every ${CLUB.name} result across league and cups, from our unbeaten ${CLUB.division} title-winning season.`) },
 
-  { file: 'league.html', tpl: () => P.league(d), ...meta('league', `League table · ${CLUB.name}`,
+  { file: 'league.html', tpl: () => league(d), ...meta('league', `League table · ${CLUB.name}`,
       `The full ${CLUB.division} ${d.currentSeason} table, every result across the division, and the league's leading scorers.`) },
 
-  { file: 'records.html', tpl: () => P.records(d), ...meta('records', `Club records · ${CLUB.name}`,
-      `Every ${CLUB.name} club record: most goals, appearances, assists, clean sheets, biggest wins and club firsts.`) },
+  { file: 'records.html', tpl: () => records(d), ...meta('records', `Club records · ${CLUB.name}`,
+      `Every ${CLUB.name} club record: honours, most goals, appearances, clean sheets, the longest runs and the club firsts.`) },
 
-  { file: 'live.html', tpl: () => P.live(d), ...meta('live', `Live and replays · ${CLUB.name}`,
+  { file: 'live.html', tpl: () => live(d), ...meta('live', `Live and replays · ${CLUB.name}`,
       `Watch ${CLUB.name} matches live and on replay, streamed from our YouTube channel.`) },
 
-  { file: 'news.html', tpl: () => P.news(d), ...meta('news', `News · ${CLUB.name}`,
+  { file: 'news.html', tpl: () => news(d), ...meta('news', `News · ${CLUB.name}`,
       `The latest from ${CLUB.name}: match reports, club announcements and the stories behind the badge.`) },
 
-  { file: 'gallery.html', tpl: () => P.gallery(d), ...meta('gallery', `Gallery · ${CLUB.name}`,
+  { file: 'gallery.html', tpl: () => gallery(d), ...meta('gallery', `Gallery · ${CLUB.name}`,
       `Matchday photography from ${CLUB.name}, season by season.`) },
 
-  { file: 'videos.html', tpl: () => P.videos(d), ...meta('videos', `Videos · ${CLUB.name}`,
+  { file: 'videos.html', tpl: () => videos(d), ...meta('videos', `Videos · ${CLUB.name}`,
       `${CLUB.name} matchday videos and highlights from our unbeaten ${CLUB.division} season.`) },
 
-  { file: 'sponsors.html', tpl: () => P.sponsors(d), ...meta('sponsors', `Sponsors · ${CLUB.name}`,
+  { file: 'sponsors.html', tpl: () => sponsors(d), ...meta('sponsors', `Sponsors · ${CLUB.name}`,
       `Meet the partners backing ${CLUB.name}, and find out how your business can sponsor a London Sunday-league club with a cause at its heart.`) },
 
-  { file: 'join.html', tpl: () => P.join(d), ...meta('join', `Join · ${CLUB.name}`,
+  { file: 'join.html', tpl: () => join(d), ...meta('join', `Join · ${CLUB.name}`,
       `Trials, volunteering, media and sponsorship. Join ${CLUB.name} for the new season.`) },
 
-  { file: 'contact.html', tpl: () => P.contact(d), ...meta('contact', `Contact · ${CLUB.name}`,
+  { file: 'contact.html', tpl: () => contact(d), ...meta('contact', `Contact · ${CLUB.name}`,
       `Get in touch with ${CLUB.name}. Enquiries about trials, volunteering, media, sponsorship and the cause.`) },
 
-  { file: '404.html', tpl: () => P.notFound(d), title: `Page not found · ${CLUB.name}`,
-    description: 'That page does not exist.', noindex: true },
+  { file: '404.html', tpl: () => notFound(d), title: `Page not found · ${CLUB.name}`,
+    description: "That page does not exist. Find Sue's Angels FC results, the squad, the league table, club news and how to get in touch from here instead.",
+    noindex: true },
 ];
 
 for (const r of routes) {
+  if (!isLive(r.file)) continue;
   const out = r.tpl();
   write(r.file, page({
     title: r.title,
@@ -209,10 +414,22 @@ for (const r of routes) {
     path: `/${r.file}`,
     body: out.body,
     bodyClass: out.bodyClass || '',
-    // A template may contribute its own structured data (the homepage FAQ).
-    schema: [...(r.schema || []), ...(out.faqSchema ? [out.faqSchema] : [])],
+    // A template may contribute its own structured data (the homepage FAQ,
+    // a sub-page's own AboutPage/breadcrumb block).
+    schema: [...(r.schema || []), ...(out.schema || []), ...(out.faqSchema ? [out.faqSchema] : [])],
+    clubExtra: r.clubExtra || null,
+    ogImage: ogCard((OG[r.file] || ['og-default'])[0]),
+    ogImageAlt: (OG[r.file] || [, `${CLUB.name} club crest`])[1],
     noindex: r.noindex,
-    assetV,
+    // The homepage carries its own stylesheet, shell and footer.
+    css: out.css || 'sa.css',
+    pageCss: out.css === 'home.css' ? bandFor(r.file) : null,
+    shell: out.shell,
+    footerHtml: out.footerHtml,
+    preMain: out.preMain,
+    preloadImage: out.preloadImage,
+    assetV: out.css === 'home.css' ? homeV : assetV,
+    jsV: assetV,
   }));
 }
 
@@ -234,22 +451,46 @@ for (const r of routes) {
 }
 
 /* ---- Player profiles ---- */
-const profilePlayers = d.players.filter((p) => !p.unknown);
+const profilePlayers = groupLive('players') ? d.players.filter((p) => !p.unknown) : [];
 for (const p of profilePlayers) {
-  const { body } = playerPage(p, d);
+  const out = playerPage(p, d);
+  const pr = out.profile;
   write(`players/${p.slug}.html`, page({
     title: `${p.name} · ${CLUB.name}`,
-    description: `${p.name}, ${p.position} for ${CLUB.name}. ${p.apps} appearances, ${p.goals} goals and ${p.assists} assists in ${d.currentSeason}.`,
+    /* Starts, not appearances: the engine counts only the eleven named on a
+       team sheet, so calling that figure appearances in a meta description
+       would overstate it for anyone who mostly came off the bench. */
+    description: fitDesc(
+      `${p.name}, ${p.position} for ${CLUB.name}. ${plural(pr.starts, 'start')}, `
+      + `${plural(pr.goals, 'goal')} and ${plural(pr.assists, 'assist')} in ${d.currentSeason}.`,
+      `Part of the squad that won ${CLUB.division} unbeaten.`,
+      `${CLUB.name}, ${CLUB.venue.district}.`,
+      `Sunday-league football in south-west London.`),
     path: `/players/${p.slug}.html`,
-    body,
-    assetV,
+    ogImage: ogCard('og-player'),
+    ogImageAlt: `${p.name}, ${p.position} for ${CLUB.name}`,
+    body: out.body,
+    bodyClass: out.bodyClass,
+    css: out.css,
+    pageCss: bandFor('players/'),
+    shell: out.shell,
+    footerHtml: out.footerHtml,
+    preMain: out.preMain,
+    assetV: homeV,
+    jsV: assetV,
     schema: [
+      /* ProfilePage, not a bare WebPage that happens to mention a Person. It
+         tells a crawler the page IS about this player, and mainEntity says
+         which one, so "who plays centre back for Sue's Angels" has something
+         to resolve against. */
+      { '@type': 'ProfilePage', mainEntity: { '@id': `${CLUB.site}/players/${p.slug}.html#person` } },
       {
-        '@context': 'https://schema.org',
         '@type': 'Person',
+        '@id': `${CLUB.site}/players/${p.slug}.html#person`,
         name: p.name,
         jobTitle: p.position,
-        memberOf: { '@type': 'SportsTeam', name: CLUB.name, url: CLUB.site },
+        /* By reference: the club node is already in this page's graph. */
+        memberOf: { '@id': CLUB_ID },
         url: `${CLUB.site}/players/${p.slug}.html`,
       },
       breadcrumb([{ label: 'Home', href: '/' }, { label: 'Squad', href: '/squad.html' }, { label: p.name, href: `/players/${p.slug}.html` }]),
@@ -257,18 +498,33 @@ for (const p of profilePlayers) {
   }));
 }
 
-/* ---- Match centre ---- */
-for (const m of d.matches) {
-  const { body } = matchPage(m, d);
-  const desc = m.played
-    ? `${m.title}, ${m.competition}, ${fmtDate(m.date, { long: true })}. Line-ups, goals and the match report.`
-    : `${m.home} v ${m.away}, ${m.competition}, ${fmtDate(m.date, { long: true })}.`;
+/* ---- Match centre ----
+   Every PLAYED match gets a page. A fixture with no result has nothing to
+   report yet and lives on /fixtures.html until it does, so writing a page for
+   one would only create a second empty URL. */
+for (const m of (groupLive('matches') ? d.played : [])) {
+  const out = matchReport(m, d);
+  const desc = fitDesc(
+    `${m.title}, ${m.competition}, ${fmtDate(m.date, { long: true })}.`,
+    out.hasReport ? 'Line-ups, goals and the full match report.' : 'Line-ups, goals and the scorers.',
+    m.homeAway === 'Neutral' ? 'Played at a neutral ground.' : `Played ${m.homeAway.toLowerCase()}.`,
+    `${CLUB.name}, ${CLUB.venue.district}.`,
+    `Sunday-league football in south-west London.`);
   write(`matches/${m.slug}.html`, page({
     title: `${m.title} · ${CLUB.name}`,
     description: desc,
+    ogImage: ogCard('og-match'),
+    ogImageAlt: `${m.title}, ${m.competition}, ${fmtDate(m.date, { long: true })}`,
     path: `/matches/${m.slug}.html`,
-    body,
-    assetV,
+    body: out.body,
+    bodyClass: out.bodyClass,
+    css: out.css,
+    pageCss: bandFor('matches/'),
+    shell: out.shell,
+    footerHtml: out.footerHtml,
+    preMain: out.preMain,
+    assetV: homeV,
+    jsV: assetV,
     schema: [
       matchSchema(m),
       breadcrumb([{ label: 'Home', href: '/' }, { label: 'Results', href: '/results.html' }, { label: m.title, href: `/matches/${m.slug}.html` }]),
@@ -277,41 +533,60 @@ for (const m of d.matches) {
 }
 
 /* ---- Articles ---- */
-for (const a of d.articles) {
-  const { body } = articlePage(a, d);
-  write(`news/${a.slug}.html`, page({
+for (const a of (groupLive('news') ? d.articles : [])) {
+  const slug = articleSlug(a);
+  const out = newsArticle(a, d);
+  write(`news/${slug}.html`, page({
     title: `${a.title} · ${CLUB.name}`,
-    description: String(a.lede || a.title).split('\n')[0].slice(0, 180),
-    path: `/news/${a.slug}.html`,
-    body,
-    assetV,
+    description: fitDesc(String(a.lede || a.title), `${CLUB.name}, ${CLUB.venue.district}.`),
+    ogImage: ogCard('og-news'),
+    ogImageAlt: `${a.title} - ${CLUB.name}`,
+    path: `/news/${slug}.html`,
+    body: out.body,
+    bodyClass: out.bodyClass,
+    css: out.css,
+    pageCss: bandFor('news/'),
+    shell: out.shell,
+    footerHtml: out.footerHtml,
+    preMain: out.preMain,
+    assetV: homeV,
+    jsV: assetV,
     schema: [
-      {
-        '@context': 'https://schema.org',
-        '@type': 'NewsArticle',
-        headline: a.title,
-        datePublished: a.iso || undefined,
-        dateModified: a.updatedAt || undefined,
-        author: { '@type': 'Organization', name: CLUB.name },
-        publisher: { '@type': 'Organization', name: CLUB.name, logo: { '@type': 'ImageObject', url: `${CLUB.site}/assets/brand/badge.png` } },
-        mainEntityOfPage: `${CLUB.site}/news/${a.slug}.html`,
-        articleSection: a.category,
-      },
-      breadcrumb([{ label: 'Home', href: '/' }, { label: 'News', href: '/news.html' }, { label: a.title, href: `/news/${a.slug}.html` }]),
+      ...out.schema,
+      breadcrumb([{ label: 'Home', href: '/' }, { label: 'News', href: '/news.html' }, { label: a.title, href: `/news/${slug}.html` }]),
     ],
   }));
 }
 
 /* ---- Gallery albums ---- */
-for (const g of d.galleries) {
-  const { body } = albumPage(g, d);
+for (const g of (groupLive('gallery') ? d.galleries : [])) {
+  const out = galleryAlbum(g, d);
   write(`gallery/${g.slug}.html`, page({
     title: `${g.title} · ${CLUB.name}`,
-    description: `${g.photoCount} matchday photographs. ${g.title}.`,
+    description: fitDesc(
+      `${g.photoCount} matchday photographs from ${splitTitle(g.title).fixture}.`,
+      g.photographer ? `Shot by ${g.photographer} for ${CLUB.name}.` : `${CLUB.name} matchday photography.`,
+      `${CLUB.name}, ${CLUB.venue.district}.`,
+      `Sunday-league football in south-west London.`),
     path: `/gallery/${g.slug}.html`,
-    body,
-    assetV,
-    schema: [breadcrumb([{ label: 'Home', href: '/' }, { label: 'Gallery', href: '/gallery.html' }, { label: g.title, href: `/gallery/${g.slug}.html` }])],
+    /* An album's own cover photograph is a far better share image than a
+       generated card, and all seven albums have one. Absolute already, since
+       these are served from Supabase storage. */
+    ogImage: g.cover || ogCard('og-gallery'),
+    ogImageAlt: `${splitTitle(g.title).fixture}, ${g.photoCount} matchday photographs`,
+    body: out.body,
+    bodyClass: out.bodyClass,
+    css: out.css,
+    pageCss: bandFor('gallery/'),
+    shell: out.shell,
+    footerHtml: out.footerHtml,
+    preMain: out.preMain,
+    assetV: homeV,
+    jsV: assetV,
+    schema: [
+      ...out.schema,
+      breadcrumb([{ label: 'Home', href: '/' }, { label: 'Gallery', href: '/gallery.html' }, { label: g.title, href: `/gallery/${g.slug}.html` }]),
+    ],
   }));
 }
 
@@ -322,10 +597,41 @@ const urls = written
   .filter((f) => f.endsWith('.html') && !NO_SITEMAP.has(f))
   .map((f) => (f === 'index.html' ? '/' : `/${f}`));
 
-const today = (d.articles[0]?.updatedAt || new Date().toISOString()).slice(0, 10);
+/* lastmod PER URL, from the content itself. Every URL used to carry the same
+   date, so a match report from September 2025 and a page rebuilt this morning
+   both claimed the same day. That is not wrong so much as useless: a crawler
+   uses lastmod to decide what to re-fetch, and a single site-wide date tells
+   it either everything changed or nothing did.
+
+   Detail routes date from their own content. Static routes take the newest
+   content date in the dataset rather than the wall clock, so a rebuild with no
+   content change does not churn the whole sitemap and cry wolf. */
+const iso10 = (v) => (v ? String(v).slice(0, 10) : '');
+const newest = [
+  ...d.played.map((m) => iso10(m.iso || m.date)),
+  ...d.articles.map((a) => iso10(a.updatedAt || a.iso)),
+  ...d.galleries.map((g) => iso10(g.date)),
+].filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x)).sort();
+const siteDate = newest[newest.length - 1] || new Date().toISOString().slice(0, 10);
+
+const lastmodFor = (u) => {
+  if (u.startsWith('/matches/')) {
+    const m = d.played.find((x) => `/matches/${x.slug}.html` === u);
+    return iso10(m?.iso || m?.date) || siteDate;
+  }
+  if (u.startsWith('/news/')) {
+    const a = d.articles.find((x) => `/news/${articleSlug(x)}.html` === u);
+    return iso10(a?.updatedAt || a?.iso) || siteDate;
+  }
+  if (u.startsWith('/gallery/')) {
+    const g = d.galleries.find((x) => `/gallery/${x.slug}.html` === u);
+    return iso10(g?.date) || siteDate;
+  }
+  return siteDate;
+};
 write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map((u) => `  <url><loc>${CLUB.site}${u}</loc><lastmod>${today}</lastmod><changefreq>${u === '/' ? 'daily' : 'weekly'}</changefreq><priority>${u === '/' ? '1.0' : u.includes('/players/') || u.includes('/matches/') ? '0.6' : '0.8'}</priority></url>`).join('\n')}
+${urls.map((u) => `  <url><loc>${CLUB.site}${u}</loc><lastmod>${lastmodFor(u)}</lastmod><changefreq>${u === '/' ? 'daily' : 'weekly'}</changefreq><priority>${u === '/' ? '1.0' : u.includes('/players/') || u.includes('/matches/') ? '0.6' : '0.8'}</priority></url>`).join('\n')}
 </urlset>
 `);
 
@@ -363,10 +669,28 @@ const kinds = written.reduce((acc, f) => {
 }, {});
 
 console.log(`${CHECK ? 'CHECK' : 'BUILD'} complete`);
-console.log(`asset version: ${assetV}`);
+console.log(`asset version: ${assetV} (home ${homeV})`);
 console.log(`css: ${cssFiles.join(', ')} -> sa.css (${(Buffer.byteLength(css) / 1024).toFixed(1)} KB)`);
+console.log(`home css: ${homeCssFiles.join(', ')} -> home.css (${(Buffer.byteLength(homeCss) / 1024).toFixed(1)} KB)`);
 console.log(`js:  ${jsFiles.join(', ')} -> sa.js (${(Buffer.byteLength(js) / 1024).toFixed(1)} KB)`);
 console.log(`files: ${written.length}, total ${(bytes / 1024).toFixed(0)} KB`);
 console.log('by group:', JSON.stringify(kinds));
-console.log(`routes: ${routes.length} static, ${profilePlayers.length} players, ${d.matches.length} matches, ${d.articles.length} articles, ${d.galleries.length} albums`);
+/* Counted from what was written, not from the dataset: while the site is
+   rebuilt page by page most of the dataset has no route, and reporting the
+   dataset here would read as "33 matches built" when none were. */
+const wrote = (dir) => written.filter((f) => f.startsWith(`${dir}/`)).length;
+console.log(`routes: ${written.filter((f) => f.endsWith('.html') && !f.includes('/')).length} static, `
+  + `${wrote('players')} players, ${wrote('matches')} matches, ${wrote('news')} articles, ${wrote('gallery')} albums`);
+/* The held-back list and PENDING_ROUTES must describe the same set, or the
+   test suite starts excusing a link the rebuild has actually reached. */
+const held = routes.filter((r) => !isLive(r.file)).map((r) => r.file);
+const drift = [
+  ...held.filter((f) => !PENDING_ROUTES.has(f)).map((f) => `held but not pending: ${f}`),
+  ...[...PENDING_ROUTES].filter((f) => !held.includes(f)).map((f) => `pending but not held: ${f}`),
+];
+if (drift.length) {
+  console.error(`\nROUTE GATE DRIFT - fix src/lib/routes.mjs:\n  ${drift.join('\n  ')}`);
+  process.exitCode = 1;
+}
+console.log(`NOT BUILT (${held.length} routes awaiting rebuild): ${held.join(' ')}`);
 console.log(`sitemap urls: ${urls.length}`);

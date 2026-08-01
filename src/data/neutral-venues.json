@@ -1,0 +1,7 @@
+{
+  "_note": "Matches played at a NEUTRAL ground. The fixture list still names one club as home, so weAreHome is true or false as the record has it, but neither side was actually at home and the site must not label the match Home or Away. Cup finals are the usual case.",
+  "_source": "Confirmed by the club.",
+  "matches": {
+    "r20260517-portolondon-drt": "Dylan Rigobert Trophy final, played at Robert Parker Stadium"
+  }
+}

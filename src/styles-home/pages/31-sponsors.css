@@ -1,0 +1,297 @@
+/* ==========================================================================
+   SPONSORS (/sponsors.html)
+
+   The only page where a colour outside the token set appears on screen,
+   because the partners' marks are theirs. Every logo sits on a plain white
+   tile and is sized, never tinted, cropped or restyled, which is also what
+   keeps a dark-navy or a deep-pink mark legible on a near-black page.
+
+   Each band takes a different form on purpose. Four consecutive grids of
+   bordered boxes made a page of real content read as a template, so the
+   partners are tiles, the argument is prose beside a ruled list, what you get
+   is a ruled list, and how it works is a sequence on one line.
+   ========================================================================== */
+
+/* ---- Hero -------------------------------------------------------------- */
+.sp-hero{padding: clamp(20px, 4vw, 48px) 0 clamp(24px, 4vw, 44px);}
+/* Single column. The logo wall that used to sit alongside repeated the
+   partner list directly below it, so it went. */
+.sp-hero__title{margin: 12px 0 0;
+  font-family: var(--display); font-weight: 300;
+  font-size: clamp(46px, 8vw, 116px); line-height: 0.92; letter-spacing: -0.04em;
+  color: var(--fg);}
+.sp-hero__lede{margin: 22px 0 0; max-width: 52ch;
+  font-size: clamp(15px, 1.45vw, 19px); line-height: 1.66; color: var(--ink-2);}
+.sp-hero__btns{display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px;}
+
+/* The squad in the shirt. A page selling visibility should show the thing it
+   is selling, and this is the only image on it that proves a name goes on
+   the kit. Wide and shallow so it sits under the headline as a strip. */
+.sp-shot{margin: clamp(30px, 4vw, 52px) 0 0; position: relative;
+  border-radius: 24px; overflow: hidden; border: 1px solid var(--line-d);}
+.sp-shot img{display: block; width: 100%; height: clamp(220px, 30vw, 400px);
+  object-fit: cover; object-position: 50% 42%;}
+/* The caption sits over the foot of the photograph, so it needs its own
+   scrim: the image is not dark enough at the bottom to carry white text. */
+.sp-shot figcaption{position: absolute; left: 0; right: 0; bottom: 0;
+  padding: 44px clamp(20px, 3vw, 32px) clamp(16px, 2vw, 22px);
+  background: linear-gradient(180deg, transparent, rgba(6, 8, 10, 0.86));
+  font-family: var(--ui); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: #FFFFFF;}
+
+.sp-lede{margin: clamp(14px, 1.8vw, 20px) 0 0; max-width: 60ch;
+  font-size: clamp(15px, 1.35vw, 17px); line-height: 1.72; color: var(--ink-2);}
+
+/* ---- 01 The partners ----------------------------------------------------
+   A native <details> per partner. Nothing is hidden by script, the open state
+   is announced without help, and only one stays open at a time via name=. */
+.sp-plist{list-style: none; margin: clamp(22px, 3vw, 32px) 0 0; padding: 0;
+  display: grid; gap: 10px;}
+.sp-prow{border-radius: 22px; border: 1px solid var(--line-d);
+  background: rgba(255, 255, 255, 0.026);
+  transition: border-color 0.3s, background 0.3s;}
+.sp-prow:hover{border-color: rgba(var(--volt-rgb), 0.3);
+  background: rgba(var(--volt-rgb), 0.05);}
+.sp-prow:has(> .sp-det[open]){border-color: rgba(var(--volt-rgb), 0.38);
+  background: rgba(var(--volt-rgb), 0.06);}
+
+.sp-det__sum{display: grid; align-items: center; gap: clamp(16px, 2.2vw, 30px);
+  grid-template-columns: 168px minmax(0, 1fr) 40px;
+  padding: 16px 20px 16px 16px;
+  cursor: pointer; list-style: none;
+  border-radius: 22px;}
+.sp-det__sum::-webkit-details-marker{display: none;}
+.sp-det__sum:focus-visible{outline: 2px solid var(--volt); outline-offset: 3px;}
+/* White tile: the partner's colours stay true and stay legible on near-black. */
+.sp-prow__mark{display: grid; place-items: center;
+  height: 92px; padding: 14px 18px;
+  border-radius: 14px; background: #FFFFFF;}
+.sp-prow__mark img{width: auto; max-width: 100%; height: auto; max-height: 64px;
+  object-fit: contain;}
+.sp-prow__head{display: grid; gap: 5px; min-width: 0;}
+.sp-prow__role{font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--volt-text);}
+.sp-prow__name{font-family: var(--display); font-weight: 500;
+  font-size: clamp(20px, 2.2vw, 27px); line-height: 1.14; letter-spacing: -0.028em;
+  color: var(--fg);}
+.sp-prow__body{font-size: 14.5px; line-height: 1.6; color: var(--ink-2);}
+
+/* A plus that becomes a minus. Two bars, one rotated, so there is no glyph to
+   go missing and no icon font to load. */
+.sp-det__cue{position: relative; display: block; justify-self: end;
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid var(--line-d); background: rgba(255, 255, 255, 0.05);
+  transition: background 0.3s, border-color 0.3s;}
+.sp-det__cue i{position: absolute; left: 50%; top: 50%;
+  width: 13px; height: 1.5px; margin: -0.75px 0 0 -6.5px; border-radius: 1px;
+  background: var(--fg);
+  transition: transform 0.35s var(--ease-out-expo), opacity 0.25s;}
+.sp-det__cue i:last-child{transform: rotate(90deg);}
+.sp-det[open] .sp-det__cue{background: var(--volt); border-color: var(--volt);}
+.sp-det[open] .sp-det__cue i{background: var(--text-on-brand, var(--navy));}
+.sp-det[open] .sp-det__cue i:last-child{transform: rotate(0deg); opacity: 0;}
+
+.sp-det__panel{padding: 4px 24px 26px 200px;}
+.sp-det__trade{margin-bottom: 12px;
+  font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3);}
+.sp-det__text{max-width: 62ch; font-size: 14.5px; line-height: 1.72; color: var(--ink-2);}
+.sp-det__k{margin: 22px 0 12px;
+  font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--volt-text);}
+.sp-det__list{list-style: none; margin: 0; padding: 0;
+  display: grid; gap: 1px; max-width: 62ch;}
+.sp-det__list li{position: relative; padding: 9px 0 9px 22px;
+  font-size: 14px; color: var(--ink-2);
+  border-top: 1px solid var(--line-d);}
+.sp-det__list li::before{content: ''; position: absolute; left: 2px; top: 17px;
+  width: 8px; height: 1.5px; border-radius: 1px; background: var(--volt);}
+
+/* The partner's own channels. Pills rather than a sentence of links, so four
+   destinations do not read as one run-on line. */
+.sp-det__links{list-style: none; margin: 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: 8px;}
+.sp-det__links a{display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 15px; border-radius: var(--pillr);
+  border: 1px solid var(--line-d); background: rgba(255, 255, 255, 0.04);
+  font-family: var(--ui); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-2);
+  transition: background 0.25s, border-color 0.25s, color 0.25s;}
+.sp-det__links a span[aria-hidden]{font-size: 11px; color: var(--volt-text);
+  transition: transform 0.3s var(--ease-out-expo);}
+.sp-det__links a:hover{background: rgba(var(--volt-rgb), 0.12);
+  border-color: rgba(var(--volt-rgb), 0.4); color: var(--fg);}
+.sp-det__links a:hover span[aria-hidden]{transform: translate(2px, -2px);}
+.sp-det__links a:focus-visible{outline: 2px solid var(--volt); outline-offset: 3px;}
+
+/* ---- 02 Why partner ----------------------------------------------------- */
+.sp-why__grid{display: grid; gap: clamp(30px, 4.5vw, 72px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;}
+.sp-why__lede{margin: clamp(16px, 2vw, 22px) 0 0; max-width: 46ch;
+  font-size: clamp(15px, 1.35vw, 17px); line-height: 1.72; color: var(--ink-2);}
+/* The season record set as a figure, because it is the argument. */
+/* max-content, not auto: auto columns absorb the free space in a full-width
+   grid and push the caption away from the number it captions. */
+.sp-why__stat{display: grid; margin-top: clamp(26px, 3vw, 38px);
+  grid-template-columns: max-content max-content; justify-content: start;
+  align-items: baseline; gap: 0 14px;}
+.sp-why__stat b{font-family: var(--display); font-weight: 300;
+  font-size: clamp(64px, 8vw, 108px); line-height: 0.84; letter-spacing: -0.05em;
+  font-variant-numeric: proportional-nums; color: var(--volt);}
+.sp-why__stat i{font-style: normal;
+  font-family: var(--ui); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3);}
+.sp-why__stat span{grid-column: 1 / -1; margin-top: 14px; max-width: 30ch;
+  font-size: 14px; line-height: 1.6; color: var(--ink-2);}
+
+/* ---- Ruled list: hairlines instead of boxes ----------------------------- */
+.sp-ruled{list-style: none; margin: 0; padding: 0; display: grid;}
+.sp-ruled li{position: relative; padding: clamp(18px, 2vw, 24px) 0;
+  border-top: 1px solid var(--line-d);
+  transition: padding-left 0.4s var(--ease-out-expo);}
+.sp-ruled li:last-child{border-bottom: 1px solid var(--line-d);}
+/* A rule that draws itself in on hover, so the row responds without moving
+   the type more than a few pixels. */
+.sp-ruled li::after{content: ''; position: absolute; left: 0; top: -1px;
+  width: 0; height: 1px; background: var(--volt);
+  transition: width 0.55s var(--ease-out-expo);}
+.sp-ruled li:hover::after{width: 100%;}
+.sp-ruled li:hover{padding-left: 10px;}
+.sp-ruled h3{font-family: var(--display); font-weight: 500;
+  font-size: clamp(18px, 1.8vw, 21px); line-height: 1.2; letter-spacing: -0.026em;
+  color: var(--fg);}
+.sp-ruled p{margin-top: 9px; max-width: 54ch;
+  font-size: 14.5px; line-height: 1.7; color: var(--ink-2);}
+.sp-ruled--wide{margin-top: clamp(22px, 3vw, 32px);}
+.sp-ruled--wide li{display: grid; align-items: baseline; gap: 4px clamp(20px, 3vw, 46px);
+  grid-template-columns: 68px minmax(0, 1fr);}
+.sp-ruled--wide h3,
+.sp-ruled--wide p{grid-column: 2;}
+.sp-ruled--wide p{max-width: 62ch;}
+.sp-ruled__n{grid-row: 1 / span 2;
+  font-family: var(--display); font-weight: 300;
+  font-size: clamp(28px, 3vw, 38px); line-height: 1; letter-spacing: -0.04em;
+  font-variant-numeric: proportional-nums; color: var(--volt);}
+
+/* ---- 03 Where your brand goes -------------------------------------------
+   Drawn rather than listed. The shirt is the same diagram as page seven of
+   the pack, so the page and the downloaded document agree. */
+.sp-kit__grid{display: grid; gap: clamp(28px, 4vw, 60px);
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  align-items: start; margin-top: clamp(24px, 3vw, 36px);}
+.sp-kit__views{display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  padding: clamp(18px, 2.2vw, 26px);
+  border-radius: 22px; border: 1px solid var(--line-d);
+  background: rgba(255, 255, 255, 0.026);
+  position: sticky; top: 96px;}
+.sp-kit__view{margin: 0; display: grid; justify-items: center; gap: 12px;}
+.sp-kit__view svg{width: 100%; height: auto; max-width: 168px;}
+.sp-kit__view figcaption{order: -1;
+  font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-3);}
+
+.sp-places{list-style: none; margin: 0; padding: 0; display: grid;}
+.sp-places li{display: grid; align-items: baseline;
+  gap: 3px clamp(14px, 2vw, 22px); grid-template-columns: 26px minmax(0, 1fr);
+  padding: clamp(14px, 1.6vw, 18px) 0;
+  border-top: 1px solid var(--line-d);}
+.sp-places li:last-child{border-bottom: 1px solid var(--line-d);}
+.sp-places__n{grid-row: 1 / span 2; justify-self: start;
+  display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--volt); color: var(--text-on-brand);
+  font-family: var(--display); font-weight: 600; font-size: 12px;}
+/* Off-kit placements have no number on the diagram, so they get a marker
+   rather than a borrowed one that would point at nothing. */
+.sp-places__n.is-off{background: none; position: relative;}
+.sp-places__n.is-off::before{content: ''; position: absolute; left: 2px; top: 11px;
+  width: 10px; height: 1.5px; border-radius: 1px; background: var(--ink-3);}
+.sp-places h3{grid-column: 2;
+  font-family: var(--display); font-weight: 500; font-size: clamp(17px, 1.7vw, 20px);
+  line-height: 1.2; letter-spacing: -0.024em; color: var(--fg);}
+.sp-places p{grid-column: 2; margin-top: 6px; max-width: 54ch;
+  font-size: 14px; line-height: 1.68; color: var(--ink-2);}
+.sp-kit__note{margin-top: 22px;
+  font-family: var(--ui); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.sp-kit__note a{color: var(--volt-text); text-decoration: underline;
+  text-underline-offset: 3px;}
+
+/* ---- 04 How it works: a sequence on one line ---------------------------- */
+/* The connector lives on the wrapper, not inside the <ol>: a non-<li> child of
+   a list breaks the "list with 3 items" a screen reader announces. */
+.sp-steps__wrap{position: relative; margin-top: clamp(28px, 3.5vw, 44px);}
+.sp-steps{list-style: none; margin: 0; padding: 0;
+  display: grid; gap: clamp(20px, 3vw, 40px);
+  grid-template-columns: repeat(3, minmax(0, 1fr));}
+.sp-steps__line{position: absolute; left: 21px; right: 21px; top: 21px; height: 1px;
+  background: linear-gradient(90deg, var(--volt), rgba(var(--volt-rgb), 0.16));}
+.sp-step{position: relative;}
+.sp-step__dot{position: relative; z-index: 1;
+  display: grid; place-items: center;
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--volt); color: var(--text-on-brand, var(--navy));
+  font-family: var(--display); font-weight: 600; font-size: 16px;
+  box-shadow: 0 0 0 6px var(--navy-deep);}
+.sp-step h3{margin-top: 22px;
+  font-family: var(--display); font-weight: 500;
+  font-size: clamp(18px, 1.9vw, 22px); line-height: 1.18; letter-spacing: -0.026em;
+  color: var(--fg);}
+.sp-step p{margin-top: 10px; max-width: 40ch;
+  font-size: 14.5px; line-height: 1.7; color: var(--ink-2);}
+
+/* ---- 06 Back the badge -------------------------------------------------- */
+.sp-back__grid{list-style: none; margin: clamp(20px, 3vw, 30px) 0 0; padding: 0;
+  display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr));}
+.sp-give{padding: clamp(24px, 2.6vw, 32px);
+  border-radius: 22px; border: 1px solid var(--line-d);}
+.sp-give h3{font-family: var(--display); font-weight: 500;
+  font-size: clamp(20px, 2vw, 25px); letter-spacing: -0.026em; color: var(--fg);}
+.sp-give p{margin-top: 12px; max-width: 46ch; font-size: 14.5px;
+  line-height: 1.7; color: var(--ink-2);}
+.sp-give .btn{margin-top: 20px;}
+.sp-give__small{margin-top: 14px !important; font-size: 12.5px; color: var(--ink-3) !important;}
+
+/* ---- Light theme --------------------------------------------------------
+   The low-alpha white surfaces read as the page underneath once the canvas
+   turns white and the hairline flips with --line-d. The step dot needs its
+   halo restated, since it is punched out of the dark canvas colour. */
+html[data-theme="light"] .sp-step__dot{box-shadow: 0 0 0 6px #FFFFFF;}
+html[data-theme="light"] .sp-det__cue i{background: var(--fg);}
+html[data-theme="light"] .sp-prow__mark{box-shadow: 0 0 0 1px rgba(17, 19, 21, 0.09);}
+
+/* ---- Responsive --------------------------------------------------------- */
+@media (max-width: 1040px){
+  .sp-why__grid,
+  .sp-kit__grid{grid-template-columns: minmax(0, 1fr);}
+  .sp-kit__views{position: static; max-width: 460px;}
+  .sp-det__sum{grid-template-columns: 132px minmax(0, 1fr) 34px;}
+  .sp-det__panel{padding-left: 160px;}
+}
+@media (max-width: 860px){
+  .sp-steps{grid-template-columns: minmax(0, 1fr); gap: 26px;}
+  /* Vertical sequence: the line runs down the dots instead of across. */
+  .sp-steps__line{left: 21px; right: auto; top: 21px; bottom: 21px; width: 1px; height: auto;
+    background: linear-gradient(180deg, var(--volt), rgba(var(--volt-rgb), 0.16));}
+  .sp-step{display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 4px 18px;}
+  .sp-step__dot{grid-row: 1 / span 2;}
+  .sp-step h3{margin-top: 8px;}
+  .sp-back__grid{grid-template-columns: minmax(0, 1fr);}
+}
+@media (max-width: 620px){
+  /* The mark moves above the name so neither is squeezed. */
+  .sp-det__sum{grid-template-columns: minmax(0, 1fr) 34px; gap: 14px;
+    padding: 16px;}
+  .sp-prow__mark{grid-column: 1 / -1; height: 76px;}
+  .sp-det__panel{padding: 4px 16px 22px;}
+  .sp-ruled--wide li{grid-template-columns: minmax(0, 1fr);}
+  .sp-ruled--wide h3,
+  .sp-ruled--wide p{grid-column: 1;}
+  .sp-ruled__n{grid-row: auto; margin-bottom: 6px;}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .sp-ruled li,
+  .sp-ruled li::after,
+  .sp-det__cue i{transition: none;}
+}

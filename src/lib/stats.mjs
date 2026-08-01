@@ -14,8 +14,14 @@ export const isUs = (name) => {
   return n.includes('suesangels') || n === 'sueangels';
 };
 
+/* Accents are folded to their base letter BEFORE the non-alphanumeric sweep.
+   Without that step "Frazier-Isaías" lost the í entirely and published as
+   frazier-isa-as-osunkoya, which is a mangled URL for the club's top scorer.
+   NFD splits a letter from its combining mark so the mark alone can go. */
 export const slugify = (s) =>
   String(s || '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
     .replace(/['’]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
@@ -117,7 +123,21 @@ export function normaliseMatch(raw, detail) {
     outcome = ourGoals > theirGoals ? 'W' : ourGoals === theirGoals ? 'D' : 'L';
   }
 
+  /* TWO scorelines, because they answer different questions and swapping them
+     silently inverts a result.
+
+     `scoreline` is the match as the fixture list writes it: home goals first.
+     It is correct ONLY where the two clubs are shown in home-away order
+     beside it, as on the results and league pages.
+
+     `ourScoreline` is the match from the club's point of view. Anywhere the
+     opponent is named as "v Watford" with no venue beside it, this is the one
+     to print: fifteen of the club's thirty matches were away, so the fixture
+     form read backwards on every one of them. The biggest win in the club's
+     history was showing as "0-12" on the records page. */
   const scoreline = isWalkover ? 'W/O' : hasScore ? `${hs}-${as}` : null;
+  const ourScoreline = isWalkover ? 'W/O' : countsGoals ? `${ourGoals}-${theirGoals}` : null;
+  const homeAway = weAreHome ? 'Home' : 'Away';
 
   return {
     id: raw.id,
@@ -141,6 +161,8 @@ export function normaliseMatch(raw, detail) {
     ourGoals, theirGoals,
     outcome,
     scoreline,
+    ourScoreline,
+    homeAway,
     detail: detail || null,
     title: isWalkover
       ? `${home} v ${away} (walkover)`
@@ -231,6 +253,59 @@ export function heaviestDefeat(matches) {
     .sort((a, b) => (b.theirGoals - b.ourGoals) - (a.theirGoals - a.ourGoals))[0] || null;
 }
 
+/* ---- Streaks ----------------------------------------------------------
+   longestRun answers "how many", which is enough for a headline figure and
+   not enough for a record: a record has to say WHEN, or a reader cannot check
+   it. This returns the span as well, and also reports whether the streak was
+   still running at the end of the record, because "eighteen and counting" and
+   "eighteen, ended in April" are different claims.
+
+   `scope` narrows to one competition so a league-only streak can be stated as
+   such. A walkover has no goal record, so any goal-based streak has to skip
+   it rather than break on it: treating a missing scoreline as "conceded"
+   would have cut the clean-sheet run in half. */
+export function longestStreak(matches, predicate, opts = {}) {
+  let ordered = matches.filter((m) => m.played);
+  if (opts.competition) ordered = ordered.filter((m) => m.competition === opts.competition);
+  if (opts.season) ordered = ordered.filter((m) => m.season === opts.season);
+  if (opts.goalRecordOnly) ordered = ordered.filter((m) => m.countsGoals);
+  ordered = ordered.slice().sort((a, b) => (a.iso || '').localeCompare(b.iso || ''));
+
+  let best = { length: 0, from: null, to: null, matches: [] };
+  let cur = [];
+  for (const m of ordered) {
+    if (predicate(m)) {
+      cur.push(m);
+      if (cur.length > best.length) {
+        best = { length: cur.length, from: cur[0], to: cur[cur.length - 1], matches: cur.slice() };
+      }
+    } else cur = [];
+  }
+  // Still running if the streak reaches the last match in scope.
+  best.live = Boolean(best.to && ordered.length && best.to === ordered[ordered.length - 1]);
+  best.of = ordered.length;
+  best.perfect = best.length > 0 && best.length === ordered.length;
+  return best;
+}
+
+/* The same idea for one player's own sequence of appearances. */
+export function playerStreak(player, matches, predicate) {
+  const byId = new Map(matches.filter((m) => m.played).map((m) => [m.id, m]));
+  const involved = (player.matches || [])
+    .map((r) => ({ ...r, m: byId.get(r.id) }))
+    .filter((r) => r.m)
+    .sort((a, b) => (a.m.iso || '').localeCompare(b.m.iso || ''));
+  let best = { length: 0, from: null, to: null };
+  let cur = [];
+  for (const r of involved) {
+    if (predicate(r)) {
+      cur.push(r);
+      if (cur.length > best.length) best = { length: cur.length, from: cur[0].m, to: cur[cur.length - 1].m };
+    } else cur = [];
+  }
+  return best;
+}
+
 export function longestRun(matches, predicate, opts = {}) {
   let ordered = matches.filter((m) => m.played);
   // A clean-sheet run cannot be judged on a walkover, which has no goal
@@ -285,11 +360,23 @@ export function playerStats(matches, squad) {
       p.subApps++;
       if (!appeared.has(num)) p.matches.push({ id: m.id, role: 'bench' });
     }
+    /* Per-match tallies are recorded on the player's own match entry as well
+       as on the season total. A scoring streak cannot be derived from a
+       season total, and re-reading every match detail to work one out would
+       mean the streak and the total could drift apart. */
+    const bump = (num, key) => {
+      const p = ensure(num);
+      let rec = p.matches.find((r) => r.id === m.id);
+      // A player can score without starting or being listed on the bench.
+      if (!rec) { rec = { id: m.id, role: 'unlisted' }; p.matches.push(rec); }
+      rec[key] = (rec[key] || 0) + 1;
+    };
     for (const g of d.goals || []) {
       const p = ensure(g.num); p.goals++;
       if (g.penalty) p.penalties++;
+      bump(g.num, 'goals');
     }
-    for (const a of d.assists || []) ensure(a.num).assists++;
+    for (const a of d.assists || []) { ensure(a.num).assists++; bump(a.num, 'assists'); }
     for (const c of d.yellowCards || []) ensure(c.num ?? c).yellow++;
     for (const c of d.redCards || []) ensure(c.num ?? c).red++;
     if (d.motm != null) ensure(d.motm).motm++;
@@ -428,4 +515,112 @@ export function monthlyStats(matches, month, year) {
     return d && d.getUTCMonth() === month && (year == null || d.getUTCFullYear() === year);
   });
   return inMonth;
+}
+
+/* ---- Player profile ----------------------------------------------------
+   Everything a single player's page publishes, derived in one place from the
+   match records so the rings, the panels and the competition table cannot
+   disagree with each other. The design this replaces showed thirteen clean
+   sheets in its rings and sixteen in the panel below them, which is what
+   happens when the same figure is worked out twice.
+
+   `apps` here is starts, as everywhere else in this engine: Sunday-league
+   returns do not record who came off the bench, so bench outings are carried
+   separately in `bench` rather than folded into a total nobody can verify. */
+export function playerProfile(player, matches, squad) {
+  const byId = new Map(matches.map((m) => [m.id, m]));
+  const mine = (player.matches || []).filter((r) => byId.has(r.id));
+  const played = mine
+    .filter((r) => r.role === 'start')
+    .map((r) => byId.get(r.id))
+    .filter((m) => m && m.played)
+    .sort((a, b) => (a.iso || '').localeCompare(b.iso || ''));
+  const bench = mine.filter((r) => r.role === 'bench').length;
+
+  const comps = new Map();
+  let conceded = 0, cleanSheets = 0, won = 0, drawn = 0, lost = 0, onRecord = 0;
+  /* Counted from THESE matches, not from the player's all-time record, so the
+     same function answers correctly for one season or for a career.
+
+     Goals, assists and Man of the Match are tallied across every match the
+     player was involved in, INCLUDING the ones he came on in. Counting them
+     only from starts lost a substitute's goals: it took one off Frazier's 31
+     and would have quietly under-reported every impact player at the club.
+     Starts, clean sheets and the win record stay on starts alone, because
+     those are claims about a match the player began. */
+  let goals = 0, assists = 0, motm = 0;
+  for (const r of mine) {
+    const m = byId.get(r.id);
+    if (!m || !m.played) continue;
+    goals += (m.detail?.goals || []).filter((x) => x.num === player.num).length;
+    assists += (m.detail?.assists || []).filter((x) => x.num === player.num).length;
+    if (m.detail?.motm === player.num) motm++;
+  }
+  const timeline = [];
+  let runGoals = 0, runAssists = 0, runClean = 0;
+
+  for (const m of played) {
+    const c = m.competition || 'Other';
+    if (!comps.has(c)) comps.set(c, { comp: c, apps: 0, goals: 0, assists: 0, cleanSheets: 0, conceded: 0, motm: 0 });
+    const row = comps.get(c);
+    row.apps++;
+
+    const g = (m.detail?.goals || []).filter((x) => x.num === player.num).length;
+    const a = (m.detail?.assists || []).filter((x) => x.num === player.num).length;
+    row.goals += g; row.assists += a;
+    if (m.detail?.motm === player.num) row.motm++;
+
+    /* A walkover has no goal record, so it cannot prove a clean sheet and
+       must not be counted as one either way. */
+    if (m.countsGoals) {
+      onRecord++;
+      row.conceded += m.theirGoals; conceded += m.theirGoals;
+      if (m.theirGoals === 0) { row.cleanSheets++; cleanSheets++; runClean++; }
+    }
+    if (m.outcome === 'W') won++; else if (m.outcome === 'D') drawn++; else if (m.outcome === 'L') lost++;
+
+    runGoals += g; runAssists += a;
+    timeline.push({
+      id: m.id, date: m.date, iso: m.iso, opponent: m.opponent, outcome: m.outcome,
+      scoreline: m.countsGoals ? `${m.ourGoals}-${m.theirGoals}` : 'W/O',
+      goals: g, assists: a, motm: m.detail?.motm === player.num,
+      conceded: m.countsGoals ? m.theirGoals : null,
+      runGoals, runAssists, runClean,
+    });
+  }
+
+  const decided = won + drawn + lost;
+  const pct = (n, of) => (of ? Math.round((n / of) * 100) : 0);
+
+  /* Rank within the squad on the measures the page actually claims a rank
+     for. Ties share the better position, the way a league table does. */
+  const rankOf = (key) => {
+    const vals = squad.map((p) => p[key] || 0).sort((x, y) => y - x);
+    const mine = player[key] || 0;
+    return mine > 0 ? vals.indexOf(mine) + 1 : null;
+  };
+
+  return {
+    starts: played.length,
+    bench,
+    goals,
+    assists,
+    involvements: goals + assists,
+    motm,
+    cleanSheets,
+    conceded,
+    onRecord,
+    won, drawn, lost,
+    winPct: pct(won, decided),
+    cleanSheetPct: pct(cleanSheets, onRecord),
+    concededPerGame: onRecord ? (conceded / onRecord).toFixed(2) : '0.00',
+    perGame: played.length ? ((goals + assists) / played.length).toFixed(2) : '0.00',
+    goalRank: rankOf('goals'),
+    assistRank: rankOf('assists'),
+    motmRank: rankOf('motm'),
+    cleanSheetRank: rankOf('cleanSheets'),
+    byCompetition: [...comps.values()].sort((a, b) => b.apps - a.apps),
+    timeline,
+    last: timeline.slice(-10).reverse(),
+  };
 }

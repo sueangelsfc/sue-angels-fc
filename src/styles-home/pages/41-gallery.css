@@ -1,0 +1,115 @@
+/* ==========================================================================
+   THE GALLERY (/gallery.html, /gallery/<slug>.html) AND CLUB VIDEOS
+
+   Photographs carry the page, so the surfaces around them stay quiet and the
+   accent is kept to the counts and the credits.
+   ========================================================================== */
+.is-gallery .pageaura{--pa-mul: 0.22;}
+
+.gl-hero{padding: clamp(20px, 4vw, 48px) 0 clamp(20px, 3vw, 40px);}
+.gl-hero__title{margin: 12px 0 0;
+  font-family: var(--display); font-weight: 300;
+  font-size: clamp(46px, 7.6vw, 108px); line-height: 0.9; letter-spacing: -0.045em;
+  color: var(--fg);}
+.gl-hero__lede{margin: 20px 0 0; max-width: 60ch;
+  font-size: clamp(15px, 1.4vw, 18px); line-height: 1.68; color: var(--ink-2);}
+.gl-empty{font-size: 15px; color: var(--ink-2);}
+
+/* ---- Album cards --------------------------------------------------------- */
+.gl-grid{list-style: none; margin: clamp(18px, 2.4vw, 26px) 0 0; padding: 0;
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 288px), 1fr));}
+.gl-card__link{display: grid; height: 100%; text-decoration: none;
+  border-radius: 20px; overflow: hidden;
+  border: 1px solid var(--line-d); background: var(--slab);
+  transition: border-color 0.25s, transform 0.3s var(--ease-out-expo);}
+.gl-card__link:hover{border-color: rgba(var(--volt-rgb), 0.36); transform: translateY(-3px);}
+.gl-card__link:focus-visible{outline: 2px solid var(--volt); outline-offset: 3px;}
+.gl-card__shot{position: relative; display: grid; place-items: center;
+  aspect-ratio: 3 / 2; overflow: hidden;
+  background: linear-gradient(168deg, rgba(var(--volt-rgb), 0.1), rgba(var(--sink), 0.66) 72%);}
+.gl-card__shot img{width: 100%; height: 100%; object-fit: cover;}
+.gl-card__shot .gl-card__crest{width: 76px; height: auto; object-fit: contain; opacity: 0.9;}
+.gl-card__count{position: absolute; right: 12px; bottom: 12px;
+  padding: 5px 11px; border-radius: var(--pillr);
+  font-family: var(--ui); font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-on-brand); background: var(--volt);}
+.gl-card__body{display: grid; align-content: start; gap: 6px; padding: 18px 20px;}
+.gl-card__fixture{font-family: var(--display); font-weight: 500; font-size: 16.5px;
+  line-height: 1.22; letter-spacing: -0.02em; color: var(--fg);}
+.gl-card__link:hover .gl-card__fixture{text-decoration: underline; text-underline-offset: 3px;}
+.gl-card__detail{font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3);}
+.gl-card__by{margin-top: 2px; font-size: 12.5px; color: var(--volt-text);}
+
+/* ---- One album ----------------------------------------------------------- */
+.gl-album__title{margin: 12px 0 0;
+  font-family: var(--display); font-weight: 400;
+  font-size: clamp(28px, 4.2vw, 50px); line-height: 1.04; letter-spacing: -0.034em;
+  color: var(--fg);}
+.gl-album__detail{margin-top: 12px; font-size: clamp(14px, 1.3vw, 16px); color: var(--ink-2);}
+.gl-album__meta{margin-top: 14px; font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+
+/* A photograph is the content, so the grid is dense and the chrome is a
+   hairline. Explicit dimensions on every image keep a 175-photo album from
+   reflowing the page as it loads. */
+.gl-shots{list-style: none; margin: 0; padding: 0;
+  display: grid; gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));}
+.gl-shot a{display: block; border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--line-d); background: rgba(var(--sink), 0.4);
+  transition: border-color 0.2s, transform 0.3s var(--ease-out-expo);}
+.gl-shot a:hover{border-color: rgba(var(--volt-rgb), 0.4); transform: scale(1.015);}
+.gl-shot a:focus-visible{outline: 2px solid var(--volt); outline-offset: 2px;}
+.gl-shot img{width: 100%; height: 100%; aspect-ratio: 3 / 2; object-fit: cover; display: block;}
+.gl-credit{margin-top: clamp(18px, 2.4vw, 26px); padding-top: 18px;
+  border-top: 1px solid var(--line-d); font-size: 13.5px; color: var(--ink-3);}
+.gl-credit b{color: var(--volt-text); font-weight: 600;}
+.gl-album__back{margin-top: clamp(20px, 2.6vw, 30px);}
+.gl-album__back a{font-family: var(--ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--volt-text); text-decoration: none;}
+.gl-album__back a:hover{text-decoration: underline; text-underline-offset: 4px;}
+
+@media (prefers-reduced-motion: reduce){
+  .gl-card__link, .gl-shot a{transition: none;}
+}
+
+/* ---- The fixture badges on a cover --------------------------------------
+   Every album already carried both badges and nothing used them. They sit
+   over the cover so the fixture reads before the title does, and a coverless
+   album stops being an anonymous crest. */
+.gl-fix{position: absolute; top: 12px; left: 12px;
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 10px; border-radius: var(--pillr);
+  background: rgba(10, 12, 15, 0.72); border: 1px solid rgba(255, 255, 255, 0.14);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);}
+.gl-fix img{width: 22px; height: 22px; object-fit: contain;}
+.gl-fix i{font-style: normal; font-family: var(--ui); font-size: 8px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255, 255, 255, 0.66);}
+
+/* ---- Player tags --------------------------------------------------------
+   A tag is a link to that player's profile. The point of tagging someone is
+   being able to go and read about them. */
+.gl-tag{display: inline-block; margin: 0 6px 6px 0; padding: 6px 12px;
+  border-radius: var(--pillr); text-decoration: none;
+  border: 1px solid rgba(var(--volt-rgb), 0.32); background: rgba(var(--volt-rgb), 0.08);
+  font-size: 13px; color: var(--fg);
+  transition: background 0.2s, border-color 0.2s;}
+.gl-tag:hover{background: rgba(var(--volt-rgb), 0.18); border-color: rgba(var(--volt-rgb), 0.5);}
+.gl-tag:focus-visible{outline: 2px solid var(--volt); outline-offset: 2px;}
+/* A name with no profile to link to still shows, just not as a control. */
+.gl-tag.is-plain{border-color: var(--line-d); background: rgba(var(--lift), 0.04);
+  color: var(--ink-2);}
+
+.gl-shot.is-tagged{display: grid; gap: 5px;}
+.gl-shot__tags{display: flex; flex-wrap: wrap; gap: 0;}
+.gl-shot__tags .gl-tag{margin: 0 4px 4px 0; padding: 4px 9px; font-size: 11.5px;}
+
+.gl-who{margin-top: clamp(20px, 2.6vw, 30px); padding: clamp(20px, 2.6vw, 28px);
+  border-radius: 18px; border: 1px solid var(--line-d); background: var(--slab);}
+.gl-who__h{margin: 0 0 14px; font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.gl-who__list{margin: 0;}
+.gl-who__note{margin: 12px 0 0; font-size: 12.5px; line-height: 1.6; color: var(--ink-3);}

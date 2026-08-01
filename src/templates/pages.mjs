@@ -5,7 +5,7 @@ import {
   fixtureCard, playerCard, leagueTable, statsTable, formGuideBlock,
   articleCard, honourRow,
 } from '../lib/blocks.mjs';
-import { CLUB, SEPSIS, SPONSOR_TIERS, ENQUIRY_TYPES, JOIN_PATHS, POSITION_GROUPS } from '../lib/club.mjs';
+import { CLUB, SEPSIS, SPONSOR_TIERS, ENQUIRY_TYPES, JOIN_PATHS, POSITION_GROUPS , SOCIALS} from '../lib/club.mjs';
 import {
   teamSummary, formGuide, homeAwaySplit, byCompetition, leaderboard,
   clubRecords, fmtDate, groupBySeason,
@@ -143,19 +143,19 @@ export function sepsis() {
           <span class="path__n">01</span>
           <h3 class="path__title">Know and share the signs</h3>
           <p class="path__body">The signs above can save a life. Take a moment to learn them, and share them with the people you love.</p>
-          <button class="btn btn--glass btn--sm" type="button" data-share aria-label="Share this page">Share this page</button>
+          <button class="btn btn--sm" type="button" data-share aria-label="Share this page">Share this page</button>
         </article>
         <article class="path glass glass--reading">
           <span class="path__n">02</span>
           <h3 class="path__title">Support the ${esc(CLUB.charity.name)}</h3>
           <p class="path__body">They support families, fund research and raise awareness across the country. You can find out more or give on their website.</p>
-          <a class="btn btn--glass btn--sm" href="${attr(CLUB.charity.url)}" rel="noopener" target="_blank">Visit sepsistrust.org ${icon('external')}</a>
+          <a class="btn btn--sm" href="${attr(CLUB.charity.url)}" rel="noopener" target="_blank">Visit sepsistrust.org ${icon('external')}</a>
         </article>
         <article class="path glass glass--reading">
           <span class="path__n">03</span>
           <h3 class="path__title">Stand with the club</h3>
           <p class="path__body">Back Sue’s Angels as a sponsor, partner or volunteer, and help us carry her message a little further.</p>
-          <a class="btn btn--glass btn--sm" href="/join.html">Get involved</a>
+          <a class="btn btn--sm" href="/join.html">Get involved</a>
         </article>
       </div>
     </div>
@@ -644,7 +644,7 @@ export function live(d) {
               land here within a couple of days.
             </p>
             <div class="row" style="margin-top:var(--space-4)">
-              ${CLUB.socials.map((s) => `<a class="btn btn--glass btn--sm" href="${attr(s.href)}" rel="noopener" target="_blank">${icon(s.icon)} ${esc(s.label)}</a>`).join('')}
+              ${SOCIALS.map((s) => `<a class="btn btn--sm" href="${attr(s.href)}" rel="noopener" target="_blank">${icon(s.icon)} ${esc(s.label)}</a>`).join('')}
             </div>
           </div>
         </div>
@@ -659,7 +659,7 @@ export function sponsors(d) {
     <h3 class="tier__name">${esc(t.name)}</h3>
     <p style="color:var(--text-muted);font-size:var(--step--1)">${esc(t.body)}</p>
     <ul class="tier__list">${t.items.map((i) => `<li>${esc(i)}</li>`).join('')}</ul>
-    <a class="btn btn--glass btn--sm" href="#enquire" style="margin-top:auto">Enquire</a>
+    <a class="btn btn--sm" href="#enquire" style="margin-top:auto">Enquire</a>
   </article>`).join('');
 
   return { body: `
@@ -758,7 +758,7 @@ export function join() {
     <span class="path__n">${esc(p.n)}</span>
     <h3 class="path__title">${esc(p.title)}</h3>
     <p class="path__body">${esc(p.body)}</p>
-    <a class="btn btn--glass btn--sm" href="#${attr(p.type)}">${esc(p.cta.label)}</a>
+    <a class="btn btn--sm" href="#${attr(p.type)}">${esc(p.cta.label)}</a>
   </article>`).join('');
 
   const forms = ['trial', 'media', 'volunteer'].map((t) => {
@@ -810,7 +810,7 @@ export function contact() {
           <div class="panel" style="padding:var(--space-5)">
             <h3 style="font-size:var(--step-1);margin-bottom:var(--space-3)">Direct</h3>
             <p style="color:var(--text-muted);font-size:var(--step--1)">The quickest route is email. We read everything.</p>
-            <a class="btn btn--glass btn--sm" href="mailto:${attr(CLUB.email)}" style="margin-top:var(--space-4)">${icon('mail')} ${esc(CLUB.email)}</a>
+            <a class="btn btn--sm" href="mailto:${attr(CLUB.email)}" style="margin-top:var(--space-4)">${icon('mail')} ${esc(CLUB.email)}</a>
           </div>
           <div class="panel" style="padding:var(--space-5)">
             <h3 style="font-size:var(--step-1);margin-bottom:var(--space-3)">Where we play</h3>
@@ -819,7 +819,7 @@ export function contact() {
           <div class="panel" style="padding:var(--space-5)">
             <h3 style="font-size:var(--step-1);margin-bottom:var(--space-3)">Follow</h3>
             <div class="row">
-              ${CLUB.socials.map((s) => `<a class="icon-btn" href="${attr(s.href)}" rel="me noopener" target="_blank" aria-label="${attr(s.label)}">${icon(s.icon)}</a>`).join('')}
+              ${SOCIALS.map((s) => `<a class="icon-btn" href="${attr(s.href)}" rel="me noopener" target="_blank" aria-label="${attr(s.label)}">${icon(s.icon)}</a>`).join('')}
             </div>
           </div>
         </div>

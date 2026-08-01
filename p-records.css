@@ -1,0 +1,172 @@
+/* ==========================================================================
+   CLUB RECORDS (/records.html)
+
+   A page of figures, so the figures carry the weight: large display numerals
+   on quiet surfaces, and the accent reserved for the one record that is
+   genuinely exceptional rather than sprayed across all eleven.
+   ========================================================================== */
+.is-records .pageaura{--pa-mul: 0.3;}
+
+/* ---- Hero -------------------------------------------------------------- */
+.rc-hero{padding: clamp(20px, 4vw, 48px) 0 clamp(20px, 3vw, 40px);}
+.rc-hero__title{margin: 12px 0 0;
+  font-family: var(--display); font-weight: 300;
+  font-size: clamp(46px, 7.6vw, 108px); line-height: 0.9; letter-spacing: -0.045em;
+  color: var(--fg);}
+.rc-hero__lede{margin: 20px 0 0; max-width: 60ch;
+  font-size: clamp(15px, 1.4vw, 18px); line-height: 1.68; color: var(--ink-2);}
+.rc-lede{margin: 16px 0 0; max-width: 62ch;
+  font-size: 14.5px; line-height: 1.7; color: var(--ink-2);}
+
+/* ---- A face, at whatever size the caller asks for ---------------------- */
+.rc-face{flex: 0 0 auto; display: inline-grid; place-items: center; overflow: hidden;
+  vertical-align: middle;
+  width: var(--f, 44px); height: var(--f, 44px); border-radius: 50%;
+  background: rgba(var(--volt-rgb), 0.12); border: 1px solid rgba(var(--volt-rgb), 0.32);}
+.rc-face img{width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%;}
+.rc-face .rc-face__crest{width: 50%; height: auto; object-fit: contain;}
+
+/* ---- 01 Honours --------------------------------------------------------- */
+.rc-trophies{list-style: none; margin: clamp(20px, 3vw, 30px) 0 0; padding: 0;
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));}
+.rc-trophy{position: relative; overflow: hidden;
+  padding: clamp(24px, 3vw, 34px);
+  border-radius: 22px; border: 1px solid rgba(var(--volt-rgb), 0.26);
+  background: linear-gradient(160deg, rgba(var(--volt-rgb), 0.13), rgba(var(--sink), 0.55) 66%);}
+.rc-trophy__star{position: absolute; right: -10px; top: -12px;
+  width: 96px; height: auto; opacity: 0.13;}
+.rc-trophy__season{font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--volt-text);}
+.rc-trophy__title{margin-top: 12px;
+  font-family: var(--display); font-weight: 400; font-size: clamp(24px, 3vw, 33px);
+  line-height: 1.05; letter-spacing: -0.032em; color: var(--fg);}
+.rc-trophy__body{margin-top: 12px; max-width: 42ch;
+  font-size: 14.5px; line-height: 1.68; color: var(--ink-2);}
+
+/* ---- 02 The perfect season ---------------------------------------------- */
+.rc-pf{margin-top: clamp(20px, 3vw, 30px); padding: clamp(24px, 3.2vw, 38px);
+  border-radius: 24px; border: 1px solid rgba(var(--volt-rgb), 0.3);
+  background: linear-gradient(158deg, rgba(var(--volt-rgb), 0.11), rgba(var(--sink), 0.6) 70%);}
+.rc-pf__nums{list-style: none; margin: 0; padding: 0;
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 116px), 1fr));}
+.rc-pf__nums li{display: grid; gap: 3px; padding: 16px 18px; border-radius: 16px;
+  border: 1px solid var(--line-d); background: rgba(var(--sink), 0.5);}
+.rc-pf__nums b{font-family: var(--display); font-weight: 500;
+  font-size: clamp(26px, 3.2vw, 36px); line-height: 1;
+  letter-spacing: -0.035em; font-variant-numeric: tabular-nums; color: var(--fg);}
+.rc-pf__nums i{font-style: normal; font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.rc-pf__body{margin: 20px 0 0; max-width: 70ch;
+  font-size: 15px; line-height: 1.72; color: var(--ink-2);}
+
+/* ---- 03 The record cards ------------------------------------------------ */
+.rc-cards{list-style: none; margin: clamp(18px, 2.4vw, 26px) 0 0; padding: 0;
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 236px), 1fr));}
+.rc-card{display: grid; align-content: start; gap: 6px;
+  padding: 22px 20px; border-radius: 18px;
+  border: 1px solid var(--line-d); background: var(--slab);
+  transition: border-color 0.25s, transform 0.3s var(--ease-out-expo);}
+.rc-card:hover{border-color: rgba(var(--volt-rgb), 0.3); transform: translateY(-2px);}
+.rc-card__v{font-family: var(--display); font-weight: 500;
+  font-size: clamp(30px, 3.6vw, 42px); line-height: 1;
+  letter-spacing: -0.04em; font-variant-numeric: tabular-nums; color: var(--fg);}
+.rc-card__l{margin-top: 4px; font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.13em; text-transform: uppercase; color: var(--ink-3);}
+.rc-card__who{display: flex; align-items: center; gap: 10px; margin-top: 8px;
+  text-decoration: none; font-size: 14.5px; color: var(--fg);}
+a.rc-card__who:hover span{text-decoration: underline; text-underline-offset: 3px;}
+.rc-card__crest{width: 20px; height: auto; flex: 0 0 auto; opacity: 0.85;}
+.rc-card__sub{font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3);}
+html.js .rc-card[hidden]{display: none;}
+.lg-chip b{margin-left: 7px; font-weight: 700; opacity: 0.62;}
+
+/* ---- 04 Streaks --------------------------------------------------------- */
+.rc-streaks__list{list-style: none; margin: clamp(18px, 2.4vw, 26px) 0 0; padding: 0;
+  display: grid; gap: 8px;}
+.rc-streak{display: grid; align-items: center; gap: 18px;
+  grid-template-columns: 104px minmax(0, 1fr) auto;
+  padding: 16px 20px; border-radius: 16px;
+  border: 1px solid var(--line-d); background: rgba(var(--lift), 0.026);
+  transition: background 0.2s, border-color 0.2s;}
+.rc-streak:hover{background: rgba(var(--lift), 0.045);}
+/* The one record that is genuinely exceptional gets the accent. The rest
+   differ by weight and structure, so it still means something. */
+.rc-streak.is-flag{border-color: rgba(var(--volt-rgb), 0.4);
+  background: rgba(var(--volt-rgb), 0.08); box-shadow: inset 3px 0 0 var(--volt);}
+.rc-streak__v{display: flex; align-items: baseline; gap: 6px;
+  font-family: var(--display); font-weight: 500; font-size: clamp(26px, 3vw, 34px);
+  line-height: 1; letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums; color: var(--fg);}
+.rc-streak__v i{font-style: normal; font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3);}
+.rc-streak__body{display: grid; gap: 3px; min-width: 0;}
+.rc-streak__body b{font-family: var(--display); font-weight: 500; font-size: 15.5px;
+  letter-spacing: -0.014em; color: var(--fg);}
+.rc-streak__body > span{font-size: 13.5px; color: var(--ink-2);}
+.rc-streak__when{font-family: var(--ui); font-size: 9.5px !important; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3) !important;}
+.rc-streak__who{display: inline-flex; align-items: center; gap: 9px;
+  text-decoration: none; font-size: 13.5px; color: var(--fg); width: fit-content;}
+.rc-streak__who:hover span{text-decoration: underline; text-underline-offset: 3px;}
+.rc-streak__scope{font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3);
+  padding: 7px 12px; border-radius: var(--pillr);
+  border: 1px solid var(--line-d); white-space: nowrap;}
+
+/* ---- 05 Firsts ---------------------------------------------------------- */
+.rc-firsts__list{list-style: none; margin: clamp(18px, 2.4vw, 26px) 0 0; padding: 0;
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 268px), 1fr));}
+.rc-first{display: flex; align-items: center; gap: 16px;
+  padding: 18px 20px; border-radius: 18px;
+  border: 1px solid var(--line-d); background: var(--slab);}
+.rc-first__body{display: grid; gap: 3px; min-width: 0;}
+.rc-first__body b{font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.13em; text-transform: uppercase; color: var(--ink-3);}
+.rc-first__body a{font-family: var(--display); font-weight: 500; font-size: 17px;
+  letter-spacing: -0.02em; color: var(--fg); text-decoration: none;}
+.rc-first__body a:hover{text-decoration: underline; text-underline-offset: 3px;}
+.rc-first__body span{font-size: 13px; color: var(--ink-2);}
+
+/* ---- 06 Leadership ------------------------------------------------------ */
+.rc-lead__list{list-style: none; margin: clamp(18px, 2.4vw, 26px) 0 0; padding: 0;
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 264px), 1fr));}
+.rc-leader{display: flex; align-items: center; gap: 16px;
+  padding: 20px; border-radius: 18px;
+  border: 1px solid var(--line-d); background: rgba(var(--lift), 0.03);}
+.rc-leader.is-first{border-color: rgba(var(--volt-rgb), 0.4);
+  background: rgba(var(--volt-rgb), 0.07);}
+.rc-leader__body{display: grid; gap: 3px; min-width: 0;}
+.rc-leader__role{font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.rc-leader__name{font-family: var(--display); font-weight: 500; font-size: 18px;
+  letter-spacing: -0.022em; color: var(--fg); text-decoration: none;}
+a.rc-leader__name:hover{text-decoration: underline; text-underline-offset: 3px;}
+.rc-leader__led{font-size: 12.5px; color: var(--ink-2);}
+
+/* ---- Responsive --------------------------------------------------------- */
+@media (max-width: 700px){
+  .rc-streak{grid-template-columns: 84px minmax(0, 1fr); row-gap: 10px;}
+  .rc-streak__scope{grid-column: 1 / -1; width: fit-content;}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .rc-card, .rc-streak{transition: none;}
+}
+/* A shared record names every holder, so the card grows a second row rather
+   than a tie-break quietly crediting one of them. */
+.rc-card__l i{font-style: normal; padding: 2px 7px; margin-left: 6px;
+  border-radius: var(--pillr); border: 1px solid rgba(var(--volt-rgb), 0.34);
+  color: var(--volt-text); font-size: 8.5px; letter-spacing: 0.1em;}
+.rc-card__who + .rc-card__who{margin-top: 2px;}
+/* A shared TEAM record is one card with a line per holder, each carrying its
+   own note, rather than two cards showing the same number twice. */
+.rc-card__team{display: grid; gap: 2px; margin-top: 8px;}
+.rc-card__team + .rc-card__team{margin-top: 12px;
+  padding-top: 12px; border-top: 1px solid var(--line-d);}
+.rc-card__team .rc-card__who{margin-top: 0;}

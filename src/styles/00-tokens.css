@@ -90,13 +90,11 @@
   --glass-sat:       1.6;
 
   /* ---- Typography ---------------------------------------------------
-     Archivo (variable weight AND width) for display, Geist (variable) for
-     body and UI. Both self-hosted as single variable files.
-
-     The width axis is the flagship typographic move: headlines run expanded
-     for stadium energy, while numbers stay at normal width so tabular
-     figures in tables and stat readouts still align. */
-  --font-display: 'Archivo', 'Arial Narrow', system-ui, sans-serif;
+     Geist for display, body and UI: one self-hosted variable file covering
+     every weight. The width axis Archivo used to provide is gone, so the
+     --width-* tokens below resolve to normal width and are kept only so
+     existing font-stretch declarations stay valid. */
+  --font-display: 'Geist', system-ui, -apple-system, sans-serif;
   --font-body: 'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
 

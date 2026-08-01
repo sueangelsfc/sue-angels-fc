@@ -1,0 +1,648 @@
+/* ==========================================================================
+   PLAYER PROFILE (/players/<slug>.html)
+
+   Every bar and ring on this page carries its figure in type beside it, so
+   the geometry is reinforcement and never the only way to read a value. That
+   also means the page still works for anyone the colour cannot reach.
+   ========================================================================== */
+
+/* ---- Hero -------------------------------------------------------------- */
+.pf-hero{padding: clamp(20px, 4vw, 44px) 0 clamp(20px, 3vw, 36px);}
+.pf-hero__grid{display: grid; gap: clamp(24px, 4vw, 54px);
+  grid-template-columns: minmax(0, 0.62fr) minmax(0, 1.38fr);
+  align-items: center;}
+.pf-hero__shot{position: relative; aspect-ratio: 3 / 4; overflow: hidden;
+  display: grid; place-items: center;
+  border-radius: 26px; border: 1px solid var(--line-d);
+  background: linear-gradient(170deg, rgba(var(--lift), 0.07), rgba(var(--lift), 0.02));}
+.pf-hero__shot img{width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%;}
+.pf-hero__shot .pf-hero__crest{width: 58%; height: auto; object-fit: contain; opacity: 0.42;}
+
+.pf-chips{display: flex; flex-wrap: wrap; gap: 8px;}
+.pf-chip{padding: 8px 14px; border-radius: var(--pillr);
+  border: 1px solid rgba(var(--volt-rgb), 0.36); background: rgba(var(--volt-rgb), 0.12);
+  font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--volt-text);}
+.pf-chip--pos{background: var(--volt); border-color: var(--volt); color: var(--text-on-brand);}
+.pf-chip--mut{background: rgba(var(--lift), 0.06); border-color: var(--line-d); color: var(--ink-2);}
+
+.pf-hero__name{margin: 18px 0 0; display: grid; gap: 2px;}
+.pf-hero__name b{font-family: var(--display); font-weight: 300;
+  font-size: clamp(42px, 6.6vw, 92px); line-height: 0.9; letter-spacing: -0.042em;
+  text-transform: uppercase; color: var(--fg);}
+.pf-hero__name i{font-style: normal;
+  font-family: var(--display); font-weight: 400;
+  font-size: clamp(18px, 2.2vw, 28px); line-height: 1.1; letter-spacing: -0.02em;
+  color: var(--ink-2);}
+.pf-hero__lede{margin: 18px 0 0; max-width: 48ch;
+  font-size: clamp(15px, 1.4vw, 17.5px); line-height: 1.68; color: var(--ink-2);}
+.pf-hero__btns{display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px;}
+
+/* ---- 01 Stat tiles ------------------------------------------------------ */
+.pf-tiles{list-style: none; margin: clamp(20px, 3vw, 30px) 0 0; padding: 0;
+  display: grid; gap: 12px; grid-template-columns: repeat(6, minmax(0, 1fr));}
+.pf-stat{position: relative; padding: 20px 18px;
+  border-radius: 18px; border: 1px solid var(--line-d);
+  background: rgba(var(--lift), 0.026);}
+.pf-stat b{display: block;
+  font-family: var(--display); font-weight: 300;
+  font-size: clamp(28px, 3vw, 38px); line-height: 1; letter-spacing: -0.04em;
+  font-variant-numeric: proportional-nums; color: var(--fg);}
+.pf-stat span{display: block; margin-top: 12px;
+  font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; line-height: 1.5; color: var(--volt-text);}
+.pf-stat i{display: block; margin-top: 6px; font-style: normal;
+  font-family: var(--ui); font-size: 9px; letter-spacing: 0.08em; color: var(--ink-3);}
+/* The ring sits behind the figure it belongs to, never instead of it. */
+.pf-stat.has-ring{padding-left: 76px;}
+.pf-ring{position: absolute; left: 16px; top: 18px; width: 52px; height: 52px;}
+
+/* ---- 02 Record and standing --------------------------------------------- */
+.pf-record__grid{display: grid; gap: clamp(20px, 3vw, 40px);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  align-items: start; margin-top: clamp(20px, 3vw, 30px);}
+.pf-bars{list-style: none; margin: 0; padding: clamp(20px, 2.4vw, 28px);
+  display: grid; gap: 22px;
+  border-radius: 20px; border: 1px solid var(--line-d);
+  background: rgba(var(--lift), 0.026);}
+.pf-bar{display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 14px;}
+.pf-bar__k{font-family: var(--ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.pf-bar__v{text-align: right;
+  font-family: var(--display); font-weight: 400; font-size: 19px;
+  letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--fg);}
+.pf-bar__v i{display: block; margin-top: 3px; font-style: normal;
+  font-family: var(--ui); font-size: 9px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);}
+.pf-bar__track{grid-column: 1 / -1; display: block; height: 8px; border-radius: 4px;
+  background: rgba(var(--lift), 0.06);}
+.pf-bar__track i{display: block; width: 0; height: 100%; border-radius: 4px;
+  background: var(--volt);
+  transition: width 0.9s var(--ease-out-expo);}
+.pf-record__grid.is-in .pf-bar__track i{width: var(--w);}
+
+.pf-ranks{list-style: none; margin: 0; padding: 0; display: grid; gap: 2px;}
+.pf-ranks li{display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 16px;
+  align-items: baseline; padding: 15px 0;
+  border-top: 1px solid var(--line-d);}
+.pf-ranks li:last-child{border-bottom: 1px solid var(--line-d);}
+.pf-ranks b{grid-row: 1 / span 2;
+  font-family: var(--display); font-weight: 300;
+  font-size: clamp(26px, 2.8vw, 34px); line-height: 1; letter-spacing: -0.04em;
+  font-variant-numeric: proportional-nums; color: var(--volt);}
+.pf-ranks span{font-size: 14.5px; color: var(--fg);}
+.pf-ranks i{font-style: normal;
+  font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+
+/* ---- 03 Through the season ---------------------------------------------- */
+.pf-plot{margin: clamp(20px, 3vw, 30px) 0 0;
+  padding: clamp(18px, 2.4vw, 28px);
+  border-radius: 20px; border: 1px solid var(--line-d);
+  background: rgba(var(--lift), 0.026);}
+.pf-plot svg{display: block; width: 100%; height: clamp(150px, 18vw, 190px);}
+.pf-plot figcaption{display: flex; align-items: baseline; justify-content: space-between;
+  gap: 16px; margin-top: 14px; padding-top: 14px;
+  border-top: 1px solid var(--line-d);
+  font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.pf-plot figcaption b{font-family: var(--display); font-weight: 500; font-size: 14px;
+  letter-spacing: -0.01em; text-transform: none; color: var(--volt-text);}
+
+/* ---- 04 Where they play ------------------------------------------------- */
+.pf-pitch__grid{display: grid; gap: clamp(24px, 4vw, 52px);
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+  align-items: center; margin-top: clamp(20px, 3vw, 30px);}
+.pf-pitch__fig{margin: 0; padding: clamp(14px, 1.8vw, 20px);
+  border-radius: 20px; border: 1px solid var(--line-d);
+  background: rgba(var(--lift), 0.026);}
+.pf-pitch__fig svg{display: block; width: 100%; height: auto; max-height: 420px;}
+.pf-pitch__body p{max-width: 46ch; font-size: 15px; line-height: 1.72; color: var(--ink-2);}
+.pf-poslist{list-style: none; margin: 22px 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: 8px;}
+.pf-poslist li b{display: inline-block; padding: 9px 15px; border-radius: var(--pillr);
+  border: 1px solid rgba(var(--volt-rgb), 0.32); background: rgba(var(--volt-rgb), 0.1);
+  font-family: var(--ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--volt-text);}
+
+/* ---- 05 By competition -------------------------------------------------- */
+.pf-tablewrap{margin-top: clamp(20px, 3vw, 30px);
+  border-radius: 20px; border: 1px solid var(--line-d);
+  background: rgba(var(--lift), 0.026); overflow-x: auto;}
+.pf-tbl{width: 100%; border-collapse: collapse; min-width: 460px;
+  font-size: 14px; font-variant-numeric: tabular-nums;}
+.pf-tbl th,
+.pf-tbl td{padding: 14px 12px; text-align: right; white-space: nowrap;
+  border-bottom: 1px solid var(--line-d);}
+.pf-tbl thead th{font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3);
+  border-bottom-color: rgba(var(--lift), 0.16);}
+.pf-tbl thead th abbr{text-decoration: none; border: 0;}
+.pf-tbl tbody th{text-align: left; font-weight: 400; color: var(--fg); min-width: 190px;}
+.pf-tbl tbody tr:last-child th,
+.pf-tbl tbody tr:last-child td{border-bottom: 0;}
+.pf-tbl tbody tr{transition: background 0.25s;}
+.pf-tbl tbody tr:hover{background: rgba(var(--lift), 0.035);}
+.pf-tbl td{color: var(--ink-2);}
+
+/* ---- 06 Last starts ----------------------------------------------------- */
+.pf-form{list-style: none; margin: clamp(20px, 3vw, 30px) 0 0; padding: 0;
+  display: grid; gap: 6px;}
+.pf-form__item{display: grid; align-items: center; gap: 14px;
+  grid-template-columns: 34px minmax(0, 200px) 54px minmax(0, 1fr) 92px 30px;
+  padding: 11px 16px;
+  border-radius: 14px; border: 1px solid var(--line-d);
+  background: rgba(var(--lift), 0.026);
+  transition: background 0.25s, border-color 0.25s, transform 0.3s var(--ease-out-expo);}
+.pf-form__item:hover{background: rgba(var(--volt-rgb), 0.07);
+  border-color: rgba(var(--volt-rgb), 0.32); transform: translateX(3px);}
+.pf-form__badge{display: grid; place-items: center; width: 34px; height: 34px;
+  border-radius: 50%; background: rgba(var(--lift), 0.06); border: 1px solid var(--line-d);}
+.pf-form__badge img{width: 22px; height: 22px; object-fit: contain;}
+.pf-form__club{font-size: 14px; color: var(--ink-2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.pf-form__score{font-family: var(--display); font-weight: 500; font-size: 16px;
+  letter-spacing: -0.01em; color: var(--fg); font-variant-numeric: tabular-nums;}
+.pf-form__note{font-family: var(--ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--volt-text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.pf-form__date{font-family: var(--ui); font-size: 10.5px; text-align: right;
+  letter-spacing: 0.06em; color: var(--ink-3);}
+/* W, D and L differ by weight and structure, never by a second hue. */
+.pf-form__res{display: grid; place-items: center; width: 26px; height: 26px;
+  border-radius: 8px; border: 1px solid var(--line-d);
+  font-family: var(--ui); font-size: 10px; font-weight: 700; color: var(--ink-3);}
+.pf-form__res[data-res="W"]{background: var(--volt); border-color: var(--volt);
+  color: var(--text-on-brand);}
+.pf-form__res[data-res="D"]{border-color: rgba(var(--volt-rgb), 0.5); color: var(--volt-text);}
+
+/* ---- 07 Honours --------------------------------------------------------- */
+.pf-honours__list{list-style: none; margin: clamp(20px, 3vw, 30px) 0 0; padding: 0;
+  display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));}
+.pf-honours__list li{display: grid; gap: 6px; padding: 20px 22px;
+  border-radius: 16px; border: 1px solid var(--line-d);
+  background: rgba(var(--lift), 0.026);
+  border-left: 2px solid var(--volt);}
+.pf-honours__list b{font-family: var(--display); font-weight: 500; font-size: 17px;
+  letter-spacing: -0.022em; color: var(--fg);}
+.pf-honours__list span{font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3);}
+
+/* ==========================================================================
+   MOTION
+
+   Everything here is additive. The resting state of every element IS its
+   finished state, so a blocked script or a reduced-motion preference leaves
+   the page complete rather than half-drawn. Each effect is driven by an
+   `.is-in` class the reveal observer adds, or by hover and focus.
+   ========================================================================== */
+
+/* Rings sweep in. Only under html.js, so a blocked script never leaves an
+   empty gauge. */
+html.js .pf-tiles .pf-ring__arc{stroke-dashoffset: var(--on);
+  transition: stroke-dashoffset 1.1s var(--ease-out-expo) calc(var(--i, 0) * 70ms);}
+html.js .pf-tiles.is-in .pf-ring__arc{stroke-dashoffset: 0;}
+
+/* Tiles lift, and the ring brightens with them. */
+.pf-stat{transition: border-color 0.3s, background 0.3s, transform 0.4s var(--ease-out-expo);}
+.pf-stat:hover{border-color: rgba(var(--volt-rgb), 0.36);
+  background: rgba(var(--volt-rgb), 0.06); transform: translateY(-3px);}
+.pf-ring__arc{transition: filter 0.35s;}
+.pf-stat:hover .pf-ring__arc{filter: drop-shadow(0 0 8px rgba(var(--volt-rgb), 0.7));}
+
+/* The line draws itself along its own length. The dash values are measured by
+   the script, because a polyline's length is not knowable at build time. */
+html.js .pf-plot__line[data-len]{stroke-dasharray: var(--len);
+  stroke-dashoffset: var(--len);
+  transition: stroke-dashoffset 1.5s var(--ease-out-expo);}
+html.js .pf-plot.is-in .pf-plot__line[data-len]{stroke-dashoffset: 0;}
+html.js .pf-plot__end{opacity: 0; transition: opacity 0.4s 1.1s;}
+html.js .pf-plot.is-in .pf-plot__end{opacity: 1;}
+
+/* Position markers breathe. Each one is offset by its index so they pulse out
+   of step, which reads as a pitch with players on it rather than a blinking
+   control panel. */
+.pf-spot__dot,
+.pf-spot text{transform-box: fill-box; transform-origin: center;}
+
+/* The field breathes. Every sample drifts on its own offset, so the mass
+   undulates the way a heat map of a real season does rather than pulsing as
+   one disc. `r` is animated directly, which the blur then fuses, so the
+   overlaps genuinely swell and recede instead of the whole group scaling.
+
+   Only under html.js, and only where motion is welcome: the resting values
+   are already on the element, so a blocked script leaves the field correct
+   and still. */
+html.js .pf-heat__b{
+  animation: pf-heat-breathe 6.2s ease-in-out infinite;
+  animation-delay: var(--d, 0s);}
+@keyframes pf-heat-breathe{
+  0%, 100%{ r: calc(var(--r) * 1px); opacity: var(--o); }
+  50%{ r: calc(var(--r) * 1.3px); opacity: calc(var(--o) * 0.7); }
+}
+
+/* Rings radiating out of the positions the player actually held. This is the
+   movement the field itself cannot carry: a heat map dense enough to read is
+   too smooth for a swell to be visible in it, so the pulse rides on top as a
+   crisp stroke instead. Staggered so they leave one after another. */
+.pf-radiate__r{fill: none; stroke: var(--volt); stroke-width: 0.55;
+  transform-box: fill-box; transform-origin: center; opacity: 0;
+  vector-effect: non-scaling-stroke;}
+html.js .pf-radiate__r{
+  animation: pf-radiate 4.4s cubic-bezier(0.16, 0.8, 0.3, 1) infinite;
+  animation-delay: var(--d, 0s);}
+@keyframes pf-radiate{
+  0%{ transform: scale(0.85); opacity: 0; }
+  12%{ opacity: 0.62; }
+  100%{ transform: scale(3.4); opacity: 0; }
+}
+.pf-spot__dot{transition: transform 0.4s var(--spring), filter 0.35s;}
+.pf-pitch__fig:hover .pf-spot__dot,
+.pf-spot:hover .pf-spot__dot{transform: scale(1.14);
+  filter: drop-shadow(0 0 10px rgba(var(--volt-rgb), 0.75));}
+
+
+/* Position pills answer the pitch. */
+.pf-poslist li b{transition: background 0.25s, border-color 0.25s, transform 0.35s var(--ease-out-expo);}
+.pf-poslist li b:hover{background: var(--volt); border-color: var(--volt);
+  color: var(--text-on-brand); transform: translateY(-2px);}
+
+/* Rank rows draw their own rule in, the same gesture the sponsors page uses
+   for a ruled list. */
+.pf-ranks li{position: relative; transition: padding-left 0.4s var(--ease-out-expo);}
+.pf-ranks li::after{content: ''; position: absolute; left: 0; top: -1px;
+  width: 0; height: 1px; background: var(--volt);
+  transition: width 0.55s var(--ease-out-expo);}
+.pf-ranks li:hover::after{width: 100%;}
+.pf-ranks li:hover{padding-left: 10px;}
+
+/* A bar surges when you point at its row. */
+.pf-bar__v{transition: color 0.25s;}
+.pf-bar:hover .pf-bar__v{color: var(--volt-text);}
+.pf-bar:hover .pf-bar__track i{filter: drop-shadow(0 0 10px rgba(var(--volt-rgb), 0.6));}
+
+/* Honours cards. */
+.pf-honours__list li{transition: border-color 0.3s, background 0.3s, transform 0.4s var(--ease-out-expo);}
+.pf-honours__list li:hover{border-color: rgba(var(--volt-rgb), 0.4);
+  background: rgba(var(--volt-rgb), 0.06); transform: translateX(4px);}
+
+/* ---- Light theme -------------------------------------------------------- */
+html[data-theme="light"] .pf-bar__track{background: rgba(17, 19, 21, 0.08);}
+html[data-theme="light"] .pf-ring circle:first-child{stroke: rgba(17, 19, 21, 0.1);}
+
+/* ---- Responsive --------------------------------------------------------- */
+@media (max-width: 1100px){
+  .pf-tiles{grid-template-columns: repeat(3, minmax(0, 1fr));}
+}
+@media (max-width: 900px){
+  .pf-hero__grid{grid-template-columns: minmax(0, 1fr);}
+  .pf-hero__shot{max-width: 300px;}
+  .pf-record__grid,
+  .pf-pitch__grid{grid-template-columns: minmax(0, 1fr);}
+  .pf-pitch__fig{max-width: 380px;}
+  .pf-form__item{grid-template-columns: 34px minmax(0, 1fr) 50px 28px; row-gap: 6px;}
+  .pf-form__note{grid-column: 2 / -1; font-size: 9.5px;}
+  .pf-form__date{display: none;}
+}
+@media (max-width: 560px){
+  .pf-tiles{grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;}
+  .pf-stat.has-ring{padding-left: 18px;}
+  .pf-ring{display: none;}
+}
+
+/* Motion stops dead, and every element is left in its finished state rather
+   than mid-draw: the bar full, the ring closed, the line complete. */
+@media (prefers-reduced-motion: reduce){
+  .pf-bar__track i{transition: none; width: var(--w);}
+  .pf-form__item,
+  .pf-stat,
+  .pf-ranks li,
+  .pf-poslist li b,
+  .pf-honours__list li,
+  .pf-spot__dot{transition: none;}
+  html.js .pf-heat__b,
+  html.js .pf-radiate__r{animation: none;}
+  html.js .pf-tiles .pf-ring__arc{transition: none; stroke-dashoffset: 0;}
+  html.js .pf-plot__line[data-len]{transition: none; stroke-dashoffset: 0;}
+  html.js .pf-plot__end{transition: none; opacity: 1;}
+}
+
+/* ==========================================================================
+   SEASON TABS, COMPARISON AND THE SCRUBABLE PLOT
+   ========================================================================== */
+
+/* ---- Season tabs --------------------------------------------------------
+   Jump links until the script promotes them. Panels only ever hide under
+   html.js, so a blocked script leaves every season stacked and readable. */
+.pf-tabs{display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: clamp(24px, 3vw, 34px);}
+.pf-tab{display: grid; gap: 2px; padding: 12px 20px; text-decoration: none;
+  border-radius: var(--pillr); border: 1px solid var(--line-d);
+  background: rgba(var(--lift), 0.03); cursor: pointer;
+  transition: background 0.25s, border-color 0.25s, transform 0.3s var(--ease-out-expo);}
+.pf-tab b{font-family: var(--display); font-weight: 500; font-size: 15px;
+  letter-spacing: -0.012em; color: var(--fg);}
+.pf-tab i{font-style: normal; font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.pf-tab:hover{background: rgba(var(--volt-rgb), 0.09);
+  border-color: rgba(var(--volt-rgb), 0.32); transform: translateY(-1px);}
+.pf-tab.is-on{background: var(--volt); border-color: var(--volt);}
+.pf-tab.is-on b{color: var(--text-on-brand);}
+.pf-tab.is-on i{color: rgba(26, 10, 2, 0.66);}
+.pf-tab:focus-visible{outline: 2px solid var(--volt); outline-offset: 3px;}
+html.js .pf-panel[hidden]{display: none;}
+
+.pf-sub + .pf-sub{margin-top: clamp(44px, 6vw, 84px);}
+.pf-sub .h2{font-size: clamp(28px, 3.6vw, 46px);}
+
+/* A season with nothing in it yet. */
+.pf-empty{padding: clamp(30px, 4vw, 48px);
+  border-radius: 22px; border: 1px dashed rgba(var(--volt-rgb), 0.3);
+  background: rgba(var(--volt-rgb), 0.04);}
+.pf-empty__k{font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--volt-text);}
+.pf-empty__t{margin-top: 12px;
+  font-family: var(--display); font-weight: 400; font-size: clamp(24px, 3vw, 34px);
+  letter-spacing: -0.03em; color: var(--fg);}
+.pf-empty__b{margin-top: 14px; max-width: 58ch; font-size: 14.5px;
+  line-height: 1.72; color: var(--ink-2);}
+
+/* ---- Against the squad --------------------------------------------------
+   Two bars in one track: the squad's middle behind, this player in front.
+   The figure and the middle are both printed, so the comparison survives
+   without the bars. */
+.pf-vs{list-style: none; margin: clamp(22px, 3vw, 32px) 0 0; padding: 0; display: grid; gap: 2px;}
+.pf-vs__row{display: grid; align-items: center; gap: 8px clamp(16px, 2.4vw, 28px);
+  grid-template-columns: minmax(0, 170px) minmax(0, 1fr) 132px;
+  padding: 16px 0; border-top: 1px solid var(--line-d);}
+.pf-vs__row:last-child{border-bottom: 1px solid var(--line-d);}
+.pf-vs__k{font-family: var(--ui); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2);}
+.pf-vs__track{position: relative; display: block; height: 14px; border-radius: 7px;
+  background: rgba(var(--lift), 0.05);}
+.pf-vs__track i{position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 7px;
+  transition: width 1s var(--ease-out-expo) calc(var(--i, 0) * 90ms);}
+/* A tick, not a bar. Drawn as a second filled bar it began at the same
+   origin as the player's own and vanished underneath it the moment they were
+   ahead of it, which on a profile page is nearly always. A marker at the
+   position stays visible on either side of it. */
+.pf-vs__mid{background: none; border-right: 2px solid rgba(var(--lift), 0.55);
+  border-radius: 0; z-index: 2; min-width: 2px;}
+.pf-vs__mid::after{content: ''; position: absolute; right: -3px; top: -5px;
+  width: 8px; height: 5px; clip-path: polygon(50% 100%, 0 0, 100% 0);
+  background: rgba(var(--lift), 0.55);}
+.pf-vs__mine{background: var(--volt);
+  box-shadow: 0 0 20px rgba(var(--volt-rgb), 0.4);}
+.pf-vs.is-in .pf-vs__track i{width: var(--w);}
+.pf-vs__v{text-align: right;}
+.pf-vs__v b{font-family: var(--display); font-weight: 400; font-size: 22px;
+  letter-spacing: -0.03em; font-variant-numeric: proportional-nums; color: var(--fg);}
+.pf-vs__v i{display: block; margin-top: 3px; font-style: normal;
+  font-family: var(--ui); font-size: 9px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);}
+.pf-vs__row:hover .pf-vs__mine{filter: brightness(1.12);}
+.pf-lede{margin: clamp(14px, 1.8vw, 20px) 0 0; max-width: 62ch;
+  font-size: 15px; line-height: 1.72; color: var(--ink-2);}
+
+/* ---- The scrubable plot ------------------------------------------------- */
+.pf-plot{position: relative;}
+.pf-plot svg{cursor: crosshair;}
+/* Generous hit targets that never paint until they are the active one. */
+.pf-plot__pt{fill: var(--volt); opacity: 0; transition: opacity 0.15s;}
+.pf-plot__pt.is-on{opacity: 1; r: 5;}
+.pf-plot__cross{transition: opacity 0.15s;}
+.pf-plot__cap{transition: color 0.2s;}
+.pf-plot__cap.is-live .pf-plot__lo,
+.pf-plot__cap.is-live .pf-plot__hi{opacity: 0.35;}
+.pf-plot__hint{margin-top: 10px;
+  font-family: var(--ui); font-size: 9.5px; font-weight: 600;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+html.js .pf-plot__hint{display: block;}
+.pf-plot__hint{display: none;}
+@media (hover: none){ html.js .pf-plot__hint{display: none;} }
+
+@media (max-width: 760px){
+  .pf-vs__row{grid-template-columns: minmax(0, 1fr) 110px;}
+  .pf-vs__track{grid-column: 1 / -1; order: 3;}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .pf-tab,
+  .pf-vs__track i{transition: none;}
+  .pf-vs__track i{width: var(--w);}
+}
+
+/* ---- Heat map ----------------------------------------------------------
+   The field is a blurred group so overlapping spots add up, which is what
+   separates a heat map from a scatter of pins. The ranked list beside it
+   carries the same figures in type, so the picture is never the only route
+   to the information. */
+/* The filter supplies the colour now, so screen blending only washed the
+   ramp out against the panel. */
+.pf-heat{mix-blend-mode: normal;}
+.pf-pitch__fig figcaption{margin-top: 14px; padding-top: 14px;
+  border-top: 1px solid var(--line-d);
+  font-family: var(--ui); font-size: 9.5px; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase; line-height: 1.6; color: var(--ink-3);}
+
+.pf-heatlist{list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 1px;}
+/* The row itself is a plain block: the <details> inside carries the grid on
+   its summary. Left as a grid it made the disclosure a grid ITEM, pinned to a
+   52px column, and the whole open panel folded up inside it. */
+.pf-heatlist li{display: block; border-top: 1px solid var(--line-d);}
+.pf-heatlist li:last-child{border-bottom: 1px solid var(--line-d);}
+.pf-heatlist__k{font-family: var(--ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.pf-heatlist__bar{display: block; height: 8px; border-radius: 4px;
+  background: rgba(var(--lift), 0.05);}
+.pf-heatlist__bar i{display: block; width: 0; height: 100%; border-radius: 4px;
+  background: rgba(var(--lift), 0.22);
+  transition: width 0.9s var(--ease-out-expo);}
+.pf-pitch__grid.is-in .pf-heatlist__bar i{width: var(--w);}
+.pf-heatlist__n{text-align: right;
+  font-family: var(--display); font-weight: 400; font-size: 15px;
+  font-variant-numeric: tabular-nums; color: var(--ink-2);}
+/* The positions the heat map actually marks, so list and picture agree. */
+.pf-heatlist li.is-key .pf-heatlist__k,
+.pf-heatlist li.is-key .pf-heatlist__n{color: var(--fg); font-weight: 500;}
+.pf-heatlist li.is-key .pf-heatlist__bar i{background: var(--volt);}
+.pf-heatlist__note{margin-top: 16px; max-width: 46ch;
+  font-size: 12.5px; line-height: 1.7; color: var(--ink-3);}
+
+/* ---- Comparison key ----------------------------------------------------- */
+.pf-key{display: flex; flex-wrap: wrap; gap: 10px 24px; margin-top: 18px;}
+.pf-key__i{display: inline-flex; align-items: center; gap: 9px;
+  font-size: 12.5px; color: var(--ink-2);}
+.pf-key__i b{font-weight: 500; color: var(--ink-3);}
+.pf-key__i i{display: block; width: 22px; height: 10px; border-radius: 5px; flex: 0 0 auto;}
+.pf-key__mine{background: var(--volt);}
+.pf-key__mid{background: none; border-right: 2px solid rgba(var(--lift), 0.55);
+  border-radius: 0;}
+.pf-key__best{background: none; box-shadow: inset 0 0 0 1px var(--line-d);
+  position: relative;}
+.pf-key__best::after{content: ''; position: absolute; right: 0; top: -2px; bottom: -2px;
+  width: 2px; border-radius: 1px; background: var(--ink-3);}
+
+@media (prefers-reduced-motion: reduce){
+  .pf-heatlist__bar i{transition: none; width: var(--w);}
+}
+
+/* ==========================================================================
+   READABILITY PASS
+
+   Every panel on this page was a 2.6%-white wash, which is right for a page
+   you scroll past and wrong for one you read figures off: the atmosphere
+   behind it came straight through and washed the numbers out. Sustained
+   reading gets an opaque surface, the same reasoning that keeps dense tables
+   off the glass elsewhere on the site.
+
+   The field is also dimmed behind the profile, because this page is almost
+   entirely data and the atmosphere was competing with it.
+   ========================================================================== */
+.is-player .pageaura{--pa-mul: 0.34;}
+
+.is-player .pf-stat,
+.is-player .pf-bars,
+.is-player .pf-plot,
+.is-player .pf-tablewrap,
+.is-player .pf-pitch__fig,
+.is-player .pf-form__item,
+.is-player .pf-honours__list li,
+.is-player .pf-empty{
+  background: var(--slab);
+  border-color: rgba(var(--lift), 0.09);
+  box-shadow: 0 20px 46px -34px rgba(0, 0, 0, 0.9);}
+.is-player .pf-stat:hover,
+.is-player .pf-form__item:hover,
+.is-player .pf-honours__list li:hover{
+  background: linear-gradient(168deg, #1B1512, #100D0C);
+  border-color: rgba(var(--volt-rgb), 0.36);}
+.is-player .pf-empty{background: linear-gradient(168deg, rgba(255, 106, 42, 0.09), var(--slab-top));}
+
+/* Ruled lists sit directly on the canvas, so they get their own quiet base
+   rather than a border that the field shines through. */
+.is-player .pf-ranks,
+.is-player .pf-vs,
+.is-player .pf-heatlist{
+  padding: 4px clamp(16px, 2vw, 24px);
+  border-radius: 20px;
+  background: var(--slab);
+  border: 1px solid rgba(var(--lift), 0.09);}
+.is-player .pf-ranks li:last-child,
+.is-player .pf-vs__row:last-child,
+.is-player .pf-heatlist li:last-child{border-bottom: 0;}
+.is-player .pf-ranks li:first-child,
+.is-player .pf-vs__row:first-child,
+.is-player .pf-heatlist li:first-child{border-top: 0;}
+
+/* ---- The plot: taller, with a scale you can read against --------------- */
+.is-player .pf-plot svg{height: clamp(200px, 26vw, 280px);}
+.pf-plot__grid line{stroke: rgba(var(--lift), 0.07);}
+.pf-plot__ax{font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.12em; fill: var(--ink-3);}
+.pf-plot__area{opacity: 0.9;}
+
+/* ---- Tiles: the ring beside the figure, not crowding it ---------------- */
+.is-player .pf-stat{padding: 22px 20px;}
+.is-player .pf-stat.has-ring{padding-left: 86px;}
+.is-player .pf-ring{left: 18px; top: 50%; transform: translateY(-50%); width: 56px; height: 56px;}
+
+/* ---- Heat map: a bigger pitch, a tighter list -------------------------- */
+.is-player .pf-pitch__grid{grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);}
+.is-player .pf-pitch__fig svg{max-height: 520px;}
+.is-player .pf-pos > summary{grid-template-columns: 52px minmax(0, 1fr) 30px 16px;}
+/* The track is capped so a single-slot position reads as a short bar rather
+   than a hairline stranded in a metre of empty rule. */
+.is-player .pf-heatlist__bar{max-width: 300px;}
+
+@media (max-width: 900px){
+  .is-player .pf-pitch__grid{grid-template-columns: minmax(0, 1fr);}
+}
+
+/* ---- A position, and the matches it came from ---------------------------
+   Native <details> per row, so the matches are in the document either way
+   and a screen reader announces the open state without help. */
+.pf-pos{width: 100%;}
+.pf-pos > summary{display: grid; align-items: center; gap: 14px;
+  grid-template-columns: 52px minmax(0, 1fr) 30px 16px;
+  padding: 9px 0; cursor: pointer; list-style: none;}
+.pf-pos > summary::-webkit-details-marker{display: none;}
+.pf-pos > summary:focus-visible{outline: 2px solid var(--volt); outline-offset: 2px;
+  border-radius: 8px;}
+/* A chevron that turns. Two borders, so there is no glyph to go missing. */
+.pf-pos__cue{display: block; width: 7px; height: 7px; justify-self: end;
+  border-right: 1.5px solid var(--ink-3); border-bottom: 1.5px solid var(--ink-3);
+  transform: rotate(45deg) translate(-2px, -2px);
+  transition: transform 0.3s var(--ease-out-expo), border-color 0.25s;}
+.pf-pos[open] .pf-pos__cue{transform: rotate(-135deg) translate(-3px, -3px);
+  border-color: var(--volt);}
+.pf-pos > summary:hover .pf-pos__cue{border-color: var(--volt);}
+
+.pf-pos__panel{padding: 4px 0 16px;}
+.pf-pos__t{font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--volt-text);
+  margin-bottom: 10px;}
+.pf-pos__list{list-style: none; margin: 0; padding: 0; display: grid; gap: 1px;}
+.pf-pos__list li{display: grid; align-items: center; gap: 6px 12px;
+  grid-template-columns: 22px 26px minmax(0, 1fr) 46px minmax(0, 156px) auto;
+  padding: 9px 0; border-top: 1px solid rgba(var(--lift), 0.06);
+  font-size: 13px;}
+/* The opponent's own mark, never recoloured, only sized. */
+.pf-pos__badge{display: grid; place-items: center; width: 26px; height: 26px;
+  border-radius: 50%; background: rgba(var(--lift), 0.06);
+  border: 1px solid var(--line-d);}
+.pf-pos__badge img{width: 17px; height: 17px; object-fit: contain;}
+.pf-pos__comp{font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--volt-text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.pf-pos__res{display: grid; place-items: center; width: 20px; height: 20px;
+  border-radius: 6px; border: 1px solid var(--line-d);
+  font-family: var(--ui); font-size: 9px; font-weight: 700; color: var(--ink-3);}
+.pf-pos__res[data-res="W"]{background: var(--volt); border-color: var(--volt);
+  color: var(--text-on-brand);}
+.pf-pos__res[data-res="D"]{border-color: rgba(var(--volt-rgb), 0.5); color: var(--volt-text);}
+.pf-pos__club{color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.pf-pos__score{font-family: var(--display); font-weight: 500; color: var(--fg);
+  font-variant-numeric: tabular-nums;}
+.pf-pos__date{font-family: var(--ui); font-size: 10px; letter-spacing: 0.06em;
+  color: var(--ink-3); text-align: right; white-space: nowrap;}
+
+/* Opening a row picks that spot out on the pitch beside it. */
+.pf-pitch__grid.is-picking .pf-heat circle{opacity: 0.06 !important;
+  transition: opacity 0.35s;}
+.pf-pitch__grid.is-picking .pf-heat circle.is-picked{opacity: 0.8 !important;}
+.pf-pitch__grid.is-picking .pf-spot{opacity: 0.2; transition: opacity 0.35s;}
+.pf-pitch__grid.is-picking .pf-spot.is-picked{opacity: 1;}
+
+@media (max-width: 900px){
+  .pf-pos__list li{grid-template-columns: 22px 26px minmax(0, 1fr) 46px;}
+  .pf-pos__comp{grid-column: 3 / -1; font-size: 8.5px;}
+  .pf-pos__date{grid-column: 3 / -1; text-align: left;}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .pf-pos__cue{transition: none;}
+}
+
+/* ---- Photographs of this player ------------------------------------------
+   Fed by tags marked SUBJECT in the control panel. The focus point recorded
+   while tagging drives object-position, which is what keeps a face in the
+   frame when a landscape photograph is cropped square. */
+.pf-shots__grid{list-style: none; margin: clamp(18px, 2.4vw, 26px) 0 0; padding: 0;
+  display: grid; gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr));}
+.pf-shot{position: relative;}
+.pf-shot a{display: block; border-radius: 14px; overflow: hidden;
+  border: 1px solid var(--line-d); background: rgba(var(--sink), 0.4);
+  transition: border-color 0.2s, transform 0.3s var(--ease-out-expo);}
+.pf-shot a:hover{border-color: rgba(var(--volt-rgb), 0.42); transform: scale(1.015);}
+.pf-shot a:focus-visible{outline: 2px solid var(--volt); outline-offset: 2px;}
+.pf-shot img{width: 100%; aspect-ratio: 1; object-fit: cover; object-position: 50% 30%; display: block;}
+.pf-shot__by{position: absolute; left: 10px; bottom: 10px;
+  padding: 4px 9px; border-radius: var(--pillr);
+  background: rgba(10, 12, 15, 0.72); border: 1px solid rgba(255, 255, 255, 0.14);
+  font-family: var(--ui); font-size: 8px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255, 255, 255, 0.8);}
+
+@media (prefers-reduced-motion: reduce){
+  .pf-shot a{transition: none;}
+}

@@ -1,0 +1,195 @@
+/* ==========================================================================
+   MATCH REPORT  (/matches/<id>.html)
+
+   One page per played match: the scoreboard, who scored, who played, and the
+   written report where the club wrote one.
+
+   These were the gap. Six reports totalling ~12,500 characters sat in the
+   match records and reached no page at all, and the homepage carried seven
+   links straight into an empty /matches/ directory. A page per match closes
+   both, and gives the news feed somewhere for its report cards to land.
+
+   Every match gets a page, not only the six with prose. A team sheet and a
+   goal list are worth a URL on their own, and a result that links nowhere is
+   what created the dead links in the first place.
+   ========================================================================== */
+import { esc, attr } from '../lib/html.mjs';
+import { CLUB } from '../lib/club.mjs';
+import { fmtDate, isUs, matchTimeline } from '../lib/stats.mjs';
+import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
+import { articleBody } from './news.mjs';
+
+const STAR = '/assets/badge/sue-angels-badge-star.webp';
+const ARROW = '<span aria-hidden="true">→</span>';
+
+const shortClub = (name) => String(name || '')
+  .replace(/^Sue.s Angels FC$/, "Sue's Angels")
+  .replace(/\s+FC 2\.0$/, ' 2.0')
+  .replace(/\s+FC$/, '');
+
+const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
+      <span class="xrail__l"><span class="xrail__n">${esc(String(n).padStart(2, '0'))}</span><span class="xrail__t">${esc(label)}</span></span>
+      <span class="xrail__r">${esc(ref)}</span>
+    </div>`;
+
+const OUTCOME = { W: 'Won', D: 'Drawn', L: 'Lost' };
+
+/* The written report is the club's own prose. Where there is none the page
+   still stands on the team sheet and the goals, and says so plainly rather
+   than printing an empty heading. */
+export const hasReport = (m) => Boolean(m.detail && String(m.detail.commentary || '').trim().length > 200);
+
+export function matchReport(m, d) {
+  const det = m.detail || {};
+  const nameFor = d.nameFor || ((n) => `No. ${n}`);
+  const badge = (club, size = 68) => (isUs(club)
+    ? `<img class="mr-badge is-us" src="${STAR}" alt="" width="${size}" height="${size}" loading="eager" />`
+    : oppBadge(club, d.badges, size, size, 'mr-badge'));
+
+  const scorers = (det.goals || []).map((g) => ({
+    name: nameFor(g.num),
+    penalty: Boolean(g.penalty),
+    minute: g.minute || '',
+  }));
+  const assists = (det.assists || []).map((a) => nameFor(a.num));
+
+  /* Grouped so a player who scored twice reads "Name (2)" rather than twice. */
+  const grouped = (list) => {
+    const seen = new Map();
+    for (const n of list) seen.set(n, (seen.get(n) || 0) + 1);
+    return [...seen.entries()].map(([n, c]) => (c > 1 ? `${n} (${c})` : n));
+  };
+
+  const starters = (det.starters || []).map((s) => ({
+    name: nameFor(s.num),
+    pos: (s.positions || []).join(', '),
+    num: s.num,
+  }));
+  const bench = (det.bench || []).map((s) => ({ name: nameFor(s.num), num: s.num }));
+  const motm = det.motm != null ? nameFor(det.motm) : '';
+  const captain = det.captain != null ? nameFor(det.captain) : '';
+
+  /* ---- Scoreboard ---- */
+  const hero = `<section class="mr-hero" aria-labelledby="mr-h">
+      <div class="wrap">
+        <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i>
+          ${esc(m.competition)}${m.round ? ` · ${esc(m.round)}` : ''}</p>
+        <h1 class="sr-only" id="mr-h">${esc(m.home)} ${esc(m.scoreline || 'v')} ${esc(m.away)}, ${esc(fmtDate(m.date))}</h1>
+        <div class="mr-board">
+          <span class="mr-board__side">
+            ${badge(m.home)}
+            <b class="${isUs(m.home) ? 'is-us' : ''}">${esc(shortClub(m.home))}</b>
+          </span>
+          <span class="mr-board__score">${m.isWalkover
+    ? '<abbr title="Awarded as a walkover">W/O</abbr>'
+    : esc(m.scoreline || 'v')}</span>
+          <span class="mr-board__side">
+            ${badge(m.away)}
+            <b class="${isUs(m.away) ? 'is-us' : ''}">${esc(shortClub(m.away))}</b>
+          </span>
+        </div>
+        <p class="mr-meta">
+          <span class="mr-meta__res mr-meta__res--${esc(String(m.outcome || 'x').toLowerCase())}">${esc(OUTCOME[m.outcome] || 'Result')}</span>
+          <span>${esc(fmtDate(m.date, { weekday: true, long: true }))}</span>
+          ${m.kick ? `<span>${esc(m.kick)}</span>` : ''}
+          <span>${esc(m.neutral ? `${m.venue} (neutral)` : m.venue || m.homeAway)}</span>
+        </p>
+        ${m.resultNote ? `<p class="mr-note">${esc(m.resultNote)}.</p>` : ''}
+      </div>
+    </section>`;
+
+  /* ---- Goals and the team sheet ---- */
+  const factsBand = `<section class="sec mr-facts" aria-labelledby="mr-f-h">
+      <div class="wrap">
+        ${rail(1, 'The match', m.isWalkover ? 'Awarded' : `${m.ourGoals}-${m.theirGoals}`)}
+        <h2 class="h2 rv" id="mr-f-h">How it <span class="volt">went.</span></h2>
+        <div class="mr-cols rv">
+          <div class="mr-col">
+            <h3 class="mr-col__h">Goals</h3>
+            ${scorers.length
+    ? `<ul class="mr-list">${grouped(scorers.map((s) => s.name))
+      .map((n) => `<li>${esc(n)}</li>`).join('')}</ul>`
+    : `<p class="mr-col__none">${m.isWalkover
+      ? 'Awarded as a walkover, so no goals are recorded.'
+      : 'No goalscorer is recorded for this match.'}</p>`}
+          </div>
+          <div class="mr-col">
+            <h3 class="mr-col__h">Assists</h3>
+            ${assists.length
+    ? `<ul class="mr-list">${grouped(assists).map((n) => `<li>${esc(n)}</li>`).join('')}</ul>`
+    : '<p class="mr-col__none">No assist is recorded for this match.</p>'}
+          </div>
+          <div class="mr-col">
+            <h3 class="mr-col__h">Player of the Match</h3>
+            ${motm ? `<p class="mr-motm">${esc(motm)}</p>`
+    : '<p class="mr-col__none">Not recorded.</p>'}
+            ${captain ? `<p class="mr-col__cap">Captain: ${esc(captain)}</p>` : ''}
+          </div>
+        </div>
+
+        ${starters.length ? `<div class="mr-sheet rv">
+          <h3 class="mr-col__h">Team sheet</h3>
+          <ol class="mr-xi">
+            ${starters.map((s) => `<li><b>${esc(s.name)}</b>${s.pos ? `<i>${esc(s.pos)}</i>` : ''}</li>`).join('\n            ')}
+          </ol>
+          ${bench.length ? `<p class="mr-bench"><span>Bench</span> ${bench.map((b) => esc(b.name)).join(' · ')}</p>` : ''}
+          <p class="mr-sheet__note">Sunday-league match returns do not record minutes or
+            substitutions, so neither is shown rather than estimated.</p>
+        </div>` : ''}
+      </div>
+    </section>`;
+
+  /* ---- The written report ---- */
+  const reportBand = hasReport(m) ? `<section class="sec mr-report" aria-labelledby="mr-r-h">
+      <div class="wrap wrap--narrow">
+        ${rail(2, 'The report', 'Written by the club')}
+        <h2 class="h2 rv" id="mr-r-h">The full <span class="volt">report.</span></h2>
+        <div class="nw-art__body rv">
+        ${articleBody(det.commentary)}
+        </div>
+      </div>
+    </section>` : '';
+
+  /* The video, when one is filed against this match.
+
+     A real embed rather than a link out: this is the page somebody is on
+     BECAUSE they want this match, so sending them to YouTube to see the goals
+     is sending them away from the report they were reading.
+
+     `youtube-nocookie` and lazy loading so the frame costs nothing until it
+     is scrolled to, and nothing is set on the visitor unless they press play.
+     Renders nothing at all when no video is filed, which is every match until
+     one is saved in the control panel. */
+  const videoBand = det && det.videoId ? `<section class="sec mr-video" aria-labelledby="mr-v-h">
+      <div class="wrap wrap--narrow">
+        ${rail(3, 'Watch it', 'Match video')}
+        <h2 class="h2 rv" id="mr-v-h">See it for <span class="volt">yourself.</span></h2>
+        <div class="mr-embed rv">
+          <iframe src="https://www.youtube-nocookie.com/embed/${attr(det.videoId)}"
+            title="${attr(`${m.title} match video`)}"
+            loading="lazy" allowfullscreen
+            allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
+            referrerpolicy="strict-origin-when-cross-origin"></iframe>
+        </div>
+      </div>
+    </section>` : '';
+
+  const backBand = `<section class="sec mr-back">
+      <div class="wrap">
+        <p class="mr-back__row">
+          <a class="btn btn--volt" href="/results.html">Every result ${ARROW}</a>
+          <a class="btn btn--ghost" href="/news.html">Club news</a>
+        </p>
+      </div>
+    </section>`;
+
+  return {
+    css: 'home.css',
+    shell: 'home',
+    bodyClass: 'is-home is-sub is-report',
+    preMain: sitePreMain(auraFor('results.html')),
+    footerHtml: siteFooter(),
+    body: siteHeader("/results.html") + hero + factsBand + reportBand + videoBand + backBand,
+    hasReport: hasReport(m),
+  };
+}

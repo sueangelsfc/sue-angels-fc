@@ -5,6 +5,22 @@
    forms sit on flat opaque surfaces because that is what stays readable.
    ========================================================================== */
 
+/* The whole panel is two screens that swap: the sign-in gate and the app. The
+   swap is done by setting the `hidden` property, and `hidden` is only a
+   browser default of `display: none`, which ANY author rule outranks. Both
+   screens set `display: grid` on themselves, so both outranked it and neither
+   could ever be hidden:
+
+     signed out - the app shell rendered underneath the login card, so a
+                  visitor could scroll past it to the panel chrome
+     signed in  - the login card stayed on top of the panel, which makes a
+                  successful sign-in look like a failed one
+
+   One rule fixes the class rather than the two instances, and `!important` is
+   the point: it has to outrank whatever a component sets on itself, including
+   rules written later. */
+[hidden] { display: none !important; }
+
 /* ---- Auth gate ---- */
 .cp-gate {
   min-height: 100svh;

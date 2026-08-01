@@ -1,0 +1,113 @@
+/* ==========================================================================
+   MOTION NAVIGATION MENU
+   The look and behaviour of the supplied React component, without React.
+
+   One shared panel is reused by every menu: it slides to sit under the active
+   trigger and animates its box to the new content's size, while the content
+   inside slides in from the side you came from. A pill highlight tracks the
+   hovered trigger.
+
+   Everything here is scoped to `.hx__mainnav.is-vp`, a class the script adds
+   only after the panel has actually been built. With scripting blocked the
+   per-group dropdowns below stay exactly as they were, so the menu never
+   depends on this file having anything to hand over to.
+   ========================================================================== */
+
+.hx__mainnav{position: relative;}
+
+/* ---- Hover highlight --------------------------------------------------- */
+.hx__hl{position: absolute; left: 0; top: 0; z-index: 0;
+  border-radius: var(--pillr);
+  background: rgba(255, 255, 255, 0.08);
+  opacity: 0; pointer-events: none;
+  transition: transform 0.38s var(--ease-out-expo),
+              width 0.38s var(--ease-out-expo),
+              height 0.3s var(--ease-out-expo),
+              opacity 0.25s;}
+.hx__mainnav .hx__navtop{position: relative; z-index: 1;}
+/* The pill replaces the per-link hover fill, or the two stack up. */
+.hx__mainnav.is-vp .hx__navtop:hover,
+.hx__mainnav.is-vp .hx__navgrp:hover > .hx__navtop,
+.hx__mainnav.is-vp .hx__navgrp.is-open > .hx__navtop{background: none;}
+
+/* ---- The shared panel --------------------------------------------------- */
+.hx__mainnav.is-vp .hx__dd{display: none;}
+
+.hx__vp{position: absolute; top: calc(100% + 10px); left: 0; z-index: 40;
+  overflow: hidden;
+  border-radius: 16px;
+  background: rgba(7, 20, 30, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: 0 26px 60px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  opacity: 0; pointer-events: none;
+  width: 0; height: 0;
+  transform: translate3d(0, 0, 0) scale(0.96);
+  transform-origin: top center;
+  transition: transform 0.42s var(--ease-out-expo),
+              width 0.42s var(--ease-out-expo),
+              height 0.42s var(--ease-out-expo),
+              opacity 0.26s;}
+.hx__mainnav.is-vp-open .hx__vp{pointer-events: auto;}
+
+/* Resting state is VISIBLE. The direction-aware entrance is an animation
+   layered on top, so if it never runs the panel still shows its links. */
+.hx__vp__in{position: absolute; inset: 0;
+  display: flex; flex-direction: column; gap: 1px;
+  padding: 8px;}
+@keyframes vp-in-r{
+  from { opacity: 0; transform: translate3d(20px, 0, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes vp-in-l{
+  from { opacity: 0; transform: translate3d(-20px, 0, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.hx__vp__in.is-in-r{animation: vp-in-r 0.34s var(--ease-out-expo) both;}
+.hx__vp__in.is-in-l{animation: vp-in-l 0.34s var(--ease-out-expo) both;}
+
+/* Sized off screen so the visible box can be animated towards a known target
+   rather than towards whatever it happens to be mid-transition. */
+.hx__vp__measure{position: absolute; left: -99999px; top: 0;
+  visibility: hidden; pointer-events: none;
+  display: flex; flex-direction: column; gap: 1px;
+  padding: 8px; width: max-content; min-width: 196px;}
+
+/* The links move out of .hx__dd into the shared panel, so they need their own
+   copy of the panel-link styling rather than inheriting it. */
+.hx__vp__in a,
+.hx__vp__measure a{padding: 9px 13px; border-radius: 9px;
+  font-family: var(--body); font-size: 13.5px; font-weight: 480;
+  color: rgba(255, 255, 255, 0.74);
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s, padding-left 0.25s var(--ease-out-expo);}
+.hx__vp__in a:hover{background: rgba(var(--volt-rgb), 0.12); color: var(--volt); padding-left: 17px;}
+
+html[data-theme="light"] .hx__vp{background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(15, 20, 28, 0.1);}
+html[data-theme="light"] .hx__vp__in a{color: var(--ink-1);}
+html[data-theme="light"] .hx__hl{background: rgba(15, 20, 28, 0.07);}
+
+/* The panel is a desktop affordance; below the nav breakpoint the burger menu
+   takes over and .hx__mainnav is not displayed at all. */
+@media (prefers-reduced-motion: reduce){
+  .hx__hl,
+  .hx__vp{transition: none;}
+  .hx__vp__in.is-in-r,
+  .hx__vp__in.is-in-l{animation: none;}
+}
+
+/* ---- The sub-page header ------------------------------------------------
+   Sub-pages have no hero photograph, so the standalone header sits on the
+   page background rather than over an image. Static, not absolute, so it
+   takes up its own space instead of overlapping the first band.
+
+   This lives with the header rather than with any one page's band, because
+   every rebuilt page wears it. It sat in the About band until the stylesheet
+   was split per page, at which point being in the wrong file would have
+   stripped the header colours from eleven pages. */
+.pghead{position: static; padding-top: 22px; padding-bottom: 22px;}
+.is-sub .pghead .hx__brand span,
+.is-sub .pghead .hx__navtop{color: var(--ink-1);}
+.is-sub .pghead .hx__navtop:hover{color: var(--fg); background: rgba(var(--volt-rgb), 0.10);}

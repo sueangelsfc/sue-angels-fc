@@ -1,0 +1,87 @@
+/* ==========================================================================
+   404 (/404.html)
+
+   One screen's worth. The whole page is a signpost, so it is centred, short,
+   and every element is either a route out or the one fact somebody probably
+   came for.
+   ========================================================================== */
+.is-404 .pageaura{--pa-mul: 0.32;}
+
+/* ---- Hero ----------------------------------------------------------------
+   The crest sits BEHIND the type as a watermark rather than above it, so the
+   page reads as one composition instead of a stacked column. It is decorative
+   and aria-hidden by having empty alt. */
+.nf-hero{padding: clamp(28px, 6vw, 80px) 0 clamp(16px, 2.4vw, 28px);}
+.nf-hero__in{position: relative; max-width: 60ch; margin: 0 auto; text-align: center;}
+.nf-hero__crest{position: absolute; left: 50%; top: 50%;
+  width: clamp(200px, 30vw, 340px); height: auto;
+  transform: translate(-50%, -54%);
+  opacity: 0.07; pointer-events: none; z-index: 0;}
+.nf-hero__eyebrow{position: relative; z-index: 1; justify-content: center;}
+.nf-hero__title{position: relative; z-index: 1; margin: 12px 0 0;
+  font-family: var(--display); font-weight: 300;
+  font-size: clamp(52px, 11vw, 132px); line-height: 0.88; letter-spacing: -0.05em;
+  color: var(--fg);}
+.nf-hero__lede{position: relative; z-index: 1;
+  margin: 20px auto 0; max-width: 46ch;
+  font-size: clamp(15px, 1.4vw, 18px); line-height: 1.68; color: var(--ink-2);}
+.nf-hero__btns{position: relative; z-index: 1;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+  margin: clamp(20px, 3vw, 28px) 0 0;}
+
+/* ---- The two live lines ---------------------------------------------------
+   A stale match link is the likeliest route here, so this answers that before
+   the index does. */
+.nf-strip{padding-top: clamp(14px, 2vw, 22px);}
+.nf-strip__h{font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3);
+  text-align: center;}
+.nf-strip__list{display: grid; gap: 10px; margin: 14px auto 0; max-width: 760px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  padding: 0; list-style: none;}
+.nf-strip__item a{display: flex; flex-direction: column; gap: 4px;
+  padding: 16px 20px; border-radius: 18px;
+  border: 1px solid var(--line-d); background: var(--slab);
+  color: inherit; text-decoration: none; text-align: center;
+  transition: transform 0.4s var(--ease-out-expo), border-color 0.3s;}
+.nf-strip__item a:hover, .nf-strip__item a:focus-visible{transform: translateY(-2px);
+  border-color: rgba(var(--volt-rgb), 0.45);}
+.nf-strip__k{font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--volt-text);}
+.nf-strip__t{font-family: var(--display); font-weight: 500;
+  font-size: clamp(15px, 1.8vw, 18px); letter-spacing: -0.022em; color: var(--fg);}
+.nf-strip__b{font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.11em; text-transform: uppercase; color: var(--ink-3);}
+
+/* ---- Where to go instead --------------------------------------------------- */
+.nf-places__h{text-align: center; margin-bottom: clamp(16px, 2.4vw, 24px);}
+/* Six tiles, and the width is chosen so they land 3 + 3 rather than 4 + 2.
+   At 900px wide with a 210px minimum, auto-fit fitted four across and left a
+   ragged pair underneath. 800px cannot fit a fourth 230px column, so the
+   rows come out even without hard-coding a column count that would then
+   break on a narrow screen. */
+.nf-grid{display: grid; gap: 10px; max-width: 800px; margin: 0 auto;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  padding: 0; list-style: none;}
+.nf-place{display: flex;}
+.nf-place__link{display: flex; flex-direction: column; gap: 7px; width: 100%;
+  padding: 18px 20px; border-radius: 18px;
+  border: 1px solid var(--line-d); background: rgba(var(--lift), 0.03);
+  color: inherit; text-decoration: none;
+  transition: transform 0.4s var(--ease-out-expo), border-color 0.3s, background 0.3s;}
+.nf-place__link:hover, .nf-place__link:focus-visible{transform: translateY(-3px);
+  border-color: rgba(var(--volt-rgb), 0.45); background: rgba(var(--volt-rgb), 0.06);}
+.nf-place__ico{display: grid; place-items: center; width: 34px; height: 34px;
+  border-radius: 11px; color: var(--volt-text);
+  background: rgba(var(--volt-rgb), 0.12); border: 1px solid rgba(var(--volt-rgb), 0.22);}
+.nf-place__t{font-family: var(--display); font-weight: 500;
+  font-size: clamp(15px, 1.7vw, 17px); letter-spacing: -0.022em; color: var(--fg);}
+.nf-place__b{font-size: 13px; line-height: 1.55; color: var(--ink-2);}
+.nf-places__note{max-width: 56ch; margin: clamp(20px, 3vw, 28px) auto 0;
+  text-align: center; font-size: 13.5px; line-height: 1.66; color: var(--ink-2);}
+/* Underlined: a link inside a sentence cannot rely on colour alone. */
+.nf-places__note a{color: var(--volt-text); font-weight: 600;
+  text-decoration: underline; text-underline-offset: 3px;
+  text-decoration-thickness: 1px; text-decoration-color: rgba(var(--volt-rgb), 0.55);
+  overflow-wrap: anywhere;}
+.nf-places__note a:hover{text-decoration-color: currentColor;}

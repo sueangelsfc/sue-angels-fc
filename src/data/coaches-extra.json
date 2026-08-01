@@ -1,0 +1,24 @@
+{
+  "_source": "production Supabase, player_photos row roster:coaches, plus the bio supplied by the club",
+  "_fetched": "2026-08-01",
+  "_note": "The recovered PageShell carries only the two founding staff. Jim El Bayati joined the coaching staff for 26/27 after captaining the club through 25/26, and exists in the live roster:coaches row with an empty bio. The bio below was supplied by the club. House style is League Ten, never Division Ten.",
+  "coaches": [
+    {
+      "id": "c-jim-el-bayati",
+      "name": "Jim El Bayati",
+      "role": "FIRST TEAM COACH",
+      "short": "First Team Coach",
+      "photo": "assets/players/10.webp",
+      "since": "26/27",
+      "bio": [
+        "Few people have had a greater influence on Sue's Angels FC than Jim El Bayati.",
+        "After captaining the club through its historic debut season, Jim now begins the next chapter of his journey by joining the coaching staff ahead of the 26/27 campaign.",
+        "A leader from the moment the club was formed, Jim played a central role in establishing the standards, culture and identity that helped transform Sue's Angels FC from a new grassroots side into League Ten champions. His commitment, professionalism and consistency set the tone for everyone around him, while his performances on the pitch helped guide the team to an unbeaten league season.",
+        "Having worked closely with manager Stephen Epathite throughout the club's first year, Jim's transition into coaching is a natural one. The relationship between the pair extends far beyond football, built on trust, respect and a shared vision for what Sue's Angels FC can become.",
+        "As captain, Jim was often an extension of the management team on the pitch. His ability to organise, communicate and bring people together made him one of the most influential figures within the squad. Those qualities will now be invaluable from the sidelines.",
+        "In this new role, Jim will help support player development, maintain the club's culture and standards, and provide leadership to a squad preparing for the challenges of League Eight football.",
+        "While his playing career may have come to an end, his impact on Sue's Angels FC is far from over. The captain becomes a coach, but his commitment to the club remains exactly the same."
+      ]
+    }
+  ]
+}

@@ -5,7 +5,7 @@
    files and it drifted (three different brand aria-labels, two different
    mobile CTA labels). Defining it once makes that class of bug impossible.
    ========================================================================== */
-import { CLUB } from './club.mjs';
+import { CLUB, SOCIALS } from './club.mjs';
 
 export const esc = (s) =>
   String(s ?? '')
@@ -45,6 +45,7 @@ const ICONS = {
   check: '<path d="M4 12.5l5 5L20 6.5"/>',
   star: '<path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2l-6.1 3.4 1.4-6.8L2.2 9.1l6.9-.8L12 2z" fill="currentColor" stroke="none"/>',
   external: '<path d="M14 4h6v6M20 4l-8.5 8.5"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
+  tiktok: '<path d="M15 3v9.6a3.4 3.4 0 1 1-2.6-3.3" /><path d="M15 6.2A4.6 4.6 0 0 0 19.4 9"/>',
 };
 
 export function icon(name, cls = '') {
@@ -105,7 +106,8 @@ export const NAV = [
     { label: 'Squad', href: '/squad.html' },
     { label: 'Player Stats', href: '/stats.html' },
     { label: 'Coaches', href: '/coaches.html' },
-    { label: 'Matches', href: '/fixtures.html' },
+    { label: 'Fixtures', href: '/fixtures.html' },
+    { label: 'Results', href: '/results.html' },
     { label: 'League', href: '/league.html' },
     { label: 'Records', href: '/records.html' },
   ] },
@@ -203,7 +205,7 @@ export function header(path) {
 }
 
 export function footer() {
-  const social = CLUB.socials.map((s) =>
+  const social = SOCIALS.map((s) =>
     `<a class="icon-btn icon-btn--sm" href="${attr(s.href)}" rel="me noopener" target="_blank" aria-label="${attr(s.label)}">${icon(s.icon)}</a>`).join('');
 
   const cols = [
@@ -213,7 +215,8 @@ export function footer() {
     ] },
     { h: 'On the Pitch', links: [
       ['Squad', '/squad.html'], ['Player Stats', '/stats.html'], ['Coaches', '/coaches.html'],
-      ['Matches', '/fixtures.html'], ['League', '/league.html'], ['Records', '/records.html'],
+      ['Fixtures', '/fixtures.html'], ['Results', '/results.html'],
+      ['League', '/league.html'], ['Records', '/records.html'],
     ] },
     { h: 'Media', links: [
       ['Live', '/live.html'], ['News', '/news.html'], ['Gallery', '/gallery.html'], ['Videos', '/videos.html'],
@@ -266,15 +269,136 @@ export function footer() {
    JS-dependent hidden state so a script failure can never blank a section. */
 const THEME_BOOT = `(function(){var d=document.documentElement;d.classList.add('js');try{var t=localStorage.getItem('sa-theme');if(t==='light'||t==='dark'){d.setAttribute('data-theme',t)}}catch(e){}})();`;
 
+/* ==========================================================================
+   STRUCTURED DATA: ONE @graph PER PAGE
+
+   Every page used to ship its JSON-LD as a handful of unrelated top-level
+   blocks, and the SportsTeam that identifies the club only appeared on the
+   home page. A crawler landing on a player profile or a match report had no
+   machine-readable way to know which club it belonged to, which is precisely
+   the connection that gets a grassroots club cited in an AI answer.
+
+   Now every page ships a single @graph whose nodes reference each other by
+   @id: the club (one canonical node, same @id site-wide), the website, and
+   this page. Templates keep contributing their own entities; a page-level one
+   (AboutPage, ContactPage, ProfilePage and so on) is MERGED into the page
+   node rather than sitting beside it as a second, competing description of
+   the same URL.
+   ========================================================================== */
+export const CLUB_ID = `${CLUB.site}/#club`;
+export const SITE_ID = `${CLUB.site}/#website`;
+
+/* Node types that describe THE PAGE ITSELF. One of these from a template is
+   merged into the page node; anything else is an entity in its own right. */
+const PAGE_TYPES = new Set(['WebPage', 'AboutPage', 'ContactPage', 'CollectionPage',
+  'ProfilePage', 'ItemPage', 'FAQPage', 'ImageGallery', 'SearchResultsPage']);
+
+export function clubNode() {
+  return {
+    '@type': ['SportsTeam', 'SportsOrganization'],
+    '@id': CLUB_ID,
+    name: CLUB.name,
+    alternateName: CLUB.nickname,
+    url: `${CLUB.site}/`,
+    sport: 'Association football',
+    foundingDate: String(CLUB.founded),
+    logo: `${CLUB.site}/assets/brand/badge.png`,
+    email: CLUB.email,
+    inLanguage: 'en-GB',
+    memberOf: { '@type': 'SportsOrganization', name: CLUB.league },
+    location: {
+      '@type': 'Place',
+      name: CLUB.venue.name,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: CLUB.venue.street,
+        addressLocality: CLUB.venue.district,
+        addressRegion: CLUB.venue.locality,
+        addressCountry: CLUB.venue.country,
+      },
+    },
+    areaServed: CLUB.areaServed.map((n) => ({ '@type': 'Place', name: n })),
+    sameAs: SOCIALS.map((s) => s.href),
+  };
+}
+
+export function siteNode() {
+  return {
+    '@type': 'WebSite',
+    '@id': SITE_ID,
+    url: `${CLUB.site}/`,
+    name: CLUB.name,
+    inLanguage: 'en-GB',
+    publisher: { '@id': CLUB_ID },
+  };
+}
+
+/* A share image is usually a site-relative path, but a gallery album uses its
+   own cover photograph, which is already an absolute Supabase URL. Prefixing
+   the site origin onto that produced a meta tag with two URLs in it. */
+export const absUrl = (u) => (/^https?:\/\//i.test(String(u)) ? String(u) : CLUB.site + u);
+
+function buildGraph({ canonical, title, description, ogImage, schema, clubExtra }) {
+  const supplied = schema.filter(Boolean).map((s) => {
+    /* Templates historically emitted each node with its own @context. Inside a
+       graph that is redundant, and a stray one makes the block harder to read
+       without changing what it means. */
+    const { '@context': _ctx, ...rest } = s;
+    return rest;
+  });
+
+  const pageish = supplied.find((s) => PAGE_TYPES.has(s['@type']));
+  /* A page can legitimately be two page-ish things at once: contact.html is a
+     ContactPage that also carries an FAQ, and FAQ rich results need a real
+     FAQPage node rather than questions folded into something else. The first
+     one becomes the page; any others keep their type but get their own @id so
+     two nodes never claim to be the same URL. */
+  const others = supplied.filter((s) => s !== pageish).map((s) => (
+    PAGE_TYPES.has(s['@type'])
+      ? { ...s, '@id': `${canonical}#${String(s['@type']).toLowerCase()}`, isPartOf: { '@id': `${canonical}#webpage` } }
+      : s));
+
+  const pageNode = {
+    '@type': pageish?.['@type'] || 'WebPage',
+    '@id': `${canonical}#webpage`,
+    url: canonical,
+    name: title,
+    description,
+    inLanguage: 'en-GB',
+    isPartOf: { '@id': SITE_ID },
+    about: { '@id': CLUB_ID },
+    primaryImageOfPage: { '@type': 'ImageObject', url: absUrl(ogImage) },
+    ...(pageish || {}),
+    /* Re-asserted after the spread: a template's own name/url/@id for the page
+       must not win over the canonical one, or two pages can claim one @id. */
+    '@id': `${canonical}#webpage`,
+    url: canonical,
+  };
+
+  /* The squad and coaching list belong on the club node, but 40 Person
+     entries on all 100 pages is a lot of bytes to repeat for no extra signal.
+     The home page is the one that carries them. */
+  const club = clubExtra ? { ...clubNode(), ...clubExtra } : clubNode();
+
+  return { '@context': 'https://schema.org', '@graph': [club, siteNode(), pageNode, ...others] };
+}
+
 export function page({
-  title, description, path, body, css = 'sa.css', js = 'sa.js',
-  ogImage = '/assets/social/og-default.png', schema = [], bodyClass = '',
-  noindex = false, assetV = 1, bare = false,
+  title, description, path, body, css = 'sa.css', pageCss = null, js = 'sa.js',
+  ogImage = '/assets/social/og-default.jpg', ogImageAlt = '', schema = [], bodyClass = '',
+  noindex = false, assetV = 1, jsV = null, bare = false, clubExtra = null,
+  /* shell: 'home' - the homepage draws its own header and footer inside the
+     composition (the nav sits in the hero frame, the footer is the sitemap
+     slab), so the shared shell is not injected over the top of it. */
+  shell = 'site', footerHtml = '', preMain = '', preloadImage = '',
 }) {
+  const scriptV = jsV || assetV;
   const canonical = `${CLUB.site}${path === '/index.html' ? '/' : path}`;
-  const schemaTags = schema.length
-    ? schema.map((s) => `<script type="application/ld+json">${JSON.stringify(s)}</script>`).join('\n')
-    : '';
+  /* One block, always: even a page whose template contributes nothing still
+     identifies the club and itself. */
+  const schemaTags = `<script type="application/ld+json">${JSON.stringify(
+    buildGraph({ canonical, title, description, ogImage, schema, clubExtra }),
+  )}</script>`;
 
   return `<!doctype html>
 <html lang="en-GB">
@@ -294,37 +418,40 @@ ${noindex ? '<meta name="robots" content="noindex,follow">' : ''}
 <meta property="og:title" content="${attr(title)}">
 <meta property="og:description" content="${attr(description)}">
 <meta property="og:url" content="${attr(canonical)}">
-<meta property="og:image" content="${attr(CLUB.site + ogImage)}">
+<meta property="og:image" content="${attr(absUrl(ogImage))}">
+<meta property="og:image:alt" content="${attr(ogImageAlt || `${CLUB.name} club crest`)}">
 <meta property="og:locale" content="en_GB">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${attr(title)}">
 <meta name="twitter:description" content="${attr(description)}">
-<meta name="twitter:image" content="${attr(CLUB.site + ogImage)}">
+<meta name="twitter:image" content="${attr(absUrl(ogImage))}">
+<meta name="twitter:image:alt" content="${attr(ogImageAlt || `${CLUB.name} club crest`)}">
 <link rel="icon" href="/assets/brand/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/assets/brand/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.webmanifest">
-<link rel="preload" href="/assets/fonts/Archivo-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+${preloadImage ? `<link rel="preload" href="${attr(preloadImage)}" as="image" fetchpriority="high">` : ''}
 <link rel="stylesheet" href="/${css}?v=${assetV}">
+${pageCss ? `<link rel="stylesheet" href="/${pageCss.href}?v=${pageCss.v}">` : ''}
 ${schemaTags}
 </head>
 <body${bodyClass ? ` class="${attr(bodyClass)}"` : ''}>
-<div class="atmos" aria-hidden="true">
+${shell === 'home' ? '' : `<div class="atmos" aria-hidden="true">
   <span class="atmos__art">
     <span class="atmos__blob atmos__blob--a"></span>
     <span class="atmos__blob atmos__blob--b"></span>
     <span class="atmos__blob atmos__blob--c"></span>
   </span>
   <span class="atmos__veil"></span>
-</div>
-${bare ? body : `<a class="skip" href="#main">Skip to content</a>
-${header(path)}
-<main id="main">
+</div>`}
+${bare ? body : `${preMain}<a class="skip" href="#main">Skip to content</a>
+${shell === 'home' ? '' : header(path)}
+<main id="main"${shell === 'home' ? ' tabindex="-1"' : ''}>
 ${body}
 </main>
-${footer()}
+${shell === 'home' ? footerHtml : footer()}
 <div class="toasts" data-toasts role="region" aria-label="Notifications" aria-live="polite"></div>`}
-<script src="/${bare ? js : `${js}?v=${assetV}`}" defer></script>
+<script src="/${bare ? js : `${js}?v=${scriptV}`}" defer></script>
 </body>
 </html>`;
 }

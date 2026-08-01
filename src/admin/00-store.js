@@ -134,6 +134,24 @@ window.CP = (function () {
     });
   }
 
+  /* A write that changed NOTHING is a failed write, and it does not look like
+     one over the wire. PostgREST answers a statement that ran but matched no
+     rows with 200 and an empty array, and a bare 204 tells you only that the
+     statement executed. Both used to resolve here as success, so the panel
+     said "Saved" and the club believed something was stored that was not.
+
+     `return=representation` is requested precisely so there is something to
+     count. If nothing comes back, say so instead of celebrating. */
+  function verifyWrote(res, what) {
+    var n = Array.isArray(res) ? res.length : (res ? 1 : 0);
+    if (n > 0) return res;
+    throw new Error(
+      'The server accepted the request but changed no rows, so ' + what + ' was not saved. '
+      + 'This is usually row-level security refusing the write: check the account is in '
+      + 'admin_users and that migration 002 has been run.'
+    );
+  }
+
   function upsert(table, key, data) {
     if (!state.isAdmin) return Promise.reject(new Error('You do not have permission to change club data.'));
     return rest(
@@ -142,6 +160,7 @@ window.CP = (function () {
       [{ key: key, data: data, updated_at: new Date().toISOString() }],
       'return=representation,resolution=merge-duplicates'
     ).then(function (res) {
+      verifyWrote(res, '"' + key + '"');
       audit('upsert', table, key);
       return res;
     });
@@ -151,6 +170,7 @@ window.CP = (function () {
     if (!state.isAdmin) return Promise.reject(new Error('You do not have permission to delete club data.'));
     return rest('DELETE', table + '?key=eq.' + encodeURIComponent(key), undefined, 'return=representation')
       .then(function (res) {
+        verifyWrote(res, '"' + key + '"');
         audit('delete', table, key);
         return res;
       });

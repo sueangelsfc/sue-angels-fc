@@ -1,0 +1,18 @@
+/* ==========================================================================
+   HOMEPAGE BUNDLE - self-hosted type
+   The homepage ships its own stylesheet (home.css) rather than the site-wide
+   sa.css: its composition is art-directed end to end, and giving it a
+   dedicated bundle means neither sheet carries rules the other never uses.
+   Both bundles reference the same two variable font files, so the browser
+   still fetches each font exactly once across the whole site.
+   ========================================================================== */
+/* Archivo was retired when display switched to Geist; its file is still in
+   assets/fonts/ should the width axis ever be wanted back. */
+@font-face {
+  font-family: 'Geist';
+  src: url('assets/fonts/Geist-Variable.woff2') format('woff2-variations'),
+       url('assets/fonts/Geist-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}

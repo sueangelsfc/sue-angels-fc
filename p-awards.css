@@ -1,0 +1,342 @@
+/* ==========================================================================
+   AWARDS (/awards.html)
+
+   Two ranked comparisons carry this page: goals conceded across the division
+   and Man of the Match counts across the squad. Both are one measure over one
+   set of names, so both are bars in a single hue with our own row carried by
+   weight and a rule rather than by a second colour. The figure is always
+   printed beside the bar, so the bar is reinforcement and never the only way
+   to read the value.
+   ========================================================================== */
+
+/* ---- Hero -------------------------------------------------------------- */
+.aw-hero{padding: clamp(20px, 4vw, 48px) 0 clamp(24px, 4vw, 44px);}
+.aw-hero__grid{display: grid; gap: clamp(28px, 4vw, 64px);
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr);
+  align-items: center;}
+.aw-hero__title{margin: 12px 0 0;
+  font-family: var(--display); font-weight: 300;
+  font-size: clamp(42px, 6.6vw, 92px); line-height: 0.94; letter-spacing: -0.038em;
+  color: var(--fg);}
+.aw-hero__lede{margin: 20px 0 0; max-width: 52ch;
+  font-size: clamp(15px, 1.4vw, 18px); line-height: 1.68; color: var(--ink-2);}
+.aw-hero__btns{display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px;}
+
+/* The tally, read as a scoreboard of how much was handed out. */
+.aw-tally{display: grid; justify-items: center; gap: 18px;
+  padding: clamp(24px, 2.6vw, 32px);
+  border-radius: 26px; border: 1px solid var(--line-d);
+  background: linear-gradient(160deg, rgba(var(--volt-rgb), 0.13), rgba(var(--sink), 0.5) 70%);}
+.aw-tally__crest{width: clamp(80px, 7vw, 108px); height: auto;
+  filter: drop-shadow(0 12px 30px rgba(0, 0, 0, 0.5));}
+.aw-tally__list{width: 100%; display: grid; gap: 10px;}
+.aw-tally__list div{display: flex; align-items: baseline; justify-content: space-between; gap: 14px;
+  padding: 13px 16px;
+  border-radius: 14px; border: 1px solid var(--line-d);
+  background: rgba(var(--sink), 0.5);}
+.aw-tally__list dt{font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--volt-text);}
+.aw-tally__list dd{font-family: var(--display); font-weight: 300;
+  font-size: 26px; line-height: 1; letter-spacing: -0.03em;
+  font-variant-numeric: proportional-nums; color: var(--fg);}
+
+/* ---- 01 The defensive record ------------------------------------------- */
+.aw-def__grid{display: grid; gap: clamp(28px, 4vw, 56px);
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  align-items: start;
+  margin-top: clamp(20px, 3vw, 30px);}
+.aw-def__lede p{color: var(--ink-2); line-height: 1.7; max-width: 46ch;}
+/* One number is the whole story of the band, so it is set as a hero figure
+   rather than dropped into a tile grid with three equals. */
+.aw-def__hero{display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+  margin-bottom: 20px;}
+.aw-def__hero b{font-family: var(--display); font-weight: 300;
+  font-size: clamp(64px, 9vw, 118px); line-height: 0.86; letter-spacing: -0.05em;
+  font-variant-numeric: proportional-nums; color: var(--volt);}
+.aw-def__hero span{max-width: 22ch;
+  font-family: var(--ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; line-height: 1.7; color: var(--ink-3);}
+.aw-def__facts{list-style: none; margin: 26px 0 0; padding: 0;
+  display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr));}
+.aw-def__facts li{padding: 16px 14px;
+  border-radius: 16px; border: 1px solid var(--line-d);
+  background: rgba(255, 255, 255, 0.028);}
+.aw-def__facts b{display: block;
+  font-family: var(--display); font-weight: 300;
+  font-size: clamp(24px, 2.6vw, 32px); line-height: 1; letter-spacing: -0.035em;
+  font-variant-numeric: proportional-nums; color: var(--fg);}
+.aw-def__facts span{display: block; margin-top: 10px;
+  font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; line-height: 1.5; color: var(--ink-3);}
+.aw-def__note{margin-top: 22px !important; font-size: 14px; color: var(--ink-3) !important;}
+
+/* The division comparison. Ten clubs, one measure, sorted best first. */
+.aw-ga{margin: 0;
+  padding: clamp(20px, 2.4vw, 28px);
+  border-radius: 22px; border: 1px solid var(--line-d);
+  background: rgba(255, 255, 255, 0.026);}
+.aw-ga__cap{font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3);
+  padding-bottom: 16px; margin-bottom: 6px;
+  border-bottom: 1px solid var(--line-d);}
+.aw-ga__list{list-style: none; margin: 0; padding: 0; display: grid; gap: 2px;}
+.aw-ga__row{display: grid; align-items: center; gap: 12px;
+  grid-template-columns: minmax(0, 158px) minmax(0, 1fr) 34px;
+  padding: 8px 0;}
+.aw-ga__club{font-size: 13px; color: var(--ink-2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.aw-ga__track{display: block; height: 10px; border-radius: 5px;
+  background: rgba(255, 255, 255, 0.05);}
+/* Rounded data-end, anchored to the baseline at the left. */
+.aw-ga__track i{display: block; width: 0; height: 100%; border-radius: 5px;
+  background: rgba(255, 255, 255, 0.22);
+  transition: width 1.05s var(--ease-out-expo) calc(var(--i, 0) * 55ms);}
+.aw-ga__v{font-family: var(--display); font-weight: 400; font-size: 14px;
+  text-align: right; font-variant-numeric: tabular-nums; color: var(--ink-2);}
+/* Emphasis, not a second hue: our row gains the accent, weight and a rule. */
+.aw-ga__row.is-us .aw-ga__club,
+.aw-ga__row.is-us .aw-ga__v{color: var(--fg); font-weight: 500;}
+.aw-ga__row.is-us .aw-ga__track i{background: var(--volt);
+  box-shadow: 0 0 22px rgba(var(--volt-rgb), 0.42);}
+.aw-ga__row.is-us{position: relative;}
+.aw-ga__row.is-us::before{content: ''; position: absolute; left: -12px; top: 6px; bottom: 6px;
+  width: 2px; border-radius: 2px; background: var(--volt);}
+.aw-def__grid.is-in .aw-ga__track i{width: var(--w);}
+
+/* ---- 02 Player of the Month --------------------------------------------
+   Tabs ship as ordinary jump links and every panel ships visible, so a
+   blocked script leaves four readable citations instead of a blank band. The
+   hidden state below is scoped to html.js and applied only by the script. */
+.aw-potm__tabs{display: flex; flex-wrap: wrap; gap: 8px;
+  margin-top: clamp(20px, 3vw, 30px);}
+.aw-potm__tab{display: grid; gap: 2px; text-align: left; text-decoration: none;
+  padding: 11px 18px;
+  border-radius: var(--pillr); border: 1px solid var(--line-d);
+  background: rgba(255, 255, 255, 0.03);
+  transition: background 0.25s, border-color 0.25s, transform 0.3s var(--ease-out-expo);
+  cursor: pointer;}
+.aw-potm__tab b{font-family: var(--display); font-weight: 500; font-size: 14px;
+  letter-spacing: -0.01em; color: var(--fg);}
+.aw-potm__tab i{font-style: normal;
+  font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.aw-potm__tab:hover{background: rgba(var(--volt-rgb), 0.09);
+  border-color: rgba(var(--volt-rgb), 0.3); transform: translateY(-1px);}
+.aw-potm__tab.is-on{background: var(--volt); border-color: var(--volt);}
+.aw-potm__tab.is-on b{color: var(--navy);}
+.aw-potm__tab.is-on i{color: rgba(23, 26, 30, 0.72);}
+
+.aw-potm__panels{display: grid; gap: 16px; margin-top: 18px;}
+.aw-potm__panel{display: grid; gap: clamp(22px, 3vw, 44px);
+  grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+  align-items: start;
+  padding: clamp(20px, 2.4vw, 30px);
+  border-radius: 24px; border: 1px solid var(--line-d);
+  background: rgba(255, 255, 255, 0.026);}
+.aw-potm__shot{position: relative; overflow: hidden;
+  border-radius: 18px; border: 1px solid var(--line-d);
+  aspect-ratio: 2 / 3; background: rgba(255, 255, 255, 0.04);}
+.aw-potm__shot img{width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 1.2s var(--ease-out-expo);}
+.aw-potm__panel:hover .aw-potm__shot img{transform: scale(1.04);}
+.aw-potm__ribbon{position: absolute; left: 12px; top: 12px;
+  padding: 7px 13px; border-radius: var(--pillr);
+  background: var(--volt); color: var(--text-on-brand, var(--navy));
+  font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;}
+.aw-potm__name{margin: 12px 0 0;
+  font-family: var(--display); font-weight: 400;
+  font-size: clamp(28px, 3.4vw, 42px); line-height: 1.02; letter-spacing: -0.035em;
+  color: var(--fg);}
+.aw-potm__pos{margin-top: 6px;
+  font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3);}
+.aw-potm__body p + p{margin-top: 14px;}
+.aw-potm__body p{color: var(--ink-2); line-height: 1.72; max-width: 62ch;}
+.aw-potm__facts{list-style: none; margin: 24px 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: 10px;}
+.aw-potm__facts li{min-width: 86px; padding: 13px 16px;
+  border-radius: 14px; border: 1px solid var(--line-d);
+  background: rgba(255, 255, 255, 0.03);}
+.aw-potm__facts b{display: block;
+  font-family: var(--display); font-weight: 300; font-size: 26px; line-height: 1;
+  letter-spacing: -0.035em; font-variant-numeric: proportional-nums; color: var(--fg);}
+.aw-potm__facts span{display: block; margin-top: 8px;
+  font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--volt-text);}
+.aw-potm__scope{margin-top: 14px !important; font-size: 12.5px; color: var(--ink-3) !important;}
+/* Only ever applied by the script; never a default. */
+html.js .aw-potm__panel[hidden]{display: none;}
+
+/* ---- 03 Man of the Match ------------------------------------------------ */
+.aw-top{display: grid; gap: clamp(20px, 3vw, 40px);
+  grid-template-columns: minmax(0, 230px) minmax(0, 1fr);
+  align-items: center;
+  margin-top: clamp(20px, 3vw, 30px);
+  padding: clamp(20px, 2.4vw, 30px);
+  border-radius: 24px; border: 1px solid rgba(var(--volt-rgb), 0.26);
+  background: linear-gradient(120deg, rgba(var(--volt-rgb), 0.12), rgba(255, 255, 255, 0.026) 62%);}
+.aw-top__shot{overflow: hidden; border-radius: 18px; border: 1px solid var(--line-d);
+  aspect-ratio: 2 / 3; background: rgba(255, 255, 255, 0.04);}
+.aw-top__shot img{width: 100%; height: 100%; object-fit: cover; display: block;}
+.aw-top__name{margin-top: 12px;
+  font-family: var(--display); font-weight: 400;
+  font-size: clamp(28px, 3.6vw, 46px); line-height: 1.02; letter-spacing: -0.038em;
+  color: var(--fg);}
+.aw-top__count{display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+  margin-top: 16px;}
+.aw-top__count b{font-family: var(--display); font-weight: 300;
+  font-size: clamp(46px, 6vw, 76px); line-height: 0.9; letter-spacing: -0.05em;
+  font-variant-numeric: proportional-nums; color: var(--volt);}
+.aw-top__count span{max-width: 24ch;
+  font-family: var(--ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; line-height: 1.7; color: var(--ink-3);}
+.aw-top__sub{margin-top: 16px; max-width: 48ch; line-height: 1.7; color: var(--ink-2);}
+
+.aw-board{list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 2px;}
+.aw-board__row{display: grid; align-items: center; gap: 14px;
+  grid-template-columns: 26px 34px minmax(0, 170px) minmax(0, 1fr) 34px;
+  padding: 9px 0;}
+.aw-board__pos{font-family: var(--ui); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.1em; color: var(--ink-3); font-variant-numeric: tabular-nums;}
+.aw-board__face{display: block; width: 34px; height: 34px; border-radius: 50%;
+  overflow: hidden; border: 1px solid var(--line-d); background: rgba(255, 255, 255, 0.06);}
+.aw-board__face img{width: 100%; height: 100%; object-fit: cover; display: block;}
+.aw-board__name{font-size: 14px; color: var(--ink-2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.aw-board__track{display: block; height: 10px; border-radius: 5px;
+  background: rgba(255, 255, 255, 0.05);}
+.aw-board__track i{display: block; width: 0; height: 100%; border-radius: 5px;
+  background: rgba(255, 255, 255, 0.22);
+  transition: width 1.05s var(--ease-out-expo) calc(var(--i, 0) * 55ms);}
+.aw-board__n{text-align: right;}
+.aw-board__n b{font-family: var(--display); font-weight: 400; font-size: 15px;
+  font-variant-numeric: tabular-nums; color: var(--ink-2);}
+.aw-board__row.is-top .aw-board__name,
+.aw-board__row.is-top .aw-board__n b{color: var(--fg); font-weight: 500;}
+.aw-board__row.is-top .aw-board__track i{background: var(--volt);
+  box-shadow: 0 0 22px rgba(var(--volt-rgb), 0.42);}
+.aw-board.is-in .aw-board__track i{width: var(--w);}
+
+.aw-motm__sub{margin: clamp(30px, 4vw, 46px) 0 0;
+  font-family: var(--ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-3);}
+.aw-mlist{list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 6px;}
+.aw-ml{display: grid; align-items: center; gap: 14px;
+  grid-template-columns: 34px minmax(0, 300px) 58px minmax(0, 1fr) 28px minmax(0, 176px);
+  padding: 11px 18px;
+  border-radius: 14px; border: 1px solid var(--line-d);
+  background: rgba(255, 255, 255, 0.026);
+  transition: background 0.25s, border-color 0.25s, transform 0.3s var(--ease-out-expo);}
+.aw-ml:hover{background: rgba(var(--volt-rgb), 0.07);
+  border-color: rgba(var(--volt-rgb), 0.32); transform: translateX(3px);}
+.aw-ml__badge{display: grid; place-items: center;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06); border: 1px solid var(--line-d);}
+.aw-ml__badge img{width: 22px; height: 22px; object-fit: contain;}
+.aw-ml__club{font-size: 14px; color: var(--ink-2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.aw-ml__score{font-family: var(--display); font-weight: 500; font-size: 16px;
+  letter-spacing: -0.01em; color: var(--fg); font-variant-numeric: tabular-nums;}
+.aw-ml__date{font-family: var(--ui); font-size: 10.5px; text-align: right;
+  letter-spacing: 0.06em; color: var(--ink-3);}
+.aw-ml__face{display: block; width: 28px; height: 28px; border-radius: 50%;
+  overflow: hidden; border: 1px solid var(--line-d); background: rgba(255, 255, 255, 0.06);}
+.aw-ml__face img{width: 100%; height: 100%; object-fit: cover; display: block;}
+.aw-ml__who{font-size: 13.5px; color: var(--fg);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.aw-motm__note{margin: 16px 0 0;
+  font-family: var(--ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+
+/* ---- 04 End of season awards -------------------------------------------- */
+/* Flex rather than grid: seven awards leave an orphan in a three-column grid,
+   and flex-wrap centres the short last row instead of stranding it left. */
+.aw-cards{list-style: none; margin: clamp(20px, 3vw, 30px) 0 0; padding: 0;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 16px;}
+.aw-card{flex: 1 1 300px; max-width: calc((100% - 32px) / 3);
+  display: grid; grid-template-rows: auto 1fr;
+  overflow: hidden;
+  border-radius: 22px; border: 1px solid var(--line-d);
+  background: rgba(255, 255, 255, 0.026);
+  transition: border-color 0.3s, transform 0.4s var(--ease-out-expo), background 0.3s;}
+.aw-card:hover{border-color: rgba(var(--volt-rgb), 0.34); transform: translateY(-4px);
+  background: rgba(var(--volt-rgb), 0.055);}
+.aw-card__shot{aspect-ratio: 4 / 3; overflow: hidden; background: rgba(255, 255, 255, 0.04);}
+.aw-card__shot img{width: 100%; height: 100%; object-fit: cover; object-position: 50% 26%;
+  display: block; transition: transform 0.9s var(--ease-out-expo);}
+.aw-card:hover .aw-card__shot img{transform: scale(1.05);}
+.aw-card__body{padding: 20px 22px 24px;}
+.aw-card__name{margin-top: 12px;
+  font-family: var(--display); font-weight: 500; font-size: 21px;
+  line-height: 1.15; letter-spacing: -0.028em; color: var(--fg);}
+.aw-card__pos{margin-top: 5px;
+  font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.aw-card__cite{margin-top: 14px; font-size: 14px; line-height: 1.68; color: var(--ink-2);}
+
+/* ---- 05 Captains -------------------------------------------------------- */
+.aw-caps__grid{list-style: none; margin: clamp(20px, 3vw, 30px) 0 0; padding: 0;
+  display: grid; gap: 14px; grid-template-columns: repeat(3, minmax(0, 1fr));}
+.aw-cap{display: grid; justify-items: start; gap: 4px;
+  padding: 24px;
+  border-radius: 20px; border: 1px solid var(--line-d);}
+.aw-cap__face{display: block; width: 64px; height: 64px; border-radius: 50%;
+  overflow: hidden; margin-bottom: 12px;
+  border: 1px solid var(--line-d); background: rgba(255, 255, 255, 0.06);}
+.aw-cap__face img{width: 100%; height: 100%; object-fit: cover; display: block;}
+.aw-cap__k{font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--volt-text);}
+.aw-cap__name{font-family: var(--display); font-weight: 500; font-size: 20px;
+  letter-spacing: -0.025em; color: var(--fg);}
+.aw-cap__pos{font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.aw-caps__note{margin: 18px 0 0; max-width: 62ch; font-size: 14px;
+  line-height: 1.7; color: var(--ink-2);}
+
+/* ---- Responsive --------------------------------------------------------- */
+@media (max-width: 1040px){
+  .aw-card{max-width: calc((100% - 16px) / 2);}
+  .aw-def__grid{grid-template-columns: minmax(0, 1fr);}
+  .aw-ml{grid-template-columns: 34px minmax(0, 1fr) 52px 28px minmax(0, 130px);}
+  .aw-ml__date{display: none;}
+}
+@media (max-width: 860px){
+  .aw-hero__grid{grid-template-columns: minmax(0, 1fr);}
+  .aw-tally{max-width: 460px;}
+  .aw-potm__panel{grid-template-columns: minmax(0, 1fr);}
+  .aw-potm__shot{max-width: 260px; margin-inline: auto;}
+  .aw-top{grid-template-columns: minmax(0, 1fr);}
+  .aw-top__shot{max-width: 220px;}
+  .aw-board__row{grid-template-columns: 22px 30px minmax(0, 1fr) 30px;}
+  .aw-board__track{display: none;}
+  .aw-caps__grid{grid-template-columns: minmax(0, 1fr);}
+}
+@media (max-width: 620px){
+  .aw-card{max-width: 100%;}
+  .aw-def__facts{grid-template-columns: minmax(0, 1fr);}
+  .aw-def__facts li{display: flex; align-items: baseline; justify-content: space-between; gap: 16px;}
+  .aw-def__facts span{margin-top: 0; text-align: right;}
+  .aw-ga__row{grid-template-columns: minmax(0, 1fr) 34px; gap: 8px;}
+  .aw-ga__track{grid-column: 1 / -1;}
+  .aw-ml{grid-template-columns: 30px minmax(0, 1fr) 48px; row-gap: 8px;}
+  .aw-ml__face{display: none;}
+  .aw-ml__who{grid-column: 2 / -1; font-size: 12.5px; color: var(--volt-text);}
+}
+
+/* ---- Light theme --------------------------------------------------------
+   Most surfaces here are low-alpha white, which simply reads as the page
+   underneath once the canvas turns white, and the hairline flips with
+   --line-d. The bars are the exception: a white fill on a white surface
+   deletes the comparison, so both ramps are restated in ink. */
+html[data-theme="light"] .aw-ga__track,
+html[data-theme="light"] .aw-board__track{background: rgba(17, 19, 21, 0.07);}
+html[data-theme="light"] .aw-ga__track i,
+html[data-theme="light"] .aw-board__track i{background: rgba(17, 19, 21, 0.34);}
+
+@media (prefers-reduced-motion: reduce){
+  .aw-ga__track i,
+  .aw-board__track i{transition: none; width: var(--w);}
+  .aw-potm__shot img,
+  .aw-card__shot img{transition: none;}
+}

@@ -1,0 +1,18 @@
+{
+  "_source": "production Supabase, player_photos row roster:status",
+  "_fetched": "2026-07-31",
+  "_note": "Shirt number to squad status. The recovered dataset marks every player active; these are the real retirements and departures, and the sponsors/awards copy already depends on two of them (Jim El Bayati and William Clark both ended their playing careers in 25/26).",
+  "status": {
+    "1": "departed",
+    "7": "retired",
+    "8": "departed",
+    "10": "retired",
+    "13": "departed",
+    "14": "departed",
+    "15": "departed",
+    "19": "departed",
+    "22": "departed",
+    "24": "departed",
+    "36": "departed"
+  }
+}

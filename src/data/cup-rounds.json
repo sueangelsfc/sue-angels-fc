@@ -1,0 +1,25 @@
+{
+  "_note": "Which round of a knockout competition each cup tie was. Nothing in the match record says this, and a cup run reads as a list of friendlies without it.",
+  "_derivation": "The Dylan Rigobert Trophy is confirmed by the club: 17 May 2026 was the FINAL, played at a neutral ground. The four earlier ties are then fixed by working backwards from it in date order, since a knockout run has exactly one tie per round.",
+  "_pending": "The other three competitions are labelled by their position in the run only. The club has not confirmed which named round each exit was, so Round 3 may in fact have been a quarter-final. Ordinal position is true either way; a named round would not be. Replace these with the real names once confirmed.",
+  "rounds": {
+    "r20251214-brockwell-drt": { "round": "Round 1", "short": "R1" },
+    "r20260111-larkhall-drt": { "round": "Round 2", "short": "R2" },
+    "r20260208-barnes-drt": { "round": "Quarter-final", "short": "QF" },
+    "r20260322-hillside-drt": { "round": "Semi-final", "short": "SF" },
+    "r20260517-portolondon-drt": { "round": "Final", "short": "Final" },
+
+    "r20251116-sutton-cc": { "round": "Round 1", "short": "R1", "assumed": true },
+    "r20251207-woking-cc": { "round": "Round 2", "short": "R2", "assumed": true },
+    "r20260125-tattenham-cc": { "round": "Round 3", "short": "R3", "assumed": true },
+    "r20260222-sheen-cc": { "round": "Round 4", "short": "R4", "assumed": true },
+
+    "r20260308-clapham-ccup": { "round": "Round 1", "short": "R1", "assumed": true },
+    "r20260315-barkingmad-ccup": { "round": "Round 2", "short": "R2", "assumed": true },
+    "r20260329-bluebirds-ccup": { "round": "Round 3", "short": "R3", "assumed": true },
+    "r20260412-kew-ccup": { "round": "Round 4", "short": "R4", "assumed": true },
+
+    "r20251026-malavida-mlip": { "round": "Round 1", "short": "R1", "assumed": true },
+    "r20251130-argentina-mlip": { "round": "Round 2", "short": "R2", "assumed": true }
+  }
+}

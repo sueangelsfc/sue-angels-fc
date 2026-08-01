@@ -1,0 +1,201 @@
+/* ==========================================================================
+   JOIN THE CLUB (/join.html)
+
+   The site's only form page, and therefore the only band file that has to
+   style form controls at all. They are built here rather than in the core
+   sheet because exactly one page uses them; if contact.html grows a form
+   this file becomes the shared one and moves up.
+
+   Two rules run through the whole sheet:
+
+   1. A control is OPAQUE, never glass. Blur behind an input costs legibility
+      while somebody is typing into it, and this is the one place on the site
+      where sustained reading of small text actually happens.
+   2. Nothing here hard-codes a colour that flips with the theme. Inputs sit
+      on rgba(var(--sink), ...) and lift with rgba(var(--lift), ...), so the
+      light theme turns them into pale grey fields with ink hairlines instead
+      of dark boxes with dark text.
+   ========================================================================== */
+.is-join .pageaura{--pa-mul: 0.3;}
+
+/* ---- Hero ---------------------------------------------------------------- */
+.jn-hero{padding: clamp(20px, 4vw, 48px) 0 clamp(18px, 2.6vw, 32px);}
+.jn-hero__title{margin: 12px 0 0;
+  font-family: var(--display); font-weight: 300;
+  font-size: clamp(48px, 8vw, 116px); line-height: 0.9; letter-spacing: -0.045em;
+  color: var(--fg);}
+.jn-hero__lede{margin: 20px 0 0; max-width: 54ch;
+  font-size: clamp(15px, 1.4vw, 18px); line-height: 1.68; color: var(--ink-2);}
+
+/* Three facts, not a stat wall. They answer the questions somebody weighing
+   up whether to send the form is actually asking: what level, how good are
+   they, and when would I have to turn up. */
+.jn-hero__facts{display: flex; flex-wrap: wrap; gap: clamp(14px, 3vw, 38px);
+  margin: clamp(20px, 3vw, 30px) 0 0; padding: 0; list-style: none;}
+.jn-hero__facts li{display: flex; flex-direction: column; gap: 4px;}
+.jn-hero__facts b{font-family: var(--display); font-weight: 500;
+  font-size: clamp(17px, 2.2vw, 24px); letter-spacing: -0.028em;
+  font-variant-numeric: tabular-nums; color: var(--fg);}
+.jn-hero__facts span{font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.jn-hero__btns{display: flex; flex-wrap: wrap; gap: 10px; margin: clamp(20px, 3vw, 28px) 0 0;}
+
+/* ---- 01 The four routes --------------------------------------------------
+   Anchors to the form, so they work with the script dead. The card is the
+   whole link: a 4-line target beats a 14px "apply" at the bottom of it. */
+.jn-grid4{display: grid; gap: 12px; margin-top: clamp(16px, 2.4vw, 24px);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); padding: 0; list-style: none;}
+.jn-route{display: flex;}
+.jn-route__link{display: flex; flex-direction: column; gap: 10px; width: 100%;
+  padding: clamp(18px, 2.2vw, 24px);
+  border-radius: 20px; border: 1px solid var(--line-d);
+  background: var(--slab); color: inherit; text-decoration: none;
+  transition: transform 0.4s var(--ease-out-expo), border-color 0.3s, box-shadow 0.4s;}
+.jn-route__link:hover, .jn-route__link:focus-visible{transform: translateY(-3px);
+  border-color: rgba(var(--volt-rgb), 0.45);
+  box-shadow: 0 18px 40px -28px rgba(var(--sink), 0.9);}
+.jn-route__top{display: flex; align-items: center; justify-content: space-between;}
+.jn-route__ico{display: grid; place-items: center; width: 38px; height: 38px;
+  border-radius: 12px; color: var(--volt-text);
+  background: rgba(var(--volt-rgb), 0.12); border: 1px solid rgba(var(--volt-rgb), 0.22);}
+.jn-route__n{font-family: var(--ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.16em; color: var(--ink-3);}
+.jn-route__t{font-family: var(--display); font-weight: 500;
+  font-size: clamp(17px, 1.9vw, 20px); line-height: 1.2; letter-spacing: -0.026em;
+  color: var(--fg);}
+.jn-route__b{font-size: 13.5px; line-height: 1.62; color: var(--ink-2);}
+/* The reference line: a fact on the left, the payoff on the right. */
+.jn-route__meta{display: flex; flex-wrap: wrap; gap: 6px 10px; margin-top: auto; padding-top: 10px;
+  border-top: 1px solid rgba(var(--lift), 0.08);
+  font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3);}
+.jn-route__meta i{font-style: normal; color: var(--volt-text);}
+.jn-route__go{font-family: var(--ui); font-size: 11.5px; font-weight: 700;
+  letter-spacing: 0.04em; color: var(--fg);}
+.jn-route__link:hover .jn-route__go{color: var(--volt-text);}
+
+/* ---- 02 The form --------------------------------------------------------- */
+.jn-formband{scroll-margin-top: 90px;}
+.jn-form{scroll-margin-top: 90px;
+  max-width: 780px; margin: clamp(16px, 2.4vw, 24px) auto 0;
+  padding: clamp(22px, 3.4vw, 40px);
+  border-radius: 26px; border: 1px solid var(--line-d);
+  /* Opaque. See the note at the top of this file. */
+  background: var(--slab);
+  box-shadow: 0 30px 70px -50px rgba(var(--sink), 0.95);}
+.jn-form__head{margin-bottom: clamp(18px, 2.4vw, 26px);}
+.jn-form__sub{margin-top: 12px; max-width: 48ch;
+  font-size: 14.5px; line-height: 1.66; color: var(--ink-2);}
+
+/* The error summary. Focusable so the handler can move the reader to it, and
+   it lists real links down to the field that failed. */
+.jn-form__err{margin-bottom: 20px; padding: 16px 18px; border-radius: 16px;
+  border: 1px solid rgba(var(--volt-rgb), 0.5);
+  background: rgba(var(--volt-rgb), 0.1);}
+.jn-form__err:focus-visible{outline: 2px solid var(--volt); outline-offset: 3px;}
+.jn-form__errh{font-family: var(--display); font-weight: 500; font-size: 16px;
+  letter-spacing: -0.02em; color: var(--fg);}
+.jn-form__err ul{margin: 8px 0 0; padding-left: 18px; font-size: 13.5px; color: var(--ink-2);}
+.jn-form__err a{color: var(--volt-text);}
+
+.jn-grid{display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr));}
+.jn-field{display: flex; flex-direction: column; gap: 7px; margin: 0;}
+.jn-field--full{grid-column: 1 / -1;}
+@media (max-width: 640px){
+  .jn-grid{grid-template-columns: minmax(0, 1fr);}
+  .jn-field{grid-column: 1 / -1;}
+}
+
+.jn-label{display: flex; align-items: baseline; gap: 7px;
+  font-family: var(--ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.jn-req{color: var(--volt-text);}
+.jn-opt{font-size: 9px; font-weight: 600; letter-spacing: 0.1em; color: var(--ink-3);
+  opacity: 0.8;}
+
+.jn-input{width: 100%; padding: 13px 15px;
+  border-radius: 13px; border: 1px solid rgba(var(--lift), 0.14);
+  background: rgba(var(--sink), 0.55);
+  color: var(--fg); font-family: var(--body); font-size: 15px; line-height: 1.5;
+  transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+  /* Safari otherwise rounds a text input's corners its own way and ignores
+     the radius on select entirely. */
+  -webkit-appearance: none; appearance: none;}
+/* --ink-2, not the fainter --ink-3, and no opacity on top of it. These
+   placeholders carry real guidance ("where you have played, how much time you
+   can give"), so they have to clear AA like any other text. --ink-3 dimmed to
+   0.85 measured 3.51:1 on the light theme's input, which fails. Firefox also
+   applies its own 0.54 default opacity unless it is reset here. */
+.jn-input::placeholder{color: var(--ink-2); opacity: 1;}
+.jn-input:hover{border-color: rgba(var(--lift), 0.24);}
+.jn-input:focus{outline: none;
+  border-color: rgba(var(--volt-rgb), 0.7);
+  box-shadow: 0 0 0 3px rgba(var(--volt-rgb), 0.18);}
+/* Keyboard focus must remain visible even where the box-shadow ring above is
+   flattened, e.g. forced-colors. */
+.jn-input:focus-visible{outline: 2px solid var(--volt); outline-offset: 2px;}
+.jn-input[aria-invalid="true"]{border-color: rgba(var(--volt-rgb), 0.85);
+  background: rgba(var(--volt-rgb), 0.07);}
+.jn-textarea{resize: vertical; min-height: 130px;}
+
+/* The select keeps its own chevron because appearance:none removes the
+   native one, and without a marker it reads as a plain text field. */
+.jn-selwrap{position: relative; display: block;}
+.jn-selico{position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  pointer-events: none; color: var(--ink-3);}
+.jn-select{padding-right: 42px; cursor: pointer;}
+
+.jn-err{font-size: 12.5px; line-height: 1.5; color: var(--volt-text);}
+
+/* Custom checkbox. The real input stays in the DOM and keeps the focus and
+   the checked state; the box beside it is the part that gets painted. */
+.jn-consent{margin-top: 2px;}
+.jn-check{display: flex; align-items: flex-start; gap: 11px; cursor: pointer;}
+.jn-check input{position: absolute; width: 1px; height: 1px; opacity: 0;
+  margin: 0; pointer-events: none;}
+.jn-check__box{flex: 0 0 auto; position: relative; width: 21px; height: 21px; margin-top: 1px;
+  border-radius: 7px; border: 1px solid rgba(var(--lift), 0.24);
+  background: rgba(var(--sink), 0.55);
+  transition: background 0.2s, border-color 0.2s;}
+.jn-check__box::after{content: ''; position: absolute; left: 6px; top: 2px;
+  width: 6px; height: 11px; border: solid var(--text-on-brand);
+  border-width: 0 2px 2px 0; transform: rotate(45deg) scale(0.5); opacity: 0;
+  transition: opacity 0.18s, transform 0.18s var(--spring);}
+.jn-check input:checked + .jn-check__box{background: var(--volt); border-color: var(--volt);}
+.jn-check input:checked + .jn-check__box::after{opacity: 1; transform: rotate(45deg) scale(1);}
+.jn-check input:focus-visible + .jn-check__box{outline: 2px solid var(--volt); outline-offset: 3px;}
+.jn-check__t{font-size: 14px; line-height: 1.55; color: var(--ink-2);}
+
+.jn-form__foot{display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
+  margin-top: clamp(18px, 2.4vw, 24px);}
+.jn-status{font-size: 13.5px; line-height: 1.5; color: var(--ink-2);}
+.jn-form__alt{margin-top: 16px; padding-top: 16px;
+  border-top: 1px solid rgba(var(--lift), 0.08);
+  font-size: 13px; color: var(--ink-3);}
+/* Underlined for the same reason as .faq__a a in the core sheet: it is a link
+   inside a sentence, so colour alone does not distinguish it. */
+.jn-form__alt a{color: var(--volt-text); font-weight: 600;
+  text-decoration: underline; text-underline-offset: 3px;
+  text-decoration-thickness: 1px; text-decoration-color: rgba(var(--volt-rgb), 0.55);}
+.jn-form__alt a:hover{text-decoration-color: currentColor;}
+
+/* The submit button while the two writes are in flight. */
+.jn-form button[data-loading]{opacity: 0.65; pointer-events: none;}
+
+/* ---- 03 Where and when --------------------------------------------------- */
+.jn-when__grid{display: grid; gap: 12px; margin-top: clamp(16px, 2.4vw, 24px);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));}
+.jn-when__card{padding: clamp(18px, 2.2vw, 24px);
+  border-radius: 20px; border: 1px solid var(--line-d);
+  background: rgba(var(--lift), 0.03);}
+.jn-when__k{display: flex; align-items: center; gap: 8px;
+  font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--volt-text);}
+.jn-when__t{margin-top: 11px;
+  font-family: var(--display); font-weight: 500;
+  font-size: clamp(17px, 2vw, 21px); line-height: 1.16; letter-spacing: -0.028em;
+  color: var(--fg);}
+.jn-when__b{margin-top: 9px; font-size: 13.5px; line-height: 1.65; color: var(--ink-2);}
+
+/* ---- 04 Questions -------------------------------------------------------- */
+.jn-faq .faq{margin-top: clamp(16px, 2.4vw, 24px);}

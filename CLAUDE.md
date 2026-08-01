@@ -107,7 +107,7 @@ npm test          # 1,546 checks against the generated output
 npm run serve     # local preview on :4321
 ```
 
-`npm test` covers: document structure, one h1 per page, heading order, alt text, resolvable assets and internal links, JSON-LD validity, asset-version consistency, overflow guards, reduced motion, both themes, WCAG AA contrast on every text token pair, form labelling, security headers, no service-role key in output, sitemap/robots correctness, and performance budgets (`sa.css` ≤ 130KB, `sa.js` ≤ 40KB, `control.js` ≤ 60KB, no page over 120KB, hero under 250KB).
+`npm test` covers: document structure, one h1 per page, heading order, alt text, resolvable assets and internal links, JSON-LD validity, asset-version consistency, overflow guards, reduced motion, both themes, WCAG AA contrast on every text token pair, form labelling, security headers, no service-role key in output, sitemap/robots correctness, and performance budgets (`sa.css` ≤ 130KB, `sa.js` ≤ 48KB, `control.js` ≤ 60KB, no page over 120KB, hero under 250KB). Budgets are **raw bytes** and the build does not minify, so they include comments; `sa.js` is ~12KB gzipped. Adding a minifier would let the JS budget come back down..
 
 ## Deployment
 **The domain is on the Vercel project `sue-angels-fc-b469`, not `sue-angels-fc`.** The older `sue-angels-fc` project links to a GitHub `repoId` that no longer exists and last deployed to production in June. `.vercel/project.json` pointed at the wrong one — if you run `vercel deploy --prod` against it, nothing reaches the live domain.

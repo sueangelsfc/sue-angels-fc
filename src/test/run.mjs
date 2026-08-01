@@ -603,7 +603,12 @@ check('share cards are not all identical', ogSeen.size >= 15, `${ogSeen.size} di
    thirteen modules to someone who opens one, so the fix is to split it and
    load a module when its panel is first shown, exactly as the CSS was split
    per page. Raise this again and that work is being deferred, not avoided. */
-const BUDGET = { 'sa.css': 28, 'home.css': 26, 'sa.js': 22, 'control.js': 24 };
+/* sa.js 22 -> 24: the cookie consent banner and analytics loader are back.
+   The retired site had both and the rebuild dropped them, which left the live
+   site with no consent banner at all - a compliance problem rather than a
+   missing nicety. Nothing third-party is fetched before the visitor chooses,
+   so the weight buys a request that never happens rather than one that does. */
+const BUDGET = { 'sa.css': 28, 'home.css': 26, 'sa.js': 24, 'control.js': 24 };
 for (const [f, kb] of Object.entries(BUDGET)) {
   const raw = fs.readFileSync(path.join(ROOT, f));
   const size = zlib.gzipSync(raw, { level: 9 }).length / 1024;
@@ -726,6 +731,38 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   check('every verified social is linked from the home page',
     liveHrefs.every((u) => home.includes(u.replace(/\/$/, ''))),
     liveHrefs.filter((u) => !home.includes(u.replace(/\/$/, ''))).join(', '));
+}
+
+
+/* ---- 15c. Restored platform features ----
+   Three things the retired site had and the rebuild dropped: a cookie consent
+   banner, analytics, and a service worker. The banner is the one that matters
+   legally, and it had been missing from the live site entirely. */
+{
+  const sw = fs.readFileSync(path.join(ROOT, 'sw.js'), 'utf8');
+  /* The placeholder appears in the file's own comment as well as the code, so
+     a string-pattern replace stamped the comment and left the cache name
+     literal - which would give every deploy the same cache and defeat the
+     point of versioning it. */
+  check('service worker has no unstamped placeholder', !sw.includes('__CACHE__'));
+  const cacheName = (sw.match(/const CACHE = '([^']+)'/) || [])[1] || '';
+  check('service worker cache is keyed to the build',
+    cacheName === `sa-${(pages.get('index.html').match(/sa\.js\?v=([a-z0-9]+)/) || [])[1]}`,
+    cacheName);
+  check('service worker never caches the control panel or the API',
+    /control\.html/.test(sw) && /\/api\//.test(sw));
+
+  const saJs = fs.readFileSync(path.join(ROOT, 'sa.js'), 'utf8');
+  check('consent banner ships', /sa-consent/.test(saJs));
+  check('saTrack is defined', /window\.saTrack\s*=/.test(saJs));
+  /* Nothing third-party may be requested before the visitor has chosen. */
+  check('analytics loads only inside the consent gate',
+    /function startAnalytics\(\)[\s\S]{0,120}read\(\) !== 'granted'/.test(saJs));
+  check('service worker is registered', /serviceWorker\.register\('\/sw\.js'/.test(saJs));
+  /* No page may ship the banner in its markup: it is built by script, so a
+     JavaScript failure cannot leave a hidden dialog on the page. */
+  check('no page ships the consent banner in markup',
+    ![...pages.values()].some((h) => /id="sa-consent"/.test(h)));
 }
 
 /* ---- Report ---- */

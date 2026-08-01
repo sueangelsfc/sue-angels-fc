@@ -102,6 +102,16 @@ write('sa.css', css);
 write('home.css', homeCss);
 write('sa.js', js);
 
+/* The service worker, stamped with the same content hash the pages carry, so
+   a deploy renames the cache and `activate` drops every older one. The
+   retired site hard-coded its cache name and relied on somebody remembering
+   to bump it. */
+write('sw.js', fs.readFileSync(path.join(ROOT, 'src', 'sw-template.js'), 'utf8')
+  /* replaceAll, not replace: the placeholder appears in the file's own
+     comment as well as the code, and a string-pattern replace only takes the
+     first, which stamped the comment and left the cache name literal. */
+  .replaceAll('__CACHE__', `sa-${assetV}`));
+
 /* One sheet per page band, each independently hashed so editing the league
    page cannot bust the cache on the other eleven. `26-campaign.css` ships as
    `p-campaign.css`: the number is only there to order the source folder. */

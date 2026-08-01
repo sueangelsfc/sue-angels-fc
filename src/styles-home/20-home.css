@@ -1765,3 +1765,30 @@ html.js .lg-panel[hidden]{display: none;}
   font-family: var(--display); font-weight: 500; font-size: clamp(20px, 2.3vw, 25px);
   letter-spacing: -0.024em; color: var(--fg);}
 .nw-art__list{margin: 0; padding-left: 1.2em; display: grid; gap: 8px; color: var(--ink-2);}
+
+/* ---- Cookie consent ------------------------------------------------------
+   Built by src/scripts/20-consent.js, never shipped in the markup, so no page
+   carries a hidden banner waiting for JavaScript. Sits above everything
+   except the boot screen, which is why it waits for it. */
+.consent{position: fixed; left: 50%; bottom: clamp(12px, 2.5vw, 24px);
+  transform: translateX(-50%); z-index: 9000;
+  display: flex; flex-wrap: wrap; align-items: center; gap: clamp(12px, 2vw, 22px);
+  width: min(calc(100vw - 24px), 720px);
+  padding: clamp(14px, 2vw, 18px) clamp(16px, 2.4vw, 22px);
+  border-radius: 18px; border: 1px solid var(--line-d);
+  background: var(--slab);
+  box-shadow: 0 24px 60px -30px rgba(var(--sink), 0.95);
+  animation: consent-in 0.5s var(--ease-out-expo) both;}
+.consent__t{flex: 1 1 320px; margin: 0;
+  font-size: 13.5px; line-height: 1.6; color: var(--ink-2);}
+.consent__t a{color: var(--volt-text); font-weight: 600;
+  text-decoration: underline; text-underline-offset: 3px;
+  text-decoration-thickness: 1px; text-decoration-color: rgba(var(--volt-rgb), 0.55);}
+.consent__btns{display: flex; gap: 8px; flex: 0 0 auto; margin-left: auto;}
+@keyframes consent-in{from{opacity: 0; transform: translate(-50%, 14px);}
+  to{opacity: 1; transform: translate(-50%, 0);}}
+@media (prefers-reduced-motion: reduce){ .consent{animation: none;} }
+@media (max-width: 560px){
+  .consent__btns{margin-left: 0; width: 100%;}
+  .consent__btns .btn{flex: 1;}
+}

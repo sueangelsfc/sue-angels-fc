@@ -393,7 +393,7 @@ export function page({
   /* shell: 'home' - the homepage draws its own header and footer inside the
      composition (the nav sits in the hero frame, the footer is the sitemap
      slab), so the shared shell is not injected over the top of it. */
-  shell = 'site', footerHtml = '', preMain = '', preloadImage = '',
+  shell = 'site', footerHtml = '', preMain = '', preloadImage = '', preScript = '',
 }) {
   const scriptV = jsV || assetV;
   const canonical = `${CLUB.site}${path === '/index.html' ? '/' : path}`;
@@ -453,6 +453,7 @@ ${body}
 </main>
 ${shell === 'home' ? footerHtml : footer()}
 <div class="toasts" data-toasts role="region" aria-label="Notifications" aria-live="polite"></div>`}
+${preScript ? `<script src="/${preScript}"></script>` : ''}
 <script src="/${bare ? js : `${js}?v=${scriptV}`}" defer></script>
 </body>
 </html>`;

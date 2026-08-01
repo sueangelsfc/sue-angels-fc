@@ -187,8 +187,29 @@ const adminSeed = {
   clubs: [...new Set(d.matches.flatMap((m) => [m.home, m.away]))]
     .filter((n) => n && !isUs(n)).sort(),
   baselineFixtures: JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'fixtures-2627.json'), 'utf8')).fixtures || [],
+  /* The squad, so a result is recorded by picking players rather than typing
+     shirt numbers into JSON and hoping. Numbers are the storage key the match
+     record already uses; they are never shown on the website. */
+  squad: d.squad.map((p) => ({ num: p.num, name: p.name, pos: p.position || '' })),
+  /* Fixture fields per match, so opening an existing record shows the real
+     date and scoreline instead of an empty form. Rows edited in the panel
+     carry their own copy and win over this. */
+  matches: d.rawMatches.map((m) => ({
+    id: m.id, date: m.date || '', kick: m.kick || '', home: m.home || '', away: m.away || '',
+    hs: m.hs, as: m.as, kind: m.kind || 'score', competition: m.competition || '',
+  })),
 };
-adminJs = `window.SA_SUPABASE=${JSON.stringify(cfg.supabase)};window.SA_EMAIL=${JSON.stringify(CLUB.email)};window.SA_SEED=${JSON.stringify(adminSeed)};\n${adminJs}`;
+/* The seed is DATA, and it grew: the squad, every match's fixture fields, the
+   known clubs and competitions. Inlined it pushed control.js past its budget
+   on its own. It ships as its own file loaded before the bundle, so it caches
+   and busts independently of the code, and control.js goes back to being
+   code. A plain script rather than a fetch, because the modules read
+   window.SA_SEED synchronously as they define themselves. */
+const adminSeedJs = `window.SA_SEED=${JSON.stringify(adminSeed)};\n`;
+const seedV = crypto.createHash('sha256').update(adminSeedJs).digest('hex').slice(0, 8);
+write('control-seed.js', adminSeedJs);
+
+adminJs = `window.SA_SUPABASE=${JSON.stringify(cfg.supabase)};window.SA_EMAIL=${JSON.stringify(CLUB.email)};\n${adminJs}`;
 const adminV = crypto.createHash('sha256').update(adminJs).digest('hex').slice(0, 8);
 write('control.js', adminJs);
 
@@ -454,6 +475,9 @@ for (const r of routes) {
     body,
     bodyClass: 'is-control',
     js: `control.js?v=${adminV}`,
+    /* Loaded first and NOT deferred: the modules read window.SA_SEED as they
+       define themselves, so it has to be there before the bundle runs. */
+    preScript: `control-seed.js?v=${seedV}`,
     noindex: true,
     assetV,
     bare: true,

@@ -1,4 +1,4 @@
-window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"sb_publishable_2VEdxWZCLW98qItINt6TPQ_r7y_Tcly"};window.SA_EMAIL="suesangelsfc@gmail.com";window.SA_SEED={"club":"Sue's Angels FC","division":"League Eight","venue":"The Reeves, Hanworth","competitions":["Chipotle UK Chairman's Cup","Dylan Rigobert Trophy","League Eight","League Ten","Pre-season friendly","Supreme Trophies Marcus Lipton Cup","Surrey FA Sunday Lower Junior County Cup"],"clubs":["AFC Bluebirds","Argentina FC 1st Team","BPR FC","BPR Men's","Balham Bteckerz","Barking Mad","Barnes Stormers FC","Brentford Town","Brockwell Violets FC","Clapham Chiefs","Dynamo London FC","FC Porto of London","Galacticos Elect","Hillside Elite FC Blues","Kew Antigua","Kingsmeadow United","Larkhall City FC","Mala Vida FC","Old Freemen's","Pure Football FC 2.0","Sheen Park Rangers","Shepherd's Tuesday","Sporting Club Catania","Sutton Knights B","Tattenham Rovers 1st","Woking Veterans Sundays"],"baselineFixtures":[{"id":"f20260802-pure","date":"02 Aug 2026","home":"Pure Football FC 2.0","away":"Sue's Angels FC"},{"id":"f20260809-galacticos","date":"09 Aug 2026","home":"Galacticos Elect","away":"Sue's Angels FC"},{"id":"f20260812-kingsmeadow","date":"12 Aug 2026","home":"Sue's Angels FC","away":"Kingsmeadow United"},{"id":"f20260816-brentford","date":"16 Aug 2026","home":"Brentford Town","away":"Sue's Angels FC"},{"id":"f20260823-kew","date":"23 Aug 2026","home":"Kew Antigua","away":"Sue's Angels FC"},{"id":"f20260830-bpr","date":"30 Aug 2026","home":"Sue's Angels FC","away":"BPR FC"}]};
+window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"sb_publishable_2VEdxWZCLW98qItINt6TPQ_r7y_Tcly"};window.SA_EMAIL="suesangelsfc@gmail.com";
 /* ==========================================================================
    CONTROL PANEL DATA LAYER
    Thin wrapper over Supabase Auth + REST. Every write is attributed and, for
@@ -716,27 +716,270 @@ window.CP = (function () {
     });
   };
 
-  M.results = kvModule({
-    key: 'results', table: 'matches', noun: 'match records', singular: 'match record',
-    addLabel: 'Add match',
-    template: {
-      starters: [], bench: [], goals: [], assists: [], yellowCards: [], redCards: [],
-      opponentGoals: [], motm: null, captain: null, formation: null, commentary: '', polishedReport: null,
-    },
-    headers: ['Key', 'Report', 'Goals', 'Starters', 'MOTM', 'Updated'],
-    cells: function (r) {
-      var d = r.data || {};
-      return [
-        esc(r.key),
-        (d.polishedReport || d.commentary) ? '<span class="badge badge--success">Yes</span>' : '<span class="badge badge--warning">No</span>',
-        esc((d.goals || []).length),
-        esc((d.starters || []).length),
-        d.motm != null ? esc(d.motm) : '-',
-        esc(fmtDate(r.updated_at)),
-      ];
-    },
-    describe: function (r) { return r.key; },
-  });
+  /* ==========================================================================
+     RESULTS
+
+     This was a JSON textarea. To record a match you typed a document of
+     shirt numbers and nested arrays into a box, with a parse error as your
+     only feedback, and even then it did not work: the scoreline, the
+     opponent and the date were not in the database at all. They came from a
+     baseline file in the code, so the panel let you describe a match a
+     developer had already added and nothing more.
+
+     dataset.mjs now lets a match record carry the whole match, so this form
+     records the result AND its detail in one place. Players are picked from
+     the squad; shirt numbers stay the storage key, which is what the record
+     has always used, and are never shown on the website.
+     ========================================================================== */
+  var SQUAD = (SEED.squad || []).slice().sort(function (a, b) { return a.num - b.num; });
+  var nameOfNum = {};
+  SQUAD.forEach(function (p) { nameOfNum[p.num] = p.name; });
+
+  function playerPicker(field, chosen, label) {
+    var set = {};
+    (chosen || []).forEach(function (n) { set[n] = (set[n] || 0) + 1; });
+    return '<div class="field"><label class="field__label">' + esc(label) + '</label>' +
+      '<div class="pickrow" data-pick="' + esc(field) + '">' +
+      SQUAD.map(function (p) {
+        var n = set[p.num] || 0;
+        return '<button type="button" class="pick' + (n ? ' is-on' : '') + '" data-num="' + p.num + '">' +
+          esc(p.name) + (n > 1 ? ' <b>x' + n + '</b>' : '') + '</button>';
+      }).join('') +
+      '</div></div>';
+  }
+
+  function selectField(id, label, options, value) {
+    return '<div class="field"><label class="field__label" for="' + id + '">' + esc(label) + '</label>' +
+      '<select class="select" id="' + id + '">' +
+      '<option value="">Not recorded</option>' +
+      options.map(function (o) {
+        return '<option value="' + esc(o.v) + '"' + (String(o.v) === String(value) ? ' selected' : '') + '>' +
+          esc(o.t) + '</option>';
+      }).join('') + '</select></div>';
+  }
+
+  M.results = function (host) {
+    return CP.readAll('matches').then(function (rows) {
+      var list = (rows || []).slice().sort(function (a, b) {
+        return String(b.key).localeCompare(String(a.key));
+      });
+
+      host.innerHTML =
+        '<div class="panel" style="padding:var(--space-5);margin-bottom:var(--space-5)">' +
+          '<div class="row row--between" style="align-items:center">' +
+            '<div><h3 style="font-size:var(--step-1)">Match records</h3>' +
+            '<p style="font-size:var(--step--1);color:var(--text-muted);margin-top:var(--space-2)">' +
+              esc(list.length) + ' recorded. Editing one opens a form, not JSON. Changes reach the ' +
+              'website after a sync.</p></div>' +
+            '<button class="btn btn--primary" data-new-match>Record a match</button>' +
+          '</div>' +
+        '</div>' +
+        table(['Match', 'Score', 'Report', 'Goals', 'XI', ''], list.map(function (r) {
+          var d = r.data || {};
+          var score = (d.hs != null && d.as != null) ? d.hs + '-' + d.as : '-';
+          return '<tr data-key="' + esc(r.key) + '">' +
+            '<td><b>' + esc(matchLabel(r.key)) + '</b><br><span style="font-size:var(--step--2);color:var(--text-subtle)">' + esc(r.key) + '</span></td>' +
+            '<td>' + esc(score) + '</td>' +
+            '<td>' + ((d.polishedReport || d.commentary)
+              ? '<span class="badge badge--success">Yes</span>'
+              : '<span class="badge badge--warning">No</span>') + '</td>' +
+            '<td>' + esc((d.goals || []).length) + '</td>' +
+            '<td>' + esc((d.starters || []).length) + '</td>' +
+            '<td><button class="btn btn--ghost btn--sm" data-edit>Edit</button> ' +
+                '<a class="btn btn--quiet btn--sm" href="/matches/' + esc(r.key) + '.html" target="_blank" rel="noopener">View</a></td>' +
+          '</tr>';
+        }).join(''));
+
+      function open(key) {
+        var rec = list.filter(function (x) { return x.key === key; })[0]
+          || { key: '', data: { starters: [], bench: [], goals: [], assists: [] } };
+        /* The row's own fixture fields win; the baseline fills the rest, so a
+           match whose scoreline still lives in code opens with its real date
+           and score rather than an empty form. */
+        var base = (SEED.matches || []).filter(function (x) { return x.id === rec.key; })[0] || {};
+        var d = Object.assign({}, base, rec.data || {});
+        var isNew = !rec.key;
+        var weAreHome = d.home ? /Sue.s Angels/.test(d.home) : true;
+        var opp = weAreHome ? (d.away || '') : (d.home || '');
+
+        var back = document.createElement('div');
+        back.className = 'modal-backdrop';
+        back.setAttribute('role', 'dialog');
+        back.setAttribute('aria-modal', 'true');
+        back.innerHTML =
+          '<div class="modal glass glass--lg" style="max-width:min(94vw,780px);max-height:90vh;overflow:auto">' +
+            '<div class="modal__head"><h2 style="font-size:var(--step-2)">' +
+              (isNew ? 'Record a match' : esc(matchLabel(rec.key))) + '</h2></div>' +
+
+            '<h3 class="mform__h">The match</h3>' +
+            '<div class="grid grid--2" style="gap:var(--space-4)">' +
+              '<div class="field"><label class="field__label" for="m-date">Date</label>' +
+                '<input class="input" id="m-date" type="date" value="' + esc(isoFromPretty(d.date)) + '"></div>' +
+              '<div class="field"><label class="field__label" for="m-kick">Kick-off</label>' +
+                '<input class="input" id="m-kick" type="time" value="' + esc(d.kick || '11:00') + '"></div>' +
+              '<div class="field"><label class="field__label" for="m-opp">Opponent</label>' +
+                '<input class="input" id="m-opp" list="m-clubs" value="' + esc(opp) + '"></div>' +
+              '<div class="field"><label class="field__label" for="m-comp">Competition</label>' +
+                '<input class="input" id="m-comp" list="m-comps" value="' + esc(d.competition || SEED.division || '') + '"></div>' +
+              '<div class="field"><label class="field__label" for="m-ha">Home or away</label>' +
+                '<select class="select" id="m-ha">' +
+                  '<option value="home"' + (weAreHome ? ' selected' : '') + '>Home</option>' +
+                  '<option value="away"' + (!weAreHome ? ' selected' : '') + '>Away</option></select></div>' +
+              '<div class="field"><label class="field__label" for="m-kind">Result type</label>' +
+                '<select class="select" id="m-kind">' +
+                  ['score', 'walkover', 'penalty', 'fixture'].map(function (k) {
+                    return '<option value="' + k + '"' + ((d.kind || 'score') === k ? ' selected' : '') + '>' +
+                      ({ score: 'Played, normal result', walkover: 'Awarded (walkover)',
+                         penalty: 'Decided on penalties', fixture: 'Not played yet' })[k] + '</option>';
+                  }).join('') + '</select></div>' +
+              '<div class="field"><label class="field__label" for="m-us">' + esc(SEED.club || 'Us') + ' goals</label>' +
+                '<input class="input" id="m-us" type="number" min="0" value="' + esc(weAreHome ? (d.hs != null ? d.hs : '') : (d.as != null ? d.as : '')) + '"></div>' +
+              '<div class="field"><label class="field__label" for="m-them">Opponent goals</label>' +
+                '<input class="input" id="m-them" type="number" min="0" value="' + esc(weAreHome ? (d.as != null ? d.as : '') : (d.hs != null ? d.hs : '')) + '"></div>' +
+            '</div>' +
+            optionList('m-clubs', SEED.clubs) + optionList('m-comps', SEED.competitions) +
+
+            '<h3 class="mform__h">Who played</h3>' +
+            playerPicker('starters', (d.starters || []).map(function (x) { return x.num; }), 'Starting eleven') +
+            playerPicker('bench', (d.bench || []).map(function (x) { return x.num; }), 'Bench') +
+
+            '<h3 class="mform__h">Goals and assists</h3>' +
+            '<p style="font-size:var(--step--2);color:var(--text-subtle);margin-bottom:var(--space-3)">' +
+              'Click a player once per goal. Click again for a second.</p>' +
+            playerPicker('goals', (d.goals || []).map(function (x) { return x.num; }), 'Scorers') +
+            playerPicker('assists', (d.assists || []).map(function (x) { return x.num; }), 'Assists') +
+
+            '<h3 class="mform__h">Recognition</h3>' +
+            '<div class="grid grid--2" style="gap:var(--space-4)">' +
+              selectField('m-motm', 'Player of the Match',
+                SQUAD.map(function (p) { return { v: p.num, t: p.name }; }), d.motm) +
+              selectField('m-capt', 'Captain',
+                SQUAD.map(function (p) { return { v: p.num, t: p.name }; }), d.captain) +
+            '</div>' +
+
+            '<h3 class="mform__h">Match report</h3>' +
+            '<div class="field"><textarea class="textarea" id="m-report" rows="8" ' +
+              'placeholder="How the game went. Blank lines separate paragraphs.">' +
+              esc(d.commentary || '') + '</textarea>' +
+              '<p class="field__hint" data-words>' + words(d.commentary) + '</p></div>' +
+
+            '<p class="field__error" data-err hidden></p>' +
+            '<div class="modal__foot">' +
+              '<button class="btn btn--ghost" data-cancel>Cancel</button>' +
+              '<button class="btn btn--primary" data-save>Save match</button>' +
+            '</div>' +
+          '</div>';
+        document.body.appendChild(back);
+
+        var counts = {
+          starters: (d.starters || []).map(function (x) { return x.num; }),
+          bench: (d.bench || []).map(function (x) { return x.num; }),
+          goals: (d.goals || []).map(function (x) { return x.num; }),
+          assists: (d.assists || []).map(function (x) { return x.num; }),
+        };
+
+        /* One click adds, and for goals and assists a second click adds a
+           SECOND one rather than removing the first, because a brace is
+           commoner than a mistake. Right-click, or shift-click, removes. */
+        back.addEventListener('click', function (e) {
+          var pick = e.target.closest('.pick');
+          if (pick) {
+            var group = pick.closest('[data-pick]').getAttribute('data-pick');
+            var num = Number(pick.getAttribute('data-num'));
+            var arr = counts[group];
+            var multi = group === 'goals' || group === 'assists';
+            var i = arr.indexOf(num);
+            if (e.shiftKey || (!multi && i !== -1)) {
+              if (i !== -1) arr.splice(i, 1);
+            } else arr.push(num);
+            var n = arr.filter(function (x) { return x === num; }).length;
+            pick.classList.toggle('is-on', n > 0);
+            pick.innerHTML = esc(nameOfNum[num]) + (n > 1 ? ' <b>x' + n + '</b>' : '');
+            return;
+          }
+          if (e.target.matches('[data-cancel]') || e.target === back) { back.remove(); return; }
+          if (!e.target.matches('[data-save]')) return;
+
+          var err = $('[data-err]', back);
+          var iso = $('#m-date', back).value;
+          var oppName = $('#m-opp', back).value.trim();
+          if (!iso) { err.textContent = 'Pick a date.'; err.hidden = false; return; }
+          if (!oppName) { err.textContent = 'Name the opponent.'; err.hidden = false; return; }
+          var home = $('#m-ha', back).value === 'home';
+          var kind = $('#m-kind', back).value;
+          var us = $('#m-us', back).value;
+          var them = $('#m-them', back).value;
+          if (kind === 'score' && (us === '' || them === '')) {
+            err.textContent = 'A played match needs both scores.'; err.hidden = false; return;
+          }
+          err.hidden = true;
+
+          var key = rec.key || ('r' + iso.replace(/-/g, '') + '-' + slugOf(oppName));
+          var next = Object.assign({}, d, {
+            date: prettyDate(iso),
+            kick: $('#m-kick', back).value || '',
+            home: home ? SEED.club : oppName,
+            away: home ? oppName : SEED.club,
+            competition: $('#m-comp', back).value.trim(),
+            kind: kind,
+            starters: counts.starters.map(function (n) { return { num: n, positions: posOf(n) }; }),
+            bench: counts.bench.map(function (n) { return { num: n }; }),
+            goals: counts.goals.map(function (n) { return { num: n }; }),
+            assists: counts.assists.map(function (n) { return { num: n }; }),
+            motm: $('#m-motm', back).value === '' ? null : Number($('#m-motm', back).value),
+            captain: $('#m-capt', back).value === '' ? null : Number($('#m-capt', back).value),
+            commentary: $('#m-report', back).value,
+            savedAt: new Date().toISOString(),
+          });
+          if (kind === 'score' || kind === 'penalty') {
+            next.hs = Number(home ? us : them);
+            next.as = Number(home ? them : us);
+          } else { delete next.hs; delete next.as; }
+
+          CP.upsert('matches', key, next).then(function () {
+            toast('Match saved', 'success');
+            back.remove();
+            refresh('results');
+          }).catch(function (e2) { err.textContent = e2.message; err.hidden = false; });
+        });
+
+        var rep = $('#m-report', back);
+        if (rep) rep.addEventListener('input', function () {
+          $('[data-words]', back).textContent = words(rep.value);
+        });
+      }
+
+      function posOf(num) {
+        var p = SQUAD.filter(function (x) { return x.num === num; })[0];
+        return p && p.pos ? [p.pos] : [];
+      }
+
+      host.addEventListener('click', function (e) {
+        if (e.target.matches('[data-new-match]')) { if (guard()) open(''); return; }
+        if (!e.target.matches('[data-edit]')) return;
+        if (!guard()) return;
+        open(e.target.closest('tr[data-key]').getAttribute('data-key'));
+      });
+    });
+  };
+
+  function words(t) {
+    var n = String(t || '').trim().split(/\s+/).filter(Boolean).length;
+    return n ? n + ' words, about ' + Math.max(1, Math.round(n / 200)) + ' min to read' : 'No report yet';
+  }
+  function slugOf(name) {
+    return String(name).toLowerCase().replace(/\b(fc|afc|united|town|club)\b/g, '')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').split('-')[0] || 'opp';
+  }
+  /* "31 May 26" back to an ISO date the picker understands. */
+  function isoFromPretty(s) {
+    var m = String(s || '').match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{2,4})$/);
+    if (!m) return '';
+    var i = MONTHS.indexOf(m[2].slice(0, 3));
+    if (i === -1) return '';
+    var y = m[3].length === 2 ? '20' + m[3] : m[3];
+    return y + '-' + String(i + 1).padStart(2, '0') + '-' + String(m[1]).padStart(2, '0');
+  }
 
   M.squad = kvModule({
     key: 'squad', table: 'player_photos', noun: 'stored player/roster records', singular: 'record',

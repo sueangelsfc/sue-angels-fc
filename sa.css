@@ -2493,3 +2493,24 @@ html.js .reveal.is-in { opacity: 1; transform: none; }
    distraction. Hold it still and quiet here. */
 .cp-gate ~ .atmos, body:has(.cp) .atmos { opacity: 0.5; }
 body:has(.cp) .atmos__blob { animation: none; }
+
+/* ---- Match form ----------------------------------------------------------
+   The results editor was a JSON textarea. These are the pieces of the form
+   that replaced it. */
+.mform__h{margin-block: var(--space-6) var(--space-4); padding-block-end: var(--space-2);
+  border-block-end: 1px solid var(--border);
+  font-size: var(--step-0); font-weight: var(--weight-semi); color: var(--text);}
+.mform__h:first-of-type{margin-block-start: var(--space-4);}
+
+/* Pick a player rather than type a shirt number. Wraps to as many rows as it
+   needs; a 34-player squad is a lot of buttons and hiding some behind a
+   scroll is how you miss the one you want. */
+.pickrow{display: flex; flex-wrap: wrap; gap: 6px;}
+.pick{padding: 7px 12px; border-radius: var(--radius-pill);
+  border: 1px solid var(--border); background: var(--surface-inset);
+  color: var(--text-muted); font-size: var(--step--2); cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;}
+.pick:hover{border-color: var(--border-strong); color: var(--text);}
+.pick.is-on{background: rgb(var(--brand-rgb) / 0.16); border-color: var(--border-brand);
+  color: var(--brand-text); font-weight: var(--weight-semi);}
+.pick b{font-weight: var(--weight-bold);}

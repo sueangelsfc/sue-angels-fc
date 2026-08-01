@@ -59,19 +59,52 @@ export function buildDataset() {
   const detailById = new Map();
   for (const row of live.matches || []) detailById.set(row.key, row.data);
 
-  /* ---- Matches ---- */
-  const rawResults = ps.SEASON_RESULTS || [];
+  /* ---- Matches ----------------------------------------------------------
+     A match used to be assembled from two places that only one of them could
+     change: the SCORELINE, the opponent, the date and the competition came
+     from SEASON_RESULTS in the code baseline, and only the line-up, goals and
+     report came from the database. The control panel therefore could not
+     record a result at all. It could describe a match, but the match itself
+     had to be added by a developer, which is why its editor looked like it
+     was letting you fill in half a form.
 
-  /* Upcoming fixtures. The production `fixtures` table is empty: the 26/27
-     pre-season schedule was published as a news article rather than entered
-     as fixtures, so nothing reached the site. It is transcribed in
-     fixtures-2627.json until the rows exist. Anything already in the results
-     baseline wins, so a fixture that has since been played is not duplicated
-     by its own placeholder. */
+     A database row may now carry the whole match. The baseline is the
+     starting point, any of these fields present on the row overrides it, and
+     a row with no baseline entry at all becomes a match in its own right, so
+     a result entered in the panel appears on the site after `npm run sync`.
+
+     Existing rows carry none of these fields, so nothing about the recorded
+     season moves: `npm run verify` still reconciles the derived figures
+     against the published league table. */
+  const FIXTURE_FIELDS = ['date', 'kick', 'home', 'away', 'hs', 'as', 'kind',
+    'competition', 'venue', 'wo'];
+
+  const byId = new Map((ps.SEASON_RESULTS || []).map((r) => [r.id, r]));
+  for (const [key, data] of detailById) {
+    if (!data) continue;
+    const overlay = {};
+    for (const f of FIXTURE_FIELDS) if (data[f] !== undefined && data[f] !== '') overlay[f] = data[f];
+    if (!Object.keys(overlay).length) continue;
+    byId.set(key, { ...(byId.get(key) || { id: key }), ...overlay });
+  }
+  const rawResults = [...byId.values()];
+
+  /* Upcoming fixtures. Real rows in the `fixtures` table win; the transcribed
+     26/27 pre-season card in fixtures-2627.json is the fallback for as long
+     as that table is empty. Anything already in the results baseline wins
+     over both, so a fixture that has since been played is not duplicated by
+     its own placeholder. */
   const known = new Set(rawResults.map((r) => r.id));
-  const upcoming = (read('fixtures-2627.json').fixtures || [])
-    .filter((f) => !known.has(f.id))
-    .map((f) => ({ kind: 'fixture', competition: 'Pre-season friendly', ...f }));
+  const storedFixtures = (live.fixtures || [])
+    .map((row) => ({ id: row.key, kind: 'fixture', ...(row.data || {}) }))
+    .filter((f) => !known.has(f.id));
+  const storedIds = new Set(storedFixtures.map((f) => f.id));
+  const upcoming = [
+    ...storedFixtures,
+    ...(read('fixtures-2627.json').fixtures || [])
+      .filter((f) => !known.has(f.id) && !storedIds.has(f.id))
+      .map((f) => ({ kind: 'fixture', competition: 'Pre-season friendly', ...f })),
+  ];
 
   /* A cup final is played at a neutral ground. The fixture list still names
      one club as home, so weAreHome stays as the record has it, but the site
@@ -365,6 +398,10 @@ export function buildDataset() {
 
   return {
     matches, played, fixtures, orphanDetails,
+    /* The merged baseline+database match list, before normalisation. The
+       control panel needs it to pre-fill a match whose scoreline still comes
+       from the code baseline rather than from a row it can edit. */
+    rawMatches: rawResults,
     squad, players, statsByNum, nameFor,
     coaches, table, leagueScorers, leagueScorersByComp, nextDivisionTable, leagueResults,
     articles, recognition, galleries, playerPhotos,

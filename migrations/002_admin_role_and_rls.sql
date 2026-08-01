@@ -90,6 +90,11 @@ revoke all on function public.is_club_admin() from public;
 grant execute on function public.is_club_admin() to authenticated;
 
 -- ---------------------------------------------------------------------------
+-- NOTE: policy names are IDENTIFIERS, so they interpolate with %I, not %L.
+-- %L quotes as a string literal and Postgres rejects it:
+--   ERROR 42601: syntax error at or near "'matches: public read'"
+-- This file had %L on all sixteen policy-name placeholders, so the migration
+-- could never have run. Found by running it.
 -- 3. Content tables: public read, administrator-only write
 --    These seven are key/value JSONB stores holding all published club data.
 -- ---------------------------------------------------------------------------
@@ -100,25 +105,25 @@ begin
   loop
     execute format('alter table if exists public.%I enable row level security', t);
 
-    execute format('drop policy if exists %L on public.%I', t || ': public read', t);
+    execute format('drop policy if exists %I on public.%I', t || ': public read', t);
     execute format(
-      'create policy %L on public.%I for select to anon, authenticated using (true)',
+      'create policy %I on public.%I for select to anon, authenticated using (true)',
       t || ': public read', t);
 
     -- One policy per verb so a future change to one cannot silently widen another.
-    execute format('drop policy if exists %L on public.%I', t || ': admin insert', t);
+    execute format('drop policy if exists %I on public.%I', t || ': admin insert', t);
     execute format(
-      'create policy %L on public.%I for insert to authenticated with check (public.is_club_admin())',
+      'create policy %I on public.%I for insert to authenticated with check (public.is_club_admin())',
       t || ': admin insert', t);
 
-    execute format('drop policy if exists %L on public.%I', t || ': admin update', t);
+    execute format('drop policy if exists %I on public.%I', t || ': admin update', t);
     execute format(
-      'create policy %L on public.%I for update to authenticated using (public.is_club_admin()) with check (public.is_club_admin())',
+      'create policy %I on public.%I for update to authenticated using (public.is_club_admin()) with check (public.is_club_admin())',
       t || ': admin update', t);
 
-    execute format('drop policy if exists %L on public.%I', t || ': admin delete', t);
+    execute format('drop policy if exists %I on public.%I', t || ': admin delete', t);
     execute format(
-      'create policy %L on public.%I for delete to authenticated using (public.is_club_admin())',
+      'create policy %I on public.%I for delete to authenticated using (public.is_club_admin())',
       t || ': admin delete', t);
   end loop;
 end $$;
@@ -136,26 +141,26 @@ begin
   loop
     execute format('alter table if exists public.%I enable row level security', t);
 
-    execute format('drop policy if exists %L on public.%I', t || ': anon submit', t);
+    execute format('drop policy if exists %I on public.%I', t || ': anon submit', t);
     execute format(
-      'create policy %L on public.%I for insert to anon, authenticated with check (true)',
+      'create policy %I on public.%I for insert to anon, authenticated with check (true)',
       t || ': anon submit', t);
 
-    execute format('drop policy if exists %L on public.%I', t || ': admin read', t);
+    execute format('drop policy if exists %I on public.%I', t || ': admin read', t);
     execute format(
-      'create policy %L on public.%I for select to authenticated using (public.is_club_admin())',
+      'create policy %I on public.%I for select to authenticated using (public.is_club_admin())',
       t || ': admin read', t);
 
-    execute format('drop policy if exists %L on public.%I', t || ': admin update', t);
+    execute format('drop policy if exists %I on public.%I', t || ': admin update', t);
     execute format(
-      'create policy %L on public.%I for update to authenticated using (public.is_club_admin()) with check (public.is_club_admin())',
+      'create policy %I on public.%I for update to authenticated using (public.is_club_admin()) with check (public.is_club_admin())',
       t || ': admin update', t);
 
     -- Deletion is how a subject-access erasure request is honoured, so it is
     -- allowed, but only for an administrator.
-    execute format('drop policy if exists %L on public.%I', t || ': admin delete', t);
+    execute format('drop policy if exists %I on public.%I', t || ': admin delete', t);
     execute format(
-      'create policy %L on public.%I for delete to authenticated using (public.is_club_admin())',
+      'create policy %I on public.%I for delete to authenticated using (public.is_club_admin())',
       t || ': admin delete', t);
   end loop;
 end $$;

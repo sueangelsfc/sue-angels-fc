@@ -1461,20 +1461,38 @@ window.CP = (function () {
 
   try { if (sessionStorage.getItem('sa-cp-word') === WORD) openLogin(); } catch (e) {}
 
-  if (wordForm) wordForm.addEventListener('submit', function (e) {
-    e.preventDefault();
+  function tryWord(fromSubmit) {
     var field = $('#cp-club-word');
     var err = $('#cp-word-error');
+    if (!field) return false;
     var given = (field.value || '').trim().toLowerCase();
     if (given !== WORD) {
-      err.textContent = 'That is not the club word.';
-      err.hidden = false;
-      field.select();
-      return;
+      /* Only complain when they actually pressed something. Typing the wrong
+         letter should not shout at you mid-word. */
+      if (fromSubmit) {
+        err.textContent = 'That is not the club word.';
+        err.hidden = false;
+        field.select();
+      }
+      return false;
     }
     err.hidden = true;
     try { sessionStorage.setItem('sa-cp-word', WORD); } catch (e2) {}
     openLogin();
+    return true;
+  }
+
+  /* Opens the moment the word is right, with no key to press. Belt and braces
+     over the submit handler: whatever combination of Enter, the button, an
+     autofill or a paste got the right text into the box, it goes through. */
+  var wordField = $('#cp-club-word');
+  if (wordField) {
+    wordField.addEventListener('input', function () { tryWord(false); });
+    wordField.addEventListener('change', function () { tryWord(false); });
+  }
+  if (wordForm) wordForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    tryWord(true);
   });
 
   /* Restore an existing session if the refresh token is still good. A valid

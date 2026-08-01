@@ -62,9 +62,13 @@ export function control() {
       <form class="cp-gate__form" id="cp-word" novalidate>
         <div class="field">
           <label class="field__label" for="cp-club-word">Club word</label>
-          <input class="input" id="cp-club-word" name="clubword" type="password"
-                 autocomplete="off" autocapitalize="off" spellcheck="false" required
-                 placeholder="Ask the club">
+          <!-- type="text", NOT password. It is not a secret, it ships in a file
+               anyone can read, and masking it caused two real problems: Chrome
+               offered to autofill a saved password over the top, and you could
+               not see what you had typed when it did not work. -->
+          <input class="input" id="cp-club-word" name="clubword" type="text"
+                 autocomplete="off" autocapitalize="none" autocorrect="off"
+                 spellcheck="false" required placeholder="Ask the club">
         </div>
         <p class="field__error" id="cp-word-error" role="alert" hidden></p>
         <button class="btn btn--primary btn--block" type="submit">Continue</button>

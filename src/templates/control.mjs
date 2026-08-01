@@ -52,7 +52,25 @@ export function control() {
       <h1 class="cp-gate__title">Control panel</h1>
       <p class="cp-gate__sub">${esc(CLUB.name)}</p>
 
-      <form class="cp-gate__form" id="cp-login" novalidate>
+      <!-- The club word. Asked for BEFORE the email and password, and checked
+           in the browser: it is a doorway, not a security control, and it is
+           not pretending otherwise. Real authorisation is Supabase Auth plus
+           the admin_users registry, and neither of those can be talked past
+           from here. What this does buy is that a stranger who finds
+           /control.html sees a question they cannot answer instead of a login
+           form to point a password list at. -->
+      <form class="cp-gate__form" id="cp-word" novalidate>
+        <div class="field">
+          <label class="field__label" for="cp-club-word">Club word</label>
+          <input class="input" id="cp-club-word" name="clubword" type="password"
+                 autocomplete="off" autocapitalize="off" spellcheck="false" required
+                 placeholder="Ask the club">
+        </div>
+        <p class="field__error" id="cp-word-error" role="alert" hidden></p>
+        <button class="btn btn--primary btn--block" type="submit">Continue</button>
+      </form>
+
+      <form class="cp-gate__form" id="cp-login" novalidate hidden>
         <div class="field">
           <label class="field__label" for="cp-email">Email</label>
           <input class="input" id="cp-email" name="email" type="email" autocomplete="username"
@@ -108,9 +126,6 @@ export function control() {
         <h1 class="cp-top__title" data-cp-title>Dashboard</h1>
         <div class="cp-top__actions">
           <span class="badge badge--neutral" data-conn>Connecting</span>
-          <button class="tsw" type="button" data-theme-toggle aria-label="Switch theme">
-            ${icon('sun', 'tsw__sun')}${icon('moon', 'tsw__moon')}
-          </button>
           <a class="btn btn--ghost btn--sm" href="/" target="_blank" rel="noopener">View site ${icon('external')}</a>
         </div>
       </header>

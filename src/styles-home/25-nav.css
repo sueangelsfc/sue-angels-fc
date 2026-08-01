@@ -84,10 +84,9 @@
   transition: background 0.2s, color 0.2s, padding-left 0.25s var(--ease-out-expo);}
 .hx__vp__in a:hover{background: rgba(var(--volt-rgb), 0.12); color: var(--volt); padding-left: 17px;}
 
-html[data-theme="light"] .hx__vp{background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(15, 20, 28, 0.1);}
-html[data-theme="light"] .hx__vp__in a{color: var(--ink-1);}
-html[data-theme="light"] .hx__hl{background: rgba(15, 20, 28, 0.07);}
+
+
+
 
 /* The panel is a desktop affordance; below the nav breakpoint the burger menu
    takes over and .hx__mainnav is not displayed at all. */

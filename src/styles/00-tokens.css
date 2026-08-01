@@ -1,3 +1,10 @@
+/* The rebuilt site is dark by default and goes light ONLY when somebody asks
+   for it with the theme toggle: home.css contains no prefers-color-scheme
+   rule at all, and the boot script sets data-theme from localStorage and
+   nothing else. This sheet still carried three system-preference blocks from
+   the retired design, so the control panel alone flipped to cream on a
+   machine set to light mode while every public page stayed black and orange.
+   Removed, so the panel follows the same rule as the site it administers. */
 /* ==========================================================================
    SUE'S ANGELS FC - DESIGN TOKENS
    The single source of truth for colour, type, space, radius, shadow, blur
@@ -199,105 +206,8 @@
    Same geometry, same type, same glass physics; luminance polarity flips and
    the orange stays visually dominant against warm white.
    ========================================================================== */
-:root[data-theme='light'] {
-  color-scheme: light;
 
-  --bg:            var(--ink-900);
-  --bg-elevated:   var(--white);
-  --surface:       var(--white);
-  --surface-2:     #FFFDFB;
-  --surface-3:     #FFF3EA;
-  --surface-inset: #1010130A;
-
-  --text:        #14100D;
-  --text-muted:  #5A5048;
-  --text-subtle: #7A6E64;
-  --text-on-brand: #FFFFFF;
-  --brand-text: var(--brand-800);   /* AA-safe orange on warm white */
-
-  --border:        #14100D14;
-  --border-strong: #14100D24;
-  --border-brand:  rgb(var(--brand-rgb) / 0.42);
-  --focus:         var(--brand-800);
-  --focus-ring:    0 0 0 2px var(--bg), 0 0 0 4px var(--focus);
-
-  --success: #1F7A4C;
-  --success-bg: #1F7A4C17;
-  --warning: #8A5A0B;
-  --warning-bg: #8A5A0B17;
-  --error: #B3271A;
-  --error-bg: #B3271A17;
-  --info: var(--brand-800);
-  --info-bg: rgb(var(--brand-rgb) / 0.10);
-
-  /* Glass on light: tint darkens slightly so the panel reads as glass over
-     a bright field, and the specular highlight stays white. */
-  --glass-tint:      #FFFFFF52;
-  --glass-tint-2:    #FFFFFF8A;
-  --glass-rim-light: #FFFFFFC7;
-  --glass-rim-dark:  #14100D1F;
-  --glass-specular:  #FFFFFF9E;
-  --glass-inner:     inset 0 1px 0 0 #FFFFFFDB, inset 0 -1px 0 0 #14100D14;
-  --glass-refract:   rgb(var(--brand-rgb) / 0.13);
-
-  --shadow-sm: 0 1px 2px #14100D12;
-  --shadow-md: 0 6px 18px -6px #14100D26, 0 2px 6px #14100D14;
-  --shadow-lg: 0 20px 50px -18px #14100D2E, 0 6px 16px #14100D17;
-  --shadow-xl: 0 40px 90px -32px #14100D3D, 0 12px 30px #14100D1F;
-  --shadow-float: 0 28px 60px -24px #14100D33;
-  --shadow-brand: 0 18px 46px -18px rgb(var(--brand-rgb) / 0.38);
-
-  --atmos-art: url('assets/brand/gradient-light.webp');
-  --atmos-base: var(--ink-900);
-  --atmos-line: #14100D0F;
-}
 
 /* System preference drives the default when the visitor has not chosen.
    data-theme (set by the inline head script) always wins over this. */
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme]) {
-    color-scheme: light;
 
-    --bg: var(--ink-900);
-    --bg-elevated: var(--white);
-    --surface: var(--white);
-    --surface-2: #FFFDFB;
-    --surface-3: #FFF3EA;
-    --surface-inset: #1010130A;
-
-    --text: #14100D;
-    --text-muted: #5A5048;
-    --text-subtle: #7A6E64;
-    --text-on-brand: #1A0A02;
-    --brand-text: var(--brand-800);
-
-    --border: #14100D14;
-    --border-strong: #14100D24;
-    --border-brand: rgb(var(--brand-rgb) / 0.42);
-    --focus: var(--brand-800);
-
-    --success: #1F7A4C; --success-bg: #1F7A4C17;
-    --warning: #8A5A0B; --warning-bg: #8A5A0B17;
-    --error: #B3271A;   --error-bg: #B3271A17;
-    --info: var(--brand-800); --info-bg: rgb(var(--brand-rgb) / 0.10);
-
-    --glass-tint: #FFFFFF52;
-    --glass-tint-2: #FFFFFF8A;
-    --glass-rim-light: #FFFFFFC7;
-    --glass-rim-dark: #14100D1F;
-    --glass-specular: #FFFFFF9E;
-    --glass-inner: inset 0 1px 0 0 #FFFFFFDB, inset 0 -1px 0 0 #14100D14;
-    --glass-refract: rgb(var(--brand-rgb) / 0.13);
-
-    --shadow-sm: 0 1px 2px #14100D12;
-    --shadow-md: 0 6px 18px -6px #14100D26, 0 2px 6px #14100D14;
-    --shadow-lg: 0 20px 50px -18px #14100D2E, 0 6px 16px #14100D17;
-    --shadow-xl: 0 40px 90px -32px #14100D3D, 0 12px 30px #14100D1F;
-    --shadow-float: 0 28px 60px -24px #14100D33;
-    --shadow-brand: 0 18px 46px -18px rgb(var(--brand-rgb) / 0.38);
-
-    --atmos-art: url('assets/brand/gradient-light.webp');
-    --atmos-base: var(--ink-900);
-    --atmos-line: #14100D0F;
-  }
-}

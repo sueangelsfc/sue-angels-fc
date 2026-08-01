@@ -90,18 +90,7 @@
   box-shadow: var(--glass-inner), var(--shadow-lg);
 }
 .glass--reading::after { opacity: 0.4; }
-:root[data-theme='light'] .glass--reading {
-  background:
-    linear-gradient(155deg, #FFFFFFCC 0%, #FFFFFFA6 42%, #FFFFFF8A 100%),
-    color-mix(in srgb, var(--surface) 88%, transparent);
-}
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme]) .glass--reading {
-    background:
-      linear-gradient(155deg, #FFFFFFCC 0%, #FFFFFFA6 42%, #FFFFFF8A 100%),
-      color-mix(in srgb, var(--surface) 88%, transparent);
-  }
-}
+
 @supports not (background: color-mix(in srgb, red 50%, transparent)) {
   .glass--reading { background: var(--surface-2); }
 }

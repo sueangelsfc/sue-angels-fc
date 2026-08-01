@@ -181,12 +181,9 @@
 /* Show the icon for the theme you would switch TO. */
 .tsw__sun { display: none; }
 .tsw__moon { display: block; }
-:root[data-theme='light'] .tsw__sun { display: block; }
-:root[data-theme='light'] .tsw__moon { display: none; }
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme]) .tsw__sun { display: block; }
-  :root:not([data-theme]) .tsw__moon { display: none; }
-}
+
+
+
 
 /* ---- Footer -----------------------------------------------------------
    Large-radius glass slab lifted off the page bottom. */

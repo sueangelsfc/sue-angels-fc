@@ -232,7 +232,7 @@ body{position: relative;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size: 160px 160px;}
 
-html[data-theme="light"] .pageaura{--pa-mul: 0.16;}
+
 
 /* Motion is the whole point of this, so reduced motion stops it dead and
    leaves the curtain hanging at a settled height rather than removing it. */
@@ -249,7 +249,7 @@ html[data-theme="light"] .pageaura{--pa-mul: 0.16;}
 .sec.sec--table,
 .sec.sec--faq,
 .sec.sec--cta{background: transparent;}
-html[data-theme="light"] .sec.sec--campaign{background: transparent;}
+
 .tsw{display: none !important;}
 img{max-width: 100%; display: block;}
 a{color: inherit; text-decoration: none;}
@@ -956,10 +956,8 @@ html.js .rv.is-in{opacity: 1; transform: translateY(0);}
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--fg);
   padding: 84px 0;}
-html[data-theme="light"] .sec--campaign{/* light theme: pure white */
-  background: #FFFFFF;
-  border-bottom-color: var(--line-l);}
-html[data-theme="light"] .sec--campaign::before{opacity: 0.5;}
+
+
 .sec--campaign::before{content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background:
     radial-gradient(52% 44% at 12% -4%, rgba(var(--volt-rgb), 0.11), transparent 60%),
@@ -1009,20 +1007,6 @@ html[data-theme="light"] .sec--campaign::before{opacity: 0.5;}
 .cmp__card--goals{--acc: #FF7A33; --acc-rgb: 255, 122, 51; --acc-2: #FFB07A;}
 /* Clean sheets sat on cyan; it now reads apart by tone, not by hue. */
 .cmp__card--clean{--acc: var(--volt-hi); --acc-rgb: 255, 154, 102; --acc-2: #FFC7A5;}
-html[data-theme="light"] .cmp__card{--acc: #C2410C; --acc-rgb: 194, 65, 12; --acc-2: #9A3412;}
-html[data-theme="light"] .cmp__card--goals{--acc: #C2410C; --acc-rgb: 194, 65, 12; --acc-2: #9A3412;}
-html[data-theme="light"] .cmp__card--clean{--acc: #9A3412; --acc-rgb: 154, 52, 18; --acc-2: #7C2D12;}
-html[data-theme="light"] .cmp__num--acc{background: none; -webkit-text-fill-color: #0C0F13; color: #0C0F13; filter: none;}
-html[data-theme="light"] .cmp__gaugectr b{color: #0C0F13;}
-html[data-theme="light"] .cmp__card.is-active,
-html[data-theme="light"] .cmp__card:hover{border-color: rgba(15, 20, 28, 0.16);
-  box-shadow: 0 26px 56px -30px rgba(15, 20, 28, 0.26);}
-html[data-theme="light"] .cmp__card::before{mix-blend-mode: normal;
-  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(var(--acc-rgb), 0.06), transparent 62%);}
-html[data-theme="light"] .cmp__card::after{background: linear-gradient(90deg, transparent, rgba(15, 20, 28, 0.14), transparent);}
-.cmp__card::before{content: ""; position: absolute; inset: 0; z-index: 4; pointer-events: none; border-radius: inherit;
-  background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), rgba(var(--acc-rgb), 0.22), transparent 62%);
-  opacity: 0; transition: opacity 0.35s; mix-blend-mode: screen;}
 .cmp__card:hover::before{opacity: 1;}
 .cmp__card::after{content: ""; position: absolute; top: 0; left: 14%; right: 14%; height: 1px; z-index: 5;
   background: linear-gradient(90deg, transparent, rgba(var(--acc-rgb), 0.78), transparent);
@@ -1095,7 +1079,7 @@ html[data-theme="light"] .cmp__card::after{background: linear-gradient(90deg, tr
 .cmp__gaugesvg{display: block; width: 100%; height: auto; overflow: visible;}
 .cmp__gaugesvg line{stroke: rgba(255, 255, 255, 0.13); stroke-width: 2.4;}
 .cmp__gaugesvg line.is-lit{stroke: var(--acc); stroke-width: 3.4; filter: drop-shadow(0 0 4px rgba(var(--acc-rgb), 0.7)); transition: stroke 0.3s;}
-html[data-theme="light"] .cmp__gaugesvg line.is-lit{stroke: var(--acc);}
+
 .cmp__gaugectr{position: absolute; left: 0; right: 0; bottom: 6%; text-align: center;}
 .cmp__gaugectr b{font-family: var(--display); font-weight: 300;
   font-size: clamp(2.4rem, 4vw, 3.1rem); color: var(--fg); letter-spacing: -0.03em;
@@ -1465,130 +1449,16 @@ html[data-brand="volt"]{--paper: #F3F7F9;          /* light band */
   display: grid; place-items: center;
   transition: transform 0.45s var(--spring);}
 .tsw__thumb svg{width: 13px; height: 13px; stroke: #17130E; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;}
-html:not([data-theme="light"]) .tsw__thumb{transform: translateX(32px);}
-html:not([data-theme="light"]) .tsw__msun{display: none;}
-html:not([data-theme="light"]) .tsw__mmoon{display: block;}
-html[data-theme="light"] .tsw__thumb{transform: translateX(0);}
-html[data-theme="light"] .tsw__msun{display: block;}
-html[data-theme="light"] .tsw__mmoon{display: none;}
+
+
+
+
+
+
 @media (prefers-reduced-motion: reduce){
 .tsw__thumb{transition: none;}
 }
-html[data-theme="light"]{--navy-deep: #FFFFFF;      /* pure, neutral white canvas (no cream / warm white) */
-  --navy-2: #F1F2F4;         /* neutral cool-grey secondary surface */
-  --paper: #FFFFFF;          /* light bands → pure white in light mode */
-  --ink-2: #60666D;          /* secondary text — AA on cream + white */
-  --ink-3: rgba(17, 19, 21, 0.6);    /* tertiary text — clears AA on cream */
-  --line-d: rgba(17, 19, 21, 0.12);  /* subtle border on light */
-  --glass-d: rgba(255, 255, 255, 0.76);  /* soft translucent glass on light */
-  --fg: #111315;
-  --volt: #E95012;           /* deeper primary orange for pale backgrounds */
-  --volt-rgb: 233, 80, 18;
-  --volt-2: #C9430C;         /* orange hover (deeper) */
-  --volt-hi: #FF7A3D;        /* soft highlight */
-  /* Orange TEXT. #C2410C clears AA on plain white at 4.83:1, which is why it
-     was chosen, but almost every place this is used is a panel carrying a
-     faint orange tint, and on those it falls to 3.98:1. Deepened one step to
-     the shade the campaign cards already use: 5.6:1 on a tinted panel and
-     6.8:1 on white. */
-  --volt-text: #9A3412;
-  /* Data panels follow the rest of the light theme to white surfaces rather
-     than staying dark slabs, and their lifts become ink so hairlines survive
-     the flip. --slab-top must match the top of the gradient exactly: it is
-     the sticky table head, and any difference shows as a seam on scroll. */
-  --slab: linear-gradient(168deg, #FFFFFF, #F7F8FA);
-  --slab-top: #FFFFFF;
-  --lift: 17, 19, 21;
-  --sink: 224, 228, 233;
-  color-scheme: light;}
-html[data-theme="light"] body{background: var(--navy-deep);}
-html[data-theme="light"] .bento__card,
-html[data-theme="light"] .cmp__card,
-html[data-theme="light"] .rcard2,
-html[data-theme="light"] .tbl{background: #FFFFFF;
-  box-shadow: 0 20px 48px -30px rgba(15, 20, 28, 0.3), 0 1px 0 rgba(15, 20, 28, 0.04);}
-html[data-theme="light"] .hx__cell,
-html[data-theme="light"] .cmp__tag{background: rgba(15, 20, 28, 0.05);
-  border-color: rgba(15, 20, 28, 0.1);}
-html[data-theme="light"] .hx__ha{color: rgba(15, 20, 28, 0.6);}
-html[data-theme="light"] .hx__card{background: rgba(255, 255, 255, 0.66); border-color: rgba(15, 20, 28, 0.1);}
-html[data-theme="light"] .cta2__glass{background: rgba(255, 255, 255, 0.6); border-color: rgba(15, 20, 28, 0.1);}
-html[data-theme="light"] .cta2__glass:hover{background: rgba(255, 255, 255, 0.72); border-color: rgba(var(--volt-rgb), 0.4);}
-html[data-theme="light"] .hx__shade{background:
-    linear-gradient(104deg, rgba(244, 237, 225, 0.93) 0%, rgba(244, 237, 225, 0.62) 26%, rgba(244, 237, 225, 0.16) 52%, rgba(244, 237, 225, 0) 74%),
-    linear-gradient(to bottom, rgba(244, 237, 225, 0.55) 0%, rgba(244, 237, 225, 0) 20%, rgba(244, 237, 225, 0) 62%, rgba(244, 237, 225, 0.62) 100%);}
-html[data-theme="light"] .hx__navtop:hover,
-html[data-theme="light"] .hx__navgrp:hover > .hx__navtop,
-html[data-theme="light"] .hx__navgrp.is-open > .hx__navtop{background: rgba(15, 20, 28, 0.06);}
-html[data-theme="light"] .hx__dd{background: rgba(255, 255, 255, 0.92); border-color: rgba(15, 20, 28, 0.1);}
-html[data-theme="light"] .mnav{background: rgba(244, 237, 225, 0.97);}
-html[data-theme="light"] .ncard__cover{background: radial-gradient(125% 105% at 50% 0%, #FFFFFF 0%, #EFE6D7 62%); border-color: rgba(15, 20, 28, 0.1);}
-html[data-theme="light"] .ncard__pill{background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(15, 20, 28, 0.08);
-  color: #17130E;
-  box-shadow: 0 6px 18px -8px rgba(15, 20, 28, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);}
-html[data-theme="light"] .ncard:hover .ncard__pill{background: #FFFFFF;
-  border-color: rgba(var(--volt-rgb), 0.55);}
-html[data-theme="light"] .ft2{background: linear-gradient(180deg, rgba(251, 246, 238, 0.62), rgba(237, 227, 211, 0.78));}
-html[data-theme="light"] .ft2__socials a{background: rgba(15, 20, 28, 0.05);}
-html[data-theme="light"] .cmp__dot--d{background: rgba(15, 20, 28, 0.28);}
-html[data-theme="light"] .btn--ghost{border-color: rgba(15, 20, 28, 0.2);}
-html[data-theme="light"] .btn--ghost:hover{border-color: rgba(15, 20, 28, 0.42);}
-html[data-theme="light"] .cmp__gaugesvg line{stroke: rgba(15, 20, 28, 0.14);}
-html[data-theme="light"] .hx__mainnav{background: rgba(255, 255, 255, 0.7);
-  border-color: rgba(15, 20, 28, 0.07);
-  box-shadow: 0 12px 34px -14px rgba(15, 20, 28, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.72);}
-html[data-theme="light"] .hx__navtop{color: rgba(15, 20, 28, 0.7);}
-html[data-theme="light"] .hx__chev{opacity: 0.42;}
-html[data-theme="light"] .hx__dd{background: rgba(255, 255, 255, 0.95);
-  border-color: rgba(15, 20, 28, 0.08);
-  box-shadow: 0 26px 56px -18px rgba(15, 20, 28, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.85);}
-html[data-theme="light"] .hx__dd a{color: rgba(15, 20, 28, 0.82);}
-html[data-theme="light"] .hx__dd a:hover{background: rgba(var(--volt-rgb), 0.12); color: var(--volt);}
-html[data-theme="light"] .mnav__grp a{color: rgba(15, 20, 28, 0.78);}
-html[data-theme="light"] .mnav__grp a:hover{color: var(--volt);}
-html[data-theme="light"] .hx__l3{color: rgba(15, 20, 28, 0.3);}
-html[data-theme="light"] .hx__about{color: rgba(15, 20, 28, 0.78);}
-html[data-theme="light"] .hx__record span{color: rgba(15, 20, 28, 0.6);}
-html[data-theme="light"] .hx__sponsorlabel{color: rgba(15, 20, 28, 0.56);}
-html[data-theme="light"] .hx__cell small,
-html[data-theme="light"] .hx__metatext small{color: rgba(15, 20, 28, 0.64);}
-html[data-theme="light"] .hx__cdlabel{color: rgba(15, 20, 28, 0.66);}
-html[data-theme="light"] .hx__metacell{background: rgba(15, 20, 28, 0.04);
-  border-color: rgba(15, 20, 28, 0.09);}
-html[data-theme="light"] .nhead__all{color: rgba(15, 20, 28, 0.6);}
-html[data-theme="light"] .nhead__all:hover{color: var(--volt);}
-html[data-theme="light"] .ft2__tag{color: rgba(15, 20, 28, 0.6);}
-html[data-theme="light"] .ft2__col h3{color: rgba(15, 20, 28, 0.55);}
-html[data-theme="light"] .ft2__col a{color: rgba(15, 20, 28, 0.66);}
-html[data-theme="light"] .ft2__col a:hover{color: var(--volt);}
-html[data-theme="light"] .ft2__form{background: rgba(15, 20, 28, 0.035); border-color: rgba(15, 20, 28, 0.14);}
-html[data-theme="light"] .ft2__form input::placeholder{color: rgba(15, 20, 28, 0.5);}
-html[data-theme="light"] .ft2__legal,
-html[data-theme="light"] .ft2__locale{color: rgba(15, 20, 28, 0.6);}
-.sec--news,
-.sec--who,
-.sec--awards,
-.sec--campaign,
-.sec--results,
-.sec--table{border-bottom-color: transparent;}
 .ft2__topline{display: none;}
-html[data-theme="light"] .eyebrow,
-html[data-theme="light"] .ticker__motto,
-html[data-theme="light"] .bento__link,
-html[data-theme="light"] .bento__stat span,
-html[data-theme="light"] .mnav__grp h4,
-html[data-theme="light"] .hx__cd,
-html[data-theme="light"] .hx__vs,
-html[data-theme="light"] .volt{color: var(--volt-text);}
-html[data-theme="light"] .cf__name{color: #FFFFFF;}
-html[data-theme="light"] .bento__label{color: rgba(15, 20, 28, 0.68);}
-html[data-theme="light"] .bento__label--on{color: rgba(255, 255, 255, 0.92);}
-html[data-theme="light"] .rcard2__score--volt{color: var(--volt-text);}
-html[data-theme="light"] .cmp__gaugectr b span{color: var(--acc);}
-html[data-theme="light"] .skip{color: #FFFFFF;}
-.sec--faq{background: var(--navy-deep); color: var(--fg); padding: clamp(60px, 7vw, 84px) 0;}
 .faq{max-width: 840px; margin: 34px auto 0; display: flex; flex-direction: column; gap: 12px;}
 .faq__item{background: var(--glass-d); border: 1px solid var(--line-d);
   border-radius: 18px; overflow: hidden;
@@ -1741,21 +1611,9 @@ body::before{animation: none;}
   --gl-rim: rgba(255, 255, 255, 0.13);
   --gl-spec: rgba(255, 255, 255, 0.17);   /* specular top edge */
   --ease-glass: cubic-bezier(0.32, 0.72, 0, 1);}
-html[data-theme="light"]{--gl-tint: rgba(255, 255, 255, 0.62);
-  --gl-tint-hi: rgba(255, 255, 255, 0.42);
-  --gl-rim: rgba(15, 20, 28, 0.10);
-  --gl-spec: rgba(255, 255, 255, 0.95);}
-html[data-theme="light"] .bento__card{background:
-    radial-gradient(320px 190px at 82% -12%, rgba(var(--volt-rgb), 0.10), transparent 70%),
-    var(--gl-tint);
-  box-shadow: inset 0 1px 0 var(--gl-spec), 0 22px 52px -34px rgba(15, 20, 28, 0.34);}
-html[data-theme="light"] .bento__card:hover{background:
-    radial-gradient(320px 190px at 82% -12%, rgba(var(--volt-rgb), 0.14), transparent 70%),
-    var(--gl-tint-hi);
-  box-shadow:
-    inset 0 1px 0 var(--gl-spec),
-    0 28px 62px -30px rgba(15, 20, 28, 0.38),
-    0 0 40px -18px rgba(var(--volt-rgb), 0.38);}
+
+
+
 .bento__card{background: var(--gl-tint);
   -webkit-backdrop-filter: blur(var(--gl-blur)) saturate(150%);
   backdrop-filter: blur(var(--gl-blur)) saturate(150%);
@@ -2013,10 +1871,9 @@ html.js .lg-panel[hidden]{display: none;}
   transition: background 0.2s, color 0.2s, padding-left 0.25s var(--ease-out-expo);}
 .hx__vp__in a:hover{background: rgba(var(--volt-rgb), 0.12); color: var(--volt); padding-left: 17px;}
 
-html[data-theme="light"] .hx__vp{background: rgba(255, 255, 255, 0.92);
-  border-color: rgba(15, 20, 28, 0.1);}
-html[data-theme="light"] .hx__vp__in a{color: var(--ink-1);}
-html[data-theme="light"] .hx__hl{background: rgba(15, 20, 28, 0.07);}
+
+
+
 
 /* The panel is a desktop affordance; below the nav breakpoint the burger menu
    takes over and .hx__mainnav is not displayed at all. */
@@ -2093,12 +1950,7 @@ html[data-theme="light"] .hx__hl{background: rgba(15, 20, 28, 0.07);}
 .toast--error { border-color: rgba(255, 80, 103, 0.5); }
 .toast--ok { border-color: rgba(var(--volt-rgb), 0.55); }
 
-html[data-theme="light"] .toast {
-  background: rgba(255, 255, 255, 0.86);
-  color: var(--navy);
-  border-color: var(--line-l);
-  box-shadow: 0 18px 44px rgba(23, 26, 30, 0.16);
-}
+
 
 @media (prefers-reduced-motion: reduce) {
   .toast { transition: none; }

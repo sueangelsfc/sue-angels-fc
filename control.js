@@ -1435,7 +1435,51 @@ window.CP = (function () {
     if (k && k !== current && M[k]) show(k);
   });
 
-  /* Restore an existing session if the refresh token is still good. */
+  /* ---- The club word --------------------------------------------------
+     Asked before the sign-in form is shown. This is a doorway, not a lock:
+     the word is in a file anyone can download, so it stops a passer-by and a
+     scanner, not an attacker. Everything that actually protects the club's
+     data is server side and unchanged: Supabase Auth for identity, and the
+     admin_users registry plus RLS for permission, neither of which this can
+     grant. Getting the word wrong should therefore cost nothing except not
+     seeing the form.
+
+     Remembered for the session only, so a reload during an evening's work
+     does not ask again, but a new day does. */
+  var WORD = 'angels';
+  var wordForm = $('#cp-word');
+  var loginForm = $('#cp-login');
+
+  function openLogin() {
+    if (wordForm) wordForm.hidden = true;
+    if (loginForm) {
+      loginForm.hidden = false;
+      var email = $('#cp-email');
+      if (email) email.focus();
+    }
+  }
+
+  try { if (sessionStorage.getItem('sa-cp-word') === WORD) openLogin(); } catch (e) {}
+
+  if (wordForm) wordForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var field = $('#cp-club-word');
+    var err = $('#cp-word-error');
+    var given = (field.value || '').trim().toLowerCase();
+    if (given !== WORD) {
+      err.textContent = 'That is not the club word.';
+      err.hidden = false;
+      field.select();
+      return;
+    }
+    err.hidden = true;
+    try { sessionStorage.setItem('sa-cp-word', WORD); } catch (e2) {}
+    openLogin();
+  });
+
+  /* Restore an existing session if the refresh token is still good. A valid
+     session means somebody already got through the door, so it does not ask
+     for the word again. */
   CP.refresh().then(function (s) {
     if (!s) return;
     return CP.loadRole().then(enterApp);

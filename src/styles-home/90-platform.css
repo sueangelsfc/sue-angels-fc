@@ -50,12 +50,7 @@
 .toast--error { border-color: rgba(255, 80, 103, 0.5); }
 .toast--ok { border-color: rgba(var(--volt-rgb), 0.55); }
 
-html[data-theme="light"] .toast {
-  background: rgba(255, 255, 255, 0.86);
-  color: var(--navy);
-  border-color: var(--line-l);
-  box-shadow: 0 18px 44px rgba(23, 26, 30, 0.16);
-}
+
 
 @media (prefers-reduced-motion: reduce) {
   .toast { transition: none; }

@@ -48,33 +48,9 @@ window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"
   window.saToast = toast;
 
   /* ---- Theme ----------------------------------------------------------
-     The inline head script has already applied the stored theme, so this
-     only handles switching and keeps the control's label truthful. */
-  var root = document.documentElement;
-  function currentTheme() {
-    var set = root.getAttribute('data-theme');
-    if (set) return set;
-    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-  }
-  function syncToggle() {
-    var next = currentTheme() === 'dark' ? 'light' : 'dark';
-    $$('[data-theme-toggle]').forEach(function (b) {
-      b.setAttribute('aria-label', 'Switch to ' + next + ' theme');
-      b.setAttribute('title', 'Switch to ' + next + ' theme');
-    });
-  }
-  $$('[data-theme-toggle]').forEach(function (btn) {
-    on(btn, 'click', function () {
-      var next = currentTheme() === 'dark' ? 'light' : 'dark';
-      root.setAttribute('data-theme', next);
-      try { localStorage.setItem('sa-theme', next); } catch (e) {}
-      syncToggle();
-    });
-  });
-  syncToggle();
-  // Follow the system if the visitor has never chosen explicitly.
-  var mq = window.matchMedia('(prefers-color-scheme: light)');
-  on(mq, 'change', function () { if (!root.getAttribute('data-theme')) syncToggle(); });
+     There isn't one. The club is black and orange and the site is black and
+     orange, on every page and every machine. The switcher, the stored
+     preference and the system-preference follow are all gone. */
 
   /* ---- Header stuck state ---------------------------------------------
      On the homepage the header sits over a tall dark hero, so it must keep

@@ -190,9 +190,6 @@ export function header(path) {
         ${brandLockup()}
         ${navDesktop(path)}
         <div class="hdr__actions">
-          <button class="tsw" type="button" data-theme-toggle aria-label="Switch to light theme" title="Switch theme">
-            ${icon('sun', 'tsw__sun')}${icon('moon', 'tsw__moon')}
-          </button>
           <a class="btn btn--primary btn--sm hdr__join" href="/join.html">Join</a>
           <button class="burger" type="button" data-mnav-open aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu">
             <span class="burger__bars" aria-hidden="true"><span></span><span></span><span></span></span>
@@ -267,7 +264,13 @@ export function footer() {
    The inline theme script must run BEFORE first paint or the page flashes
    the wrong theme. It also sets html.js, which is what scopes every
    JS-dependent hidden state so a script failure can never blank a section. */
-const THEME_BOOT = `(function(){var d=document.documentElement;d.classList.add('js');try{var t=localStorage.getItem('sa-theme');if(t==='light'||t==='dark'){d.setAttribute('data-theme',t)}}catch(e){}})();`;
+/* There is one theme. The site is black and orange, on every page, on every
+   machine, whichever way the operating system is set. This script used to
+   restore a stored light preference and the stylesheets carried 81 rules to
+   support it; a light mode that nobody asked for is how the control panel
+   ended up rendering cream while the website it administers stayed dark.
+   All this does now is mark that JavaScript ran. */
+const THEME_BOOT = `(function(){document.documentElement.classList.add('js')})();`;
 
 /* ==========================================================================
    STRUCTURED DATA: ONE @graph PER PAGE
@@ -410,9 +413,8 @@ export function page({
 <link rel="canonical" href="${attr(canonical)}">
 ${noindex ? '<meta name="robots" content="noindex,follow">' : ''}
 <script>${THEME_BOOT}</script>
-<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#FFF8F3" media="(prefers-color-scheme: light)">
-<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="${attr(CLUB.name)}">
 <meta property="og:title" content="${attr(title)}">

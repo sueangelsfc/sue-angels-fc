@@ -721,7 +721,91 @@ export function home(d) {
   /* ================= FOOTER ================= */
   const footerHtml = siteFooter();
 
-  const preMain = sitePreMain(auraFor('index.html'));
+  /* ==========================================================================
+     BOOT SCREEN
+
+     The crest assembles itself out of forty shards, then beats. It was on the
+     old home page and the rebuild dropped it, so it is back, on the home page
+     only: it is an arrival, and playing it again on every internal navigation
+     would be an obstacle rather than a welcome.
+
+     Two things changed in the port. The backdrop is the rebuild's near-black
+     rather than the retired navy, so it matches the page underneath it.
+
+     And the hold is much shorter. The original waited a minimum of 8.8
+     seconds because it was covering a JavaScript app booting; this site is
+     static HTML that has already painted, so that same wait would now be
+     nothing but a wait. It holds for as long as the animation actually takes
+     and not a moment longer, and it never blocks a visitor who is ready
+     sooner. MIN is one number if the club wants it to linger.
+
+     It is inline in the head-adjacent markup rather than in sa.js, because a
+     boot screen that needs an external script to appear has missed its own
+     moment; and it removes itself unconditionally on a timer, so a failure
+     anywhere else can never leave a visitor staring at a black rectangle. */
+  const bootScreen = `<div id="sa-boot" aria-hidden="true"><div class="sa-crest"></div></div>
+    <style>
+      @keyframes saBeat{0%,100%{transform:scale(1)}50%{transform:scale(1.055)}}
+      #sa-boot{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
+        background:#090B0D;opacity:1;transition:opacity .9s ease;will-change:opacity}
+      #sa-boot .sa-crest{position:relative;width:118px;height:118px}
+      #sa-boot .sa-crest.is-beating{animation:saBeat 1.7s ease-in-out infinite}
+      #sa-boot .sa-shard{position:absolute;top:0;left:0;width:118px;height:118px;will-change:transform,opacity}
+      #sa-boot.sa-boot--hide{opacity:0;pointer-events:none}
+      @media (prefers-reduced-motion: reduce){#sa-boot{transition:none}}
+    </style>
+    <script>
+    (function(){
+      var boot=document.getElementById('sa-boot'); if(!boot) return;
+      var crest=boot.querySelector('.sa-crest');
+      var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      /* The ORANGE crest. sue-angels-shield.webp is the retired lime badge, and
+         the loader assembled it in the old brand's colours in front of a black
+         and orange site. This is the same file the header lockup uses, so it is
+         already cached by the time anyone sees it twice. */
+      var SRC='/assets/brand/crest.webp', COLS=5, ROWS=8, maxEnd=0;
+      for(var r=0;r<ROWS;r++){ for(var c=0;c<COLS;c++){
+        var img=document.createElement('img'); img.className='sa-shard'; img.src=SRC; img.alt='';
+        img.style.clipPath='inset('+(r/ROWS*100)+'% '+((COLS-1-c)/COLS*100)+'% '+((ROWS-1-r)/ROWS*100)+'% '+(c/COLS*100)+'%)';
+        if(reduce){ img.style.opacity='1'; }
+        else{
+          var a=Math.random()*6.2832, d=50+Math.random()*52;
+          var dx=Math.cos(a)*d, dy=Math.sin(a)*d, rot=(Math.random()*2-1)*40, sc=0.5+Math.random()*0.3;
+          var dur=1.2+Math.random()*0.7, del=Math.random()*0.9; if(del+dur>maxEnd) maxEnd=del+dur;
+          img.style.opacity='0';
+          img.style.transform='translate('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px) rotate('+rot.toFixed(1)+'deg) scale('+sc.toFixed(2)+')';
+          img.style.transition='transform '+dur.toFixed(2)+'s cubic-bezier(.16,.72,.16,1) '+del.toFixed(2)+'s, opacity '+(dur*0.55).toFixed(2)+'s ease '+del.toFixed(2)+'s';
+        }
+        crest.appendChild(img);
+      }}
+      if(!reduce){
+        requestAnimationFrame(function(){ requestAnimationFrame(function(){
+          var sh=crest.querySelectorAll('.sa-shard');
+          for(var i=0;i<sh.length;i++){ sh[i].style.opacity='1'; sh[i].style.transform='none'; }
+        });});
+        setTimeout(function(){ crest.classList.add('is-beating'); }, Math.round(Math.max(maxEnd-0.5,0)*1000));
+      }
+      /* Long enough to watch the crest come together, and no longer. Reduced
+         motion skips the assembly, so it skips the wait too. */
+      var MIN=reduce?280:2200, MAX=4200, start=Date.now(), done=false;
+      function hide(){
+        if(done) return; done=true;
+        boot.classList.add('sa-boot--hide');
+        setTimeout(function(){ if(boot&&boot.parentNode) boot.parentNode.removeChild(boot); }, 1000);
+      }
+      function ready(){ return !!document.querySelector('.hx__frame, .hx'); }
+      function tick(){
+        var e=Date.now()-start;
+        if(e>=MAX || (ready() && e>=MIN)){ hide(); return; }
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+      /* Belt and braces: whatever happens above, it goes. */
+      setTimeout(hide, MAX+200);
+    })();
+    </script>`;
+
+  const preMain = bootScreen + sitePreMain(auraFor('index.html'));
 
   return {
     body: hero + ticker + newsBand + whoBand + awardsBand + campaignBand + resultsBand + tableBand + faqBand + wordstrip + ctaBand,
@@ -1025,13 +1109,6 @@ export function sitePreMain(variant = 'ember') {
         ${g.children.map((l) => `<a href="${attr(l.href)}">${esc(l.label)}</a>`).join('\n        ')}
       </div>`).join('\n      ')}
     </div>
-    <button class="tsw" type="button" data-theme-toggle aria-label="Switch theme" style="margin:0 auto 4px">
-      ${SVG.sun}${SVG.moon}
-      <span class="tsw__thumb" aria-hidden="true">
-        <svg class="tsw__msun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M3 12h2M19 12h2M5.6 18.4l1.4-1.4M17 7l1.4-1.4"/></svg>
-        <svg class="tsw__mmoon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
-      </span>
-    </button>
     <a class="mnav__join" href="/join.html">Join the club</a>
   </nav>
 </div>`;

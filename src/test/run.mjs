@@ -175,6 +175,7 @@ check('one asset version across all pages', versions.size === 1,
 
 /* ---- 7. Overflow guards ---- */
 const css = fs.readFileSync(path.join(ROOT, 'sa.css'), 'utf8');
+const homeCssSheet = fs.readFileSync(path.join(ROOT, 'home.css'), 'utf8');
 check('html has overflow-x hidden', /html\s*\{[^}]*overflow-x:\s*hidden/.test(css));
 const rawMinmax = [...css.matchAll(/minmax\((\d+px)/g)];
 check('no fixed-px minmax without min() guard', rawMinmax.length === 0,
@@ -186,10 +187,35 @@ check('atmosphere animation stops on reduced motion',
   /prefers-reduced-motion[\s\S]{0,400}\.atmos__blob\s*\{\s*animation:\s*none/.test(css));
 
 /* ---- 9. Themes ---- */
-check('light theme defined', /:root\[data-theme='light'\]/.test(css));
-check('system light preference handled', /@media \(prefers-color-scheme: light\)/.test(css));
-check('no-flash theme script inline', /sa-theme/.test(pages.get('index.html')));
-check('colour-scheme declared', /color-scheme:\s*dark/.test(css) && /color-scheme:\s*light/.test(css));
+/* There is one theme. These three used to assert the opposite: that a light
+   theme existed, that the head script restored a stored preference, and that
+   the page advertised both schemes to the browser. The club is black and
+   orange, so 81 light rules, the switcher and the stored preference are gone,
+   and the assertions now guard that they stay gone. A stray light rule is how
+   the control panel came to render cream on a machine set to light mode. */
+check('no light theme in either stylesheet',
+  !/\[data-theme=['"]light['"]\]/.test(css) && !/\[data-theme=['"]light['"]\]/.test(homeCssSheet));
+check('no theme switcher ships',
+  ![...pages.values()].some((h) => /data-theme-toggle/.test(h)));
+
+/* The rebuilt site is dark by default and turns light ONLY when the visitor
+   asks: home.css has no prefers-color-scheme rule and the boot script reads
+   data-theme from localStorage and nothing else.
+
+   This used to assert the opposite, because the retired design followed the
+   system. The control panel's sheet still carried three of those blocks after
+   the rebuild, so on a machine set to light mode the panel alone rendered
+   cream while all 20 public pages stayed black and orange. Asserting the rule
+   on BOTH sheets is what keeps the two consistent; asserting it on one is how
+   they drifted. */
+for (const [name, sheet] of [['sa.css', css], ['home.css', homeCssSheet]]) {
+  check(`${name}: theme is chosen, not inherited from the system`,
+    !/@media \(prefers-color-scheme:/.test(sheet.replace(/\/\*[\s\S]*?\*\//g, '')));
+}
+check('boot script marks that JS ran', /classList\.add\('js'\)/.test(pages.get('index.html')));
+check('boot script no longer restores a theme', !/sa-theme/.test(pages.get('index.html')));
+check('page declares a single colour scheme',
+  [...pages.values()].every((h) => /<meta name="color-scheme" content="dark">/.test(h)));
 
 /* ---- 10. Contrast on the text tokens ---- */
 function lum(hex) {

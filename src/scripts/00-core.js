@@ -399,6 +399,37 @@
     buttons.forEach(function (b, idx) { on(b, 'click', function () { openLightbox(srcs, idx); }); });
   });
 
+  /* ---- The club word ---------------------------------------------------
+     Type "angels" anywhere on the website and it opens the control panel
+     sign-in. There is no link to /control.html in the navigation, the footer
+     or the sitemap, so this is how the club gets in: the door is where you
+     know it is rather than where a stranger can find it.
+
+     It is a doorway, not a lock, and nothing about it pretends otherwise. The
+     word is in a file anyone can download. What it buys is that somebody
+     poking at the site never meets a login form at all. Identity is still
+     Supabase Auth and permission is still the admin_users registry, and this
+     cannot grant either.
+
+     Ignored while the visitor is typing into a field, or the word "angels" in
+     a message on the join form would throw them out of it mid-sentence.
+     Modifier chords are ignored too, so it cannot fire on a shortcut. */
+  var wordBuf = '';
+  on(document, 'keydown', function (e) {
+    var t = e.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA'
+      || t.tagName === 'SELECT' || t.isContentEditable)) return;
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (!e.key || e.key.length !== 1) return;
+    wordBuf = (wordBuf + e.key).toLowerCase().slice(-12);
+    if (wordBuf.indexOf('angels') === -1) return;
+    wordBuf = '';
+    /* Same key the panel checks, so arriving this way goes straight to the
+       sign-in rather than asking for the word a second time. */
+    try { sessionStorage.setItem('sa-cp-word', 'angels'); } catch (err) {}
+    location.href = '/control.html';
+  });
+
   /* ---- Join: route cards preset the enquiry menu ----------------------
      Pure enhancement. The cards are anchors to #enquire and the menu is a
      real <select> inside the form, so with this script dead the page still

@@ -43,31 +43,9 @@ alter table public.admin_users enable row level security;
 
 -- A signed-in user may read ONLY their own row, which is what lets the control
 -- panel ask "am I an administrator?" without exposing the whole roster.
-drop policy if exists "admin_users: read own row" on public.admin_users;
-create policy "admin_users: read own row"
-  on public.admin_users for select
-  to authenticated
-  using (user_id = auth.uid());
-
--- Only an existing admin may see or change the full roster.
-drop policy if exists "admin_users: admins read all" on public.admin_users;
-create policy "admin_users: admins read all"
-  on public.admin_users for select
-  to authenticated
-  using (exists (select 1 from public.admin_users a where a.user_id = auth.uid() and a.role = 'admin'));
-
-drop policy if exists "admin_users: admins manage" on public.admin_users;
-create policy "admin_users: admins manage"
-  on public.admin_users for all
-  to authenticated
-  using (exists (select 1 from public.admin_users a where a.user_id = auth.uid() and a.role = 'admin'))
-  with check (exists (select 1 from public.admin_users a where a.user_id = auth.uid() and a.role = 'admin'));
-
 -- ---------------------------------------------------------------------------
--- 2. The authorisation predicate
---    SECURITY DEFINER so the function can read admin_users regardless of the
---    caller's own RLS view, and STABLE so the planner can cache it per
---    statement. search_path is pinned to defeat search-path hijacking.
+-- The permission function comes FIRST: the admin_users policies below call it,
+-- so it has to exist before they are created.
 -- ---------------------------------------------------------------------------
 create or replace function public.is_club_admin()
 returns boolean
@@ -88,6 +66,42 @@ comment on function public.is_club_admin() is
 
 revoke all on function public.is_club_admin() from public;
 grant execute on function public.is_club_admin() to authenticated;
+
+drop policy if exists "admin_users: read own row" on public.admin_users;
+create policy "admin_users: read own row"
+  on public.admin_users for select
+  to authenticated
+  using (user_id = auth.uid());
+
+-- Only an existing admin may see or change the full roster.
+-- A policy ON admin_users must never SELECT FROM admin_users to decide who may
+-- read it: evaluating the policy re-triggers the policy and Postgres aborts
+-- with 42P17, "infinite recursion detected in policy for relation
+-- admin_users". Both of these did exactly that, so every read of the table
+-- returned 500 and the panel, which reads it to learn your role, fell back to
+-- read-only for a user the database already considered an administrator.
+--
+-- is_club_admin() is SECURITY DEFINER, so it sees the table without RLS and
+-- the question terminates. That is what the function is for.
+drop policy if exists "admin_users: admins read all" on public.admin_users;
+create policy "admin_users: admins read all"
+  on public.admin_users for select
+  to authenticated
+  using (public.is_club_admin());
+
+drop policy if exists "admin_users: admins manage" on public.admin_users;
+create policy "admin_users: admins manage"
+  on public.admin_users for all
+  to authenticated
+  using (public.is_club_admin())
+  with check (public.is_club_admin());
+
+-- ---------------------------------------------------------------------------
+-- 2. The authorisation predicate
+--    SECURITY DEFINER so the function can read admin_users regardless of the
+--    caller's own RLS view, and STABLE so the planner can cache it per
+--    statement. search_path is pinned to defeat search-path hijacking.
+
 
 -- ---------------------------------------------------------------------------
 -- NOTE: policy names are IDENTIFIERS, so they interpolate with %I, not %L.

@@ -10,6 +10,8 @@
     "verify": "node src/lib/verify-dataset.mjs",
     "test": "node src/test/run.mjs",
     "serve": "npx --yes serve@14 -l 4321 .",
-    "pack": "node scripts/make-pack.mjs"
+    "pack": "node scripts/make-pack.mjs",
+    "sync": "node scripts/sync.mjs",
+    "publish": "npm run sync && npm run build && npm run verify && npm test"
   }
 }

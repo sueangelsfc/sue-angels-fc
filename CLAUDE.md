@@ -38,6 +38,26 @@ src/
 3. **Vercel needs no build step.** `buildCommand: null`. No build can fail on deploy.
 4. **Works with JavaScript disabled.** Every page ships complete markup.
 
+### The database does not reach the site on its own
+The control panel writes to **Supabase**. The generator reads
+**`src/data/recovered-live.json`**, which is a snapshot of exactly those seven
+tables. Nothing connects them automatically, so a save in the panel changes the
+database and **not the website** until the snapshot is refreshed.
+
+```bash
+npm run sync        # pull the seven content tables into the snapshot
+npm run publish     # sync + build + verify + test, in that order
+```
+
+This gap was live for the whole of the July rebuild: six fixtures, and edits to
+four other tables, sat in the database while the site showed the code baseline.
+`npm run sync` reports which tables changed, so an empty report is a real
+answer rather than a silent no-op.
+
+`player_photos` is skipped by default. The snapshot keeps only `{key, kind,
+bytes}` for it because the generator needs the size, not the base64 payload;
+pass `--photos` when a roster, coach or sponsor record has actually changed.
+
 ### Cache busting is automatic
 `sa.css` and `sa.js` are versioned by a **content hash** computed at build time and stamped identically on every page. Never hand-edit a `?v=`. Mixed versions used to be a recurring production bug; the test suite now asserts a single version across all pages.
 

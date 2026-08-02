@@ -91,11 +91,20 @@ export default async function handler(req, res) {
     });
     const said = (await check.text()).trim();
     if (!check.ok) {
-      res.status(502).json({
+      /* THREE outcomes, not two. A rejected request is usually the deployment's
+         fault, but not when the rejection is specifically "this JWT is no
+         longer valid": that is a sign-in that has simply run out, which is the
+         commonest thing of all if the panel has been left open, and telling
+         somebody their website is broken when they need to sign in again is
+         the same mistake as telling an administrator they are not one. */
+      const expired = check.status === 401 && /PGRST301|JWT|expired/i.test(said);
+      res.status(expired ? 401 : 502).json({
         ok: false,
-        error: 'The club database would not answer the permission check, so nothing was published. '
-          + 'This is a fault in the website, not with your account.',
-        detail: `${check.status} ${said.slice(0, 200)}`,
+        error: expired
+          ? 'Your sign-in has expired, so nothing was published. Sign in again and press it once more.'
+          : 'The club database would not answer the permission check, so nothing was published. '
+            + 'This is a fault in the website, not with your account.',
+        detail: expired ? undefined : `${check.status} ${said.slice(0, 200)}`,
       });
       return;
     }

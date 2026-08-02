@@ -355,7 +355,17 @@
      the squad; shirt numbers stay the storage key, which is what the record
      has always used, and are never shown on the website.
      ========================================================================== */
-  var SQUAD = (SEED.squad || []).slice().sort(function (a, b) { return a.num - b.num; });
+  /* The squad, and anyone on trial. A trialist plays in a match like anybody
+     else and so has to be pickable in one, but has no profile and appears in
+     no club record; the site keeps them apart, and here the only difference is
+     that the dropdown says so. Their numbers start at 900, allocated by the
+     panel, so they can never collide with a squad number. */
+  var TRIALISTS = (SEED.trialists || []).slice()
+    .sort(function (a, b) { return a.name.localeCompare(b.name); });
+  var SQUAD = (SEED.squad || []).slice().sort(function (a, b) { return a.num - b.num; })
+    .concat(TRIALISTS.map(function (t) {
+      return { num: t.num, name: t.name, pos: '', trial: true };
+    }));
   var nameOfNum = {};
   SQUAD.forEach(function (p) { nameOfNum[p.num] = p.name; });
 
@@ -384,7 +394,7 @@
         '<option value="">' + (free.length ? 'Choose a player' : 'Everyone is already on the list') + '</option>' +
         free.map(function (p) {
           return '<option value="' + p.num + '">' + esc(p.name) +
-            (p.pos ? ' (' + esc(p.pos) + ')' : '') + '</option>';
+            (p.trial ? ' (on trial)' : p.pos ? ' (' + esc(p.pos) + ')' : '') + '</option>';
         }).join('') +
       '</select>' +
       (hint ? '<p class="field__hint">' + esc(hint) + '</p>' : '') +
@@ -560,7 +570,7 @@
     return (blank ? '<option value="">' + esc(blank) + '</option>' : '') +
       SQUAD.map(function (p) {
         return '<option value="' + p.num + '"' + (p.num === chosen ? ' selected' : '') +
-          '>' + esc(p.name) + '</option>';
+          '>' + esc(p.name) + (p.trial ? ' (on trial)' : '') + '</option>';
       }).join('');
   }
 

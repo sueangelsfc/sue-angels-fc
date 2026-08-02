@@ -193,6 +193,11 @@ const adminSeed = {
      shirt numbers into JSON and hoping. Numbers are the storage key the match
      record already uses; they are never shown on the website. */
   squad: d.squad.map((p) => ({ num: p.num, name: p.name, pos: p.position || '' })),
+  /* Trialists. They are picked on a team sheet like anybody else and have no
+     profile, no squad card and no place in any club record, which is what a
+     trial is. Numbers run from 900 so they can never collide with a real one. */
+  trialists: Object.entries(d.trialists || {})
+    .map(([num, name]) => ({ num: Number(num), name })),
   /* Fixture fields per match, so opening an existing record shows the real
      date and scoreline instead of an empty form. Rows edited in the panel
      carry their own copy and win over this. */

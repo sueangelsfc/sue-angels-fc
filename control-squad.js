@@ -97,6 +97,15 @@
     var row = rows.filter(function (r) { return r.key === 'roster:s2627'; })[0];
     return ((row && row.data && row.data.players) || []).filter(function (p) { return p && p.num; });
   }
+  /* Trialists. Deliberately NOT squad members: they have no profile, no card
+     and no place in any club record. They exist so that a friendly they played
+     in can name them instead of saying "No. 901", which is the whole point of
+     having them at all. Numbers run from 900 up so they can never collide. */
+  function trialistList(rows) {
+    var row = rows.filter(function (r) { return r.key === 'roster:trialists'; })[0];
+    return ((row && row.data && row.data.players) || []).filter(function (t) { return t && t.name; });
+  }
+
   function staffList(rows) {
     var row = rows.filter(function (r) { return r.key === 'roster:coaches'; })[0];
     return ((row && row.data && row.data.coaches) || []).filter(function (c) { return c && c.name; });
@@ -142,6 +151,7 @@
         };
       }).sort(function (a, b) { return a.name.localeCompare(b.name); });
 
+      var trialists = trialistList(rows);
       var counts = {};
       STATUSES.forEach(function (x) { counts[x.key] = 0; });
       players.forEach(function (p) { counts[p.status] = (counts[p.status] || 0) + 1; });
@@ -178,6 +188,27 @@
             }).join('')),
           where: [['Squad', '/squad.html'], ['Every player profile', '/squad.html']],
           whereNote: 'retired, departed and now-coaching players keep their profile and their record',
+        }) +
+
+        sec({
+          title: 'On trial',
+          sub: 'Lads having a look who are not signed. They can be picked on a team sheet, score, '
+            + 'and be named in a match report, and they appear <b>nowhere else</b>: no profile, no '
+            + 'squad card, and nothing in the club’s records. That is what a trial is. Sign one and '
+            + 'you add them properly above.',
+          actions: '<button class="btn btn--primary" data-add-trialist>Add a trialist</button>',
+          body: (trialists.length
+            ? table(['Name', 'Added', ''], trialists.map(function (t, i) {
+              return '<tr data-trialist="' + i + '">' +
+                '<td><b>' + esc(t.name) + '</b></td>' +
+                '<td>' + esc(t.added || '') + '</td>' +
+                '<td><button class="btn btn--quiet btn--sm" data-del-trialist>Remove</button></td>' +
+              '</tr>';
+            }).join(''))
+            : empty('Nobody on trial',
+              'Add one and they can be picked on a team sheet straight away.')),
+          where: [['Match reports', '/results.html']],
+          whereNote: 'and nowhere else, on purpose',
         }) +
 
         sec({
@@ -237,8 +268,49 @@
         }).catch(function (err) { toast(err.message, 'error'); refresh('squad'); });
       });
 
+      function saveTrialists(next, msg) {
+        return CP.upsert('player_photos', 'roster:trialists', { players: next })
+          .then(function () { toast(msg, 'success'); refresh('squad'); })
+          .catch(function (err) { toast(err.message, 'error'); });
+      }
+
       host.addEventListener('click', function (e) {
         if (e.target.matches('[data-add-player]')) { if (guard()) playerForm(); return; }
+
+        if (e.target.matches('[data-add-trialist]')) {
+          if (!guard()) return;
+          var said = window.prompt('What is their name?');
+          if (said === null) return;
+          var name = said.trim();
+          if (!name) { toast('A name, please.', 'error'); return; }
+          /* From 900 up, so a trialist number can never be mistaken for a
+             squad number by any record that only stores the number. */
+          var used = {};
+          trialists.forEach(function (t) { used[t.num] = true; });
+          var num = 900;
+          while (used[num]) num++;
+          saveTrialists(trialists.concat([{ num: num, name: name,
+            added: new Date().toISOString().slice(0, 10) }]), name + ' can now be picked');
+          return;
+        }
+        var trow = e.target.closest('tr[data-trialist]');
+        if (trow && e.target.matches('[data-del-trialist]')) {
+          if (!guard()) return;
+          var ti = Number(trow.getAttribute('data-trialist'));
+          confirmAction({
+            title: 'Remove ' + trialists[ti].name + '?',
+            body: 'They can no longer be picked on a team sheet.',
+            detail: 'Any match they have already played in keeps them, because that match happened. '
+              + 'If they have signed, add them to the squad above instead.',
+            confirmLabel: 'Remove',
+          }).then(function (yes) {
+            if (!yes) return;
+            var rest = trialists.slice();
+            rest.splice(ti, 1);
+            saveTrialists(rest, 'Removed');
+          });
+          return;
+        }
         if (e.target.matches('[data-add-staff]')) { if (guard()) staffForm(null); return; }
 
         var srow = e.target.closest('tr[data-staff]');

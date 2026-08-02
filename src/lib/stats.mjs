@@ -337,7 +337,7 @@ export function longestRun(matches, predicate, opts = {}) {
    Appearances, starts, goals, assists, cards, clean sheets and MOTM all come
    from the match detail records. A player who never appears in any detail
    record correctly reports zeroes rather than being omitted. */
-export function playerStats(matches, squad) {
+export function playerStats(matches, squad, trialists = {}) {
   const table = new Map();
   const ensure = (num) => {
     if (!table.has(num)) {
@@ -451,15 +451,31 @@ export function playerStats(matches, squad) {
       minutesNote: 'Minutes are not recorded in Sunday-league match returns.',
     });
   }
-  // Any detail record referencing a number not in the squad (a departed
-  // player) still deserves its stats rather than silently vanishing.
+  /* A number in a match record that is not in the squad is one of two things:
+     a trialist who turned out once, or a departed player from before the
+     roster was written down. A trialist has a name here and gets it; nobody
+     else does, and "No. 24" is the honest alternative to inventing one.
+
+     `trialist` keeps them out of the leaderboards and off the squad page
+     without hiding them from the match they actually played in. A lad on trial
+     who scores in a friendly belongs in that match report and does not belong
+     in the club's season records. */
   for (const [num, s] of table) {
     if (bySquad.has(num)) continue;
+    const known = trialists[String(num)];
     rows.push({
-      ...s, name: `No. ${num}`, slug: `player-${num}`, first: '', last: `No. ${num}`,
-      position: 'Unknown', positionGroup: 'mid', status: 'departed',
+      ...s,
+      name: known || `No. ${num}`,
+      slug: known ? `trialist-${num}` : `player-${num}`,
+      first: known ? known.split(' ')[0] : '',
+      last: known ? (known.split(' ').slice(1).join(' ') || known) : `No. ${num}`,
+      position: 'Unknown',
+      positionGroup: 'mid',
+      status: known ? 'trial' : 'departed',
       savesPerGame: s.keeperApps ? (s.saves / s.keeperApps).toFixed(1) : null,
-      goalContributions: s.goals + s.assists, unknown: true,
+      goalContributions: s.goals + s.assists,
+      unknown: true,
+      trialist: !!known,
     });
   }
   return rows.sort((a, b) => b.goalContributions - a.goalContributions || b.goals - a.goals || a.num - b.num);
@@ -467,6 +483,9 @@ export function playerStats(matches, squad) {
 
 export function leaderboard(rows, key, n = 10) {
   return rows
+    /* Trialists are recorded so a match report can name them and left out of
+       every club record, which is what a trial is. */
+    .filter((r) => !r.trialist)
     .filter((r) => r[key] > 0)
     .sort((a, b) => b[key] - a[key] || b.apps - a.apps || a.num - b.num)
     .slice(0, n);

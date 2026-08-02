@@ -218,8 +218,20 @@ export function buildDataset() {
     };
   });
 
+  /* Trialists. Somebody having a look, who turns out in a friendly and is
+     named on the team sheet. They are deliberately NOT in `squad`, so no
+     profile page is generated and they appear on no squad listing; they exist
+     here only so a match they played in can say who they were rather than
+     "No. 901". Shirt numbers are allocated from 900 up by the panel, so they
+     can never collide with a real one. */
+  const trialists = Object.fromEntries(
+    ((blob('roster:trialists') || {}).players || [])
+      .filter((t) => t && t.num && t.name)
+      .map((t) => [String(t.num), t.name]),
+  );
+
   /* ---- Player statistics (derived) ---- */
-  const players = playerStats(matches, squad);
+  const players = playerStats(matches, squad, trialists);
   const statsByNum = new Map(players.map((p) => [p.num, p]));
   const nameFor = (num) => statsByNum.get(num)?.name || `No. ${num}`;
 
@@ -461,7 +473,7 @@ export function buildDataset() {
     rawMatches: rawResults,
     squad, players, statsByNum, nameFor,
     coaches, table, leagueScorers, leagueScorersByComp, nextDivisionTable, leagueResults,
-    articles, recognition, galleries, playerPhotos, donate, hero,
+    articles, recognition, galleries, playerPhotos, donate, hero, trialists,
     seasons, seasonInfo, competitions, knownClubs, badges,
     currentSeason: ps.CURRENT_SEASON,
     leagueTotalGames: ps.LEAGUE_TOTAL_GAMES,

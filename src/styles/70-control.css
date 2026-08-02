@@ -176,3 +176,52 @@ body:has(.cp) .atmos__blob { animation: none; }
 .cp-menubtn[aria-expanded="true"]{background: rgb(var(--brand-rgb) / 0.16);
   border-color: var(--border-brand); color: var(--brand-text);}
 @media (min-width: 900px){ .cp-menubtn{display: none;} }
+
+/* ---- Match detail: pitch, positions, goal rows --------------------------- */
+.me__posgrid{display: grid; gap: var(--space-2); margin-block: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr));}
+.me__pos{display: flex; align-items: center; gap: var(--space-2);
+  font-size: var(--step--2); color: var(--text-muted);}
+.me__pos span{flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.me__pos .select{width: 84px; flex: 0 0 auto; padding-block: 4px;}
+
+/* Portrait pitch, us attacking upward. */
+.pitch{position: relative; width: min(100%, 320px); aspect-ratio: 68 / 100;
+  margin: var(--space-4) auto var(--space-2); border-radius: var(--radius-sm);
+  overflow: hidden; border: 1px solid var(--border);}
+.pitch__grass{position: absolute; inset: 0;
+  background:
+    linear-gradient(180deg, rgb(var(--brand-rgb) / 0.05), transparent 60%),
+    repeating-linear-gradient(180deg, #0e1412 0 10%, #111917 10% 20%);}
+.pitch__grass::after{content: ''; position: absolute; inset: 6%;
+  border: 1px solid rgb(255 255 255 / 0.13); border-radius: 2px;}
+.pitch__p{position: absolute; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 1px; width: 58px;}
+.pitch__p b{display: grid; place-items: center; width: 26px; height: 26px;
+  border-radius: 50%; background: var(--brand); color: var(--text-on-brand);
+  font-size: 9px; font-weight: var(--weight-bold);}
+.pitch__p i{font-style: normal; font-size: 9px; color: var(--text);
+  text-shadow: 0 1px 3px #000; text-align: center; line-height: 1.1;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 58px;}
+.pitch__empty{position: absolute; inset: 0; display: grid; place-items: center;
+  padding: var(--space-5); text-align: center;
+  font-size: var(--step--2); color: var(--text-subtle);}
+.pitch__meta{text-align: center; font-size: var(--step--2); color: var(--text-muted);
+  margin-block-end: var(--space-4);}
+
+/* A goal is a row, because it has a minute and a manner as well as a scorer. */
+.me__row{display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) 0; border-block-end: 1px solid var(--border);}
+.me__who{flex: 1 1 150px; min-width: 0; padding-block: 5px;}
+.me__min{width: 68px; flex: 0 0 auto; padding-block: 5px; text-align: center;}
+.me__seg{display: inline-flex; border: 1px solid var(--border);
+  border-radius: var(--radius-pill); overflow: hidden;}
+.me__segb{padding: 5px 10px; border: 0; background: transparent;
+  color: var(--text-muted); font-size: var(--step--2); cursor: pointer;}
+.me__segb.is-on{background: rgb(var(--brand-rgb) / 0.18); color: var(--brand-text);
+  font-weight: var(--weight-semi);}
+.me__x{margin-inline-start: auto; width: 28px; height: 28px; flex: 0 0 auto;
+  border: 1px solid var(--border); border-radius: 50%; background: transparent;
+  color: var(--text-subtle); font-size: 16px; line-height: 1; cursor: pointer;}
+.me__x:hover{border-color: var(--error); color: var(--error);}
+.me__none{font-size: var(--step--2); color: var(--text-subtle); padding-block: var(--space-2);}

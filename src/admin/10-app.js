@@ -376,7 +376,8 @@
                 '<span style="font-size:var(--step--2);color:var(--text-subtle)">' + esc(r.key) + '</span></td>' +
               '<td>' + esc(f.competition || '') + '</td>' +
               '<td>' + esc(f.kick || '') + '</td>' +
-              '<td><button class="btn btn--ghost btn--sm" data-del>Remove</button></td>' +
+              '<td><button class="btn btn--ghost btn--sm" data-fx-edit>Edit</button> ' +
+                '<button class="btn btn--quiet btn--sm" data-del>Remove</button></td>' +
             '</tr>';
           }).join(''))
           : empty('No fixtures stored', 'Add one above and it appears on the website immediately, including the next-match card on the home page.'));
@@ -418,7 +419,34 @@
         if (el) el.addEventListener('input', paintPreview);
       });
 
+      /* Editing reuses the form above rather than opening a second one: a
+         fixture has six fields and two places to change them is one too many.
+         The key is held so a date or opponent change rewrites the same row
+         instead of leaving the old one behind. */
+      var editingKey = null;
+      function loadForEdit(key) {
+        var rec = list.filter(function (x) { return x.key === key; })[0];
+        if (!rec) return;
+        var f = rec.data || {};
+        var weAreHome = f.home ? !!/Sue.s Angels/.test(f.home) : true;
+        $('#fx-date', host).value = f.iso || isoFromPretty(f.date) || '';
+        $('#fx-kick', host).value = f.kick || '';
+        $('#fx-opp', host).value = weAreHome ? (f.away || '') : (f.home || '');
+        $('#fx-comp', host).value = f.competition || '';
+        $('#fx-ha', host).value = f.neutral ? 'neutral' : (weAreHome ? 'home' : 'away');
+        $('#fx-venue', host).value = f.venue || '';
+        editingKey = key;
+        $('[data-fx-add]', host).textContent = 'Save changes';
+        paintPreview();
+        $('#fx-date', host).scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
       host.addEventListener('click', function (e) {
+        if (e.target.matches('[data-fx-edit]')) {
+          if (!guard()) return;
+          loadForEdit(e.target.closest('tr[data-key]').getAttribute('data-key'));
+          return;
+        }
         if (e.target.matches('[data-import]')) {
           if (!guard()) return;
           e.target.setAttribute('data-loading', 'true');
@@ -447,10 +475,20 @@
           var f = readForm();
           if (!f.iso) { err.textContent = 'Pick a date.'; err.hidden = false; return; }
           if (!f.opponent) { err.textContent = 'Name the opponent.'; err.hidden = false; return; }
-          if (have[f.key]) { err.textContent = 'A fixture with the key ' + f.key + ' already exists.'; err.hidden = false; return; }
+          if (have[f.key] && f.key !== editingKey) {
+            err.textContent = 'A fixture with the key ' + f.key + ' already exists.';
+            err.hidden = false; return;
+          }
           err.hidden = true;
+          var wasEditing = editingKey;
           CP.upsert('fixtures', f.key, f.row).then(function () {
-            toast('Fixture added', 'success');
+            /* Changing the date or the opponent changes the derived key, so
+               the row it used to live under has to go or the fixture appears
+               twice. */
+            if (wasEditing && wasEditing !== f.key) return CP.remove('fixtures', wasEditing);
+            return null;
+          }).then(function () {
+            toast(wasEditing ? 'Fixture updated' : 'Fixture added', 'success');
             refresh('fixtures');
           }).catch(function (e2) { err.textContent = e2.message; err.hidden = false; });
           return;
@@ -517,6 +555,135 @@
         return '<option value="' + esc(o.v) + '"' + (String(o.v) === String(value) ? ' selected' : '') + '>' +
           esc(o.t) + '</option>';
       }).join('') + '</select></div>';
+  }
+
+
+  /* ==========================================================================
+     MATCH DETAIL: positions, the pitch, and how a goal was scored
+
+     The retired MatchEntry.jsx recorded far more than a list of scorers, and
+     the first version of this form threw all of it away: where each player
+     lined up, the formation that fell out of that, what minute a goal went
+     in, whether it came from open play, a set piece or the spot, which set
+     piece, who kept a clean sheet, cards, penalties saved and missed. The
+     website already reads several of these, so losing them made pages
+     thinner, not just the panel.
+     ========================================================================== */
+
+  /* Portrait pitch, us attacking upward. Same coordinates the old editor
+     used, so a formation drawn then draws identically now. */
+  var PITCH_XY = {
+    GK: [50, 92], CB: [50, 80], LCB: [35, 81], RCB: [65, 81],
+    LB: [15, 75], RB: [85, 75], LWB: [13, 64], RWB: [87, 64],
+    CDM: [50, 66], DM: [50, 66], CM: [50, 51], LCM: [33, 52], RCM: [67, 52],
+    LM: [15, 49], RM: [85, 49], CAM: [50, 37], AM: [50, 37],
+    LW: [17, 27], RW: [83, 27], SS: [50, 28], CF: [50, 21], ST: [50, 14],
+  };
+  var POS_CODES = ['GK', 'LB', 'LCB', 'CB', 'RCB', 'RB', 'LWB', 'RWB',
+    'CDM', 'DM', 'LCM', 'CM', 'RCM', 'LM', 'RM', 'CAM', 'AM',
+    'LW', 'RW', 'SS', 'CF', 'ST'];
+
+  /* Formation from the XI: count the outfield players in each band and read
+     it back as 4-4-2. Derived rather than typed, so it cannot contradict the
+     line-up beside it. */
+  function detectFormation(starters) {
+    var band = { def: 0, mid: 0, fwd: 0 };
+    var placed = 0;
+    starters.forEach(function (st) {
+      var c = (st.positions || [])[0];
+      if (!c || c === 'GK') return;
+      placed++;
+      if (/^(L|R|LC|RC)?(B|WB|CB)$/.test(c)) band.def++;
+      else if (/^(L|R|LC|RC)?(M|DM|CM|AM|CDM|CAM)$/.test(c)) band.mid++;
+      else band.fwd++;
+    });
+    if (placed < 6) return null;
+    return band.def + '-' + band.mid + '-' + band.fwd;
+  }
+
+  function pitchSvg(starters) {
+    var placed = starters.filter(function (s) { return (s.positions || [])[0] && PITCH_XY[s.positions[0]]; });
+    var unplaced = starters.filter(function (s) { return !((s.positions || [])[0] && PITCH_XY[s.positions[0]]); });
+    var form = detectFormation(starters);
+    return '<div class="pitch">' +
+      '<div class="pitch__grass" aria-hidden="true"></div>' +
+      (placed.length ? placed.map(function (s) {
+        var xy = PITCH_XY[s.positions[0]];
+        var nm = (nameOfNum[s.num] || ('#' + s.num)).split(' ').slice(-1)[0];
+        return '<span class="pitch__p" style="left:' + xy[0] + '%;top:' + xy[1] + '%">' +
+          '<b>' + esc(s.positions[0]) + '</b><i>' + esc(nm) + '</i></span>';
+      }).join('') : '<p class="pitch__empty">Give the starters a position and the shape appears here</p>') +
+      '</div>' +
+      '<p class="pitch__meta">' + (form ? 'Formation <b>' + esc(form) + '</b>' : 'Formation not detected yet') +
+        (unplaced.length ? ' · ' + unplaced.length + ' without a position' : '') + '</p>';
+  }
+
+  var GOAL_TYPES = [['open', 'Open play'], ['set', 'Set piece'], ['pen', 'Penalty']];
+  var SET_SOURCES = [['corner', 'Corner'], ['freekick', 'Free kick'], ['throwin', 'Throw in']];
+
+  /* One row per goal, in the order they went in. Minute is optional because a
+     Sunday-league team sheet often does not record it, and an invented minute
+     is worse than an honest blank. */
+  function goalRows(goals) {
+    if (!goals.length) return '<p class="me__none">No goals recorded.</p>';
+    return goals.map(function (g, i) {
+      return '<div class="me__row" data-goal="' + i + '">' +
+        '<select class="select me__who" data-g-num>' +
+          SQUAD.map(function (p) {
+            return '<option value="' + p.num + '"' + (p.num === g.num ? ' selected' : '') + '>' + esc(p.name) + '</option>';
+          }).join('') + '</select>' +
+        '<input class="input me__min" type="number" min="1" max="130" placeholder="min" ' +
+          'value="' + (g.minute != null ? esc(g.minute) : '') + '" data-g-min>' +
+        '<span class="me__seg" role="group" aria-label="How it was scored">' +
+          GOAL_TYPES.map(function (t) {
+            return '<button type="button" class="me__segb' + ((g.type || 'open') === t[0] ? ' is-on' : '') +
+              '" data-g-type="' + t[0] + '">' + t[1] + '</button>';
+          }).join('') + '</span>' +
+        '<span class="me__seg me__seg--src"' + ((g.type === 'set') ? '' : ' hidden') + ' role="group" aria-label="Set piece">' +
+          SET_SOURCES.map(function (t) {
+            return '<button type="button" class="me__segb' + (g.setType === t[0] ? ' is-on' : '') +
+              '" data-g-src="' + t[0] + '">' + t[1] + '</button>';
+          }).join('') + '</span>' +
+        '<button type="button" class="me__x" data-g-del aria-label="Remove this goal">&times;</button>' +
+      '</div>';
+    }).join('');
+  }
+
+  function assistRows(assists) {
+    if (!assists.length) return '<p class="me__none">No assists recorded.</p>';
+    return assists.map(function (a, i) {
+      return '<div class="me__row" data-assist="' + i + '">' +
+        '<select class="select me__who" data-a-num>' +
+          SQUAD.map(function (p) {
+            return '<option value="' + p.num + '"' + (p.num === a.num ? ' selected' : '') + '>' + esc(p.name) + '</option>';
+          }).join('') + '</select>' +
+        '<input class="input me__min" type="number" min="1" max="130" placeholder="min" ' +
+          'value="' + (a.minute != null ? esc(a.minute) : '') + '" data-a-min>' +
+        '<button type="button" class="me__x" data-a-del aria-label="Remove this assist">&times;</button>' +
+      '</div>';
+    }).join('');
+  }
+
+
+  /* These lists were stored as bare numbers in some records and as objects in
+     others, so read both rather than losing half of them. */
+  function numOf(x) { return (x && typeof x === 'object') ? x.num : x; }
+
+  /* One row per starter: who, and where they lined up. The position drives
+     the pitch and the formation, so this is the field that makes the rest of
+     the section mean anything. */
+  function positionRows(starters) {
+    if (!starters.length) return '<p class="me__none">Pick the starting eleven above.</p>';
+    return '<div class="me__posgrid">' + starters.map(function (st, i) {
+      var code = (st.positions || [])[0] || '';
+      return '<label class="me__pos" data-pos-row="' + i + '">' +
+        '<span>' + esc(nameOfNum[st.num] || ('#' + st.num)) + '</span>' +
+        '<select class="select" data-pos-num="' + st.num + '">' +
+          '<option value="">Position</option>' +
+          POS_CODES.map(function (c) {
+            return '<option value="' + c + '"' + (c === code ? ' selected' : '') + '>' + c + '</option>';
+          }).join('') + '</select></label>';
+    }).join('') + '</div>';
   }
 
   M.results = function (host) {
@@ -602,13 +769,32 @@
 
             '<h3 class="mform__h">Who played</h3>' +
             playerPicker('starters', (d.starters || []).map(function (x) { return x.num; }), 'Starting eleven') +
+            '<div data-positions>' + positionRows(d.starters || []) + '</div>' +
+            '<div data-pitch>' + pitchSvg(d.starters || []) + '</div>' +
             playerPicker('bench', (d.bench || []).map(function (x) { return x.num; }), 'Bench') +
 
-            '<h3 class="mform__h">Goals and assists</h3>' +
-            '<p style="font-size:var(--step--2);color:var(--text-subtle);margin-bottom:var(--space-3)">' +
-              'Click a player once per goal. Click again for a second.</p>' +
-            playerPicker('goals', (d.goals || []).map(function (x) { return x.num; }), 'Scorers') +
-            playerPicker('assists', (d.assists || []).map(function (x) { return x.num; }), 'Assists') +
+            '<h3 class="mform__h">Goals</h3>' +
+            '<div data-goals>' + goalRows(d.goals || []) + '</div>' +
+            '<button type="button" class="btn btn--ghost btn--sm" data-add-goal>Add a goal</button>' +
+
+            '<h3 class="mform__h">Assists</h3>' +
+            '<div data-assists>' + assistRows(d.assists || []) + '</div>' +
+            '<button type="button" class="btn btn--ghost btn--sm" data-add-assist>Add an assist</button>' +
+
+            '<h3 class="mform__h">Cards and the goalkeeper</h3>' +
+            playerPicker('yellowCards', (d.yellowCards || []).map(numOf), 'Yellow cards') +
+            playerPicker('redCards', (d.redCards || []).map(numOf), 'Red cards') +
+            playerPicker('cleanSheets', (d.cleanSheets || []).map(numOf), 'Clean sheet') +
+            '<div class="grid grid--2" style="gap:var(--space-4)">' +
+              '<div class="field"><label class="field__label" for="m-oppgoals">Opponent goals conceded from penalties</label>' +
+                '<input class="input" id="m-oppgoals" type="number" min="0" value="' +
+                  esc(d.penaltiesConceded != null ? d.penaltiesConceded : 0) + '"></div>' +
+              '<div class="field"><label class="field__label" for="m-oppreds">Opponent red cards</label>' +
+                '<input class="input" id="m-oppreds" type="number" min="0" value="' +
+                  esc((d.opponentRedCards || []).length || 0) + '"></div>' +
+            '</div>' +
+            playerPicker('penaltiesSaved', (d.penaltiesSaved || []).map(numOf), 'Penalties saved') +
+            playerPicker('penaltiesMissed', (d.penaltiesMissed || []).map(numOf), 'Penalties missed') +
 
             '<h3 class="mform__h">Recognition</h3>' +
             '<div class="grid grid--2" style="gap:var(--space-4)">' +
@@ -635,9 +821,36 @@
         var counts = {
           starters: (d.starters || []).map(function (x) { return x.num; }),
           bench: (d.bench || []).map(function (x) { return x.num; }),
-          goals: (d.goals || []).map(function (x) { return x.num; }),
-          assists: (d.assists || []).map(function (x) { return x.num; }),
+          yellowCards: (d.yellowCards || []).map(numOf),
+          redCards: (d.redCards || []).map(numOf),
+          cleanSheets: (d.cleanSheets || []).map(numOf),
+          penaltiesSaved: (d.penaltiesSaved || []).map(numOf),
+          penaltiesMissed: (d.penaltiesMissed || []).map(numOf),
         };
+        /* Goals and assists are records, not tallies: each carries a minute
+           and, for a goal, how it was scored. */
+        var goals = (d.goals || []).map(function (g) {
+          return { num: g.num, minute: g.minute != null ? g.minute : null,
+            type: g.type || (g.penalty ? 'pen' : 'open'), setType: g.setType || null };
+        });
+        var assists = (d.assists || []).map(function (a) {
+          return { num: a.num, minute: a.minute != null ? a.minute : null };
+        });
+        /* Position per shirt number, seeded from the record. */
+        var posByNum = {};
+        (d.starters || []).forEach(function (st) { posByNum[st.num] = (st.positions || [])[0] || ''; });
+
+        function startersNow() {
+          return counts.starters.map(function (n) {
+            return { num: n, positions: posByNum[n] ? [posByNum[n]] : [] };
+          });
+        }
+        function repaintShape() {
+          $('[data-positions]', back).innerHTML = positionRows(startersNow());
+          $('[data-pitch]', back).innerHTML = pitchSvg(startersNow());
+        }
+        function repaintGoals() { $('[data-goals]', back).innerHTML = goalRows(goals); }
+        function repaintAssists() { $('[data-assists]', back).innerHTML = assistRows(assists); }
 
         /* One click adds, and for goals and assists a second click adds a
            SECOND one rather than removing the first, because a brace is
@@ -648,15 +861,43 @@
             var group = pick.closest('[data-pick]').getAttribute('data-pick');
             var num = Number(pick.getAttribute('data-num'));
             var arr = counts[group];
-            var multi = group === 'goals' || group === 'assists';
+            if (!arr) return;
             var i = arr.indexOf(num);
-            if (e.shiftKey || (!multi && i !== -1)) {
-              if (i !== -1) arr.splice(i, 1);
-            } else arr.push(num);
-            var n = arr.filter(function (x) { return x === num; }).length;
-            pick.classList.toggle('is-on', n > 0);
-            pick.innerHTML = esc(nameOfNum[num]) + (n > 1 ? ' <b>x' + n + '</b>' : '');
+            if (i !== -1) arr.splice(i, 1); else arr.push(num);
+            pick.classList.toggle('is-on', arr.indexOf(num) !== -1);
+            /* Dropping a starter drops their position with them, or the pitch
+               keeps drawing somebody who is no longer in the team. */
+            if (group === 'starters') { if (arr.indexOf(num) === -1) delete posByNum[num]; repaintShape(); }
             return;
+          }
+          if (e.target.matches('[data-add-goal]')) {
+            goals.push({ num: counts.starters[0] || SQUAD[0].num, minute: null, type: 'open', setType: null });
+            repaintGoals(); return;
+          }
+          if (e.target.matches('[data-add-assist]')) {
+            assists.push({ num: counts.starters[0] || SQUAD[0].num, minute: null });
+            repaintAssists(); return;
+          }
+          if (e.target.matches('[data-g-del]')) {
+            goals.splice(Number(e.target.closest('[data-goal]').getAttribute('data-goal')), 1);
+            repaintGoals(); return;
+          }
+          if (e.target.matches('[data-a-del]')) {
+            assists.splice(Number(e.target.closest('[data-assist]').getAttribute('data-assist')), 1);
+            repaintAssists(); return;
+          }
+          if (e.target.matches('[data-g-type]')) {
+            var gi = Number(e.target.closest('[data-goal]').getAttribute('data-goal'));
+            goals[gi].type = e.target.getAttribute('data-g-type');
+            /* A penalty or an open-play goal has no set-piece source, so
+               clear it rather than leaving a stale corner on a penalty. */
+            if (goals[gi].type !== 'set') goals[gi].setType = null;
+            repaintGoals(); return;
+          }
+          if (e.target.matches('[data-g-src]')) {
+            var gj = Number(e.target.closest('[data-goal]').getAttribute('data-goal'));
+            goals[gj].setType = e.target.getAttribute('data-g-src');
+            repaintGoals(); return;
           }
           if (e.target.matches('[data-cancel]') || e.target === back) { back.remove(); return; }
           if (!e.target.matches('[data-save]')) return;
@@ -683,10 +924,23 @@
             away: home ? oppName : SEED.club,
             competition: $('#m-comp', back).value.trim(),
             kind: kind,
-            starters: counts.starters.map(function (n) { return { num: n, positions: posOf(n) }; }),
+            starters: startersNow(),
             bench: counts.bench.map(function (n) { return { num: n }; }),
-            goals: counts.goals.map(function (n) { return { num: n }; }),
-            assists: counts.assists.map(function (n) { return { num: n }; }),
+            goals: goals.map(function (g) {
+              return { num: g.num, minute: g.minute, type: g.type,
+                penalty: g.type === 'pen', setType: g.type === 'set' ? g.setType : null };
+            }),
+            assists: assists.map(function (a) { return { num: a.num, minute: a.minute }; }),
+            yellowCards: counts.yellowCards.map(function (n) { return { num: n }; }),
+            redCards: counts.redCards.map(function (n) { return { num: n }; }),
+            cleanSheets: counts.cleanSheets.map(function (n) { return { num: n }; }),
+            penaltiesSaved: counts.penaltiesSaved.map(function (n) { return { num: n }; }),
+            penaltiesMissed: counts.penaltiesMissed.map(function (n) { return { num: n }; }),
+            penaltiesConceded: Number($('#m-oppgoals', back).value || 0),
+            opponentRedCards: new Array(Number($('#m-oppreds', back).value || 0)).fill({}),
+            /* Derived from where the XI actually lined up, so it can never
+               disagree with the team sheet printed beside it. */
+            formation: detectFormation(startersNow()),
             motm: $('#m-motm', back).value === '' ? null : Number($('#m-motm', back).value),
             captain: $('#m-capt', back).value === '' ? null : Number($('#m-capt', back).value),
             commentary: $('#m-report', back).value,
@@ -702,6 +956,29 @@
             back.remove();
             refresh('results');
           }).catch(function (e2) { err.textContent = e2.message; err.hidden = false; });
+        });
+
+        back.addEventListener('change', function (e) {
+          if (e.target.matches('[data-pos-num]')) {
+            posByNum[Number(e.target.getAttribute('data-pos-num'))] = e.target.value;
+            $('[data-pitch]', back).innerHTML = pitchSvg(startersNow());
+            return;
+          }
+          var gr = e.target.closest('[data-goal]');
+          if (gr && e.target.matches('[data-g-num]')) { goals[Number(gr.getAttribute('data-goal'))].num = Number(e.target.value); return; }
+          var ar = e.target.closest('[data-assist]');
+          if (ar && e.target.matches('[data-a-num]')) { assists[Number(ar.getAttribute('data-assist'))].num = Number(e.target.value); }
+        });
+        back.addEventListener('input', function (e) {
+          var gr = e.target.closest('[data-goal]');
+          if (gr && e.target.matches('[data-g-min]')) {
+            goals[Number(gr.getAttribute('data-goal'))].minute = e.target.value === '' ? null : Number(e.target.value);
+            return;
+          }
+          var ar = e.target.closest('[data-assist]');
+          if (ar && e.target.matches('[data-a-min]')) {
+            assists[Number(ar.getAttribute('data-assist'))].minute = e.target.value === '' ? null : Number(e.target.value);
+          }
         });
 
         var rep = $('#m-report', back);

@@ -115,10 +115,24 @@ export function normaliseMatch(raw, detail) {
 
   let outcome = null;
   if (isWalkover) {
-    // Every walkover in the record was awarded to us. Verify from the record
-    // rather than assuming, and leave it unset if the wording says otherwise.
-    const said = String(detail?.commentary || '');
-    outcome = /awarded a walkover/i.test(said) && /Sue.s Angels/i.test(said) ? 'W' : null;
+    /* `wo` says which side the tie was awarded to: H-W the home club, A-W the
+       away club. It is the record's own field, already carried by all three
+       stored walkovers, and it is what the control panel writes when somebody
+       picks a club from the "awarded to" list.
+
+       It replaces reading the outcome out of the match report, which could
+       only ever produce a win: a walkover AGAINST the club would have been
+       recorded as a match with no result at all, silently missing from the
+       played column. Three points hung on the phrasing of a sentence. */
+    const wo = String(raw.wo || '').trim().toUpperCase();
+    if (wo === 'H-W') outcome = weAreHome ? 'W' : 'L';
+    else if (wo === 'A-W') outcome = weAreHome ? 'L' : 'W';
+    else {
+      // Older records carry no `wo`. Fall back to the report's wording rather
+      // than assuming, and leave it unset if the wording does not say.
+      const said = String(detail?.commentary || '');
+      outcome = /awarded a walkover/i.test(said) && /Sue.s Angels/i.test(said) ? 'W' : null;
+    }
   } else if (countsGoals) {
     outcome = ourGoals > theirGoals ? 'W' : ourGoals === theirGoals ? 'D' : 'L';
   }
@@ -170,7 +184,7 @@ export function normaliseMatch(raw, detail) {
         ? `${home} ${hs}-${as} ${away}`
         : `${home} v ${away}`,
     resultNote: isWalkover
-      ? 'Awarded as a walkover'
+      ? (outcome === 'L' ? 'Conceded as a walkover' : 'Awarded as a walkover')
       : isPenalty
         ? 'Decided on penalties'
         : null,

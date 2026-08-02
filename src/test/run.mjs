@@ -348,12 +348,28 @@ check('CSP has frame-ancestors', /frame-ancestors/.test(csp));
    login card stayed on top of the panel after a successful sign-in. The
    blanket rule is the fix; this is here so removing it fails loudly. */
 {
-  const cpCss = fs.readFileSync(path.join(ROOT, 'src', 'styles', '70-control.css'), 'utf8');
+  const cpCss = fs.readFileSync(path.join(ROOT, 'control.css'), 'utf8');
   check('control panel enforces the hidden attribute',
     /\[hidden\]\s*\{[^}]*display:\s*none\s*!important/.test(cpCss));
   /* And the two screens it applies to are still the two screens. */
   const cpHtml = pages.get('control.html') || '';
   check('control panel still has both screens', /id="cp-gate"/.test(cpHtml) && /id="cp-app"[^>]*hidden/.test(cpHtml));
+
+  /* The panel's stylesheet is the panel's. It used to be bundled into sa.css,
+     so every visitor to the website downloaded the whole control panel's
+     styling to render a page that cannot show a pixel of it. If a panel class
+     reappears in sa.css this has silently regressed. */
+  const publicCss = fs.readFileSync(path.join(ROOT, 'sa.css'), 'utf8');
+  check('panel CSS is not in the public bundle',
+    !/\.cp-side|\.cp-nav__item|\.mform__|\.pitch__grass/.test(publicCss),
+    'control panel styling has leaked back into sa.css');
+  check('control.html links its own stylesheet',
+    /href="\/control\.css\?v=/.test(cpHtml));
+  /* And it still links the shared one, because it uses .btn, .panel, .field,
+     .modal and .tabs from it. Dropping that link is how the panel becomes
+     unstyled while every test above still passes. */
+  check('control.html still links the shared stylesheet',
+    /href="\/sa\.css\?v=/.test(cpHtml));
 }
 
 check('control panel is noindex in headers',
@@ -618,12 +634,85 @@ check('share cards are not all identical', ogSeen.size >= 15, `${ogSeen.size} di
    been the same every time: this file ships all thirteen modules to somebody
    who opens one. The next module added here must come with the split, not
    another line in this comment. */
-const BUDGET = { 'sa.css': 28, 'home.css': 26, 'sa.js': 24, 'control.js': 30 };
+/* control.js 30 -> 18, and sa.css 28 -> 22. THE SPLIT HAPPENED.
+
+   The comment above said the next module added here had to come with it, and
+   it did. Two things changed and both are structural rather than a diet:
+
+   The panel's own stylesheet left sa.css. It was src/styles/70-control.css,
+   inside the sheet every public page links, so a visitor reading the fixtures
+   list downloaded the entire control panel's styling to render a page that
+   cannot show a pixel of it. control.html links control.css on its own now.
+
+   And the two heaviest modules left control.js: the match form (the pitch,
+   the position codes, the pickers, five tabs) and the photograph tagger. They
+   are fetched the first time their panel is opened and cached from then on,
+   so signing in to read the inbox downloads neither.
+
+   The numbers below are therefore ceilings over a smaller thing, not a raise.
+   A new module goes in src/admin/lazy/ with its own entry here; adding one to
+   control.js means everybody downloads it forever, which is the mistake this
+   split exists to undo. */
+const BUDGET = {
+  'sa.css': 22,
+  'home.css': 26,
+  'sa.js': 24,
+  'control.css': 7,
+  'control.js': 18,
+  'control-match.js': 18,
+  'control-photos.js': 6,
+};
 for (const [f, kb] of Object.entries(BUDGET)) {
   const raw = fs.readFileSync(path.join(ROOT, f));
   const size = zlib.gzipSync(raw, { level: 9 }).length / 1024;
   check(`${f} within ${kb}KB gzipped`, size <= kb,
     `${size.toFixed(1)}KB gzipped, ${(raw.length / 1024).toFixed(0)}KB raw`);
+}
+
+/* ---- The split stays split ----
+   Every one of these is a way the panel could quietly go back to shipping
+   everything to everybody, or to shipping half of itself and breaking. */
+{
+  const core = fs.readFileSync(path.join(ROOT, 'control.js'), 'utf8');
+  const matchChunk = fs.readFileSync(path.join(ROOT, 'control-match.js'), 'utf8');
+
+  /* The heavy modules are NOT in the core. */
+  check('match form is not in the control.js core',
+    !/M\.results\s*=\s*function/.test(core) && !/PITCH_XY/.test(core),
+    'the match form has moved back into the bundle everybody downloads');
+  check('photo tagger is not in the control.js core', !/M\.phototag\s*=\s*function/.test(core));
+
+  /* The core knows where they are and what they own. A chunk file listed in
+     CHUNK_OF but never emitted would make its panel permanently unopenable. */
+  check('core maps its panels to chunks', /CHUNK_OF\s*=\s*\{[^}]*results:\s*'match'/.test(core));
+  const urls = core.match(/window\.CP_CHUNKS=(\{.*?\});/);
+  check('build stamps hashed chunk URLs into the core', !!urls);
+  if (urls) {
+    const parsed = JSON.parse(urls[1]);
+    for (const [name, url] of Object.entries(parsed)) {
+      check(`chunk ${name} is emitted at ${url.split('?')[0]}`,
+        fs.existsSync(path.join(ROOT, url.split('?')[0])));
+      check(`chunk ${name} is cache-busted`, /\?v=[0-9a-f]{8}$/.test(url));
+    }
+    /* Every panel the core defers must have a chunk to defer to. */
+    for (const owner of core.match(/CHUNK_OF\s*=\s*\{([^}]*)\}/)[1].matchAll(/'([a-z]+)'/g)) {
+      check(`deferred panel maps to a real chunk: ${owner[1]}`, !!parsed[owner[1]]);
+    }
+  }
+
+  /* A chunk borrows the shell's helpers. If it ever declares its own copy of
+     one, the two drift and the panel gets two different confirm dialogs. */
+  check('match chunk borrows the shell helpers', /var U = window\.CPU;/.test(matchChunk));
+  check('match chunk registers into the shared registry', /var M = window\.CPM;/.test(matchChunk));
+  check('core publishes the helper set before any chunk can run',
+    /window\.CPU\s*=\s*\{/.test(core) && core.indexOf('window.CPU') < core.indexOf('function render(key)'));
+
+  /* Routing cannot ask M whether a panel exists any more: nothing lazy is in
+     M until it has been downloaded, so a bookmarked #results would bounce to
+     the dashboard. */
+  check('routing does not gate on a module being loaded',
+    !/M\[start\]\s*\?/.test(core) && /known\(start\)/.test(core),
+    'a deferred panel would fall back to the dashboard when opened by URL');
 }
 
 /* What a visitor actually downloads on a cold load: the core plus the one

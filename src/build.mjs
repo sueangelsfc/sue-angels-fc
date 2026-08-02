@@ -197,6 +197,9 @@ const adminSeed = {
   matches: d.rawMatches.map((m) => ({
     id: m.id, date: m.date || '', kick: m.kick || '', home: m.home || '', away: m.away || '',
     hs: m.hs, as: m.as, kind: m.kind || 'score', competition: m.competition || '',
+    /* Which club a walkover was awarded to, H-W or A-W. Without it the form
+       reopens a walkover with no winner and saving would quietly drop one. */
+    wo: m.wo || '',
   })),
 };
 /* The seed is DATA, and it grew: the squad, every match's fixture fields, the
@@ -209,9 +212,36 @@ const adminSeedJs = `window.SA_SEED=${JSON.stringify(adminSeed)};\n`;
 const seedV = crypto.createHash('sha256').update(adminSeedJs).digest('hex').slice(0, 8);
 write('control-seed.js', adminSeedJs);
 
-adminJs = `window.SA_SUPABASE=${JSON.stringify(cfg.supabase)};window.SA_EMAIL=${JSON.stringify(CLUB.email)};\n${adminJs}`;
+/* ---- Panel modules loaded on demand ----
+   control.js carried all thirteen modules and handed every one of them to
+   somebody who opened one; its budget went 16 -> 18 -> 24 -> 30KB in a single
+   sitting, always for that reason. src/admin/lazy/*.js are the two heaviest,
+   emitted as their own hashed files and fetched the first time their panel is
+   opened. `10-match.js` ships as `control-match.js`: the number is only there
+   to order the source folder, exactly as the page CSS bands work. */
+const lazyDir = path.join(ROOT, 'src', 'admin', 'lazy');
+const chunkUrls = {};
+for (const f of fs.readdirSync(lazyDir).filter((x) => x.endsWith('.js')).sort()) {
+  const name = f.replace(/^\d+-|\.js$/g, '');
+  const body = fs.readFileSync(path.join(lazyDir, f), 'utf8');
+  const v = crypto.createHash('sha256').update(body).digest('hex').slice(0, 8);
+  write(`control-${name}.js`, body);
+  chunkUrls[name] = `control-${name}.js?v=${v}`;
+}
+
+adminJs = `window.SA_SUPABASE=${JSON.stringify(cfg.supabase)};window.SA_EMAIL=${JSON.stringify(CLUB.email)};`
+  + `window.CP_CHUNKS=${JSON.stringify(chunkUrls)};\n${adminJs}`;
 const adminV = crypto.createHash('sha256').update(adminJs).digest('hex').slice(0, 8);
 write('control.js', adminJs);
+
+/* The panel's own stylesheet, linked by control.html and nowhere else.
+   It used to be src/styles/70-control.css, which put it inside sa.css: the
+   panel has always been private, but every visitor to the website was
+   downloading its styling to render a page that cannot show any of it. */
+const adminCssFiles = fs.readdirSync(path.join(ROOT, 'src', 'styles-control')).filter((f) => f.endsWith('.css')).sort();
+const adminCss = absAssets(bundle('styles-control', adminCssFiles));
+const adminCssV = crypto.createHash('sha256').update(adminCss).digest('hex').slice(0, 8);
+write('control.css', adminCss);
 
 /* ---- Schema.org --------------------------------------------------------
    SportsTeam for the club, SportsEvent per match, Article per news item,
@@ -474,6 +504,7 @@ for (const r of routes) {
     path: '/control.html',
     body,
     bodyClass: 'is-control',
+    pageCss: { href: 'control.css', v: adminCssV },
     js: `control.js?v=${adminV}`,
     /* Loaded first and NOT deferred: the modules read window.SA_SEED as they
        define themselves, so it has to be there before the bundle runs. */

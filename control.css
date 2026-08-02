@@ -1,0 +1,506 @@
+/* ==========================================================================
+   CONTROL PANEL
+
+   Calm and dense. It uses the club's tokens so it feels like Sue's Angels,
+   but glass is reserved for the auth card and dialogs: dense tables and long
+   forms sit on flat opaque surfaces because that is what stays readable.
+
+   THIS SHEET IS NOT IN sa.css. It used to be, as src/styles/70-control.css.
+   The panel has always been private, but its STYLING was bundled into the
+   sheet every public page links, so a visitor reading the fixtures list
+   downloaded the whole panel's CSS to render a page that cannot show any of
+   it. control.html links this file on its own now. Nothing about who can
+   reach the panel changes; the public simply stops paying for it, and the
+   panel can afford to be designed properly.
+
+   It still links sa.css too, for the shared components it genuinely uses:
+   .btn, .panel, .field, .input, .select, .badge, .glass, .modal, .tabs,
+   .stat, .state, .table-wrap. Those belong to the site, not the panel, and
+   duplicating them here would be worse than sharing them.
+   ========================================================================== */
+
+/* The whole panel is two screens that swap: the sign-in gate and the app. The
+   swap is done by setting the `hidden` property, and `hidden` is only a
+   browser default of `display: none`, which ANY author rule outranks. Both
+   screens set `display: grid` on themselves, so both outranked it and neither
+   could ever be hidden:
+
+     signed out - the app shell rendered underneath the login card, so a
+                  visitor could scroll past it to the panel chrome
+     signed in  - the login card stayed on top of the panel, which makes a
+                  successful sign-in look like a failed one
+
+   One rule fixes the class rather than the two instances, and `!important` is
+   the point: it has to outrank whatever a component sets on itself, including
+   rules written later. */
+[hidden] { display: none !important; }
+
+/* ---- Auth gate ---- */
+.cp-gate {
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-6) var(--space-5);
+}
+.cp-gate__card { width: min(100%, 420px); padding: var(--space-7) var(--space-6); text-align: center; }
+.cp-gate__crest { display: block; width: 64px; margin: 0 auto var(--space-5); }
+.cp-gate__crest img { width: 100%; height: auto; }
+.cp-gate__title { font-size: var(--step-3); }
+.cp-gate__sub { color: var(--text-subtle); font-size: var(--step--1); margin-block-end: var(--space-6); }
+.cp-gate__form { display: flex; flex-direction: column; gap: var(--space-4); text-align: left; }
+.cp-gate__note {
+  margin-block-start: var(--space-5);
+  font-size: var(--step--2);
+  color: var(--text-subtle);
+}
+
+/* ---- Shell ---- */
+.cp { display: grid; min-height: 100svh; }
+
+.cp-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-5) var(--space-4);
+  background: var(--surface);
+  border-inline-end: 1px solid var(--border);
+}
+@media (max-width: 899px) {
+  .cp-side {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: 60;
+    width: min(84vw, 300px);
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: 0 20px 60px rgb(0 0 0 / 0.5);
+  }
+  .cp-side.is-open { transform: none; }
+}
+@media (min-width: 900px) {
+  .cp { grid-template-columns: 260px 1fr; }
+  .cp-side { position: sticky; top: 0; height: 100svh; }
+}
+
+.cp-side__brand { display: flex; align-items: center; gap: var(--space-3); text-decoration: none; }
+.cp-side__crest { width: 34px; flex: 0 0 auto; }
+.cp-side__crest img { width: 100%; height: auto; }
+.cp-side__brand b { display: block; font-family: var(--font-display); font-size: var(--step--1); }
+.cp-side__brand small { display: block; font-size: var(--step--2); color: var(--text-subtle); }
+
+.cp-nav { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.cp-nav__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--step--1);
+  text-align: left;
+  cursor: pointer;
+}
+.cp-nav__item:hover { background: var(--surface-inset); color: var(--text); }
+.cp-nav__item.is-active { background: rgb(var(--brand-rgb) / 0.14); color: var(--brand-text); font-weight: var(--weight-semi); }
+.cp-nav__item.is-active .ico { color: var(--brand); }
+.cp-nav__count {
+  margin-inline-start: auto;
+  min-width: 20px;
+  padding-inline: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--brand);
+  color: var(--text-on-brand);
+  font-size: var(--step--2);
+  font-weight: var(--weight-bold);
+  text-align: center;
+}
+
+.cp-side__foot { margin-block-start: auto; display: flex; flex-direction: column; gap: var(--space-3); }
+.cp-who { display: flex; align-items: center; gap: var(--space-3); font-size: var(--step--2); }
+.cp-who__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-subtle); flex: 0 0 auto; }
+.cp-who b { display: block; overflow: hidden; text-overflow: ellipsis; }
+.cp-who small { color: var(--text-subtle); }
+
+/* ---- Main ---- */
+.cp-main { display: flex; flex-direction: column; min-width: 0; }
+.cp-top {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg);
+  border-block-end: 1px solid var(--border);
+}
+.cp-top__title { font-size: var(--step-2); margin-inline-end: auto; }
+.cp-top__actions { display: flex; align-items: center; gap: var(--space-2); }
+@media (min-width: 900px) { #cp-menu { display: none; } }
+
+.cp-body { padding: var(--space-6) var(--space-5); flex: 1; min-width: 0; }
+.cp-panel[hidden] { display: none; }
+.cp-panel__loading { display: flex; flex-direction: column; gap: var(--space-3); max-width: 520px; }
+
+/* The panel background is flat, never glass: these views are dense tables. */
+.cp .panel { background: var(--surface); }
+.cp table.data { font-size: var(--step--2); }
+.cp table.data th, .cp table.data td { padding: var(--space-3); vertical-align: middle; }
+.cp table.data td:last-child { text-align: right; white-space: nowrap; }
+
+/* The control panel is a working tool, so the drifting background would be a
+   distraction. Hold it still and quiet here. */
+.cp-gate ~ .atmos, body:has(.cp) .atmos { opacity: 0.5; }
+body:has(.cp) .atmos__blob { animation: none; }
+
+/* The sidebar toggle. Was an unlabelled chevron rotated to point left, which
+   reads as "back": on a window under 900px the sidebar is a drawer and this
+   is the only way to reach it, so it has to look like a menu and say so. */
+.cp-menubtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface-inset);
+  color: var(--text);
+  font-size: var(--step--2);
+  font-weight: var(--weight-semi);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.cp-menubtn:hover { border-color: var(--border-strong); }
+.cp-menubtn[aria-expanded='true'] {
+  background: rgb(var(--brand-rgb) / 0.16);
+  border-color: var(--border-brand);
+  color: var(--brand-text);
+}
+@media (min-width: 900px) { .cp-menubtn { display: none; } }
+
+/* ==========================================================================
+   SECTION FURNITURE
+
+   Every module used to open with a hand-built `<div class="panel"
+   style="padding:var(--space-5);margin-bottom:var(--space-5)">` and an
+   `<h3 style="font-size:var(--step-1)">`: ninety-eight inline style
+   attributes across the file, no two sections quite the same, and no way to
+   restyle the panel without editing thirteen modules. These classes are that
+   pattern, named once.
+   ========================================================================== */
+.cp-sec { margin-block-end: var(--space-6); }
+.cp-sec:last-child { margin-block-end: 0; }
+
+.cp-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-block-end: var(--space-4);
+}
+.cp-head__text { flex: 1 1 320px; min-width: 0; }
+.cp-head__title { font-size: var(--step-1); font-weight: var(--weight-semi); }
+.cp-head__sub {
+  margin-block-start: var(--space-2);
+  max-width: 74ch;
+  font-size: var(--step--1);
+  color: var(--text-muted);
+}
+.cp-head__actions { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+
+/* A card is the panel surface with its padding applied once, here, rather
+   than as an inline style in thirteen modules. */
+.cp-card { padding: var(--space-5); }
+.cp-card + .cp-card { margin-block-start: var(--space-4); }
+
+/* ---- Notes ---------------------------------------------------------------
+   `--warn` is the only one that borrows a status colour, and it never sits
+   next to football data: it is interface feedback about the panel itself,
+   which is exactly what the status tokens are for. */
+.cp-note { font-size: var(--step--1); color: var(--text-muted); max-width: 74ch; }
+.cp-note + .cp-note { margin-block-start: var(--space-3); }
+.cp-note--warn { border-color: var(--warning); }
+.cp-note--warn .cp-head__title { color: var(--warning); }
+.cp-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-block-start: var(--space-3);
+  padding-inline-start: var(--space-5);
+  font-size: var(--step--1);
+}
+
+/* ---- Where it shows on the website ---------------------------------------
+   The commonest question about this panel is "and where does that turn up?".
+   Every module answers it in a strip like this, with a link to the page, so
+   the panel explains the website rather than assuming you hold its map in
+   your head already. */
+.cp-where {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-block-start: var(--space-4);
+  padding-block-start: var(--space-3);
+  border-block-start: 1px solid var(--border);
+  font-size: var(--step--2);
+  color: var(--text-subtle);
+}
+.cp-where b { color: var(--text-muted); font-weight: var(--weight-medium); }
+
+/* ---- Feed rows: recently changed, the audit trail ---- */
+.cp-feed { display: flex; flex-direction: column; }
+.cp-feed__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block: var(--space-3);
+  border-block-end: 1px solid var(--border);
+  font-size: var(--step--1);
+}
+.cp-feed__row:last-child { border-block-end: 0; }
+.cp-feed__row time { color: var(--text-subtle); font-size: var(--step--2); flex: 0 0 auto; }
+.cp-feed__row b {
+  font-weight: var(--weight-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Definition list, used by Settings ---- */
+.cp-dl { display: grid; gap: var(--space-4); }
+.cp-dl dt { font-size: var(--step--2); color: var(--text-subtle); }
+.cp-dl dd { margin: 4px 0 0; font-size: var(--step--1); }
+.cp-dl dd.is-id { font-family: var(--font-mono); font-size: var(--step--2); word-break: break-all; }
+
+/* ==========================================================================
+   THE MATCH FORM
+
+   It was one column two thousand pixels tall inside a modal 780px wide: the
+   match, then six walls of thirty-four name buttons, then the report.
+   Filling it in meant scrolling past everything you were not doing. It is
+   five tabs now, so each part of a match is one screen with the save button
+   always in view.
+   ========================================================================== */
+.mform {
+  width: min(96vw, 1060px);
+  max-height: min(92svh, 940px);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+.mform__head { padding: var(--space-5) var(--space-5) 0; border-block-end: 1px solid var(--border); }
+.mform__title { font-size: var(--step-2); }
+.mform__sub { margin-block-start: 4px; font-size: var(--step--2); color: var(--text-subtle); }
+.mform__tabs { margin-block-start: var(--space-4); }
+.mform__body { flex: 1; min-height: 0; overflow-y: auto; padding: var(--space-5); }
+.mform__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border-block-start: 1px solid var(--border);
+  background: var(--surface);
+}
+.mform__status { flex: 1; min-width: 0; font-size: var(--step--2); color: var(--text-subtle); }
+.mform__h { margin-block: var(--space-5) var(--space-3); font-size: var(--step-0); font-weight: var(--weight-semi); }
+.mform__h:first-child { margin-block-start: 0; }
+
+/* ==========================================================================
+   THE TEAM SHEET
+
+   Picking eleven players was a wall of thirty-four buttons, then a second
+   grid of position selects underneath repeating the same names. Now one
+   dropdown adds a player, and each chosen player is a row carrying their
+   position, beside the pitch those rows draw.
+   ========================================================================== */
+.tsheet { display: grid; gap: var(--space-5); align-items: start; }
+@media (min-width: 820px) { .tsheet { grid-template-columns: 1fr 300px; } }
+
+.picker { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-3); }
+.picker .field { flex: 1 1 220px; min-width: 0; }
+.picker__count { font-size: var(--step--2); color: var(--text-subtle); padding-block-end: 10px; }
+.picker__count.is-full { color: var(--success); }
+.picker__count.is-over { color: var(--error); }
+
+/* One chosen player: the bench, cards, clean sheets and penalties, where all
+   that is recorded is that somebody is on the list. */
+.picked { display: flex; flex-wrap: wrap; gap: 6px; margin-block-start: var(--space-3); }
+.picked__p {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px 5px 12px;
+  border: 1px solid var(--border-brand);
+  border-radius: var(--radius-pill);
+  background: rgb(var(--brand-rgb) / 0.14);
+  color: var(--brand-text);
+  font-size: var(--step--2);
+  font-weight: var(--weight-medium);
+}
+.picked__x {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(var(--brand-rgb) / 0.2);
+  color: inherit;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+}
+.picked__x:hover { background: var(--error); color: var(--bg); }
+
+/* One starter: their name, where they lined up, and a way off the sheet. */
+.xi { display: flex; flex-direction: column; margin-block-start: var(--space-3); }
+.xi__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-block: var(--space-2);
+  border-block-end: 1px solid var(--border);
+}
+.xi__row:last-child { border-block-end: 0; }
+.xi__n { flex: 0 0 auto; width: 20px; font-size: var(--step--2); color: var(--text-subtle); font-variant-numeric: tabular-nums; }
+.xi__name { flex: 1; min-width: 0; font-size: var(--step--1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.xi__row .select { flex: 0 0 auto; width: 108px; padding-block: 5px; }
+.xi__row .picked__x { flex: 0 0 auto; width: 24px; height: 24px; background: var(--surface-inset); color: var(--text-subtle); }
+
+/* Portrait pitch, us attacking upward. */
+.pitch {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 68 / 100;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.pitch__grass {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgb(var(--brand-rgb) / 0.05), transparent 60%),
+    repeating-linear-gradient(180deg, #0e1412 0 10%, #111917 10% 20%);
+}
+.pitch__grass::after {
+  content: '';
+  position: absolute;
+  inset: 6%;
+  border: 1px solid rgb(255 255 255 / 0.13);
+  border-radius: 2px;
+}
+.pitch__p {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  width: 58px;
+}
+.pitch__p b {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: var(--text-on-brand);
+  font-size: 9px;
+  font-weight: var(--weight-bold);
+}
+.pitch__p i {
+  font-style: normal;
+  font-size: 9px;
+  color: #fff;
+  text-shadow: 0 1px 3px #000;
+  text-align: center;
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 58px;
+}
+.pitch__empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-5);
+  text-align: center;
+  font-size: var(--step--2);
+  color: var(--text-subtle);
+}
+.pitch__meta { text-align: center; font-size: var(--step--2); color: var(--text-muted); margin-block-start: var(--space-3); }
+.pitch__meta b { color: var(--text); font-weight: var(--weight-semi); }
+
+/* ---- A goal is a row, because it has a minute and a manner as well as a
+   scorer. ---- */
+.me__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding-block: var(--space-3);
+  border-block-end: 1px solid var(--border);
+}
+.me__i { flex: 0 0 auto; width: 18px; font-size: var(--step--2); color: var(--text-subtle); font-variant-numeric: tabular-nums; }
+.me__who { flex: 1 1 150px; min-width: 0; padding-block: 5px; }
+.me__min { width: 74px; flex: 0 0 auto; padding-block: 5px; text-align: center; }
+.me__seg { display: inline-flex; border: 1px solid var(--border); border-radius: var(--radius-pill); overflow: hidden; }
+.me__segb {
+  padding: 5px 10px;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--step--2);
+  cursor: pointer;
+}
+.me__segb.is-on { background: rgb(var(--brand-rgb) / 0.18); color: var(--brand-text); font-weight: var(--weight-semi); }
+.me__x {
+  margin-inline-start: auto;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-subtle);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+.me__x:hover { border-color: var(--error); color: var(--error); }
+.me__none { font-size: var(--step--2); color: var(--text-subtle); padding-block: var(--space-3); }
+
+/* ---- Photograph tagger ---- */
+.tagshot {
+  width: 100%;
+  max-height: 52svh;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background: var(--surface-inset);
+}
+.tagrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+  border-block-start: 1px solid var(--border);
+}
+
+/* ---- Wide content stays inside its column on a narrow window ---- */
+.cp .scroll-x { max-width: 100%; }
+.cell-club { max-width: 34ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cp-search { max-width: 340px; }

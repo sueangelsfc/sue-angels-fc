@@ -165,12 +165,22 @@ export function home(d) {
                 <span class="hx__ha">${homeIsAway ? 'Home' : 'Away'}</span>
               </div>`;
 
+  /* The club's own banner if it has chosen one in the panel, and the one the
+     site ships with otherwise. Both carry the same three widths, so the page
+     is identical in shape either way and a phone never downloads the large
+     file. */
+  const heroPic = d.hero || {
+    src: '/assets/hero/kit-crest-1344.webp',
+    srcset: '/assets/hero/kit-crest-640.webp 640w, /assets/hero/kit-crest-960.webp 960w, /assets/hero/kit-crest-1344.webp 1344w',
+    alt: '',
+  };
+
   const hero = `<section class="hx" aria-label="${attr(CLUB.name)}">
       <div class="hx__frame">
 
-        <img class="hx__bg" src="/assets/hero/kit-crest-1344.webp"
-             srcset="/assets/hero/kit-crest-640.webp 640w, /assets/hero/kit-crest-960.webp 960w, /assets/hero/kit-crest-1344.webp 1344w"
-             sizes="100vw" alt="" aria-hidden="true" width="1344" height="752"
+        <img class="hx__bg" src="${attr(heroPic.src)}"
+             srcset="${attr(heroPic.srcset)}"
+             sizes="100vw" alt="${attr(heroPic.alt)}"${heroPic.alt ? '' : ' aria-hidden="true"'} width="1344" height="752"
              fetchpriority="high" decoding="async" />
         <div class="hx__shade" aria-hidden="true"></div>
 
@@ -820,7 +830,7 @@ export function home(d) {
     shell: 'home',
     preMain,
     footerHtml,
-    preloadImage: '/assets/hero/kit-crest-1344.webp',
+    preloadImage: heroPic.src,
     faqSchema: {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',

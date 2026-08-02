@@ -160,17 +160,34 @@ export function matchReport(m, d) {
      is scrolled to, and nothing is set on the visitor unless they press play.
      Renders nothing at all when no video is filed, which is every match until
      one is saved in the control panel. */
-  const videoBand = det && det.videoId ? `<section class="sec mr-video" aria-labelledby="mr-v-h">
+  /* Four things can be filed against a match now: the footage, somebody before
+     the game, somebody after it, and anything else. Each is either a YouTube
+     id or a clip uploaded straight to the club's own storage, so both have to
+     render. Nothing here appears until something is actually filed. */
+  const CLIPS = [
+    { id: 'videoId', file: 'videoFile', label: 'The match' },
+    { id: 'preId', file: 'preFile', label: 'Before the game' },
+    { id: 'postId', file: 'postFile', label: 'After the game' },
+    { id: 'extraId', file: 'extraFile', label: 'More from the day' },
+  ];
+  const clips = det ? CLIPS.filter((c) => det[c.id] || det[c.file]) : [];
+  const videoBand = clips.length ? `<section class="sec mr-video" aria-labelledby="mr-v-h">
       <div class="wrap wrap--narrow">
-        ${rail(3, 'Watch it', 'Match video')}
+        ${rail(3, 'Watch it', clips.length === 1 ? 'Match video' : `${clips.length} clips`)}
         <h2 class="h2 rv" id="mr-v-h">See it for <span class="volt">yourself.</span></h2>
-        <div class="mr-embed rv">
-          <iframe src="https://www.youtube-nocookie.com/embed/${attr(det.videoId)}"
-            title="${attr(`${m.title} match video`)}"
-            loading="lazy" allowfullscreen
-            allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
-            referrerpolicy="strict-origin-when-cross-origin"></iframe>
-        </div>
+        ${clips.map((c) => `<figure class="mr-clip rv">
+          ${clips.length > 1 ? `<figcaption class="mr-clip__cap">${esc(c.label)}</figcaption>` : ''}
+          <div class="mr-embed">
+            ${det[c.id]
+    ? `<iframe src="https://www.youtube-nocookie.com/embed/${attr(det[c.id])}"
+              title="${attr(`${m.title}, ${c.label.toLowerCase()}`)}"
+              loading="lazy" allowfullscreen
+              allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
+              referrerpolicy="strict-origin-when-cross-origin"></iframe>`
+    : `<video src="${attr(det[c.file])}" controls preload="none"
+              title="${attr(`${m.title}, ${c.label.toLowerCase()}`)}"></video>`}
+          </div>
+        </figure>`).join('\n        ')}
       </div>
     </section>` : '';
 

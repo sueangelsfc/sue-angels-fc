@@ -206,6 +206,12 @@ const adminSeed = {
      src/lib/football.mjs. The panel builds its dropdowns from this, so the
      words it offers and the words the website prints cannot drift apart. */
   vocab: VOCAB,
+  /* Club crests, so the panel can DRAW a match-report cover: two badges, the
+     score and the date. Names are matched exactly as the fixture list writes
+     them, which is why a misspelt opponent silently loses its badge. */
+  badges: Object.fromEntries(Object.entries(d.badges || {})
+    .map(([name, b]) => [name, '/' + String(b.src || '').replace(/^\//, '')])),
+  crest: '/assets/badge/sue-angels-badge-star.webp',
 };
 /* The seed is DATA, and it grew: the squad, every match's fixture fields, the
    known clubs and competitions. Inlined it pushed control.js past its budget
@@ -583,7 +589,11 @@ for (const m of (groupLive('matches') ? d.played : [])) {
   write(`matches/${m.slug}.html`, page({
     title: `${m.title} · ${CLUB.name}`,
     description: desc,
-    ogImage: ogCard('og-match'),
+    /* The drawn cover if the club has made one, which carries the two badges,
+       the score and the date, and is far more use in a WhatsApp group than a
+       generic card that says nothing about this match. Falls back to the
+       generic one, so a match without a cover still shares properly. */
+    ogImage: m.detail?.cover || ogCard('og-match'),
     ogImageAlt: `${m.title}, ${m.competition}, ${fmtDate(m.date, { long: true })}`,
     path: `/matches/${m.slug}.html`,
     body: out.body,
@@ -609,7 +619,9 @@ for (const a of (groupLive('news') ? d.articles : [])) {
   write(`news/${slug}.html`, page({
     title: `${a.title} · ${CLUB.name}`,
     description: fitDesc(String(a.lede || a.title), `${CLUB.name}, ${CLUB.venue.district}.`),
-    ogImage: ogCard('og-news'),
+    /* The article's own cover, drawn or photographed, in preference to the
+       generic news card. */
+    ogImage: a.cover || ogCard('og-news'),
     ogImageAlt: `${a.title} - ${CLUB.name}`,
     path: `/news/${slug}.html`,
     body: out.body,

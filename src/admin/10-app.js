@@ -209,6 +209,29 @@
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
   }
 
+  /* "r20251123-catania" carries the date and the opponent already; this makes
+     it readable without another round trip for data the panel does not hold.
+     It lives in the core because the dashboard, the covers and the video
+     section all print match names and none of them should carry a copy. */
+  function matchLabel(key) {
+    var m = String(key).match(/^[a-z](\d{4})(\d{2})(\d{2})-(.+)$/);
+    if (!m) return key;
+    var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    var opp = m[4].replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+    return opp + ' \u00b7 ' + Number(m[3]) + ' ' + (MON[Number(m[2]) - 1] || '') + ' ' + m[1];
+  }
+
+  /* Anything somebody might paste out of YouTube: the share link, the address
+     bar, an embed URL, a Short, a live URL, or the bare id. Returns the id or
+     an empty string. Eleven characters is the format YouTube has always used. */
+  function youtubeId(input) {
+    var s2 = String(input || '').trim();
+    if (!s2) return '';
+    if (/^[\w-]{11}$/.test(s2)) return s2;
+    var m = s2.match(/(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/|\/live\/)([\w-]{11})/);
+    return m ? m[1] : '';
+  }
+
   /* =================== MODULES =================== */
   /* The registry is global because two of the modules arrive later, in their
      own files, and register themselves into it. See `need()` below. */
@@ -236,6 +259,7 @@
     readImage: readImage,
     uploadImage: uploadImage,
     matchLabel: matchLabel,
+    youtubeId: youtubeId,
     refresh: function (key) { return refresh(key); },
   };
 
@@ -333,112 +357,6 @@
 
 
   
-  /* ==========================================================================
-     VIDEOS
-
-     The website has rendered match video on three pages for a while: the
-     videos page, the live page and each match report, all keyed off
-     `videoId` on a match. Nothing in this panel could write that field. The
-     only way to attach a video was to open Results, find the right match and
-     hand-type "videoId" into its raw JSON, which is not a thing anybody
-     should have to know. A video was reported as uploaded and it was not,
-     because there was no upload to do.
-
-     So: one row per match, paste a link, done. It writes videoId onto the
-     match record the site already reads, so a saved video appears on all
-     three pages with no further work.
-     ========================================================================== */
-
-  /* Accepts anything somebody might paste out of YouTube: the share link, the
-     address bar, an embed URL, a Short, or the bare id. Returns the id or ''.
-     An 11-character id is the format YouTube has used throughout. */
-  function youtubeId(input) {
-    var s = String(input || '').trim();
-    if (!s) return '';
-    if (/^[\w-]{11}$/.test(s)) return s;
-    var m = s.match(/(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/|\/live\/)([\w-]{11})/);
-    return m ? m[1] : '';
-  }
-
-  /* "r20251123-catania" carries the date and the opponent already; this makes
-     it readable without another round trip for data the panel does not hold. */
-  function matchLabel(key) {
-    var m = String(key).match(/^[a-z](\d{4})(\d{2})(\d{2})-(.+)$/);
-    if (!m) return key;
-    var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    var opp = m[4].replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
-    return opp + ' · ' + Number(m[3]) + ' ' + (MON[Number(m[2]) - 1] || '') + ' ' + m[1];
-  }
-
-  M.videos = function (host) {
-    return CP.readAll('matches').then(function (rows) {
-      var list = (rows || []).slice().sort(function (a, b) {
-        return String(b.key).localeCompare(String(a.key));
-      });
-      if (!list.length) {
-        host.innerHTML = empty('No matches stored', 'Add a result first and it will appear here.');
-        return;
-      }
-      var withVideo = list.filter(function (r) { return (r.data || {}).videoId; }).length;
-
-      host.innerHTML = sec({
-        title: 'Match video',
-        sub: 'Paste a YouTube link against a match and it appears on the videos page, the live page '
-          + 'and that match’s own report. Any YouTube address works: the share link, the one in the '
-          + 'address bar, an embed link, a Short, or just the id. '
-          + '<b>' + esc(withVideo) + '</b> of <b>' + esc(list.length) + '</b> matches have one.',
-        body: table(['Match', 'YouTube link or id', 'Video', ''], list.map(function (r) {
-          var vid = (r.data || {}).videoId || '';
-          return '<tr data-key="' + esc(r.key) + '">' +
-            '<td><b>' + esc(matchLabel(r.key)) + '</b></td>' +
-            '<td><input class="input" data-vid value="' + esc(vid) + '" '
-              + 'aria-label="YouTube link" placeholder="https://youtu.be/…"></td>' +
-            '<td data-thumb>' + (vid
-              ? '<a href="https://www.youtube.com/watch?v=' + esc(vid) + '" target="_blank" rel="noopener">'
-                + '<img src="https://i.ytimg.com/vi/' + esc(vid) + '/default.jpg" alt="" width="80" height="60" '
-                + 'style="border-radius:6px;display:block"></a>'
-              : '<span class="badge badge--warning">None</span>') + '</td>' +
-            '<td><button class="btn btn--primary btn--sm" data-save>Save</button>' +
-              (vid ? ' <button class="btn btn--ghost btn--sm" data-clear>Clear</button>' : '') + '</td>' +
-          '</tr>';
-        }).join('')),
-        where: [['Videos', '/videos.html'], ['Live', '/live.html'], ['That match’s report', '/results.html']],
-      });
-
-      /* One write path for both buttons: `id` empty means remove the field
-         rather than storing an empty string the site would treat as a video. */
-      function write(row, id) {
-        var key = row.getAttribute('data-key');
-        var rec = list.filter(function (x) { return x.key === key; })[0];
-        var next = {};
-        Object.keys(rec.data || {}).forEach(function (k) { if (k !== 'videoId') next[k] = rec.data[k]; });
-        if (id) next.videoId = id;
-        return CP.upsert('matches', key, next).then(function () {
-          rec.data = next;
-          toast(id ? 'Video saved' : 'Video removed', 'success');
-          refresh('videos');
-        }).catch(function (e) { toast(e.message, 'error'); });
-      }
-
-      host.addEventListener('click', function (e) {
-        var row = e.target.closest && e.target.closest('tr[data-key]');
-        if (!row) return;
-        if (e.target.matches('[data-clear]')) { if (guard()) write(row, ''); return; }
-        if (!e.target.matches('[data-save]')) return;
-        if (!guard()) return;
-        var raw = $('[data-vid]', row).value;
-        var id = youtubeId(raw);
-        if (raw.trim() && !id) {
-          toast('That does not look like a YouTube link or id.', 'error');
-          return;
-        }
-        write(row, id);
-      });
-    });
-  };
-
-  
-
   /* ---- Inbox ---- */
   M.inbox = function (host) {
     if (!CP.state.isAdmin) {
@@ -666,6 +584,9 @@
     league: 'content', sponsors: 'content',
     photos: 'photos-donations', donations: 'photos-donations',
     pipeline: 'pipeline',
+    covers: 'covers',
+    videos: 'video',
+    hero: 'hero',
   };
   var pending = {};
   function need(key) {

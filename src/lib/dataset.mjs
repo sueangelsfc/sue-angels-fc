@@ -162,6 +162,18 @@ export function buildDataset() {
      pointing nowhere. */
   const donate = blob('donate:config') || {};
 
+  /* The home page banner, if the club has chosen one. Stored as three widths
+     because that is what the page's srcset promises; the home template falls
+     back to the built-in banner when there is no record, so removing it puts
+     the original back rather than leaving a hole. */
+  const heroRow = blob('hero:home') || {};
+  const hero = heroRow.w1344 ? {
+    src: heroRow.w1344,
+    srcset: [640, 960, 1344].filter((w) => heroRow[`w${w}`])
+      .map((w) => `${heroRow[`w${w}`]} ${w}w`).join(', '),
+    alt: heroRow.alt || '',
+  } : null;
+
   const squad = [...(ps.SQUAD || []), ...addedPlayers].map((p) => {
     const name = `${p.first} ${p.last}`.trim();
     const pos = posByNum.get(p.num);
@@ -447,7 +459,7 @@ export function buildDataset() {
     rawMatches: rawResults,
     squad, players, statsByNum, nameFor,
     coaches, table, leagueScorers, leagueScorersByComp, nextDivisionTable, leagueResults,
-    articles, recognition, galleries, playerPhotos, donate,
+    articles, recognition, galleries, playerPhotos, donate, hero,
     seasons, seasonInfo, competitions, knownClubs, badges,
     currentSeason: ps.CURRENT_SEASON,
     leagueTotalGames: ps.LEAGUE_TOTAL_GAMES,

@@ -122,21 +122,12 @@ export const SEPSIS = {
 };
 
 /* Position taxonomy, used to group the squad and to read line-up codes. */
-export const POSITION_GROUPS = [
-  { key: 'gk', label: 'Goalkeepers', codes: ['GK'] },
-  { key: 'def', label: 'Defenders', codes: ['LB', 'RB', 'CB', 'LCB', 'RCB', 'LWB', 'RWB'] },
-  { key: 'mid', label: 'Midfielders', codes: ['CM', 'LCM', 'RCM', 'DM', 'CDM', 'AM', 'CAM', 'LM', 'RM'] },
-  { key: 'fwd', label: 'Forwards', codes: ['ST', 'CF', 'LW', 'RW', 'SS'] },
-];
-
-export const POSITION_LABEL = {
-  GK: 'Goalkeeper', LB: 'Left back', RB: 'Right back', CB: 'Centre back',
-  LCB: 'Centre back', RCB: 'Centre back', LWB: 'Left wing back', RWB: 'Right wing back',
-  DM: 'Defensive midfield', CDM: 'Defensive midfield', CM: 'Central midfield',
-  LCM: 'Central midfield', RCM: 'Central midfield', AM: 'Attacking midfield',
-  CAM: 'Attacking midfield', LM: 'Left midfield', RM: 'Right midfield',
-  LW: 'Left wing', RW: 'Right wing', ST: 'Striker', CF: 'Centre forward', SS: 'Second striker',
-};
+/* Positions live in src/lib/positions.mjs now, one list with a full name, a
+   group and a place on the pitch for every code the club's records have ever
+   used. These two were missing LDM, RDM, LAM and RAM, which the archive
+   contains, so a player page printed the raw code beside a proper name.
+   Re-exported here because a dozen files import them from club.mjs. */
+export { POSITION_GROUPS, POSITION_LABEL } from './positions.mjs';
 
 /* Current partners, recovered from the deployed site. Sponsor logos are the
    partners' own marks and are never recoloured or restyled. */

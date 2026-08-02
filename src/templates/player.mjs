@@ -36,6 +36,7 @@ import { fileURLToPath } from 'node:url';
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { BODY_PARTS, ZONES, SITUATIONS, ASSIST_TYPES } from '../lib/football.mjs';
+import { POSITION_LABEL, POSITION_XY, positionName } from '../lib/positions.mjs';
 import { playerProfile, fmtDate } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
 
@@ -66,38 +67,12 @@ const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
       <span class="xrail__r">${esc(ref)}</span>
     </div>`;
 
-/* Where a position sits on the pitch, attacking up the page. Only codes the
-   squad actually uses are mapped; anything else is dropped rather than
-   guessed into the middle of the park. */
-/* Written-out names, so a panel heading says something the abbreviation does
-   not. POSITION_LABEL in club.mjs covers most of these; the side-specific
-   codes the team sheets use are spelt out here. */
-const POS_NAME = {
-  GK: 'Goalkeeper',
-  LB: 'Left back', RB: 'Right back', CB: 'Centre back',
-  LCB: 'Left centre back', RCB: 'Right centre back',
-  LWB: 'Left wing back', RWB: 'Right wing back',
-  DM: 'Defensive midfield', CDM: 'Defensive midfield',
-  LDM: 'Left defensive midfield', RDM: 'Right defensive midfield',
-  CM: 'Central midfield', LCM: 'Left central midfield', RCM: 'Right central midfield',
-  LM: 'Left midfield', RM: 'Right midfield',
-  AM: 'Attacking midfield', CAM: 'Attacking midfield',
-  LAM: 'Left attacking midfield', RAM: 'Right attacking midfield',
-  LW: 'Left wing', RW: 'Right wing',
-  SS: 'Second striker', CF: 'Centre forward', ST: 'Striker',
-};
-
-const PITCH = {
-  GK: [50, 90],
-  LB: [17, 76], RB: [83, 76], CB: [50, 78], LCB: [37, 78], RCB: [63, 78],
-  LWB: [13, 65], RWB: [87, 65],
-  DM: [50, 65], CDM: [50, 65], LDM: [39, 65], RDM: [61, 65],
-  CM: [50, 53], LCM: [38, 53], RCM: [62, 53],
-  LM: [16, 51], RM: [84, 51],
-  AM: [50, 38], CAM: [50, 38], LAM: [36, 37], RAM: [64, 37],
-  LW: [15, 32], RW: [85, 32],
-  SS: [50, 28], CF: [50, 22], ST: [50, 14],
-};
+/* Positions come from src/lib/positions.mjs: one list with a full name and a
+   place on the pitch for every code the club's records have ever used. The
+   two copies that used to live here knew different subsets, so a profile could
+   print "Left wing back" on one line and "RDM" on the next. */
+const POS_NAME = POSITION_LABEL;
+const PITCH = POSITION_XY;
 
 /* Several codes share a spot on the park: ST, CF, SS and CAM all sit on the
    centre line, and a forward who has played all four stacked four discs on
@@ -681,7 +656,7 @@ export function playerPage(p, d) {
                   stroke="#0D0F12" stroke-width="0.9" />
                 <text x="${h.x.toFixed(1)}" y="${(h.y * 1.4 + 1.4).toFixed(1)}" text-anchor="middle"
                   font-family="Geist, sans-serif" font-size="3.5" font-weight="600"
-                  fill="var(--text-on-brand)">${esc(h.code)}</text>
+                  fill="var(--text-on-brand)"><title>${esc(positionName(h.code))}</title>${esc(h.code)}</text>
               </g>`).join('\n              ')}
             </svg>
             <figcaption>Attacking upward. The brighter the field, the more often ${esc(p.first)} played there.</figcaption>
@@ -690,22 +665,22 @@ export function playerPage(p, d) {
           <div class="pf-pitch__body">
             <p>Read off the team sheets, not from a label. ${esc(p.first)} was named in
               ${esc(heat.length)} ${heat.length === 1 ? 'position' : 'different positions'}
-              across ${esc(d.currentSeason)}${heat.length > 1 ? `, most often at ${esc(heat[0].code)}` : ''}.</p>
+              across ${esc(d.currentSeason)}${heat.length > 1 ? `, most often at ${esc(positionName(heat[0].code).toLowerCase())}` : ''}.</p>
             <ol class="pf-heatlist">
               ${heat.map((h) => {
     const ms = posMatches.get(h.code) || [];
     return `<li${h.k >= 0.34 ? ' class="is-key"' : ''}>
                 <details class="pf-pos" data-pos="${attr(h.code)}">
                   <summary>
-                    <span class="pf-heatlist__k">${esc(h.code)}</span>
+                    <span class="pf-heatlist__k">${esc(positionName(h.code))}</span>
                     <span class="pf-heatlist__bar" aria-hidden="true"><i style="--w:${Math.round(h.k * 100)}%"></i></span>
                     <span class="pf-heatlist__n">${esc(fmtN(h.n))}</span>
                     <span class="pf-pos__cue" aria-hidden="true"></span>
-                    <span class="sr-only">${esc(POS_NAME[h.code] || h.code)}, ${esc(ms.length)}
+                    <span class="sr-only">${esc(positionName(h.code))}, ${esc(ms.length)}
                       ${ms.length === 1 ? 'match' : 'matches'}. Show them.</span>
                   </summary>
                   <div class="pf-pos__panel">
-                    <p class="pf-pos__t">${esc(POS_NAME[h.code] || h.code)}</p>
+                    <p class="pf-pos__t">${esc(positionName(h.code))}</p>
                     <ol class="pf-pos__list">
                       ${ms.map((x) => `<li>
                         <span class="pf-pos__res" data-res="${attr(x.outcome || '')}">${esc(x.outcome || '-')}</span>

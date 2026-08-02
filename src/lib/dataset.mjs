@@ -6,7 +6,7 @@
    ========================================================================== */
 import fs from 'node:fs';
 import path from 'node:path';
-import { POSITION_GROUPS, POSITION_LABEL } from './club.mjs';
+import { POSITION_GROUPS, positionName } from './positions.mjs';
 import { normaliseMatch, normaliseTable, playerStats, slugify, isUs, seasonOf, toISO } from './stats.mjs';
 
 const DATA_DIR = path.join(process.cwd(), 'src', 'data');
@@ -43,7 +43,9 @@ function inferPositions(matches) {
        up somewhere, not merely that they once did. A bench slot counts half,
        because being named there is not the same as playing there. */
     out.set(num, {
-      code: top, label: POSITION_LABEL[top] || top, group,
+      /* A name, never the code. `|| top` here is what put "RDM" on a player
+         page in place of a position. */
+      code: top, label: positionName(top), group,
       all: ranked.map((r) => r[0]),
       weights: ranked.map(([c, n]) => ({ code: c, n })),
     });

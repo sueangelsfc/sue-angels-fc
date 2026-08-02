@@ -432,18 +432,21 @@
      thinner, not just the panel.
      ========================================================================== */
 
-  /* Portrait pitch, us attacking upward. Same coordinates the old editor
-     used, so a formation drawn then draws identically now. */
-  var PITCH_XY = {
-    GK: [50, 92], CB: [50, 80], LCB: [35, 81], RCB: [65, 81],
-    LB: [15, 75], RB: [85, 75], LWB: [13, 64], RWB: [87, 64],
-    CDM: [50, 66], DM: [50, 66], CM: [50, 51], LCM: [33, 52], RCM: [67, 52],
-    LM: [15, 49], RM: [85, 49], CAM: [50, 37], AM: [50, 37],
-    LW: [17, 27], RW: [83, 27], SS: [50, 28], CF: [50, 21], ST: [50, 14],
-  };
-  var POS_CODES = ['GK', 'LB', 'LCB', 'CB', 'RCB', 'RB', 'LWB', 'RWB',
-    'CDM', 'DM', 'LCM', 'CM', 'RCM', 'LM', 'RM', 'CAM', 'AM',
-    'LW', 'RW', 'SS', 'CF', 'ST'];
+  /* Positions come from the generator, which reads src/lib/positions.mjs: one
+     list with a full name and a place on the pitch for every code the club's
+     records have ever used. This file used to carry its own, missing the four
+     the archive actually contains, so a team sheet could not record a position
+     an old team sheet already had.
+
+     The DROPDOWN shows the full name. The pitch marker keeps the short code,
+     because a 26px disc cannot hold "Left centre back" and a pitch diagram is
+     the one place in football where everybody reads the short form anyway; it
+     carries the full name as its title. */
+  var POSITIONS = SEED.positions || [];
+  var PITCH_XY = {};
+  var POS_NAME = {};
+  POSITIONS.forEach(function (p) { PITCH_XY[p.code] = [p.x, p.y]; POS_NAME[p.code] = p.name; });
+  var POS_CODES = POSITIONS.map(function (p) { return p.code; });
 
   /* Formation from the XI: count the outfield players in each band and read
      it back as 4-4-2. Derived rather than typed, so it cannot contradict the
@@ -472,7 +475,8 @@
       (placed.length ? placed.map(function (s) {
         var xy = PITCH_XY[s.positions[0]];
         var nm = nameOf(s.num).split(' ').slice(-1)[0];
-        return '<span class="pitch__p" style="left:' + xy[0] + '%;top:' + xy[1] + '%">' +
+        return '<span class="pitch__p" style="left:' + xy[0] + '%;top:' + xy[1] + '%" title="' +
+          esc(nameOf(s.num) + ', ' + (POS_NAME[s.positions[0]] || s.positions[0])) + '">' +
           '<b>' + esc(s.positions[0]) + '</b><i>' + esc(nm) + '</i></span>';
       }).join('') : '<p class="pitch__empty">Give the starters a position and the shape appears here</p>') +
       '</div>' +
@@ -576,10 +580,18 @@
       return '<div class="xi__row">' +
         '<span class="xi__n">' + (i + 1) + '</span>' +
         '<span class="xi__name">' + esc(nameOf(st.num)) + '</span>' +
-        '<select class="select" data-pos-num="' + st.num + '" aria-label="Position for ' + esc(nameOf(st.num)) + '">' +
-          '<option value="">Position</option>' +
-          POS_CODES.map(function (c) {
-            return '<option value="' + c + '"' + (c === code ? ' selected' : '') + '>' + c + '</option>';
+        '<select class="select xi__pos" data-pos-num="' + st.num +
+          '" aria-label="Where ' + esc(nameOf(st.num)) + ' played">' +
+          '<option value="">Where did he play</option>' +
+          ['gk', 'def', 'mid', 'fwd'].map(function (g) {
+            var inGroup = POSITIONS.filter(function (p) { return p.group === g; });
+            if (!inGroup.length) return '';
+            return '<optgroup label="' +
+              ({ gk: 'In goal', def: 'Defence', mid: 'Midfield', fwd: 'Attack' })[g] + '">' +
+              inGroup.map(function (p) {
+                return '<option value="' + p.code + '"' + (p.code === code ? ' selected' : '') +
+                  '>' + esc(p.name) + '</option>';
+              }).join('') + '</optgroup>';
           }).join('') + '</select>' +
         '<button type="button" class="picked__x" data-drop="starters" data-i="' + i +
           '" aria-label="Take ' + esc(nameOf(st.num)) + ' out of the eleven">&times;</button>' +

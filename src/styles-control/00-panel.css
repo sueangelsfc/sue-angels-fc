@@ -386,7 +386,10 @@ body:has(.cp) .atmos__blob { animation: none; }
 .xi__row:last-child { border-block-end: 0; }
 .xi__n { flex: 0 0 auto; width: 20px; font-size: var(--step--2); color: var(--text-subtle); font-variant-numeric: tabular-nums; }
 .xi__name { flex: 1; min-width: 0; font-size: var(--step--1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.xi__row .select { flex: 0 0 auto; width: 108px; padding-block: 5px; }
+/* Wide enough for a full position name. It was 108px, which fitted "LCB"
+   and nothing a person would say out loud. */
+.xi__row .select { flex: 0 1 200px; min-width: 0; padding-block: 5px; }
+@media (max-width: 560px) { .xi__row { flex-wrap: wrap; } .xi__row .select { flex: 1 1 100%; } }
 .xi__row .picked__x { flex: 0 0 auto; width: 24px; height: 24px; background: var(--surface-inset); color: var(--text-subtle); }
 
 /* Portrait pitch, us attacking upward. */

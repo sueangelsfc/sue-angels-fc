@@ -40,6 +40,7 @@ import { matchPage, articlePage, albumPage } from './templates/detail.mjs';
 import { playerPage } from './templates/player.mjs';
 import { control } from './templates/control.mjs';
 import { VOCAB } from './lib/football.mjs';
+import { POSITION_VOCAB } from './lib/positions.mjs';
 
 const ROOT = process.cwd();
 const CHECK = process.argv.includes('--check');
@@ -212,6 +213,11 @@ const adminSeed = {
   badges: Object.fromEntries(Object.entries(d.badges || {})
     .map(([name, b]) => [name, '/' + String(b.src || '').replace(/^\//, '')])),
   crest: '/assets/badge/sue-angels-badge-star.webp',
+  /* Every position the site can name and draw, with its place on the pitch.
+     The panel's dropdown and its team-sheet pitch both come from here, so the
+     panel cannot offer a position the player pages have no name for, which is
+     how RDM and LAM ended up in the archive as bare codes. */
+  positions: POSITION_VOCAB,
 };
 /* The seed is DATA, and it grew: the squad, every match's fixture fields, the
    known clubs and competitions. Inlined it pushed control.js past its budget

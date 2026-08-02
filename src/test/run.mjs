@@ -690,6 +690,57 @@ for (const [f, kb] of Object.entries(BUDGET)) {
     `${size.toFixed(1)}KB gzipped, ${(raw.length / 1024).toFixed(0)}KB raw`);
 }
 
+/* ---- Positions are one list ----
+   They were three: club.mjs knew 21 codes, the player profile knew 26, the
+   control panel offered 22. The club's archive contains team sheets using RDM
+   and LAM, which two of the three had never heard of, so a player page printed
+   the raw code beside a proper name. */
+{
+  const seedJs = fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8');
+  const seed = JSON.parse(seedJs.replace(/^window\.SA_SEED=/, '').replace(/;\s*$/, ''));
+  const codes = new Set((seed.positions || []).map((p) => p.code));
+  check('the panel is given the position list', codes.size >= 25, `${codes.size} positions`);
+
+  /* Every position code in any stored team sheet must be one the site can
+     name. This is the check that would have caught RDM. */
+  const used = new Set();
+  const live = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'recovered-live.json'), 'utf8'));
+  for (const row of live.matches || []) {
+    for (const s2 of (row.data || {}).starters || []) {
+      for (const c of s2.positions || []) used.add(c);
+    }
+  }
+  const orphans = [...used].filter((c) => !codes.has(c));
+  check('every position in the archive has a full name', orphans.length === 0,
+    orphans.length ? `no name for ${orphans.join(', ')}` : '');
+
+  /* And nothing published is a bare code where a NAME belongs.
+
+     The pitch diagram is exempt and deliberately so: a marker disc cannot hold
+     "Left centre back", and a pitch diagram is the one place in football where
+     everybody reads the short form. Those carry a <title> with the full name,
+     which is asserted below. Everywhere else, a code printed as a position is
+     the bug this list exists to stop. */
+  for (const [f, h] of pages) {
+    if (!f.startsWith('players/')) continue;
+    const prose = h.replace(/<svg[\s\S]*?<\/svg>/g, '');
+    const bare = prose.match(/>(?:RDM|LDM|LAM|RAM|LCM|RCM|LCB|RCB|CDM|CAM|LWB|RWB)</g);
+    check(`${f}: no bare position codes in text`, !bare,
+      bare ? `${bare.length} raw codes printed as a position name` : '');
+    /* A code on the diagram must still be readable to a screen reader. */
+    const marks = (h.match(/<text[^>]*>(?:<title>[^<]+<\/title>)?[A-Z]{2,3}<\/text>/g) || []);
+    const silent = marks.filter((t) => !/<title>/.test(t));
+    check(`${f}: every pitch marker names its position`, silent.length === 0,
+      silent.length ? `${silent.length} markers with no title` : '');
+  }
+
+  /* Every position needs somewhere to stand, or the panel draws a team sheet
+     with a player missing from the pitch. */
+  const noXY = (seed.positions || []).filter((p) => typeof p.x !== 'number' || typeof p.y !== 'number');
+  check('every position has a place on the pitch', noXY.length === 0,
+    noXY.map((p) => p.code).join(', '));
+}
+
 /* ---- The split stays split ----
    Every one of these is a way the panel could quietly go back to shipping
    everything to everybody, or to shipping half of itself and breaking. */

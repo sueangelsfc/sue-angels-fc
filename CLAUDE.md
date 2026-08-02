@@ -124,7 +124,7 @@ Plus private `enquiries` and `supporters`.
 ## Control panel
 `/control.html`, with `control.js` and `control.css`. Auth via Supabase Auth REST directly — no SDK, no in-browser Babel. Reached by typing **angels** anywhere on the site, which is a doorway rather than a lock: everything that actually protects the club's data is server side.
 
-Modules: dashboard, fixtures, results and reports, squad and staff, player photographs, news, gallery albums, photo tagging, match video, recognition, league badges, sponsors, donations, sponsorship pipeline, inbox, settings.
+Modules: dashboard, fixtures, results and reports, squad and staff, player photographs, news, gallery albums, cover pictures, home page banner, photo tagging, video and interviews, recognition, league badges, sponsors, donations, sponsorship pipeline, inbox, settings. Each heavy one is its own file in `src/admin/lazy/`.
 
 ### It is split, and it has to stay split
 `control.js` shipped all thirteen modules to somebody who opened one, and its budget went 16 → 18 → 24 → 30KB in a single sitting for that one reason. Now:
@@ -141,7 +141,11 @@ The panel's stylesheet was `src/styles/70-control.css`, inside `sa.css`, so ever
 - **Row keys are never shown.** `r20260201-bpr` is a database format, not a name for anything.
 - Every section ends with **where its content shows on the website**, with a link.
 - A fixture that has been played has **Enter result**: it opens the match form pre-filled and saving clears the fixture, so the site cannot list a match as still to come under a report of its own score.
-- The match form is five tabs, players are picked from dropdowns, and the pitch draws the shape from the positions given to the eleven. Match reports take **bullets**, and the report builder writes the facts already recorded (goals in minute order with the running score, cards, keeping) around the coach's own words. It invents nothing: a goal with no minute does not acquire one.
+- The match form is five tabs, players are picked from dropdowns, and the pitch draws the shape from the positions given to the eleven. Match reports take **bullets**, and the report builder writes the facts already recorded around the coach's own words. It invents nothing: a goal with no minute does not acquire one.
+- **A goal carries what it was struck with, where from, what the ball was doing, and who made it and how.** The vocabulary is `src/lib/football.mjs`, following Opta's qualifiers, and it is shared by the panel, the stats engine and the pages so they cannot describe the same goal differently. The assist is a field ON the goal; the flat `assists` array is derived on save so everything downstream keeps working. Goalkeepers have saves. All of it surfaces on the player profile, with a line saying how many of his goals the detail actually covers.
+- **Covers are drawn, not found.** Two badges, the score and the date for a match; the crest and the headline for an article. Canvas, in the browser, saved to the record and used as the share image. A real photograph always wins.
+- **The home page banner is pickable** and produces the same three widths the build does (640/960/1344), so the srcset and the preload hint stay true. Removing it restores the original.
+- Four video slots per match: footage, before, after, anything else. Direct upload is capped at 60MB with the reason on the button, because a full match is a gigabyte.
 - **Recognition follows its type.** A season award, a trophy, a club record, a Player of the Month and the captaincy are five different shapes, and the awards page reads different fields from each. The form asks for the right ones and clears the ones belonging to a type an entry has been changed away from, while still preserving anything it has never heard of.
 - **The sponsorship pipeline** is the club's own prospect list: who has been contacted, who has committed, and how much of the season's target that is. Nothing in it is published. The retired one lived in browser storage on one laptop.
 - Squad status moves a player between **in the squad, retained for 26/27, retired, left the club, moved into coaching**. The last one writes both `roster:status` and `roster:coaches`, because in real life it is one decision.
@@ -198,8 +202,7 @@ Push to `main` → `sue-angels-fc-b469` auto-deploys to www.suesangelsfc.co.uk. 
 - **A probe row exists in production `enquiries`** (`name = __probe_delete_me`), created while auditing RLS. Anonymous clients cannot delete it; remove it from Control panel → Inbox once signed in.
 - **One cup tie has no stored shootout result** (`r20260412-kew-ccup`, Kew Antigua 2-2). It is shown as penalty-decided with no winner claimed rather than inventing one.
 - **Stripe donations** are built and the panel owns the link (Control panel → Donations). The cause page falls back to the link that is live today if the record is empty.
-- **The hero banner picker was deliberately not restored.** The homepage hero ships as three pre-optimised widths with a preload hint; a panel that let somebody upload a replacement would swap that for one unoptimised file and slow the first thing every visitor sees.
-- **15 of 34 players have no photograph.** They can be added now, in Control panel → Player photographs.
+- **15 of 34 players have no photograph**, and 26 of the opponent clubs have no badge. Both can be added now, and a missing opponent badge is what makes a drawn match cover fall back to initials.
 - **No photograph of Susan Anne Martin exists in the repo.** The cause page opens on the crest. If the family can clear a photo it belongs there.
 - **Appearances count starts only.** Sunday-league match returns do not record minutes or substitute appearances, so neither is shown rather than estimated.
 - Videos page links out to YouTube; per-video embedding awaits catalogued rows.

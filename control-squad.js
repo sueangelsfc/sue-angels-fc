@@ -50,15 +50,37 @@
      the squad": the difference is whether next season has been settled, which
      is a real distinction in a Sunday-league side in July and invisible on the
      website until somebody decides. */
+  /* What a player can be. Five was not enough: a club in July has players it
+     has kept, players it has just signed, players back after a year away and
+     players it is having a look at, and calling all four "in the squad" throws
+     away the only thing anybody wants to know in pre-season.
+
+     `playing` is what puts somebody in the squad on the website. The rest move
+     them to Those who came before, which keeps their profile and their whole
+     record rather than deleting them. */
   var STATUSES = [
-    ['active', 'In the squad', 'Playing now. Appears in the squad on the website.'],
-    ['retained', 'Retained for 26/27', 'Signed on for the new season. Still in the squad, and says so.'],
-    ['retired', 'Retired from playing', 'Hung up the boots. Moves to Those who came before.'],
-    ['departed', 'Left the club', 'Moved on. Moves to Those who came before.'],
-    ['staff', 'Moved into coaching', 'Off the pitch and onto the touchline. Also added to the staff.'],
+    { key: 'active', label: 'In the squad', playing: true,
+      note: 'Playing now.' },
+    { key: 'retained', label: 'Retained for 26/27', playing: true,
+      note: 'Was here last season and has signed on again.' },
+    { key: 'new', label: 'New signing', playing: true,
+      note: 'Joined for the new season.' },
+    { key: 'returned', label: 'Returned to the club', playing: true,
+      note: 'Played here before, was away, and is back.' },
+    { key: 'trial', label: 'On trial', playing: true,
+      note: 'Training with the squad, not signed. Shown as a trialist.' },
+    { key: 'injured', label: 'Injured, long term', playing: true,
+      note: 'Still in the squad and shown as unavailable.' },
+    { key: 'retired', label: 'Retired from playing', playing: false,
+      note: 'Hung up the boots.' },
+    { key: 'departed', label: 'Left the club', playing: false,
+      note: 'Moved on.' },
+    { key: 'staff', label: 'Moved into coaching', playing: false,
+      note: 'Off the pitch and onto the touchline. Also added to the staff.' },
   ];
   var LABEL = {};
-  STATUSES.forEach(function (s) { LABEL[s[0]] = s[1]; });
+  var PLAYING = {};
+  STATUSES.forEach(function (x) { LABEL[x.key] = x.label; PLAYING[x.key] = x.playing; });
 
   var POSITIONS = ['Goalkeeper', 'Defender', 'Midfielder', 'Forward'];
   var ROLES = ['Manager', 'Assistant manager', 'Coach', 'Goalkeeping coach',
@@ -121,17 +143,18 @@
       }).sort(function (a, b) { return a.name.localeCompare(b.name); });
 
       var counts = {};
-      STATUSES.forEach(function (s) { counts[s[0]] = 0; });
+      STATUSES.forEach(function (x) { counts[x.key] = 0; });
       players.forEach(function (p) { counts[p.status] = (counts[p.status] || 0) + 1; });
 
       host.innerHTML =
         sec({
           title: 'The squad',
-          sub: esc(players.length) + ' players. Changing what somebody is moves them on the website: '
-            + '<b>' + esc(counts.active + counts.retained) + '</b> in the squad, '
-            + '<b>' + esc(counts.retired) + '</b> retired, '
-            + '<b>' + esc(counts.departed) + '</b> departed, '
-            + '<b>' + esc(counts.staff) + '</b> now coaching.',
+          sub: esc(players.length) + ' players. Changing what somebody is moves them on the website. '
+            + STATUSES.filter(function (x) { return counts[x.key]; })
+              .map(function (x) { return '<b>' + esc(counts[x.key]) + '</b> ' + esc(x.label.toLowerCase()); })
+              .join(', ') + '.'
+            + ' Anyone not in the squad keeps their profile and their whole record; they move to '
+            + '<b>Those who came before</b> rather than disappearing.',
           actions: '<button class="btn btn--primary" data-add-player>Add a player</button>',
           body: table(['Player', 'Position', 'Photograph', 'What they are now', ''],
             players.map(function (p) {
@@ -142,9 +165,9 @@
                   ? '<span class="badge badge--success">Yes</span>'
                   : '<span class="badge badge--warning">None</span>') + '</td>' +
                 '<td><select class="select" data-status aria-label="Status for ' + esc(p.name) + '">' +
-                  STATUSES.map(function (s) {
-                    return '<option value="' + s[0] + '"' + (p.status === s[0] ? ' selected' : '') +
-                      '>' + esc(s[1]) + '</option>';
+                  STATUSES.map(function (x) {
+                    return '<option value="' + x.key + '"' + (p.status === x.key ? ' selected' : '') +
+                      '>' + esc(x.label) + '</option>';
                   }).join('') + '</select></td>' +
                 '<td>' + (p.added
                   ? '<button class="btn btn--quiet btn--sm" data-del-player>Remove</button> '
@@ -271,10 +294,12 @@
               '<select class="select" id="p-pos">' +
                 POSITIONS.map(function (x) { return '<option>' + esc(x) + '</option>'; }).join('') +
               '</select></div>' +
-            '<div class="field"><label class="field__label" for="p-status">Status</label>' +
+            '<div class="field"><label class="field__label" for="p-status">What they are</label>' +
               '<select class="select" id="p-status">' +
-                '<option value="active">In the squad</option>' +
-                '<option value="retained">Retained for 26/27</option>' +
+                STATUSES.filter(function (x) { return x.playing; }).map(function (x) {
+                  return '<option value="' + x.key + '"' + (x.key === 'new' ? ' selected' : '') +
+                    '>' + esc(x.label) + '</option>';
+                }).join('') +
               '</select></div>' +
           '</div>' +
           '<div class="field" style="margin-top:var(--space-4)">' +

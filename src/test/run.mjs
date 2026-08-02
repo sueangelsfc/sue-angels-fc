@@ -670,7 +670,11 @@ const BUDGET = {
      which is a handful of people a season. 20 -> 22 for the goal detail, which
      is the feature this whole section exists to provide. */
   'control-match.js': 22,
-  'control-content.js': 11,
+  /* News, gallery, recognition, badges and sponsors. 11 -> 14 for the album
+     editor: the photographs are visible, removable, reorderable and taggable
+     in the album itself, which is four operations that all have to keep the
+     parallel tag list in step. */
+  'control-content.js': 15,
   'control-squad.js': 8,
   'control-photos.js': 6,
   'control-photos-donations.js': 6,

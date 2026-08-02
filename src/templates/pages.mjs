@@ -234,7 +234,12 @@ export function champions(d) {
 /* ======================= SQUAD ======================= */
 export function squad(d) {
   const groups = POSITION_GROUPS.map((g) => {
-    const list = d.players.filter((p) => p.positionGroup === g.key && !p.unknown && p.status === 'active');
+    /* Everyone still in the squad, not only those marked plainly "active":
+       a retained or newly signed player is in the squad too, and filtering on
+       one status alone emptied the list the moment the panel started using
+       the others. */
+    const GONE = new Set(['retired', 'departed', 'staff']);
+    const list = d.players.filter((p) => p.positionGroup === g.key && !p.unknown && !GONE.has(p.status));
     if (!list.length) return '';
     return `<section class="section" aria-labelledby="grp-${g.key}">
       <div class="wrap wrap--wide">

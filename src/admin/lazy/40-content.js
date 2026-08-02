@@ -308,45 +308,92 @@
 
   /* ==========================================================================
      GALLERY
+
+     The album editor was a textarea holding forty photograph URLs and a plea
+     not to break them. You could not see a picture, could not remove one
+     without finding its line, and could not reorder anything. Tagging who was
+     in a photograph was a different section entirely, so naming the players in
+     an album you had just uploaded meant leaving, finding the album again in
+     another dropdown, and starting over.
+
+     Now the album editor shows the photographs. Each one can be removed, moved,
+     made the cover, or tagged, in the place you are already standing. Uploading
+     is a file picker, and every picture is resized on the way in.
+
+     The tag list runs PARALLEL to the photo list: entry i names who is in photo
+     i. That is the shape the club's 448 already-tagged photographs are stored
+     in, so removing or moving a photograph has to move its tags with it or 448
+     tags silently attach themselves to the wrong pictures. Every operation here
+     does the two together.
      ========================================================================== */
   var ALBUM_CATS = ['Matchday', 'Training', 'Club', 'Awards', 'Community'];
 
   M.media = function (host) {
-    return CP.readAll('gallery').then(function (rows) {
-      var list = rows.slice().sort(function (a, b) {
-        return Number((b.data || {}).sort || 0) - Number((a.data || {}).sort || 0);
+    return Promise.all([CP.readAll('gallery'), CP.readAll('player_photos')]).then(function (r) {
+      var rows = r[0] || [];
+      var list = rows.slice().sort(function (a2, b2) {
+        return Number((b2.data || {}).sort || 0) - Number((a2.data || {}).sort || 0);
       });
-      var photos = list.reduce(function (n, r) { return n + (((r.data || {}).photos) || []).length; }, 0);
+      var photos = list.reduce(function (n, x) { return n + (((x.data || {}).photos) || []).length; }, 0);
+      /* Who can be tagged: the squad, plus anyone already tagged anywhere, so
+         the names offered match the ones the club has been using. */
+      var names = SQUAD.map(function (p) { return p.name; });
+      list.forEach(function (x) {
+        var d = x.data || {};
+        (d.tags || []).forEach(function (t) { names.push(t); });
+        (d.photoTags || []).forEach(function (t) {
+          (t || []).forEach(function (one) { names.push(typeof one === 'string' ? one : one.name); });
+        });
+      });
+      names = names.filter(function (v, i, arr) { return v && arr.indexOf(v) === i; }).sort();
 
       host.innerHTML = sec({
         title: 'Albums',
-        sub: esc(list.length) + ' albums holding ' + esc(photos) + ' photographs. '
-          + 'Photographs are one web address per line, so pasting a batch in is one action rather than '
-          + 'forty pieces of punctuation.',
+        sub: esc(list.length) + ' albums holding ' + esc(photos) + ' photographs. Open one and you can '
+          + 'see every picture, take one out, move it, make it the cover, and say who is in it, '
+          + 'without leaving the album.',
         actions: '<button class="btn btn--primary" data-new>New album</button>',
         body: (list.length
-          ? table(['Album', 'Category', 'Photographs', 'Tagged', 'Photographer', ''], list.map(function (r) {
-            var d = r.data || {};
+          ? table(['Album', 'Category', 'Photographs', 'Tagged', 'Photographer', ''], list.map(function (x) {
+            var d = x.data || {};
             var pt = (d.photoTags || []).filter(function (t) { return t && t.length; }).length;
-            return '<tr data-key="' + esc(r.key) + '">' +
-              '<td><b>' + esc(d.title || 'Album') + '</b></td>' +
+            var n = (d.photos || []).length;
+            return '<tr data-key="' + esc(x.key) + '">' +
+              '<td>' + (d.cover || d.src
+                ? '<img src="' + esc(d.cover || d.src) + '" alt="" width="40" height="40" '
+                  + 'style="border-radius:6px;object-fit:cover;float:left;margin-right:10px">' : '') +
+                '<b>' + esc(d.title || 'Album') + '</b></td>' +
               '<td>' + esc(d.category || 'Matchday') + '</td>' +
-              '<td>' + esc((d.photos || []).length) + '</td>' +
-              '<td>' + esc(pt) + '</td>' +
+              '<td>' + esc(n) + '</td>' +
+              '<td>' + (n && pt === n ? '<span class="badge badge--success">All</span>'
+                : pt ? esc(pt) + ' of ' + esc(n)
+                  : '<span class="badge badge--warning">None</span>') + '</td>' +
               '<td>' + esc(d.photographer || '') + '</td>' +
-              '<td><button class="btn btn--ghost btn--sm" data-edit>Edit</button> ' +
+              '<td><button class="btn btn--ghost btn--sm" data-edit>Open</button> ' +
                 '<button class="btn btn--quiet btn--sm" data-raw>Raw</button> ' +
                 '<button class="btn btn--quiet btn--sm" data-del>Delete</button></td>' +
             '</tr>';
           }).join(''))
-          : empty('No albums yet', 'Create one, then name the players in each photograph under Photo tagging.')),
-        where: [['Gallery', '/gallery.html']],
-        whereNote: 'tagged players also appear on their own profile',
+          : empty('No albums yet', 'Create one and add the photographs straight into it.')),
+        where: [['Gallery', '/gallery.html'], ['Every player profile', '/squad.html']],
+        whereNote: 'a tagged player is linked to their profile under the photograph',
       });
 
       function form(rec) {
         var d = (rec && rec.data) || {};
         var isNew = !rec;
+        /* Working copies. Nothing is written until Save, so a mis-click on a
+           remove button is one Cancel away from undone. */
+        var pics = ((d.photos) || []).slice();
+        var tags = [];
+        for (var i = 0; i < pics.length; i++) {
+          var at = (d.photoTags || [])[i];
+          tags.push(((at || []).map(function (t) { return typeof t === 'string' ? t : t.name; })
+            .filter(Boolean)));
+        }
+        var cover = d.cover || d.src || '';
+        var open = -1;
+
         var back = dialog(isNew ? 'New album' : 'Edit this album',
           '<div class="grid grid--2">' +
             field('g-title', 'Album title', text('g-title', d.title, 'Sue’s Angels 4-2 BPR Men’s')) +
@@ -355,35 +402,121 @@
               esc(toIso(d.date) || String(d.date || '').slice(0, 10) || today()) + '">') +
             field('g-by', 'Photographer', text('g-by', d.photographer, 'Who took them')) +
           '</div>' +
-          imageField('g-cover', 'Cover photograph', d.cover || d.src,
-            { max: 1200, hint: 'Left blank, the first photograph is used.' }) +
           '<h4 class="mform__h">The photographs</h4>' +
-          field('g-photos', 'One web address per line',
-            area('g-photos', (d.photos || []).join('\n'), 12, 'https://…\nhttps://…'),
-            (d.photoTags || []).length
-              ? 'Player tags are kept against position in this list, so reordering or removing a line '
-                + 'moves the tags with it. Adding to the end is always safe.'
-              : 'Paste as many as you like.') +
-          '<p class="field__hint" data-count></p>');
+          '<div class="cp-head__actions" style="margin-bottom:var(--space-3)">' +
+            '<label class="btn btn--primary btn--sm" style="cursor:pointer">Add photographs' +
+              '<input type="file" accept="image/*" multiple hidden data-add-pics></label>' +
+            '<span class="cp-note" data-pic-note></span>' +
+          '</div>' +
+          '<div data-pics></div>', 920);
 
-        wireUploads(back);
-        var listEl = $('#g-photos', back);
-        function count() {
-          var n = listEl.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean).length;
-          $('[data-count]', back).textContent = n + ' photograph' + (n === 1 ? '' : 's');
+        function paint() {
+          $('[data-pics]', back).innerHTML = pics.length
+            ? '<ul class="picgrid">' + pics.map(function (src, i) {
+              var mine = tags[i] || [];
+              return '<li class="picgrid__i' + (open === i ? ' is-open' : '') + '" data-pic="' + i + '">' +
+                '<img src="' + esc(src) + '" alt="" loading="lazy">' +
+                (src === cover ? '<span class="picgrid__cover">Cover</span>' : '') +
+                '<div class="picgrid__bar">' +
+                  '<button type="button" class="picgrid__b" data-pic-left title="Move earlier"' +
+                    (i === 0 ? ' disabled' : '') + '>&#8592;</button>' +
+                  '<button type="button" class="picgrid__b" data-pic-right title="Move later"' +
+                    (i === pics.length - 1 ? ' disabled' : '') + '>&#8594;</button>' +
+                  '<button type="button" class="picgrid__b" data-pic-cover title="Make this the cover">Cover</button>' +
+                  '<button type="button" class="picgrid__b" data-pic-tag title="Who is in it">' +
+                    (mine.length ? mine.length + ' tagged' : 'Tag') + '</button>' +
+                  '<button type="button" class="picgrid__b picgrid__b--x" data-pic-del ' +
+                    'title="Remove this photograph">&times;</button>' +
+                '</div>' +
+                (open === i
+                  ? '<div class="picgrid__tags">' +
+                      names.map(function (n) {
+                        var on = mine.indexOf(n) !== -1;
+                        return '<button type="button" class="chip' + (on ? ' is-active' : '') +
+                          '" data-tag-name="' + esc(n) + '" aria-pressed="' + on + '">' + esc(n) + '</button>';
+                      }).join('') +
+                    '</div>'
+                  : mine.length
+                    ? '<p class="picgrid__who">' + esc(mine.join(', ')) + '</p>'
+                    : '') +
+              '</li>';
+            }).join('') + '</ul>'
+            : '<p class="me__none">No photographs yet. Add some above.</p>';
+          $('[data-pic-note]', back).textContent = pics.length
+            ? pics.length + ' photograph' + (pics.length === 1 ? '' : 's') + ', '
+              + tags.filter(function (t) { return t && t.length; }).length + ' tagged'
+            : 'Pictures are resized on the way in, so a phone photograph does not land on the site whole.';
         }
-        listEl.addEventListener('input', count);
-        count();
+        paint();
+
+        /* Uploading. Sequential rather than parallel, because ten photographs
+           at once off a phone is forty megabytes of canvas work and the tab
+           stops responding. */
+        back.addEventListener('change', function (e) {
+          if (!e.target.matches('[data-add-pics]')) return;
+          var files = Array.prototype.slice.call(e.target.files || []);
+          if (!files.length) return;
+          if (!guard()) { e.target.value = ''; return; }
+          var note = $('[data-pic-note]', back);
+          var done = 0;
+          files.reduce(function (chain, f) {
+            return chain.then(function () {
+              note.textContent = 'Uploading ' + (done + 1) + ' of ' + files.length + '.';
+              return U.uploadImage(f, { max: 1600, prefix: 'album' }).then(function (out) {
+                pics.push(out.url);
+                tags.push([]);
+                if (!cover) cover = out.url;
+                done++;
+              });
+            });
+          }, Promise.resolve()).then(function () {
+            paint();
+            note.textContent = done + ' added.';
+          }).catch(function (err) {
+            paint();
+            note.textContent = err.message;
+          });
+          e.target.value = '';
+        });
+
+        back.addEventListener('click', function (e) {
+          var li = e.target.closest('[data-pic]');
+          if (!li) return;
+          var i = Number(li.getAttribute('data-pic'));
+          var swap = function (a2, b2) {
+            var t = pics[a2]; pics[a2] = pics[b2]; pics[b2] = t;
+            var g = tags[a2]; tags[a2] = tags[b2]; tags[b2] = g;
+          };
+          if (e.target.matches('[data-pic-left]')) { swap(i, i - 1); if (open === i) open = i - 1; paint(); return; }
+          if (e.target.matches('[data-pic-right]')) { swap(i, i + 1); if (open === i) open = i + 1; paint(); return; }
+          if (e.target.matches('[data-pic-cover]')) { cover = pics[i]; paint(); return; }
+          if (e.target.matches('[data-pic-tag]')) { open = open === i ? -1 : i; paint(); return; }
+          if (e.target.matches('[data-pic-del]')) {
+            /* The tags go with it. They are keyed by position, so removing a
+               photograph without removing its entry shifts every tag after it
+               onto the wrong picture. */
+            if (cover === pics[i]) cover = '';
+            pics.splice(i, 1);
+            tags.splice(i, 1);
+            if (open === i) open = -1; else if (open > i) open--;
+            paint();
+            return;
+          }
+          var chip = e.target.closest('[data-tag-name]');
+          if (chip) {
+            var name = chip.getAttribute('data-tag-name');
+            var mine = tags[i] || (tags[i] = []);
+            var at = mine.indexOf(name);
+            if (at === -1) mine.push(name); else mine.splice(at, 1);
+            paint();
+          }
+        });
 
         $('[data-save]', back).addEventListener('click', function () {
           var title = val(back, 'g-title');
           if (!title) { fail(back, 'The album needs a title.'); return; }
-          var urls = listEl.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
           var iso = val(back, 'g-date') || today();
           var key = rec ? rec.key : newId('alb');
-          /* photoTags runs parallel to photos. Trimming it to the new length
-             stops a shortened album carrying tags that point past its end. */
-          var tags = (d.photoTags || []).slice(0, urls.length);
           put(back, 'gallery', key, d, {
             id: key,
             title: title,
@@ -391,10 +524,16 @@
             date: iso,
             sort: rec && d.sort ? d.sort : Date.now(),
             photographer: val(back, 'g-by'),
-            photos: urls,
-            cover: val(back, 'g-cover') || urls[0] || '',
-            src: val(back, 'g-cover') || urls[0] || '',
+            photos: pics,
+            cover: cover || pics[0] || '',
+            src: cover || pics[0] || '',
             photoTags: tags,
+            /* The album-level list is every name tagged anywhere in it, which
+               is what the gallery page filters on. */
+            tags: tags.reduce(function (acc, t) {
+              (t || []).forEach(function (n) { if (acc.indexOf(n) === -1) acc.push(n); });
+              return acc;
+            }, []),
           }, 'media');
         });
       }
@@ -736,82 +875,166 @@
   /* ==========================================================================
      SPONSORS
 
-     The five partners are in the site's source, deliberately: a partner logo
-     is a contractual asset that ships as an optimised static file. What IS
-     editable is who has sponsored what, which is the record this table holds
-     and which the panel previously showed as a truncated JSON string in a
-     column headed "Data".
+     This section confused everybody who opened it, and fairly: it showed a
+     table headed "Key / Data / Updated" with one row reading "sponsor:matchreport"
+     and an empty string, next to a paragraph explaining that the real sponsors
+     are in the code. So it looked like the club's sponsorship was broken.
+
+     Nothing was broken. There are two different things here and the section
+     never said so.
+
+     THE PARTNERS are the five businesses whose logos are on the shirt and
+     across the sponsors page. Their marks are contractual assets that ship as
+     optimised static files, and changing one is a deliberate code change, on
+     purpose: nobody should be able to alter a partner's logo by accident from
+     a phone.
+
+     THE SPONSORSHIPS are the small things sold during a season, one at a
+     time: a match report, a player's season, a match ball. They change often
+     and they belong in the database, which is what this table is. It was
+     empty because none have been sold yet, and an empty table with no
+     explanation reads as a fault rather than as a to-do list.
+
+     So the section now names what is for sale, says which of them are taken,
+     and points at the pipeline for the ones that are not.
      ========================================================================== */
+  /* What a club this size can actually sell, with what the site does when
+     somebody buys it. Prices are the club's to set; this is the shelf. */
+  var SLOTS = [
+    { key: 'matchreport', label: 'The match report',
+      what: 'Their name on every match report for the season.' },
+    { key: 'matchball', label: 'The match ball',
+      what: 'Named as the match ball sponsor on that game’s report.' },
+    { key: 'motm', label: 'Player of the Match',
+      what: 'Named alongside the award on every match report.' },
+  ];
+
   M.sponsors = function (host) {
     return CP.readAll('player_photos').then(function (rows) {
-      var list = rows.filter(function (r) { return r.key.indexOf('sponsor:') === 0; })
-        .sort(function (a, b) { return String(a.key).localeCompare(String(b.key)); });
+      var stored = rows.filter(function (r) { return r.key.indexOf('sponsor:') === 0
+        && r.key !== 'sponsor:pipeline'; });
+      var byKey = {};
+      stored.forEach(function (r) {
+        var raw = r.data;
+        byKey[r.key.replace('sponsor:', '')] = typeof raw === 'string' ? { name: raw } : (raw || {});
+      });
+      /* A player's own season is sellable too, so the shelf is the fixed slots
+         plus one per player, and the table below lists whatever is actually
+         sold rather than thirty-seven empty rows. */
+      var sold = Object.keys(byKey).filter(function (k) { return byKey[k] && byKey[k].name; });
+
+      function labelFor(key) {
+        var slot = SLOTS.filter(function (x) { return x.key === key; })[0];
+        if (slot) return slot.label;
+        var m = String(key).match(/^player-(\d+)$/);
+        if (m) {
+          var p = SQUAD.filter(function (x) { return String(x.num) === m[1]; })[0];
+          return p ? p.name + '’s season' : 'A player’s season';
+        }
+        return key;
+      }
 
       host.innerHTML =
         sec({
-          title: 'Match sponsorship',
-          sub: 'Who has sponsored the match report and the individual players. This is the part that '
-            + 'changes during a season, so it lives in the database and can be edited here.',
-          actions: '<button class="btn btn--primary" data-new>Add a sponsorship</button>',
-          body: (list.length
-            ? table(['What is sponsored', 'Sponsor', 'Link', ''], list.map(function (r) {
-              var d = r.data || {};
-              var what = r.key.replace('sponsor:', '');
-              return '<tr data-key="' + esc(r.key) + '">' +
-                '<td><b>' + esc(what === 'matchreport' ? 'The match report' : what) + '</b></td>' +
-                '<td>' + esc((d && d.name) || (typeof d === 'string' ? d : '') || 'Nobody yet') + '</td>' +
-                '<td>' + esc((d && d.url) || '') + '</td>' +
+          title: 'What the club has sold',
+          sub: sold.length
+            ? '<b>' + esc(sold.length) + '</b> sponsorship' + (sold.length === 1 ? '' : 's')
+              + ' recorded. Each one shows up on the website wherever the thing they sponsored appears.'
+            : 'Nothing sold yet. This is not a fault: it is the list of small sponsorships the club '
+              + 'sells during a season, and none have been taken. Add one the moment somebody says yes.',
+          actions: '<button class="btn btn--primary" data-new>Record a sponsorship</button>',
+          body: (sold.length
+            ? table(['What they sponsor', 'Sponsor', 'Link', ''], sold.map(function (k) {
+              var d = byKey[k];
+              return '<tr data-key="sponsor:' + esc(k) + '">' +
+                '<td><b>' + esc(labelFor(k)) + '</b></td>' +
+                '<td>' + esc(d.name) + '</td>' +
+                '<td>' + (d.url
+                  ? '<a href="' + esc(d.url) + '" target="_blank" rel="noopener">their site</a>' : '') + '</td>' +
                 '<td><button class="btn btn--ghost btn--sm" data-edit>Edit</button> ' +
-                  '<button class="btn btn--quiet btn--sm" data-del>Delete</button></td>' +
+                  '<button class="btn btn--quiet btn--sm" data-del>Remove</button></td>' +
               '</tr>';
             }).join(''))
-            : empty('No sponsorships recorded', 'Add one and it appears against whatever it sponsors.')),
+            : ''),
           where: [['Sponsors', '/sponsors.html'], ['Match reports', '/results.html']],
         }) +
+
         sec({
-          title: 'Club partners',
-          sub: 'The five current partners are held in the site’s own source so their logos ship as '
-            + 'optimised static files and load instantly, and so nobody can change a partner’s mark by '
-            + 'accident. Changing one is a deliberate code change: a partner logo is a contractual '
-            + 'asset, not routine content.',
+          title: 'What is still for sale',
+          sub: 'The small sponsorships that turn over during a season. Somewhere to point a '
+            + 'prospect, and somewhere to look when one says yes.',
+          body: '<ul class="cp-list">' +
+            SLOTS.map(function (x) {
+              var taken = byKey[x.key] && byKey[x.key].name;
+              return '<li><b>' + esc(x.label) + '</b> &middot; ' + esc(x.what) + ' ' +
+                (taken
+                  ? '<span class="badge badge--success">' + esc(taken) + '</span>'
+                  : '<span class="badge badge--warning">Available</span>') + '</li>';
+            }).join('') +
+            '<li><b>A player’s season</b> &middot; Their name on that player’s profile for the year. ' +
+              '<span class="badge badge--neutral">' +
+                esc(sold.filter(function (k) { return /^player-/.test(k); }).length) +
+                ' of ' + esc(SQUAD.length) + ' taken</span></li>' +
+          '</ul>',
+          where: [['Sponsorship packages', '/sponsors.html']],
+          whereNote: 'the page a prospect reads',
+        }) +
+
+        sec({
+          title: 'Chasing the ones that are not',
+          sub: 'Who has been approached, who is thinking about it, and how much of the season’s '
+            + 'target is committed, all live under <b>Sponsorship pipeline</b>.',
+          actions: '<button class="btn btn--glass btn--sm" data-goto-pipeline>Open the pipeline</button>',
+        }) +
+
+        sec({
+          title: 'The club’s partners',
+          sub: 'The five businesses on the shirt and across the sponsors page. Their logos are '
+            + 'contractual assets and ship as optimised static files, so changing one is a '
+            + 'deliberate code change rather than something anybody can do by accident from a '
+            + 'phone. That is why they are not editable here, and it is on purpose.',
           where: [['Sponsors', '/sponsors.html']],
         });
 
-      function form(rec) {
-        var raw = (rec && rec.data) || {};
-        var d = typeof raw === 'string' ? { name: raw } : raw;
-        var back = dialog(rec ? 'Edit this sponsorship' : 'Add a sponsorship',
-          field('s-what', 'What is sponsored',
-            rec ? text('s-what', rec.key.replace('sponsor:', ''))
+      function form(key) {
+        var d = key ? byKey[key] : {};
+        var back = dialog(key ? 'Edit this sponsorship' : 'Record a sponsorship',
+          field('s-what', 'What have they sponsored',
+            key ? text('s-what', labelFor(key)) + '<input type="hidden" id="s-key" value="' + esc(key) + '">'
               : choose('s-what', 'matchreport',
-                [['matchreport', 'The match report']].concat(SQUAD.map(function (p) {
-                  return ['player-' + p.num, p.name];
-                })))) +
+                SLOTS.map(function (x) { return [x.key, x.label]; })
+                  .concat(SQUAD.map(function (p) { return ['player-' + p.num, p.name + '’s season']; }))),
+            key ? 'This cannot be changed. Remove it and record a new one instead.' : '') +
           '<div class="grid grid--2" style="margin-top:var(--space-4)">' +
             field('s-name', 'Sponsor', text('s-name', d.name, 'The business or person')) +
             field('s-url', 'Their website', text('s-url', d.url, 'https://…')) +
           '</div>' +
-          field('s-note', 'A line about them', area('s-note', d.note, 3)),
-          620);
+          field('s-note', 'A line about them', area('s-note', d.note, 3),
+            'Optional. Shown beside their name.'),
+          640);
+        if (key) $('#s-what', back).readOnly = true;
 
         $('[data-save]', back).addEventListener('click', function () {
-          var what = val(back, 's-what');
+          var what = key || val(back, 's-what');
           var name = val(back, 's-name');
           if (!what) { fail(back, 'Say what is being sponsored.'); return; }
           if (!name) { fail(back, 'Name the sponsor.'); return; }
-          put(back, 'player_photos', 'sponsor:' + what.replace(/^sponsor:/, ''),
-            typeof raw === 'string' ? {} : raw,
+          put(back, 'player_photos', 'sponsor:' + what, d,
             { name: name, url: val(back, 's-url'), note: val(back, 's-note') }, 'sponsors');
         });
       }
 
       host.addEventListener('click', function (e) {
         if (e.target.matches('[data-new]')) { if (guard()) form(null); return; }
+        if (e.target.matches('[data-goto-pipeline]')) { location.hash = '#pipeline'; return; }
         var tr = e.target.closest('tr[data-key]');
         if (!tr) return;
-        var rec = list.filter(function (x) { return x.key === tr.getAttribute('data-key'); })[0];
-        if (e.target.matches('[data-edit]')) { if (guard()) form(rec); return; }
-        if (e.target.matches('[data-del]')) { if (guard()) removeRow('player_photos', rec.key, 'this sponsorship', 'sponsors'); }
+        var full = tr.getAttribute('data-key');
+        var short = full.replace('sponsor:', '');
+        if (e.target.matches('[data-edit]')) { if (guard()) form(short); return; }
+        if (e.target.matches('[data-del]')) {
+          if (guard()) removeRow('player_photos', full, labelFor(short) + '’s sponsorship', 'sponsors');
+        }
       });
     });
   };

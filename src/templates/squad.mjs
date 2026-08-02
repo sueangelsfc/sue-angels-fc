@@ -64,12 +64,12 @@ export function squad(d) {
       ? pool.find((x) => (x.s[key] || 0) === top) : null;
   };
 
-  /* Five statuses, three sections. `retained` is a player kept on for 26/27,
-     so they are in the squad, not a footnote; `staff` is a player who has
-     moved off the pitch and onto the coaching bench, which belongs with those
-     who came before rather than with the current eleven. Anything the panel
-     has not been told about is treated as active, so a missing status can
-     never quietly delete somebody from the squad page. */
+  /* Nine statuses, and only three of them take a player off the squad page.
+     Retained, new, returned, on trial and injured are all still in the squad:
+     they say something about WHY somebody is in it, which is the only
+     interesting question in July. Anything the panel has not been told about
+     is treated as active, so a missing status can never quietly delete
+     somebody from the squad page. */
   const PAST = new Set(['retired', 'departed', 'staff']);
   const first = all.filter((p) => !PAST.has(p.status));
   const retired = all.filter((p) => p.status === 'retired');

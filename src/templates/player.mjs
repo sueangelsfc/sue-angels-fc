@@ -218,6 +218,10 @@ export function playerPage(p, d) {
     retired: 'Retired',
     departed: 'Departed',
     retained: 'Retained for 26/27',
+    new: 'New signing',
+    returned: 'Back at the club',
+    trial: 'On trial',
+    injured: 'Out injured',
     staff: 'Now on the coaching staff',
   };
   const statusLabel = STATUS[squadRec.status];

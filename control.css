@@ -538,6 +538,75 @@ body:has(.cp) .atmos__blob { animation: none; }
 .me__x:hover { border-color: var(--error); color: var(--error); }
 .me__none { font-size: var(--step--2); color: var(--text-subtle); padding-block: var(--space-3); }
 
+/* ==========================================================================
+   THE ALBUM'S PHOTOGRAPHS
+
+   The editor showed a textarea of URLs. Removing a picture meant finding its
+   line; making one the cover meant copying its address into another field;
+   seeing which one you were about to delete was not possible at all. Here
+   they are, as pictures, each with the four things anyone actually wants to
+   do to one.
+   ========================================================================== */
+.picgrid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr));
+}
+.picgrid__i {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface-inset);
+}
+.picgrid__i.is-open { grid-column: 1 / -1; border-color: var(--border-brand); }
+.picgrid__i img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.picgrid__i.is-open img { aspect-ratio: 16 / 9; }
+.picgrid__cover {
+  position: absolute;
+  inset-block-start: 6px;
+  inset-inline-start: 6px;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--brand);
+  color: var(--text-on-brand);
+  font-size: var(--step--2);
+  font-weight: var(--weight-bold);
+}
+.picgrid__bar { display: flex; flex-wrap: wrap; gap: 2px; padding: 6px; }
+.picgrid__b {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--step--2);
+  cursor: pointer;
+}
+.picgrid__b:hover:not(:disabled) { border-color: var(--border-brand); color: var(--brand-text); }
+.picgrid__b:disabled { opacity: 0.35; cursor: not-allowed; }
+.picgrid__b--x { margin-inline-start: auto; }
+.picgrid__b--x:hover { border-color: var(--error); color: var(--error); }
+.picgrid__who {
+  padding: 0 8px 8px;
+  font-size: var(--step--2);
+  color: var(--text-subtle);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.picgrid__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: var(--space-3);
+  border-block-start: 1px solid var(--border);
+}
+
 /* ---- Photograph tagger ---- */
 .tagshot {
   width: 100%;

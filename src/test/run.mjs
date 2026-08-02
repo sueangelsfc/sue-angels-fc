@@ -650,16 +650,25 @@ check('share cards are not all identical', ogSeen.size >= 15, `${ogSeen.size} di
    so signing in to read the inbox downloads neither.
 
    The numbers below are therefore ceilings over a smaller thing, not a raise.
-   A new module goes in src/admin/lazy/ with its own entry here; adding one to
-   control.js means everybody downloads it forever, which is the mistake this
-   split exists to undo. */
+   Each chunk gets its own, with a little headroom, and they guard different
+   things. control.js is what everybody downloads on sign-in, so it is the one
+   that matters and it is the one that got smaller: 32 -> 14KB.
+   The chunk ceilings guard against a module quietly becoming enormous, not
+   against the panel having features. A new panel goes in src/admin/lazy/ with
+   its own line here. Adding one to control.js means everybody downloads it
+   forever, which is the mistake this split exists to undo. */
 const BUDGET = {
   'sa.css': 22,
   'home.css': 26,
   'sa.js': 24,
   'control.css': 7,
-  'control.js': 18,
-  'control-match.js': 18,
+  'control.js': 16,
+  /* The heaviest, and fairly: the pitch, the position codes, five tabs, and
+     the composer that turns a coach's bullets into a match report. Fetched
+     only by somebody who has opened Fixtures or Results. */
+  'control-match.js': 20,
+  'control-content.js': 11,
+  'control-squad.js': 8,
   'control-photos.js': 6,
 };
 for (const [f, kb] of Object.entries(BUDGET)) {
@@ -710,6 +719,15 @@ for (const [f, kb] of Object.entries(BUDGET)) {
   /* Routing cannot ask M whether a panel exists any more: nothing lazy is in
      M until it has been downloaded, so a bookmarked #results would bounce to
      the dashboard. */
+  /* Every module attaches its listeners to the panel body and relies on
+     events bubbling up from the rows it draws. Emptying that element with
+     innerHTML leaves the listeners on it, so each refresh stacked another
+     copy: two renders in, one click saved twice. Saving refreshes, so it
+     compounded. The body element is replaced now. */
+  check('a re-render replaces the panel body rather than emptying it',
+    /cloneNode\(false\)/.test(core) && !/\bbody\.innerHTML = '';/.test(core),
+    'module listeners stack up on every refresh, so one click saves twice');
+
   check('routing does not gate on a module being loaded',
     !/M\[start\]\s*\?/.test(core) && /known\(start\)/.test(core),
     'a deferred panel would fall back to the dashboard when opened by URL');

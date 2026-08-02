@@ -300,16 +300,24 @@ body:has(.cp) .atmos__blob { animation: none; }
 .mform__sub { margin-block-start: 4px; font-size: var(--step--2); color: var(--text-subtle); }
 .mform__tabs { margin-block-start: var(--space-4); }
 .mform__body { flex: 1; min-height: 0; overflow-y: auto; padding: var(--space-5); }
+/* Cancel, then what saving will do, then Save. As a flex row the status text
+   was a squeezed column one word wide between two buttons, 195px tall on a
+   narrow window. Grid gives the buttons their content width and the sentence
+   whatever is left, and drops it onto its own line when there is not enough. */
 .mform__foot {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-3) var(--space-4);
   padding: var(--space-4) var(--space-5);
   border-block-start: 1px solid var(--border);
   background: var(--surface);
 }
-.mform__status { flex: 1; min-width: 0; font-size: var(--step--2); color: var(--text-subtle); }
+.mform__status { min-width: 0; font-size: var(--step--2); color: var(--text-subtle); }
+@media (max-width: 600px) {
+  .mform__foot { grid-template-columns: 1fr 1fr; }
+  .mform__status { grid-column: 1 / -1; grid-row: 1; }
+}
 .mform__h { margin-block: var(--space-5) var(--space-3); font-size: var(--step-0); font-weight: var(--weight-semi); }
 .mform__h:first-child { margin-block-start: 0; }
 

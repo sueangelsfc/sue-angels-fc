@@ -213,7 +213,12 @@ export function playerPage(p, d) {
     leadership.thirdChoiceCaptainPlayerId === p.num ? 'Third-choice captain' : null,
   ].find(Boolean);
 
-  const STATUS = { retired: 'Retired', departed: 'Departed' };
+  const STATUS = {
+    retired: 'Retired',
+    departed: 'Departed',
+    retained: 'Retained for 26/27',
+    staff: 'Now on the coaching staff',
+  };
   const statusLabel = STATUS[squadRec.status];
 
   /* ================= HERO ================= */

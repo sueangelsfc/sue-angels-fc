@@ -20,12 +20,10 @@
    secret: the anon key in src/data/runtime.json is enough. Nothing here can
    write to the database.
 
-   `player_photos` is left alone. Its rows are large base64 blobs and the
-   snapshot stores them in a different shape ({key, kind, bytes}) from the
-   other six ({key, data, updated_at}), because what the generator needs from
-   that table is the size, not the payload. Re-fetching 28 photographs on
-   every sync to throw the bytes away would make this slow for nothing. Pass
-   --photos when a roster, coach or sponsor record has genuinely changed.
+   `player_photos` is two tables sharing one name: base64 photographs, whose
+   size is all the generator needs, and small structured records the control
+   panel writes and the website reads. The photographs are reduced to
+   {key, kind, bytes}; everything else is kept whole. See the block below.
    ========================================================================== */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -33,7 +31,6 @@ import path from 'node:path';
 const ROOT = process.cwd();
 const SNAP = path.join(ROOT, 'src', 'data', 'recovered-live.json');
 const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'runtime.json'), 'utf8')).supabase;
-const WITH_PHOTOS = process.argv.includes('--photos');
 
 const TABLES = ['matches', 'fixtures', 'team_badges', 'articles', 'gallery', 'recognition'];
 
@@ -61,20 +58,38 @@ for (const t of TABLES) {
     + `${same ? '' : '   CHANGED'}`);
 }
 
-if (WITH_PHOTOS) {
-  const rows = await table('player_photos', 'key,data');
-  next.player_photos = rows.map((r) => ({
-    key: r.key,
-    kind: typeof r.data === 'string' ? 'string' : (r.data && r.data.dataUrl ? 'dataUrl' : 'object'),
-    bytes: JSON.stringify(r.data ?? '').length,
-  }));
-  console.log(`  player_photos ${String(rows.length).padStart(4)} rows   REFRESHED`);
-} else {
-  console.log(`  player_photos ${String((before.player_photos || []).length).padStart(4)} rows`
-    + '   skipped (pass --photos to refresh)');
+/* `player_photos` is two different tables sharing one name. Most of it is
+   base64 photographs, megabytes of payload the generator needs only the SIZE
+   of. The rest is small structured records the control panel writes and the
+   website reads: roster:status (who is active, retained, retired, departed or
+   now coaching), roster:s2627 (players added since the recovery), roster:coaches,
+   coach:*, sponsor:* and donate:config.
+
+   Skipping the whole table to avoid the photographs is what kept those records
+   out of the build: the panel could change a player's status all it liked and
+   the website went on showing the code baseline. So the photographs are
+   reduced to their size, as before, and everything else is kept whole. */
+{
+  const rows = await table('player_photos', 'key,data,updated_at');
+  const isPhoto = (r) => typeof r.data === 'string' && r.data.indexOf('data:image') === 0;
+  const photos = rows.filter(isPhoto);
+  const records = rows.filter((r) => !isPhoto(r));
+  next.player_photos = [
+    ...photos.map((r) => ({
+      key: r.key,
+      kind: typeof r.data === 'string' ? 'string' : (r.data && r.data.dataUrl ? 'dataUrl' : 'object'),
+      bytes: JSON.stringify(r.data ?? '').length,
+    })),
+    ...records.map((r) => ({ key: r.key, data: r.data, updated_at: r.updated_at })),
+  ].sort((a, b) => String(a.key).localeCompare(String(b.key)));
+  const same = JSON.stringify(before.player_photos || []) === JSON.stringify(next.player_photos);
+  if (!same) changed++;
+  console.log(`  player_photos ${String(rows.length).padStart(4)} rows`
+    + `   ${photos.length} photographs (size only), ${records.length} records`
+    + `${same ? '' : '   CHANGED'}`);
 }
 
-if (!changed && !WITH_PHOTOS) {
+if (!changed) {
   console.log('\nNothing changed. The site already reflects the database.');
   process.exit(0);
 }

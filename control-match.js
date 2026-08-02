@@ -602,6 +602,152 @@
     return (p && /goalkeeper|keeper/i.test(p.pos || '')) ? 'GK' : '';
   }
 
+  /* ==========================================================================
+     BULLETS INTO AN ARTICLE
+
+     The retired editor had this and it was the fastest thing in it: you typed
+     what you remembered as bullets, pressed a button, and got a match report.
+     It did it by handing the notes to a language model through
+     window.claude.complete, which existed because that admin ran inside a
+     Claude artifact. On a deployed website there is no such thing, so this
+     does the job the other way round: it writes the parts of a report that
+     are already facts, and threads the notes through as the story.
+
+     Which is arguably where it belongs. The scoreline, who scored, what
+     minute, whether it was a penalty, who kept the sheet, who was booked, the
+     shape the side lined up in: all of that is on the other four tabs
+     already, and a model retyping it is a chance to get it wrong. What a
+     model was genuinely adding was prose around the coach's observations, and
+     those are the coach's own words here rather than a paraphrase of them.
+
+     Nothing is invented. A goal with no minute recorded is not given one, and
+     a shootout whose result was never stored does not acquire a winner.
+     ========================================================================== */
+  function listOf(names) {
+    if (!names.length) return '';
+    if (names.length === 1) return names[0];
+    return names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
+  }
+
+  /* "on 12 minutes", or nothing at all when the team sheet did not say. */
+  function atMin(m) { return m == null || m === '' ? '' : ' on ' + m + ' minutes'; }
+
+  function howScored(g) {
+    if (g.type === 'pen') return ' from the penalty spot';
+    if (g.type === 'set') {
+      return g.setType === 'corner' ? ' from a corner'
+        : g.setType === 'freekick' ? ' from a free kick'
+          : g.setType === 'throwin' ? ' from a throw in' : ' from a set piece';
+    }
+    return '';
+  }
+
+  function buildReport(c) {
+    var paras = [];
+    var them = c.opp || 'the opposition';
+    var comp = c.competition ? ' in ' + c.competition : '';
+    /* Small numbers read as words in prose and as figures in a scoreline.
+       "BPR Men's scored 2" is a spreadsheet talking. */
+    var WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+    var say = function (n) { return WORD[n] || String(n); };
+
+    /* ---- What happened ---- */
+    if (c.kind === 'walkover') {
+      paras.push(c.woUs
+        ? c.us + ' were awarded a walkover victory over ' + them + ' after the fixture went '
+          + 'unfulfilled. No goals are recorded against a walkover, but the points stand.'
+        : them + ' were awarded the fixture as a walkover. No goals are recorded against a '
+          + 'walkover, and the points go with it.');
+    } else if (c.kind === 'fixture' || c.ourGoals == null) {
+      paras.push(c.us + ' meet ' + them + (c.home ? ' at home' : ' away') + comp
+        + (c.date ? ' on ' + c.date : '') + '.');
+    } else if (c.kind === 'penalty') {
+      paras.push('There was nothing to separate ' + c.us + ' and ' + them + ' after ninety minutes'
+        + comp + (c.date ? ', ' + c.date : '') + ', the tie finishing ' + c.ourGoals + '-'
+        + c.theirGoals + ' and going to penalties.');
+    } else {
+      var verb = c.ourGoals > c.theirGoals ? 'beat'
+        : c.ourGoals === c.theirGoals ? 'drew with' : 'lost to';
+      var margin = c.ourGoals - c.theirGoals;
+      var colour = verb === 'beat'
+        ? (margin >= 5 ? 'a thumping win' : margin >= 3 ? 'a comfortable win'
+          : margin === 1 ? 'a narrow win' : 'a solid win')
+        : verb === 'lost to'
+          ? (margin <= -4 ? 'a heavy defeat' : margin === -1 ? 'a narrow defeat' : 'a defeat')
+          : (c.ourGoals === 0 ? 'a goalless draw' : 'a draw');
+      paras.push(c.us + ' ' + verb + ' ' + them + ' ' + c.ourGoals + '-' + c.theirGoals
+        + (c.home ? ' at home' : ' away') + comp + (c.date ? ' on ' + c.date : '')
+        + (c.venue ? ', at ' + c.venue : '') + ', ' + colour + '.');
+    }
+
+    /* ---- The shape ---- */
+    if (c.formation || c.xi || c.captain) {
+      var shape = c.formation ? c.us + ' lined up in a ' + c.formation + '.'
+        : c.xi >= 11 ? ''
+          : c.xi ? 'The team sheet names ' + say(c.xi) + ' of the starting eleven.' : '';
+      var line = (shape + (c.captain ? ' ' + c.captain + ' wore the armband.' : '')).trim();
+      if (line) paras.push(line);
+    }
+
+    /* ---- The goals, in the order they went in where that is recorded ---- */
+    var timed = c.goals.filter(function (g) { return g.minute != null && g.minute !== ''; })
+      .sort(function (a, b) { return a.minute - b.minute; });
+    var untimed = c.goals.filter(function (g) { return g.minute == null || g.minute === ''; });
+    if (timed.length) {
+      var running = 0;
+      var lines = timed.map(function (g, i) {
+        running++;
+        var assist = c.assists.filter(function (a) {
+          return a.minute != null && Number(a.minute) === Number(g.minute) && a.name !== g.name;
+        })[0];
+        var lead = i === 0 ? g.name + ' opened the scoring'
+          : running === 2 ? g.name + ' made it two'
+            : running === 3 ? g.name + ' put the game beyond doubt with a third'
+              : g.name + ' added a ' + ordinal(running);
+        return lead + atMin(g.minute) + howScored(g)
+          + (assist ? ', set up by ' + assist.name : '') + '.';
+      });
+      paras.push(lines.join(' '));
+    }
+    if (untimed.length) {
+      var names = untimed.map(function (g) { return g.name; });
+      paras.push((timed.length ? 'Also on the scoresheet: ' : 'On the scoresheet: ')
+        + listOf(names) + '. The team sheet does not record what minute those went in.');
+    }
+    var freeAssists = c.assists.filter(function (a) {
+      return !timed.some(function (g) { return Number(g.minute) === Number(a.minute) && a.name !== g.name; });
+    }).map(function (a) { return a.name; });
+    if (freeAssists.length && !timed.length) {
+      paras.push('Assists went to ' + listOf(freeAssists) + '.');
+    }
+
+    /* ---- The coach's own words, which is what this is for ---- */
+    if (c.bullets.length) paras.push.apply(paras, c.bullets);
+
+    /* ---- Keeping and discipline ---- */
+    var tail = [];
+    if (c.cleanSheet.length) {
+      tail.push(listOf(c.cleanSheet) + ' kept a clean sheet.');
+    } else if (c.theirGoals != null && c.theirGoals > 0 && c.kind === 'score') {
+      tail.push(them + (c.theirGoals === 1 ? ' got one back.' : ' managed ' + say(c.theirGoals) + '.'));
+    }
+    if (c.pensSaved.length) tail.push(listOf(c.pensSaved) + ' saved a penalty.');
+    if (c.reds.length) tail.push(listOf(c.reds) + (c.reds.length === 1 ? ' was sent off.' : ' were sent off.'));
+    if (c.yellows.length) {
+      tail.push(listOf(c.yellows) + (c.yellows.length === 1 ? ' was booked.' : ' were booked.'));
+    }
+    if (tail.length) paras.push(tail.join(' '));
+
+    if (c.motm) paras.push(c.motm + ' was named Player of the Match.');
+
+    return paras.join('\n\n');
+  }
+
+  function ordinal(n) {
+    return n === 4 ? 'fourth' : n === 5 ? 'fifth' : n === 6 ? 'sixth' : n === 7 ? 'seventh'
+      : n === 8 ? 'eighth' : n === 9 ? 'ninth' : n === 10 ? 'tenth' : n + 'th';
+  }
+
   function openMatch(o) {
     var opts = o || {};
     var rec = opts.rec || { key: '', data: {} };
@@ -784,11 +930,36 @@
           '<div data-mpane="report" hidden>' +
             selectField('m-motm', 'Player of the Match',
               SQUAD.map(function (p) { return { v: p.num, t: p.name }; }), d.motm) +
-            '<h4 class="mform__h">Match report</h4>' +
-            '<div class="field"><textarea class="textarea" id="m-report" rows="12" ' +
-              'placeholder="How the game went. Blank lines separate paragraphs.">' +
+
+            '<h4 class="mform__h">Your notes</h4>' +
+            '<div class="field">' +
+              '<label class="field__label" for="m-report">What happened, in bullets</label>' +
+              '<textarea class="textarea" id="m-report" rows="9" ' +
+                'placeholder="- Slow start, they had the better of the first twenty\n' +
+                '- Turned on the press after the opener and never let them settle\n' +
+                '- Back four barely gave a chance away">' +
               esc(d.commentary || '') + '</textarea>' +
-              '<p class="field__hint" data-words>' + words(d.commentary) + '</p></div>' +
+              '<p class="field__hint" data-words>' + words(d.commentary) + '</p>' +
+            '</div>' +
+            '<div class="cp-head__actions" style="margin-top:var(--space-3)">' +
+              '<button type="button" class="btn btn--primary btn--sm" data-build>' +
+                (d.polishedReport ? 'Build it again' : 'Build the report') + '</button>' +
+              '<span class="cp-note">Your bullets, plus everything recorded on the other tabs, '
+                + 'written out as an article you can edit.</span>' +
+            '</div>' +
+
+            '<h4 class="mform__h">The report</h4>' +
+            '<div class="field">' +
+              '<label class="field__label" for="m-polished">What the website publishes</label>' +
+              '<textarea class="textarea" id="m-polished" rows="16" ' +
+                'placeholder="Write the bullets above and press Build the report, or type it here yourself.">' +
+              esc(d.polishedReport || '') + '</textarea>' +
+              '<p class="field__hint" data-pwords>' + words(d.polishedReport) + '</p>' +
+            '</div>' +
+            '<div class="cp-head__actions" style="margin-top:var(--space-3)">' +
+              '<button type="button" class="btn btn--ghost btn--sm" data-clear-report>Clear it</button>' +
+              '<span class="cp-note">Cleared, the website falls back to your notes as they are.</span>' +
+            '</div>' +
           '</div>' +
 
         '</div>' +
@@ -908,6 +1079,64 @@
         goals[gj].setType = e.target.getAttribute('data-g-src');
         repaintGoals(); return;
       }
+      /* ---- Bullets into an article ---- */
+      if (e.target.matches('[data-build]')) {
+        var notes = $('#m-report', back).value;
+        var bullets = notes.split('\n')
+          .map(function (l) { return l.replace(/^\s*[-*•·]\s*/, '').trim(); })
+          .filter(Boolean)
+          /* A bullet is a note, not a sentence, so it does not always arrive
+             with a capital or a full stop. Give it both rather than printing
+             a paragraph that starts lower case and stops dead. */
+          .map(function (l) {
+            var s = l.charAt(0).toUpperCase() + l.slice(1);
+            return /[.!?]$/.test(s) ? s : s + '.';
+          });
+        var kindNow = $('#m-kind', back).value;
+        var homeNow = $('#m-ha', back).value === 'home';
+        var usG = $('#m-us', back).value;
+        var themG = $('#m-them', back).value;
+        var motmNum = $('#m-motm', back).value;
+        var captNum = $('#m-capt', back).value;
+        var article = buildReport({
+          us: SEED.club || "Sue's Angels FC",
+          opp: $('#m-opp', back).value.trim(),
+          home: homeNow,
+          competition: $('#m-comp', back).value.trim(),
+          venue: d.venue || '',
+          date: longDate($('#m-date', back).value),
+          kind: kindNow,
+          woUs: $('#m-wo', back).value === 'us',
+          ourGoals: usG === '' ? null : Number(usG),
+          theirGoals: themG === '' ? null : Number(themG),
+          formation: detectFormation(startersNow()),
+          xi: counts.starters.length,
+          captain: captNum === '' ? '' : nameOf(Number(captNum)),
+          motm: motmNum === '' ? '' : nameOf(Number(motmNum)),
+          goals: goals.map(function (g) {
+            return { name: nameOf(g.num), minute: g.minute, type: g.type, setType: g.setType };
+          }),
+          assists: assists.map(function (a) { return { name: nameOf(a.num), minute: a.minute }; }),
+          yellows: counts.yellowCards.map(nameOf),
+          reds: counts.redCards.map(nameOf),
+          cleanSheet: counts.cleanSheets.map(nameOf),
+          pensSaved: counts.penaltiesSaved.map(nameOf),
+          bullets: bullets,
+        });
+        var out = $('#m-polished', back);
+        out.value = article;
+        $('[data-pwords]', back).textContent = words(article);
+        $('[data-build]', back).textContent = 'Build it again';
+        toast('Report built. Read it through and change anything you like.', 'success');
+        out.focus();
+        return;
+      }
+      if (e.target.matches('[data-clear-report]')) {
+        $('#m-polished', back).value = '';
+        $('[data-pwords]', back).textContent = words('');
+        return;
+      }
+
       if (e.target.matches('[data-cancel]') || e.target === back) { back.remove(); return; }
       if (!e.target.matches('[data-save]')) return;
 
@@ -965,9 +1194,15 @@
         formation: detectFormation(startersNow()),
         motm: $('#m-motm', back).value === '' ? null : Number($('#m-motm', back).value),
         captain: $('#m-capt', back).value === '' ? null : Number($('#m-capt', back).value),
+        /* Two fields, as the record has always held them: `commentary` is
+           what the coach wrote, `polishedReport` is the article. The website
+           prefers the article and falls back to the notes, so clearing the
+           article restores the notes rather than emptying the page. */
         commentary: $('#m-report', back).value,
+        polishedReport: $('#m-polished', back).value.trim(),
         savedAt: new Date().toISOString(),
       });
+      if (!next.polishedReport) delete next.polishedReport;
       if (kind === 'score' || kind === 'penalty') {
         next.hs = Number(home ? us : them);
         next.as = Number(home ? them : us);
@@ -1035,6 +1270,10 @@
       if (e.target.matches('#m-opp') || e.target.matches('#m-date')) { paintTitle(); return; }
       if (e.target.matches('#m-report')) {
         $('[data-words]', back).textContent = words(e.target.value);
+        return;
+      }
+      if (e.target.matches('#m-polished')) {
+        $('[data-pwords]', back).textContent = words(e.target.value);
         return;
       }
       var gr = e.target.closest('[data-goal]');

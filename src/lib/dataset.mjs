@@ -139,15 +139,48 @@ export function buildDataset() {
 
   /* Squad status. The recovered PageShell marks every player active, which is
      wrong: two ended their playing careers during 25/26 and nine have moved
-     on. The truth lives in the production `roster:status` blob, whose row was
-     recovered without its data, so it is mirrored here by shirt number. See
-     the note in the file itself for provenance. */
-  const rosterStatus = read('roster-status.json').status || {};
+     on. roster-status.json mirrors the production `roster:status` blob, whose
+     row was recovered without its data. See the note in that file.
 
-  const squad = (ps.SQUAD || []).map((p) => {
+     The database row now wins over it where one exists, which is what makes
+     the control panel's squad editor mean anything: moving somebody to
+     retired, retained or the coaching staff writes that row, and this is
+     where the change enters the website. */
+  const blob = (key) => (live.player_photos || []).find((p) => p.key === key)?.data;
+  const statusRow = blob('roster:status');
+  const rosterStatus = {
+    ...(read('roster-status.json').status || {}),
+    ...((statusRow && (statusRow.status || statusRow)) || {}),
+  };
+
+  /* Players signed since the recovery. The panel writes them here rather than
+     into the code baseline, so a new signing does not need a developer. */
+  const addedPlayers = (blob('roster:s2627')?.players || []).filter((p) => p && p.num);
+
+  const squad = [...(ps.SQUAD || []), ...addedPlayers].map((p) => {
     const name = `${p.first} ${p.last}`.trim();
     const pos = posByNum.get(p.num);
     const isGk = p.gk || pos?.code === 'GK';
+    /* A stated position wins over the inferred one. Inference reads where
+       somebody actually lined up, which is the right answer for anyone with a
+       season behind them and no answer at all for a player who has not played
+       yet: without this a new signing is a "Squad player" forever. */
+    const said = p.position || '';
+    if (said && !pos) {
+      const group = /goal/i.test(said) ? 'gk' : /def|back/i.test(said) ? 'def'
+        : /forward|strik/i.test(said) ? 'fwd' : 'mid';
+      return {
+        num: p.num, first: p.first, last: p.last, name, slug: slugify(name),
+        gk: group === 'gk',
+        position: said,
+        positionCode: group === 'gk' ? 'GK' : '',
+        positionGroup: group,
+        positionsPlayed: [], positionWeights: [],
+        bio: p.bio || bios[p.num] || bios[name] || null,
+        hasPhoto: photoKeys.has(String(p.num)),
+        status: rosterStatus[String(p.num)] || p.status || 'active',
+      };
+    }
     return {
       num: p.num,
       first: p.first,
@@ -177,7 +210,12 @@ export function buildDataset() {
      recovery captured without its contents, so it is mirrored in
      coaches-extra.json. Merged by id so a later edit to a founding coach in
      that file wins rather than duplicating the person. */
-  const extraCoaches = read('coaches-extra.json').coaches || [];
+  const extraCoaches = [
+    ...(read('coaches-extra.json').coaches || []),
+    /* And anyone the control panel has appointed since, including a player
+       moved off the pitch and onto the staff. */
+    ...((blob('roster:coaches')?.coaches) || []),
+  ];
   const coachSource = [...(ps.COACHES || [])];
   for (const extra of extraCoaches) {
     const at = coachSource.findIndex((c) => c.id === extra.id || c.name === extra.name);

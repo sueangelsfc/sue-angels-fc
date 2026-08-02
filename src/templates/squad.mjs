@@ -64,9 +64,17 @@ export function squad(d) {
       ? pool.find((x) => (x.s[key] || 0) === top) : null;
   };
 
-  const first = all.filter((p) => p.status === 'active');
+  /* Five statuses, three sections. `retained` is a player kept on for 26/27,
+     so they are in the squad, not a footnote; `staff` is a player who has
+     moved off the pitch and onto the coaching bench, which belongs with those
+     who came before rather than with the current eleven. Anything the panel
+     has not been told about is treated as active, so a missing status can
+     never quietly delete somebody from the squad page. */
+  const PAST = new Set(['retired', 'departed', 'staff']);
+  const first = all.filter((p) => !PAST.has(p.status));
   const retired = all.filter((p) => p.status === 'retired');
   const departed = all.filter((p) => p.status === 'departed');
+  const nowCoaching = all.filter((p) => p.status === 'staff');
 
   const league = teamSummary((d.played || []).filter((m) => m.competition === CLUB.division));
   const squadGoals = first.reduce((n, p) => n + (p.s.goals || 0), 0);
@@ -191,15 +199,16 @@ export function squad(d) {
           </ul>
         </section>` : '';
 
-  const pastBand = (retired.length || departed.length) ? `<section class="sec sq-pastband" id="past-players" aria-labelledby="sq-past-h">
+  const pastBand = (retired.length || departed.length || nowCoaching.length) ? `<section class="sec sq-pastband" id="past-players" aria-labelledby="sq-past-h">
       <div class="wrap">
-        ${rail(2, 'Past players', `${retired.length + departed.length} in all`)}
+        ${rail(2, 'Past players', `${retired.length + departed.length + nowCoaching.length} in all`)}
         <h2 class="h2 rv" id="sq-past-h">Those who <span class="volt">came before.</span></h2>
         <p class="sq-lede rv">Nobody who pulled on the shirt disappears off this page. These are the
           players who hung up the boots or moved on, with the record they left behind.</p>
         <div class="rv">
         ${pastSection(retired, 'retired', 'Retired', 'Hung up the boots')}
         ${pastSection(departed, 'departed', 'Departed', 'Moved on from the club')}
+        ${pastSection(nowCoaching, 'staff', 'Now on the staff', 'Swapped the pitch for the touchline')}
         </div>
       </div>
     </section>` : '';

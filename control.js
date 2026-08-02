@@ -1,4 +1,4 @@
-window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"sb_publishable_2VEdxWZCLW98qItINt6TPQ_r7y_Tcly"};window.SA_EMAIL="suesangelsfc@gmail.com";window.CP_CHUNKS={"match":"control-match.js?v=1e021dc8","photos":"control-photos.js?v=801b0dc2"};
+window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"sb_publishable_2VEdxWZCLW98qItINt6TPQ_r7y_Tcly"};window.SA_EMAIL="suesangelsfc@gmail.com";window.CP_CHUNKS={"match":"control-match.js?v=ca011465","photos":"control-photos.js?v=801b0dc2","squad":"control-squad.js?v=ddc1e515","content":"control-content.js?v=e8fe0380"};
 /* ==========================================================================
    CONTROL PANEL DATA LAYER
    Thin wrapper over Supabase Auth + REST. Every write is attributed and, for
@@ -471,162 +471,13 @@ window.CP = (function () {
     });
   };
 
-  /* ---- Generic key/value editor, used by several modules ---- */
-  function kvModule(cfg) {
-    return function (host) {
-      return CP.readAll(cfg.table).then(function (rows) {
-        var list = cfg.filter ? rows.filter(cfg.filter) : rows;
-        host.innerHTML =
-          '<div class="row row--between" style="margin-bottom:var(--space-5)">' +
-            '<p style="color:var(--text-muted);font-size:var(--step--1)">' + esc(list.length) + ' ' + esc(cfg.noun) + '</p>' +
-            '<div class="row row--tight">' +
-              '<button class="btn btn--ghost btn--sm" data-export>Export JSON</button>' +
-              (cfg.canAdd === false ? '' : '<button class="btn btn--primary btn--sm" data-new>' + esc(cfg.addLabel || 'Add') + '</button>') +
-            '</div>' +
-          '</div>' +
-          '<div data-list></div>';
-
-        var listHost = $('[data-list]', host);
-        function paint() {
-          if (!list.length) { listHost.innerHTML = empty('Nothing here yet', cfg.emptyBody); return; }
-          listHost.innerHTML = table(
-            cfg.headers.concat(['']),
-            list.map(function (row, i) {
-              return '<tr>' + cfg.cells(row).map(function (c) { return '<td>' + c + '</td>'; }).join('') +
-                '<td><div class="row row--tight" style="justify-content:flex-end">' +
-                  '<button class="btn btn--ghost btn--sm" data-edit="' + i + '">Edit</button>' +
-                  '<button class="btn btn--ghost btn--sm" data-del="' + i + '">Delete</button>' +
-                '</div></td></tr>';
-            }).join('')
-          );
-          $$('[data-edit]', listHost).forEach(function (b) {
-            b.addEventListener('click', function () { editRow(list[+b.getAttribute('data-edit')]); });
-          });
-          $$('[data-del]', listHost).forEach(function (b) {
-            b.addEventListener('click', function () {
-              var row = list[+b.getAttribute('data-del')];
-              if (!guard()) return;
-              confirmAction({
-                title: 'Delete this ' + cfg.singular + '?',
-                body: cfg.describe ? cfg.describe(row) : row.key,
-                detail: 'This removes the record from the live website immediately. It cannot be undone from here.',
-              }).then(function (ok) {
-                if (!ok) return;
-                CP.remove(cfg.table, row.key).then(function () {
-                  toast(cfg.singular + ' deleted', 'success');
-                  refresh(cfg.key);
-                }).catch(function (e) { toast(e.message, 'error'); });
-              });
-            });
-          });
-        }
-
-        /* Raw JSON editor. Deliberate: these are JSONB documents with varied
-           shapes, and a lossy form would silently drop fields the website
-           reads. The textarea is validated before it can be saved. */
-        function editRow(row) {
-          var isNew = !row;
-          var key = row ? row.key : '';
-          var back = document.createElement('div');
-          back.className = 'modal-backdrop';
-          back.setAttribute('role', 'dialog');
-          back.setAttribute('aria-modal', 'true');
-          back.innerHTML =
-            '<div class="modal glass glass--lg" style="width:min(100%,720px)">' +
-              '<div class="modal__head"><h2 style="font-size:var(--step-2)">' +
-                (isNew ? 'New ' + esc(cfg.singular) : 'Edit ' + esc(cfg.singular)) + '</h2></div>' +
-              '<div class="field"><label class="field__label" for="kv-key">Key</label>' +
-                '<input class="input" id="kv-key" value="' + esc(key) + '"' + (isNew ? '' : ' readonly') + '></div>' +
-              '<div class="field" style="margin-top:var(--space-4)">' +
-                '<label class="field__label" for="kv-data">Data (JSON)</label>' +
-                '<textarea class="textarea" id="kv-data" spellcheck="false" style="min-height:320px;font-family:var(--font-mono);font-size:var(--step--1)">' +
-                esc(JSON.stringify(row ? row.data : (cfg.template || {}), null, 2)) + '</textarea>' +
-                '<p class="field__error" data-err hidden></p></div>' +
-              '<div class="modal__foot"><button class="btn btn--ghost" data-cancel>Cancel</button>' +
-                '<button class="btn btn--primary" data-save>Save</button></div>' +
-            '</div>';
-          document.body.appendChild(back);
-          var close = function () { back.remove(); };
-          $('[data-cancel]', back).addEventListener('click', close);
-          back.addEventListener('click', function (e) { if (e.target === back) close(); });
-          $('[data-save]', back).addEventListener('click', function () {
-            if (!guard()) return;
-            var k = $('#kv-key', back).value.trim();
-            var errEl = $('[data-err]', back);
-            if (!k) { errEl.textContent = 'A key is required'; errEl.hidden = false; return; }
-            var parsed;
-            try { parsed = JSON.parse($('#kv-data', back).value); }
-            catch (e) { errEl.textContent = 'That is not valid JSON: ' + e.message; errEl.hidden = false; return; }
-            errEl.hidden = true;
-            CP.upsert(cfg.table, k, parsed).then(function () {
-              toast('Saved', 'success'); close(); refresh(cfg.key);
-            }).catch(function (e) { errEl.textContent = e.message; errEl.hidden = false; });
-          });
-        }
-
-        var addBtn = $('[data-new]', host);
-        if (addBtn) addBtn.addEventListener('click', function () { if (guard()) editRow(null); });
-        $('[data-export]', host).addEventListener('click', function () {
-          download(cfg.table + '-' + new Date().toISOString().slice(0, 10) + '.json',
-            JSON.stringify(list, null, 2), 'application/json');
-        });
-        paint();
-      });
-    };
-  }
 
 
-  M.squad = kvModule({
-    key: 'squad', table: 'player_photos', noun: 'stored player/roster records', singular: 'record',
-    addLabel: 'Add record',
-    emptyBody: 'This table holds player photographs plus roster and status records.',
-    headers: ['Key', 'Type', 'Size', 'Updated'],
-    cells: function (r) {
-      var isImg = typeof r.data === 'string' && r.data.indexOf('data:image') === 0;
-      var size = typeof r.data === 'string' ? Math.round(r.data.length / 1024) + ' KB' : '-';
-      return [esc(r.key), isImg ? 'Photograph' : 'Record', esc(size), esc(fmtDate(r.updated_at))];
-    },
-    describe: function (r) { return r.key; },
-  });
-
-  M.news = kvModule({
-    key: 'news', table: 'articles', noun: 'articles', singular: 'article',
-    addLabel: 'New article',
-    template: { id: '', title: '', cat: 'News', date: '', lede: '', body: '', cover: '' },
-    headers: ['Title', 'Category', 'Date', 'Updated'],
-    cells: function (r) {
-      var d = r.data || {};
-      return [esc(d.title || r.key), esc(d.cat), esc(d.date), esc(fmtDate(r.updated_at))];
-    },
-    describe: function (r) { return (r.data && r.data.title) || r.key; },
-  });
-
-  M.media = kvModule({
-    key: 'media', table: 'gallery', noun: 'albums', singular: 'album',
-    addLabel: 'New album',
-    template: { id: '', title: '', category: 'Matchday', photos: [], cover: '', tags: [], photographer: '' },
-    headers: ['Title', 'Category', 'Photos', 'Updated'],
-    cells: function (r) {
-      var d = r.data || {};
-      return [esc(d.title || r.key), esc(d.category), esc((d.photos || []).length), esc(fmtDate(r.updated_at))];
-    },
-    describe: function (r) { return (r.data && r.data.title) || r.key; },
-  });
+  
+  
 
 
-
-  M.recognition = kvModule({
-    key: 'recognition', table: 'recognition', noun: 'recognition entries', singular: 'entry',
-    addLabel: 'Add recognition',
-    template: { id: '', type: 'potm', month: '', player: null, reason: '' },
-    headers: ['Key', 'Type', 'Month/Season', 'Player'],
-    cells: function (r) {
-      var d = r.data || {};
-      return [esc(r.key), esc(d.type), esc(d.month || d.season || ''), esc(d.player != null ? d.player : '')];
-    },
-    describe: function (r) { return r.key; },
-  });
-
+  
   /* ==========================================================================
      VIDEOS
 
@@ -734,42 +585,7 @@ window.CP = (function () {
     });
   };
 
-  M.league = kvModule({
-    key: 'league', table: 'team_badges', noun: 'opponent badge records', singular: 'badge record',
-    addLabel: 'Add badge',
-    emptyBody: 'Opponent crests currently come from the code baseline. Rows added here override it.',
-    template: { src: '', alt: '', aspect: 'circle' },
-    headers: ['Club', 'Source', 'Aspect'],
-    cells: function (r) {
-      var d = r.data || {};
-      return [esc(r.key), esc(d.src), esc(d.aspect)];
-    },
-    describe: function (r) { return r.key; },
-  });
-
-  /* ---- Sponsors: stored as one record so ordering is preserved ---- */
-  M.sponsors = function (host) {
-    return CP.readAll('player_photos').then(function (rows) {
-      var rec = rows.filter(function (r) { return r.key.indexOf('sponsor') === 0; });
-      host.innerHTML =
-        '<div class="panel" style="padding:var(--space-5);margin-bottom:var(--space-5)">' +
-          '<h3 style="font-size:var(--step-1);margin-bottom:var(--space-3)">Partners on the website</h3>' +
-          '<p style="font-size:var(--step--1);color:var(--text-muted)">The five current partners are held in the site source ' +
-          '(src/lib/club.mjs) so their logos ship as optimised static files and load instantly. ' +
-          'Changing a partner is a code change plus a rebuild, which is deliberate: a partner logo is ' +
-          'a contractual asset, not routine content.</p>' +
-        '</div>' +
-        '<div class="panel" style="padding:var(--space-5)">' +
-          '<h3 style="font-size:var(--step-1);margin-bottom:var(--space-4)">Sponsorship records in the database</h3>' +
-          (rec.length
-            ? table(['Key', 'Data', 'Updated'], rec.map(function (r) {
-                return '<tr><td>' + esc(r.key) + '</td><td class="cell-club">' +
-                  esc(JSON.stringify(r.data).slice(0, 90)) + '</td><td>' + esc(fmtDate(r.updated_at)) + '</td></tr>';
-              }).join(''))
-            : empty('No sponsorship records', 'Player and match-report sponsorship records appear here once set.')) +
-        '</div>';
-    });
-  };
+  
 
   /* ---- Inbox ---- */
   M.inbox = function (host) {
@@ -959,7 +775,13 @@ window.CP = (function () {
      A chunk registers itself into window.CPM, which is the same object `M` is,
      so once it has loaded nothing downstream can tell the difference. */
   var CHUNKS = window.CP_CHUNKS || {};
-  var CHUNK_OF = { fixtures: 'match', results: 'match', phototag: 'photos' };
+  var CHUNK_OF = {
+    fixtures: 'match', results: 'match',
+    phototag: 'photos',
+    squad: 'squad',
+    news: 'content', media: 'content', recognition: 'content',
+    league: 'content', sponsors: 'content',
+  };
   var pending = {};
   function need(key) {
     var chunk = CHUNK_OF[key];
@@ -990,9 +812,23 @@ window.CP = (function () {
     var panel = $('#panel-' + key);
     if (!panel) return;
     var spinner = $('[data-panel-loading]', panel);
-    var body = $('[data-panel-body]', panel);
+    var old = $('[data-panel-body]', panel);
     if (spinner) spinner.hidden = false;
-    body.innerHTML = '';
+
+    /* REPLACE the body element, do not empty it.
+       Every module attaches its listeners to this element and relies on
+       events bubbling up from the rows it draws. Setting innerHTML = '' takes
+       away the rows and leaves the listeners, so each refresh added another
+       identical handler to the same node. Two renders in, one click ran the
+       handler twice: two writes to the database, two toasts, two confirm
+       dialogs, and a player added to the eleven twice by one choice. It got
+       worse every time anything was saved, because saving refreshes.
+
+       cloneNode(false) keeps the element and its attributes and takes nothing
+       else, listeners included. */
+    var body = old.cloneNode(false);
+    old.parentNode.replaceChild(body, old);
+
     need(key)
       .then(function () {
         if (!M[key]) { body.innerHTML = empty('Not built yet'); return null; }

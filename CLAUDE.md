@@ -64,11 +64,25 @@ structured records the panel writes and the site reads. Skipping the whole
 table to dodge the photographs is what kept those out of the build, so a
 squad status could be changed all day and the website never moved.
 
-The club can publish for itself: **Publish to site** calls `/api/publish`,
-which checks `is_club_admin()` and fires the Vercel deploy hook. That needs
-`DEPLOY_HOOK_URL` set in Vercel (Settings -> Git -> Deploy Hooks, branch
-`main`, then Settings -> Environment Variables). Until it exists the button
-says so rather than pretending.
+**The club publishes for itself.** *Publish to site* calls `/api/publish`,
+which asks `is_club_admin()` and then fires the Vercel deploy hook. It is
+live: `DEPLOY_HOOK_URL` is set on `sue-angels-fc-b469` and pressing the button
+produces a production deployment within seconds. `npm run publish` on a laptop
+still works and is the fallback if the hook is ever revoked.
+
+`DEPLOY_HOOK_URL` is the ONLY variable it needs. It also read
+`SUPABASE_ANON_KEY`, which the activation note never mentioned, so it was
+never set: `apikey` fell back to the caller's own login token, Supabase's
+gateway rejected it, and the function told an administrator they were not one.
+The key comes from `src/data/runtime.json` now, where the website already
+ships it. A setup step nobody is told to perform is a step that does not
+happen.
+
+The button reports the SERVER's answer, and its four outcomes are distinct on
+purpose: not signed in, sign-in expired, the database says no, and the
+database would not answer (a fault here, with the status it returned). It also
+does not guard on the browser's copy of the permission answer the way every
+other write does, because its whole job is to go and ask.
 
 ### Cache busting is automatic
 `sa.css` and `sa.js` are versioned by a **content hash** computed at build time and stamped identically on every page. Never hand-edit a `?v=`. Mixed versions used to be a recurring production bug; the test suite now asserts a single version across all pages.
@@ -198,7 +212,6 @@ Push to `main` → `sue-angels-fc-b469` auto-deploys to www.suesangelsfc.co.uk. 
 9. **Footer headings.** They are `h2`; as `h3` they created an `h1 → h3` jump on any page whose main content had no `h2`.
 
 ## Outstanding / known limitations
-- **`DEPLOY_HOOK_URL` is not set in Vercel**, so Publish to site correctly reports that publishing is not configured rather than pretending. Vercel → Settings → Git → Deploy Hooks (branch `main`), then Settings → Environment Variables. Until then, publishing is `npm run publish` on a laptop.
 - **`fixtures` and `team_badges` are empty (0 rows).** The homepage next-match card shows "to be confirmed" and the fixtures page shows an empty state. Upcoming fixtures come from the code baseline until rows exist.
 - **A probe row exists in production `enquiries`** (`name = __probe_delete_me`), created while auditing RLS. Anonymous clients cannot delete it; remove it from Control panel → Inbox once signed in.
 - **One cup tie has no stored shootout result** (`r20260412-kew-ccup`, Kew Antigua 2-2). It is shown as penalty-decided with no winner claimed rather than inventing one.

@@ -66,6 +66,52 @@
   }
   function val(back, id) { var el = $('#' + id, back); return el ? el.value.trim() : ''; }
 
+  /* An address field with an upload button beside it. The old editor let you
+     upload a badge and this one only took a URL, which quietly assumed the
+     club already had its images hosted somewhere. Pick a file and it is
+     resized in the browser, put in the club's own storage, and its address
+     dropped into the field, so the two ways in end up in the same place. */
+  function imageField(id, label, value, opts) {
+    var o = opts || {};
+    return '<div class="field"><label class="field__label" for="' + id + '">' + esc(label) + '</label>' +
+      '<div class="picker">' +
+        '<input class="input" id="' + id + '" value="' + esc(value || '') + '" placeholder="https://…" ' +
+          'style="flex:1 1 220px">' +
+        '<label class="btn btn--ghost btn--sm" style="cursor:pointer;flex:0 0 auto">Upload one' +
+          '<input type="file" accept="image/*" hidden data-upload-for="' + id + '" ' +
+            'data-up-max="' + (o.max || 1200) + '"' + (o.square ? ' data-up-square="1"' : '') +
+            (o.keepAlpha ? ' data-up-alpha="1"' : '') + '></label>' +
+      '</div>' +
+      '<p class="field__hint" data-up-note="' + id + '">' + esc(o.hint || '') + '</p></div>';
+  }
+
+  /* One handler for every upload button in a dialog. */
+  function wireUploads(back) {
+    back.addEventListener('change', function (e) {
+      var input = e.target.closest('[data-upload-for]');
+      if (!input) return;
+      var file = input.files && input.files[0];
+      if (!file) return;
+      if (!guard()) { input.value = ''; return; }
+      var id = input.getAttribute('data-upload-for');
+      var note = $('[data-up-note="' + id + '"]', back);
+      note.textContent = 'Uploading.';
+      U.uploadImage(file, {
+        max: Number(input.getAttribute('data-up-max')) || 1200,
+        square: input.hasAttribute('data-up-square'),
+        keepAlpha: input.hasAttribute('data-up-alpha'),
+        prefix: id,
+      }).then(function (out) {
+        $('#' + id, back).value = out.url;
+        note.textContent = 'Uploaded, ' + Math.round(out.was / 1024) + ' KB down to '
+          + Math.round(out.now / 1024) + ' KB.';
+      }).catch(function (err) {
+        note.textContent = err.message;
+        input.value = '';
+      });
+    });
+  }
+
   function dialog(title, body, width) {
     var back = document.createElement('div');
     back.className = 'modal-backdrop';
@@ -206,8 +252,8 @@
             field('a-cat', 'Category', choose('a-cat', d.cat || 'News', CATS)) +
             field('a-date', 'Date', '<input class="input" id="a-date" type="date" value="' +
               esc(toIso(d.date) || d.sortISO || today()) + '">') +
-            field('a-cover', 'Cover image', text('a-cover', d.cover, 'https://…'),
-              'Optional. A link to a photograph already on the web.') +
+            imageField('a-cover', 'Cover image', d.cover,
+              { max: 1200, hint: 'Optional. Shown on the news page and when the article is shared.' }) +
           '</div>' +
           '<h4 class="mform__h">The article</h4>' +
           field('a-body', 'What you want to say',
@@ -216,6 +262,7 @@
             'This is the whole article. It appears on the news page and gets its own page.') +
           '<p class="field__hint" data-count></p>');
 
+        wireUploads(back);
         var body = $('#a-body', back);
         function count() {
           var n = body.value.trim().split(/\s+/).filter(Boolean).length;
@@ -308,8 +355,8 @@
               esc(toIso(d.date) || String(d.date || '').slice(0, 10) || today()) + '">') +
             field('g-by', 'Photographer', text('g-by', d.photographer, 'Who took them')) +
           '</div>' +
-          field('g-cover', 'Cover photograph', text('g-cover', d.cover || d.src, 'https://…'),
-            'Left blank, the first photograph is used.') +
+          imageField('g-cover', 'Cover photograph', d.cover || d.src,
+            { max: 1200, hint: 'Left blank, the first photograph is used.' }) +
           '<h4 class="mform__h">The photographs</h4>' +
           field('g-photos', 'One web address per line',
             area('g-photos', (d.photos || []).join('\n'), 12, 'https://…\nhttps://…'),
@@ -319,6 +366,7 @@
               : 'Paste as many as you like.') +
           '<p class="field__hint" data-count></p>');
 
+        wireUploads(back);
         var listEl = $('#g-photos', back);
         function count() {
           var n = listEl.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean).length;
@@ -650,13 +698,16 @@
               return '<option value="' + esc(c) + '"></option>';
             }).join('') + '</datalist>',
             'Spelt exactly as it is on the fixtures list, or the badge will not find its club.') +
-          '<div class="grid grid--2" style="margin-top:var(--space-4)">' +
-            field('b-src', 'Badge address', text('b-src', d.src, 'https://…')) +
-            field('b-aspect', 'Shape', choose('b-aspect', d.aspect || 'circle',
-              [['circle', 'Round'], ['shield', 'Shield'], ['square', 'Square']])) +
+          '<div style="margin-top:var(--space-4)">' +
+            imageField('b-src', 'The badge', d.src,
+              { max: 240, keepAlpha: true,
+                hint: 'A club crest usually has a transparent background, so an uploaded one is kept as a PNG.' }) +
           '</div>' +
+          field('b-aspect', 'Shape', choose('b-aspect', d.aspect || 'circle',
+            [['circle', 'Round'], ['shield', 'Shield'], ['square', 'Square']])) +
           field('b-alt', 'Description for screen readers', text('b-alt', d.alt, 'Barnes Stormers club crest')),
           620);
+        wireUploads(back);
 
         $('[data-save]', back).addEventListener('click', function () {
           var club = val(back, 'b-club');

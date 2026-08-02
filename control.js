@@ -1,4 +1,4 @@
-window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"sb_publishable_2VEdxWZCLW98qItINt6TPQ_r7y_Tcly"};window.SA_EMAIL="suesangelsfc@gmail.com";window.CP_CHUNKS={"match":"control-match.js?v=ca011465","photos":"control-photos.js?v=1aaaead8","squad":"control-squad.js?v=ddc1e515","content":"control-content.js?v=27cad30b","photos-donations":"control-photos-donations.js?v=897bafaa","pipeline":"control-pipeline.js?v=ed7d09c1"};
+window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"sb_publishable_2VEdxWZCLW98qItINt6TPQ_r7y_Tcly"};window.SA_EMAIL="suesangelsfc@gmail.com";window.CP_CHUNKS={"match":"control-match.js?v=ca011465","photos":"control-photos.js?v=1aaaead8","squad":"control-squad.js?v=ddc1e515","content":"control-content.js?v=316c9f5c","photos-donations":"control-photos-donations.js?v=5ed0c2d5","pipeline":"control-pipeline.js?v=ed7d09c1"};
 /* ==========================================================================
    CONTROL PANEL DATA LAYER
    Thin wrapper over Supabase Auth + REST. Every write is attributed and, for
@@ -366,6 +366,79 @@ window.CP = (function () {
       return cols.map(function (c) { return q(r[c]); }).join(',');
     })).join('\n');
   }
+  /* ---- Choosing an image file ------------------------------------------
+     Shared, because three sections need it and none of them should carry
+     their own copy of canvas resizing.
+
+     Every image is resized and re-encoded in the browser before it leaves.
+     A phone camera produces four or five megabytes; nothing on this site is
+     drawn wider than about twelve hundred pixels. Uploading the original
+     would put a multi-megabyte file on a page that needed forty kilobytes,
+     and the club's own photographs are the one thing here nobody can
+     optimise later without asking for them again.
+
+     Returns a data URL and a blob. The caller decides which it wants: a
+     player photograph is stored inline, because that is where the nineteen
+     existing ones already live, and a badge or an article cover goes to
+     storage, because a page showing five of them inline would carry them all
+     as base64. */
+  function readImage(file, opts) {
+    var o = opts || {};
+    var max = o.max || 520;
+    return new Promise(function (resolve, reject) {
+      if (!file || !/^image\//.test(file.type)) { reject(new Error('That is not an image.')); return; }
+      var reader = new FileReader();
+      reader.onerror = function () { reject(new Error('That file could not be read.')); };
+      reader.onload = function () {
+        var img = new Image();
+        img.onerror = function () { reject(new Error('That image could not be opened.')); };
+        img.onload = function () {
+          var canvas = document.createElement('canvas');
+          var ctx;
+          if (o.square) {
+            /* Cropped from the middle of the frame. A team photograph cropped
+               from the top loses faces; from the middle it rarely does. */
+            var side = Math.min(img.width, img.height);
+            canvas.width = max;
+            canvas.height = max;
+            ctx = canvas.getContext('2d');
+            ctx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, max, max);
+          } else {
+            var scale = Math.min(1, max / img.width);
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          }
+          /* PNG for anything that might have a transparent background, which
+             a club badge usually does. A photograph never should: a JPEG of
+             the same picture is a fraction of the size. */
+          var type = o.keepAlpha ? 'image/png' : 'image/jpeg';
+          var dataUrl = canvas.toDataURL(type, 0.82);
+          canvas.toBlob(function (blob) {
+            resolve({ dataUrl: dataUrl, blob: blob, was: file.size, type: type });
+          }, type, 0.82);
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /* Resize, then put it in the club's storage bucket and hand back the public
+     address. Used where an image is REFERENCED by a page rather than embedded
+     in one record. */
+  function uploadImage(file, opts) {
+    var o = opts || {};
+    return readImage(file, o).then(function (out) {
+      var ext = out.type === 'image/png' ? 'png' : 'jpg';
+      var name = (o.prefix || 'img') + '-' + Date.now() + '.' + ext;
+      return CP.upload(o.bucket || 'gallery', name, out.blob).then(function (url) {
+        return { url: url, was: out.was, now: out.blob.size };
+      });
+    });
+  }
+
   function download(name, text, type) {
     var blob = new Blob([text], { type: type || 'text/csv;charset=utf-8' });
     var a = document.createElement('a');
@@ -399,6 +472,8 @@ window.CP = (function () {
     fmtDate: fmtDate,
     csv: csv,
     download: download,
+    readImage: readImage,
+    uploadImage: uploadImage,
     matchLabel: matchLabel,
     refresh: function (key) { return refresh(key); },
   };

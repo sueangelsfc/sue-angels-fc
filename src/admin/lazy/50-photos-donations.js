@@ -44,40 +44,12 @@
   var SEED = window.SA_SEED || {};
   var SQUAD = (SEED.squad || []).slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
 
-  /* ---- Resize and re-encode in the browser -------------------------------
-     Square, covering the frame, 520px, JPEG at 0.82. 520 rather than 400 so
-     the picture still holds up on a high-density screen, and square because
-     every place the site shows a player crops to a square anyway. */
-  var MAX = 520;
-  function shrink(file) {
-    return new Promise(function (resolve, reject) {
-      if (!/^image\//.test(file.type)) { reject(new Error('That is not an image.')); return; }
-      var reader = new FileReader();
-      reader.onerror = function () { reject(new Error('That file could not be read.')); };
-      reader.onload = function () {
-        var img = new Image();
-        img.onerror = function () { reject(new Error('That image could not be opened.')); };
-        img.onload = function () {
-          var side = Math.min(img.width, img.height);
-          var canvas = document.createElement('canvas');
-          canvas.width = MAX;
-          canvas.height = MAX;
-          var ctx = canvas.getContext('2d');
-          /* Crop to the middle of the frame. A team photograph cropped from
-             the top loses faces; from the middle it rarely does. */
-          ctx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, MAX, MAX);
-          resolve({
-            dataUrl: canvas.toDataURL('image/jpeg', 0.82),
-            was: file.size,
-            width: img.width,
-            height: img.height,
-          });
-        };
-        img.src = reader.result;
-      };
-      reader.readAsDataURL(file);
-    });
-  }
+  /* Resizing lives in the shell now, because badges and article covers need
+     it too and three copies of a canvas crop is three places to fix it.
+     Square and 520px: square because every place the site shows a player crops
+     to one anyway, and 520 rather than 400 so it still holds up on a
+     high-density screen. */
+  var shrink = function (file) { return U.readImage(file, { square: true, max: 520 }); };
 
   function kb(n) { return Math.round(n / 1024) + ' KB'; }
 

@@ -145,7 +145,7 @@ The panel's stylesheet was `src/styles/70-control.css`, inside `sa.css`, so ever
 - **Recognition follows its type.** A season award, a trophy, a club record, a Player of the Month and the captaincy are five different shapes, and the awards page reads different fields from each. The form asks for the right ones and clears the ones belonging to a type an entry has been changed away from, while still preserving anything it has never heard of.
 - **The sponsorship pipeline** is the club's own prospect list: who has been contacted, who has committed, and how much of the season's target that is. Nothing in it is published. The retired one lived in browser storage on one laptop.
 - Squad status moves a player between **in the squad, retained for 26/27, retired, left the club, moved into coaching**. The last one writes both `roster:status` and `roster:coaches`, because in real life it is one decision.
-- Photographs are **cut square and re-encoded to 520px in the browser** before they are saved. A phone produces five megabytes for something the site draws at 400 pixels.
+- **Images are resized in the browser before they leave it.** A phone produces four or five megabytes and nothing on the site is drawn wider than about 1200px. Player photographs are cut square to 520px and stored inline on the `player_photos` row, which is where the existing nineteen live. Badges and article covers go to the storage bucket and the record keeps the address, because a page showing five inline would carry them all as base64. A badge is kept as a PNG so a transparent crest stays transparent.
 - Every destructive action goes through a confirm dialog. Writes are attributed to `audit_log` via `log_admin_action()`.
 - Settings offers a full JSON backup of every content table.
 

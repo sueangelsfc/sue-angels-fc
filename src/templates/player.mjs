@@ -44,12 +44,15 @@ const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const shotFor = (num) => {
+const fileShot = (num) => {
   try {
     return fs.existsSync(path.join(ROOT, 'assets', 'players', `${num}.webp`))
       ? `/assets/players/${num}.webp` : '';
   } catch { return ''; }
 };
+/* Uploaded first, then the file that ships with the site. See the note in
+   dataset.mjs: an uploaded photograph used to reach nothing at all. */
+const shotFor = (num, d, season) => (d && d.photoFor && d.photoFor(num, season)) || fileShot(num);
 
 const shortClub = (name) => String(name || '')
   .replace(/\s+FC 2\.0$/, '')
@@ -154,7 +157,7 @@ const ordinal = (n) => {
 export function playerPage(p, d) {
   const squadRec = (d.squad || []).find((x) => x.num === p.num) || {};
   const gk = !!squadRec.gk;
-  const shot = shotFor(p.num);
+  const shot = shotFor(p.num, d, d && d.currentSeason);
 
   /* One profile per season, plus an all-time one for the hero and the squad
      comparison. The seasons come from the club's own list, so a season with

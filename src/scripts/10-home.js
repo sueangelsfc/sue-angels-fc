@@ -1466,3 +1466,104 @@
     });
   });
 })();
+
+
+/* ==========================================================================
+   THE SEASON STRIP, ON A PHONE
+
+   Each cell on "Every match, in order" carries a card with the badge, the
+   score, the club and the date, and it was shown on :hover alone. A phone has
+   no hover, so thirty-three results were on the page and unreadable: tapping
+   one did nothing.
+
+   A tap opens it now. The cell is not made focusable, deliberately: that would
+   put thirty-three tab stops in front of everything below it, and the same
+   results are in the table underneath as a real table with headers, which is
+   where a keyboard or a screen reader should be sent anyway.
+
+   Runs only where the pointer is coarse. On a desktop hover already works and
+   a click that latched a card open would be worse than what is there.
+   ========================================================================== */
+(function () {
+  'use strict';
+  if (!window.matchMedia || !window.matchMedia('(pointer: coarse)').matches) return;
+  var strip = document.querySelector('.camp__strip');
+  if (!strip) return;
+  var open = null;
+
+  function close() {
+    if (!open) return;
+    open.classList.remove('is-open');
+    open = null;
+  }
+
+  strip.addEventListener('click', function (e) {
+    var cell = e.target.closest ? e.target.closest('.camp__cell') : null;
+    if (!cell) return;
+    if (cell === open) { close(); return; }
+    close();
+    /* Positioned against the cell but fixed to the viewport, so a match at
+       either end of the strip cannot push its card off the side. */
+    var box = cell.getBoundingClientRect();
+    var tip = cell.querySelector('.camp__tip');
+    if (tip) tip.style.setProperty('--tip-top', Math.max(12, box.top - 150) + 'px');
+    cell.classList.add('is-open');
+    open = cell;
+    e.stopPropagation();
+  });
+
+  /* Anywhere else, and scrolling, closes it. A card left hanging over the page
+     while it moves underneath is worse than no card. */
+  document.addEventListener('click', close);
+  window.addEventListener('scroll', close, { passive: true });
+})();
+
+
+/* ==========================================================================
+   THE SQUAD, BY SEASON
+
+   Which players belong to which season is worked out at build time from the
+   matches each was actually named in, and stamped on the card as
+   data-seasons. This filters on it.
+
+   Progressive: with the script blocked the page is the whole squad under real
+   position headings, which is a worse page but never an empty one. The
+   position chips already work this way and this sits alongside them, so a
+   season and a position filter compose rather than fight.
+   ========================================================================== */
+(function () {
+  'use strict';
+  var bar = document.querySelector('[data-season-filter]');
+  if (!bar) return;
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.pc[data-seasons]'));
+  if (!cards.length) return;
+
+  function apply(season) {
+    cards.forEach(function (card) {
+      var has = (' ' + card.getAttribute('data-seasons') + ' ').indexOf(' ' + season + ' ') !== -1;
+      card.hidden = !has;
+    });
+    /* A position group with nobody left in it should go, not sit there as an
+       empty heading with a count of players who are not shown. */
+    Array.prototype.forEach.call(document.querySelectorAll('.sq-grp'), function (grp) {
+      var shown = grp.querySelectorAll('.pc:not([hidden])').length;
+      grp.hidden = !shown;
+      var n = grp.querySelector('.sq-grp__h span');
+      if (n) n.textContent = shown;
+    });
+  }
+
+  bar.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('[data-season]') : null;
+    if (!b) return;
+    Array.prototype.forEach.call(bar.querySelectorAll('[data-season]'), function (x) {
+      var on = x === b;
+      x.classList.toggle('is-on', on);
+      x.setAttribute('aria-pressed', String(on));
+    });
+    apply(b.getAttribute('data-season'));
+  });
+
+  var first = bar.querySelector('[data-season]');
+  if (first) apply(first.getAttribute('data-season'));
+})();

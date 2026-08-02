@@ -118,8 +118,26 @@ write('sw.js', fs.readFileSync(path.join(ROOT, 'src', 'sw-template.js'), 'utf8')
    page cannot bust the cache on the other eleven. `26-campaign.css` ships as
    `p-campaign.css`: the number is only there to order the source folder. */
 const pageCss = new Map();
+/* A band's output name is its source name without the ordering prefix, so
+   30-squad.css and 32-squad.css both emit p-squad.css and the later one wins
+   silently. That happened: a new file appended alongside 33-player.css was
+   called 50-player.css, sorted after it, and replaced the entire 34KB player
+   stylesheet with a 2KB fragment. Every player profile shipped unstyled and
+   nothing said a word.
+
+   Two files cannot share an output name. This is a build error now, named,
+   before anything is written. */
+const seenBand = new Map();
 for (const f of pageCssFiles) {
   const name = `p-${f.replace(/^\d+-/, '')}`;
+  if (seenBand.has(name)) {
+    throw new Error(
+      `two page bands both emit ${name}: ${seenBand.get(name)} and ${f}. `
+      + 'Rename one, or fold it into the other. The later one would silently '
+      + 'replace the earlier and the page would ship unstyled.',
+    );
+  }
+  seenBand.set(name, f);
   const body = absAssets(fs.readFileSync(path.join(pageCssDir, f), 'utf8'));
   write(name, body);
   pageCss.set(f.replace(/^\d+-|\.css$/g, ''), {
@@ -198,6 +216,11 @@ const adminSeed = {
      trial is. Numbers run from 900 so they can never collide with a real one. */
   trialists: Object.entries(d.trialists || {})
     .map(([num, name]) => ({ num: Number(num), name })),
+  /* The seasons the club has, so the photographs section can hold one picture
+     per player per season and fall back to the default until this year's are
+     taken. */
+  seasons: (d.seasons || []).map((x) => x.name),
+  currentSeason: d.currentSeason,
   /* Fixture fields per match, so opening an existing record shows the real
      date and scoreline instead of an empty form. Rows edited in the panel
      carry their own copy and win over this. */

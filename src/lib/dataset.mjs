@@ -218,6 +218,35 @@ export function buildDataset() {
     };
   });
 
+  /* PLAYER PHOTOGRAPHS, AND WHY THEY LIVE HERE.
+
+     A photograph uploaded in the panel used to be written as a data URL onto
+     the `player_photos` row for that shirt number, and it never reached the
+     website. Two reasons, both structural. The snapshot reduces every base64
+     row to {key, kind, bytes} on purpose, because twenty photographs inline
+     would be megabytes in a committed JSON file. And the squad page read
+     `assets/players/<num>.webp` off disk, which only exists for the twenty
+     somebody exported by hand. So the panel said "photograph saved" and the
+     site went on showing initials.
+
+     One small record instead: `roster:photos`, shirt number to a set of
+     addresses, one per season plus a default. The images themselves go to the
+     club's storage, so the record holds URLs and stays a few hundred bytes,
+     which survives the snapshot whole and reaches the build.
+
+     Resolution order for a given season: that season's photograph, then the
+     default, then the file on disk, then their initials. A club that has not
+     taken 26/27 photographs yet therefore shows last season's, which is what
+     you want in August. */
+  const photoRec = blob('roster:photos') || {};
+  const photoFor = (num, season) => {
+    const rec = photoRec[String(num)] || {};
+    return (season && rec[season]) || rec.default || '';
+  };
+  const photoSeasons = [...new Set(
+    Object.values(photoRec).flatMap((r) => Object.keys(r || {})),
+  )].filter((k) => k !== 'default');
+
   /* Trialists. Somebody having a look, who turns out in a friendly and is
      named on the team sheet. They are deliberately NOT in `squad`, so no
      profile page is generated and they appear on no squad listing; they exist
@@ -474,6 +503,7 @@ export function buildDataset() {
     squad, players, statsByNum, nameFor,
     coaches, table, leagueScorers, leagueScorersByComp, nextDivisionTable, leagueResults,
     articles, recognition, galleries, playerPhotos, donate, hero, trialists,
+    photoFor, photoSeasons,
     seasons, seasonInfo, competitions, knownClubs, badges,
     currentSeason: ps.CURRENT_SEASON,
     leagueTotalGames: ps.LEAGUE_TOTAL_GAMES,

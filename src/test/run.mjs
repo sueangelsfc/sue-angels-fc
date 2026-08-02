@@ -660,7 +660,7 @@ check('share cards are not all identical', ogSeen.size >= 15, `${ogSeen.size} di
 const BUDGET = {
   'sa.css': 22,
   'home.css': 26,
-  'sa.js': 24,
+  'sa.js': 26,
   'control.css': 9,
   'control.js': 17,
   /* The heaviest, and fairly: the pitch, the position codes, five tabs, the
@@ -689,6 +689,31 @@ for (const [f, kb] of Object.entries(BUDGET)) {
   const size = zlib.gzipSync(raw, { level: 9 }).length / 1024;
   check(`${f} within ${kb}KB gzipped`, size <= kb,
     `${size.toFixed(1)}KB gzipped, ${(raw.length / 1024).toFixed(0)}KB raw`);
+}
+
+/* ---- A page band actually contains its page's styling ----
+   p-player.css was silently reduced to a 2KB fragment when a second source
+   file emitted the same name, and every player profile shipped unstyled while
+   all 2,018 checks passed. Size alone would not have caught it either: the
+   fragment was valid CSS. What catches it is asking whether the band contains
+   the classes its page actually uses. */
+{
+  const BANDS = [
+    ['p-player.css', ['pf-hero', 'pf-stat', 'pf-tabs']],
+    ['p-squad.css', ['sq-cards', 'pc__shot', 'sq-grp']],
+    ['p-campaign.css', ['camp__strip', 'camp__tip']],
+    ['p-matches.css', ['mt-']],
+    ['p-league.css', ['lg-']],
+    ['p-stats.css', ['st-']],
+  ];
+  for (const [file, needles] of BANDS) {
+    const css = fs.existsSync(path.join(ROOT, file))
+      ? fs.readFileSync(path.join(ROOT, file), 'utf8') : '';
+    const missing = needles.filter((n) => !css.includes(n));
+    check(`${file}: carries its page's styling`, css.length > 4000 && !missing.length,
+      !css.length ? 'missing entirely'
+        : missing.length ? `no rules for ${missing.join(', ')}` : `only ${css.length} bytes`);
+  }
 }
 
 /* ---- Positions are one list ----

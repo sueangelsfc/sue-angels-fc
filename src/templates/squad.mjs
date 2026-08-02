@@ -30,12 +30,17 @@ const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const shotFor = (num) => {
+/* An uploaded photograph wins over the file on disk, because it is the most
+   recent thing anybody chose. `d.photoFor` resolves the season first, so a
+   club that has not taken this season's pictures yet keeps last season's
+   rather than falling back to initials. */
+const fileShot = (num) => {
   try {
     return fs.existsSync(path.join(ROOT, 'assets', 'players', `${num}.webp`))
       ? `/assets/players/${num}.webp` : '';
   } catch { return ''; }
 };
+const shotFor = (num, d, season) => (d && d.photoFor && d.photoFor(num, season)) || fileShot(num);
 
 const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
       <span class="xrail__l"><span class="xrail__n">${esc(String(n).padStart(2, '0'))}</span><span class="xrail__t">${esc(label)}</span></span>
@@ -51,7 +56,29 @@ const GROUPS = [
 
 export function squad(d) {
   const stats = new Map((d.players || []).map((p) => [p.num, p]));
-  const all = (d.squad || []).map((p) => ({ ...p, s: stats.get(p.num) || {} }));
+
+  /* WHICH SEASONS A PLAYER BELONGS TO.
+     Read off the matches he was actually named in, not off a label. Anyone
+     currently in the squad also belongs to the season about to start, because
+     that is what being in the squad means in August before a ball is kicked.
+
+     One DOM, filtered, exactly as the position chips already work: with the
+     script blocked the page is the whole squad under real headings rather
+     than an empty tab. */
+  const seasonOfMatch = new Map((d.matches || []).map((m) => [m.id, m.season]));
+  const season = d.currentSeason;
+  const seasons = (d.seasons || []).map((x) => x.name);
+  const upcoming = seasons.filter((n) => n !== season);
+  const PAST_STATUS = new Set(['retired', 'departed', 'staff']);
+
+  const all = (d.squad || []).map((p) => {
+    const st = stats.get(p.num) || {};
+    const played = new Set((st.matches || [])
+      .map((r) => seasonOfMatch.get(r.id)).filter(Boolean));
+    if (!PAST_STATUS.has(p.status)) upcoming.forEach((n) => played.add(n));
+    if (!played.size) played.add(season);
+    return { ...p, s: st, seasons: [...played] };
+  });
 
   /* Squad leaders, so a card can say why this player matters at a glance.
      Only an outright leader is badged: a shared top score would make the mark
@@ -99,7 +126,8 @@ export function squad(d) {
   const card = (p, i) => {
     const s = p.s;
     const badge = badges.get(p.num);
-    const shot = shotFor(p.num);
+    const shot = shotFor(p.num, d, season);
+    const inSeasons = (p.seasons || [season]).join(' ');
     /* "Starts", not "Apps". The engine counts an appearance only when a
        player is named in the eleven, because Sunday-league returns do not
        record who actually came on. Calling that figure "apps" produced cards
@@ -113,7 +141,7 @@ export function squad(d) {
       ? [{ v: s.starts || 0, k: 'Starts' }, { v: s.cleanSheets || 0, k: 'Clean' }, { v: s.motm || 0, k: 'MOTM' }]
       : [{ v: s.starts || 0, k: 'Starts' }, { v: s.goals || 0, k: 'Goals' }, { v: s.assists || 0, k: 'Assists' }];
 
-    return `<li class="pc" style="--i:${i}">
+    return `<li class="pc" style="--i:${i}" data-seasons="${attr(inSeasons)}">
             <a class="pc__link" href="/players/${attr(p.slug)}.html" data-tilt>
               <span class="pc__shot">
                 ${shot
@@ -151,6 +179,19 @@ export function squad(d) {
   /* Chips are real jump links to the position headings, so with the script
      blocked they still take you somewhere useful. The script promotes them to
      filters. */
+  /* Season tabs. Real buttons, and the panel below is the same one DOM
+     filtered, so nothing depends on the script to be readable. */
+  const seasonTabs = seasons.length > 1 ? `<div class="sq-seasons" data-season-filter role="group"
+        aria-label="Season">
+        ${seasons.map((n, i) => {
+    const count = all.filter((p) => (p.seasons || []).includes(n)).length;
+    return `<button class="sq-season${i === 0 ? ' is-on' : ''}" type="button"
+          data-season="${attr(n)}" aria-pressed="${i === 0 ? 'true' : 'false'}">
+          <b>${esc(n)}</b><span>${esc(count)} player${count === 1 ? '' : 's'}</span>
+        </button>`;
+  }).join('\n        ')}
+      </div>` : '';
+
   const chips = (list, scope) => {
     const groups = byGroup(list);
     return `<div class="sq-chips" data-filter-scope="${attr(scope)}">
@@ -181,6 +222,7 @@ export function squad(d) {
       <div class="wrap">
         ${rail(1, 'First team', `${first.length} players`)}
         <h2 class="h2 rv" id="sq-first-h">The first <span class="volt">team.</span></h2>
+        ${seasonTabs}
         ${chips(first, 'first-team')}
         <div class="sq-groups rv">
         ${grid(first)}

@@ -28,8 +28,8 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preload" href="/assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
 
-<link rel="stylesheet" href="/home.css?v=56cb2720">
-<link rel="stylesheet" href="/p-squad.css?v=eac40ee7">
+<link rel="stylesheet" href="/home.css?v=56cdcb2a">
+<link rel="stylesheet" href="/p-squad.css?v=830151f9">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":["SportsTeam","SportsOrganization"],"@id":"https://www.suesangelsfc.co.uk/#club","name":"Sue's Angels FC","alternateName":"The Angels","url":"https://www.suesangelsfc.co.uk/","sport":"Association football","foundingDate":"2025","logo":"https://www.suesangelsfc.co.uk/assets/brand/badge.png","email":"suesangelsfc@gmail.com","inLanguage":"en-GB","memberOf":{"@type":"SportsOrganization","name":"Southern Sunday Football League"},"location":{"@type":"Place","name":"The Reeves Sports Club","address":{"@type":"PostalAddress","streetAddress":"Snakey Lane","addressLocality":"Hanworth","addressRegion":"London","addressCountry":"GB"}},"areaServed":[{"@type":"Place","name":"Kingston upon Thames"},{"@type":"Place","name":"Hanworth"},{"@type":"Place","name":"Sunbury-on-Thames"},{"@type":"Place","name":"Twickenham"},{"@type":"Place","name":"Staines-upon-Thames"}],"sameAs":["https://www.instagram.com/suesangelsfc/","https://www.tiktok.com/@suesangelsfc","https://www.facebook.com/people/Sues-Angels-FC/61576808678302/"]},{"@type":"WebSite","@id":"https://www.suesangelsfc.co.uk/#website","url":"https://www.suesangelsfc.co.uk/","name":"Sue's Angels FC","inLanguage":"en-GB","publisher":{"@id":"https://www.suesangelsfc.co.uk/#club"}},{"@type":"WebPage","@id":"https://www.suesangelsfc.co.uk/squad.html#webpage","url":"https://www.suesangelsfc.co.uk/squad.html","name":"Squad · Sue's Angels FC","description":"Every player in the Sue's Angels FC first-team squad, grouped by position, with goals, assists and appearances on each player's own profile.","inLanguage":"en-GB","isPartOf":{"@id":"https://www.suesangelsfc.co.uk/#website"},"about":{"@id":"https://www.suesangelsfc.co.uk/#club"},"primaryImageOfPage":{"@type":"ImageObject","url":"https://www.suesangelsfc.co.uk/assets/social/og-squad.jpg"},"breadcrumb":{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.suesangelsfc.co.uk/"},{"@type":"ListItem","position":2,"name":"Squad","item":"https://www.suesangelsfc.co.uk/squad.html"}]}}]}</script>
 </head>
 <body class="is-home is-sub is-squad">
@@ -181,6 +181,17 @@
       <span class="xrail__r">23 players</span>
     </div>
         <h2 class="h2 rv" id="sq-first-h">The first <span class="volt">team.</span></h2>
+        <div class="sq-seasons" data-season-filter role="group"
+        aria-label="Season">
+        <button class="sq-season is-on" type="button"
+          data-season="25/26" aria-pressed="true">
+          <b>25/26</b><span>34 players</span>
+        </button>
+        <button class="sq-season" type="button"
+          data-season="26/27" aria-pressed="false">
+          <b>26/27</b><span>23 players</span>
+        </button>
+      </div>
         <div class="sq-chips" data-filter-scope="first-team">
           <a class="sq-chip is-on" href="#first-team" data-group-all>All<span>23</span></a>
           <a class="sq-chip" href="#first-team" data-group-pick="gk">Goalkeepers<span>1</span></a>
@@ -192,7 +203,7 @@
         <section class="sq-grp" data-group="gk">
           <h3 class="sq-grp__h">Goalkeepers <span>1</span></h3>
           <ul class="sq-cards">
-            <li class="pc" style="--i:0">
+            <li class="pc" style="--i:0" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/luke-munns.html" data-tilt>
               <span class="pc__shot">
                 <img src="/assets/players/28.webp" alt="" width="320" height="480" loading="lazy" decoding="async" />
@@ -221,7 +232,7 @@
         <section class="sq-grp" data-group="def">
           <h3 class="sq-grp__h">Defenders <span>9</span></h3>
           <ul class="sq-cards">
-            <li class="pc" style="--i:0">
+            <li class="pc" style="--i:0" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/michael-brabrook.html" data-tilt>
               <span class="pc__shot">
                 <img src="/assets/players/4.webp" alt="" width="320" height="480" loading="lazy" decoding="async" />
@@ -245,7 +256,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:1">
+            <li class="pc" style="--i:1" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/kieron-horrill.html" data-tilt>
               <span class="pc__shot">
                 <img src="/assets/players/16.webp" alt="" width="320" height="480" loading="lazy" decoding="async" />
@@ -269,7 +280,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:2">
+            <li class="pc" style="--i:2" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/dean-knight.html" data-tilt>
               <span class="pc__shot">
                 <img src="/assets/players/20.webp" alt="" width="320" height="480" loading="lazy" decoding="async" />
@@ -293,7 +304,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:3">
+            <li class="pc" style="--i:3" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/jon-lloyd.html" data-tilt>
               <span class="pc__shot">
                 <img src="/assets/players/21.webp" alt="" width="320" height="480" loading="lazy" decoding="async" />
@@ -317,7 +328,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:4">
+            <li class="pc" style="--i:4" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/stewart-luwawa.html" data-tilt>
               <span class="pc__shot">
                 <img src="/assets/players/23.webp" alt="" width="320" height="480" loading="lazy" decoding="async" />
@@ -341,7 +352,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:5">
+            <li class="pc" style="--i:5" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/daniel-mclane.html" data-tilt>
               <span class="pc__shot">
                 <img src="/assets/players/25.webp" alt="" width="320" height="480" loading="lazy" decoding="async" />
@@ -365,7 +376,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:6">
+            <li class="pc" style="--i:6" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/daniel-rand.html" data-tilt>
               <span class="pc__shot">
                 <img class="pc__crest" src="/assets/badge/sue-angels-badge-star.webp" alt="" width="200" height="248" loading="lazy" decoding="async" />
@@ -389,7 +400,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:7">
+            <li class="pc" style="--i:7" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/sean-sheehan.html" data-tilt>
               <span class="pc__shot">
                 <img class="pc__crest" src="/assets/badge/sue-angels-badge-star.webp" alt="" width="200" height="248" loading="lazy" decoding="async" />
@@ -413,7 +424,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:8">
+            <li class="pc" style="--i:8" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/jeev-thilaganathan.html" data-tilt>
               <span class="pc__shot">
                 <img src="/assets/players/35.webp" alt="" width="320" height="480" loading="lazy" decoding="async" />
@@ -442,7 +453,7 @@
         <section class="sq-grp" data-group="mid">
           <h3 class="sq-grp__h">Midfielders <span>10</span></h3>
           <ul class="sq-cards">
-            <li class="pc" style="--i:0">
+            <li class="pc" style="--i:0" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/andrew-allen.html" data-tilt>
               <span class="pc__shot">
                 <img src="/assets/players/2.webp" alt="" width="320" height="480" loading="lazy" decoding="async" />
@@ -466,7 +477,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:1">
+            <li class="pc" style="--i:1" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/kafele-brown.html" data-tilt>
               <span class="pc__shot">
                 <img class="pc__crest" src="/assets/badge/sue-angels-badge-star.webp" alt="" width="200" height="248" loading="lazy" decoding="async" />
@@ -490,7 +501,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:2">
+            <li class="pc" style="--i:2" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/elis-brumpton.html" data-tilt>
               <span class="pc__shot">
                 <img src="/assets/players/6.webp" alt="" width="320" height="480" loading="lazy" decoding="async" />
@@ -514,7 +525,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:3">
+            <li class="pc" style="--i:3" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/richard-epathite.html" data-tilt>
               <span class="pc__shot">
                 <img class="pc__crest" src="/assets/badge/sue-angels-badge-star.webp" alt="" width="200" height="248" loading="lazy" decoding="async" />
@@ -538,7 +549,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:4">
+            <li class="pc" style="--i:4" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/alfie-james-inman.html" data-tilt>
               <span class="pc__shot">
                 <img class="pc__crest" src="/assets/badge/sue-angels-badge-star.webp" alt="" width="200" height="248" loading="lazy" decoding="async" />
@@ -562,7 +573,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:5">
+            <li class="pc" style="--i:5" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/malachi-mullings.html" data-tilt>
               <span class="pc__shot">
                 <img src="/assets/players/27.webp" alt="" width="320" height="480" loading="lazy" decoding="async" />
@@ -586,7 +597,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:6">
+            <li class="pc" style="--i:6" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/samakab-nur.html" data-tilt>
               <span class="pc__shot">
                 <img src="/assets/players/29.webp" alt="" width="320" height="480" loading="lazy" decoding="async" />
@@ -610,7 +621,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:7">
+            <li class="pc" style="--i:7" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/frazier-isaias-osunkoya.html" data-tilt>
               <span class="pc__shot">
                 <img src="/assets/players/30.webp" alt="" width="320" height="480" loading="lazy" decoding="async" />
@@ -634,7 +645,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:8">
+            <li class="pc" style="--i:8" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/stephen-potter.html" data-tilt>
               <span class="pc__shot">
                 <img src="/assets/players/31.webp" alt="" width="320" height="480" loading="lazy" decoding="async" />
@@ -658,7 +669,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:9">
+            <li class="pc" style="--i:9" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/alex-rodway-brown.html" data-tilt>
               <span class="pc__shot">
                 <img class="pc__crest" src="/assets/badge/sue-angels-badge-star.webp" alt="" width="200" height="248" loading="lazy" decoding="async" />
@@ -687,7 +698,7 @@
         <section class="sq-grp" data-group="fwd">
           <h3 class="sq-grp__h">Forwards <span>3</span></h3>
           <ul class="sq-cards">
-            <li class="pc" style="--i:0">
+            <li class="pc" style="--i:0" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/charlie-dunkley.html" data-tilt>
               <span class="pc__shot">
                 <img src="/assets/players/9.webp" alt="" width="320" height="480" loading="lazy" decoding="async" />
@@ -711,7 +722,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:1">
+            <li class="pc" style="--i:1" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/danny-jackson.html" data-tilt>
               <span class="pc__shot">
                 <img src="/assets/players/18.webp" alt="" width="320" height="480" loading="lazy" decoding="async" />
@@ -735,7 +746,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:2">
+            <li class="pc" style="--i:2" data-seasons="25/26 26/27">
             <a class="pc__link" href="/players/kyrell-mullings.html" data-tilt>
               <span class="pc__shot">
                 <img class="pc__crest" src="/assets/badge/sue-angels-badge-star.webp" alt="" width="200" height="248" loading="lazy" decoding="async" />
@@ -779,7 +790,7 @@
         <section class="sq-past" data-past="retired">
           <h3 class="sq-past__h">Retired <span>Hung up the boots</span></h3>
           <ul class="sq-cards sq-cards--past">
-            <li class="pc" style="--i:0">
+            <li class="pc" style="--i:0" data-seasons="25/26">
             <a class="pc__link" href="/players/william-clark.html" data-tilt>
               <span class="pc__shot">
                 <img src="/assets/players/7.webp" alt="" width="320" height="480" loading="lazy" decoding="async" />
@@ -803,7 +814,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:1">
+            <li class="pc" style="--i:1" data-seasons="25/26">
             <a class="pc__link" href="/players/jim-el-bayati.html" data-tilt>
               <span class="pc__shot">
                 <img src="/assets/players/10.webp" alt="" width="320" height="480" loading="lazy" decoding="async" />
@@ -832,7 +843,7 @@
         <section class="sq-past" data-past="departed">
           <h3 class="sq-past__h">Departed <span>Moved on from the club</span></h3>
           <ul class="sq-cards sq-cards--past">
-            <li class="pc" style="--i:0">
+            <li class="pc" style="--i:0" data-seasons="25/26">
             <a class="pc__link" href="/players/abiola-adio.html" data-tilt>
               <span class="pc__shot">
                 <img class="pc__crest" src="/assets/badge/sue-angels-badge-star.webp" alt="" width="200" height="248" loading="lazy" decoding="async" />
@@ -856,7 +867,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:1">
+            <li class="pc" style="--i:1" data-seasons="25/26">
             <a class="pc__link" href="/players/joshua-cowie.html" data-tilt>
               <span class="pc__shot">
                 <img class="pc__crest" src="/assets/badge/sue-angels-badge-star.webp" alt="" width="200" height="248" loading="lazy" decoding="async" />
@@ -880,7 +891,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:2">
+            <li class="pc" style="--i:2" data-seasons="25/26">
             <a class="pc__link" href="/players/christopher-fernandes.html" data-tilt>
               <span class="pc__shot">
                 <img class="pc__crest" src="/assets/badge/sue-angels-badge-star.webp" alt="" width="200" height="248" loading="lazy" decoding="async" />
@@ -904,7 +915,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:3">
+            <li class="pc" style="--i:3" data-seasons="25/26">
             <a class="pc__link" href="/players/jake-fisher.html" data-tilt>
               <span class="pc__shot">
                 <img class="pc__crest" src="/assets/badge/sue-angels-badge-star.webp" alt="" width="200" height="248" loading="lazy" decoding="async" />
@@ -928,7 +939,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:4">
+            <li class="pc" style="--i:4" data-seasons="25/26">
             <a class="pc__link" href="/players/james-fisher.html" data-tilt>
               <span class="pc__shot">
                 <img class="pc__crest" src="/assets/badge/sue-angels-badge-star.webp" alt="" width="200" height="248" loading="lazy" decoding="async" />
@@ -952,7 +963,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:5">
+            <li class="pc" style="--i:5" data-seasons="25/26">
             <a class="pc__link" href="/players/david-jones.html" data-tilt>
               <span class="pc__shot">
                 <img class="pc__crest" src="/assets/badge/sue-angels-badge-star.webp" alt="" width="200" height="248" loading="lazy" decoding="async" />
@@ -976,7 +987,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:6">
+            <li class="pc" style="--i:6" data-seasons="25/26">
             <a class="pc__link" href="/players/leo-lloyd.html" data-tilt>
               <span class="pc__shot">
                 <img class="pc__crest" src="/assets/badge/sue-angels-badge-star.webp" alt="" width="200" height="248" loading="lazy" decoding="async" />
@@ -1000,7 +1011,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:7">
+            <li class="pc" style="--i:7" data-seasons="25/26">
             <a class="pc__link" href="/players/lee-mckinson.html" data-tilt>
               <span class="pc__shot">
                 <img class="pc__crest" src="/assets/badge/sue-angels-badge-star.webp" alt="" width="200" height="248" loading="lazy" decoding="async" />
@@ -1024,7 +1035,7 @@
               </span>
             </a>
           </li>
-            <li class="pc" style="--i:8">
+            <li class="pc" style="--i:8" data-seasons="25/26">
             <a class="pc__link" href="/players/ross-tomassi.html" data-tilt>
               <span class="pc__shot">
                 <img class="pc__crest" src="/assets/badge/sue-angels-badge-star.webp" alt="" width="200" height="248" loading="lazy" decoding="async" />
@@ -1151,6 +1162,6 @@
   </footer>
 <div class="toasts" data-toasts role="region" aria-label="Notifications" aria-live="polite"></div>
 
-<script src="/sa.js?v=8e3c5711" defer></script>
+<script src="/sa.js?v=20887f52" defer></script>
 </body>
 </html>

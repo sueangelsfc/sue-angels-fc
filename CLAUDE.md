@@ -124,7 +124,7 @@ Plus private `enquiries` and `supporters`.
 ## Control panel
 `/control.html`, with `control.js` and `control.css`. Auth via Supabase Auth REST directly — no SDK, no in-browser Babel. Reached by typing **angels** anywhere on the site, which is a doorway rather than a lock: everything that actually protects the club's data is server side.
 
-Modules: dashboard, fixtures, results and reports, squad and staff, player photographs, news, gallery albums, photo tagging, match video, recognition, league badges, sponsors, donations, inbox, settings.
+Modules: dashboard, fixtures, results and reports, squad and staff, player photographs, news, gallery albums, photo tagging, match video, recognition, league badges, sponsors, donations, sponsorship pipeline, inbox, settings.
 
 ### It is split, and it has to stay split
 `control.js` shipped all thirteen modules to somebody who opened one, and its budget went 16 → 18 → 24 → 30KB in a single sitting for that one reason. Now:
@@ -142,6 +142,8 @@ The panel's stylesheet was `src/styles/70-control.css`, inside `sa.css`, so ever
 - Every section ends with **where its content shows on the website**, with a link.
 - A fixture that has been played has **Enter result**: it opens the match form pre-filled and saving clears the fixture, so the site cannot list a match as still to come under a report of its own score.
 - The match form is five tabs, players are picked from dropdowns, and the pitch draws the shape from the positions given to the eleven. Match reports take **bullets**, and the report builder writes the facts already recorded (goals in minute order with the running score, cards, keeping) around the coach's own words. It invents nothing: a goal with no minute does not acquire one.
+- **Recognition follows its type.** A season award, a trophy, a club record, a Player of the Month and the captaincy are five different shapes, and the awards page reads different fields from each. The form asks for the right ones and clears the ones belonging to a type an entry has been changed away from, while still preserving anything it has never heard of.
+- **The sponsorship pipeline** is the club's own prospect list: who has been contacted, who has committed, and how much of the season's target that is. Nothing in it is published. The retired one lived in browser storage on one laptop.
 - Squad status moves a player between **in the squad, retained for 26/27, retired, left the club, moved into coaching**. The last one writes both `roster:status` and `roster:coaches`, because in real life it is one decision.
 - Photographs are **cut square and re-encoded to 520px in the browser** before they are saved. A phone produces five megabytes for something the site draws at 400 pixels.
 - Every destructive action goes through a confirm dialog. Writes are attributed to `audit_log` via `log_admin_action()`.

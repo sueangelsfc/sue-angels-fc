@@ -514,6 +514,18 @@ body:has(.cp) .atmos__blob { animation: none; }
   border-block-start: 1px solid var(--border);
 }
 
+/* ---- The pipeline's progress toward the season's sponsorship target ----
+   Orange, because orange is the only accent hue here: a green "good" bar
+   would be a second colour doing a job weight already does. */
+.pipebar {
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-inset);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.pipebar__fill { display: block; height: 100%; background: var(--brand); }
+
 /* ---- Wide content stays inside its column on a narrow window ---- */
 .cp .scroll-x { max-width: 100%; }
 .cell-club { max-width: 34ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

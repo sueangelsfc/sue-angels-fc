@@ -369,8 +369,18 @@
      RECOGNITION
 
      Player of the Month, the end-of-season awards, trophies, club records and
-     who wore the armband. The old editor asked for `type` as a code and
-     `playerId` as a number, both of which you had to already know.
+     who wore the armband. Five different shapes of record, and the awards page
+     reads different fields from each: a season award needs a `title` and a
+     `description`, a trophy needs a `value` and an icon, a club record needs a
+     `recordKey` the page looks it up by, and leadership carries three players
+     rather than one.
+
+     The first version of this form asked for the same five fields whatever you
+     picked, which meant a season award created here arrived on the awards page
+     with no name and nothing written under it. The form follows the type now.
+
+     The old editor asked for `type` as a code and `playerId` as a number, both
+     of which you had to already know. Here they are both chosen by name.
      ========================================================================== */
   var RTYPES = [
     ['potm', 'Player of the Month'],
@@ -383,25 +393,47 @@
   RTYPES.forEach(function (t) { RLABEL[t[0]] = t[1]; });
   var MONTHS_FULL = ['September', 'October', 'November', 'December', 'January',
     'February', 'March', 'April', 'May'];
+  /* The seven the club already gives out. A datalist, not a fixed list, so an
+     eighth can be invented without a code change. */
+  var AWARD_NAMES = ['Players’ Player of the Year', 'Manager’s Player of the Year',
+    'Clubman of the Year', 'Top Goalscorer', 'Top Assister', 'Goal of the Season',
+    'Defensive Record Award'];
+  var TROPHY_ICONS = [['trophy', 'Trophy'], ['medal', 'Medal'], ['star', 'Star']];
+
+  /* A stable key from the title, so the awards page can look a record up by
+     name rather than by whichever id the clock happened to give it. */
+  function recordKeyFor(title) {
+    return String(title).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  }
 
   M.recognition = function (host) {
     return CP.readAll('recognition').then(function (rows) {
       var list = rows.slice().sort(function (a, b) {
         return String((b.data || {}).createdAt || '').localeCompare(String((a.data || {}).createdAt || ''));
       });
+      var byName = {};
+      SQUAD.forEach(function (p) { byName[p.num] = p.name; });
+
+      function who(d) {
+        if (d.type === 'leadership') return d.clubCaptainName || byName[d.clubCaptainPlayerId] || '';
+        return d.playerName || byName[d.playerId] || '';
+      }
+
       host.innerHTML = sec({
         title: 'Recognition',
         sub: esc(list.length) + ' entries. Player of the Month, the end-of-season awards, trophies, '
-          + 'club records and who captains the side.',
+          + 'club records and who captains the side. The form changes with what you are recording, '
+          + 'because a trophy and a Player of the Month are not the same shape.',
         actions: '<button class="btn btn--primary" data-new>Add recognition</button>',
         body: (list.length
-          ? table(['What', 'When', 'Who', 'Written up', ''], list.map(function (r) {
+          ? table(['What', 'Which', 'When', 'Who', 'Written up', ''], list.map(function (r) {
             var d = r.data || {};
             return '<tr data-key="' + esc(r.key) + '">' +
               '<td><b>' + esc(RLABEL[d.type] || d.type || 'Entry') + '</b></td>' +
+              '<td>' + esc(d.title || '') + '</td>' +
               '<td>' + esc(d.month || d.season || '') + '</td>' +
-              '<td>' + esc(d.playerName || '') + '</td>' +
-              '<td>' + (d.reason
+              '<td>' + esc(who(d)) + '</td>' +
+              '<td>' + ((d.reason || d.description || d.note)
                 ? '<span class="badge badge--success">Yes</span>'
                 : '<span class="badge badge--warning">No</span>') + '</td>' +
               '<td><button class="btn btn--ghost btn--sm" data-edit>Edit</button> ' +
@@ -410,44 +442,153 @@
             '</tr>';
           }).join(''))
           : empty('Nothing recorded yet', 'Player of the Month and the season awards appear on the awards page.')),
-        where: [['Awards', '/awards.html'], ['The player’s own profile', '/squad.html']],
+        where: [['Awards', '/awards.html'], ['The player’s own profile', '/squad.html'],
+          ['Coaches', '/coaches.html']],
+        whereNote: 'trophies also appear on the about page',
       });
+
+      var PLAYER_OPTS = [['', 'Nobody in particular']]
+        .concat(SQUAD.map(function (p) { return [p.num, p.name]; }));
 
       function form(rec) {
         var d = (rec && rec.data) || {};
         var back = dialog(rec ? 'Edit this entry' : 'Add recognition',
-          '<div class="grid grid--2">' +
-            field('r-type', 'What it is', choose('r-type', d.type || 'potm', RTYPES)) +
-            field('r-player', 'Who it went to',
-              choose('r-player', d.playerId == null ? '' : d.playerId,
-                [['', 'Nobody in particular']].concat(SQUAD.map(function (p) { return [p.num, p.name]; })))) +
-            field('r-month', 'Month', choose('r-month', d.month || '',
-              [['', 'Not a monthly award']].concat(MONTHS_FULL))) +
+          field('r-type', 'What are you recording', choose('r-type', d.type || 'potm', RTYPES)) +
+
+          /* Player of the Month */
+          '<div data-rfor="potm" class="grid grid--2" style="margin-top:var(--space-4)">' +
+            field('r-player', 'Who won it', choose('r-player', d.playerId, PLAYER_OPTS)) +
+            field('r-month', 'Month', choose('r-month', d.month || '', [['', 'Pick a month']].concat(MONTHS_FULL))) +
+          '</div>' +
+
+          /* End of season award */
+          '<div data-rfor="season_award" class="grid grid--2" style="margin-top:var(--space-4)" hidden>' +
+            field('r-award', 'Which award',
+              '<input class="input" id="r-award" list="r-awards" value="' + esc(d.title || '') + '">' +
+              '<datalist id="r-awards">' + AWARD_NAMES.map(function (a) {
+                return '<option value="' + esc(a) + '"></option>';
+              }).join('') + '</datalist>',
+              'Any of the seven the club gives out, or a new one.') +
+            field('r-aplayer', 'Who won it', choose('r-aplayer', d.playerId, PLAYER_OPTS)) +
+          '</div>' +
+
+          /* Trophy */
+          '<div data-rfor="trophy" class="grid grid--2" style="margin-top:var(--space-4)" hidden>' +
+            field('r-ttitle', 'What was won', text('r-ttitle', d.title, 'League Eight Champions')) +
+            field('r-tvalue', 'The short version', text('r-tvalue', d.value, 'Champions'),
+              'One or two words. This is what shows on the trophy itself.') +
+            field('r-ticon', 'Mark', choose('r-ticon', d.icon || 'trophy', TROPHY_ICONS)) +
+          '</div>' +
+
+          /* Club record */
+          '<div data-rfor="club_record" class="grid grid--2" style="margin-top:var(--space-4)" hidden>' +
+            field('r-rtitle', 'The record', text('r-rtitle', d.title, 'Most goals in a season')) +
+            field('r-rplayer', 'Who holds it', choose('r-rplayer', d.playerId, PLAYER_OPTS)) +
+            field('r-rvalue', 'What they did', text('r-rvalue', d.value, '25 goals'),
+              'The figure or the name the record is for.') +
+          '</div>' +
+
+          /* Leadership */
+          '<div data-rfor="leadership" class="grid grid--2" style="margin-top:var(--space-4)" hidden>' +
+            field('r-capt', 'Club captain', choose('r-capt', d.clubCaptainPlayerId, PLAYER_OPTS)) +
+            field('r-vice', 'Vice-captain', choose('r-vice', d.viceCaptainPlayerId, PLAYER_OPTS)) +
+            field('r-third', 'Third-choice captain', choose('r-third', d.thirdChoicePlayerId
+              || d.thirdChoiceCaptainPlayerId, PLAYER_OPTS)) +
+          '</div>' +
+
+          '<div class="grid grid--2" style="margin-top:var(--space-4)">' +
             field('r-season', 'Season', text('r-season', d.season || '25/26', '25/26')) +
           '</div>' +
+
           '<h4 class="mform__h">Why</h4>' +
           field('r-reason', 'The write-up',
-            area('r-reason', d.reason, 8, 'What they did to earn it. Blank lines separate paragraphs.'),
-            'This is what the awards page prints under their name.'));
+            area('r-reason', d.reason || d.description || d.note, 8,
+              'What they did to earn it. Blank lines separate paragraphs.'),
+            'This is what the awards page prints underneath.'));
+
+        function syncType() {
+          var t = $('#r-type', back).value;
+          [].forEach.call(back.querySelectorAll('[data-rfor]'), function (el) {
+            el.hidden = el.getAttribute('data-rfor') !== t;
+          });
+        }
+        $('#r-type', back).addEventListener('change', syncType);
+        syncType();
 
         $('[data-save]', back).addEventListener('click', function () {
-          var type = val(back, 'r-type');
-          var pid = val(back, 'r-player');
-          var who = SQUAD.filter(function (p) { return String(p.num) === pid; })[0];
-          if (type === 'potm' && !who) { fail(back, 'Player of the Month needs a player.'); return; }
-          var key = rec ? rec.key : (type.replace(/_/g, '') + '-' + Date.now());
-          var patch = {
-            id: key,
-            type: type,
-            month: val(back, 'r-month'),
-            season: val(back, 'r-season'),
-            reason: $('#r-reason', back).value.trim(),
-            updatedAt: new Date().toISOString(),
+          var type = $('#r-type', back).value;
+          var season = val(back, 'r-season');
+          var write = $('#r-reason', back).value.trim();
+          var patch = { type: type, season: season, updatedAt: new Date().toISOString() };
+          var pick = function (id) {
+            var v = val(back, id);
+            return v === '' ? null : Number(v);
           };
-          if (who) { patch.playerId = who.num; patch.playerName = who.name; }
-          else { patch.playerId = null; patch.playerName = ''; }
+          var nameOf = function (num) {
+            var p = SQUAD.filter(function (x) { return x.num === num; })[0];
+            return p ? p.name : '';
+          };
+
+          if (type === 'potm') {
+            patch.playerId = pick('r-player');
+            if (patch.playerId == null) { fail(back, 'Player of the Month needs a player.'); return; }
+            patch.playerName = nameOf(patch.playerId);
+            patch.month = val(back, 'r-month');
+            if (!patch.month) { fail(back, 'Which month was it for?'); return; }
+            patch.reason = write;
+          } else if (type === 'season_award') {
+            patch.title = val(back, 'r-award');
+            if (!patch.title) { fail(back, 'Name the award.'); return; }
+            patch.playerId = pick('r-aplayer');
+            patch.playerName = patch.playerId == null ? '' : nameOf(patch.playerId);
+            patch.description = write;
+          } else if (type === 'trophy') {
+            patch.title = val(back, 'r-ttitle');
+            if (!patch.title) { fail(back, 'Name what was won.'); return; }
+            patch.value = val(back, 'r-tvalue') || patch.title;
+            patch.icon = val(back, 'r-ticon');
+            patch.description = write;
+          } else if (type === 'club_record') {
+            patch.title = val(back, 'r-rtitle');
+            if (!patch.title) { fail(back, 'Name the record.'); return; }
+            /* An existing record keeps the key the awards page already looks
+               it up by. Renaming a record must not break the page that finds
+               it by name. */
+            patch.recordKey = d.recordKey || recordKeyFor(patch.title);
+            patch.playerId = pick('r-rplayer');
+            patch.playerName = patch.playerId == null ? '' : nameOf(patch.playerId);
+            patch.value = val(back, 'r-rvalue') || patch.playerName;
+            patch.description = write;
+          } else {
+            patch.clubCaptainPlayerId = pick('r-capt');
+            patch.clubCaptainName = patch.clubCaptainPlayerId == null ? '' : nameOf(patch.clubCaptainPlayerId);
+            patch.viceCaptainPlayerId = pick('r-vice');
+            patch.viceCaptainName = patch.viceCaptainPlayerId == null ? '' : nameOf(patch.viceCaptainPlayerId);
+            patch.thirdChoiceCaptainPlayerId = pick('r-third');
+            patch.thirdChoiceCaptainName = patch.thirdChoiceCaptainPlayerId == null
+              ? '' : nameOf(patch.thirdChoiceCaptainPlayerId);
+            patch.note = write;
+          }
+
+          var key = rec ? rec.key : (type.replace(/_/g, '') + '-' + Date.now());
+          patch.id = key;
           if (!rec) patch.createdAt = patch.updatedAt;
-          put(back, 'recognition', key, d, patch, 'recognition');
+
+          /* Changing an entry's TYPE is the one case where preserving every
+             field is wrong. Turn a season award into a trophy and it would
+             otherwise keep the player it was awarded to, which is a fact about
+             a record that no longer exists. Every field belonging only to
+             another type is cleared; anything outside this list, which is
+             anything a future version of the site adds, is still preserved. */
+          var OWNED = ['playerId', 'playerName', 'month', 'reason', 'title', 'description',
+            'value', 'icon', 'recordKey', 'note', 'clubCaptainPlayerId', 'clubCaptainName',
+            'viceCaptainPlayerId', 'viceCaptainName',
+            'thirdChoiceCaptainPlayerId', 'thirdChoiceCaptainName'];
+          var base = {};
+          Object.keys(d).forEach(function (k) {
+            if (OWNED.indexOf(k) === -1 || Object.prototype.hasOwnProperty.call(patch, k)) base[k] = d[k];
+          });
+          put(back, 'recognition', key, base, patch, 'recognition');
         });
       }
 

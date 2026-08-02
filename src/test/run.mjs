@@ -671,6 +671,7 @@ const BUDGET = {
   'control-squad.js': 8,
   'control-photos.js': 6,
   'control-photos-donations.js': 6,
+  'control-pipeline.js': 6,
 };
 for (const [f, kb] of Object.entries(BUDGET)) {
   const raw = fs.readFileSync(path.join(ROOT, f));

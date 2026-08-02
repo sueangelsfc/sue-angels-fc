@@ -24,6 +24,7 @@ export const MODULES = [
   { key: 'league', label: 'League table', icon: 'chart' },
   { key: 'sponsors', label: 'Sponsors', icon: 'heart' },
   { key: 'donations', label: 'Donations', icon: 'heart' },
+  { key: 'pipeline', label: 'Sponsorship pipeline', icon: 'chart' },
   { key: 'inbox', label: 'Inbox', icon: 'mail' },
   { key: 'settings', label: 'Settings', icon: 'shield' },
 ];

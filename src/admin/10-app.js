@@ -590,6 +590,7 @@
     news: 'content', media: 'content', recognition: 'content',
     league: 'content', sponsors: 'content',
     photos: 'photos-donations', donations: 'photos-donations',
+    pipeline: 'pipeline',
   };
   var pending = {};
   function need(key) {

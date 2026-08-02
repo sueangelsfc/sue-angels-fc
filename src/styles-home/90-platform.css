@@ -55,3 +55,56 @@
 @media (prefers-reduced-motion: reduce) {
   .toast { transition: none; }
 }
+
+/* ==========================================================================
+   TOUCH
+
+   Measured at 375px across every page rather than assumed. Nothing overflows
+   horizontally, which is the bug this kind of pass usually finds. These two
+   are what it actually found.
+
+   `pointer: coarse` rather than a width breakpoint, because both of these are
+   about a finger, not about a narrow window. A 380px browser window on a
+   desktop wants neither of them.
+   ========================================================================== */
+@media (pointer: coarse) {
+  /* iOS Safari zooms the whole page when a field smaller than 16px is
+     focused, and then leaves it zoomed. Every input on the site was 13.5 to
+     15px, so tapping any of them, including the newsletter box in the footer
+     of every single page, threw the layout sideways. Eight fields on the join
+     form did it eight times.
+
+     16px exactly: the threshold, not a redesign. Nothing on a desktop moves. */
+  input,
+  select,
+  textarea,
+  .input,
+  .select,
+  .textarea {
+    font-size: 16px;
+  }
+
+  /* Navigation and footer links sat at 24px tall, which is a comfortable
+     reading rhythm and an uncomfortable target: the guideline is 44 and the
+     real cost is tapping the wrong one of eighteen stacked links.
+
+     Padding rather than font-size or line-height, so the type and the visual
+     spacing are unchanged and only the hit area grows. */
+  .mnav__grp a,
+  .ft2__col a,
+  .ft2__socials a,
+  .nhead__all,
+  .cf__link {
+    padding-block: 10px;
+  }
+  .mnav__grp { gap: 0; }
+  .ft2__col { gap: 0; }
+
+  /* A carousel dot is 8px of paint. It needs a finger-sized box around it,
+     which is what a transparent border buys without moving the dot. */
+  .cf__dot {
+    border: 12px solid transparent;
+    background-clip: padding-box;
+    box-sizing: content-box;
+  }
+}

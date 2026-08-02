@@ -24,9 +24,19 @@
    the panel's team-sheet pitch and the profile's heat map so a shape drawn
    when a match was recorded is the shape drawn on the player's page.
 
+   POSITIONS AND ROLES ARE BOTH HERE, AND THE DIFFERENCE IS MARKED.
+   A left back is a place on the pitch. A false nine is a job somebody does
+   from roughly where a centre forward stands. Both belong on a team sheet,
+   because "he played as a false nine" is the useful thing to write down, but
+   only one of them is a position, so `role: true` marks the ones that are
+   really instructions. Nothing downstream has to care yet; it is there so that
+   a future "played as" versus "lined up at" question has an answer, rather
+   than being lost the moment it is recorded.
+
    Sourced against the standard set (Wikipedia's association football
-   positions, and the side-specific codes the club's own team sheets use)
-   rather than invented here.
+   positions, the side-specific codes the club's own team sheets use, and the
+   modern role vocabulary as football actually defines it) rather than
+   invented here.
    ========================================================================== */
 
 export const POSITIONS = [
@@ -46,6 +56,12 @@ export const POSITIONS = [
   { code: 'RB', name: 'Right back', group: 'def', x: 85, y: 75 },
   { code: 'LWB', name: 'Left wing back', group: 'def', x: 13, y: 64 },
   { code: 'RWB', name: 'Right wing back', group: 'def', x: 87, y: 64 },
+  /* Roles. A ball-playing centre back stands where a centre back stands and is
+     asked to carry and pass out of it; an inverted full back starts wide and
+     steps into midfield with the ball, which is why they sit further in. */
+  { code: 'BPD', name: 'Ball-playing centre back', group: 'def', role: true, x: 50, y: 83 },
+  { code: 'ILB', name: 'Inverted left back', group: 'def', role: true, x: 26, y: 70 },
+  { code: 'IRB', name: 'Inverted right back', group: 'def', role: true, x: 74, y: 70 },
 
   /* ---- Midfield ---- */
   { code: 'CDM', name: 'Defensive midfielder', group: 'mid', x: 50, y: 66 },
@@ -61,6 +77,15 @@ export const POSITIONS = [
   { code: 'AM', name: 'Attacking midfielder', group: 'mid', x: 50, y: 37 },
   { code: 'LAM', name: 'Left attacking midfielder', group: 'mid', x: 34, y: 38 },
   { code: 'RAM', name: 'Right attacking midfielder', group: 'mid', x: 66, y: 38 },
+  /* Roles. The regista sits at the base and sets the tempo by passing; the
+     box to box gets between both penalty areas; a mezzala is Italian for
+     "half winger" and is a central midfielder who drifts into the channel
+     outside his own centre; the trequartista plays free between the lines. */
+  { code: 'REG', name: 'Deep-lying playmaker', group: 'mid', role: true, x: 50, y: 61 },
+  { code: 'B2B', name: 'Box to box midfielder', group: 'mid', role: true, x: 50, y: 56 },
+  { code: 'LMZ', name: 'Left mezzala', group: 'mid', role: true, x: 30, y: 45 },
+  { code: 'RMZ', name: 'Right mezzala', group: 'mid', role: true, x: 70, y: 45 },
+  { code: 'TRQ', name: 'Free role behind the striker', group: 'mid', role: true, x: 50, y: 32 },
 
   /* ---- Attack ---- */
   { code: 'LW', name: 'Left winger', group: 'fwd', x: 17, y: 27 },
@@ -70,6 +95,15 @@ export const POSITIONS = [
   { code: 'SS', name: 'Second striker', group: 'fwd', x: 50, y: 28 },
   { code: 'CF', name: 'Centre forward', group: 'fwd', x: 50, y: 21 },
   { code: 'ST', name: 'Striker', group: 'fwd', x: 50, y: 14 },
+  /* Roles. An inverted winger comes in off the wing onto his stronger foot;
+     a false nine starts as the centre forward and drops between the lines; a
+     target man holds the ball up thirty yards out; a poacher lives in the six
+     yard box and does almost nothing else, which is a compliment. */
+  { code: 'ILW', name: 'Inverted left winger', group: 'fwd', role: true, x: 24, y: 31 },
+  { code: 'IRW', name: 'Inverted right winger', group: 'fwd', role: true, x: 76, y: 31 },
+  { code: 'F9', name: 'False nine', group: 'fwd', role: true, x: 50, y: 24 },
+  { code: 'TM', name: 'Target man', group: 'fwd', role: true, x: 50, y: 18 },
+  { code: 'POA', name: 'Poacher', group: 'fwd', role: true, x: 50, y: 10 },
 ];
 
 /* The order a team sheet is filled in: back to front, left to right, so the
@@ -94,4 +128,10 @@ export const positionName = (code) => POSITION_LABEL[String(code || '').toUpperC
 
 /* Shipped to the control panel so its team-sheet dropdown offers exactly the
    positions the site can name and draw. */
-export const POSITION_VOCAB = POSITIONS.map(({ code, name, group, x, y }) => ({ code, name, group, x, y }));
+export const POSITION_VOCAB = POSITIONS.map(({ code, name, group, x, y, role }) =>
+  ({ code, name, group, x, y, role: !!role }));
+
+/* True where the entry is a job rather than a place. Used to keep the two
+   apart in the dropdown, so a manager filling in a team sheet sees the shape
+   first and the instructions after it. */
+export const isRole = (code) => !!POSITIONS.find((p) => p.code === code)?.role;

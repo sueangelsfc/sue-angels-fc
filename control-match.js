@@ -445,7 +445,17 @@
   var POSITIONS = SEED.positions || [];
   var PITCH_XY = {};
   var POS_NAME = {};
-  POSITIONS.forEach(function (p) { PITCH_XY[p.code] = [p.x, p.y]; POS_NAME[p.code] = p.name; });
+  /* Which band a code belongs to. The formation used to be worked out by
+     regex-matching the code itself, which happened to work for the twenty-odd
+     codes that existed when it was written and put every new one in attack:
+     a ball-playing centre back and a deep-lying playmaker would both have been
+     counted as forwards. The list already knows the answer. */
+  var POS_GROUP = {};
+  POSITIONS.forEach(function (p) {
+    PITCH_XY[p.code] = [p.x, p.y];
+    POS_NAME[p.code] = p.name;
+    POS_GROUP[p.code] = p.group;
+  });
   var POS_CODES = POSITIONS.map(function (p) { return p.code; });
 
   /* Formation from the XI: count the outfield players in each band and read
@@ -456,14 +466,38 @@
     var placed = 0;
     starters.forEach(function (st) {
       var c = (st.positions || [])[0];
-      if (!c || c === 'GK') return;
+      if (!c || !POS_GROUP[c] || POS_GROUP[c] === 'gk') return;
       placed++;
-      if (/^(L|R|LC|RC)?(B|WB|CB)$/.test(c)) band.def++;
-      else if (/^(L|R|LC|RC)?(M|DM|CM|AM|CDM|CAM)$/.test(c)) band.mid++;
-      else band.fwd++;
+      band[POS_GROUP[c]]++;
     });
     if (placed < 6) return null;
     return band.def + '-' + band.mid + '-' + band.fwd;
+  }
+
+  /* Several codes sit close together on purpose: a false nine drops off a
+     centre forward, a ball-playing centre back stands where a centre back
+     stands. Two markers at the same spot stack into an unreadable disc, so
+     anything landing within a marker's width of one already placed is nudged
+     sideways, alternating left and right so the shape stays centred on where
+     the side actually lined up. */
+  function fanOut(list) {
+    var out = [];
+    list.forEach(function (item) {
+      var base = PITCH_XY[item.positions[0]];
+      var x = base[0];
+      var y = base[1];
+      for (var step = 0; step < 6; step++) {
+        var clash = out.some(function (o) {
+          return Math.abs(o.x - x) < 13 && Math.abs(o.y - y) < 9;
+        });
+        if (!clash) break;
+        var shift = (Math.floor(step / 2) + 1) * 14;
+        x = base[0] + (step % 2 ? -shift : shift);
+        if (x < 9 || x > 91) { x = base[0]; y = base[1] + 9; }
+      }
+      out.push({ p: item, x: x, y: y });
+    });
+    return out;
   }
 
   function pitchSvg(starters) {
@@ -472,8 +506,9 @@
     var form = detectFormation(starters);
     return '<div class="pitch">' +
       '<div class="pitch__grass" aria-hidden="true"></div>' +
-      (placed.length ? placed.map(function (s) {
-        var xy = PITCH_XY[s.positions[0]];
+      (placed.length ? fanOut(placed).map(function (spot) {
+        var s = spot.p;
+        var xy = [spot.x, spot.y];
         var nm = nameOf(s.num).split(' ').slice(-1)[0];
         return '<span class="pitch__p" style="left:' + xy[0] + '%;top:' + xy[1] + '%" title="' +
           esc(nameOf(s.num) + ', ' + (POS_NAME[s.positions[0]] || s.positions[0])) + '">' +
@@ -583,16 +618,26 @@
         '<select class="select xi__pos" data-pos-num="' + st.num +
           '" aria-label="Where ' + esc(nameOf(st.num)) + ' played">' +
           '<option value="">Where did he play</option>' +
-          ['gk', 'def', 'mid', 'fwd'].map(function (g) {
-            var inGroup = POSITIONS.filter(function (p) { return p.group === g; });
-            if (!inGroup.length) return '';
-            return '<optgroup label="' +
-              ({ gk: 'In goal', def: 'Defence', mid: 'Midfield', fwd: 'Attack' })[g] + '">' +
-              inGroup.map(function (p) {
-                return '<option value="' + p.code + '"' + (p.code === code ? ' selected' : '') +
-                  '>' + esc(p.name) + '</option>';
-              }).join('') + '</optgroup>';
-          }).join('') + '</select>' +
+          /* Places first, then the roles played from them. A manager filling
+             in a team sheet wants the shape before the instructions, and
+             "False nine" sitting between "Centre forward" and "Striker" as
+             though it were a third place on the pitch is what makes a long
+             list feel arbitrary. */
+          ['gk', 'def', 'mid', 'fwd'].reduce(function (out, g) {
+            var label = { gk: 'In goal', def: 'Defence', mid: 'Midfield', fwd: 'Attack' }[g];
+            [false, true].forEach(function (wantRole) {
+              var inGroup = POSITIONS.filter(function (p) {
+                return p.group === g && !!p.role === wantRole;
+              });
+              if (!inGroup.length) return;
+              out.push('<optgroup label="' + label + (wantRole ? ', played as' : '') + '">' +
+                inGroup.map(function (p) {
+                  return '<option value="' + p.code + '"' + (p.code === code ? ' selected' : '') +
+                    '>' + esc(p.name) + '</option>';
+                }).join('') + '</optgroup>');
+            });
+            return out;
+          }, []).join('') + '</select>' +
         '<button type="button" class="picked__x" data-drop="starters" data-i="' + i +
           '" aria-label="Take ' + esc(nameOf(st.num)) + ' out of the eleven">&times;</button>' +
       '</div>';

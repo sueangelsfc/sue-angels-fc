@@ -669,7 +669,7 @@ const BUDGET = {
      match report. Fetched only by somebody who has opened Fixtures or Results,
      which is a handful of people a season. 20 -> 22 for the goal detail, which
      is the feature this whole section exists to provide. */
-  'control-match.js': 22,
+  'control-match.js': 23,
   /* News, gallery, recognition, badges and sponsors. 11 -> 14 for the album
      editor: the photographs are visible, removable, reorderable and taggable
      in the album itself, which is four operations that all have to keep the

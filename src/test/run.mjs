@@ -257,12 +257,20 @@ for (const [name, fg, bg, min] of PAIRS) {
    So read the tokens out of the generated sheet instead of restating them. A
    token that changes now changes the test with it. */
 {
-  const homeCss = fs.readFileSync(path.join(ROOT, 'home.css'), 'utf8');
+  /* Read from the SOURCE, not from home.css. The shipped sheet is minified
+     now, so a regex looking for a newline inside :root{} found nothing and
+     the whole suite died on an undefined token. The values are identical
+     either way, and the point of this block was never to test formatting: it
+     was to stop the palette being restated in the test and drifting. */
+  const homeCss = fs.readdirSync(path.join(ROOT, 'src', 'styles-home'))
+    .filter((f) => f.endsWith('.css')).sort()
+    .map((f) => fs.readFileSync(path.join(ROOT, 'src', 'styles-home', f), 'utf8'))
+    .join('\n');
   const block = (re) => (re.exec(homeCss) || [, ''])[1];
   const toks = (s) => Object.fromEntries(
     [...s.matchAll(/(--[\w-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()]));
-  const dark = toks(block(/:root\{([\s\S]*?)\n\}/));
-  const light = { ...dark, ...toks(block(/html\[data-theme="light"\]\{([\s\S]*?)color-scheme: light;\}/)) };
+  const dark = toks(block(/:root\s*\{([\s\S]*?)\n\}/));
+  const light = { ...dark, ...toks(block(/html\[data-theme="light"\]\s*\{([\s\S]*?)color-scheme:\s*light;/)) };
 
   /* Composite a token onto a solid backdrop. Values here are either #rrggbb
      or an rgba() lift, and a lift has to be flattened before its luminance
@@ -657,60 +665,58 @@ check('share cards are not all identical', ogSeen.size >= 15, `${ogSeen.size} di
    against the panel having features. A new panel goes in src/admin/lazy/ with
    its own line here. Adding one to control.js means everybody downloads it
    forever, which is the mistake this split exists to undo. */
-/* sa.js 26 -> 28, and this raise is on notice.
+/* THE BUILD MINIFIES NOW, so every one of these came down and none of them
+   is a raise. Measured, before and after:
 
-   What it bought is real and was asked for: the album viewer with swipe, the
-   profile chart made readable by finger, the season card lifted out of the
-   strip that was clipping it, and per-season squad figures. All four exist
-   because the site did not work on a phone without them.
+     sa.js      28 -> 15   (13.6 shipped)      home.css   26 -> 17  (15.3)
+     sa.css     22 -> 13   (11.3)              control.js 17 -> 11  (9.5)
+     control.css 9 -> 5    (3.6)               control-match.js 23 -> 14 (12.8)
 
-   But the number is being spent on the wrong thing. sa.js is 96KB raw and
-   26.7KB gzipped, and MINIFIED IT IS 13.5KB - measured, with the esbuild
-   already sitting in node_modules. Half of what every visitor downloads is
-   prose written for whoever reads this repo next. Keeping those comments in
-   the source is right; shipping them to a supporter on a phone is not.
+   The comments this codebase is written around were being downloaded by
+   every visitor, and they are for whoever reads the repository next. They
+   stay in src/ and they no longer ship. A first visit to the home page is
+   about twenty kilobytes lighter than it was this morning.
 
-   So the next raise is not a raise. It is one esbuild call in build.mjs
-   between concatenation and write, which halves this file and drops the
-   ceiling below where it started. */
+   The headroom above each shipped size is deliberate and small. A budget with
+   nothing in reserve gets raised the first time anybody adds a feature, which
+   is how the old sa.js ceiling went 18 -> 22 -> 24 -> 26 -> 28 while the file
+   it guarded was half prose. These are close enough that a real regression
+   trips them and a comment never can. */
 const BUDGET = {
-  'sa.css': 22,
-  'home.css': 26,
-  'sa.js': 28,
-  'control.css': 9,
-  'control.js': 17,
-  /* The heaviest, and fairly: the pitch, the position codes, five tabs, the
+  'sa.css': 13,
+  'home.css': 17,
+  'sa.js': 15,
+  'control.css': 5,
+  'control.js': 11,
+  /* The heaviest, and fairly: the pitch, the position names, five tabs, the
      goal detail (what it was struck with, where from, what the ball was doing,
      who made it and how), and the composer that turns a coach's bullets into a
      match report. Fetched only by somebody who has opened Fixtures or Results,
-     which is a handful of people a season. 20 -> 22 for the goal detail, which
-     is the feature this whole section exists to provide. */
-  'control-match.js': 23,
-  /* News, gallery, recognition, badges and sponsors. 11 -> 14 for the album
-     editor: the photographs are visible, removable, reorderable and taggable
-     in the album itself, which is four operations that all have to keep the
-     parallel tag list in step. */
-  'control-content.js': 15,
-  /* 8 -> 9. Squad status became a fact about a player IN A SEASON rather
-     than one value that had to be true forever, which is what stops "Retained
-     for 26/27" being a string somebody has to remember to change and stops a
-     trial lasting for the rest of a career. The screen now carries a season
-     bar, reads three stored shapes, and works out new / retained / back at
-     the club instead of asking anybody to keep them true. */
-  'control-squad.js': 9,
-  'control-coaches.js': 8,
-  'control-photos.js': 6,
-  /* 6 -> 7. The player photograph screen can now take a picture straight from
-     the gallery. The club has already tagged who is in six hundred photographs
-     and the site was making somebody find one of them on a phone and upload it
-     again, which is asking them to redo work already done. It builds the list
-     from the albums rather than the seed, so nothing extra ships to a visitor
-     to the panel who never opens this screen. */
-  'control-photos-donations.js': 7,
-  'control-pipeline.js': 6,
-  'control-covers.js': 8,
-  'control-video.js': 6,
-  'control-hero.js': 6,
+     which is a handful of people a season. */
+  'control-match.js': 14,
+  /* News, gallery, recognition, badges and sponsors. The album editor is the
+     weight: photographs visible, removable, reorderable and taggable in the
+     album itself, four operations that all have to keep the parallel tag list
+     in step. */
+  'control-content.js': 11,
+  /* Squad status is a fact about a player IN A SEASON, which is what stops
+     "Retained for 26/27" being a string somebody has to remember to change
+     and stops a trial lasting the rest of a career. The screen carries a
+     season bar, reads three stored shapes, and works out new / retained /
+     back at the club rather than asking anybody to keep them true. */
+  'control-squad.js': 6,
+  'control-coaches.js': 4,
+  'control-photos.js': 4,
+  /* Takes a player's picture straight from the gallery: the club has already
+     tagged who is in six hundred photographs, and the site was making
+     somebody find one on a phone and upload it again. The list is built from
+     the albums rather than shipped in the seed, so nothing extra reaches a
+     panel visitor who never opens this screen. */
+  'control-photos-donations.js': 4,
+  'control-pipeline.js': 4,
+  'control-covers.js': 4,
+  'control-video.js': 3,
+  'control-hero.js': 3,
 };
 for (const [f, kb] of Object.entries(BUDGET)) {
   const raw = fs.readFileSync(path.join(ROOT, f));
@@ -797,10 +803,26 @@ for (const [f, kb] of Object.entries(BUDGET)) {
 
 /* ---- The split stays split ----
    Every one of these is a way the panel could quietly go back to shipping
-   everything to everybody, or to shipping half of itself and breaking. */
+   everything to everybody, or to shipping half of itself and breaking.
+
+   READ FROM THE SOURCE, not from the shipped bundle. Everything here is a
+   claim about the SHAPE of the code - which module lives in which file, what
+   is published before what, whether a re-render replaces its body - and the
+   shipped bundle is minified now, so every one of those regexes was matching
+   against renamed variables and collapsed whitespace. They did not fail
+   loudly either: half of them were negative assertions, which a rename turns
+   green while proving nothing at all.
+
+   What genuinely belongs against the OUTPUT stays there below: that the
+   chunk URLs were stamped, that every chunk named is a file that exists, and
+   that each one is cache-busted. Those are facts about the build, not about
+   the source, and they are read back from `control.js` as shipped. */
 {
-  const core = fs.readFileSync(path.join(ROOT, 'control.js'), 'utf8');
-  const matchChunk = fs.readFileSync(path.join(ROOT, 'control-match.js'), 'utf8');
+  const srcDir = path.join(ROOT, 'src', 'admin');
+  const core = fs.readdirSync(srcDir).filter((f) => f.endsWith('.js')).sort()
+    .map((f) => fs.readFileSync(path.join(srcDir, f), 'utf8')).join('\n');
+  const matchChunk = fs.readFileSync(path.join(srcDir, 'lazy', '10-match.js'), 'utf8');
+  const shippedCore = fs.readFileSync(path.join(ROOT, 'control.js'), 'utf8');
 
   /* The heavy modules are NOT in the core. */
   check('match form is not in the control.js core',
@@ -811,10 +833,16 @@ for (const [f, kb] of Object.entries(BUDGET)) {
   /* The core knows where they are and what they own. A chunk file listed in
      CHUNK_OF but never emitted would make its panel permanently unopenable. */
   check('core maps its panels to chunks', /CHUNK_OF\s*=\s*\{[^}]*results:\s*'match'/.test(core));
-  const urls = core.match(/window\.CP_CHUNKS=(\{.*?\});/);
+  /* Read off the SHIPPED core, because this is what the build stamped. The
+     object is written by the generator and then minified, so its keys lose
+     their quotes: parsed by pattern rather than by JSON.parse, which is what
+     broke the whole suite the first time this file was minified. */
+  const urls = shippedCore.match(/window\.CP_CHUNKS\s*=\s*(\{[^}]*\})/);
   check('build stamps hashed chunk URLs into the core', !!urls);
   if (urls) {
-    const parsed = JSON.parse(urls[1]);
+    const parsed = Object.fromEntries(
+      [...urls[1].matchAll(/["']?([a-z-]+)["']?\s*:\s*["']([^"']+)["']/g)].map((m) => [m[1], m[2]]));
+    check('chunk URL map is not empty', Object.keys(parsed).length > 0, urls[1].slice(0, 60));
     for (const [name, url] of Object.entries(parsed)) {
       check(`chunk ${name} is emitted at ${url.split('?')[0]}`,
         fs.existsSync(path.join(ROOT, url.split('?')[0])));
@@ -847,7 +875,12 @@ for (const [f, kb] of Object.entries(BUDGET)) {
 
   /* No em dashes, anywhere the panel can write them. The club's copy rule
      applies to text the panel GENERATES as much as to text a developer types:
-     the match report builder writes sentences straight onto the website. */
+     the match report builder writes sentences straight onto the website.
+
+     Checked on the SHIPPED files, deliberately. This one is about the bytes
+     that reach a browser, and it is the only assertion here that gets
+     STRONGER after minification: comments are gone, so a match can only be
+     an em dash in real copy rather than one a developer wrote in an aside. */
   for (const f of fs.readdirSync(ROOT).filter((x) => /^control(-[a-z-]+)?\.js$/.test(x))) {
     const body = fs.readFileSync(path.join(ROOT, f), 'utf8');
     check(`${f}: no em dashes`, !body.includes('\u2014'),
@@ -995,13 +1028,44 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   check('service worker never caches the control panel or the API',
     /control\.html/.test(sw) && /\/api\//.test(sw));
 
+  /* Two readings of the same file, and they answer different questions.
+
+     The SHIPPED bundle answers "does this reach a browser": the consent
+     banner's id, the global the site tracks through, the service worker's
+     path. Those are strings, and minification cannot touch a string.
+
+     The SOURCE answers "is the code shaped the way it has to be": that the
+     analytics loader returns early unless consent was granted. That claim is
+     about a function by name, and the shipped bundle no longer has names. */
   const saJs = fs.readFileSync(path.join(ROOT, 'sa.js'), 'utf8');
+  const saSrc = fs.readdirSync(path.join(ROOT, 'src', 'scripts'))
+    .filter((f) => f.endsWith('.js')).sort()
+    .map((f) => fs.readFileSync(path.join(ROOT, 'src', 'scripts', f), 'utf8')).join('\n');
+
   check('consent banner ships', /sa-consent/.test(saJs));
   check('saTrack is defined', /window\.saTrack\s*=/.test(saJs));
   /* Nothing third-party may be requested before the visitor has chosen. */
   check('analytics loads only inside the consent gate',
-    /function startAnalytics\(\)[\s\S]{0,120}read\(\) !== 'granted'/.test(saJs));
-  check('service worker is registered', /serviceWorker\.register\('\/sw\.js'/.test(saJs));
+    /function startAnalytics\(\)[\s\S]{0,160}read\(\) !== 'granted'/.test(saSrc));
+  /* And the shipped bundle names no third-party host the club has not
+     agreed to. This is the assertion that would actually catch a regression:
+     a script tag built from a literal URL cannot hide behind a renamed
+     function the way the check above could.
+
+     Google Analytics and the Meta pixel are here on purpose and neither is
+     fetched until the visitor has chosen; that is what the consent gate
+     above is. Anything else appearing in this list is a new third party
+     nobody decided on, which is exactly the thing worth failing over. */
+  const ALLOWED_THIRD_PARTY = [
+    'googletagmanager.com',   // Google Analytics, inside the gate
+    'connect.facebook.net',   // Meta pixel, inside the gate
+  ];
+  const hosts = [...saJs.matchAll(/["'](https?:\/\/[^"']+)["']/g)].map((m) => m[1])
+    .filter((u) => !/suesangelsfc\.co\.uk|schema\.org|w3\.org|supabase\.co/.test(u))
+    .filter((u) => !ALLOWED_THIRD_PARTY.some((h) => u.includes(h)));
+  check('no undeclared third-party URL in the public bundle', hosts.length === 0,
+    [...new Set(hosts)].slice(0, 3).join(', '));
+  check('service worker is registered', /serviceWorker\.register\(["']\/sw\.js["']/.test(saJs));
   /* No page may ship the banner in its markup: it is built by script, so a
      JavaScript failure cannot leave a hidden dialog on the page. */
   check('no page ships the consent banner in markup',

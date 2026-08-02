@@ -42,6 +42,7 @@ import { control } from './templates/control.mjs';
 import { VOCAB } from './lib/football.mjs';
 import { POSITION_VOCAB, ROLE_VOCAB } from './lib/positions.mjs';
 import { STATUS_VOCAB } from './lib/squad-status.mjs';
+import * as esbuild from 'esbuild';
 
 const ROOT = process.cwd();
 const CHECK = process.argv.includes('--check');
@@ -58,9 +59,44 @@ function write(rel, content) {
   bytes += Buffer.byteLength(content);
 }
 
+/* ---- MINIFICATION ------------------------------------------------------
+   This repo comments heavily on purpose: the reasoning behind a decision is
+   worth more than the line it explains, and it is why anybody can pick this
+   codebase up. But those comments were being SHIPPED. sa.js was 98KB raw and
+   27KB gzipped, and half of that was prose written for whoever reads the
+   repository next, downloaded by a supporter on a phone who never will.
+
+   So the source keeps every word and the output keeps none. Measured on the
+   files this build writes: sa.js 27.2 -> 13.7KB gzipped, control.js 16.3 ->
+   9.5, control-match.js 22.9 -> 12.8, sa.css 19.6 -> 11.4, home.css 23.5 ->
+   15.4, control.css 8.1 -> 3.7. A first visit to the home page is about
+   twenty kilobytes lighter.
+
+   NOT TRANSPILED, only minified: no `target` is set, so esbuild rewrites
+   nothing about the syntax and cannot introduce a behaviour difference by
+   downlevelling something. `charset: 'utf8'` keeps the literal characters
+   this codebase insists on (`·`, `’`, `–`) as themselves rather than
+   escaping them back into the entities it spent a day removing.
+
+   The service worker is deliberately left alone. It is small, it is the one
+   file whose failure mode is a stale cache nobody can clear, and its cache
+   name is read back by the test suite.
+
+   THE COST, stated plainly: the generated files committed to this repo are
+   now single lines and their diffs are unreadable. That is the right trade
+   only because `src/` is what anybody reviews and the root is a build
+   artefact Vercel serves without building. */
+const minifyJs = (code) => esbuild.transformSync(code, {
+  minify: true, charset: 'utf8', legalComments: 'none',
+}).code;
+const minifyCss = (code) => esbuild.transformSync(code, {
+  loader: 'css', minify: true, charset: 'utf8', legalComments: 'none',
+}).code;
+
 /* ---- Asset version: content-hashed so caches bust correctly and every
    page necessarily carries the same value (mixed versions were a recurring
-   bug when they were hand-edited). ---- */
+   bug when they were hand-edited). Hashed AFTER minification, so the version
+   describes the bytes a browser actually receives. ---- */
 function bundle(dir, files) {
   return files.map((f) => fs.readFileSync(path.join(ROOT, 'src', dir, f), 'utf8')).join('\n');
 }
@@ -92,14 +128,22 @@ const absAssets = (s) => s.replace(/url\('assets\//g, "url('/assets/");
 css = absAssets(css);
 homeCss = absAssets(homeCss);
 
+/* Inject runtime config the client needs (public values only - the anon key
+   is designed to be public and all protection comes from RLS). Prepended
+   BEFORE minification so it is part of the hashed bytes. */
+const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'runtime.json'), 'utf8'));
+js = `window.SA_SUPABASE=${JSON.stringify(cfg.supabase)};window.SA_EMAIL=${JSON.stringify(CLUB.email)};\n${js}`;
+
+const cssSrc = css;
+const homeCssSrc = homeCss;
+const jsSrc = js;
+css = minifyCss(css);
+homeCss = minifyCss(homeCss);
+js = minifyJs(js);
+
 const crypto = await import('node:crypto');
 const assetV = crypto.createHash('sha256').update(css + js).digest('hex').slice(0, 8);
 const homeV = crypto.createHash('sha256').update(homeCss + js).digest('hex').slice(0, 8);
-
-/* Inject runtime config the client needs (public values only - the anon key
-   is designed to be public and all protection comes from RLS). */
-const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'runtime.json'), 'utf8'));
-js = `window.SA_SUPABASE=${JSON.stringify(cfg.supabase)};window.SA_EMAIL=${JSON.stringify(CLUB.email)};\n${js}`;
 
 write('sa.css', css);
 write('home.css', homeCss);
@@ -139,7 +183,7 @@ for (const f of pageCssFiles) {
     );
   }
   seenBand.set(name, f);
-  const body = absAssets(fs.readFileSync(path.join(pageCssDir, f), 'utf8'));
+  const body = minifyCss(absAssets(fs.readFileSync(path.join(pageCssDir, f), 'utf8')));
   write(name, body);
   pageCss.set(f.replace(/^\d+-|\.css$/g, ''), {
     href: name,
@@ -293,7 +337,7 @@ const lazyDir = path.join(ROOT, 'src', 'admin', 'lazy');
 const chunkUrls = {};
 for (const f of fs.readdirSync(lazyDir).filter((x) => x.endsWith('.js')).sort()) {
   const name = f.replace(/^\d+-|\.js$/g, '');
-  const body = fs.readFileSync(path.join(lazyDir, f), 'utf8');
+  const body = minifyJs(fs.readFileSync(path.join(lazyDir, f), 'utf8'));
   const v = crypto.createHash('sha256').update(body).digest('hex').slice(0, 8);
   write(`control-${name}.js`, body);
   chunkUrls[name] = `control-${name}.js?v=${v}`;
@@ -301,6 +345,7 @@ for (const f of fs.readdirSync(lazyDir).filter((x) => x.endsWith('.js')).sort())
 
 adminJs = `window.SA_SUPABASE=${JSON.stringify(cfg.supabase)};window.SA_EMAIL=${JSON.stringify(CLUB.email)};`
   + `window.CP_CHUNKS=${JSON.stringify(chunkUrls)};\n${adminJs}`;
+adminJs = minifyJs(adminJs);
 const adminV = crypto.createHash('sha256').update(adminJs).digest('hex').slice(0, 8);
 write('control.js', adminJs);
 
@@ -309,7 +354,7 @@ write('control.js', adminJs);
    panel has always been private, but every visitor to the website was
    downloading its styling to render a page that cannot show any of it. */
 const adminCssFiles = fs.readdirSync(path.join(ROOT, 'src', 'styles-control')).filter((f) => f.endsWith('.css')).sort();
-const adminCss = absAssets(bundle('styles-control', adminCssFiles));
+const adminCss = minifyCss(absAssets(bundle('styles-control', adminCssFiles)));
 const adminCssV = crypto.createHash('sha256').update(adminCss).digest('hex').slice(0, 8);
 write('control.css', adminCss);
 

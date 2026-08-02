@@ -13,5 +13,8 @@
     "pack": "node scripts/make-pack.mjs",
     "sync": "node scripts/sync.mjs",
     "publish": "npm run sync && npm run build && npm run verify && npm test"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
   }
 }

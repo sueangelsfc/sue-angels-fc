@@ -190,3 +190,9 @@ html.js .mt[hidden]{display: none;}
 /* A competition the club did not play that season leaves the row rather than
    offering a filter that finds nothing. */
 .mt-chip[hidden]{display: none;}
+
+/* Played, waiting for a score. Deliberately quiet: it is a prompt to the club
+   rather than a result, and it must not read like one. */
+.mt-lede{margin: clamp(12px, 1.8vw, 18px) 0 clamp(16px, 2vw, 22px); max-width: 60ch;
+  font-size: 15px; line-height: 1.7; color: var(--ink-3);}
+.mt-awaiting .mt{opacity: 0.86;}

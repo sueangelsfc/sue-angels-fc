@@ -158,6 +158,22 @@ export function buildDataset() {
     .sort((a, b) => (a.iso || '9999-99-99').localeCompare(b.iso || '9999-99-99'));
   const nextFixture = upcoming[0] || null;
 
+  /* PLAYED, BUT NOBODY HAS SAID WHAT HAPPENED.
+
+     A fixture whose date has been and gone is no longer upcoming, and with no
+     score on it, it is not a result either. Until now that meant it appeared
+     NOWHERE: the morning after a match the club's own game vanished off the
+     website, and stayed vanished until somebody opened the panel. A match the
+     club played is a fact whether or not the score has been typed in yet.
+
+     These carry no goals, no outcome and no `played` flag, so nothing derived
+     ever counts them: `teamSummary`, the league reconciliation and every
+     player figure read `played`, which they are not in. They exist to be
+     shown and to ask for a scoreline. */
+  const awaiting = fixtures
+    .filter((m) => m.iso && m.iso < todayISO)
+    .sort((a, b) => (b.iso || '').localeCompare(a.iso || ''));
+
   /* ---- Squad ---- */
   const posByNum = inferPositions(matches);
   const bios = ps.PLAYER_BIOS || {};
@@ -664,7 +680,7 @@ export function buildDataset() {
   const pages = read('recovered-pages.json');
 
   return {
-    matches, played, fixtures, upcoming, nextFixture, orphanDetails,
+    matches, played, fixtures, upcoming, nextFixture, awaiting, orphanDetails,
     /* The merged baseline+database match list, before normalisation. The
        control panel needs it to pre-fill a match whose scoreline still comes
        from the code baseline rather than from a row it can edit. */

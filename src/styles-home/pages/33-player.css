@@ -639,12 +639,26 @@ html.js .pf-plot__hint--fine{display: block;}
 }
 
 /* ---- Photographs of this player ------------------------------------------
-   Fed by tags marked SUBJECT in the control panel. The focus point recorded
-   while tagging drives object-position, which is what keeps a face in the
-   frame when a landscape photograph is cropped square. */
+   Every frame the player is tagged in. The focus point recorded while tagging
+   drives object-position, which is what keeps a face in the frame when a
+   landscape photograph is cropped square.
+
+   THE MINIMUM COLUMN WIDTH IS THE WHOLE POINT. `minmax(min(100%, 190px), 1fr)`
+   reads as "at least 190px", and on a 375px phone with page padding there is
+   room for one of those, not two. Eighteen square photographs in a single
+   column is a NINE THOUSAND PIXEL band, all of it lazy-loaded and therefore
+   blank until scrolled through: the page looked like the section had failed
+   to load rather than like a grid. Three across on a phone is a contact
+   sheet, which is what this band is. */
 .pf-shots__grid{list-style: none; margin: clamp(18px, 2.4vw, 26px) 0 0; padding: 0;
   display: grid; gap: 8px;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr));}
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));}
+@media (max-width: 620px){
+  .pf-shots__grid{gap: 6px; grid-template-columns: repeat(3, minmax(0, 1fr));}
+  /* Nine is a screenful and a half at three across. The rest are one tap
+     away in the gallery, and the line underneath says how many. */
+  .pf-shot:nth-child(n+10){display: none;}
+}
 .pf-shot{position: relative;}
 .pf-shot a{display: block; border-radius: 14px; overflow: hidden;
   border: 1px solid var(--line-d); background: rgba(var(--sink), 0.4);
@@ -715,3 +729,11 @@ html.js .pf-plot__hint--fine{display: block;}
 .pf-shots__more{margin: clamp(14px, 1.8vw, 18px) 0 0;
   font-size: 13.5px; line-height: 1.7; color: var(--ink-3);}
 .pf-shots__more a{color: var(--volt-text);}
+
+/* Which "N more" line is shown follows the same breakpoint that decides how
+   many frames the grid draws, so the sentence can never contradict it. */
+.pf-shots__more--narrow{display: none;}
+@media (max-width: 620px){
+  .pf-shots__more--wide{display: none;}
+  .pf-shots__more--narrow{display: block;}
+}

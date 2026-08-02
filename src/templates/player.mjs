@@ -65,9 +65,21 @@ const shortComp = (name) => String(name || '')
   .replace(/^Surrey FA Sunday Lower Junior County Cup$/, 'Surrey FA Cup');
 
 const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
-      <span class="xrail__l"><span class="xrail__n">${esc(String(n).padStart(2, '0'))}</span><span class="xrail__t">${esc(label)}</span></span>
+      <span class="xrail__l"><span class="xrail__n">${n === 'NUM' ? 'NUM' : esc(String(n).padStart(2, '0'))}</span><span class="xrail__t">${esc(label)}</span></span>
       <span class="xrail__r">${esc(ref)}</span>
     </div>`;
+
+/* Page-level bands number themselves in the order a reader meets them. They
+   are built in one order and assembled in another, and each used to carry a
+   number typed into it: the page ran 02, 03, 06, 06, 04, with two bands both
+   calling themselves 06. A band that does not render leaves no placeholder,
+   so the sequence closes up rather than skipping a number. The season block
+   keeps its own 01-05, which are inside a panel and describe one season. */
+const numberRails = (html) => {
+  let n = 5;
+  return html.replace(/<span class="xrail__n">NUM<\/span>/g,
+    () => `<span class="xrail__n">${String(n += 1).padStart(2, '0')}</span>`);
+};
 
 /* Positions come from src/lib/positions.mjs: one list with a full name and a
    place on the pitch for every code the club's records have ever used. The
@@ -462,7 +474,25 @@ export function playerPage(p, d) {
       </div>
     </section>`;
 
-  /* ================= 02 AGAINST THE SQUAD =================
+  /* THE PAGE-LEVEL BAND NUMBERS.
+
+     Each band used to carry a number typed into it, and they were built in a
+     different order from the one they are assembled in: the page ran 02, 03,
+     06, 06, 04, with two bands both calling themselves 06 and Recognition
+     landing after them at 04. Worse, a band that does not render (no honours,
+     no recorded detail) left a hole in the sequence.
+
+     A counter handed out in assembly order fixes both. The season block keeps
+     its own 01-05 because those are INSIDE a panel and describe one season. */
+  /* A placeholder, numbered when the page is assembled. The bands are BUILT
+     in a different order from the one they are shown in, so a counter read
+     here would hand out numbers in the wrong sequence just as surely as the
+     typed ones did. NUM is replaced left to right across the finished body,
+     which is the order a reader meets them, and a band that did not render
+     never had a placeholder to number. */
+  const RAIL = { next: () => 'NUM' };
+
+  /* ================= AGAINST THE SQUAD =================
      A figure on its own says little. Set against the squad's best and its
      middle, it says whether it was exceptional or ordinary, which is the
      question every one of these pages exists to answer. */
@@ -497,7 +527,7 @@ export function playerPage(p, d) {
 
   const versusBand = pool.length > 2 ? `<section class="sec pf-versus" aria-labelledby="pf-vs-h">
       <div class="wrap">
-        ${rail(2, 'Against the squad', `${pool.length} who started a match`)}
+        ${rail(RAIL.next(), 'Against the squad', `${pool.length} who started a match`)}
         <h2 class="h2 rv" id="pf-vs-h">How that <span class="volt">compares.</span></h2>
         <p class="pf-lede rv">${esc(p.first)} against the ${esc(pool.length)}
           ${gk ? 'goalkeepers' : 'outfield players'} who started a match in ${esc(d.currentSeason)},
@@ -564,7 +594,7 @@ export function playerPage(p, d) {
 
   const pitchBand = heat.length ? `<section class="sec pf-pitch" aria-labelledby="pf-pitch-h">
       <div class="wrap">
-        ${rail(3, 'Where they play', `${heat.length} ${heat.length === 1 ? 'position' : 'positions'}`)}
+        ${rail(RAIL.next(), 'Where they play', `${heat.length} ${heat.length === 1 ? 'position' : 'positions'}`)}
         <h2 class="h2 rv" id="pf-pitch-h">On the <span class="volt">pitch.</span></h2>
         <div class="pf-pitch__grid rv">
           <figure class="pf-pitch__fig">
@@ -720,7 +750,7 @@ export function playerPage(p, d) {
 
   const honoursBand = honours.length ? `<section class="sec pf-honours" aria-labelledby="pf-hon-h">
       <div class="wrap">
-        ${rail(4, 'Recognition', `${honours.length} in all`)}
+        ${rail(RAIL.next(), 'Recognition', `${honours.length} in all`)}
         <h2 class="h2 rv" id="pf-hon-h">What they <span class="volt">won.</span></h2>
         <ul class="pf-honours__list rv">
           ${honours.map((h) => `<li>
@@ -774,7 +804,7 @@ export function playerPage(p, d) {
   const SHOW = 18;
   const shotsBand = shots.length ? `<section class="sec pf-shots" aria-labelledby="pf-sh-h">
       <div class="wrap">
-        ${rail(6, 'In the gallery', `${shots.length} photograph${shots.length === 1 ? '' : 's'}`)}
+        ${rail(RAIL.next(), 'In the gallery', `${shots.length} photograph${shots.length === 1 ? '' : 's'}`)}
         <h2 class="h2 rv" id="pf-sh-h">${esc(p.first || p.name)} in <span class="volt">frame.</span></h2>
         <ul class="pf-shots__grid rv" data-album>
           ${shots.slice(0, SHOW).map((sh) => {
@@ -793,8 +823,15 @@ export function playerPage(p, d) {
           </li>`;
   }).join('\n          ')}
         </ul>
-        ${shots.length > SHOW ? `<p class="pf-shots__more">${esc(shots.length - SHOW)} more in
-          <a href="/gallery.html">the gallery</a>.</p>` : ''}
+        <!-- Two counts, because a phone shows nine of the eighteen. Which
+             line is on screen is decided in CSS by the same breakpoint that
+             decides how many frames are shown, so the sentence and the grid
+             cannot disagree. -->
+        <p class="pf-shots__more pf-shots__more--wide">${shots.length > SHOW
+    ? `${esc(shots.length - SHOW)} more in <a href="/gallery.html">the gallery</a>.`
+    : `All ${esc(shots.length)} of them, from <a href="/gallery.html">the gallery</a>.`}</p>
+        <p class="pf-shots__more pf-shots__more--narrow">${esc(Math.max(0, shots.length - 9))} more in
+          <a href="/gallery.html">the gallery</a>.</p>
       </div>
     </section>` : '';
 
@@ -827,15 +864,26 @@ export function playerPage(p, d) {
   const asType = pr.assistsByType || {};
   const detailed = pr.goalsDetailed || 0;
 
-  const howBand = (detailed || pr.assists || pr.saves) ? `<section class="sec pf-how" aria-labelledby="pf-how-h">
+  /* WHAT THIS BAND WILL ACTUALLY CONTAIN, worked out before deciding to draw
+     it. The gate used to be `detailed || pr.assists || pr.saves`, and nothing
+     inside the band reads pr.assists: assists appear only as assist TYPES,
+     which is a different record and is empty until somebody says HOW a chance
+     was made. So a player with five assists and no recorded detail rendered
+     the heading, the rail and an empty box - 270px of "How he does it" with
+     nothing under it. A band with nothing to say should not say it. */
+  const howSections = [
+    detailBars('What he strikes it with', BODY_PARTS.map((b) => ({ label: b.label, n: foot[b.key] || 0 }))),
+    detailBars('Where he strikes it from', ZONES.map((z) => ({ label: z.label, n: zone[z.key] || 0 }))),
+    detailBars('What the ball was doing', SITUATIONS.map((x) => ({ label: x.label, n: sit[x.key] || 0 }))),
+    detailBars('How he makes them for others', ASSIST_TYPES.map((a) => ({ label: a.label, n: asType[a.key] || 0 }))),
+  ].filter(Boolean);
+
+  const howBand = (howSections.length || pr.keeperApps) ? `<section class="sec pf-how" aria-labelledby="pf-how-h">
       <div class="wrap">
-        ${rail(6, 'The detail', detailed ? `${detailed} of ${pr.goals} goals recorded in full` : 'from the match records')}
+        ${rail(RAIL.next(), 'The detail', detailed ? `${detailed} of ${pr.goals} goals recorded in full` : 'from the match records')}
         <h2 class="h2 rv" id="pf-how-h">How he <span class="volt">does it.</span></h2>
         <div class="pf-how__grid rv">
-          ${detailBars('What he strikes it with', BODY_PARTS.map((b) => ({ label: b.label, n: foot[b.key] || 0 })))}
-          ${detailBars('Where he strikes it from', ZONES.map((z) => ({ label: z.label, n: zone[z.key] || 0 })))}
-          ${detailBars('What the ball was doing', SITUATIONS.map((x) => ({ label: x.label, n: sit[x.key] || 0 })))}
-          ${detailBars('How he makes them for others', ASSIST_TYPES.map((a) => ({ label: a.label, n: asType[a.key] || 0 })))}
+          ${howSections.join('\n          ')}
           ${pr.keeperApps ? `<section class="pf-sub">
             <h3 class="pf-how__h">In goal</h3>
             <ul class="pf-how__keeper">
@@ -854,8 +902,8 @@ export function playerPage(p, d) {
 
   return {
 
-    body: siteHeader('/squad.html') + hero + seasonBand + versusBand
-      + pitchBand + howBand + shotsBand + honoursBand + ctaBand,
+    body: numberRails(siteHeader('/squad.html') + hero + seasonBand + versusBand
+      + pitchBand + howBand + shotsBand + honoursBand + ctaBand),
     bodyClass: 'is-home is-sub is-player',
     css: 'home.css',
     shell: 'home',

@@ -73,11 +73,39 @@ const rail = (n, label) => `<div class="xrail" aria-hidden="true">
    carries a `match` fragment, because the same club appears under more than
    one name across the records ("BPR FC" holds the badge, the league table
    calls them "BPR Men's"). Exact-key lookup alone drops those badges. */
+/* A club is written differently on a team sheet than in the badge registry,
+   and it is always the SAME club: "Sutton Knights B" and "Sutton Knights",
+   "Barking Mad" and "Barking Mad FC", "Woking Veterans Sundays" and "Woking
+   Vets FC". Seven of the eight clubs with no badge on the site had one sitting
+   in assets/badge/ the whole time, filed under the other spelling.
+
+   So a club name is reduced to the part that identifies the CLUB: the legal
+   suffix, the team qualifier and the competition-day noise come off. Matching
+   is on EQUALITY of the reduced forms, never on one containing the other,
+   because a badge on the wrong club is worse than no badge at all. */
+const clubKey = (name) => String(name || '')
+  .toLowerCase()
+  .replace(/[’']/g, '')
+  .replace(/\b(fc|afc|cf)\b/g, ' ')
+  .replace(/\b(1st|2nd|3rd|first|second|third)\s*(team|xi)?\b/g, ' ')
+  .replace(/\b(reserves?|vets|veterans|seniors|mens|ladies|womens|youth)\b/g, ' ')
+  .replace(/\b(sunday|sundays|saturday|saturdays)\b/g, ' ')
+  .replace(/\b[abc]\b\s*$/, ' ')
+  .replace(/[^a-z0-9]+/g, ' ')
+  .trim();
+
 export function oppBadge(name, badges, w, h, cls = '') {
   let rec = badges?.[name];
   if (!rec && badges) {
     const needle = String(name || '').toLowerCase();
     rec = Object.values(badges).find((r) => r && r.match && needle.includes(String(r.match).toLowerCase()));
+  }
+  if (!rec && badges) {
+    const key = clubKey(name);
+    if (key) {
+      const hit = Object.entries(badges).find(([club]) => clubKey(club) === key);
+      rec = hit && hit[1];
+    }
   }
   const src = typeof rec === 'string' ? rec : rec?.src;
   if (!src) return clubCrest(name, badges, cls);

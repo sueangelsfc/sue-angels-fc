@@ -232,7 +232,15 @@ body{position: relative;
 .sec.sec--cta{background: transparent;}
 
 .tsw{display: none !important;}
-img{max-width: 100%; display: block;}
+/* `height: auto` is not cosmetic. The width and height ATTRIBUTES on an
+   <img> are presentational hints, so an image with width="480" height="480"
+   and a CSS width but no CSS height renders 480px tall, and an explicit
+   height makes `aspect-ratio` inert. That is what turned the player profile's
+   gallery band into a column of 480px boxes at 103px wide.
+
+   sa.css has carried this reset since the beginning; home.css never did, and
+   home.css is what every rebuilt page wears. */
+img{max-width: 100%; height: auto; display: block;}
 a{color: inherit; text-decoration: none;}
 b{font-weight: 700;}
 ::selection{background: var(--volt); color: var(--navy);}

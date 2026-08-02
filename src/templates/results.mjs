@@ -225,10 +225,32 @@ function matchesPage(d, mode) {
   /* ================= 02 THE MATCHES =================
      Every filter is a jump link until the script promotes it, and every card
      ships visible, so a blocked script leaves the full list in date order. */
+  /* PLAYED, WAITING FOR A SCORE.
+     A fixture whose date has been and gone is not upcoming any more, and with
+     no score on it, it is not a result either: it used to leave the website
+     entirely the morning after the match and stay gone until somebody opened
+     the panel. It sits at the top of the results now, saying plainly that the
+     scoreline has not been entered rather than pretending the game did not
+     happen. It counts towards nothing: every figure on this site is derived
+     from played matches, and this is not one. */
+  const awaiting = d.awaiting || [];
+  const awaitingBand = awaiting.length ? `<section class="sec mt-awaiting" aria-labelledby="mt-aw-h">
+      <div class="wrap">
+        ${rail(2, 'Just played', `${awaiting.length} awaiting a score`)}
+        <h2 class="h2 rv" id="mt-aw-h">Played, not yet <span class="volt">counted.</span></h2>
+        <p class="mt-lede rv">${awaiting.length === 1 ? 'This match has' : 'These matches have'} been
+          played and the scoreline has not been entered yet. Nothing on the site counts
+          ${awaiting.length === 1 ? 'it' : 'them'} until it is.</p>
+        <ul class="mt-grid rv">
+          ${awaiting.map((m, i) => card(m, i)).join('\n          ')}
+        </ul>
+      </div>
+    </section>` : '';
+
   const listBand = `<section class="sec mt-list" id="matches" aria-labelledby="mt-list-h">
       <div class="wrap">
         <!-- Follows the season bar: the grid below it is filtered. -->
-        ${rail(2, 'Every match', `${VIEWS[DEFAULT].matches.length} played`)
+        ${rail(awaiting.length ? 3 : 2, 'Every match', `${VIEWS[DEFAULT].matches.length} played`)
     .replace('<span class="xrail__r">', '<span class="xrail__r" data-played-count>')}
         <h2 class="h2 rv" id="mt-list-h">Match by <span class="volt">match.</span></h2>
 
@@ -384,7 +406,7 @@ function matchesPage(d, mode) {
 
   return {
     body: siteHeader(isFixtures ? '/fixtures.html' : '/results.html')
-      + (isFixtures ? fixHero + fixBand : hero + recordBand + listBand)
+      + (isFixtures ? fixHero + fixBand : hero + recordBand + awaitingBand + listBand)
       + ctaBand,
     bodyClass: `is-home is-sub is-matches${isFixtures ? ' is-fixtures' : ''}`,
     css: 'home.css',

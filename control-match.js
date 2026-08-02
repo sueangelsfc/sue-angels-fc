@@ -443,6 +443,12 @@
      the one place in football where everybody reads the short form anyway; it
      carries the full name as its title. */
   var POSITIONS = SEED.positions || [];
+  var ROLES = SEED.roles || [];
+  var ROLE_NAME = {};
+  ROLES.forEach(function (r) { ROLE_NAME[r.code] = r.name; });
+  function rolesFor(code) {
+    return ROLES.filter(function (r) { return (r.for || []).indexOf(code) !== -1; });
+  }
   var PITCH_XY = {};
   var POS_NAME = {};
   /* Which band a code belongs to. The formation used to be worked out by
@@ -510,8 +516,10 @@
         var s = spot.p;
         var xy = [spot.x, spot.y];
         var nm = nameOf(s.num).split(' ').slice(-1)[0];
+        var where = POS_NAME[s.positions[0]] || s.positions[0];
+        if (s.role && ROLE_NAME[s.role]) where += ', played as a ' + ROLE_NAME[s.role].toLowerCase();
         return '<span class="pitch__p" style="left:' + xy[0] + '%;top:' + xy[1] + '%" title="' +
-          esc(nameOf(s.num) + ', ' + (POS_NAME[s.positions[0]] || s.positions[0])) + '">' +
+          esc(nameOf(s.num) + ', ' + where) + '">' +
           '<b>' + esc(s.positions[0]) + '</b><i>' + esc(nm) + '</i></span>';
       }).join('') : '<p class="pitch__empty">Give the starters a position and the shape appears here</p>') +
       '</div>' +
@@ -606,6 +614,18 @@
 
      The chosen list and the position grid used to be two separate blocks
      naming the same eleven people twice. One list, carrying both. */
+  function roleSelect(num, code, chosen) {
+    var options = rolesFor(code);
+    if (!options.length) return '';
+    return '<select class="select xi__role" data-role-num="' + num +
+      '" aria-label="What ' + esc(nameOf(num)) + ' was asked to do">' +
+      '<option value="">Played as (optional)</option>' +
+      options.map(function (r) {
+        return '<option value="' + r.code + '"' + (r.code === chosen ? ' selected' : '') +
+          ' title="' + esc(r.note || '') + '">' + esc(r.name) + '</option>';
+      }).join('') + '</select>';
+  }
+
   function xiRows(starters) {
     if (!starters.length) {
       return '<p class="me__none">Nobody picked yet. Choose the starting eleven above.</p>';
@@ -618,26 +638,21 @@
         '<select class="select xi__pos" data-pos-num="' + st.num +
           '" aria-label="Where ' + esc(nameOf(st.num)) + ' played">' +
           '<option value="">Where did he play</option>' +
-          /* Places first, then the roles played from them. A manager filling
-             in a team sheet wants the shape before the instructions, and
-             "False nine" sitting between "Centre forward" and "Striker" as
-             though it were a third place on the pitch is what makes a long
-             list feel arbitrary. */
-          ['gk', 'def', 'mid', 'fwd'].reduce(function (out, g) {
-            var label = { gk: 'In goal', def: 'Defence', mid: 'Midfield', fwd: 'Attack' }[g];
-            [false, true].forEach(function (wantRole) {
-              var inGroup = POSITIONS.filter(function (p) {
-                return p.group === g && !!p.role === wantRole;
-              });
-              if (!inGroup.length) return;
-              out.push('<optgroup label="' + label + (wantRole ? ', played as' : '') + '">' +
-                inGroup.map(function (p) {
-                  return '<option value="' + p.code + '"' + (p.code === code ? ' selected' : '') +
-                    '>' + esc(p.name) + '</option>';
-                }).join('') + '</optgroup>');
-            });
-            return out;
-          }, []).join('') + '</select>' +
+          ['gk', 'def', 'mid', 'fwd'].map(function (g) {
+            var inGroup = POSITIONS.filter(function (p) { return p.group === g; });
+            if (!inGroup.length) return '';
+            return '<optgroup label="' +
+              ({ gk: 'In goal', def: 'Defence', mid: 'Midfield', fwd: 'Attack' })[g] + '">' +
+              inGroup.map(function (p) {
+                return '<option value="' + p.code + '"' + (p.code === code ? ' selected' : '') +
+                  '>' + esc(p.name) + '</option>';
+              }).join('') + '</optgroup>';
+          }).join('') + '</select>' +
+        /* And what he was asked to do there. Only ever the roles that attach
+           to the position he is standing in, so nobody is asked whether their
+           left back was a poacher. Hidden entirely until a position is chosen,
+           because a role with nowhere to attach is a question with no answer. */
+        roleSelect(st.num, code, st.role) +
         '<button type="button" class="picked__x" data-drop="starters" data-i="' + i +
           '" aria-label="Take ' + esc(nameOf(st.num)) + ' out of the eleven">&times;</button>' +
       '</div>';
@@ -796,6 +811,14 @@
           : c.xi ? 'The team sheet names ' + say(c.xi) + ' of the starting eleven.' : '';
       var line = (shape + (c.captain ? ' ' + c.captain + ' wore the armband.' : '')).trim();
       if (line) paras.push(line);
+      /* And what anybody was asked to do, where somebody said. Only the roles
+         actually set, because a list of eleven default instructions is not
+         information. */
+      if (c.roles && c.roles.length) {
+        paras.push(c.roles.map(function (r) {
+          return r.name + ' played as ' + (/^[aeiou]/i.test(r.role) ? 'an ' : 'a ') + r.role.toLowerCase();
+        }).join(', ') + '.');
+      }
     }
 
     /* ---- The goals, in the order they went in where that is recorded ----
@@ -941,11 +964,17 @@
         && Number(g.minute) === Number(a.minute); });
     });
     var posByNum = {};
-    (d.starters || []).forEach(function (st) { posByNum[st.num] = (st.positions || [])[0] || ''; });
+    var roleByNum = {};
+    (d.starters || []).forEach(function (st) {
+      posByNum[st.num] = (st.positions || [])[0] || '';
+      if (st.role) roleByNum[st.num] = st.role;
+    });
 
     function startersNow() {
       return counts.starters.map(function (n) {
-        return { num: n, positions: posByNum[n] ? [posByNum[n]] : [] };
+        var out = { num: n, positions: posByNum[n] ? [posByNum[n]] : [] };
+        if (roleByNum[n]) out.role = roleByNum[n];
+        return out;
       });
     }
 
@@ -1256,6 +1285,8 @@
           theirGoals: themG === '' ? null : Number(themG),
           formation: detectFormation(startersNow()),
           xi: counts.starters.length,
+          roles: startersNow().filter(function (st) { return st.role && ROLE_NAME[st.role]; })
+            .map(function (st) { return { name: nameOf(st.num), role: ROLE_NAME[st.role] }; }),
           captain: captNum === '' ? '' : nameOf(Number(captNum)),
           motm: motmNum === '' ? '' : nameOf(Number(motmNum)),
           goals: goals.map(function (g) {
@@ -1422,7 +1453,22 @@
         return;
       }
       if (e.target.matches('[data-pos-num]')) {
-        posByNum[Number(e.target.getAttribute('data-pos-num'))] = e.target.value;
+        var pnum = Number(e.target.getAttribute('data-pos-num'));
+        posByNum[pnum] = e.target.value;
+        /* A role belongs to a position. Move somebody from striker to left
+           back and "False nine" has to go with the striker, or the record says
+           a full back was a false nine. */
+        if (roleByNum[pnum] && !rolesFor(e.target.value).some(function (r) {
+          return r.code === roleByNum[pnum];
+        })) delete roleByNum[pnum];
+        /* Redraw the whole team sheet, not just the pitch: the role dropdown
+           beside this position has to be rebuilt for the new one. */
+        paintXI();
+        return;
+      }
+      if (e.target.matches('[data-role-num]')) {
+        var rnum = Number(e.target.getAttribute('data-role-num'));
+        if (e.target.value) roleByNum[rnum] = e.target.value; else delete roleByNum[rnum];
         $('[data-pitch]', back).innerHTML = pitchSvg(startersNow());
         return;
       }

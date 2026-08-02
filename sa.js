@@ -2058,8 +2058,11 @@ window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"
   if (choice === 'granted') startAnalytics();
   /* Nothing to ask about if the club has configured no analytics at all. */
   else if (!choice && (window.SA_GA_ID || window.SA_META_PIXEL_ID)) {
-    /* After the boot screen, so it never lands on top of the arrival. */
-    if (document.getElementById('sa-boot')) setTimeout(banner, 11000);
+    /* After the boot screen, so it never lands on top of the arrival. The
+       number tracks the boot screen's own hold, which is three seconds now
+       rather than nine and a half; a stale eleven here would have left the
+       banner sitting eight seconds after the site had finished arriving. */
+    if (document.getElementById('sa-boot')) setTimeout(banner, 4200);
     else banner();
   }
 })();

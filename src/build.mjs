@@ -40,7 +40,7 @@ import { matchPage, articlePage, albumPage } from './templates/detail.mjs';
 import { playerPage } from './templates/player.mjs';
 import { control } from './templates/control.mjs';
 import { VOCAB } from './lib/football.mjs';
-import { POSITION_VOCAB } from './lib/positions.mjs';
+import { POSITION_VOCAB, ROLE_VOCAB } from './lib/positions.mjs';
 
 const ROOT = process.cwd();
 const CHECK = process.argv.includes('--check');
@@ -218,6 +218,11 @@ const adminSeed = {
      panel cannot offer a position the player pages have no name for, which is
      how RDM and LAM ended up in the archive as bare codes. */
   positions: POSITION_VOCAB,
+  /* What a player can be ASKED to do from a position, and which positions each
+     one attaches to. A role is extra information about a place, never a
+     replacement for it, so the team sheet asks for both and everything derived
+     from where somebody stood is untouched by it. */
+  roles: ROLE_VOCAB,
 };
 /* The seed is DATA, and it grew: the squad, every match's fixture fields, the
    known clubs and competitions. Inlined it pushed control.js past its budget

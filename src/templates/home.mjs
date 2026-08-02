@@ -759,7 +759,7 @@ export function home(d) {
       #sa-boot{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;
         background:#090B0D;opacity:1;transition:opacity .9s ease;will-change:opacity}
       #sa-boot .sa-crest{position:relative;width:116px;height:144px}
-      #sa-boot .sa-crest.is-beating{animation:saBeat 1.7s ease-in-out infinite}
+      #sa-boot .sa-crest.is-beating{animation:saBeat .75s ease-in-out infinite}
       #sa-boot .sa-shard{position:absolute;top:0;left:0;width:116px;height:144px;will-change:transform,opacity}
       #sa-boot.sa-boot--hide{opacity:0;pointer-events:none}
       @media (prefers-reduced-motion: reduce){#sa-boot{transition:none}}
@@ -789,11 +789,20 @@ export function home(d) {
         }
         crest.appendChild(img);
       }}
-      /* The badge breathes BEATS times before the site appears. Derived from
-         the animation rather than typed in: the shards finish assembling at
-         maxEnd, the heartbeat is BEAT seconds a cycle, so the hold is however
-         long that adds up to. Change either number and the timing follows. */
-      var BEAT=1.7, BEATS=4.5, beatStart=Math.max(maxEnd-0.5,0);
+      /* THREE SECONDS, END TO END. The badge assembles, then beats for
+         whatever is left of the three, and the site appears.
+
+         It used to hold for nine and a half. That was arrived at honestly
+         (4.5 breaths at 1.7 seconds each, derived from the animation rather
+         than typed in) and it was still far too long: nine seconds is a
+         website deciding it is more interesting than the thing somebody came
+         for, and everybody after the first visit is simply waiting.
+
+         BEAT is 0.75s, which is eighty a minute and reads as a pulse rather
+         than a slow breath, so the shorter hold still gets two or three of
+         them. TOTAL is the number to change; everything else follows it. */
+      var TOTAL=3, BEAT=0.75, beatStart=Math.min(Math.max(maxEnd-0.5,0), TOTAL-BEAT*2);
+      var BEATS=Math.max(2,(TOTAL-beatStart)/BEAT);
       if(!reduce){
         requestAnimationFrame(function(){ requestAnimationFrame(function(){
           var sh=crest.querySelectorAll('.sa-shard');
@@ -803,7 +812,9 @@ export function home(d) {
       }
       /* Reduced motion gets neither the assembly nor the wait for it. */
       var MIN=reduce?280:Math.round((beatStart+BEAT*BEATS)*1000);
-      var MAX=MIN+2500, start=Date.now(), done=false;
+      /* And a ceiling on waiting for the page itself. Three seconds of badge
+         plus two and a half of hoping is five and a half seconds of nothing. */
+      var MAX=MIN+1200, start=Date.now(), done=false;
       function hide(){
         if(done) return; done=true;
         boot.classList.add('sa-boot--hide');

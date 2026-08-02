@@ -388,7 +388,9 @@ body:has(.cp) .atmos__blob { animation: none; }
 .xi__name { flex: 1; min-width: 0; font-size: var(--step--1); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Wide enough for a full position name. It was 108px, which fitted "LCB"
    and nothing a person would say out loud. */
-.xi__row .select { flex: 0 1 200px; min-width: 0; padding-block: 5px; }
+.xi__row .select { flex: 0 1 190px; min-width: 0; padding-block: 5px; }
+/* The role sits after the position and reads as secondary, because it is. */
+.xi__row .xi__role { flex: 0 1 170px; color: var(--text-muted); }
 @media (max-width: 560px) { .xi__row { flex-wrap: wrap; } .xi__row .select { flex: 1 1 100%; } }
 .xi__row .picked__x { flex: 0 0 auto; width: 24px; height: 24px; background: var(--surface-inset); color: var(--text-subtle); }
 

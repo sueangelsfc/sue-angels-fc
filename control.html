@@ -199,6 +199,10 @@
         <h1 class="cp-top__title" data-cp-title>Dashboard</h1>
         <div class="cp-top__actions">
           <span class="badge badge--neutral" data-conn>Connecting</span>
+          <!-- Saving writes to the database; the website is generated from it.
+               This is the step that joins the two, and without it every edit
+               made here sits in Supabase and the site never changes. -->
+          <button class="btn btn--primary btn--sm" type="button" id="cp-publish">Publish to site</button>
           <a class="btn btn--ghost btn--sm" href="/" target="_blank" rel="noopener">View site <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 4h6v6M20 4l-8.5 8.5"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg></a>
         </div>
       </header>
@@ -312,6 +316,6 @@
 
   <div class="toasts" data-toasts role="region" aria-label="Notifications" aria-live="polite"></div>
 <script src="/control-seed.js?v=c0f081f6"></script>
-<script src="/control.js?v=2ee7f47f" defer></script>
+<script src="/control.js?v=2d717027" defer></script>
 </body>
 </html>

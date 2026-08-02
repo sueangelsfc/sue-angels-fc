@@ -137,6 +137,10 @@ export function control() {
         <h1 class="cp-top__title" data-cp-title>Dashboard</h1>
         <div class="cp-top__actions">
           <span class="badge badge--neutral" data-conn>Connecting</span>
+          <!-- Saving writes to the database; the website is generated from it.
+               This is the step that joins the two, and without it every edit
+               made here sits in Supabase and the site never changes. -->
+          <button class="btn btn--primary btn--sm" type="button" id="cp-publish">Publish to site</button>
           <a class="btn btn--ghost btn--sm" href="/" target="_blank" rel="noopener">View site ${icon('external')}</a>
         </div>
       </header>

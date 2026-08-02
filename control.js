@@ -1644,6 +1644,43 @@ window.CP = (function () {
   $$('.cp-nav__item').forEach(function (b) {
     b.addEventListener('click', function () { show(b.getAttribute('data-module')); });
   });
+  /* ---- Publish -------------------------------------------------------
+     Everything in this panel writes to the database. The website is
+     generated from a snapshot of it, so until this is pressed an edit is
+     saved but not published. The confirm says exactly that, because
+     "Publish" meaning "the thing you already saved now becomes visible" is
+     not obvious from the word alone. */
+  var pub = $('#cp-publish');
+  if (pub) pub.addEventListener('click', function () {
+    if (!guard()) return;
+    confirmAction({
+      title: 'Publish to the website?',
+      body: 'This rebuilds the site from the database as it is right now. '
+        + 'Everything saved in this panel goes live; anything you have not saved does not.',
+      detail: 'It takes a couple of minutes. The site stays up throughout, and if the '
+        + 'build fails the current site stays exactly as it is.',
+      confirmLabel: 'Publish',
+    }).then(function (yes) {
+      if (!yes) return;
+      pub.setAttribute('data-loading', 'true');
+      pub.textContent = 'Publishing…';
+      var tok = CP.state.session && CP.state.session.access_token;
+      fetch('/api/publish', { method: 'POST', headers: { Authorization: 'Bearer ' + tok } })
+        .then(function (r) { return r.json().catch(function () { return {}; }); })
+        .then(function (j) {
+          pub.removeAttribute('data-loading');
+          pub.textContent = 'Publish to site';
+          if (j && j.ok) toast(j.message || 'Publishing.', 'success');
+          else toast((j && j.error) || 'Could not publish.', 'error');
+        })
+        .catch(function () {
+          pub.removeAttribute('data-loading');
+          pub.textContent = 'Publish to site';
+          toast('Could not reach the server.', 'error');
+        });
+    });
+  });
+
   var menu = $('#cp-menu');
   if (menu) menu.addEventListener('click', function () {
     var side = $('.cp-side');

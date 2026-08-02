@@ -100,7 +100,7 @@ export function control() {
 
   <!-- ============ APP ============ -->
   <div class="cp" id="cp-app" hidden>
-    <aside class="cp-side">
+    <aside class="cp-side" id="cp-sections">
       <a class="cp-side__brand" href="/">
         <span class="cp-side__crest">${crest()}</span>
         <span>
@@ -125,8 +125,15 @@ export function control() {
 
     <main class="cp-main">
       <header class="cp-top">
-        <button class="icon-btn" type="button" id="cp-menu" aria-label="Show sections"
-                aria-expanded="false">${icon('chevron')}</button>
+        <!-- A labelled hamburger. This was a chevron rotated 180 degrees, which
+             reads as a back arrow, so on any window under 900px the sidebar was
+             off-screen and the one control that opened it looked like it went
+             somewhere else. The panel appeared to be a dashboard with no
+             navigation at all. -->
+        <button class="cp-menubtn" type="button" id="cp-menu" aria-label="Show sections"
+                aria-expanded="false" aria-controls="cp-sections">
+          ${icon('menu')}<span>Sections</span>
+        </button>
         <h1 class="cp-top__title" data-cp-title>Dashboard</h1>
         <div class="cp-top__actions">
           <span class="badge badge--neutral" data-conn>Connecting</span>

@@ -127,7 +127,6 @@
 .cp-top__title { font-size: var(--step-2); margin-inline-end: auto; }
 .cp-top__actions { display: flex; align-items: center; gap: var(--space-2); }
 @media (min-width: 900px) { #cp-menu { display: none; } }
-#cp-menu .ico { transform: rotate(180deg); }
 
 .cp-body { padding: var(--space-6) var(--space-5); flex: 1; min-width: 0; }
 .cp-panel[hidden] { display: none; }
@@ -163,3 +162,17 @@ body:has(.cp) .atmos__blob { animation: none; }
 .pick.is-on{background: rgb(var(--brand-rgb) / 0.16); border-color: var(--border-brand);
   color: var(--brand-text); font-weight: var(--weight-semi);}
 .pick b{font-weight: var(--weight-bold);}
+
+/* The sidebar toggle. Was an unlabelled chevron rotated to point left, which
+   reads as "back": on a window under 900px the sidebar is a drawer and this
+   is the only way to reach it, so it has to look like a menu and say so. */
+.cp-menubtn{display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border); border-radius: var(--radius-pill);
+  background: var(--surface-inset); color: var(--text);
+  font-size: var(--step--2); font-weight: var(--weight-semi); cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;}
+.cp-menubtn:hover{border-color: var(--border-strong);}
+.cp-menubtn[aria-expanded="true"]{background: rgb(var(--brand-rgb) / 0.16);
+  border-color: var(--border-brand); color: var(--brand-text);}
+@media (min-width: 900px){ .cp-menubtn{display: none;} }

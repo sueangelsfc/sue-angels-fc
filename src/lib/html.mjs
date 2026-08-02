@@ -46,6 +46,7 @@ const ICONS = {
   star: '<path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2l-6.1 3.4 1.4-6.8L2.2 9.1l6.9-.8L12 2z" fill="currentColor" stroke="none"/>',
   external: '<path d="M14 4h6v6M20 4l-8.5 8.5"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
   tiktok: '<path d="M15 3v9.6a3.4 3.4 0 1 1-2.6-3.3" /><path d="M15 6.2A4.6 4.6 0 0 0 19.4 9"/>',
+  menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
 };
 
 export function icon(name, cls = '') {

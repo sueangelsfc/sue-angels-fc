@@ -182,3 +182,7 @@ html.js .mt[hidden]{display: none;}
 .mt.is-next .mt__card{border-color: rgba(var(--volt-rgb), 0.45);
   background: linear-gradient(158deg, rgba(var(--volt-rgb), 0.12), var(--slab-top) 62%);
   box-shadow: 0 0 0 1px rgba(var(--volt-rgb), 0.12), 0 24px 54px -34px rgba(0, 0, 0, 0.9);}
+
+/* A season with nothing played yet says so rather than drawing an empty bar. */
+.mt-rec__none{margin: clamp(14px, 2vw, 20px) 0 0; max-width: 56ch;
+  font-size: 15px; line-height: 1.7; color: var(--ink-3);}

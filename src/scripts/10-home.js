@@ -1184,20 +1184,26 @@
        panel per view and this shows the matching one, so the two halves of
        the page agree. The rail's count of players used moves with it. */
     var leaderBand = $('[data-leader-views]');
-    var showLeaders = function (view) {
-      if (!leaderBand || !view) return;
-      var panels = $$('[data-leader-view]', leaderBand);
+    var shareBand = $('[data-share-views]');
+    var heroSeason = $('[data-hero-season]');
+    var heroTally = $('[data-hero-tally]');
+
+    /* Show the one panel belonging to this view and hide the rest. A panel
+       first revealed here never met the scroll observer, so it would sit at
+       the reveal's starting opacity forever: is-in is what stops that. */
+    var showPanel = function (band, attrName, view) {
+      if (!band || !view) return null;
       var live = null;
-      panels.forEach(function (p) {
-        var on = p.getAttribute('data-leader-view') === view;
+      $$('[' + attrName + ']', band).forEach(function (p) {
+        var on = p.getAttribute(attrName) === view;
         p.hidden = !on;
-        if (on) {
-          live = p;
-          /* A panel first revealed here never met the scroll observer, so it
-             would sit at the reveal's starting opacity forever. */
-          p.classList.add('is-in');
-        }
+        if (on) { live = p; p.classList.add('is-in'); }
       });
+      return live;
+    };
+
+    var showLeaders = function (view) {
+      var live = showPanel(leaderBand, 'data-leader-view', view);
       if (!live) return;
       var head = $('[data-leader-heading]', leaderBand);
       if (head) head.textContent = live.getAttribute('data-heading') || '';
@@ -1206,6 +1212,27 @@
         var n = live.getAttribute('data-players-used') || '0';
         used.textContent = n + ' player' + (n === '1' ? '' : 's') + ' used';
       }
+    };
+
+    /* "Who scored them" counted every goal the club has ever scored, under a
+       heading sitting directly below tabs that said 25/26 and 26/27. */
+    var showShare = function (view) {
+      var live = showPanel(shareBand, 'data-share-view', view);
+      if (!live) return;
+      var n = live.getAttribute('data-scorers') || '0';
+      var ref = $('.xrail__r', shareBand);
+      if (ref) ref.textContent = n + ' scorer' + (n === '1' ? '' : 's');
+    };
+
+    /* The hero said "By the numbers · 25/26" over the club's career totals,
+       which is two claims about different things sitting side by side. */
+    var showHero = function (view, label) {
+      if (heroSeason && label) heroSeason.textContent = label;
+      if (!heroTally) return;
+      var raw = heroTally.getAttribute('data-tally-' + view);
+      if (!raw) return;
+      var v = raw.split(',');
+      $$('dd', heroTally).forEach(function (dd, i) { if (v[i] !== undefined) dd.textContent = v[i]; });
     };
 
     seasonTabs.forEach(function (tab) {
@@ -1219,11 +1246,19 @@
           t.classList.toggle('is-on', on);
           t.setAttribute('aria-pressed', on ? 'true' : 'false');
         });
-        showLeaders(tab.getAttribute('data-view'));
+        var view = tab.getAttribute('data-view');
+        showLeaders(view);
+        showShare(view);
+        showHero(view, ($('b', tab) || {}).textContent);
         refresh();
       });
     });
-    if (onDefault) showLeaders(onDefault.getAttribute('data-view'));
+    if (onDefault) {
+      var v0 = onDefault.getAttribute('data-view');
+      showLeaders(v0);
+      showShare(v0);
+      showHero(v0, ($('b', onDefault) || {}).textContent);
+    }
 
     modes.forEach(function (m) {
       m.setAttribute('role', 'button');
@@ -1266,6 +1301,14 @@
 
     groups.forEach(function (g) {
       picked[g.getAttribute('data-filter-group')] = 'all';
+    });
+
+    /* The season bar above this list filters it too, so the page has one
+       season control rather than a tab row and a chip row that could
+       disagree. Every card carries the season it was played in. */
+    document.addEventListener('sa:season', function (e) {
+      picked.season = e.detail.season || 'all';
+      apply();
     });
 
     var apply = function () {
@@ -1657,7 +1700,46 @@
     }
   }
 
+  /* The hero and the position chips describe whatever the tab is showing.
+     They used to be fixed: "The players who won League Ten unbeaten" sat
+     above a 26/27 squad that has not kicked a ball, and the chips added up to
+     twenty-four under a tab reading thirty-four players. */
+  var heroBox = document.querySelector('[data-sq-hero]');
+  function heroFor(view) {
+    if (!heroBox) return;
+    var raw = heroBox.getAttribute('data-hero-' + view);
+    if (!raw) return;
+    var h;
+    try { h = JSON.parse(raw); } catch (e) { return; }
+    var eye = heroBox.querySelector('[data-hero-eyebrow]');
+    var lede = heroBox.querySelector('[data-hero-lede]');
+    if (eye) eye.textContent = h.eyebrow;
+    if (lede) lede.textContent = h.lede;
+    /* "In the first team" is the wrong label for a season that has been
+       played, where the figure is everyone who turned out, including the
+       eleven who have since retired or moved on. The generator works out
+       which of the two it is, because it is the one that knows. */
+    var dt = heroBox.querySelector('[data-hero-dt]');
+    if (dt && h.label) dt.textContent = h.label;
+    var dds = heroBox.querySelectorAll('dd');
+    for (var i = 0; i < dds.length && i < h.tally.length; i++) dds[i].textContent = h.tally[i];
+  }
+
+  function chipsFor(view) {
+    Array.prototype.forEach.call(document.querySelectorAll('.sq-chip'), function (chip) {
+      var n = chip.getAttribute('data-n-' + view);
+      if (n === null) return;
+      var out = chip.querySelector('span');
+      if (out) out.textContent = n;
+      /* A position nobody filled that season is not a filter worth offering.
+         "All" always stays, because it is how you get back. */
+      if (!chip.hasAttribute('data-group-all')) chip.hidden = n === '0';
+    });
+  }
+
   function apply(season, view) {
+    heroFor(view);
+    chipsFor(view);
     cards.forEach(function (card) {
       /* "All seasons" is every player the club has had, not a season to
          match against. */
@@ -1666,6 +1748,13 @@
       card.hidden = !has;
       if (has && view) figures(card, view);
     });
+    /* The band's own rail count. It was fixed at the whole first team while
+       the band beneath it was being filtered by season. */
+    var band = document.querySelector('[data-band-count]');
+    if (band) {
+      var n = document.querySelectorAll('#first-team .pc:not([hidden])').length;
+      band.textContent = n + ' player' + (n === 1 ? '' : 's');
+    }
     /* A position group with nobody left in it should go, not sit there as an
        empty heading with a count of players who are not shown. */
     Array.prototype.forEach.call(document.querySelectorAll('.sq-grp'), function (grp) {
@@ -1689,4 +1778,96 @@
 
   var first = bar.querySelector('[data-season]');
   if (first) apply(first.getAttribute('data-season'), first.getAttribute('data-view'));
+})();
+
+
+/* ==========================================================================
+   SEASON VIEWS, ANYWHERE
+
+   Four pages offer the same choice and the first three each grew their own
+   switcher. This is the one that serves any page: a [data-season-switch] bar
+   of [data-view] buttons showing the matching [data-season-view] panel inside
+   [data-season-views].
+
+   A page adding a season filter now writes no JavaScript at all. The panels
+   all ship in the HTML, so with this blocked the page still shows the season
+   it opened on rather than nothing.
+   ========================================================================== */
+(function () {
+  'use strict';
+  var bars = document.querySelectorAll('[data-season-switch]');
+  if (!bars.length) return;
+
+  Array.prototype.forEach.call(bars, function (bar) {
+    /* The panels belonging to THIS bar: the nearest set that follows it,
+       so a page can carry more than one season filter without them fighting. */
+    var host = bar.parentNode.querySelector('[data-season-views]')
+      || document.querySelector('[data-season-views]');
+    if (!host) return;
+
+    var show = function (view) {
+      Array.prototype.forEach.call(host.querySelectorAll('[data-season-view]'), function (p) {
+        var on = p.getAttribute('data-season-view') === view;
+        p.hidden = !on;
+        /* A panel first revealed here never met the scroll observer, so it
+           would sit at the reveal animation's starting opacity forever. */
+        if (on) {
+          p.classList.add('is-in');
+          Array.prototype.forEach.call(p.querySelectorAll('.rv'), function (el) {
+            el.classList.add('is-in');
+          });
+          /* Count-ups inside a panel that was hidden at first paint never
+             ran either, so they would read nought. */
+          if (window.saTick) {
+            Array.prototype.forEach.call(p.querySelectorAll('[data-count]'), window.saTick);
+          }
+        }
+      });
+    };
+
+    /* Anything else on the page that filters by season listens for this
+       rather than growing a second set of tabs. One control, one answer:
+       the results page swaps its record panel AND filters its match list
+       from the same press. */
+    /* A page header that names a season has to move with the tabs, or it is
+       a caption for whichever one the page happened to open on. Every season
+       word carries data-aw-season and the tallies ride on the list. */
+    var heroFollows = function (btn) {
+      var view = btn.getAttribute('data-view');
+      var label = (btn.querySelector('b') || {}).textContent || '';
+      Array.prototype.forEach.call(document.querySelectorAll('[data-aw-season]'), function (el) {
+        el.textContent = label;
+      });
+      var list = document.querySelector('[data-aw-tally]');
+      if (!list) return;
+      var raw = list.getAttribute('data-t-' + view);
+      if (!raw) return;
+      var v = raw.split(',');
+      Array.prototype.forEach.call(list.querySelectorAll('dd'), function (dd, i) {
+        if (v[i] !== undefined) dd.textContent = v[i];
+      });
+    };
+
+    var announce = function (btn) {
+      document.dispatchEvent(new CustomEvent('sa:season', {
+        detail: { view: btn.getAttribute('data-view'), season: btn.getAttribute('data-season') || '' },
+      }));
+    };
+
+    bar.addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('[data-view]') : null;
+      if (!b) return;
+      Array.prototype.forEach.call(bar.querySelectorAll('[data-view]'), function (x) {
+        var on = x === b;
+        x.classList.toggle('is-on', on);
+        x.setAttribute('aria-pressed', String(on));
+      });
+      show(b.getAttribute('data-view'));
+      heroFollows(b);
+      announce(b);
+    });
+
+    var on = bar.querySelector('[data-view].is-on') || bar.querySelector('[data-view]');
+    if (on) { show(on.getAttribute('data-view')); heroFollows(on); announce(on); }
+  });
 })();

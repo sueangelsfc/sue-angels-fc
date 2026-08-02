@@ -338,3 +338,8 @@ html.js .sq-cards .pc__link:focus-visible{--lift: -5px;}
 }
 .sq-season.is-on span { color: rgb(0 0 0 / 0.62); }
 .sq-season:focus-visible { outline: 2px solid var(--volt, #FF7034); outline-offset: 2px; }
+
+/* A position nobody filled that season is hidden rather than offered as a
+   filter that returns nothing. [hidden] on an inline-flex element needs
+   saying out loud, because the display rule above would otherwise win. */
+.sq-chip[hidden]{display: none;}

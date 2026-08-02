@@ -108,3 +108,48 @@
     box-sizing: content-box;
   }
 }
+
+/* ==========================================================================
+   SEASON TABS
+
+   One bar, used by results, records and awards. The squad and stats pages
+   have their own because their bars carry different information, but all
+   four size the same way: the tabs wrap, they never scroll sideways, and
+   every one of them is a finger-sized target from the start.
+   ========================================================================== */
+.sn-tabs{display: flex; flex-wrap: wrap; gap: 8px;
+  margin: clamp(16px, 2.4vw, 24px) 0 clamp(18px, 2.4vw, 26px);}
+.sn-tab{display: flex; flex-direction: column; gap: 2px;
+  min-height: 48px; padding: 9px 18px;
+  border: 1px solid var(--line-d); border-radius: var(--pillr);
+  background: transparent; color: var(--ink-2);
+  font: inherit; text-align: left; cursor: pointer;
+  transition: background 0.25s, border-color 0.25s, color 0.25s;}
+.sn-tab b{font-family: var(--display); font-weight: 500;
+  font-size: clamp(14px, 1.5vw, 16px); line-height: 1.15; letter-spacing: -0.02em;}
+.sn-tab span{font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.sn-tab:hover{background: rgba(var(--volt-rgb), 0.08);
+  border-color: rgba(var(--volt-rgb), 0.3);}
+.sn-tab.is-on{background: var(--volt); border-color: var(--volt); color: var(--text-on-brand);}
+.sn-tab.is-on span{color: rgba(26, 10, 2, 0.62);}
+.sn-tab:focus-visible{outline: 2px solid var(--volt); outline-offset: 2px;}
+.sn-view[hidden]{display: none;}
+
+/* At phone widths the tabs share the row evenly rather than each sizing to
+   its own text, which left a two-and-a-half tab row with an orphan below. */
+@media (max-width: 560px){
+  .sn-tabs{gap: 6px;}
+  .sn-tab{flex: 1 1 auto; min-width: calc(50% - 3px); padding: 9px 14px;}
+}
+@media (prefers-reduced-motion: reduce){
+  .sn-tab{transition: none;}
+}
+
+/* A season bar is a control for the band under it, not a section of its own.
+   Given `.sec` padding it floated in the middle of a screen of nothing on a
+   phone, a long way from both the hero above and the content it governs. */
+.rc-seasons,
+.aw-seasons{padding-block: 0 !important;}
+.rc-seasons .sn-tabs,
+.aw-seasons .sn-tabs{margin-block: 0 clamp(6px, 1.5vw, 12px);}

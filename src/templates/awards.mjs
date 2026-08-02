@@ -18,6 +18,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
+import { seasonViews, defaultView, seasonBar, seasonPanels, matchNote } from '../lib/seasons.mjs';
 import { teamSummary, playerStats, leaderboard, longestRun, fmtDate, parseDate } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
 
@@ -83,6 +84,8 @@ const POS_LABEL = {
 const readablePos = (p) => POS_LABEL[p] || p || '';
 
 export function awards(d) {
+  const VIEWS = seasonViews(d);
+  const DEFAULT = defaultView(VIEWS);
   const squad = d.squad || [];
   const players = d.players || [];
   const byNum = new Map(squad.map((p) => [p.num, p]));
@@ -94,23 +97,27 @@ export function awards(d) {
   const league = teamSummary(leagueGames);
 
   const recognition = d.recognition || [];
+  /* The unfiltered list. bodyFor() scopes it to whichever season is being
+     looked at; the hero counts across all of them, because a tally in a page
+     header is a claim about the club rather than about one year. */
+  const ALL_RECOGNITION = recognition;
   const potm = recognition.filter((r) => r.type === 'potm');
   const seasonAwards = recognition.filter((r) => r.type === 'season_award');
   const leadership = recognition.find((r) => r.type === 'leadership');
   const captainRecord = recognition.find((r) => r.type === 'club_record' && r.recordKey === 'first_club_captain');
 
   /* ---- Man of the Match, counted from the records ---- */
-  const motmBoard = leaderboard(players, 'motm', 8);
-  const motmTop = motmBoard[0];
+  /* Hero-only: the page header counts across the club, not one season. */
+  const motmTop = leaderboard(players, 'motm', 1)[0];
   const motmMatches = ordered.filter((m) => m.detail && m.detail.motm !== null && m.detail.motm !== undefined);
 
   /* ---- The defensive record ---- */
   const table = d.table || [];
-  const ourRow = table.find((r) => r.us);
+  const heroRow = table.find((r) => r.us);
   const gaSorted = table.slice().sort((a, b) => a.goalsAgainst - b.goalsAgainst);
   const nextBest = gaSorted.find((r) => !r.us);
   const gaMax = gaSorted.length ? gaSorted[gaSorted.length - 1].goalsAgainst : 0;
-  const gaGap = ourRow && nextBest ? nextBest.goalsAgainst - ourRow.goalsAgainst : null;
+  const gaGap = heroRow && nextBest ? nextBest.goalsAgainst - heroRow.goalsAgainst : null;
   const csRun = longestRun(leagueGames, (m) => m.theirGoals === 0, { goalRecordOnly: true });
   const keeper = seasonAwards.find((a) => /defensive/i.test(a.title));
 
@@ -118,10 +125,14 @@ export function awards(d) {
   const hero = `<section class="aw-hero" aria-labelledby="aw-h">
       <div class="wrap aw-hero__grid">
         <div>
-          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Recognition · ${esc(d.currentSeason)}</p>
+          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Recognition ·
+            <span data-aw-season>${esc(VIEWS[DEFAULT].label)}</span></p>
           <h1 class="aw-hero__title" id="aw-h">Awards &amp; honours<span class="volt">.</span></h1>
+          <!-- The season follows the tab. It was written in twice as a fixed
+               claim, sitting above a filter that can show any of them. -->
           <p class="aw-hero__lede">A title is won by a squad, but it is decided in moments by individuals.
-            These are the players the club picked out across ${esc(d.currentSeason)}, month by month,
+            These are the players the club picked out across
+            <span data-aw-season>${esc(VIEWS[DEFAULT].label)}</span>, month by month,
             match by match, and on the night it was all counted up.</p>
           <div class="aw-hero__btns">
             <a class="btn btn--volt" href="#season">The season awards ${ARROW}</a>
@@ -132,14 +143,54 @@ export function awards(d) {
         <div class="aw-tally glassbox">
           <img class="aw-tally__crest" src="${STAR}" alt="${attr(CLUB.name)} crest"
                width="150" height="186" decoding="async" />
-          <dl class="aw-tally__list" aria-label="Awards given in ${attr(d.currentSeason)}">
-            <div><dt>Player of the Month</dt><dd>${esc(potm.length)}</dd></div>
-            <div><dt>End of season awards</dt><dd>${esc(seasonAwards.length)}</dd></div>
-            <div><dt>Man of the Match</dt><dd>${esc(motmMatches.length)}</dd></div>
+          <dl class="aw-tally__list" aria-label="Awards given"
+              data-aw-tally${VIEWS.map((v) => {
+    const r = (d.recognition || []).filter((x) => v.key === 'all' || String(x.season || '') === v.key);
+    const mm = v.matches.filter((m) => m.detail && m.detail.motm !== null && m.detail.motm !== undefined);
+    return ` data-t-${v.id}="${attr([r.filter((x) => x.type === 'potm').length,
+    r.filter((x) => x.type === 'season_award').length, mm.length].join(','))}"`;
+  }).join('')}>
+            <div><dt>Player of the Month</dt><dd>${esc((d.recognition || []).filter((x) => x.type === 'potm' && (VIEWS[DEFAULT].key === 'all' || String(x.season || '') === VIEWS[DEFAULT].key)).length)}</dd></div>
+            <div><dt>End of season awards</dt><dd>${esc((d.recognition || []).filter((x) => x.type === 'season_award' && (VIEWS[DEFAULT].key === 'all' || String(x.season || '') === VIEWS[DEFAULT].key)).length)}</dd></div>
+            <div><dt>Man of the Match</dt><dd>${esc(VIEWS[DEFAULT].matches.filter((m) => m.detail && m.detail.motm !== null && m.detail.motm !== undefined).length)}</dd></div>
           </dl>
         </div>
       </div>
     </section>`;
+
+  /* EVERY AWARD BELONGS TO A SEASON, and this page showed all of them at
+     once under a heading naming one. Recognition records carry their own
+     `season`, and a Player of the Month is worked out from that season's
+     matches, so both scope cleanly. `bodyFor(view)` builds the bands from one
+     season's evidence and the shared switcher shows the matching panel.
+
+     The hero and the closing call to action stay outside it: neither is a
+     claim about a particular season. See src/lib/seasons.mjs. */
+  const bodyFor = (view) => {
+  const scope = view.matches;
+  const seasonLabel = view.key === 'all' ? 'every season' : view.label;
+  const inView = (r) => view.key === 'all' || String(r.season || '') === view.key;
+  const potm = ALL_RECOGNITION.filter((r) => r.type === 'potm').filter(inView);
+  const seasonAwards = ALL_RECOGNITION.filter((r) => r.type === 'season_award').filter(inView);
+
+  /* Worked out from THIS view's matches. Both of these were derived from every
+     match the club has played, so the 26/27 tab printed a Man of the Match
+     board and a defensive record for a season with no results in it. */
+  const ordered = scope.slice().sort((a, b) => (b.iso || '').localeCompare(a.iso || ''));
+  const motmMatches = ordered.filter((m) => m.detail
+    && m.detail.motm !== null && m.detail.motm !== undefined);
+  const motmTally = new Map();
+  motmMatches.forEach((m) => {
+    const n = m.detail.motm;
+    motmTally.set(n, (motmTally.get(n) || 0) + 1);
+  });
+  const motmBoard = [...motmTally.entries()]
+    .map(([num, motm]) => ({ num, motm, name: nameOf(num) }))
+    .sort((a, b) => b.motm - a.motm || a.name.localeCompare(b.name))
+    .slice(0, 8);
+  /* The defensive record is a claim about a completed league season, so it
+     is only made where one has been played. */
+  const ourRow = scope.length ? table.find((r) => r.us) : null;
 
   /* ================= 01 THE DEFENSIVE RECORD =================
      The club's headline claim is that no side in League Ten has conceded
@@ -148,7 +199,7 @@ export function awards(d) {
      compares this season. */
   const gaBand = ourRow ? `<section class="sec aw-def" id="defence" aria-labelledby="aw-def-h">
       <div class="wrap">
-        ${rail(1, 'The record of the season', `${CLUB.division} · ${d.currentSeason}`)}
+        ${rail(1, 'The record of the season', `${CLUB.division} · ${seasonLabel}`)}
         <h2 class="h2 rv" id="aw-def-h">The best defensive record in
           <span class="volt">League Ten history.</span></h2>
         <div class="aw-def__grid rv">
@@ -187,8 +238,8 @@ export function awards(d) {
   const potmCards = potm.map((r, i) => {
     const num = r.playerId;
     const mi = MONTHS.indexOf(r.month);
-    const yr = yearForMonth(mi, r.season || d.currentSeason);
-    const monthGames = mi < 0 ? [] : d.played.filter((m) => {
+    const yr = yearForMonth(mi, r.season || (view.key === 'all' ? d.currentSeason : view.key));
+    const monthGames = mi < 0 ? [] : scope.filter((m) => {
       const dt = parseDate(m.date);
       return dt && dt.getUTCMonth() === mi && (yr === null || dt.getUTCFullYear() === yr);
     });
@@ -211,7 +262,7 @@ export function awards(d) {
               <span class="aw-potm__ribbon">Player of the Month</span>
             </div>
             <div class="aw-potm__body">
-              <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> ${esc(r.month)} · ${esc(r.season || d.currentSeason)}</p>
+              <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> ${esc(r.month)} · ${esc(r.season || seasonLabel)}</p>
               <h3 class="aw-potm__name">${esc(nameOf(num))}</h3>
               ${posOf(num) ? `<p class="aw-potm__pos">${esc(posOf(num))}</p>` : ''}
               ${paras(r.reason)}
@@ -280,7 +331,7 @@ export function awards(d) {
             <span class="aw-ml__who">${esc(nameOf(m.detail.motm))}</span>
           </li>`).join('\n          ')}
         </ol>
-        <p class="aw-motm__note">Drawn from the ${esc(motmMatches.length)} matches of ${esc(d.played.length)} that carry a
+        <p class="aw-motm__note">Drawn from the ${esc(motmMatches.length)} matches of ${esc(scope.length)} that carry a
           Man of the Match in the record.</p>
       </div>
     </section>` : '';
@@ -331,6 +382,9 @@ export function awards(d) {
     </section>` : '';
 
   /* ================= CTA ================= */
+  return { gaBand, potmBand, motmBand, seasonBand, capBand };
+  };
+
   const ctaBand = `<section class="sec sec--cta aw-cta" aria-labelledby="aw-cta-h">
       <div class="wrap">
         <div class="cta2">
@@ -351,8 +405,16 @@ export function awards(d) {
     </section>`;
 
   return {
-    body: siteHeader('/awards.html') + hero + gaBand + potmBand + motmBand
-      + seasonBand + capBand + ctaBand,
+    body: siteHeader('/awards.html') + hero
+      + `<section class="sec aw-seasons"><div class="wrap">${seasonBar(VIEWS, DEFAULT, matchNote, { esc, attr })}</div></section>`
+      + seasonPanels(VIEWS, DEFAULT, (v) => {
+    const b = bodyFor(v);
+    const out = b.gaBand + b.potmBand + b.motmBand + b.seasonBand + b.capBand;
+    return out || `<section class="sec"><div class="wrap"><p class="aw-none">Nothing has been
+        awarded for ${esc(v.label)} yet. Player of the Month, Man of the Match and the end of
+        season awards appear here as the season is recorded in the control panel.</p></div></section>`;
+  }, { attr })
+      + ctaBand,
     bodyClass: 'is-home is-sub is-awards',
     css: 'home.css',
     shell: 'home',

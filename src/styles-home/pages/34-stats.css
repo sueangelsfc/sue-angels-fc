@@ -272,3 +272,8 @@ html.js .st-mode{display: inline-flex;}
   border-color: var(--line-d);}
 .st-lead__amp{color: var(--ink-3); font-weight: 400;}
 .st-lead__name{line-height: 1.25;}
+
+/* One panel per view for "Who scored them", the same shape as the leaders
+   above: the band counted every goal the club has ever scored while the tabs
+   under it said 25/26 and 26/27. */
+.st-share__view[hidden]{display: none;}

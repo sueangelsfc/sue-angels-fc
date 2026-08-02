@@ -340,3 +340,7 @@ html[data-theme="light"] .aw-board__track i{background: rgba(17, 19, 21, 0.34);}
   .aw-potm__shot img,
   .aw-card__shot img{transition: none;}
 }
+
+/* A season with nothing awarded yet says so, rather than showing the page
+   with every band missing and no explanation. */
+.aw-none{max-width: 58ch; font-size: 15px; line-height: 1.72; color: var(--ink-3);}

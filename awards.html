@@ -28,8 +28,8 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preload" href="/assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
 
-<link rel="stylesheet" href="/home.css?v=f3328ca4">
-<link rel="stylesheet" href="/p-awards.css?v=e382073d">
+<link rel="stylesheet" href="/home.css?v=ff6bc1f2">
+<link rel="stylesheet" href="/p-awards.css?v=8ce02a61">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":["SportsTeam","SportsOrganization"],"@id":"https://www.suesangelsfc.co.uk/#club","name":"Sue's Angels FC","alternateName":"The Angels","url":"https://www.suesangelsfc.co.uk/","sport":"Association football","foundingDate":"2025","logo":"https://www.suesangelsfc.co.uk/assets/brand/badge.png","email":"suesangelsfc@gmail.com","inLanguage":"en-GB","memberOf":{"@type":"SportsOrganization","name":"Southern Sunday Football League"},"location":{"@type":"Place","name":"The Reeves Sports Club","address":{"@type":"PostalAddress","streetAddress":"Snakey Lane","addressLocality":"Hanworth","addressRegion":"London","addressCountry":"GB"}},"areaServed":[{"@type":"Place","name":"Kingston upon Thames"},{"@type":"Place","name":"Hanworth"},{"@type":"Place","name":"Sunbury-on-Thames"},{"@type":"Place","name":"Twickenham"},{"@type":"Place","name":"Staines-upon-Thames"}],"sameAs":["https://www.instagram.com/suesangelsfc/","https://www.tiktok.com/@suesangelsfc","https://www.facebook.com/people/Sues-Angels-FC/61576808678302/"]},{"@type":"WebSite","@id":"https://www.suesangelsfc.co.uk/#website","url":"https://www.suesangelsfc.co.uk/","name":"Sue's Angels FC","inLanguage":"en-GB","publisher":{"@id":"https://www.suesangelsfc.co.uk/#club"}},{"@type":"WebPage","@id":"https://www.suesangelsfc.co.uk/awards.html#webpage","url":"https://www.suesangelsfc.co.uk/awards.html","name":"Awards · Sue's Angels FC","description":"Sue's Angels FC awards and honours: Player of the Month, the 25/26 end of season winners, and the best defensive record in League Ten history.","inLanguage":"en-GB","isPartOf":{"@id":"https://www.suesangelsfc.co.uk/#website"},"about":{"@id":"https://www.suesangelsfc.co.uk/#club"},"primaryImageOfPage":{"@type":"ImageObject","url":"https://www.suesangelsfc.co.uk/assets/social/og-awards.jpg"},"breadcrumb":{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.suesangelsfc.co.uk/"},{"@type":"ListItem","position":2,"name":"Awards","item":"https://www.suesangelsfc.co.uk/awards.html"}]}}]}</script>
 </head>
 <body class="is-home is-sub is-awards">
@@ -165,10 +165,14 @@
         </header><section class="aw-hero" aria-labelledby="aw-h">
       <div class="wrap aw-hero__grid">
         <div>
-          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Recognition · 25/26</p>
+          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Recognition ·
+            <span data-aw-season>25/26</span></p>
           <h1 class="aw-hero__title" id="aw-h">Awards &amp; honours<span class="volt">.</span></h1>
+          <!-- The season follows the tab. It was written in twice as a fixed
+               claim, sitting above a filter that can show any of them. -->
           <p class="aw-hero__lede">A title is won by a squad, but it is decided in moments by individuals.
-            These are the players the club picked out across 25/26, month by month,
+            These are the players the club picked out across
+            <span data-aw-season>25/26</span>, month by month,
             match by match, and on the night it was all counted up.</p>
           <div class="aw-hero__btns">
             <a class="btn btn--volt" href="#season">The season awards <span aria-hidden="true">→</span></a>
@@ -179,14 +183,33 @@
         <div class="aw-tally glassbox">
           <img class="aw-tally__crest" src="/assets/badge/sue-angels-badge-star.webp" alt="Sue&#39;s Angels FC crest"
                width="150" height="186" decoding="async" />
-          <dl class="aw-tally__list" aria-label="Awards given in 25/26">
+          <dl class="aw-tally__list" aria-label="Awards given"
+              data-aw-tally data-t-2526="4,7,26" data-t-2627="0,0,0" data-t-all="4,7,26">
             <div><dt>Player of the Month</dt><dd>4</dd></div>
             <div><dt>End of season awards</dt><dd>7</dd></div>
             <div><dt>Man of the Match</dt><dd>26</dd></div>
           </dl>
         </div>
       </div>
-    </section><section class="sec aw-def" id="defence" aria-labelledby="aw-def-h">
+    </section><section class="sec aw-seasons"><div class="wrap"><div class="sn-tabs" data-season-switch role="group" aria-label="Season">
+        <button class="sn-tab is-on" type="button"
+          data-view="2526" data-season="25/26"
+          aria-pressed="true">
+          <b>25/26</b><span>33 matches</span>
+        </button>
+        <button class="sn-tab" type="button"
+          data-view="2627" data-season="26/27"
+          aria-pressed="false">
+          <b>26/27</b><span>Not started</span>
+        </button>
+        <button class="sn-tab" type="button"
+          data-view="all" data-season="all"
+          aria-pressed="false">
+          <b>All seasons</b><span>33 matches</span>
+        </button>
+      </div></div></section><div data-season-views>
+        <div class="sn-view" data-season-view="2526">
+          <section class="sec aw-def" id="defence" aria-labelledby="aw-def-h">
       <div class="wrap">
         <div class="xrail" aria-hidden="true">
       <span class="xrail__l"><span class="xrail__n">01</span><span class="xrail__t">The record of the season</span></span>
@@ -407,22 +430,22 @@
           </li>
           <li class="aw-board__row" style="--i:1">
             <span class="aw-board__pos">2</span>
-            <span class="aw-board__face"><img src="/assets/players/23.webp" alt="" width="34" height="34" loading="lazy" decoding="async" /></span>
-            <span class="aw-board__name">Stewart Luwawa</span>
-            <span class="aw-board__track" aria-hidden="true"><i style="--w:60%"></i></span>
-            <span class="aw-board__n"><b>3</b></span>
-          </li>
-          <li class="aw-board__row" style="--i:2">
-            <span class="aw-board__pos">3</span>
             <span class="aw-board__face"><img src="/assets/players/9.webp" alt="" width="34" height="34" loading="lazy" decoding="async" /></span>
             <span class="aw-board__name">Charlie Dunkley</span>
             <span class="aw-board__track" aria-hidden="true"><i style="--w:60%"></i></span>
             <span class="aw-board__n"><b>3</b></span>
           </li>
-          <li class="aw-board__row" style="--i:3">
-            <span class="aw-board__pos">4</span>
+          <li class="aw-board__row" style="--i:2">
+            <span class="aw-board__pos">3</span>
             <span class="aw-board__face"><img src="/assets/players/10.webp" alt="" width="34" height="34" loading="lazy" decoding="async" /></span>
             <span class="aw-board__name">Jim El Bayati</span>
+            <span class="aw-board__track" aria-hidden="true"><i style="--w:60%"></i></span>
+            <span class="aw-board__n"><b>3</b></span>
+          </li>
+          <li class="aw-board__row" style="--i:3">
+            <span class="aw-board__pos">4</span>
+            <span class="aw-board__face"><img src="/assets/players/23.webp" alt="" width="34" height="34" loading="lazy" decoding="async" /></span>
+            <span class="aw-board__name">Stewart Luwawa</span>
             <span class="aw-board__track" aria-hidden="true"><i style="--w:60%"></i></span>
             <span class="aw-board__n"><b>3</b></span>
           </li>
@@ -449,8 +472,8 @@
           </li>
           <li class="aw-board__row" style="--i:7">
             <span class="aw-board__pos">8</span>
-            <span class="aw-board__face"><img src="/assets/players/28.webp" alt="" width="34" height="34" loading="lazy" decoding="async" /></span>
-            <span class="aw-board__name">Luke Munns</span>
+            <span class="aw-board__face"><img src="/assets/players/18.webp" alt="" width="34" height="34" loading="lazy" decoding="async" /></span>
+            <span class="aw-board__name">Danny Jackson</span>
             <span class="aw-board__track" aria-hidden="true"><i style="--w:20%"></i></span>
             <span class="aw-board__n"><b>1</b></span>
           </li>
@@ -793,7 +816,651 @@
         </ul>
         <p class="aw-caps__note">Jim El Bayati was appointed the first club captain in Sue’s Angels FC history, leading the side through the inaugural 25/26 season.</p>
       </div>
-    </section><section class="sec sec--cta aw-cta" aria-labelledby="aw-cta-h">
+    </section>
+        </div>
+        <div class="sn-view" data-season-view="2627" hidden>
+          <section class="sec aw-caps" aria-labelledby="aw-caps-h">
+      <div class="wrap">
+        <div class="xrail" aria-hidden="true">
+      <span class="xrail__l"><span class="xrail__n">05</span><span class="xrail__t">Leading the side</span></span>
+      <span class="xrail__r">25/26</span>
+    </div>
+        <h2 class="h2 rv" id="aw-caps-h">The <span class="volt">captains.</span></h2>
+        <ul class="aw-caps__grid rv">
+          <li class="aw-cap glassbox" style="--i:0">
+            <span class="aw-cap__face"><img src="/assets/players/10.webp" alt="" width="64" height="64" loading="lazy" decoding="async" /></span>
+            <p class="aw-cap__k">Club captain</p>
+            <p class="aw-cap__name">Jim El Bayati</p>
+            <p class="aw-cap__pos">Right centre back</p>
+          </li>
+          <li class="aw-cap glassbox" style="--i:1">
+            <span class="aw-cap__face"><img src="/assets/players/25.webp" alt="" width="64" height="64" loading="lazy" decoding="async" /></span>
+            <p class="aw-cap__k">Vice-captain</p>
+            <p class="aw-cap__name">Daniel McLane</p>
+            <p class="aw-cap__pos">Centre back</p>
+          </li>
+          <li class="aw-cap glassbox" style="--i:2">
+            <span class="aw-cap__face"><img src="/assets/players/2.webp" alt="" width="64" height="64" loading="lazy" decoding="async" /></span>
+            <p class="aw-cap__k">Third-choice captain</p>
+            <p class="aw-cap__name">Andrew Allen</p>
+            <p class="aw-cap__pos">Left central midfielder</p>
+          </li>
+        </ul>
+        <p class="aw-caps__note">Jim El Bayati was appointed the first club captain in Sue’s Angels FC history, leading the side through the inaugural 25/26 season.</p>
+      </div>
+    </section>
+        </div>
+        <div class="sn-view" data-season-view="all" hidden>
+          <section class="sec aw-def" id="defence" aria-labelledby="aw-def-h">
+      <div class="wrap">
+        <div class="xrail" aria-hidden="true">
+      <span class="xrail__l"><span class="xrail__n">01</span><span class="xrail__t">The record of the season</span></span>
+      <span class="xrail__r">League Ten · every season</span>
+    </div>
+        <h2 class="h2 rv" id="aw-def-h">The best defensive record in
+          <span class="volt">League Ten history.</span></h2>
+        <div class="aw-def__grid rv">
+          <div class="aw-def__lede">
+            <p class="aw-def__hero"><b>11</b><span>goals conceded in 18 league games</span></p>
+            <p>No side has gone through a League Ten season conceding fewer. Thirteen fewer than the next best defence in the division, and less than a goal a game across the whole campaign.</p>
+            <ul class="aw-def__facts">
+              <li><b>0.73</b><span>Conceded a game</span></li>
+              <li><b>7</b><span>League clean sheets</span></li>
+              <li><b>4</b><span>Longest shut-out run</span></li>
+            </ul>
+            <p class="aw-def__note">Luke Munns took the Defensive Record Award
+              for it, though the number belongs to a back line that defended as one all season.</p>
+          </div>
+
+          <figure class="aw-ga">
+            <figcaption class="aw-ga__cap">Goals conceded · League Ten 25/26</figcaption>
+            <ol class="aw-ga__list">
+              <li class="aw-ga__row is-us" style="--i:0">
+                <span class="aw-ga__club">Sue&#39;s Angels</span>
+                <span class="aw-ga__track" aria-hidden="true"><i style="--w:14.1%"></i></span>
+                <span class="aw-ga__v">11</span>
+              </li>
+              <li class="aw-ga__row" style="--i:1">
+                <span class="aw-ga__club">Hillside Elite FC Blues</span>
+                <span class="aw-ga__track" aria-hidden="true"><i style="--w:30.8%"></i></span>
+                <span class="aw-ga__v">24</span>
+              </li>
+              <li class="aw-ga__row" style="--i:2">
+                <span class="aw-ga__club">Brockwell Violets</span>
+                <span class="aw-ga__track" aria-hidden="true"><i style="--w:35.9%"></i></span>
+                <span class="aw-ga__v">28</span>
+              </li>
+              <li class="aw-ga__row" style="--i:3">
+                <span class="aw-ga__club">Sporting Club Catania</span>
+                <span class="aw-ga__track" aria-hidden="true"><i style="--w:44.9%"></i></span>
+                <span class="aw-ga__v">35</span>
+              </li>
+              <li class="aw-ga__row" style="--i:4">
+                <span class="aw-ga__club">Old Freemen&#39;s</span>
+                <span class="aw-ga__track" aria-hidden="true"><i style="--w:46.2%"></i></span>
+                <span class="aw-ga__v">36</span>
+              </li>
+              <li class="aw-ga__row" style="--i:5">
+                <span class="aw-ga__club">Shepherd&#39;s Tuesday</span>
+                <span class="aw-ga__track" aria-hidden="true"><i style="--w:46.2%"></i></span>
+                <span class="aw-ga__v">36</span>
+              </li>
+              <li class="aw-ga__row" style="--i:6">
+                <span class="aw-ga__club">BPR Men&#39;s</span>
+                <span class="aw-ga__track" aria-hidden="true"><i style="--w:48.7%"></i></span>
+                <span class="aw-ga__v">38</span>
+              </li>
+              <li class="aw-ga__row" style="--i:7">
+                <span class="aw-ga__club">Dynamo London</span>
+                <span class="aw-ga__track" aria-hidden="true"><i style="--w:51.3%"></i></span>
+                <span class="aw-ga__v">40</span>
+              </li>
+              <li class="aw-ga__row" style="--i:8">
+                <span class="aw-ga__club">Pure Football</span>
+                <span class="aw-ga__track" aria-hidden="true"><i style="--w:82.1%"></i></span>
+                <span class="aw-ga__v">64</span>
+              </li>
+              <li class="aw-ga__row" style="--i:9">
+                <span class="aw-ga__club">Balham Bteckerz</span>
+                <span class="aw-ga__track" aria-hidden="true"><i style="--w:100%"></i></span>
+                <span class="aw-ga__v">78</span>
+              </li>
+            </ol>
+          </figure>
+        </div>
+      </div>
+    </section><section class="sec aw-potm" id="potm" aria-labelledby="aw-potm-h">
+      <div class="wrap">
+        <div class="xrail" aria-hidden="true">
+      <span class="xrail__l"><span class="xrail__n">02</span><span class="xrail__t">Month by month</span></span>
+      <span class="xrail__r">4 awarded</span>
+    </div>
+        <h2 class="h2 rv" id="aw-potm-h">Player of the <span class="volt">Month.</span></h2>
+        <div class="aw-potm__tabs rv" data-potm>
+          <a class="aw-potm__tab" href="#potm-p-0" data-potm-tab="0">
+            <b>September</b><i>Malachi</i>
+          </a>
+          <a class="aw-potm__tab" href="#potm-p-1" data-potm-tab="1">
+            <b>February</b><i>Daniel</i>
+          </a>
+          <a class="aw-potm__tab" href="#potm-p-2" data-potm-tab="2">
+            <b>March</b><i>Daniel</i>
+          </a>
+          <a class="aw-potm__tab" href="#potm-p-3" data-potm-tab="3">
+            <b>January</b><i>Frazier-Isaías</i>
+          </a>
+        </div>
+        <div class="aw-potm__panels rv">
+          <div class="aw-potm__panel" id="potm-p-0" data-potm-panel="0">
+            <div class="aw-potm__shot">
+              <img src="/assets/players/27.webp" alt="Malachi Mullings"
+                   width="360" height="540" loading="lazy" decoding="async" />
+              <span class="aw-potm__ribbon">Player of the Month</span>
+            </div>
+            <div class="aw-potm__body">
+              <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> September · 25/26</p>
+              <h3 class="aw-potm__name">Malachi Mullings</h3>
+              <p class="aw-potm__pos">Attacking midfielder</p>
+              <p>A huge congratulations to Malachi on being named Sue&#39;s Angels FC Player of the Month for September.</p>
+              <p>Malachi has played a key role in our strong start to the season, consistently making an impact in the final third. With 1 goal and 4 assists in just 3 games, his contributions have been vital to the team&#39;s early success.</p>
+              <p>A well-deserved award and a fantastic way to start the campaign.</p>
+              <p>Congratulations, Malachi!</p>
+              <ul class="aw-potm__facts">
+                <li><b>2</b><span>Games</span></li>
+                <li><b>1</b><span>Goals</span></li>
+                <li><b>3</b><span>Assists</span></li>
+              </ul>
+              <p class="aw-potm__scope">Counted from the 2 matches played in September.</p>
+            </div>
+          </div>
+          <div class="aw-potm__panel" id="potm-p-1" data-potm-panel="1">
+            <div class="aw-potm__shot">
+              <img src="/assets/players/25.webp" alt="Daniel McLane"
+                   width="360" height="540" loading="lazy" decoding="async" />
+              <span class="aw-potm__ribbon">Player of the Month</span>
+            </div>
+            <div class="aw-potm__body">
+              <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> February · 25/26</p>
+              <h3 class="aw-potm__name">Daniel McLane</h3>
+              <p class="aw-potm__pos">Centre back</p>
+              <p>Congratulations to Dan on being named Sue&#39;s Angels FC Player of the Month for February.</p>
+              <p>Dan&#39;s commitment, consistency and performances throughout the month made him a standout contributor for the team. His hard work and dedication have not gone unnoticed, and this award is thoroughly deserved.</p>
+              <p>Congratulations, Dan, and thank you for your efforts throughout February.</p>
+              <ul class="aw-potm__facts">
+                <li><b>3</b><span>Games</span></li>
+                <li><b>1</b><span>Clean sheets</span></li>
+              </ul>
+              <p class="aw-potm__scope">Counted from the 3 matches played in February.</p>
+            </div>
+          </div>
+          <div class="aw-potm__panel" id="potm-p-2" data-potm-panel="2">
+            <div class="aw-potm__shot">
+              <img src="/assets/players/25.webp" alt="Daniel McLane"
+                   width="360" height="540" loading="lazy" decoding="async" />
+              <span class="aw-potm__ribbon">Player of the Month</span>
+            </div>
+            <div class="aw-potm__body">
+              <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> March · 25/26</p>
+              <h3 class="aw-potm__name">Daniel McLane</h3>
+              <p class="aw-potm__pos">Centre back</p>
+              <p>Congratulations to Dan on being named Sue&#39;s Angels FC Player of the Month for March, making it two awards in a row after also winning in February.</p>
+              <p>Dan continued his outstanding season with a series of influential performances from centre-back. Despite playing in defence, he contributed an impressive 4 goals, helped the team keep 3 clean sheets, and picked up a Man of the Match award along the way.</p>
+              <p>His leadership, consistency and quality at both ends of the pitch were key as Sue&#39;s Angels FC went through March unbeaten, making this latest accolade thoroughly deserved.</p>
+              <p>Congratulations, Dan!</p>
+              <ul class="aw-potm__facts">
+                <li><b>5</b><span>Games</span></li>
+                <li><b>4</b><span>Goals</span></li>
+                <li><b>3</b><span>Clean sheets</span></li>
+              </ul>
+              <p class="aw-potm__scope">Counted from the 6 matches played in March.</p>
+            </div>
+          </div>
+          <div class="aw-potm__panel" id="potm-p-3" data-potm-panel="3">
+            <div class="aw-potm__shot">
+              <img src="/assets/players/30.webp" alt="Frazier-Isaías Osunkoya"
+                   width="360" height="540" loading="lazy" decoding="async" />
+              <span class="aw-potm__ribbon">Player of the Month</span>
+            </div>
+            <div class="aw-potm__body">
+              <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> January · 25/26</p>
+              <h3 class="aw-potm__name">Frazier-Isaías Osunkoya</h3>
+              <p class="aw-potm__pos">Right attacking midfielder</p>
+              <p>Congratulations to Fraizer on being named Sue&#39;s Angels FC Player of the Month for January.</p>
+              <p>Fraizer was in outstanding form throughout the month, playing a huge role in the team&#39;s success. In just 4 games, he recorded an incredible 7 goals and 4 assists, consistently delivering when it mattered most.</p>
+              <p>A thoroughly deserved award for a brilliant month.</p>
+              <p>Well done, Fraizer!</p>
+              <ul class="aw-potm__facts">
+                <li><b>3</b><span>Games</span></li>
+                <li><b>6</b><span>Goals</span></li>
+                <li><b>3</b><span>Assists</span></li>
+              </ul>
+              <p class="aw-potm__scope">Counted from the 3 matches played in January.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section><section class="sec aw-motm" id="motm" aria-labelledby="aw-motm-h">
+      <div class="wrap">
+        <div class="xrail" aria-hidden="true">
+      <span class="xrail__l"><span class="xrail__n">03</span><span class="xrail__t">Chosen on the day</span></span>
+      <span class="xrail__r">26 awarded</span>
+    </div>
+        <h2 class="h2 rv" id="aw-motm-h">Most Man of the <span class="volt">Match.</span></h2>
+
+        <div class="aw-top rv">
+          <div class="aw-top__shot">
+            <img src="/assets/players/30.webp" alt="Frazier-Isaías Osunkoya"
+                 width="300" height="450" loading="lazy" decoding="async" />
+          </div>
+          <div class="aw-top__body">
+            <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Most awards · 25/26</p>
+            <p class="aw-top__name">Frazier-Isaías Osunkoya</p>
+            <p class="aw-top__count"><b>5</b><span>Man of the Match awards</span></p>
+            <p class="aw-top__sub">Right attacking midfielder · 31 goals and 13 assists
+              in 25 appearances. No one else was picked out more than
+              three times.</p>
+          </div>
+        </div>
+
+        <ol class="aw-board rv">
+          <li class="aw-board__row is-top" style="--i:0">
+            <span class="aw-board__pos">1</span>
+            <span class="aw-board__face"><img src="/assets/players/30.webp" alt="" width="34" height="34" loading="lazy" decoding="async" /></span>
+            <span class="aw-board__name">Frazier-Isaías Osunkoya</span>
+            <span class="aw-board__track" aria-hidden="true"><i style="--w:100%"></i></span>
+            <span class="aw-board__n"><b>5</b></span>
+          </li>
+          <li class="aw-board__row" style="--i:1">
+            <span class="aw-board__pos">2</span>
+            <span class="aw-board__face"><img src="/assets/players/9.webp" alt="" width="34" height="34" loading="lazy" decoding="async" /></span>
+            <span class="aw-board__name">Charlie Dunkley</span>
+            <span class="aw-board__track" aria-hidden="true"><i style="--w:60%"></i></span>
+            <span class="aw-board__n"><b>3</b></span>
+          </li>
+          <li class="aw-board__row" style="--i:2">
+            <span class="aw-board__pos">3</span>
+            <span class="aw-board__face"><img src="/assets/players/10.webp" alt="" width="34" height="34" loading="lazy" decoding="async" /></span>
+            <span class="aw-board__name">Jim El Bayati</span>
+            <span class="aw-board__track" aria-hidden="true"><i style="--w:60%"></i></span>
+            <span class="aw-board__n"><b>3</b></span>
+          </li>
+          <li class="aw-board__row" style="--i:3">
+            <span class="aw-board__pos">4</span>
+            <span class="aw-board__face"><img src="/assets/players/23.webp" alt="" width="34" height="34" loading="lazy" decoding="async" /></span>
+            <span class="aw-board__name">Stewart Luwawa</span>
+            <span class="aw-board__track" aria-hidden="true"><i style="--w:60%"></i></span>
+            <span class="aw-board__n"><b>3</b></span>
+          </li>
+          <li class="aw-board__row" style="--i:4">
+            <span class="aw-board__pos">5</span>
+            <span class="aw-board__face"><img src="/assets/players/2.webp" alt="" width="34" height="34" loading="lazy" decoding="async" /></span>
+            <span class="aw-board__name">Andrew Allen</span>
+            <span class="aw-board__track" aria-hidden="true"><i style="--w:40%"></i></span>
+            <span class="aw-board__n"><b>2</b></span>
+          </li>
+          <li class="aw-board__row" style="--i:5">
+            <span class="aw-board__pos">6</span>
+            <span class="aw-board__face"><img src="/assets/players/25.webp" alt="" width="34" height="34" loading="lazy" decoding="async" /></span>
+            <span class="aw-board__name">Daniel McLane</span>
+            <span class="aw-board__track" aria-hidden="true"><i style="--w:40%"></i></span>
+            <span class="aw-board__n"><b>2</b></span>
+          </li>
+          <li class="aw-board__row" style="--i:6">
+            <span class="aw-board__pos">7</span>
+            <span class="aw-board__face"><img src="/assets/players/21.webp" alt="" width="34" height="34" loading="lazy" decoding="async" /></span>
+            <span class="aw-board__name">Jon Lloyd</span>
+            <span class="aw-board__track" aria-hidden="true"><i style="--w:40%"></i></span>
+            <span class="aw-board__n"><b>2</b></span>
+          </li>
+          <li class="aw-board__row" style="--i:7">
+            <span class="aw-board__pos">8</span>
+            <span class="aw-board__face"><img src="/assets/players/18.webp" alt="" width="34" height="34" loading="lazy" decoding="async" /></span>
+            <span class="aw-board__name">Danny Jackson</span>
+            <span class="aw-board__track" aria-hidden="true"><i style="--w:20%"></i></span>
+            <span class="aw-board__n"><b>1</b></span>
+          </li>
+        </ol>
+
+        <h3 class="aw-motm__sub rv">Every award, match by match</h3>
+        <ol class="aw-mlist rv">
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/hillside-elite.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Hillside Elite FC Blues</span>
+            <span class="aw-ml__score">2-0</span>
+            <span class="aw-ml__date">31 May 2026</span>
+            <span class="aw-ml__face"><img src="/assets/players/10.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Jim El Bayati</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/bpr-fc.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">BPR Men&#39;s</span>
+            <span class="aw-ml__score">4-2</span>
+            <span class="aw-ml__date">24 May 2026</span>
+            <span class="aw-ml__face"><img src="/assets/players/10.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Jim El Bayati</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/brockwell-violets.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Brockwell Violets</span>
+            <span class="aw-ml__score">3-1</span>
+            <span class="aw-ml__date">10 May 2026</span>
+            <span class="aw-ml__face"><img src="/assets/players/23.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Stewart Luwawa</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/dynamo-london.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Dynamo London</span>
+            <span class="aw-ml__score">6-1</span>
+            <span class="aw-ml__date">3 May 2026</span>
+            <span class="aw-ml__face"><img src="/assets/players/30.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Frazier-Isaías Osunkoya</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/sporting-catania.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Sporting Club Catania</span>
+            <span class="aw-ml__score">10-1</span>
+            <span class="aw-ml__date">26 Apr 2026</span>
+            <span class="aw-ml__face"><img src="/assets/players/30.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Frazier-Isaías Osunkoya</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/balham-bteckerz.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Balham Bteckerz</span>
+            <span class="aw-ml__score">9-0</span>
+            <span class="aw-ml__date">19 Apr 2026</span>
+            <span class="aw-ml__face"><img src="/assets/players/23.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Stewart Luwawa</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/afc-bluebirds.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">AFC Bluebirds</span>
+            <span class="aw-ml__score">2-1</span>
+            <span class="aw-ml__date">29 Mar 2026</span>
+            <span class="aw-ml__face"><img src="/assets/players/30.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Frazier-Isaías Osunkoya</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/hillside-elite.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Hillside Elite FC Blues</span>
+            <span class="aw-ml__score">3-0</span>
+            <span class="aw-ml__date">22 Mar 2026</span>
+            <span class="aw-ml__face"><img src="/assets/players/30.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Frazier-Isaías Osunkoya</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/barking-mad.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Barking Mad</span>
+            <span class="aw-ml__score">1-0</span>
+            <span class="aw-ml__date">15 Mar 2026</span>
+            <span class="aw-ml__face"><img src="/assets/players/25.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Daniel McLane</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/clapham-chiefs.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Clapham Chiefs</span>
+            <span class="aw-ml__score">2-0</span>
+            <span class="aw-ml__date">8 Mar 2026</span>
+            <span class="aw-ml__face"><img src="/assets/players/21.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Jon Lloyd</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/shepherds-tuesday.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Shepherd&#39;s Tuesday</span>
+            <span class="aw-ml__score">5-1</span>
+            <span class="aw-ml__date">1 Mar 2026</span>
+            <span class="aw-ml__face"><img src="/assets/players/18.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Danny Jackson</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/barnes-stormers.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Barnes Stormers</span>
+            <span class="aw-ml__score">7-0</span>
+            <span class="aw-ml__date">8 Feb 2026</span>
+            <span class="aw-ml__face"><img src="/assets/players/9.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Charlie Dunkley</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/bpr-fc.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">BPR Men&#39;s</span>
+            <span class="aw-ml__score">4-2</span>
+            <span class="aw-ml__date">1 Feb 2026</span>
+            <span class="aw-ml__face"><img src="/assets/players/25.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Daniel McLane</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/tattenham-rovers.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Tattenham Rovers 1st</span>
+            <span class="aw-ml__score">3-0</span>
+            <span class="aw-ml__date">25 Jan 2026</span>
+            <span class="aw-ml__face"><img src="/assets/players/10.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Jim El Bayati</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/balham-bteckerz.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Balham Bteckerz</span>
+            <span class="aw-ml__score">12-0</span>
+            <span class="aw-ml__date">18 Jan 2026</span>
+            <span class="aw-ml__face"><img src="/assets/players/7.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">William Clark</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/larkhall-city.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Larkhall City</span>
+            <span class="aw-ml__score">6-0</span>
+            <span class="aw-ml__date">11 Jan 2026</span>
+            <span class="aw-ml__face"><img src="/assets/players/2.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Andrew Allen</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/brockwell-violets.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Brockwell Violets</span>
+            <span class="aw-ml__score">5-1</span>
+            <span class="aw-ml__date">14 Dec 2025</span>
+            <span class="aw-ml__face"><img src="/assets/players/31.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Stephen Potter</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/woking-vets.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Woking Veterans Sundays</span>
+            <span class="aw-ml__score">7-0</span>
+            <span class="aw-ml__date">7 Dec 2025</span>
+            <span class="aw-ml__face"><img src="/assets/players/21.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Jon Lloyd</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/sutton-knights.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Sutton Knights B</span>
+            <span class="aw-ml__score">7-1</span>
+            <span class="aw-ml__date">16 Nov 2025</span>
+            <span class="aw-ml__face"><img src="/assets/players/30.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Frazier-Isaías Osunkoya</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/pure-fc.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Pure Football</span>
+            <span class="aw-ml__score">7-1</span>
+            <span class="aw-ml__date">9 Nov 2025</span>
+            <span class="aw-ml__face"><img src="/assets/players/23.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Stewart Luwawa</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><span class="crest crest--letter" aria-hidden="true">M</span></span>
+            <span class="aw-ml__club">Mala Vida</span>
+            <span class="aw-ml__score">2-1</span>
+            <span class="aw-ml__date">26 Oct 2025</span>
+            <span class="aw-ml__face"><img src="/assets/players/28.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Luke Munns</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/old-freemens.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Old Freemen&#39;s</span>
+            <span class="aw-ml__score">7-2</span>
+            <span class="aw-ml__date">19 Oct 2025</span>
+            <span class="aw-ml__face"><img src="/assets/players/9.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Charlie Dunkley</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/hillside-elite.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Hillside Elite FC Blues</span>
+            <span class="aw-ml__score">5-0</span>
+            <span class="aw-ml__date">12 Oct 2025</span>
+            <span class="aw-ml__face"><img src="/assets/players/27.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Malachi Mullings</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/brockwell-violets.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Brockwell Violets</span>
+            <span class="aw-ml__score">6-0</span>
+            <span class="aw-ml__date">5 Oct 2025</span>
+            <span class="aw-ml__face"><img src="/assets/players/2.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Andrew Allen</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/dynamo-london.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Dynamo London</span>
+            <span class="aw-ml__score">5-0</span>
+            <span class="aw-ml__date">28 Sept 2025</span>
+            <span class="aw-ml__face"><img src="/assets/players/4.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Michael Brabrook</span>
+          </li>
+          <li class="aw-ml">
+            <span class="aw-ml__badge"><img src="/assets/badge/pure-fc.webp" alt="" width="26" height="26" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__club">Pure Football</span>
+            <span class="aw-ml__score">5-0</span>
+            <span class="aw-ml__date">21 Sept 2025</span>
+            <span class="aw-ml__face"><img src="/assets/players/9.webp" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__who">Charlie Dunkley</span>
+          </li>
+        </ol>
+        <p class="aw-motm__note">Drawn from the 26 matches of 33 that carry a
+          Man of the Match in the record.</p>
+      </div>
+    </section><section class="sec aw-season" id="season" aria-labelledby="aw-season-h">
+      <div class="wrap">
+        <div class="xrail" aria-hidden="true">
+      <span class="xrail__l"><span class="xrail__n">04</span><span class="xrail__t">25/26 awards night</span></span>
+      <span class="xrail__r">7 winners</span>
+    </div>
+        <h2 class="h2 rv" id="aw-season-h">End of season <span class="volt">awards.</span></h2>
+        <ul class="aw-cards rv">
+          <li class="aw-card" style="--i:0">
+            <div class="aw-card__shot">
+              <img src="/assets/players/9.webp" alt="Charlie Dunkley"
+                   width="320" height="320" loading="lazy" decoding="async" />
+            </div>
+            <div class="aw-card__body">
+              <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Top Assister</p>
+              <p class="aw-card__name">Charlie Dunkley</p>
+              <p class="aw-card__pos">Striker</p>
+              <p class="aw-card__cite">Relentless all season. Energy, intelligence and selfless running made him a constant threat, and his assists and link play drove our attacking success.</p>
+            </div>
+          </li>
+          <li class="aw-card" style="--i:1">
+            <div class="aw-card__shot">
+              <img src="/assets/players/28.webp" alt="Luke Munns"
+                   width="320" height="320" loading="lazy" decoding="async" />
+            </div>
+            <div class="aw-card__body">
+              <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Defensive Record Award</p>
+              <p class="aw-card__name">Luke Munns</p>
+              <p class="aw-card__pos">Goalkeeper</p>
+              <p class="aw-card__cite">The goalkeeper every championship side needs. Calm, commanding and full of match-winning saves as the Angels set a historic defensive record.</p>
+            </div>
+          </li>
+          <li class="aw-card" style="--i:2">
+            <div class="aw-card__shot">
+              <img src="/assets/players/27.webp" alt="Malachi Mullings"
+                   width="320" height="320" loading="lazy" decoding="async" />
+            </div>
+            <div class="aw-card__body">
+              <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Goal of the Season</p>
+              <p class="aw-card__name">Malachi Mullings</p>
+              <p class="aw-card__pos">Attacking midfielder</p>
+              <p class="aw-card__cite">A stunning strike against Mala Vida, pure quality. A huge part of the season before injury cut it short. We can’t wait to see him back in yellow.</p>
+            </div>
+          </li>
+          <li class="aw-card" style="--i:3">
+            <div class="aw-card__shot">
+              <img src="/assets/players/30.webp" alt="Frazier-Isaías Osunkoya"
+                   width="320" height="320" loading="lazy" decoding="async" />
+            </div>
+            <div class="aw-card__body">
+              <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Top Goalscorer</p>
+              <p class="aw-card__name">Frazier-Isaías Osunkoya</p>
+              <p class="aw-card__pos">Right attacking midfielder</p>
+              <p class="aw-card__cite">Goals, goals and more goals. Movement, composure and a finish in him at any moment. When the team needed one, Fraizer usually delivered.</p>
+            </div>
+          </li>
+          <li class="aw-card" style="--i:4">
+            <div class="aw-card__shot">
+              <img src="/assets/players/10.webp" alt="Jim El Bayati"
+                   width="320" height="320" loading="lazy" decoding="async" />
+            </div>
+            <div class="aw-card__body">
+              <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Clubman of the Year</p>
+              <p class="aw-card__name">Jim El Bayati</p>
+              <p class="aw-card__pos">Right centre back</p>
+              <p class="aw-card__cite">A leader, role model and true club servant. As he closes his playing career he leaves the culture and standards that drive the club. A true legend.</p>
+            </div>
+          </li>
+          <li class="aw-card" style="--i:5">
+            <div class="aw-card__shot">
+              <img src="/assets/players/25.webp" alt="Daniel McLane"
+                   width="320" height="320" loading="lazy" decoding="async" />
+            </div>
+            <div class="aw-card__body">
+              <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Players’ Player of the Year</p>
+              <p class="aw-card__name">Daniel McLane</p>
+              <p class="aw-card__pos">Centre back</p>
+              <p class="aw-card__cite">Voted for by his teammates. Solid as a rock in defence and a real weapon from set pieces. A warrior who set the standard every single week.</p>
+            </div>
+          </li>
+          <li class="aw-card" style="--i:6">
+            <div class="aw-card__shot">
+              <img src="/assets/players/20.webp" alt="Dean Knight"
+                   width="320" height="320" loading="lazy" decoding="async" />
+            </div>
+            <div class="aw-card__body">
+              <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Manager’s Player of the Year</p>
+              <p class="aw-card__name">Dean Knight</p>
+              <p class="aw-card__pos">Right wing back</p>
+              <p class="aw-card__cite">Consistency, versatility and constant improvement. Right-back, wing-back, even emergency keeper with two clean sheets. Whatever the team needed, Dean delivered.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </section><section class="sec aw-caps" aria-labelledby="aw-caps-h">
+      <div class="wrap">
+        <div class="xrail" aria-hidden="true">
+      <span class="xrail__l"><span class="xrail__n">05</span><span class="xrail__t">Leading the side</span></span>
+      <span class="xrail__r">25/26</span>
+    </div>
+        <h2 class="h2 rv" id="aw-caps-h">The <span class="volt">captains.</span></h2>
+        <ul class="aw-caps__grid rv">
+          <li class="aw-cap glassbox" style="--i:0">
+            <span class="aw-cap__face"><img src="/assets/players/10.webp" alt="" width="64" height="64" loading="lazy" decoding="async" /></span>
+            <p class="aw-cap__k">Club captain</p>
+            <p class="aw-cap__name">Jim El Bayati</p>
+            <p class="aw-cap__pos">Right centre back</p>
+          </li>
+          <li class="aw-cap glassbox" style="--i:1">
+            <span class="aw-cap__face"><img src="/assets/players/25.webp" alt="" width="64" height="64" loading="lazy" decoding="async" /></span>
+            <p class="aw-cap__k">Vice-captain</p>
+            <p class="aw-cap__name">Daniel McLane</p>
+            <p class="aw-cap__pos">Centre back</p>
+          </li>
+          <li class="aw-cap glassbox" style="--i:2">
+            <span class="aw-cap__face"><img src="/assets/players/2.webp" alt="" width="64" height="64" loading="lazy" decoding="async" /></span>
+            <p class="aw-cap__k">Third-choice captain</p>
+            <p class="aw-cap__name">Andrew Allen</p>
+            <p class="aw-cap__pos">Left central midfielder</p>
+          </li>
+        </ul>
+        <p class="aw-caps__note">Jim El Bayati was appointed the first club captain in Sue’s Angels FC history, leading the side through the inaugural 25/26 season.</p>
+      </div>
+    </section>
+        </div>
+      </div><section class="sec sec--cta aw-cta" aria-labelledby="aw-cta-h">
       <div class="wrap">
         <div class="cta2">
           <span class="cta2__glow" aria-hidden="true"></span>
@@ -891,6 +1558,6 @@
   </footer>
 <div class="toasts" data-toasts role="region" aria-label="Notifications" aria-live="polite"></div>
 
-<script src="/sa.js?v=23729123" defer></script>
+<script src="/sa.js?v=a195532b" defer></script>
 </body>
 </html>

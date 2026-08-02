@@ -23,6 +23,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
+import { seasonViews, defaultView, seasonBar, seasonPanels, matchNote } from '../lib/seasons.mjs';
 import {
   fmtDate, longestStreak, playerStreak, teamSummary, leaderboard,
   biggestWin, heaviestDefeat, slugify,
@@ -58,9 +59,24 @@ const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
     </div>`;
 
 export function records(d) {
-  const played = d.played || [];
-  const season = d.currentSeason;
-  const inSeason = played.filter((m) => m.season === season);
+  /* EVERY BAND ON THIS PAGE IS A FUNCTION OF A SEASON NOW.
+
+     It was pinned to `d.currentSeason` throughout: the honours rail said "in
+     25/26", the perfect-season band said "League Ten 25/26", and the records
+     grid and the streaks were worked out over every match the club has ever
+     played. Three different scopes on one page, none of them labelled, and no
+     way to ask what any of it looked like in a given year.
+
+     `bodyFor(view)` builds the lot from one match list. The page renders it
+     once per season plus once for all of them, and the shared switcher shows
+     the matching panel. See src/lib/seasons.mjs. */
+  const VIEWS = seasonViews(d);
+  const DEFAULT = defaultView(VIEWS);
+
+  const bodyFor = (view) => {
+  const played = view.matches;
+  const season = view.key === 'all' ? d.currentSeason : view.key;
+  const inSeason = view.key === 'all' ? played : played.filter((m) => m.season === season);
   const league = inSeason.filter((m) => m.competition === CLUB.division);
   const sum = teamSummary(inSeason);
   const leagueSum = teamSummary(league);
@@ -233,22 +249,18 @@ export function records(d) {
       : `<img class="rc-face__crest" src="${STAR}" alt="" width="${Math.round(size * 0.5)}" height="${Math.round(size * 0.62)}" loading="lazy" decoding="async" />`}</span>`;
   };
 
-  /* ================= HERO ================= */
-  const hero = `<section class="rc-hero" aria-labelledby="rc-h">
-      <div class="wrap">
-        <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Club archive</p>
-        <h1 class="rc-hero__title" id="rc-h">Club records<span class="volt">.</span></h1>
-        <p class="rc-hero__lede">The honours, the numbers and the runs behind them. Every figure
-          on this page is worked out from the match record, so it updates itself the moment a
-          result is saved.</p>
-      </div>
-    </section>`;
-
   /* ================= 01 HONOURS ================= */
-  const trophies = rec.filter((r) => r.type === 'trophy');
+  /* Filtered to the view. Every trophy was showing under every season tab,
+     with the rail claiming "2 in 26/27" over two won in 25/26. A trophy with
+     no season recorded stays visible on the all-seasons view, which is the
+     honest home for a record whose date nobody wrote down. */
+  const trophies = rec.filter((r) => r.type === 'trophy')
+    .filter((t) => view.key === 'all' || String(t.season || '') === view.key);
   const honoursBand = trophies.length ? `<section class="sec rc-honours" aria-labelledby="rc-hon-h">
       <div class="wrap">
-        ${rail(1, 'Honours', `${trophies.length} in ${season}`)}
+        ${rail(1, 'Honours', view.key === 'all'
+    ? `${trophies.length} won`
+    : `${trophies.length} in ${view.label}`)}
         <h2 class="h2 rv" id="rc-hon-h">What the club has <span class="volt">won.</span></h2>
         <ul class="rc-trophies rv">
           ${trophies.map((t) => `<li class="rc-trophy">
@@ -264,7 +276,9 @@ export function records(d) {
   /* ================= 02 THE PERFECT SEASON ================= */
   const perfectBand = perfectLeague.perfect ? `<section class="sec rc-perfect" aria-labelledby="rc-pf-h">
       <div class="wrap">
-        ${rail(2, 'The record that stands out', `${CLUB.division} ${season}`)}
+        ${rail(2, 'The record that stands out', view.key === 'all'
+    ? `${CLUB.division}, every season`
+    : `${CLUB.division} ${view.label}`)}
         <h2 class="h2 rv" id="rc-pf-h">Played ${esc(perfectLeague.of)}. Won <span class="volt">${esc(perfectLeague.length)}.</span></h2>
         <div class="rc-pf rv">
           <ul class="rc-pf__nums">
@@ -395,6 +409,20 @@ export function records(d) {
       </div>
     </section>` : '';
 
+  return { honoursBand, perfectBand, recordsBand, streaksBand, firstsBand, leadBand };
+  };
+
+  /* ================= HERO ================= */
+  const hero = `<section class="rc-hero" aria-labelledby="rc-h">
+      <div class="wrap">
+        <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Club archive</p>
+        <h1 class="rc-hero__title" id="rc-h">Club records<span class="volt">.</span></h1>
+        <p class="rc-hero__lede">The honours, the numbers and the runs behind them. Every figure
+          on this page is worked out from the match record, so it updates itself the moment a
+          result is saved.</p>
+      </div>
+    </section>`;
+
   /* ================= CTA ================= */
   const ctaBand = `<section class="sec sec--cta rc-cta" aria-labelledby="rc-cta-h">
       <div class="wrap">
@@ -402,7 +430,7 @@ export function records(d) {
           <span class="cta2__glow" aria-hidden="true"></span>
           <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
-            <p class="eyebrow cta2__eyebrow">${esc(season)} · Champions</p>
+            <p class="eyebrow cta2__eyebrow">${esc(d.currentSeason)} · Champions</p>
             <h2 class="h2" id="rc-cta-h">Records are there to be <span class="volt">broken.</span></h2>
             <p class="cta2__sub">${esc(CLUB.nextDivision)} starts in September. Every one of these
               is on the line.</p>
@@ -423,8 +451,13 @@ export function records(d) {
        argument to sitePreMain, not something to concatenate beside it. */
     preMain: sitePreMain(auraFor('records.html')),
     footerHtml: siteFooter(),
-    body: siteHeader('/records.html') + hero + honoursBand + perfectBand + recordsBand
-      + streaksBand + firstsBand + leadBand + ctaBand,
+    body: siteHeader('/records.html') + hero
+      + `<section class="sec rc-seasons"><div class="wrap">${seasonBar(VIEWS, DEFAULT, matchNote, { esc, attr })}</div></section>`
+      + seasonPanels(VIEWS, DEFAULT, (v) => {
+    const b = bodyFor(v);
+    return b.honoursBand + b.perfectBand + b.recordsBand + b.streaksBand + b.firstsBand + b.leadBand;
+  }, { attr })
+      + ctaBand,
     schema: [{
       '@context': 'https://schema.org',
       '@type': 'CollectionPage',

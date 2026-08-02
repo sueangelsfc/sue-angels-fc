@@ -28,6 +28,7 @@
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { teamSummary, fmtDate } from '../lib/stats.mjs';
+import { seasonViews, defaultView, seasonBar, seasonPanels, matchNote } from '../lib/seasons.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
@@ -58,6 +59,12 @@ const chipRow = (label, items, group) => `<div class="mt-chips" data-filter-grou
         </div>`;
 
 function matchesPage(d, mode) {
+  /* THE SEASON FILTER. One bar for the whole page: it swaps the record panel
+     and filters the match list below from the same press, because two season
+     controls on one page is two things that can disagree. See
+     src/lib/seasons.mjs and the switcher in src/scripts/10-home.js. */
+  const VIEWS = seasonViews(d);
+  const DEFAULT = defaultView(VIEWS);
   const played = (d.played || []).filter((m) => m.played)
     .slice().sort((a, b) => (b.iso || '').localeCompare(a.iso || ''));
   /* Still to come, from dataset.mjs, which drops the dates that have been
@@ -158,29 +165,45 @@ function matchesPage(d, mode) {
       </div>
     </section>`;
 
-  /* ================= 01 THE RECORD ================= */
-  const wdlTotal = Math.max(1, all.won + all.drawn + all.lost);
-  const recordBand = `<section class="sec mt-record" aria-labelledby="mt-rec-h">
-      <div class="wrap">
-        ${rail(1, 'The record', `${d.currentSeason} · every competition`)}
-        <h2 class="h2 rv" id="mt-rec-h">How it all <span class="volt">finished.</span></h2>
-        <div class="mt-rec rv">
+  /* ================= 01 THE RECORD =================
+     One panel per season plus one for every season together. It used to be a
+     single set of career figures under a rail reading "25/26 · every
+     competition", which is a claim about one season sitting on top of totals
+     from all of them. */
+  const recordPanel = (v) => {
+    const sum = teamSummary(v.matches);
+    if (!sum.played) {
+      return `<p class="mt-rec__none">No ${esc(v.label)} match has been played yet. The record
+          fills in here as results come in.</p>`;
+    }
+    const wdl = Math.max(1, sum.won + sum.drawn + sum.lost);
+    const big = v.matches.filter((m) => m.countsGoals)
+      .slice().sort((a, b) => (b.ourGoals - b.theirGoals) - (a.ourGoals - a.theirGoals))[0];
+    return `<div class="mt-rec">
           <ol class="mt-rec__bar" aria-label="Results across every competition">
-            <li class="mt-rec__w" style="--w:${((all.won / wdlTotal) * 100).toFixed(1)}%"><span class="sr-only">Won ${esc(all.won)}</span></li>
-            ${all.drawn ? `<li class="mt-rec__d" style="--w:${((all.drawn / wdlTotal) * 100).toFixed(1)}%"><span class="sr-only">Drawn ${esc(all.drawn)}</span></li>` : ''}
-            ${all.lost ? `<li class="mt-rec__l" style="--w:${((all.lost / wdlTotal) * 100).toFixed(1)}%"><span class="sr-only">Lost ${esc(all.lost)}</span></li>` : ''}
+            <li class="mt-rec__w" style="--w:${((sum.won / wdl) * 100).toFixed(1)}%"><span class="sr-only">Won ${esc(sum.won)}</span></li>
+            ${sum.drawn ? `<li class="mt-rec__d" style="--w:${((sum.drawn / wdl) * 100).toFixed(1)}%"><span class="sr-only">Drawn ${esc(sum.drawn)}</span></li>` : ''}
+            ${sum.lost ? `<li class="mt-rec__l" style="--w:${((sum.lost / wdl) * 100).toFixed(1)}%"><span class="sr-only">Lost ${esc(sum.lost)}</span></li>` : ''}
           </ol>
           <ul class="mt-rec__key">
-            <li><i class="mt-sw mt-sw--w"></i><b>${esc(all.won)}</b> won</li>
-            <li><i class="mt-sw mt-sw--d"></i><b>${esc(all.drawn)}</b> drawn</li>
-            <li><i class="mt-sw mt-sw--l"></i><b>${esc(all.lost)}</b> lost</li>
-            <li><i class="mt-sw mt-sw--g"></i><b>${esc(all.goalsFor)}-${esc(all.goalsAgainst)}</b> goals</li>
+            <li><i class="mt-sw mt-sw--w"></i><b>${esc(sum.won)}</b> won</li>
+            <li><i class="mt-sw mt-sw--d"></i><b>${esc(sum.drawn)}</b> drawn</li>
+            <li><i class="mt-sw mt-sw--l"></i><b>${esc(sum.lost)}</b> lost</li>
+            <li><i class="mt-sw mt-sw--g"></i><b>${esc(sum.goalsFor)}-${esc(sum.goalsAgainst)}</b> goals</li>
           </ul>
-          ${biggest ? `<p class="mt-rec__note">Biggest win: <b>${esc(biggest.ourGoals)}-${esc(biggest.theirGoals)}</b>
-            ${biggest.weAreHome ? 'at home to' : 'away at'} ${esc(shortClub(biggest.opponent))},
-            ${esc(fmtDate(biggest.date, { long: true }))}.
-            ${all.walkovers ? `${esc(all.walkovers)} of the ${esc(all.played)} were awarded as walkovers and carry no score.` : ''}</p>` : ''}
-        </div>
+          ${big ? `<p class="mt-rec__note">Biggest win: <b>${esc(big.ourGoals)}-${esc(big.theirGoals)}</b>
+            ${big.weAreHome ? 'at home to' : 'away at'} ${esc(shortClub(big.opponent))},
+            ${esc(fmtDate(big.date, { long: true }))}.
+            ${sum.walkovers ? `${esc(sum.walkovers)} of the ${esc(sum.played)} were awarded as walkovers and carry no score.` : ''}</p>` : ''}
+        </div>`;
+  };
+
+  const recordBand = `<section class="sec mt-record" aria-labelledby="mt-rec-h">
+      <div class="wrap">
+        ${rail(1, 'The record', 'Every competition')}
+        <h2 class="h2 rv" id="mt-rec-h">How it all <span class="volt">finished.</span></h2>
+        ${seasonBar(VIEWS, DEFAULT, matchNote, { esc, attr })}
+        ${seasonPanels(VIEWS, DEFAULT, recordPanel, { attr })}
       </div>
     </section>`;
 

@@ -94,19 +94,59 @@ export function stats(d) {
   const clubMotm = rows.reduce((n, x) => n + (x.r.motm || 0), 0);
   const maxGA = Math.max(1, ...rows.map((x) => (x.r.goals || 0) + (x.r.assists || 0)));
 
-  /* ================= HERO ================= */
+  const rowsFrom = (set) => squad
+    .map((p) => ({ p, r: set.get(p.num) || {} }))
+    .filter(({ r }) => (r.starts || 0) + (r.subApps || 0) > 0)
+    .sort((a, b) => ((b.r.goals || 0) + (b.r.assists || 0)) - ((a.r.goals || 0) + (a.r.assists || 0))
+      || (b.r.goals || 0) - (a.r.goals || 0)
+      || (b.r.starts || 0) - (a.r.starts || 0));
+
+  /* THE VIEWS. Every season the club has had, newest last, plus its whole
+     history. "All seasons" is not a season and never says "not started": it
+     is every match ever played, which is the right home for a club record. */
+  const VIEWS = [
+    ...seasons.map((sn) => ({
+      key: sn.name, id: sn.name.replace(/\D/g, ''), label: sn.name,
+      note: sn.matches.length ? `${sn.matches.length} matches` : 'Not started',
+      rows: rowsFrom(sn.all), heading: 'The season’s',
+    })),
+    {
+      key: 'all', id: 'all', label: 'All seasons',
+      note: `${played.length} matches`,
+      rows: rowsFrom(allSet), heading: 'The club’s',
+    },
+  ];
+
+  /* Open on the most recent season that has matches, never on an empty one:
+     landing the page on a season nobody has played yet shows a table of
+     zeroes and reads as broken. */
+  let defaultView = 0;
+  VIEWS.forEach((v, i) => { if (v.key !== 'all' && v.rows.length) defaultView = i; });
+
+  /* ================= HERO =================
+     The eyebrow and the three tallies follow the season tab. They used to be
+     the club's career totals under a fixed "By the numbers · 25/26", which
+     was two claims about different things sitting next to each other. Every
+     view's figures ride on the element and the tab rewrites them. */
+  const tally = (viewRows) => [
+    viewRows.reduce((n, x) => n + (x.r.goals || 0), 0),
+    viewRows.reduce((n, x) => n + (x.r.assists || 0), 0),
+    viewRows.reduce((n, x) => n + (x.r.motm || 0), 0),
+  ];
+  const heroTallyData = () => VIEWS.map((v) => ` data-tally-${v.id}="${attr(tally(v.rows).join(','))}"`).join('');
   const hero = `<section class="st-hero" aria-labelledby="st-h">
       <div class="wrap st-hero__grid">
         <div>
-          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> By the numbers · ${esc(d.currentSeason)}</p>
+          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> By the numbers ·
+            <span data-hero-season>${esc(VIEWS[defaultView].label)}</span></p>
           <h1 class="st-hero__title" id="st-h">Player stats<span class="volt">.</span></h1>
           <p class="st-hero__lede">Every player's season, counted from the team sheets. Sort any
             column, filter by competition, and open anyone for their full profile.</p>
         </div>
-        <dl class="st-tally glassbox">
-          <div><dt>Goals scored</dt><dd>${esc(clubGoals)}</dd></div>
-          <div><dt>Assists made</dt><dd>${esc(clubAssists)}</dd></div>
-          <div><dt>Man of the Match</dt><dd>${esc(clubMotm)}</dd></div>
+        <dl class="st-tally glassbox" data-hero-tally${heroTallyData()}>
+          <div><dt>Goals scored</dt><dd>${esc(tally(VIEWS[defaultView].rows)[0])}</dd></div>
+          <div><dt>Assists made</dt><dd>${esc(tally(VIEWS[defaultView].rows)[1])}</dd></div>
+          <div><dt>Man of the Match</dt><dd>${esc(tally(VIEWS[defaultView].rows)[2])}</dd></div>
         </dl>
       </div>
     </section>`;
@@ -179,12 +219,6 @@ export function stats(d) {
     }).sort((a, b) => b.cats.length - a.cats.length).concat(tieCards);
   };
 
-  const rowsFrom = (set) => squad
-    .map((p) => ({ p, r: set.get(p.num) || {} }))
-    .filter(({ r }) => (r.starts || 0) + (r.subApps || 0) > 0)
-    .sort((a, b) => ((b.r.goals || 0) + (b.r.assists || 0)) - ((a.r.goals || 0) + (a.r.assists || 0))
-      || (b.r.goals || 0) - (a.r.goals || 0)
-      || (b.r.starts || 0) - (a.r.starts || 0));
 
   const leaderGrid = (leaders) => `<ul class="st-lead__grid">
           ${leaders.map((l, i) => {
@@ -229,27 +263,6 @@ export function stats(d) {
     { k: 'motm', label: 'MOTM', full: 'Man of the Match', i: 6 },
   ];
 
-  /* THE VIEWS. Every season the club has had, newest last, plus its whole
-     history. "All seasons" is not a season and never says "not started": it
-     is every match ever played, which is the right home for a club record. */
-  const VIEWS = [
-    ...seasons.map((sn) => ({
-      key: sn.name, id: sn.name.replace(/\D/g, ''), label: sn.name,
-      note: sn.matches.length ? `${sn.matches.length} matches` : 'Not started',
-      rows: rowsFrom(sn.all), heading: 'The season’s',
-    })),
-    {
-      key: 'all', id: 'all', label: 'All seasons',
-      note: `${played.length} matches`,
-      rows: rowsFrom(allSet), heading: 'The club’s',
-    },
-  ];
-
-  /* Open on the most recent season that has matches, never on an empty one:
-     landing the page on a season nobody has played yet shows a table of
-     zeroes and reads as broken. */
-  let defaultView = 0;
-  VIEWS.forEach((v, i) => { if (v.key !== 'all' && v.rows.length) defaultView = i; });
 
   const seasonTabs = VIEWS.length > 1 ? `<div class="st-seasons" data-season-chips>
           ${VIEWS.map((v, i) => `<a class="st-season${i === defaultView ? ' is-on' : ''}"
@@ -365,39 +378,64 @@ export function stats(d) {
 
   /* ================= 03 WHERE THE GOALS CAME FROM =================
      Thirty rows tell you the order. This tells you the shape: how much of the
-     club's scoring sat with how few players. */
-  const scorers = rows.filter((x) => (x.r.goals || 0) > 0)
-    .sort((a, b) => (b.r.goals || 0) - (a.r.goals || 0));
-  let running = 0;
-  const share = scorers.map((x) => {
-    running += x.r.goals;
-    return { ...x, pct: (x.r.goals / clubGoals) * 100, cum: (running / clubGoals) * 100 };
-  });
-  const topFive = share.slice(0, 5).reduce((n, x) => n + x.r.goals, 0);
+     club's scoring sat with how few players.
 
-  const shareBand = share.length > 3 ? `<section class="sec st-share" aria-labelledby="st-share-h">
-      <div class="wrap">
-        ${rail(3, 'Where the goals came from', `${scorers.length} scorers`)}
-        <h2 class="h2 rv" id="st-share-h">Who scored them<span class="volt">.</span></h2>
-        <p class="st-lede rv">${esc(clubGoals)} goals across every competition, shared between
-          ${esc(scorers.length)} players. The top five scored ${esc(topFive)} of them,
-          ${esc(Math.round((topFive / clubGoals) * 100))}% of the club's return.</p>
-        <ol class="st-share__bar rv" aria-label="Share of the club's goals by player">
+     PER VIEW, like the leaders above. This counted every goal the club has
+     ever scored under a heading sitting directly beneath tabs that said
+     25/26 and 26/27, so it answered a question nobody had asked on either of
+     them. Same derivation, one view's rows at a time. */
+  const shareOf = (viewRows) => {
+    const goals = viewRows.reduce((n, x) => n + (x.r.goals || 0), 0);
+    const scorers = viewRows.filter((x) => (x.r.goals || 0) > 0)
+      .sort((a, b) => (b.r.goals || 0) - (a.r.goals || 0));
+    if (!goals) return { goals: 0, scorers, share: [], topFive: 0 };
+    let running = 0;
+    const share = scorers.map((x) => {
+      running += x.r.goals;
+      return { ...x, pct: (x.r.goals / goals) * 100, cum: (running / goals) * 100 };
+    });
+    return { goals, scorers, share, topFive: share.slice(0, 5).reduce((n, x) => n + x.r.goals, 0) };
+  };
+
+  const sharePanel = (v) => {
+    const { goals, scorers, share, topFive } = shareOf(v.rows);
+    if (share.length < 1) {
+      return `<p class="st-lede">No goals recorded for ${esc(v.label)} yet. This fills in as
+          results come in.</p>`;
+    }
+    return `<p class="st-lede">${esc(goals)} goal${goals === 1 ? '' : 's'}${v.key === 'all'
+      ? ' across every season the club has played' : ` in ${esc(v.label)}`}, shared between
+          ${esc(scorers.length)} player${scorers.length === 1 ? '' : 's'}.${share.length > 5
+      ? ` The top five scored ${esc(topFive)} of them, ${esc(Math.round((topFive / goals) * 100))}% of the return.`
+      : ''}</p>
+        <ol class="st-share__bar" aria-label="Share of the club's goals by player">
           ${share.map((x, i) => `<li style="--w:${x.pct.toFixed(2)}%;--i:${i}"
             title="${attr(`${x.p.name}: ${x.r.goals} goals`)}">
             <span class="sr-only">${esc(x.p.name)}, ${esc(x.r.goals)} goals</span>
           </li>`).join('\n          ')}
         </ol>
-        <ol class="st-share__key rv">
-          ${share.slice(0, 6).map((x) => `<li>
-            <span class="st-share__sw" aria-hidden="true" style="--o:${(1 - share.indexOf(x) * 0.13).toFixed(2)}"></span>
+        <ol class="st-share__key">
+          ${share.slice(0, 6).map((x, n) => `<li>
+            <span class="st-share__sw" aria-hidden="true" style="--o:${(1 - n * 0.13).toFixed(2)}"></span>
             <b>${esc(x.p.last)}</b>
             <i>${esc(x.r.goals)}</i>
           </li>`).join('\n          ')}
           ${share.length > 6 ? `<li><span class="st-share__sw is-rest" aria-hidden="true"></span>
             <b>${esc(share.length - 6)} others</b>
             <i>${esc(share.slice(6).reduce((n, x) => n + x.r.goals, 0))}</i></li>` : ''}
-        </ol>
+        </ol>`;
+  };
+
+  const shareBand = VIEWS.some((v) => shareOf(v.rows).share.length > 3)
+    ? `<section class="sec st-share" aria-labelledby="st-share-h" data-share-views>
+      <div class="wrap">
+        ${rail(3, 'Where the goals came from',
+    `${shareOf(VIEWS[defaultView].rows).scorers.length} scorers`)}
+        <h2 class="h2 rv" id="st-share-h">Who scored them<span class="volt">.</span></h2>
+        ${VIEWS.map((v, i) => `<div class="st-share__view rv" data-share-view="${attr(v.id)}"
+          data-scorers="${attr(shareOf(v.rows).scorers.length)}"${i === defaultView ? '' : ' hidden'}>
+          ${sharePanel(v)}
+        </div>`).join('\n        ')}
       </div>
     </section>` : '';
 

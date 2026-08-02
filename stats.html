@@ -28,8 +28,8 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preload" href="/assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
 
-<link rel="stylesheet" href="/home.css?v=f3328ca4">
-<link rel="stylesheet" href="/p-stats.css?v=5283c26f">
+<link rel="stylesheet" href="/home.css?v=ff6bc1f2">
+<link rel="stylesheet" href="/p-stats.css?v=04c2a142">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":["SportsTeam","SportsOrganization"],"@id":"https://www.suesangelsfc.co.uk/#club","name":"Sue's Angels FC","alternateName":"The Angels","url":"https://www.suesangelsfc.co.uk/","sport":"Association football","foundingDate":"2025","logo":"https://www.suesangelsfc.co.uk/assets/brand/badge.png","email":"suesangelsfc@gmail.com","inLanguage":"en-GB","memberOf":{"@type":"SportsOrganization","name":"Southern Sunday Football League"},"location":{"@type":"Place","name":"The Reeves Sports Club","address":{"@type":"PostalAddress","streetAddress":"Snakey Lane","addressLocality":"Hanworth","addressRegion":"London","addressCountry":"GB"}},"areaServed":[{"@type":"Place","name":"Kingston upon Thames"},{"@type":"Place","name":"Hanworth"},{"@type":"Place","name":"Sunbury-on-Thames"},{"@type":"Place","name":"Twickenham"},{"@type":"Place","name":"Staines-upon-Thames"}],"sameAs":["https://www.instagram.com/suesangelsfc/","https://www.tiktok.com/@suesangelsfc","https://www.facebook.com/people/Sues-Angels-FC/61576808678302/"]},{"@type":"WebSite","@id":"https://www.suesangelsfc.co.uk/#website","url":"https://www.suesangelsfc.co.uk/","name":"Sue's Angels FC","inLanguage":"en-GB","publisher":{"@id":"https://www.suesangelsfc.co.uk/#club"}},{"@type":"WebPage","@id":"https://www.suesangelsfc.co.uk/stats.html#webpage","url":"https://www.suesangelsfc.co.uk/stats.html","name":"Player stats · Sue's Angels FC","description":"Sue's Angels FC player statistics for 25/26: goals, assists and appearances for every player, derived from the club's own match records.","inLanguage":"en-GB","isPartOf":{"@id":"https://www.suesangelsfc.co.uk/#website"},"about":{"@id":"https://www.suesangelsfc.co.uk/#club"},"primaryImageOfPage":{"@type":"ImageObject","url":"https://www.suesangelsfc.co.uk/assets/social/og-stats.jpg"},"breadcrumb":{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.suesangelsfc.co.uk/"},{"@type":"ListItem","position":2,"name":"Player stats","item":"https://www.suesangelsfc.co.uk/stats.html"}]}}]}</script>
 </head>
 <body class="is-home is-sub is-stats">
@@ -158,12 +158,13 @@
         </header><section class="st-hero" aria-labelledby="st-h">
       <div class="wrap st-hero__grid">
         <div>
-          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> By the numbers · 25/26</p>
+          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> By the numbers ·
+            <span data-hero-season>25/26</span></p>
           <h1 class="st-hero__title" id="st-h">Player stats<span class="volt">.</span></h1>
           <p class="st-hero__lede">Every player's season, counted from the team sheets. Sort any
             column, filter by competition, and open anyone for their full profile.</p>
         </div>
-        <dl class="st-tally glassbox">
+        <dl class="st-tally glassbox" data-hero-tally data-tally-2526="137,121,26" data-tally-2627="0,0,0" data-tally-all="137,121,26">
           <div><dt>Goals scored</dt><dd>137</dd></div>
           <div><dt>Assists made</dt><dd>121</dd></div>
           <div><dt>Man of the Match</dt><dd>26</dd></div>
@@ -985,17 +986,18 @@
           not record who came off the bench, so bench outings are counted separately rather than
           folded into an appearance total we cannot verify.</p>
       </div>
-    </section><section class="sec st-share" aria-labelledby="st-share-h">
+    </section><section class="sec st-share" aria-labelledby="st-share-h" data-share-views>
       <div class="wrap">
         <div class="xrail" aria-hidden="true">
       <span class="xrail__l"><span class="xrail__n">03</span><span class="xrail__t">Where the goals came from</span></span>
       <span class="xrail__r">19 scorers</span>
     </div>
         <h2 class="h2 rv" id="st-share-h">Who scored them<span class="volt">.</span></h2>
-        <p class="st-lede rv">137 goals across every competition, shared between
-          19 players. The top five scored 91 of them,
-          66% of the club's return.</p>
-        <ol class="st-share__bar rv" aria-label="Share of the club's goals by player">
+        <div class="st-share__view rv" data-share-view="2526"
+          data-scorers="19">
+          <p class="st-lede">137 goals in 25/26, shared between
+          19 players. The top five scored 91 of them, 66% of the return.</p>
+        <ol class="st-share__bar" aria-label="Share of the club's goals by player">
           <li style="--w:22.63%;--i:0"
             title="Frazier-Isaías Osunkoya: 31 goals">
             <span class="sr-only">Frazier-Isaías Osunkoya, 31 goals</span>
@@ -1073,7 +1075,7 @@
             <span class="sr-only">Jake Fisher, 1 goals</span>
           </li>
         </ol>
-        <ol class="st-share__key rv">
+        <ol class="st-share__key">
           <li>
             <span class="st-share__sw" aria-hidden="true" style="--o:1.00"></span>
             <b>Osunkoya</b>
@@ -1108,6 +1110,130 @@
             <b>13 others</b>
             <i>38</i></li>
         </ol>
+        </div>
+        <div class="st-share__view rv" data-share-view="2627"
+          data-scorers="0" hidden>
+          <p class="st-lede">No goals recorded for 26/27 yet. This fills in as
+          results come in.</p>
+        </div>
+        <div class="st-share__view rv" data-share-view="all"
+          data-scorers="19" hidden>
+          <p class="st-lede">137 goals across every season the club has played, shared between
+          19 players. The top five scored 91 of them, 66% of the return.</p>
+        <ol class="st-share__bar" aria-label="Share of the club's goals by player">
+          <li style="--w:22.63%;--i:0"
+            title="Frazier-Isaías Osunkoya: 31 goals">
+            <span class="sr-only">Frazier-Isaías Osunkoya, 31 goals</span>
+          </li>
+          <li style="--w:17.52%;--i:1"
+            title="Charlie Dunkley: 24 goals">
+            <span class="sr-only">Charlie Dunkley, 24 goals</span>
+          </li>
+          <li style="--w:12.41%;--i:2"
+            title="Stephen Potter: 17 goals">
+            <span class="sr-only">Stephen Potter, 17 goals</span>
+          </li>
+          <li style="--w:7.30%;--i:3"
+            title="Daniel McLane: 10 goals">
+            <span class="sr-only">Daniel McLane, 10 goals</span>
+          </li>
+          <li style="--w:6.57%;--i:4"
+            title="Malachi Mullings: 9 goals">
+            <span class="sr-only">Malachi Mullings, 9 goals</span>
+          </li>
+          <li style="--w:5.84%;--i:5"
+            title="Andrew Allen: 8 goals">
+            <span class="sr-only">Andrew Allen, 8 goals</span>
+          </li>
+          <li style="--w:5.11%;--i:6"
+            title="William Clark: 7 goals">
+            <span class="sr-only">William Clark, 7 goals</span>
+          </li>
+          <li style="--w:5.11%;--i:7"
+            title="Danny Jackson: 7 goals">
+            <span class="sr-only">Danny Jackson, 7 goals</span>
+          </li>
+          <li style="--w:5.11%;--i:8"
+            title="Stewart Luwawa: 7 goals">
+            <span class="sr-only">Stewart Luwawa, 7 goals</span>
+          </li>
+          <li style="--w:3.65%;--i:9"
+            title="Jon Lloyd: 5 goals">
+            <span class="sr-only">Jon Lloyd, 5 goals</span>
+          </li>
+          <li style="--w:2.19%;--i:10"
+            title="Kieron Horrill: 3 goals">
+            <span class="sr-only">Kieron Horrill, 3 goals</span>
+          </li>
+          <li style="--w:1.46%;--i:11"
+            title="Dean Knight: 2 goals">
+            <span class="sr-only">Dean Knight, 2 goals</span>
+          </li>
+          <li style="--w:0.73%;--i:12"
+            title="Michael Brabrook: 1 goals">
+            <span class="sr-only">Michael Brabrook, 1 goals</span>
+          </li>
+          <li style="--w:0.73%;--i:13"
+            title="Alfie James Inman: 1 goals">
+            <span class="sr-only">Alfie James Inman, 1 goals</span>
+          </li>
+          <li style="--w:0.73%;--i:14"
+            title="Jim El Bayati: 1 goals">
+            <span class="sr-only">Jim El Bayati, 1 goals</span>
+          </li>
+          <li style="--w:0.73%;--i:15"
+            title="Abiola Adio: 1 goals">
+            <span class="sr-only">Abiola Adio, 1 goals</span>
+          </li>
+          <li style="--w:0.73%;--i:16"
+            title="David Jones: 1 goals">
+            <span class="sr-only">David Jones, 1 goals</span>
+          </li>
+          <li style="--w:0.73%;--i:17"
+            title="Samakab Nur: 1 goals">
+            <span class="sr-only">Samakab Nur, 1 goals</span>
+          </li>
+          <li style="--w:0.73%;--i:18"
+            title="Jake Fisher: 1 goals">
+            <span class="sr-only">Jake Fisher, 1 goals</span>
+          </li>
+        </ol>
+        <ol class="st-share__key">
+          <li>
+            <span class="st-share__sw" aria-hidden="true" style="--o:1.00"></span>
+            <b>Osunkoya</b>
+            <i>31</i>
+          </li>
+          <li>
+            <span class="st-share__sw" aria-hidden="true" style="--o:0.87"></span>
+            <b>Dunkley</b>
+            <i>24</i>
+          </li>
+          <li>
+            <span class="st-share__sw" aria-hidden="true" style="--o:0.74"></span>
+            <b>Potter</b>
+            <i>17</i>
+          </li>
+          <li>
+            <span class="st-share__sw" aria-hidden="true" style="--o:0.61"></span>
+            <b>McLane</b>
+            <i>10</i>
+          </li>
+          <li>
+            <span class="st-share__sw" aria-hidden="true" style="--o:0.48"></span>
+            <b>Mullings</b>
+            <i>9</i>
+          </li>
+          <li>
+            <span class="st-share__sw" aria-hidden="true" style="--o:0.35"></span>
+            <b>Allen</b>
+            <i>8</i>
+          </li>
+          <li><span class="st-share__sw is-rest" aria-hidden="true"></span>
+            <b>13 others</b>
+            <i>38</i></li>
+        </ol>
+        </div>
       </div>
     </section><section class="sec sec--cta st-cta" aria-labelledby="st-cta-h">
       <div class="wrap">
@@ -1207,6 +1333,6 @@
   </footer>
 <div class="toasts" data-toasts role="region" aria-label="Notifications" aria-live="polite"></div>
 
-<script src="/sa.js?v=23729123" defer></script>
+<script src="/sa.js?v=a195532b" defer></script>
 </body>
 </html>

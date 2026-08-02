@@ -28,8 +28,8 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preload" href="/assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
 
-<link rel="stylesheet" href="/home.css?v=f3328ca4">
-<link rel="stylesheet" href="/p-squad.css?v=3c6590b5">
+<link rel="stylesheet" href="/home.css?v=ff6bc1f2">
+<link rel="stylesheet" href="/p-squad.css?v=2193521e">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":["SportsTeam","SportsOrganization"],"@id":"https://www.suesangelsfc.co.uk/#club","name":"Sue's Angels FC","alternateName":"The Angels","url":"https://www.suesangelsfc.co.uk/","sport":"Association football","foundingDate":"2025","logo":"https://www.suesangelsfc.co.uk/assets/brand/badge.png","email":"suesangelsfc@gmail.com","inLanguage":"en-GB","memberOf":{"@type":"SportsOrganization","name":"Southern Sunday Football League"},"location":{"@type":"Place","name":"The Reeves Sports Club","address":{"@type":"PostalAddress","streetAddress":"Snakey Lane","addressLocality":"Hanworth","addressRegion":"London","addressCountry":"GB"}},"areaServed":[{"@type":"Place","name":"Kingston upon Thames"},{"@type":"Place","name":"Hanworth"},{"@type":"Place","name":"Sunbury-on-Thames"},{"@type":"Place","name":"Twickenham"},{"@type":"Place","name":"Staines-upon-Thames"}],"sameAs":["https://www.instagram.com/suesangelsfc/","https://www.tiktok.com/@suesangelsfc","https://www.facebook.com/people/Sues-Angels-FC/61576808678302/"]},{"@type":"WebSite","@id":"https://www.suesangelsfc.co.uk/#website","url":"https://www.suesangelsfc.co.uk/","name":"Sue's Angels FC","inLanguage":"en-GB","publisher":{"@id":"https://www.suesangelsfc.co.uk/#club"}},{"@type":"WebPage","@id":"https://www.suesangelsfc.co.uk/squad.html#webpage","url":"https://www.suesangelsfc.co.uk/squad.html","name":"Squad · Sue's Angels FC","description":"Every player in the Sue's Angels FC first-team squad, grouped by position, with goals, assists and appearances on each player's own profile.","inLanguage":"en-GB","isPartOf":{"@id":"https://www.suesangelsfc.co.uk/#website"},"about":{"@id":"https://www.suesangelsfc.co.uk/#club"},"primaryImageOfPage":{"@type":"ImageObject","url":"https://www.suesangelsfc.co.uk/assets/social/og-squad.jpg"},"breadcrumb":{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.suesangelsfc.co.uk/"},{"@type":"ListItem","position":2,"name":"Squad","item":"https://www.suesangelsfc.co.uk/squad.html"}]}}]}</script>
 </head>
 <body class="is-home is-sub is-squad">
@@ -161,24 +161,26 @@
             </button>
           </div>
         </header><section class="sq-hero" aria-labelledby="sq-h">
-      <div class="wrap sq-hero__grid">
+      <div class="wrap sq-hero__grid" data-sq-hero data-hero-2526="{&quot;eyebrow&quot;:&quot;First team · 25/26&quot;,&quot;label&quot;:&quot;Players used&quot;,&quot;lede&quot;:&quot;The 32 used in 25/26, grouped by where they actually line up. Every number here is counted from the team sheets.&quot;,&quot;tally&quot;:[32,137,7]}" data-hero-2627="{&quot;eyebrow&quot;:&quot;First team · 26/27&quot;,&quot;label&quot;:&quot;In the first team&quot;,&quot;lede&quot;:&quot;The squad for 26/27, grouped by where they line up. Nothing has been played yet, so the figures fill in as results come in.&quot;,&quot;tally&quot;:[24,0,0]}" data-hero-all="{&quot;eyebrow&quot;:&quot;Every season&quot;,&quot;label&quot;:&quot;Players used&quot;,&quot;lede&quot;:&quot;Every player who has pulled on the shirt, grouped by where they actually line up. Every number here is counted from the team sheets.&quot;,&quot;tally&quot;:[32,137,7]}">
         <div>
-          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> First team · 25/26</p>
+          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i>
+            <span data-hero-eyebrow>First team · 25/26</span></p>
           <h1 class="sq-hero__title" id="sq-h">The squad<span class="volt">.</span></h1>
-          <p class="sq-hero__lede">The players who won League Ten unbeaten, grouped by where
-            they actually line up. Every number here is counted from the team sheets.</p>
+          <p class="sq-hero__lede" data-hero-lede>The 32 used in 25/26, grouped by where they actually line up. Every number here is counted from the team sheets.</p>
         </div>
         <dl class="sq-tally glassbox">
-          <div><dt>In the first team</dt><dd>24</dd></div>
-          <div><dt>Goals between them</dt><dd>123</dd></div>
+          <div><dt data-hero-dt>Players used</dt><dd>32</dd></div>
+          <div><dt>Goals between them</dt><dd>137</dd></div>
           <div><dt>League clean sheets</dt><dd>7</dd></div>
         </dl>
       </div>
     </section><section class="sec sq-first" id="first-team" aria-labelledby="sq-first-h">
       <div class="wrap">
+        <!-- The count follows the season tab: the band is filtered, so a
+             fixed figure beside it is a caption for a different page. -->
         <div class="xrail" aria-hidden="true">
       <span class="xrail__l"><span class="xrail__n">01</span><span class="xrail__t">First team</span></span>
-      <span class="xrail__r">24 players</span>
+      <span class="xrail__r" data-band-count>22 players</span>
     </div>
         <h2 class="h2 rv" id="sq-first-h">The first <span class="volt">team.</span></h2>
         <div class="sq-seasons" data-season-filter role="group"
@@ -186,7 +188,7 @@
         <button class="sq-season is-on" type="button"
           data-season="25/26" data-view="2526"
           aria-pressed="true">
-          <b>25/26</b><span>34 players · 33 matches</span>
+          <b>25/26</b><span>32 players · 33 matches</span>
         </button>
         <button class="sq-season" type="button"
           data-season="26/27" data-view="2627"
@@ -196,15 +198,15 @@
         <button class="sq-season" type="button"
           data-season="all" data-view="all"
           aria-pressed="false">
-          <b>All seasons</b><span>36 players · 33 matches</span>
+          <b>All seasons</b><span>32 players · 33 matches</span>
         </button>
       </div>
         <div class="sq-chips" data-filter-scope="first-team">
-          <a class="sq-chip is-on" href="#first-team" data-group-all>All<span>24</span></a>
-          <a class="sq-chip" href="#first-team" data-group-pick="gk">Goalkeepers<span>1</span></a>
-          <a class="sq-chip" href="#first-team" data-group-pick="def">Defenders<span>8</span></a>
-          <a class="sq-chip" href="#first-team" data-group-pick="mid">Midfielders<span>11</span></a>
-          <a class="sq-chip" href="#first-team" data-group-pick="fwd">Forwards<span>4</span></a>
+          <a class="sq-chip is-on" href="#first-team" data-group-all data-n-2526="22" data-n-2627="24" data-n-all="24">All<span>22</span></a>
+          <a class="sq-chip" href="#first-team" data-group-pick="gk" data-n-2526="1" data-n-2627="1" data-n-all="1">Goalkeepers<span>1</span></a>
+          <a class="sq-chip" href="#first-team" data-group-pick="def" data-n-2526="8" data-n-2627="8" data-n-all="8">Defenders<span>8</span></a>
+          <a class="sq-chip" href="#first-team" data-group-pick="mid" data-n-2526="9" data-n-2627="11" data-n-all="11">Midfielders<span>9</span></a>
+          <a class="sq-chip" href="#first-team" data-group-pick="fwd" data-n-2526="4" data-n-2627="4" data-n-all="4">Forwards<span>4</span></a>
         </div>
         <div class="sq-groups rv">
         <section class="sq-grp" data-group="gk">
@@ -2009,6 +2011,6 @@
   </footer>
 <div class="toasts" data-toasts role="region" aria-label="Notifications" aria-live="polite"></div>
 
-<script src="/sa.js?v=23729123" defer></script>
+<script src="/sa.js?v=a195532b" defer></script>
 </body>
 </html>

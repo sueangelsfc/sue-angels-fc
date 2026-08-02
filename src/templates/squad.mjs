@@ -264,8 +264,17 @@ export function squad(d) {
   const seasonTabs = VIEWS.length > 1 ? `<div class="sq-seasons" data-season-filter role="group"
         aria-label="Season">
         ${VIEWS.map((v, i) => {
-    const count = v === 'all' ? all.length : all.filter((p) => (p.seasons || []).includes(v)).length;
     const games = v === 'all' ? (d.played || []).length : playedIn(v);
+    /* The same count the hero states, worked out the same way: who ACTUALLY
+       PLAYED once a season has been played, and who is in the squad while it
+       has not. The tab said 34 players over a hero saying 32 used, which is
+       two answers to one question on the same screen. */
+    const count = games
+      ? all.filter((p) => {
+        const st = statsIn(v, p.num);
+        return (st.starts || 0) + (st.subApps || 0) > 0;
+      }).length
+      : first.filter((p) => (p.seasons || []).includes(v)).length;
     const note = `${count} player${count === 1 ? '' : 's'} · ${games ? `${games} match${games === 1 ? '' : 'es'}` : 'no matches yet'}`;
     return `<button class="sq-season${i === 0 ? ' is-on' : ''}" type="button"
           data-season="${attr(v)}" data-view="${attr(viewKey(v))}"
@@ -275,27 +284,87 @@ export function squad(d) {
   }).join('\n        ')}
       </div>` : '';
 
+  /* The chips count what the SEASON TAB is showing, not the whole roster.
+     They were built once from every player in the band, so the 25/26 tab
+     listed thirty-four players above a row of chips adding up to twenty-four.
+     Every view's counts ride on the chip and the tab rewrites them, exactly
+     as the cards' figures do.
+
+     A group with nobody in it that season is hidden rather than shown as a
+     zero: "Forwards 0" is a heading for a filter that would return nothing. */
   const chips = (list, scope) => {
     const groups = byGroup(list);
+    const inView = (p, v) => v === 'all' || (p.seasons || []).includes(v);
+    const counts = (pick) => VIEWS
+      .map((v) => ` data-n-${viewKey(v)}="${attr(list.filter((p) => inView(p, v) && pick(p)).length)}"`)
+      .join('');
+    const v0 = VIEWS[0];
+    const n0 = (pick) => list.filter((p) => inView(p, v0) && pick(p)).length;
     return `<div class="sq-chips" data-filter-scope="${attr(scope)}">
-          <a class="sq-chip is-on" href="#${attr(scope)}" data-group-all>All<span>${esc(list.length)}</span></a>
-          ${groups.map((g) => `<a class="sq-chip" href="#${attr(scope)}" data-group-pick="${attr(g.key)}">${esc(g.label)}<span>${esc(g.players.length)}</span></a>`).join('\n          ')}
+          <a class="sq-chip is-on" href="#${attr(scope)}" data-group-all${counts(() => true)}>All<span>${esc(n0(() => true))}</span></a>
+          ${groups.map((g) => {
+    const pick = (p) => p.positionGroup === g.key;
+    return `<a class="sq-chip" href="#${attr(scope)}" data-group-pick="${attr(g.key)}"${counts(pick)}${n0(pick) ? '' : ' hidden'}>${esc(g.label)}<span>${esc(n0(pick))}</span></a>`;
+  }).join('\n          ')}
         </div>`;
   };
 
-  /* ================= HERO ================= */
+  /* ================= HERO =================
+     The eyebrow, the sentence and the three tallies all follow the season
+     tab. They used to be one fixed claim about 25/26 sitting above a filter
+     that could be showing any season: "The players who won League Ten
+     unbeaten" over a 26/27 squad that has not kicked a ball.
+
+     Every view's figures ride on the elements and the tab rewrites them, so
+     the page reads correctly with the script blocked (it shows the first
+     tab's, which is the season the page opens on) and follows it when it
+     runs. */
+  const heroFor = (v) => {
+    const played = (d.played || []).filter((m) => v === 'all' || m.season === v);
+    const lg = teamSummary(played.filter((m) => m.competition === CLUB.division));
+    /* WHICH POOL the figures describe, and it is not the same question in
+       August as it is in May.
+
+       A season that has been played is described by who ACTUALLY PLAYED IT,
+       which includes the eleven who have since retired or moved on: they were
+       there, and every goal in the total is one of theirs. Counting only
+       today's first team gave 22 players and then their 123 goals, which is
+       two different squads in one sentence.
+
+       A season not yet started has nobody who has played it, so the only
+       honest figure is who is in the squad for it. */
+    const featured = all.filter((p) => {
+      const st = statsIn(v, p.num);
+      return (st.starts || 0) + (st.subApps || 0) > 0;
+    });
+    const usePlayed = played.length > 0;
+    const pool = usePlayed ? featured : first.filter((p) => (p.seasons || []).includes(v));
+    const goals = pool.reduce((n, p) => n + (statsIn(v, p.num).goals || 0), 0);
+    return {
+      eyebrow: v === 'all' ? 'Every season' : `First team · ${v}`,
+      label: usePlayed ? 'Players used' : 'In the first team',
+      lede: v === 'all'
+        ? 'Every player who has pulled on the shirt, grouped by where they actually line up. Every number here is counted from the team sheets.'
+        : usePlayed
+          ? `The ${pool.length} used in ${v}, grouped by where they actually line up. Every number here is counted from the team sheets.`
+          : `The squad for ${v}, grouped by where they line up. Nothing has been played yet, so the figures fill in as results come in.`,
+      tally: [pool.length, goals, lg.cleanSheets || 0],
+    };
+  };
+  const heroData = VIEWS.map((v) => ` data-hero-${viewKey(v)}="${attr(JSON.stringify(heroFor(v)))}"`).join('');
+  const h0 = heroFor(VIEWS[0]);
   const hero = `<section class="sq-hero" aria-labelledby="sq-h">
-      <div class="wrap sq-hero__grid">
+      <div class="wrap sq-hero__grid" data-sq-hero${heroData}>
         <div>
-          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> First team · ${esc(d.currentSeason)}</p>
+          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i>
+            <span data-hero-eyebrow>${esc(h0.eyebrow)}</span></p>
           <h1 class="sq-hero__title" id="sq-h">The squad<span class="volt">.</span></h1>
-          <p class="sq-hero__lede">The players who won ${esc(CLUB.division)} unbeaten, grouped by where
-            they actually line up. Every number here is counted from the team sheets.</p>
+          <p class="sq-hero__lede" data-hero-lede>${esc(h0.lede)}</p>
         </div>
         <dl class="sq-tally glassbox">
-          <div><dt>In the first team</dt><dd>${esc(first.length)}</dd></div>
-          <div><dt>Goals between them</dt><dd>${esc(squadGoals)}</dd></div>
-          <div><dt>League clean sheets</dt><dd>${esc(league.cleanSheets)}</dd></div>
+          <div><dt data-hero-dt>${esc(h0.label)}</dt><dd>${esc(h0.tally[0])}</dd></div>
+          <div><dt>Goals between them</dt><dd>${esc(h0.tally[1])}</dd></div>
+          <div><dt>League clean sheets</dt><dd>${esc(h0.tally[2])}</dd></div>
         </dl>
       </div>
     </section>`;
@@ -303,7 +372,10 @@ export function squad(d) {
   /* ================= 01 FIRST TEAM ================= */
   const firstBand = `<section class="sec sq-first" id="first-team" aria-labelledby="sq-first-h">
       <div class="wrap">
-        ${rail(1, 'First team', `${first.length} players`)}
+        <!-- The count follows the season tab: the band is filtered, so a
+             fixed figure beside it is a caption for a different page. -->
+        ${rail(1, 'First team', `${first.filter((p) => (p.seasons || []).includes(VIEWS[0])).length} players`)
+    .replace('<span class="xrail__r">', '<span class="xrail__r" data-band-count>')}
         <h2 class="h2 rv" id="sq-first-h">The first <span class="volt">team.</span></h2>
         ${seasonTabs}
         ${chips(first, 'first-team')}

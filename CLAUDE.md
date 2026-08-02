@@ -197,6 +197,8 @@ Push to `main` → `sue-angels-fc-b469` auto-deploys to www.suesangelsfc.co.uk. 
 
 ## Conventions
 - British spelling. "League Ten / League Eight", never "Division".
+- **Five pages carry a season filter** (squad, player stats, results, club records, awards) and they all use the same one: `src/lib/seasons.mjs` builds the views and the bar, `[data-season-switch]` in `sa.js` shows the matching `[data-season-view]` panel. **A page adding a season filter writes no JavaScript.** Every panel ships in the HTML, so with the script blocked the page still shows the season it opened on. The bar also fires a `sa:season` event, which is how the results page filters its match list from the same press rather than growing a second control.
+- **Every figure on a filtered page must describe the filter.** This went wrong in six places at once: the stats leaders were career totals under "The season's leaders", the squad chips totalled 24 under a tab reading 34, "Who scored them" counted every goal the club has scored, and three heroes named a fixed season above tabs that could show any. If a tab changes what is listed, it changes what is counted and what the sentence above it says.
 - **Never type a season into copy.** `d.currentSeason`, `d.nextSeason` and `d.latestSeason` are derived, and `d.nextSeason` counts on from the last known season so the site never runs out of an answer. Eight pages said "26/27" in their copy, five of them as `d.nextSeason || '26/27'` where `d.nextSeason` did not exist, so the fallback WAS the value. Every one would have been wrong from July 2027.
 - **No em dashes** in copy.
 - Club email is **suesangelsfc@gmail.com**. `hello@suesangelsfc.co.uk` does not exist.

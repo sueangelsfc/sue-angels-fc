@@ -661,8 +661,8 @@ const BUDGET = {
   'sa.css': 22,
   'home.css': 26,
   'sa.js': 24,
-  'control.css': 7,
-  'control.js': 16,
+  'control.css': 9,
+  'control.js': 17,
   /* The heaviest, and fairly: the pitch, the position codes, five tabs, the
      goal detail (what it was struck with, where from, what the ball was doing,
      who made it and how), and the composer that turns a coach's bullets into a
@@ -676,6 +676,7 @@ const BUDGET = {
      parallel tag list in step. */
   'control-content.js': 15,
   'control-squad.js': 8,
+  'control-coaches.js': 8,
   'control-photos.js': 6,
   'control-photos-donations.js': 6,
   'control-pipeline.js': 6,

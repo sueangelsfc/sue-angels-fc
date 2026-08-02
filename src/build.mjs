@@ -223,6 +223,13 @@ const adminSeed = {
      replacement for it, so the team sheet asks for both and everything derived
      from where somebody stood is untouched by it. */
   roles: ROLE_VOCAB,
+  /* The staff as the website builds them, so the panel's editor opens showing
+     what the page actually shows, including the founding three that live in
+     the site's own records rather than in a database row. */
+  coaches: d.coaches.map((c) => ({
+    id: c.id || c.slug, name: c.name, role: c.role || '', short: c.short || '',
+    photo: c.photo || '', photoUrl: c.photoUrl || '', bio: c.bio || [],
+  })),
 };
 /* The seed is DATA, and it grew: the squad, every match's fixture fields, the
    known clubs and competitions. Inlined it pushed control.js past its budget

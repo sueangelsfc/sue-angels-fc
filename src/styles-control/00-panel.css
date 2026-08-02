@@ -190,6 +190,87 @@ body:has(.cp) .atmos__blob { animation: none; }
 @media (min-width: 900px) { .cp-menubtn { display: none; } }
 
 /* ==========================================================================
+   DASHBOARD TILES
+
+   Eight identical tiles in one auto-filling grid, and a grid row stretches
+   every cell to the tallest: one label wrapping onto three lines inflated all
+   eight to nearly three hundred pixels of mostly nothing.
+
+   `align-items: start` is the fix for the height. The rest is hierarchy: a
+   COUNT is a fact and sits quietly, a PROGRESS tile is a job half done and is
+   a button, because a number you cannot act on from where you are reading it
+   is a number that stays the same all season.
+   ========================================================================== */
+.cpt-grid {
+  display: grid;
+  gap: var(--space-3);
+  /* start, not stretch: a tile is as tall as what is in it. */
+  align-items: start;
+  /* 260 rather than 178: seven tiles across five columns leaves a two-tile
+     orphan row, four columns leaves three, which reads as a grid rather than
+     as something that ran out. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+  margin-block-end: var(--space-6);
+}
+.cpt-grid--go { margin-block-end: 0; }
+
+.cpt {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+.cpt__v {
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  font-weight: var(--weight-bold);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+/* The denominator is context, not the figure, so it does not compete with it.
+   "9/33" also fits on one line where "9 of 33" did not. */
+.cpt__v i {
+  font-style: normal;
+  font-size: var(--step-0);
+  color: var(--text-subtle);
+  font-weight: var(--weight-medium);
+}
+.cpt__l {
+  font-size: var(--step--2);
+  color: var(--text-muted);
+  line-height: 1.25;
+}
+.cpt__s { font-size: var(--step--2); color: var(--text-subtle); }
+
+/* A job. Reads as pressable and says what is left rather than what is done. */
+.cpt--go {
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.cpt--go:hover { border-color: var(--border-brand); background: var(--surface-inset); }
+.cpt--go:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.cpt__bar {
+  display: block;
+  height: 5px;
+  margin-block-start: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-inset);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.cpt__bar i { display: block; height: 100%; background: var(--brand); }
+/* Finished tiles stop asking. Weight and a quieter bar, not a second colour:
+   green here would be the only green on a screen full of orange. */
+.cpt--go.is-done .cpt__bar i { background: var(--text-subtle); }
+.cpt--go.is-done .cpt__v { color: var(--text-muted); }
+
+/* ==========================================================================
    SECTION FURNITURE
 
    Every module used to open with a hand-built `<div class="panel"

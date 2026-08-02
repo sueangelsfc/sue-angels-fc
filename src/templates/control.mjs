@@ -15,6 +15,7 @@ export const MODULES = [
   { key: 'fixtures', label: 'Fixtures', icon: 'calendar' },
   { key: 'results', label: 'Results and reports', icon: 'shield' },
   { key: 'squad', label: 'Squad and staff', icon: 'users' },
+  { key: 'coaches', label: 'Coaches', icon: 'users' },
   { key: 'photos', label: 'Player photographs', icon: 'camera' },
   { key: 'news', label: 'News', icon: 'news' },
   { key: 'media', label: 'Gallery albums', icon: 'camera' },

@@ -1,4 +1,4 @@
-window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"sb_publishable_2VEdxWZCLW98qItINt6TPQ_r7y_Tcly"};window.SA_EMAIL="suesangelsfc@gmail.com";window.CP_CHUNKS={"match":"control-match.js?v=c4594f1d","photos":"control-photos.js?v=1aaaead8","squad":"control-squad.js?v=dc46a6fd","content":"control-content.js?v=a1d7ec90","photos-donations":"control-photos-donations.js?v=5ed0c2d5","pipeline":"control-pipeline.js?v=ed7d09c1","covers":"control-covers.js?v=4eb2aa4e","video":"control-video.js?v=71bfcd0a","hero":"control-hero.js?v=1e574542"};
+window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"sb_publishable_2VEdxWZCLW98qItINt6TPQ_r7y_Tcly"};window.SA_EMAIL="suesangelsfc@gmail.com";window.CP_CHUNKS={"match":"control-match.js?v=c4594f1d","photos":"control-photos.js?v=1aaaead8","squad":"control-squad.js?v=dc46a6fd","content":"control-content.js?v=a1d7ec90","coaches":"control-coaches.js?v=67fd23dd","photos-donations":"control-photos-donations.js?v=5ed0c2d5","pipeline":"control-pipeline.js?v=ed7d09c1","covers":"control-covers.js?v=4eb2aa4e","video":"control-video.js?v=71bfcd0a","hero":"control-hero.js?v=1e574542"};
 /* ==========================================================================
    CONTROL PANEL DATA LAYER
    Thin wrapper over Supabase Auth + REST. Every write is attributed and, for
@@ -448,16 +448,34 @@ window.CP = (function () {
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
   }
 
-  /* "r20251123-catania" carries the date and the opponent already; this makes
-     it readable without another round trip for data the panel does not hold.
-     It lives in the core because the dashboard, the covers and the video
-     section all print match names and none of them should carry a copy. */
+  /* A match by its opponent and its date, in the words the club uses.
+
+     This used to un-slug the row key, which is where "Portolondon Drt" and
+     "Bpr" came from: the key holds a squashed, lower-cased fragment of a club
+     name chosen to be a safe filename, and turning it back into English is
+     not something that can be done. The generator ships the real fixture for
+     every match, so look the name up rather than trying to reconstruct it.
+
+     Falls back to the old de-slugging only for a match the seed has never
+     heard of, which is one recorded since the last publish. */
+  var MATCH_BY_ID = {};
+  (SEED.matches || []).forEach(function (m) { MATCH_BY_ID[m.id] = m; });
+  var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
   function matchLabel(key) {
+    var rec = MATCH_BY_ID[key];
     var m = String(key).match(/^[a-z](\d{4})(\d{2})(\d{2})-(.+)$/);
+    var when = m
+      ? Number(m[3]) + ' ' + (MON[Number(m[2]) - 1] || '') + ' ' + m[1]
+      : '';
+    if (rec) {
+      var home = /Sue.s Angels/.test(rec.home || '');
+      var opp = home ? rec.away : rec.home;
+      if (opp) return (home ? 'v ' : 'away to ') + opp + (when ? ' \u00b7 ' + when : '');
+    }
     if (!m) return key;
-    var MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    var opp = m[4].replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
-    return opp + ' \u00b7 ' + Number(m[3]) + ' ' + (MON[Number(m[2]) - 1] || '') + ' ' + m[1];
+    var guess = m[4].replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+    return guess + (when ? ' \u00b7 ' + when : '');
   }
 
   /* Anything somebody might paste out of YouTube: the share link, the address
@@ -502,7 +520,45 @@ window.CP = (function () {
     refresh: function (key) { return refresh(key); },
   };
 
-  /* ---- Dashboard ---- */
+  /* ==========================================================================
+     DASHBOARD
+
+     It was eight identical tiles in one auto-filling grid, and a grid row
+     stretches every cell to the tallest one: "9 of 33 matches with a report"
+     wrapped onto three lines and inflated all eight to nearly three hundred
+     pixels of mostly nothing. Every number also carried the same weight, so
+     606 photographs shouted as loudly as the one figure that needed doing
+     something about.
+
+     Two kinds of tile now. A COUNT is a fact and sits quietly. A PROGRESS
+     tile is a job half done, carries a bar, and is what the eye should land
+     on, because those are the three questions this club actually has: how
+     many matches still have no report, how many players have no photograph,
+     how many opponents have no badge.
+     ========================================================================== */
+  function countTile(value, label, sub) {
+    return '<div class="cpt">' +
+      '<span class="cpt__v">' + esc(value) + '</span>' +
+      '<span class="cpt__l">' + esc(label) + '</span>' +
+      (sub ? '<span class="cpt__s">' + esc(sub) + '</span>' : '') +
+    '</div>';
+  }
+
+  /* done of total, with the bar. Complete is stated rather than drawn: a full
+     bar and a nearly full one look the same at a glance and "all of them" is
+     the thing worth knowing. */
+  function progressTile(done, total, label, goto) {
+    var pct = total ? Math.round((done / total) * 100) : 0;
+    var full = total > 0 && done >= total;
+    return '<button type="button" class="cpt cpt--go' + (full ? ' is-done' : '') + '"' +
+        (goto ? ' data-goto="' + esc(goto) + '"' : '') + '>' +
+      '<span class="cpt__v">' + esc(done) + '<i>/' + esc(total) + '</i></span>' +
+      '<span class="cpt__l">' + esc(label) + '</span>' +
+      '<span class="cpt__bar" aria-hidden="true"><i style="width:' + pct + '%"></i></span>' +
+      '<span class="cpt__s">' + (full ? 'All done' : esc(total - done) + ' to go') + '</span>' +
+    '</button>';
+  }
+
   M.dashboard = function (host) {
     return Promise.all([
       CP.readAll('matches'), CP.readAll('articles'), CP.readAll('gallery'),
@@ -510,51 +566,68 @@ window.CP = (function () {
       CP.state.isAdmin ? CP.readEnquiries() : Promise.resolve([]),
       CP.state.isAdmin ? CP.readSupporters() : Promise.resolve([]),
       CP.readAll('player_photos'),
+      CP.readAll('team_badges'),
     ]).then(function (r) {
       var matches = r[0], articles = r[1], gallery = r[2], recog = r[3], fixtures = r[4];
-      var enq = r[5] || [], sup = r[6] || [];
+      var enq = r[5] || [], sup = r[6] || [], blobs = r[7] || [], badges = r[8] || [];
 
       var withReport = matches.filter(function (m) {
         return m.data && (m.data.polishedReport || m.data.commentary);
       }).length;
       var photos = gallery.reduce(function (a, g) { return a + ((g.data && g.data.photos) || []).length; }, 0);
       var newEnq = enq.filter(function (e) { return !e.status || e.status === 'new'; }).length;
-      var photoCount = (r[7] || []).filter(function (x) { return /^\d+$/.test(x.key); }).length;
+      var squadSize = (SEED.squad || []).length;
+      var withPhoto = blobs.filter(function (x) { return /^\d+$/.test(x.key); }).length;
+      var clubs = (SEED.clubs || []).length;
+      var withBadge = badges.filter(function (x) { return (x.data || {}).src; }).length;
+      var withCover = matches.filter(function (m) { return (m.data || {}).cover; }).length;
 
       var warn = [];
       if (!CP.state.isAdmin) {
-        warn.push('This account is not in the administrator registry, so everything here is read-only. Run migration 002 and add the account to admin_users.');
+        warn.push(['This account is not in the administrator registry, so everything here is '
+          + 'read-only.', null, null]);
       }
-      if (!fixtures.length) warn.push('No fixtures are stored. The website shows "to be confirmed" until the new season fixtures are added.');
-      if (matches.length - withReport > 0) {
-        warn.push((matches.length - withReport) + ' matches have no written report. '
-          + 'Results and reports, then Edit, then the Report tab.');
-      }
-      var noPhoto = (SEED.squad || []).length - photoCount;
-      if (noPhoto > 0) {
-        warn.push(noPhoto + ' players have no photograph, so they show as their initials. '
-          + 'Player photographs.');
+      if (!fixtures.length) {
+        warn.push(['No fixtures are stored, so the website says "to be confirmed" until some are '
+          + 'added.', 'Add a fixture', 'fixtures']);
       }
 
       host.innerHTML =
-        '<div class="grid grid--4" style="margin-bottom:var(--space-6)">' +
-          tile(matches.length, 'Matches recorded') +
-          tile(fixtures.length, 'Fixtures to come') +
-          tile(withReport + ' of ' + matches.length, 'Matches with a report') +
-          tile(photos, 'Photographs', gallery.length + ' albums') +
-          tile(articles.length, 'Articles') +
-          tile(recog.length, 'Recognition entries') +
-          tile(CP.state.isAdmin ? newEnq : '-', 'New enquiries',
+        /* The counts: what the club has. */
+        '<div class="cpt-grid">' +
+          countTile(matches.length, 'Matches recorded') +
+          countTile(fixtures.length, 'Fixtures to come') +
+          countTile(articles.length, 'Articles') +
+          countTile(photos, 'Photographs', gallery.length + ' albums') +
+          countTile(recog.length, 'Recognition entries') +
+          countTile(CP.state.isAdmin ? newEnq : '-', 'New enquiries',
             CP.state.isAdmin ? enq.length + ' in all' : 'sign in as an administrator') +
-          tile(CP.state.isAdmin ? sup.length : '-', 'Newsletter subscribers') +
+          countTile(CP.state.isAdmin ? sup.length : '-', 'Newsletter subscribers') +
         '</div>' +
+
+        /* The progress: what is half done. These are buttons because every one
+           of them is a job, and a number you cannot act on from where you are
+           reading it is a number that stays the same all season. */
+        sec({
+          title: 'Where the gaps are',
+          sub: 'Each of these is a job, and each one is a button. Nothing here is broken; it is '
+            + 'what has not been filled in yet.',
+          body: '<div class="cpt-grid cpt-grid--go">' +
+            progressTile(withReport, matches.length, 'Matches with a report', 'results') +
+            progressTile(withPhoto, squadSize, 'Players with a photograph', 'photos') +
+            progressTile(withBadge, clubs, 'Opponents with a badge', 'league') +
+            progressTile(withCover, matches.length, 'Matches with a cover picture', 'covers') +
+          '</div>',
+        }) +
 
         (warn.length
           ? sec({
             warn: true,
             title: 'Needs attention',
             body: '<ul class="cp-list">' + warn.map(function (w) {
-              return '<li>' + esc(w) + '</li>';
+              return '<li>' + esc(w[0]) +
+                (w[1] ? ' <button type="button" class="btn btn--ghost btn--sm" data-goto="'
+                  + esc(w[2]) + '">' + esc(w[1]) + '</button>' : '') + '</li>';
             }).join('') + '</ul>',
           })
           : '') +
@@ -562,8 +635,7 @@ window.CP = (function () {
         '<div class="grid grid--2">' +
           sec({
             title: 'Recently changed',
-            /* This listed raw row keys, which are the database's names for
-               things and nobody else's. */
+            sub: 'The last six matches anybody touched.',
             body: feed(matches.slice()
               .sort(function (a, b) { return String(b.updated_at).localeCompare(String(a.updated_at)); })
               .slice(0, 6)
@@ -576,26 +648,20 @@ window.CP = (function () {
               '<button class="btn btn--glass btn--sm" data-goto="fixtures">Add a fixture</button>' +
               '<button class="btn btn--glass btn--sm" data-goto="results">Record a match</button>' +
               '<button class="btn btn--glass btn--sm" data-goto="news">Write an article</button>' +
-              '<button class="btn btn--glass btn--sm" data-goto="photos">Add player photographs</button>' +
+              '<button class="btn btn--glass btn--sm" data-goto="media">Add photographs</button>' +
               '<button class="btn btn--glass btn--sm" data-goto="inbox">Read the inbox</button>' +
             '</div>',
           }) +
         '</div>';
 
-      $$('[data-goto]', host).forEach(function (b) {
-        b.addEventListener('click', function () { show(b.getAttribute('data-goto')); });
+      host.addEventListener('click', function (e) {
+        var go = e.target.closest('[data-goto]');
+        if (go) show(go.getAttribute('data-goto'));
       });
       setCount('inbox', CP.state.isAdmin ? newEnq : 0);
     });
   };
 
-
-
-  
-  
-
-
-  
   /* ---- Inbox ---- */
   M.inbox = function (host) {
     if (!CP.state.isAdmin) {
@@ -818,7 +884,7 @@ window.CP = (function () {
   var CHUNK_OF = {
     fixtures: 'match', results: 'match',
     phototag: 'photos',
-    squad: 'squad',
+    squad: 'squad', coaches: 'coaches',
     news: 'content', media: 'content', recognition: 'content',
     league: 'content', sponsors: 'content',
     photos: 'photos-donations', donations: 'photos-donations',

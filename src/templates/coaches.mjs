@@ -33,6 +33,11 @@ const exists = (rel) => {
   catch { return false; }
 };
 const shotFor = (c) => {
+  /* An uploaded one wins: it is the most recent thing anybody chose, and it
+     lives in the club's storage rather than in the repo. `photo` is a path to
+     a file that ships with the site, so it is checked for existence; a URL
+     obviously cannot be. */
+  if (c.photoUrl && /^https?:\/\//.test(c.photoUrl)) return c.photoUrl;
   if (exists(c.photo)) return `/${c.photo.replace(/^\//, '')}`;
   return '';
 };

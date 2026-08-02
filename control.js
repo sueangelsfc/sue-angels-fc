@@ -920,7 +920,11 @@ window.CP = (function () {
      not obvious from the word alone. */
   var pub = $('#cp-publish');
   if (pub) pub.addEventListener('click', function () {
-    if (!guard()) return;
+    /* No client-side guard here, deliberately, and unlike every other write.
+       Permission is the database's answer and this button's whole job is to go
+       and get it. Refusing on the browser's copy of that answer means a wrong
+       copy stops the request before anything can tell you it was wrong, which
+       is exactly the situation where you most need to hear from the server. */
     confirmAction({
       title: 'Publish to the website?',
       body: 'This rebuilds the site from the database as it is right now. '
@@ -938,8 +942,14 @@ window.CP = (function () {
         .then(function (j) {
           pub.removeAttribute('data-loading');
           pub.textContent = 'Publish to site';
-          if (j && j.ok) toast(j.message || 'Publishing.', 'success');
-          else toast((j && j.error) || 'Could not publish.', 'error');
+          if (j && j.ok) { toast(j.message || 'Publishing.', 'success'); return; }
+          /* Say what actually happened. `detail` carries the status the
+             database gave back when the fault is in the website rather than in
+             the account, and printing it is the difference between somebody
+             fixing this in a minute and somebody going to look at the wrong
+             screen in Vercel. */
+          toast((j && j.error) || 'Could not publish.', 'error');
+          if (j && j.detail) toast(j.detail, 'error');
         })
         .catch(function () {
           pub.removeAttribute('data-loading');

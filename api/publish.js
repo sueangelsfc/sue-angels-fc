@@ -34,6 +34,18 @@
 // Until it is set this returns a clear "not configured" rather than pretending
 // to have published something.
 
+// The publishable key, from the file the website already ships it in. It is
+// designed to be public and every protection comes from RLS, so there is no
+// reason for this to be a second environment variable.
+//
+// It WAS one, and that was a bug: the activation note above lists exactly one
+// variable to set, so SUPABASE_ANON_KEY was never set, `apikey` fell back to
+// the caller's own login token, Supabase's gateway rejected the request, and
+// the function reported "your account is not a club administrator" to an
+// account that is one. A step nobody was told to perform is a step that does
+// not happen.
+import runtime from '../src/data/runtime.json' with { type: 'json' };
+
 const ALLOWED_ORIGINS = [
   'https://www.suesangelsfc.co.uk',
   'https://suesangelsfc.co.uk',
@@ -51,8 +63,8 @@ export default async function handler(req, res) {
   }
 
   const HOOK = process.env.DEPLOY_HOOK_URL;
-  const SB_URL = process.env.SUPABASE_URL || 'https://hvbquuvxcswylyguplfb.supabase.co';
-  const SB_ANON = process.env.SUPABASE_ANON_KEY;
+  const SB_URL = process.env.SUPABASE_URL || runtime.supabase.url;
+  const SB_ANON = process.env.SUPABASE_ANON_KEY || runtime.supabase.anonKey;
 
   const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '').trim();
   if (!token) {
@@ -61,23 +73,41 @@ export default async function handler(req, res) {
   }
 
   // Ask the database, not this file, whether the caller may publish.
+  //
+  // The two ways this can say no are NOT the same and must not read the same.
+  // "The database says you are not an administrator" is a fact about the
+  // caller. "The request never reached the database" is a fault in this
+  // deployment. Collapsing both into one message is what made a broken API key
+  // look like a permissions problem, and sent somebody to fix the wrong thing.
   try {
     const check = await fetch(`${SB_URL}/rest/v1/rpc/is_club_admin`, {
       method: 'POST',
       headers: {
-        apikey: SB_ANON || token,
+        apikey: SB_ANON,
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: '{}',
     });
-    const allowed = check.ok && (await check.text()).trim() === 'true';
-    if (!allowed) {
-      res.status(403).json({ ok: false, error: 'Your account is not a club administrator.' });
+    const said = (await check.text()).trim();
+    if (!check.ok) {
+      res.status(502).json({
+        ok: false,
+        error: 'The club database would not answer the permission check, so nothing was published. '
+          + 'This is a fault in the website, not with your account.',
+        detail: `${check.status} ${said.slice(0, 200)}`,
+      });
+      return;
+    }
+    if (said !== 'true') {
+      res.status(403).json({
+        ok: false,
+        error: 'The club database says this account is not an administrator, so it cannot publish.',
+      });
       return;
     }
   } catch (e) {
-    res.status(502).json({ ok: false, error: 'Could not check your access. Try again.' });
+    res.status(502).json({ ok: false, error: 'Could not reach the club database. Try again.' });
     return;
   }
 

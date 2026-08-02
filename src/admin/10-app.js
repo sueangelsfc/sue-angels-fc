@@ -16,6 +16,10 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   };
   var toast = function (m, k) { if (window.saToast) window.saToast(m, k); };
+  /* Club facts the generator knows and the browser otherwise could not: the
+     club's own name, the squad, the competitions and opponents already in the
+     record. Shipped as control-seed.js, ahead of this file. */
+  var SEED = window.SA_SEED || {};
 
   /* ---- Confirm dialog: every destructive action goes through this ------ */
   function confirmAction(opts) {
@@ -25,10 +29,10 @@
       back.setAttribute('role', 'dialog');
       back.setAttribute('aria-modal', 'true');
       back.innerHTML =
-        '<div class="modal glass glass--lg">' +
-          '<div class="modal__head"><h2 style="font-size:var(--step-2)">' + esc(opts.title) + '</h2></div>' +
-          '<p style="color:var(--text-muted)">' + esc(opts.body) + '</p>' +
-          (opts.detail ? '<p style="margin-top:var(--space-3);font-size:var(--step--1);color:var(--text-subtle)">' + esc(opts.detail) + '</p>' : '') +
+        '<div class="modal glass glass--lg" style="width:min(96vw,560px)">' +
+          '<div class="modal__head"><h2 class="mform__title">' + esc(opts.title) + '</h2></div>' +
+          '<p class="cp-head__sub">' + esc(opts.body) + '</p>' +
+          (opts.detail ? '<p class="cp-where">' + esc(opts.detail) + '</p>' : '') +
           '<div class="modal__foot">' +
             '<button class="btn btn--ghost" data-no>Cancel</button>' +
             '<button class="btn btn--danger" data-yes>' + esc(opts.confirmLabel || 'Delete') + '</button>' +
@@ -167,6 +171,7 @@
       CP.readAll('recognition'), CP.readAll('fixtures'),
       CP.state.isAdmin ? CP.readEnquiries() : Promise.resolve([]),
       CP.state.isAdmin ? CP.readSupporters() : Promise.resolve([]),
+      CP.readAll('player_photos'),
     ]).then(function (r) {
       var matches = r[0], articles = r[1], gallery = r[2], recog = r[3], fixtures = r[4];
       var enq = r[5] || [], sup = r[6] || [];
@@ -176,53 +181,67 @@
       }).length;
       var photos = gallery.reduce(function (a, g) { return a + ((g.data && g.data.photos) || []).length; }, 0);
       var newEnq = enq.filter(function (e) { return !e.status || e.status === 'new'; }).length;
+      var photoCount = (r[7] || []).filter(function (x) { return /^\d+$/.test(x.key); }).length;
 
       var warn = [];
       if (!CP.state.isAdmin) {
         warn.push('This account is not in the administrator registry, so everything here is read-only. Run migration 002 and add the account to admin_users.');
       }
       if (!fixtures.length) warn.push('No fixtures are stored. The website shows "to be confirmed" until the new season fixtures are added.');
-      if (matches.length - withReport > 0) warn.push((matches.length - withReport) + ' matches have no written report.');
+      if (matches.length - withReport > 0) {
+        warn.push((matches.length - withReport) + ' matches have no written report. '
+          + 'Results and reports, then Edit, then the Report tab.');
+      }
+      var noPhoto = (SEED.squad || []).length - photoCount;
+      if (noPhoto > 0) {
+        warn.push(noPhoto + ' players have no photograph, so they show as their initials. '
+          + 'Player photographs.');
+      }
 
       host.innerHTML =
         '<div class="grid grid--4" style="margin-bottom:var(--space-6)">' +
           tile(matches.length, 'Matches recorded') +
-          tile(fixtures.length, 'Upcoming fixtures') +
-          tile(articles.length, 'Articles') +
+          tile(fixtures.length, 'Fixtures to come') +
+          tile(withReport + ' of ' + matches.length, 'Matches with a report') +
           tile(photos, 'Photographs', gallery.length + ' albums') +
+          tile(articles.length, 'Articles') +
           tile(recog.length, 'Recognition entries') +
-          tile(CP.state.isAdmin ? newEnq : '-', 'New enquiries', CP.state.isAdmin ? enq.length + ' total' : 'sign in as admin') +
+          tile(CP.state.isAdmin ? newEnq : '-', 'New enquiries',
+            CP.state.isAdmin ? enq.length + ' in all' : 'sign in as an administrator') +
           tile(CP.state.isAdmin ? sup.length : '-', 'Newsletter subscribers') +
-          tile(withReport + '/' + matches.length, 'Matches with a report') +
         '</div>' +
+
         (warn.length
-          ? '<div class="panel" style="padding:var(--space-5);margin-bottom:var(--space-6);border-color:var(--warning)">' +
-            '<h3 style="font-size:var(--step-1);color:var(--warning);margin-bottom:var(--space-3)">Needs attention</h3>' +
-            '<ul style="display:flex;flex-direction:column;gap:var(--space-2);padding-left:var(--space-5)">' +
-            warn.map(function (w) { return '<li style="font-size:var(--step--1)">' + esc(w) + '</li>'; }).join('') +
-            '</ul></div>'
+          ? sec({
+            warn: true,
+            title: 'Needs attention',
+            body: '<ul class="cp-list">' + warn.map(function (w) {
+              return '<li>' + esc(w) + '</li>';
+            }).join('') + '</ul>',
+          })
           : '') +
+
         '<div class="grid grid--2">' +
-          '<div class="panel" style="padding:var(--space-5)">' +
-            '<h3 style="font-size:var(--step-1);margin-bottom:var(--space-4)">Recently changed</h3>' +
-            (matches.length
-              ? matches.slice().sort(function (a, b) { return String(b.updated_at).localeCompare(String(a.updated_at)); })
-                  .slice(0, 6).map(function (m) {
-                    return '<div class="row row--between" style="font-size:var(--step--1);padding-block:var(--space-2);border-bottom:1px solid var(--border)">' +
-                      '<span class="truncate">' + esc(m.key) + '</span>' +
-                      '<span style="color:var(--text-subtle)">' + esc(fmtDate(m.updated_at)) + '</span></div>';
-                  }).join('')
-              : empty('Nothing yet')) +
-          '</div>' +
-          '<div class="panel" style="padding:var(--space-5)">' +
-            '<h3 style="font-size:var(--step-1);margin-bottom:var(--space-4)">Shortcuts</h3>' +
-            '<div class="row">' +
+          sec({
+            title: 'Recently changed',
+            /* This listed raw row keys, which are the database's names for
+               things and nobody else's. */
+            body: feed(matches.slice()
+              .sort(function (a, b) { return String(b.updated_at).localeCompare(String(a.updated_at)); })
+              .slice(0, 6)
+              .map(function (m) { return [matchLabel(m.key), fmtDate(m.updated_at)]; })),
+          }) +
+          sec({
+            title: 'What usually needs doing',
+            sub: 'Everything saved here reaches the website when you press <b>Publish to site</b>.',
+            body: '<div class="cp-head__actions">' +
               '<button class="btn btn--glass btn--sm" data-goto="fixtures">Add a fixture</button>' +
-              '<button class="btn btn--glass btn--sm" data-goto="results">Enter a result</button>' +
+              '<button class="btn btn--glass btn--sm" data-goto="results">Record a match</button>' +
               '<button class="btn btn--glass btn--sm" data-goto="news">Write an article</button>' +
+              '<button class="btn btn--glass btn--sm" data-goto="photos">Add player photographs</button>' +
               '<button class="btn btn--glass btn--sm" data-goto="inbox">Read the inbox</button>' +
-            '</div>' +
-          '</div>' +
+            '</div>',
+          }) +
         '</div>';
 
       $$('[data-goto]', host).forEach(function (b) {
@@ -287,32 +306,29 @@
       }
       var withVideo = list.filter(function (r) { return (r.data || {}).videoId; }).length;
 
-      host.innerHTML =
-        '<div class="panel" style="padding:var(--space-5);margin-bottom:var(--space-5)">' +
-          '<h3 style="font-size:var(--step-1);margin-bottom:var(--space-3)">Match video</h3>' +
-          '<p style="font-size:var(--step--1);color:var(--text-muted);max-width:66ch">' +
-            'Paste a YouTube link against a match and it appears on the videos page, the live ' +
-            'page and that match’s own report. Any YouTube address works: the share link, ' +
-            'the one in the address bar, an embed link, a Short, or just the id.</p>' +
-          '<p style="font-size:var(--step--1);color:var(--text-muted);margin-top:var(--space-2)">' +
-            '<b>' + esc(withVideo) + '</b> of <b>' + esc(list.length) + '</b> matches have a video.</p>' +
-        '</div>' +
-        table(['Match', 'YouTube link or id', 'Video', ''],
-        list.map(function (r) {
+      host.innerHTML = sec({
+        title: 'Match video',
+        sub: 'Paste a YouTube link against a match and it appears on the videos page, the live page '
+          + 'and that match’s own report. Any YouTube address works: the share link, the one in the '
+          + 'address bar, an embed link, a Short, or just the id. '
+          + '<b>' + esc(withVideo) + '</b> of <b>' + esc(list.length) + '</b> matches have one.',
+        body: table(['Match', 'YouTube link or id', 'Video', ''], list.map(function (r) {
           var vid = (r.data || {}).videoId || '';
           return '<tr data-key="' + esc(r.key) + '">' +
-            '<td><b>' + esc(matchLabel(r.key)) + '</b><br>' +
-              '<span style="font-size:var(--step--2);color:var(--text-subtle)">' + esc(r.key) + '</span></td>' +
-            '<td><input class="input" data-vid value="' + esc(vid) + '" placeholder="https://youtu.be/…"></td>' +
+            '<td><b>' + esc(matchLabel(r.key)) + '</b></td>' +
+            '<td><input class="input" data-vid value="' + esc(vid) + '" '
+              + 'aria-label="YouTube link" placeholder="https://youtu.be/…"></td>' +
             '<td data-thumb>' + (vid
               ? '<a href="https://www.youtube.com/watch?v=' + esc(vid) + '" target="_blank" rel="noopener">'
                 + '<img src="https://i.ytimg.com/vi/' + esc(vid) + '/default.jpg" alt="" width="80" height="60" '
                 + 'style="border-radius:6px;display:block"></a>'
-              : '<span style="color:var(--text-subtle);font-size:var(--step--2)">None</span>') + '</td>' +
+              : '<span class="badge badge--warning">None</span>') + '</td>' +
             '<td><button class="btn btn--primary btn--sm" data-save>Save</button>' +
               (vid ? ' <button class="btn btn--ghost btn--sm" data-clear>Clear</button>' : '') + '</td>' +
           '</tr>';
-        }).join(''));
+        }).join('')),
+        where: [['Videos', '/videos.html'], ['Live', '/live.html'], ['That match’s report', '/results.html']],
+      });
 
       /* One write path for both buttons: `id` empty means remove the field
          rather than storing an empty string the site would treat as a video. */
@@ -357,36 +373,51 @@
     }
     return Promise.all([CP.readEnquiries(), CP.readSupporters()]).then(function (r) {
       var enq = r[0] || [], sup = r[1] || [];
-      host.innerHTML =
-        '<div class="tabs" role="tablist" style="margin-bottom:var(--space-5)">' +
-          '<button class="tab" role="tab" aria-selected="true" data-tab="enq">Enquiries (' + enq.length + ')</button>' +
-          '<button class="tab" role="tab" aria-selected="false" data-tab="sup">Subscribers (' + sup.length + ')</button>' +
-        '</div>' +
-        '<div data-tabpane="enq">' +
-          '<div class="row row--between" style="margin-bottom:var(--space-4)">' +
-            '<input class="input" data-search placeholder="Search name, email or message" style="max-width:320px">' +
-            '<button class="btn btn--ghost btn--sm" data-csv-enq>Export CSV</button>' +
+      host.innerHTML = sec({
+        title: 'Inbox',
+        sub: 'Everything sent through the website: the join form, the contact form and the '
+          + 'sponsorship form all land here, and so does every newsletter sign-up. '
+          + 'They are hidden from anyone not signed in as an administrator, which is the '
+          + 'row-level security policy doing its job.',
+        body:
+          '<div class="tabs" role="tablist">' +
+            '<button class="tab" role="tab" aria-selected="true" data-tab="enq">Enquiries (' + enq.length + ')</button>' +
+            '<button class="tab" role="tab" aria-selected="false" data-tab="sup">Subscribers (' + sup.length + ')</button>' +
           '</div>' +
-          (enq.length ? table(['Received', 'Name', 'Email', 'Type', 'Message', ''], enq.map(function (e, i) {
-            return '<tr>' +
-              '<td>' + esc(fmtDate(e.created_at)) + '</td>' +
-              '<td>' + esc(e.name) + '</td>' +
-              '<td><a href="mailto:' + esc(e.email) + '">' + esc(e.email) + '</a></td>' +
-              '<td>' + esc(e.type || e.enquiry_type || '-') + '</td>' +
-              '<td class="cell-club">' + esc(String(e.message || '').slice(0, 90)) + '</td>' +
-              '<td><button class="btn btn--ghost btn--sm" data-del-enq="' + i + '">Delete</button></td>' +
-            '</tr>';
-          }).join('')) : empty('No enquiries yet', 'Submissions from the contact, join and sponsorship forms land here.')) +
-        '</div>' +
-        '<div data-tabpane="sup" hidden>' +
-          '<div class="row row--between" style="margin-bottom:var(--space-4)">' +
-            '<p style="color:var(--text-muted);font-size:var(--step--1)">' + sup.length + ' subscribers</p>' +
-            '<button class="btn btn--ghost btn--sm" data-csv-sup>Export CSV</button>' +
+          '<div data-tabpane="enq" style="margin-top:var(--space-4)">' +
+            '<div class="cp-head">' +
+              '<input class="input cp-search" data-search placeholder="Search name, email or message" ' +
+                'aria-label="Search enquiries">' +
+              '<div class="cp-head__actions">' +
+                '<button class="btn btn--ghost btn--sm" data-csv-enq>Export CSV</button></div>' +
+            '</div>' +
+            (enq.length ? table(['Received', 'Name', 'Email', 'About', 'Message', ''], enq.map(function (e, i) {
+              return '<tr>' +
+                '<td>' + esc(fmtDate(e.created_at)) + '</td>' +
+                '<td><b>' + esc(e.name) + '</b></td>' +
+                '<td><a href="mailto:' + esc(e.email) + '">' + esc(e.email) + '</a></td>' +
+                '<td>' + esc(e.type || e.enquiry_type || '-') + '</td>' +
+                '<td class="cell-club">' + esc(String(e.message || '').slice(0, 90)) + '</td>' +
+                '<td><button class="btn btn--quiet btn--sm" data-del-enq="' + i + '">Delete</button></td>' +
+              '</tr>';
+            }).join('')) : empty('No enquiries yet',
+              'Submissions from the contact, join and sponsorship forms land here.')) +
           '</div>' +
-          (sup.length ? table(['Joined', 'Email', 'Source'], sup.map(function (s) {
-            return '<tr><td>' + esc(fmtDate(s.created_at)) + '</td><td>' + esc(s.email) + '</td><td>' + esc(s.source || '-') + '</td></tr>';
-          }).join('')) : empty('No subscribers yet')) +
-        '</div>';
+          '<div data-tabpane="sup" hidden style="margin-top:var(--space-4)">' +
+            '<div class="cp-head">' +
+              '<p class="cp-note">' + esc(sup.length) + ' people get the newsletter.</p>' +
+              '<div class="cp-head__actions">' +
+                '<button class="btn btn--ghost btn--sm" data-csv-sup>Export CSV</button></div>' +
+            '</div>' +
+            (sup.length ? table(['Joined', 'Email', 'Where from'], sup.map(function (s2) {
+              return '<tr><td>' + esc(fmtDate(s2.created_at)) + '</td><td>' + esc(s2.email) +
+                '</td><td>' + esc(s2.source || '-') + '</td></tr>';
+            }).join('')) : empty('No subscribers yet')) +
+          '</div>',
+        where: [['Join the club', '/join.html'], ['Club information', '/contact.html'],
+          ['Sponsors', '/sponsors.html']],
+        whereNote: 'these are the forms that feed it',
+      });
 
       $$('[data-tab]', host).forEach(function (t) {
         t.addEventListener('click', function () {
@@ -433,39 +464,56 @@
 
   /* ---- Settings ---- */
   M.settings = function (host) {
-    var s = CP.state;
+    var st = CP.state;
     host.innerHTML =
       '<div class="grid grid--2">' +
-        '<div class="panel" style="padding:var(--space-5)">' +
-          '<h3 style="font-size:var(--step-1);margin-bottom:var(--space-4)">Access</h3>' +
-          '<dl style="display:grid;gap:var(--space-3)">' +
-            '<div><dt style="font-size:var(--step--2);color:var(--text-subtle)">Signed in as</dt><dd>' + esc(s.user ? s.user.email : '-') + '</dd></div>' +
-            '<div><dt style="font-size:var(--step--2);color:var(--text-subtle)">Database role</dt><dd>' +
-              (s.role ? '<span class="badge badge--success">' + esc(s.role) + '</span>'
-                      : '<span class="badge badge--warning">not registered</span>') + '</dd></div>' +
-            '<div><dt style="font-size:var(--step--2);color:var(--text-subtle)">Can write</dt><dd>' + (s.isAdmin ? 'Yes' : 'No, read-only') + '</dd></div>' +
-            '<div><dt style="font-size:var(--step--2);color:var(--text-subtle)">User id</dt><dd style="font-family:var(--font-mono);font-size:var(--step--2)">' + esc(s.user ? s.user.id : '-') + '</dd></div>' +
+        sec({
+          title: 'Your access',
+          body: '<dl class="cp-dl">' +
+            '<div><dt>Signed in as</dt><dd>' + esc(st.user ? st.user.email : '-') + '</dd></div>' +
+            '<div><dt>What the database says you are</dt><dd>' +
+              (st.role ? '<span class="badge badge--success">' + esc(st.role) + '</span>'
+                : '<span class="badge badge--warning">not registered</span>') + '</dd></div>' +
+            '<div><dt>Can you change anything</dt><dd>' +
+              (st.isAdmin ? 'Yes' : 'No, everything is read-only') + '</dd></div>' +
+            '<div><dt>Your account id</dt><dd class="is-id">' +
+              esc(st.user ? st.user.id : '-') + '</dd></div>' +
           '</dl>' +
-          (!s.isAdmin ? '<p style="margin-top:var(--space-4);font-size:var(--step--1);color:var(--text-muted)">' +
-            'To grant access, run migrations/002_admin_role_and_rls.sql then insert this user id into public.admin_users.</p>' : '') +
-        '</div>' +
-        '<div class="panel" style="padding:var(--space-5)">' +
-          '<h3 style="font-size:var(--step-1);margin-bottom:var(--space-4)">Club information</h3>' +
-          '<p style="font-size:var(--step--1);color:var(--text-muted)">Club name, contact address, venue, social links and ' +
-          'sponsorship packages live in src/lib/club.mjs and ship as static HTML. They change by editing that file and ' +
-          'rebuilding, which keeps them fast and indexable rather than fetched at runtime.</p>' +
-          '<p style="margin-top:var(--space-3);font-size:var(--step--1);color:var(--text-muted)">Club email: <b>' + esc(window.SA_EMAIL || '') + '</b></p>' +
-        '</div>' +
-        '<div class="panel" style="padding:var(--space-5)">' +
-          '<h3 style="font-size:var(--step-1);margin-bottom:var(--space-4)">Audit trail</h3>' +
-          '<div data-audit><p style="color:var(--text-subtle);font-size:var(--step--1)">Loading...</p></div>' +
-        '</div>' +
-        '<div class="panel" style="padding:var(--space-5)">' +
-          '<h3 style="font-size:var(--step-1);margin-bottom:var(--space-4)">Backup</h3>' +
-          '<p style="font-size:var(--step--1);color:var(--text-muted);margin-bottom:var(--space-4)">' +
-          'Downloads every content table as JSON. Keep a copy before any bulk change.</p>' +
-          '<button class="btn btn--primary btn--sm" data-backup>Download full backup</button>' +
-        '</div>' +
+          (!st.isAdmin
+            ? '<p class="cp-note" style="margin-top:var(--space-4)">To grant access, run '
+              + 'migrations/002_admin_role_and_rls.sql and insert the account id above into '
+              + 'public.admin_users. Permission is the database’s answer, not this panel’s, which is '
+              + 'why nothing here can grant it to itself.</p>'
+            : ''),
+        }) +
+
+        sec({
+          title: 'How a change reaches the website',
+          body: '<p class="cp-note">Everything you save in this panel goes into the club’s database '
+            + 'straight away. The website is a set of files built from that database, so it does not '
+            + 'change until it is rebuilt. <b>Publish to site</b>, at the top of every screen, is what '
+            + 'rebuilds it. It takes a couple of minutes, the site stays up throughout, and if the '
+            + 'build fails the site stays exactly as it is.</p>' +
+            '<p class="cp-note">Anything you have not saved does not go out. Anything you have saved '
+            + 'does, including things saved days ago and never published.</p>',
+        }) +
+
+        sec({ title: 'Who changed what', body: '<div data-audit><p class="cp-note">Loading.</p></div>' }) +
+
+        sec({
+          title: 'Backup',
+          sub: 'Every content table as one JSON file. Worth taking before any bulk change: it is the '
+            + 'only copy that does not depend on the database being reachable.',
+          actions: '<button class="btn btn--primary btn--sm" data-backup>Download a full backup</button>',
+        }) +
+
+        sec({
+          title: 'Club details',
+          sub: 'The club name, contact address, venue, social links and sponsorship packages are in '
+            + 'the site’s own source so they ship as static HTML and are indexable rather than '
+            + 'fetched when somebody arrives. Changing one is a code change and a rebuild.',
+          body: '<p class="cp-note">Club email: <b>' + esc(window.SA_EMAIL || '') + '</b></p>',
+        }) +
       '</div>';
 
     $('[data-backup]', host).addEventListener('click', function () {
@@ -486,15 +534,14 @@
     var auditHost = $('[data-audit]', host);
     return CP.rest('GET', 'audit_log?select=*&order=at.desc&limit=12').then(function (rows) {
       auditHost.innerHTML = (rows && rows.length)
-        ? rows.map(function (a) {
-            return '<div class="row row--between" style="font-size:var(--step--2);padding-block:var(--space-2);border-bottom:1px solid var(--border)">' +
-              '<span class="truncate">' + esc(a.action) + ' ' + esc(a.table_name || '') + ' ' + esc(a.row_key || '') + '</span>' +
-              '<span style="color:var(--text-subtle)">' + esc(fmtDate(a.at)) + '</span></div>';
-          }).join('')
-        : '<p style="color:var(--text-subtle);font-size:var(--step--1)">No entries yet.</p>';
+        ? feed(rows.map(function (a2) {
+          return [(a2.action + ' ' + (a2.table_name || '') + ' ' + (a2.row_key || '')).trim(),
+            fmtDate(a2.at)];
+        }))
+        : '<p class="cp-note">Nothing recorded yet.</p>';
     }).catch(function () {
-      auditHost.innerHTML = '<p style="color:var(--text-subtle);font-size:var(--step--1)">' +
-        'Audit table not present. Run migrations/002_admin_role_and_rls.sql to enable it.</p>';
+      auditHost.innerHTML = '<p class="cp-note">The audit table is not there yet. '
+        + 'Run migrations/002_admin_role_and_rls.sql to switch it on.</p>';
     });
   };
 
@@ -542,6 +589,7 @@
     squad: 'squad',
     news: 'content', media: 'content', recognition: 'content',
     league: 'content', sponsors: 'content',
+    photos: 'photos-donations', donations: 'photos-donations',
   };
   var pending = {};
   function need(key) {

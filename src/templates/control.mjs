@@ -15,6 +15,7 @@ export const MODULES = [
   { key: 'fixtures', label: 'Fixtures', icon: 'calendar' },
   { key: 'results', label: 'Results and reports', icon: 'shield' },
   { key: 'squad', label: 'Squad and staff', icon: 'users' },
+  { key: 'photos', label: 'Player photographs', icon: 'camera' },
   { key: 'news', label: 'News', icon: 'news' },
   { key: 'media', label: 'Gallery albums', icon: 'camera' },
   { key: 'phototag', label: 'Tag players in photos', icon: 'users' },
@@ -22,6 +23,7 @@ export const MODULES = [
   { key: 'recognition', label: 'Recognition', icon: 'trophy' },
   { key: 'league', label: 'League table', icon: 'chart' },
   { key: 'sponsors', label: 'Sponsors', icon: 'heart' },
+  { key: 'donations', label: 'Donations', icon: 'heart' },
   { key: 'inbox', label: 'Inbox', icon: 'mail' },
   { key: 'settings', label: 'Settings', icon: 'shield' },
 ];

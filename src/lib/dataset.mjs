@@ -157,6 +157,11 @@ export function buildDataset() {
      into the code baseline, so a new signing does not need a developer. */
   const addedPlayers = (blob('roster:s2627')?.players || []).filter((p) => p && p.num);
 
+  /* Where the cause page's donate button points. Set in the panel; the page
+     keeps its own fallback so an empty record can never leave the button
+     pointing nowhere. */
+  const donate = blob('donate:config') || {};
+
   const squad = [...(ps.SQUAD || []), ...addedPlayers].map((p) => {
     const name = `${p.first} ${p.last}`.trim();
     const pos = posByNum.get(p.num);
@@ -442,7 +447,7 @@ export function buildDataset() {
     rawMatches: rawResults,
     squad, players, statsByNum, nameFor,
     coaches, table, leagueScorers, leagueScorersByComp, nextDivisionTable, leagueResults,
-    articles, recognition, galleries, playerPhotos,
+    articles, recognition, galleries, playerPhotos, donate,
     seasons, seasonInfo, competitions, knownClubs, badges,
     currentSeason: ps.CURRENT_SEASON,
     leagueTotalGames: ps.LEAGUE_TOTAL_GAMES,

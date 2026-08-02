@@ -29,7 +29,7 @@
 <link rel="preload" href="/assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
 
 <link rel="stylesheet" href="/sa.css?v=80b85668">
-<link rel="stylesheet" href="/control.css?v=77b0e58f">
+<link rel="stylesheet" href="/control.css?v=3c7cdc04">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":["SportsTeam","SportsOrganization"],"@id":"https://www.suesangelsfc.co.uk/#club","name":"Sue's Angels FC","alternateName":"The Angels","url":"https://www.suesangelsfc.co.uk/","sport":"Association football","foundingDate":"2025","logo":"https://www.suesangelsfc.co.uk/assets/brand/badge.png","email":"suesangelsfc@gmail.com","inLanguage":"en-GB","memberOf":{"@type":"SportsOrganization","name":"Southern Sunday Football League"},"location":{"@type":"Place","name":"The Reeves Sports Club","address":{"@type":"PostalAddress","streetAddress":"Snakey Lane","addressLocality":"Hanworth","addressRegion":"London","addressCountry":"GB"}},"areaServed":[{"@type":"Place","name":"Kingston upon Thames"},{"@type":"Place","name":"Hanworth"},{"@type":"Place","name":"Sunbury-on-Thames"},{"@type":"Place","name":"Twickenham"},{"@type":"Place","name":"Staines-upon-Thames"}],"sameAs":["https://www.instagram.com/suesangelsfc/","https://www.tiktok.com/@suesangelsfc","https://www.facebook.com/people/Sues-Angels-FC/61576808678302/"]},{"@type":"WebSite","@id":"https://www.suesangelsfc.co.uk/#website","url":"https://www.suesangelsfc.co.uk/","name":"Sue's Angels FC","inLanguage":"en-GB","publisher":{"@id":"https://www.suesangelsfc.co.uk/#club"}},{"@type":"WebPage","@id":"https://www.suesangelsfc.co.uk/control.html#webpage","url":"https://www.suesangelsfc.co.uk/control.html","name":"Control panel · Sue's Angels FC","description":"Administrative control panel.","inLanguage":"en-GB","isPartOf":{"@id":"https://www.suesangelsfc.co.uk/#website"},"about":{"@id":"https://www.suesangelsfc.co.uk/#club"},"primaryImageOfPage":{"@type":"ImageObject","url":"https://www.suesangelsfc.co.uk/assets/social/og-default.jpg"}}]}</script>
 </head>
 <body class="is-control">
@@ -127,6 +127,11 @@
       <span class="cp-nav__count" data-count-for="squad" hidden></span>
     </button>
   </li><li>
+    <button class="cp-nav__item" type="button" data-module="photos">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.8l1.2-2h6.9l1.2 2h1.9A2.5 2.5 0 0 1 21 8.5v9A2.5 2.5 0 0 1 18.5 20h-13A2.5 2.5 0 0 1 3 17.5v-9z"/><circle cx="12" cy="12.6" r="3.4"/></svg><span>Player photographs</span>
+      <span class="cp-nav__count" data-count-for="photos" hidden></span>
+    </button>
+  </li><li>
     <button class="cp-nav__item" type="button" data-module="news">
       <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 5h11v14H4z"/><path d="M15 9h5v8a2 2 0 0 1-2 2h-3"/><path d="M7 9h5M7 12h5M7 15h3"/></svg><span>News</span>
       <span class="cp-nav__count" data-count-for="news" hidden></span>
@@ -160,6 +165,11 @@
     <button class="cp-nav__item" type="button" data-module="sponsors">
       <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 20s-7-4.4-7-9.4A4 4 0 0 1 12 7a4 4 0 0 1 7 3.6c0 5-7 9.4-7 9.4z"/></svg><span>Sponsors</span>
       <span class="cp-nav__count" data-count-for="sponsors" hidden></span>
+    </button>
+  </li><li>
+    <button class="cp-nav__item" type="button" data-module="donations">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 20s-7-4.4-7-9.4A4 4 0 0 1 12 7a4 4 0 0 1 7 3.6c0 5-7 9.4-7 9.4z"/></svg><span>Donations</span>
+      <span class="cp-nav__count" data-count-for="donations" hidden></span>
     </button>
   </li><li>
     <button class="cp-nav__item" type="button" data-module="inbox">
@@ -238,6 +248,14 @@
       <div class="skeleton skeleton--text"></div>
     </div>
     <div data-panel-body></div>
+  </section><section class="cp-panel" id="panel-photos"
+      role="tabpanel" aria-label="Player photographs" hidden>
+    <div class="cp-panel__loading" data-panel-loading>
+      <div class="skeleton skeleton--title"></div>
+      <div class="skeleton skeleton--text"></div>
+      <div class="skeleton skeleton--text"></div>
+    </div>
+    <div data-panel-body></div>
   </section><section class="cp-panel" id="panel-news"
       role="tabpanel" aria-label="News" hidden>
     <div class="cp-panel__loading" data-panel-loading>
@@ -294,6 +312,14 @@
       <div class="skeleton skeleton--text"></div>
     </div>
     <div data-panel-body></div>
+  </section><section class="cp-panel" id="panel-donations"
+      role="tabpanel" aria-label="Donations" hidden>
+    <div class="cp-panel__loading" data-panel-loading>
+      <div class="skeleton skeleton--title"></div>
+      <div class="skeleton skeleton--text"></div>
+      <div class="skeleton skeleton--text"></div>
+    </div>
+    <div data-panel-body></div>
   </section><section class="cp-panel" id="panel-inbox"
       role="tabpanel" aria-label="Inbox" hidden>
     <div class="cp-panel__loading" data-panel-loading>
@@ -316,6 +342,6 @@
 
   <div class="toasts" data-toasts role="region" aria-label="Notifications" aria-live="polite"></div>
 <script src="/control-seed.js?v=0781c50d"></script>
-<script src="/control.js?v=60439d31" defer></script>
+<script src="/control.js?v=3aca6e27" defer></script>
 </body>
 </html>

@@ -26,8 +26,19 @@ const ARROW = '<span aria-hidden="true">→</span>';
    Stripe's own page, so this page must not show amount chips it cannot
    actually apply: offering "£10" here and landing the reader on a page asking
    them to choose again would be a small lie in a place that cannot afford
-   one. */
-const STRIPE_LINK = 'https://buy.stripe.com/aFacN69GRd3b9dG1DKak000';
+   one.
+
+   The club sets this in Control panel -> Donations, which writes the
+   `donate:config` record. That record existed and was read by nothing, so the
+   only way to change where the club's own donate button pointed was to edit
+   this file. The constant below is the fallback, and stays as the link that
+   is live today. */
+const STRIPE_FALLBACK = 'https://buy.stripe.com/aFacN69GRd3b9dG1DKak000';
+const donateLink = (d) => {
+  const cfg = (d.donate) || {};
+  const link = String(cfg.stripeLink || cfg.link || '').trim();
+  return /^https:\/\//.test(link) ? link : STRIPE_FALLBACK;
+};
 
 const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
       <span class="xrail__l"><span class="xrail__n">${esc(String(n).padStart(2, '0'))}</span><span class="xrail__t">${esc(label)}</span></span>
@@ -230,7 +241,7 @@ export function cause(d) {
             <span class="cz-give__ico" aria-hidden="true">${heart}</span>
             <h3>Support the club</h3>
             <p>Equipment, training, matchdays and media. Every pound goes back into ${esc(CLUB.short)}.</p>
-            <a class="btn btn--volt" href="${attr(STRIPE_LINK)}" rel="noopener" target="_blank">Donate securely ${ARROW}</a>
+            <a class="btn btn--volt" href="${attr(donateLink(d))}" rel="noopener" target="_blank">Donate securely ${ARROW}</a>
             <p class="cz-give__small">Card payment handled by Stripe. You choose the amount on Stripe's
               own page, and we never see your card details.</p>
           </li>

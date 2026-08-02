@@ -60,20 +60,20 @@
       }
 
       host.innerHTML =
-        '<div class="panel" style="padding:var(--space-5);margin-bottom:var(--space-5)">' +
-          '<h3 style="font-size:var(--step-1);margin-bottom:var(--space-3)">Tag players in a photograph</h3>' +
-          '<p style="font-size:var(--step--1);color:var(--text-muted);margin-bottom:var(--space-4)">' +
-            'Pick an album, step through the photographs and click a name to tag them. ' +
-            'Tagged names appear under that photograph on the website and link to the player&rsquo;s profile.</p>' +
-          '<label class="field"><span class="field__label">Album</span>' +
-            '<select class="input" data-album>' +
+        U.sec({
+          title: 'Tag players in a photograph',
+          sub: 'Pick an album, step through the photographs and click a name to tag them. Tagged '
+            + 'names appear under that photograph on the website and link to the player’s profile.',
+          body: '<label class="field"><span class="field__label">Album</span>' +
+            '<select class="select" data-album>' +
               albums.map(function (a, i) {
                 var d = a.data || {};
                 return '<option value="' + i + '">' + esc(d.title || a.key) +
                   ' (' + ((d.photos || []).length) + ')</option>';
               }).join('') +
-            '</select></label>' +
-        '</div>' +
+            '</select></label>',
+          where: [['Gallery', '/gallery.html'], ['Every player profile', '/squad.html']],
+        }) +
         '<div data-tagger></div>';
 
       var pane = $('[data-tagger]', host);
@@ -116,21 +116,20 @@
         var mine = currentTags();
         var tagged = tags.filter(function (t) { return t && t.length; }).length;
         pane.innerHTML =
-          '<div class="panel" style="padding:var(--space-5)">' +
-            '<div class="row row--between" style="margin-bottom:var(--space-4)">' +
-              '<p style="font-size:var(--step--1);color:var(--text-muted)">Photograph ' +
+          '<div class="panel cp-card">' +
+            '<div class="cp-head">' +
+              '<p class="cp-note">Photograph ' +
                 esc(idx + 1) + ' of ' + esc(photos.length) + ' &middot; ' + esc(tagged) + ' tagged</p>' +
-              '<div class="row row--tight">' +
+              '<div class="cp-head__actions">' +
                 '<button class="btn btn--ghost btn--sm" data-prev>Previous</button>' +
                 '<button class="btn btn--ghost btn--sm" data-next>Next</button>' +
                 '<button class="btn btn--primary btn--sm" data-save' + (dirty ? '' : ' disabled') + '>Save album</button>' +
               '</div>' +
             '</div>' +
-            '<img src="' + esc(photos[idx]) + '" alt="" ' +
-              'style="width:100%;max-height:52vh;object-fit:contain;border-radius:var(--radius-sm);background:var(--surface-inset)" />' +
-            '<p style="margin:var(--space-4) 0 var(--space-2);font-size:var(--step--1);color:var(--text-muted)">' +
+            '<img class="tagshot" src="' + esc(photos[idx]) + '" alt="" />' +
+            '<p class="cp-head__sub" style="margin-block:var(--space-4) var(--space-2)">' +
               'In this photograph' + (mine.length ? '' : ': nobody tagged yet') + '</p>' +
-            '<div class="row row--tight" style="flex-wrap:wrap;gap:6px">' +
+            '<div class="cp-head__actions">' +
               roster.map(function (n) {
                 var on = false;
                 mine.forEach(function (t) { if (t.name === n) on = true; });
@@ -143,14 +142,14 @@
                it, and how good it is. That is what lets the website pick
                pictures for a player on its own. */
             (mine.length
-              ? '<div style="margin-top:var(--space-5);border-top:1px solid var(--border);padding-top:var(--space-4)">' +
-                  '<p style="font-size:var(--step--1);color:var(--text-muted);margin-bottom:var(--space-3)">' +
+              ? '<div style="margin-top:var(--space-5)">' +
+                  '<p class="cp-head__sub" style="margin-bottom:var(--space-3)">' +
                     'Mark someone as the <strong>subject</strong> and this photograph becomes usable as their picture ' +
                     'across the site. Click the image to set where they are in the frame so any crop keeps them in it.</p>' +
                   mine.map(function (t, ti) {
-                    return '<div class="row row--between" style="gap:var(--space-3);padding:var(--space-3) 0;flex-wrap:wrap">' +
-                      '<strong style="font-size:var(--step--1)">' + esc(t.name) + '</strong>' +
-                      '<div class="row row--tight" style="flex-wrap:wrap;gap:6px">' +
+                    return '<div class="tagrow">' +
+                      '<strong>' + esc(t.name) + '</strong>' +
+                      '<div class="cp-head__actions">' +
                         '<button class="btn btn--sm ' + (t.role === 'subject' ? 'btn--primary' : 'btn--ghost') +
                           '" data-role="' + ti + '">' + (t.role === 'subject' ? 'Subject' : 'In shot') + '</button>' +
                         '<button class="btn btn--sm ' + (t.focus ? 'btn--primary' : 'btn--ghost') +

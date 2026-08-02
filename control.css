@@ -128,19 +128,25 @@
 
 /* ---- Main ---- */
 .cp-main { display: flex; flex-direction: column; min-width: 0; }
+/* Wraps, because it did not. On a narrow window the menu button, the section
+   title and the actions were laid out on one unwrapping line, and Publish to
+   site, the button that puts everything on the website, sat off the right
+   edge with no way to scroll to it. */
 .cp-top {
   position: sticky;
   top: 0;
   z-index: 40;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-2) var(--space-4);
   padding: var(--space-4) var(--space-5);
   background: var(--bg);
   border-block-end: 1px solid var(--border);
 }
-.cp-top__title { font-size: var(--step-2); margin-inline-end: auto; }
-.cp-top__actions { display: flex; align-items: center; gap: var(--space-2); }
+.cp-top__title { font-size: var(--step-1); margin-inline-end: auto; }
+@media (min-width: 700px) { .cp-top__title { font-size: var(--step-2); } }
+.cp-top__actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
 @media (min-width: 900px) { #cp-menu { display: none; } }
 
 .cp-body { padding: var(--space-6) var(--space-5); flex: 1; min-width: 0; }

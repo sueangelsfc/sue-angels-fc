@@ -1195,6 +1195,23 @@
        heading that said "The season's leaders". The generator now writes one
        panel per view and this shows the matching one, so the two halves of
        the page agree. The rail's count of players used moves with it. */
+    /* A PANEL FIRST SHOWN HERE NEVER MET THE SCROLL OBSERVER, so nothing
+       inside it ever got `is-in`. That is not only an animation: a dozen
+       rules across this site give an element its WIDTH only once its
+       container is revealed (`.mt-rec.is-in .mt-rec__bar li`,
+       `.st-share__bar.is-in li`, `.aw-board.is-in .aw-board__track i`), so a
+       panel that never gets it draws its bars completely empty. Reveal the
+       panel and everything inside it that asked to be revealed. */
+    var reveal = function (el) {
+      el.classList.add('is-in');
+      Array.prototype.forEach.call(el.querySelectorAll('.rv'), function (x) {
+        x.classList.add('is-in');
+      });
+      if (window.saTick) {
+        Array.prototype.forEach.call(el.querySelectorAll('[data-count]'), window.saTick);
+      }
+    };
+
     var leaderBand = $('[data-leader-views]');
     var shareBand = $('[data-share-views]');
     var heroSeason = $('[data-hero-season]');
@@ -1209,7 +1226,7 @@
       $$('[' + attrName + ']', band).forEach(function (p) {
         var on = p.getAttribute(attrName) === view;
         p.hidden = !on;
-        if (on) { live = p; p.classList.add('is-in'); }
+        if (on) { live = p; reveal(p); }
       });
       return live;
     };
@@ -1912,6 +1929,10 @@
         /* A panel first revealed here never met the scroll observer, so it
            would sit at the reveal animation's starting opacity forever. */
         if (on) {
+          /* The panel AND everything inside it that asked to be revealed. A
+             dozen rules give an element its width only once its container
+             carries is-in, so missing one draws an empty bar rather than a
+             missing animation. */
           p.classList.add('is-in');
           Array.prototype.forEach.call(p.querySelectorAll('.rv'), function (el) {
             el.classList.add('is-in');

@@ -425,7 +425,10 @@ export function stats(d) {
           ${esc(scorers.length)} player${scorers.length === 1 ? '' : 's'}.${share.length > 5
       ? ` The top five scored ${esc(topFive)} of them, ${esc(Math.round((topFive / goals) * 100))}% of the return.`
       : ''}</p>
-        <ol class="st-share__bar" aria-label="Share of the club's goals by player">
+        <!-- .rv is not decoration here: the rule that gives every segment its
+             width is gated on this bar carrying is-in, so without it the bar
+             draws completely empty. -->
+        <ol class="st-share__bar rv" aria-label="Share of the club's goals by player">
           ${share.map((x, i) => `<li style="--w:${x.pct.toFixed(2)}%;--i:${i}"
             title="${attr(`${x.p.name}: ${x.r.goals} goals`)}">
             <span class="sr-only">${esc(x.p.name)}, ${esc(x.r.goals)} goals</span>

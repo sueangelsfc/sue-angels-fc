@@ -78,8 +78,20 @@ export function records(d) {
   const league = inSeason.filter((m) => m.competition === CLUB.division);
   const sum = teamSummary(inSeason);
   const leagueSum = teamSummary(league);
-  const players = (d.players || []).filter((p) => !p.unknown);
-  const rec = d.recognition || [];
+  /* THE PLAYER RECORDS ARE THIS SEASON'S. They were the career table
+     whichever tab was on, so 26/27 - a season with no matches in it - claimed
+     "Most appearances 30, Most goals 31, Most assists 19" beside team records
+     correctly reading nought. The engine is run once per season in
+     dataset.mjs, so a season's records are the same derivation over a shorter
+     match list. */
+  const seasonTable = view.key === 'all'
+    ? (d.players || [])
+    : ((d.playersBySeason || {})[view.key] || []);
+  const players = seasonTable.filter((p) => !p.unknown);
+  /* And so is the recognition. A record with no season recorded belongs to
+     the all-seasons view rather than to a year nobody wrote down. */
+  const rec = (d.recognition || [])
+    .filter((r) => view.key === 'all' || String(r.season || '') === view.key);
 
   const byNum = new Map((d.squad || []).map((p) => [p.num, p]));
   const playerLink = (num, fallback) => {

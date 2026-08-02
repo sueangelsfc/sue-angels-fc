@@ -192,7 +192,9 @@ function matchesPage(d, mode) {
     const wdl = Math.max(1, sum.won + sum.drawn + sum.lost);
     const big = v.matches.filter((m) => m.countsGoals)
       .slice().sort((a, b) => (b.ourGoals - b.theirGoals) - (a.ourGoals - a.theirGoals))[0];
-    return `<div class="mt-rec">
+    /* .rv earns its place: `.mt-rec.is-in .mt-rec__bar li` is what gives the
+       won/drawn/lost segments their width. Without it the bar is empty. */
+    return `<div class="mt-rec rv">
           <ol class="mt-rec__bar" aria-label="Results across every competition">
             <li class="mt-rec__w" style="--w:${((sum.won / wdl) * 100).toFixed(1)}%"><span class="sr-only">Won ${esc(sum.won)}</span></li>
             ${sum.drawn ? `<li class="mt-rec__d" style="--w:${((sum.drawn / wdl) * 100).toFixed(1)}%"><span class="sr-only">Drawn ${esc(sum.drawn)}</span></li>` : ''}

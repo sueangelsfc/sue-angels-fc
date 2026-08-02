@@ -1,4 +1,4 @@
-window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"sb_publishable_2VEdxWZCLW98qItINt6TPQ_r7y_Tcly"};window.SA_EMAIL="suesangelsfc@gmail.com";window.CP_CHUNKS={"match":"control-match.js?v=ca011465","photos":"control-photos.js?v=1aaaead8","squad":"control-squad.js?v=ddc1e515","content":"control-content.js?v=316c9f5c","photos-donations":"control-photos-donations.js?v=5ed0c2d5","pipeline":"control-pipeline.js?v=ed7d09c1"};
+window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"sb_publishable_2VEdxWZCLW98qItINt6TPQ_r7y_Tcly"};window.SA_EMAIL="suesangelsfc@gmail.com";window.CP_CHUNKS={"match":"control-match.js?v=f8dad954","photos":"control-photos.js?v=1aaaead8","squad":"control-squad.js?v=ddc1e515","content":"control-content.js?v=316c9f5c","photos-donations":"control-photos-donations.js?v=5ed0c2d5","pipeline":"control-pipeline.js?v=ed7d09c1"};
 /* ==========================================================================
    CONTROL PANEL DATA LAYER
    Thin wrapper over Supabase Auth + REST. Every write is attributed and, for

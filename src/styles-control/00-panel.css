@@ -457,6 +457,48 @@ body:has(.cp) .atmos__blob { animation: none; }
 .pitch__meta { text-align: center; font-size: var(--step--2); color: var(--text-muted); margin-block-start: var(--space-3); }
 .pitch__meta b { color: var(--text); font-weight: var(--weight-semi); }
 
+/* ==========================================================================
+   A GOAL IS A CARD
+
+   It was a row: scorer, minute, three buttons. A goal now carries what it was
+   struck with, where from, what the ball was doing beforehand and who made
+   it, which is six controls, and six controls on one line is a line nobody
+   can read. Three bands instead: who and when, how, and who made it.
+   ========================================================================== */
+.gcard {
+  padding: var(--space-4) 0;
+  border-block-end: 1px solid var(--border);
+}
+.gcard:last-child { border-block-end: 0; }
+.gcard__top { display: flex; align-items: center; gap: var(--space-2); }
+.gcard__n {
+  flex: 0 0 auto;
+  width: 20px;
+  font-size: var(--step--2);
+  color: var(--text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+.gcard__who { flex: 1 1 160px; min-width: 0; padding-block: 5px; }
+/* Wide enough for the word it holds. At 68px the placeholder "min" was
+   clipped to "mir", which reads as a typo rather than a hint. */
+.gcard__min { flex: 0 0 auto; }
+.gcard__min .input { width: 88px; text-align: center; padding-block: 5px; }
+.gcard__grid,
+.gcard__assist {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block-start: var(--space-2);
+  padding-inline-start: calc(20px + var(--space-2));
+}
+.gcard__grid .select { flex: 1 1 150px; min-width: 0; padding-block: 5px; }
+.gcard__assist .select { flex: 1 1 140px; min-width: 0; padding-block: 5px; }
+.gcard__lbl { font-size: var(--step--2); color: var(--text-subtle); flex: 0 0 auto; }
+@media (max-width: 560px) {
+  .gcard__grid, .gcard__assist { padding-inline-start: 0; }
+}
+
 /* ---- A goal is a row, because it has a minute and a manner as well as a
    scorer. ---- */
 .me__row {

@@ -344,6 +344,17 @@ export function playerStats(matches, squad) {
       table.set(num, {
         num, apps: 0, starts: 0, subApps: 0, goals: 0, assists: 0,
         yellow: 0, red: 0, motm: 0, cleanSheets: 0, captained: 0,
+        /* How the goals were scored and how the chances were made. Every one
+           of these counts only goals where somebody actually recorded that
+           detail, so a player whose early-season goals were logged before the
+           panel could hold it shows fewer here than in the goals column. That
+           is honest: the alternative is guessing a body part. */
+        byFoot: { right: 0, left: 0, head: 0, other: 0 },
+        byZone: { six: 0, box: 0, outside: 0 },
+        bySituation: {},
+        assistsByType: {},
+        goalsDetailed: 0,
+        saves: 0, keeperApps: 0,
         penalties: 0, matches: [],
       });
     }
@@ -387,10 +398,28 @@ export function playerStats(matches, squad) {
     };
     for (const g of d.goals || []) {
       const p = ensure(g.num); p.goals++;
-      if (g.penalty) p.penalties++;
+      if (g.penalty || g.situation === 'penalty') p.penalties++;
+      if (g.bodyPart && p.byFoot[g.bodyPart] !== undefined) p.byFoot[g.bodyPart]++;
+      if (g.zone && p.byZone[g.zone] !== undefined) p.byZone[g.zone]++;
+      if (g.situation) p.bySituation[g.situation] = (p.bySituation[g.situation] || 0) + 1;
+      if (g.bodyPart || g.zone || g.situation) p.goalsDetailed++;
       bump(g.num, 'goals');
     }
-    for (const a of d.assists || []) { ensure(a.num).assists++; bump(a.num, 'assists'); }
+    for (const a of d.assists || []) {
+      const p = ensure(a.num);
+      p.assists++;
+      const t = a.type || 'pass';
+      p.assistsByType[t] = (p.assistsByType[t] || 0) + 1;
+      bump(a.num, 'assists');
+    }
+    /* Goalkeeping. `keeper` names who was between the posts, which is not the
+       same as who is a goalkeeper by position: a Sunday-league side puts an
+       outfield player in goal more often than it likes to admit. */
+    if (d.keeper != null) {
+      const k = ensure(d.keeper);
+      k.keeperApps++;
+      if (Number.isFinite(Number(d.saves))) k.saves += Number(d.saves);
+    }
     for (const c of d.yellowCards || []) ensure(c.num ?? c).yellow++;
     for (const c of d.redCards || []) ensure(c.num ?? c).red++;
     if (d.motm != null) ensure(d.motm).motm++;
@@ -404,9 +433,13 @@ export function playerStats(matches, squad) {
     const s = table.get(p.num) || {
       num: p.num, apps: 0, starts: 0, subApps: 0, goals: 0, assists: 0,
       yellow: 0, red: 0, motm: 0, cleanSheets: 0, captained: 0, penalties: 0, matches: [],
+      byFoot: { right: 0, left: 0, head: 0, other: 0 },
+      byZone: { six: 0, box: 0, outside: 0 },
+      bySituation: {}, assistsByType: {}, goalsDetailed: 0, saves: 0, keeperApps: 0,
     };
     rows.push({
       ...s,
+      savesPerGame: s.keeperApps ? (s.saves / s.keeperApps).toFixed(1) : null,
       name: p.name,
       slug: p.slug,
       first: p.first,
@@ -425,6 +458,7 @@ export function playerStats(matches, squad) {
     rows.push({
       ...s, name: `No. ${num}`, slug: `player-${num}`, first: '', last: `No. ${num}`,
       position: 'Unknown', positionGroup: 'mid', status: 'departed',
+      savesPerGame: s.keeperApps ? (s.saves / s.keeperApps).toFixed(1) : null,
       goalContributions: s.goals + s.assists, unknown: true,
     });
   }

@@ -480,55 +480,83 @@
         (unplaced.length ? ' · ' + unplaced.length + ' without a position' : '') + '</p>';
   }
 
-  var GOAL_TYPES = [['open', 'Open play'], ['set', 'Set piece'], ['pen', 'Penalty']];
-  var SET_SOURCES = [['corner', 'Corner'], ['freekick', 'Free kick'], ['throwin', 'Throw in']];
+  /* ==========================================================================
+     A GOAL, IN THE DETAIL THE PEOPLE WHO WERE THERE ACTUALLY REMEMBER
 
-  /* One row per goal, in the order they went in. Minute is optional because a
-     Sunday-league team sheet often does not record it, and an invented minute
-     is worse than an honest blank. */
+     It used to be a scorer, a minute and one of three buttons: open play, set
+     piece, penalty. So the record could say a goal came from a set piece and
+     never say whether it was headed in from a corner or curled straight in
+     from a free kick, which are not the same goal.
+
+     Now: what it was struck with, where from, what the ball was doing
+     beforehand, and who made it. The words come from src/lib/football.mjs,
+     which is also what the website prints them with, so the panel cannot
+     offer a term the site has no sentence for.
+
+     THE ASSIST LIVES ON THE GOAL. It was a second list underneath, paired to
+     a goal by matching minutes, which fails the moment two goals share a
+     minute or a minute was never written down. An assist is the pass for a
+     goal and cannot exist without one, so it is a field on the goal. The flat
+     `assists` array is still written out on save, because the statistics
+     engine and every page already read it.
+     ========================================================================== */
+  var VOCAB = SEED.vocab || { bodyParts: [], situations: [], zones: [], assistTypes: [] };
+
+  function optionsOf(list, chosen, blank) {
+    return '<option value="">' + esc(blank) + '</option>' +
+      list.map(function (o) {
+        return '<option value="' + esc(o.key) + '"' + (o.key === chosen ? ' selected' : '') +
+          '>' + esc(o.label) + '</option>';
+      }).join('');
+  }
+  function playerOptions(chosen, blank) {
+    return (blank ? '<option value="">' + esc(blank) + '</option>' : '') +
+      SQUAD.map(function (p) {
+        return '<option value="' + p.num + '"' + (p.num === chosen ? ' selected' : '') +
+          '>' + esc(p.name) + '</option>';
+      }).join('');
+  }
+
+  /* One card per goal, in the order they went in. Every field below the first
+     line is optional: a goal with nothing but a scorer is still a goal, and
+     the site says nothing about how it was scored rather than inventing it. */
   function goalRows(goals) {
-    if (!goals.length) return '<p class="me__none">No goals recorded.</p>';
+    if (!goals.length) {
+      return '<p class="me__none">No goals recorded. Add one and it appears in the report, '
+        + 'on the scorer’s profile and in the season’s statistics.</p>';
+    }
     return goals.map(function (g, i) {
-      return '<div class="me__row" data-goal="' + i + '">' +
-        '<span class="me__i">' + (i + 1) + '</span>' +
-        '<select class="select me__who" data-g-num aria-label="Who scored">' +
-          SQUAD.map(function (p) {
-            return '<option value="' + p.num + '"' + (p.num === g.num ? ' selected' : '') + '>' + esc(p.name) + '</option>';
-          }).join('') + '</select>' +
-        '<input class="input me__min" type="number" min="1" max="130" placeholder="min" ' +
-          'value="' + (g.minute != null ? esc(g.minute) : '') + '" data-g-min>' +
-        '<span class="me__seg" role="group" aria-label="How it was scored">' +
-          GOAL_TYPES.map(function (t) {
-            return '<button type="button" class="me__segb' + ((g.type || 'open') === t[0] ? ' is-on' : '') +
-              '" data-g-type="' + t[0] + '">' + t[1] + '</button>';
-          }).join('') + '</span>' +
-        '<span class="me__seg me__seg--src"' + ((g.type === 'set') ? '' : ' hidden') + ' role="group" aria-label="Set piece">' +
-          SET_SOURCES.map(function (t) {
-            return '<button type="button" class="me__segb' + (g.setType === t[0] ? ' is-on' : '') +
-              '" data-g-src="' + t[0] + '">' + t[1] + '</button>';
-          }).join('') + '</span>' +
-        '<button type="button" class="me__x" data-g-del aria-label="Remove this goal">&times;</button>' +
+      var a = g.assist || {};
+      return '<div class="gcard" data-goal="' + i + '">' +
+        '<div class="gcard__top">' +
+          '<span class="gcard__n">' + (i + 1) + '</span>' +
+          '<select class="select gcard__who" data-g-num aria-label="Who scored the ' + (i + 1) + ' goal">' +
+            playerOptions(g.num, '') + '</select>' +
+          '<label class="gcard__min"><span class="sr-only">Minute</span>' +
+            '<input class="input" type="number" min="1" max="130" placeholder="min" ' +
+              'value="' + (g.minute != null ? esc(g.minute) : '') + '" data-g-min ' +
+              'aria-label="Minute"></label>' +
+          '<button type="button" class="me__x" data-g-del aria-label="Remove this goal">&times;</button>' +
+        '</div>' +
+        '<div class="gcard__grid">' +
+          '<select class="select" data-g-body aria-label="What it was struck with">' +
+            optionsOf(VOCAB.bodyParts, g.bodyPart, 'Struck with…') + '</select>' +
+          '<select class="select" data-g-zone aria-label="Where it was struck from">' +
+            optionsOf(VOCAB.zones, g.zone, 'From…') + '</select>' +
+          '<select class="select" data-g-sit aria-label="What the ball was doing">' +
+            optionsOf(VOCAB.situations, g.situation, 'Situation…') + '</select>' +
+        '</div>' +
+        '<div class="gcard__assist">' +
+          '<span class="gcard__lbl">Made by</span>' +
+          '<select class="select" data-g-anum aria-label="Who assisted">' +
+            playerOptions(a.num, 'Nobody, he made it himself') + '</select>' +
+          '<select class="select" data-g-atype aria-label="How the chance was made"' +
+            (a.num ? '' : ' disabled') + '>' +
+            optionsOf(VOCAB.assistTypes, a.type || 'pass', 'How…') + '</select>' +
+        '</div>' +
       '</div>';
     }).join('');
   }
-
-  function assistRows(assists) {
-    if (!assists.length) return '<p class="me__none">No assists recorded.</p>';
-    return assists.map(function (a, i) {
-      return '<div class="me__row" data-assist="' + i + '">' +
-        '<span class="me__i">' + (i + 1) + '</span>' +
-        '<select class="select me__who" data-a-num aria-label="Who assisted">' +
-          SQUAD.map(function (p) {
-            return '<option value="' + p.num + '"' + (p.num === a.num ? ' selected' : '') + '>' + esc(p.name) + '</option>';
-          }).join('') + '</select>' +
-        '<input class="input me__min" type="number" min="1" max="130" placeholder="min" ' +
-          'value="' + (a.minute != null ? esc(a.minute) : '') + '" data-a-min>' +
-        '<button type="button" class="me__x" data-a-del aria-label="Remove this assist">&times;</button>' +
-      '</div>';
-    }).join('');
-  }
-
-
   /* These lists were stored as bare numbers in some records and as objects in
      others, so read both rather than losing half of them. */
   function numOf(x) { return (x && typeof x === 'object') ? x.num : x; }
@@ -632,14 +660,38 @@
   /* "on 12 minutes", or nothing at all when the team sheet did not say. */
   function atMin(m) { return m == null || m === '' ? '' : ' on ' + m + ' minutes'; }
 
+  /* How a goal was scored, in words, from whatever was recorded. The phrases
+     are the ones in src/lib/football.mjs so the report and the player page
+     describe the same goal the same way. */
+  var SIT_PHRASE = {
+    open: '', corner: 'from a corner', 'freekick-direct': 'direct from a free kick',
+    freekick: 'from a free kick', throwin: 'from a throw in', penalty: 'from the penalty spot',
+    counter: 'on the counter', rebound: 'from a rebound',
+  };
+  var BODY_PHRASE = { right: 'with his right foot', left: 'with his left foot',
+    head: 'with a header', other: 'off the body' };
+  var ZONE_PHRASE = { six: 'from close range', box: 'from inside the box', outside: 'from outside the box' };
+  var ASSIST_PHRASE = {
+    pass: 'set up by', through: 'sent through by', cross: 'crossed in by',
+    cutback: 'cut back by', layoff: 'laid off by', flickon: 'flicked on by',
+    headpass: 'headed down by', rebound: 'after a rebound off',
+  };
+  var ASSIST_SET = { corner: '’s corner', freekick: '’s free kick', throwin: '’s throw in' };
+
   function howScored(g) {
-    if (g.type === 'pen') return ' from the penalty spot';
-    if (g.type === 'set') {
-      return g.setType === 'corner' ? ' from a corner'
-        : g.setType === 'freekick' ? ' from a free kick'
-          : g.setType === 'throwin' ? ' from a throw in' : ' from a set piece';
-    }
-    return '';
+    if (g.situation === 'penalty') return ' from the penalty spot';
+    var bits = [];
+    if (BODY_PHRASE[g.bodyPart]) bits.push(BODY_PHRASE[g.bodyPart]);
+    if (ZONE_PHRASE[g.zone]) bits.push(ZONE_PHRASE[g.zone]);
+    if (SIT_PHRASE[g.situation]) bits.push(SIT_PHRASE[g.situation]);
+    return bits.length ? ' ' + bits.join(' ') : '';
+  }
+
+  function madeBy(g) {
+    if (!g.assist || !g.assist.name) return '';
+    var t = g.assist.type || 'pass';
+    if (ASSIST_SET[t]) return ', from ' + g.assist.name + ASSIST_SET[t];
+    return ', ' + (ASSIST_PHRASE[t] || ASSIST_PHRASE.pass) + ' ' + g.assist.name;
   }
 
   function buildReport(c) {
@@ -689,36 +741,44 @@
       if (line) paras.push(line);
     }
 
-    /* ---- The goals, in the order they went in where that is recorded ---- */
+    /* ---- The goals, in the order they went in where that is recorded ----
+       Each goal is a sentence and the openings rotate, because four goals all
+       beginning "X added a" is the sound of a machine writing. Nothing is
+       invented: every clause here is a field somebody filled in. */
     var timed = c.goals.filter(function (g) { return g.minute != null && g.minute !== ''; })
       .sort(function (a, b) { return a.minute - b.minute; });
     var untimed = c.goals.filter(function (g) { return g.minute == null || g.minute === ''; });
+
+    function lead(g, n, first) {
+      if (first) {
+        return g.minute != null && g.minute <= 15
+          ? g.name + ' put them ahead early'
+          : g.name + ' opened the scoring';
+      }
+      if (n === 2) return g.name + ' doubled it';
+      if (n === 3) return g.name + ' made it three';
+      return g.name + ' got the ' + ordinal(n);
+    }
+
     if (timed.length) {
       var running = 0;
-      var lines = timed.map(function (g, i) {
+      var sentences = timed.map(function (g, i) {
         running++;
-        var assist = c.assists.filter(function (a) {
-          return a.minute != null && Number(a.minute) === Number(g.minute) && a.name !== g.name;
-        })[0];
-        var lead = i === 0 ? g.name + ' opened the scoring'
-          : running === 2 ? g.name + ' made it two'
-            : running === 3 ? g.name + ' put the game beyond doubt with a third'
-              : g.name + ' added a ' + ordinal(running);
-        return lead + atMin(g.minute) + howScored(g)
-          + (assist ? ', set up by ' + assist.name : '') + '.';
+        return lead(g, running, i === 0) + atMin(g.minute) + howScored(g) + madeBy(g) + '.';
       });
-      paras.push(lines.join(' '));
+      /* Broken into paragraphs of two, so a five-goal game does not arrive as
+         one block a reader has to hack their way through. */
+      for (var i = 0; i < sentences.length; i += 2) {
+        paras.push(sentences.slice(i, i + 2).join(' '));
+      }
     }
     if (untimed.length) {
-      var names = untimed.map(function (g) { return g.name; });
+      var others = untimed.map(function (g) {
+        var extra = (howScored(g) + madeBy(g)).trim();
+        return g.name + (extra ? ' (' + extra.replace(/^, /, '') + ')' : '');
+      });
       paras.push((timed.length ? 'Also on the scoresheet: ' : 'On the scoresheet: ')
-        + listOf(names) + '. The team sheet does not record what minute those went in.');
-    }
-    var freeAssists = c.assists.filter(function (a) {
-      return !timed.some(function (g) { return Number(g.minute) === Number(a.minute) && a.name !== g.name; });
-    }).map(function (a) { return a.name; });
-    if (freeAssists.length && !timed.length) {
-      paras.push('Assists went to ' + listOf(freeAssists) + '.');
+        + listOf(others) + '. The team sheet does not say what minute those went in.');
     }
 
     /* ---- The coach's own words, which is what this is for ---- */
@@ -730,6 +790,10 @@
       tail.push(listOf(c.cleanSheet) + ' kept a clean sheet.');
     } else if (c.theirGoals != null && c.theirGoals > 0 && c.kind === 'score') {
       tail.push(them + (c.theirGoals === 1 ? ' got one back.' : ' managed ' + say(c.theirGoals) + '.'));
+    }
+    if (c.saves) {
+      tail.push((c.keeper || 'The goalkeeper') + ' made ' + say(c.saves) + ' save'
+        + (c.saves === 1 ? '' : 's') + '.');
     }
     if (c.pensSaved.length) tail.push(listOf(c.pensSaved) + ' saved a penalty.');
     if (c.reds.length) tail.push(listOf(c.reds) + (c.reds.length === 1 ? ' was sent off.' : ' were sent off.'));
@@ -776,12 +840,48 @@
     };
     /* Goals and assists are records, not tallies: each carries a minute and,
        for a goal, how it was scored. */
-    var goals = (d.goals || []).map(function (g) {
-      return { num: g.num, minute: g.minute != null ? g.minute : null,
-        type: g.type || (g.penalty ? 'pen' : 'open'), setType: g.setType || null };
+    /* Older records carry `type`/`setType` and a separate assists array. Read
+       both forward into the shape the form uses, so a match recorded by the
+       previous version of this form opens with everything it had. */
+    /* An old record said `type: 'set'` and then `setType: 'corner'`, which is
+       the specific answer sitting behind the general one. The specific one has
+       to win or every corner in the archive reads as a free kick. */
+    var LEGACY_SIT = { pen: 'penalty', set: 'freekick', open: 'open' };
+    var LEGACY_SRC = { corner: 'corner', freekick: 'freekick', throwin: 'throwin' };
+    function legacySituation(g) {
+      if (g.situation) return g.situation;
+      if (g.penalty || g.type === 'pen') return 'penalty';
+      if (LEGACY_SRC[g.setType]) return LEGACY_SRC[g.setType];
+      return LEGACY_SIT[g.type] || '';
+    }
+    var oldAssists = (d.assists || []).map(function (a) {
+      return { num: a.num, minute: a.minute != null ? a.minute : null, type: a.type || 'pass' };
     });
-    var assists = (d.assists || []).map(function (a) {
-      return { num: a.num, minute: a.minute != null ? a.minute : null };
+    var goals = (d.goals || []).map(function (g) {
+      var assist = g.assist && g.assist.num ? { num: g.assist.num, type: g.assist.type || 'pass' } : null;
+      if (!assist && g.minute != null) {
+        /* The old pairing rule: an assist in the same minute by somebody else.
+           Used once, here, to carry the record forward rather than every time
+           a page wants to know who made a goal. */
+        var m = oldAssists.filter(function (a) {
+          return a.minute != null && Number(a.minute) === Number(g.minute) && a.num !== g.num;
+        })[0];
+        if (m) assist = { num: m.num, type: m.type };
+      }
+      return {
+        num: g.num,
+        minute: g.minute != null ? g.minute : null,
+        bodyPart: g.bodyPart || '',
+        zone: g.zone || '',
+        situation: legacySituation(g),
+        assist: assist,
+      };
+    });
+    /* Assists that never matched a goal are kept so nothing is lost, but they
+       are not editable here: an assist without a goal is not a thing. */
+    var orphanAssists = oldAssists.filter(function (a) {
+      return !goals.some(function (g) { return g.assist && g.assist.num === a.num
+        && Number(g.minute) === Number(a.minute); });
     });
     var posByNum = {};
     (d.starters || []).forEach(function (st) { posByNum[st.num] = (st.positions || [])[0] || ''; });
@@ -892,14 +992,13 @@
 
           /* ---- Goals and assists ---- */
           '<div data-mpane="goals" hidden>' +
-            '<h4 class="mform__h">Goals</h4>' +
+            '<p class="cp-note" style="margin-bottom:var(--space-4)">Everything except the scorer '
+              + 'is optional. What you fill in is what the match report writes and what the '
+              + 'season’s statistics count, and what you leave blank the site simply does not '
+              + 'claim to know.</p>' +
             '<div data-goals>' + goalRows(goals) + '</div>' +
-            '<button type="button" class="btn btn--ghost btn--sm" data-add-goal ' +
-              'style="margin-top:var(--space-3)">Add a goal</button>' +
-            '<h4 class="mform__h">Assists</h4>' +
-            '<div data-assists>' + assistRows(assists) + '</div>' +
-            '<button type="button" class="btn btn--ghost btn--sm" data-add-assist ' +
-              'style="margin-top:var(--space-3)">Add an assist</button>' +
+            '<button type="button" class="btn btn--primary btn--sm" data-add-goal ' +
+              'style="margin-top:var(--space-4)">Add a goal</button>' +
           '</div>' +
 
           /* ---- Cards and keeping ---- */
@@ -914,6 +1013,16 @@
                 '', GROUPS.penaltiesSaved.empty) +
               pickerGroup('penaltiesMissed', GROUPS.penaltiesMissed.label, counts.penaltiesMissed,
                 '', GROUPS.penaltiesMissed.empty) +
+            '</div>' +
+            '<h4 class="mform__h">The goalkeeper</h4>' +
+            '<div class="grid grid--2">' +
+              '<div class="field"><label class="field__label" for="m-keeper">Who kept goal</label>' +
+                '<select class="select" id="m-keeper">' + playerOptions(d.keeper, 'Not recorded') +
+                '</select></div>' +
+              '<div class="field"><label class="field__label" for="m-saves">Saves</label>' +
+                '<input class="input" id="m-saves" type="number" min="0" value="' +
+                  esc(d.saves != null ? d.saves : '') + '" placeholder="How many he made">' +
+                '<p class="field__hint">Counts toward his saves per game across the season.</p></div>' +
             '</div>' +
             '<h4 class="mform__h">The opposition</h4>' +
             '<div class="grid grid--2">' +
@@ -994,7 +1103,6 @@
         '<div data-picked="' + field + '">' + pickedList(field, counts[field], cfg.empty) + '</div>';
     }
     function repaintGoals() { $('[data-goals]', back).innerHTML = goalRows(goals); }
-    function repaintAssists() { $('[data-assists]', back).innerHTML = assistRows(assists); }
 
     /* The header says which match this is, in words, and keeps saying it as
        the date and the opponent are typed. */
@@ -1051,32 +1159,12 @@
       }
 
       if (e.target.matches('[data-add-goal]')) {
-        goals.push({ num: counts.starters[0] || SQUAD[0].num, minute: null, type: 'open', setType: null });
+        goals.push({ num: counts.starters[0] || SQUAD[0].num, minute: null,
+          bodyPart: '', zone: '', situation: '', assist: null });
         repaintGoals(); return;
-      }
-      if (e.target.matches('[data-add-assist]')) {
-        assists.push({ num: counts.starters[0] || SQUAD[0].num, minute: null });
-        repaintAssists(); return;
       }
       if (e.target.matches('[data-g-del]')) {
         goals.splice(Number(e.target.closest('[data-goal]').getAttribute('data-goal')), 1);
-        repaintGoals(); return;
-      }
-      if (e.target.matches('[data-a-del]')) {
-        assists.splice(Number(e.target.closest('[data-assist]').getAttribute('data-assist')), 1);
-        repaintAssists(); return;
-      }
-      if (e.target.matches('[data-g-type]')) {
-        var gi = Number(e.target.closest('[data-goal]').getAttribute('data-goal'));
-        goals[gi].type = e.target.getAttribute('data-g-type');
-        /* A penalty or an open-play goal has no set-piece source, so clear it
-           rather than leaving a stale corner on a penalty. */
-        if (goals[gi].type !== 'set') goals[gi].setType = null;
-        repaintGoals(); return;
-      }
-      if (e.target.matches('[data-g-src]')) {
-        var gj = Number(e.target.closest('[data-goal]').getAttribute('data-goal'));
-        goals[gj].setType = e.target.getAttribute('data-g-src');
         repaintGoals(); return;
       }
       /* ---- Bullets into an article ---- */
@@ -1114,9 +1202,14 @@
           captain: captNum === '' ? '' : nameOf(Number(captNum)),
           motm: motmNum === '' ? '' : nameOf(Number(motmNum)),
           goals: goals.map(function (g) {
-            return { name: nameOf(g.num), minute: g.minute, type: g.type, setType: g.setType };
+            return {
+              name: nameOf(g.num), minute: g.minute,
+              bodyPart: g.bodyPart, zone: g.zone, situation: g.situation,
+              assist: g.assist ? { name: nameOf(g.assist.num), type: g.assist.type } : null,
+            };
           }),
-          assists: assists.map(function (a) { return { name: nameOf(a.num), minute: a.minute }; }),
+          keeper: $('#m-keeper', back).value === '' ? '' : nameOf(Number($('#m-keeper', back).value)),
+          saves: Number($('#m-saves', back).value) || 0,
           yellows: counts.yellowCards.map(nameOf),
           reds: counts.redCards.map(nameOf),
           cleanSheet: counts.cleanSheets.map(nameOf),
@@ -1178,15 +1271,39 @@
         starters: startersNow(),
         bench: counts.bench.map(function (n) { return { num: n }; }),
         goals: goals.map(function (g) {
-          return { num: g.num, minute: g.minute, type: g.type,
-            penalty: g.type === 'pen', setType: g.type === 'set' ? g.setType : null };
+          return {
+            num: g.num,
+            minute: g.minute,
+            bodyPart: g.bodyPart || null,
+            zone: g.zone || null,
+            situation: g.situation || null,
+            assist: g.assist ? { num: g.assist.num, type: g.assist.type || 'pass' } : null,
+            /* Kept because the statistics engine and three pages already read
+               it, and because a penalty is the one piece of goal detail the
+               site has always printed. */
+            penalty: g.situation === 'penalty',
+          };
         }),
-        assists: assists.map(function (a) { return { num: a.num, minute: a.minute }; }),
+        /* Derived from the goals, not entered separately. Every page and the
+           statistics engine already read this array, so writing it keeps all
+           of them working without knowing the assist moved onto the goal.
+           Assists from an older record that never matched a goal are kept on
+           the end rather than quietly deleted. */
+        assists: goals.filter(function (g) { return g.assist && g.assist.num; })
+          .map(function (g) {
+            return { num: g.assist.num, minute: g.minute, type: g.assist.type || 'pass',
+              forGoalBy: g.num };
+          })
+          .concat(orphanAssists.map(function (a) {
+            return { num: a.num, minute: a.minute, type: a.type || 'pass' };
+          })),
         yellowCards: counts.yellowCards.map(function (n) { return { num: n }; }),
         redCards: counts.redCards.map(function (n) { return { num: n }; }),
         cleanSheets: counts.cleanSheets.map(function (n) { return { num: n }; }),
         penaltiesSaved: counts.penaltiesSaved.map(function (n) { return { num: n }; }),
         penaltiesMissed: counts.penaltiesMissed.map(function (n) { return { num: n }; }),
+        keeper: $('#m-keeper', back).value === '' ? null : Number($('#m-keeper', back).value),
+        saves: $('#m-saves', back).value === '' ? null : Number($('#m-saves', back).value),
         penaltiesConceded: Number($('#m-oppgoals', back).value || 0),
         opponentRedCards: new Array(Number($('#m-oppreds', back).value || 0)).fill({}),
         /* Derived from where the XI actually lined up, so it can never
@@ -1257,12 +1374,27 @@
         paintTitle(); return;
       }
       var gr = e.target.closest('[data-goal]');
-      if (gr && e.target.matches('[data-g-num]')) {
-        goals[Number(gr.getAttribute('data-goal'))].num = Number(e.target.value); return;
+      if (!gr) return;
+      var gi = Number(gr.getAttribute('data-goal'));
+      var g = goals[gi];
+      if (e.target.matches('[data-g-num]')) { g.num = Number(e.target.value); return; }
+      if (e.target.matches('[data-g-body]')) { g.bodyPart = e.target.value; return; }
+      if (e.target.matches('[data-g-zone]')) { g.zone = e.target.value; return; }
+      if (e.target.matches('[data-g-sit]')) {
+        g.situation = e.target.value;
+        /* A penalty is not assisted and is not struck from anywhere but the
+           spot, so those fields go rather than sitting there contradicting it. */
+        if (g.situation === 'penalty') { g.assist = null; g.zone = ''; repaintGoals(); }
+        return;
       }
-      var ar = e.target.closest('[data-assist]');
-      if (ar && e.target.matches('[data-a-num]')) {
-        assists[Number(ar.getAttribute('data-assist'))].num = Number(e.target.value);
+      if (e.target.matches('[data-g-anum]')) {
+        var who = Number(e.target.value);
+        g.assist = who ? { num: who, type: (g.assist && g.assist.type) || 'pass' } : null;
+        repaintGoals();
+        return;
+      }
+      if (e.target.matches('[data-g-atype]')) {
+        if (g.assist) g.assist.type = e.target.value;
       }
     });
 
@@ -1279,12 +1411,6 @@
       var gr = e.target.closest('[data-goal]');
       if (gr && e.target.matches('[data-g-min]')) {
         goals[Number(gr.getAttribute('data-goal'))].minute =
-          e.target.value === '' ? null : Number(e.target.value);
-        return;
-      }
-      var ar = e.target.closest('[data-assist]');
-      if (ar && e.target.matches('[data-a-min]')) {
-        assists[Number(ar.getAttribute('data-assist'))].minute =
           e.target.value === '' ? null : Number(e.target.value);
       }
     });

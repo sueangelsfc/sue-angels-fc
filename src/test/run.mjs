@@ -663,10 +663,13 @@ const BUDGET = {
   'sa.js': 24,
   'control.css': 7,
   'control.js': 16,
-  /* The heaviest, and fairly: the pitch, the position codes, five tabs, and
-     the composer that turns a coach's bullets into a match report. Fetched
-     only by somebody who has opened Fixtures or Results. */
-  'control-match.js': 20,
+  /* The heaviest, and fairly: the pitch, the position codes, five tabs, the
+     goal detail (what it was struck with, where from, what the ball was doing,
+     who made it and how), and the composer that turns a coach's bullets into a
+     match report. Fetched only by somebody who has opened Fixtures or Results,
+     which is a handful of people a season. 20 -> 22 for the goal detail, which
+     is the feature this whole section exists to provide. */
+  'control-match.js': 22,
   'control-content.js': 11,
   'control-squad.js': 8,
   'control-photos.js': 6,
@@ -729,6 +732,15 @@ for (const [f, kb] of Object.entries(BUDGET)) {
   check('a re-render replaces the panel body rather than emptying it',
     /cloneNode\(false\)/.test(core) && !/\bbody\.innerHTML = '';/.test(core),
     'module listeners stack up on every refresh, so one click saves twice');
+
+  /* No em dashes, anywhere the panel can write them. The club's copy rule
+     applies to text the panel GENERATES as much as to text a developer types:
+     the match report builder writes sentences straight onto the website. */
+  for (const f of fs.readdirSync(ROOT).filter((x) => /^control(-[a-z-]+)?\.js$/.test(x))) {
+    const body = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    check(`${f}: no em dashes`, !body.includes('\u2014'),
+      'the panel would write one into the club\'s copy');
+  }
 
   check('routing does not gate on a module being loaded',
     !/M\[start\]\s*\?/.test(core) && /known\(start\)/.test(core),

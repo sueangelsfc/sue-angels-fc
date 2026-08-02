@@ -35,6 +35,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
+import { BODY_PARTS, ZONES, SITUATIONS, ASSIST_TYPES } from '../lib/football.mjs';
 import { playerProfile, fmtDate } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
 
@@ -794,9 +795,64 @@ export function playerPage(p, d) {
       </div>
     </section>` : '';
 
+
+  /* ================= HOW HE SCORES =================
+     The detail the match form now records: what a goal was struck with, from
+     where, out of what, and how the chance was made. It appears only where
+     somebody actually recorded it, and it says how many of his goals it
+     covers, because "4 with his right foot" alongside a career of 25 goals
+     invites the reader to assume the other 21 were headers. */
+  const detailBars = (title, items, total) => {
+    const rows = items.filter((r) => r.n > 0);
+    if (!rows.length) return '';
+    const top = Math.max(...rows.map((r) => r.n));
+    return `<section class="pf-sub">
+          <h3 class="pf-how__h">${esc(title)}</h3>
+          <ul class="pf-how__list">
+            ${rows.map((r) => `<li class="pf-how__row">
+              <span class="pf-how__k">${esc(r.label)}</span>
+              <span class="pf-how__bar"><i style="--w:${Math.round((r.n / top) * 100)}%"></i></span>
+              <b class="pf-how__v">${r.n}</b>
+            </li>`).join('\n            ')}
+          </ul>
+        </section>`;
+  };
+
+  const foot = pr.byFoot || {};
+  const zone = pr.byZone || {};
+  const sit = pr.bySituation || {};
+  const asType = pr.assistsByType || {};
+  const detailed = pr.goalsDetailed || 0;
+
+  const howBand = (detailed || pr.assists || pr.saves) ? `<section class="sec pf-how" aria-labelledby="pf-how-h">
+      <div class="wrap">
+        ${rail(6, 'The detail', detailed ? `${detailed} of ${pr.goals} goals recorded in full` : 'from the match records')}
+        <h2 class="h2 rv" id="pf-how-h">How he <span class="volt">does it.</span></h2>
+        <div class="pf-how__grid rv">
+          ${detailBars('What he strikes it with', BODY_PARTS.map((b) => ({ label: b.label, n: foot[b.key] || 0 })))}
+          ${detailBars('Where he strikes it from', ZONES.map((z) => ({ label: z.label, n: zone[z.key] || 0 })))}
+          ${detailBars('What the ball was doing', SITUATIONS.map((x) => ({ label: x.label, n: sit[x.key] || 0 })))}
+          ${detailBars('How he makes them for others', ASSIST_TYPES.map((a) => ({ label: a.label, n: asType[a.key] || 0 })))}
+          ${pr.keeperApps ? `<section class="pf-sub">
+            <h3 class="pf-how__h">In goal</h3>
+            <ul class="pf-how__keeper">
+              <li><b>${pr.saves}</b><span>saves</span></li>
+              <li><b>${esc(pr.savesPerGame || '0')}</b><span>a game</span></li>
+              <li><b>${pr.keeperApps}</b><span>games in goal</span></li>
+            </ul>
+          </section>` : ''}
+        </div>
+        ${detailed && detailed < pr.goals ? `<p class="pf-how__note rv">The other
+          ${pr.goals - detailed} ${pr.goals - detailed === 1 ? 'goal was' : 'goals were'} recorded before
+          the club kept this level of detail, so nothing is claimed about
+          ${pr.goals - detailed === 1 ? 'it' : 'them'}.</p>` : ''}
+      </div>
+    </section>` : '';
+
   return {
+
     body: siteHeader('/squad.html') + hero + seasonBand + versusBand
-      + pitchBand + shotsBand + honoursBand + ctaBand,
+      + pitchBand + howBand + shotsBand + honoursBand + ctaBand,
     bodyClass: 'is-home is-sub is-player',
     css: 'home.css',
     shell: 'home',

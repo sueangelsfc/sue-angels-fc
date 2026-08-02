@@ -39,6 +39,7 @@ import { PENDING_ROUTES, isLive, groupLive } from './lib/routes.mjs';
 import { matchPage, articlePage, albumPage } from './templates/detail.mjs';
 import { playerPage } from './templates/player.mjs';
 import { control } from './templates/control.mjs';
+import { VOCAB } from './lib/football.mjs';
 
 const ROOT = process.cwd();
 const CHECK = process.argv.includes('--check');
@@ -201,6 +202,10 @@ const adminSeed = {
        reopens a walkover with no winner and saving would quietly drop one. */
     wo: m.wo || '',
   })),
+  /* How a goal was scored and how the chance was made, defined once in
+     src/lib/football.mjs. The panel builds its dropdowns from this, so the
+     words it offers and the words the website prints cannot drift apart. */
+  vocab: VOCAB,
 };
 /* The seed is DATA, and it grew: the squad, every match's fixture fields, the
    known clubs and competitions. Inlined it pushed control.js past its budget

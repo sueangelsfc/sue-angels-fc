@@ -164,10 +164,16 @@ function matchesPage(d, mode) {
           <p class="mt-hero__lede">Every match ${esc(CLUB.name)} has played, across league and cups.
             Filter by competition, by home or away, or by how it finished.</p>
         </div>
-        <dl class="mt-tally glassbox">
-          <div><dt>Played</dt><dd>${esc(all.played)}</dd></div>
-          <div><dt>Won</dt><dd>${esc(all.won)}</dd></div>
-          <div><dt>Scored</dt><dd>${esc(all.goalsFor)}</dd></div>
+        <!-- Follows the season bar. These were the club's career totals under
+             an eyebrow naming one season, so 26/27 read "Played 33, Won 29,
+             Scored 137" for a season with no results in it. -->
+        <dl class="mt-tally glassbox" data-hero-tally${VIEWS.map((v) => {
+    const sm = teamSummary(v.matches);
+    return ` data-tally-${v.id}="${attr([sm.played, sm.won, sm.goalsFor].join(','))}"`;
+  }).join('')}>
+          <div><dt>Played</dt><dd>${esc(teamSummary(VIEWS[DEFAULT].matches).played)}</dd></div>
+          <div><dt>Won</dt><dd>${esc(teamSummary(VIEWS[DEFAULT].matches).won)}</dd></div>
+          <div><dt>Scored</dt><dd>${esc(teamSummary(VIEWS[DEFAULT].matches).goalsFor)}</dd></div>
         </dl>
       </div>
     </section>`;

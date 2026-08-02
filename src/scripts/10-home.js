@@ -665,8 +665,11 @@
     scopes.forEach(function (bar) {
       var chips = $$('.sq-chip', bar);
       if (chips.length < 2) return;
-      var band = bar.parentNode;
-      var groups = $$('.sq-grp', band);
+      /* Every position group on the page, not only the band the chips sit
+         in. Asking for goalkeepers should show the season's goalkeepers,
+         including the ones who have since retired or moved on, and their
+         count is in the chip. */
+      var groups = $$('.sq-grp');
       if (!groups.length) return;
 
       bar.setAttribute('role', 'tablist');
@@ -680,9 +683,18 @@
           c.tabIndex = on ? 0 : -1;
           if (on && focus) c.focus();
         });
-        groups.forEach(function (g) {
-          g.hidden = want !== '' && g.getAttribute('data-group') !== want;
-        });
+        /* TWO FILTERS, ONE ANSWER. The season tabs and these chips both decide
+           whether a position group is on screen, and each used to set
+           `hidden` on its own: picking goalkeepers hid the other three, then
+           the next season press showed all four again. The pick is recorded
+           here and window.saSquadPaint applies both together. */
+        window.saSquadPick = want;
+        if (window.saSquadPaint) window.saSquadPaint();
+        else {
+          groups.forEach(function (g) {
+            g.hidden = want !== '' && g.getAttribute('data-group') !== want;
+          });
+        }
       };
 
       chips.forEach(function (c, i) {
@@ -1833,15 +1845,25 @@
       var n = document.querySelectorAll('#first-team .pc:not([hidden])').length;
       band.textContent = n + ' player' + (n === 1 ? '' : 's');
     }
-    /* A position group with nobody left in it should go, not sit there as an
-       empty heading with a count of players who are not shown. */
+    paintGroups();
+  }
+
+  /* THE ONE DECIDER for whether a position group is on screen: it has to
+     satisfy the season (does it still hold anyone?) AND the position chips
+     (is it the one picked?). Held on window so the chip handler above, which
+     runs in its own block, calls the same function rather than a second
+     opinion. */
+  function paintGroups() {
+    var want = window.saSquadPick || '';
     Array.prototype.forEach.call(document.querySelectorAll('.sq-grp'), function (grp) {
       var shown = grp.querySelectorAll('.pc:not([hidden])').length;
-      grp.hidden = !shown;
+      var wanted = !want || grp.getAttribute('data-group') === want;
+      grp.hidden = !shown || !wanted;
       var n = grp.querySelector('.sq-grp__h span');
       if (n) n.textContent = shown;
     });
   }
+  window.saSquadPaint = paintGroups;
 
   bar.addEventListener('click', function (e) {
     var b = e.target.closest ? e.target.closest('[data-season]') : null;
@@ -1918,13 +1940,17 @@
         document.querySelectorAll('[data-aw-season], [data-hero-season]'), function (el) {
           el.textContent = label;
         });
-      var list = document.querySelector('[data-aw-tally]');
-      if (!list) return;
-      var raw = list.getAttribute('data-t-' + view);
-      if (!raw) return;
-      var v = raw.split(',');
-      Array.prototype.forEach.call(list.querySelectorAll('dd'), function (dd, i) {
-        if (v[i] !== undefined) dd.textContent = v[i];
+      /* Two tally shapes, one job: a header full of figures that has to say
+         something true about the season named beside it. */
+      [['[data-aw-tally]', 'data-t-'], ['[data-hero-tally]', 'data-tally-']].forEach(function (pair) {
+        var list = document.querySelector(pair[0]);
+        if (!list) return;
+        var raw = list.getAttribute(pair[1] + view);
+        if (!raw) return;
+        var v = raw.split(',');
+        Array.prototype.forEach.call(list.querySelectorAll('dd'), function (dd, i) {
+          if (v[i] !== undefined) dd.textContent = v[i];
+        });
       });
     };
 

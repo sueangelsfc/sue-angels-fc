@@ -343,3 +343,13 @@ html.js .sq-cards .pc__link:focus-visible{--lift: -5px;}
    filter that returns nothing. [hidden] on an inline-flex element needs
    saying out loud, because the display rule above would otherwise win. */
 .sq-chip[hidden]{display: none;}
+
+/* Past players are grouped by position too, so the chips can filter them as
+   well as count them. The sub-heading is quieter than the first team's: this
+   band is a record, not the shop window. */
+.sq-grp--past + .sq-grp--past{margin-top: clamp(20px, 2.6vw, 30px);}
+.sq-grp__sub{display: flex; align-items: baseline; gap: 10px;
+  margin: 0 0 clamp(12px, 1.6vw, 16px);
+  font-family: var(--ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3);}
+.sq-grp__sub span{font-size: 9px; color: var(--ink-3); opacity: 0.7;}

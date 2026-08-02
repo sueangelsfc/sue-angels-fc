@@ -106,10 +106,14 @@ export function coaches(d) {
   /* ================= HERO ================= */
   const hero = `<section class="co-hero" aria-labelledby="co-h">
       <div class="wrap">
-        <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> The dugout · ${esc(d.currentSeason)}</p>
+        <!-- Just "The dugout". The page has no season filter, and the staff
+             are not a season: naming one made a claim the page never keeps up
+             with, and the sentence below did the same with "the club's first
+             season" once there was a second. -->
+        <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> The dugout</p>
         <h1 class="co-hero__title" id="co-h">The coaches<span class="volt">.</span></h1>
         <p class="co-hero__lede">The people guiding ${esc(CLUB.name)}. ${esc(staff.length)} on the
-          staff, and the record they built together in the club's first season.</p>
+          staff, and the record they have built together.</p>
       </div>
     </section>`;
 

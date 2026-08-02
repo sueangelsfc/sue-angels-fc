@@ -74,8 +74,13 @@ export function squad(d) {
     const st = stats.get(p.num) || {};
     const played = new Set((st.matches || [])
       .map((r) => seasonOfMatch.get(r.id)).filter(Boolean));
+    /* Anyone still at the club belongs to the season about to start, because
+       that is what being in the squad means in August before a ball is
+       kicked. A season already PLAYED is evidence only: a line that read
+       "if he has played nowhere, put him in the current season" was adding
+       two players who never turned out to 25/26, so the tab said 32 played
+       and the page showed 34 cards. */
     if (!PAST_STATUS.has(p.status)) upcoming.forEach((n) => played.add(n));
-    if (!played.size) played.add(season);
     return { ...p, s: st, seasons: [...played] };
   });
 
@@ -264,16 +269,18 @@ export function squad(d) {
         aria-label="Season">
         ${VIEWS.map((v, i) => {
     const games = v === 'all' ? (d.played || []).length : playedIn(v);
-    /* The same count the hero states, worked out the same way: who ACTUALLY
-       PLAYED once a season has been played, and who is in the squad while it
-       has not. The tab said 34 players over a hero saying 32 used, which is
-       two answers to one question on the same screen. */
-    const count = games
-      ? all.filter((p) => {
-        const st = statsIn(v, p.num);
-        return (st.starts || 0) + (st.subApps || 0) > 0;
-      }).length
-      : first.filter((p) => (p.seasons || []).includes(v)).length;
+    /* WHAT THE TAB PRODUCES, which is the only thing a tab can honestly
+       promise: the number of players it will put on the page. It is the same
+       figure the "All" chip carries and the same as the position chips sum
+       to, because all three are now the one question.
+
+       It said 34 over a hero saying 32 used, then 32 over chips totalling
+       22. The hero is allowed to say something different because it says it
+       under its own label ("Players used"), which is a narrower claim than
+       "everyone this tab shows". */
+    const count = v === 'all'
+      ? all.length
+      : all.filter((p) => (p.seasons || []).includes(v)).length;
     const note = `${count} player${count === 1 ? '' : 's'} · ${games ? `${games} match${games === 1 ? '' : 'es'}` : 'no matches yet'}`;
     return `<button class="sq-season${i === 0 ? ' is-on' : ''}" type="button"
           data-season="${attr(v)}" data-view="${attr(viewKey(v))}"
@@ -291,14 +298,23 @@ export function squad(d) {
 
      A group with nobody in it that season is hidden rather than shown as a
      zero: "Forwards 0" is a heading for a filter that would return nothing. */
+  /* THE CHIPS COUNT EVERYONE ON THE TAB, both bands.
+
+     They counted the first team alone, so a tab reading "32 players · 33
+     matches" sat above a row of chips totalling 22: the ten who played that
+     season and have since retired or moved on were in the band below and in
+     neither figure. Two numbers about the same tab.
+
+     They filter both bands too. Asking for goalkeepers should show the
+     season's goalkeepers, not only the ones still at the club. */
   const chips = (list, scope) => {
-    const groups = byGroup(list);
+    const groups = byGroup(all);
     const inView = (p, v) => v === 'all' || (p.seasons || []).includes(v);
     const counts = (pick) => VIEWS
-      .map((v) => ` data-n-${viewKey(v)}="${attr(list.filter((p) => inView(p, v) && pick(p)).length)}"`)
+      .map((v) => ` data-n-${viewKey(v)}="${attr(all.filter((p) => inView(p, v) && pick(p)).length)}"`)
       .join('');
     const v0 = VIEWS[0];
-    const n0 = (pick) => list.filter((p) => inView(p, v0) && pick(p)).length;
+    const n0 = (pick) => all.filter((p) => inView(p, v0) && pick(p)).length;
     return `<div class="sq-chips" data-filter-scope="${attr(scope)}">
           <a class="sq-chip is-on" href="#${attr(scope)}" data-group-all${counts(() => true)}>All<span>${esc(n0(() => true))}</span></a>
           ${groups.map((g) => {
@@ -388,11 +404,20 @@ export function squad(d) {
     </section>`;
 
   /* ================= 02 PAST PLAYERS ================= */
+  /* Cards go inside position groups here too, exactly as the first team's do.
+     They used to sit in one flat list, so the position chips - which now
+     COUNT across both bands - could only FILTER one of them: asking for
+     goalkeepers left every retired outfielder on screen. A group is only
+     drawn where somebody is in it, so a section with no forwards does not
+     grow an empty heading. */
   const pastSection = (list, key, title, sub) => list.length ? `<section class="sq-past" data-past="${attr(key)}">
           <h3 class="sq-past__h">${esc(title)} <span>${esc(sub)}</span></h3>
-          <ul class="sq-cards sq-cards--past">
-            ${list.map((p, i) => card(p, i)).join('\n            ')}
-          </ul>
+          ${byGroup(list).map((g) => `<section class="sq-grp sq-grp--past" data-group="${attr(g.key)}">
+            <h4 class="sq-grp__sub">${esc(g.label)} <span>${esc(g.players.length)}</span></h4>
+            <ul class="sq-cards sq-cards--past">
+              ${g.players.map((p, i) => card(p, i)).join('\n              ')}
+            </ul>
+          </section>`).join('\n          ')}
         </section>` : '';
 
   const pastBand = (retired.length || departed.length || nowCoaching.length) ? `<section class="sec sq-pastband" id="past-players" aria-labelledby="sq-past-h">

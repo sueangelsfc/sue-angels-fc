@@ -30,12 +30,9 @@ import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.m
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 /* Photographs are filed by shirt number. The number is the filename only: it
    is never rendered, here or anywhere else on the site. */
-const shotFor = (num) => {
-  try {
-    return fs.existsSync(path.join(ROOT, 'assets', 'players', `${num}.webp`))
-      ? `/assets/players/${num}.webp` : '';
-  } catch { return ''; }
-};
+/* Resolved in src/lib/dataset.mjs, not here. Each page kept its own copy of
+   "is there a file for this shirt number", and shirt numbers get reused: a new
+   signing given number 12 inherited a previous holder's photograph. */
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -58,6 +55,7 @@ const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
     </div>`;
 
 export function league(d) {
+  const shotFor = (num) => (d.shotFor ? d.shotFor(num, d.currentSeason) : '');
   const table = d.table || [];
   const next = d.nextDivisionTable || {};
   const charts = d.leagueScorersByComp || { all: d.leagueScorers || [] };

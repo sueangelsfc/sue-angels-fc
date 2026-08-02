@@ -1214,6 +1214,33 @@
       }
     };
 
+    /* The competition chips were the club's whole history whichever season
+       was chosen: 26/27 offered League Ten 18 and four cups, every one of
+       them a filter that returns nothing. A competition not played that
+       season is taken out of the row rather than shown as a nought, and if
+       the one currently selected goes with it the row falls back to all. */
+    var showComps = function (view) {
+      var chips = $$('[data-comp-chips] .st-chip');
+      if (!chips.length) return;
+      var activeGone = false;
+      chips.forEach(function (chip) {
+        var n = chip.getAttribute('data-n-' + view);
+        if (n === null) return;
+        var out = $('span', chip);
+        if (out) out.textContent = n;
+        var isAll = chip.getAttribute('data-comp') === 'all';
+        chip.hidden = !isAll && n === '0';
+        if (chip.hidden && chip.classList.contains('is-on')) activeGone = true;
+      });
+      if (!activeGone) return;
+      chips.forEach(function (c) {
+        var isAll = c.getAttribute('data-comp') === 'all';
+        c.classList.toggle('is-on', isAll);
+        c.setAttribute('aria-pressed', isAll ? 'true' : 'false');
+      });
+      comp = 'all';
+    };
+
     /* "Who scored them" counted every goal the club has ever scored, under a
        heading sitting directly below tabs that said 25/26 and 26/27. */
     var showShare = function (view) {
@@ -1249,6 +1276,7 @@
         var view = tab.getAttribute('data-view');
         showLeaders(view);
         showShare(view);
+        showComps(view);
         showHero(view, ($('b', tab) || {}).textContent);
         refresh();
       });
@@ -1257,6 +1285,7 @@
       var v0 = onDefault.getAttribute('data-view');
       showLeaders(v0);
       showShare(v0);
+      showComps(v0);
       showHero(v0, ($('b', onDefault) || {}).textContent);
     }
 
@@ -1308,6 +1337,55 @@
        disagree. Every card carries the season it was played in. */
     document.addEventListener('sa:season', function (e) {
       picked.season = e.detail.season || 'all';
+      /* The competition chips count THAT season's matches. They were the
+         club's whole history whichever tab was on, so 26/27 offered League
+         Ten 18 and four cups, each a filter that finds nothing. One the club
+         did not play that season leaves the row rather than sitting at nought,
+         and if it was the one selected the row falls back to all. */
+      var view = e.detail.view;
+      var gone = false;
+      /* Venue and result chips carry their own per-season counts too. A
+         filter's count is a promise about what pressing it finds. */
+      $$('[data-filter-group="venue"] .mt-chip, [data-filter-group="result"] .mt-chip')
+        .forEach(function (chip) {
+          var n = chip.getAttribute('data-n-' + view);
+          if (n === null) return;
+          var out = $('span', chip);
+          if (out) out.textContent = n;
+          chip.hidden = n === '0';
+          if (chip.hidden && chip.classList.contains('is-on')) {
+            var g = chip.closest('[data-filter-group]');
+            var name = g.getAttribute('data-filter-group');
+            $$('.mt-chip', g).forEach(function (c, i) {
+              c.classList.toggle('is-on', i === 0);
+              c.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+            });
+            picked[name] = 'all';
+          }
+        });
+      var pc = document.querySelector('[data-played-count]');
+      if (pc) {
+        var total = $$('[data-filter-group="comp"] .mt-chip[data-value="all"]')[0];
+        var t = total ? total.getAttribute('data-n-' + view) : null;
+        if (t !== null) pc.textContent = t + ' played';
+      }
+      $$('[data-filter-group="comp"] .mt-chip').forEach(function (chip) {
+        var n = chip.getAttribute('data-n-' + view);
+        if (n === null) return;
+        var out = $('span', chip);
+        if (out) out.textContent = n;
+        var isAll = chip.getAttribute('data-value') === 'all';
+        chip.hidden = !isAll && n === '0';
+        if (chip.hidden && chip.classList.contains('is-on')) gone = true;
+      });
+      if (gone) {
+        $$('[data-filter-group="comp"] .mt-chip').forEach(function (c) {
+          var isAll = c.getAttribute('data-value') === 'all';
+          c.classList.toggle('is-on', isAll);
+          c.setAttribute('aria-pressed', isAll ? 'true' : 'false');
+        });
+        picked.comp = 'all';
+      }
       apply();
     });
 
@@ -1835,9 +1913,11 @@
     var heroFollows = function (btn) {
       var view = btn.getAttribute('data-view');
       var label = (btn.querySelector('b') || {}).textContent || '';
-      Array.prototype.forEach.call(document.querySelectorAll('[data-aw-season]'), function (el) {
-        el.textContent = label;
-      });
+      /* Any word on the page naming the season, wherever it sits. */
+      Array.prototype.forEach.call(
+        document.querySelectorAll('[data-aw-season], [data-hero-season]'), function (el) {
+          el.textContent = label;
+        });
       var list = document.querySelector('[data-aw-tally]');
       if (!list) return;
       var raw = list.getAttribute('data-t-' + view);

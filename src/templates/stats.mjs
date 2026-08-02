@@ -30,12 +30,11 @@ const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const shotFor = (num) => {
-  try {
-    return fs.existsSync(path.join(ROOT, 'assets', 'players', `${num}.webp`))
-      ? `/assets/players/${num}.webp` : '';
-  } catch { return ''; }
-};
+/* Photographs resolve in ONE place, src/lib/dataset.mjs: the season's
+   uploaded picture, then the most recent, then a file on disk only where the
+   shirt number can be proved to belong to the player. Six templates each kept
+   their own copy of the disk lookup, and it put a previous holder of number 12
+   on a new signing's profile. */
 
 const shortComp = (name) => String(name || '')
   .replace(/^Chipotle UK /, '')
@@ -50,6 +49,7 @@ const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
 const initial = (first) => (first ? `${first.charAt(0)}.` : '');
 
 export function stats(d) {
+  const shotFor = (num) => (d.shotFor ? d.shotFor(num, d.currentSeason) : '');
   const squad = d.squad || [];
   const byNum = new Map(squad.map((p) => [p.num, p]));
   const played = (d.played || []).filter((m) => m.played);
@@ -108,11 +108,15 @@ export function stats(d) {
     ...seasons.map((sn) => ({
       key: sn.name, id: sn.name.replace(/\D/g, ''), label: sn.name,
       note: sn.matches.length ? `${sn.matches.length} matches` : 'Not started',
+      /* The matches themselves, not only the derived rows: the competition
+         chips count fixtures, not players. */
+      matches: sn.matches,
       rows: rowsFrom(sn.all), heading: 'The season’s',
     })),
     {
       key: 'all', id: 'all', label: 'All seasons',
       note: `${played.length} matches`,
+      matches: played,
       rows: rowsFrom(allSet), heading: 'The club’s',
     },
   ];
@@ -306,9 +310,22 @@ export function stats(d) {
           </div>
         </div>`;
 
+  /* THE COMPETITIONS FOLLOW THE SEASON TAB.
+     They were the club's whole history regardless: pick 26/27, a season with
+     no matches in it, and the row still offered League Ten 18, Dylan Rigobert
+     Trophy 5, Chairman's Cup 4. Every count is a filter that would return
+     nothing.
+
+     A competition the club did not play that season is hidden rather than
+     shown as a nought, and every view's counts ride on the chip so switching
+     season is a rewrite rather than a fetch. */
+  const compCount = (v, name) => v.matches.filter((m) => m.competition === name).length;
+  const compData = (name) => VIEWS
+    .map((v) => ` data-n-${v.id}="${attr(name === null ? v.matches.length : compCount(v, name))}"`).join('');
+  const v0 = VIEWS[defaultView];
   const chips = `<div class="st-chips" data-comp-chips>
-          <a class="st-chip is-on" href="#table" data-comp="all">All competitions<span>${esc(played.length)}</span></a>
-          ${compSets.map((c) => `<a class="st-chip" href="#table" data-comp="${attr(c.key)}">${esc(c.short)}<span>${esc(played.filter((m) => m.competition === c.name).length)}</span></a>`).join('\n          ')}
+          <a class="st-chip is-on" href="#table" data-comp="all"${compData(null)}>All competitions<span>${esc(v0.matches.length)}</span></a>
+          ${compSets.map((c) => `<a class="st-chip" href="#table" data-comp="${attr(c.key)}"${compData(c.name)}${compCount(v0, c.name) ? '' : ' hidden'}>${esc(c.short)}<span>${esc(compCount(v0, c.name))}</span></a>`).join('\n          ')}
         </div>`;
 
   const tableBand = `<section class="sec st-table" id="table" aria-labelledby="st-tbl-h">

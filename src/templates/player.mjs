@@ -44,15 +44,14 @@ const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const fileShot = (num) => {
-  try {
-    return fs.existsSync(path.join(ROOT, 'assets', 'players', `${num}.webp`))
-      ? `/assets/players/${num}.webp` : '';
-  } catch { return ''; }
-};
 /* Uploaded first, then the file that ships with the site. See the note in
    dataset.mjs: an uploaded photograph used to reach nothing at all. */
-const shotFor = (num, d, season) => (d && d.photoFor && d.photoFor(num, season)) || fileShot(num);
+/* Resolved once, in src/lib/dataset.mjs: the season's uploaded picture, then
+   the most recent, then a file on disk ONLY where the shirt number can be
+   proved to belong to this player. The disk files are named after a number
+   and nothing else, and the panel gives a new signing the lowest free one, so
+   Ade Owolona was signed into 12 and inherited the previous holder's face. */
+const shotFor = (num, d, season) => (d && d.shotFor ? d.shotFor(num, season) : '');
 
 const shortClub = (name) => String(name || '')
   .replace(/\s+FC 2\.0$/, '')

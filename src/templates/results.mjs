@@ -54,8 +54,12 @@ const key = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
 /* A row of filter chips, shared by both pages. Ships as jump links and is
    promoted to buttons by the script, so a blocked script leaves a complete
    list rather than dead controls. */
+/* `counts` is an optional per-season tally: ` data-n-2526="18"` and so on, so
+   a chip can say how many matches it would find in the season on screen
+   rather than across the club's whole history. Without it the 26/27 tab
+   offered League Ten 18 and four cups, every one a filter returning nothing. */
 const chipRow = (label, items, group) => `<div class="mt-chips" data-filter-group="${attr(group)}" role="group" aria-label="${attr(label)}">
-          ${items.map((it, n) => `<a class="mt-chip${n === 0 ? ' is-on' : ''}" href="#matches" data-value="${attr(it.value)}">${esc(it.label)}${it.n === undefined ? '' : `<span>${esc(it.n)}</span>`}</a>`).join('\n          ')}
+          ${items.map((it, n) => `<a class="mt-chip${n === 0 ? ' is-on' : ''}" href="#matches" data-value="${attr(it.value)}"${it.counts || ''}${it.hidden ? ' hidden' : ''}>${esc(it.label)}${it.n === undefined ? '' : `<span>${esc(it.n)}</span>`}</a>`).join('\n          ')}
         </div>`;
 
 function matchesPage(d, mode) {
@@ -152,7 +156,10 @@ function matchesPage(d, mode) {
   const hero = `<section class="mt-hero" aria-labelledby="mt-h">
       <div class="wrap mt-hero__grid">
         <div>
-          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Matchday · ${esc(d.currentSeason)}</p>
+          <!-- Follows the season bar below. It named one season above a
+               filter that can show any of them. -->
+          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Matchday ·
+            <span data-hero-season>${esc(VIEWS[DEFAULT].label)}</span></p>
           <h1 class="mt-hero__title" id="mt-h">Results<span class="volt">.</span></h1>
           <p class="mt-hero__lede">Every match ${esc(CLUB.name)} has played, across league and cups.
             Filter by competition, by home or away, or by how it finished.</p>
@@ -212,26 +219,49 @@ function matchesPage(d, mode) {
      ships visible, so a blocked script leaves the full list in date order. */
   const listBand = `<section class="sec mt-list" id="matches" aria-labelledby="mt-list-h">
       <div class="wrap">
-        ${rail(2, 'Every match', `${played.length} played`)}
+        <!-- Follows the season bar: the grid below it is filtered. -->
+        ${rail(2, 'Every match', `${VIEWS[DEFAULT].matches.length} played`)
+    .replace('<span class="xrail__r">', '<span class="xrail__r" data-played-count>')}
         <h2 class="h2 rv" id="mt-list-h">Match by <span class="volt">match.</span></h2>
 
         <div class="mt-filters rv">
-          ${chipRow('Competition', [
-    { label: 'All competitions', value: 'all', n: played.length },
-    ...comps.map((c) => ({ label: c.short, value: c.key, n: c.n })),
-  ], 'comp')}
+          ${chipRow('Competition', (() => {
+    const inView = (v, name) => v.matches.filter((m) => name === null || m.competition === name).length;
+    const counts = (name) => VIEWS.map((v) => ` data-n-${v.id}="${attr(inView(v, name))}"`).join('');
+    const v0 = VIEWS[DEFAULT];
+    return [
+      { label: 'All competitions', value: 'all', n: inView(v0, null), counts: counts(null) },
+      ...comps.map((c) => ({
+        label: c.short, value: c.key, n: inView(v0, c.name),
+        counts: counts(c.name), hidden: !inView(v0, c.name),
+      })),
+    ];
+  })(), 'comp')}
           <div class="mt-filters__row">
-            ${chipRow('Venue', [
-    { label: 'Home and away', value: 'all' },
-    { label: 'Home', value: 'home', n: played.filter((m) => m.weAreHome).length },
-    { label: 'Away', value: 'away', n: played.filter((m) => !m.weAreHome).length },
-  ], 'venue')}
-            ${chipRow('Result', [
-    { label: 'Any result', value: 'all' },
-    { label: 'Wins', value: 'wins', n: all.won },
-    { label: 'Draws', value: 'draws', n: all.drawn },
-    { label: 'Losses', value: 'losses', n: all.lost },
-  ], 'result')}
+            <!-- Venue and result counts are the selected season's too. A
+                 filter's own count is a promise about what pressing it finds. -->
+            ${chipRow('Venue', (() => {
+    const n = (v, pred) => v.matches.filter(pred).length;
+    const c = (pred) => VIEWS.map((v) => ` data-n-${v.id}="${attr(n(v, pred))}"`).join('');
+    const v0 = VIEWS[DEFAULT];
+    const home = (m) => m.weAreHome;
+    const away = (m) => !m.weAreHome;
+    return [
+      { label: 'Home and away', value: 'all' },
+      { label: 'Home', value: 'home', n: n(v0, home), counts: c(home), hidden: !n(v0, home) },
+      { label: 'Away', value: 'away', n: n(v0, away), counts: c(away), hidden: !n(v0, away) },
+    ];
+  })(), 'venue')}
+            ${chipRow('Result', (() => {
+    const c = (key) => VIEWS.map((v) => ` data-n-${v.id}="${attr(teamSummary(v.matches)[key] || 0)}"`).join('');
+    const s0 = teamSummary(VIEWS[DEFAULT].matches);
+    return [
+      { label: 'Any result', value: 'all' },
+      { label: 'Wins', value: 'wins', n: s0.won, counts: c('won'), hidden: !s0.won },
+      { label: 'Draws', value: 'draws', n: s0.drawn, counts: c('drawn'), hidden: !s0.drawn },
+      { label: 'Losses', value: 'losses', n: s0.lost, counts: c('lost'), hidden: !s0.lost },
+    ];
+  })(), 'result')}
           </div>
         </div>
 

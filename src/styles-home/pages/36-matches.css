@@ -186,3 +186,7 @@ html.js .mt[hidden]{display: none;}
 /* A season with nothing played yet says so rather than drawing an empty bar. */
 .mt-rec__none{margin: clamp(14px, 2vw, 20px) 0 0; max-width: 56ch;
   font-size: 15px; line-height: 1.7; color: var(--ink-3);}
+
+/* A competition the club did not play that season leaves the row rather than
+   offering a filter that finds nothing. */
+.mt-chip[hidden]{display: none;}

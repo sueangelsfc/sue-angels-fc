@@ -34,13 +34,9 @@ const shortClub = (name) => String(name || '')
 /* Squad photography is filed by shirt number. A missing file falls back to
    the neutral avatar rather than to a stand-in face. */
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const shotFor = (num) => {
-  if (num === undefined || num === null || num === '') return AVATAR;
-  try {
-    return fs.existsSync(path.join(ROOT, 'assets', 'players', `${num}.webp`))
-      ? `/assets/players/${num}.webp` : AVATAR;
-  } catch { return AVATAR; }
-};
+/* Resolved in src/lib/dataset.mjs, not here. Each page kept its own copy of
+   "is there a file for this shirt number", and shirt numbers get reused: a new
+   signing given number 12 inherited a previous holder's photograph. */
 
 const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
       <span class="xrail__l"><span class="xrail__n">${esc(String(n).padStart(2, '0'))}</span><span class="xrail__t">${esc(label)}</span></span>
@@ -84,6 +80,7 @@ const POS_LABEL = {
 const readablePos = (p) => POS_LABEL[p] || p || '';
 
 export function awards(d) {
+  const shotFor = (num) => (d.shotFor ? d.shotFor(num, d.currentSeason) : '');
   const VIEWS = seasonViews(d);
   const DEFAULT = defaultView(VIEWS);
   const squad = d.squad || [];

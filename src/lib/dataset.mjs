@@ -218,6 +218,20 @@ export function buildDataset() {
     alt: heroRow.alt || '',
   } : null;
 
+  /* WHO CAME FROM THE CODE BASELINE, and who the panel signed.
+
+     It matters because the twenty photographs that ship as files in
+     assets/players/ are named after a SHIRT NUMBER and nothing else, and
+     shirt numbers get reused: the panel gives a new player the lowest free
+     one. Ade Owolona was signed into number 12, a `12.webp` was still sitting
+     on disk from whoever had it before, and his profile showed a stranger's
+     face.
+
+     A player the panel signed cannot have a file on disk, because those files
+     were exported by hand before the panel existed. Marking where each record
+     came from is what lets the site refuse a photograph it cannot prove
+     belongs to the person. */
+  const addedNums = new Set(addedPlayers.map((p) => String(p.num)));
   const squad = [...(ps.SQUAD || []), ...addedPlayers].map((p) => {
     const name = `${p.first} ${p.last}`.trim();
     const pos = posByNum.get(p.num);
@@ -240,6 +254,7 @@ export function buildDataset() {
         bio: p.bio || bios[p.num] || bios[name] || null,
         hasPhoto: photoKeys.has(String(p.num)),
         status: rosterStatus[String(p.num)] || p.status || 'active',
+        signedHere: addedNums.has(String(p.num)),
       };
     }
     return {
@@ -257,6 +272,9 @@ export function buildDataset() {
       bio: bios[p.num] || bios[name] || null,
       hasPhoto: photoKeys.has(String(p.num)),
       status: rosterStatus[String(p.num)] || p.status || 'active',
+      /* Signed through the panel rather than present in the code baseline,
+         so no hand-exported photograph can belong to them. */
+      signedHere: addedNums.has(String(p.num)),
     };
   });
 
@@ -288,6 +306,35 @@ export function buildDataset() {
   const photoSeasons = [...new Set(
     Object.values(photoRec).flatMap((r) => Object.keys(r || {})),
   )].filter((k) => k !== 'default');
+
+  /* THE WHOLE RESOLUTION, IN ONE PLACE.
+
+     Six templates each kept their own copy of "is there a file on disk for
+     this shirt number", which is six chances to disagree and, worse, six
+     copies of a bug: the twenty photographs in assets/players/ are named
+     after a SHIRT NUMBER and nothing else, and numbers are reused. The panel
+     gives a new signing the lowest free one, so Ade Owolona was signed into
+     number 12, a 12.webp from a previous holder was still on disk, and his
+     profile carried a stranger's face.
+
+     A file on disk is only trusted for a player who was in the code baseline
+     when those files were exported by hand. Anybody the panel has signed
+     since gets an uploaded photograph or their initials, which is the honest
+     answer rather than somebody else's photograph. */
+  const signedHere = new Set(squad.filter((p) => p.signedHere).map((p) => String(p.num)));
+  const diskPhotos = (() => {
+    try {
+      return new Set(fs.readdirSync(path.join(process.cwd(), 'assets', 'players'))
+        .filter((f) => /^\d+\.webp$/.test(f)).map((f) => f.replace('.webp', '')));
+    } catch { return new Set(); }
+  })();
+  const shotFor = (num, season) => {
+    const key = String(num);
+    const own = photoFor(num, season);
+    if (own) return own;
+    if (signedHere.has(key)) return '';
+    return diskPhotos.has(key) ? `/assets/players/${key}.webp` : '';
+  };
 
   /* Trialists. Somebody having a look, who turns out in a friendly and is
      named on the team sheet. They are deliberately NOT in `squad`, so no
@@ -632,7 +679,7 @@ export function buildDataset() {
     isPlayingStatus: isPlaying,
     coaches, table, leagueScorers, leagueScorersByComp, nextDivisionTable, leagueResults,
     articles, recognition, galleries, playerPhotos, donate, hero, trialists,
-    photoFor, photoSeasons,
+    photoFor, photoSeasons, shotFor,
     seasons, seasonInfo, competitions, knownClubs, badges,
     currentSeason: ps.CURRENT_SEASON,
     nextSeason,

@@ -60,8 +60,9 @@ const chipRow = (label, items, group) => `<div class="mt-chips" data-filter-grou
 function matchesPage(d, mode) {
   const played = (d.played || []).filter((m) => m.played)
     .slice().sort((a, b) => (b.iso || '').localeCompare(a.iso || ''));
-  const upcoming = (d.fixtures || [])
-    .slice().sort((a, b) => (a.iso || '').localeCompare(b.iso || ''));
+  /* Still to come, from dataset.mjs, which drops the dates that have been
+     and gone. Sorting `fixtures` here listed last month's fixture first. */
+  const upcoming = d.upcoming || [];
 
   const nameFor = d.nameFor || ((n) => `No. ${n}`);
   const comps = [...new Set(played.map((m) => m.competition))]
@@ -224,7 +225,7 @@ function matchesPage(d, mode) {
   const fixHero = `<section class="mt-hero" aria-labelledby="fx-h">
       <div class="wrap mt-hero__grid">
         <div>
-          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Still to play · ${esc(d.nextSeason || '26/27')}</p>
+          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Still to play · ${esc(d.nextSeason)}</p>
           <h1 class="mt-hero__title" id="fx-h">Fixtures<span class="volt">.</span></h1>
           <p class="mt-hero__lede">Every game still to come. As soon as a result is entered the
             match moves across to <a href="/results.html">results</a>, so this page only ever shows
@@ -271,7 +272,7 @@ function matchesPage(d, mode) {
           ${upcoming.map(card).join('\n          ')}
         </ul>
         <p class="mt-empty" data-match-empty hidden>No fixture matches those filters.</p>` : `<div class="mt-none rv">
-          <p class="mt-none__k">${esc(CLUB.nextDivision)} · ${esc(d.nextSeason || '26/27')}</p>
+          <p class="mt-none__k">${esc(CLUB.nextDivision)} · ${esc(d.nextSeason)}</p>
           <p class="mt-none__t">No fixtures on the calendar yet.</p>
           <p class="mt-none__b">As soon as dates are confirmed they appear here, and each one moves
             across to the results page once it has been played.</p>

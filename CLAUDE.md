@@ -128,6 +128,8 @@ Plus private `enquiries` and `supporters`.
 
 `player_photos` is a general blob store, not just photographs: it also holds `roster:*`, `coach:*`, `donate:config` and `sponsor:*` records.
 
+**A tag is stored EITHER as a bare name or as `{name, role}`.** The tagger writes the second the moment it knows anything beyond the name, and both shapes are in the database. Reading only the first is what put the literal text `[object Object]` under 624 gallery photographs and into their alt text. Everything reading a tag goes through `tagName()` in `src/templates/gallery.mjs`.
+
 ### Security posture
 - **Anonymous:** may read the seven content tables, may INSERT into `enquiries`/`supporters`, may do nothing else. Verified: content writes return 401 or affect zero rows; `enquiries`/`supporters` SELECT returns `[]`; storage upload returns 403.
 - **A `200 []` from an anonymous read of a private table is the policy working**, not an empty table.
@@ -164,7 +166,7 @@ The panel's stylesheet was `src/styles/70-control.css`, inside `sa.css`, so ever
 - Four video slots per match: footage, before, after, anything else. Direct upload is capped at 60MB with the reason on the button, because a full match is a gigabyte.
 - **Recognition follows its type.** A season award, a trophy, a club record, a Player of the Month and the captaincy are five different shapes, and the awards page reads different fields from each. The form asks for the right ones and clears the ones belonging to a type an entry has been changed away from, while still preserving anything it has never heard of.
 - **The sponsorship pipeline** is the club's own prospect list: who has been contacted, who has committed, and how much of the season's target that is. Nothing in it is published. The retired one lived in browser storage on one laptop.
-- Squad status moves a player between **in the squad, retained for 26/27, retired, left the club, moved into coaching**. The last one writes both `roster:status` and `roster:coaches`, because in real life it is one decision.
+- **Squad status is a fact about a player IN A SEASON**, `src/lib/squad-status.mjs`. It was one value per player with no date, so "Retained for 26/27" was a literal string in two files (wrong from July 2027, fixable only by a developer), "New signing" never expired, and a trial never ended. `roster:status` is `{num: {season: key}}` now; the old flat shape still reads, taken as the latest season. The club sets seven things (in the squad, on trial, injured, unavailable this season, retired, left, moved into coaching) and the site **works out three**: new signing, retained, back at the club. They are derived from **who was named in a match that season**, so nobody keeps them true and they stay true as seasons pass. Moving somebody into coaching still writes both `roster:status` and `roster:coaches`, because in real life it is one decision.
 - **Images are resized in the browser before they leave it.** A phone produces four or five megabytes and nothing on the site is drawn wider than about 1200px. Player photographs are cut square to 520px and stored inline on the `player_photos` row, which is where the existing nineteen live. Badges and article covers go to the storage bucket and the record keeps the address, because a page showing five inline would carry them all as base64. A badge is kept as a PNG so a transparent crest stays transparent.
 - Every destructive action goes through a confirm dialog. Writes are attributed to `audit_log` via `log_admin_action()`.
 - Settings offers a full JSON backup of every content table.
@@ -195,6 +197,7 @@ Push to `main` → `sue-angels-fc-b469` auto-deploys to www.suesangelsfc.co.uk. 
 
 ## Conventions
 - British spelling. "League Ten / League Eight", never "Division".
+- **Never type a season into copy.** `d.currentSeason`, `d.nextSeason` and `d.latestSeason` are derived, and `d.nextSeason` counts on from the last known season so the site never runs out of an answer. Eight pages said "26/27" in their copy, five of them as `d.nextSeason || '26/27'` where `d.nextSeason` did not exist, so the fallback WAS the value. Every one would have been wrong from July 2027.
 - **No em dashes** in copy.
 - Club email is **suesangelsfc@gmail.com**. `hello@suesangelsfc.co.uk` does not exist.
 - No emoji. No colours outside the token set.
@@ -213,11 +216,12 @@ Push to `main` → `sue-angels-fc-b469` auto-deploys to www.suesangelsfc.co.uk. 
 9. **Footer headings.** They are `h2`; as `h3` they created an `h1 → h3` jump on any page whose main content had no `h2`.
 
 ## Outstanding / known limitations
-- **`fixtures` and `team_badges` are empty (0 rows).** The homepage next-match card shows "to be confirmed" and the fixtures page shows an empty state. Upcoming fixtures come from the code baseline until rows exist.
+- **`team_badges` is empty (0 rows)**, so 26 opponent clubs have no crest. `fixtures` has 6 rows and they are live on the site.
+- **What is still to come is derived once**, in `dataset.mjs` as `d.upcoming` / `d.nextFixture`, against the day the site was generated. Six pages each used to sort `fixtures` and take the first without checking whether the date had passed, so the morning after a match the home page still led with it and the countdown ran backwards. Two of the six filtered on `m.played`, which a fixture row does not carry. Nothing re-derives it now.
 - **A probe row exists in production `enquiries`** (`name = __probe_delete_me`), created while auditing RLS. Anonymous clients cannot delete it; remove it from Control panel → Inbox once signed in.
 - **One cup tie has no stored shootout result** (`r20260412-kew-ccup`, Kew Antigua 2-2). It is shown as penalty-decided with no winner claimed rather than inventing one.
 - **Stripe donations** are built and the panel owns the link (Control panel → Donations). The cause page falls back to the link that is live today if the record is empty.
-- **15 of 34 players have no photograph**, and 26 of the opponent clubs have no badge. Both can be added now, and a missing opponent badge is what makes a drawn match cover fall back to initials.
+- **16 of 36 players have no photograph**, and 26 of the opponent clubs have no badge. A missing opponent badge is what makes a drawn match cover fall back to initials. A player's photograph can now be **picked from the gallery** (Control panel → Player photographs → From the gallery): 624 frames are already tagged, so making somebody find one on a phone and upload it again was asking them to redo work the site had done.
 - **No photograph of Susan Anne Martin exists in the repo.** The cause page opens on the crest. If the family can clear a photo it belongs there.
 - **Appearances count starts only.** Sunday-league match returns do not record minutes or substitute appearances, so neither is shown rather than estimated.
 - Videos page links out to YouTube; per-video embedding awaits catalogued rows.

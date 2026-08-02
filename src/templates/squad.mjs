@@ -80,15 +80,38 @@ export function squad(d) {
     return { ...p, s: st, seasons: [...played] };
   });
 
+  /* PER-SEASON FIGURES, AND WHY EVERY TAB USED TO SHOW THE SAME ONES.
+     A card printed the career total whichever season tab was open, so 26/27,
+     which has not seen a ball kicked, reported 25/26's goals and starts. The
+     tab looked like a filter and behaved like a label.
+
+     The statistics engine is run once per season in dataset.mjs, so the
+     figures for a season are derived from that season's matches by the same
+     code as everything else. VIEWS is what the tab bar offers: every season,
+     newest first, plus an all-seasons view that is the career total. */
+  const bySeasonStats = d.playersBySeason || {};
+  /* What a player was in a given season: on trial, injured, unavailable, or
+     one of the three the site works out for itself (new, retained, back).
+     See src/lib/squad-status.mjs. */
+  const statusOf = (num, s) => (d.statusLabelIn ? d.statusLabelIn(num, s) : null);
+  const statsIn = (view, num) => {
+    if (view === 'all') return stats.get(num) || {};
+    return ((bySeasonStats[view] || []).find((x) => x.num === num)) || {};
+  };
+  const VIEWS = [...seasons, 'all'];
+  const viewKey = (v) => (v === 'all' ? 'all' : v.replace(/\D/g, ''));
+  const viewLabel = (v) => (v === 'all' ? 'All seasons' : v);
+
   /* Squad leaders, so a card can say why this player matters at a glance.
      Only an outright leader is badged: a shared top score would make the mark
-     meaningless. */
-  const leaderOf = (key, pool) => {
-    const vals = pool.map((x) => x.s[key] || 0);
+     meaningless. Worked out per view, because the leading scorer of one
+     season is not necessarily the club's leading scorer. */
+  const leaderOf = (key, pool, view) => {
+    const val = (x) => statsIn(view, x.num)[key] || 0;
+    const vals = pool.map(val);
     const top = Math.max(0, ...vals);
     if (!top) return null;
-    return vals.filter((v) => v === top).length === 1
-      ? pool.find((x) => (x.s[key] || 0) === top) : null;
+    return vals.filter((v) => v === top).length === 1 ? pool.find((x) => val(x) === top) : null;
   };
 
   /* Nine statuses, and only three of them take a player off the squad page.
@@ -113,44 +136,96 @@ export function squad(d) {
   /* A card. The three headline figures are always visible; the panel adds the
      rest and rides in on hover or focus, but is in the DOM either way. The
      whole card is one link, so the panel is reachable by keyboard. */
-  const badges = new Map();
   const outfieldPool = all.filter((x) => !x.gk);
   const gkPool = all.filter((x) => x.gk);
-  [['goals', 'Top scorer', outfieldPool], ['assists', 'Most assists', outfieldPool],
-    ['motm', 'Most MOTM', all], ['cleanSheets', 'Most clean sheets', gkPool]]
-    .forEach(([key, label, pool]) => {
-      const who = leaderOf(key, pool);
-      if (who && !badges.has(who.num)) badges.set(who.num, label);
-    });
+  const badgesFor = (view) => {
+    const m = new Map();
+    [['goals', 'Top scorer', outfieldPool], ['assists', 'Most assists', outfieldPool],
+      ['motm', 'Most MOTM', all], ['cleanSheets', 'Most clean sheets', gkPool]]
+      .forEach(([key, label, pool]) => {
+        const who = leaderOf(key, pool, view);
+        if (who && !m.has(who.num)) m.set(who.num, label);
+      });
+    return m;
+  };
+  const badgesByView = new Map(VIEWS.map((v) => [v, badgesFor(v)]));
+  const badges = badgesByView.get(VIEWS[0]) || new Map();
+
+  /* "Starts", not "Apps". The engine counts an appearance only when a player
+     is named in the eleven, because Sunday-league returns do not record who
+     actually came on. Calling that figure "apps" produced cards like 2 apps
+     and 7 goals, which reads as broken data rather than as a substitute who
+     scored: William Clark started twice and was on the bench fifteen times.
+     Bench is shown alongside instead of folded in. */
+  const sixOf = (p, view) => {
+    const s = statsIn(view, p.num);
+    return p.gk
+      ? [s.starts || 0, s.cleanSheets || 0, s.motm || 0,
+        s.subApps || 0, s.cleanSheets || 0, s.motm || 0]
+      : [s.starts || 0, s.goals || 0, s.assists || 0,
+        s.subApps || 0, (s.goals || 0) + (s.assists || 0), s.motm || 0];
+  };
 
   const card = (p, i) => {
-    const s = p.s;
     const badge = badges.get(p.num);
     const shot = shotFor(p.num, d, season);
     const inSeasons = (p.seasons || [season]).join(' ');
-    /* "Starts", not "Apps". The engine counts an appearance only when a
-       player is named in the eleven, because Sunday-league returns do not
-       record who actually came on. Calling that figure "apps" produced cards
-       like 2 apps and 7 goals, which reads as broken data rather than as a
-       substitute who scored: William Clark started twice and was on the bench
-       fifteen times. Bench is shown alongside instead of folded in. */
-    const extra = p.gk
-      ? [{ v: s.subApps || 0, k: 'Bench' }, { v: s.cleanSheets || 0, k: 'Clean sheets' }, { v: s.motm || 0, k: 'MOTM' }]
-      : [{ v: s.subApps || 0, k: 'Bench' }, { v: (s.goals || 0) + (s.assists || 0), k: 'Involved' }, { v: s.motm || 0, k: 'MOTM' }];
-    const heads = p.gk
-      ? [{ v: s.starts || 0, k: 'Starts' }, { v: s.cleanSheets || 0, k: 'Clean' }, { v: s.motm || 0, k: 'MOTM' }]
-      : [{ v: s.starts || 0, k: 'Starts' }, { v: s.goals || 0, k: 'Goals' }, { v: s.assists || 0, k: 'Assists' }];
+    const keys = p.gk
+      ? ['Starts', 'Clean', 'MOTM', 'Bench', 'Clean sheets', 'MOTM']
+      : ['Starts', 'Goals', 'Assists', 'Bench', 'Involved', 'MOTM'];
+    const six = sixOf(p, VIEWS[0]);
+    const heads = keys.slice(0, 3).map((k, n) => ({ v: six[n], k }));
+    const extra = keys.slice(3).map((k, n) => ({ v: six[n + 3], k }));
 
-    return `<li class="pc" style="--i:${i}" data-seasons="${attr(inSeasons)}">
+    /* Every view's six figures ride on the card, so switching season is a
+       rewrite of six numbers rather than a page the script has to fetch.
+       Six small integers per view is a few dozen bytes, and it keeps the
+       whole squad readable with the script blocked: what ships in the HTML
+       is the first tab's real numbers, not placeholders. */
+    const payload = VIEWS.map((v) => {
+      const b = (badgesByView.get(v) || new Map()).get(p.num) || '';
+      /* What he was THAT season, not what he is today. Without this the 25/26
+         tab labelled a man who left in June 2026 "Left the club" over the
+         twenty-nine games he played that year. */
+      const st = v === 'all' ? null : statusOf(p.num, v);
+      return ` data-st-${viewKey(v)}="${attr(sixOf(p, v).join(','))}"`
+        + (b ? ` data-bg-${viewKey(v)}="${attr(b)}"` : '')
+        + (st && st.label ? ` data-sl-${viewKey(v)}="${attr(st.label)}"` : '');
+    }).join('');
+    const nowStatus = VIEWS[0] === 'all' ? null : statusOf(p.num, VIEWS[0]);
+
+    return `<li class="pc" style="--i:${i}" data-seasons="${attr(inSeasons)}"${payload}>
             <a class="pc__link" href="/players/${attr(p.slug)}.html" data-tilt>
               <span class="pc__shot">
                 ${shot
     ? `<img src="${attr(shot)}" alt="" width="320" height="480" loading="lazy" decoding="async" />`
     : `<img class="pc__crest" src="${STAR}" alt="" width="200" height="248" loading="lazy" decoding="async" />`}
               </span>
-              <span class="pc__pos${p.positionCode ? '' : ' is-none'}">${esc(p.positionCode || 'Squad')}</span>
-              ${badge ? `<span class="pc__badge">${esc(badge)}</span>` : ''}
+              <!-- One row for both chips rather than two independently pinned
+                   corners. Pinned, a long leader badge ("Most clean sheets")
+                   simply grew leftwards until it sat on top of the position,
+                   which is what it did on every card narrower than about
+                   200px. In a wrapping row it drops to its own line instead.
+
+                   The position is its full name. It used to be the raw code,
+                   which is a thing the club's own records say and not a thing
+                   anybody calls a player: LCB reads as a typo unless you
+                   already know it. Codes survive only on the pitch diagram,
+                   where there is room for nothing else and each carries its
+                   name in a <title>. -->
+              <span class="pc__tags">
+                <span class="pc__pos${p.positionCode ? '' : ' is-none'}">${esc(p.position || 'Squad player')}</span>
+                <!-- Always present so switching season can fill it, hidden
+                     when this view has no leader mark for him. [hidden] is
+                     display:none, so an empty chip never paints. -->
+                <span class="pc__badge" data-badge${badge ? '' : ' hidden'}>${esc(badge || '')}</span>
+              </span>
               <span class="pc__body">
+                <!-- What he was THAT season. New signing, retained and back
+                     at the club are worked out from which seasons he has been
+                     in the squad, so nobody has to keep them true and none of
+                     them carries a year baked into a string. -->
+                <span class="pc__state" data-state${nowStatus && nowStatus.label ? '' : ' hidden'}>${esc((nowStatus && nowStatus.label) || '')}</span>
                 <span class="pc__name">
                   <b>${esc(p.last)}</b>
                   <i>${esc(p.first)}</i>
@@ -181,13 +256,21 @@ export function squad(d) {
      filters. */
   /* Season tabs. Real buttons, and the panel below is the same one DOM
      filtered, so nothing depends on the script to be readable. */
-  const seasonTabs = seasons.length > 1 ? `<div class="sq-seasons" data-season-filter role="group"
+  /* A tab says what it will show BEFORE you press it: how many players, and
+     how many matches those figures were counted from. "26/27 · 23 players ·
+     no matches yet" is the honest label for a season in July, and it is why
+     every figure under that tab is a nought rather than a bug. */
+  const playedIn = (n) => (d.played || []).filter((m) => m.season === n).length;
+  const seasonTabs = VIEWS.length > 1 ? `<div class="sq-seasons" data-season-filter role="group"
         aria-label="Season">
-        ${seasons.map((n, i) => {
-    const count = all.filter((p) => (p.seasons || []).includes(n)).length;
+        ${VIEWS.map((v, i) => {
+    const count = v === 'all' ? all.length : all.filter((p) => (p.seasons || []).includes(v)).length;
+    const games = v === 'all' ? (d.played || []).length : playedIn(v);
+    const note = `${count} player${count === 1 ? '' : 's'} · ${games ? `${games} match${games === 1 ? '' : 'es'}` : 'no matches yet'}`;
     return `<button class="sq-season${i === 0 ? ' is-on' : ''}" type="button"
-          data-season="${attr(n)}" aria-pressed="${i === 0 ? 'true' : 'false'}">
-          <b>${esc(n)}</b><span>${esc(count)} player${count === 1 ? '' : 's'}</span>
+          data-season="${attr(v)}" data-view="${attr(viewKey(v))}"
+          aria-pressed="${i === 0 ? 'true' : 'false'}">
+          <b>${esc(viewLabel(v))}</b><span>${esc(note)}</span>
         </button>`;
   }).join('\n        ')}
       </div>` : '';
@@ -263,7 +346,7 @@ export function squad(d) {
           <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
             <p class="eyebrow cta2__eyebrow">Want to play here?</p>
-            <h2 class="h2" id="sq-cta-h">Trials are open for <span class="volt">26/27.</span></h2>
+            <h2 class="h2" id="sq-cta-h">Trials are open for <span class="volt">${esc(d.nextSeason)}.</span></h2>
             <p class="cta2__sub">Think you can wear the shirt? Register your interest and we will be
               in touch with dates.</p>
             <div class="cta2__btns">

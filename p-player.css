@@ -25,6 +25,11 @@
   letter-spacing: 0.16em; text-transform: uppercase; color: var(--volt-text);}
 .pf-chip--pos{background: var(--volt); border-color: var(--volt); color: var(--text-on-brand);}
 .pf-chip--mut{background: rgba(var(--lift), 0.06); border-color: var(--line-d); color: var(--ink-2);}
+/* The season the status refers to. It used to be inside the words ("Retained
+   for 26/27"), which meant the sentence went stale on a date nobody was
+   watching. Beside them it is a fact the generator supplies. */
+.pf-chip--mut i{font-style: normal; margin-left: 7px; padding-left: 7px;
+  border-left: 1px solid var(--line-d); color: var(--ink-3);}
 
 .pf-hero__name{margin: 18px 0 0; display: grid; gap: 2px;}
 .pf-hero__name b{font-family: var(--display); font-weight: 300;
@@ -405,7 +410,9 @@ html.js .pf-panel[hidden]{display: none;}
 
 /* ---- The scrubable plot ------------------------------------------------- */
 .pf-plot{position: relative;}
-.pf-plot svg{cursor: crosshair;}
+/* pan-y hands vertical gestures back to the browser so the page still scrolls
+   over the chart, while a sideways drag stays with the script and scrubs. */
+.pf-plot svg{cursor: crosshair; touch-action: pan-y;}
 /* Generous hit targets that never paint until they are the active one. */
 .pf-plot__pt{fill: var(--volt); opacity: 0; transition: opacity 0.15s;}
 .pf-plot__pt.is-on{opacity: 1; r: 5;}
@@ -413,12 +420,20 @@ html.js .pf-panel[hidden]{display: none;}
 .pf-plot__cap{transition: color 0.2s;}
 .pf-plot__cap.is-live .pf-plot__lo,
 .pf-plot__cap.is-live .pf-plot__hi{opacity: 0.35;}
-.pf-plot__hint{margin-top: 10px;
+/* Both hints ship in the markup and both start hidden, because the chart is
+   only scrubable once the script has run: promising it before then would be a
+   promise the page cannot keep. Which one then shows is decided by the
+   pointer, not the width, since a narrow window on a laptop still has a mouse.
+   The coarse line used to be no line at all, because the chart could not be
+   read by finger; now that it can, it says so. */
+.pf-plot__hint{display: none; margin-top: 10px;
   font-family: var(--ui); font-size: 9.5px; font-weight: 600;
   letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
-html.js .pf-plot__hint{display: block;}
-.pf-plot__hint{display: none;}
-@media (hover: none){ html.js .pf-plot__hint{display: none;} }
+html.js .pf-plot__hint--fine{display: block;}
+@media (hover: none){
+  html.js .pf-plot__hint--fine{display: none;}
+  html.js .pf-plot__hint--coarse{display: block;}
+}
 
 @media (max-width: 760px){
   .pf-vs__row{grid-template-columns: minmax(0, 1fr) 110px;}
@@ -694,3 +709,9 @@ html.js .pf-plot__hint{display: block;}
   color: var(--fg-3, #9aa);
   max-width: 62ch;
 }
+
+/* How many more of him are in the gallery than the eighteen shown. The band
+   used to render nothing at all, so this had nothing to count. */
+.pf-shots__more{margin: clamp(14px, 1.8vw, 18px) 0 0;
+  font-size: 13.5px; line-height: 1.7; color: var(--ink-3);}
+.pf-shots__more a{color: var(--volt-text);}

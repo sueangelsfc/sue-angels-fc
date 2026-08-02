@@ -156,7 +156,17 @@
   .camp__kpis{grid-template-columns: repeat(2, minmax(0, 1fr));}
 }
 @media (max-width: 560px){
-  .camp__kpis{grid-template-columns: 1fr 1fr;}
+  .camp__kpis{grid-template-columns: 1fr 1fr; gap: 10px;
+    /* Even tiles. Without this a label that takes two lines makes its whole
+       row taller and the two beside it sit in a box of empty space. */
+    grid-auto-rows: 1fr;}
+  /* At two columns on a 375px screen a tile has about 116px of text width,
+     and the labels are longer than that: "Win rate, all comps" broke onto two
+     lines and "Clean sheets · 42%" ran into the edge. Less padding and less
+     tracking buys enough room for every one of the four to sit on one line. */
+  .camp__kpi{padding: 15px 13px;}
+  .camp__kpi b{font-size: clamp(27px, 7.6vw, 34px);}
+  .camp__kpi span{margin-top: 7px; font-size: 9.5px; letter-spacing: 0.055em;}
   .camp__mini{grid-template-columns: 1fr 1fr;}
   /* Thirty-odd cells cannot each hold a tap target at phone widths, so the
      strip scrolls at a readable cell size rather than shrinking to slivers. */
@@ -366,27 +376,49 @@
 
 /* TOUCH. The card only ever appeared on hover, and a phone has no hover, so
    tapping a match on the strip did nothing at all: thirty-three results on the
-   home page that a phone could not read. `.is-open` is set by a tap, and the
-   card is clamped inside the viewport because a 20px cell near either edge
-   would otherwise push a 132px card off the screen.
+   home page that a phone could not read. `.is-open` is set by a tap.
 
    The cells stay non-focusable on purpose. Giving them focus would put
    thirty-three tab stops on the home page in front of everything below, and
    the same thirty-three results are in the table underneath as a real table
    with headers, which is the better route for a keyboard and a screen reader
-   either way. */
+   either way.
+
+   THE IN-STRIP CARD CANNOT BE USED ON TOUCH, and going position: fixed did
+   not rescue it. The strip scrolls sideways, so it has overflow-x: auto, and
+   a box that scrolls on one axis clips on both; and every cell runs a
+   transform animation, which makes the cell the containing block for a fixed
+   descendant, so the card stayed inside the thing clipping it. What a tap
+   produced was the card cropped to the 34px height of the strip: a black stub
+   with a sliver of badge and nothing readable. So the script lifts a copy to
+   the end of <body> as .camp__pop, and this one stays down. */
 @media (pointer: coarse) {
   .camp__cell { cursor: pointer; }
-  .camp__tip {
-    position: fixed;
-    left: 50%;
-    bottom: auto;
-    top: var(--tip-top, 50%);
-    max-width: min(88vw, 260px);
-  }
-  /* The pointer is meaningless once the card is centred on the screen rather
-     than hung off its cell. */
-  .camp__tip::after { display: none; }
+  .camp__cell.is-open .camp__tip { opacity: 0; visibility: hidden; }
+}
+
+/* The lifted card. Same content, same look, no ancestor that can clip it.
+   Positioned entirely by the script, which measures it against its cell. */
+.camp__pop{position: fixed; left: 0; top: 0; z-index: 90;
+  display: grid; justify-items: center; gap: 2px;
+  width: max-content; max-width: min(78vw, 280px);
+  padding: 14px 18px 15px;
+  border-radius: 16px;
+  background: rgba(10, 13, 17, 0.97);
+  border: 1px solid var(--line-d);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.62);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transform: translateY(6px) scale(0.97); transform-origin: bottom center;
+  transition: opacity 0.18s, transform 0.3s var(--ease-out-expo), visibility 0.18s;}
+.camp__pop.is-shown{opacity: 1; visibility: visible; transform: none;}
+.camp__pop .camp__tipbadge{width: 40px; height: 40px;}
+.camp__pop .camp__tipbadge img{width: 26px; height: 26px;}
+.camp__pop .camp__tipscore{font-size: 23px;}
+.camp__pop .camp__tipclub{font-size: 13.5px; white-space: normal; text-align: center;}
+@media (prefers-reduced-motion: reduce){
+  .camp__pop{transition: opacity 0.18s, visibility 0.18s; transform: none;}
 }
 /* The pointer down to the cell. */
 .camp__tip::after{content: ''; position: absolute; top: 100%; left: 50%;

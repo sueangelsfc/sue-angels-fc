@@ -1,0 +1,139 @@
+
+/* ==========================================================================
+   SEASON BAR
+
+   Squad status is recorded per season, so every screen that edits it has to
+   say which season it is editing. The alternative was a label with the year
+   written into it ("Retained for 26/27"), typed into two files, wrong from
+   the July after and fixable only by a developer.
+   ========================================================================== */
+.cp-seasonbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-block-end: var(--space-4);
+}
+.cp-seasonbtn {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  min-height: 40px;
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: var(--step--1);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.cp-seasonbtn:hover { background: var(--surface-inset); color: var(--text); }
+.cp-seasonbtn i {
+  font-style: normal;
+  font-size: var(--step--2);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.66;
+}
+.cp-seasonbtn.is-on {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--text-on-brand);
+}
+.cp-seasonbtn:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+/* The line under a dropdown that says what the chosen option means. Every
+   status in that list is a decision about a real person, and "On trial" in
+   particular meant nothing without being told when a trial ends. */
+.cp-hint {
+  display: block;
+  margin-block-start: var(--space-2);
+  max-width: 34ch;
+  font-size: var(--step--2);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   PICKING A PLAYER'S PHOTOGRAPH FROM THE GALLERY
+
+   The club has already tagged who is in six hundred gallery photographs, so
+   asking somebody to find one of those on their phone and upload it again is
+   asking them to redo work the site has done. This is that list, and one tap
+   crops the chosen frame square and saves it for the season on screen.
+   ========================================================================== */
+.cp-pickwrap {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  background: rgb(0 0 0 / 0.72);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  padding: var(--space-5);
+}
+.cp-pick__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3) var(--space-4);
+  max-width: 1100px;
+  width: 100%;
+  margin-inline: auto;
+  padding-block-end: var(--space-4);
+}
+.cp-pick__head b { font-size: var(--step-1); color: var(--text); }
+.cp-pick__head span { flex: 1 1 22ch; font-size: var(--step--1); color: var(--text-muted); }
+.cp-pick {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0 0 var(--space-5);
+  max-width: 1100px;
+  width: 100%;
+  overflow-y: auto;
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+.cp-pick button {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface-3);
+  cursor: pointer;
+}
+.cp-pick button:hover { border-color: var(--brand); }
+.cp-pick button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.cp-pick button[disabled] { opacity: 0.45; cursor: progress; }
+.cp-pick img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; }
+/* Which frames the tagger marked as being OF this player rather than merely
+   containing them. They sort first; this says why. */
+.cp-pick i {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-start: var(--space-2);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--brand);
+  color: var(--text-on-brand);
+  font-style: normal;
+  font-size: var(--step--2);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.cp-pick span {
+  display: block;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--step--2);
+  line-height: 1.4;
+  color: var(--text-muted);
+  text-align: start;
+}

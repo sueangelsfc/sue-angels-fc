@@ -343,7 +343,9 @@ export function coaches(d) {
 
 /* ======================= FIXTURES ======================= */
 export function fixtures(d) {
-  const upcoming = d.fixtures.slice().sort((a, b) => (a.iso || '').localeCompare(b.iso || ''));
+  /* Still to come. This sorted every fixture including the played ones, so
+     the fixtures page opened on a match that had already been played. */
+  const upcoming = d.upcoming || [];
   return { body: `
   ${pageHero({
     crumbs: trail({ label: 'Fixtures', href: '/fixtures.html' }),
@@ -621,7 +623,7 @@ export function videos(d) {
 
 /* ======================= LIVE ======================= */
 export function live(d) {
-  const next = d.fixtures.slice().sort((a, b) => (a.iso || '').localeCompare(b.iso || ''))[0];
+  const next = d.nextFixture;
   return { body: `
   ${pageHero({
     crumbs: trail({ label: 'Live', href: '/live.html' }),

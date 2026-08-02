@@ -134,46 +134,59 @@ export function stats(d) {
     { key: 'cleanSheets', label: 'Most clean sheets', unit: 'clean sheets' },
   ];
 
-  const wins = new Map();
-  const ties = [];
-  for (const cat of CATS) {
-    const best = Math.max(0, ...rows.map((x) => x.r[cat.key] || 0));
-    if (!best) continue;
-    const holders = rows.filter((x) => (x.r[cat.key] || 0) === best);
-    if (holders.length > 1) { ties.push({ ...cat, best, holders }); continue; }
-    const who = holders[0];
-    if (!wins.has(who.p.num)) wins.set(who.p.num, { ...who, cats: [] });
-    wins.get(who.p.num).cats.push({ ...cat, v: best });
-  }
+  /* WORKED OUT PER VIEW, not once for the club.
 
-  const tieCards = ties.map((t) => ({
-    tie: true,
-    v: t.best,
-    label: t.label,
-    names: t.holders.map((h) => h.p.name),
-    holders: t.holders,
-    sub: `${t.holders.length === 2 ? 'Both on' : `${t.holders.length} players on`} ${t.best} ${t.unit}`,
-    extra: [],
-  }));
+     The tabs below said 25/26 and 26/27 and the leaders above them never
+     moved, because they were derived from every match the club has played
+     while the heading read "The season's leaders". One of those two was
+     wrong whichever tab you were on. So the same derivation runs for each
+     season and for the club's whole history, and the tab picks which one is
+     on screen. Same engine, shorter match list. */
+  const leadersFrom = (viewRows) => {
+    const wins = new Map();
+    const ties = [];
+    for (const cat of CATS) {
+      const best = Math.max(0, ...viewRows.map((x) => x.r[cat.key] || 0));
+      if (!best) continue;
+      const holders = viewRows.filter((x) => (x.r[cat.key] || 0) === best);
+      if (holders.length > 1) { ties.push({ ...cat, best, holders }); continue; }
+      const who = holders[0];
+      if (!wins.has(who.p.num)) wins.set(who.p.num, { ...who, cats: [] });
+      wins.get(who.p.num).cats.push({ ...cat, v: best });
+    }
 
-  const leaders = [...wins.values()].map((w) => {
-    const lead = w.cats[0];
-    return {
-      ...w,
-      v: lead.v,
-      label: w.cats.map((c) => c.label).join(' · '),
-      sub: w.cats.length > 1
-        ? w.cats.map((c) => `${c.v} ${c.unit}`).join(' and ')
-        : `${lead.v} ${lead.unit} in ${w.r.starts} starts`,
-      extra: w.cats.slice(1),
-    };
-  }).sort((a, b) => b.cats.length - a.cats.length).concat(tieCards);
+    const tieCards = ties.map((t) => ({
+      tie: true,
+      v: t.best,
+      label: t.label,
+      names: t.holders.map((h) => h.p.name),
+      holders: t.holders,
+      sub: `${t.holders.length === 2 ? 'Both on' : `${t.holders.length} players on`} ${t.best} ${t.unit}`,
+      extra: [],
+    }));
 
-  const leadersBand = leaders.length ? `<section class="sec st-leaders" aria-labelledby="st-lead-h">
-      <div class="wrap">
-        ${rail(1, 'Who led the way', `${rows.length} players used`)}
-        <h2 class="h2 rv" id="st-lead-h">The season's <span class="volt">leaders.</span></h2>
-        <ul class="st-lead__grid rv">
+    return [...wins.values()].map((w) => {
+      const lead = w.cats[0];
+      return {
+        ...w,
+        v: lead.v,
+        label: w.cats.map((c) => c.label).join(' · '),
+        sub: w.cats.length > 1
+          ? w.cats.map((c) => `${c.v} ${c.unit}`).join(' and ')
+          : `${lead.v} ${lead.unit} in ${w.r.starts} start${w.r.starts === 1 ? '' : 's'}`,
+        extra: w.cats.slice(1),
+      };
+    }).sort((a, b) => b.cats.length - a.cats.length).concat(tieCards);
+  };
+
+  const rowsFrom = (set) => squad
+    .map((p) => ({ p, r: set.get(p.num) || {} }))
+    .filter(({ r }) => (r.starts || 0) + (r.subApps || 0) > 0)
+    .sort((a, b) => ((b.r.goals || 0) + (b.r.assists || 0)) - ((a.r.goals || 0) + (a.r.assists || 0))
+      || (b.r.goals || 0) - (a.r.goals || 0)
+      || (b.r.starts || 0) - (a.r.starts || 0));
+
+  const leaderGrid = (leaders) => `<ul class="st-lead__grid">
           ${leaders.map((l, i) => {
     const shot = l.tie ? '' : shotFor(l.p.num);
     /* A tie shows both faces rather than a crest: the players exist, they are
@@ -203,9 +216,7 @@ export function stats(d) {
     : `<a class="st-lead__link" href="/players/${attr(l.p.slug)}.html">${inner}</a>`}
           </li>`;
   }).join('\n          ')}
-        </ul>
-      </div>
-    </section>` : '';
+        </ul>`;
 
   /* ================= 02 THE TABLE ================= */
   const COLS = [
@@ -218,18 +229,53 @@ export function stats(d) {
     { k: 'motm', label: 'MOTM', full: 'Man of the Match', i: 6 },
   ];
 
+  /* THE VIEWS. Every season the club has had, newest last, plus its whole
+     history. "All seasons" is not a season and never says "not started": it
+     is every match ever played, which is the right home for a club record. */
+  const VIEWS = [
+    ...seasons.map((sn) => ({
+      key: sn.name, id: sn.name.replace(/\D/g, ''), label: sn.name,
+      note: sn.matches.length ? `${sn.matches.length} matches` : 'Not started',
+      rows: rowsFrom(sn.all), heading: 'The season’s',
+    })),
+    {
+      key: 'all', id: 'all', label: 'All seasons',
+      note: `${played.length} matches`,
+      rows: rowsFrom(allSet), heading: 'The club’s',
+    },
+  ];
+
   /* Open on the most recent season that has matches, never on an empty one:
      landing the page on a season nobody has played yet shows a table of
      zeroes and reads as broken. */
-  let defaultSeason = 0;
-  seasons.forEach((sn, i) => { if (sn.matches.length) defaultSeason = i; });
+  let defaultView = 0;
+  VIEWS.forEach((v, i) => { if (v.key !== 'all' && v.rows.length) defaultView = i; });
 
-  const seasonTabs = seasons.length > 1 ? `<div class="st-seasons" data-season-chips>
-          ${seasons.map((sn, i) => `<a class="st-season${i === defaultSeason ? ' is-on' : ''}"
-            href="#table" data-season="${attr(sn.name)}">
-            <b>${esc(sn.name)}</b><i>${sn.matches.length ? `${sn.matches.length} matches` : 'Not started'}</i>
+  const seasonTabs = VIEWS.length > 1 ? `<div class="st-seasons" data-season-chips>
+          ${VIEWS.map((v, i) => `<a class="st-season${i === defaultView ? ' is-on' : ''}"
+            href="#table" data-season="${attr(v.key)}" data-view="${attr(v.id)}">
+            <b>${esc(v.label)}</b><i>${esc(v.note)}</i>
           </a>`).join('\n          ')}
         </div>` : '';
+
+  /* One band, one panel per view, all of them in the HTML. The tab shows the
+     matching panel. With the script blocked the default season's leaders are
+     what ship visible, which is a correct page rather than an empty one. */
+  const leadersBand = VIEWS.some((v) => v.rows.length)
+    ? `<section class="sec st-leaders" aria-labelledby="st-lead-h" data-leader-views>
+      <div class="wrap">
+        ${rail(1, 'Who led the way', `${VIEWS[defaultView].rows.length} players used`)}
+        <h2 class="h2 rv" id="st-lead-h"><span data-leader-heading>${esc(VIEWS[defaultView].heading)}</span>
+          <span class="volt">leaders.</span></h2>
+        ${VIEWS.map((v, i) => `<div class="st-lead__view rv" data-leader-view="${attr(v.id)}"
+          data-players-used="${attr(v.rows.length)}" data-heading="${attr(v.heading)}"${i === defaultView ? '' : ' hidden'}>
+          ${v.rows.length
+    ? leaderGrid(leadersFrom(v.rows))
+    : `<p class="st-lead__none">Nobody has played a ${esc(v.label)} match yet. The leaders
+              for this season will appear here once the first result is in.</p>`}
+        </div>`).join('\n        ')}
+      </div>
+    </section>` : '';
 
   const tools = `<div class="st-tools">
           <label class="st-search">
@@ -363,7 +409,7 @@ export function stats(d) {
           <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
             <p class="eyebrow cta2__eyebrow">Want to play here?</p>
-            <h2 class="h2" id="st-cta-h">Trials are open for <span class="volt">26/27.</span></h2>
+            <h2 class="h2" id="st-cta-h">Trials are open for <span class="volt">${esc(d.nextSeason)}.</span></h2>
             <p class="cta2__sub">Think you can wear the shirt? Register your interest and we will be
               in touch with dates.</p>
             <div class="cta2__btns">

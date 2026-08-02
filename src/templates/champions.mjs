@@ -71,7 +71,7 @@ export function champions(d) {
           <h1 class="ch-hero__title" id="ch-h">Champions<span class="volt">.</span></h1>
           <p class="ch-hero__lede">${esc(league.won)} games, ${esc(league.won)} wins. ${esc(CLUB.name)} took the
             ${esc(CLUB.division)} title at the first attempt without losing a match, and go up to
-            ${esc(CLUB.nextDivision)} for ${esc(d.nextSeason || '26/27')}.</p>
+            ${esc(CLUB.nextDivision)} for ${esc(d.nextSeason)}.</p>
           <div class="ch-hero__btns">
             <a class="btn btn--volt" href="#table">The final table ${ARROW}</a>
             <a class="btn btn--ghost" href="#run">The unbeaten run</a>
@@ -230,7 +230,7 @@ export function champions(d) {
   /* ================= 06 WHAT NEXT ================= */
   const nextBand = `<section class="sec ch-next" aria-labelledby="ch-next-h">
       <div class="wrap">
-        ${rail(6, 'What happens now', `${esc(CLUB.nextDivision)} · ${esc(d.nextSeason || '26/27')}`)}
+        ${rail(6, 'What happens now', `${esc(CLUB.nextDivision)} · ${esc(d.nextSeason)}`)}
         <div class="ch-next__panel rv">
           <img class="ch-next__mark" src="${STAR}" alt="" width="260" height="322" loading="lazy" decoding="async" aria-hidden="true" />
           <h2 class="h2" id="ch-next-h">Up to <span class="volt">${esc(CLUB.nextDivision)}.</span></h2>

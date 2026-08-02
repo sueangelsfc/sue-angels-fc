@@ -32,6 +32,12 @@
   font-size: clamp(15px, 1.35vw, 17px); line-height: 1.72; color: var(--ink-2);}
 
 /* ---- 01 Leaders --------------------------------------------------------- */
+/* One panel per season plus one for the club's whole history, all in the
+   HTML, with the season tabs below showing the matching one. [hidden] is
+   display:none, so the ones not in view cost nothing to paint. */
+.st-lead__view[hidden]{display: none;}
+.st-lead__none{margin: clamp(22px, 3vw, 32px) 0 0; max-width: 56ch;
+  font-size: 15px; line-height: 1.7; color: var(--ink-3);}
 /* auto-fit, not a fixed four: merging a player's two categories onto one
    card means the count varies, and a hard four left half the row empty. */
 .st-lead__grid{list-style: none; margin: clamp(22px, 3vw, 32px) 0 0; padding: 0;

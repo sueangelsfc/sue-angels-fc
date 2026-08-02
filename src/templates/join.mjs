@@ -39,7 +39,7 @@ const ROUTE_META = {
   trial: { ico: 'shield', note: 'Every position', reply: 'Reply inside 48 hours' },
   media: { ico: 'camera', note: 'No experience needed', reply: 'Portfolio work every week' },
   volunteer: { ico: 'users', note: 'However much time you have', reply: 'Matchday access' },
-  sponsorship: { ico: 'star', note: 'Packages built to fit', reply: 'On the shirt for 26/27' },
+  sponsorship: { ico: 'star', note: 'Packages built to fit', reply: 'On the shirt next season' },
 };
 
 /* ==========================================================================
@@ -134,11 +134,12 @@ export function join(d) {
 
   /* A real upcoming fixture if one is stored, otherwise the code baseline.
      Same precedence the homepage uses, so the two cannot disagree. */
-  const upcoming = (d.fixtures || [])
-    .filter((m) => !m.played)
-    .slice()
-    .sort((a, b) => (a.iso || '').localeCompare(b.iso || ''));
-  const next = upcoming[0] || null;
+  /* One shared answer, from dataset.mjs: fixtures whose date has not been
+     and gone, soonest first. The filter here was on `m.played`, which a
+     fixture row does not carry, so a match that had already happened stayed
+     at the top of the list. */
+  const upcoming = d.upcoming || [];
+  const next = d.nextFixture || null;
   const nextName = next ? (next.weAreHome === false ? next.home : next.away) : NEXT_FIXTURE.badgeName;
   const nextDate = next ? fmtDate(next.date, { weekday: true }) : NEXT_FIXTURE.dateLabel;
   const nextComp = next ? next.competition : NEXT_FIXTURE.competition;
@@ -249,7 +250,7 @@ export function join(d) {
           <span class="cta2__glow" aria-hidden="true"></span>
           <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
-            <p class="eyebrow cta2__eyebrow">${esc(CLUB.nextDivision)} · 26/27</p>
+            <p class="eyebrow cta2__eyebrow">${esc(CLUB.nextDivision)} · ${esc(d.nextSeason)}</p>
             <h2 class="h2" id="jn-cta-h">There is a shirt with your <span class="volt">name on it.</span></h2>
             <p class="cta2__sub">Whether you play, shoot, organise or sponsor, the club is built out
               of people who put their hand up.</p>

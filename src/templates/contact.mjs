@@ -215,7 +215,7 @@ export function contact(d) {
           <span class="cta2__glow" aria-hidden="true"></span>
           <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
-            <p class="eyebrow cta2__eyebrow">${esc(CLUB.nextDivision)} · 26/27</p>
+            <p class="eyebrow cta2__eyebrow">${esc(CLUB.nextDivision)} · ${esc(d.nextSeason)}</p>
             <h2 class="h2" id="ct-cta-h">Still not the answer you <span class="volt">wanted?</span></h2>
             <p class="cta2__sub">Email the club and a person will read it. If it is about playing,
               helping or sponsoring, the form gets you a faster reply.</p>

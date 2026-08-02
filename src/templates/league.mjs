@@ -93,7 +93,7 @@ export function league(d) {
             <b>${esc(CLUB.division)}</b><i>${esc(d.currentSeason)} · final</i>
           </a>
           <a class="lg-tab" href="#table" data-league="eight">
-            <b>${esc(next.division || CLUB.nextDivision)}</b><i>${esc(next.season || '26/27')} · ${next.started ? 'in play' : 'not started'}</i>
+            <b>${esc(next.division || CLUB.nextDivision)}</b><i>${esc(next.season || d.nextSeason)} · ${next.started ? 'in play' : 'not started'}</i>
           </a>
         </div>
 
@@ -136,7 +136,7 @@ export function league(d) {
 
         <div class="lg-panel rv" data-league-panel="eight">
           ${next.started ? '' : `<div class="lg-fresh">
-            <p class="lg-fresh__k">${esc(next.division || CLUB.nextDivision)} · ${esc(next.season || '26/27')}</p>
+            <p class="lg-fresh__k">${esc(next.division || CLUB.nextDivision)} · ${esc(next.season || d.nextSeason)}</p>
             <p class="lg-fresh__t">Not a table yet.</p>
             <p class="lg-fresh__b">No match has been played, so every club sits on nothing and the
               league lists them alphabetically. These are the ${esc((next.clubs || []).length)} sides

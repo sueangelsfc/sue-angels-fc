@@ -42,11 +42,12 @@ export function notFound(d) {
     .sort((a, b) => (b.iso || '').localeCompare(a.iso || ''));
   const last = played[0] || null;
 
-  const upcoming = (d.fixtures || [])
-    .filter((m) => !m.played)
-    .slice()
-    .sort((a, b) => (a.iso || '').localeCompare(b.iso || ''));
-  const next = upcoming[0] || null;
+  /* One shared answer, from dataset.mjs: fixtures whose date has not been
+     and gone, soonest first. The filter here was on `m.played`, which a
+     fixture row does not carry, so a match that had already happened stayed
+     at the top of the list. */
+  const upcoming = d.upcoming || [];
+  const next = d.nextFixture || null;
 
   const hero = `<section class="nf-hero" aria-labelledby="nf-h">
       <div class="wrap">

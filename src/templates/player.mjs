@@ -192,17 +192,15 @@ export function playerPage(p, d) {
     leadership.thirdChoiceCaptainPlayerId === p.num ? 'Third-choice captain' : null,
   ].find(Boolean);
 
-  const STATUS = {
-    retired: 'Retired',
-    departed: 'Departed',
-    retained: 'Retained for 26/27',
-    new: 'New signing',
-    returned: 'Back at the club',
-    trial: 'On trial',
-    injured: 'Out injured',
-    staff: 'Now on the coaching staff',
-  };
-  const statusLabel = STATUS[squadRec.status];
+  /* "Retained for 26/27" was written here as a literal string, and in the
+     control panel's dropdown as a second one, so in July 2027 both were wrong
+     and only a developer could correct them. The label comes from the record
+     now, for the season being looked at, and the season is named beside it
+     rather than baked into it. See src/lib/squad-status.mjs. */
+  const nowStatus = d.statusLabelIn
+    ? d.statusLabelIn(p.num, d.currentSeason)
+    : { key: squadRec.status, label: null, derived: false };
+  const statusLabel = nowStatus.label;
 
   /* ================= HERO ================= */
   const hero = `<section class="pf-hero" aria-labelledby="pf-h">
@@ -217,7 +215,7 @@ export function playerPage(p, d) {
             <span class="pf-chip pf-chip--pos">${esc(squadRec.position || p.position)}</span>
             ${accolades.map((a) => `<span class="pf-chip">${esc(a)}</span>`).join('\n            ')}
             ${captainOf ? `<span class="pf-chip">${esc(captainOf)}</span>` : ''}
-            ${statusLabel ? `<span class="pf-chip pf-chip--mut">${esc(statusLabel)}</span>` : ''}
+            ${statusLabel ? `<span class="pf-chip pf-chip--mut">${esc(statusLabel)}<i>${esc(d.currentSeason)}</i></span>` : ''}
           </p>
           <h1 class="pf-hero__name" id="pf-h">
             <b>${esc(p.last)}</b>
@@ -301,7 +299,11 @@ export function playerPage(p, d) {
                 <b>${esc(top)} ${esc(unit)}</b>
                 <span class="pf-plot__hi">Last start</span>
               </figcaption>
-              <p class="pf-plot__hint">Point at the line to read each match.</p>
+              <!-- Two hints, one shown per pointer. "Point at the line" is an
+                   instruction a phone cannot follow, and it was the only thing
+                   telling anyone the chart could be read at all. -->
+              <p class="pf-plot__hint pf-plot__hint--fine">Point at the line to read each match.</p>
+              <p class="pf-plot__hint pf-plot__hint--coarse">Touch the line to read each match.</p>
             </figure>`;
   };
 
@@ -751,29 +753,49 @@ export function playerPage(p, d) {
     </section>`;
 
   /* ---- Photographs of this player -----------------------------------------
-     Fed by tags marked SUBJECT in the control panel's photo tagger. A player
-     merely present in a wide shot is not offered here, because this band is
-     pictures OF someone, not pictures they happen to be standing in.
+     EVERY frame he is tagged in, newest album first, with any tagged as the
+     SUBJECT of the picture sorted to the front.
 
-     The band renders nothing at all until at least one photograph is tagged
-     that way, so it costs an unrefined profile no space. The focus point set
-     while tagging drives object-position, which is what keeps a face in frame
-     when a landscape photograph is cropped to a square. */
+     This band shipped empty for its whole life. It took only subject tags, on
+     the reasoning that a player standing in a wide shot is not a picture of
+     him, and the reasoning was right about photographs and wrong about
+     people: all 624 tags in the database say "present", because nobody has
+     ever pressed the Subject button and nothing ever asked them to. So the
+     band existed, was correct, and rendered nothing on all thirty-six
+     profiles. Every tagged frame is offered now and the club picks the good
+     one in the panel, which is the judgement the tagger was being asked for
+     and is easier made looking at them side by side.
+
+     The focus point set while tagging drives object-position, which is what
+     keeps a face in frame when a landscape photograph is cropped square.
+     data-album hands the grid to the viewer in sa.js, so a tap opens the
+     photograph in place with the rest of them rather than leaving the site
+     for a bare image URL. */
   const shots = (d.playerPhotos || {})[p.slug] || [];
+  const SHOW = 18;
   const shotsBand = shots.length ? `<section class="sec pf-shots" aria-labelledby="pf-sh-h">
       <div class="wrap">
         ${rail(6, 'In the gallery', `${shots.length} photograph${shots.length === 1 ? '' : 's'}`)}
         <h2 class="h2 rv" id="pf-sh-h">${esc(p.first || p.name)} in <span class="volt">frame.</span></h2>
-        <ul class="pf-shots__grid rv">
-          ${shots.slice(0, 12).map((sh) => `<li class="pf-shot">
-            <a href="${attr(sh.album.slug ? `/gallery/${sh.album.slug}.html` : sh.src)}"${sh.album.slug ? '' : ' rel="noopener" target="_blank"'}>
-              <img src="${attr(sh.src)}" alt="${attr(`${p.name}${sh.album.title ? `, ${sh.album.title}` : ''}`)}"
+        <ul class="pf-shots__grid rv" data-album>
+          ${shots.slice(0, SHOW).map((sh) => {
+    /* The caption a photograph deserves: which match, and who else is in it.
+       A grid of faces with nothing said about them is a screensaver. */
+    const others = (sh.with || []).slice(0, 2);
+    const alt = `${p.name}${sh.album.title ? `, ${sh.album.title}` : ''}`
+      + (others.length ? `, with ${others.join(' and ')}` : '');
+    return `<li class="pf-shot">
+            <a href="${attr(sh.src)}" rel="noopener" target="_blank">
+              <img src="${attr(sh.src)}" alt="${attr(alt)}"
                 width="480" height="480" loading="lazy" decoding="async"
                 ${sh.focus ? `style="object-position:${esc(sh.focus[0])}% ${esc(sh.focus[1])}%"` : ''} />
             </a>
             ${sh.album.photographer ? `<span class="pf-shot__by">${esc(sh.album.photographer)}</span>` : ''}
-          </li>`).join('\n          ')}
+          </li>`;
+  }).join('\n          ')}
         </ul>
+        ${shots.length > SHOW ? `<p class="pf-shots__more">${esc(shots.length - SHOW)} more in
+          <a href="/gallery.html">the gallery</a>.</p>` : ''}
       </div>
     </section>` : '';
 

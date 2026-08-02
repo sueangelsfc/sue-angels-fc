@@ -657,10 +657,26 @@ check('share cards are not all identical', ogSeen.size >= 15, `${ogSeen.size} di
    against the panel having features. A new panel goes in src/admin/lazy/ with
    its own line here. Adding one to control.js means everybody downloads it
    forever, which is the mistake this split exists to undo. */
+/* sa.js 26 -> 28, and this raise is on notice.
+
+   What it bought is real and was asked for: the album viewer with swipe, the
+   profile chart made readable by finger, the season card lifted out of the
+   strip that was clipping it, and per-season squad figures. All four exist
+   because the site did not work on a phone without them.
+
+   But the number is being spent on the wrong thing. sa.js is 96KB raw and
+   26.7KB gzipped, and MINIFIED IT IS 13.5KB - measured, with the esbuild
+   already sitting in node_modules. Half of what every visitor downloads is
+   prose written for whoever reads this repo next. Keeping those comments in
+   the source is right; shipping them to a supporter on a phone is not.
+
+   So the next raise is not a raise. It is one esbuild call in build.mjs
+   between concatenation and write, which halves this file and drops the
+   ceiling below where it started. */
 const BUDGET = {
   'sa.css': 22,
   'home.css': 26,
-  'sa.js': 26,
+  'sa.js': 28,
   'control.css': 9,
   'control.js': 17,
   /* The heaviest, and fairly: the pitch, the position codes, five tabs, the
@@ -675,10 +691,22 @@ const BUDGET = {
      in the album itself, which is four operations that all have to keep the
      parallel tag list in step. */
   'control-content.js': 15,
-  'control-squad.js': 8,
+  /* 8 -> 9. Squad status became a fact about a player IN A SEASON rather
+     than one value that had to be true forever, which is what stops "Retained
+     for 26/27" being a string somebody has to remember to change and stops a
+     trial lasting for the rest of a career. The screen now carries a season
+     bar, reads three stored shapes, and works out new / retained / back at
+     the club instead of asking anybody to keep them true. */
+  'control-squad.js': 9,
   'control-coaches.js': 8,
   'control-photos.js': 6,
-  'control-photos-donations.js': 6,
+  /* 6 -> 7. The player photograph screen can now take a picture straight from
+     the gallery. The club has already tagged who is in six hundred photographs
+     and the site was making somebody find one of them on a phone and upload it
+     again, which is asking them to redo work already done. It builds the list
+     from the albums rather than the seed, so nothing extra ships to a visitor
+     to the panel who never opens this screen. */
+  'control-photos-donations.js': 7,
   'control-pipeline.js': 6,
   'control-covers.js': 8,
   'control-video.js': 6,

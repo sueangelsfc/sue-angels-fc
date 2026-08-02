@@ -274,7 +274,7 @@ export function coaches(d) {
           <div class="cta2__glass glassbox rv">
             <p class="eyebrow cta2__eyebrow">${esc(CLUB.nextDivision)} · Next season</p>
             <h2 class="h2" id="co-cta-h">Play under this <span class="volt">staff.</span></h2>
-            <p class="cta2__sub">Trials are open for 26/27. Register your interest and we will be in
+            <p class="cta2__sub">Trials are open for ${esc(d.nextSeason)}. Register your interest and we will be in
               touch with dates.</p>
             <div class="cta2__btns">
               <a class="btn btn--volt" href="/join.html">Apply for a trial ${ARROW}</a>

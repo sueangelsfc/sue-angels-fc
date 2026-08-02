@@ -126,6 +126,13 @@
 }
 .icon-btn--sm { width: 34px; height: 34px; }
 .icon-btn--sm svg { width: 16px; height: 16px; }
+/* 42px is comfortable under a cursor and short of the 44px a finger is aimed
+   at, and the small variant is well short of it. Both are pushed up on touch
+   rather than everywhere, so the desktop rhythm is unchanged. */
+@media (pointer: coarse) {
+  .icon-btn { width: 46px; height: 46px; }
+  .icon-btn--sm { width: 44px; height: 44px; }
+}
 
 /* Button group - segmented pill */
 .btn-group {
@@ -771,26 +778,11 @@ table.data .cell-club { max-width: 210px; overflow: hidden; text-overflow: ellip
 .state__title { font-family: var(--font-display); font-size: var(--step-1); color: var(--text); }
 .state__body { max-width: 46ch; font-size: var(--step--1); }
 
-/* ---- Tooltip --------------------------------------------------------- */
-.tip { position: relative; }
-.tip__bubble {
-  position: absolute;
-  inset-block-end: calc(100% + 8px);
-  inset-inline-start: 50%;
-  transform: translateX(-50%) translateY(4px);
-  z-index: 60;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-strong);
-  box-shadow: var(--shadow-md);
-  font-size: var(--step--2);
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
-}
-.tip:hover .tip__bubble, .tip:focus-within .tip__bubble { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* A hover tooltip lived here and no page ever used it. It was shipped to
+   every visitor regardless, and it could not have earned its place anyway:
+   a bubble that only opens on hover carries nothing to a phone. Where the
+   site does need to say more about a thing you point at, it uses a real card
+   that opens on tap as well (.camp__tip on the season strip). */
 
 /* ---- Dropdown / context menu ----------------------------------------- */
 .menu {

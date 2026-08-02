@@ -36,11 +36,12 @@ import { join } from './templates/join.mjs';
 import { contact } from './templates/contact.mjs';
 import { notFound } from './templates/notfound.mjs';
 import { PENDING_ROUTES, isLive, groupLive } from './lib/routes.mjs';
-import { matchPage, articlePage, albumPage } from './templates/detail.mjs';
+import { matchPage, articlePage } from './templates/detail.mjs';
 import { playerPage } from './templates/player.mjs';
 import { control } from './templates/control.mjs';
 import { VOCAB } from './lib/football.mjs';
 import { POSITION_VOCAB, ROLE_VOCAB } from './lib/positions.mjs';
+import { STATUS_VOCAB } from './lib/squad-status.mjs';
 
 const ROOT = process.cwd();
 const CHECK = process.argv.includes('--check');
@@ -251,6 +252,18 @@ const adminSeed = {
      replacement for it, so the team sheet asks for both and everything derived
      from where somebody stood is untouched by it. */
   roles: ROLE_VOCAB,
+  /* What a player can BE, and in which season. The panel's dropdown is built
+     from `set`; `derived` is the three the site works out for itself (new
+     signing, retained, back at the club) and is here so the editor can SHOW
+     them beside a player without offering them as something to type. Defined
+     once in src/lib/squad-status.mjs, so the panel and the website cannot
+     describe the same player differently. */
+  statuses: STATUS_VOCAB,
+  /* Every season the club has had, and which one is current, so nothing in
+     the panel has to carry a year in a string. "Retained for 26/27" was
+     typed into two files and would have been wrong from July 2027. */
+  seasons: (d.seasons || []).map((s) => s.name),
+  currentSeason: d.currentSeason,
   /* The staff as the website builds them, so the panel's editor opens showing
      what the page actually shows, including the founding three that live in
      the site's own records rather than in a database row. */

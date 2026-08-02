@@ -56,17 +56,32 @@ const badgePair = (g) => {
   return `<span class="gl-fix" aria-hidden="true">${one(g.homeBadge, '')}<i>v</i>${one(g.awayBadge, '')}</span>`;
 };
 
+/* A tag is stored EITHER as a bare name or as a record: the tagger writes
+   `{ name, role }` the moment anything beyond the name is known, and collapses
+   it back to a string when nothing is. Both shapes are in the database right
+   now, and reading only the first is what put the literal text "[object
+   Object]" under 624 photographs and into their alt text. Anything that reads
+   a tag goes through here. */
+export const tagName = (t) => (typeof t === 'string' ? t
+  : (t && (t.name || t.player || t.label)) || '');
+const isSubject = (t) => !!(t && typeof t === 'object' && t.role === 'subject');
+
 /* An album tag is a player's name. Matched to the squad it becomes a link to
    their profile, which is the whole point of tagging someone. A name with no
    profile (a photographer, a guest) still shows, just not as a link. */
 const tagLinks = (names, squad) => {
   const bySlug = new Map((squad || []).map((p) => [slugify(p.name), p]));
-  return (names || []).map((n) => {
+  return (names || []).map((t) => {
+    const n = tagName(t);
+    if (!n) return '';
     const p = bySlug.get(slugify(n));
+    /* Who the photograph is OF, as opposed to who else is in it. The tagger
+       records it and nothing showed it. */
+    const sub = isSubject(t) ? ' is-subject' : '';
     return p
-      ? `<a class="gl-tag" href="/players/${attr(p.slug)}.html">${esc(n)}</a>`
-      : `<span class="gl-tag is-plain">${esc(n)}</span>`;
-  });
+      ? `<a class="gl-tag${sub}" href="/players/${attr(p.slug)}.html">${esc(n)}</a>`
+      : `<span class="gl-tag is-plain${sub}">${esc(n)}</span>`;
+  }).filter(Boolean);
 };
 
 const sorted = (albums) => albums.slice()
@@ -179,18 +194,21 @@ export function galleryAlbum(g, d) {
       </div>
     </section>`;
 
-  /* A plain grid of links to the full-size file. No lightbox: it would put the
-     album behind JavaScript, and a photograph opening in its own tab is what
-     someone wanting to save one actually needs. */
+  /* A plain grid of links to the full-size file, which is what a reader with
+     no script and anyone wanting to save a photograph needs, and what this
+     still is. data-album lets the script enhance the same links into a viewer
+     that stays on the website: following them on a phone meant landing on a
+     bare image URL on the storage host with no way back and no way to reach
+     the next of 175 photographs. Nothing is hidden behind the script. */
   const grid = photos.length ? `<section class="sec gl-album" aria-label="Photographs">
       <div class="wrap">
-        <ul class="gl-shots">
+        <ul class="gl-shots" data-album>
           ${photos.map((src, i) => {
     const tagged = tagLinks(photoTags[String(i)] || [], d.squad);
     return `<li class="gl-shot${tagged.length ? ' is-tagged' : ''}">
             <a href="${attr(src)}" rel="noopener" target="_blank">
               <img src="${attr(src)}" alt="${attr(tagged.length
-      ? `${fixture}: ${(photoTags[String(i)] || []).join(', ')}`
+      ? `${fixture}: ${(photoTags[String(i)] || []).map(tagName).filter(Boolean).join(', ')}`
       : `${fixture}, photograph ${i + 1} of ${photos.length}`)}"
                 width="600" height="400" loading="lazy" decoding="async" />
             </a>

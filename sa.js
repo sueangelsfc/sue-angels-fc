@@ -370,15 +370,54 @@ window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"
     var count = $('[data-lb-count]', lb);
     function show() {
       i = (i + items.length) % items.length;
-      img.src = items[i];
+      var it = items[i];
+      img.src = typeof it === 'string' ? it : it.src;
+      img.alt = (typeof it === 'string' ? '' : it.alt) || '';
       count.textContent = (i + 1) + ' / ' + items.length;
     }
+    /* Swipe state. A phone has no arrow keys and two small buttons under a
+       full-bleed photograph, so the gesture everybody already tries is the one
+       that has to work. Vertical movement is left alone: stealing it makes the
+       viewer feel stuck. The end of the gesture is read from the last position
+       seen rather than from the up event, because a browser that decides
+       mid-swipe that it was a pan sends pointercancel with a stale point. */
+    var sx = 0, sy = 0, lx = 0, ly = 0, sid = null, swiped = false;
+    var finishSwipe = function () {
+      if (sid === null) return;
+      sid = null;
+      var dx = lx - sx, dy = ly - sy;
+      if (Math.abs(dx) < 45 || Math.abs(dx) <= Math.abs(dy)) return;
+      swiped = true;
+      i += dx < 0 ? 1 : -1;
+      show();
+    };
+
     show();
     on($('[data-lb-prev]', lb), 'click', function () { i--; show(); });
     on($('[data-lb-next]', lb), 'click', function () { i++; show(); });
     on($('[data-lb-close]', lb), 'click', closeLightbox);
-    on(lb, 'click', function (e) { if (e.target === lb) closeLightbox(); });
+    on(lb, 'click', function (e) {
+      /* A swipe that finishes on the backdrop also fires a click, and that
+         click would close the viewer the swipe was navigating. */
+      if (swiped) { swiped = false; return; }
+      if (e.target === lb) closeLightbox();
+    });
     on(document, 'keydown', lbKeys);
+
+    on(lb, 'pointerdown', function (e) {
+      if (e.pointerType === 'mouse') return;
+      sid = e.pointerId;
+      sx = lx = e.clientX;
+      sy = ly = e.clientY;
+    });
+    on(lb, 'pointermove', function (e) {
+      if (e.pointerId !== sid) return;
+      lx = e.clientX; ly = e.clientY;
+    });
+    ['pointerup', 'pointercancel'].forEach(function (ev) {
+      on(lb, ev, function (e) { if (e.pointerId === sid) finishSwipe(); });
+    });
+
     $('[data-lb-close]', lb).focus();
   }
   function lbKeys(e) {
@@ -394,10 +433,30 @@ window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"
     document.body.style.overflow = '';
     document.removeEventListener('keydown', lbKeys);
   }
-  $$('[data-lightbox]').forEach(function (grid) {
-    var buttons = $$('[data-full]', grid);
-    var srcs = buttons.map(function (b) { return b.getAttribute('data-full'); });
-    buttons.forEach(function (b, idx) { on(b, 'click', function () { openLightbox(srcs, idx); }); });
+  /* ---- Album photographs ------------------------------------------------
+     An album ships as real links to the full-size file, which is what a
+     reader with no script and anyone wanting to save a photograph needs, and
+     that stays true: this only intercepts the plain left click.
+
+     It has to, on a phone especially. Following the link left the website
+     entirely for a bare image URL on the storage host, with no caption, no
+     way back except the browser's own button, and no way at all to reach the
+     next photograph in an album of 175. Cmd/ctrl/shift click, middle click
+     and long-press still open the file itself. */
+  $$('[data-album]').forEach(function (grid) {
+    var links = $$('a[href]', grid);
+    if (links.length < 1) return;
+    var items = links.map(function (a) {
+      var im = $('img', a);
+      return { src: a.getAttribute('href'), alt: (im && im.getAttribute('alt')) || '' };
+    });
+    links.forEach(function (a, idx) {
+      on(a, 'click', function (e) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
+        e.preventDefault();
+        openLightbox(items, idx);
+      });
+    });
   });
 
   /* ---- The club word ---------------------------------------------------
@@ -478,46 +537,15 @@ window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"
   var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ---- In-hero navigation dropdowns -----------------------------------
-     CSS also opens these on :focus-within, which is what lets a keyboard user
-     tab in. Escape therefore has to move focus back to the trigger before
-     closing, or focus-within holds the panel open and the key looks dead. */
-  (function () {
-    var groups = $$('.hx__navgrp');
-    if (!groups.length) return;
-    var closeAll = function (except) {
-      groups.forEach(function (g) {
-        if (g === except) return;
-        g.classList.remove('is-open');
-        var t = $('.hx__navtrig', g);
-        if (t) t.setAttribute('aria-expanded', 'false');
-      });
-    };
-    groups.forEach(function (g) {
-      var trig = $('.hx__navtrig', g);
-      if (!trig) return;
-      trig.addEventListener('click', function (e) {
-        e.preventDefault();
-        var open = !g.classList.contains('is-open');
-        closeAll(g);
-        g.classList.toggle('is-open', open);
-        trig.setAttribute('aria-expanded', String(open));
-      });
-    });
-    document.addEventListener('click', function (e) {
-      if (!e.target.closest('.hx__navgrp')) closeAll(null);
-    });
-    document.addEventListener('keydown', function (e) {
-      if (e.key !== 'Escape') return;
-      var inside = document.activeElement && document.activeElement.closest
-        ? document.activeElement.closest('.hx__navgrp') : null;
-      if (inside) {
-        var t = $('.hx__navtrig', inside);
-        if (t) t.focus();
-      }
-      closeAll(null);
-    });
-  })();
+  /* A second handler for the hero dropdowns lived here and has been removed.
+     It opened them on CLICK while the block below opens them on hover and on
+     focus, and the two disagreed: hovering a group opened it, then the click
+     that followed read the group as already open and closed it again, leaving
+     the shared panel on screen with no group marked as its owner. It could
+     not earn that cost either. `.hx__mainnav` is display:none below 920px, so
+     the click path was reachable only on a desktop, where hovering already
+     opens the menu, the trigger's own focus handler covers the keyboard, and
+     CSS opens on :focus-within regardless. */
 
   /* ---- Motion navigation menu -----------------------------------------
      One shared panel serves every menu: it slides under the active trigger,
@@ -645,7 +673,17 @@ window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"
       if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
     });
     vp.addEventListener('pointerleave', function () { closeTimer = setTimeout(close, 90); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    /* CSS also opens these on :focus-within, so Escape has to put focus back
+       on the trigger before closing. Without that the panel is held open by
+       focus sitting inside it and the key looks dead. */
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      var inside = document.activeElement && document.activeElement.closest
+        ? document.activeElement.closest('.hx__navgrp') : null;
+      var t = inside && trigOf(inside);
+      if (t) t.focus();
+      close();
+    });
     document.addEventListener('pointerdown', function (e) {
       if (!nav.contains(e.target) && !vp.contains(e.target)) close();
     });
@@ -1371,8 +1409,38 @@ window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"
         if (best) show(best);
       };
 
-      svg.addEventListener('pointermove', function (e) { pick(e.clientX); });
-      svg.addEventListener('pointerleave', clear);
+      /* A mouse reads this by moving over it. A finger cannot: a tap fires
+         pointermove then pointerleave within the same gesture, so the reading
+         appeared and vanished before it could be read, which is the same as
+         the chart having no readout at all on a phone.
+
+         So the two pointers are handled as the different things they are. A
+         mouse scrubs on move and the readout goes when it leaves. A finger
+         takes a reading on touch down, scrubs while it stays down, and the
+         reading STAYS when it lifts, because taking it is the whole point.
+         Tapping anywhere else on the page puts the chart back. */
+      var dragging = false;
+
+      svg.addEventListener('pointerdown', function (e) {
+        if (e.pointerType === 'mouse') return;
+        dragging = true;
+        pick(e.clientX);
+      });
+      svg.addEventListener('pointermove', function (e) {
+        if (e.pointerType === 'mouse' || dragging) pick(e.clientX);
+      });
+      /* pointercancel is what fires when the browser decides the gesture was
+         a vertical scroll after all (touch-action: pan-y in the stylesheet).
+         Without this the chart would keep scrubbing as the page moved. */
+      ['pointerup', 'pointercancel'].forEach(function (ev) {
+        svg.addEventListener(ev, function () { dragging = false; });
+      });
+      svg.addEventListener('pointerleave', function (e) {
+        if (e.pointerType === 'mouse') clear();
+      });
+      document.addEventListener('pointerdown', function (e) {
+        if (!fig.contains(e.target)) clear();
+      });
     });
   })();
 
@@ -1628,6 +1696,38 @@ window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"
       if (sortCol !== null) applySort(sortCol, desc); else paint();
     };
 
+    /* THE LEADERS FOLLOW THE TAB.
+       The band above this table names the top scorer, the most assists and
+       the most clean sheets, and it used to be worked out from every match
+       the club has ever played whichever season was selected, under a
+       heading that said "The season's leaders". The generator now writes one
+       panel per view and this shows the matching one, so the two halves of
+       the page agree. The rail's count of players used moves with it. */
+    var leaderBand = $('[data-leader-views]');
+    var showLeaders = function (view) {
+      if (!leaderBand || !view) return;
+      var panels = $$('[data-leader-view]', leaderBand);
+      var live = null;
+      panels.forEach(function (p) {
+        var on = p.getAttribute('data-leader-view') === view;
+        p.hidden = !on;
+        if (on) {
+          live = p;
+          /* A panel first revealed here never met the scroll observer, so it
+             would sit at the reveal's starting opacity forever. */
+          p.classList.add('is-in');
+        }
+      });
+      if (!live) return;
+      var head = $('[data-leader-heading]', leaderBand);
+      if (head) head.textContent = live.getAttribute('data-heading') || '';
+      var used = $('.xrail__r', leaderBand);
+      if (used) {
+        var n = live.getAttribute('data-players-used') || '0';
+        used.textContent = n + ' player' + (n === '1' ? '' : 's') + ' used';
+      }
+    };
+
     seasonTabs.forEach(function (tab) {
       tab.setAttribute('role', 'button');
       tab.setAttribute('aria-pressed', tab.classList.contains('is-on') ? 'true' : 'false');
@@ -1639,9 +1739,11 @@ window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"
           t.classList.toggle('is-on', on);
           t.setAttribute('aria-pressed', on ? 'true' : 'false');
         });
+        showLeaders(tab.getAttribute('data-view'));
         refresh();
       });
     });
+    if (onDefault) showLeaders(onDefault.getAttribute('data-view'));
 
     modes.forEach(function (m) {
       m.setAttribute('role', 'button');
@@ -1944,6 +2046,18 @@ window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"
 
    Runs only where the pointer is coarse. On a desktop hover already works and
    a click that latched a card open would be worse than what is there.
+
+   THE CARD IS LIFTED OUT OF THE STRIP. Showing the cell's own card in place
+   did not work and could not: the strip scrolls sideways, so it carries
+   overflow-x: auto, and a box that scrolls on one axis clips on both. On top
+   of that every cell runs a transform animation, and a transformed element
+   becomes the containing block for a fixed-position descendant, so the card
+   could not escape by going fixed either. Between the two it was cropped to
+   the 34px height of the strip: tapping a match produced a black stub with
+   nothing readable in it.
+
+   So a tap copies the cell's card into one element at the end of <body>,
+   where nothing clips it, and positions it against the cell by hand.
    ========================================================================== */
 (function () {
   'use strict';
@@ -1951,11 +2065,46 @@ window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"
   var strip = document.querySelector('.camp__strip');
   if (!strip) return;
   var open = null;
+  var pop = null;
+
+  var vw = function () { return document.documentElement.clientWidth || window.innerWidth || 360; };
+  var vh = function () { return document.documentElement.clientHeight || window.innerHeight || 640; };
+
+  function popEl() {
+    if (pop) return pop;
+    pop = document.createElement('div');
+    pop.className = 'camp__pop';
+    /* The same figures are in the table below as a real table with headers,
+       which is the route a screen reader is given. This is the visual echo. */
+    pop.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(pop);
+    return pop;
+  }
 
   function close() {
     if (!open) return;
     open.classList.remove('is-open');
     open = null;
+    if (pop) pop.classList.remove('is-shown');
+  }
+
+  function place(cell) {
+    var p = popEl();
+    var tip = cell.querySelector('.camp__tip');
+    p.innerHTML = tip ? tip.innerHTML : '';
+    /* Shown before measuring: a display:none box measures zero, and the
+       position would then be computed against nothing. */
+    p.classList.add('is-shown');
+    var box = cell.getBoundingClientRect();
+    var w = p.offsetWidth, h = p.offsetHeight;
+    var left = box.left + box.width / 2 - w / 2;
+    left = Math.min(Math.max(8, left), Math.max(8, vw() - w - 8));
+    /* Above the cell if it fits, below it if it does not. A strip near the
+       top of the screen would otherwise put the card off the top edge. */
+    var top = box.top - h - 12;
+    if (top < 8) top = Math.min(box.bottom + 12, vh() - h - 8);
+    p.style.left = Math.round(left) + 'px';
+    p.style.top = Math.round(top) + 'px';
   }
 
   strip.addEventListener('click', function (e) {
@@ -1963,20 +2112,19 @@ window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"
     if (!cell) return;
     if (cell === open) { close(); return; }
     close();
-    /* Positioned against the cell but fixed to the viewport, so a match at
-       either end of the strip cannot push its card off the side. */
-    var box = cell.getBoundingClientRect();
-    var tip = cell.querySelector('.camp__tip');
-    if (tip) tip.style.setProperty('--tip-top', Math.max(12, box.top - 150) + 'px');
     cell.classList.add('is-open');
     open = cell;
+    place(cell);
     e.stopPropagation();
   });
 
   /* Anywhere else, and scrolling, closes it. A card left hanging over the page
-     while it moves underneath is worse than no card. */
+     while it moves underneath is worse than no card. The strip's own sideways
+     scroll counts: the card is positioned against a cell that just moved. */
   document.addEventListener('click', close);
   window.addEventListener('scroll', close, { passive: true });
+  strip.addEventListener('scroll', close, { passive: true });
+  window.addEventListener('resize', close);
 })();
 
 
@@ -1999,10 +2147,44 @@ window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"
   var cards = Array.prototype.slice.call(document.querySelectorAll('.pc[data-seasons]'));
   if (!cards.length) return;
 
-  function apply(season) {
+  /* SWITCHING SEASON SWITCHES THE NUMBERS TOO.
+     It used to switch only which cards were shown, so the 26/27 tab listed
+     the right players against 25/26's goals and starts, for a season that
+     has not started. Every view's six figures are stamped on the card by the
+     generator as data-st-<view>, derived per season by the same statistics
+     engine as everything else, so this is a rewrite of six numbers. The
+     leader mark moves with them: the top scorer of one season is not
+     necessarily the club's top scorer. */
+  function figures(card, view) {
+    var raw = card.getAttribute('data-st-' + view);
+    if (!raw) return;
+    var v = raw.split(',');
+    var cells = card.querySelectorAll('.pc__stats b, .pc__morestats b');
+    for (var n = 0; n < cells.length && n < v.length; n++) cells[n].textContent = v[n];
+    var badge = card.querySelector('[data-badge]');
+    if (badge) {
+      var mark = card.getAttribute('data-bg-' + view) || '';
+      badge.textContent = mark;
+      badge.hidden = !mark;
+    }
+    /* What he was that season: on trial, injured, or one of the three the
+       site works out (new signing, retained, back at the club). */
+    var state = card.querySelector('[data-state]');
+    if (state) {
+      var label = card.getAttribute('data-sl-' + view) || '';
+      state.textContent = label;
+      state.hidden = !label;
+    }
+  }
+
+  function apply(season, view) {
     cards.forEach(function (card) {
-      var has = (' ' + card.getAttribute('data-seasons') + ' ').indexOf(' ' + season + ' ') !== -1;
+      /* "All seasons" is every player the club has had, not a season to
+         match against. */
+      var has = season === 'all'
+        || (' ' + card.getAttribute('data-seasons') + ' ').indexOf(' ' + season + ' ') !== -1;
       card.hidden = !has;
+      if (has && view) figures(card, view);
     });
     /* A position group with nobody left in it should go, not sit there as an
        empty heading with a count of players who are not shown. */
@@ -2022,11 +2204,11 @@ window.SA_SUPABASE={"url":"https://hvbquuvxcswylyguplfb.supabase.co","anonKey":"
       x.classList.toggle('is-on', on);
       x.setAttribute('aria-pressed', String(on));
     });
-    apply(b.getAttribute('data-season'));
+    apply(b.getAttribute('data-season'), b.getAttribute('data-view'));
   });
 
   var first = bar.querySelector('[data-season]');
-  if (first) apply(first.getAttribute('data-season'));
+  if (first) apply(first.getAttribute('data-season'), first.getAttribute('data-view'));
 })();
 
 /* ==========================================================================

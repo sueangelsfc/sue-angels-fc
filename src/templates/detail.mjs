@@ -244,30 +244,8 @@ export function articlePage(a, d) {
   </section>` : ''}` };
 }
 
-/* ======================= GALLERY ALBUM ======================= */
-export function albumPage(g, d) {
-  const photos = (g.photos || []).slice();
-  return { body: `
-  <section class="section" style="padding-block-start:var(--space-6)">
-    <div class="wrap wrap--wide">
-      ${crumbs([{ label: 'Home', href: '/' }, { label: 'Gallery', href: '/gallery.html' }, { label: g.title, href: `/gallery/${g.slug}.html` }])}
-      <div class="phero__inner" style="margin-top:var(--space-6)">
-        <span class="eyebrow">${esc(g.category)}${g.photographer ? ` · ${esc(g.photographer)}` : ''}</span>
-        <h1 style="font-size:var(--step-4)">${esc(g.title)}</h1>
-        <p class="phero__lede">${esc(photos.length)} photographs.</p>
-      </div>
-      ${g.tags?.length ? `<div class="chip-row" style="margin-top:var(--space-5)">
-        ${g.tags.map((t) => `<span class="chip" style="pointer-events:none">${esc(t)}</span>`).join('')}
-      </div>` : ''}
-    </div>
-  </section>
-  <section class="section section--flush">
-    <div class="wrap wrap--wide">
-      ${photos.length ? `<div class="gal" data-lightbox>
-        ${photos.map((src, i) => `<button class="gal__item" type="button" data-full="${attr(src)}" aria-label="View photograph ${i + 1} of ${photos.length}">
-          <img src="${attr(src)}" alt="" width="180" height="180" loading="${i < 12 ? 'eager' : 'lazy'}" decoding="async">
-        </button>`).join('')}
-      </div>` : emptyState({ title: 'No photographs in this album yet' })}
-    </div>
-  </section>` };
-}
+/* GALLERY ALBUM lived here and was never routed: src/build.mjs renders albums
+   with galleryAlbum() from templates/gallery.mjs. It was the only thing in the
+   codebase emitting data-lightbox / data-full, so the lightbox in the core
+   script had nothing to bind to and no album has ever used it. Removed rather
+   than left as a second album template that disagreed with the real one. */

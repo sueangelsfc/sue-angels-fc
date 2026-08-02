@@ -7,6 +7,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { POSITION_GROUPS, positionName } from './positions.mjs';
+import { readStatusRecord, statusIn, statusLabelIn, isPlaying } from './squad-status.mjs';
 import { normaliseMatch, normaliseTable, playerStats, slugify, isUs, seasonOf, toISO } from './stats.mjs';
 
 const DATA_DIR = path.join(process.cwd(), 'src', 'data');
@@ -101,7 +102,10 @@ export function buildDataset() {
     .map((row) => ({ id: row.key, kind: 'fixture', ...(row.data || {}) }))
     .filter((f) => !known.has(f.id));
   const storedIds = new Set(storedFixtures.map((f) => f.id));
-  const upcoming = [
+  /* Every fixture known to the club, played or not. `upcoming` below is the
+     subset still to come; this one is the raw pool the match list is built
+     from, so it deliberately keeps dates that have already passed. */
+  const allFixtures = [
     ...storedFixtures,
     ...(read('fixtures-2627.json').fixtures || [])
       .filter((f) => !known.has(f.id) && !storedIds.has(f.id))
@@ -116,7 +120,7 @@ export function buildDataset() {
   /* Which round of a knockout each cup tie was. Nothing in the match record
      carries it, and without it a cup run reads as a list of friendlies. */
   const rounds = read('cup-rounds.json').rounds || {};
-  const matches = [...rawResults, ...upcoming]
+  const matches = [...rawResults, ...allFixtures]
     .map((r) => normaliseMatch(r, detailById.get(r.id) || null))
     .map((m) => (neutral[m.id]
       ? { ...m, neutral: true, neutralNote: neutral[m.id], homeAway: 'Neutral' }
@@ -134,6 +138,26 @@ export function buildDataset() {
   const played = matches.filter((m) => m.played);
   const fixtures = matches.filter((m) => !m.played);
 
+  /* WHAT IS STILL TO COME, worked out once.
+     Six pages each sorted `fixtures` by date and took the first, and not one
+     of them dropped a date that had already been. The morning after a match
+     the home page still led with it and the countdown beside it ran
+     backwards. Two of the six also filtered on `m.played`, which a plain
+     fixture row does not carry, so the guard did nothing.
+
+     A fixture with no date is KEPT and sorted last: a friendly agreed with a
+     club but not yet given a day is still a fixture, and dropping it would
+     lose the only record that it exists.
+
+     A match today counts as upcoming. The site is static and may have been
+     built this morning for a game this afternoon, and it is generated fresh
+     on every publish, so this is as current as the last deploy. */
+  const todayISO = new Date().toISOString().slice(0, 10);
+  const upcoming = fixtures
+    .filter((m) => !m.iso || m.iso >= todayISO)
+    .sort((a, b) => (a.iso || '9999-99-99').localeCompare(b.iso || '9999-99-99'));
+  const nextFixture = upcoming[0] || null;
+
   /* ---- Squad ---- */
   const posByNum = inferPositions(matches);
   const bios = ps.PLAYER_BIOS || {};
@@ -150,10 +174,28 @@ export function buildDataset() {
      where the change enters the website. */
   const blob = (key) => (live.player_photos || []).find((p) => p.key === key)?.data;
   const statusRow = blob('roster:status');
-  const rosterStatus = {
+  const rawStatus = {
     ...(read('roster-status.json').status || {}),
     ...((statusRow && (statusRow.status || statusRow)) || {}),
   };
+  /* A status is now a fact about a player IN A SEASON rather than one value
+     that had to be true forever. See src/lib/squad-status.mjs for why, and
+     for how the three tenure labels - new, retained, back at the club - stop
+     being things anybody types and start being worked out. Both the old flat
+     shape and the per-season one are read, so nothing already saved is lost. */
+  const statusRecord = readStatusRecord(rawStatus);
+  /* The player's status TODAY, which is what a page with no season in mind
+     wants. Kept under the old name so every existing caller is unaffected. */
+  /* The most recent thing the club has said about a player, which is what a
+     page with no season in mind means by "status". Needs no evidence, so it
+     can be worked out here, before the squad it describes exists. The
+     season-aware answers hang off `d.statusIn` further down. */
+  const rosterStatus = Object.fromEntries(Object.entries(statusRecord).map(([num, rec]) => {
+    if (rec.__flat) return [num, rec.__flat];
+    const all = ps.ALL_SEASONS || [];
+    for (let i = all.length - 1; i >= 0; i--) if (rec[all[i]]) return [num, rec[all[i]]];
+    return [num, 'active'];
+  }));
 
   /* Players signed since the recovery. The panel writes them here rather than
      into the code baseline, so a new signing does not need a developer. */
@@ -263,6 +305,70 @@ export function buildDataset() {
   const players = playerStats(matches, squad, trialists);
   const statsByNum = new Map(players.map((p) => [p.num, p]));
   const nameFor = (num) => statsByNum.get(num)?.name || `No. ${num}`;
+
+  /* THE SAME ENGINE, RUN ONCE PER SEASON.
+     The squad page showed one set of numbers under every season tab, so a
+     26/27 tab that has not seen a ball kicked reported 25/26's goals: the
+     tab looked like a filter and behaved like a label. `playerStats` already
+     derives everything from whatever match list it is handed, so a season is
+     the same call with a shorter list, and a season with no matches yields
+     the zeroes it should. Keyed by season name; `players` above stays the
+     career total and is what an "all seasons" view reads. */
+  const playersBySeason = {};
+  for (const name of (ps.ALL_SEASONS || [])) {
+    playersBySeason[name] = playerStats(
+      matches.filter((m) => m.season === name), squad, trialists,
+    );
+  }
+
+  /* WHO WAS ACTUALLY HERE, PER SEASON, from the team sheets.
+     This is the evidence the status record leans on. A player named in a
+     match that season was at the club that season, whatever anybody has or
+     has not typed since, which is how the site can tell a first season from
+     a second from a return without being told. Nobody keeps it true; it is
+     true because it is counted. */
+  const appearedIn = {};
+  for (const [name, list] of Object.entries(playersBySeason)) {
+    appearedIn[name] = new Set(list
+      .filter((r) => (r.starts || 0) + (r.subApps || 0) > 0)
+      .map((r) => String(r.num)));
+  }
+  /* The season the club is IN. A season with fixtures but no results yet is
+     still the current one: a squad member with nothing recorded belongs to
+     it, because it has not been played. */
+  const latestSeason = (ps.ALL_SEASONS || [])[(ps.ALL_SEASONS || []).length - 1]
+    || ps.CURRENT_SEASON;
+
+  /* THE SEASON AHEAD. Eight pages said "26/27" in the copy: five as
+     `d.nextSeason || '26/27'`, and `d.nextSeason` did not exist, so all five
+     fell through to the literal and the fallback WAS the value. The other
+     three had the year typed straight into the sentence. Every one of them
+     would have been wrong from July 2027 and only a developer could have
+     fixed them.
+
+     Taken from the season list when there is one after the current season,
+     and otherwise counted on from it, so the site never runs out of an answer
+     and never needs a release to move a year forward. */
+  const nextLabel = (name) => {
+    const m = String(name || '').match(/^(\d{2})\/(\d{2})$/);
+    if (!m) return name;
+    const pad = (n) => String(n % 100).padStart(2, '0');
+    return `${pad(Number(m[1]) + 1)}/${pad(Number(m[2]) + 1)}`;
+  };
+  const seasonList = ps.ALL_SEASONS || [];
+  const currentIdx = seasonList.indexOf(ps.CURRENT_SEASON);
+  const nextSeason = (currentIdx > -1 && seasonList[currentIdx + 1])
+    || (ps.CURRENT_SEASON === latestSeason ? nextLabel(latestSeason) : latestSeason);
+  const statusOpts = {
+    seasons: ps.ALL_SEASONS || [],
+    latestSeason,
+    wasHere: (num, season) => (season === latestSeason
+      /* Nothing has been played yet, so absence of evidence is not evidence
+         of absence: a squad member belongs to the season about to start. */
+      ? !(appearedIn[season] && appearedIn[season].size)
+        || appearedIn[season].has(String(num))
+      : Boolean(appearedIn[season] && appearedIn[season].has(String(num)))),
+  };
 
   /* ---- Coaches ----
      The recovered PageShell holds only the two founding staff. Anyone who has
@@ -436,10 +542,21 @@ export function buildDataset() {
      the SUBJECT of a frame and the site can use that frame for them without
      anyone choosing it by hand.
 
-     Only 'subject' tags qualify. A player merely present in a wide shot is
-     not offered, because the whole point is a picture that is actually of
-     them. Ordering is rating first, then most recent album, so the newest
-     good photograph wins and the list stays stable between builds.
+     EVERY tag qualifies, and this is the fix for a feature that produced
+     nothing at all. It used to take only tags marked 'subject', on the
+     reasoning that a player merely present in a wide shot is not a picture OF
+     him. The reasoning was fine and the result was an empty index: all 624
+     tags in the database say `role: 'present'`, because nobody has ever
+     pressed the Subject button and nothing told them to. A feature gated on a
+     step nobody is asked to take is a feature that does not exist.
+
+     So every tagged frame is offered and 'subject' simply sorts first. The
+     club can then pick one on a player's page in the panel, which is the
+     judgement that was being asked of the tagger and is better asked here,
+     looking at the pictures side by side.
+
+     Ordering is subject first, then rating, then most recent album, so the
+     newest good photograph wins and the list stays stable between builds.
 
      A pin in src/data/photo-pins.json overrides all of it: that is the
      "unless specifically stated" case. */
@@ -450,20 +567,25 @@ export function buildDataset() {
       const src = (g.photos || [])[Number(idx)];
       if (!src) continue;
       for (const t of tags) {
-        if (t.role !== 'subject') continue;
         const slug = slugify(t.name);
         (playerPhotos[slug] ||= []).push({
           src,
+          index: Number(idx),
+          subject: t.role === 'subject',
           focus: t.focus,
           rating: t.rating || 0,
           note: t.note || '',
+          /* Who else is in the frame, so a page can caption it rather than
+             printing a photograph with nothing said about it. */
+          with: tags.map((o) => o.name).filter((n) => n && slugify(n) !== slug),
           album: { slug: g.slug, title: g.title, date: g.date, photographer: g.photographer },
         });
       }
     }
   }
   for (const slug of Object.keys(playerPhotos)) {
-    playerPhotos[slug].sort((a, b) => b.rating - a.rating
+    playerPhotos[slug].sort((a, b) => (b.subject ? 1 : 0) - (a.subject ? 1 : 0)
+      || b.rating - a.rating
       || String(b.album.date || '').localeCompare(String(a.album.date || ''))
       || String(a.src).localeCompare(String(b.src)));
   }
@@ -495,17 +617,26 @@ export function buildDataset() {
   const pages = read('recovered-pages.json');
 
   return {
-    matches, played, fixtures, orphanDetails,
+    matches, played, fixtures, upcoming, nextFixture, orphanDetails,
     /* The merged baseline+database match list, before normalisation. The
        control panel needs it to pre-fill a match whose scoreline still comes
        from the code baseline rather than from a row it can edit. */
     rawMatches: rawResults,
-    squad, players, statsByNum, nameFor,
+    squad, players, playersBySeason, statsByNum, nameFor,
+    /* What each player was in each season, and the helpers that read it. A
+       page asking "what was he in 25/26" gets an answer about 25/26 rather
+       than about today. */
+    statusRecord,
+    statusIn: (num, season) => statusIn(statusRecord, num, season, statusOpts),
+    statusLabelIn: (num, season) => statusLabelIn(statusRecord, num, season, statusOpts),
+    isPlayingStatus: isPlaying,
     coaches, table, leagueScorers, leagueScorersByComp, nextDivisionTable, leagueResults,
     articles, recognition, galleries, playerPhotos, donate, hero, trialists,
     photoFor, photoSeasons,
     seasons, seasonInfo, competitions, knownClubs, badges,
     currentSeason: ps.CURRENT_SEASON,
+    nextSeason,
+    latestSeason,
     leagueTotalGames: ps.LEAGUE_TOTAL_GAMES,
     promotionSpots: ps.LEAGUE_PROMOTION_SPOTS,
     pages,

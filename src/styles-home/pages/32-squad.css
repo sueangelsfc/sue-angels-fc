@@ -7,7 +7,9 @@
    The extra numbers ride in .pc__more, which is translated out of view rather
    than hidden. It is in the DOM, it is inside the card's own link, and it
    comes back on hover AND on keyboard focus, so nothing a screen reader or a
-   keyboard user needs is behind a gesture they cannot make.
+   keyboard user needs is behind a gesture they cannot make. On touch, where
+   neither gesture exists, it does not slide at all: it simply sits under the
+   headline row and both are read at once. See the (hover: none) block.
    ========================================================================== */
 
 /* ---- Hero -------------------------------------------------------------- */
@@ -94,18 +96,34 @@ html.js .sq-grp[hidden]{display: none;}
 /* No photograph: the crest. It has to sit under the same scrim as a
    photograph would, so it needs enough presence to read as a deliberate
    placeholder rather than as a card that failed to load. */
-.pc__shot .pc__crest{width: 62%; height: auto; object-fit: contain; opacity: 0.4;}
+/* Centred at 40% it was sitting in the darkest part of the scrim, and 16 of
+   the 34 cards have no photograph, so a third of the squad page was black
+   rectangles with a name on them. It sits above the scrim's dark zone now and
+   is allowed enough presence to read as a deliberate stand-in.
+
+   Positioned on the crest itself rather than by padding .pc__shot, because
+   the photograph is a child of the same box and padding would have shrunk
+   every real picture to make room for the one case that has none. */
+.pc__shot .pc__crest{width: 47%; height: auto; object-fit: contain; opacity: 0.55;
+  align-self: start; margin-top: 13%;}
 .pc__link:hover .pc__shot .pc__crest{transform: none;}
 /* The scrim that keeps white type legible over an unpredictable photograph. */
 .pc__link::after{content: ''; position: absolute; inset: 0; pointer-events: none;
   background: linear-gradient(180deg, rgba(6, 8, 10, 0.5) 0%, transparent 34%,
     rgba(6, 8, 10, 0.72) 70%, rgba(6, 8, 10, 0.94) 100%);}
 
-.pc__pos{position: absolute; left: 12px; top: 12px; z-index: 2;
-  padding: 6px 11px; border-radius: var(--pillr);
+/* Both chips in one wrapping row, pinned once. Pinning them separately meant
+   a long badge grew back along the top of the card and covered the position. */
+.pc__tags{position: absolute; left: 12px; right: 12px; top: 12px; z-index: 3;
+  display: flex; flex-wrap: wrap; align-items: flex-start;
+  justify-content: space-between; gap: 6px;}
+.pc__pos{padding: 6px 11px; border-radius: var(--pillr);
   background: var(--volt); color: var(--text-on-brand);
   font-family: var(--ui); font-size: 9px; font-weight: 700;
-  letter-spacing: 0.14em; text-transform: uppercase;}
+  line-height: 1.3; letter-spacing: 0.14em; text-transform: uppercase;
+  /* A full position name is up to 26 characters, which will not sit on one
+     line inside a card 150px wide. Two lines of chip is better than a code. */
+  max-width: 100%;}
 /* Position is inferred from team sheets, so a player who never started has
    none. A neutral chip keeps the grid even and says why. */
 .pc__pos.is-none{background: rgba(255, 255, 255, 0.13); color: var(--ink-2);}
@@ -116,6 +134,14 @@ html.js .sq-grp[hidden]{display: none;}
 .pc__body{position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
   display: grid; gap: 12px; padding: 16px;
   transition: transform 0.45s var(--ease-out-expo), opacity 0.3s;}
+/* What he was that season: above the name, because it qualifies who he is
+   rather than what he did. Quiet, so it never competes with the figures. */
+.pc__state{justify-self: start; padding: 4px 9px; border-radius: var(--pillr);
+  background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.18);
+  font-family: var(--ui); font-size: 7.5px; font-weight: 700; line-height: 1.3;
+  letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255, 255, 255, 0.82);
+  max-width: 100%;}
+.pc__state[hidden]{display: none;}
 .pc__name{display: grid; gap: 1px;}
 .pc__name b{font-family: var(--display); font-weight: 500;
   font-size: clamp(17px, 1.7vw, 20px); line-height: 1.08; letter-spacing: -0.028em;
@@ -187,10 +213,37 @@ html[data-theme="light"] .sq-chip.is-on span{color: rgba(26, 10, 2, 0.62);}
   .sq-cards--past{grid-template-columns: repeat(2, minmax(0, 1fr));}
 }
 
-/* Touch has no hover, so the panel would never appear and its numbers would
-   be unreachable. Show the headline stats permanently instead. */
+/* Touch has no hover, so the sliding panel would never appear. It used to be
+   dropped entirely, which is three real figures per player thrown away on the
+   device this page is read on most. Instead the card stops sliding and lays
+   both rows out permanently: the two elements leave the absolute layer and
+   stack in flow at the foot of the card.
+
+   The cue goes with the panel. "Full profile" only ever existed to give the
+   revealed panel something to say; the whole card is already the link, so on
+   touch it is a button inside a button that repeats what tapping does. */
 @media (hover: none){
-  .pc__more{display: none;}
+  .pc__link{display: flex; flex-direction: column; justify-content: flex-end;}
+  .pc__body,
+  .pc__more{position: relative; transform: none; opacity: 1;}
+  .pc__body{gap: 9px; padding: 14px 14px 7px;}
+  .pc__more{background: none; padding: 0 14px 13px;}
+  .pc__cta{display: none;}
+  .pc__stats b,
+  .pc__morestats b{font-size: 16px;}
+  .pc__stats,
+  .pc__morestats{gap: 6px;}
+  /* Type now starts around the half-way line rather than in the last third,
+     so the scrim has to come up to meet it or the first row of numbers sits
+     on whatever the photograph happens to be doing there. */
+  .pc__link::after{background: linear-gradient(180deg, rgba(6, 8, 10, 0.46) 0%, transparent 24%,
+    rgba(6, 8, 10, 0.62) 42%, rgba(6, 8, 10, 0.9) 66%, rgba(6, 8, 10, 0.97) 100%);}
+  /* A little more room for the extra row, so the face is not squeezed into
+     the top quarter of a card that is mostly numbers. */
+  .pc__link{aspect-ratio: 5 / 7;}
+  /* The card is taller and its bottom half is numbers, so the crest stand-in
+     needs to sit higher again to stay in the clear band under the chips. */
+  .pc__shot .pc__crest{width: 42%; margin-top: 15%;}
 }
 
 @media (prefers-reduced-motion: reduce){
@@ -205,12 +258,12 @@ html[data-theme="light"] .sq-chip.is-on span{color: rgba(26, 10, 2, 0.62);}
    ========================================================================== */
 
 /* A squad leader says so on the card. Only an outright leader is badged. */
-.pc__badge{position: absolute; right: 10px; top: 12px; z-index: 3;
-  padding: 6px 10px; border-radius: var(--pillr);
+.pc__badge{padding: 6px 10px; border-radius: var(--pillr);
   background: rgba(6, 8, 10, 0.72); border: 1px solid rgba(var(--volt-rgb), 0.5);
   -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   font-family: var(--ui); font-size: 8px; font-weight: 700;
-  letter-spacing: 0.14em; text-transform: uppercase; color: var(--volt-text);}
+  line-height: 1.3; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--volt-text); max-width: 100%;}
 
 /* Pointer-tracked tilt. The card leans toward the cursor and a soft highlight
    follows it, which is what makes a grid of faces feel handled rather than

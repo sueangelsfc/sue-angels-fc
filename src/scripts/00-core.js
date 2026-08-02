@@ -369,15 +369,54 @@
     var count = $('[data-lb-count]', lb);
     function show() {
       i = (i + items.length) % items.length;
-      img.src = items[i];
+      var it = items[i];
+      img.src = typeof it === 'string' ? it : it.src;
+      img.alt = (typeof it === 'string' ? '' : it.alt) || '';
       count.textContent = (i + 1) + ' / ' + items.length;
     }
+    /* Swipe state. A phone has no arrow keys and two small buttons under a
+       full-bleed photograph, so the gesture everybody already tries is the one
+       that has to work. Vertical movement is left alone: stealing it makes the
+       viewer feel stuck. The end of the gesture is read from the last position
+       seen rather than from the up event, because a browser that decides
+       mid-swipe that it was a pan sends pointercancel with a stale point. */
+    var sx = 0, sy = 0, lx = 0, ly = 0, sid = null, swiped = false;
+    var finishSwipe = function () {
+      if (sid === null) return;
+      sid = null;
+      var dx = lx - sx, dy = ly - sy;
+      if (Math.abs(dx) < 45 || Math.abs(dx) <= Math.abs(dy)) return;
+      swiped = true;
+      i += dx < 0 ? 1 : -1;
+      show();
+    };
+
     show();
     on($('[data-lb-prev]', lb), 'click', function () { i--; show(); });
     on($('[data-lb-next]', lb), 'click', function () { i++; show(); });
     on($('[data-lb-close]', lb), 'click', closeLightbox);
-    on(lb, 'click', function (e) { if (e.target === lb) closeLightbox(); });
+    on(lb, 'click', function (e) {
+      /* A swipe that finishes on the backdrop also fires a click, and that
+         click would close the viewer the swipe was navigating. */
+      if (swiped) { swiped = false; return; }
+      if (e.target === lb) closeLightbox();
+    });
     on(document, 'keydown', lbKeys);
+
+    on(lb, 'pointerdown', function (e) {
+      if (e.pointerType === 'mouse') return;
+      sid = e.pointerId;
+      sx = lx = e.clientX;
+      sy = ly = e.clientY;
+    });
+    on(lb, 'pointermove', function (e) {
+      if (e.pointerId !== sid) return;
+      lx = e.clientX; ly = e.clientY;
+    });
+    ['pointerup', 'pointercancel'].forEach(function (ev) {
+      on(lb, ev, function (e) { if (e.pointerId === sid) finishSwipe(); });
+    });
+
     $('[data-lb-close]', lb).focus();
   }
   function lbKeys(e) {
@@ -393,10 +432,30 @@
     document.body.style.overflow = '';
     document.removeEventListener('keydown', lbKeys);
   }
-  $$('[data-lightbox]').forEach(function (grid) {
-    var buttons = $$('[data-full]', grid);
-    var srcs = buttons.map(function (b) { return b.getAttribute('data-full'); });
-    buttons.forEach(function (b, idx) { on(b, 'click', function () { openLightbox(srcs, idx); }); });
+  /* ---- Album photographs ------------------------------------------------
+     An album ships as real links to the full-size file, which is what a
+     reader with no script and anyone wanting to save a photograph needs, and
+     that stays true: this only intercepts the plain left click.
+
+     It has to, on a phone especially. Following the link left the website
+     entirely for a bare image URL on the storage host, with no caption, no
+     way back except the browser's own button, and no way at all to reach the
+     next photograph in an album of 175. Cmd/ctrl/shift click, middle click
+     and long-press still open the file itself. */
+  $$('[data-album]').forEach(function (grid) {
+    var links = $$('a[href]', grid);
+    if (links.length < 1) return;
+    var items = links.map(function (a) {
+      var im = $('img', a);
+      return { src: a.getAttribute('href'), alt: (im && im.getAttribute('alt')) || '' };
+    });
+    links.forEach(function (a, idx) {
+      on(a, 'click', function (e) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button) return;
+        e.preventDefault();
+        openLightbox(items, idx);
+      });
+    });
   });
 
   /* ---- The club word ---------------------------------------------------

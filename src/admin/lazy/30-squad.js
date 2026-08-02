@@ -46,41 +46,92 @@
   var SEED = window.SA_SEED || {};
   var SQUAD = (SEED.squad || []).slice();
 
-  /* The five things a player can be. `active` and `retained` both mean "in
-     the squad": the difference is whether next season has been settled, which
-     is a real distinction in a Sunday-league side in July and invisible on the
-     website until somebody decides. */
-  /* What a player can be. Five was not enough: a club in July has players it
-     has kept, players it has just signed, players back after a year away and
-     players it is having a look at, and calling all four "in the squad" throws
-     away the only thing anybody wants to know in pre-season.
+  /* WHAT A PLAYER IS, AND IN WHICH SEASON.
 
-     `playing` is what puts somebody in the squad on the website. The rest move
-     them to Those who came before, which keeps their profile and their whole
-     record rather than deleting them. */
-  var STATUSES = [
-    { key: 'active', label: 'In the squad', playing: true,
-      note: 'Playing now.' },
-    { key: 'retained', label: 'Retained for 26/27', playing: true,
-      note: 'Was here last season and has signed on again.' },
-    { key: 'new', label: 'New signing', playing: true,
-      note: 'Joined for the new season.' },
-    { key: 'returned', label: 'Returned to the club', playing: true,
-      note: 'Played here before, was away, and is back.' },
-    { key: 'trial', label: 'On trial', playing: true,
-      note: 'Training with the squad, not signed. Shown as a trialist.' },
-    { key: 'injured', label: 'Injured, long term', playing: true,
-      note: 'Still in the squad and shown as unavailable.' },
-    { key: 'retired', label: 'Retired from playing', playing: false,
-      note: 'Hung up the boots.' },
-    { key: 'departed', label: 'Left the club', playing: false,
-      note: 'Moved on.' },
-    { key: 'staff', label: 'Moved into coaching', playing: false,
-      note: 'Off the pitch and onto the touchline. Also added to the staff.' },
-  ];
+     This was one flat list with one value per player, and three of its nine
+     entries could not stay true on their own:
+
+       "Retained for 26/27" carried a year in the string, typed here and in
+       src/templates/player.mjs, so from July 2027 both were wrong and only a
+       developer could change them.
+       "New signing" never expired.
+       "On trial" never ended, though a trial is a fixed window by definition:
+       a few weeks, after which somebody is signed or is not.
+
+     Status is now a fact about a player IN A SEASON, and the three tenure
+     labels are WORKED OUT from which seasons he has been in the squad rather
+     than typed. The dropdown asks only for what the club knows and the site
+     cannot derive. Defined once in src/lib/squad-status.mjs and shipped here
+     in the seed, so this editor and the website cannot disagree. */
+  var VOCAB = SEED.statuses || { set: [], derived: [] };
+  var STATUSES = VOCAB.set;
+  var DERIVED = VOCAB.derived;
+  var SEASONS = (SEED.seasons || []).slice();
+  var CURRENT = SEED.currentSeason || SEASONS[SEASONS.length - 1] || '';
   var LABEL = {};
   var PLAYING = {};
   STATUSES.forEach(function (x) { LABEL[x.key] = x.label; PLAYING[x.key] = x.playing; });
+  DERIVED.forEach(function (x) { LABEL[x.key] = x.label; PLAYING[x.key] = true; });
+
+  /* The season being edited. Everything on this screen is about this one
+     season: the dropdown sets what somebody was IN IT, and the counts and
+     the worked-out labels describe IT. It starts on the current season
+     because that is what anybody opening the panel in August is here for. */
+  var editSeason = CURRENT;
+
+  /* Three shapes have been written to roster:status and all three are read.
+     A flat string is what the player was in the CURRENT season, which is
+     what it meant when it was written; for any earlier season it is read as
+     "in the squad", because he plainly was - every figure on his card for
+     that season was earned here. */
+  var RETIRED_KEYS = { 'new': 1, retained: 1, returned: 1 };
+  function collapse(k) { return RETIRED_KEYS[k] ? 'active' : k; }
+
+  function statusIn(map, num, season) {
+    var rec = map[String(num)];
+    if (!rec) return 'active';
+    if (typeof rec === 'string') {
+      if (season === CURRENT) return collapse(rec);
+      return SEASONS.indexOf(season) < SEASONS.indexOf(CURRENT) ? 'active' : collapse(rec);
+    }
+    if (rec[season]) return collapse(rec[season]);
+    for (var i = SEASONS.indexOf(season) - 1; i >= 0; i--) {
+      if (rec[SEASONS[i]]) return collapse(rec[SEASONS[i]]);
+    }
+    return 'active';
+  }
+  function isPlaying(key) { return PLAYING[key] !== false; }
+
+  /* New signing / retained / back at the club, worked out rather than typed.
+     Nobody is "new" in the club's first season: it would be true of the whole
+     squad and would say nothing. */
+  function tenureIn(map, num, season) {
+    var idx = SEASONS.indexOf(season);
+    if (idx < 0) return null;
+    var here = function (s) { return isPlaying(statusIn(map, num, s)); };
+    if (!here(season) || idx === 0) return null;
+    if (here(SEASONS[idx - 1])) return 'retained';
+    for (var i = idx - 2; i >= 0; i--) if (here(SEASONS[i])) return 'returned';
+    return 'new';
+  }
+
+  /* Writing keeps every season already recorded, including any this tool has
+     never heard of. A flat value being replaced is preserved as what he was
+     in the current season rather than thrown away. */
+  function withStatus(map, num, season, key) {
+    var next = {};
+    Object.keys(map).forEach(function (k) { next[k] = map[k]; });
+    var prev = next[String(num)];
+    var bySeason = {};
+    if (prev && typeof prev === 'object') {
+      Object.keys(prev).forEach(function (s) { bySeason[s] = prev[s]; });
+    } else if (typeof prev === 'string' && prev && !bySeason[CURRENT]) {
+      bySeason[CURRENT] = prev;
+    }
+    bySeason[season] = key;
+    next[String(num)] = bySeason;
+    return next;
+  }
 
   var POSITIONS = ['Goalkeeper', 'Defender', 'Midfielder', 'Forward'];
   var ROLES = ['Manager', 'Assistant manager', 'Coach', 'Goalkeeping coach',
@@ -145,7 +196,10 @@
           num: p.num,
           name: p.name,
           pos: p.pos || '',
-          status: status[String(p.num)] || 'active',
+          /* What he is IN THE SEASON BEING EDITED, and what the site works
+             out about him from the seasons around it. */
+          status: statusIn(status, p.num, editSeason),
+          tenure: tenureIn(status, p.num, editSeason),
           photo: !!photoKeys[String(p.num)],
           added: added.some(function (a) { return a.num === p.num; }),
         };
@@ -156,17 +210,38 @@
       STATUSES.forEach(function (x) { counts[x.key] = 0; });
       players.forEach(function (p) { counts[p.status] = (counts[p.status] || 0) + 1; });
 
+      /* One tab per season. Everything under it is about that season: the
+         counts, the dropdowns and the worked-out labels. Editing 25/26 does
+         not touch 26/27, which is the whole point of the change. */
+      var seasonBar = SEASONS.length > 1
+        ? '<div class="cp-seasonbar" role="group" aria-label="Season">' +
+            SEASONS.map(function (s) {
+              return '<button class="cp-seasonbtn' + (s === editSeason ? ' is-on' : '') +
+                '" type="button" data-edit-season="' + esc(s) + '"' +
+                ' aria-pressed="' + (s === editSeason ? 'true' : 'false') + '">' +
+                esc(s) + (s === CURRENT ? '<i>this season</i>' : '') + '</button>';
+            }).join('') +
+          '</div>'
+        : '';
+
       host.innerHTML =
         sec({
           title: 'The squad',
-          sub: esc(players.length) + ' players. Changing what somebody is moves them on the website. '
+          sub: seasonBar
+            + '<p>' + esc(players.length) + ' players. What somebody is is recorded <b>per season</b>, '
+            + 'so this screen is about <b>' + esc(editSeason) + '</b> and nothing you change here '
+            + 'touches another year. '
             + STATUSES.filter(function (x) { return counts[x.key]; })
               .map(function (x) { return '<b>' + esc(counts[x.key]) + '</b> ' + esc(x.label.toLowerCase()); })
               .join(', ') + '.'
             + ' Anyone not in the squad keeps their profile and their whole record; they move to '
-            + '<b>Those who came before</b> rather than disappearing.',
+            + '<b>Those who came before</b> rather than disappearing.</p>'
+            + '<p class="cp-note"><b>New signing</b>, <b>retained</b> and <b>back at the club</b> are '
+            + 'not in the list because the site works them out: it knows which seasons each player has '
+            + 'been in the squad, so it can tell a first season from a second from a return, and it '
+            + 'keeps doing so every year without anyone editing anything.</p>',
           actions: '<button class="btn btn--primary" data-add-player>Add a player</button>',
-          body: table(['Player', 'Position', 'Photograph', 'What they are now', ''],
+          body: table(['Player', 'Position', 'Photograph', 'In ' + editSeason, 'Worked out', ''],
             players.map(function (p) {
               return '<tr data-num="' + p.num + '">' +
                 '<td><b>' + esc(p.name) + '</b></td>' +
@@ -174,11 +249,20 @@
                 '<td>' + (p.photo
                   ? '<span class="badge badge--success">Yes</span>'
                   : '<span class="badge badge--warning">None</span>') + '</td>' +
-                '<td><select class="select" data-status aria-label="Status for ' + esc(p.name) + '">' +
+                '<td><select class="select" data-status aria-label="What ' + esc(p.name) +
+                    ' was in ' + esc(editSeason) + '">' +
                   STATUSES.map(function (x) {
                     return '<option value="' + x.key + '"' + (p.status === x.key ? ' selected' : '') +
                       '>' + esc(x.label) + '</option>';
-                  }).join('') + '</select></td>' +
+                  }).join('') + '</select>' +
+                  '<small class="cp-hint" data-status-hint>' +
+                    esc((STATUSES.filter(function (x) { return x.key === p.status; })[0] || {}).hint || '') +
+                  '</small></td>' +
+                /* The site's own answer, shown but never editable, so it is
+                   obvious it is derived rather than something to maintain. */
+                '<td>' + (p.tenure
+                  ? '<span class="badge badge--neutral">' + esc(LABEL[p.tenure]) + '</span>'
+                  : '<span class="cp-hint">Nothing to say</span>') + '</td>' +
                 '<td>' + (p.added
                   ? '<button class="btn btn--quiet btn--sm" data-del-player>Remove</button> '
                   : '') +
@@ -246,8 +330,11 @@
         var num = Number(e.target.closest('tr[data-num]').getAttribute('data-num'));
         var player = players.filter(function (p) { return p.num === num; })[0];
         var value = e.target.value;
-        var next = Object.assign({}, status);
-        next[String(num)] = value;
+        /* Written against the season being edited, keeping every other season
+           already on the record. Setting somebody to Left the club in 26/27
+           leaves 25/26 exactly as it was, which is what makes the squad page's
+           25/26 tab able to say he was in the squad that year. */
+        var next = withStatus(status, num, editSeason, value);
 
         /* Moving a player into coaching is one decision, so it is one action:
            they come out of the squad AND go onto the staff. Doing only the
@@ -263,7 +350,7 @@
           });
         }
         work.then(function () {
-          toast(player.name + ': ' + LABEL[value], 'success');
+          toast(player.name + ' in ' + editSeason + ': ' + LABEL[value], 'success');
           refresh('squad');
         }).catch(function (err) { toast(err.message, 'error'); refresh('squad'); });
       });
@@ -275,6 +362,14 @@
       }
 
       host.addEventListener('click', function (e) {
+        /* Switching season re-renders this screen against that season. It
+           reads and writes nothing: the record already holds every year. */
+        var tab = e.target.closest && e.target.closest('[data-edit-season]');
+        if (tab) {
+          editSeason = tab.getAttribute('data-edit-season');
+          refresh('squad');
+          return;
+        }
         if (e.target.matches('[data-add-player]')) { if (guard()) playerForm(); return; }
 
         if (e.target.matches('[data-add-trialist]')) {
@@ -366,10 +461,14 @@
               '<select class="select" id="p-pos">' +
                 POSITIONS.map(function (x) { return '<option>' + esc(x) + '</option>'; }).join('') +
               '</select></div>' +
-            '<div class="field"><label class="field__label" for="p-status">What they are</label>' +
+            '<div class="field"><label class="field__label" for="p-status">What they are in ' +
+                esc(editSeason) + '</label>' +
               '<select class="select" id="p-status">' +
+                /* "New signing" is not offered because the site works it out:
+                   a player with no earlier season IS a new signing, and will
+                   stop being one next year without anybody editing him. */
                 STATUSES.filter(function (x) { return x.playing; }).map(function (x) {
-                  return '<option value="' + x.key + '"' + (x.key === 'new' ? ' selected' : '') +
+                  return '<option value="' + x.key + '"' + (x.key === 'active' ? ' selected' : '') +
                     '>' + esc(x.label) + '</option>';
                 }).join('') +
               '</select></div>' +
@@ -391,8 +490,7 @@
           var rec = { num: num, first: first, last: last, position: $('#p-pos', back).value };
           if (bio) rec.bio = [bio];
           var chosen = $('#p-status', back).value;
-          var nextStatus = Object.assign({}, status);
-          nextStatus[String(num)] = chosen;
+          var nextStatus = withStatus(status, num, editSeason, chosen);
           err.hidden = true;
           savePlayers(added.concat([rec]))
             .then(function () { return saveStatus(nextStatus); })

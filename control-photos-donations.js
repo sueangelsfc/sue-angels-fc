@@ -76,8 +76,65 @@
      pictures shows last year's rather than initials, which is what you want in
      August, and replacing one season leaves the others alone.
      ========================================================================== */
+  /* Who a tag names, whatever shape it arrived in: the tagger writes a bare
+     name at first and `{name, role}` the moment it knows anything more. Both
+     are in the database, and reading only the first is what printed the words
+     "[object Object]" under 624 photographs on the website. */
+  function tagName(t) {
+    if (typeof t === 'string') return t;
+    return (t && (t.name || t.player || t.label)) || '';
+  }
+  function slugOf(name) {
+    return String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+
+  /* EVERY FRAME A PLAYER IS TAGGED IN, from the albums themselves.
+     Derived here rather than shipped in the seed, because 624 storage
+     addresses would be seventy kilobytes every visitor to the panel
+     downloads to look at one player. Subject tags sort first; after that the
+     newest album wins. */
+  function framesBySlug(albums) {
+    var out = {};
+    albums.forEach(function (row) {
+      var a = (row && row.data) || {};
+      var photos = a.photos || [];
+      var tags = a.photoTags || {};
+      Object.keys(tags).forEach(function (idx) {
+        var src = photos[Number(idx)];
+        if (!src) return;
+        (tags[idx] || []).forEach(function (t) {
+          var name = tagName(t);
+          if (!name) return;
+          var slug = slugOf(name);
+          (out[slug] = out[slug] || []).push({
+            src: src,
+            subject: !!(t && t.role === 'subject'),
+            album: a.title || '',
+            date: a.date || '',
+          });
+        });
+      });
+    });
+    Object.keys(out).forEach(function (k) {
+      out[k].sort(function (x, y) {
+        return (y.subject ? 1 : 0) - (x.subject ? 1 : 0)
+          || String(y.date).localeCompare(String(x.date));
+      });
+    });
+    return out;
+  }
+
   M.photos = function (host) {
-    return CP.readAll('player_photos').then(function (rows) {
+    return Promise.all([CP.readAll('player_photos'), CP.readAll('gallery')])
+      .then(function (both) {
+        var rows = both[0];
+        var frames = framesBySlug(both[1] || []);
+        return photosScreen(host, rows, frames);
+      });
+  };
+
+  function photosScreen(host, rows, frames) {
+    return Promise.resolve().then(function () {
       var row = rows.filter(function (r) { return r.key === 'roster:photos'; })[0];
       var recs = (row && row.data) || {};
       /* The twenty that ship as files with the site. The panel cannot see the
@@ -112,6 +169,7 @@
           : '',
         body: table(['Player', esc(season), 'Falls back to', ''], SQUAD.map(function (p) {
           var f = shotFor(p.num);
+          var mine = frames[slugOf(p.name)] || [];
           return '<tr data-num="' + p.num + '">' +
             '<td><b>' + esc(p.name) + '</b><br>' +
               '<span style="color:var(--text-subtle)">' + esc(p.pos || '') + '</span></td>' +
@@ -128,6 +186,14 @@
             '<td><label class="btn btn--ghost btn--sm" style="cursor:pointer">' +
                 (f.own ? 'Replace' : 'Add one') +
                 '<input type="file" accept="image/*" data-file hidden></label>' +
+              /* The club has already tagged who is in six hundred gallery
+                 photographs. Making somebody go and find one of them on their
+                 phone to upload it again is asking them to do work the site
+                 has already done. */
+              (mine.length
+                ? ' <button class="btn btn--ghost btn--sm" data-pick>From the gallery'
+                  + ' <span class="badge badge--neutral">' + esc(mine.length) + '</span></button>'
+                : '') +
               (f.own ? ' <button class="btn btn--quiet btn--sm" data-drop>Remove</button>' : '') +
             '</td>' +
           '</tr>';
@@ -170,7 +236,76 @@
           .catch(function (err) { toast(err.message, 'error'); refresh('photos'); });
       });
 
+      /* CHOOSING ONE OF THE TAGGED FRAMES.
+         The picture is cropped square in the browser exactly as an upload is,
+         so a landscape action shot becomes the same 520px square as everything
+         else and the squad grid stays even. Reading a storage URL back into a
+         canvas needs the image served with CORS, which the gallery bucket is;
+         if it ever is not, this says so rather than saving a blank square. */
+      function pickFrom(num, who, mine) {
+        var wrap = document.createElement('div');
+        wrap.className = 'cp-pickwrap';
+        wrap.innerHTML =
+          '<div class="cp-pick__head">' +
+            '<b>' + esc(who.name) + '</b>' +
+            '<span>' + esc(mine.length) + ' photograph' + (mine.length === 1 ? '' : 's') +
+              ' they are tagged in. Choose the one for <b>' + esc(season) + '</b>.</span>' +
+            '<button class="btn btn--quiet btn--sm" data-pick-close>Close</button>' +
+          '</div>' +
+          '<ul class="cp-pick">' +
+            mine.map(function (fr, i) {
+              return '<li><button type="button" data-pick-one="' + i + '">' +
+                '<img src="' + esc(fr.src) + '" alt="" loading="lazy" decoding="async">' +
+                (fr.subject ? '<i>Subject</i>' : '') +
+                '<span>' + esc(fr.album || 'Gallery') + '</span>' +
+              '</button></li>';
+            }).join('') +
+          '</ul>';
+        document.body.appendChild(wrap);
+
+        wrap.addEventListener('click', function (ev) {
+          if (ev.target.closest('[data-pick-close]') || ev.target === wrap) { wrap.remove(); return; }
+          var btn = ev.target.closest('[data-pick-one]');
+          if (!btn) return;
+          if (!guard()) { wrap.remove(); return; }
+          var fr = mine[Number(btn.getAttribute('data-pick-one'))];
+          btn.disabled = true;
+          /* Fetched to a blob first: the resizer takes a File or a Blob, not
+             a URL, because everything else that reaches it comes off a file
+             input. The gallery bucket is public and sends CORS headers, so
+             this is a plain fetch rather than anything clever. */
+          fetch(fr.src)
+            .then(function (r) {
+              if (!r.ok) throw new Error('the gallery would not hand it over (' + r.status + ')');
+              return r.blob();
+            })
+            .then(function (blob) {
+              return U.uploadImage(blob, { square: true, max: 520, prefix: 'player-' + num });
+            })
+            .then(function (out) {
+              var next = JSON.parse(JSON.stringify(recs));
+              next[num] = next[num] || {};
+              next[num][season] = out.url;
+              if (!next[num].default) next[num].default = out.url;
+              wrap.remove();
+              return save(next, who.name + ': set from the gallery');
+            })
+            .catch(function (err) {
+              btn.disabled = false;
+              toast('Could not use that one: ' + err.message, 'error');
+            });
+        });
+      }
+
       host.addEventListener('click', function (e) {
+        var pick = e.target.closest && e.target.closest('[data-pick]');
+        if (pick) {
+          if (!guard()) return;
+          var pnum = pick.closest('tr[data-num]').getAttribute('data-num');
+          var pwho = SQUAD.filter(function (x) { return String(x.num) === pnum; })[0];
+          pickFrom(pnum, pwho, frames[slugOf(pwho.name)] || []);
+          return;
+        }
         if (!e.target.matches('[data-drop]')) return;
         if (!guard()) return;
         var num = e.target.closest('tr[data-num]').getAttribute('data-num');
@@ -187,7 +322,7 @@
         });
       });
     });
-  };
+  }
 
   /* ==========================================================================
      DONATIONS

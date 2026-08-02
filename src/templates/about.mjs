@@ -325,7 +325,7 @@ export function about(d) {
           <span class="cta2__glow" aria-hidden="true"></span>
           <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
-          <p class="eyebrow cta2__eyebrow">26/27 · The next chapter</p>
+          <p class="eyebrow cta2__eyebrow">${esc(d.nextSeason)} · The next chapter</p>
           <h2 class="h2" id="ab-cta-h">Pull on the <span class="volt">shirt.</span></h2>
           <p class="cta2__sub">Trials, volunteering, media and sponsorship. All open for the new season.</p>
           <div class="cta2__btns">

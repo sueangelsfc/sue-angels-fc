@@ -47,14 +47,19 @@ const dayMonthYear = (str) => {
 };
 
 /* Reference strip on the right of each section rail, cycled as the reference
-   does. */
-const RAIL_REF = [
+   does. The season is filled in by the caller rather than typed, so this
+   line does not quietly become a claim about a year that has been and gone. */
+const railRefs = (d) => [
   'Est. 2025',
-  'League Eight · 26/27',
+  `${CLUB.nextDivision} · ${d.nextSeason}`,
   'The Reeves, Hanworth',
   '51.43° N / 0.40° W',
   'P18 W18 · Unbeaten',
 ];
+/* Filled in by home() before anything renders. The season used to be typed
+   into the list, which made a strip of quiet reference marks carry a claim
+   about a year that would go out of date on its own. */
+let RAIL_REF = railRefs({ nextSeason: '' });
 
 const rail = (n, label) => `<div class="xrail" aria-hidden="true">
       <span class="xrail__l"><span class="xrail__n">${esc(String(n).padStart(2, '0'))}</span><span class="xrail__t">${esc(label)}</span></span>
@@ -130,6 +135,7 @@ function bars(values, { max, min = 2, fill } = {}) {
 }
 
 export function home(d) {
+  RAIL_REF = railRefs(d);
   const all = teamSummary(d.played);
   const league = teamSummary(d.played.filter((m) => m.competition === CLUB.division));
   /* The form strip reads left to right in the order the games were played. */
@@ -143,7 +149,12 @@ export function home(d) {
   const scored = ordered.filter((m) => m.countsGoals);
   const recent = d.played.slice().sort((a, b) => (b.iso || '').localeCompare(a.iso || '')).slice(0, 7);
   const news = d.articles.slice(0, 6);
-  const next = d.fixtures.slice().sort((a, b) => (a.iso || '').localeCompare(b.iso || ''))[0] || NEXT_FIXTURE;
+  /* THE NEXT MATCH IS THE NEXT ONE, not the earliest one on the list. This
+     used to take the first fixture by date whether or not that date had been
+     and gone, so the morning after a game the home page still led with it and
+     the countdown beside it ran backwards. dataset.mjs works it out once and
+     every page that needs it reads the same answer. */
+  const next = d.nextFixture || NEXT_FIXTURE;
 
   /* ================= HERO ================= */
   const navGroups = NAV_TREE.map((item) => `<div class="hx__navgrp">
@@ -715,7 +726,7 @@ export function home(d) {
           <span class="cta2__glow" aria-hidden="true"></span>
           <img class="cta2__badge" src="${STAR}" alt=""${sizeAttrs(STAR)} aria-hidden="true" loading="lazy" decoding="async" />
           <div class="cta2__glass glassbox">
-            <p class="eyebrow cta2__eyebrow">26/27 · The next chapter</p>
+            <p class="eyebrow cta2__eyebrow">${esc(d.nextSeason)} · The next chapter</p>
             <h2 class="h1b" id="cta-h">Pull on the shirt<span class="volt">.</span></h2>
             <p class="cta2__sub">Trials, volunteering, media and sponsorship. All open for the new season.</p>
             <div class="cta2__btns">

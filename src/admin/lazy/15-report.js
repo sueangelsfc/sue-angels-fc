@@ -215,7 +215,23 @@
        where there is nobody to instruct. */
     var BRIEF = /^\s*(highlight|include|mention|add|write|make sure|ensure|focus on|talk about|cover)\b/i;
     var bullets = (c.bullets || []).filter(function (b) { return !BRIEF.test(b); });
-    var notes = placeNotes(bullets, scorerNames.concat(c.motm ? [c.motm] : []));
+    /* EVERY MAN WHO PLAYED, not only the ones who scored.
+
+       A note naming a player was matched against the scorers and the Player
+       of the Match and nobody else, so this:
+
+         "Jeev impressed in the first half, Stewart was given the armband and
+          looked rusty, Harry brought that engine in the middle"
+
+       - which is the best material in a coach's notes and the part a reader
+       actually wants - matched nothing and fell into the undifferentiated
+       middle. The eleven who played are all on the team sheet. */
+    var everyone = scorerNames
+      .concat(c.motm ? [c.motm] : [])
+      .concat((c.lineup || []).map(function (p) { return p.name; }))
+      .concat(c.keeper ? [c.keeper] : [])
+      .concat(c.captain ? [c.captain] : []);
+    var notes = placeNotes(bullets, everyone);
 
     /* DID HE ALREADY SAY IT. The report announced the head-to-head under a
        note reading "Pure Football will also compete in our league", said "the
@@ -435,13 +451,24 @@
        write next. Every clause is a stored figure. */
     if (c.players && c.players.length) paras.push(c.players.join(' '));
 
-    /* ---- The rest of what the coach said ----
-       Whatever did not attach to a goal or to the start or the end: the run of
-       play, which is where a report puts it. Anything still keyed to a name
-       goes here too, so nothing typed is ever silently dropped. */
-    Object.keys(notes.byName).forEach(function (n) {
-      notes.middle = notes.middle.concat(notes.byName[n]);
+    /* ---- How they played ----
+       What is left keyed to a name belongs to a player who did not score, and
+       that is a passage in its own right rather than filler in the run of
+       play: it is the part of a report where somebody says who was good.
+       Kept in the order the team sheet is in, so it reads back to front like
+       a team does. */
+    var order = (c.lineup || []).map(function (p) { return p.name; });
+    var rated = Object.keys(notes.byName).sort(function (a, b) {
+      var ai = order.indexOf(a), bi = order.indexOf(b);
+      return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi);
     });
+    var ratings = [];
+    rated.forEach(function (nm) { ratings = ratings.concat(notes.byName[nm]); });
+    if (ratings.length) {
+      for (var rr = 0; rr < ratings.length; rr += 3) {
+        his(ratings.slice(rr, rr + 3).join(' '));
+      }
+    }
     if (notes.middle.length) {
       for (var b = 0; b < notes.middle.length; b += 2) {
         his(notes.middle.slice(b, b + 2).join(' '));
@@ -497,6 +524,14 @@
     /* Where this one sits in pre-season, which is the difference between a
        result and a run of them. Only said when there is a run: "the first of
        one" is not a fact worth printing. */
+    /* What comes next, unless he has already said it. */
+    if (c.next && !said(/next up|next game|next match|on sunday|this week/i)) {
+      var nx = c.next;
+      paras.push('Next up ' + (nx.home ? 'is a home game with ' : 'is a trip to ') + nx.opponent
+        + (nx.date ? ' on ' + nx.date : '')
+        + (nx.inWeek > 2 ? ', the first of ' + say(nx.inWeek) + ' inside a week.' : '.'));
+    }
+
     if (c.motm && !said(/player of the match|man of the match|motm/i)) {
       paras.push(pick([
         c.motm + ' was named Player of the Match.',
@@ -783,12 +818,45 @@
     });
   }
 
+  /* WHAT IS NEXT, which is how a match report ends and which nobody should be
+     typing. "The game against Galacticos on Sunday will be the first of three
+     within the week" is three facts the fixture list already holds: who, when,
+     and how many are packed into the days after. */
+  function nextUp(all, fixtures, thisIso, thisId) {
+    if (!thisIso) return null;
+    var seen = {};
+    var later = (all || []).concat(fixtures || [])
+      .map(function (m) {
+        return { id: m.id, iso: isoOf(m), home: m.home, away: m.away, date: m.date || '' };
+      })
+      .filter(function (m) {
+        if (!m.iso || m.iso <= thisIso || m.id === thisId) return false;
+        var k = m.iso + '|' + String(m.id).replace(/^[a-z]/, '');
+        if (seen[k]) return false;
+        seen[k] = 1; return true;
+      })
+      .sort(function (a, b) { return a.iso.localeCompare(b.iso); });
+    if (!later.length) return null;
+    var next = later[0];
+    /* How many more inside a week of it, because three games in seven days is
+       the story and one game is not. */
+    var week = new Date(next.iso + 'T00:00:00Z').getTime() + 7 * 86400000;
+    var inWeek = later.filter(function (m) {
+      return new Date(m.iso + 'T00:00:00Z').getTime() < week;
+    }).length;
+    return {
+      opponent: isUs(next.home) ? next.away : next.home,
+      home: isUs(next.home), date: next.date, iso: next.iso, inWeek: inWeek,
+    };
+  }
+
   function context(all, fixtures, c, history) {
     var iso = c && c.iso ? c.iso : '';
     return {
       h2h: headToHead(all, c && c.opp, iso, c && c.id),
       friendlyOf: friendlyOrder(all, fixtures, iso, c && c.id, c && c.competition),
       players: playerNotes(c || {}, history || null),
+      next: nextUp(all, fixtures, iso, c && c.id),
     };
   }
 

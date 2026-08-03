@@ -1621,6 +1621,7 @@
           facts.h2h = ctx.h2h;
           facts.friendlyOf = ctx.friendlyOf;
           facts.players = ctx.players;
+          facts.next = ctx.next;
           return window.CPR.write(facts, {
             token: CP.state.session && CP.state.session.access_token,
           });

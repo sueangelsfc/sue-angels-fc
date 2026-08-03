@@ -1083,6 +1083,54 @@ for (const [f, kb] of Object.entries(BUDGET)) {
       `opens with: ${noted.slice(0, 50)}`);
   }
 
+  /* A NOTE ABOUT A PLAYER WHO DID NOT SCORE.
+
+     Names were matched against the scorers and the Player of the Match and
+     nobody else, so the best material a coach writes - "Jeev impressed in the
+     first half, Stewart looked rusty, Harry brought that engine in the middle"
+     - matched nothing and fell into the undifferentiated run of play. Every
+     man on the team sheet is matchable now, and what is left keyed to a name
+     is its own passage, in team-sheet order.
+
+     And what comes next is derived, not typed: the fixture list holds who,
+     when, and how many are packed into the following week. */
+  {
+    const w3 = {};
+    new Function('window', 'fetch', reportChunk)(w3, () => Promise.reject(new Error('offline')));
+    const seedRaw3 = fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8');
+    const SEED3 = JSON.parse(seedRaw3.replace(/^window\.SA_SEED=/, '').replace(/;\s*$/, ''));
+    const base = {
+      us: 'Us', opp: 'Them', kind: 'score', home: true, ourGoals: 1, theirGoals: 0,
+      goals: [{ name: 'Ade Owolona', minute: 30 }], roles: [], cleanSheet: [], yellows: [],
+      reds: [], pensSaved: [], saves: 0, captain: 'Stewart Luwawa', keeper: 'Luke Munns',
+      lineup: [{ name: 'Luke Munns' }, { name: 'Jeev Thilaganathan' },
+        { name: 'Stewart Luwawa' }, { name: 'Ade Owolona' }],
+      unused: [],
+      bullets: ['Jeev impressed in the first half.',
+        'Stewart was given the armband and looked rusty.',
+        'Luke pulled a string of saves in both halves.'],
+    };
+    const out3 = w3.CPR.compose(base);
+    for (const who of ['Jeev', 'Stewart', 'Luke']) {
+      check(`a note about ${who}, who did not score, survives`, out3.includes(who),
+        'the coach’s best material was dropped into the run of play');
+    }
+    /* Team-sheet order: the goalkeeper's line before the midfielders'. */
+    check('player notes read in team-sheet order',
+      out3.indexOf('Luke pulled') < out3.indexOf('Jeev impressed')
+      && out3.indexOf('Jeev impressed') < out3.indexOf('Stewart was given'),
+      'a report should read back to front like a team does');
+
+    const ctx3 = w3.CPR.context(SEED3.matches, SEED3.baselineFixtures,
+      { iso: '2026-08-02', id: 'r20260802-pure', opp: 'Pure Football FC 2.0',
+        competition: 'Pre-season friendly', goals: [] }, SEED3.history);
+    check('what comes next is derived from the fixture list',
+      !!ctx3.next && ctx3.next.opponent === 'Galacticos Elect' && ctx3.next.home === false,
+      JSON.stringify(ctx3.next));
+    check('the next fixture is not the one just played',
+      !ctx3.next || ctx3.next.iso > '2026-08-02');
+  }
+
   check('report writer says which one wrote it',
     /composed/.test(reportChunk) && /written/.test(matchChunk + reportChunk),
     'the club cannot tell a composed report from a written one');

@@ -373,9 +373,15 @@
         { head: '', list: events.filter(function (e) { return e.minute <= 45; }) },
         { head: '', list: events.filter(function (e) { return e.minute > 45; }) },
       ];
+      /* Three to a paragraph, EXCEPT where that would leave one on its own.
+         Four moments in a half came out three-then-one, so "Thilaganathan
+         booked for a late one in midfield" sat as a one-line paragraph. Split
+         evenly instead: four go two and two. */
       halves.forEach(function (half) {
-        for (var q = 0; q < half.list.length; q += 3) {
-          paras.push(half.list.slice(q, q + 3).map(function (e) { return e.text; }).join(' '));
+        var list = half.list;
+        var per = (list.length % 3 === 1 && list.length > 3) ? 2 : 3;
+        for (var q = 0; q < list.length; q += per) {
+          paras.push(list.slice(q, q + per).map(function (e) { return e.text; }).join(' '));
         }
       });
       /* Anything with no minute still has to be told, but as one sentence

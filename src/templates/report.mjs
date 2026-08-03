@@ -18,7 +18,7 @@ import { CLUB } from '../lib/club.mjs';
 import { fmtDate, isUs, matchTimeline } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
 import { articleBody } from './news.mjs';
-import { reportText, hasReport as hasReportOf } from '../lib/prose.mjs';
+import { reportText, hasReport as hasReportOf, FRIENDLY_NOTE } from '../lib/prose.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -116,6 +116,7 @@ export function matchReport(m, d) {
           <span>${esc(m.neutral ? `${m.venue} (neutral)` : m.venue || m.homeAway)}</span>
         </p>
         ${m.resultNote ? `<p class="mr-note">${esc(m.resultNote)}.</p>` : ''}
+        ${m.friendly ? `<p class="mr-note is-flag">${esc(FRIENDLY_NOTE)}</p>` : ''}
       </div>
     </section>`;
 

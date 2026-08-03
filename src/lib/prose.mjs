@@ -117,3 +117,26 @@ export function houseRecord(value, key) {
   }
   return value;
 }
+
+/* ==========================================================================
+   WHAT A FRIENDLY COUNTS FOR, said in one place.
+
+   The rule itself lives in stats.mjs (`isFriendly`) and it is applied
+   everywhere it should be: a friendly reaches no club total, no player total,
+   no league table and no club record. What was missing is that the site never
+   SAID so, and in one place said the opposite. Ade Owolona started, scored
+   and made one on 2 August 2026; his profile's 26/27 panel read "Nothing has
+   been played in 26/27 that we hold a team sheet for."
+
+   A page is entitled to exclude something. It is not entitled to deny it
+   happened. So the exclusion is stated wherever a friendly's figures are in
+   view, and the empty state now distinguishes a season that has not started
+   from one whose only match does not count.
+
+   Defined here rather than typed into four templates, for the reason every
+   other shared string is: two of them would drift, and the one on the match
+   card would be the one nobody re-read. */
+export const FRIENDLY_FLAG = 'Friendly · not counted';
+export const FRIENDLY_NOTE = 'Friendlies stand on their own. Nothing from this match counts '
+  + 'towards any club or player record on this site.';
+export const FRIENDLY_NOTE_SHORT = 'Friendlies count towards no club or player record here.';

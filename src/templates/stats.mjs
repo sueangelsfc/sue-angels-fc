@@ -52,7 +52,14 @@ export function stats(d) {
   const shotFor = (num) => (d.shotFor ? d.shotFor(num, d.currentSeason) : '');
   const squad = d.squad || [];
   const byNum = new Map(squad.map((p) => [p.num, p]));
-  const played = (d.played || []).filter((m) => m.played);
+  /* COMPETITIVE ONLY. This whole page is player records, and it was built
+     over `d.played`, which includes friendlies: the club's all-time goals
+     printed as 139 against the 137 every other page derives, and a 26/27 tab
+     offered "2 goals, shared between 2 players" from a pre-season friendly
+     that counts towards nothing. A player's own profile has always excluded
+     them, so the same man's totals disagreed with themselves across two
+     pages. `d.competitive` is the list every figure is counted from. */
+  const played = (d.competitive || []).filter((m) => m.played);
 
   /* One stats table per competition, plus the combined one. Computed here so
      the browser never has to, and so the figures come from the same engine as

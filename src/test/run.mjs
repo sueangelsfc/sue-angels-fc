@@ -1515,6 +1515,77 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     offenders.length === 0, [...new Set(offenders)].slice(0, 3).join('; '));
 }
 
+/* ==========================================================================
+   A FRIENDLY COUNTS TOWARDS NOTHING, AND THE SITE SAYS SO
+
+   The rule was implemented and unstated, which is half a rule. One pre-season
+   friendly put the club's all-time goals at 139 on the records page and the
+   stats page while every other page derived 137; the awards page drew Man of
+   the Match "from the 26 matches of 34"; and the profile of a man who had
+   started, scored and made one on 2 August told readers that nothing had been
+   played in 26/27 that we hold a team sheet for.
+
+   Three things are asserted here, and each of them failed before the fix:
+     1. No page publishes a club figure that includes a friendly.
+     2. Every played friendly says on its own card and its own page that it
+        counts towards nothing.
+     3. No player page denies a season in which that player played a friendly.
+   ========================================================================== */
+{
+  const { buildDataset: bdF } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const DF = bdF();
+  const PAGES = Object.fromEntries(pages);
+  const friendlies = (DF.played || []).filter((m) => m.friendly);
+  const competitive = (DF.competitive || []);
+  check('there is a friendly to test against', friendlies.length > 0,
+    'no friendly in the dataset: the checks below would pass vacuously');
+
+  /* 1. The club's own totals, derived the way every page should derive them. */
+  const clubGoals = competitive.reduce((n, m) => n + (m.ourGoals || 0), 0);
+  const inflated = competitive.reduce((n, m) => n + (m.ourGoals || 0), 0)
+    + friendlies.reduce((n, m) => n + (m.ourGoals || 0), 0);
+  if (friendlies.length && inflated !== clubGoals) {
+    for (const [f, h] of Object.entries(PAGES)) {
+      const text = h.replace(/<script[\s\S]*?<\/script>/g, '').replace(/<[^>]+>/g, ' ');
+      check(`${f}: no club goal total inflated by a friendly`,
+        !new RegExp(`\\b${inflated}\\b\\s*(goals|Goals)`).test(text),
+        `prints ${inflated}; the competitive figure is ${clubGoals}`);
+    }
+  }
+
+  /* 2. Said on the card and on the page. */
+  for (const m of friendlies) {
+    const page = PAGES[`matches/${m.id}.html`];
+    check(`matches/${m.id}.html: says a friendly counts towards nothing`,
+      !!page && page.includes('counts towards any club or player record'),
+      'the match page carries no such note');
+  }
+  const res = PAGES['results.html'] || '';
+  const cards = res.match(/<li class="mt[^"]*"[\s\S]*?<\/li>/g) || [];
+  const friendlyCards = cards.filter((c) => /data-comp="[^"]*friendly/.test(c));
+  check('results: every played friendly card carries the flag',
+    friendlyCards.length > 0
+      && friendlyCards.every((c) => c.includes('Friendly · not counted')),
+    `${friendlyCards.filter((c) => !c.includes('Friendly · not counted')).length} of ${friendlyCards.length} unflagged`);
+
+  /* 3. A player page may exclude a friendly. It may not deny it happened. */
+  const denials = [];
+  for (const m of friendlies) {
+    const sheet = [...((m.detail && m.detail.starters) || []),
+      ...((m.detail && m.detail.bench) || [])];
+    for (const s of sheet) {
+      const p = (DF.squad || []).find((x) => String(x.num) === String(s.num));
+      if (!p || !p.slug) continue;
+      const h = PAGES[`players/${p.slug}.html`];
+      if (h && h.includes(`Nothing has been played in ${m.season}`)) {
+        denials.push(`${p.slug} played a friendly in ${m.season} and the page says none was`);
+      }
+    }
+  }
+  check('no player page denies a season it holds a team sheet for',
+    denials.length === 0, denials.slice(0, 3).join('; '));
+}
+
 /* ---- Report ---- */
 console.log(`\n${'='.repeat(66)}`);
 if (warns.length) {

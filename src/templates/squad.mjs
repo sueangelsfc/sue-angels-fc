@@ -264,11 +264,14 @@ export function squad(d) {
      how many matches those figures were counted from. "26/27 · 23 players ·
      no matches yet" is the honest label for a season in July, and it is why
      every figure under that tab is a nought rather than a bug. */
-  const playedIn = (n) => (d.played || []).filter((m) => m.season === n).length;
+  /* Competitive, because the figures the tab is promising are. Counting a
+     pre-season friendly here labelled 26/27 "1 match" above a set of noughts,
+     which reads as a bug rather than as a season that has not started. */
+  const playedIn = (n) => (d.competitive || []).filter((m) => m.season === n).length;
   const seasonTabs = VIEWS.length > 1 ? `<div class="sq-seasons" data-season-filter role="group"
         aria-label="Season">
         ${VIEWS.map((v, i) => {
-    const games = v === 'all' ? (d.played || []).length : playedIn(v);
+    const games = v === 'all' ? (d.competitive || []).length : playedIn(v);
     /* WHAT THE TAB PRODUCES, which is the only thing a tab can honestly
        promise: the number of players it will put on the page. It is the same
        figure the "All" chip carries and the same as the position chips sum
@@ -335,7 +338,7 @@ export function squad(d) {
      tab's, which is the season the page opens on) and follows it when it
      runs. */
   const heroFor = (v) => {
-    const played = (d.played || []).filter((m) => v === 'all' || m.season === v);
+    const played = (d.competitive || []).filter((m) => v === 'all' || m.season === v);
     const lg = teamSummary(played.filter((m) => m.competition === CLUB.division));
     /* WHICH POOL the figures describe, and it is not the same question in
        August as it is in May.

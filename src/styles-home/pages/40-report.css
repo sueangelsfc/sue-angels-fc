@@ -34,6 +34,11 @@
 .mr-meta__res--d{border-color: rgba(var(--lift), 0.3); color: var(--fg);}
 .mr-meta__res--l{opacity: 0.62;}
 .mr-note{margin-top: 12px; font-size: 13.5px; color: var(--ink-3);}
+/* A friendly's caveat. Reads as a note, not an alarm: the result stands, it
+   just counts towards nothing. Orange is the only accent hue, so weight and a
+   rule carry the emphasis rather than a second colour. */
+.mr-note.is-flag{margin-inline: auto; max-width: 46ch; padding-top: 10px;
+  border-top: 1px solid var(--line-d); font-weight: 600; color: var(--ink-2);}
 
 /* ---- Goals, assists, motm ------------------------------------------------ */
 .mr-cols{display: grid; gap: 10px; margin-top: clamp(18px, 2.4vw, 26px);

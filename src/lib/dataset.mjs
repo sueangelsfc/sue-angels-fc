@@ -506,6 +506,29 @@ export function buildDataset() {
     );
   }
 
+  /* WHAT SOMEBODY DID IN A FRIENDLY, kept apart rather than thrown away.
+
+     No figure on this site counts it and that does not change. But the player
+     page said "Nothing has been played in 26/27 that we hold a team sheet
+     for" on the profile of a man who had started, scored and made one on 2
+     August, because the only sentence it had was written for a season that
+     has not begun. Excluding a match from the figures is right; saying it did
+     not happen is not.
+
+     Same engine, same shape as `playersBySeason`, over the other list. */
+  const friendliesBySeason = {};
+  for (const name of (ps.ALL_SEASONS || [])) {
+    friendliesBySeason[name] = new Map(
+      playerStats(friendlies.filter((m) => m.season === name), squad, trialists)
+        .filter((p) => p.starts || p.subApps)
+        .map((p) => [p.num, p]),
+    );
+  }
+  const friendlyFor = (num, season) => {
+    const rows = friendliesBySeason[season];
+    return (rows && rows.get(Number(num))) || null;
+  };
+
   /* WHO WAS ACTUALLY HERE, PER SEASON, from the team sheets.
      This is the evidence the status record leans on. A player named in a
      match that season was at the club that season, whatever anybody has or
@@ -892,7 +915,7 @@ export function buildDataset() {
        control panel needs it to pre-fill a match whose scoreline still comes
        from the code baseline rather than from a row it can edit. */
     rawMatches: rawResults,
-    squad, players, playersBySeason, statsByNum, nameFor,
+    squad, players, playersBySeason, statsByNum, nameFor, friendlyFor,
     /* What each player was in each season, and the helpers that read it. A
        page asking "what was he in 25/26" gets an answer about 25/26 rather
        than about today. */

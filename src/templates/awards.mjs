@@ -89,8 +89,12 @@ export function awards(d) {
   const nameOf = (num) => (byNum.get(num) || {}).name || `No. ${num}`;
   const posOf = (num) => readablePos((byNum.get(num) || {}).position);
 
-  const ordered = d.played.slice().sort((a, b) => (b.iso || '').localeCompare(a.iso || ''));
-  const leagueGames = d.played.filter((m) => m.competition === CLUB.division);
+  /* Competitive only: the Man of the Match line reads "drawn from the 26
+     matches of 34 that carry one", and a pre-season friendly was in the 34
+     while carrying no award and counting towards nothing. A denominator has
+     to be the population it is describing. */
+  const ordered = (d.competitive || []).slice().sort((a, b) => (b.iso || '').localeCompare(a.iso || ''));
+  const leagueGames = (d.competitive || []).filter((m) => m.competition === CLUB.division);
   const league = teamSummary(leagueGames);
 
   const recognition = d.recognition || [];
@@ -164,7 +168,8 @@ export function awards(d) {
      The hero and the closing call to action stay outside it: neither is a
      claim about a particular season. See src/lib/seasons.mjs. */
   const bodyFor = (view) => {
-  const scope = view.matches;
+  /* Competitive: this is the denominator under "drawn from N matches of M". */
+  const scope = view.competitive;
   const seasonLabel = view.key === 'all' ? 'every season' : view.label;
   const inView = (r) => view.key === 'all' || String(r.season || '') === view.key;
   const potm = ALL_RECOGNITION.filter((r) => r.type === 'potm').filter(inView);

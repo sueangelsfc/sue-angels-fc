@@ -96,5 +96,16 @@ export function seasonPanels(views, active, render, { attr } = {}) {
 export function matchNote(v) {
   const n = v.matches.length;
   if (!n) return 'Not started';
-  return `${n} match${n === 1 ? '' : 'es'}`;
+  /* NAMES BOTH KINDS WHEN THERE ARE BOTH. Every page using this bar counts
+     its figures from `competitive`, so a chip reading "34 matches" above a
+     record built from 33 was over-promising by exactly one pre-season
+     friendly, and 26/27 read "1 match" above a screen of noughts. Saying
+     "33 matches · 1 friendly" is true wherever the bar appears: on results,
+     which lists both, and on records and awards, which count one. */
+  const c = (v.competitive || v.matches).length;
+  const f = (v.friendlies || []).length;
+  const matches = (k) => `${k} match${k === 1 ? '' : 'es'}`;
+  const friendlies = `${f} friendl${f === 1 ? 'y' : 'ies'}`;
+  if (!f) return matches(c);
+  return c ? `${matches(c)} · ${friendlies}` : friendlies;
 }

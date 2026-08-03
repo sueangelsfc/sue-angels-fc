@@ -30,7 +30,7 @@ import { CLUB } from '../lib/club.mjs';
 import { teamSummary, fmtDate } from '../lib/stats.mjs';
 import { seasonViews, defaultView, seasonBar, seasonPanels, matchNote } from '../lib/seasons.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
-import { hasReport as hasWrittenReport } from '../lib/prose.mjs';
+import { hasReport as hasWrittenReport, FRIENDLY_FLAG, FRIENDLY_NOTE_SHORT } from '../lib/prose.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -148,6 +148,10 @@ function matchesPage(d, mode) {
     : m.decidedOnPenalties
       ? `<p class="mt__note is-flag">Level after ninety · decided on penalties</p>`
       : scorers.length ? `<p class="mt__scorers">${scorers.map((s) => esc(s)).join(', ')}</p>` : ''}
+            ${/* Sits alongside the scorers rather than instead of them: a friendly
+                  has both a scoreline and a caveat, and the walkover branch above
+                  is an either/or because a walkover has no scorers to print. */
+    m.played && m.friendly ? `<p class="mt__note is-flag">${esc(FRIENDLY_FLAG)}</p>` : ''}
             <footer class="mt__foot">
               <span>${esc(shortComp(m.competition))}</span>
               <span class="mt__where">${m.weAreHome ? 'Home' : 'Away'}${m.played && hasReport ? ' · Report' : ''}</span>
@@ -198,9 +202,13 @@ function matchesPage(d, mode) {
       return `<p class="mt-rec__none">No ${esc(v.label)} competitive match has been played yet${f
     ? `, though ${f === 1 ? 'a friendly has' : `${f} friendlies have`} been`
     : ''}. The record fills in here as results come in.
-          ${f ? 'Friendlies stand on their own and count towards nothing here.' : ''}</p>`;
+          ${f ? esc(FRIENDLY_NOTE_SHORT) : ''}</p>`;
     }
     const wdl = Math.max(1, sum.won + sum.drawn + sum.lost);
+    /* A season holding both kinds shows figures for one of them. The count
+       above says "competitive"; this says what was left out, in the same
+       breath as the walkover line below and for the same reason. */
+    const fr = (v.friendlies || []).length;
     const big = v.matches.filter((m) => m.countsGoals)
       .slice().sort((a, b) => (b.ourGoals - b.theirGoals) - (a.ourGoals - a.theirGoals))[0];
     /* .rv earns its place: `.mt-rec.is-in .mt-rec__bar li` is what gives the
@@ -221,6 +229,9 @@ function matchesPage(d, mode) {
             ${big.weAreHome ? 'at home to' : 'away at'} ${esc(shortClub(big.opponent))},
             ${esc(fmtDate(big.date, { long: true }))}.
             ${sum.walkovers ? `${esc(sum.walkovers)} of the ${esc(sum.played)} were awarded as walkovers and carry no score.` : ''}</p>` : ''}
+          ${fr ? `<p class="mt-rec__note">These figures are competitive matches only.
+            ${fr === 1 ? 'One friendly was' : `${esc(fr)} friendlies were`} also played.
+            ${esc(FRIENDLY_NOTE_SHORT)}</p>` : ''}
         </div>`;
   };
 
@@ -294,13 +305,20 @@ function matchesPage(d, mode) {
     ];
   })(), 'venue')}
             ${chipRow('Result', (() => {
-    const c = (key) => VIEWS.map((v) => ` data-n-${v.id}="${attr(teamSummary(v.competitive)[key] || 0)}"`).join('');
-    const s0 = teamSummary(VIEWS[DEFAULT].competitive);
+    /* COUNTED OVER THE SAME LIST THE FILTER ACTS ON, which is `matches` and
+       not `competitive`. These were a teamSummary of the competitive list, so
+       "Wins 29" sat above a press that produced thirty cards: every card in
+       this grid carries data-result, the friendly included, because the grid
+       lists friendlies. The record band above counts `competitive` and now
+       says so; a chip is a promise about what pressing it finds. */
+    const n = (v, o) => v.matches.filter((m) => m.outcome === o).length;
+    const c = (o) => VIEWS.map((v) => ` data-n-${v.id}="${attr(n(v, o))}"`).join('');
+    const v0 = VIEWS[DEFAULT];
     return [
       { label: 'Any result', value: 'all' },
-      { label: 'Wins', value: 'wins', n: s0.won, counts: c('won'), hidden: !s0.won },
-      { label: 'Draws', value: 'draws', n: s0.drawn, counts: c('drawn'), hidden: !s0.drawn },
-      { label: 'Losses', value: 'losses', n: s0.lost, counts: c('lost'), hidden: !s0.lost },
+      { label: 'Wins', value: 'wins', n: n(v0, 'W'), counts: c('W'), hidden: !n(v0, 'W') },
+      { label: 'Draws', value: 'draws', n: n(v0, 'D'), counts: c('D'), hidden: !n(v0, 'D') },
+      { label: 'Losses', value: 'losses', n: n(v0, 'L'), counts: c('L'), hidden: !n(v0, 'L') },
     ];
   })(), 'result')}
           </div>

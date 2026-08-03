@@ -38,6 +38,7 @@ import { CLUB } from '../lib/club.mjs';
 import { BODY_PARTS, ZONES, SITUATIONS, ASSIST_TYPES } from '../lib/football.mjs';
 import { POSITION_LABEL, POSITION_XY, positionName } from '../lib/positions.mjs';
 import { playerProfile, fmtDate } from '../lib/stats.mjs';
+import { FRIENDLY_NOTE_SHORT } from '../lib/prose.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
@@ -382,13 +383,33 @@ export function playerPage(p, d) {
   /* A season with no matches in the record. Said plainly, because a grid of
      zeroes reads as a player who contributed nothing rather than as a season
      that has not started. */
-  const emptyPanel = (name) => `<div class="pf-empty">
+  const emptyPanel = (name) => {
+    /* THE SEASON HAS NOT STARTED, or it has and none of it counted. Two
+       different facts, and one sentence was serving for both: this page told
+       a man who started, scored and made one on 2 August that nothing had
+       been played in 26/27 that we hold a team sheet for. We hold his. */
+    const f = d.friendlyFor ? d.friendlyFor(p.num, name) : null;
+    if (f) {
+      const did = [
+        f.goals ? `${f.goals} ${f.goals === 1 ? 'goal' : 'goals'}` : '',
+        f.assists ? `${f.assists} ${f.assists === 1 ? 'assist' : 'assists'}` : '',
+      ].filter(Boolean).join(' and ');
+      return `<div class="pf-empty">
+            <p class="pf-empty__k">${esc(name)}</p>
+            <p class="pf-empty__t">No competitive match yet.</p>
+            <p class="pf-empty__b">${esc(f.starts === 1 ? 'One friendly' : `${f.starts} friendlies`)}
+              in ${esc(name)}${did ? `, ${esc(did)}` : ''}. ${esc(FRIENDLY_NOTE_SHORT)}
+              The figures on this page fill in once the league season starts.</p>
+          </div>`;
+    }
+    return `<div class="pf-empty">
             <p class="pf-empty__k">${esc(name)}</p>
             <p class="pf-empty__t">No matches on record yet.</p>
             <p class="pf-empty__b">Nothing has been played in ${esc(name)} that we hold a team sheet for.
               Every figure on this page is counted from those sheets, so this season fills in as the
               results come in.</p>
           </div>`;
+  };
 
   const seasonPanel = (sn, x, idx) => {
     if (!x.starts && !x.bench) {

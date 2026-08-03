@@ -72,7 +72,13 @@ export function records(d) {
   const DEFAULT = defaultView(VIEWS);
 
   const bodyFor = (view) => {
-  const played = view.matches;
+  /* COMPETITIVE ONLY, because this page is the club's record book. It read
+     `view.matches`, so one pre-season friendly put the club's all-time goals
+     at 139 when the figure every other page derives is 137, and the biggest
+     win, the streaks and the player records were all drawn from a list with a
+     friendly in it. seasons.mjs hands every view both lists for exactly this
+     reason; the results page was the only one taking the right one. */
+  const played = view.competitive;
   const season = view.key === 'all' ? d.currentSeason : view.key;
   const inSeason = view.key === 'all' ? played : played.filter((m) => m.season === season);
   const league = inSeason.filter((m) => m.competition === CLUB.division);

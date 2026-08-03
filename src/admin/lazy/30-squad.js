@@ -387,10 +387,26 @@
             + 'you add them properly above.',
           actions: '<button class="btn btn--primary" data-add-trialist>Add a trialist</button>',
           body: (trialists.length
-            ? table(['Name', 'Added', ''], trialists.map(function (t, i) {
+            ? table(['Name', 'Trial window', 'Still offered', ''], trialists.map(function (t, i) {
+              /* A trial is a window by definition: a few weeks training with
+                 the squad, after which they sign or they do not. Without an
+                 end date a fortnight's trial from two seasons ago sits in
+                 every team-sheet dropdown for good. */
+              var today = new Date().toISOString().slice(0, 10);
+              var over = t.until && today > t.until;
+              var window = (t.from || t.added || '?') + ' to ' + (t.until || 'open');
               return '<tr data-trialist="' + i + '">' +
                 '<td><b>' + esc(t.name) + '</b></td>' +
-                '<td>' + esc(t.added || '') + '</td>' +
+                '<td>' +
+                  '<input class="input input--sm" type="date" data-t-from value="' + esc(t.from || '') + '" ' +
+                    'aria-label="Trial from"> ' +
+                  '<input class="input input--sm" type="date" data-t-until value="' + esc(t.until || '') + '" ' +
+                    'aria-label="Trial until">' +
+                  '<span class="cp-hint">' + esc(window) + '</span>' +
+                '</td>' +
+                '<td>' + (over
+                  ? '<span class="badge badge--warning">Trial over</span>'
+                  : '<span class="badge badge--success">Yes</span>') + '</td>' +
                 '<td><button class="btn btn--quiet btn--sm" data-del-trialist>Remove</button></td>' +
               '</tr>';
             }).join(''))
@@ -430,6 +446,25 @@
       }
 
       host.addEventListener('change', function (e) {
+        /* A trial window, edited in place. Setting an end date is what stops
+           somebody being offered on a team sheet for ever. */
+        var tr = e.target.closest('tr[data-trialist]');
+        if (tr && (e.target.matches('[data-t-from]') || e.target.matches('[data-t-until]'))) {
+          if (!guard()) { refresh('squad'); return; }
+          var ti = Number(tr.getAttribute('data-trialist'));
+          var next = trialists.map(function (t, k) {
+            if (k !== ti) return t;
+            var copy = {};
+            Object.keys(t).forEach(function (key) { copy[key] = t[key]; });
+            var f = tr.querySelector('[data-t-from]').value;
+            var u = tr.querySelector('[data-t-until]').value;
+            if (f) copy.from = f; else delete copy.from;
+            if (u) copy.until = u; else delete copy.until;
+            return copy;
+          });
+          saveTrialists(next, trialists[ti].name + '\u2019s trial window saved');
+          return;
+        }
         var isStatus = e.target.matches('[data-status]');
         var isExtra = e.target.matches('[data-extra]');
         if (!isStatus && !isExtra) return;
@@ -502,8 +537,9 @@
           trialists.forEach(function (t) { used[t.num] = true; });
           var num = 900;
           while (used[num]) num++;
+          var today = new Date().toISOString().slice(0, 10);
           saveTrialists(trialists.concat([{ num: num, name: name,
-            added: new Date().toISOString().slice(0, 10) }]), name + ' can now be picked');
+            added: today, from: today }]), name + ' can now be picked. Set an end date when the trial finishes.');
           return;
         }
         var trow = e.target.closest('tr[data-trialist]');

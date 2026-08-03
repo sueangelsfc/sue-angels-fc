@@ -376,10 +376,107 @@
     .sort(function (a, b) { return a.name.localeCompare(b.name); });
   var SQUAD = (SEED.squad || []).slice().sort(function (a, b) { return a.num - b.num; })
     .concat(TRIALISTS.map(function (t) {
-      return { num: t.num, name: t.name, pos: '', trial: true };
+      return { num: t.num, name: t.name, pos: '', trial: true, from: t.from, until: t.until };
     }));
   var nameOfNum = {};
   SQUAD.forEach(function (p) { nameOfNum[p.num] = p.name; });
+
+  /* ==========================================================================
+     WHO WAS AT THE CLUB THAT DAY
+
+     The team sheet offered all thirty-six players and every trialist who has
+     ever been here, for every match ever, so picking an eleven meant reading
+     past people who left two seasons ago and lads who trialled for a fortnight
+     and were never seen again.
+
+     The test is the MATCH'S OWN DATE, not today's. Filtering on today would
+     mean opening last October's game and finding half the eleven missing from
+     the dropdown, and re-saving it would quietly drop them from the record.
+     A player who left in June was at the club in May, and May's team sheet has
+     to keep saying so.
+
+     Two rules make it safe:
+
+       - Anyone ALREADY on the sheet stays pickable and removable whatever the
+         dates say. A record you cannot edit is worse than one listing somebody
+         who has since left.
+       - No date on the record means no restriction. Nothing already saved has
+         to be filled in before the form works.
+     ========================================================================== */
+  var STATUS = {};      /* roster:status, read live below */
+  var GONE = { retired: 1, departed: 1, staff: 1 };
+
+  /* A season runs Sep to May, so Jun to Aug belongs to the season about to
+     start. Same rule as seasonOf() in stats.mjs. */
+  function seasonOfIso(iso) {
+    var d = new Date(iso + 'T12:00:00Z');
+    if (isNaN(d)) return null;
+    var y = d.getUTCFullYear();
+    var start = d.getUTCMonth() >= 5 ? y : y - 1;
+    return String(start).slice(2) + '/' + String(start + 1).slice(2);
+  }
+
+  /* The status entry for a player in a season: a key, or a key with the
+     club's own detail beside it. Kept in step with squad-status.mjs. */
+  function entryFor(num, season) {
+    var rec = STATUS[String(num)];
+    if (!rec || typeof rec !== 'object') return null;
+    var seasons = SEED.seasons || [];
+    if (rec[season]) return rec[season];
+    for (var i = seasons.indexOf(season) - 1; i >= 0; i--) {
+      if (rec[seasons[i]]) return rec[seasons[i]];
+    }
+    return null;
+  }
+
+  /* The date the form is showing. Read from the field rather than from the
+     record, so changing the date changes who is offered without a reload. */
+  function matchIso() {
+    var el = document.getElementById('m-date');
+    return (el && el.value) || '';
+  }
+
+  /* WHO THE FORM OFFERS, in one place for every dropdown on it.
+
+     `keep` is whoever is already recorded in that field, and they stay in the
+     list however long ago they left: dropping a stored captain out of his own
+     dropdown would blank him on the next save. `skip` is everybody already on
+     a list, so the same player cannot be added to the eleven twice. */
+  function pickable(keep, skip) {
+    var when = matchIso();
+    var out = skip || {};
+    return SQUAD.filter(function (p) {
+      if (out[p.num]) return false;
+      return availableOn(p, when) || String(p.num) === String(keep);
+    });
+  }
+
+  function availableOn(p, iso) {
+    if (!iso) return true;
+
+    /* A trialist has a window. Outside it they are not offered, which is what
+       stops a fortnight's trial from three seasons ago sitting in the list
+       for good. */
+    if (p.trial) {
+      if (p.from && iso < p.from) return false;
+      if (p.until && iso > p.until) return false;
+      return true;
+    }
+
+    var season = seasonOfIso(iso);
+    if (!season) return true;
+    var entry = entryFor(p.num, season);
+    if (!entry) return true;
+    var key = typeof entry === 'string' ? entry : (entry.key || '');
+    if (!GONE[key]) return true;
+
+    /* Gone, but WHEN. A leaving date makes this exact: somebody who left in
+       June is still pickable for a match in May of the same season. Without
+       one the season is the only granularity there is, and being gone in a
+       season means gone for it. */
+    var from = (typeof entry === 'object' && entry.from) || '';
+    return from ? iso < from : false;
+  }
 
   /* ---- Picking a player --------------------------------------------------
      This was thirty-four name buttons in a wrapping wall, repeated six times
@@ -393,12 +490,39 @@
      list is the answer to "who is in", which is the question being asked. */
   function nameOf(num) { return nameOfNum[num] || ('Player ' + num); }
 
+  /* ADDING A TRIALIST WITHOUT LEAVING THE TEAM SHEET.
+
+     A trialist was added in Squad and staff and only then appeared here, which
+     is the wrong way round: you find out somebody is a trialist while you are
+     typing the team sheet he played in, and being sent to another screen to
+     add him is how he ends up recorded as "No. 901" instead.
+
+     The window is asked for at the same time, because it is known at the same
+     time and never will be again. Left empty it means no restriction, so this
+     never blocks anybody in a hurry. */
+  function addTrialistRow(field) {
+    return '<details class="cp-newtrial"><summary>Somebody on trial?</summary>' +
+      '<div class="cp-newtrial__body">' +
+        '<input class="input input--sm" data-nt-name placeholder="Their name" aria-label="Trialist name">' +
+        '<label class="cp-newtrial__f"><span>Trial from</span>' +
+          '<input class="input input--sm" type="date" data-nt-from></label>' +
+        '<label class="cp-newtrial__f"><span>Trial until</span>' +
+          '<input class="input input--sm" type="date" data-nt-until></label>' +
+        '<button type="button" class="btn btn--ghost btn--sm" data-nt-add ' +
+          'data-nt-field="' + esc(field) + '">Add and pick him</button>' +
+      '</div>' +
+      '<p class="field__hint">He gets a number from 900 up, plays in this match like anybody '
+        + 'else, and appears in no club record. Leave the dates empty if you do not know them '
+        + 'yet; with an end date he stops being offered once the trial is over.</p>' +
+    '</details>';
+  }
+
   function pickerSelect(field, label, hint, chosen) {
     /* Somebody already on the list is dropped from the dropdown, so the same
        player cannot be added to the eleven twice. */
     var on = {};
     (chosen || []).forEach(function (n) { on[n] = true; });
-    var free = SQUAD.filter(function (p) { return !on[p.num]; });
+    var free = pickable(null, on);
     return '<div class="field">' +
       '<label class="field__label" for="add-' + esc(field) + '">' + esc(label) + '</label>' +
       '<select class="select" id="add-' + esc(field) + '" data-add="' + esc(field) + '"' +
@@ -410,6 +534,7 @@
         }).join('') +
       '</select>' +
       (hint ? '<p class="field__hint">' + esc(hint) + '</p>' : '') +
+      (field === 'starters' || field === 'bench' ? addTrialistRow(field) : '') +
     '</div>';
   }
 
@@ -1090,7 +1215,7 @@
                 pickerGroup('bench', GROUPS.bench.label, counts.bench, GROUPS.bench.hint, GROUPS.bench.empty) +
                 '<h4 class="mform__h">Captain</h4>' +
                 selectField('m-capt', 'Who wore the armband',
-                  SQUAD.map(function (p) { return { v: p.num, t: p.name }; }), d.captain) +
+                  pickable(d.captain).map(function (p) { return { v: p.num, t: p.name }; }), d.captain) +
               '</div>' +
               '<div>' +
                 '<div data-pitch></div>' +
@@ -1146,7 +1271,7 @@
           /* ---- Report ---- */
           '<div data-mpane="report" hidden>' +
             selectField('m-motm', 'Player of the Match',
-              SQUAD.map(function (p) { return { v: p.num, t: p.name }; }), d.motm) +
+              pickable(d.motm).map(function (p) { return { v: p.num, t: p.name }; }), d.motm) +
 
             '<h4 class="mform__h">Your notes</h4>' +
             '<div class="field">' +
@@ -1245,6 +1370,37 @@
 
     /* ---- Tabs ---- */
     back.addEventListener('click', function (e) {
+      if (e.target.matches('[data-nt-add]')) {
+        if (!guard()) return;
+        var wrap = e.target.closest('.cp-newtrial');
+        var nm = $('[data-nt-name]', wrap).value.trim();
+        if (!nm) { toast('The trialist needs a name.', 'error'); return; }
+        var field = e.target.getAttribute('data-nt-field');
+        /* 900 up, so a trialist can never collide with a squad number. */
+        var used = {};
+        SQUAD.forEach(function (p) { used[p.num] = 1; });
+        var n = 900;
+        while (used[n]) n++;
+        var rec = { num: n, name: nm };
+        var f = $('[data-nt-from]', wrap).value;
+        var u = $('[data-nt-until]', wrap).value;
+        if (f) rec.from = f;
+        if (u) rec.until = u;
+
+        var next = TRIALISTS.concat([rec]);
+        CP.upsert('player_photos', 'roster:trialists', { players: next }).then(function () {
+          TRIALISTS = next.slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
+          SQUAD = SQUAD.concat([{ num: n, name: nm, pos: '', trial: true, from: rec.from, until: rec.until }]);
+          nameOfNum[n] = nm;
+          counts[field].push(n);
+          if (field === 'starters') {
+            if (!posByNum[n]) posByNum[n] = defaultPos(n);
+            paintXI();
+          } else paintGroup(field);
+          toast(nm + ' added as a trialist and picked.', 'success');
+        }).catch(function (err) { toast(err.message, 'error'); });
+        return;
+      }
       var tab = e.target.closest('[data-mtab]');
       if (tab) {
         var name = tab.getAttribute('data-mtab');
@@ -1460,6 +1616,17 @@
     });
 
     back.addEventListener('change', function (e) {
+      /* THE DATE DECIDES WHO IS OFFERED, so changing it rebuilds the lists.
+
+         The dropdowns are built as a string before the dialog is in the
+         document, so at that moment there is no date field to read and
+         everybody is offered. Repainting once the form exists is what makes
+         the filter take effect at all, and repainting on every later change
+         is what makes correcting a mistyped date correct the squad with it. */
+      if (e.target.id === 'm-date') {
+        paintXI();
+        Object.keys(GROUPS).forEach(paintGroup);
+      }
       /* Adding somebody to a list. The dropdown returns to its prompt so the
          next person can be added straight away. */
       var add = e.target.closest('[data-add]');
@@ -1542,7 +1709,29 @@
   }
 
   M.results = function (host) {
-    return CP.readAll('matches').then(function (rows) {
+    /* `player_photos` carries roster:status and roster:trialists, which is
+       how the form knows who had left by the day of a given match. Read live
+       rather than taken from the build seed: the club may have marked
+       somebody departed a minute ago and would expect the next team sheet to
+       know, without waiting for a rebuild. */
+    return Promise.all([CP.readAll('matches'), CP.readAll('player_photos')])
+      .then(function (both) {
+        var blobs = both[1] || [];
+        var st = blobs.filter(function (r) { return r.key === 'roster:status'; })[0];
+        STATUS = (st && st.data && (st.data.status || st.data)) || {};
+        var tr = blobs.filter(function (r) { return r.key === 'roster:trialists'; })[0];
+        var list = (tr && tr.data && tr.data.players) || [];
+        TRIALISTS = list.slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
+        /* Rebuilt so a trialist added since the page loaded is pickable. */
+        SQUAD = (SEED.squad || []).slice().sort(function (a, b) { return a.num - b.num; })
+          .concat(TRIALISTS.map(function (t) {
+            return { num: t.num, name: t.name, pos: '', trial: true, from: t.from, until: t.until };
+          }));
+        nameOfNum = {};
+        SQUAD.forEach(function (p) { nameOfNum[p.num] = p.name; });
+        return both[0];
+      })
+      .then(function (rows) {
       var list = (rows || []).slice().sort(function (a, b) {
         return String(b.key).localeCompare(String(a.key));
       });

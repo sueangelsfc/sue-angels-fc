@@ -831,3 +831,44 @@ body:has(.cp) .atmos__blob { animation: none; }
      than squeezing six buttons onto one line. */
   .picbig__bar .btn { min-height: 44px; }
 }
+
+/* ==========================================================================
+   SOMEBODY ON TRIAL, ADDED FROM THE TEAM SHEET
+
+   You find out a lad is a trialist while typing the team sheet he played in.
+   Being sent to another screen to add him is how he ends up recorded as
+   "No. 901" instead, so the form is here, folded away until it is wanted.
+   ========================================================================== */
+.cp-newtrial { margin-block-start: var(--space-3); }
+.cp-newtrial > summary {
+  cursor: pointer;
+  font-size: var(--step--1);
+  color: var(--text-muted);
+  padding-block: 6px;
+}
+.cp-newtrial > summary:hover { color: var(--brand-text); }
+.cp-newtrial__body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: end;
+  padding-block: var(--space-2);
+}
+.cp-newtrial__body [data-nt-name] { flex: 1 1 170px; min-width: 0; }
+.cp-newtrial__f { display: grid; gap: 2px; flex: 0 1 150px; min-width: 0; }
+.cp-newtrial__f span {
+  font-family: var(--ui);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+
+@media (pointer: coarse) {
+  /* One control per line rather than four squeezed onto a phone, and 16px so
+     iOS does not zoom the page on focus and leave it zoomed. */
+  .cp-newtrial__body { display: grid; }
+  .cp-newtrial__f { flex: 1 1 100%; }
+  .cp-newtrial__body .input { font-size: 16px; }
+}

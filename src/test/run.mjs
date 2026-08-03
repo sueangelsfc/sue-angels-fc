@@ -1296,7 +1296,10 @@ for (const [f, kb] of Object.entries(BUDGET)) {
   {
     const api = fs.readFileSync(path.join(ROOT, 'api', 'claude.js'), 'utf8');
     const serverCap = Number((api.match(/MAX_INPUT_CHARS\s*=\s*(\d+)/) || [])[1]);
-    const clientCap = Number((reportChunk.match(/length\s*>\s*(\d{4,})/) || [])[1]);
+    /* esbuild writes 16000 as 16e3, so the number has to be parsed rather than
+       matched as digits. A check that reads the SOURCE would have passed here
+       and told us nothing about what ships. */
+    const clientCap = Number((reportChunk.match(/length\s*>\s*([\d.]+e\d+|\d{4,})/) || [])[1]);
     check('the server declares an input cap', serverCap > 0, String(serverCap));
     check('the panel checks against the same cap the server enforces',
       serverCap === clientCap, `server ${serverCap}, panel ${clientCap}`);

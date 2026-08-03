@@ -158,7 +158,12 @@ The panel's stylesheet was `src/styles/70-control.css`, inside `sa.css`, so ever
 - **Positions are one list**, `src/lib/positions.mjs`: twenty-nine places with a full name, a group and a place on the pitch, and nineteen **roles** in their own list, each naming the positions it attaches to. A team sheet records both (`positions: ['ST'], role: 'F9'` is a striker playing as a false nine), and everything derived from where somebody stood reads `positions` alone. Changing a position clears a role that no longer attaches to it. It was three lists that disagreed (21, 26 and 22 codes), so team sheets in the archive using RDM and LAM printed as raw codes on a player page. Full names everywhere text is read; the short code survives only on a pitch diagram, where it carries a `<title>`. The suite fails if a code in any stored team sheet has no name, or if a marker is silent.
 - Every section ends with **where its content shows on the website**, with a link.
 - A fixture that has been played has **Enter result**: it opens the match form pre-filled and saving clears the fixture, so the site cannot list a match as still to come under a report of its own score.
-- The match form is five tabs, players are picked from dropdowns, and the pitch draws the shape from the positions given to the eleven. Match reports take **bullets**, and the report builder writes the facts already recorded around the coach's own words. It invents nothing: a goal with no minute does not acquire one.
+- The match form is five tabs, players are picked from dropdowns, and the pitch draws the shape from the positions given to the eleven.
+- **The report writer is its own chunk**, `src/admin/lazy/15-report.js` → `control-report.js`, fetched when Build the report is pressed and by nobody else. It was inside `control-match.js` and was most of the reason that file reached 17KB. Two ways to write one, and **the panel always says which it used**:
+  - **Written.** `/api/claude` gets the facts, the coach's notes and the club's house rules. `ANTHROPIC_API_KEY` is set on `sue-angels-fc-b469`.
+  - **Composed.** Arranged in the browser from the facts alone, threading the notes through by time and by player name. No key, no network. This is the fallback for a missing session, a missing key, an over-long prompt, no network or a 500, so the button can never do nothing.
+- It also knows two things no tab on the form holds: **how the club has done against this opponent before**, and **where the match sits in a run of pre-season friendlies**. Both are counted from the match list the panel already ships, walkovers carrying no goals exactly as the site counts them, and the suite reconciles the head-to-head against the site's own figures for every opponent.
+- It invents nothing either way: a goal with no minute does not acquire one.
 - **A goal carries what it was struck with, where from, what the ball was doing, and who made it and how.** The vocabulary is `src/lib/football.mjs`, following Opta's qualifiers, and it is shared by the panel, the stats engine and the pages so they cannot describe the same goal differently. The assist is a field ON the goal; the flat `assists` array is derived on save so everything downstream keeps working. Goalkeepers have saves. All of it surfaces on the player profile, with a line saying how many of his goals the detail actually covers.
 - **Covers are drawn, not found.** Two badges, the score and the date for a match; the crest and the headline for an article. Canvas, in the browser, saved to the record and used as the share image. A real photograph always wins.
 - The boot screen holds for **three seconds, end to end**, however long the badge takes to assemble; the beat count adapts rather than the total. `TOTAL` in `home.mjs` is the only number to change.
@@ -191,9 +196,34 @@ npm run serve     # local preview on :4321
 `npm test` covers: document structure, one h1 per page, heading order, alt text, resolvable assets and internal links, JSON-LD validity, asset-version consistency, overflow guards, reduced motion, both themes, WCAG AA contrast on every text token pair, form labelling, security headers, no service-role key in output, sitemap/robots correctness, and performance budgets. Budgets are **gzipped KB**, one per bundle, and they are ceilings over a split thing rather than one big one: `sa.css` 22, `home.css` 26, `sa.js` 24, `control.css` 7, `control.js` 16, and one per lazy panel chunk. It also asserts the split stays split: that the match form and the photo tagger are not in the core, that every deferred panel maps to a chunk that exists and is cache-busted, and that routing does not gate on a module having been downloaded.
 
 ## Deployment
-**The domain is on the Vercel project `sue-angels-fc-b469`, not `sue-angels-fc`.** The older `sue-angels-fc` project links to a GitHub `repoId` that no longer exists and last deployed to production in June. `.vercel/project.json` pointed at the wrong one — if you run `vercel deploy --prod` against it, nothing reaches the live domain.
+**The domain is on the Vercel project `sue-angels-fc-b469`.** Three projects on this account look like the right one and only that one is:
+
+```
+Project                Domains
+sue-angels-fc-b469     www.suesangelsfc.co.uk, suesangelsfc.co.uk    ← this one
+sue-angels-fc          www.suesangelsfc.co.uk                        ← stale, dead repoId, last prod deploy June
+sue-angels-rebuild     none                                          ← deploys the same repo to a .vercel.app only
+```
+
+**Comparing content will not tell them apart.** `sue-angels-rebuild` auto-deploys from the same GitHub repo, so it serves a byte-identical build and every `*.vercel.app` hostname returns the same site. `.vercel/` has pointed at the wrong project twice; ask Vercel instead:
+
+```bash
+vercel domains inspect suesangelsfc.co.uk     # the Projects table at the bottom is the answer
+```
+
+`vercel env ls production` is the other tell: `sue-angels-fc-b469` is the one holding `DEPLOY_HOOK_URL` and `ANTHROPIC_API_KEY`. A settings screen for the wrong project looks completely normal, which is how an environment variable gets added to a project nothing is served from.
 
 Push to `main` → `sue-angels-fc-b469` auto-deploys to www.suesangelsfc.co.uk. Preview URLs are protected by team SSO and need a signed-in Vercel session.
+
+**Server-side environment variables** (never in `src/data/runtime.json`, never anywhere the generator can reach):
+
+| Variable | Used by | State |
+|---|---|---|
+| `DEPLOY_HOOK_URL` | `api/publish.js` | set, Preview + Production |
+| `ANTHROPIC_API_KEY` | `api/claude.js` | set 3 Aug 2026, Production, sensitive |
+| `RESEND_API_KEY` | `api/notify-enquiry.js` | not set; the endpoint no-ops gracefully and the `enquiries` table write is what actually records the lead |
+
+Adding one takes effect only on the NEXT deployment: `vercel redeploy <latest-prod-url>`, or press **Publish to site** in the control panel.
 
 ## Conventions
 - British spelling. "League Ten / League Eight", never "Division".

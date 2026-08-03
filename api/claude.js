@@ -5,10 +5,17 @@
 // Body: { prompt: "..." }     // OR { messages: [...] } for advanced use
 // Returns: { completion: "..." }
 //
-// NOTHING ON THIS SITE CALLS IT. The panel's report builder composes an
-// article in the browser out of the facts already recorded and invents
-// nothing, which is the point of it. This is kept for the day somebody wants
-// drafting help, and gated so that day can be chosen rather than arrived at.
+// THE CONTROL PANEL CALLS IT. Build the report in the match dialog sends the
+// facts the club has recorded plus the coach's notes, and what comes back
+// lands in a textarea somebody reads before saving. See
+// src/admin/lazy/15-report.js.
+//
+// It falls back rather than fails. No session, no key, too much to send, no
+// network, a 500: every one of those ends at compose(), which writes the
+// article in the browser from the facts alone and needs none of them. The
+// panel says which one wrote what you are reading, because a report that
+// quietly changed character depending on this file would be worse than
+// either. ANTHROPIC_API_KEY was set on sue-angels-fc-b469 on 3 August 2026.
 //
 // Security model:
 //   • The Anthropic API key lives ONLY in Vercel's environment variables

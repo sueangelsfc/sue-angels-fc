@@ -224,6 +224,32 @@
        what it writes. */
     var wrote = bullets.join(' ').toLowerCase();
     var said = function (re) { return re.test(wrote); };
+
+    /* HE HAS EITHER TAKEN NOTES OR WRITTEN THE REPORT, and those need
+       different treatment.
+
+       Handed paragraphs, this used to shuffle them in between its own
+       template sentences, so the piece announced the score, then his
+       paragraph announced the score, then a closing line announced it a third
+       time. Two documents interleaved, which is what it read like.
+
+       A written paragraph is prose: several sentences, properly punctuated,
+       nothing like a note. When most of what arrives looks like that, the
+       coach has written the report and this has one job left - be the sub
+       editor. Add the details block, add the facts he did not cover, and stop
+       writing sentences over the top of his. */
+    var isProse = function (t) {
+      return t.length > 120 && (t.match(/[.!?]\s/g) || []).length >= 1;
+    };
+    var proseCount = bullets.filter(isProse).length;
+    var drafted = bullets.length > 0 && proseCount >= Math.max(2, Math.ceil(bullets.length / 2));
+
+    /* WHOSE PARAGRAPH IS WHOSE. In drafted mode his writing leads and the
+       derived material follows it, because he has written the report and this
+       is adding to it. Marked at the point each one is pushed rather than
+       guessed at afterwards by matching text. */
+    var mine = {};
+    var his = function (t) { mine[paras.length] = 1; paras.push(t); };
     var them = c.opp || 'the opposition';
     /* "away in Pre-season friendly" is a database field being read out. A
        competition is either a named one you play IN, or a kind of match you
@@ -271,16 +297,28 @@
         c.ourGoals + '-' + c.theirGoals + where + '. ' + c.us + ' ' + verb + ' ' + them
           + ', and it was ' + colour + '.',
       ];
-      paras.push(pick(openings, seed));
+      /* Not if he opened it himself. His first paragraph said "Sue's Angels
+         secured a 2-0 victory against Pure Football" directly under this one
+         saying the same thing in different words. */
+      if (!(drafted && said(/\b\d\s*[-–]\s*\d\b|victory|beat |won |defeat|lost to/i))) {
+        paras.push(pick(openings, seed));
+      }
     }
 
     /* What the coach said about the start of it, next: that is where a report
        sets the scene, and it is his sentence rather than a manufactured one. */
-    if (notes.early.length) paras.push(notes.early.join(' '));
+    if (notes.early.length) his(notes.early.join(' '));
 
-    /* ---- The shape ---- */
-    if (c.formation || c.xi || c.captain) {
-      var shape = c.formation ? c.us + ' lined up in a ' + c.formation + '.'
+    /* ---- The shape ----
+       Skipped entirely when he has written the report: the shape and the
+       captain are both in MATCH DETAILS, and suppressing the opening left
+       "Stewart Luwawa wore the armband" as the first line of the piece. */
+    if (!drafted && (c.formation || c.xi || c.captain)) {
+      /* Once, and not at all if he mentioned the shape himself. It printed
+         "lined up in a 5-4-1" two lines above his own "we lined up in a
+         3-4-2-1": one eleven, two shapes, in one report. */
+      var shape = (c.formation && !said(/\b\d-\d(-\d)*(-\d)*\b|formation|shape|lined up/i))
+        ? c.us + ' lined up in a ' + c.formation + '.'
         : c.xi >= 11 ? ''
           : c.xi ? 'The team sheet names ' + say(c.xi) + ' of the starting eleven.' : '';
       var line = (shape + (c.captain ? ' ' + c.captain + ' wore the armband.' : '')).trim();
@@ -288,22 +326,11 @@
       /* And what anybody was asked to do, where somebody said. Only the roles
          actually set, because a list of eleven default instructions is not
          information. */
-      if (c.roles && c.roles.length) {
-        /* GROUPED BY THE JOB, not listed by the man. Six clauses each reading
-           "X played as a Y" is a table being read aloud, and it was: two
-           overlapping full backs and two ball-playing centre backs came out as
-           four separate sentences that happened to end the same way. */
-        var byRole = {};
-        c.roles.forEach(function (r) { (byRole[r.role] = byRole[r.role] || []).push(r.name); });
-        var jobs = Object.keys(byRole).map(function (role) {
-          var who = byRole[role];
-          var one = who.length === 1;
-          var word = role.toLowerCase();
-          return listOf(who) + (one ? ' played as ' + (/^[aeiou]/i.test(word) ? 'an ' : 'a ') + word
-            : ' played as ' + word + 's');
-        });
-        paras.push(jobs.join(', ').replace(/, ([^,]*)$/, ' and $1') + '.');
-      }
+      /* THE ROLES USED TO BE A PARAGRAPH and no report carries one. Six
+         clauses each ending "played as a ..." is a team sheet read aloud, and
+         a team sheet has a place: the details block at the end, which is
+         exactly where every professional report puts it. Moved there, beside
+         each player's name, so the narrative can get on with the match. */
     }
 
     /* ---- The goals, in the order they went in where that is recorded ----
@@ -411,28 +438,27 @@
     });
     if (notes.middle.length) {
       for (var b = 0; b < notes.middle.length; b += 2) {
-        paras.push(notes.middle.slice(b, b + 2).join(' '));
+        his(notes.middle.slice(b, b + 2).join(' '));
       }
     }
 
     /* ---- Keeping and discipline ---- */
+    /* WHAT IS A SENTENCE AND WHAT IS A DETAIL.
+
+       This block used to hold the clean sheet, the save count, the bookings
+       and the sendings-off, and every one of them arrived with no minute
+       against it. So a report finished on the coach's sign-off and then said
+       "Luke Munns made six saves" underneath, as a one-line paragraph.
+
+       A sending-off changes a match and belongs in the story even without a
+       time. A save count is a figure, and figures go in MATCH DETAILS with
+       the rest of the team sheet. */
     var tail = [];
-    if (c.cleanSheet.length) {
-      if (!said(/clean sheet|shut ?out|kept them out|conceded nothing/i)) {
-        tail.push(listOf(c.cleanSheet) + ' kept a clean sheet.');
-      }
-    } else if (c.theirGoals != null && c.theirGoals > 0 && c.kind === 'score') {
+    if (!c.cleanSheet.length && c.theirGoals != null && c.theirGoals > 0 && c.kind === 'score') {
       tail.push(them + (c.theirGoals === 1 ? ' got one back.' : ' managed ' + say(c.theirGoals) + '.'));
-    }
-    if (c.saves) {
-      tail.push((c.keeper || 'The goalkeeper') + ' made ' + say(c.saves) + ' save'
-        + (c.saves === 1 ? '' : 's') + '.');
     }
     if (c.pensSaved.length) tail.push(listOf(c.pensSaved) + ' saved a penalty.');
     if (c.reds.length) tail.push(listOf(c.reds) + (c.reds.length === 1 ? ' was sent off.' : ' were sent off.'));
-    if (c.yellows.length) {
-      tail.push(listOf(c.yellows) + (c.yellows.length === 1 ? ' was booked.' : ' were booked.'));
-    }
     if (tail.length) paras.push(tail.join(' '));
 
     /* ---- What the clubs have done to each other before ----
@@ -477,7 +503,18 @@
        the game, or how he signed off. It used to sit in the middle, so the
        piece thanked the opposition and then carried on with the goalkeeper's
        save count and a head-to-head. */
-    if (notes.late.length) paras.push(notes.late.join(' '));
+    if (notes.late.length) his(notes.late.join(' '));
+
+    /* HIS FIRST, everything derived after it, and his sign-off kept last.
+       He wrote the report; this is a sub editor adding what he did not cover,
+       and a sub editor does not put his own paragraphs above the piece. */
+    if (drafted) {
+      var byCoach = paras.filter(function (t, i) { return mine[i]; });
+      var byUs = paras.filter(function (t, i) { return !mine[i]; });
+      var signOff = notes.late.length ? byCoach.pop() : null;
+      paras = byCoach.concat(byUs);
+      if (signOff) paras.push(signOff);
+    }
 
     /* ==========================================================================
        MATCH DETAILS
@@ -492,9 +529,15 @@
        not being. Nothing is padded to eleven. */
     var details = [];
     if ((c.lineup || []).length) {
+      /* The line-up in the order it was picked, each man's position beside
+         his name and the substitution in brackets, which is the form every
+         professional report uses and the only place a team sheet belongs. */
       details.push('Line-up: ' + c.lineup.map(function (p) {
-        return p.name + (p.offFor ? ' (' + p.offFor + (p.offAt ? ' ' + p.offAt : '') + ')' : '');
+        return p.name + (p.pos ? ' (' + p.pos + ')' : '')
+          + (p.offFor ? ' (' + p.offFor + (p.offAt ? ' ' + p.offAt : '') + ')' : '');
       }).join(', ') + '.');
+      if (c.formation) details.push('Shape: ' + c.formation + '.');
+      if (c.captain) details.push('Captain: ' + c.captain + '.');
     }
     if ((c.unused || []).length) details.push('Substitutes not used: ' + c.unused.join(', ') + '.');
     if (c.goals && c.goals.length) {
@@ -505,6 +548,11 @@
     }
     if ((c.yellows || []).length) details.push('Booked: ' + c.yellows.join(', ') + '.');
     if ((c.reds || []).length) details.push('Sent off: ' + c.reds.join(', ') + '.');
+    /* Saves and the clean sheet used to sit in the prose with no minute
+       against them, so a save count landed as a one-line paragraph after the
+       coach had signed off. A figure with no moment attached is a detail. */
+    if ((c.cleanSheet || []).length) details.push('Clean sheet: ' + c.cleanSheet.join(', ') + '.');
+    if (c.saves) details.push('Saves: ' + (c.keeper || 'goalkeeper') + ' ' + c.saves + '.');
     if (details.length) paras.push('MATCH DETAILS\n' + details.join('\n'));
 
     return paras.join('\n\n');

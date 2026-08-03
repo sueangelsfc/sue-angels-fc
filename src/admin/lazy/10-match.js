@@ -658,20 +658,58 @@
   });
   var POS_CODES = POSITIONS.map(function (p) { return p.code; });
 
-  /* Formation from the XI: count the outfield players in each band and read
-     it back as 4-4-2. Derived rather than typed, so it cannot contradict the
-     line-up beside it. */
+  /* FORMATION FROM THE XI, and a formation is ROWS ON A PITCH.
+
+     This counted three bands - defenders, midfielders, forwards - and read
+     them back as "5-4-1". It cannot ever have produced 3-4-2-1, 4-2-3-1 or
+     4-3-2-1, because those have four rows and it only had three. Worse, wing
+     backs are filed under `def` in the position list, so a back three with
+     two wing backs came out as five defenders.
+
+     Against Pure Football that printed "Sue's Angels FC lined up in a 5-4-1"
+     two lines above the coach's own note saying 3-4-2-1. One report, one
+     eleven, two shapes.
+
+     The position list already stores where every code STANDS - `y`, the depth
+     up the pitch - so the rows are in the data and were being thrown away.
+     Ranked by depth, empty ranks dropped, and the one genuinely conventional
+     judgement made explicitly: two wing backs in front of a back three are
+     the wide men of a midfield four, which is what 3-4-2-1 means; alongside a
+     back four they are a back five. */
+  var RANKS = [
+    { key: 'back', has: function (y) { return y >= 70; } },
+    { key: 'wing', has: function (y) { return y >= 60 && y < 70 && y === 64; } },
+    { key: 'hold', has: function (y) { return y >= 60 && y < 70 && y !== 64; } },
+    { key: 'centre', has: function (y) { return y >= 45 && y < 60; } },
+    { key: 'attack', has: function (y) { return y >= 32 && y < 45; } },
+    { key: 'front', has: function (y) { return y < 32; } },
+  ];
+
   function detectFormation(starters) {
-    var band = { def: 0, mid: 0, fwd: 0 };
+    var count = { back: 0, wing: 0, hold: 0, centre: 0, attack: 0, front: 0 };
     var placed = 0;
     starters.forEach(function (st) {
       var c = (st.positions || [])[0];
-      if (!c || !POS_GROUP[c] || POS_GROUP[c] === 'gk') return;
-      placed++;
-      band[POS_GROUP[c]]++;
+      if (!c || POS_GROUP[c] === 'gk') return;
+      var xy = PITCH_XY[c];
+      if (!xy) return;
+      var y = xy[1];
+      for (var i = 0; i < RANKS.length; i++) {
+        if (RANKS[i].has(y)) { count[RANKS[i].key]++; placed++; return; }
+      }
     });
     if (placed < 6) return null;
-    return band.def + '-' + band.mid + '-' + band.fwd;
+
+    /* The one judgement, made once and written down. */
+    if (count.wing) {
+      if (count.back >= 4) count.back += count.wing;
+      else if (count.hold) count.hold += count.wing;
+      else count.centre += count.wing;
+      count.wing = 0;
+    }
+    var rows = ['back', 'hold', 'centre', 'attack', 'front']
+      .map(function (k) { return count[k]; }).filter(Boolean);
+    return rows.length > 1 ? rows.join('-') : null;
   }
 
   /* Several codes sit close together on purpose: a false nine drops off a
@@ -1253,6 +1291,23 @@
             selectField('m-motm', 'Player of the Match',
               pickable(d.motm).map(function (p) { return { v: p.num, t: p.name }; }), d.motm) +
 
+            /* THE SHAPE, DERIVED AND OVERRIDABLE.
+               It was derived only, on the reasoning that a derived figure
+               cannot contradict the line-up beside it. True, and it still
+               contradicted the COACH: the detector read the eleven as 5-4-1
+               and he had written 3-4-2-1 in his notes, so the report carried
+               both. Both describe the same eleven and only one of them is
+               what the club calls it, which is a question the club answers.
+               Left blank it stays derived, so nothing already saved changes. */
+            '<div class="field">' +
+              '<label class="field__label" for="m-shape">Shape</label>' +
+              '<input class="input" id="m-shape" value="' + esc(d.shape || '') + '" ' +
+                'placeholder="' + esc(detectFormation(sheetFor(counts.starters, false)) || 'e.g. 3-4-2-1') + '">' +
+              '<p class="field__hint">Left blank this is worked out from where the eleven stood, ' +
+                'which is shown above. Fill it in if the side calls it something else: a back ' +
+                'three with wing backs is a 3-4-2-1 to most people and a 5-4-1 to a computer.</p>' +
+            '</div>' +
+
             '<h4 class="mform__h">Your notes</h4>' +
             '<div class="field">' +
               '<label class="field__label" for="m-report">What happened, in bullets</label>' +
@@ -1279,6 +1334,14 @@
             '<div class="cp-head__actions" style="margin-top:var(--space-3)">' +
               '<button type="button" class="btn btn--primary btn--sm" data-build>' +
                 (d.polishedReport ? 'Build it again' : 'Build the report') + '</button>' +
+                /* SAYS WHICH WROTE IT, AND STAYS SAID.
+                   This was a toast, and a toast is gone in four seconds. The
+                   club pressed the button, read a report that was arranged
+                   rather than written, and had no way of knowing which it had
+                   got or why. The difference matters more than almost
+                   anything else on this screen, so it sits next to the button
+                   until the next press. */
+                '<p class="field__hint" data-build-said hidden></p>' +
               '<span class="cp-note">Your bullets, plus everything recorded on the other tabs, '
                 + 'written out as an article you can edit.</span>' +
             '</div>' +
@@ -1500,7 +1563,7 @@
           woUs: $('#m-wo', back).value === 'us',
           ourGoals: usG === '' ? null : Number(usG),
           theirGoals: themG === '' ? null : Number(themG),
-          formation: detectFormation(startersNow()),
+          formation: ($('#m-shape', back).value.trim() || detectFormation(startersNow())),
           xi: counts.starters.length,
           roles: startersNow().filter(function (st) { return st.role && ROLE_NAME[st.role]; })
             .map(function (st) { return { name: nameOf(st.num), role: ROLE_NAME[st.role] }; }),
@@ -1523,7 +1586,13 @@
              whom and when. All of it is already on the form. */
           lineup: startersNow().map(function (st) {
             var on = benchNow().filter(function (b) { return b.on && b.forNum === st.num; })[0];
+            /* The position beside the name, which is what a line-up is. It
+               used to be a paragraph in the prose reading "Samakab Nur and
+               Daniel Thorz played as overlapping full backs", and no report
+               carries one of those. */
+            var code = (st.positions || [])[0];
             return { name: nameOf(st.num),
+              pos: code ? (POS_NAME[code] || code) : '',
               offFor: on ? nameOf(on.num) : '', offAt: on && on.minute ? on.minute : '' };
           }),
           unused: benchNow().filter(function (b) { return !b.on; }).map(function (b) { return nameOf(b.num); }),
@@ -1564,11 +1633,26 @@
              character depending on a server setting would be worse than
              either of them, and the club has to know what it is reading
              before it presses Save. */
+          var saidEl = $('[data-build-said]', back);
           if (r.source === 'written') {
-            toast('Report written from your notes. Read it through and change anything you like.', 'success');
+            saidEl.textContent = 'Written from your notes' + (r.model ? ' by ' + r.model : '')
+              + '. Read it through and change anything you like.';
+            saidEl.hidden = false;
+            toast('Report written from your notes.', 'success');
           } else {
-            toast('Report composed from the facts recorded (' + r.note
-              + '). Read it through and change anything you like.', 'success');
+            /* The reason, in the club's words rather than the server's, and
+               what to do about it. Four of the five are fixable by somebody
+               reading this line. */
+            var why = {
+              'not signed in': 'you are not signed in, so it could not ask',
+              'too much to send': 'there were too many notes to send',
+              'no writing key set on the server': 'no writing key is set on the site',
+              'could not reach the server': 'the site could not be reached',
+            }[r.note] || r.note;
+            saidEl.textContent = 'Composed from the facts recorded, because ' + why
+              + '. Everything below is true; it is arranged rather than written.';
+            saidEl.hidden = false;
+            toast('Report composed: ' + why + '.', 'success');
           }
           out.focus();
         }).catch(function () {
@@ -1665,6 +1749,9 @@
         /* Derived from where the XI actually lined up, so it can never
            disagree with the team sheet printed beside it. */
         formation: detectFormation(startersNow()),
+        /* Stored separately from the derived one so the derivation stays
+           true and a blank override keeps deriving. */
+        shape: $('#m-shape', back).value.trim(),
         motm: $('#m-motm', back).value === '' ? null : Number($('#m-motm', back).value),
         captain: $('#m-capt', back).value === '' ? null : Number($('#m-capt', back).value),
         /* Two fields, as the record has always held them: `commentary` is

@@ -981,6 +981,108 @@ for (const [f, kb] of Object.entries(BUDGET)) {
     }
   }
 
+  /* A FORMATION IS ROWS ON A PITCH, and the detector only had three of them.
+
+     It counted defenders, midfielders and forwards, so it could not express
+     3-4-2-1, 4-2-3-1 or 4-3-2-1 at all, and wing backs are filed under
+     defenders in the position list, so a back three with wing backs read as
+     five at the back. Against Pure Football it printed "lined up in a 5-4-1"
+     two lines above the coach's own note saying 3-4-2-1: one eleven, one
+     report, two shapes.
+
+     Run against the shipped chunk, over shapes a Sunday-league side actually
+     plays, using the real position vocabulary rather than a copy of it. */
+  {
+    const seedRaw = fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8');
+    const SEEDF = JSON.parse(seedRaw.replace(/^window\.SA_SEED=/, '').replace(/;\s*$/, ''));
+    const PITCH_XY = {}, POS_GROUP = {};
+    (SEEDF.positions || []).forEach((p) => { PITCH_XY[p.code] = [p.x, p.y]; POS_GROUP[p.code] = p.group; });
+    const src = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '10-match.js'), 'utf8');
+    const body = /var RANKS = \[[\s\S]*?\n  \}\n/.exec(src);
+    check('the formation detector can be isolated for testing', !!body);
+    if (body) {
+      const detect = new Function('PITCH_XY', 'POS_GROUP', body[0] + '; return detectFormation;')(PITCH_XY, POS_GROUP);
+      const xi = (codes) => codes.map((c) => ({ positions: [c] }));
+      const SHAPES = [
+        ['3-4-2-1', ['GK', 'LCB', 'CB', 'RCB', 'LWB', 'RWB', 'LCM', 'RCM', 'LAM', 'RAM', 'ST']],
+        ['4-4-2', ['GK', 'LB', 'LCB', 'RCB', 'RB', 'LM', 'LCM', 'RCM', 'RM', 'ST', 'CF']],
+        ['4-2-3-1', ['GK', 'LB', 'LCB', 'RCB', 'RB', 'LDM', 'RDM', 'LAM', 'CAM', 'RAM', 'ST']],
+        ['4-3-3', ['GK', 'LB', 'LCB', 'RCB', 'RB', 'LCM', 'CM', 'RCM', 'LW', 'ST', 'RW']],
+        ['5-3-2', ['GK', 'LB', 'LCB', 'CB', 'RCB', 'RB', 'LCM', 'CM', 'RCM', 'ST', 'CF']],
+        ['4-3-2-1', ['GK', 'LB', 'LCB', 'RCB', 'RB', 'LCM', 'CM', 'RCM', 'LAM', 'RAM', 'ST']],
+      ];
+      for (const [want, codes] of SHAPES) {
+        const got = detect(xi(codes));
+        check(`formation: a ${want} reads as ${want}`, got === want, `read as ${got}`);
+      }
+      /* Every shape must add up to ten outfield players, or it is describing
+         a different team from the one on the sheet. */
+      for (const [, codes] of SHAPES) {
+        const got = detect(xi(codes)) || '';
+        const total = got.split('-').reduce((n2, x) => n2 + Number(x), 0);
+        check(`formation ${got} accounts for all ten outfield players`, total === 10, `sums to ${total}`);
+      }
+    }
+  }
+
+  /* HANDED PROSE, IT MUST SUB EDIT, NOT CO-AUTHOR.
+
+     The coach wrote five paragraphs and this shuffled them between its own
+     template sentences, so the piece announced the score, then his paragraph
+     announced the score, then a closing line announced it a third time. Two
+     documents interleaved. It also opened on "Stewart Luwawa wore the
+     armband" once the duplicate opening was suppressed. */
+  {
+    const w2 = {};
+    new Function('window', 'fetch', reportChunk)(w2, () => Promise.reject(new Error('offline')));
+    const PROSE = [
+      'Sue’s Angels secured a 2-0 victory against Pure Football in the first of six scheduled pre-season friendlies. Pure Football will also compete in our league this season, making it a useful early test.',
+      'We lined up in a 3-4-2-1 formation, giving the players a chance to work within a familiar system. The squad featured several new faces, a mixture of trialists and new signings.',
+      'It was a tough game in hot conditions, with the players gaining valuable minutes. Both goals were scored by new signings who joined from Sheen Park.',
+      'We would like to thank Pure Football for hosting and wish them all the best for the season ahead.',
+    ];
+    const drafted = w2.CPR.compose({
+      us: 'Sue’s Angels FC', opp: 'Pure Football FC 2.0', kind: 'score', home: false,
+      ourGoals: 2, theirGoals: 0, formation: '3-4-2-1', xi: 11, captain: 'Stewart Luwawa',
+      goals: [{ name: 'Ade Owolona' }, { name: 'Leon Burnett' }],
+      roles: [], cleanSheet: ['Luke Munns'], yellows: [], reds: [], pensSaved: [],
+      keeper: 'Luke Munns', saves: 6, bullets: PROSE,
+      lineup: [{ name: 'Luke Munns', pos: 'Goalkeeper' }], unused: [],
+    });
+    check('handed prose, the coach’s own words open the report',
+      drafted.indexOf('Sue’s Angels secured') === 0,
+      `opens with: ${drafted.slice(0, 60)}`);
+    /* Matched on the VERDICT phrase, which only the template writes. Anchoring
+       to the start of a line missed it, because the template's second variant
+       opens "A solid win away, Sue's Angels FC beat ..." - the check passed
+       with the fix reverted, which is a check that proves nothing. */
+    check('handed prose, it does not write a second opening',
+      !/\b(a solid win|a narrow win|a comfortable win|a thumping win|and it was a)\b/i.test(drafted),
+      'the template announced the result over the top of his own opening');
+    check('handed prose, the shape is not restated over his',
+      (drafted.match(/3-4-2-1/g) || []).length <= 2,
+      'his formation and a derived one both in the prose');
+    check('the sign-off is the last thing before the details block',
+      drafted.indexOf('wish them all the best') > drafted.indexOf('The clubs have met before')
+      && drafted.indexOf('wish them all the best') < drafted.indexOf('MATCH DETAILS'));
+    check('a save count is a detail, not a paragraph',
+      !/^Luke Munns made six saves\.$/m.test(drafted) && drafted.includes('Saves: Luke Munns 6.'),
+      'an orphan one-line paragraph after the sign-off');
+    check('the line-up carries each position',
+      drafted.includes('Luke Munns (Goalkeeper)'),
+      'positions were a paragraph of prose no report carries');
+
+    /* And handed BULLETS it must still compose, or the mode test has broken
+       the ordinary path. */
+    const noted = w2.CPR.compose({
+      us: 'Us', opp: 'Them', kind: 'score', home: true, ourGoals: 1, theirGoals: 0,
+      goals: [{ name: 'Scorer', minute: 30 }], roles: [], cleanSheet: [], yellows: [],
+      reds: [], pensSaved: [], saves: 0, bullets: ['Slow start', 'Better after the break'],
+    });
+    check('handed bullets, it still writes the opening', /^Us beat Them 1-0|^1-0 at home|^A narrow win/.test(noted),
+      `opens with: ${noted.slice(0, 50)}`);
+  }
+
   check('report writer says which one wrote it',
     /composed/.test(reportChunk) && /written/.test(matchChunk + reportChunk),
     'the club cannot tell a composed report from a written one');

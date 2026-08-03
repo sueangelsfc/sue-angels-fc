@@ -183,3 +183,69 @@ The two-implementations pass paid for itself. `src/test/panel-vs-site.mjs` now
 runs a real differential over 180 answers rather than a spot check. Any other
 rule written twice deserves the same: candidates are `detectFormation`,
 `slugify` and the match-report composer, all of which exist on both sides.
+
+---
+
+## Run 2026-08-03 (third: what a friendly counts for)
+
+Triggered by the club asking for pre-season results to be marked as not
+counting towards historic club or player data. The exclusion turned out to be
+half-built: implemented in the engine, unstated on the site, and bypassed by
+four pages.
+
+**Swept:** passes 2 (derived figures against their own source) and 4 (house
+style in shipped copy), over every page that publishes a club or player
+figure. Method: derive the competitive total independently, then grep every
+built page for the friendly-inclusive one.
+
+**Found and fixed**
+- `records.html` published the club's all-time goals as **139**. Every other
+  page derives 137. The record book was reading `view.matches`; seasons.mjs
+  has handed every view a `competitive` list since it was written, with a
+  comment saying which is which. → `128ca46`
+- `stats.html` the same, plus a 26/27 tab offering "2 goals, shared between 2
+  players" from the friendly. A player's own profile has always excluded
+  friendlies, so one man's totals disagreed with themselves across two pages.
+  → `128ca46`
+- `awards.html` drew Man of the Match "from the 26 matches of 34". → `128ca46`
+- `squad.html` labelled 26/27 "1 match" above a screen of noughts. → `128ca46`
+- **A player page said something false.** Ade Owolona started, scored and made
+  one on 2 August; his 26/27 panel read "Nothing has been played in 26/27 that
+  we hold a team sheet for." A page may exclude a match from its figures. It
+  may not deny the match happened. → `128ca46`
+- The results page's **result chips** counted `teamSummary(competitive)` while
+  the filter they drive acts on the full grid: "Wins 29" above a press that
+  produced thirty cards. The file's own comment says a chip's count is a
+  promise about what pressing it finds. → `128ca46`
+
+**Checked, and sound**
+- The engine was right throughout: `isFriendly`, `playerStats`, `playerProfile`
+  and `d.competitive` all excluded friendlies correctly. Nothing in the
+  derivation needed changing, only what read from it.
+- Home page, league page and the cause/join/sponsors figures already filtered
+  to `CLUB.division`, which excludes friendlies for free.
+- `d.played` legitimately means "has been played" and is the right list for
+  LISTS: the results grid, the report index, videos and albums. Left alone.
+- Fixtures panel in the control panel sorts by row key, which the results list
+  bug made suspicious. Sound: `fixtureKey()` mints `f`+YYYYMMDD from the ISO
+  date, so a key sort IS a date sort by construction.
+
+**Left deliberately**
+- **The results rail reads "33 played" while the ungated grid holds 34.** The
+  rail follows the season bar and is rewritten by the script on load; only a
+  reader with JavaScript blocked sees the mismatch, and the count paragraph
+  beside it says 34. Would change if the rail ever stops being script-driven.
+
+**Locked**
+Four checks, each proven to fail when its fix is reverted: no page publishes a
+friendly-inflated club total; every played friendly is flagged on its card and
+on its own page; and no player page denies a season it holds a team sheet for.
+The first check computes the inflated figure from the data rather than hard
+-coding 139, so it keeps working as the club plays more friendlies.
+2115 -> 2222 checks.
+
+**Note for the next run**
+The pattern here is worth naming: a rule enforced in the engine and unstated in
+the copy is a rule that pages quietly opt out of. Any other exclusion the site
+makes deserves the same audit. `countsGoals` on a walkover is the obvious
+candidate and is already stated on the record band; nothing else was found.

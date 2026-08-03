@@ -243,6 +243,7 @@ let adminJs = bundle('admin', adminFiles);
    club and breaks its badge), and the pre-season fixtures transcribed in the
    code baseline but never entered as rows, so the panel can offer to import
    them in one action instead of six hand-typed JSON documents. */
+const isoById = new Map((d.matches || []).map((m) => [m.id, m.iso]));
 const adminSeed = {
   club: CLUB.name,
   division: CLUB.nextDivision,
@@ -302,6 +303,33 @@ const adminSeed = {
      shirt numbers into JSON and hoping. Numbers are the storage key the match
      record already uses; they are never shown on the website. */
   squad: d.squad.map((p) => ({ num: p.num, name: p.name, pos: p.position || '' })),
+  /* WHAT THE CLUB KNOWS ABOUT EACH PLAYER, so a match report can say
+     something a person would say. The panel knew a name, a number and a
+     position, so every report described eleven interchangeable men: it could
+     not tell that one of Sunday's scorers had never played for the club and
+     that the goalkeeper behind him kept thirteen clean sheets winning the
+     league.
+
+     COMPETITIVE ONLY, the same figures every page publishes, so a report
+     cannot claim a total the stats page disagrees with. Zeroes are omitted
+     rather than stored: two thirds of the fields are zero and the seed ships
+     on every panel load. `f` is the first competitive appearance, which is
+     what makes "his first" derivable rather than asserted. */
+  history: Object.fromEntries(d.players
+    .filter((p) => p.starts || p.subApps || p.goals)
+    .map((p) => {
+      const first = (p.matches || []).map((r) => isoById.get(r.id))
+        .filter(Boolean).sort()[0] || '';
+      const row = {};
+      if (p.starts) row.a = p.starts;
+      if (p.goals) row.g = p.goals;
+      if (p.assists) row.as = p.assists;
+      if (p.cleanSheets) row.cs = p.cleanSheets;
+      if (p.motm) row.m = p.motm;
+      if (p.captained) row.c = p.captained;
+      if (first) row.f = first;
+      return [p.num, row];
+    })),
   /* Trialists. They are picked on a team sheet like anybody else and have no
      profile, no squad card and no place in any club record, which is what a
      trial is. Numbers run from 900 so they can never collide with a real one. */

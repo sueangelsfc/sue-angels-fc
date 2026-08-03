@@ -1256,12 +1256,25 @@
             '<h4 class="mform__h">Your notes</h4>' +
             '<div class="field">' +
               '<label class="field__label" for="m-report">What happened, in bullets</label>' +
+              /* PUT A MINUTE IN FRONT AND IT BECOMES A MOMENT. This is the one
+                 thing that separates this report from a professional one, and
+                 it is not the writing: a club-site report narrates fifteen
+                 incidents because somebody sat there and wrote each one down
+                 with the time on it. Nothing here can invent them. Said in the
+                 placeholder AND in the hint, because a placeholder vanishes
+                 the moment anybody starts typing. */
               '<textarea class="textarea" id="m-report" rows="9" ' +
-                'placeholder="- Slow start, they had the better of the first twenty\n' +
-                '- Turned on the press after the opener and never let them settle\n' +
-                '- Back four barely gave a chance away">' +
+                'placeholder="9 - Owolona forced a save with his first touch\n' +
+                '24 - Sheehan headed over from a corner\n' +
+                '40 - they hit the post from twenty yards\n' +
+                '78 - Munns saved low to his right\n' +
+                'Tough game in the heat, shaking off the rust">' +
               esc(d.commentary || '') + '</textarea>' +
-              '<p class="field__hint" data-words>' + words(d.commentary) + '</p>' +
+              '<p class="field__hint">Start a line with a minute and it is treated as a moment in ' +
+                'the game, told in order alongside the goals. Lines without one are your ' +
+                'thoughts on it, and they get woven through. The more moments you note, the ' +
+                'more there is to write: the report cannot invent a save nobody recorded. ' +
+                '<span data-words>' + words(d.commentary) + '</span></p>' +
             '</div>' +
             '<div class="cp-head__actions" style="margin-top:var(--space-3)">' +
               '<button type="button" class="btn btn--primary btn--sm" data-build>' +
@@ -1495,12 +1508,25 @@
           motm: motmNum === '' ? '' : nameOf(Number(motmNum)),
           goals: goals.map(function (g) {
             return {
-              name: nameOf(g.num), minute: g.minute,
+              num: g.num, name: nameOf(g.num), minute: g.minute,
               bodyPart: g.bodyPart, zone: g.zone, situation: g.situation,
               assist: g.assist ? { name: nameOf(g.assist.num), type: g.assist.type } : null,
             };
           }),
           keeper: $('#m-keeper', back).value === '' ? '' : nameOf(Number($('#m-keeper', back).value)),
+          /* Numbers as well as names: the writer looks a player's record up by
+             number, which is the key the history is stored under. */
+          keeperNum: $('#m-keeper', back).value === '' ? null : Number($('#m-keeper', back).value),
+          captainNum: captNum === '' ? null : Number(captNum),
+          /* THE TEAM SHEET, for the match-details block every real report
+             carries and this one never did. Who started, who came on for
+             whom and when. All of it is already on the form. */
+          lineup: startersNow().map(function (st) {
+            var on = benchNow().filter(function (b) { return b.on && b.forNum === st.num; })[0];
+            return { name: nameOf(st.num),
+              offFor: on ? nameOf(on.num) : '', offAt: on && on.minute ? on.minute : '' };
+          }),
+          unused: benchNow().filter(function (b) { return !b.on; }).map(function (b) { return nameOf(b.num); }),
           saves: Number($('#m-saves', back).value) || 0,
           yellows: counts.yellowCards.map(nameOf),
           reds: counts.redCards.map(nameOf),
@@ -1521,9 +1547,11 @@
              how the club has done against this opponent before, and where
              this match sits in a run of pre-season friendlies. Both are in
              the match list the panel already ships. */
-          var ctx = window.CPR.context(SEED.matches || [], SEED.baselineFixtures || [], facts);
+          var ctx = window.CPR.context(SEED.matches || [], SEED.baselineFixtures || [],
+            facts, SEED.history || {});
           facts.h2h = ctx.h2h;
           facts.friendlyOf = ctx.friendlyOf;
+          facts.players = ctx.players;
           return window.CPR.write(facts, {
             token: CP.state.session && CP.state.session.access_token,
           });

@@ -763,7 +763,23 @@ const BUDGET = {
      tab on the match form holds - how the club has done against this
      opponent before, and where the match sits in a run of pre-season
      friendlies - both counted from the match list the panel already ships. */
-  'control-report.js': 7,
+  /* 7 -> 8. What bought it: a note beginning with a minute is read as the
+     moment it happened and narrated in clock order alongside the goals, which
+     is the difference between a report and two columns of a table read aloud;
+     the match-details block every professional report ends with and this one
+     never had; and the club's record on the men who played, so a report can
+     say a scorer had never started a competitive game rather than describing
+     eleven interchangeable names.
+
+     Paid for first: the per-player sentence builder collapsed into a grouped
+     one, which was shorter than the version that repeated itself, and the
+     prompt's house rules stopped restating what the fact sheet already says.
+
+     This chunk is downloaded when Build the report is pressed and by nobody
+     else, which is the entire reason it exists. It is the right place for
+     weight and the wrong place to keep adding: the next thing this needs is
+     the coach typing more moments, not this file writing more sentences. */
+  'control-report.js': 8,
   /* News, gallery, recognition, badges and sponsors. The album editor is the
      weight: photographs visible, removable, reorderable and taggable in the
      album itself, four operations that all have to keep the parallel tag list
@@ -929,6 +945,42 @@ for (const [f, kb] of Object.entries(BUDGET)) {
     check(`report writer falls back when ${why}`, reportChunk.includes(why),
       'a missing ANTHROPIC_API_KEY would leave the club with no report at all');
   }
+  /* A NOTE WITH A MINUTE ON IT IS A MOMENT, and the composer must narrate it
+     in clock order alongside the goals. This is the one lever that separates
+     a club report from a professional one - a journalist logs fifteen
+     incidents, this record held two goals - so it is asserted rather than
+     assumed, by running the shipped chunk. */
+  {
+    const w = {};
+    new Function('window', 'fetch', reportChunk)(w, () => Promise.reject(new Error('offline')));
+    const out = w.CPR.compose({
+      us: 'Us', opp: 'Them', kind: 'score', ourGoals: 1, theirGoals: 0, home: true,
+      goals: [{ name: 'Scorer', minute: 30 }],
+      bullets: ['9 - an early save', '70 - a late block', 'It was hot'],
+      cleanSheet: [], yellows: [], reds: [], pensSaved: [], saves: 0, roles: [],
+      lineup: [{ name: 'Keeper' }, { name: 'Scorer', offFor: 'Sub', offAt: '80' }],
+      unused: ['Bench'],
+    });
+    const at = (t) => out.indexOf(t);
+    check('a note with a minute is narrated, not listed',
+      at('An early save.') > -1 && at('A late block.') > -1);
+    check('moments and goals share one clock',
+      at('An early save.') < at('Scorer') && at('Scorer') < at('A late block.'),
+      'a save on 9 and a block on 70 must sit either side of a goal on 30');
+    check('a note without a minute is still an observation', at('It was hot.') > -1);
+    check('the report carries a match details block', at('MATCH DETAILS') > -1);
+    check('the details block names the line-up and the substitution',
+      at('Scorer (Sub 80)') > -1 && at('Substitutes not used: Bench.') > -1);
+    check('the details block is last', at('MATCH DETAILS') > at('A late block.'));
+    /* Whichever dash the coach reaches for. */
+    for (const sep of ['-', '\u2013', '\u2014', ':']) {
+      const r = w.CPR.compose({ us: 'A', opp: 'B', kind: 'score', ourGoals: 1, theirGoals: 0,
+        goals: [], bullets: ['12 ' + sep + ' a save'], cleanSheet: [], yellows: [], reds: [],
+        pensSaved: [], saves: 0, roles: [] });
+      check(`a minute separated by "${sep}" is read as a minute`, r.includes('A save.'));
+    }
+  }
+
   check('report writer says which one wrote it',
     /composed/.test(reportChunk) && /written/.test(matchChunk + reportChunk),
     'the club cannot tell a composed report from a written one');

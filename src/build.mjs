@@ -274,6 +274,20 @@ const adminSeed = {
      can actually draw a face for, counting the ones on disk as well as the
      ones stored against a row. */
   squadWithPhoto: d.squad.filter((p) => p.hasPhoto).map((p) => p.num),
+  /* THE GROUNDS THE CLUB HAS PLAYED AT, offered as you type.
+
+     A venue was a bare text field and nothing compared what you typed with
+     what had been typed before, so sixteen strings were stored for about nine
+     grounds: "Meadhurst Sports Clun", the club's own ground written out as a
+     postal address, Barn Elms spelled two ways, Prince George's with and
+     without its apostrophe. src/data/venues.json cleans that up on the way
+     into the build, which fixes the website and does nothing about the next
+     one being typed.
+
+     A suggestion list rather than a fixed menu, on purpose: the club will
+     play somewhere new and a form that refuses the name of the ground it is
+     standing on is worse than one that lets a typo through. */
+  venues: [...new Set(d.matches.map((m) => m.venue).filter(Boolean))].sort(),
   baselineFixtures: JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'fixtures-2627.json'), 'utf8')).fixtures || [],
   /* The squad, so a result is recorded by picking players rather than typing
      shirt numbers into JSON and hoping. Numbers are the storage key the match

@@ -140,10 +140,22 @@
                 '<select class="select" id="fx-ha">' +
                   '<option value="home">Home</option><option value="away">Away</option>' +
                   '<option value="neutral">Neutral ground</option></select></div>' +
+              /* THE GROUND, OFFERED RATHER THAN REMEMBERED. Typed free, this
+                 field produced sixteen spellings of about nine grounds, and
+                 the same pitch read three ways across three match reports.
+                 The list is every ground the club has played at; it suggests
+                 and does not insist, because the next fixture may be
+                 somewhere new and a form that refuses the name of the ground
+                 it is standing on is worse than one that lets a typo
+                 through. */
               '<div class="field"><label class="field__label" for="fx-venue">Venue</label>' +
-                '<input class="input" id="fx-venue" placeholder="' + esc(SEED.venue || '') + '"></div>' +
+                '<input class="input" id="fx-venue" list="fx-venues" placeholder="' +
+                  esc(SEED.venue || '') + '">' +
+                '<p class="field__hint">Start typing and the grounds the club has played at come up. '
+                  + 'Spell one the way it is already spelled and the website keeps them together.</p></div>' +
             '</div>' +
             optionList('fx-clubs', SEED.clubs) + optionList('fx-comps', SEED.competitions) +
+            optionList('fx-venues', SEED.venues) +
             '<p class="field__error" data-fx-err hidden></p>' +
             '<div class="cp-head__actions" style="margin-top:var(--space-4)">' +
               '<button class="btn btn--primary" data-fx-add>Add fixture</button>' +

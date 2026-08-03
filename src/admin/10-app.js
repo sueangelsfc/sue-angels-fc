@@ -401,6 +401,17 @@
         one ? 'Enter the result' : 'Enter the results', 'fixtures']);
       }
 
+      /* The row a security check left behind. Deleting it needs the sign-in
+         only the club has, which is why it is still there and why the club is
+         the only one who can be told about it. */
+      var probes = enq.filter(function (e) { return /^__|probe_delete_me/i.test(String(e.name || '')); });
+      if (probes.length) {
+        warn.push([probes.length + ' enquir' + (probes.length === 1 ? 'y is' : 'ies are')
+          + ' left over from a check that anonymous visitors cannot read this table. The check '
+          + 'passed. The row is not a real enquiry and can be deleted from the inbox.',
+        'Open the inbox', 'inbox']);
+      }
+
       host.innerHTML =
         /* The counts: what the club has. */
         '<div class="cpt-grid">' +
@@ -499,9 +510,25 @@
                 '<button class="btn btn--ghost btn--sm" data-csv-enq>Export CSV</button></div>' +
             '</div>' +
             (enq.length ? table(['Received', 'Name', 'Email', 'About', 'Message', ''], enq.map(function (e, i) {
-              return '<tr>' +
+              /* A ROW LEFT BEHIND BY A TEST, said out loud.
+
+                 One was written into production while checking that anonymous
+                 visitors genuinely cannot read this table. The check worked
+                 and the row could not then be removed, because deleting it
+                 needs the sign-in that only the club has. It has sat there
+                 since, looking exactly like somebody called
+                 __probe_delete_me got in touch.
+
+                 Marked rather than hidden: a panel that quietly filters rows
+                 out of the club's own inbox is worse than one that explains
+                 an odd-looking one. */
+              var isProbe = /^__|probe_delete_me/i.test(String(e.name || ''));
+              return '<tr' + (isProbe ? ' class="is-probe"' : '') + '>' +
                 '<td>' + esc(fmtDate(e.created_at)) + '</td>' +
-                '<td><b>' + esc(e.name) + '</b></td>' +
+                '<td><b>' + esc(e.name) + '</b>' +
+                  (isProbe ? '<br><span class="badge badge--warning">Left over from a security check'
+                    + '</span><br><span style="color:var(--text-subtle)">Not a real enquiry. '
+                    + 'Safe to delete.</span>' : '') + '</td>' +
                 '<td><a href="mailto:' + esc(e.email) + '">' + esc(e.email) + '</a></td>' +
                 '<td>' + esc(e.type || e.enquiry_type || '-') + '</td>' +
                 '<td class="cell-club">' + esc(String(e.message || '').slice(0, 90)) + '</td>' +

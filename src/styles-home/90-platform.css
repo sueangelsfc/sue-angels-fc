@@ -84,29 +84,18 @@
     font-size: 16px;
   }
 
-  /* Navigation and footer links sat at 24px tall, which is a comfortable
-     reading rhythm and an uncomfortable target: the guideline is 44 and the
-     real cost is tapping the wrong one of eighteen stacked links.
+  /* THE LINK PADDING THAT USED TO LIVE HERE DID NOTHING, and measuring is the
+     only reason anyone would know. `padding-block` on an INLINE element
+     paints but does not grow the layout box, and a footer link is inline by
+     default, so the hit area stayed 21px while the rule looked like it had
+     fixed it. Eighteen stacked links, each still a millimetre from its
+     neighbour.
 
-     Padding rather than font-size or line-height, so the type and the visual
-     spacing are unchanged and only the hit area grows. */
-  .mnav__grp a,
-  .ft2__col a,
-  .ft2__socials a,
-  .nhead__all,
-  .cf__link {
-    padding-block: 10px;
-  }
+     The working version is further down this file: display: inline-flex plus
+     min-height, which gives the box a height an inline element cannot have.
+     Kept as one block rather than two so they cannot drift apart. */
   .mnav__grp { gap: 0; }
   .ft2__col { gap: 0; }
-
-  /* A carousel dot is 8px of paint. It needs a finger-sized box around it,
-     which is what a transparent border buys without moving the dot. */
-  .cf__dot {
-    border: 12px solid transparent;
-    background-clip: padding-box;
-    box-sizing: content-box;
-  }
 }
 
 /* ==========================================================================
@@ -153,3 +142,141 @@
 .aw-seasons{padding-block: 0 !important;}
 .rc-seasons .sn-tabs,
 .aw-seasons .sn-tabs{margin-block: 0 clamp(6px, 1.5vw, 12px);}
+
+
+/* ==========================================================================
+   A LEGIBLE FLOOR ON A PHONE
+
+   The micro-label is this design's signature: 8px uppercase with wide
+   tracking, read at arm's length on a desktop. A phone is held closer but
+   its pixels are smaller and it gets used in daylight, on a bus, one-handed,
+   and 7.5px there is not small type, it is unreadable type. The squad page
+   carried 192 of them: every Starts, Goals, Assists and Bench label on the
+   page a supporter is most likely to open on a phone.
+
+   Only rules already BELOW the design's own 9px floor are lifted, and only
+   where the pointer is coarse, so the desktop rhythm is untouched.
+
+   EVERY SELECTOR CARRIES AN html PREFIX. A page band (p-squad.css and the
+   rest) is a separate file linked AFTER home.css, so a plain .pc__stats i
+   here loses the cascade to the identical selector there and the floor
+   silently does nothing. One specificity point settles it.
+   ========================================================================== */
+@media (pointer: coarse) {
+  html .bento__table i,
+  html .gl-card__count,
+  html .gl-fix i,
+  html .hx__cell small,
+  html .hx__ha,
+  html .hx__metatext small,
+  html .lg-res__round,
+  html .mr-bench span,
+  html .mr-xi i,
+  html .mt__tag,
+  html .nw-card__score i,
+  html .pc__badge,
+  html .pc__morestats i,
+  html .pc__state,
+  html .pc__stats i,
+  html .pf-pos__comp,
+  html .pf-shot__by,
+  html .rc-card__l i {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+}
+
+/* ==========================================================================
+   A FINGER-SIZED TARGET FOR EVERY LINK
+
+   A footer column is eighteen links stacked 21px apart and the mobile menu is
+   eighteen more at 24px. At that pitch the wrong one is a millimetre away in
+   either direction, which is the real problem: not that a link is hard to hit,
+   but that missing it lands you somewhere else on the site.
+
+   The padding is vertical and the line spacing already allows for it, so
+   nothing moves visually. What changes is the box the finger aims at. Coarse
+   pointers only: a mouse does not need it and the desktop footer is tuned to
+   its own rhythm.
+
+   Selectors carry an html prefix for the same reason the type floor above
+   does: a page band is a separate file linked after home.css, and without the
+   extra specificity these rules lose to it and quietly do nothing.
+   ========================================================================== */
+@media (pointer: coarse) {
+  html .ft2__col a,
+  html .mnav__grp a,
+  html .ft2__joincta,
+  html .ft2__totop,
+  html .cf__link,
+  html .bento__link,
+  html .nhead__all,
+  html .rc-card__who,
+  html .co-best__n,
+  html .gl-who__list a,
+  html .pf-pos__t,
+  html .lg-cp__club a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  /* Icon buttons grow in both directions rather than stretching a square into
+     a letterbox. */
+  html .ft2__socials a,
+  html .bento__arrow,
+  html .ncar__arrow { width: 44px; height: 44px; }
+
+  /* Chips sit a whisker under the line at 39.6px. */
+  html .sq-chip,
+  html .st-chip,
+  html .mt-chip,
+  html .lg-chip { min-height: 44px; }
+
+  /* A dot the size of a full stop is not a control. An absolutely positioned
+     ::after was tried first and did nothing measurable: the pseudo-element
+     paints but the button's own box, which is what a tap is tested against,
+     stayed 8px.
+
+     So the BUTTON becomes 44px and the dot becomes a pseudo-element inside
+     it. Identical to look at, seven times the target. The active pill is
+     wider, so its inner mark stretches rather than the button. */
+  html .cf__dots .cf__dot {
+    /* flex-shrink defaults to 1, and seven 44px targets plus gaps overflow a
+       narrow row, so the browser squashed them straight back to 8px wide. The
+       height took, which is exactly the kind of half-fix that reads as done. */
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    border-radius: 0;
+    background: none;
+    display: inline-grid;
+    place-items: center;
+  }
+  html .cf__dots .cf__dot::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.28);
+    transition: background 0.25s, width 0.3s var(--ease-out-expo);
+  }
+  html .cf__dots .cf__dot:hover::before { background: rgba(255, 255, 255, 0.45); }
+  html .cf__dots .cf__dot.is-on { width: 44px; background: none; }
+  html .cf__dots .cf__dot.is-on::before { background: var(--volt); width: 22px; border-radius: 5px; }
+  /* The row that holds them is a flex line sharing 375px with a counter and
+     an "All" button, and it was squeezing all three: the dots down to 8px
+     each and the BUTTON DOWN TO ZERO WIDTH, which is a control that cannot be
+     seen or tapped at all. Wrapping the line gives the dots a row of their
+     own, where seven 44px targets fit with room to spare, and lets the button
+     be its own size again. */
+  html .cf__foot { flex-wrap: wrap; row-gap: 14px; }
+  html .cf__dots { gap: 0; flex: 1 0 100%; order: 3; justify-content: center; }
+
+  /* A submit button that is 38px square, and a bare text link in a paragraph,
+     are both a tap away from a miss. */
+  html .ft2__form button,
+  html .ft2__form .btn { min-width: 44px; min-height: 44px; }
+  html .ft2__social-line a,
+  html p > a { display: inline-flex; align-items: center; min-height: 44px; }
+}

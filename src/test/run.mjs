@@ -1190,6 +1190,51 @@ for (const [f, kb] of Object.entries(BUDGET)) {
     }
   }
 
+  /* TEAM NEWS, COUNTED RATHER THAN REMEMBERED.
+
+     "Who in the starting XI also played last year", "new signings making
+     their debut even though the game is not competitive" and "a lot of the
+     boys from last season are yet to return" were all being typed by hand,
+     and all three are counted from the team sheet and the squad record the
+     panel already ships. A first game of pre-season is ABOUT who is there and
+     who is not.
+
+     A friendly does not make a man experienced, so a debut in one is still a
+     debut: the figures here are the competitive record the site publishes. */
+  {
+    const w4 = {};
+    const seedRaw5 = fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8');
+    const SEED5 = JSON.parse(seedRaw5.replace(/^window\.SA_SEED=/, '').replace(/;\s*$/, ''));
+    w4.SA_SEED = SEED5;
+    new Function('window', 'fetch', reportChunk)(w4, () => Promise.reject(new Error('offline')));
+
+    /* A real sheet: capped men, two who have never played, and a trialist. */
+    const capped = Object.keys(SEED5.history).filter((n) => (SEED5.history[n].a || 0) > 0).slice(0, 6).map(Number);
+    const uncapped = (SEED5.squad || []).filter((p) => !(SEED5.history[p.num] || {}).a).slice(0, 2).map((p) => p.num);
+    check('the seed can supply capped and uncapped players', capped.length === 6 && uncapped.length === 2,
+      `${capped.length} capped, ${uncapped.length} uncapped`);
+    const ctx4 = w4.CPR.context(SEED5.matches, SEED5.baselineFixtures, {
+      iso: '2026-08-02', id: 'r20260802-pure', opp: 'Pure Football FC 2.0',
+      competition: 'Pre-season friendly', goals: [],
+      sheetNums: capped.concat(uncapped).concat([901]),
+    }, SEED5.history);
+    const news = (ctx4.squad || []).join(' ');
+    check('team news counts who has played competitively before', /had started a competitive match/.test(news), news.slice(0, 90));
+    check('team news names a debut even in a friendly', /making a first appearance/.test(news), news.slice(0, 120));
+    check('team news counts a trialist', /trialist was given a run/.test(news), news.slice(0, 120));
+    check('team news names who is not involved', /were not involved, among them/.test(news), news.slice(0, 140));
+    /* Every one of these opens a sentence, and the number words are written
+       out, so they must be capitalised or they read as fragments. */
+    for (const sentence of news.split(/(?<=\.)\s+/).filter(Boolean)) {
+      check(`team news sentence starts with a capital: "${sentence.slice(0, 28)}..."`,
+        /^[A-Z“‘]/.test(sentence), sentence.slice(0, 40));
+    }
+    /* A trialist has no club record and must never be counted as one who has. */
+    check('a trialist is not counted among the capped',
+      !/\b(thirteen|twelve) of the (twelve|thirteen)/.test(news),
+      'trialists are being counted in the club record');
+  }
+
   check('report writer says which one wrote it',
     /composed/.test(reportChunk) && /written/.test(matchChunk + reportChunk),
     'the club cannot tell a composed report from a written one');

@@ -1636,6 +1636,10 @@
               offFor: on ? nameOf(on.num) : '', offAt: on && on.minute ? on.minute : '' };
           }),
           unused: benchNow().filter(function (b) { return !b.on; }).map(function (b) { return nameOf(b.num); }),
+          /* Every shirt number involved, so the writer can count who has
+             played for the club before and who has not. */
+          sheetNums: startersNow().map(function (st) { return st.num; })
+            .concat(benchNow().map(function (b) { return b.num; })),
           saves: Number($('#m-saves', back).value) || 0,
           yellows: counts.yellowCards.map(nameOf),
           reds: counts.redCards.map(nameOf),
@@ -1662,6 +1666,7 @@
           facts.friendlyOf = ctx.friendlyOf;
           facts.players = ctx.players;
           facts.next = ctx.next;
+          facts.squad = ctx.squad;
           return window.CPR.write(facts, {
             token: CP.state.session && CP.state.session.access_token,
           });

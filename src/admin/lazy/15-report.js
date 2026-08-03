@@ -369,6 +369,11 @@
       return g.name + ' got the ' + ordinal(n);
     }
 
+    /* WHO WAS THERE AND WHO WAS NOT, which is what a first pre-season game is
+       about. Placed after the shape and before the football, exactly where a
+       report puts its team news. */
+    if (c.squad && c.squad.length) paras.push(c.squad.join(' '));
+
     /* ONE CLOCK. A goal on 53 minutes and a save on 48 belong in that order,
        and a report that lists every goal and then every other incident is not
        narrating a match, it is reading two columns of a table. Split at half
@@ -739,9 +744,13 @@
     'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen',
     'seventeen', 'eighteen', 'nineteen', 'twenty'];
   var num = function (n) { return NUM[n] || String(n); };
+  /* Sentence case, because these open sentences: "nine of the twelve named"
+     read as a fragment somebody forgot to finish. */
+  var Num = function (n) { var w = num(n); return w.charAt(0).toUpperCase() + w.slice(1); };
 
-  function playerNotes(c, history) {
+  function playerNotes(c, history, covered) {
     if (!history) return [];
+    var already = covered || {};
     /* GROUPED BY WHAT IS TRUE, not listed by the man it is true of. Both of
        Sunday's scorers were new, so the report said "Ade Owolona had not
        started a competitive match for the club before this one" and then said
@@ -764,8 +773,11 @@
       var r = h(g.num);
       var starts = r.a || 0;
       var goals = r.g || 0;
+      /* The team news has already said he was making a first appearance;
+         saying it again two paragraphs later is the report repeating itself,
+         which is the clearest sign nothing is reading it. */
       if (!starts && !goals) {
-        add(g.name, 'NEW');
+        if (!already[g.num]) add(g.name, 'NEW');
       } else if (!goals) {
         add(g.name, 'FIRSTGOAL:' + starts);
       } else {
@@ -850,13 +862,87 @@
     };
   }
 
+  /* ==========================================================================
+     WHO THIS ELEVEN IS, which the club has to look up and should not.
+
+     "Who in the starting XI also played last year", "new signings making
+     their debut even though the game is not competitive", "a lot of the boys
+     from last season are yet to return" - the club was typing all three, and
+     all three are counted from the team sheet and the squad record it already
+     has. A first game of pre-season is ABOUT who is there and who is not,
+     which is why this is worth deriving properly rather than leaving to
+     somebody's memory on a Sunday evening.
+
+     Every figure is the competitive record the site publishes. A friendly
+     does not make somebody experienced, so a debut in one is still a debut.
+     ========================================================================== */
+  function squadContext(c, history, squad) {
+    if (!history || !(c.sheetNums || []).length) return { lines: [], debutants: {} };
+    var out = [];
+    var debutants = {};
+    var h = function (n) { return history[String(n)] || history[n] || {}; };
+    var nameOf = {};
+    (squad || []).forEach(function (p) { nameOf[p.num] = p.name; });
+
+    /* Numbers from 900 up are trialists: they have no profile, no squad card
+       and no place in any club record, which is what a trial is. */
+    var real = c.sheetNums.filter(function (n) { return Number(n) < 900; });
+    var trialists = c.sheetNums.filter(function (n) { return Number(n) >= 900; });
+
+    var capped = real.filter(function (n) { return (h(n).a || 0) > 0; });
+    var uncapped = real.filter(function (n) { return !(h(n).a || 0); });
+
+    if (capped.length && real.length > 3) {
+      var starts = capped.reduce(function (t, n) { return t + (h(n).a || 0); }, 0);
+      out.push(Num(capped.length) + ' of the ' + num(real.length) + ' named had started a '
+        + 'competitive match for the club before, ' + starts + ' between them.');
+    }
+
+    /* A DEBUT IS A DEBUT. The club asked for this in as many words: a first
+       appearance counts as one whether or not the game counted. */
+    if (uncapped.length && uncapped.length <= 5) {
+      var who = uncapped.map(function (n) { return nameOf[n] || ('No. ' + n); }).filter(Boolean);
+      if (who.length) {
+        uncapped.forEach(function (n2) { debutants[n2] = 1; });
+        out.push(who.length === 1
+          ? who[0] + ' was making a first appearance for the club.'
+          : listOf(who) + ' were all making a first appearance for the club.');
+      }
+    } else if (uncapped.length) {
+      out.push(Num(uncapped.length) + ' of the side had not played for the club before.');
+    }
+
+    if (trialists.length) {
+      out.push(trialists.length === 1 ? 'A trialist was given a run.'
+        : Num(trialists.length) + ' trialists were given a run.');
+    }
+
+    /* WHO IS NOT THERE, which in August is half the story. Anybody with a
+       real body of work for the club who is not on this sheet. Said as "has
+       not featured", because a man missing from a July friendly has not been
+       dropped, he is on holiday. */
+    var onSheet = {};
+    c.sheetNums.forEach(function (n) { onSheet[n] = 1; });
+    var away = (squad || []).filter(function (p) {
+      return !onSheet[p.num] && (h(p.num).a || 0) >= 10;
+    }).sort(function (a, b) { return (h(b.num).a || 0) - (h(a.num).a || 0); });
+    if (away.length >= 3) {
+      var top = away.slice(0, 3).map(function (p) { return p.name; });
+      out.push(Num(away.length) + ' of last season\u2019s regulars were not involved, among them '
+        + listOf(top) + '.');
+    }
+    return { lines: out, debutants: debutants };
+  }
+
   function context(all, fixtures, c, history) {
     var iso = c && c.iso ? c.iso : '';
+    var sq = squadContext(c || {}, history || null, (window.SA_SEED || {}).squad || []);
     return {
       h2h: headToHead(all, c && c.opp, iso, c && c.id),
       friendlyOf: friendlyOrder(all, fixtures, iso, c && c.id, c && c.competition),
-      players: playerNotes(c || {}, history || null),
+      players: playerNotes(c || {}, history || null, sq.debutants),
       next: nextUp(all, fixtures, iso, c && c.id),
+      squad: sq.lines,
     };
   }
 
@@ -970,6 +1056,9 @@
        something about a player rather than only about a scoreline, and it is
        the same competitive record every page publishes. */
     (c.players || []).forEach(function (line) { L.push('Player record: ' + line); });
+    /* Team news, counted rather than remembered. This is the material a
+       pre-season report is made of and the club should not be typing it. */
+    (c.squad || []).forEach(function (line) { L.push('Team news: ' + line); });
     /* The team sheet, handed over ready to print rather than as a table for
        the model to reformat and get wrong. */
     if ((c.lineup || []).length) {

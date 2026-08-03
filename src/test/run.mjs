@@ -797,7 +797,22 @@ const BUDGET = {
      else, which is the entire reason it exists. It is the right place for
      weight and the wrong place to keep adding: the next thing this needs is
      the coach typing more moments, not this file writing more sentences. */
-  'control-report.js': 9,
+  'control-report.js': 10,
+  /* 9 -> 10. What bought it: the brief rewritten around the club's own
+     exemplar - a report the retired admin produced when it ran inside a Claude
+     artifact and had a model to hand - and the club's season record, so a
+     report can close on "eighteen wins from eighteen, fifty-four points,
+     ninety scored and eleven conceded" without anybody typing figures the site
+     already derives. Typing them is how a published number goes wrong.
+
+     Also the opposition's goals and the penalties they saved, both of which
+     were RECORDED WITH MINUTES and had never once reached the writer: a report
+     of a 3-0 cup final defeat could say "they managed three" and nothing about
+     how, and the two penalties saved five minutes apart in that same final -
+     the turning point of the match - were invisible to it.
+
+     Fetched when Build the report is pressed and by nobody else, which is why
+     this is the right chunk to carry it. */
   /* 8 -> 9. What bought it: a note naming a player who did not score now
      attaches to him and forms its own passage in team-sheet order, which is
      the best material in a coach's notes and was being dropped into the run
@@ -1233,6 +1248,45 @@ for (const [f, kb] of Object.entries(BUDGET)) {
     check('a trialist is not counted among the capped',
       !/\b(thirteen|twelve) of the (twelve|thirteen)/.test(news),
       'trialists are being counted in the club record');
+  }
+
+  /* MOMENTS THE RECORD ALREADY TIMED AND THE WRITER NEVER SAW.
+
+     Nineteen opposition goals are stored across the archive and four missed
+     penalties, three of them with a minute, and not one had ever reached the
+     writer. So a report of a 3-0 cup final defeat could say "they managed
+     three" and nothing about how, and the two penalties saved five minutes
+     apart in that same final - the turning point of the match - were
+     invisible to it. A moment is a moment whoever it belonged to. */
+  {
+    const w5 = {};
+    w5.SA_SEED = JSON.parse(fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8')
+      .replace(/^window\.SA_SEED=/, '').replace(/;\s*$/, ''));
+    new Function('window', 'fetch', reportChunk)(w5, () => Promise.reject(new Error('offline')));
+    const out5 = w5.CPR.compose({
+      us: 'Us', opp: 'Them', kind: 'score', home: false, ourGoals: 0, theirGoals: 3,
+      goals: [], roles: [], cleanSheet: [], yellows: [], reds: [], pensSaved: [],
+      saves: 0, bullets: ['12 - we hit the post'],
+      theirGoals_detail: [{ name: '', minute: '28' }, { name: '', minute: '34' }, { name: '', minute: '70' }],
+      pensMissed: [{ name: 'Andrew Allen', minute: '50' }, { name: 'Frazier', minute: '55' }],
+      clubRecord: { played: 33, won: 29, drawn: 1, lost: 3, gf: 137, ga: 25,
+        league: { played: 18, won: 18, drawn: 0, lost: 0, gf: 90, ga: 11, points: 54 } },
+    });
+    check('an opposition goal with a minute is narrated', /opened the scoring/.test(out5), out5.slice(0, 120));
+    check('three opposition goals are counted, not repeated',
+      /made it two/.test(out5) && /got a third/.test(out5),
+      'every goal read "Them scored", which is the sound of a machine writing');
+    check('a saved penalty with a minute is narrated',
+      /Andrew Allen’s penalty was saved/.test(out5), 'the turning point of a cup final was invisible');
+    check('the penalties sit between the second and third goals',
+      out5.indexOf('made it two') < out5.indexOf('Andrew Allen’s penalty')
+      && out5.indexOf('Andrew Allen’s penalty') < out5.indexOf('got a third'),
+      'one clock means one clock, whoever the moment belonged to');
+    check('their goals are not both narrated and summarised',
+      !/managed three/.test(out5), 'narrated one by one and then totalled');
+    check('the club record closes the report',
+      /54 points/.test(out5) && /90 and conceded 11/.test(out5),
+      'the club was typing figures the site already derives');
   }
 
   check('report writer says which one wrote it',

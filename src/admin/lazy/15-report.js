@@ -194,7 +194,8 @@
          so the report thanked the opposition and then carried on with a save
          count and a head-to-head. */
       else if (/\b(final|last (ten|fifteen|twenty)|closing|full.?time|late on|at the end)\b/.test(low)
-        || /\b(thank|thanks to|wish them|wish him|good luck|all the best|best of luck|season ahead)\b/.test(low)) late.push(t);
+        || /\b(thank|thanks to|wish them|wish him|good luck|all the best|best of luck|season ahead)\b/.test(low)
+        || /\b(respect to|credit to|congratulations|well played|meet again|lessons)\b/.test(low)) late.push(t);
       else if (who) { (byName[who] = byName[who] || []).push(t); }
       else middle.push(t);
     });
@@ -383,6 +384,39 @@
       var events = notes.timed.map(function (t) {
         return { minute: t.minute, text: t.text, goal: false };
       });
+
+      /* EVERYTHING ELSE THE RECORD TIMED, which until now was nothing.
+
+         Nineteen opposition goals are stored across the archive and the writer
+         had never seen one, so a report of a 3-0 cup final defeat could say
+         "they managed three" and not one word about how. Four missed penalties
+         are stored, three of them with a minute, including the two saved five
+         minutes apart in that same final - which is the turning point of the
+         match and the thing anybody writing it would lead on.
+
+         A moment is a moment whoever it belonged to. */
+      /* Counted as they go, exactly as ours are. Three goals all reading
+         "FC Porto of London scored." is the sound of a machine writing, and
+         it is the same fault the club's own goals were fixed for. */
+      var theirs = 0;
+      (c.theirGoals_detail || []).slice()
+        .sort(function (a, b) { return Number(a.minute) - Number(b.minute); })
+        .forEach(function (g) {
+          if (g.minute == null || g.minute === '') return;
+          theirs++;
+          var who = String(g.name || '').trim();
+          var named = who && !/^unknown$/i.test(who);
+          var did = theirs === 1 ? ' opened the scoring'
+            : theirs === 2 ? ' made it two' : ' got a ' + ordinal(theirs);
+          events.push({ minute: Number(g.minute), goal: false,
+            text: (named ? who + did + ' for ' + them : them + did)
+              + (g.penalty ? ', from the spot' : '') + '.' });
+        });
+      (c.pensMissed || []).forEach(function (pk) {
+        if (pk.minute == null || pk.minute === '') return;
+        events.push({ minute: Number(pk.minute), goal: false,
+          text: (pk.name || 'A penalty') + (pk.name ? '\u2019s penalty was saved.' : ' was saved.') });
+      });
       var scored = 0;
       timed.forEach(function (g, i) {
         scored++;
@@ -492,7 +526,12 @@
        time. A save count is a figure, and figures go in MATCH DETAILS with
        the rest of the team sheet. */
     var tail = [];
-    if (!c.cleanSheet.length && c.theirGoals != null && c.theirGoals > 0 && c.kind === 'score') {
+    var theirsTimed = (c.theirGoals_detail || []).filter(function (g) {
+      return g.minute != null && g.minute !== '';
+    }).length;
+    /* Not if they have already been narrated one by one. */
+    if (!theirsTimed && !c.cleanSheet.length && c.theirGoals != null
+      && c.theirGoals > 0 && c.kind === 'score') {
       tail.push(them + (c.theirGoals === 1 ? ' got one back.' : ' managed ' + say(c.theirGoals) + '.'));
     }
     if (c.pensSaved.length) tail.push(listOf(c.pensSaved) + ' saved a penalty.');
@@ -529,6 +568,21 @@
     /* Where this one sits in pre-season, which is the difference between a
        result and a run of them. Only said when there is a run: "the first of
        one" is not a fact worth printing. */
+    /* THE WIDER PICTURE, which is how a report of a match that mattered ends.
+       Every figure is the club's own published record. */
+    /* Suppressed only if he STATES the record, not if he happens to use the
+       word "season". "Valuable lessons from the club's first ever final in our
+       debut season" was silencing the closing paragraph. */
+    if (c.clubRecord && c.clubRecord.league
+      && !said(/\d+\s*points|played \d+|won \d+ of|\bunbeaten\b|\d+ wins from \d+/i)) {
+      var lr = c.clubRecord.league;
+      if (lr.played >= 10) {
+        paras.push('In the league that season ' + c.us + ' played ' + lr.played + ', won '
+          + lr.won + (lr.drawn ? ', drew ' + lr.drawn : '') + (lr.lost ? ', lost ' + lr.lost : '')
+          + ', scored ' + lr.gf + ' and conceded ' + lr.ga + ', for ' + lr.points + ' points.');
+      }
+    }
+
     /* What comes next, unless he has already said it. */
     if (c.next && !said(/next up|next game|next match|on sunday|this week/i)) {
       var nx = c.next;
@@ -894,8 +948,10 @@
 
     if (capped.length && real.length > 3) {
       var starts = capped.reduce(function (t, n) { return t + (h(n).a || 0); }, 0);
-      out.push(Num(capped.length) + ' of the ' + num(real.length) + ' named had started a '
-        + 'competitive match for the club before, ' + starts + ' between them.');
+      out.push((capped.length === real.length
+        ? 'All ' + num(real.length) + ' named had'
+        : Num(capped.length) + ' of the ' + num(real.length) + ' named had')
+        + ' started a competitive match for the club before, ' + starts + ' between them.');
     }
 
     /* A DEBUT IS A DEBUT. The club asked for this in as many words: a first
@@ -971,40 +1027,42 @@
     'men’s Sunday-league club. Write to the standard of a professional club-site',
     'report: a journalist who watched the game and is telling somebody who did not.',
     '',
+    'STRUCTURE, in this order',
+    '1. Open on what the result means, not on the scoreline as a statistic. Two or',
+    '   three sentences that a supporter would want to read first.',
+    '2. A TEAM NEWS paragraph naming the side IN PROSE, not as a list: who was in',
+    '   goal, who was across the back, who sat in midfield, who led the line, who',
+    '   wore the armband, and who was on the bench. Write it as sentences.',
+    '3. What was at stake, and anything the notes say about the occasion.',
+    '4. The game itself, narrated in the order it happened from the timed moments',
+    '   below. Each moment gets its own proper sentence of twenty to twenty-five',
+    '   words: what led to it, who was involved, where on the pitch, what followed.',
+    '   Where there are moments in both halves, break with a heading in CAPITALS.',
+    '5. What it means in the wider picture, using the club and player records given.',
+    '6. Then the MATCH DETAILS block, reproduced exactly as supplied, at the end.',
+    '',
     'LENGTH',
     '- Aim for ' + WORDS.min + ' to ' + WORDS.max + ' words, excluding the MATCH DETAILS block.',
-    '- Reach it by writing each recorded moment properly. A moment worth a line in',
-    '  the notes is worth twenty to twenty-five words on the page: what led to it,',
-    '  who was involved, where on the pitch, and what happened next.',
+    '- Reach it by writing each recorded moment properly, and by using the player',
+    '  and club records to say who somebody is and what a result is worth.',
     '- Do NOT reach it by padding, by repeating yourself, by restating the score in',
     '  a new paragraph, or by inventing an incident. If the record will not carry',
     '  ' + WORDS.min + ' words, write what it carries and stop. Short and true beats long',
     '  and made up, every time.',
     '',
-    'STRUCTURE',
-    '- Open with the result and what it meant, in two or three sentences.',
-    '- Then narrate the game in the order it happened, using the timed moments',
-    '  below. Give each one a sentence. Do not group all the goals together and',
-    '  then all the other incidents: a save on 48 comes before a goal on 53.',
-    '- Where there are moments in both halves, break the narrative with a first',
-    '  half and second half heading in CAPITALS on its own line.',
-    '- Finish on the game, then reproduce the MATCH DETAILS block verbatim at the',
-    '  very end, exactly as given, under a line reading MATCH DETAILS.',
-    '',
     'VOICE',
-    '- British spelling. No em dashes. No emoji. No exclamation marks.',
+    '- British spelling. NO EM DASHES, ever; use a comma or a full stop.',
     '- "League Ten" or "League Eight", never "Division".',
     '- Understate it. A real number instead of an adjective. Never "incredible",',
     '  "unbelievable", "historic", "clinical", "dominant" or "showcasing".',
-    '- Name players. A report about eleven interchangeable men is not a report.',
-    '  Use the player records below to say who somebody is when it matters.',
-    '- Do not write a summary paragraph that repeats what you have just narrated.',
+    '- Name players and say something true about them. A report about eleven',
+    '  interchangeable men is not a report.',
+    '- No headline. No markdown, no bullet points, no bold. Plain paragraphs.',
     '',
     'ABSOLUTE',
     '- Invent NOTHING. Every incident you narrate must be in the notes below. You',
     '  may not add a save, a chance, a booking, a substitution or a moment of',
-    '  pressure that is not recorded. If the record is thin, the report is short.',
-    '  A short honest report is the correct output; a padded one is a failure.',
+    '  pressure that is not recorded.',
     '- Do not name a player who is not named below.',
     '- Do not mention sepsis or the club’s cause. This is a football report.',
     '- Do not repeat a fact the coach has already stated in his own notes.',
@@ -1059,6 +1117,19 @@
     /* Team news, counted rather than remembered. This is the material a
        pre-season report is made of and the club should not be typing it. */
     (c.squad || []).forEach(function (line) { L.push('Team news: ' + line); });
+    /* The club's own record, so the closing paragraph is derived rather than
+       remembered. Every one of these is published on the site. */
+    if (c.clubRecord) {
+      var cr = c.clubRecord;
+      L.push('Club record that season, all competitions: played ' + cr.played + ', won ' + cr.won
+        + ', drawn ' + cr.drawn + ', lost ' + cr.lost + ', scored ' + cr.gf + ', conceded ' + cr.ga
+        + ' (' + Math.round((cr.won / Math.max(1, cr.played)) * 100) + '% won).');
+      if (cr.league) {
+        L.push('In the league that season: played ' + cr.league.played + ', won ' + cr.league.won
+          + ', drawn ' + cr.league.drawn + ', lost ' + cr.league.lost + ', scored ' + cr.league.gf
+          + ', conceded ' + cr.league.ga + ', ' + cr.league.points + ' points.');
+      }
+    }
     /* The team sheet, handed over ready to print rather than as a table for
        the model to reformat and get wrong. */
     if ((c.lineup || []).length) {

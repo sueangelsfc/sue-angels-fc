@@ -1169,6 +1169,21 @@
       el.setAttribute('data-short', short > 0 ? 'true' : 'false');
     }
 
+    /* Parsed from the same "minute - name" shape as the notes box. Kept as
+       the record's own {name, minute, penalty} so nothing downstream changes. */
+    function theirGoalsNow() {
+      var raw = ($('#m-their', back) || {}).value || '';
+      return raw.split('\n').map(function (l) { return l.trim(); }).filter(Boolean).map(function (l) {
+        var pen = /\(pen\)/i.test(l);
+        var t = l.replace(/\(pen\)/ig, '').trim();
+        var m2 = t.match(/^(\d{1,3})\s*[-\u2013\u2014:.)]?\s*(.*)$/);
+        return {
+          name: (m2 ? m2[2] : t).trim(), type: pen ? 'pen' : 'open',
+          minute: m2 ? m2[1] : '', penalty: pen,
+        };
+      });
+    }
+
     function startersNow() { return sheetFor(counts.starters, false); }
     function benchNow() { return sheetFor(counts.bench, true); }
 
@@ -1335,6 +1350,25 @@
               '<p class="field__hint">Left blank this is worked out from where the eleven stood, ' +
                 'which is shown above. Fill it in if the side calls it something else: a back ' +
                 'three with wing backs is a 3-4-2-1 to most people and a 5-4-1 to a computer.</p>' +
+            '</div>' +
+
+            /* THEIR GOALS. Nineteen are stored across the archive and there
+               has never been a way to enter one: they came in with the code
+               baseline and the form could not touch them. A report of a 3-0
+               defeat that cannot say who scored or when is not a report.
+
+               Same shape as the notes box, because the club already knows it:
+               a minute, a dash, and who. */
+            '<div class="field">' +
+              '<label class="field__label" for="m-their">Their goals</label>' +
+              '<textarea class="textarea" id="m-their" rows="3" ' +
+                'placeholder="23 - Rayan Alhajeri\n41 - their number nine\n67 - unknown (pen)">' +
+              esc(((d.opponentGoals || []).map(function (g) {
+                return (g.minute ? g.minute + ' - ' : '') + (g.name || '')
+                  + (g.penalty ? ' (pen)' : '');
+              }).filter(function (l) { return l.trim(); }).join('\n'))) + '</textarea>' +
+              '<p class="field__hint">One a line. A minute in front puts it in the story where it ' +
+                'happened. Add (pen) for a penalty. Leave a name out if nobody knows it.</p>' +
             '</div>' +
 
             '<h4 class="mform__h">Your notes</h4>' +
@@ -1616,6 +1650,11 @@
               assist: g.assist ? { name: nameOf(g.assist.num), type: g.assist.type } : null,
             };
           }),
+          theirGoals_detail: theirGoalsNow(),
+          pensMissed: counts.penaltiesMissed.map(function (n2) {
+            var was = (d.penaltiesMissed || []).filter(function (x) { return x && x.num === n2; })[0];
+            return { name: nameOf(n2), minute: (was && was.minute) || '' };
+          }),
           keeper: $('#m-keeper', back).value === '' ? '' : nameOf(Number($('#m-keeper', back).value)),
           /* Numbers as well as names: the writer looks a player's record up by
              number, which is the key the history is stored under. */
@@ -1667,6 +1706,8 @@
           facts.players = ctx.players;
           facts.next = ctx.next;
           facts.squad = ctx.squad;
+          /* The club's record in the season this match belongs to. */
+          facts.clubRecord = (SEED.clubRecord || {})[seasonOfIso($('#m-date', back).value || '')] || null;
           return window.CPR.write(facts, {
             token: CP.state.session && CP.state.session.access_token,
           });
@@ -1802,7 +1843,14 @@
         redCards: counts.redCards.map(function (n) { return { num: n }; }),
         cleanSheets: counts.cleanSheets.map(function (n) { return { num: n }; }),
         penaltiesSaved: counts.penaltiesSaved.map(function (n) { return { num: n }; }),
-        penaltiesMissed: counts.penaltiesMissed.map(function (n) { return { num: n }; }),
+        penaltiesMissed: counts.penaltiesMissed.map(function (n) {
+          /* Keep the minute already stored against him: it is the difference
+             between "a penalty was saved" and the turning point of a cup
+             final, and re-saving the form used to wipe it. */
+          var was = (d.penaltiesMissed || []).filter(function (x) { return x && x.num === n; })[0];
+          return was && was.minute ? { num: n, minute: was.minute } : { num: n };
+        }),
+        opponentGoals: theirGoalsNow(),
         keeper: $('#m-keeper', back).value === '' ? null : Number($('#m-keeper', back).value),
         saves: $('#m-saves', back).value === '' ? null : Number($('#m-saves', back).value),
         penaltiesConceded: Number($('#m-oppgoals', back).value || 0),

@@ -303,6 +303,36 @@ const adminSeed = {
      shirt numbers into JSON and hoping. Numbers are the storage key the match
      record already uses; they are never shown on the website. */
   squad: d.squad.map((p) => ({ num: p.num, name: p.name, pos: p.position || '' })),
+  /* THE CLUB'S OWN RECORD, so a report can close the way a report closes.
+
+     "Eighteen wins from eighteen. Fifty-four points. Ninety goals scored
+     across the league alone. Just eleven conceded. In thirty-three matches
+     across all competitions we scored 137 and won eighty-eight per cent" -
+     every figure in that paragraph is derived on this site and none of it
+     reached the writer, so the club was typing its own history from memory
+     into a box, which is exactly how a published figure goes wrong.
+
+     Counted at the point the season the match belongs to had reached would be
+     better and is harder; this is the season entire, which is right for a
+     report written after it and slightly generous for one written in October.
+     Stated as the season's final record so nothing reads as a claim about the
+     day. */
+  clubRecord: (() => {
+    const byYear = {};
+    for (const sn of (d.seasons || [])) {
+      const inSeason = d.competitive.filter((m) => m.season === sn.name);
+      if (!inSeason.length) continue;
+      const all = teamSummary(inSeason);
+      const lg = teamSummary(inSeason.filter((m) => m.competition === CLUB.division));
+      byYear[sn.name] = {
+        played: all.played, won: all.won, drawn: all.drawn, lost: all.lost,
+        gf: all.goalsFor, ga: all.goalsAgainst,
+        league: lg.played ? { played: lg.played, won: lg.won, drawn: lg.drawn, lost: lg.lost,
+          gf: lg.goalsFor, ga: lg.goalsAgainst, points: lg.won * 3 + lg.drawn } : null,
+      };
+    }
+    return byYear;
+  })(),
   /* HOW LONG A MATCH REPORT SHOULD BE, defined once because three places ask:
      the gauge under the notes box, the line beside the Build button, and the
      brief the model is written to. Typed into each of them they would drift,

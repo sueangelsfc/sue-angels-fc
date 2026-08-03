@@ -219,16 +219,21 @@
       var list = rows.slice().sort(function (a, b) {
         return String((b.data || {}).sortISO || '').localeCompare(String((a.data || {}).sortISO || ''));
       });
+      var drafts = list.filter(function (r) { return (r.data || {}).draft; }).length;
       host.innerHTML = sec({
         title: 'Club news',
-        sub: esc(list.length) + ' articles. Written here as prose, not as a JSON document: '
+        sub: esc(list.length) + ' articles'
+          + (drafts ? ', ' + esc(drafts) + ' of them ' + (drafts === 1 ? 'a draft' : 'drafts')
+            + ' the website does not show' : '')
+          + '. Written here as prose, not as a JSON document: '
           + 'blank lines between paragraphs, exactly as it reads on the website.',
         actions: '<button class="btn btn--primary" data-new>Write an article</button>',
         body: (list.length
           ? table(['Headline', 'Category', 'Date', 'Cover', ''], list.map(function (r) {
             var d = r.data || {};
             return '<tr data-key="' + esc(r.key) + '">' +
-              '<td><b>' + esc(d.title || 'Untitled') + '</b></td>' +
+              '<td><b>' + esc(d.title || 'Untitled') + '</b>' +
+                (d.draft ? ' <span class="badge badge--warning">Draft</span>' : '') + '</td>' +
               '<td>' + esc(d.cat || 'News') + '</td>' +
               '<td>' + esc(d.date || '') + '</td>' +
               '<td>' + (d.cover
@@ -252,6 +257,15 @@
             field('a-cat', 'Category', choose('a-cat', d.cat || 'News', CATS)) +
             field('a-date', 'Date', '<input class="input" id="a-date" type="date" value="' +
               esc(toIso(d.date) || d.sortISO || today()) + '">') +
+            /* SOMEWHERE TO LEAVE A PIECE UNFINISHED. Saving writes to the
+               database and Publish to site puts everything in the database on
+               the website, so an article started on a Tuesday and meant for
+               the weekend went live the moment anybody published for an
+               unrelated reason. A draft is kept out of the build entirely: no
+               feed card, no page, no sitemap entry. */
+            field('a-draft', 'On the website', choose('a-draft', d.draft ? 'draft' : 'live', [
+              ['live', 'Published'], ['draft', 'Draft, keep it off the site'],
+            ]), 'A draft is saved here and stays off the website until you publish it.') +
             imageField('a-cover', 'Cover image', d.cover,
               { max: 1200, hint: 'Optional. Shown on the news page and when the article is shared.' }) +
           '</div>' +
@@ -284,6 +298,7 @@
             id: key,
             title: title,
             cat: val(back, 'a-cat'),
+            draft: val(back, 'a-draft') === 'draft',
             date: pretty(iso),
             sortISO: iso,
             lede: body.value.trim(),

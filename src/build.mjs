@@ -917,3 +917,41 @@ if (drift.length) {
 }
 console.log(`NOT BUILT (${held.length} routes awaiting rebuild): ${held.join(' ')}`);
 console.log(`sitemap urls: ${urls.length}`);
+
+/* ==========================================================================
+   A PAGE FOR A RECORD THAT NO LONGER EXISTS
+
+   The generator wrote files and never removed one. Delete an article in the
+   control panel and its page kept serving at the same URL for good: gone from
+   the news feed, gone from the sitemap, still there for anyone holding the
+   link, still in Google. Same for a deleted album, and for a match whose id
+   changed. It surfaced here as a probe article that outlived the record it
+   came from and broke the sitemap check on the next run.
+
+   Only these four directories, which the build owns completely: every file in
+   them is one route per record and nothing else is ever put there. Assets,
+   the root pages and anything hand-written are not touched. --check writes
+   nothing, so it removes nothing either.
+
+   Reported rather than silent. A build that quietly deletes files is a build
+   nobody trusts, and if this ever removes something it should not, the line
+   it prints is the evidence. */
+if (!CHECK) {
+  const OWNED = ['news', 'matches', 'players', 'gallery'];
+  const kept = new Set(written);
+  const orphans = [];
+  for (const dir of OWNED) {
+    const full = path.join(ROOT, dir);
+    if (!fs.existsSync(full)) continue;
+    for (const name of fs.readdirSync(full)) {
+      if (!name.endsWith('.html')) continue;
+      const rel = `${dir}/${name}`;
+      if (kept.has(rel)) continue;
+      fs.unlinkSync(path.join(ROOT, rel));
+      orphans.push(rel);
+    }
+  }
+  if (orphans.length) {
+    console.log(`removed ${orphans.length} page(s) whose record is gone: ${orphans.join(' ')}`);
+  }
+}

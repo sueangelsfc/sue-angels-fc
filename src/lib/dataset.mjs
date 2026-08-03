@@ -532,7 +532,19 @@ export function buildDataset() {
   const leagueResults = (ps.LEAGUE_RESULTS || []);
 
   /* ---- Articles ---- */
+  /* A HALF-WRITTEN ARTICLE IS NOT A PUBLISHED ONE.
+
+     Saving in the panel writes to the database, and the club publishes with a
+     button that puts everything in the database on the website. So an article
+     somebody started on a Tuesday and meant to finish at the weekend went
+     live the moment anybody pressed Publish for an unrelated reason. There
+     was nowhere to leave a piece unfinished.
+
+     `draft: true` on the record keeps it out of the build entirely: no feed
+     card, no page, no sitemap entry. Absent means published, so the five
+     articles already written are unaffected and nothing has to be re-saved. */
   const articles = (live.articles || [])
+    .filter((row) => !(row.data && row.data.draft))
     .map((row) => {
       const d = row.data || {};
       return {

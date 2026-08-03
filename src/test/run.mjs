@@ -709,7 +709,28 @@ const BUDGET = {
      who made it and how), and the composer that turns a coach's bullets into a
      match report. Fetched only by somebody who has opened Fixtures or Results,
      which is a handful of people a season. */
-  'control-match.js': 14,
+  /* 14 -> 15, stated rather than slipped past, because the block above names
+     raising as the failure mode.
+
+     What bought it: 108 bytes for the results list being usable at all. It
+     sorted on the row KEY, and a key starts with the letter the record was
+     created under, so every fixture-promoted match sorted below every
+     baseline one whatever the dates said - the last game of last season sat
+     at the bottom under thirty-three older ones. And the Result column read
+     only the row, so the thirty-three matches whose scoreline lives in the
+     baseline all said "Not recorded" beside a result the website was
+     publishing.
+
+     Paid for first, three times, before raising: pickable() and
+     pickerSelect() merged into one offer function, the repaint reading its
+     field names off GROUPS instead of a hand-typed list that had three of
+     them wrong, and the Played column dropped because matchLabel already
+     renders the date beside the opponent. Those bought 40 bytes of the 148.
+
+     This module is now the one to split. It is the match form, the fixture
+     list and the results table in one chunk, and the results table is what
+     loads first. */
+  'control-match.js': 15,
   /* News, gallery, recognition, badges and sponsors. The album editor is the
      weight: photographs visible, removable, reorderable and taggable in the
      album itself, four operations that all have to keep the parallel tag list

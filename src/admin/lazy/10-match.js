@@ -1732,8 +1732,31 @@
         return both[0];
       })
       .then(function (rows) {
+      /* ORDERED BY WHEN THE MATCH WAS PLAYED.
+
+         It sorted on the row key, and a key begins with the letter the record
+         was created under: `r` for one from the results baseline, `f` for one
+         promoted from a fixture. Sorting those as text puts every f below
+         every r whatever the dates say, so the last game of last season, at
+         home to Hillside, sat at the bottom of the list under thirty-three
+         older matches. The club could not find its own most recent result.
+
+         BASE is the same match list the website builds from, so a record
+         whose scoreline lives in the baseline rather than on its own row
+         still knows its own date. */
+      var BASE = {};
+      (SEED.matches || []).forEach(function (m) { BASE[m.id] = m; });
+      var whenOf = function (r) {
+        var x = r.data || {};
+        var said = x.date || (BASE[r.key] || {}).date || '';
+        var iso = isoFromPretty(said);
+        if (iso) return iso;
+        /* Failing that, the date is in the key: r20260531-hillside. */
+        var m = String(r.key).match(/^[a-z](\d{4})(\d{2})(\d{2})/);
+        return m ? m[1] + '-' + m[2] + '-' + m[3] : '';
+      };
       var list = (rows || []).slice().sort(function (a, b) {
-        return String(b.key).localeCompare(String(a.key));
+        return whenOf(b).localeCompare(whenOf(a));
       });
       var withReport = list.filter(function (r) {
         var x = r.data || {};
@@ -1749,8 +1772,16 @@
         body: (list.length
           ? table(['Match', 'Result', 'Report', 'Goals', 'Team sheet', ''], list.map(function (r) {
             var x = r.data || {};
-            var score = x.kind === 'walkover' ? 'Walkover'
-              : (x.hs != null && x.as != null) ? x.hs + '-' + x.as : 'Not recorded';
+            /* The scoreline is on the row for a match the panel recorded, and
+               in the baseline for the thirty-three it did not. Reading only
+               the row made every one of those say "Not recorded" beside a
+               result the website was publishing. */
+            var b = BASE[r.key] || {};
+            var kind = x.kind || b.kind;
+            var hs = x.hs != null ? x.hs : b.hs;
+            var as = x.as != null ? x.as : b.as;
+            var score = kind === 'walkover' ? 'Walkover'
+              : (hs != null && as != null) ? hs + '-' + as : 'Not recorded';
             var xi = (x.starters || []).length;
             return '<tr data-key="' + esc(r.key) + '">' +
               '<td><b>' + esc(matchLabel(r.key)) + '</b></td>' +

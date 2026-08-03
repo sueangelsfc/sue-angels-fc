@@ -562,6 +562,32 @@
   /* The people chosen, each with a way off the list again. */
   function pickedList(field, chosen, emptyText) {
     if (!chosen.length) return '<p class="me__none">' + esc(emptyText || 'Nobody yet.') + '</p>';
+    /* THE BENCH IS NOT A LIST OF NAMES. Somebody who came on played, and a
+       lad who came on at half time and scored twice was recorded as having
+       sat there: the bench held a name and nothing else. Each one now says
+       whether he got on, when, and where he played once he did. Left alone he
+       is an unused substitute, which is the honest default. */
+    if (field === 'bench') {
+      return '<div class="bench">' + chosen.map(function (n, i) {
+        var b = benchDetail[n] || {};
+        var spells = spellsByNum[n] || [];
+        if (b.on && !spells.length) spells = [{ half: '2', pos: '', role: '' }];
+        spellsByNum[n] = spells;
+        return '<div class="bench__row' + (b.on ? ' is-on' : '') + '" data-bench="' + i + '">' +
+          '<div class="xi__head">' +
+            '<label class="bench__on"><input type="checkbox" data-b-on="' + n + '"' +
+              (b.on ? ' checked' : '') + '> Came on</label>' +
+            '<span class="xi__name">' + esc(nameOf(n)) + '</span>' +
+            (b.on ? '<input class="input input--sm bench__min" type="number" min="1" max="130" ' +
+              'data-b-min="' + n + '" value="' + esc(b.onAt == null ? '' : b.onAt) + '" ' +
+              'placeholder="min" aria-label="Minute ' + esc(nameOf(n)) + ' came on">' : '') +
+            '<button type="button" class="picked__x" data-drop="bench" data-i="' + i +
+              '" aria-label="Remove ' + esc(nameOf(n)) + '">&times;</button>' +
+          '</div>' +
+          (b.on ? spellList('bench', i, spells) : '') +
+        '</div>';
+      }).join('') + '</div>';
+    }
     return '<div class="picked">' + chosen.map(function (n, i) {
       return '<span class="picked__p">' + esc(nameOf(n)) +
         '<button type="button" class="picked__x" data-drop="' + esc(field) + '" data-i="' + i +
@@ -782,11 +808,97 @@
 
      The chosen list and the position grid used to be two separate blocks
      naming the same eleven people twice. One list, carrying both. */
-  function roleSelect(num, code, chosen) {
+  /* ==========================================================================
+     WHAT SOMEBODY ACTUALLY DID IN THE GAME
+
+     A player had one position and one role for the whole match, and a
+     substitute had neither: the bench was a list of names and nothing else,
+     so a lad who came on at half time and scored twice was recorded as having
+     sat there.
+
+     Football is not like that. Somebody starts at right back, moves into
+     midfield when the shape changes, and finishes on the wing. Somebody comes
+     on for the second half. So a player has a LIST OF SPELLS, each one a
+     half, a position and what he was asked to do there, and there is no limit
+     on how many he has.
+
+     One mechanism rather than two. A fixed "first half / second half" pair
+     would not hold a player who moved twice in a half, and a bare list of
+     positions would not say when. A spell says both.
+
+     WHAT THE SITE READS IS UNCHANGED. `positions` and `role` are still on the
+     record, still the flat fields every page and the whole statistics engine
+     read, and they are now DERIVED from the spells when the match is saved -
+     the same way the flat `assists` array is derived from the assist recorded
+     on each goal. Nothing downstream knows this changed, and a record written
+     before today still opens, because a player with no spells is read as one
+     spell holding the position he already had.
+     ========================================================================== */
+  var HALVES = [['1', 'First half'], ['2', 'Second half'], ['et', 'Extra time']];
+
+  /* The open match's spells and bench detail. Module scope because the row
+     renderers are module-level and only ever one match dialog is open; both
+     are reset when a match is opened. Same as STATUS and TRIALISTS above. */
+  var spellsByNum = {};
+  var benchDetail = {};
+
+  /* The spells a record holds, whatever shape it was written in. */
+  function spellsOf(st) {
+    if (st.spells && st.spells.length) return st.spells.slice();
+    var codes = st.positions || [];
+    if (!codes.length) return [];
+    /* An older record: one position for the whole game. Read as one spell so
+       it opens, edits and saves like anything written today. */
+    return codes.map(function (c, i) {
+      return { half: '1', pos: c, role: i === 0 ? (st.role || '') : '' };
+    });
+  }
+
+  /* Back to the flat fields the website reads. Order is kept and duplicates
+     dropped, so `positions` stays "where he played", and `role` is the first
+     one he was actually given. */
+  function flattenSpells(spells) {
+    var pos = [], role = '';
+    (spells || []).forEach(function (sp) {
+      if (sp.pos && pos.indexOf(sp.pos) === -1) pos.push(sp.pos);
+      if (!role && sp.role) role = sp.role;
+    });
+    return { positions: pos, role: role };
+  }
+
+  /* One spell: which half, where, and what he was asked to do there. */
+  function spellRow(field, i, j, sp) {
+    var code = sp.pos || '';
+    return '<div class="spell" data-spell="' + i + ':' + j + '" data-field="' + esc(field) + '">' +
+      '<select class="select spell__h" data-sp-half aria-label="Which part of the game">' +
+        HALVES.map(function (h) {
+          return '<option value="' + h[0] + '"' + (String(sp.half) === h[0] ? ' selected' : '') +
+            '>' + h[1] + '</option>';
+        }).join('') + '</select>' +
+      '<select class="select spell__p" data-sp-pos aria-label="Where he played">' +
+        '<option value="">Where did he play</option>' +
+        ['gk', 'def', 'mid', 'fwd'].map(function (g) {
+          var inGroup = POSITIONS.filter(function (p) { return p.group === g; });
+          if (!inGroup.length) return '';
+          return '<optgroup label="' +
+            ({ gk: 'In goal', def: 'Defence', mid: 'Midfield', fwd: 'Attack' })[g] + '">' +
+            inGroup.map(function (p) {
+              return '<option value="' + p.code + '"' + (p.code === code ? ' selected' : '') +
+                '>' + esc(p.name) + '</option>';
+            }).join('') + '</optgroup>';
+        }).join('') + '</select>' +
+      spellRole(code, sp.role) +
+      '<button type="button" class="spell__x" data-sp-drop ' +
+        'aria-label="Remove this spell">&times;</button>' +
+    '</div>';
+  }
+
+  /* Only the roles that attach to the position he is standing in, so nobody
+     is asked whether their left back was a poacher. */
+  function spellRole(code, chosen) {
     var options = rolesFor(code);
-    if (!options.length) return '';
-    return '<select class="select xi__role" data-role-num="' + num +
-      '" aria-label="What ' + esc(nameOf(num)) + ' was asked to do">' +
+    if (!options.length) return '<span class="spell__norole"></span>';
+    return '<select class="select spell__r" data-sp-role aria-label="What he was asked to do">' +
       '<option value="">Played as (optional)</option>' +
       options.map(function (r) {
         return '<option value="' + r.code + '"' + (r.code === chosen ? ' selected' : '') +
@@ -794,35 +906,35 @@
       }).join('') + '</select>';
   }
 
+  function spellList(field, i, spells) {
+    return '<div class="spells" data-spells="' + i + '" data-field="' + esc(field) + '">' +
+      spells.map(function (sp, j) { return spellRow(field, i, j, sp); }).join('') +
+      '<button type="button" class="btn btn--quiet btn--sm" data-sp-add ' +
+        'data-field="' + esc(field) + '" data-i="' + i + '">Add where else he played</button>' +
+    '</div>';
+  }
+
+
   function xiRows(starters) {
     if (!starters.length) {
       return '<p class="me__none">Nobody picked yet. Choose the starting eleven above.</p>';
     }
     return '<div class="xi">' + starters.map(function (st, i) {
-      var code = (st.positions || [])[0] || '';
+      /* The WORKING spells, not the ones sheetFor() shaped for saving: that
+         drops a spell with nothing chosen in it yet, which is exactly what a
+         freshly added row is. Rendering from the saved shape meant Add did
+         nothing you could see. */
+      var spells = spellsByNum[st.num] || spellsOf(st);
+      if (!spells.length) spells = [{ half: '1', pos: '', role: '' }];
+      spellsByNum[st.num] = spells;
       return '<div class="xi__row">' +
-        '<span class="xi__n">' + (i + 1) + '</span>' +
-        '<span class="xi__name">' + esc(nameOf(st.num)) + '</span>' +
-        '<select class="select xi__pos" data-pos-num="' + st.num +
-          '" aria-label="Where ' + esc(nameOf(st.num)) + ' played">' +
-          '<option value="">Where did he play</option>' +
-          ['gk', 'def', 'mid', 'fwd'].map(function (g) {
-            var inGroup = POSITIONS.filter(function (p) { return p.group === g; });
-            if (!inGroup.length) return '';
-            return '<optgroup label="' +
-              ({ gk: 'In goal', def: 'Defence', mid: 'Midfield', fwd: 'Attack' })[g] + '">' +
-              inGroup.map(function (p) {
-                return '<option value="' + p.code + '"' + (p.code === code ? ' selected' : '') +
-                  '>' + esc(p.name) + '</option>';
-              }).join('') + '</optgroup>';
-          }).join('') + '</select>' +
-        /* And what he was asked to do there. Only ever the roles that attach
-           to the position he is standing in, so nobody is asked whether their
-           left back was a poacher. Hidden entirely until a position is chosen,
-           because a role with nowhere to attach is a question with no answer. */
-        roleSelect(st.num, code, st.role) +
-        '<button type="button" class="picked__x" data-drop="starters" data-i="' + i +
-          '" aria-label="Take ' + esc(nameOf(st.num)) + ' out of the eleven">&times;</button>' +
+        '<div class="xi__head">' +
+          '<span class="xi__n">' + (i + 1) + '</span>' +
+          '<span class="xi__name">' + esc(nameOf(st.num)) + '</span>' +
+          '<button type="button" class="picked__x" data-drop="starters" data-i="' + i +
+            '" aria-label="Take ' + esc(nameOf(st.num)) + ' out of the eleven">&times;</button>' +
+        '</div>' +
+        spellList('starters', i, spells) +
       '</div>';
     }).join('') + '</div>';
   }
@@ -1248,20 +1360,51 @@
       return !goals.some(function (g) { return g.assist && g.assist.num === a.num
         && Number(g.minute) === Number(a.minute); });
     });
+    /* SPELLS, keyed by shirt number, for the eleven and for the bench. A
+       player has as many as he had: a half, a position and a role each. The
+       flat `positions` and `role` the website reads are derived from these
+       when the match is saved. */
+    spellsByNum = {};
+    benchDetail = {};
+    (d.starters || []).forEach(function (st) { spellsByNum[st.num] = spellsOf(st); });
+    (d.bench || []).forEach(function (b) {
+      benchDetail[b.num] = { on: !!b.on, onAt: b.onAt == null ? '' : b.onAt };
+      spellsByNum[b.num] = spellsOf(b);
+    });
+    /* Kept because the pitch diagram and the formation detector want one
+       position per player, which is the first one he stood in. */
     var posByNum = {};
-    var roleByNum = {};
-    (d.starters || []).forEach(function (st) {
-      posByNum[st.num] = (st.positions || [])[0] || '';
-      if (st.role) roleByNum[st.num] = st.role;
+    Object.keys(spellsByNum).forEach(function (n) {
+      var first = (spellsByNum[n] || []).filter(function (sp) { return sp.pos; })[0];
+      if (first) posByNum[n] = first.pos;
     });
 
-    function startersNow() {
-      return counts.starters.map(function (n) {
-        var out = { num: n, positions: posByNum[n] ? [posByNum[n]] : [] };
-        if (roleByNum[n]) out.role = roleByNum[n];
+    function sheetFor(nums, isBench) {
+      return nums.map(function (n) {
+        var spells = (spellsByNum[n] || []).filter(function (sp) { return sp.pos || sp.role; });
+        var flat = flattenSpells(spells);
+        var out = { num: n, positions: flat.positions };
+        if (flat.role) out.role = flat.role;
+        if (spells.length) out.spells = spells;
+        if (isBench) {
+          var b = benchDetail[n] || {};
+          /* Absent means he did not get on, so nothing already saved has to be
+             touched and an unused substitute stays an unused substitute. */
+          if (b.on) {
+            out.on = true;
+            if (b.onAt !== '' && b.onAt != null) out.onAt = Number(b.onAt);
+          } else {
+            out.positions = [];
+            delete out.role;
+            delete out.spells;
+          }
+        }
         return out;
       });
     }
+
+    function startersNow() { return sheetFor(counts.starters, false); }
+    function benchNow() { return sheetFor(counts.bench, true); }
 
     function scoreFields() {
       return '<div class="field"><label class="field__label" for="m-us">' +
@@ -1518,6 +1661,23 @@
     });
 
     back.addEventListener('click', function (e) {
+      if (e.target.matches('[data-sp-add]')) {
+        var af = e.target.getAttribute('data-field');
+        var an = (counts[af] || [])[Number(e.target.getAttribute('data-i'))];
+        spellsByNum[an] = (spellsByNum[an] || []).concat([{ half: '2', pos: '', role: '' }]);
+        if (af === 'bench') paintGroup('bench'); else paintXI();
+        return;
+      }
+      if (e.target.matches('[data-sp-drop]')) {
+        var dEl = e.target.closest('[data-spell]');
+        var dp = dEl.getAttribute('data-spell').split(':');
+        var df = dEl.getAttribute('data-field');
+        var dn = (counts[df] || [])[Number(dp[0])];
+        (spellsByNum[dn] || []).splice(Number(dp[1]), 1);
+        posByNum[dn] = ((spellsByNum[dn] || []).filter(function (x) { return x.pos; })[0] || {}).pos || '';
+        if (df === 'bench') paintGroup('bench'); else paintXI();
+        return;
+      }
       if (e.target.matches('[data-nt-add]')) {
         if (!guard()) return;
         var wrap = e.target.closest('.cp-newtrial');
@@ -1529,16 +1689,21 @@
         SQUAD.forEach(function (p) { used[p.num] = 1; });
         var n = 900;
         while (used[n]) n++;
-        var rec = { num: n, name: nm };
+        /* NOT `rec`. `var` is function-scoped, so a `var rec` here hoists to
+           the top of this whole click handler and shadows the match's own
+           `rec` in every other branch of it - including Save, which then read
+           `rec.key` off undefined and threw. Saving a match was broken by
+           this for as long as the trialist form has existed. */
+        var trialist = { num: n, name: nm };
         var f = $('[data-nt-from]', wrap).value;
         var u = $('[data-nt-until]', wrap).value;
-        if (f) rec.from = f;
-        if (u) rec.until = u;
+        if (f) trialist.from = f;
+        if (u) trialist.until = u;
 
-        var next = TRIALISTS.concat([rec]);
+        var next = TRIALISTS.concat([trialist]);
         CP.upsert('player_photos', 'roster:trialists', { players: next }).then(function () {
           TRIALISTS = next.slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
-          SQUAD = SQUAD.concat([{ num: n, name: nm, pos: '', trial: true, from: rec.from, until: rec.until }]);
+          SQUAD = SQUAD.concat([{ num: n, name: nm, pos: '', trial: true, from: trialist.from, until: trialist.until }]);
           nameOfNum[n] = nm;
           counts[field].push(n);
           if (field === 'starters') {
@@ -1695,7 +1860,9 @@
         competition: $('#m-comp', back).value.trim(),
         kind: kind,
         starters: startersNow(),
-        bench: counts.bench.map(function (n) { return { num: n }; }),
+        /* The bench carries what each substitute actually did: whether he
+           got on, when, and where he played once he did. */
+        bench: benchNow(),
         goals: goals.map(function (g) {
           return {
             num: g.num,
@@ -1801,24 +1968,47 @@
         } else paintGroup(field);
         return;
       }
-      if (e.target.matches('[data-pos-num]')) {
-        var pnum = Number(e.target.getAttribute('data-pos-num'));
-        posByNum[pnum] = e.target.value;
-        /* A role belongs to a position. Move somebody from striker to left
-           back and "False nine" has to go with the striker, or the record says
-           a full back was a false nine. */
-        if (roleByNum[pnum] && !rolesFor(e.target.value).some(function (r) {
-          return r.code === roleByNum[pnum];
-        })) delete roleByNum[pnum];
-        /* Redraw the whole team sheet, not just the pitch: the role dropdown
-           beside this position has to be rebuilt for the new one. */
-        paintXI();
+      /* ---- A spell: which half, where, and what he was asked to do ---- */
+      var spellEl = e.target.closest('[data-spell]');
+      if (spellEl) {
+        var parts = spellEl.getAttribute('data-spell').split(':');
+        var sField = spellEl.getAttribute('data-field');
+        var nums = counts[sField] || [];
+        var sNum = nums[Number(parts[0])];
+        var sList = spellsByNum[sNum] || (spellsByNum[sNum] = []);
+        var sp = sList[Number(parts[1])] || (sList[Number(parts[1])] = { half: '1', pos: '', role: '' });
+
+        if (e.target.matches('[data-sp-half]')) sp.half = e.target.value;
+        else if (e.target.matches('[data-sp-role]')) sp.role = e.target.value;
+        else if (e.target.matches('[data-sp-pos]')) {
+          sp.pos = e.target.value;
+          /* A role belongs to a position. Move somebody from striker to left
+             back and "False nine" has to go with the striker, or the record
+             says a full back was a false nine. */
+          if (sp.role && !rolesFor(sp.pos).some(function (r) { return r.code === sp.role; })) {
+            sp.role = '';
+          }
+        }
+        posByNum[sNum] = (sList.filter(function (x) { return x.pos; })[0] || {}).pos || '';
+        if (sField === 'bench') paintGroup('bench'); else paintXI();
         return;
       }
-      if (e.target.matches('[data-role-num]')) {
-        var rnum = Number(e.target.getAttribute('data-role-num'));
-        if (e.target.value) roleByNum[rnum] = e.target.value; else delete roleByNum[rnum];
-        $('[data-pitch]', back).innerHTML = pitchSvg(startersNow());
+
+      /* ---- Did a substitute get on, and when ---- */
+      if (e.target.matches('[data-b-on]')) {
+        var bn = Number(e.target.getAttribute('data-b-on'));
+        benchDetail[bn] = benchDetail[bn] || {};
+        benchDetail[bn].on = e.target.checked;
+        if (e.target.checked && !(spellsByNum[bn] || []).length) {
+          spellsByNum[bn] = [{ half: '2', pos: '', role: '' }];
+        }
+        paintGroup('bench');
+        return;
+      }
+      if (e.target.matches('[data-b-min]')) {
+        var mn = Number(e.target.getAttribute('data-b-min'));
+        benchDetail[mn] = benchDetail[mn] || {};
+        benchDetail[mn].onAt = e.target.value;
         return;
       }
       if (e.target.matches('#m-kind')) { paintKind(); return; }

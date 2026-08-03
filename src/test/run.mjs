@@ -730,7 +730,28 @@ const BUDGET = {
      This module is now the one to split. It is the match form, the fixture
      list and the results table in one chunk, and the results table is what
      loads first. */
-  'control-match.js': 15,
+  /* 15 -> 17. THE SECOND RAISE, and the last one that should be allowed.
+
+     What bought it: 850 bytes for a player having a list of spells rather
+     than one position - a half, a place and a role each, as many as he had -
+     and for the bench recording whether a substitute got on, when, and where
+     he played. A lad who came on at half time and scored twice was previously
+     recorded as having sat there.
+
+     Paid for first: roleSelect() deleted outright, orphaned by the change,
+     and posByNum/roleByNum reduced to the one lookup the pitch diagram needs.
+     That covered 60 of the 910.
+
+     THE SPLIT IS NOW BLOCKING. This chunk is three things: the fixtures
+     panel, the results table and the match dialog. The table is what loads
+     when the club opens Results; the dialog is most of the weight and is only
+     wanted once somebody presses Edit. The report writer inside it is a
+     self-contained lump of pure functions used only when the Build button is
+     pressed, and it is the obvious first extraction. Not attempted here
+     because it is a 1,400-line move and shipping a working form mattered
+     more than the number tonight, which is exactly the reasoning a ceiling
+     exists to make somebody write down rather than think quietly. */
+  'control-match.js': 17,
   /* News, gallery, recognition, badges and sponsors. The album editor is the
      weight: photographs visible, removable, reorderable and taggable in the
      album itself, four operations that all have to keep the parallel tag list
@@ -1420,6 +1441,78 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     `only ${result.compared} answers compared`);
   check('the panel and the site agree about every squad status',
     result.diffs.length === 0, result.diffs.slice(0, 3).join('; '));
+}
+
+/* ==========================================================================
+   NO `var` SHADOWS A NAME ITS OWN ENCLOSING FUNCTION USES
+
+   A `var rec` inside one branch of the match dialog's click handler hoisted to
+   the top of that whole handler and shadowed the dialog's own `rec` in every
+   other branch. Saving a match then read `.key` off undefined and threw, and
+   it shipped: the club could not save a match at all.
+
+   Worth failing the build over because it is invisible in review - the two
+   declarations sit four hundred lines apart and each looks correct where it
+   is. Compared against the ACTUAL enclosing function, found by matching
+   braces, rather than against any declaration anywhere in the file, which
+   flags every honest re-use of a short name.
+   ========================================================================== */
+{
+  const bodyFrom = (src, open) => {
+    let i = open, depth = 0;
+    do {
+      if (src[i] === '{') depth++;
+      else if (src[i] === '}') depth--;
+      i++;
+    } while (i < src.length && depth > 0);
+    return src.slice(open, i);
+  };
+  const declared = (body) => new Set(
+    [...body.matchAll(/\bvar\s+([a-zA-Z_$][\w$]*)/g)].map((m) => m[1]),
+  );
+
+  const offenders = [];
+  const dir = path.join(ROOT, 'src', 'admin', 'lazy');
+  for (const f of fs.readdirSync(dir)) {
+    if (!f.endsWith('.js')) continue;
+    /* Comments out first, or the check reads the sentence explaining the bug
+       as if it were the bug. */
+    const src = fs.readFileSync(path.join(dir, f), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/^\s*\/\/.*$/gm, '');
+    for (const fn of src.matchAll(/\bfunction\s+[a-zA-Z_$][\w$]*\s*\([^)]*\)\s*\{/g)) {
+      const outerBody = bodyFrom(src, fn.index + fn[0].length - 1);
+      /* Names the function itself declares, excluding those inside its own
+         nested listeners - which is what we are about to compare against. */
+      const listeners = [...outerBody.matchAll(/addEventListener\('(?:click|change|keydown|input)',\s*function\s*\([^)]*\)\s*\{/g)];
+      if (!listeners.length) continue;
+      let outerOnly = outerBody;
+      const bodies = [];
+      for (const l of listeners) {
+        const b = bodyFrom(outerBody, l.index + l[0].length - 1);
+        bodies.push(b);
+        outerOnly = outerOnly.split(b).join('');
+      }
+      /* And strip every OTHER nested function too. `wrap` declared in
+         paintGroup and again in a listener are siblings, not an ancestor and
+         its descendant, and nothing is shadowed. Counting those made the
+         check cry wolf three times, which is how a check gets ignored. */
+      for (const nested of [...outerOnly.matchAll(/\bfunction\s*[a-zA-Z_$][\w$]*\s*\([^)]*\)\s*\{/g)].reverse()) {
+        const b = bodyFrom(outerOnly, nested.index + nested[0].length - 1);
+        if (b.length < outerOnly.length) outerOnly = outerOnly.split(b).join('');
+      }
+      const outerNames = declared(outerOnly);
+      for (const b of bodies) {
+        for (const name of declared(b)) {
+          if (outerNames.has(name)) {
+            offenders.push(`${f}: a listener re-declares \`${name}\`, shadowing its enclosing function`);
+          }
+        }
+      }
+    }
+  }
+  check('no listener re-declares a var its enclosing function uses',
+    offenders.length === 0, [...new Set(offenders)].slice(0, 3).join('; '));
 }
 
 /* ---- Report ---- */

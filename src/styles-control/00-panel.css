@@ -872,3 +872,68 @@ body:has(.cp) .atmos__blob { animation: none; }
   .cp-newtrial__f { flex: 1 1 100%; }
   .cp-newtrial__body .input { font-size: 16px; }
 }
+
+/* ==========================================================================
+   WHAT SOMEBODY DID IN THE GAME
+
+   A player had one position for ninety minutes and a substitute had none at
+   all. Football is not like that: somebody starts at right back, moves into
+   midfield when the shape changes, and finishes on the wing, and somebody
+   else comes on at half time and scores twice.
+
+   Each spell is a row - which part of the game, where, and what he was asked
+   to do there - and a player has as many as he had.
+   ========================================================================== */
+.xi__head { display: flex; align-items: center; gap: var(--space-2); }
+.xi__head .xi__name { flex: 1 1 auto; min-width: 0; }
+
+.spells { display: grid; gap: 4px; padding: 6px 0 2px 28px; }
+.spell { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.spell__h { flex: 0 1 120px; min-width: 0; }
+.spell__p { flex: 1 1 150px; min-width: 0; }
+.spell__r { flex: 1 1 140px; min-width: 0; }
+.spell__norole { flex: 1 1 140px; }
+.spell__x {
+  flex: 0 0 auto;
+  width: 28px; height: 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.spell__x:hover { border-color: var(--error); color: var(--error); }
+
+/* ---- The bench ---- */
+.bench { display: grid; gap: var(--space-2); }
+.bench__row {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-inset);
+}
+.bench__row.is-on { border-color: var(--border-brand); }
+.bench__on {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  font-size: var(--step--1);
+  color: var(--text-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.bench__on input { accent-color: var(--brand); cursor: pointer; }
+.bench__min { flex: 0 0 74px; }
+.bench__row .spells { padding-left: 0; }
+
+@media (pointer: coarse) {
+  /* One control per line on a phone, and 16px so iOS does not zoom the page
+     on focus and leave it zoomed. */
+  .spell { display: grid; }
+  .spell__h, .spell__p, .spell__r, .spell__norole { flex: none; }
+  .spell__norole { display: none; }
+  .spells { padding-left: 0; }
+  .spell .select, .bench__min { font-size: 16px; min-height: 44px; }
+  .spell__x { width: 100%; height: 44px; }
+}

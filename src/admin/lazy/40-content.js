@@ -441,9 +441,14 @@
            remove button is one Cancel away from undone. */
         var pics = ((d.photos) || []).slice();
         var tags = [];
-        for (var i = 0; i < pics.length; i++) {
-          var at = (d.photoTags || [])[i];
-          tags.push(((at || []).map(function (t) { return typeof t === 'string' ? t : t.name; })
+        /* Named apart from the `i` and `at` the handlers below use. `var` is
+           function-scoped, so a loop counter up here and one inside a listener
+           are the same name in two scopes waiting to be confused - which is
+           exactly how a `var rec` in one branch of a handler once shadowed the
+           match's own `rec` and broke saving. */
+        for (var pi = 0; pi < pics.length; pi++) {
+          var raw = (d.photoTags || [])[pi];
+          tags.push(((raw || []).map(function (t) { return typeof t === 'string' ? t : t.name; })
             .filter(Boolean)));
         }
         var cover = d.cover || d.src || '';

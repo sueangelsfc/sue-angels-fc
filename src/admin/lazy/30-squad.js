@@ -125,10 +125,40 @@
   /* New signing / retained / back at the club, worked out rather than typed.
      Nobody is "new" in the club's first season: it would be true of the whole
      squad and would say nothing. */
+  /* WAS HE ACTUALLY HERE, as opposed to "nothing says otherwise".
+
+     statusIn() answers 'active' when a season has no entry, which is the
+     right default for the dropdown: a player nobody has said anything about
+     is in the squad. It is the wrong answer for working out tenure, because
+     it makes every season before a player joined look like a season he was
+     here for, and a first-ever signing therefore read "Retained".
+
+     That was a real disagreement with the website, which knows the
+     difference: statusIn() in src/lib/squad-status.mjs returns 'absent' for a
+     season with no entry and no evidence, and that is precisely what makes
+     "new" derivable. 12 of 180 answers differed before this. */
+  function wasHere(map, num, season) {
+    var rec = map[String(num)];
+    if (!rec) return false;
+    if (typeof rec === 'string') {
+      /* A flat value is what the club last said, so it describes the current
+         season and every season before it that they were around for. */
+      return SEASONS.indexOf(season) <= SEASONS.indexOf(CURRENT) && isPlaying(collapse(rec));
+    }
+    if (rec[season]) return isPlaying(collapse(keyOf(rec[season])));
+    /* Carried forward from the most recent earlier entry, the same way
+       statusIn does, so setting somebody departed does not make the next
+       season forget. Nothing earlier at all means he was not here. */
+    for (var i = SEASONS.indexOf(season) - 1; i >= 0; i--) {
+      if (rec[SEASONS[i]]) return isPlaying(collapse(keyOf(rec[SEASONS[i]])));
+    }
+    return false;
+  }
+
   function tenureIn(map, num, season) {
     var idx = SEASONS.indexOf(season);
     if (idx < 0) return null;
-    var here = function (s) { return isPlaying(statusIn(map, num, s)); };
+    var here = function (s) { return wasHere(map, num, s); };
     if (!here(season) || idx === 0) return null;
     if (here(SEASONS[idx - 1])) return 'retained';
     for (var i = idx - 2; i >= 0; i--) if (here(SEASONS[i])) return 'returned';

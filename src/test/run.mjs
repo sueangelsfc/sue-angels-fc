@@ -1376,6 +1376,31 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   }
 }
 
+/* ==========================================================================
+   THE PANEL AND THE SITE, ON THE SAME RULE
+
+   Squad status is implemented twice: once in src/lib/squad-status.mjs for the
+   build, once in src/admin/lazy/30-squad.js for the browser. Nothing forces
+   them to agree, and when they drift nobody sees it, because each looks
+   correct on its own screen.
+
+   They had drifted. The panel answered "active" for a season with no entry,
+   which is the right default for its dropdown and the wrong one for working
+   out tenure: it made every season before a player joined look like one he
+   was here for, so a first-ever signing read "Retained" in the panel while
+   the website said "First season at the club". 12 of 180 answers differed.
+
+   src/test/panel-vs-site.mjs runs both over the same fifteen record shapes
+   and compares every answer. It is a real differential, not a spot check.
+   ========================================================================== */
+{
+  const { result } = await import(path.join(ROOT, 'src', 'test', 'panel-vs-site.mjs'));
+  check('the panel and the site were actually compared', result.compared >= 150,
+    `only ${result.compared} answers compared`);
+  check('the panel and the site agree about every squad status',
+    result.diffs.length === 0, result.diffs.slice(0, 3).join('; '));
+}
+
 /* ---- Report ---- */
 console.log(`\n${'='.repeat(66)}`);
 if (warns.length) {

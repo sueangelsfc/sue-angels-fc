@@ -91,7 +91,17 @@ duplicates; the two-implementations problem.
   home page is a search form with no table, and League Eight does not start
   until 6 September, so a parser written now would be guesswork against a page
   that does not exist. The derived-table check covers the recorded season
-  instead. Would change once a real league URL is known.
+  instead.
+
+  **This is now scheduled rather than open.** The club will supply the league's
+  own URL once the season starts. When it arrives: fetch it server-side on a
+  schedule, parse the table, and reconcile it against `deriveTable()` the way
+  `npm run verify` already reconciles 25/26 — two independent routes to the
+  same figures, and a loud failure when they disagree. What must NOT be
+  rebuilt is what `TableSync.jsx` was: a third-party proxy with a hard-coded
+  fallback, which is two ways to publish a wrong table quietly. A fetch that
+  cannot be checked against the club's own results is not an improvement on
+  typing it in.
 - **The probe row in production `enquiries`.** Deleting it needs the sign-in
   only the club has. Flagged in the inbox and on the dashboard as safe to
   delete.

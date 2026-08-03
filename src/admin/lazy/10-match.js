@@ -1140,6 +1140,35 @@
       });
     }
 
+    /* Recomputed on every keystroke in the notes box. Cheap: a split and two
+       counts over a few hundred characters. */
+    function gaugeNotes() {
+      var el = $('[data-notes-gauge]', back);
+      if (!el) return;
+      var raw = ($('#m-report', back) || {}).value || '';
+      var lines = raw.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+      var moments = lines.filter(function (l) {
+        return /^\s*[-*·•]?\s*\d{1,3}\s*(?:'|m|min|mins|minutes)?\s*[-\u2013\u2014:.)]?\s+\S/.test(l);
+      }).length;
+      var thoughts = lines.length - moments;
+      var W = SEED.reportWords || { min: 700, max: 900, perMoment: 22, base: 150 };
+      /* Estimated for a WRITTEN report, because that is the target. A properly
+         written incident runs twenty-odd words; the composer echoes a note at
+         about ten, which is why the same notes make a much shorter piece when
+         the writing key is not working. */
+      var est = Math.round(W.base + moments * W.perMoment + thoughts * (W.perMoment - 4));
+      var short = W.min - est;
+      var need = Math.ceil(short / W.perMoment);
+      el.textContent = moments + (moments === 1 ? ' moment' : ' moments') + ', '
+        + thoughts + (thoughts === 1 ? ' thought' : ' thoughts') + '. '
+        + 'About ' + est + ' words written up. '
+        + (short > 0
+          ? 'Roughly ' + need + ' more timed ' + (need === 1 ? 'moment' : 'moments')
+            + ' to reach ' + W.min + '.'
+          : est > W.max ? 'Past ' + W.max + '; worth a trim.' : 'In range.');
+      el.setAttribute('data-short', short > 0 ? 'true' : 'false');
+    }
+
     function startersNow() { return sheetFor(counts.starters, false); }
     function benchNow() { return sheetFor(counts.bench, true); }
 
@@ -1327,9 +1356,20 @@
               esc(d.commentary || '') + '</textarea>' +
               '<p class="field__hint">Start a line with a minute and it is treated as a moment in ' +
                 'the game, told in order alongside the goals. Lines without one are your ' +
-                'thoughts on it, and they get woven through. The more moments you note, the ' +
-                'more there is to write: the report cannot invent a save nobody recorded. ' +
-                '<span data-words>' + words(d.commentary) + '</span></p>' +
+                'thoughts on it, and they get woven through. The report cannot invent a save ' +
+                'nobody recorded, so the length of it is set here.</p>' +
+              /* THE TARGET, AND THE DISTANCE TO IT, while there is still time
+                 to do something about it. The club wants 400 to 600 words and
+                 was finding out it had 315 after pressing the button, by
+                 which point the only options are padding or shrugging.
+
+                 A moment is worth about eight words once it is written out,
+                 and the derived material - the goals, the head-to-head, the
+                 player records, the details block - is worth about 150 on its
+                 own. So the sum is honest arithmetic rather than a guess, and
+                 it says what would close the gap rather than only that there
+                 is one. */
+              '<p class="field__hint" data-notes-gauge></p>' +
             '</div>' +
             '<div class="cp-head__actions" style="margin-top:var(--space-3)">' +
               '<button type="button" class="btn btn--primary btn--sm" data-build>' +
@@ -1635,11 +1675,26 @@
              either of them, and the club has to know what it is reading
              before it presses Save. */
           var saidEl = $('[data-build-said]', back);
+          /* THE LENGTH, MEASURED, AND WHAT WOULD CHANGE IT. The club wants 400
+             to 600 words and had no way of knowing it had 315 until it counted
+             them by hand. A word count on its own is a complaint; a word count
+             with the number of moments that would close the gap is a next
+             step. Counted on the prose, not the details block: a team sheet is
+             not writing. */
+          var prose = String(r.text || '').split('MATCH DETAILS')[0];
+          var got = words(prose);
+          var WL = SEED.reportWords || { min: 700, max: 900, perMoment: 22 };
+          var gap = WL.min - got;
+          var lengthNote = got + ' words'
+            + (gap > 0
+              ? ', short of ' + WL.min + '. About ' + Math.ceil(gap / WL.perMoment)
+                + ' more timed moments would cover it.'
+              : got > WL.max ? ', over ' + WL.max + '. Worth a trim.' : '.');
           if (r.source === 'written') {
             saidEl.textContent = 'Written from your notes' + (r.model ? ' by ' + r.model : '')
-              + '. Read it through and change anything you like.';
+              + '. ' + lengthNote;
             saidEl.hidden = false;
-            toast('Report written from your notes.', 'success');
+            toast('Report written from your notes. ' + lengthNote, 'success');
           } else {
             /* The reason, in the club's words rather than the server's, and
                what to do about it. Four of the five are fixable by somebody
@@ -1651,9 +1706,9 @@
               'could not reach the server': 'the site could not be reached',
             }[r.note] || r.note;
             saidEl.textContent = 'Composed from the facts recorded, because ' + why
-              + '. Everything below is true; it is arranged rather than written.';
+              + '. Everything below is true; it is arranged rather than written. ' + lengthNote;
             saidEl.hidden = false;
-            toast('Report composed: ' + why + '.', 'success');
+            toast('Report composed: ' + why + '. ' + lengthNote, 'success');
           }
           out.focus();
         }).catch(function () {
@@ -1891,10 +1946,12 @@
       }
     });
 
+    gaugeNotes();
+
     back.addEventListener('input', function (e) {
       if (e.target.matches('#m-opp') || e.target.matches('#m-date')) { paintTitle(); return; }
       if (e.target.matches('#m-report')) {
-        $('[data-words]', back).textContent = words(e.target.value);
+        gaugeNotes();
         return;
       }
       if (e.target.matches('#m-polished')) {

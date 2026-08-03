@@ -303,6 +303,18 @@ const adminSeed = {
      shirt numbers into JSON and hoping. Numbers are the storage key the match
      record already uses; they are never shown on the website. */
   squad: d.squad.map((p) => ({ num: p.num, name: p.name, pos: p.position || '' })),
+  /* HOW LONG A MATCH REPORT SHOULD BE, defined once because three places ask:
+     the gauge under the notes box, the line beside the Build button, and the
+     brief the model is written to. Typed into each of them they would drift,
+     and the one nobody re-reads would be the brief.
+
+     700 to 900 is a full club-site report. It is worth knowing what that
+     costs: a properly written incident runs 20 to 25 words, so seven hundred
+     of them is roughly twenty timed moments plus the team news, the player
+     records and the context. Two goals and no incidents cannot reach it, and
+     the house rule against inventing anything means nothing will pad it out
+     to look as though they had. */
+  reportWords: { min: 700, max: 900, perMoment: 22, base: 150 },
   /* WHAT THE CLUB KNOWS ABOUT EACH PLAYER, so a match report can say
      something a person would say. The panel knew a name, a number and a
      position, so every report described eleven interchangeable men: it could

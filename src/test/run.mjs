@@ -754,7 +754,25 @@ const BUDGET = {
      the results table the same way, because the table is what loads when the
      club opens Results and the dialog is only wanted once somebody presses
      Edit. */
-  'control-match.js': 15,
+  'control-match.js': 16,
+  /* 15 -> 16. What bought it: the length gauge under the notes box, and the
+     word count beside the Build button.
+
+     The club asked for 700 to 900 word reports and had no way of knowing it
+     had 315 until it counted them by hand, at which point the only options
+     are padding or shrugging. Both numbers now appear while there is still
+     time to do something about them, and both say what would close the gap
+     rather than only that there is one: a written-up incident runs about
+     twenty-two words, so the arithmetic is honest rather than a nag.
+
+     Paid for first: the notes box carried its own word counter and the gauge
+     replaces it, so `data-words` and its listener branch are gone.
+
+     THE NEXT RAISE MUST BE THE SPLIT. This chunk is still the fixtures panel,
+     the results table and the match dialog in one file, and the table is what
+     loads when the club opens Results. Extracting the report writer took it
+     17 -> 13.9; extracting the dialog is the same move again and is the only
+     honest way to pay for the next feature. */
   /* The report writer, fetched when Build the report is pressed and never on
      a page load. Two ways to write one: composed in the browser from the
      facts recorded, which needs no key and no network, or written by
@@ -779,7 +797,19 @@ const BUDGET = {
      else, which is the entire reason it exists. It is the right place for
      weight and the wrong place to keep adding: the next thing this needs is
      the coach typing more moments, not this file writing more sentences. */
-  'control-report.js': 8,
+  'control-report.js': 9,
+  /* 8 -> 9. What bought it: a note naming a player who did not score now
+     attaches to him and forms its own passage in team-sheet order, which is
+     the best material in a coach's notes and was being dropped into the run
+     of play as filler; what comes next is derived from the fixture list
+     rather than typed; and the brief carries the club's length target, which
+     is defined once in the seed so the gauge, the button and the brief cannot
+     disagree about what a full report is.
+
+     This chunk is fetched when Build the report is pressed and by nobody
+     else. That is the whole reason it exists and it is the right place for
+     weight; the thing that makes reports longer from here is the club typing
+     more moments, not this file writing more sentences. */
   /* News, gallery, recognition, badges and sponsors. The album editor is the
      weight: photographs visible, removable, reorderable and taggable in the
      album itself, four operations that all have to keep the parallel tag list
@@ -1129,6 +1159,35 @@ for (const [f, kb] of Object.entries(BUDGET)) {
       JSON.stringify(ctx3.next));
     check('the next fixture is not the one just played',
       !ctx3.next || ctx3.next.iso > '2026-08-02');
+  }
+
+  /* ONE DEFINITION OF HOW LONG A REPORT SHOULD BE. Three places ask - the
+     gauge under the notes box, the line beside the Build button, and the
+     brief the model is written to - and typed into each they would drift.
+     The one nobody would re-read is the brief. */
+  {
+    const seedRaw4 = fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8');
+    const SEED4 = JSON.parse(seedRaw4.replace(/^window\.SA_SEED=/, '').replace(/;\s*$/, ''));
+    const W = SEED4.reportWords;
+    check('the seed defines the report length target', !!W && W.min > 0 && W.max > W.min,
+      JSON.stringify(W));
+    if (W) {
+      /* Both chunks must READ it, not carry their own copy. Matched on the
+         property name, which survives minification; a literal 700 appearing
+         in either file would be a second definition. */
+      check('the match chunk reads the target rather than hard-coding it',
+        /reportWords/.test(matchChunk), 'the gauge carries its own copy of the target');
+      check('the report brief reads the target rather than hard-coding it',
+        /reportWords/.test(reportChunk), 'the brief carries its own copy of the target');
+      check('the brief states the target it was given',
+        reportChunk.includes(String(W.min)) && reportChunk.includes(String(W.max)),
+        'the model is not told how long the club wants it');
+      /* And the anti-padding rule has to survive beside the target, or a word
+         count becomes a licence to invent an incident. */
+      check('the brief forbids padding to reach the target',
+        /pad/i.test(reportChunk) && /invent/i.test(reportChunk),
+        'a length target without an anti-padding rule is an instruction to make things up');
+    }
   }
 
   check('report writer says which one wrote it',

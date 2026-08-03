@@ -878,10 +878,22 @@
      of them end at compose(), which needs none of those things. The button
      has never been able to do nothing and it still cannot.
      ========================================================================== */
+  var WORDS = (window.SA_SEED && window.SA_SEED.reportWords) || { min: 700, max: 900 };
+
   var HOUSE = [
     'You are a football writer filing a match report for Sue’s Angels FC, a London',
     'men’s Sunday-league club. Write to the standard of a professional club-site',
     'report: a journalist who watched the game and is telling somebody who did not.',
+    '',
+    'LENGTH',
+    '- Aim for ' + WORDS.min + ' to ' + WORDS.max + ' words, excluding the MATCH DETAILS block.',
+    '- Reach it by writing each recorded moment properly. A moment worth a line in',
+    '  the notes is worth twenty to twenty-five words on the page: what led to it,',
+    '  who was involved, where on the pitch, and what happened next.',
+    '- Do NOT reach it by padding, by repeating yourself, by restating the score in',
+    '  a new paragraph, or by inventing an incident. If the record will not carry',
+    '  ' + WORDS.min + ' words, write what it carries and stop. Short and true beats long',
+    '  and made up, every time.',
     '',
     'STRUCTURE',
     '- Open with the result and what it meant, in two or three sentences.',
@@ -983,7 +995,9 @@
       + 'work each one in where it belongs:\n'
       + (c.bullets || []).map(function (b) { return '- ' + b; }).join('\n')
       + '\n\nA note beginning with a number is the MINUTE that moment happened. Narrate\n'
-      + 'those in clock order alongside the goals, one sentence each.\n\nWrite the report.';
+      + 'those in clock order alongside the goals. Give each one its own proper\n'
+      + 'sentence of twenty to twenty-five words rather than a four-word summary:\n'
+      + 'that is where the length comes from.\n\nWrite the report.';
   }
 
   function write(c, opts) {

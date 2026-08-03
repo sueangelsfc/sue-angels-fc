@@ -535,6 +535,128 @@ export function normaliseTable(raw) {
   }));
 }
 
+/* ==========================================================================
+   THE LEAGUE TABLE, WORKED OUT FROM THE RESULTS
+
+   The published table is transcribed by hand, and a transcribed number is one
+   nobody can check. The retired TableSync.jsx tried to solve that by pulling
+   the table off FA Full-Time through a third-party proxy with a hard-coded
+   fallback, which is two ways to publish a wrong table quietly.
+
+   It does not need fetching. The site already holds every result in the
+   division, all ninety of them, because it prints them under "Around the
+   league": a ten-club double round robin is exactly ninety matches. So the
+   table can be derived from results the club already publishes, and the
+   transcription becomes a second opinion rather than the only one.
+
+   Run against the recorded season the two agree on every figure, including
+   the club's own 90-11 and 54 points. `npm run verify` asserts it, so a
+   mistyped table or a wrong division result stops the build instead of
+   reaching the site. That is the loud failure the fetch was meant to provide,
+   without a third party in the path.
+
+   WALKOVERS ARE THE WHOLE DIFFICULTY, and getting them wrong is what made an
+   earlier derivation disagree with the official table by six rows out of ten.
+   Seven of the ninety were awarded rather than played. They count as played,
+   they give three points to one side, and they add NO GOALS: the official
+   table adds none, which is why 15x3 + 3x3 = 54 rather than 18 wins' worth of
+   goals. Treated as scoreless draws they cost the club six points and three
+   wins, and quietly moved four other clubs.
+   ========================================================================== */
+export function deriveTable(results) {
+  const rows = new Map();
+  const row = (club) => {
+    if (!rows.has(club)) {
+      rows.set(club, {
+        club, played: 0, won: 0, drawn: 0, lost: 0,
+        goalsFor: 0, goalsAgainst: 0, points: 0,
+      });
+    }
+    return rows.get(club);
+  };
+
+  for (const m of results || []) {
+    const h = row(m.home);
+    const a = row(m.away);
+    h.played += 1;
+    a.played += 1;
+
+    if (m.wo) {
+      /* Which side it went to is the record's own field, never inferred. */
+      const homeAwarded = String(m.wo).toLowerCase().startsWith('h');
+      const winner = homeAwarded ? h : a;
+      const loser = homeAwarded ? a : h;
+      winner.won += 1;
+      winner.points += 3;
+      loser.lost += 1;
+      continue;
+    }
+    if (typeof m.hs !== 'number' || typeof m.as !== 'number') {
+      /* No score and no walkover is a record that cannot be counted. Left out
+         of the goal columns rather than guessed at as 0-0, and the played
+         count above still stands so the discrepancy shows up rather than
+         balancing itself out. */
+      continue;
+    }
+
+    h.goalsFor += m.hs; h.goalsAgainst += m.as;
+    a.goalsFor += m.as; a.goalsAgainst += m.hs;
+    if (m.hs > m.as) { h.won += 1; h.points += 3; a.lost += 1; }
+    else if (m.hs < m.as) { a.won += 1; a.points += 3; h.lost += 1; }
+    else { h.drawn += 1; a.drawn += 1; h.points += 1; a.points += 1; }
+  }
+
+  return [...rows.values()]
+    .map((r) => ({ ...r, goalDifference: r.goalsFor - r.goalsAgainst, us: isUs(r.club) }))
+    .sort((x, y) => y.points - x.points
+      || y.goalDifference - x.goalDifference
+      || y.goalsFor - x.goalsFor)
+    .map((r, i) => ({ pos: i + 1, ...r }));
+}
+
+/* Does the transcribed table agree with the results? Compared club by club
+   rather than row by row, because two clubs level on every single figure are
+   ordered by the league and not by arithmetic: Old Freemen's and Shepherd's
+   Tuesday finished P18 W5 D2 L11, 28-36, 17 points, identical, and which of
+   them is eighth is the league's call.
+
+   Returns the disagreements, so the caller decides how loudly to fail. */
+export function compareTable(published, derived) {
+  const byClub = new Map(derived.map((r) => [r.club, r]));
+  const out = [];
+  const FIELDS = ['played', 'won', 'drawn', 'lost', 'goalsFor', 'goalsAgainst', 'points'];
+
+  for (const p of published || []) {
+    const d = byClub.get(p.club);
+    if (!d) { out.push(`${p.club}: in the published table, not in the results`); continue; }
+    byClub.delete(p.club);
+    for (const f of FIELDS) {
+      if (p[f] == null) continue;
+      if (Number(p[f]) !== Number(d[f])) {
+        out.push(`${p.club} ${f}: table says ${p[f]}, the results say ${d[f]}`);
+      }
+    }
+  }
+  for (const club of byClub.keys()) {
+    out.push(`${club}: in the results, not in the published table`);
+  }
+
+  /* The published ORDER still has to make sense of its own figures, even
+     where the league breaks a tie: points must never rise going down the
+     table, and neither may goal difference within the same points. */
+  for (let i = 1; i < (published || []).length; i += 1) {
+    const above = published[i - 1];
+    const here = published[i];
+    if (Number(here.points) > Number(above.points)) {
+      out.push(`${here.club} is below ${above.club} on more points`);
+    } else if (Number(here.points) === Number(above.points)
+      && Number(here.goalDifference) > Number(above.goalDifference)) {
+      out.push(`${here.club} is below ${above.club} on the same points and a better goal difference`);
+    }
+  }
+  return out;
+}
+
 /* ---- Season grouping ------------------------------------------------- */
 export function groupBySeason(matches) {
   const map = new Map();

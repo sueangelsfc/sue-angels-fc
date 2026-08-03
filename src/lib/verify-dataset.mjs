@@ -3,7 +3,8 @@
    League Ten figures do not match that row exactly, something is wrong and
    no page should publish a number. */
 import { buildDataset } from './dataset.mjs';
-import { teamSummary, leaderboard, clubRecords, formGuide, homeAwaySplit, byCompetition } from './stats.mjs';
+import { teamSummary, leaderboard, clubRecords, formGuide, homeAwaySplit, byCompetition,
+  deriveTable, compareTable } from './stats.mjs';
 
 const d = buildDataset();
 let fails = 0;
@@ -28,6 +29,31 @@ console.log(`orphan Supabase match details (id not in results baseline)=${d.orph
 console.log(`venues not in the known list=${d.unknownVenues.length}`,
   d.unknownVenues.length ? d.unknownVenues.map((v) => JSON.stringify(v)).join(', ') : '');
 console.log(`matches with detail records: ${d.matches.filter((m) => m.detail).length}/${d.matches.length}`);
+
+/* ==========================================================================
+   THE PUBLISHED TABLE AGAINST THE RESULTS IT IS MADE OF
+
+   The table is transcribed by hand and a transcribed number is one nobody can
+   check. It does not need fetching from anywhere: the site already holds all
+   ninety division results, because it prints them under "Around the league".
+   So the table is derived from those and the two are made to agree.
+
+   This is the loud failure the retired FA Full-Time sync was meant to provide
+   and never did, and it has no third party in the path. A mistyped table or a
+   wrong division result stops the build. */
+{
+  const derived = deriveTable(d.leagueResults);
+  const gaps = compareTable(d.table, derived);
+  console.log(`\n=== LEAGUE TABLE vs ${d.leagueResults.length} DIVISION RESULTS ===`);
+  console.log(`derived ${derived.length} rows from ${d.leagueResults.length} results`
+    + ` (${d.leagueResults.filter((m) => m.wo).length} of them awarded as walkovers)`);
+  if (gaps.length) {
+    fails += gaps.length;
+    gaps.forEach((g) => console.log(`FAIL  ${g}`));
+  } else {
+    console.log('PASS  every club agrees with the results, and the order makes sense of its figures');
+  }
+}
 
 console.log('\n=== VERIFY vs PUBLISHED LEAGUE TABLE ROW ===');
 const ourRow = d.table.find((r) => r.us);

@@ -92,11 +92,35 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Vary', 'Origin');
   }
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (!originAllowed)          return res.status(403).json({ error: 'Origin not allowed' });
+
+  /* A HEALTH CHECK, because the club could not tell me why it was falling back.
+     The panel says which of five reasons it composed instead of writing, but
+     that sentence is on a screen only the club can see, and diagnosing it by
+     asking somebody to read a line back took days.
+     
+     GET answers one boolean: is a key configured. It spends nothing, calls
+     nothing, does no work, and reveals no value - only whether an environment
+     variable exists, which is the single fact needed to tell "the key never
+     reached this project" apart from "the key is here and Anthropic refused
+     it". Those two have completely different fixes and look identical from
+     the outside.
+     
+     Deliberately not behind the administrator gate: a caller who cannot sign
+     in still gets nothing but a boolean, and putting it behind the gate would
+     make it useless for the one situation it exists for. */
+  if (req.method === 'GET') {
+    return res.status(200).json({
+      ok: true,
+      configured: !!process.env.ANTHROPIC_API_KEY,
+      maxInputChars: MAX_INPUT_CHARS,
+      maxOutputTokens: MAX_OUTPUT_TOKENS,
+    });
+  }
   if (req.method !== 'POST')   return res.status(405).json({ error: 'POST only' });
 
   // AN ORIGIN CHECK IS NOT A LOCK.

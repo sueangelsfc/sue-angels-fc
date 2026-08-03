@@ -667,7 +667,7 @@ export function home(d) {
       <ol class="rl" id="rlRail" role="group" aria-label="Recent results" tabindex="0">
         ${recent.map((m, i) => {
           const hs = m.isWalkover ? 'W/O' : m.hs;
-          const as = m.isWalkover ? '—' : m.as;
+          const as = m.isWalkover ? '–' : m.as;
           const homeWon = Number(m.hs) > Number(m.as);
           const awayWon = Number(m.as) > Number(m.hs);
           return `<li class="rcard2${i === 0 ? ' rcard2--glow' : ''}">

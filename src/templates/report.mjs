@@ -18,6 +18,7 @@ import { CLUB } from '../lib/club.mjs';
 import { fmtDate, isUs, matchTimeline } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
 import { articleBody } from './news.mjs';
+import { reportText, hasReport as hasReportOf } from '../lib/prose.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -34,10 +35,11 @@ const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
 
 const OUTCOME = { W: 'Won', D: 'Drawn', L: 'Lost' };
 
-/* The written report is the club's own prose. Where there is none the page
-   still stands on the team sheet and the goals, and says so plainly rather
-   than printing an empty heading. */
-export const hasReport = (m) => Boolean(m.detail && String(m.detail.commentary || '').trim().length > 200);
+/* Where there is no report the page still stands on the team sheet and the
+   goals, and says so plainly rather than printing an empty heading. What
+   counts as a report is decided once, in prose.mjs, because four places used
+   to decide it separately and disagreed. */
+export const hasReport = hasReportOf;
 
 export function matchReport(m, d) {
   const det = m.detail || {};
@@ -160,12 +162,12 @@ export function matchReport(m, d) {
     </section>`;
 
   /* ---- The written report ---- */
-  const reportBand = hasReport(m) ? `<section class="sec mr-report" aria-labelledby="mr-r-h">
+  const reportBand = hasReportOf(m) ? `<section class="sec mr-report" aria-labelledby="mr-r-h">
       <div class="wrap wrap--narrow">
         ${rail(2, 'The report', 'Written by the club')}
         <h2 class="h2 rv" id="mr-r-h">The full <span class="volt">report.</span></h2>
         <div class="nw-art__body rv">
-        ${articleBody(det.commentary)}
+        ${articleBody(reportText(m))}
         </div>
       </div>
     </section>` : '';
@@ -238,6 +240,6 @@ export function matchReport(m, d) {
     preMain: sitePreMain(auraFor('results.html')),
     footerHtml: siteFooter(),
     body: siteHeader("/results.html") + hero + factsBand + reportBand + videoBand + sponsorBand + backBand,
-    hasReport: hasReport(m),
+    hasReport: hasReportOf(m),
   };
 }

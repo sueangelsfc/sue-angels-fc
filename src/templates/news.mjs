@@ -19,6 +19,7 @@ import { esc, attr, CLUB_ID } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { fmtDate, slugify, isUs } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor } from './home.mjs';
+import { reportText, hasReport } from '../lib/prose.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -68,7 +69,7 @@ const sorted = (articles) => articles.slice()
    shaped like an article so one card renderer serves both, and it keeps its
    own href into the match page rather than a /news/ URL. */
 const reportEntries = (d) => (d.played || [])
-  .filter((m) => m.detail && String(m.detail.commentary || '').trim().length > 200)
+  .filter(hasReport)
   .map((m) => ({
     isReport: true,
     id: m.id,
@@ -77,7 +78,10 @@ const reportEntries = (d) => (d.played || [])
     category: 'Report',
     date: m.date,
     iso: m.iso,
-    lede: String(m.detail.commentary).replace(/^#+[^\n]*\n+/, ''),
+    /* The published article, not the coach's bullets. A leading markdown
+       heading is dropped because the card draws its own title from the
+       scoreline. */
+    lede: reportText(m).replace(/^#+[^\n]*\n+/, ''),
     match: m,
   }));
 

@@ -30,6 +30,7 @@ import { CLUB } from '../lib/club.mjs';
 import { teamSummary, fmtDate } from '../lib/stats.mjs';
 import { seasonViews, defaultView, seasonBar, seasonPanels, matchNote } from '../lib/seasons.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
+import { hasReport as hasWrittenReport } from '../lib/prose.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -109,7 +110,10 @@ function matchesPage(d, mode) {
     const hs = m.countsGoals ? m.hs : null;
     const as = m.countsGoals ? m.as : null;
     const scorers = scorersOf(m);
-    const hasReport = !!(m.detail?.polishedReport || m.detail?.commentary);
+    /* The same test the match page uses. Counting any commentary at all put a
+       Read the report link on three cards whose pages then said no report had
+       been written. */
+    const hasReport = hasWrittenReport(m);
     const isNext = m.id === nextId;
 
     const side = (club, score, isUs) => `<span class="mt-side${isUs ? ' is-us' : ''}">

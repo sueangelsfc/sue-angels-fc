@@ -211,7 +211,7 @@ export function timelineBlock(events) {
   if (!events.length) return '';
   return `<div class="timeline">
     ${events.map((e) => `<div class="tl-item" data-kind="${attr(e.kind)}">
-      <span class="tl-item__min">${esc(e.min ? `${e.min}'` : '—')}</span>
+      <span class="tl-item__min">${esc(e.min ? `${e.min}'` : '–')}</span>
       <span class="tl-item__text">${esc(e.text)}</span>
     </div>`).join('')}
   </div>`;

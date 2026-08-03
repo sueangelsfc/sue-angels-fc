@@ -121,7 +121,7 @@ export function control() {
         <div class="cp-who">
           <span class="cp-who__dot" data-role-dot></span>
           <span>
-            <b data-who-email>—</b>
+            <b data-who-email>–</b>
             <small data-who-role>checking access</small>
           </span>
         </div>

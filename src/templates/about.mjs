@@ -112,7 +112,7 @@ export function about(d) {
           <dl class="ab-plate__facts">
             <div><dt>Founded</dt><dd>${esc(CLUB.founded)}</dd></div>
             <div><dt>Home</dt><dd>${esc(CLUB.venue.name)}</dd></div>
-            <div><dt>Division</dt><dd>${esc(CLUB.nextDivision)}</dd></div>
+            <div><dt>League</dt><dd>${esc(CLUB.nextDivision)}</dd></div>
             <div><dt>Trophies</dt><dd>${esc(trophies.length)}</dd></div>
             <div class="ab-plate__wide"><dt>All competitions</dt>
               <dd>P${esc(all.played)} W${esc(all.won)} D${esc(all.drawn)} L${esc(all.lost)} · GF ${esc(all.goalsFor)} GA ${esc(all.goalsAgainst)}</dd></div>

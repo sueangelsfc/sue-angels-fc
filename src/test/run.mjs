@@ -1072,6 +1072,61 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     ![...pages.values()].some((h) => /id="sa-consent"/.test(h)));
 }
 
+/* ==========================================================================
+   HOUSE STYLE IN PUBLISHED COPY
+
+   The club types its match reports and bios into the control panel, on a
+   phone or pasted out of somewhere else, so the typography that arrives is
+   whatever that somewhere else used. src/lib/prose.mjs settles it once as the
+   text enters the build. These three assert the result rather than the rule,
+   because the rule passing is not the same as the page being right.
+   ========================================================================== */
+{
+  const emDash = [];
+  const division = [];
+  for (const [f, h] of pages) {
+    /* The house list names ·, ’ and – as the literals to use. An em dash is
+       not on it, and 52 of them arrived with six pasted match reports. */
+    if (h.includes('—')) emDash.push(f);
+    /* League Ten and League Eight. "Division" is what everybody types out of
+       habit from the league they played in before, and it reached 17 places
+       across 8 pages, including a fact label whose own value said League
+       Eight beside it. */
+    if (/\bDivision\b/.test(h)) division.push(f);
+  }
+  check('no em dash in any published page', emDash.length === 0,
+    emDash.slice(0, 4).join(', '));
+  check('no page calls the league a Division', division.length === 0,
+    division.slice(0, 4).join(', '));
+
+  /* THE PANEL'S PROMISE. Its report box is labelled "What the website
+     publishes" and the button beside it says clearing that box falls back to
+     the coach's notes. Both were untrue: every match page read the notes and
+     the article reached no page at all, so around 25,000 characters of
+     finished writing sat in the records unpublished.
+
+     Asserted against the built pages, not against the template, because the
+     template read a real field and still published the wrong one. */
+  const live = JSON.parse(fs.readFileSync(
+    path.join(ROOT, 'src', 'data', 'recovered-live.json'), 'utf8'));
+  const { house } = await import(path.join(ROOT, 'src', 'lib', 'prose.mjs'));
+  const flat = (s) => String(s).replace(/&#?\w+;/g, '').replace(/[^a-z0-9]+/gi, '').toLowerCase();
+  const built = [...pages].filter(([f]) => f.startsWith('matches/'))
+    .map(([f, h]) => [f, flat(h)]);
+  const unpublished = [];
+  for (const row of live.matches || []) {
+    const article = String(row.data?.polishedReport || '').trim();
+    if (article.length <= 200) continue;
+    /* Probed from the last paragraph: the first is preceded by a markdown
+       heading the renderer lifts into an <h3>, which moves every offset. */
+    const tail = flat(house(article).split(/\n\s*\n/).pop()).slice(0, 70);
+    if (!tail) continue;
+    if (!built.some(([, h]) => h.includes(tail))) unpublished.push(row.key);
+  }
+  check('every written match report reaches its page', unpublished.length === 0,
+    unpublished.join(', '));
+}
+
 /* ---- Report ---- */
 console.log(`\n${'='.repeat(66)}`);
 if (warns.length) {

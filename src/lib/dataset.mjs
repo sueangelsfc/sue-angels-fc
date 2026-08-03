@@ -8,6 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { POSITION_GROUPS, positionName } from './positions.mjs';
 import { readStatusRecord, statusIn, statusLabelIn, isPlaying } from './squad-status.mjs';
+import { houseRecord } from './prose.mjs';
 import { normaliseMatch, normaliseTable, playerStats, slugify, isUs, seasonOf, toISO } from './stats.mjs';
 
 const DATA_DIR = path.join(process.cwd(), 'src', 'data');
@@ -56,7 +57,16 @@ function inferPositions(matches) {
 
 export function buildDataset() {
   const ps = read('recovered-pageshell.json');
-  const live = read('recovered-live.json');
+  /* Club-written prose gets the house typography on the way in, once, rather
+     than at each of the places that render a piece of it. See prose.mjs: it
+     sets dashes, apostrophes and the league's name and changes nothing else.
+
+     The snapshot on disk is left exactly as Supabase returned it, because it
+     is a mirror of the database and `npm run sync` overwrites it. The
+     normalising belongs to the build, so a report typed with an em dash is
+     published without one and still reads back into the panel as the coach
+     typed it. */
+  const live = houseRecord(read('recovered-live.json'));
 
   /* ---- Match detail records, keyed by match id ---- */
   const detailById = new Map();

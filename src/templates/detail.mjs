@@ -167,8 +167,8 @@ export function matchPage(m, d) {
             <h3 style="font-size:var(--step-1);margin-bottom:var(--space-4)">Match statistics</h3>
             ${statRow('Goals', m.hs, m.as)}
             ${statRow('Goals logged to a scorer', goalsFor, (dtl.opponentGoals || []).length)}
-            ${statRow('Assists logged', (dtl.assists || []).length, '—')}
-            ${statRow('Yellow cards', (dtl.yellowCards || []).length, '—')}
+            ${statRow('Assists logged', (dtl.assists || []).length, '–')}
+            ${statRow('Yellow cards', (dtl.yellowCards || []).length, '–')}
             ${statRow('Red cards', (dtl.redCards || []).length, (dtl.opponentRedCards || []).length)}
           </div>` : ''}
 

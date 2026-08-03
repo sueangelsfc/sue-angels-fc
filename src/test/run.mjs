@@ -1219,6 +1219,81 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     swallowed.length === 0, swallowed.slice(0, 2).join(' | '));
 }
 
+/* ==========================================================================
+   EVERY DRAWN FIGURE AGREES WITH THE FIGURE BESIDE IT
+
+   The site draws 477 proportional bars and 91 gauges, every one of them from
+   the match records. A bar is the only thing on a page that can be wrong
+   without looking wrong: the number beside it stays right while the bar it
+   sits in stops meaning anything. These compare the two.
+   ========================================================================== */
+{
+  /* A RANK OUTSIDE ITS OWN POPULATION. The squad-comparison band ranks a
+     player against those who started a match, and ranked the eight who
+     started none against them anyway, so the Starts row on eight player pages
+     read "28th of 27". */
+  const impossible = [];
+  for (const [f, h] of pages) {
+    for (const m of h.matchAll(/<i>(\d+)(?:st|nd|rd|th) of (\d+)<\/i>/g)) {
+      if (Number(m[1]) > Number(m[2])) impossible.push(`${f}: ${m[1]} of ${m[2]}`);
+    }
+  }
+  check('no rank falls outside the group it names', impossible.length === 0,
+    impossible.slice(0, 3).join(', '));
+
+  /* The stats table: each bar against the top figure in its own column. */
+  const st = pages.get('stats.html') || '';
+  const tbl = [...st.matchAll(/--w:\s*([\d.]+)%"[^>]*>\s*<\/i>\s*<\/span>\s*<b>([\d.]+)<\/b>/g)]
+    .map((m) => ({ pct: Number(m[1]), val: Number(m[2]) }));
+  const tblMax = Math.max(0, ...tbl.map((r) => r.val));
+  const tblBad = tbl.filter((r) => Math.abs((r.val / tblMax) * 100 - r.pct) > 1);
+  check('every stats-table bar matches its figure',
+    tbl.length > 0 && tblBad.length === 0,
+    tbl.length ? `${tblBad.length} of ${tbl.length} disagree` : 'no bars found');
+
+  /* The player profile bars, including the "26 of 30" under a percentage. */
+  const PF = /<li class="pf-bar">\s*<span class="pf-bar__k">([^<]*)<\/span>\s*<span class="pf-bar__v">\s*<span data-count="([^"]*)">[^<]*<\/span>\s*(?:<i>([^<]*)<\/i>)?\s*<\/span>\s*<span class="pf-bar__track"[^>]*>\s*<i style="--w:([\d.]+)%">/g;
+  let pfSeen = 0;
+  const pfBad = [];
+  for (const [f, h] of pages) {
+    const rows = [...h.matchAll(PF)].map((m) => ({
+      raw: m[2], sub: m[3] || '', pct: Number(m[4]),
+    }));
+    if (!rows.length) continue;
+    pfSeen += rows.length;
+    const counts = rows.filter((r) => !r.raw.includes('%'));
+    const sum = counts.reduce((t, r) => t + (Number(r.raw) || 0), 0);
+    for (const r of rows) {
+      if (r.raw.includes('%')) {
+        const said = parseFloat(r.raw);
+        if (Math.abs(said - r.pct) > 1) pfBad.push(`${f} ${r.raw} drawn ${r.pct}%`);
+        const of = r.sub.match(/(\d+)\s+of\s+(\d+)/);
+        if (of && Math.abs((Number(of[1]) / Number(of[2])) * 100 - said) > 1) {
+          pfBad.push(`${f} "${r.sub}" is not ${r.raw}`);
+        }
+      } else if (sum) {
+        const want = (Number(r.raw) / sum) * 100;
+        if (Math.abs(want - r.pct) > 1.2) pfBad.push(`${f} ${r.raw} drawn ${r.pct}%, expected ${want.toFixed(1)}%`);
+      }
+    }
+  }
+  check('every player-profile bar matches its figure',
+    pfSeen > 0 && pfBad.length === 0,
+    pfSeen ? pfBad.slice(0, 2).join('; ') : 'no bars found');
+
+  /* THE SAME ROW, THE SAME NUMBER. The position list printed a weighted slot
+     count to the eye and a match count to a screen reader, so one row gave
+     two figures in two units. */
+  const split = [];
+  for (const [f, h] of pages) {
+    for (const m of h.matchAll(/<span class="pf-heatlist__n">([\d.]+)<\/span>[\s\S]{0,120}?<span class="sr-only">([^<]*)<\/span>/g)) {
+      if (!m[2].includes(m[1])) split.push(`${f}: shows ${m[1]}, says "${m[2].trim().slice(0, 40)}"`);
+    }
+  }
+  check('the position list reads the same to the eye and to a screen reader',
+    split.length === 0, split.slice(0, 2).join('; '));
+}
+
 /* ---- Report ---- */
 console.log(`\n${'='.repeat(66)}`);
 if (warns.length) {

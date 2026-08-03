@@ -541,7 +541,21 @@ export function playerPage(p, d) {
     return { ...m, mine: mineV, typical: median(m.key), best: b, rank: better + 1 };
   });
 
-  const versusBand = pool.length > 2 ? `<section class="sec pf-versus" aria-labelledby="pf-vs-h">
+  /* THE BAND ONLY RANKS SOMEBODY IN THE POOL IT NAMES.
+
+     The pool is the players who started a match, chosen deliberately: ranking
+     against everyone ever registered dragged the median to one goal. Eight
+     outfield players started none this season, and the band ranked them
+     against the 27 anyway, which is arithmetically what `1 + how many are
+     above me` gives and is a claim to a place in a group they are not in.
+     On the Starts row every one of the eight read "28th of 27": a rank
+     outside its own population, printed on eight player pages.
+
+     A player with no starts has nothing to compare, so the page says that
+     instead of manufacturing a position for them. */
+  const inPool = pool.some((x) => x.num === p.num);
+
+  const versusBand = pool.length > 2 && inPool ? `<section class="sec pf-versus" aria-labelledby="pf-vs-h">
       <div class="wrap">
         ${rail(RAIL.next(), 'Against the squad', `${pool.length} who started a match`)}
         <h2 class="h2 rv" id="pf-vs-h">How that <span class="volt">compares.</span></h2>
@@ -562,7 +576,16 @@ export function playerPage(p, d) {
           </li>`).join('\n          ')}
         </ul>
       </div>
-    </section>` : '';
+    </section>` : (pool.length > 2 ? `<section class="sec pf-versus" aria-labelledby="pf-vs-h">
+      <div class="wrap">
+        ${rail(RAIL.next(), 'Against the squad', `${pool.length} who started a match`)}
+        <h2 class="h2 rv" id="pf-vs-h">Not yet in the <span class="volt">comparison.</span></h2>
+        <p class="pf-lede rv">This page sets a player against the ${esc(pool.length)}
+          ${gk ? 'goalkeepers' : 'outfield players'} who started a match in ${esc(d.currentSeason)}.
+          ${esc(p.first)} is not one of them yet, so there is no place in that order to
+          give him. Everything above is the record as it stands.</p>
+      </div>
+    </section>` : '');
 
   /* ================= 03 WHERE THEY PLAY =================
      A real heat map, not a scatter of pins. The team sheets record how OFTEN
@@ -726,8 +749,17 @@ export function playerPage(p, d) {
                     <span class="pf-heatlist__bar" aria-hidden="true"><i style="--w:${Math.round(h.k * 100)}%"></i></span>
                     <span class="pf-heatlist__n">${esc(fmtN(h.n))}</span>
                     <span class="pf-pos__cue" aria-hidden="true"></span>
-                    <span class="sr-only">${esc(positionName(h.code))}, ${esc(ms.length)}
-                      ${ms.length === 1 ? 'match' : 'matches'}. Show them.</span>
+                    ${/* THE SAME NUMBER THE EYE SEES. This said "Striker, 1
+                          match" beside a visible 0.5, so a sighted reader and
+                          a screen-reader user were given two different figures
+                          in two different units for one row. The visible
+                          column is team-sheet slots, where a bench place
+                          counts a half, and the note under the list says so.
+                          Both are stated here because the second explains the
+                          first. */''}
+                    <span class="sr-only">${esc(positionName(h.code))},
+                      ${esc(fmtN(h.n))} team-sheet ${h.n === 1 ? 'slot' : 'slots'}
+                      from ${esc(ms.length)} ${ms.length === 1 ? 'match' : 'matches'}. Show them.</span>
                   </summary>
                   <div class="pf-pos__panel">
                     <p class="pf-pos__t">${esc(positionName(h.code))}</p>

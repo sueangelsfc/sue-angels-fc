@@ -213,6 +213,21 @@ export function playerPage(p, d) {
     : { key: squadRec.status, label: null, derived: false };
   const statusLabel = nowStatus.label;
 
+  /* A PLAYER'S SEASON IS SELLABLE, and the panel sells it: "Ade Owolona's
+     season" is one of the slots on the shelf. Nothing read it, so a business
+     could buy a player's season and never appear anywhere on his page. A line
+     of text under the name, not a logo: this is a small sponsorship, not one
+     of the partners whose marks are contractual. */
+  const seasonSponsor = (() => {
+    const sp = (d.sponsorships || {})['player-' + p.num];
+    if (!sp || !sp.name) return '';
+    const who = sp.url
+      ? `<a href="${attr(sp.url)}" rel="noopener nofollow" target="_blank">${esc(sp.name)}</a>`
+      : esc(sp.name);
+    return `<p class="pf-sponsor">${esc(p.first || p.name)}’s season is sponsored by ${who}${
+      sp.note ? ` <i>${esc(sp.note)}</i>` : ''}</p>`;
+  })();
+
   /* ================= HERO ================= */
   const hero = `<section class="pf-hero" aria-labelledby="pf-h">
       <div class="wrap pf-hero__grid">
@@ -232,6 +247,7 @@ export function playerPage(p, d) {
             <b>${esc(p.last)}</b>
             <i>${esc(p.first)}</i>
           </h1>
+          ${seasonSponsor}
           <p class="pf-hero__lede">${esc(pr.starts)} ${pr.starts === 1 ? 'start' : 'starts'} for
             ${esc(CLUB.name)} in ${esc(d.currentSeason)}${pr.bench ? `, plus ${esc(pr.bench)} on the bench` : ''}.
             ${gk

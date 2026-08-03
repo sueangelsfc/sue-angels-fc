@@ -96,3 +96,11 @@
   margin-block-end: 0.6rem;
 }
 .mr-embed video { display: block; width: 100%; height: 100%; border: 0; background: #000; }
+
+/* A sponsorship credit. Quiet on purpose: the club sells these one at a time
+   and the person reading came for the match, so it reads as a thank-you at
+   the foot of the report rather than as advertising in front of it. */
+.mr-sponsors{padding-block: 0;}
+.mr-sponsor{margin: 6px 0 0; font-size: 13.5px; line-height: 1.7; color: var(--ink-3);}
+.mr-sponsor a{color: var(--volt-text);}
+.mr-sponsor i{font-style: normal; color: var(--ink-3); opacity: 0.8;}

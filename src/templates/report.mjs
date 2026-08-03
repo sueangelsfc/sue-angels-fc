@@ -67,6 +67,25 @@ export function matchReport(m, d) {
   }));
   const bench = (det.bench || []).map((s) => ({ name: nameFor(s.num), num: s.num }));
   const motm = det.motm != null ? nameFor(det.motm) : '';
+
+  /* SPONSORSHIPS SOLD IN THE PANEL, honoured here.
+     The editor tells the club exactly what each slot buys: their name on
+     every match report, named as the match ball sponsor on that game's
+     report, named alongside the Player of the Match award. None of it was
+     ever read, so all three sentences were promises the site did not keep.
+
+     A credit is drawn only where a sponsor has actually been recorded, and it
+     is a line of text rather than a logo: these are the small things sold one
+     at a time, not the partners whose marks are contractual assets. */
+  const sold = d.sponsorships || {};
+  const credit = (key, prefix) => {
+    const sp = sold[key];
+    if (!sp || !sp.name) return '';
+    const who = sp.url
+      ? `<a href="${attr(sp.url)}" rel="noopener nofollow" target="_blank">${esc(sp.name)}</a>`
+      : esc(sp.name);
+    return `<p class="mr-sponsor">${esc(prefix)} ${who}${sp.note ? `<i>${esc(sp.note)}</i>` : ''}</p>`;
+  };
   const captain = det.captain != null ? nameFor(det.captain) : '';
 
   /* ---- Scoreboard ---- */
@@ -124,6 +143,7 @@ export function matchReport(m, d) {
             ${motm ? `<p class="mr-motm">${esc(motm)}</p>`
     : '<p class="mr-col__none">Not recorded.</p>'}
             ${captain ? `<p class="mr-col__cap">Captain: ${esc(captain)}</p>` : ''}
+            ${credit('motm', 'Award sponsored by')}
           </div>
         </div>
 
@@ -191,6 +211,17 @@ export function matchReport(m, d) {
       </div>
     </section>` : '';
 
+  /* The report's own sponsor and the match ball, at the foot of the report
+     where a credit belongs: read after the thing it paid for, not before it. */
+  const sponsorBand = (credit('matchreport', 'This match report is brought to you by')
+    + credit('matchball', 'Match ball sponsored by'))
+    ? `<section class="sec mr-sponsors">
+      <div class="wrap">
+        ${credit('matchreport', 'This match report is brought to you by')}
+        ${credit('matchball', 'Match ball sponsored by')}
+      </div>
+    </section>` : '';
+
   const backBand = `<section class="sec mr-back">
       <div class="wrap">
         <p class="mr-back__row">
@@ -206,7 +237,7 @@ export function matchReport(m, d) {
     bodyClass: 'is-home is-sub is-report',
     preMain: sitePreMain(auraFor('results.html')),
     footerHtml: siteFooter(),
-    body: siteHeader("/results.html") + hero + factsBand + reportBand + videoBand + backBand,
+    body: siteHeader("/results.html") + hero + factsBand + reportBand + videoBand + sponsorBand + backBand,
     hasReport: hasReport(m),
   };
 }

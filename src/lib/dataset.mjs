@@ -319,6 +319,22 @@ export function buildDataset() {
     const rec = photoRec[String(num)] || {};
     return (season && rec[season]) || rec.default || '';
   };
+  /* SPONSORSHIPS SOLD DURING A SEASON.
+
+     The panel sells three slots and a player's season, and tells the club
+     exactly what each one buys: "their name on every match report", "named as
+     the match ball sponsor on that game's report", "named alongside the award".
+     The generator read none of them, so every one of those sentences was a
+     promise the site did not keep. Recording a sale changed the database and
+     nothing a sponsor could ever be shown.
+
+     Keyed without the prefix, so `sponsorships.matchreport` and
+     `sponsorships['player-30']`. A record with no name is not a sale. */
+  const sponsorships = Object.fromEntries((live.player_photos || [])
+    .filter((r) => String(r.key).startsWith('sponsor:') && r.key !== 'sponsor:pipeline')
+    .map((r) => [String(r.key).slice(8), typeof r.data === 'string' ? { name: r.data } : (r.data || {})])
+    .filter(([, v]) => v && v.name));
+
   const photoSeasons = [...new Set(
     Object.values(photoRec).flatMap((r) => Object.keys(r || {})),
   )].filter((k) => k !== 'default');
@@ -676,7 +692,19 @@ export function buildDataset() {
   /* The recovered registry misses clubs whose badge files are already in
      assets/badge/, which is how a new opponent ends up on the initial-letter
      fallback with its own crest sitting unused on disk. */
-  const badges = { ...(ps.BADGES || {}), ...(read('badges-extra.json').badges || {}) };
+  /* AND THE ONES THE CLUB HAS UPLOADED. The panel has an Opponent badges
+     editor that writes the `team_badges` table, keyed by club name with
+     exactly the shape used here, and the generator never read it: uploading a
+     crest changed the database and nothing else, for as long as the editor
+     has existed. A row here wins over both baselines, because it is the most
+     recent thing anybody chose. */
+  const badges = {
+    ...(ps.BADGES || {}),
+    ...(read('badges-extra.json').badges || {}),
+    ...Object.fromEntries((live.team_badges || [])
+      .filter((row) => row && row.key && row.data && row.data.src)
+      .map((row) => [row.key, row.data])),
+  };
   const pages = read('recovered-pages.json');
 
   return {
@@ -695,7 +723,7 @@ export function buildDataset() {
     isPlayingStatus: isPlaying,
     coaches, table, leagueScorers, leagueScorersByComp, nextDivisionTable, leagueResults,
     articles, recognition, galleries, playerPhotos, donate, hero, trialists,
-    photoFor, photoSeasons, shotFor,
+    photoFor, photoSeasons, shotFor, sponsorships,
     seasons, seasonInfo, competitions, knownClubs, badges,
     currentSeason: ps.CURRENT_SEASON,
     nextSeason,

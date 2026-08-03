@@ -737,3 +737,8 @@ html.js .pf-plot__hint--fine{display: block;}
   .pf-shots__more--wide{display: none;}
   .pf-shots__more--narrow{display: block;}
 }
+
+/* Whoever has sponsored this player's season. A line, not a logo. */
+.pf-sponsor{margin: 14px 0 0; font-size: 13.5px; line-height: 1.7; color: var(--ink-3);}
+.pf-sponsor a{color: var(--volt-text);}
+.pf-sponsor i{font-style: normal; opacity: 0.8;}

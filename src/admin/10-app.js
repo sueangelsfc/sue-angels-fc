@@ -353,6 +353,32 @@
           + 'added.', 'Add a fixture', 'fixtures']);
       }
 
+      /* A FIXTURE WHOSE DATE HAS BEEN AND GONE WITH NO SCORE.
+
+         The website already handles this properly: it drops the match off the
+         fixtures page so nothing advertises a game that has been played, and
+         puts it under "Just played, awaiting a score" on the results page. So
+         the only people who could not see it were the people who could fix
+         it. The club was told by its own website, in public, and not by the
+         screen it would act from.
+
+         Computed here rather than at build time on purpose: the generator's
+         idea of today is the moment it last ran, and this is a question about
+         now. */
+      var todayIso = new Date().toISOString().slice(0, 10);
+      var played = fixtures.filter(function (f) {
+        var when = String((f.data || {}).date || '').slice(0, 10);
+        return when && when < todayIso;
+      });
+      if (played.length) {
+        var one = played.length === 1;
+        warn.push([(one ? 'A fixture has' : played.length + ' fixtures have')
+          + ' been played and no score has been entered, so the website is showing '
+          + (one ? 'it' : 'them') + ' as awaiting a result. Enter result fills the match form in '
+          + 'from the fixture and clears it.',
+        one ? 'Enter the result' : 'Enter the results', 'fixtures']);
+      }
+
       host.innerHTML =
         /* The counts: what the club has. */
         '<div class="cpt-grid">' +

@@ -67,9 +67,22 @@ route to the same answer.
 - Any "Nth of M" against its own population
 
 ### 3. Data reaching the page
-For each table in the snapshot, pick a record and prove its content appears on
-the page that should carry it. Records that reach no page are the single most
-common defect class in this repo.
+Records that reach no page are the single most common defect class here.
+
+**The method that found four bugs in one pass**, worth following exactly:
+enumerate every key the panel writes (grep for `upsert` and the `put` helper),
+put a recognisable value against each one in the snapshot, rebuild, and grep
+the built pages for it. Restore the snapshot afterwards.
+
+Cover three states, not one. Publishing works far more often than
+unpublishing: assert the value appears where expected, then mark the record
+draft or hidden and assert it appears NOWHERE and leaves no orphan page.
+
+**Expect your probe to be wrong before the code is.** Two of three apparent
+failures were the probe guessing a shape the panel does not write: `hero:home`
+is `{w640, w960, w1344}`, not `{src, srcset}`. Read the panel's save handler
+for the real shape first. That guessing is itself the finding, though: it is
+exactly how the two sides drift.
 
 ### 4. House style in shipped copy
 Not in the source, in the built HTML: em dashes, "Division" for a league,

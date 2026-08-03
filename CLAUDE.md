@@ -201,6 +201,17 @@ Push to `main` → `sue-angels-fc-b469` auto-deploys to www.suesangelsfc.co.uk. 
 - **Every figure on a filtered page must describe the filter.** This went wrong in six places at once: the stats leaders were career totals under "The season's leaders", the squad chips totalled 24 under a tab reading 34, "Who scored them" counted every goal the club has scored, and three heroes named a fixed season above tabs that could show any. If a tab changes what is listed, it changes what is counted and what the sentence above it says.
 - **Never type a season into copy.** `d.currentSeason`, `d.nextSeason` and `d.latestSeason` are derived, and `d.nextSeason` counts on from the last known season so the site never runs out of an answer. Eight pages said "26/27" in their copy, five of them as `d.nextSeason || '26/27'` where `d.nextSeason` did not exist, so the fallback WAS the value. Every one would have been wrong from July 2027.
 - **No em dashes** in copy.
+- **Writing about the cause.** The club exists because Susan Anne Martin died of sepsis, and that asks for care the style rules above do not cover. Say **she died of sepsis**, never "lost her battle" or "fought": it was an illness, not a defeat. Warm and plain, not mournful and not inspirational. **Never point it at an outcome** - it does not appear in a sponsorship pitch, a recruitment line or as a reason to click, because a death is not a selling point. **Never medical advice**: link the UK Sepsis Trust and let them do that. And when a piece is about football, let it be about football; the cause has its own page and does not need a paragraph bolted onto a match report.
+- **Understate it.** Eighteen from eighteen speaks without help, and "incredible", "unbelievable" and "historic" all make it smaller. A real number instead of an adjective, and say the awkward part out loud: "3 of the 33 were awarded as walkovers and carry no score" is why the rest is believable. An empty state says what is missing, why, and what fills it, never "No data available".
+
+## Adding a field to the control panel
+
+Four rules, each of them written after the failure it prevents. `harden-site` audits for these after the fact; these are how not to need it.
+
+- **Write the reader first.** A field with no consumer is a lie with a save button. Two tables were written by the panel and read by nothing for as long as their editors existed.
+- **Say where it shows, in the hint, and make it a `where:` link.** A label that promises an outcome is a testable claim, and "What the website publishes" was false for six match reports.
+- **Absent must mean the safe default.** `draft: true` hides an article; missing means published, so nothing already saved needs migrating.
+- **The panel never offers what the site derives.** New signing, retained and returned are worked out from evidence. Offering them as choices creates a second source for one fact, and the two will disagree - the panel called a first-ever signing "Retained" for exactly this reason.
 - Club email is **suesangelsfc@gmail.com**. `hello@suesangelsfc.co.uk` does not exist.
 - No emoji. No colours outside the token set.
 - **Use literal characters (`·`, `’`, `–`), not HTML entities**, in template strings. Named entities passed through `esc()` render literally as `&MIDDOT;` — this happened in 61 places. Literals are correct in both escaped and raw contexts.

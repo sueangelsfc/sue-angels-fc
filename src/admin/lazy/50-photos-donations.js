@@ -109,6 +109,12 @@
           (out[slug] = out[slug] || []).push({
             src: src,
             subject: !!(t && t.role === 'subject'),
+            /* How many OTHER people are tagged in the same frame. A shot with
+               one name on it is at least unambiguous; a shot with three is
+               three faces and no way of knowing which is which, and picking
+               wrong puts somebody else on this player's profile. Shown on the
+               tile so the choice is made with that in view. */
+            others: Math.max(0, (tags[idx] || []).length - 1),
             album: a.title || '',
             date: a.date || '',
           });
@@ -116,8 +122,13 @@
       });
     });
     Object.keys(out).forEach(function (k) {
+      /* A marked subject first, then the frames with fewest other people in
+         them, then newest. Until somebody marks a subject the second key is
+         the only useful one: it puts the shots where this player is the only
+         name ahead of the team photographs. */
       out[k].sort(function (x, y) {
         return (y.subject ? 1 : 0) - (x.subject ? 1 : 0)
+          || x.others - y.others
           || String(y.date).localeCompare(String(x.date));
       });
     });
@@ -245,11 +256,34 @@
       function pickFrom(num, who, mine) {
         var wrap = document.createElement('div');
         wrap.className = 'cp-pickwrap';
+        /* TAGGED IN IS NOT THE SAME AS A PICTURE OF.
+
+           All 624 tags in the gallery are a bare name, which means "this
+           person is somewhere in this photograph". None of them is marked as
+           the subject, because marking one is a judgement about a face that
+           only somebody who knows the squad can make.
+
+           It matters here more than anywhere. These are wide match shots: a
+           player is often forty pixels tall with five team-mates around him,
+           and a frame carrying two names does not say which face is which.
+           Cropping one of those into a profile picture is how somebody ends
+           up wearing another player's face on the website, which has happened
+           on this site before.
+
+           So the picker says which it is looking at rather than presenting
+           twenty-six pitch shots as if any of them were a portrait. */
+        var subjects = mine.filter(function (f) { return f.subject; }).length;
         wrap.innerHTML =
           '<div class="cp-pick__head">' +
             '<b>' + esc(who.name) + '</b>' +
-            '<span>' + esc(mine.length) + ' photograph' + (mine.length === 1 ? '' : 's') +
-              ' they are tagged in. Choose the one for <b>' + esc(season) + '</b>.</span>' +
+            '<span>' + (subjects
+    ? esc(subjects) + ' photograph' + (subjects === 1 ? '' : 's') + ' marked as being OF '
+      + esc(who.first || who.name) + ', then ' + esc(mine.length - subjects) + ' more he is in. '
+      + 'Choose the one for <b>' + esc(season) + '</b>.'
+    : 'None of these ' + esc(mine.length) + ' is marked as being a picture OF him yet, only as '
+      + 'ones he is somewhere in, and most are wide match shots. Mark a subject in '
+      + '<b>Photo tagging</b> and it comes to the front here. Check the face before you '
+      + 'choose: a frame with two names does not say which is which.') + '</span>' +
             '<button class="btn btn--quiet btn--sm" data-pick-close>Close</button>' +
           '</div>' +
           '<ul class="cp-pick">' +
@@ -257,7 +291,9 @@
               return '<li><button type="button" data-pick-one="' + i + '">' +
                 '<img src="' + esc(fr.src) + '" alt="" loading="lazy" decoding="async">' +
                 (fr.subject ? '<i>Subject</i>' : '') +
-                '<span>' + esc(fr.album || 'Gallery') + '</span>' +
+                '<span>' + (fr.others
+      ? 'with ' + esc(fr.others) + ' other' + (fr.others === 1 ? '' : 's') + ' tagged'
+      : 'only name on it') + '</span>' +
               '</button></li>';
             }).join('') +
           '</ul>';

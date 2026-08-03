@@ -14,7 +14,7 @@ import { buildDataset } from './lib/dataset.mjs';
 import { page, esc, CLUB_ID } from './lib/html.mjs';
 import { CLUB, SEPSIS } from './lib/club.mjs';
 import { teamSummary, fmtDate, isUs } from './lib/stats.mjs';
-import { home } from './templates/home.mjs';
+import { home, oppBadge } from './templates/home.mjs';
 import * as P from './templates/pages.mjs';
 import { about } from './templates/about.mjs';
 import { cause } from './templates/cause.mjs';
@@ -251,6 +251,29 @@ const adminSeed = {
     ...d.played.map((m) => m.competition), 'Pre-season friendly'])].filter(Boolean).sort(),
   clubs: [...new Set(d.matches.flatMap((m) => [m.home, m.away]))]
     .filter((n) => n && !isUs(n)).sort(),
+  /* WHICH OF THEM ALREADY HAVE A CREST, worked out the way the website works
+     it out.
+
+     The dashboard counted rows in the `team_badges` table, which is the table
+     the panel's own uploader writes and which has none in it, and reported
+     "0 of 26 opponents have a badge" while twenty-five crests were shipping
+     on every match card on the site. It was asking the club to go and find
+     twenty-five badges it already had.
+
+     A badge resolves from three places, in order: an uploaded row, the
+     curated file, and the recovered registry, with a needle so "Woking
+     Veterans Sundays" finds the Woking Vets crest. Only oppBadge() knows all
+     of that, so the answer is computed here with oppBadge() rather than
+     guessed at again in the browser. One club is genuinely without: Mala
+     Vida FC. */
+  clubsWithBadge: [...new Set(d.matches.flatMap((m) => [m.home, m.away]))]
+    .filter((n) => n && !isUs(n))
+    .filter((n) => /src="/.test(oppBadge(n, d.badges, 22, 22)))
+    .sort(),
+  /* And the same question for photographs: which shirt numbers the website
+     can actually draw a face for, counting the ones on disk as well as the
+     ones stored against a row. */
+  squadWithPhoto: d.squad.filter((p) => p.hasPhoto).map((p) => p.num),
   baselineFixtures: JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'fixtures-2627.json'), 'utf8')).fixtures || [],
   /* The squad, so a result is recorded by picking players rather than typing
      shirt numbers into JSON and hoping. Numbers are the storage key the match

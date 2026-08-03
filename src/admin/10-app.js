@@ -338,9 +338,31 @@
       var photos = gallery.reduce(function (a, g) { return a + ((g.data && g.data.photos) || []).length; }, 0);
       var newEnq = enq.filter(function (e) { return !e.status || e.status === 'new'; }).length;
       var squadSize = (SEED.squad || []).length;
-      var withPhoto = blobs.filter(function (x) { return /^\d+$/.test(x.key); }).length;
       var clubs = (SEED.clubs || []).length;
-      var withBadge = badges.filter(function (x) { return (x.data || {}).src; }).length;
+
+      /* WHAT THE WEBSITE CAN ACTUALLY DRAW, not what this panel has uploaded.
+
+         Both of these counted rows in the table the panel's own uploader
+         writes. `team_badges` has none in it, so the tile read "0 of 26
+         opponents have a badge" while twenty-five crests were on every match
+         card on the site, and it was telling the club to go and find
+         twenty-five badges it already had. The photograph tile had the milder
+         version of the same: the pictures on disk did not count.
+
+         The build works both answers out with the site's own resolver, which
+         is the only thing that knows a crest can come from an upload, a
+         curated file or the recovered registry, and that "Woking Veterans
+         Sundays" finds the Woking Vets badge. An uploaded row still counts on
+         top, because it may be for a club added since the last publish. */
+      var badgeSet = {};
+      (SEED.clubsWithBadge || []).forEach(function (c) { badgeSet[c] = 1; });
+      badges.forEach(function (x) { if ((x.data || {}).src) badgeSet[x.key] = 1; });
+      var withBadge = Object.keys(badgeSet).length;
+
+      var photoSet = {};
+      (SEED.squadWithPhoto || []).forEach(function (n) { photoSet[String(n)] = 1; });
+      blobs.forEach(function (x) { if (/^\d+$/.test(x.key)) photoSet[x.key] = 1; });
+      var withPhoto = Object.keys(photoSet).length;
       var withCover = matches.filter(function (m) { return (m.data || {}).cover; }).length;
 
       var warn = [];

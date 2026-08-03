@@ -23,7 +23,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
-import { teamSummary } from '../lib/stats.mjs';
+import { teamSummary, isLeague} from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor } from './home.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
@@ -130,7 +130,7 @@ export function squad(d) {
   const departed = all.filter((p) => p.status === 'departed');
   const nowCoaching = all.filter((p) => p.status === 'staff');
 
-  const league = teamSummary((d.played || []).filter((m) => m.competition === CLUB.division));
+  const league = teamSummary((d.played || []).filter(isLeague));
   const squadGoals = first.reduce((n, p) => n + (p.s.goals || 0), 0);
 
   const byGroup = (list) => GROUPS
@@ -339,7 +339,7 @@ export function squad(d) {
      runs. */
   const heroFor = (v) => {
     const played = (d.competitive || []).filter((m) => v === 'all' || m.season === v);
-    const lg = teamSummary(played.filter((m) => m.competition === CLUB.division));
+    const lg = teamSummary(played.filter(isLeague));
     /* WHICH POOL the figures describe, and it is not the same question in
        August as it is in May.
 

@@ -13,7 +13,7 @@ import path from 'node:path';
 import { buildDataset } from './lib/dataset.mjs';
 import { page, esc, CLUB_ID } from './lib/html.mjs';
 import { CLUB, SEPSIS } from './lib/club.mjs';
-import { teamSummary, fmtDate, isUs } from './lib/stats.mjs';
+import { teamSummary, fmtDate, isUs, isLeague} from './lib/stats.mjs';
 import { home, oppBadge } from './templates/home.mjs';
 import * as P from './templates/pages.mjs';
 import { about } from './templates/about.mjs';
@@ -323,7 +323,7 @@ const adminSeed = {
       const inSeason = d.competitive.filter((m) => m.season === sn.name);
       if (!inSeason.length) continue;
       const all = teamSummary(inSeason);
-      const lg = teamSummary(inSeason.filter((m) => m.competition === CLUB.division));
+      const lg = teamSummary(inSeason.filter(isLeague));
       byYear[sn.name] = {
         played: all.played, won: all.won, drawn: all.drawn, lost: all.lost,
         gf: all.goalsFor, ga: all.goalsAgainst,

@@ -384,7 +384,7 @@ function matchesPage(d, mode) {
           ${upcoming.map(card).join('\n          ')}
         </ul>
         <p class="mt-empty" data-match-empty hidden>No fixture matches those filters.</p>` : `<div class="mt-none rv">
-          <p class="mt-none__k">${esc(CLUB.nextDivision)} · ${esc(d.nextSeason)}</p>
+          <p class="mt-none__k">${esc(d.divisionOf(d.nextSeason))} · ${esc(d.nextSeason)}</p>
           <p class="mt-none__t">No fixtures on the calendar yet.</p>
           <p class="mt-none__b">As soon as dates are confirmed they appear here, and each one moves
             across to the results page once it has been played.</p>

@@ -25,7 +25,7 @@
    ========================================================================== */
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB, PARTNERS, SPONSOR_PACK } from '../lib/club.mjs';
-import { teamSummary } from '../lib/stats.mjs';
+import { teamSummary, isLeague} from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor } from './home.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
@@ -59,14 +59,14 @@ const STEPS = [
 ];
 
 export function sponsors(d) {
-  const league = teamSummary((d.played || []).filter((m) => m.competition === CLUB.division));
+  const league = teamSummary((d.played || []).filter(isLeague));
 
   /* Every claim in this band is checkable, so each one carries the thing that
      backs it rather than an adjective. */
   const REASONS = [
     {
       k: 'Champions, with momentum',
-      v: `Played ${league.played}, won ${league.won}, promoted to ${CLUB.nextDivision}. Your brand backs a `
+      v: `Played ${league.played}, won ${league.won}, promoted to ${d.divisionOf(d.nextSeason)}. Your brand backs a `
         + 'winning, rising club, not a hopeful start-up.',
     },
     {
@@ -104,7 +104,7 @@ export function sponsors(d) {
         <figure class="sp-shot">
           <img src="/assets/hero/team.webp" alt="The ${attr(CLUB.name)} squad in the matchday kit, with the kit sponsor's name across the front of every shirt"
                width="1200" height="500" decoding="async" />
-          <figcaption>The squad that won ${esc(CLUB.division)} unbeaten, in the shirt your name goes on.</figcaption>
+          <figcaption>The squad that won ${esc(d.divisionOf(d.currentSeason))} unbeaten, in the shirt your name goes on.</figcaption>
         </figure>
       </div>
     </section>`;
@@ -166,7 +166,7 @@ export function sponsors(d) {
           <div class="sp-why__arg">
             <h2 class="h2" id="sp-why-h">More than a logo on a <span class="volt">shirt.</span></h2>
             <p class="sp-why__lede">${esc(CLUB.short)} is not a typical grassroots side. We are
-              ${esc(CLUB.division)} champions, unbeaten in our first season, built around a cause that
+              ${esc(d.divisionOf(d.currentSeason))} champions, unbeaten in our first season, built around a cause that
               matters, with a growing audience that puts local businesses in front of the right people.</p>
             <p class="sp-why__stat">
               <b>${esc(league.won)}</b><i>from ${esc(league.played)}</i>

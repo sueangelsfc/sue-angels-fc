@@ -16,7 +16,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { esc, attr, NAV } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
-import { teamSummary, fmtDate, homeAwaySplit, biggestWin } from '../lib/stats.mjs';
+import { teamSummary, fmtDate, homeAwaySplit, biggestWin, isLeague} from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
@@ -42,9 +42,9 @@ const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
     </div>`;
 
 export function champions(d) {
-  const league = teamSummary(d.played.filter((m) => m.competition === CLUB.division));
+  const league = teamSummary(d.played.filter(isLeague));
   const ordered = d.played.slice().sort((a, b) => (a.iso || '').localeCompare(b.iso || ''));
-  const leagueGames = ordered.filter((m) => m.competition === CLUB.division);
+  const leagueGames = ordered.filter(isLeague);
 
   const table = d.table || [];
   const ourRow = table.find((r) => r.us);
@@ -67,11 +67,11 @@ export function champions(d) {
   const hero = `<section class="ch-hero" aria-labelledby="ch-h">
       <div class="wrap ch-hero__grid">
         <div>
-          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> ${esc(CLUB.division)} ${esc(d.currentSeason)}</p>
+          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> ${esc(d.divisionOf(d.currentSeason))} ${esc(d.currentSeason)}</p>
           <h1 class="ch-hero__title" id="ch-h">Champions<span class="volt">.</span></h1>
           <p class="ch-hero__lede">${esc(league.won)} games, ${esc(league.won)} wins. ${esc(CLUB.name)} took the
-            ${esc(CLUB.division)} title at the first attempt without losing a match, and go up to
-            ${esc(CLUB.nextDivision)} for ${esc(d.nextSeason)}.</p>
+            ${esc(d.divisionOf(d.currentSeason))} title at the first attempt without losing a match, and go up to
+            ${esc(d.divisionOf(d.nextSeason))} for ${esc(d.nextSeason)}.</p>
           <div class="ch-hero__btns">
             <a class="btn btn--volt" href="#table">The final table ${ARROW}</a>
             <a class="btn btn--ghost" href="#run">The unbeaten run</a>
@@ -115,11 +115,11 @@ export function champions(d) {
   /* ================= 02 THE FINAL TABLE ================= */
   const tableBand = table.length ? `<section class="sec ch-table" id="table" aria-labelledby="ch-table-h">
       <div class="wrap">
-        ${rail(2, 'The final table', `${esc(CLUB.division)} ${esc(d.currentSeason)}`)}
+        ${rail(2, 'The final table', `${esc(d.divisionOf(d.currentSeason))} ${esc(d.currentSeason)}`)}
         <h2 class="h2 rv" id="ch-table-h">How it finished<span class="volt">.</span></h2>
         <div class="ch-tablewrap rv">
           <table class="ch-tbl">
-            <caption class="sr-only">${esc(CLUB.division)} ${esc(d.currentSeason)} final standings</caption>
+            <caption class="sr-only">${esc(d.divisionOf(d.currentSeason))} ${esc(d.currentSeason)} final standings</caption>
             <thead>
               <tr>
                 <th scope="col" class="ch-tbl__pos">#</th>
@@ -153,7 +153,7 @@ export function champions(d) {
             </tbody>
           </table>
         </div>
-        ${d.promotionSpots ? `<p class="ch-table__note">Top ${esc(d.promotionSpots)} promoted to ${esc(CLUB.nextDivision)}.</p>` : ''}
+        ${d.promotionSpots ? `<p class="ch-table__note">Top ${esc(d.promotionSpots)} promoted to ${esc(d.divisionOf(d.nextSeason))}.</p>` : ''}
       </div>
     </section>` : '';
 
@@ -180,7 +180,7 @@ export function champions(d) {
   /* ================= 04 WHO WON IT ================= */
   const scorersBand = scorers.length ? `<section class="sec ch-scorers" aria-labelledby="ch-sc-h">
       <div class="wrap">
-        ${rail(4, 'Who won it', `${esc(CLUB.division)} scorers`)}
+        ${rail(4, 'Who won it', `${esc(d.divisionOf(d.currentSeason))} scorers`)}
         <h2 class="h2 rv" id="ch-sc-h">The division's leading <span class="volt">scorers.</span></h2>
         <ol class="ch-sc__list rv">
           ${scorers.map((s) => `<li class="ch-sc${s.us ? ' is-us' : ''}">
@@ -230,11 +230,11 @@ export function champions(d) {
   /* ================= 06 WHAT NEXT ================= */
   const nextBand = `<section class="sec ch-next" aria-labelledby="ch-next-h">
       <div class="wrap">
-        ${rail(6, 'What happens now', `${esc(CLUB.nextDivision)} · ${esc(d.nextSeason)}`)}
+        ${rail(6, 'What happens now', `${esc(d.divisionOf(d.nextSeason))} · ${esc(d.nextSeason)}`)}
         <div class="ch-next__panel rv">
           <img class="ch-next__mark" src="${STAR}" alt="" width="260" height="322" loading="lazy" decoding="async" aria-hidden="true" />
-          <h2 class="h2" id="ch-next-h">Up to <span class="volt">${esc(CLUB.nextDivision)}.</span></h2>
-          <p>${promoRec ? esc(promoRec.description) : `Promotion sealed as champions, stepping up to ${CLUB.nextDivision}.`}</p>
+          <h2 class="h2" id="ch-next-h">Up to <span class="volt">${esc(d.divisionOf(d.nextSeason))}.</span></h2>
+          <p>${promoRec ? esc(promoRec.description) : `Promotion sealed as champions, stepping up to ${d.divisionOf(d.nextSeason)}.`}</p>
           <p>${titleRec ? esc(titleRec.description) : ''}</p>
           <div class="ch-next__btns">
             <a class="btn btn--volt" href="/join.html">Play for the club ${ARROW}</a>

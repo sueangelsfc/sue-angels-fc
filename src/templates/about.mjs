@@ -24,7 +24,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { esc, attr, NAV, CLUB_ID } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
-import { teamSummary, leaderboard, biggestWin, fmtDate } from '../lib/stats.mjs';
+import { teamSummary, leaderboard, biggestWin, fmtDate, isLeague} from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge, auraFor } from './home.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
@@ -70,13 +70,13 @@ const VALUES = [
 ];
 
 export function about(d) {
-  const league = teamSummary(d.played.filter((m) => m.competition === CLUB.division));
+  const league = teamSummary(d.played.filter(isLeague));
   const all = teamSummary(d.competitive);
 
   const ordered = d.played.slice().sort((a, b) => (a.iso || '').localeCompare(b.iso || ''));
   const first = ordered[0];
   const big = biggestWin(d.played);
-  const leagueGames = ordered.filter((m) => m.competition === CLUB.division);
+  const leagueGames = ordered.filter(isLeague);
   const lastLeague = leagueGames[leagueGames.length - 1];
 
   const topScorer = leaderboard(d.players, 'goals', 1)[0];
@@ -99,7 +99,7 @@ export function about(d) {
           <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> The story</p>
           <h1 class="ab-hero__title" id="ab-h">Built in <span class="volt">her name.</span></h1>
           <p class="ab-hero__lede">Founded in ${esc(CLUB.founded)} in memory of ${esc(CLUB.memorial.name)}.
-            ${esc(CLUB.division)} champions, first season, unbeaten.</p>
+            ${esc(d.divisionOf(d.currentSeason))} champions, first season, unbeaten.</p>
           <div class="ab-hero__btns">
             <a class="btn btn--volt" href="/champions.html">The ${esc(d.currentSeason)} story ${ARROW}</a>
             <a class="btn btn--ghost" href="/join.html">Get involved</a>
@@ -112,11 +112,11 @@ export function about(d) {
           <dl class="ab-plate__facts">
             <div><dt>Founded</dt><dd>${esc(CLUB.founded)}</dd></div>
             <div><dt>Home</dt><dd>${esc(CLUB.venue.name)}</dd></div>
-            <div><dt>League</dt><dd>${esc(CLUB.nextDivision)}</dd></div>
+            <div><dt>League</dt><dd>${esc(d.divisionOf(d.nextSeason))}</dd></div>
             <div><dt>Trophies</dt><dd>${esc(trophies.length)}</dd></div>
             <div class="ab-plate__wide"><dt>All competitions</dt>
               <dd>P${esc(all.played)} W${esc(all.won)} D${esc(all.drawn)} L${esc(all.lost)} · GF ${esc(all.goalsFor)} GA ${esc(all.goalsAgainst)}</dd></div>
-            <div class="ab-plate__wide"><dt>${esc(CLUB.division)} ${esc(d.currentSeason)}</dt>
+            <div class="ab-plate__wide"><dt>${esc(d.divisionOf(d.currentSeason))} ${esc(d.currentSeason)}</dt>
               <dd>P${esc(league.played)} W${esc(league.won)} D${esc(league.drawn)} L${esc(league.lost)} · ${esc(league.points)} pts</dd></div>
           </dl>
         </aside>
@@ -214,7 +214,7 @@ export function about(d) {
       title: 'Title confirmed',
       opp: lastLeague.opponent,
       score: scoreOf(lastLeague),
-      body: `${CLUB.division} clinched. ${league.won} wins from ${league.played}, ${league.points} points.`,
+      body: `${d.divisionOf(d.currentSeason)} clinched. ${league.won} wins from ${league.played}, ${league.points} points.`,
     },
     {
       when: monthYear(lastLeague?.iso || lastLeague?.date),
@@ -223,7 +223,7 @@ export function about(d) {
     },
     {
       when: 'Sep 26',
-      title: `Promoted to ${CLUB.nextDivision}`,
+      title: `Promoted to ${d.divisionOf(d.nextSeason)}`,
       body: 'A new division, and the next chapter of the story.',
     },
   ].filter(Boolean);
@@ -263,7 +263,7 @@ export function about(d) {
         ${rail(4, 'The division', `${facedNames.length} clubs met`)}
         <div class="ab-faced__head rv">
           <h2 class="h2" id="ab-faced-h">Who we <span class="volt">faced.</span></h2>
-          <p class="ab-faced__sub">Every club we met on the way to the ${esc(CLUB.division)} title. We beat all of them.</p>
+          <p class="ab-faced__sub">Every club we met on the way to the ${esc(d.divisionOf(d.currentSeason))} title. We beat all of them.</p>
         </div>
         <ul class="ab-crests rv">
           ${facedNames.map((n) => `<li class="ab-crest">
@@ -281,7 +281,7 @@ export function about(d) {
         <div class="ab-cause__grid rv">
           <figure class="ab-cause__fig">
             <img class="ab-cause__img" src="/assets/hero/team.webp"
-                 alt="${attr(CLUB.name)} squad, ${attr(CLUB.division)} champions"
+                 alt="${attr(CLUB.name)} squad, ${attr(d.divisionOf(d.currentSeason))} champions"
                  width="640" height="800" loading="lazy" decoding="async" />
             <figcaption class="ab-cause__cap">
               <img src="${STAR}" alt="" width="26" height="32" loading="lazy" decoding="async" />

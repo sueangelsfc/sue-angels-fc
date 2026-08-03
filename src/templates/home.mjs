@@ -22,7 +22,7 @@
 import { esc, attr, clubCrest, NAV } from '../lib/html.mjs';
 import { sizeAttrs } from '../lib/imagesize.mjs';
 import { CLUB, SPONSORS, FAQS, NEXT_FIXTURE, SEASON_AWARDS , SOCIALS} from '../lib/club.mjs';
-import { teamSummary, formGuide } from '../lib/stats.mjs';
+import { teamSummary, formGuide, isLeague} from '../lib/stats.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 
@@ -49,13 +49,29 @@ const dayMonthYear = (str) => {
 /* Reference strip on the right of each section rail, cycled as the reference
    does. The season is filled in by the caller rather than typed, so this
    line does not quietly become a claim about a year that has been and gone. */
-const railRefs = (d) => [
-  'Est. 2025',
-  `${CLUB.nextDivision} · ${d.nextSeason}`,
-  'The Reeves, Hanworth',
-  '51.43° N / 0.40° W',
-  'P18 W18 · Unbeaten',
-];
+const railRefs = (d) => {
+  /* Called once with a stub before the dataset exists, so everything here has
+     to survive being handed almost nothing. */
+  const div = d.divisionOf ? d.divisionOf(d.nextSeason) : '';
+  /* AND THE RECORD IS DERIVED TOO. "P18 W18 · Unbeaten" was typed into this
+     list, which is the same fault as the division on a slower fuse: true
+     today, wrong the first time the club loses a league match, and sitting in
+     a strip of quiet reference marks where nobody would think to look. */
+  const lg = d.divisionOf && d.competitive
+    ? d.competitive.filter((m) => m.season === d.currentSeason && isLeague(m))
+    : [];
+  const w = lg.filter((m) => m.outcome === 'W').length;
+  const record = lg.length
+    ? `P${lg.length} W${w}${w === lg.length ? ' · Unbeaten' : ''}`
+    : 'Est. 2025';
+  return [
+    'Est. 2025',
+    div ? `${div} · ${d.nextSeason}` : 'Sunday league',
+    'The Reeves, Hanworth',
+    '51.43° N / 0.40° W',
+    record,
+  ];
+};
 /* Filled in by home() before anything renders. The season used to be typed
    into the list, which made a strip of quiet reference marks carry a claim
    about a year that would go out of date on its own. */
@@ -175,7 +191,7 @@ function bars(values, { max, min = 2, fill } = {}) {
 export function home(d) {
   RAIL_REF = railRefs(d);
   const all = teamSummary(d.competitive);
-  const league = teamSummary(d.played.filter((m) => m.competition === CLUB.division));
+  const league = teamSummary(d.played.filter(isLeague));
   /* The form strip reads left to right in the order the games were played. */
   const form = formGuide(d.competitive, 6).slice().reverse();
   /* Per-match rates are quoted over every match played, not only the ones
@@ -291,7 +307,7 @@ export function home(d) {
             <p class="hx__record drop" style="--dd:.46s">
               ${SVG.heroStar}
               <b>${esc(league.won)} wins from ${esc(league.played)}</b>
-              <span>${esc(CLUB.division)} Champions ${esc(d.currentSeason)}</span>
+              <span>${esc(d.divisionOf(d.currentSeason))} Champions ${esc(d.currentSeason)}</span>
             </p>
 
             <div class="hx__sponsors drop" style="--dd:.54s" aria-label="Club partners">
@@ -355,8 +371,8 @@ export function home(d) {
     `Played ${league.played}`,
     `Won ${league.won}`,
     'Unbeaten',
-    `${CLUB.division} Champions ${d.currentSeason}`,
-    `Promoted to ${CLUB.nextDivision}`,
+    `${d.divisionOf(d.currentSeason)} Champions ${d.currentSeason}`,
+    `Promoted to ${d.divisionOf(d.nextSeason)}`,
     { motto: CLUB.memorial.motto.replace(/\.$/, '') },
   ].map((t) => (typeof t === 'object'
     ? `<span class="ticker__motto">${esc(t.motto)}</span><i></i>`
@@ -408,7 +424,7 @@ export function home(d) {
     </section>` : '';
 
   /* ================= 02 MORE THAN A RESULT ================= */
-  const leagueMatches = scored.filter((m) => m.competition === CLUB.division);
+  const leagueMatches = scored.filter(isLeague);
   const firstMatch = leagueMatches[0];
   const clincher = leagueMatches.slice().sort((a, b) =>
     ((b.ourGoals - b.theirGoals) - (a.ourGoals - a.theirGoals)) || (b.ourGoals - a.ourGoals))[0];
@@ -431,11 +447,11 @@ export function home(d) {
         <div class="bento rv" style="--d:.08s">
 
           <article class="bento__card bento__card--tall">
-            <img class="bento__img" src="/assets/hero/team.webp" alt="${attr(CLUB.name)} squad, ${attr(CLUB.division)} champions" width="640" height="800" loading="lazy" decoding="async" />
+            <img class="bento__img" src="/assets/hero/team.webp" alt="${attr(CLUB.name)} squad, ${attr(d.divisionOf(d.currentSeason))} champions" width="640" height="800" loading="lazy" decoding="async" />
             <span class="bento__imgshade" aria-hidden="true"></span>
             <span class="bento__label bento__label--on">${SVG.star} Champions</span>
             <div class="bento__tallfoot">
-              <h3 class="bento__h3">${esc(CLUB.division)} winners</h3>
+              <h3 class="bento__h3">${esc(d.divisionOf(d.currentSeason))} winners</h3>
               <div class="bento__table">
                 ${tlRow(firstMatch, 'First fixture', `Won ${firstMatch ? (firstMatch.ourScoreline || firstMatch.scoreline) : ''}`)}
                 ${tlRow(clincher, 'Title clinched', `Won ${clincher ? (clincher.ourScoreline || clincher.scoreline) : ''}`)}
@@ -457,7 +473,7 @@ export function home(d) {
             <span class="bento__glow" aria-hidden="true"></span>
             <span class="bento__label">${SVG.star} The record</span>
             <b class="bento__stat">${esc(Math.round((league.won / Math.max(league.played, 1)) * 100))}<span>%</span></b>
-            <span class="bento__statcap">Win rate · ${esc(CLUB.division)} ${esc(d.currentSeason)}</span>
+            <span class="bento__statcap">Win rate · ${esc(d.divisionOf(d.currentSeason))} ${esc(d.currentSeason)}</span>
           </article>
 
           <article class="bento__card bento__card--partners">
@@ -568,7 +584,7 @@ export function home(d) {
         <div class="cmp__head rv">
           <div class="cmp__headlede">
             <h2 class="h2" id="cmp-h">The campaign<span class="volt">.</span></h2>
-            <p class="cmp__thesis">${esc(all.won)} wins in ${esc(all.played)}, unbeaten to the ${esc(CLUB.division).replace(' ', '&nbsp;')} title. The ${esc(d.currentSeason)} season, measured in full.</p>
+            <p class="cmp__thesis">${esc(all.won)} wins in ${esc(all.played)}, unbeaten to the ${esc(d.divisionOf(d.currentSeason)).replace(' ', '&nbsp;')} title. The ${esc(d.currentSeason)} season, measured in full.</p>
           </div>
           <a class="btn btn--ghost cmp__cta" href="/champions.html">Champions ${ARROW}</a>
         </div>
@@ -579,7 +595,7 @@ export function home(d) {
                a single ratio against a limit wants a meter, and 46 gauge ticks
                were chrome around one number. -->
           <article class="camp__hero">
-            <p class="camp__k">${esc(CLUB.division)} ${esc(d.currentSeason)}</p>
+            <p class="camp__k">${esc(d.divisionOf(d.currentSeason))} ${esc(d.currentSeason)}</p>
             <p class="camp__heroval"><b>${esc(league.won)}</b><span>from ${esc(league.played)}</span></p>
             <p class="camp__herolede">Every league game won. The season finished unbeaten,
               ${esc(league.points)} points from ${esc(league.played * 3)}.</p>
@@ -753,7 +769,7 @@ export function home(d) {
           </a>`).join('\n          ')}
         </div>
         <table class="sr-only">
-          <caption>${esc(CLUB.division)} final standings, ${esc(d.currentSeason)}</caption>
+          <caption>${esc(d.divisionOf(d.currentSeason))} final standings, ${esc(d.currentSeason)}</caption>
           <thead><tr><th scope="col">Position</th><th scope="col">Club</th><th scope="col">Played</th>
             <th scope="col">Won</th><th scope="col">Goal difference</th><th scope="col">Points</th></tr></thead>
           <tbody>${d.table.map((r) => `<tr><td>${esc(r.pos)}</td><th scope="row">${esc(r.club)}</th>
@@ -953,7 +969,14 @@ export function siteFooter() {
             <img src="${STAR}" alt="" width="36" height="45" loading="lazy" decoding="async" />
             <span>Sue's Angels <b>FC</b></span>
           </a>
-          <p class="ft2__tag">Sunday-league football, built in her name. ${esc(CLUB.division)} champions, unbeaten.</p>
+          <!-- The footer is shared by every page and has no dataset to ask,
+               so it does not name a division. It named League Ten, which was
+               going to be wrong from the first whistle of League Eight and
+               could not be fixed here without handing the whole dataset to a
+               function that renders a logo and four links. Champions in the
+               club's first season, unbeaten, is true forever and needs
+               nothing. -->
+          <p class="ft2__tag">Sunday-league football, built in her name. Champions and unbeaten in our first season.</p>
           <!-- From the club record, not typed in here. This list had drifted
                from the shared footer in both directions: it carried TikTok,
                which the other 99 pages did not, and YouTube, whose handle

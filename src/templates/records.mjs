@@ -26,8 +26,7 @@ import { CLUB } from '../lib/club.mjs';
 import { seasonViews, defaultView, seasonBar, seasonPanels, matchNote } from '../lib/seasons.mjs';
 import {
   fmtDate, longestStreak, playerStreak, teamSummary, leaderboard,
-  biggestWin, heaviestDefeat, slugify,
-} from '../lib/stats.mjs';
+  biggestWin, heaviestDefeat, slugify, isLeague } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -81,7 +80,7 @@ export function records(d) {
   const played = view.competitive;
   const season = view.key === 'all' ? d.currentSeason : view.key;
   const inSeason = view.key === 'all' ? played : played.filter((m) => m.season === season);
-  const league = inSeason.filter((m) => m.competition === CLUB.division);
+  const league = inSeason.filter(isLeague);
   const sum = teamSummary(inSeason);
   const leagueSum = teamSummary(league);
   /* THE PLAYER RECORDS ARE THIS SEASON'S. They were the career table
@@ -111,13 +110,13 @@ export function records(d) {
     ? (s.from.id === s.to.id ? fmtDate(s.from.date) : `${fmtDate(s.from.date)} to ${fmtDate(s.to.date)}`)
     : '');
 
-  const perfectLeague = st((m) => m.outcome === 'W', { competition: CLUB.division, season });
+  const perfectLeague = st((m) => m.outcome === 'W', { competition: d.divisionOf(season), season });
   const streaks = [
     {
       value: `${perfectLeague.length}`, unit: 'wins',
-      label: `${CLUB.division} won from ${perfectLeague.of}`,
+      label: `${d.divisionOf(season)} won from ${perfectLeague.of}`,
       who: perfectLeague.perfect ? 'A hundred per cent record' : 'Longest league winning run',
-      when: span(perfectLeague), flag: perfectLeague.perfect, scope: CLUB.division,
+      when: span(perfectLeague), flag: perfectLeague.perfect, scope: d.divisionOf(season),
     },
     (() => { const s = st((m) => m.outcome === 'W'); return {
       value: `${s.length}`, unit: 'wins', label: 'Longest winning run',
@@ -228,7 +227,7 @@ export function records(d) {
     big && { k: 'team', value: big.ourScoreline, label: 'Biggest win',
       who: `v ${shortClub(big.opponent)}`, sub: `${fmtDate(big.date)} · ${big.homeAway}` },
     { k: 'team', value: sum.goalsFor, label: 'Goals scored', who: CLUB.short, sub: 'All competitions' },
-    { k: 'team', value: leagueSum.goalsAgainst, label: 'Goals conceded in the league', who: CLUB.short, sub: `${CLUB.division} ${season}` },
+    { k: 'team', value: leagueSum.goalsAgainst, label: 'Goals conceded in the league', who: CLUB.short, sub: `${d.divisionOf(season)} ${season}` },
     { k: 'team', value: sum.cleanSheets, label: 'Clean sheets', who: CLUB.short, sub: 'All competitions' },
     venueCard(biggestWin(atHome), 'Biggest home win'),
     venueCard(biggestWin(away), 'Biggest away win'),
@@ -293,8 +292,8 @@ export function records(d) {
   const perfectBand = perfectLeague.perfect ? `<section class="sec rc-perfect" aria-labelledby="rc-pf-h">
       <div class="wrap">
         ${rail(2, 'The record that stands out', view.key === 'all'
-    ? `${CLUB.division}, every season`
-    : `${CLUB.division} ${view.label}`)}
+    ? 'The league, every season'
+    : `${d.divisionOf(view.key)} ${view.label}`)}
         <h2 class="h2 rv" id="rc-pf-h">Played ${esc(perfectLeague.of)}. Won <span class="volt">${esc(perfectLeague.length)}.</span></h2>
         <div class="rc-pf rv">
           <ul class="rc-pf__nums">
@@ -306,9 +305,9 @@ export function records(d) {
             <li><b>${esc(leagueSum.points)}</b><i>Points</i></li>
           </ul>
           <p class="rc-pf__body">A hundred per cent record: ${esc(CLUB.short)} won every one of
-            their ${esc(leagueSum.played)} ${esc(CLUB.division)} matches in ${esc(season)}, from
+            their ${esc(leagueSum.played)} ${esc(d.divisionOf(season))} matches in ${esc(season)}, from
             ${esc(span(perfectLeague))}. Eleven goals conceded across the season is the best
-            defensive record in ${esc(CLUB.division)} history.</p>
+            defensive record in ${esc(d.divisionOf(season))} history.</p>
         </div>
       </div>
     </section>` : '';
@@ -448,7 +447,7 @@ export function records(d) {
           <div class="cta2__glass glassbox rv">
             <p class="eyebrow cta2__eyebrow">${esc(d.currentSeason)} · Champions</p>
             <h2 class="h2" id="rc-cta-h">Records are there to be <span class="volt">broken.</span></h2>
-            <p class="cta2__sub">${esc(CLUB.nextDivision)} starts in September. Every one of these
+            <p class="cta2__sub">${esc(d.divisionOf(d.nextSeason))} starts in September. Every one of these
               is on the line.</p>
             <div class="cta2__btns">
               <a class="btn btn--volt" href="/fixtures.html">The fixtures ${ARROW}</a>

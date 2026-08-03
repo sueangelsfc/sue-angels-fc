@@ -9,7 +9,7 @@ import path from 'node:path';
 import { POSITION_GROUPS, positionName } from './positions.mjs';
 import { readStatusRecord, statusIn, statusLabelIn, isPlaying } from './squad-status.mjs';
 import { houseRecord } from './prose.mjs';
-import { normaliseMatch, normaliseTable, playerStats, slugify, isUs, seasonOf, toISO,
+import { normaliseMatch, normaliseTable, playerStats, slugify, isUs, seasonOf, toISO, isLeague, isCup,
   isCompetitive, isFriendly } from './stats.mjs';
 
 const DATA_DIR = path.join(process.cwd(), 'src', 'data');
@@ -506,6 +506,87 @@ export function buildDataset() {
     );
   }
 
+  /* ==========================================================================
+     WHICH DIVISION THE CLUB WAS IN, AND WHEN.
+
+     `CLUB.division` was 'League Ten', typed into a constants file, and 102
+     references across sixteen files read it. That is right until 6 September
+     2026 and wrong from the first whistle of League Eight: every league figure
+     would quietly keep counting last season's division, and "promoted to
+     League Eight" would read as something still to come for as long as the
+     club exists. Exactly the fault the hard-coded seasons had.
+
+     Derived, in three steps, most authoritative first:
+
+       1. THE MATCHES. If league matches were played in a season, the
+          competition they were played in IS the division. Nothing can argue
+          with that and nobody has to maintain it.
+       2. THE PROMOTION. A season that has not kicked off has no matches to
+          read, but the club records "Promoted to League Eight" against the
+          season it went up FROM, so the season after it is League Eight. It
+          is the club's own statement about itself.
+       3. UNCHANGED. Otherwise a season is played in whatever the one before
+          it was, which is what happens when a club stays put.
+
+     Historical copy stays correct by construction: "League Ten champions
+     25/26" asks for the division in 25/26 and gets League Ten forever.
+     ========================================================================== */
+  /* dataset.mjs deliberately does not import club.mjs - the club constants
+     read the dataset, not the other way round - so the last-resort answer is
+     the earliest league competition on record. */
+  const FOUNDING_DIVISION = (competitive.filter(isLeague)
+    .slice().sort((a, b) => String(a.iso || '').localeCompare(String(b.iso || '')))[0] || {}).competition
+    || 'League Ten';
+
+  const divisionPlayedIn = {};
+  for (const m of competitive) {
+    if (m.season && isLeague(m) && !divisionPlayedIn[m.season]) divisionPlayedIn[m.season] = m.competition;
+  }
+  /* "Promoted to League Eight" / "Relegated to League Twelve", read off the
+     club's own recognition record. A title is a loose thing to parse, so it
+     has to match the whole shape or it is ignored: a near miss falls through
+     to "unchanged", which is the safe answer. */
+  const movedInto = {};
+  /* BOTH SOURCES. The assembled list is built two hundred lines below this,
+     and it merges the database rows with the code baseline - which is where
+     "Promoted to League Eight" actually lives, because the club recorded the
+     promotion before the panel could write one. Reading only the database
+     found four Player of the Month entries and no promotion at all. */
+  for (const row of [...(live.recognition || []), ...(ps.SA_DEFAULT_RECOGNITION || [])]) {
+    const r = row && row.data ? row.data : row;
+    if (!r) continue;
+    const said = String(r.title || r.name || '');
+    const hit = said.match(/\b(?:promoted|relegated)\s+(?:in)?to\s+(.+?)\s*$/i);
+    if (hit && r.season) movedInto[r.season] = hit[1].trim();
+  }
+  const seasonsInOrder = (ps.ALL_SEASONS || []).slice().sort();
+  const divisionOf = (season) => {
+    if (!season) return FOUNDING_DIVISION;
+    if (divisionPlayedIn[season]) return divisionPlayedIn[season];
+    /* A season the club has not reached yet is not in the list, so indexOf
+       gives -1 and the walk never ran: 27/28 fell all the way through to the
+       founding division and answered League Ten for a club two divisions on
+       from it. An unknown season is a FUTURE season, so it starts from the
+       end and inherits forward. */
+    const known = seasonsInOrder.indexOf(season);
+    /* And an unknown season BEFORE the first one the club played is not a
+       future season, it is one the club did not exist for. Inheriting forward
+       gave 24/25 the division the club was promoted into a year later.
+       Season labels sort correctly as strings: "24/25" < "25/26". */
+    if (known === -1 && seasonsInOrder.length && season < seasonsInOrder[0]) {
+      return FOUNDING_DIVISION;
+    }
+    const at = known === -1 ? seasonsInOrder.length : known;
+    for (let i = at - 1; i >= 0; i--) {
+      const before = seasonsInOrder[i];
+      if (movedInto[before]) return movedInto[before];
+      if (divisionPlayedIn[before]) return divisionPlayedIn[before];
+    }
+    /* Nothing to go on: the founding division, which is the only sensible
+       answer for a club with no recorded league match anywhere. */
+    return FOUNDING_DIVISION;
+  };
+
   /* WHAT SOMEBODY DID IN A FRIENDLY, kept apart rather than thrown away.
 
      No figure on this site counts it and that does not change. But the player
@@ -620,7 +701,16 @@ export function buildDataset() {
 
   /* The division the club has gone up into. Not yet played, so it is a club
      list rather than a standing. */
-  const nextDivisionTable = read('league-eight-2627.json');
+  /* The club list for the division ahead, and whether it has started.
+     `started` was a flag typed into that file, so the league page would have
+     gone on saying "not started" through a season the club was playing in
+     until somebody remembered to edit a JSON file. The matches know. */
+  const nextDivisionTable = (() => {
+    const t = read('league-eight-2627.json');
+    const forSeason = t.season || latestSeason;
+    const played = competitive.some((m) => m.season === forSeason && isLeague(m));
+    return { ...t, division: t.division || divisionOf(forSeason), started: t.started || played };
+  })();
   const leagueResults = (ps.LEAGUE_RESULTS || []);
 
   /* ---- Articles ---- */
@@ -916,6 +1006,12 @@ export function buildDataset() {
        from the code baseline rather than from a row it can edit. */
     rawMatches: rawResults,
     squad, players, playersBySeason, statsByNum, nameFor, friendlyFor,
+    /* WHERE THE CLUB PLAYS, derived. `division` is this season's, which rolls
+       on its own when the club goes up or down; `divisionOf(season)` answers
+       for any year, so "League Ten champions 25/26" stays right forever. */
+    divisionOf,
+    division: divisionOf(latestSeason),
+    previousDivision: divisionOf(ps.CURRENT_SEASON),
     /* What each player was in each season, and the helpers that read it. A
        page asking "what was he in 25/26" gets an answer about 25/26 rather
        than about today. */

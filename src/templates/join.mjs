@@ -22,7 +22,7 @@
    ========================================================================== */
 import { esc, attr, icon } from '../lib/html.mjs';
 import { CLUB, JOIN_PATHS, JOIN_FAQS, ENQUIRY_TYPES, NEXT_FIXTURE } from '../lib/club.mjs';
-import { fmtDate, teamSummary } from '../lib/stats.mjs';
+import { fmtDate, teamSummary, isLeague} from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor } from './home.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
@@ -130,7 +130,7 @@ export function join(d) {
      invites the reader to compare two different things. The league record is
      the one that earned the promotion, and it is the one the published table
      agrees with. Derived by filtering, never typed in. */
-  const s = teamSummary((d.played || []).filter((m) => m.competition === CLUB.division));
+  const s = teamSummary((d.played || []).filter(isLeague));
 
   /* A real upcoming fixture if one is stored, otherwise the code baseline.
      Same precedence the homepage uses, so the two cannot disagree. */
@@ -152,8 +152,8 @@ export function join(d) {
         <p class="jn-hero__lede">Players, media, volunteers and sponsors. Four ways in, one form,
           and a person on the other end of it.</p>
         <ul class="jn-hero__facts">
-          <li><b>${esc(CLUB.nextDivision)}</b><span>Where we play next</span></li>
-          <li><b>P${esc(s.played)} W${esc(s.won)} D${esc(s.drawn)} L${esc(s.lost)}</b><span>${esc(CLUB.division)}${s.lost === 0 ? ', unbeaten' : ''}</span></li>
+          <li><b>${esc(d.divisionOf(d.nextSeason))}</b><span>Where we play next</span></li>
+          <li><b>P${esc(s.played)} W${esc(s.won)} D${esc(s.drawn)} L${esc(s.lost)}</b><span>${esc(d.divisionOf(d.currentSeason))}${s.lost === 0 ? ', unbeaten' : ''}</span></li>
           <li><b>${esc(CLUB.venue.shortName)}, ${esc(CLUB.venue.district)}</b><span>Our home ground</span></li>
         </ul>
         <p class="jn-hero__btns">
@@ -250,7 +250,7 @@ export function join(d) {
           <span class="cta2__glow" aria-hidden="true"></span>
           <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
-            <p class="eyebrow cta2__eyebrow">${esc(CLUB.nextDivision)} · ${esc(d.nextSeason)}</p>
+            <p class="eyebrow cta2__eyebrow">${esc(d.divisionOf(d.nextSeason))} · ${esc(d.nextSeason)}</p>
             <h2 class="h2" id="jn-cta-h">There is a shirt with your <span class="volt">name on it.</span></h2>
             <p class="cta2__sub">Whether you play, shoot, organise or sponsor, the club is built out
               of people who put their hand up.</p>

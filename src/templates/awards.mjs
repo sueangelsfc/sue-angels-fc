@@ -19,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { seasonViews, defaultView, seasonBar, seasonPanels, matchNote } from '../lib/seasons.mjs';
-import { teamSummary, playerStats, leaderboard, longestRun, fmtDate, parseDate } from '../lib/stats.mjs';
+import { teamSummary, playerStats, leaderboard, longestRun, fmtDate, parseDate, isLeague} from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
@@ -94,7 +94,7 @@ export function awards(d) {
      while carrying no award and counting towards nothing. A denominator has
      to be the population it is describing. */
   const ordered = (d.competitive || []).slice().sort((a, b) => (b.iso || '').localeCompare(a.iso || ''));
-  const leagueGames = (d.competitive || []).filter((m) => m.competition === CLUB.division);
+  const leagueGames = (d.competitive || []).filter(isLeague);
   const league = teamSummary(leagueGames);
 
   const recognition = d.recognition || [];
@@ -171,6 +171,9 @@ export function awards(d) {
   /* Competitive: this is the denominator under "drawn from N matches of M". */
   const scope = view.competitive;
   const seasonLabel = view.key === 'all' ? 'every season' : view.label;
+  /* Which division that season was played in. Naming it from the constant put
+     "League Ten" above figures for a season the club spent in League Eight. */
+  const seasonKey = view.key === 'all' ? d.currentSeason : view.key;
   const inView = (r) => view.key === 'all' || String(r.season || '') === view.key;
   const potm = ALL_RECOGNITION.filter((r) => r.type === 'potm').filter(inView);
   const seasonAwards = ALL_RECOGNITION.filter((r) => r.type === 'season_award').filter(inView);
@@ -201,13 +204,13 @@ export function awards(d) {
      compares this season. */
   const gaBand = ourRow ? `<section class="sec aw-def" id="defence" aria-labelledby="aw-def-h">
       <div class="wrap">
-        ${rail(1, 'The record of the season', `${CLUB.division} · ${seasonLabel}`)}
+        ${rail(1, 'The record of the season', `${d.divisionOf(seasonKey)} · ${seasonLabel}`)}
         <h2 class="h2 rv" id="aw-def-h">The best defensive record in
           <span class="volt">League Ten history.</span></h2>
         <div class="aw-def__grid rv">
           <div class="aw-def__lede">
             <p class="aw-def__hero"><b>${esc(ourRow.goalsAgainst)}</b><span>goals conceded in ${esc(league.played)} league games</span></p>
-            <p>No side has gone through a ${esc(CLUB.division)} season conceding fewer. ${gaGap !== null
+            <p>No side has gone through a ${esc(d.divisionOf(seasonKey))} season conceding fewer. ${gaGap !== null
               ? `${esc(Words(gaGap))} fewer than the next best defence in the division, and less than a goal a game across the whole campaign.`
               : 'Less than a goal a game across the whole campaign.'}</p>
             <ul class="aw-def__facts">
@@ -220,7 +223,7 @@ export function awards(d) {
           </div>
 
           <figure class="aw-ga">
-            <figcaption class="aw-ga__cap">Goals conceded · ${esc(CLUB.division)} ${esc(d.currentSeason)}</figcaption>
+            <figcaption class="aw-ga__cap">Goals conceded · ${esc(d.divisionOf(seasonKey))} ${esc(seasonLabel)}</figcaption>
             <ol class="aw-ga__list">
               ${gaSorted.map((r, i) => `<li class="aw-ga__row${r.us ? ' is-us' : ''}" style="--i:${i}">
                 <span class="aw-ga__club">${esc(shortClub(r.club))}</span>
@@ -393,7 +396,7 @@ export function awards(d) {
           <span class="cta2__glow" aria-hidden="true"></span>
           <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
-            <p class="eyebrow cta2__eyebrow">${esc(CLUB.nextDivision)} · Next season</p>
+            <p class="eyebrow cta2__eyebrow">${esc(d.divisionOf(d.nextSeason))} · Next season</p>
             <h2 class="h2" id="aw-cta-h">Win one of <span class="volt">these.</span></h2>
             <p class="cta2__sub">The awards above went to players who turned up every week and set the
               standard. There is room for more of them.</p>

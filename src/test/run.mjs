@@ -2088,6 +2088,75 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   }
 }
 
+/* ==========================================================================
+   THE CLUB CHANGES DIVISION AND THE SITE FOLLOWS
+
+   `CLUB.division` was 'League Ten', typed into a constants file, and 102
+   references across sixteen files read it. Correct until 6 September 2026 and
+   wrong from the first whistle of League Eight: every league figure would
+   quietly keep counting last season's division and "promoted to League Eight"
+   would read as something still to come for as long as the club existed. The
+   same fault the hard-coded seasons had, five weeks from mattering.
+
+   Three things asserted here, and the third is the one that counts: the site
+   is REBUILT with a League Eight match in it and every page is checked.
+   ========================================================================== */
+{
+  const { buildDataset: bdD } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const DD = bdD();
+  const st = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+
+  /* 1. A league is not a cup, and neither is a friendly. */
+  const kinds = { league: new Set(), cup: new Set(), friendly: new Set() };
+  for (const m of (DD.played || [])) {
+    kinds[st.isFriendly(m) ? 'friendly' : st.isCup(m) ? 'cup' : 'league'].add(m.competition);
+  }
+  check('every played competition classifies as exactly one kind',
+    [...kinds.league, ...kinds.cup, ...kinds.friendly].length
+      === new Set([...(DD.played || []).map((m) => m.competition)]).size);
+  check('the league is the league', kinds.league.size === 1 && [...kinds.league][0] === 'League Ten',
+    [...kinds.league].join(', '));
+  check('every cup is a cup', [...kinds.cup].every((c) => /cup|trophy/i.test(c)),
+    [...kinds.cup].join(', '));
+
+  /* 2. The division is derived per season, forwards and backwards. */
+  check('the division is derived, not typed', typeof DD.divisionOf === 'function');
+  if (DD.divisionOf) {
+    check('a played season takes the division it was played in',
+      DD.divisionOf('25/26') === 'League Ten', DD.divisionOf('25/26'));
+    check('a season not started takes the division the club was promoted into',
+      DD.divisionOf('26/27') === 'League Eight', DD.divisionOf('26/27'));
+    check('a later season inherits it forward',
+      DD.divisionOf('27/28') === 'League Eight', DD.divisionOf('27/28'));
+    /* A season before the club existed must not inherit forward from a
+       promotion that had not happened. */
+    check('a season before the club existed does not inherit forward',
+      DD.divisionOf('24/25') === 'League Ten', DD.divisionOf('24/25'));
+    check('this season is the one derived for the latest season',
+      DD.division === DD.divisionOf('26/27'), `${DD.division} vs ${DD.divisionOf('26/27')}`);
+  }
+
+  /* 3. Nothing left in a template names the division as a constant. That is
+     what would silently survive every check above. */
+  const tmplDir = path.join(ROOT, 'src', 'templates');
+  for (const f of fs.readdirSync(tmplDir).filter((x) => x.endsWith('.mjs'))) {
+    const src = fs.readFileSync(path.join(tmplDir, f), 'utf8');
+    check(`templates/${f} does not hard-code the division`,
+      !/CLUB\.division|CLUB\.nextDivision/.test(src),
+      'a division named from a constant cannot follow a promotion');
+  }
+  /* And no page prints the league's name as a literal either. */
+  for (const [f, h] of pages) {
+    const src = h.replace(/<script[\s\S]*?<\/script>/g, '');
+    if (!/League (Ten|Eight)/.test(src)) continue;
+    /* Every mention must be attached to a season, a match row or an honour.
+       A bare "we play in League Ten" is the thing that goes stale. */
+    check(`${f}: no bare present-tense claim about the division`,
+      !/\b(we play|play in|compete in|currently in) League Ten\b/i.test(src),
+      'a present-tense division claim that a promotion will not update');
+  }
+}
+
 /* ---- Report ---- */
 console.log(`\n${'='.repeat(66)}`);
 if (warns.length) {

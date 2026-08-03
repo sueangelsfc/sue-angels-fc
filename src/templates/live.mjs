@@ -139,7 +139,7 @@ export function live(d) {
           <span class="cta2__glow" aria-hidden="true"></span>
           <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
-            <p class="eyebrow cta2__eyebrow">${esc(CLUB.nextDivision)} · ${esc(d.nextSeason)}</p>
+            <p class="eyebrow cta2__eyebrow">${esc(d.divisionOf(d.nextSeason))} · ${esc(d.nextSeason)}</p>
             <h2 class="h2" id="lv-cta-h">Be there when we <span class="volt">kick off.</span></h2>
             <p class="cta2__sub">Subscribe for the streams, or come down to ${esc(CLUB.venue.shortName)}
               and watch it properly.</p>

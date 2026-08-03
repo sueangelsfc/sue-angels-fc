@@ -117,6 +117,28 @@ export function seasonOf(dateStr) {
 export const isFriendly = (m) => /friendly|friendlies/i.test(String(m?.competition || ''));
 export const isCompetitive = (m) => !isFriendly(m);
 
+/* ==========================================================================
+   IS THIS A LEAGUE MATCH, which is not the same question as "is this League
+   Ten".
+
+   Fifteen filters across the site asked `m.competition === CLUB.division`,
+   with CLUB.division typed into a constants file as 'League Ten'. That is
+   correct until 6 September 2026 and wrong from the first whistle of League
+   Eight: every league figure on the site would quietly start counting last
+   season's division, and "promoted to League Eight" would read as something
+   still to come for as long as the club exists.
+
+   It is the same fault the hard-coded seasons had, and the same fix. The
+   question those filters are actually asking is whether a match was a league
+   match rather than a cup tie, so that is what they ask now, and the answer
+   does not care what the league is called this year or next.
+
+   Named off the competition, because that is what the club types and there is
+   nowhere else it would be kept in step. A cup names itself. ========================================================================== */
+const CUP_WORD = /\b(cup|trophy|shield|plate|vase|bowl)\b/i;
+export const isCup = (m) => !isFriendly(m) && CUP_WORD.test(String(m?.competition || ''));
+export const isLeague = (m) => !isFriendly(m) && !CUP_WORD.test(String(m?.competition || ''));
+
 export function normaliseMatch(raw, detail) {
   const home = raw.home || '';
   const away = raw.away || '';

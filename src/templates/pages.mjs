@@ -8,8 +8,7 @@ import {
 import { CLUB, SEPSIS, SPONSOR_TIERS, ENQUIRY_TYPES, JOIN_PATHS, POSITION_GROUPS , SOCIALS} from '../lib/club.mjs';
 import {
   teamSummary, formGuide, homeAwaySplit, byCompetition, leaderboard,
-  clubRecords, fmtDate, groupBySeason,
-} from '../lib/stats.mjs';
+  clubRecords, fmtDate, groupBySeason, isLeague } from '../lib/stats.mjs';
 
 const trail = (...parts) => crumbs([{ label: 'Home', href: '/' }, ...parts]);
 
@@ -33,9 +32,9 @@ export function about(d) {
           family and friends carry every day, and it is the reason this club exists.</p>
           <p>We play for her, and we talk openly about sepsis so that fewer people have to go through the same thing.</p>
           <h2>The first season</h2>
-          <p>The club entered ${esc(CLUB.division)} of the ${esc(CLUB.league)} for the ${esc(d.currentSeason)}
+          <p>The club entered ${esc(d.divisionOf(d.currentSeason))} of the ${esc(CLUB.league)} for the ${esc(d.currentSeason)}
           season as a brand new side. It finished the league campaign unbeaten, champions at the first attempt,
-          and promoted into ${esc(CLUB.nextDivision)}.</p>
+          and promoted into ${esc(d.divisionOf(d.nextSeason))}.</p>
           <p>Across all competitions the Angels played ${esc(all.played)} matches and won ${esc(all.won)},
           scoring ${esc(all.goalsFor)} goals. Three of those league wins came as walkovers when the
           opposition could not field a side.</p>
@@ -53,7 +52,7 @@ export function about(d) {
             ${statTile({ value: String(CLUB.founded), label: 'Founded', glass: true, brand: true })}
             ${statTile({ value: String(all.played), label: 'Matches played', glass: true })}
             ${statTile({ value: String(d.squad.length), label: 'Squad members', glass: true })}
-            ${statTile({ value: '1st', label: `${CLUB.division} finish`, glass: true, brand: true })}
+            ${statTile({ value: '1st', label: `${d.divisionOf(d.currentSeason)} finish`, glass: true, brand: true })}
           </div>
           <a class="btn btn--primary btn--block" href="/sepsis.html">${icon('heart')} Our cause: sepsis awareness</a>
         </div>
@@ -164,7 +163,7 @@ export function sepsis() {
 
 /* ======================= CHAMPIONS ======================= */
 export function champions(d) {
-  const league = d.played.filter((m) => m.competition === CLUB.division);
+  const league = d.played.filter(isLeague);
   const ls = teamSummary(league);
   const all = teamSummary(d.competitive);
   const ourRow = d.table.find((r) => r.us);
@@ -173,9 +172,9 @@ export function champions(d) {
   return { body: `
   ${pageHero({
     crumbs: trail({ label: 'Champions', href: '/champions.html' }),
-    eyebrow: `${esc(d.currentSeason)} · ${esc(CLUB.division)}`,
+    eyebrow: `${esc(d.currentSeason)} · ${esc(d.divisionOf(d.currentSeason))}`,
     title: 'Champions.<br>Unbeaten.',
-    lede: `Eighteen league games, eighteen wins, ${esc(ls.goalsFor)} goals scored and ${esc(ls.goalsAgainst)} conceded. Promoted into ${esc(CLUB.nextDivision)}.`,
+    lede: `Eighteen league games, eighteen wins, ${esc(ls.goalsFor)} goals scored and ${esc(ls.goalsAgainst)} conceded. Promoted into ${esc(d.divisionOf(d.nextSeason))}.`,
   })}
   <section class="section section--flush">
     <div class="wrap wrap--wide">
@@ -194,8 +193,8 @@ export function champions(d) {
 
   <section class="section">
     <div class="wrap wrap--wide">
-      ${sectionHead({ index: '01', eyebrow: 'How it finished', title: `${esc(CLUB.division)} final table` })}
-      ${leagueTable(d.table, { caption: `${CLUB.league} · ${CLUB.division} · ${d.currentSeason} final standings` })}
+      ${sectionHead({ index: '01', eyebrow: 'How it finished', title: `${esc(d.divisionOf(d.currentSeason))} final table` })}
+      ${leagueTable(d.table, { caption: `${CLUB.league} · ${d.divisionOf(d.currentSeason)} · ${d.currentSeason} final standings` })}
       <div class="ltable__legend">
         <span class="ltable__key"><span class="ltable__swatch"></span> Sue’s Angels FC</span>
         ${d.promotionSpots ? `<span>Top ${esc(d.promotionSpots)} promoted</span>` : ''}
@@ -214,7 +213,7 @@ export function champions(d) {
     <div class="wrap wrap--wide">
       ${sectionHead({ index: '03', eyebrow: 'Beyond the league', title: 'Cup competitions' })}
       <div class="grid grid--2">
-        ${byCompetition(d.competitive).filter((c) => c.competition !== CLUB.division).map((c) => `
+        ${byCompetition(d.competitive).filter((c) => !/^League /i.test(c.competition)).map((c) => `
           <div class="panel" style="padding:var(--space-5)">
             <h3 style="font-size:var(--step-1);margin-bottom:var(--space-3)">${esc(c.competition)}</h3>
             <p style="color:var(--text-muted);font-size:var(--step--1)">
@@ -359,7 +358,7 @@ export function fixtures(d) {
         ? `<div class="grid grid--wide">${upcoming.map((m) => fixtureCard(m, d.badges, { glass: true })).join('')}</div>`
         : emptyState({
             title: 'No fixtures scheduled',
-            body: `The ${CLUB.nextDivision} fixture list is published as soon as the league releases it. Results from the title-winning season are all available in the meantime.`,
+            body: `The ${d.divisionOf(d.nextSeason)} fixture list is published as soon as the league releases it. Results from the title-winning season are all available in the meantime.`,
             action: '<a class="btn btn--primary" href="/results.html">Every result</a>',
           })}
     </div>
@@ -405,12 +404,12 @@ export function league(d) {
   ${pageHero({
     crumbs: trail({ label: 'League table', href: '/league.html' }),
     eyebrow: esc(CLUB.league),
-    title: `${esc(CLUB.division)}.`,
+    title: `${esc(d.divisionOf(d.currentSeason))}.`,
     lede: `The full ${esc(d.currentSeason)} table, every result across the division, and the league’s leading scorers.`,
   })}
   <section class="section section--flush">
     <div class="wrap wrap--wide">
-      ${leagueTable(d.table, { caption: `${CLUB.division} · ${d.currentSeason} final standings` })}
+      ${leagueTable(d.table, { caption: `${d.divisionOf(d.currentSeason)} · ${d.currentSeason} final standings` })}
       <div class="ltable__legend">
         <span class="ltable__key"><span class="ltable__swatch"></span> Sue’s Angels FC</span>
         ${d.promotionSpots ? `<span>Top ${esc(d.promotionSpots)} promoted</span>` : ''}
@@ -422,7 +421,7 @@ export function league(d) {
       ${sectionHead({ index: '01', eyebrow: 'Across the division', title: 'Leading scorers' })}
       <div class="table-wrap scroll-x">
         <table class="data">
-          <caption>${esc(CLUB.division)} leading scorers · ${esc(d.currentSeason)}</caption>
+          <caption>${esc(d.divisionOf(d.currentSeason))} leading scorers · ${esc(d.currentSeason)}</caption>
           <thead><tr>
             <th scope="col">#</th><th scope="col">Player</th><th scope="col">Club</th>
             <th scope="col">Goals</th><th scope="col">Assists</th><th scope="col">Apps</th>
@@ -682,7 +681,7 @@ export function sponsors(d) {
         ${statTile({ value: String(teamSummary(d.competitive).played), label: 'Matches a season', glass: true })}
         ${statTile({ value: String(d.galleries.reduce((a, g) => a + g.photoCount, 0)), label: 'Matchday photographs', glass: true, brand: true })}
         ${statTile({ value: String(d.squad.length), label: 'Players and staff', glass: true })}
-        ${statTile({ value: CLUB.nextDivision, label: 'New division', glass: true })}
+        ${statTile({ value: d.divisionOf(d.nextSeason), label: 'New division', glass: true })}
       </div>
     </div>
   </section>
@@ -784,7 +783,7 @@ export function join() {
   return { body: `
   ${pageHero({
     crumbs: trail({ label: 'Join', href: '/join.html' }),
-    eyebrow: `${esc(CLUB.nextDivision)} · New season`,
+    eyebrow: `${esc(d.divisionOf(d.nextSeason))} · New season`,
     title: 'Join the Angels.',
     lede: 'Players, media volunteers, helpers and sponsors. There is more than one way in.',
   })}

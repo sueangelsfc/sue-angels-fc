@@ -21,7 +21,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
-import { teamSummary } from '../lib/stats.mjs';
+import { teamSummary, isLeague} from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor } from './home.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
@@ -62,7 +62,7 @@ export function coaches(d) {
      minutes out, and a win in one is not a win a manager is judged on. */
   const played = (d.competitive || []).filter((m) => m.played);
   const all = teamSummary(played);
-  const league = teamSummary(played.filter((m) => m.competition === CLUB.division));
+  const league = teamSummary(played.filter(isLeague));
   const manager = staff.find((c) => /manager/i.test(c.role || '')) || staff[0];
 
   /* ---- Who was picked, and who delivered ---- */
@@ -279,7 +279,7 @@ export function coaches(d) {
           <span class="cta2__glow" aria-hidden="true"></span>
           <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
-            <p class="eyebrow cta2__eyebrow">${esc(CLUB.nextDivision)} · Next season</p>
+            <p class="eyebrow cta2__eyebrow">${esc(d.divisionOf(d.nextSeason))} · Next season</p>
             <h2 class="h2" id="co-cta-h">Play under this <span class="volt">staff.</span></h2>
             <p class="cta2__sub">Trials are open for ${esc(d.nextSeason)}. Register your interest and we will be in
               touch with dates.</p>

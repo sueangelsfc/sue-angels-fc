@@ -290,7 +290,24 @@ export function buildDataset() {
   /* Where the cause page's donate button points. Set in the panel; the page
      keeps its own fallback so an empty record can never leave the button
      pointing nowhere. */
-  const donate = blob('donate:config') || {};
+  /* THE PAYMENT LINK, WHATEVER THE RECORD CALLS IT.
+
+     The panel writes `stripeLink`. The record in production holds `clubUrl`,
+     written by an older version of this screen, and the cause page reads
+     `stripeLink || link`. So the stored link was read by nothing and the page
+     fell back to a link hard-coded in the template, which happened to be the
+     same address, so it looked correct.
+
+     It is a donate button on a page about a woman who died of sepsis. "Looks
+     correct because the fallback matches" is not good enough for it: the
+     moment the club edits that record the site would keep publishing the old
+     address and nothing would say so. Every alias the record has ever used is
+     read, and normalised to the one the page asks for. */
+  const donateRow = blob('donate:config') || {};
+  const donate = {
+    ...donateRow,
+    stripeLink: String(donateRow.stripeLink || donateRow.link || donateRow.clubUrl || '').trim(),
+  };
 
   /* The home page banner, if the club has chosen one. Stored as three widths
      because that is what the page's srcset promises; the home template falls
@@ -458,7 +475,21 @@ export function buildDataset() {
      be shown on their own rather than disappearing. */
   const players = playerStats(matches.filter(isCompetitive), squad, trialists);
   const statsByNum = new Map(players.map((p) => [p.num, p]));
-  const nameFor = (num) => statsByNum.get(num)?.name || `No. ${num}`;
+
+  /* NAMING SOMEBODY IS NOT A STATISTIC, and separating the two is the whole
+     point of this pair.
+
+     `players` is competitive-only, because a friendly counts towards nothing.
+     Names were being read off it too, so anybody who has only ever played a
+     friendly had no row to look up and the site called him "No. 901" on the
+     team sheet of the match he played in. A trialist is exactly that person:
+     the panel's trialist screen exists, in its own words, so that a friendly
+     he played in can name him instead of saying No. 901.
+
+     So the name index is built over EVERY match. It answers "who is number
+     901", which is true regardless of what the match counted towards. */
+  const nameByNum = new Map(playerStats(matches, squad, trialists).map((p) => [p.num, p.name]));
+  const nameFor = (num) => nameByNum.get(num) || `No. ${num}`;
 
   /* THE SAME ENGINE, RUN ONCE PER SEASON.
      The squad page showed one set of numbers under every season tab, so a

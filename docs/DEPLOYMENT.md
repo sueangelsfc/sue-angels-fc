@@ -59,7 +59,7 @@ Names only. Set these in Vercel → project → Settings → Environment Variabl
 |---|---|---|
 | `RESEND_API_KEY` | `api/notify-enquiry.js` | email alerts silently skipped; enquiries still recorded in Supabase, so no lead is lost |
 | `MAILERLITE_API_KEY` | `api/subscribe.js` | newsletter signups still recorded in `supporters`, not pushed to MailerLite |
-| `ANTHROPIC_API_KEY` | `api/claude.js` | match-report drafting assistance unavailable |
+| `ANTHROPIC_API_KEY` | `api/claude.js` | nothing: no page or panel screen calls this endpoint. The match report is built in the browser from the facts already recorded. The endpoint is administrator-gated and kept for the day drafting help is wanted. |
 | `SA_GA_ID` | analytics | analytics inactive |
 
 **Never set a Supabase service-role key as an environment variable that reaches browser code.** The anon/publishable key in `src/data/runtime.json` is designed to be public; all protection comes from row-level security. `npm test` fails the build if `service_role` appears in shipped output.

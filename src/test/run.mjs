@@ -1310,6 +1310,72 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     split.length === 0, split.slice(0, 2).join('; '));
 }
 
+/* ==========================================================================
+   THE PANEL AND THE SITE AGREE ABOUT A SHAPE
+
+   The panel writes a record and the site reads it. Nothing forces the two to
+   use the same field name, and when they drift the failure is silent: the
+   page falls back to something plausible and nobody sees a broken thing.
+   Both of these were found that way.
+   ========================================================================== */
+{
+  const { buildDataset: bd } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const data2 = bd();
+
+  /* THE DONATE LINK. The panel writes `stripeLink`; the record in production
+     holds `clubUrl` from an older version of the screen; the page read
+     neither and fell back to a link hard-coded in the template, which
+     happened to be the same address. A donate button that is right by
+     coincidence is a donate button that goes wrong silently. */
+  const rowsRaw = JSON.parse(fs.readFileSync(
+    path.join(ROOT, 'src', 'data', 'recovered-live.json'), 'utf8'));
+  const donateRow = (rowsRaw.player_photos || []).find((r) => r.key === 'donate:config');
+  const stored = donateRow && (donateRow.data.stripeLink || donateRow.data.link || donateRow.data.clubUrl);
+  if (stored) {
+    check('the stored donate link is the one published',
+      String(data2.donate.stripeLink) === String(stored),
+      `stored ${stored}, dataset ${data2.donate.stripeLink}`);
+    const causePage = pages.get('sepsis.html') || '';
+    check('the cause page carries the stored donate link',
+      causePage.includes(stored), 'falls back to the template default');
+  }
+
+  /* NAMING SOMEBODY IS NOT A STATISTIC. Player stats are competitive-only,
+     because a friendly counts towards nothing. Names were read off the same
+     list, so anybody who has only played a friendly had no row and appeared
+     on his own team sheet as "No. 901" - which is the exact thing the panel's
+     trialist screen exists to prevent. */
+  const named = [...pages].filter(([f]) => f.startsWith('matches/'))
+    .filter(([, h]) => /<b>No\. \d+<\/b>/.test(h))
+    .map(([f]) => f);
+  check('no team sheet prints a shirt number instead of a name',
+    named.length === 0, named.slice(0, 3).join(', '));
+}
+
+/* ==========================================================================
+   EVERY SERVERLESS ROUTE THAT SPENDS SOMETHING IS GATED
+
+   /api/claude proxies a paid API. Its comment claimed only the club's own
+   site could reach it; the code allowed any request with no Origin header,
+   which is every script, every curl and every server. It has been harmless
+   only because ANTHROPIC_API_KEY has never been set, which is one environment
+   variable away from an open proxy.
+
+   Asserted on the source, because there is no built artefact for a serverless
+   function: a route that spends money or deploys the site has to ask the
+   database who is calling, the way /api/publish does.
+   ========================================================================== */
+{
+  const GATED = ['api/claude.js', 'api/publish.js'];
+  for (const f of GATED) {
+    const src = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    check(`${f} asks the database who is calling`,
+      src.includes('rpc/is_club_admin'), 'no is_club_admin check');
+    check(`${f} refuses a request with no bearer token`,
+      /authorization/i.test(src) && /401/.test(src), 'no token check');
+  }
+}
+
 /* ---- Report ---- */
 console.log(`\n${'='.repeat(66)}`);
 if (warns.length) {

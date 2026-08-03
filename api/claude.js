@@ -1,21 +1,31 @@
 // Vercel serverless function, proxies a single Claude request to Anthropic.
 //
-// Public endpoint: /api/claude
-// Method: POST
+// ADMINISTRATORS ONLY: /api/claude
+// Method: POST, with a signed-in administrator's bearer token
 // Body: { prompt: "..." }     // OR { messages: [...] } for advanced use
 // Returns: { completion: "..." }
+//
+// NOTHING ON THIS SITE CALLS IT. The panel's report builder composes an
+// article in the browser out of the facts already recorded and invents
+// nothing, which is the point of it. This is kept for the day somebody wants
+// drafting help, and gated so that day can be chosen rather than arrived at.
 //
 // Security model:
 //   • The Anthropic API key lives ONLY in Vercel's environment variables
 //     (Settings → Environment Variables → ANTHROPIC_API_KEY).
 //   • It never reaches the browser; the browser only sees the polished text.
-//   • CORS is set to allow the site's own origin.
+//   • The database is asked whether the caller is a club administrator,
+//     exactly as /api/publish does. The origin check below is kept as a
+//     first filter but is NOT the lock: it allows a request with no Origin
+//     header, which is every script and every server.
 //
 // Cost guard:
 //   • Hard input cap of 8,000 chars (≈ 2,000 tokens) per request.
 //   • Hard output cap of 1,500 tokens.
 //   • Use the cheap model (claude-haiku-4) by default, switch to sonnet
 //     for higher quality at ~5x cost if needed.
+
+import runtime from '../src/data/runtime.json' with { type: 'json' };
 
 // Ordered preference if we can't list models, cheapest-first guesses.
 const MODEL_FALLBACKS = [
@@ -68,9 +78,55 @@ export default async function handler(req, res) {
   }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (!originAllowed)          return res.status(403).json({ error: 'Origin not allowed' });
   if (req.method !== 'POST')   return res.status(405).json({ error: 'POST only' });
+
+  // AN ORIGIN CHECK IS NOT A LOCK.
+  //
+  // The comment above says only the club's own site may call this, and that
+  // is not what the code above does: `!origin` is treated as allowed, because
+  // a same-origin request need not send the header. Every script, every curl,
+  // every server also sends no Origin. So the gate is open to anything that
+  // is not a browser, which is everything that would want to abuse it.
+  //
+  // It has not mattered so far only because ANTHROPIC_API_KEY has never been
+  // set, so the endpoint answers 500 to everyone. That is one environment
+  // variable away from being an open proxy to a paid API, and setting it is a
+  // perfectly natural thing for somebody to do.
+  //
+  // Nothing on this site calls this endpoint. The panel's report builder
+  // composes an article in the browser from the facts already recorded, and
+  // invents nothing, which is the point of it. So the gate here is the same
+  // one /api/publish uses: the database is asked whether the caller is a club
+  // administrator. A signed-in administrator can still use it; nobody else
+  // can spend the key.
+  const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '').trim();
+  if (!token) return res.status(401).json({ error: 'sign in first' });
+
+  const SB_URL = process.env.SUPABASE_URL || runtime.supabase.url;
+  const SB_ANON = process.env.SUPABASE_ANON_KEY || runtime.supabase.anonKey;
+  try {
+    const check = await fetch(`${SB_URL}/rest/v1/rpc/is_club_admin`, {
+      method: 'POST',
+      headers: {
+        apikey: SB_ANON,
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: '{}',
+    });
+    const said = (await check.text()).trim();
+    if (!check.ok) {
+      const expired = check.status === 401 && /PGRST301|JWT|expired/i.test(said);
+      return res.status(expired ? 401 : 502)
+        .json({ error: expired ? 'sign in again' : 'could not check permissions' });
+    }
+    if (said !== 'true') return res.status(403).json({ error: 'not an administrator' });
+  } catch (e) {
+    return res.status(502).json({ error: 'could not check permissions' });
+  }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {

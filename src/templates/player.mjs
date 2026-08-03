@@ -242,6 +242,13 @@ export function playerPage(p, d) {
             ${accolades.map((a) => `<span class="pf-chip">${esc(a)}</span>`).join('\n            ')}
             ${captainOf ? `<span class="pf-chip">${esc(captainOf)}</span>` : ''}
             ${statusLabel ? `<span class="pf-chip pf-chip--mut">${esc(statusLabel)}<i>${esc(d.currentSeason)}</i></span>` : ''}
+            ${/* WHAT THE CLUB SAID BESIDE THE STATUS. "On trial" is a window
+                  and this is when it opened; an injury says when he went out
+                  and when he is expected back; a departure says where he
+                  went. Drawn only where the club has actually said, so a
+                  record written before any of it was askable reads exactly as
+                  it did. */
+    nowStatus.detail ? `<span class="pf-chip pf-chip--mut">${esc(nowStatus.detail)}</span>` : ''}
           </p>
           <h1 class="pf-hero__name" id="pf-h">
             <b>${esc(p.last)}</b>

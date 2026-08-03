@@ -87,6 +87,16 @@
   var RETIRED_KEYS = { 'new': 1, retained: 1, returned: 1 };
   function collapse(k) { return RETIRED_KEYS[k] ? 'active' : k; }
 
+  /* A season entry is either a key or a key with the club's own detail beside
+     it: { key: 'departed', from: '2026-06-14', to: 'Barnes Stormers' }. Both
+     shapes read here, so every caller keeps getting the plain key it expects
+     and nothing that predates the detail has to be re-saved. Kept in step
+     with keyOf() in src/lib/squad-status.mjs, which does the same job on the
+     site's side. */
+  function keyOf(entry) {
+    if (!entry) return '';
+    return typeof entry === 'string' ? entry : (entry.key || '');
+  }
   function statusIn(map, num, season) {
     var rec = map[String(num)];
     if (!rec) return 'active';
@@ -94,11 +104,21 @@
       if (season === CURRENT) return collapse(rec);
       return SEASONS.indexOf(season) < SEASONS.indexOf(CURRENT) ? 'active' : collapse(rec);
     }
-    if (rec[season]) return collapse(rec[season]);
+    if (rec[season]) return collapse(keyOf(rec[season]));
     for (var i = SEASONS.indexOf(season) - 1; i >= 0; i--) {
-      if (rec[SEASONS[i]]) return collapse(rec[SEASONS[i]]);
+      if (rec[SEASONS[i]]) return collapse(keyOf(rec[SEASONS[i]]));
     }
     return 'active';
+  }
+
+  /* What was recorded beside the status for a season, if anything. */
+  function statusDetail(map, num, season) {
+    var rec = map[String(num)];
+    var entry = rec && typeof rec === 'object' && rec[season];
+    if (!entry || typeof entry !== 'object') return {};
+    var out = {};
+    Object.keys(entry).forEach(function (k) { if (k !== 'key') out[k] = entry[k]; });
+    return out;
   }
   function isPlaying(key) { return PLAYING[key] !== false; }
 
@@ -118,7 +138,14 @@
   /* Writing keeps every season already recorded, including any this tool has
      never heard of. A flat value being replaced is preserved as what he was
      in the current season rather than thrown away. */
-  function withStatus(map, num, season, key) {
+  /* `extra` is what the club knows beyond the bare status: the day somebody
+     signed, the day a trial started, when an injured player is expected back,
+     which club a departing one went to. Stored beside the key rather than
+     instead of it, so everything that only wants the key keeps working.
+
+     A season with nothing extra stays a plain string, so the record does not
+     grow objects it has no use for. */
+  function withStatus(map, num, season, key, extra) {
     var next = {};
     Object.keys(map).forEach(function (k) { next[k] = map[k]; });
     var prev = next[String(num)];
@@ -128,10 +155,50 @@
     } else if (typeof prev === 'string' && prev && !bySeason[CURRENT]) {
       bySeason[CURRENT] = prev;
     }
-    bySeason[season] = key;
+    var kept = {};
+    Object.keys(extra || {}).forEach(function (k) {
+      if (extra[k] !== '' && extra[k] != null) kept[k] = extra[k];
+    });
+    if (Object.keys(kept).length) {
+      kept.key = key;
+      bySeason[season] = kept;
+    } else {
+      bySeason[season] = key;
+    }
     next[String(num)] = bySeason;
     return next;
   }
+
+  /* WHAT EACH STATUS IS WORTH ASKING ABOUT.
+
+     A season on its own is not detailed enough, which is the whole reason for
+     this: "New signing" is equally true of somebody who came through
+     pre-season and somebody who arrived after Christmas, and it reads the
+     same in his eighth month as in his first. A date turns it into "Signed
+     July 2026".
+
+     Only the fields that mean something for the status chosen, so the form
+     never asks when an injury ends for a player who has retired. */
+  function detailFields(key, have) {
+    var fields = DETAIL_FIELDS[key] || [];
+    if (!fields.length) return '';
+    return fields.map(function (f) {
+      var name = f[0], kind = f[1], label = f[2];
+      return '<label class="cp-when__f"><span>' + esc(label) + '</span>' +
+        '<input class="input input--sm" type="' + kind + '" data-extra="' + name + '" ' +
+          'value="' + esc(have[name] || '') + '"></label>';
+    }).join('');
+  }
+
+  var DETAIL_FIELDS = {
+    active: [['from', 'date', 'The day they signed']],
+    trial: [['from', 'date', 'Trial started'], ['until', 'date', 'Trial ends']],
+    injured: [['from', 'date', 'Out since'], ['until', 'date', 'Expected back']],
+    away: [['note', 'text', 'Why, in a few words']],
+    retired: [['from', 'date', 'The day they retired']],
+    departed: [['from', 'date', 'The day they left'], ['to', 'text', 'Where they went']],
+    staff: [['from', 'date', 'The day they moved across']],
+  };
 
   var POSITIONS = ['Goalkeeper', 'Defender', 'Midfielder', 'Forward'];
   var ROLES = ['Manager', 'Assistant manager', 'Coach', 'Goalkeeping coach',
@@ -200,6 +267,9 @@
              out about him from the seasons around it. */
           status: statusIn(status, p.num, editSeason),
           tenure: tenureIn(status, p.num, editSeason),
+          /* Whatever was recorded beside the status for this season, so the
+             fields open with what is already there rather than blank. */
+          detail: statusDetail(status, p.num, editSeason),
           photo: !!photoKeys[String(p.num)],
           added: added.some(function (a) { return a.num === p.num; }),
         };
@@ -257,7 +327,12 @@
                   }).join('') + '</select>' +
                   '<small class="cp-hint" data-status-hint>' +
                     esc((STATUSES.filter(function (x) { return x.key === p.status; })[0] || {}).hint || '') +
-                  '</small></td>' +
+                  '</small>' +
+                  /* The fields that go with whichever status is chosen. They
+                     save on change like the status does, so there is no
+                     second button to press and nothing to forget. */
+                  '<div class="cp-when" data-when>' + detailFields(p.status, p.detail || {}) + '</div>' +
+                  '</td>' +
                 /* The site's own answer, shown but never editable, so it is
                    obvious it is derived rather than something to maintain. */
                 '<td>' + (p.tenure
@@ -325,16 +400,29 @@
       }
 
       host.addEventListener('change', function (e) {
-        if (!e.target.matches('[data-status]')) return;
+        var isStatus = e.target.matches('[data-status]');
+        var isExtra = e.target.matches('[data-extra]');
+        if (!isStatus && !isExtra) return;
         if (!guard()) { refresh('squad'); return; }
-        var num = Number(e.target.closest('tr[data-num]').getAttribute('data-num'));
+        var tr = e.target.closest('tr[data-num]');
+        var num = Number(tr.getAttribute('data-num'));
         var player = players.filter(function (p) { return p.num === num; })[0];
-        var value = e.target.value;
+        var sel = tr.querySelector('[data-status]');
+        var value = sel.value;
+
+        /* Changing the status swaps which fields are asked for, and the ones
+           belonging to the status being left behind are dropped rather than
+           kept against a status they mean nothing to. */
+        if (isStatus) tr.querySelector('[data-when]').innerHTML = detailFields(value, {});
+        var extra = {};
+        Array.prototype.forEach.call(tr.querySelectorAll('[data-extra]'), function (i) {
+          extra[i.getAttribute('data-extra')] = i.value.trim();
+        });
         /* Written against the season being edited, keeping every other season
            already on the record. Setting somebody to Left the club in 26/27
            leaves 25/26 exactly as it was, which is what makes the squad page's
            25/26 tab able to say he was in the squad that year. */
-        var next = withStatus(status, num, editSeason, value);
+        var next = withStatus(status, num, editSeason, value, extra);
 
         /* Moving a player into coaching is one decision, so it is one action:
            they come out of the squad AND go onto the staff. Doing only the

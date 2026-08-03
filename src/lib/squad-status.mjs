@@ -117,18 +117,49 @@ const RETIRED_KEYS = new Set(['new', 'retained', 'returned']);
 export function readStatusRecord(raw) {
   const d = (raw && raw.status) || raw || {};
   const out = {};
+  const extra = {};
   for (const [num, val] of Object.entries(d)) {
     if (!val) continue;
     if (typeof val === 'string') out[String(num)] = { __flat: collapse(val) };
     else if (typeof val === 'object') {
       const bySeason = {};
-      for (const [season, key] of Object.entries(val)) {
-        if (typeof key === 'string' && key) bySeason[season] = collapse(key);
+      for (const [season, entry] of Object.entries(val)) {
+        /* FOUR SHAPES NOW, and all of them still read.
+
+             "active"                          a bare key
+             { key: "active" }                 the same, with room beside it
+             { key: "active", from: "..." }    and the day it started
+             { key: "trial", from, until, note, to }
+
+           A key on its own says what somebody is. The fields beside it say
+           when it started, when it is expected to end, where they went and
+           anything the club wants to add, which is what turns "New signing"
+           into "Signed 12 July 2026" and "On trial" into a window with an
+           end. The key is kept where the key has always been so nothing that
+           reads a status has to know the difference. */
+        if (typeof entry === 'string' && entry) bySeason[season] = collapse(entry);
+        else if (entry && typeof entry === 'object' && entry.key) {
+          bySeason[season] = collapse(entry.key);
+          const { key, ...rest } = entry;
+          if (Object.keys(rest).length) {
+            (extra[String(num)] = extra[String(num)] || {})[season] = rest;
+          }
+        }
       }
       if (Object.keys(bySeason).length) out[String(num)] = bySeason;
     }
   }
+  /* Hung off the record rather than mixed into it, so every existing reader
+     keeps getting the plain key it expects. */
+  Object.defineProperty(out, '__detail', { value: extra, enumerable: false });
   return out;
+}
+
+/* What the club recorded ALONGSIDE a status: when it started, when it is
+   expected to end, where somebody went. Empty where nothing was said. */
+export function statusDetail(record, num, season) {
+  const all = (record && record.__detail) || {};
+  return (all[String(num)] && all[String(num)][season]) || {};
 }
 
 const collapse = (key) => (RETIRED_KEYS.has(key) ? 'active' : key);
@@ -174,16 +205,114 @@ export function statusIn(record, num, season, opts = {}) {
    season is the club's first and "new signing" would be true of everybody.
    `opts.seasons` must be in chronological order. */
 export function tenureIn(record, num, season, opts = {}) {
+  const t = tenureDetail(record, num, season, opts);
+  return t ? t.key : null;
+}
+
+/* ==========================================================================
+   HOW LONG SOMEBODY HAS BEEN HERE, IN DETAIL
+
+   "New signing" is true of a player for a whole season and says almost
+   nothing. It does not say whether he signed in the summer or in January, it
+   reads the same in his eighth month as in his first, and it is the same
+   three words for a lad who came through pre-season and one who arrived after
+   Christmas. "Retained" is worse: it is equally true of a second season and a
+   fifth, and a fifth season at a Sunday-league club is the thing worth
+   saying.
+
+   Everything below comes out of the record the club already keeps, so it is
+   true without anybody maintaining it:
+
+     nth          which season this is for them, counting only seasons they
+                  were actually in the squad
+     runningFor   how many in a row up to and including this one
+     awayFor      seasons between their last spell and this one
+     since        the first season they were here
+     firstEver    true if the club has never had them before
+
+   `from` is the one thing the record cannot work out, and the panel now asks
+   for it: the day somebody signed. With it, a first season becomes "Signed
+   12 July 2026" rather than "New signing", and the site can tell a summer
+   signing from a January one. Without it nothing breaks and the wording falls
+   back to the season.
+   ========================================================================== */
+export function tenureDetail(record, num, season, opts = {}) {
   const seasons = opts.seasons || [];
   const idx = seasons.indexOf(season);
   if (idx < 0) return null;
   const here = (s) => isPlaying(statusIn(record, num, s, opts));
   if (!here(season)) return null;
-  /* Everyone is new in the club's first season, which says nothing. */
+
+  /* Every season up to and including this one that they were in the squad. */
+  const past = [];
+  for (let i = 0; i <= idx; i += 1) if (here(seasons[i])) past.push(seasons[i]);
+
+  let runningFor = 0;
+  for (let i = idx; i >= 0 && here(seasons[i]); i -= 1) runningFor += 1;
+
+  let awayFor = 0;
+  if (runningFor === 1 && idx > 0) {
+    for (let i = idx - 1; i >= 0 && !here(seasons[i]); i -= 1) awayFor += 1;
+  }
+
+  const firstEver = past.length === 1;
+  const key = firstEver ? 'new' : (runningFor > 1 ? 'retained' : 'returned');
+
+  /* Everyone is new in the club's first season, which says nothing at all. */
   if (idx === 0) return null;
-  if (here(seasons[idx - 1])) return 'retained';
-  for (let i = idx - 2; i >= 0; i--) if (here(seasons[i])) return 'returned';
-  return 'new';
+
+  return {
+    key,
+    nth: past.length,
+    runningFor,
+    awayFor,
+    since: past[0] || season,
+    firstEver,
+    from: signedFrom(record, num, season),
+  };
+}
+
+/* The day the club says somebody signed, where it has said. Read off the
+   season entry, so it belongs to the spell it describes: a player who leaves
+   and comes back two years later has two of them and neither overwrites the
+   other. */
+function signedFrom(record, num, season) {
+  return statusDetail(record, num, season).from || '';
+}
+
+const ORDINALS = ['', 'First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth',
+  'Seventh', 'Eighth', 'Ninth', 'Tenth'];
+const COUNTS = ['', 'a', 'two', 'three', 'four', 'five', 'six', 'seven'];
+
+/* The sentence a page prints. Specific first: a date beats a season, a season
+   count beats a bare word, and "Retained" on its own is the last resort. */
+export function tenureLabel(t, opts = {}) {
+  if (!t) return null;
+  const month = t.from ? monthYear(t.from, opts) : '';
+
+  if (t.key === 'new') {
+    if (month) return `Signed ${month}`;
+    return 'First season at the club';
+  }
+  if (t.key === 'returned') {
+    const gap = COUNTS[t.awayFor] || `${t.awayFor}`;
+    const back = t.awayFor === 1 ? 'Back after a season away' : `Back after ${gap} seasons away`;
+    return month ? `${back}, signed ${month}` : back;
+  }
+  /* Retained. The season count is the thing worth saying, and it is only
+     worth saying once it means something: a second season is a fact, a fifth
+     is a story. */
+  const nth = ORDINALS[t.nth] || `${t.nth}th`;
+  return t.nth >= 2 ? `${nth} season at the club` : 'Retained';
+}
+
+/* "July 2026" from an ISO date, or the date as typed if it is not one. */
+function monthYear(iso, opts = {}) {
+  const m = String(iso).match(/^(\d{4})-(\d{2})/);
+  if (!m) return String(iso);
+  const names = opts.months || ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+  return `${names[Number(m[2]) - 1]} ${m[1]}`;
 }
 
 /* The one line a page prints. The set status wins when it is something worth
@@ -194,10 +323,67 @@ export function tenureIn(record, num, season, opts = {}) {
    season's page to be labelled. */
 export function statusLabelIn(record, num, season, opts = {}) {
   const set = statusIn(record, num, season, opts);
-  if (set === 'absent') return { key: 'absent', label: null, derived: false };
-  if (set !== 'active') return { key: set, label: STATUS_LABEL[set] || null, derived: false };
-  const t = tenureIn(record, num, season, opts);
-  return t ? { key: t, label: STATUS_LABEL[t], derived: true } : { key: 'active', label: null, derived: false };
+  if (set === 'absent') return { key: 'absent', label: null, derived: false, detail: null };
+  const extra = statusDetail(record, num, season);
+
+  if (set !== 'active') {
+    /* A SET STATUS, WITH WHAT THE CLUB SAID BESIDE IT. "On trial" is a
+       window and now says when it opened; an injury says when it started and
+       when he is expected back; a departure says where he went. Each falls
+       back to the plain label where nothing was recorded, so a record written
+       before any of this still reads properly. */
+    return {
+      key: set,
+      label: STATUS_LABEL[set] || null,
+      detail: setSentence(set, extra),
+      derived: false,
+    };
+  }
+
+  const t = tenureDetail(record, num, season, opts);
+  if (!t) return { key: 'active', label: null, derived: false, detail: null };
+  return {
+    key: t.key,
+    /* The specific sentence, not the three-word category. This is the whole
+       point: "Signed July 2026" and "Fourth season at the club" say something
+       "New signing" and "Retained" do not. */
+    label: tenureLabel(t, opts),
+    category: STATUS_LABEL[t.key],
+    tenure: t,
+    derived: true,
+    detail: null,
+  };
+}
+
+/* The line under a set status, where the club has given one. */
+function setSentence(key, x) {
+  const from = x.from ? onDate(x.from) : '';
+  const until = x.until ? onDate(x.until) : '';
+  if (key === 'trial') {
+    if (from && until) return `Training with the squad from ${from} to ${until}`;
+    if (from) return `Training with the squad since ${from}`;
+    return '';
+  }
+  if (key === 'injured') {
+    if (from && until) return `Out since ${from}, expected back ${until}`;
+    if (from) return `Out since ${from}`;
+    if (until) return `Expected back ${until}`;
+    return '';
+  }
+  if (key === 'departed') {
+    if (x.to && from) return `Left for ${x.to} in ${from}`;
+    if (x.to) return `Left for ${x.to}`;
+    if (from) return `Left in ${from}`;
+    return '';
+  }
+  if (key === 'retired' && from) return `Retired in ${from}`;
+  if (key === 'away' && x.note) return x.note;
+  return x.note || '';
+}
+
+/* "July 2026" from an ISO date; the string as typed if it is not one. */
+function onDate(iso, opts = {}) {
+  return monthYear(iso, opts);
 }
 
 /* Writing. Always produces the per-season shape, and preserves every season

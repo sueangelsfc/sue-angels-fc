@@ -1,0 +1,30 @@
+
+/* ==========================================================================
+   WHEN, BESIDE WHAT
+
+   A status says what somebody is; these say when it started, when it is
+   expected to end and where they went. They sit under the status they belong
+   to and change with it, so the form never asks when an injury ends for a
+   player who has retired.
+
+   Small and quiet on purpose: they are a refinement of the answer above, not
+   a second question of equal weight.
+   ========================================================================== */
+.cp-when { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.cp-when:empty { display: none; }
+.cp-when__f { display: grid; gap: 2px; flex: 1 1 128px; min-width: 0; }
+.cp-when__f span {
+  font-family: var(--ui);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+.input--sm { padding: 5px 8px; font-size: 12.5px; }
+
+@media (pointer: coarse) {
+  /* iOS zooms the page for anything under 16px and then leaves it zoomed. */
+  .input--sm { font-size: 16px; }
+  .cp-when__f { flex: 1 1 100%; }
+}

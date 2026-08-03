@@ -420,8 +420,24 @@
      club's own detail beside it. Kept in step with squad-status.mjs. */
   function entryFor(num, season) {
     var rec = STATUS[String(num)];
-    if (!rec || typeof rec !== 'object') return null;
+    if (!rec) return null;
     var seasons = SEED.seasons || [];
+    var latest = seasons[seasons.length - 1];
+
+    /* THE FLAT SHAPE, which is what the record actually holds. Twelve players
+       are stored as `"7": "retired"` with no season against them, written
+       before status became a fact about a player IN a season. Reading only the
+       per-season shape meant this filter did nothing at all for every one of
+       them, which is most of the people it exists to hide.
+
+       A flat value is the last thing the club said, so it belongs to the
+       LATEST season and not to every season before it. Somebody marked
+       departed today was still here for last October's match, and that team
+       sheet has to keep offering him. Same rule as statusIn() in
+       src/lib/squad-status.mjs. */
+    if (typeof rec === 'string') return season === latest ? rec : null;
+    if (typeof rec !== 'object') return null;
+
     if (rec[season]) return rec[season];
     for (var i = seasons.indexOf(season) - 1; i >= 0; i--) {
       if (rec[seasons[i]]) return rec[seasons[i]];
@@ -503,9 +519,14 @@
   function addTrialistRow(field) {
     return '<details class="cp-newtrial"><summary>Somebody on trial?</summary>' +
       '<div class="cp-newtrial__body">' +
-        '<input class="input input--sm" data-nt-name placeholder="Their name" aria-label="Trialist name">' +
+        '<input class="input input--sm" data-nt-name placeholder="Their name, then Enter" ' +
+          'aria-label="Trialist name">' +
+        /* The trial starts on the day of this match, because you are adding
+           him from the sheet of the game he played in. Overwrite it if the
+           trial began earlier; it is the default, not a claim. */
         '<label class="cp-newtrial__f"><span>Trial from</span>' +
-          '<input class="input input--sm" type="date" data-nt-from></label>' +
+          '<input class="input input--sm" type="date" data-nt-from value="' +
+            esc(matchIso()) + '"></label>' +
         '<label class="cp-newtrial__f"><span>Trial until</span>' +
           '<input class="input input--sm" type="date" data-nt-until></label>' +
         '<button type="button" class="btn btn--ghost btn--sm" data-nt-add ' +
@@ -913,8 +934,84 @@
     return ', ' + (ASSIST_PHRASE[t] || ASSIST_PHRASE.pass) + ' ' + g.assist.name;
   }
 
+  /* ==========================================================================
+     MAKING IT READ LIKE A DIFFERENT MATCH EACH TIME
+
+     Two things made every report the same article with the nouns swapped.
+
+     The skeleton never moved: result, shape, goals, the coach's notes, the
+     tail, Player of the Match, in that order, whatever happened. And the
+     coach's notes were pushed in as a block of their own, so what somebody
+     actually SAW sat in a lump between the goals and the bookings instead of
+     being part of the piece.
+
+     Both are fixed below. The wording is chosen from the match itself rather
+     than at random, so the same match always writes the same article - a
+     report that changed every time you pressed the button would be worse, not
+     better - but two different matches choose differently.
+
+     WHAT THIS IS NOT. It arranges facts somebody recorded and sentences
+     somebody wrote. It does not know what the game felt like, and it invents
+     nothing: every clause traces to a field that was filled in. The coach's
+     own sentences are the only opinion in it, which is why they are woven
+     through rather than parked in a block.
+     ========================================================================== */
+
+  /* A number from the match, so the choices are stable for a given game and
+     different across games. Not Math.random(): pressing Build twice must give
+     the same article, or nobody can trust what they are reading. */
+  function seedOf(c) {
+    var t = String(c.date || '') + '|' + String(c.opp || '') + '|' + c.ourGoals + '-' + c.theirGoals;
+    var n = 0;
+    for (var i = 0; i < t.length; i++) n = (n * 31 + t.charCodeAt(i)) >>> 0;
+    return n;
+  }
+  function pick(list, seed, salt) {
+    return list[(seed + (salt || 0)) % list.length];
+  }
+
+  /* A note the coach typed, made into a sentence. Bullets arrive as they were
+     typed: a leading dash, no capital, no full stop, sometimes a fragment. */
+  function asSentence(t) {
+    var x = String(t || '').trim().replace(/^[-*\u2022\u00b7]\s*/, '');
+    if (!x) return '';
+    x = x.charAt(0).toUpperCase() + x.slice(1);
+    return /[.!?]$/.test(x) ? x : x + '.';
+  }
+
+  /* WHERE A NOTE BELONGS. A note naming a player goes beside that player's
+     goal; one about the start of the game goes early; one about the end goes
+     late. Anything else sits in the middle, which is where match reports put
+     the run of play. */
+  function placeNotes(bullets, names) {
+    var early = [], late = [], byName = {}, middle = [];
+    (bullets || []).forEach(function (raw) {
+      var t = asSentence(raw);
+      if (!t) return;
+      var low = t.toLowerCase();
+      /* Any part of the name will do, because that is how people write about
+         each other: "Frazier was unplayable" for Frazier-Isaías Osunkoya,
+         "Allen ran the midfield" for Andrew Allen. Matching only the first
+         word missed both. Parts under four letters are skipped so "El" or a
+         short surname does not swallow half the notes. */
+      var who = names.filter(function (n) {
+        return String(n).toLowerCase().split(/[\s-]+/).some(function (part) {
+          return part.length >= 4 && low.indexOf(part) !== -1;
+        });
+      })[0];
+      if (/\b(kick.?off|first (ten|fifteen|twenty)|from the start|early on|opening)\b/.test(low)) early.push(t);
+      else if (/\b(final|last (ten|fifteen|twenty)|closing|full.?time|late on|at the end)\b/.test(low)) late.push(t);
+      else if (who) { (byName[who] = byName[who] || []).push(t); }
+      else middle.push(t);
+    });
+    return { early: early, late: late, byName: byName, middle: middle };
+  }
+
   function buildReport(c) {
     var paras = [];
+    var seed = seedOf(c);
+    var scorerNames = (c.goals || []).map(function (g) { return g.name; });
+    var notes = placeNotes(c.bullets, scorerNames.concat(c.motm ? [c.motm] : []));
     var them = c.opp || 'the opposition';
     var comp = c.competition ? ' in ' + c.competition : '';
     /* Small numbers read as words in prose and as figures in a scoreline.
@@ -946,10 +1043,23 @@
         : verb === 'lost to'
           ? (margin <= -4 ? 'a heavy defeat' : margin === -1 ? 'a narrow defeat' : 'a defeat')
           : (c.ourGoals === 0 ? 'a goalless draw' : 'a draw');
-      paras.push(c.us + ' ' + verb + ' ' + them + ' ' + c.ourGoals + '-' + c.theirGoals
-        + (c.home ? ' at home' : ' away') + comp + (c.date ? ' on ' + c.date : '')
-        + (c.venue ? ', at ' + c.venue : '') + ', ' + colour + '.');
+      var where = (c.home ? ' at home' : ' away') + comp
+        + (c.date ? ' on ' + c.date : '') + (c.venue ? ', at ' + c.venue : '');
+      /* Three ways into the same fact, chosen by the match rather than at
+         random, so the club's reports do not all open with the same clause. */
+      var openings = [
+        c.us + ' ' + verb + ' ' + them + ' ' + c.ourGoals + '-' + c.theirGoals + where + ', ' + colour + '.',
+        colour.charAt(0).toUpperCase() + colour.slice(1) + where + ', ' + c.us + ' ' + verb + ' '
+          + them + ' ' + c.ourGoals + '-' + c.theirGoals + '.',
+        c.ourGoals + '-' + c.theirGoals + where + '. ' + c.us + ' ' + verb + ' ' + them
+          + ', and it was ' + colour + '.',
+      ];
+      paras.push(pick(openings, seed));
     }
+
+    /* What the coach said about the start of it, next: that is where a report
+       sets the scene, and it is his sentence rather than a manufactured one. */
+    if (notes.early.length) paras.push(notes.early.join(' '));
 
     /* ---- The shape ---- */
     if (c.formation || c.xi || c.captain) {
@@ -996,7 +1106,17 @@
       /* Broken into paragraphs of two, so a five-goal game does not arrive as
          one block a reader has to hack their way through. */
       for (var i = 0; i < sentences.length; i += 2) {
-        paras.push(sentences.slice(i, i + 2).join(' '));
+        var block = sentences.slice(i, i + 2);
+        /* Anything the coach wrote about one of these scorers joins the
+           sentence about his goal, instead of turning up four paragraphs
+           later with no idea what it is referring to. */
+        timed.slice(i, i + 2).forEach(function (g) {
+          if (notes.byName[g.name]) {
+            block = block.concat(notes.byName[g.name]);
+            delete notes.byName[g.name];
+          }
+        });
+        paras.push(block.join(' '));
       }
     }
     if (untimed.length) {
@@ -1008,8 +1128,18 @@
         + listOf(others) + '. The team sheet does not say what minute those went in.');
     }
 
-    /* ---- The coach's own words, which is what this is for ---- */
-    if (c.bullets.length) paras.push.apply(paras, c.bullets);
+    /* ---- The rest of what the coach said ----
+       Whatever did not attach to a goal or to the start or the end: the run of
+       play, which is where a report puts it. Anything still keyed to a name
+       goes here too, so nothing typed is ever silently dropped. */
+    Object.keys(notes.byName).forEach(function (n) {
+      notes.middle = notes.middle.concat(notes.byName[n]);
+    });
+    if (notes.middle.length) {
+      for (var b = 0; b < notes.middle.length; b += 2) {
+        paras.push(notes.middle.slice(b, b + 2).join(' '));
+      }
+    }
 
     /* ---- Keeping and discipline ---- */
     var tail = [];
@@ -1029,7 +1159,15 @@
     }
     if (tail.length) paras.push(tail.join(' '));
 
-    if (c.motm) paras.push(c.motm + ' was named Player of the Match.');
+    if (notes.late.length) paras.push(notes.late.join(' '));
+
+    if (c.motm) {
+      paras.push(pick([
+        c.motm + ' was named Player of the Match.',
+        'Player of the Match: ' + c.motm + '.',
+        c.motm + ' took the Player of the Match award.',
+      ], seed, 3));
+    }
 
     return paras.join('\n\n');
   }
@@ -1369,6 +1507,16 @@
     paintKind();
 
     /* ---- Tabs ---- */
+    /* Enter in the name field adds him. Typing a name and reaching for a
+       button is two actions for one thought, and this is done mid-team-sheet
+       with eleven more names to get down. */
+    back.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' || !e.target.matches('[data-nt-name]')) return;
+      e.preventDefault();
+      var btn = e.target.closest('.cp-newtrial').querySelector('[data-nt-add]');
+      if (btn) btn.click();
+    });
+
     back.addEventListener('click', function (e) {
       if (e.target.matches('[data-nt-add]')) {
         if (!guard()) return;
@@ -1397,6 +1545,18 @@
             if (!posByNum[n]) posByNum[n] = defaultPos(n);
             paintXI();
           } else paintGroup(field);
+          /* Cleared and still focused, so a second trialist is another name
+             and another Enter rather than another hunt for the field.
+
+             Re-queried, not reused: painting the picker replaces the markup
+             this button lives in, so the element captured before the paint is
+             detached and focusing it does nothing. */
+          var fresh = $('[data-nt-name]', back);
+          if (fresh) {
+            fresh.closest('.cp-newtrial').open = true;
+            fresh.value = '';
+            fresh.focus();
+          }
           toast(nm + ' added as a trialist and picked.', 'success');
         }).catch(function (err) { toast(err.message, 'error'); });
         return;

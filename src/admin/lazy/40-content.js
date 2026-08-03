@@ -448,6 +448,12 @@
         }
         var cover = d.cover || d.src || '';
         var open = -1;
+        /* WHICH PHOTOGRAPHS ARE PICKED, held by URL rather than by position.
+           A position is only true until something before it is removed, and
+           the whole point of picking several is that they are removed
+           together. */
+        var picked = Object.create(null);
+        var big = -1;   // the one opened full size, -1 for none
 
         var back = dialog(isNew ? 'New album' : 'Edit this album',
           '<div class="grid grid--2">' +
@@ -466,16 +472,113 @@
           '<div class="cp-head__actions" style="margin-bottom:var(--space-3)">' +
             '<label class="btn btn--primary btn--sm" style="cursor:pointer">Add photographs' +
               '<input type="file" accept="image/*" multiple hidden data-add-pics></label>' +
+            /* PICKING SEVERAL, because the real job is culling. An album is
+               175 frames of one Sunday morning and a good number of them are
+               somebody's elbow. Removing those one at a time is 30 taps, and
+               the grid shifts under your finger after each one. */
+            '<button type="button" class="btn btn--ghost btn--sm" data-pick-all>Select all</button>' +
+            '<button type="button" class="btn btn--ghost btn--sm" data-pick-none hidden>Clear</button>' +
+            '<button type="button" class="btn btn--danger btn--sm" data-pick-del hidden></button>' +
             '<span class="cp-note" data-pic-note></span>' +
           '</div>' +
-          '<div data-pics></div>', 920);
+          '<div data-pics></div>' +
+          /* Full size, over the grid. A 190px tile is enough to see that a
+             photograph exists and not enough to judge whether it is sharp or
+             who is actually in it, which is the whole of the decision being
+             made. */
+          '<div class="picbig" data-big hidden>' +
+            '<button type="button" class="picbig__x" data-big-close aria-label="Close">&times;</button>' +
+            '<img data-big-img alt="">' +
+            '<div class="picbig__bar">' +
+              '<button type="button" class="btn btn--ghost btn--sm" data-big-prev>Previous</button>' +
+              '<span class="picbig__n" data-big-n></span>' +
+              '<button type="button" class="btn btn--ghost btn--sm" data-big-next>Next</button>' +
+              '<button type="button" class="btn btn--ghost btn--sm" data-big-cover>Make it the cover</button>' +
+              '<button type="button" class="btn btn--danger btn--sm" data-big-del>Remove it</button>' +
+            '</div>' +
+          '</div>', 920);
+
+        /* ONE WAY OUT, AND IT ASKS FIRST.
+
+           Removing a photograph was the only destructive action in the panel
+           that did not confirm, against the rule every other one follows. On a
+           phone the × sits a few millimetres from Tag and from the arrows, and
+           there is no undo: the album is saved from this array, so a mis-tap
+           followed by Save is a photograph gone.
+
+           Both routes come through here - the × on a tile and the picked set -
+           so there is one confirmation, one splice, and one place for the rule
+           that the tags go with the photograph. */
+        function removePics(list) {
+          var srcs = list.filter(function (u) { return u; });
+          if (!srcs.length) return;
+          var one = srcs.length === 1;
+          confirmAction({
+            title: one ? 'Remove this photograph' : 'Remove ' + srcs.length + ' photographs',
+            body: one
+              ? 'It comes out of the album, and whoever is tagged in it is untagged.'
+              : 'They come out of the album, and anybody tagged in them is untagged.',
+            detail: 'Nothing is deleted from storage, and nothing changes on the website until you '
+              + 'press Save.',
+            confirmLabel: one ? 'Remove it' : 'Remove them',
+          }).then(function (yes) {
+            if (!yes) return;
+            srcs.forEach(function (src) {
+              var at = pics.indexOf(src);
+              if (at < 0) return;
+              /* The tags go with it. They are keyed by position, so removing a
+                 photograph without removing its entry shifts every tag after
+                 it onto the wrong picture. */
+              if (cover === pics[at]) cover = '';
+              pics.splice(at, 1);
+              tags.splice(at, 1);
+              delete picked[src];
+              if (open === at) open = -1; else if (open > at) open--;
+              if (big === at) big = -1; else if (big > at) big--;
+            });
+            if (big >= pics.length) big = -1;
+            paint();
+            if (big < 0) hideBig(); else showBig(big);
+            toast(srcs.length + ' removed from the album. Save to keep it.', 'success');
+          });
+        }
+
+        /* ---- Full size ---- */
+        function showBig(i) {
+          if (i < 0 || i >= pics.length) return hideBig();
+          big = i;
+          var box = $('[data-big]', back);
+          $('[data-big-img]', box).src = pics[i];
+          $('[data-big-n]', box).textContent = (i + 1) + ' of ' + pics.length
+            + (pics[i] === cover ? ' · cover' : '');
+          $('[data-big-prev]', box).disabled = i === 0;
+          $('[data-big-next]', box).disabled = i === pics.length - 1;
+          box.hidden = false;
+        }
+        function hideBig() {
+          big = -1;
+          var box = $('[data-big]', back);
+          box.hidden = true;
+          $('[data-big-img]', box).removeAttribute('src');
+        }
 
         function paint() {
           $('[data-pics]', back).innerHTML = pics.length
             ? '<ul class="picgrid">' + pics.map(function (src, i) {
               var mine = tags[i] || [];
-              return '<li class="picgrid__i' + (open === i ? ' is-open' : '') + '" data-pic="' + i + '">' +
-                '<img src="' + esc(src) + '" alt="" loading="lazy">' +
+              var on = !!picked[src];
+              return '<li class="picgrid__i' + (open === i ? ' is-open' : '') + (on ? ' is-picked' : '') +
+                  '" data-pic="' + i + '">' +
+                /* The image is the button. Tapping a photograph to see it
+                   properly is what anybody expects a photograph to do, and it
+                   is the only way to judge the one you are deciding about. */
+                '<button type="button" class="picgrid__shot" data-pic-big ' +
+                    'title="See it full size" aria-label="See photograph ' + (i + 1) + ' full size">' +
+                  '<img src="' + esc(src) + '" alt="" loading="lazy">' +
+                '</button>' +
+                '<label class="picgrid__pick" title="Pick this one">' +
+                  '<input type="checkbox" data-pic-pick' + (on ? ' checked' : '') + '>' +
+                '</label>' +
                 (src === cover ? '<span class="picgrid__cover">Cover</span>' : '') +
                 '<div class="picgrid__bar">' +
                   '<button type="button" class="picgrid__b" data-pic-left title="Move earlier"' +
@@ -502,12 +605,63 @@
               '</li>';
             }).join('') + '</ul>'
             : '<p class="me__none">No photographs yet. Add some above.</p>';
+          var n = Object.keys(picked).length;
           $('[data-pic-note]', back).textContent = pics.length
             ? pics.length + ' photograph' + (pics.length === 1 ? '' : 's') + ', '
               + tags.filter(function (t) { return t && t.length; }).length + ' tagged'
+              + (n ? ', ' + n + ' picked' : '')
             : 'Pictures are resized on the way in, so a phone photograph does not land on the site whole.';
+
+          /* The remove button says how many it will remove, so the number is
+             read before the button is pressed rather than after. */
+          var del = $('[data-pick-del]', back);
+          var clear = $('[data-pick-none]', back);
+          del.textContent = 'Remove ' + n + ' picked';
+          del.hidden = !n;
+          clear.hidden = !n;
+          $('[data-pick-all]', back).hidden = !pics.length;
         }
         paint();
+
+        /* ---- The toolbar above the grid, and the viewer over it ---- */
+        back.addEventListener('click', function (e) {
+          if (e.target.matches('[data-pick-all]')) {
+            pics.forEach(function (src) { picked[src] = 1; });
+            paint();
+            return;
+          }
+          if (e.target.matches('[data-pick-none]')) {
+            picked = Object.create(null);
+            paint();
+            return;
+          }
+          if (e.target.matches('[data-pick-del]')) {
+            if (guard()) removePics(Object.keys(picked));
+            return;
+          }
+          if (e.target.matches('[data-big-close]')) { hideBig(); return; }
+          if (e.target.matches('[data-big-prev]')) { showBig(big - 1); return; }
+          if (e.target.matches('[data-big-next]')) { showBig(big + 1); return; }
+          if (e.target.matches('[data-big-cover]')) {
+            cover = pics[big];
+            paint();
+            showBig(big);
+            return;
+          }
+          if (e.target.matches('[data-big-del]')) {
+            if (guard()) removePics([pics[big]]);
+          }
+        });
+
+        /* Arrow keys and Escape while the viewer is open, because looking
+           through 175 photographs with a mouse aimed at one small button is
+           not looking through them. */
+        back.addEventListener('keydown', function (e) {
+          if (big < 0) return;
+          if (e.key === 'Escape') { e.stopPropagation(); hideBig(); }
+          else if (e.key === 'ArrowRight') showBig(big + 1);
+          else if (e.key === 'ArrowLeft') showBig(big - 1);
+        });
 
         /* Uploading. Sequential rather than parallel, because ten photographs
            at once off a phone is forty megabytes of canvas work and the tab
@@ -551,15 +705,14 @@
           if (e.target.matches('[data-pic-right]')) { swap(i, i + 1); if (open === i) open = i + 1; paint(); return; }
           if (e.target.matches('[data-pic-cover]')) { cover = pics[i]; paint(); return; }
           if (e.target.matches('[data-pic-tag]')) { open = open === i ? -1 : i; paint(); return; }
-          if (e.target.matches('[data-pic-del]')) {
-            /* The tags go with it. They are keyed by position, so removing a
-               photograph without removing its entry shifts every tag after it
-               onto the wrong picture. */
-            if (cover === pics[i]) cover = '';
-            pics.splice(i, 1);
-            tags.splice(i, 1);
-            if (open === i) open = -1; else if (open > i) open--;
+          if (e.target.matches('[data-pic-pick]')) {
+            if (picked[pics[i]]) delete picked[pics[i]]; else picked[pics[i]] = 1;
             paint();
+            return;
+          }
+          if (e.target.closest('[data-pic-big]')) { showBig(i); return; }
+          if (e.target.matches('[data-pic-del]')) {
+            removePics([pics[i]]);
             return;
           }
           var chip = e.target.closest('[data-tag-name]');

@@ -738,3 +738,96 @@ body:has(.cp) .atmos__blob { animation: none; }
 .cp .scroll-x { max-width: 100%; }
 .cell-club { max-width: 34ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cp-search { max-width: 340px; }
+
+/* ==========================================================================
+   PICKING PHOTOGRAPHS, AND SEEING ONE PROPERLY
+
+   The grid already showed every photograph with the four things you can do to
+   one. Two things were missing for the job people actually do with it, which
+   is culling: you could not see a picture well enough to decide, and you
+   could not decide about more than one at a time.
+
+   An album is 175 frames of one Sunday morning. A 190px tile at 4:3 tells you
+   a photograph exists; it does not tell you whether it is sharp or which of
+   two people is facing the camera, which is the whole of the decision.
+   ========================================================================== */
+.picgrid__shot {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: zoom-in;
+}
+.picgrid__shot:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+
+.picgrid__pick {
+  position: absolute;
+  inset-block-start: 6px;
+  inset-inline-end: 6px;
+  /* 34px so a finger can hit it without hitting the photograph underneath. */
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.55);
+  cursor: pointer;
+}
+.picgrid__pick input { width: 18px; height: 18px; accent-color: var(--brand); cursor: pointer; }
+.picgrid__i.is-picked { border-color: var(--brand); }
+.picgrid__i.is-picked .picgrid__shot img { opacity: 0.55; }
+
+/* ---- One photograph, full size, over the grid ---- */
+.picbig {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: rgba(0, 0, 0, 0.88);
+}
+.picbig[hidden] { display: none; }
+.picbig img {
+  min-height: 0;
+  max-width: 100%;
+  max-height: 100%;
+  margin: auto;
+  object-fit: contain;
+}
+.picbig__bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: center;
+}
+.picbig__n {
+  font-size: var(--step--1);
+  color: var(--text-muted);
+  min-width: 8ch;
+  text-align: center;
+}
+.picbig__x {
+  position: absolute;
+  inset-block-start: 10px;
+  inset-inline-end: 10px;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface-inset);
+  color: var(--text);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.picbig__x:hover { border-color: var(--border-brand); color: var(--brand-text); }
+
+@media (pointer: coarse) {
+  /* Every control in the viewer is a finger target, and the row wraps rather
+     than squeezing six buttons onto one line. */
+  .picbig__bar .btn { min-height: 44px; }
+}

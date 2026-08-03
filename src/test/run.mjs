@@ -1127,6 +1127,77 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     unpublished.join(', '));
 }
 
+/* ==========================================================================
+   AN ALBUM IS OF A MATCH
+
+   Seven albums hold 606 photographs of seven games, and nothing joined them
+   to the games: no report offered its photographs and no album offered its
+   report. Each album also RE-TYPED the fixture, the competition and the date
+   into its title, two of the seven lost the separator on the way in, and the
+   date field held the afternoon of the upload rather than the day of the
+   match, so all seven read June 2026 for an autumn and a winter of football.
+   ========================================================================== */
+{
+  const { buildDataset } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const data = buildDataset();
+  const albums = data.galleries || [];
+
+  const unresolved = albums.filter((g) => !g.matchId && g.category === 'Matchday');
+  check('every matchday album resolves to a match', unresolved.length === 0,
+    unresolved.map((g) => g.title.slice(0, 40)).join(', '));
+
+  /* The resolution has to be RIGHT, not merely present: an album pointing at
+     the wrong game would pass a presence check and publish a scoreline from
+     somebody else's afternoon. Its own title still carries the score that was
+     typed at upload, so the two are compared. */
+  const wrong = albums.filter((g) => {
+    if (!g.matchId) return false;
+    const said = String(g.title).match(/(\d+)\s*-\s*(\d+)/);
+    return said && g.scoreline !== `${said[1]}-${said[2]}`;
+  });
+  check('each album resolves to the match its title names', wrong.length === 0,
+    wrong.map((g) => `${g.title.slice(0, 30)} -> ${g.matchId}`).join(', '));
+
+  /* Dated by the match, not by the upload. */
+  const uploadDated = albums.filter((g) => g.matchId && g.shownDate !== g.matchIso);
+  check('albums are dated by their match', uploadDated.length === 0,
+    uploadDated.map((g) => g.matchId).join(', '));
+
+  /* Both directions. A link one way only is how the gallery was reachable
+     from nowhere but its own index.
+
+     THE FLOOR MATTERS. Written as "every linked album links back", these two
+     passed 0 of 0 the moment the resolver stopped resolving, which is the
+     exact failure they exist to catch. They assert a count as well. */
+  const linked = albums.filter((g) => g.matchId);
+  check('the albums actually resolve to matches', linked.length >= 7,
+    `${linked.length} resolved, expected at least 7`);
+  const albumToMatch = linked.filter((g) => {
+    const h = pages.get(`gallery/${g.slug}.html`);
+    return h && h.includes(`href="${g.matchHref}"`);
+  });
+  const matchToAlbum = linked.filter((g) => {
+    const m = data.played.find((x) => x.id === g.matchId);
+    const h = m && pages.get(`matches/${m.slug}.html`);
+    return h && h.includes(`/gallery/${g.slug}.html`);
+  });
+  check('every album links to its match report',
+    albumToMatch.length === linked.length,
+    `${albumToMatch.length}/${linked.length}`);
+  check('every match with an album links to it',
+    matchToAlbum.length === linked.length,
+    `${matchToAlbum.length}/${linked.length}`);
+
+  /* The bug this replaces: a competition swallowed into the fixture line
+     because the title had no separator to split on. */
+  const gal = pages.get('gallery.html') || '';
+  const swallowed = [...gal.matchAll(/class="gl-card__fixture">([^<]+)</g)]
+    .map((m) => unesc(m[1]))
+    .filter((s) => /\b(League (Ten|Eight)|Trophy|County Cup)\b/.test(s));
+  check('no gallery card puts the competition in the fixture',
+    swallowed.length === 0, swallowed.slice(0, 2).join(' | '));
+}
+
 /* ---- Report ---- */
 console.log(`\n${'='.repeat(66)}`);
 if (warns.length) {

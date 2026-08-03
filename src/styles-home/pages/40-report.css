@@ -104,3 +104,40 @@
 .mr-sponsor{margin: 6px 0 0; font-size: 13.5px; line-height: 1.7; color: var(--ink-3);}
 .mr-sponsor a{color: var(--volt-text);}
 .mr-sponsor i{font-style: normal; color: var(--ink-3); opacity: 0.8;}
+
+/* ==========================================================================
+   THE ALBUM FROM THIS MATCH
+
+   A horizontal card rather than the gallery's vertical one: it sits at the
+   foot of a report as an offer, not as the page's subject, and a 3:2 cover
+   the full width of the column would read as the main event.
+
+   Below 520px it stacks, because a 120px thumbnail beside two lines of text
+   leaves the text about 34 characters wide.
+   ========================================================================== */
+.mr-album__link{display: grid; grid-template-columns: 148px 1fr; align-items: stretch;
+  gap: 0; text-decoration: none; overflow: hidden;
+  border: 1px solid var(--line-d); border-radius: 18px; background: var(--slab);
+  transition: border-color 0.25s, transform 0.3s var(--ease-out-expo);}
+.mr-album__link:hover{border-color: rgba(var(--volt-rgb), 0.36); transform: translateY(-2px);}
+.mr-album__link:focus-visible{outline: 2px solid var(--volt); outline-offset: 3px;}
+.mr-album__link img{width: 100%; height: 100%; object-fit: cover;}
+.mr-album__crest{align-self: center; width: 62px; height: auto;
+  object-fit: contain; opacity: 0.9; justify-self: center;}
+.mr-album__body{display: grid; align-content: center; gap: 5px; padding: 16px 20px;}
+.mr-album__body b{font-family: var(--display); font-weight: 500; font-size: 17px;
+  line-height: 1.2; letter-spacing: -0.02em; color: var(--fg);}
+.mr-album__body i{font-style: normal; font-family: var(--ui); font-size: 9px;
+  font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3);}
+.mr-album__go{margin-top: 4px; font-size: 13px; color: var(--volt-text);}
+.mr-album__link:hover .mr-album__go{text-decoration: underline; text-underline-offset: 3px;}
+
+@media (max-width: 520px){
+  .mr-album__link{grid-template-columns: 1fr;}
+  .mr-album__link img{aspect-ratio: 3 / 2;}
+  .mr-album__crest{padding-block: 20px 0;}
+}
+@media (prefers-reduced-motion: reduce){
+  .mr-album__link{transition: none;}
+  .mr-album__link:hover{transform: none;}
+}

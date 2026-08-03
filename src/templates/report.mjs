@@ -224,6 +224,29 @@ export function matchReport(m, d) {
       </div>
     </section>` : '';
 
+  /* THE PHOTOGRAPHS OF THIS MATCH. Seven albums hold 606 pictures of seven
+     games, and the report of a game linked to none of them: the only route in
+     was the gallery index, which meant knowing the album existed before you
+     could find it. dataset.mjs resolves the album to its match, so a page
+     showing a 7-2 win can offer the 151 photographs somebody took of it. */
+  const album = (d.galleries || []).find((g) => g.matchId === m.id);
+  const albumBand = album ? `<section class="sec mr-album" aria-labelledby="mr-a-h">
+      <div class="wrap wrap--narrow">
+        ${rail(4, 'The photographs', `${album.photos.length} from the day`)}
+        <h2 class="h2 rv" id="mr-a-h">Somebody was <span class="volt">there.</span></h2>
+        <a class="mr-album__link rv" href="${attr(`/gallery/${album.slug}.html`)}">
+          ${album.cover
+    ? `<img class="mr-album__shot" src="${attr(album.cover)}" alt="" width="640" height="427" loading="lazy" decoding="async" />`
+    : `<img class="mr-album__crest" src="${STAR}" alt="" width="76" height="94" loading="lazy" decoding="async" />`}
+          <span class="mr-album__body">
+            <b>${esc(album.photos.length)} photograph${album.photos.length === 1 ? '' : 's'}</b>
+            <i>${esc(album.photographer ? `Shot by ${album.photographer}` : 'From the club album')}</i>
+            <span class="mr-album__go">See the album ${ARROW}</span>
+          </span>
+        </a>
+      </div>
+    </section>` : '';
+
   const backBand = `<section class="sec mr-back">
       <div class="wrap">
         <p class="mr-back__row">
@@ -239,7 +262,7 @@ export function matchReport(m, d) {
     bodyClass: 'is-home is-sub is-report',
     preMain: sitePreMain(auraFor('results.html')),
     footerHtml: siteFooter(),
-    body: siteHeader("/results.html") + hero + factsBand + reportBand + videoBand + sponsorBand + backBand,
+    body: siteHeader("/results.html") + hero + factsBand + reportBand + videoBand + albumBand + sponsorBand + backBand,
     hasReport: hasReportOf(m),
   };
 }

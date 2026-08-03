@@ -592,13 +592,67 @@ export function buildDataset() {
     return out;
   };
 
+  /* ---- WHICH MATCH AN ALBUM IS OF -----------------------------------------
+     Every album is 17 to 175 photographs of one game, and until now neither
+     page knew about the other: no album linked to its report and no report
+     linked to its photographs.
+
+     Worse, each album RE-TYPED the match. The title carried the fixture, the
+     competition, the matchday and the date as one hand-written string, and
+     two of the seven lost their separator on the way in, so the gallery
+     printed "Sue's Angels 4-2 BPR Men's League Ten" as the fixture with the
+     competition swallowed into it. The `date` field held the moment the
+     album was uploaded, not the day of the match, so all seven said June
+     2026 for games played between September 2025 and February 2026, each
+     card contradicting the date written in its own title.
+
+     So it is resolved instead. `matchId` on the record wins, which is what
+     the panel now writes. Failing that the date is read out of the title and
+     matched against the results, and where a date somehow lands on two
+     matches the opponent's name settles it. All seven existing albums
+     resolve this way, and every one agrees with its record on scoreline,
+     competition and which side was at home.
+
+     Nothing is invented: an album that resolves to no match keeps its title
+     exactly as typed and simply carries no link. */
+  const matchForAlbum = (d) => {
+    if (d.matchId) return matches.find((m) => m.id === d.matchId) || null;
+    const said = String(d.title || '');
+    const when = said.match(/\b(\d{1,2}\s+[A-Za-z]+\s+20\d{2})\b/);
+    if (!when) return null;
+    const parsed = new Date(`${when[1]} UTC`);
+    if (Number.isNaN(parsed.getTime())) return null;
+    const iso = parsed.toISOString().slice(0, 10);
+    const sameDay = matches.filter((m) => m.iso === iso && m.played);
+    if (sameDay.length <= 1) return sameDay[0] || null;
+    const said2 = said.toLowerCase();
+    return sameDay.find((m) => said2.includes(String(m.opponent).toLowerCase().slice(0, 10)))
+      || null;
+  };
+
   const galleries = (live.gallery || []).map((row) => {
     const d = row.data || {};
+    const of = matchForAlbum(d);
     return {
       key: row.key,
       id: d.id || row.key,
       title: d.title || 'Album',
       slug: slugify(d.title || row.key),
+      /* The match this album is of, and the facts drawn from it rather than
+         from the title. A page shows `fixture` and `competition` where they
+         exist and falls back to splitting the title where they do not. */
+      matchId: of ? of.id : '',
+      matchHref: of ? `/matches/${of.slug}.html` : '',
+      matchIso: of ? of.iso : '',
+      /* The two clubs and the score kept apart, not joined into a string. A
+         template shortens a club name with its own rule, and running that
+         rule over a joined fixture cut the FC out of the MIDDLE of "Hillside
+         Elite FC Blues". */
+      home: of ? of.home : '',
+      away: of ? of.away : '',
+      scoreline: of ? (of.scoreline || 'v') : '',
+      competition: of ? of.competition : '',
+      season: of ? of.season : '',
       category: d.category || 'Matchday',
       cover: d.cover || d.src || '',
       src: d.src || '',
@@ -623,7 +677,13 @@ export function buildDataset() {
          clicking. */
       photoTags: normalisePhotoTags(d.photoTags),
     };
-  }).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  })
+    /* Newest MATCH first, not newest upload. Sorting on the record's own date
+       ordered the albums by the afternoon somebody sat down and uploaded
+       them, which for these seven was one afternoon, so the run order was
+       whatever the loop happened to produce. */
+    .map((g) => ({ ...g, shownDate: g.matchIso || g.date }))
+    .sort((a, b) => String(b.shownDate).localeCompare(String(a.shownDate)));
 
   /* ---- Photographs of a player -------------------------------------------
      Which gallery photographs may be used as a picture of a given player,

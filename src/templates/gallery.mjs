@@ -29,12 +29,40 @@ const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
 
 /* "Fixture • Competition • Date" or "Fixture | Competition • Date". Split on
    either separator, keep the first part as the fixture and the rest as the
-   supporting line. A title with no separator stays whole. */
+   supporting line. A title with no separator stays whole.
+
+   THE FALLBACK, not the first choice. Reading a hand-typed title is how the
+   gallery came to print "Sue's Angels 4-2 BPR Men's League Ten" as a fixture:
+   two of the seven albums were saved without the separator before the
+   competition, so the split had nothing to cut on and swallowed it. Where the
+   album resolves to a match the fixture and the competition come from the
+   match record instead, and cannot be typed wrongly. */
 export function splitTitle(title) {
   const parts = String(title || '').split(/\s*[•|]\s*/).map((p) => p.trim()).filter(Boolean);
   if (parts.length < 2) return { fixture: String(title || ''), detail: '' };
   return { fixture: parts[0], detail: parts.slice(1).join(' · ') };
 }
+
+/* What a card and an album page put on their two lines. Derived from the
+   match where there is one, so the scoreline, the competition and the date
+   are the same facts the results page and the report page publish. */
+export function albumLines(g) {
+  if (!g.matchId) return splitTitle(g.title);
+  return {
+    fixture: `${shortClub(g.home)} ${g.scoreline} ${shortClub(g.away)}`,
+    detail: [g.competition, g.shownDate ? fmtDate(g.shownDate, { long: true }) : '']
+      .filter(Boolean).join(' · '),
+  };
+}
+
+/* The gallery card is narrow and "Sue's Angels FC 4-2 Pure Football FC 2.0"
+   wraps to three lines in it. The same rule the results cards use, applied to
+   each club on its own: anchored at the END, so the FC in the middle of
+   "Hillside Elite FC Blues" is part of the name and stays. */
+const shortClub = (name) => String(name || '')
+  .replace(/^Sue.s Angels FC$/, 'Sue’s Angels')
+  .replace(/\s+FC 2\.0$/, ' 2.0')
+  .replace(/\s+FC$/, '');
 
 const photosOf = (g) => (g.photos || []).filter(Boolean);
 
@@ -84,8 +112,13 @@ const tagLinks = (names, squad) => {
   }).filter(Boolean);
 };
 
+/* Newest match first. `date` on the record is when the album was UPLOADED,
+   which for all seven of these was the same afternoon in June 2026, so
+   sorting on it ordered seven matchdays spanning September to February by
+   nothing at all. dataset.mjs resolves the match and puts its date on
+   `shownDate`. */
 const sorted = (albums) => albums.slice()
-  .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+  .sort((a, b) => String(b.shownDate || b.date || '').localeCompare(String(a.shownDate || a.date || '')));
 
 /* ==========================================================================
    THE INDEX
@@ -96,7 +129,7 @@ export function gallery(d) {
   const credits = [...new Set(albums.map((g) => g.photographer).filter(Boolean))];
 
   const card = (g) => {
-    const { fixture, detail } = splitTitle(g.title);
+    const { fixture, detail } = albumLines(g);
     const n = photosOf(g).length;
     return `<li class="gl-card">
             <a class="gl-card__link" href="/gallery/${attr(g.slug)}.html">
@@ -179,7 +212,7 @@ export function gallery(d) {
    ========================================================================== */
 export function galleryAlbum(g, d) {
   const photos = photosOf(g);
-  const { fixture, detail } = splitTitle(g.title);
+  const { fixture, detail } = albumLines(g);
   const others = sorted(d.galleries || []).filter((x) => x.slug !== g.slug).slice(0, 3);
   const photoTags = g.photoTags || {};
   const squadTags = tagLinks(g.tags, d.squad);
@@ -187,10 +220,16 @@ export function galleryAlbum(g, d) {
   const hero = `<section class="gl-hero" aria-labelledby="ga-h">
       <div class="wrap">
         <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i>
-          ${esc(g.category || 'Matchday')}${g.date ? ` · ${esc(fmtDate(g.date))}` : ''}</p>
+          ${esc(g.category || 'Matchday')}${g.shownDate ? ` · ${esc(fmtDate(g.shownDate))}` : ''}</p>
         <h1 class="gl-album__title" id="ga-h">${esc(fixture)}</h1>
         ${detail ? `<p class="gl-album__detail">${esc(detail)}</p>` : ''}
         <p class="gl-album__meta">${esc(photos.length)} photograph${photos.length === 1 ? '' : 's'}${g.photographer ? ` · shot by ${esc(g.photographer)}` : ''}</p>
+        ${/* THE MATCH THESE ARE OF. 175 photographs of a game whose report,
+              team sheet and goalscorers sit on another page, and until now
+              nothing joined them. */
+    g.matchHref ? `<p class="gl-album__match">
+          <a class="gl-album__matchlink" href="${attr(g.matchHref)}">Read the match report ${ARROW}</a>
+        </p>` : ''}
       </div>
     </section>`;
 

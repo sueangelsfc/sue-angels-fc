@@ -113,3 +113,9 @@
   letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
 .gl-who__list{margin: 0;}
 .gl-who__note{margin: 12px 0 0; font-size: 12.5px; line-height: 1.6; color: var(--ink-3);}
+
+/* The album page's own way back to the match, the same link in reverse. */
+.gl-album__match{margin: 14px 0 0;}
+.gl-album__matchlink{font-size: 14px; color: var(--volt-text);
+  text-decoration: none; display: inline-flex; align-items: center; gap: 6px;}
+.gl-album__matchlink:hover{text-decoration: underline; text-underline-offset: 3px;}

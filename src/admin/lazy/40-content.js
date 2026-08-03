@@ -328,9 +328,49 @@
      ========================================================================== */
   var ALBUM_CATS = ['Matchday', 'Training', 'Club', 'Awards', 'Community'];
 
+  /* WHICH MATCH AN ALBUM IS OF, offered as a list rather than typed.
+
+     The seven existing albums each re-typed the fixture, the competition, the
+     matchday and the date into the title as one string, and two of the seven
+     lost the separator before the competition, so the gallery printed
+     "Sue's Angels 4-2 BPR Men's League Ten" as the fixture. The date field
+     held the afternoon the album was uploaded rather than the day of the
+     match, so all seven read June 2026 for games played across an autumn and
+     a winter.
+
+     Naming the match instead means the site draws the scoreline, the
+     competition and the date from the match record, which is where they
+     already live and where the results page and the report read them from.
+     It also joins the two pages: the album offers the report, the report
+     offers the 175 photographs somebody took of it.
+
+     Existing albums resolve by the date in their title, so nothing has to be
+     re-saved for the link to work. This is what stops the next one needing
+     that. */
+  function matchOptions(rows) {
+    var out = [['', 'Not a match']];
+    (rows || []).slice()
+      .sort(function (a, b) { return String(b.key).localeCompare(String(a.key)); })
+      .forEach(function (row) {
+        var d2 = row.data || {};
+        var when = String(d2.date || '').slice(0, 10);
+        var side = d2.home && d2.away ? d2.home + ' v ' + d2.away : '';
+        var score = (d2.hs != null && d2.as != null) ? ' ' + d2.hs + '-' + d2.as : '';
+        var label = (side || row.key) + score + (when ? '  ·  ' + when : '');
+        out.push([row.key, label]);
+      });
+    return out;
+  }
+
   M.media = function (host) {
-    return Promise.all([CP.readAll('gallery'), CP.readAll('player_photos')]).then(function (r) {
-      var rows = r[0] || [];
+    /* The matches are read for one reason: the album form offers them by name
+       so an album can say which game it is of. */
+    return Promise.all([CP.readAll('gallery'), CP.readAll('matches')])
+      .then(function (r) { return mediaPanel(host, r[0] || [], r[1] || []); });
+  };
+
+  function mediaPanel(host, rows, matchRows) {
+    return Promise.resolve().then(function () {
       var list = rows.slice().sort(function (a2, b2) {
         return Number((b2.data || {}).sort || 0) - Number((a2.data || {}).sort || 0);
       });
@@ -396,10 +436,15 @@
 
         var back = dialog(isNew ? 'New album' : 'Edit this album',
           '<div class="grid grid--2">' +
-            field('g-title', 'Album title', text('g-title', d.title, 'Sue’s Angels 4-2 BPR Men’s')) +
+            field('g-match', 'Which match', choose('g-match', d.matchId || '', matchOptions(matchRows)),
+              'Name the match and the website draws the fixture, the competition and the date '
+              + 'from its record, and links the album and the match report to each other.') +
+            field('g-title', 'Album title', text('g-title', d.title, 'Sue’s Angels 4-2 BPR Men’s'),
+              'Only used where the album is not a match.') +
             field('g-cat', 'Category', choose('g-cat', d.category || 'Matchday', ALBUM_CATS)) +
             field('g-date', 'Date', '<input class="input" id="g-date" type="date" value="' +
-              esc(toIso(d.date) || String(d.date || '').slice(0, 10) || today()) + '">') +
+              esc(toIso(d.date) || String(d.date || '').slice(0, 10) || today()) + '">',
+              'The match date wins where a match is named above.') +
             field('g-by', 'Photographer', text('g-by', d.photographer, 'Who took them')) +
           '</div>' +
           '<h4 class="mform__h">The photographs</h4>' +
@@ -514,11 +559,16 @@
 
         $('[data-save]', back).addEventListener('click', function () {
           var title = val(back, 'g-title');
-          if (!title) { fail(back, 'The album needs a title.'); return; }
+          var matchId = val(back, 'g-match');
+          /* A named match IS the album's identity, so the title stops being
+             required: the site builds the heading from the record. Without
+             one there is nothing else to call the album, so it is asked for. */
+          if (!title && !matchId) { fail(back, 'Name the match, or give the album a title.'); return; }
           var iso = val(back, 'g-date') || today();
           var key = rec ? rec.key : newId('alb');
           put(back, 'gallery', key, d, {
             id: key,
+            matchId: matchId,
             title: title,
             category: val(back, 'g-cat'),
             date: iso,
@@ -550,7 +600,7 @@
         }
       });
     });
-  };
+  }
 
   /* ==========================================================================
      RECOGNITION

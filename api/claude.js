@@ -26,24 +26,31 @@
 //     first filter but is NOT the lock: it allows a request with no Origin
 //     header, which is every script and every server.
 //
-// Cost guard:
-//   • Hard input cap of 8,000 chars (≈ 2,000 tokens) per request.
-//   • Hard output cap of 1,500 tokens.
-//   • Use the cheap model (claude-haiku-4) by default, switch to sonnet
-//     for higher quality at ~5x cost if needed.
+// Cost guard, and what the caps actually mean for a match report:
+//   • Input cap 16,000 chars. Measured: the brief plus a full team sheet plus
+//     thirty timed moments comes to about 7,300, so this is roughly seventy
+//     moments of headroom. It was 8,000, which a long game would have hit.
+//   • Output cap 3,000 tokens, about 2,200 words. The club asks for 700 to
+//     900 plus a MATCH DETAILS block, which is around 1,250 tokens, and the
+//     old 1,500 left almost nothing spare. A cap does not cost anything until
+//     it is used: the model writes what the brief asks for.
+//   • SONNET FIRST, haiku second. This writes something the club publishes
+//     under its own name, and the difference between the two on 900 words of
+//     prose is the difference between a report and a summary. A report costs
+//     a fraction of a penny either way.
 
 import runtime from '../src/data/runtime.json' with { type: 'json' };
 
 // Ordered preference if we can't list models, cheapest-first guesses.
 const MODEL_FALLBACKS = [
+  'claude-sonnet-4-5-20250929',
+  'claude-sonnet-4-20250514',
+  'claude-3-5-sonnet-20241022',
   'claude-haiku-4-5-20251001',
   'claude-3-5-haiku-20241022',
-  'claude-3-5-sonnet-20241022',
-  'claude-sonnet-4-20250514',
-  'claude-3-haiku-20240307',
 ];
-const MAX_INPUT_CHARS = 8000;
-const MAX_OUTPUT_TOKENS = 1500;
+const MAX_INPUT_CHARS = 16000;
+const MAX_OUTPUT_TOKENS = 3000;
 
 // Discover a model the account can actually use by listing models from the
 // Anthropic API. Prefers haiku (cheapest) → sonnet → anything available.
@@ -59,8 +66,10 @@ async function resolveModel(apiKey, requested) {
     if (r.ok) {
       const j = await r.json();
       const ids = (j.data || []).map((m) => m.id);
-      const pick = ids.find((id) => /haiku/i.test(id))
-                || ids.find((id) => /sonnet/i.test(id))
+      /* Best writer the account can reach, not the cheapest. Newest sonnet
+         first: model ids sort chronologically because they carry the date. */
+      const pick = ids.filter((id) => /sonnet/i.test(id)).sort().reverse()[0]
+                || ids.filter((id) => /haiku/i.test(id)).sort().reverse()[0]
                 || ids[0];
       if (pick) { CACHED_MODEL = pick; return pick; }
     }

@@ -1289,6 +1289,28 @@ for (const [f, kb] of Object.entries(BUDGET)) {
       'the club was typing figures the site already derives');
   }
 
+  /* THE TWO CAPS MUST AGREE. The panel checks the prompt length before it
+     sends, so that a long game falls back with a sentence the club can read
+     rather than coming back as a 413 it has to interpret. Two numbers in two
+     files: if they drift, the friendlier check stops firing. */
+  {
+    const api = fs.readFileSync(path.join(ROOT, 'api', 'claude.js'), 'utf8');
+    const serverCap = Number((api.match(/MAX_INPUT_CHARS\s*=\s*(\d+)/) || [])[1]);
+    const clientCap = Number((reportChunk.match(/length\s*>\s*(\d{4,})/) || [])[1]);
+    check('the server declares an input cap', serverCap > 0, String(serverCap));
+    check('the panel checks against the same cap the server enforces',
+      serverCap === clientCap, `server ${serverCap}, panel ${clientCap}`);
+    const outCap = Number((api.match(/MAX_OUTPUT_TOKENS\s*=\s*(\d+)/) || [])[1]);
+    /* The club asks for up to 900 words plus a details block. At about 0.75
+       words a token that is roughly 1,300, so the cap has to clear it with
+       room or the report stops mid-sentence. */
+    const W2 = JSON.parse(fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8')
+      .replace(/^window\.SA_SEED=/, '').replace(/;\s*$/, '')).reportWords;
+    check('the output cap clears the length the club asks for',
+      outCap > (W2.max / 0.75) * 1.2,
+      `${outCap} tokens against ${W2.max} words wanted`);
+  }
+
   check('report writer says which one wrote it',
     /composed/.test(reportChunk) && /written/.test(matchChunk + reportChunk),
     'the club cannot tell a composed report from a written one');

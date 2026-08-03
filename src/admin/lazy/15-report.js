@@ -1167,7 +1167,10 @@
     };
     if (!o.token) return Promise.resolve(fallback('not signed in'));
     var body = prompt(c);
-    if (body.length > 8000) return Promise.resolve(fallback('too much to send'));
+    /* Kept in step with MAX_INPUT_CHARS in api/claude.js. Checked here as well
+       so a long game fails as a fallback rather than as a 413 the club has to
+       interpret. Measured: thirty timed moments is about 7,300 characters. */
+    if (body.length > 16000) return Promise.resolve(fallback('too much to send'));
     return fetch('/api/claude', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + o.token },

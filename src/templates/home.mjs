@@ -94,7 +94,12 @@ const clubKey = (name) => String(name || '')
   .replace(/[^a-z0-9]+/g, ' ')
   .trim();
 
-export function oppBadge(name, badges, w, h, cls = '') {
+/* Where a club's crest lives, or '' if it has none. Three places in order,
+   then a needle, so "Woking Veterans Sundays" finds the Woking Vets badge.
+   Factored out of oppBadge() because two other callers want the address
+   rather than the markup, and a second copy of this chain is a second chance
+   for it to disagree with itself. */
+export function oppBadgeSrc(name, badges) {
   let rec = badges?.[name];
   if (!rec && badges) {
     const needle = String(name || '').toLowerCase();
@@ -108,8 +113,13 @@ export function oppBadge(name, badges, w, h, cls = '') {
     }
   }
   const src = typeof rec === 'string' ? rec : rec?.src;
-  if (!src) return clubCrest(name, badges, cls);
-  const path = src.startsWith('/') ? src : `/${src}`;
+  if (!src) return '';
+  return src.startsWith('/') ? src : `/${src}`;
+}
+
+export function oppBadge(name, badges, w, h, cls = '') {
+  const path = oppBadgeSrc(name, badges);
+  if (!path) return clubCrest(name, badges, cls);
   return `<img${cls ? ` class="${attr(cls)}"` : ''} src="${attr(path)}" alt="" width="${attr(w)}" height="${attr(h)}" loading="lazy" decoding="async" />`;
 }
 
@@ -184,6 +194,32 @@ export function home(d) {
      every page that needs it reads the same answer. */
   const next = d.nextFixture || NEXT_FIXTURE;
 
+  /* AND WHAT COMES AFTER IT, because a static page has a stale idea of today.
+
+     `next` is right when the build runs and wrong from the first whistle of
+     that match until somebody publishes again. Between two pre-season
+     friendlies that is a week of the home page leading with a game that has
+     been played and a countdown reading "Kick-off".
+
+     So the card carries the rest of the fixture list with it and the script
+     moves it on. Nothing is hidden behind that: with the script blocked the
+     page shows the build's answer, which is the correct one at the moment it
+     was published, and every field is real markup either way. */
+  const upcomingData = (d.upcoming || []).map((f) => ({
+    home: f.weAreHome ? CLUB.name : f.opponent,
+    away: f.weAreHome ? f.opponent : CLUB.name,
+    weAreHome: Boolean(f.weAreHome),
+    label: f.label || f.competition || '',
+    competition: f.competition || '',
+    venue: f.venue || '',
+    kick: f.kick || '',
+    date: f.dateLabel || dayMonthYear(f.iso || f.date),
+    at: f.isoDateTime || '',
+    badge: oppBadgeSrc(f.opponent, d.badges),
+    them: f.opponent,
+    initials: String(f.opponent || '').split(/\s+/).map((w) => w[0]).join('').slice(0, 3).toUpperCase(),
+  }));
+
   /* ================= HERO ================= */
   const navGroups = NAV_TREE.map((item) => `<div class="hx__navgrp">
               <button class="hx__navtop hx__navtrig" type="button" aria-expanded="false">${esc(item.label)} ${SVG.caret}</button>
@@ -193,15 +229,15 @@ export function home(d) {
             </div>`).join('\n            ');
 
   const homeIsAway = !next.weAreHome;
-  const usSide = `<div class="hx__side">
+  const usSide = `<div class="hx__side" data-nx-us>
                 <span class="hx__crest"><img src="${STAR}" alt="${attr(CLUB.name)} crest" width="48" height="60" loading="lazy" decoding="async" /></span>
                 <b>Sue's Angels</b>
-                <span class="hx__ha">${homeIsAway ? 'Away' : 'Home'}</span>
+                <span class="hx__ha" data-nx-usha>${homeIsAway ? 'Away' : 'Home'}</span>
               </div>`;
-  const themSide = `<div class="hx__side">
-                <span class="hx__crest">${oppBadge(next.badgeName || next.opponent, d.badges, 48, 48)}</span>
-                <b>${esc(shortClub(next.opponent))}</b>
-                <span class="hx__ha">${homeIsAway ? 'Home' : 'Away'}</span>
+  const themSide = `<div class="hx__side" data-nx-them>
+                <span class="hx__crest" data-nx-crest>${oppBadge(next.badgeName || next.opponent, d.badges, 48, 48)}</span>
+                <b data-nx-club>${esc(shortClub(next.opponent))}</b>
+                <span class="hx__ha" data-nx-themha>${homeIsAway ? 'Home' : 'Away'}</span>
               </div>`;
 
   /* The club's own banner if it has chosen one in the panel, and the one the
@@ -270,8 +306,9 @@ export function home(d) {
                be top level; this one is nested inside the hero, so it showed up
                as a landmark in the wrong place in the document outline. It is a
                labelled card, not a section of the page. -->
-          <div class="hx__card glassbox drop" style="--dd:.3s" role="group" aria-label="Next match">
-            <p class="hx__cardlabel">Next match${next.competition ? ` · ${esc(next.label || next.competition)}` : ''}</p>
+          <div class="hx__card glassbox drop" style="--dd:.3s" role="group" aria-label="Next match"
+            data-next-match data-upcoming="${attr(JSON.stringify(upcomingData))}">
+            <p class="hx__cardlabel" data-nx-label>Next match${next.competition ? ` · ${esc(next.label || next.competition)}` : ''}</p>
 
             <div class="hx__fixture">
               ${homeIsAway ? themSide : usSide}
@@ -282,22 +319,22 @@ export function home(d) {
             <div class="hx__cells">
               <span class="hx__cell">
                 ${SVG.calendar}
-                <span><small>Date</small>${esc(next.dateLabel || dayMonthYear(next.iso || next.date))}</span>
+                <span><small>Date</small><i data-nx-date>${esc(next.dateLabel || dayMonthYear(next.iso || next.date))}</i></span>
               </span>
               <span class="hx__cell">
                 ${SVG.clock}
-                <span><small>Kick-off</small>${esc(next.kick || 'TBC')}</span>
+                <span><small>Kick-off</small><i data-nx-kick>${esc(next.kick || 'TBC')}</i></span>
               </span>
             </div>
 
             <div class="hx__meta">
               <div class="hx__metacell">
                 ${SVG.ball}
-                <span class="hx__metatext"><small>Fixture</small><b>${esc(next.competition)}</b></span>
+                <span class="hx__metatext"><small>Fixture</small><b data-nx-comp>${esc(next.competition)}</b></span>
               </div>
               <div class="hx__metacell">
                 ${SVG.pin}
-                <span class="hx__metatext"><small>Venue</small><b>${esc(next.venue || 'TBC')}</b></span>
+                <span class="hx__metatext"><small>Venue</small><b data-nx-venue>${esc(next.venue || 'TBC')}</b></span>
               </div>
             </div>
 

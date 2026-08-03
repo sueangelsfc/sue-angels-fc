@@ -240,26 +240,105 @@
     });
   })();
 
-  /* ---- Countdown to kick-off ------------------------------------------
-     The full date and time are already in the card, so this is decorative
-     precision rather than the only source. It is deliberately not a live
-     region: a value changing every second would flood a screen reader. */
+  /* ---- The next match is the next one TODAY --------------------------
+     A static page has a stale idea of now. The build picks the next fixture
+     correctly at the moment it runs and that answer is wrong from the first
+     whistle of that match until somebody publishes again: between two
+     pre-season friendlies, a week of the home page leading with a game that
+     has been played and a countdown reading "Kick-off".
+
+     So the card ships the rest of the fixture list and this moves it on. The
+     match is treated as still to come for two hours after kick-off, because a
+     supporter looking at the page at three o'clock wants the game being played
+     rather than the one next Sunday.
+
+     Nothing is revealed by this. The card is complete markup with the build's
+     answer in it, which is correct when published; with the script blocked it
+     simply stops being updated, which is where it was before. */
   (function () {
-    var cd = $('.hx__cd');
-    if (!cd) return;
-    var kick = new Date(cd.getAttribute('data-kick') || '').getTime();
-    if (!kick || isNaN(kick)) { cd.textContent = 'TBC'; return; }
-    var tick = function () {
-      var left = kick - Date.now();
-      if (left <= 0) { cd.textContent = 'Kick-off'; return; }
-      var d = Math.floor(left / 86400000);
-      var h = Math.floor(left / 3600000) % 24;
-      var m = Math.floor(left / 60000) % 60;
-      var s = Math.floor(left / 1000) % 60;
-      cd.textContent = d + 'd ' + h + 'h ' + m + 'm ' + s + 's';
-      setTimeout(tick, 1000);
+    var card = $('[data-next-match]');
+    if (!card) return;
+    var cd = card.querySelector('.hx__cd');
+
+    /* The clock under the card. Decorative precision: the full date and time
+       are already printed above it. Deliberately not a live region, because a
+       value changing every second would flood a screen reader. Takes the
+       kick-off it is counting to as an argument, so advancing the fixture
+       re-points it rather than leaving it counting down to a game that has
+       been played. */
+    var countdown = function (at) {
+      if (!cd) return;
+      var kick = new Date(at || cd.getAttribute('data-kick') || '').getTime();
+      if (!kick || isNaN(kick)) { cd.textContent = 'TBC'; return; }
+      var tick = function () {
+        var left = kick - Date.now();
+        if (left <= 0) { cd.textContent = 'Kick-off'; return; }
+        cd.textContent = Math.floor(left / 86400000) + 'd '
+          + Math.floor(left / 3600000) % 24 + 'h '
+          + Math.floor(left / 60000) % 60 + 'm '
+          + Math.floor(left / 1000) % 60 + 's';
+        setTimeout(tick, 1000);
+      };
+      tick();
     };
-    tick();
+
+    var list;
+    try { list = JSON.parse(card.getAttribute('data-upcoming') || '[]'); } catch (e) { list = []; }
+    if (!list.length) { countdown(); return; }
+
+    var IN_PLAY = 2 * 60 * 60 * 1000;
+    var now = Date.now();
+    var pick = null;
+    for (var i = 0; i < list.length; i++) {
+      var at = list[i].at ? new Date(list[i].at).getTime() : NaN;
+      /* A fixture with no kick-off time cannot be judged past, so it stands. */
+      if (isNaN(at) || at + IN_PLAY > now) { pick = list[i]; break; }
+    }
+    /* Every fixture on the card has been played. Leaving the last one up is
+       better than emptying the card: it is the most recent thing the club
+       knows about, and the fixtures page is one tap away. */
+    if (!pick) pick = list[list.length - 1];
+    if (pick === list[0]) { countdown(); return; }
+
+    var fields = {
+      club: pick.them,
+      date: pick.date,
+      kick: pick.kick || 'TBC',
+      comp: pick.competition,
+      venue: pick.venue || 'TBC',
+      usha: pick.weAreHome ? 'Home' : 'Away',
+      themha: pick.weAreHome ? 'Away' : 'Home',
+      label: 'Next match' + (pick.label ? ' · ' + pick.label : ''),
+    };
+    for (var k in fields) {
+      var el = card.querySelector('[data-nx-' + k + ']');
+      if (el) el.textContent = fields[k];
+    }
+
+    /* The crest, replaced rather than re-sourced: a club with no badge of its
+       own gets the initials mark the server would have drawn, not a broken
+       image pointing at nothing. */
+    var crest = card.querySelector('[data-nx-crest]');
+    if (crest) {
+      crest.innerHTML = pick.badge
+        ? '<img src="' + pick.badge + '" alt="" width="48" height="48" loading="lazy" decoding="async">'
+        : '<span class="crest crest--initials" aria-hidden="true">' + (pick.initials || '') + '</span>';
+    }
+
+    /* The two sides swap when home and away do, so the club on the left is
+       the club at home. */
+    var fixture = card.querySelector('.hx__fixture');
+    var first = card.querySelector(pick.weAreHome ? '[data-nx-us]' : '[data-nx-them]');
+    if (fixture && first && fixture.firstElementChild !== first) {
+      fixture.insertBefore(first, fixture.firstElementChild);
+    }
+
+    /* The attribute as well as the clock. countdown() is given the new
+       kick-off directly, so leaving the old one on the element would not
+       break anything today; it would just be a wrong time sitting in the
+       markup for the next thing that reads it. */
+    if (cd) cd.setAttribute('data-kick', pick.at || '');
+    countdown(pick.at);
   })();
 
   /* ---- News rail ------------------------------------------------------ */

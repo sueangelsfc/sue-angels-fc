@@ -685,7 +685,23 @@ check('share cards are not all identical', ogSeen.size >= 15, `${ogSeen.size} di
 const BUDGET = {
   'sa.css': 13,
   'home.css': 17,
-  'sa.js': 15,
+  /* 15 -> 16, and stated rather than slipped in, because the paragraph above
+     names exactly this as the failure mode.
+
+     What bought it: 386 bytes for the home page's next-match card advancing
+     itself. The build picks the next fixture correctly at the moment it runs
+     and that answer is wrong from the first whistle of that match until
+     somebody publishes again, which between two pre-season friendlies is a
+     week of the front page leading with a game that has been played under a
+     countdown reading "Kick-off". Trimmed first: the countdown was folded
+     into the same block rather than querying the same card twice.
+     Deliberately NOT bought by loosening anything else.
+
+     This is the trade the ceiling exists to force somebody to write down. If
+     the next raise cannot name its 400 bytes this plainly, it is drift, and
+     the right answer then is to split sa.js per page the way the stylesheets
+     already are: this feature ships to 101 pages to run on one. */
+  'sa.js': 16,
   'control.css': 5,
   'control.js': 11,
   /* The heaviest, and fairly: the pitch, the position names, five tabs, the

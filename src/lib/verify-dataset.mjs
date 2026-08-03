@@ -20,6 +20,13 @@ console.log(`articles=${d.articles.length} galleries=${d.galleries.length} recog
 console.log(`table rows=${d.table.length} leagueScorers=${d.leagueScorers.length}`);
 console.log(`orphan Supabase match details (id not in results baseline)=${d.orphanDetails.length}`,
   d.orphanDetails.length ? d.orphanDetails.join(', ') : '');
+
+/* A venue nobody has seen before is a new spelling of a ground the club
+   already plays at, far more often than it is a new ground. Named here so it
+   is corrected at the source rather than becoming the seventeenth variant.
+   See src/data/venues.json. */
+console.log(`venues not in the known list=${d.unknownVenues.length}`,
+  d.unknownVenues.length ? d.unknownVenues.map((v) => JSON.stringify(v)).join(', ') : '');
 console.log(`matches with detail records: ${d.matches.filter((m) => m.detail).length}/${d.matches.length}`);
 
 console.log('\n=== VERIFY vs PUBLISHED LEAGUE TABLE ROW ===');

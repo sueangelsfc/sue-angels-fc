@@ -1,0 +1,48 @@
+{
+  "_note": [
+    "Where a match was played, spelled one way. Sixteen distinct strings were",
+    "stored for about nine grounds, because a venue is typed by hand into the",
+    "match form and nothing checked it against what had been typed before.",
+    "The same ground read three different ways across three match reports.",
+    "",
+    "This is a correction map, not a spell-checker: every entry is a variant",
+    "somebody actually typed, listed on purpose, so a new mistake shows up as",
+    "a new venue rather than being quietly absorbed. `npm run verify` prints",
+    "any venue it has never seen.",
+    "",
+    "Two entries are the OPPONENT'S CLUB NAME typed into the venue field on an",
+    "away tie: 'Woking Veterans Sundays' and 'Tattenham Rovers'. Neither is a",
+    "ground and no ground name can be invented for one, but each does say",
+    "where the game was in the way a Sunday-league player would say it, so",
+    "both stand. The club can name the ground in Control panel -> Results if",
+    "it knows it. Only the doubling in 'Tattenham Rovers Tattenham Rovers' is",
+    "corrected, because a name pasted in twice is a slip rather than a claim."
+  ],
+
+  "canonical": {
+    "Meadhurst Sports Clun": "Meadhurst Sports Club",
+
+    "The Reeves, Snakey Ln, Feltham TW13 7NB": "The Reeves Sports Club",
+
+    "Barns Elms Sports Centre": "Barn Elms Sports Centre",
+    "Barn Elms Sports centre": "Barn Elms Sports Centre",
+
+    "Prince Georges Playing Fields": "Prince George’s Playing Fields",
+
+    "Tattenham Rovers Tattenham Rovers": "Tattenham Rovers"
+  },
+
+  "known": [
+    "Barn Elms Sports Centre",
+    "Clapham Common",
+    "King George’s Park Pitches North",
+    "King’s House Sports Ground",
+    "Meadhurst Sports Club",
+    "Prince George’s Playing Fields",
+    "Robert Parker Stadium",
+    "Tattenham Rovers",
+    "The Reeves Sports Club",
+    "Wandsworth Common",
+    "Woking Veterans Sundays"
+  ]
+}

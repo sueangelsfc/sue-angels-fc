@@ -122,6 +122,27 @@ export function buildDataset() {
       .map((f) => ({ kind: 'fixture', competition: 'Pre-season friendly', ...f })),
   ];
 
+  /* ONE SPELLING PER GROUND. A venue is typed by hand into the match form and
+     nothing compared it with what had been typed before, so sixteen strings
+     were stored for about nine grounds: "Meadhurst Sports Clun", the club's
+     own ground written out as a postal address, Barn Elms spelled two ways
+     and capitalised two ways, Prince George's with and without its
+     apostrophe, and one opponent's name pasted in twice in a row.
+
+     A stated map rather than a fuzzy match, so a new mistake appears as a new
+     venue instead of being quietly absorbed into an existing one. See
+     src/data/venues.json, which also lists what it deliberately leaves. */
+  const venues = read('venues.json');
+  const CANON = venues.canonical || {};
+  const KNOWN = new Set(venues.known || []);
+  const tidyVenue = (v) => {
+    const said = String(v || '').replace(/\s+/g, ' ').trim();
+    return CANON[said] || said;
+  };
+  /* Anything neither corrected nor recognised, reported once so it can be
+     fixed at the source rather than accumulating another variant. */
+  const unknownVenues = new Set();
+
   /* A cup final is played at a neutral ground. The fixture list still names
      one club as home, so weAreHome stays as the record has it, but the site
      must not caption the match Home or Away: the Dylan Rigobert Trophy final
@@ -132,6 +153,12 @@ export function buildDataset() {
   const rounds = read('cup-rounds.json').rounds || {};
   const matches = [...rawResults, ...allFixtures]
     .map((r) => normaliseMatch(r, detailById.get(r.id) || null))
+    .map((m) => {
+      if (!m.venue) return m;
+      const venue = tidyVenue(m.venue);
+      if (!KNOWN.has(venue)) unknownVenues.add(venue);
+      return venue === m.venue ? m : { ...m, venue };
+    })
     .map((m) => (neutral[m.id]
       ? { ...m, neutral: true, neutralNote: neutral[m.id], homeAway: 'Neutral' }
       : m))
@@ -779,6 +806,7 @@ export function buildDataset() {
 
   return {
     matches, played, fixtures, upcoming, nextFixture, awaiting, orphanDetails,
+    unknownVenues: [...unknownVenues],
     /* The merged baseline+database match list, before normalisation. The
        control panel needs it to pre-fill a match whose scoreline still comes
        from the code baseline rather than from a row it can edit. */

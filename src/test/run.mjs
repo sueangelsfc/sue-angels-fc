@@ -1188,6 +1188,27 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     matchToAlbum.length === linked.length,
     `${matchToAlbum.length}/${linked.length}`);
 
+  /* ONE SPELLING PER GROUND. Sixteen strings were stored for about nine
+     grounds, so the same pitch read three ways across three match reports.
+
+     Compared on a flattened key rather than against the list in venues.json,
+     because a check that only knows the corrections already made cannot catch
+     the next variant. Two venues differing solely in case, punctuation or
+     spacing are the same ground written twice. */
+  const seenVenue = new Map();
+  const dupes = [];
+  for (const m of [...data.played, ...(data.fixtures || [])]) {
+    if (!m.venue) continue;
+    const flat = m.venue.toLowerCase().replace(/[^a-z0-9]+/g, '');
+    const first = seenVenue.get(flat);
+    if (first === undefined) seenVenue.set(flat, m.venue);
+    else if (first !== m.venue) dupes.push(`${JSON.stringify(first)} / ${JSON.stringify(m.venue)}`);
+  }
+  check('no ground is spelled two ways', dupes.length === 0,
+    [...new Set(dupes)].slice(0, 3).join(', '));
+  check('venues are all recognised', (data.unknownVenues || []).length === 0,
+    (data.unknownVenues || []).join(', '));
+
   /* The bug this replaces: a competition swallowed into the fixture line
      because the title had no separator to split on. */
   const gal = pages.get('gallery.html') || '';

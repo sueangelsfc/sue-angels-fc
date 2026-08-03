@@ -24,13 +24,26 @@
 export function seasonViews(d) {
   const seasons = (d.seasons || []).map((s) => s.name);
   const played = d.played || [];
-  const out = seasons.map((name) => ({
-    key: name,
-    id: name.replace(/\D/g, '') || name.replace(/\W/g, ''),
-    label: name,
-    matches: played.filter((m) => m.season === name),
-  }));
-  out.push({ key: 'all', id: 'all', label: 'All seasons', matches: played.slice() });
+  /* TWO LISTS PER VIEW, and the difference matters.
+
+     `matches` is every completed match in the season, which is what a results
+     list shows: a pre-season friendly was played, has a report and a page,
+     and belongs on the page. `competitive` is the same list without the
+     friendlies, and it is what every FIGURE beside that list is counted from,
+     because a friendly counts towards nothing. See isFriendly() in stats.mjs.
+
+     Handing one list to both is how a played-won-drawn-lost quietly picks up
+     a pre-season result. */
+  const view = (name, list) => ({
+    key: name === 'all' ? 'all' : name,
+    id: name === 'all' ? 'all' : (name.replace(/\D/g, '') || name.replace(/\W/g, '')),
+    label: name === 'all' ? 'All seasons' : name,
+    matches: list,
+    competitive: list.filter((m) => !m.friendly),
+    friendlies: list.filter((m) => m.friendly),
+  });
+  const out = seasons.map((name) => view(name, played.filter((m) => m.season === name)));
+  out.push(view('all', played.slice()));
   return out;
 }
 
@@ -39,8 +52,13 @@ export function seasonViews(d) {
    noughts and reads as broken, and landing on "all seasons" buries the thing
    most people came for. */
 export function defaultView(views) {
+  /* The most recent season with a COMPETITIVE match in it. Counting every
+     match opened the results page on 26/27 the moment a pre-season friendly
+     was played, under a record reading Played 0, Won 0, Scored 0, because a
+     friendly counts towards none of them. A season is worth opening on when
+     there is something to show. */
   let i = 0;
-  views.forEach((v, n) => { if (v.key !== 'all' && v.matches.length) i = n; });
+  views.forEach((v, n) => { if (v.key !== 'all' && (v.competitive || v.matches).length) i = n; });
   return i;
 }
 

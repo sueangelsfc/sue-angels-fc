@@ -5514,6 +5514,123 @@
         "cleanSheetContributors": []
       },
       "updated_at": "2026-06-04T15:09:42.979+00:00"
+    },
+    {
+      "key": "r20260802-pure",
+      "data": {
+        "as": 2,
+        "hs": 0,
+        "iso": "2026-08-02",
+        "away": "Sue's Angels FC",
+        "date": "02 Aug 2026",
+        "home": "Pure Football FC 2.0",
+        "kick": "12:30",
+        "kind": "score",
+        "motm": null,
+        "bench": [],
+        "goals": [
+          {
+            "num": 12,
+            "zone": "box",
+            "assist": null,
+            "minute": null,
+            "penalty": false,
+            "bodyPart": "left",
+            "situation": "open"
+          },
+          {
+            "num": 3,
+            "zone": "outside",
+            "assist": {
+              "num": 12,
+              "type": "through"
+            },
+            "minute": null,
+            "penalty": false,
+            "bodyPart": "right",
+            "situation": "open"
+          }
+        ],
+        "saves": null,
+        "venue": "Barn Elms Sports centre",
+        "keeper": null,
+        "assists": [
+          {
+            "num": 12,
+            "type": "through",
+            "minute": null,
+            "forGoalBy": 3
+          }
+        ],
+        "captain": 23,
+        "savedAt": "2026-08-02T23:44:46.600Z",
+        "redCards": [],
+        "starters": [
+          {
+            "num": 28,
+            "positions": [
+              "GK"
+            ]
+          },
+          {
+            "num": 29,
+            "role": "OFB",
+            "positions": [
+              "LWB"
+            ]
+          },
+          {
+            "num": 34,
+            "role": "BPD",
+            "positions": [
+              "LCB"
+            ]
+          },
+          {
+            "num": 10,
+            "role": "BPD",
+            "positions": [
+              "CB"
+            ]
+          },
+          {
+            "num": 23,
+            "positions": [
+              "RDM"
+            ]
+          },
+          {
+            "num": 35,
+            "positions": [
+              "LDM"
+            ]
+          },
+          {
+            "num": 12,
+            "role": "TRQ",
+            "positions": [
+              "RAM"
+            ]
+          },
+          {
+            "num": 3,
+            "role": "TM",
+            "positions": [
+              "ST"
+            ]
+          }
+        ],
+        "formation": "3-3-1",
+        "commentary": "",
+        "cleanSheets": [],
+        "competition": "Pre-season friendly",
+        "yellowCards": [],
+        "penaltiesSaved": [],
+        "penaltiesMissed": [],
+        "opponentRedCards": [],
+        "penaltiesConceded": 0
+      },
+      "updated_at": "2026-08-02T23:44:46.6+00:00"
     }
   ],
   "articles": [
@@ -8400,29 +8517,29 @@
     {
       "key": "f20260802-pure",
       "data": {
-        "iso": "2026-08-02",
         "away": "Sue's Angels FC",
         "date": "02 Aug 2026",
         "home": "Pure Football FC 2.0",
-        "kick": "12:30",
-        "kind": "fixture",
-        "venue": "Barn Elms Sports centre",
-        "competition": "Pre-season friendly"
-      },
-      "updated_at": "2026-08-02T01:38:32.912+00:00"
-    },
-    {
-      "key": "f20260809-galacticos",
-      "data": {
-        "away": "Sue's Angels FC",
-        "date": "09 Aug 2026",
-        "home": "Galacticos Elect",
         "kick": "",
         "kind": "fixture",
         "venue": "",
         "competition": "Pre-season friendly"
       },
-      "updated_at": "2026-08-01T23:15:16.292+00:00"
+      "updated_at": "2026-08-02T23:40:09.313+00:00"
+    },
+    {
+      "key": "f20260809-galacticos",
+      "data": {
+        "iso": "2026-08-09",
+        "away": "Sue's Angels FC",
+        "date": "09 Aug 2026",
+        "home": "Galacticos Elect",
+        "kick": "10:00",
+        "kind": "fixture",
+        "venue": "",
+        "competition": "Pre-season friendly"
+      },
+      "updated_at": "2026-08-02T23:50:26.643+00:00"
     },
     {
       "key": "f20260812-kingsmeadow",
@@ -8431,38 +8548,40 @@
         "away": "Kingsmeadow United",
         "date": "12 Aug 2026",
         "home": "Sue's Angels FC",
-        "kick": "",
+        "kick": "19:00",
         "kind": "fixture",
         "venue": "The Reeves, Snakey Ln, Feltham TW13 7NB",
         "competition": "Pre-season friendly"
       },
-      "updated_at": "2026-08-02T01:39:36.668+00:00"
+      "updated_at": "2026-08-02T23:50:39.197+00:00"
     },
     {
       "key": "f20260816-brentford",
       "data": {
+        "iso": "2026-08-16",
         "away": "Sue's Angels FC",
         "date": "16 Aug 2026",
         "home": "Brentford Town",
-        "kick": "",
+        "kick": "10:00",
         "kind": "fixture",
         "venue": "",
         "competition": "Pre-season friendly"
       },
-      "updated_at": "2026-08-01T23:15:16.417+00:00"
+      "updated_at": "2026-08-02T23:50:52.718+00:00"
     },
     {
       "key": "f20260823-kew",
       "data": {
+        "iso": "2026-08-23",
         "away": "Sue's Angels FC",
         "date": "23 Aug 2026",
         "home": "Kew Antigua",
-        "kick": "",
+        "kick": "10:00",
         "kind": "fixture",
         "venue": "",
         "competition": "Pre-season friendly"
       },
-      "updated_at": "2026-08-01T23:15:16.492+00:00"
+      "updated_at": "2026-08-02T23:51:00.583+00:00"
     },
     {
       "key": "f20260830-bpr",

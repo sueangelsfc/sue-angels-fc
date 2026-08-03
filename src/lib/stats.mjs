@@ -94,6 +94,29 @@ export function seasonOf(dateStr) {
                was settled on penalties. The shootout result is not stored,
                so no winner is inferred.
 */
+/* ==========================================================================
+   A FRIENDLY IS NOT A COMPETITIVE MATCH
+
+   Pre-season friendlies stand on their own. They are real games, they get a
+   report and a page and a place in the results list, and they count towards
+   nothing: not the club's played-won-drawn-lost, not a player's goals or
+   appearances, not a club record, not form.
+
+   The reason is that they are not comparable. A friendly is arranged to give
+   minutes to whoever needs them, the opposition may be two divisions away,
+   and rolling substitutions mean a team sheet is not an eleven. Adding one to
+   a league season's figures makes every one of them mean slightly less, and a
+   pre-season goal against a side the club will never be drawn against is not
+   the same thing as one in League Eight.
+
+   Named off the competition rather than a flag on the record, because that is
+   what the club actually types and there is nowhere else it would be kept in
+   step. Anything calling itself a friendly is one; everything else, league or
+   cup, is competitive.
+   ========================================================================== */
+export const isFriendly = (m) => /friendly|friendlies/i.test(String(m?.competition || ''));
+export const isCompetitive = (m) => !isFriendly(m);
+
 export function normaliseMatch(raw, detail) {
   const home = raw.home || '';
   const away = raw.away || '';
@@ -167,6 +190,9 @@ export function normaliseMatch(raw, detail) {
     decidedOnPenalties: isPenalty,
     countsGoals,
     competition: raw.competition || 'League Ten',
+    /* Worked out once, here, so a page filtering matches never has to know
+       how a friendly is spelled. */
+    friendly: isFriendly({ competition: raw.competition || 'League Ten' }),
     venue: raw.venue || detail?.venue || '',
     season: seasonOf(raw.date),
     weAreHome,

@@ -80,7 +80,7 @@ function matchesPage(d, mode) {
   const comps = [...new Set(played.map((m) => m.competition))]
     .map((name) => ({ name, key: key(name), short: shortComp(name), n: played.filter((m) => m.competition === name).length }));
 
-  const all = teamSummary(played);
+  const all = teamSummary(played.filter((m) => !m.friendly));
   const biggest = played.filter((m) => m.countsGoals)
     .slice().sort((a, b) => (b.ourGoals - b.theirGoals) - (a.ourGoals - a.theirGoals))[0];
 
@@ -172,12 +172,12 @@ function matchesPage(d, mode) {
              an eyebrow naming one season, so 26/27 read "Played 33, Won 29,
              Scored 137" for a season with no results in it. -->
         <dl class="mt-tally glassbox" data-hero-tally${VIEWS.map((v) => {
-    const sm = teamSummary(v.matches);
+    const sm = teamSummary(v.competitive);
     return ` data-tally-${v.id}="${attr([sm.played, sm.won, sm.goalsFor].join(','))}"`;
   }).join('')}>
-          <div><dt>Played</dt><dd>${esc(teamSummary(VIEWS[DEFAULT].matches).played)}</dd></div>
-          <div><dt>Won</dt><dd>${esc(teamSummary(VIEWS[DEFAULT].matches).won)}</dd></div>
-          <div><dt>Scored</dt><dd>${esc(teamSummary(VIEWS[DEFAULT].matches).goalsFor)}</dd></div>
+          <div><dt>Played</dt><dd>${esc(teamSummary(VIEWS[DEFAULT].competitive).played)}</dd></div>
+          <div><dt>Won</dt><dd>${esc(teamSummary(VIEWS[DEFAULT].competitive).won)}</dd></div>
+          <div><dt>Scored</dt><dd>${esc(teamSummary(VIEWS[DEFAULT].competitive).goalsFor)}</dd></div>
         </dl>
       </div>
     </section>`;
@@ -188,10 +188,17 @@ function matchesPage(d, mode) {
      competition", which is a claim about one season sitting on top of totals
      from all of them. */
   const recordPanel = (v) => {
-    const sum = teamSummary(v.matches);
+    const sum = teamSummary(v.competitive);
     if (!sum.played) {
-      return `<p class="mt-rec__none">No ${esc(v.label)} match has been played yet. The record
-          fills in here as results come in.</p>`;
+      /* A season can hold a friendly and no competitive match, which is
+         exactly where 26/27 stands in August. Saying "no match has been
+         played" beside a result on the same page would be wrong, so it says
+         which kind is missing. */
+      const f = (v.friendlies || []).length;
+      return `<p class="mt-rec__none">No ${esc(v.label)} competitive match has been played yet${f
+    ? `, though ${f === 1 ? 'a friendly has' : `${f} friendlies have`} been`
+    : ''}. The record fills in here as results come in.
+          ${f ? 'Friendlies stand on their own and count towards nothing here.' : ''}</p>`;
     }
     const wdl = Math.max(1, sum.won + sum.drawn + sum.lost);
     const big = v.matches.filter((m) => m.countsGoals)
@@ -287,8 +294,8 @@ function matchesPage(d, mode) {
     ];
   })(), 'venue')}
             ${chipRow('Result', (() => {
-    const c = (key) => VIEWS.map((v) => ` data-n-${v.id}="${attr(teamSummary(v.matches)[key] || 0)}"`).join('');
-    const s0 = teamSummary(VIEWS[DEFAULT].matches);
+    const c = (key) => VIEWS.map((v) => ` data-n-${v.id}="${attr(teamSummary(v.competitive)[key] || 0)}"`).join('');
+    const s0 = teamSummary(VIEWS[DEFAULT].competitive);
     return [
       { label: 'Any result', value: 'all' },
       { label: 'Wins', value: 'wins', n: s0.won, counts: c('won'), hidden: !s0.won },

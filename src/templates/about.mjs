@@ -71,7 +71,7 @@ const VALUES = [
 
 export function about(d) {
   const league = teamSummary(d.played.filter((m) => m.competition === CLUB.division));
-  const all = teamSummary(d.played);
+  const all = teamSummary(d.competitive);
 
   const ordered = d.played.slice().sort((a, b) => (a.iso || '').localeCompare(b.iso || ''));
   const first = ordered[0];

@@ -57,7 +57,10 @@ const roleOf = (c) => c.short || (c.role ? c.role.charAt(0) + c.role.slice(1).to
 
 export function coaches(d) {
   const staff = d.coaches || [];
-  const played = (d.played || []).filter((m) => m.played);
+  /* The dugout's record is a record of competitive matches. A pre-season
+     friendly counts towards nothing, here included: it was arranged to give
+     minutes out, and a win in one is not a win a manager is judged on. */
+  const played = (d.competitive || []).filter((m) => m.played);
   const all = teamSummary(played);
   const league = teamSummary(played.filter((m) => m.competition === CLUB.division));
   const manager = staff.find((c) => /manager/i.test(c.role || '')) || staff[0];

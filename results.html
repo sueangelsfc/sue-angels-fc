@@ -191,12 +191,12 @@
         <button class="sn-tab" type="button"
           data-view="2627" data-season="26/27"
           aria-pressed="false">
-          <b>26/27</b><span>Not started</span>
+          <b>26/27</b><span>1 match</span>
         </button>
         <button class="sn-tab" type="button"
           data-view="all" data-season="all"
           aria-pressed="false">
-          <b>All seasons</b><span>33 matches</span>
+          <b>All seasons</b><span>34 matches</span>
         </button>
       </div>
         <div data-season-views>
@@ -220,8 +220,8 @@
         </div>
         </div>
         <div class="sn-view" data-season-view="2627" hidden>
-          <p class="mt-rec__none">No 26/27 match has been played yet. The record
-          fills in here as results come in.</p>
+          <p class="mt-rec__none">No 26/27 competitive match has been played yet, though a friendly has been. The record fills in here as results come in.
+          Friendlies stand on their own and count towards nothing here.</p>
         </div>
         <div class="sn-view" data-season-view="all" hidden>
           <div class="mt-rec rv">
@@ -244,61 +244,19 @@
         </div>
       </div>
       </div>
-    </section><section class="sec mt-awaiting" aria-labelledby="mt-aw-h">
-      <div class="wrap">
-        <div class="xrail" aria-hidden="true">
-      <span class="xrail__l"><span class="xrail__n">02</span><span class="xrail__t">Just played</span></span>
-      <span class="xrail__r">1 awaiting a score</span>
-    </div>
-        <h2 class="h2 rv" id="mt-aw-h">Played, not yet <span class="volt">counted.</span></h2>
-        <p class="mt-lede rv">This match has been
-          played and the scoreline has not been entered yet. Nothing on the site counts
-          it until it is.</p>
-        <ul class="mt-grid rv">
-          <li class="mt is-fixture" style="--i:0"
-          data-comp="pre-season-friendly"
-          data-venue="away"
-          data-result="losses"
-          data-season="26/27">
-          <article class="mt__card">
-            <header class="mt__top">
-              <span class="mt__tag">To play</span>
-              <span class="mt__date">Sun, 2 Aug 2026</span>
-            </header>
-            <div class="mt__sides is-fixture">
-              <span class="mt-side">
-              <span class="mt-side__badge"><img src="/assets/badge/pure-fc.webp" alt="" width="22" height="22" loading="lazy" decoding="async" /></span>
-              <span class="mt-side__club">Pure Football 2.0</span>
-              
-            </span>
-              <span class="mt__v" aria-hidden="true">v</span>
-              <span class="mt-side is-us">
-              <span class="mt-side__badge"><img src="/assets/badge/sue-angels-badge-star.webp" alt="" width="22" height="27" loading="lazy" decoding="async" /></span>
-              <span class="mt-side__club">Sue&#39;s Angels</span>
-              
-            </span>
-            </div>
-            <p class="mt__note">Kick-off 12:30</p>
-            <footer class="mt__foot">
-              <span>Pre-season friendly</span>
-              <span class="mt__where">Away</span>
-            </footer>
-          </article>
-        </li>
-        </ul>
-      </div>
     </section><section class="sec mt-list" id="matches" aria-labelledby="mt-list-h">
       <div class="wrap">
         <!-- Follows the season bar: the grid below it is filtered. -->
         <div class="xrail" aria-hidden="true">
-      <span class="xrail__l"><span class="xrail__n">03</span><span class="xrail__t">Every match</span></span>
+      <span class="xrail__l"><span class="xrail__n">02</span><span class="xrail__t">Every match</span></span>
       <span class="xrail__r" data-played-count>33 played</span>
     </div>
         <h2 class="h2 rv" id="mt-list-h">Match by <span class="volt">match.</span></h2>
 
         <div class="mt-filters rv">
           <div class="mt-chips" data-filter-group="comp" role="group" aria-label="Competition">
-          <a class="mt-chip is-on" href="#matches" data-value="all" data-n-2526="33" data-n-2627="0" data-n-all="33">All competitions<span>33</span></a>
+          <a class="mt-chip is-on" href="#matches" data-value="all" data-n-2526="33" data-n-2627="1" data-n-all="34">All competitions<span>33</span></a>
+          <a class="mt-chip" href="#matches" data-value="pre-season-friendly" data-n-2526="0" data-n-2627="1" data-n-all="1" hidden>Pre-season friendly<span>0</span></a>
           <a class="mt-chip" href="#matches" data-value="league-ten" data-n-2526="18" data-n-2627="0" data-n-all="18">League Ten<span>18</span></a>
           <a class="mt-chip" href="#matches" data-value="dylan-rigobert-trophy" data-n-2526="5" data-n-2627="0" data-n-all="5">Dylan Rigobert Trophy<span>5</span></a>
           <a class="mt-chip" href="#matches" data-value="chipotle-uk-chairman-s-cup" data-n-2526="4" data-n-2627="0" data-n-all="4">Chairman&#39;s Cup<span>4</span></a>
@@ -311,7 +269,7 @@
             <div class="mt-chips" data-filter-group="venue" role="group" aria-label="Venue">
           <a class="mt-chip is-on" href="#matches" data-value="all">Home and away</a>
           <a class="mt-chip" href="#matches" data-value="home" data-n-2526="16" data-n-2627="0" data-n-all="16">Home<span>16</span></a>
-          <a class="mt-chip" href="#matches" data-value="away" data-n-2526="17" data-n-2627="0" data-n-all="17">Away<span>17</span></a>
+          <a class="mt-chip" href="#matches" data-value="away" data-n-2526="17" data-n-2627="1" data-n-all="18">Away<span>17</span></a>
         </div>
             <div class="mt-chips" data-filter-group="result" role="group" aria-label="Result">
           <a class="mt-chip is-on" href="#matches" data-value="all">Any result</a>
@@ -322,9 +280,39 @@
           </div>
         </div>
 
-        <p class="mt-count rv" data-match-count>33 matches</p>
+        <p class="mt-count rv" data-match-count>34 matches</p>
         <ul class="mt-grid rv" data-match-grid>
           <li class="mt" style="--i:0"
+          data-comp="pre-season-friendly"
+          data-venue="away"
+          data-result="wins"
+          data-season="26/27">
+          <article class="mt__card">
+            <header class="mt__top">
+              <span class="mt__res" data-res="W">W</span>
+              <span class="mt__date">Sun, 2 Aug 2026</span>
+            </header>
+            <div class="mt__sides">
+              <span class="mt-side">
+              <span class="mt-side__badge"><img src="/assets/badge/pure-fc.webp" alt="" width="22" height="22" loading="lazy" decoding="async" /></span>
+              <span class="mt-side__club">Pure Football 2.0</span>
+              <span class="mt-side__score">0</span>
+            </span>
+              
+              <span class="mt-side is-us">
+              <span class="mt-side__badge"><img src="/assets/badge/sue-angels-badge-star.webp" alt="" width="22" height="27" loading="lazy" decoding="async" /></span>
+              <span class="mt-side__club">Sue&#39;s Angels</span>
+              <span class="mt-side__score">2</span>
+            </span>
+            </div>
+            <p class="mt__scorers">Owolona, Burnett</p>
+            <footer class="mt__foot">
+              <span>Pre-season friendly</span>
+              <span class="mt__where">Away</span>
+            </footer>
+          </article>
+        </li>
+          <li class="mt" style="--i:1"
           data-comp="league-ten"
           data-venue="home"
           data-result="wins"
@@ -354,7 +342,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:1"
+          <li class="mt" style="--i:2"
           data-comp="league-ten"
           data-venue="away"
           data-result="wins"
@@ -384,7 +372,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:2"
+          <li class="mt" style="--i:3"
           data-comp="dylan-rigobert-trophy"
           data-venue="away"
           data-result="losses"
@@ -414,7 +402,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:3"
+          <li class="mt" style="--i:4"
           data-comp="league-ten"
           data-venue="away"
           data-result="wins"
@@ -444,7 +432,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:4"
+          <li class="mt" style="--i:5"
           data-comp="league-ten"
           data-venue="home"
           data-result="wins"
@@ -474,7 +462,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:5"
+          <li class="mt" style="--i:6"
           data-comp="league-ten"
           data-venue="home"
           data-result="wins"
@@ -504,7 +492,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:6"
+          <li class="mt" style="--i:7"
           data-comp="league-ten"
           data-venue="home"
           data-result="wins"
@@ -534,7 +522,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:7"
+          <li class="mt" style="--i:8"
           data-comp="chipotle-uk-chairman-s-cup"
           data-venue="away"
           data-result="draws"
@@ -564,7 +552,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:8"
+          <li class="mt" style="--i:9"
           data-comp="chipotle-uk-chairman-s-cup"
           data-venue="home"
           data-result="wins"
@@ -594,7 +582,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:9"
+          <li class="mt" style="--i:10"
           data-comp="dylan-rigobert-trophy"
           data-venue="home"
           data-result="wins"
@@ -624,7 +612,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:10"
+          <li class="mt" style="--i:11"
           data-comp="chipotle-uk-chairman-s-cup"
           data-venue="away"
           data-result="wins"
@@ -654,7 +642,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:11"
+          <li class="mt" style="--i:12"
           data-comp="chipotle-uk-chairman-s-cup"
           data-venue="away"
           data-result="wins"
@@ -684,7 +672,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:12"
+          <li class="mt" style="--i:13"
           data-comp="league-ten"
           data-venue="away"
           data-result="wins"
@@ -714,7 +702,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:13"
+          <li class="mt" style="--i:14"
           data-comp="league-ten"
           data-venue="away"
           data-result="wins"
@@ -744,7 +732,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:14"
+          <li class="mt" style="--i:15"
           data-comp="surrey-fa-sunday-lower-junior-county-cup"
           data-venue="home"
           data-result="losses"
@@ -774,7 +762,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:15"
+          <li class="mt" style="--i:16"
           data-comp="dylan-rigobert-trophy"
           data-venue="home"
           data-result="wins"
@@ -804,7 +792,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:16"
+          <li class="mt" style="--i:17"
           data-comp="league-ten"
           data-venue="home"
           data-result="wins"
@@ -834,7 +822,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:17"
+          <li class="mt" style="--i:18"
           data-comp="surrey-fa-sunday-lower-junior-county-cup"
           data-venue="away"
           data-result="wins"
@@ -864,7 +852,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:18"
+          <li class="mt" style="--i:19"
           data-comp="league-ten"
           data-venue="away"
           data-result="wins"
@@ -894,7 +882,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:19"
+          <li class="mt" style="--i:20"
           data-comp="dylan-rigobert-trophy"
           data-venue="home"
           data-result="wins"
@@ -924,7 +912,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:20"
+          <li class="mt" style="--i:21"
           data-comp="dylan-rigobert-trophy"
           data-venue="home"
           data-result="wins"
@@ -954,7 +942,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:21"
+          <li class="mt" style="--i:22"
           data-comp="surrey-fa-sunday-lower-junior-county-cup"
           data-venue="away"
           data-result="wins"
@@ -984,7 +972,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:22"
+          <li class="mt" style="--i:23"
           data-comp="supreme-trophies-marcus-lipton-cup"
           data-venue="away"
           data-result="losses"
@@ -1014,7 +1002,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:23"
+          <li class="mt" style="--i:24"
           data-comp="league-ten"
           data-venue="away"
           data-result="wins"
@@ -1044,7 +1032,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:24"
+          <li class="mt" style="--i:25"
           data-comp="surrey-fa-sunday-lower-junior-county-cup"
           data-venue="home"
           data-result="wins"
@@ -1074,7 +1062,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:25"
+          <li class="mt" style="--i:26"
           data-comp="league-ten"
           data-venue="away"
           data-result="wins"
@@ -1104,7 +1092,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:26"
+          <li class="mt" style="--i:27"
           data-comp="league-ten"
           data-venue="home"
           data-result="wins"
@@ -1134,7 +1122,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:27"
+          <li class="mt" style="--i:28"
           data-comp="supreme-trophies-marcus-lipton-cup"
           data-venue="away"
           data-result="wins"
@@ -1164,7 +1152,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:28"
+          <li class="mt" style="--i:29"
           data-comp="league-ten"
           data-venue="home"
           data-result="wins"
@@ -1194,7 +1182,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:29"
+          <li class="mt" style="--i:30"
           data-comp="league-ten"
           data-venue="away"
           data-result="wins"
@@ -1224,7 +1212,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:30"
+          <li class="mt" style="--i:31"
           data-comp="league-ten"
           data-venue="home"
           data-result="wins"
@@ -1254,7 +1242,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:31"
+          <li class="mt" style="--i:32"
           data-comp="league-ten"
           data-venue="away"
           data-result="wins"
@@ -1284,7 +1272,7 @@
             </footer>
           </article>
         </li>
-          <li class="mt" style="--i:32"
+          <li class="mt" style="--i:33"
           data-comp="league-ten"
           data-venue="home"
           data-result="wins"

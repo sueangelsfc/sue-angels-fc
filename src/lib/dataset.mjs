@@ -9,7 +9,8 @@ import path from 'node:path';
 import { POSITION_GROUPS, positionName } from './positions.mjs';
 import { readStatusRecord, statusIn, statusLabelIn, isPlaying } from './squad-status.mjs';
 import { houseRecord } from './prose.mjs';
-import { normaliseMatch, normaliseTable, playerStats, slugify, isUs, seasonOf, toISO } from './stats.mjs';
+import { normaliseMatch, normaliseTable, playerStats, slugify, isUs, seasonOf, toISO,
+  isCompetitive, isFriendly } from './stats.mjs';
 
 const DATA_DIR = path.join(process.cwd(), 'src', 'data');
 const read = (f) => JSON.parse(fs.readFileSync(path.join(DATA_DIR, f), 'utf8'));
@@ -107,18 +108,42 @@ export function buildDataset() {
      as that table is empty. Anything already in the results baseline wins
      over both, so a fixture that has since been played is not duplicated by
      its own placeholder. */
+  /* A FIXTURE AND ITS RESULT ARE THE SAME MATCH, and the id does not say so.
+
+     Entering a result writes `r20260802-pure` while the fixture it came from
+     is `f20260802-pure`: the same game, the same afternoon, two keys that
+     differ by one letter. Matching on the id therefore did not notice, and
+     Pure Football 2.0 away appeared twice on the site at once, with the 0-2
+     on the results page and the same match still on the home page under
+     "Played, not yet counted".
+
+     So identity is the match itself: the day it was played and the two clubs,
+     in whatever order they were typed. The panel is meant to clear the
+     fixture when a result is saved and mostly does, but the site should not
+     depend on that having worked. */
+  const identity = (m) => [
+    String(m.date || '').slice(0, 10),
+    toISO(m.date || '') || '',
+    [String(m.home || '').toLowerCase(), String(m.away || '').toLowerCase()].sort().join(' v '),
+  ].filter(Boolean).slice(-2).join('|');
+
   const known = new Set(rawResults.map((r) => r.id));
+  const knownMatches = new Set(rawResults.map(identity));
   const storedFixtures = (live.fixtures || [])
     .map((row) => ({ id: row.key, kind: 'fixture', ...(row.data || {}) }))
-    .filter((f) => !known.has(f.id));
+    .filter((f) => !known.has(f.id) && !knownMatches.has(identity(f)));
   const storedIds = new Set(storedFixtures.map((f) => f.id));
   /* Every fixture known to the club, played or not. `upcoming` below is the
      subset still to come; this one is the raw pool the match list is built
      from, so it deliberately keeps dates that have already passed. */
   const allFixtures = [
     ...storedFixtures,
+    /* The same identity test as above, and it has to be here too. Filtering
+       the database fixtures alone dropped the played one out of `storedIds`,
+       which is what this list checks against, so the transcribed card put it
+       straight back and the duplicate survived a fix aimed at it. */
     ...(read('fixtures-2627.json').fixtures || [])
-      .filter((f) => !known.has(f.id) && !storedIds.has(f.id))
+      .filter((f) => !known.has(f.id) && !storedIds.has(f.id) && !knownMatches.has(identity(f)))
       .map((f) => ({ kind: 'fixture', competition: 'Pre-season friendly', ...f })),
   ];
 
@@ -173,6 +198,14 @@ export function buildDataset() {
   const orphanDetails = [...detailById.keys()].filter((k) => !knownIds.has(k));
 
   const played = matches.filter((m) => m.played);
+  /* THE TWO SETS. `played` is every completed match and is what the results
+     list, the match pages and the gallery links read, because a friendly is a
+     real game and belongs on the site. `competitive` is what every FIGURE
+     reads: the club record, the player stats, the club records, the form.
+     `friendlies` is the rest, kept so it can be shown on its own rather than
+     silently dropped. */
+  const competitive = played.filter(isCompetitive);
+  const friendlies = played.filter(isFriendly);
   const fixtures = matches.filter((m) => !m.played);
 
   /* WHAT IS STILL TO COME, worked out once.
@@ -417,8 +450,13 @@ export function buildDataset() {
       .map((t) => [String(t.num), t.name]),
   );
 
-  /* ---- Player statistics (derived) ---- */
-  const players = playerStats(matches, squad, trialists);
+  /* ---- Player statistics (derived) ----
+     FROM COMPETITIVE MATCHES ONLY. A pre-season friendly is a real game with
+     a real report and a real page, and it counts towards nothing: not a
+     player's goals, not his assists, not his appearances. See isFriendly() in
+     stats.mjs for why. Friendlies are counted separately, below, so they can
+     be shown on their own rather than disappearing. */
+  const players = playerStats(matches.filter(isCompetitive), squad, trialists);
   const statsByNum = new Map(players.map((p) => [p.num, p]));
   const nameFor = (num) => statsByNum.get(num)?.name || `No. ${num}`;
 
@@ -433,7 +471,7 @@ export function buildDataset() {
   const playersBySeason = {};
   for (const name of (ps.ALL_SEASONS || [])) {
     playersBySeason[name] = playerStats(
-      matches.filter((m) => m.season === name), squad, trialists,
+      matches.filter((m) => m.season === name && isCompetitive(m)), squad, trialists,
     );
   }
 
@@ -817,7 +855,7 @@ export function buildDataset() {
   const pages = read('recovered-pages.json');
 
   return {
-    matches, played, fixtures, upcoming, nextFixture, awaiting, orphanDetails,
+    matches, played, competitive, friendlies, fixtures, upcoming, nextFixture, awaiting, orphanDetails,
     unknownVenues: [...unknownVenues],
     /* The merged baseline+database match list, before normalisation. The
        control panel needs it to pre-fill a match whose scoreline still comes

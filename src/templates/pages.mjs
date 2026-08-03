@@ -15,7 +15,7 @@ const trail = (...parts) => crumbs([{ label: 'Home', href: '/' }, ...parts]);
 
 /* ======================= OUR STORY ======================= */
 export function about(d) {
-  const all = teamSummary(d.played);
+  const all = teamSummary(d.competitive);
   return { body: `
   ${pageHero({
     crumbs: trail({ label: 'Our story', href: '/about.html' }),
@@ -166,7 +166,7 @@ export function sepsis() {
 export function champions(d) {
   const league = d.played.filter((m) => m.competition === CLUB.division);
   const ls = teamSummary(league);
-  const all = teamSummary(d.played);
+  const all = teamSummary(d.competitive);
   const ourRow = d.table.find((r) => r.us);
   const ordered = league.slice().sort((a, b) => (a.iso || '').localeCompare(b.iso || ''));
 
@@ -214,7 +214,7 @@ export function champions(d) {
     <div class="wrap wrap--wide">
       ${sectionHead({ index: '03', eyebrow: 'Beyond the league', title: 'Cup competitions' })}
       <div class="grid grid--2">
-        ${byCompetition(d.played).filter((c) => c.competition !== CLUB.division).map((c) => `
+        ${byCompetition(d.competitive).filter((c) => c.competition !== CLUB.division).map((c) => `
           <div class="panel" style="padding:var(--space-5)">
             <h3 style="font-size:var(--step-1);margin-bottom:var(--space-3)">${esc(c.competition)}</h3>
             <p style="color:var(--text-muted);font-size:var(--step--1)">
@@ -447,8 +447,8 @@ export function league(d) {
 
 /* ======================= RECORDS ======================= */
 export function records(d) {
-  const recs = clubRecords(d.played, d.players);
-  const split = homeAwaySplit(d.played);
+  const recs = clubRecords(d.competitive, d.players);
+  const split = homeAwaySplit(d.competitive);
   return { body: `
   ${pageHero({
     crumbs: trail({ label: 'Club records', href: '/records.html' }),
@@ -480,7 +480,7 @@ export function records(d) {
           <div class="panel" style="padding:var(--space-5)">
             <h3 style="font-size:var(--step-1);margin-bottom:var(--space-4)">By competition</h3>
             <div class="stack stack--sm">
-              ${byCompetition(d.played).map((c) => `<div class="row row--between" style="font-size:var(--step--1)">
+              ${byCompetition(d.competitive).map((c) => `<div class="row row--between" style="font-size:var(--step--1)">
                 <span class="truncate">${esc(c.competition)}</span>
                 <strong class="tnum">${esc(c.won)}W ${esc(c.drawn)}D ${esc(c.lost)}L</strong>
               </div>`).join('')}
@@ -679,7 +679,7 @@ export function sponsors(d) {
   <section class="section section--flush">
     <div class="wrap wrap--wide">
       <div class="grid grid--4">
-        ${statTile({ value: String(teamSummary(d.played).played), label: 'Matches a season', glass: true })}
+        ${statTile({ value: String(teamSummary(d.competitive).played), label: 'Matches a season', glass: true })}
         ${statTile({ value: String(d.galleries.reduce((a, g) => a + g.photoCount, 0)), label: 'Matchday photographs', glass: true, brand: true })}
         ${statTile({ value: String(d.squad.length), label: 'Players and staff', glass: true })}
         ${statTile({ value: CLUB.nextDivision, label: 'New division', glass: true })}

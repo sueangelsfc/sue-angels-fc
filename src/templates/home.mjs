@@ -174,10 +174,10 @@ function bars(values, { max, min = 2, fill } = {}) {
 
 export function home(d) {
   RAIL_REF = railRefs(d);
-  const all = teamSummary(d.played);
+  const all = teamSummary(d.competitive);
   const league = teamSummary(d.played.filter((m) => m.competition === CLUB.division));
   /* The form strip reads left to right in the order the games were played. */
-  const form = formGuide(d.played, 6).slice().reverse();
+  const form = formGuide(d.competitive, 6).slice().reverse();
   /* Per-match rates are quoted over every match played, not only the ones
      carrying a goal record, which is how the published figures read. */
   const goalsPerGame = (all.goalsFor / Math.max(all.played, 1)).toFixed(1);

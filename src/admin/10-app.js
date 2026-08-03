@@ -279,6 +279,11 @@
     matchLabel: matchLabel,
     youtubeId: youtubeId,
     refresh: function (key) { return refresh(key); },
+    /* Fetch a chunk that is not a panel. The report writer is the first of
+       these: it belongs to a BUTTON rather than to a section, so CHUNK_OF
+       cannot reach it and the module asks for it by name when pressed. Same
+       loader, same pending map, same retry-after-failure behaviour. */
+    chunk: function (name) { return load(name); },
   };
 
   /* ==========================================================================
@@ -730,9 +735,10 @@
     hero: 'hero',
   };
   var pending = {};
-  function need(key) {
-    var chunk = CHUNK_OF[key];
-    if (!chunk || M[key]) return Promise.resolve();
+  /* Fetch a chunk by its own name. `need` maps a panel to one; CPU.chunk
+     asks for one directly, which is how a button loads the report writer. */
+  function load(chunk) {
+    if (!chunk) return Promise.resolve();
     if (pending[chunk]) return pending[chunk];
     pending[chunk] = new Promise(function (resolve, reject) {
       var s = document.createElement('script');
@@ -748,6 +754,11 @@
       document.head.appendChild(s);
     });
     return pending[chunk];
+  }
+
+  function need(key) {
+    if (M[key]) return Promise.resolve();
+    return load(CHUNK_OF[key]);
   }
 
   /* A section exists if the shell rendered a button for it. Asking M instead

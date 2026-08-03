@@ -742,16 +742,28 @@ const BUDGET = {
      and posByNum/roleByNum reduced to the one lookup the pitch diagram needs.
      That covered 60 of the 910.
 
-     THE SPLIT IS NOW BLOCKING. This chunk is three things: the fixtures
-     panel, the results table and the match dialog. The table is what loads
-     when the club opens Results; the dialog is most of the weight and is only
-     wanted once somebody presses Edit. The report writer inside it is a
-     self-contained lump of pure functions used only when the Build button is
-     pressed, and it is the obvious first extraction. Not attempted here
-     because it is a 1,400-line move and shipping a working form mattered
-     more than the number tonight, which is exactly the reasoning a ceiling
-     exists to make somebody write down rather than think quietly. */
-  'control-match.js': 17,
+     THE SPLIT HAPPENED, and this is what it bought. The report writer was a
+     self-contained lump of pure functions with exactly one caller, sitting in
+     a file that also carried the fixtures panel and the results table. It is
+     `control-report.js` now, fetched on the press of Build the report and by
+     nobody else, and this chunk went 17 -> 13.9 without losing a feature.
+
+     Set to 15 rather than back to 14: the head-to-head and the friendly count
+     went INTO the report chunk, not this one, so the headroom here is for the
+     dialog and the table. The next raise should extract the match dialog from
+     the results table the same way, because the table is what loads when the
+     club opens Results and the dialog is only wanted once somebody presses
+     Edit. */
+  'control-match.js': 15,
+  /* The report writer, fetched when Build the report is pressed and never on
+     a page load. Two ways to write one: composed in the browser from the
+     facts recorded, which needs no key and no network, or written by
+     /api/claude from the same facts plus the coach's notes, which falls back
+     to the first the moment it is not available. It also knows two things no
+     tab on the match form holds - how the club has done against this
+     opponent before, and where the match sits in a run of pre-season
+     friendlies - both counted from the match list the panel already ships. */
+  'control-report.js': 7,
   /* News, gallery, recognition, badges and sponsors. The album editor is the
      weight: photographs visible, removable, reorderable and taggable in the
      album itself, four operations that all have to keep the parallel tag list
@@ -887,6 +899,39 @@ for (const [f, kb] of Object.entries(BUDGET)) {
     !/M\.results\s*=\s*function/.test(core) && !/PITCH_XY/.test(core),
     'the match form has moved back into the bundle everybody downloads');
   check('photo tagger is not in the control.js core', !/M\.phototag\s*=\s*function/.test(core));
+
+  /* THE REPORT WRITER IS ITS OWN CHUNK and must stay out of both the core and
+     the match chunk. It was inside the match chunk, which is what took that
+     file to 17KB gzipped: 15KB of pure functions with exactly one caller,
+     shipped to everybody who opened Results to look at a list. */
+  const reportChunk = fs.readFileSync(path.join(ROOT, 'control-report.js'), 'utf8');
+  check('report writer is not in the control.js core', !/function compose\(/.test(core)
+    && !/ANTHROPIC_API_KEY/.test(core),
+    'the report writer is back in the bundle everybody downloads');
+  check('report writer is not in the match chunk', !/window\.CPR\s*=/.test(matchChunk),
+    'the split has been undone');
+  check('match chunk asks for the report chunk by name',
+    /chunk\(["']report["']\)/.test(matchChunk),
+    'Build the report cannot reach its writer');
+  check('the core can fetch a chunk that is not a panel',
+    /chunk:\s*function/.test(core),
+    'CPU.chunk is gone, so a button-loaded chunk can never arrive');
+  check('report chunk publishes its entry points',
+    /compose:/.test(reportChunk) && /write:/.test(reportChunk) && /context:/.test(reportChunk));
+  /* Falls back rather than fails: no key, no session, no network, a 500. The
+     button has never been able to do nothing and it must stay that way. */
+  /* Matched on the STRINGS, not on function names: the minifier renames every
+     local, so a check written against `fallback(` passes in source and fails
+     against what actually ships. Each of these is a reason the writer gives
+     for having composed instead, and all four have to exist. */
+  for (const why of ['not signed in', 'too much to send', 'could not reach the server',
+    'no writing key set']) {
+    check(`report writer falls back when ${why}`, reportChunk.includes(why),
+      'a missing ANTHROPIC_API_KEY would leave the club with no report at all');
+  }
+  check('report writer says which one wrote it',
+    /composed/.test(reportChunk) && /written/.test(matchChunk + reportChunk),
+    'the club cannot tell a composed report from a written one');
 
   /* The core knows where they are and what they own. A chunk file listed in
      CHUNK_OF but never emitted would make its panel permanently unopenable. */
@@ -1584,6 +1629,78 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   }
   check('no player page denies a season it holds a team sheet for',
     denials.length === 0, denials.slice(0, 3).join('; '));
+}
+
+/* ==========================================================================
+   THE PANEL'S HEAD-TO-HEAD AGREES WITH THE SITE'S OWN RECORD
+
+   The report writer tells the club how it has done against this opponent
+   before. That is a published figure arrived at by a second route - the panel
+   counting the seeded match list in a browser, rather than stats.mjs counting
+   the dataset at build time - and two routes to one number is exactly the
+   arrangement this codebase keeps being bitten by.
+
+   So it is reconciled here, opponent by opponent, over every club the team
+   has played. The panel's own code is run, not a reimplementation of it: the
+   shipped chunk is evaluated and its exported function called, so a change to
+   the file is a change to what is asserted.
+   ========================================================================== */
+{
+  const { buildDataset: bdH } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const DH = bdH();
+  const chunk = fs.readFileSync(path.join(ROOT, 'control-report.js'), 'utf8');
+  const seedJs = fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8');
+  const win = {};
+  new Function('window', 'fetch', chunk)(win, () => Promise.reject(new Error('no network')));
+  const SEED = JSON.parse(seedJs.replace(/^window\.SA_SEED=/, '').replace(/;\s*$/, ''));
+
+  check('the report chunk exposes its head-to-head', typeof (win.CPR || {})._headToHead === 'function');
+
+  if (win.CPR && win.CPR._headToHead) {
+    const opponents = [...new Set((DH.played || []).map((m) => m.opponent))].filter(Boolean);
+    check('there are opponents to reconcile', opponents.length > 5, `${opponents.length} found`);
+    let checked = 0;
+    for (const opp of opponents) {
+      /* The site's answer: every completed match against this club, counted
+         the way stats.mjs counts them. No date cut-off, so the panel is asked
+         the same question with a cut-off after the last one. */
+      const theirs = (DH.played || []).filter((m) => m.opponent === opp);
+      const site = {
+        played: theirs.length,
+        won: theirs.filter((m) => m.outcome === 'W').length,
+        drawn: theirs.filter((m) => m.outcome === 'D').length,
+        lost: theirs.filter((m) => m.outcome === 'L').length,
+        gf: theirs.reduce((n, m) => n + (m.countsGoals ? m.ourGoals : 0), 0),
+        ga: theirs.reduce((n, m) => n + (m.countsGoals ? m.theirGoals : 0), 0),
+      };
+      const panel = win.CPR._headToHead(SEED.matches || [], opp, '9999-12-31', null);
+      if (!panel) { check(`head-to-head found for ${opp}`, false, 'the panel sees no meetings'); continue; }
+      checked++;
+      for (const k of ['played', 'won', 'drawn', 'lost', 'gf', 'ga']) {
+        check(`head-to-head v ${opp}: ${k} agrees with the site`, panel[k] === site[k],
+          `panel ${panel[k]}, site ${site[k]}`);
+      }
+    }
+    check('every opponent was reconciled', checked === opponents.length,
+      `${checked} of ${opponents.length}`);
+  }
+
+  /* AND THE FRIENDLY COUNT. Six were arranged for pre-season 26/27, one has
+     been played and five are still fixtures; counting only what has been
+     played would have called the first one "the first of one", and counting a
+     result and the fixture it came from separately would have said seven. */
+  if (win.CPR && win.CPR._friendlyOrder) {
+    const friendlies = (DH.played || []).filter((m) => m.friendly);
+    const arranged = friendlies.length + (DH.fixtures || []).filter((f) => /friendly/i.test(f.competition || '')).length;
+    for (const m of friendlies) {
+      const got = win.CPR._friendlyOrder(SEED.matches || [], SEED.baselineFixtures || [],
+        m.iso, m.id, m.competition);
+      check(`friendly ${m.id} knows it is one of ${arranged}`, !!got && got.of === arranged,
+        got ? `says ${got.of}` : 'says nothing');
+      check(`friendly ${m.id} knows where it sits`, !!got && got.nth >= 1 && got.nth <= arranged,
+        got ? `nth ${got.nth}` : 'no answer');
+    }
+  }
 }
 
 /* ---- Report ---- */

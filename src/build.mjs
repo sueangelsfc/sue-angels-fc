@@ -288,7 +288,16 @@ const adminSeed = {
      play somewhere new and a form that refuses the name of the ground it is
      standing on is worse than one that lets a typo through. */
   venues: [...new Set(d.matches.map((m) => m.venue).filter(Boolean))].sort(),
-  baselineFixtures: JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'fixtures-2627.json'), 'utf8')).fixtures || [],
+  /* The transcribed pre-season list. Carries the competition and kick-off the
+     dataset resolved for each one, which the raw file does not hold: without
+     it the report writer could not tell that a fixture was a friendly, so
+     "the first of six" came out as nothing at all. Taken from `d.fixtures`
+     rather than defaulted here a second time, so the two cannot drift. */
+  baselineFixtures: (JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'fixtures-2627.json'), 'utf8')).fixtures || [])
+    .map((f) => {
+      const resolved = (d.fixtures || []).find((x) => x.id === f.id) || {};
+      return { ...f, competition: resolved.competition || '', kick: f.kick || resolved.kick || '' };
+    }),
   /* The squad, so a result is recorded by picking players rather than typing
      shirt numbers into JSON and hoping. Numbers are the storage key the match
      record already uses; they are never shown on the website. */

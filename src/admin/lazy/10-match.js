@@ -982,312 +982,11 @@
     return (p && /goalkeeper|keeper/i.test(p.pos || '')) ? 'GK' : '';
   }
 
-  /* ==========================================================================
-     BULLETS INTO AN ARTICLE
-
-     The retired editor had this and it was the fastest thing in it: you typed
-     what you remembered as bullets, pressed a button, and got a match report.
-     It did it by handing the notes to a language model through
-     window.claude.complete, which existed because that admin ran inside a
-     Claude artifact. On a deployed website there is no such thing, so this
-     does the job the other way round: it writes the parts of a report that
-     are already facts, and threads the notes through as the story.
-
-     Which is arguably where it belongs. The scoreline, who scored, what
-     minute, whether it was a penalty, who kept the sheet, who was booked, the
-     shape the side lined up in: all of that is on the other four tabs
-     already, and a model retyping it is a chance to get it wrong. What a
-     model was genuinely adding was prose around the coach's observations, and
-     those are the coach's own words here rather than a paraphrase of them.
-
-     Nothing is invented. A goal with no minute recorded is not given one, and
-     a shootout whose result was never stored does not acquire a winner.
-     ========================================================================== */
-  function listOf(names) {
-    if (!names.length) return '';
-    if (names.length === 1) return names[0];
-    return names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
-  }
-
-  /* "on 12 minutes", or nothing at all when the team sheet did not say. */
-  function atMin(m) { return m == null || m === '' ? '' : ' on ' + m + ' minutes'; }
-
-  /* How a goal was scored, in words, from whatever was recorded. The phrases
-     are the ones in src/lib/football.mjs so the report and the player page
-     describe the same goal the same way. */
-  var SIT_PHRASE = {
-    open: '', corner: 'from a corner', 'freekick-direct': 'direct from a free kick',
-    freekick: 'from a free kick', throwin: 'from a throw in', penalty: 'from the penalty spot',
-    counter: 'on the counter', rebound: 'from a rebound',
-  };
-  var BODY_PHRASE = { right: 'with his right foot', left: 'with his left foot',
-    head: 'with a header', other: 'off the body' };
-  var ZONE_PHRASE = { six: 'from close range', box: 'from inside the box', outside: 'from outside the box' };
-  var ASSIST_PHRASE = {
-    pass: 'set up by', through: 'sent through by', cross: 'crossed in by',
-    cutback: 'cut back by', layoff: 'laid off by', flickon: 'flicked on by',
-    headpass: 'headed down by', rebound: 'after a rebound off',
-  };
-  var ASSIST_SET = { corner: '’s corner', freekick: '’s free kick', throwin: '’s throw in' };
-
-  function howScored(g) {
-    if (g.situation === 'penalty') return ' from the penalty spot';
-    var bits = [];
-    if (BODY_PHRASE[g.bodyPart]) bits.push(BODY_PHRASE[g.bodyPart]);
-    if (ZONE_PHRASE[g.zone]) bits.push(ZONE_PHRASE[g.zone]);
-    if (SIT_PHRASE[g.situation]) bits.push(SIT_PHRASE[g.situation]);
-    return bits.length ? ' ' + bits.join(' ') : '';
-  }
-
-  function madeBy(g) {
-    if (!g.assist || !g.assist.name) return '';
-    var t = g.assist.type || 'pass';
-    if (ASSIST_SET[t]) return ', from ' + g.assist.name + ASSIST_SET[t];
-    return ', ' + (ASSIST_PHRASE[t] || ASSIST_PHRASE.pass) + ' ' + g.assist.name;
-  }
-
-  /* ==========================================================================
-     MAKING IT READ LIKE A DIFFERENT MATCH EACH TIME
-
-     Two things made every report the same article with the nouns swapped.
-
-     The skeleton never moved: result, shape, goals, the coach's notes, the
-     tail, Player of the Match, in that order, whatever happened. And the
-     coach's notes were pushed in as a block of their own, so what somebody
-     actually SAW sat in a lump between the goals and the bookings instead of
-     being part of the piece.
-
-     Both are fixed below. The wording is chosen from the match itself rather
-     than at random, so the same match always writes the same article - a
-     report that changed every time you pressed the button would be worse, not
-     better - but two different matches choose differently.
-
-     WHAT THIS IS NOT. It arranges facts somebody recorded and sentences
-     somebody wrote. It does not know what the game felt like, and it invents
-     nothing: every clause traces to a field that was filled in. The coach's
-     own sentences are the only opinion in it, which is why they are woven
-     through rather than parked in a block.
-     ========================================================================== */
-
-  /* A number from the match, so the choices are stable for a given game and
-     different across games. Not Math.random(): pressing Build twice must give
-     the same article, or nobody can trust what they are reading. */
-  function seedOf(c) {
-    var t = String(c.date || '') + '|' + String(c.opp || '') + '|' + c.ourGoals + '-' + c.theirGoals;
-    var n = 0;
-    for (var i = 0; i < t.length; i++) n = (n * 31 + t.charCodeAt(i)) >>> 0;
-    return n;
-  }
-  function pick(list, seed, salt) {
-    return list[(seed + (salt || 0)) % list.length];
-  }
-
-  /* A note the coach typed, made into a sentence. Bullets arrive as they were
-     typed: a leading dash, no capital, no full stop, sometimes a fragment. */
-  function asSentence(t) {
-    var x = String(t || '').trim().replace(/^[-*\u2022\u00b7]\s*/, '');
-    if (!x) return '';
-    x = x.charAt(0).toUpperCase() + x.slice(1);
-    return /[.!?]$/.test(x) ? x : x + '.';
-  }
-
-  /* WHERE A NOTE BELONGS. A note naming a player goes beside that player's
-     goal; one about the start of the game goes early; one about the end goes
-     late. Anything else sits in the middle, which is where match reports put
-     the run of play. */
-  function placeNotes(bullets, names) {
-    var early = [], late = [], byName = {}, middle = [];
-    (bullets || []).forEach(function (raw) {
-      var t = asSentence(raw);
-      if (!t) return;
-      var low = t.toLowerCase();
-      /* Any part of the name will do, because that is how people write about
-         each other: "Frazier was unplayable" for Frazier-Isaías Osunkoya,
-         "Allen ran the midfield" for Andrew Allen. Matching only the first
-         word missed both. Parts under four letters are skipped so "El" or a
-         short surname does not swallow half the notes. */
-      var who = names.filter(function (n) {
-        return String(n).toLowerCase().split(/[\s-]+/).some(function (part) {
-          return part.length >= 4 && low.indexOf(part) !== -1;
-        });
-      })[0];
-      if (/\b(kick.?off|first (ten|fifteen|twenty)|from the start|early on|opening)\b/.test(low)) early.push(t);
-      else if (/\b(final|last (ten|fifteen|twenty)|closing|full.?time|late on|at the end)\b/.test(low)) late.push(t);
-      else if (who) { (byName[who] = byName[who] || []).push(t); }
-      else middle.push(t);
-    });
-    return { early: early, late: late, byName: byName, middle: middle };
-  }
-
-  function buildReport(c) {
-    var paras = [];
-    var seed = seedOf(c);
-    var scorerNames = (c.goals || []).map(function (g) { return g.name; });
-    var notes = placeNotes(c.bullets, scorerNames.concat(c.motm ? [c.motm] : []));
-    var them = c.opp || 'the opposition';
-    var comp = c.competition ? ' in ' + c.competition : '';
-    /* Small numbers read as words in prose and as figures in a scoreline.
-       "BPR Men's scored 2" is a spreadsheet talking. */
-    var WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
-    var say = function (n) { return WORD[n] || String(n); };
-
-    /* ---- What happened ---- */
-    if (c.kind === 'walkover') {
-      paras.push(c.woUs
-        ? c.us + ' were awarded a walkover victory over ' + them + ' after the fixture went '
-          + 'unfulfilled. No goals are recorded against a walkover, but the points stand.'
-        : them + ' were awarded the fixture as a walkover. No goals are recorded against a '
-          + 'walkover, and the points go with it.');
-    } else if (c.kind === 'fixture' || c.ourGoals == null) {
-      paras.push(c.us + ' meet ' + them + (c.home ? ' at home' : ' away') + comp
-        + (c.date ? ' on ' + c.date : '') + '.');
-    } else if (c.kind === 'penalty') {
-      paras.push('There was nothing to separate ' + c.us + ' and ' + them + ' after ninety minutes'
-        + comp + (c.date ? ', ' + c.date : '') + ', the tie finishing ' + c.ourGoals + '-'
-        + c.theirGoals + ' and going to penalties.');
-    } else {
-      var verb = c.ourGoals > c.theirGoals ? 'beat'
-        : c.ourGoals === c.theirGoals ? 'drew with' : 'lost to';
-      var margin = c.ourGoals - c.theirGoals;
-      var colour = verb === 'beat'
-        ? (margin >= 5 ? 'a thumping win' : margin >= 3 ? 'a comfortable win'
-          : margin === 1 ? 'a narrow win' : 'a solid win')
-        : verb === 'lost to'
-          ? (margin <= -4 ? 'a heavy defeat' : margin === -1 ? 'a narrow defeat' : 'a defeat')
-          : (c.ourGoals === 0 ? 'a goalless draw' : 'a draw');
-      var where = (c.home ? ' at home' : ' away') + comp
-        + (c.date ? ' on ' + c.date : '') + (c.venue ? ', at ' + c.venue : '');
-      /* Three ways into the same fact, chosen by the match rather than at
-         random, so the club's reports do not all open with the same clause. */
-      var openings = [
-        c.us + ' ' + verb + ' ' + them + ' ' + c.ourGoals + '-' + c.theirGoals + where + ', ' + colour + '.',
-        colour.charAt(0).toUpperCase() + colour.slice(1) + where + ', ' + c.us + ' ' + verb + ' '
-          + them + ' ' + c.ourGoals + '-' + c.theirGoals + '.',
-        c.ourGoals + '-' + c.theirGoals + where + '. ' + c.us + ' ' + verb + ' ' + them
-          + ', and it was ' + colour + '.',
-      ];
-      paras.push(pick(openings, seed));
-    }
-
-    /* What the coach said about the start of it, next: that is where a report
-       sets the scene, and it is his sentence rather than a manufactured one. */
-    if (notes.early.length) paras.push(notes.early.join(' '));
-
-    /* ---- The shape ---- */
-    if (c.formation || c.xi || c.captain) {
-      var shape = c.formation ? c.us + ' lined up in a ' + c.formation + '.'
-        : c.xi >= 11 ? ''
-          : c.xi ? 'The team sheet names ' + say(c.xi) + ' of the starting eleven.' : '';
-      var line = (shape + (c.captain ? ' ' + c.captain + ' wore the armband.' : '')).trim();
-      if (line) paras.push(line);
-      /* And what anybody was asked to do, where somebody said. Only the roles
-         actually set, because a list of eleven default instructions is not
-         information. */
-      if (c.roles && c.roles.length) {
-        paras.push(c.roles.map(function (r) {
-          return r.name + ' played as ' + (/^[aeiou]/i.test(r.role) ? 'an ' : 'a ') + r.role.toLowerCase();
-        }).join(', ') + '.');
-      }
-    }
-
-    /* ---- The goals, in the order they went in where that is recorded ----
-       Each goal is a sentence and the openings rotate, because four goals all
-       beginning "X added a" is the sound of a machine writing. Nothing is
-       invented: every clause here is a field somebody filled in. */
-    var timed = c.goals.filter(function (g) { return g.minute != null && g.minute !== ''; })
-      .sort(function (a, b) { return a.minute - b.minute; });
-    var untimed = c.goals.filter(function (g) { return g.minute == null || g.minute === ''; });
-
-    function lead(g, n, first) {
-      if (first) {
-        return g.minute != null && g.minute <= 15
-          ? g.name + ' put them ahead early'
-          : g.name + ' opened the scoring';
-      }
-      if (n === 2) return g.name + ' doubled it';
-      if (n === 3) return g.name + ' made it three';
-      return g.name + ' got the ' + ordinal(n);
-    }
-
-    if (timed.length) {
-      var running = 0;
-      var sentences = timed.map(function (g, i) {
-        running++;
-        return lead(g, running, i === 0) + atMin(g.minute) + howScored(g) + madeBy(g) + '.';
-      });
-      /* Broken into paragraphs of two, so a five-goal game does not arrive as
-         one block a reader has to hack their way through. */
-      for (var i = 0; i < sentences.length; i += 2) {
-        var block = sentences.slice(i, i + 2);
-        /* Anything the coach wrote about one of these scorers joins the
-           sentence about his goal, instead of turning up four paragraphs
-           later with no idea what it is referring to. */
-        timed.slice(i, i + 2).forEach(function (g) {
-          if (notes.byName[g.name]) {
-            block = block.concat(notes.byName[g.name]);
-            delete notes.byName[g.name];
-          }
-        });
-        paras.push(block.join(' '));
-      }
-    }
-    if (untimed.length) {
-      var others = untimed.map(function (g) {
-        var extra = (howScored(g) + madeBy(g)).trim();
-        return g.name + (extra ? ' (' + extra.replace(/^, /, '') + ')' : '');
-      });
-      paras.push((timed.length ? 'Also on the scoresheet: ' : 'On the scoresheet: ')
-        + listOf(others) + '. The team sheet does not say what minute those went in.');
-    }
-
-    /* ---- The rest of what the coach said ----
-       Whatever did not attach to a goal or to the start or the end: the run of
-       play, which is where a report puts it. Anything still keyed to a name
-       goes here too, so nothing typed is ever silently dropped. */
-    Object.keys(notes.byName).forEach(function (n) {
-      notes.middle = notes.middle.concat(notes.byName[n]);
-    });
-    if (notes.middle.length) {
-      for (var b = 0; b < notes.middle.length; b += 2) {
-        paras.push(notes.middle.slice(b, b + 2).join(' '));
-      }
-    }
-
-    /* ---- Keeping and discipline ---- */
-    var tail = [];
-    if (c.cleanSheet.length) {
-      tail.push(listOf(c.cleanSheet) + ' kept a clean sheet.');
-    } else if (c.theirGoals != null && c.theirGoals > 0 && c.kind === 'score') {
-      tail.push(them + (c.theirGoals === 1 ? ' got one back.' : ' managed ' + say(c.theirGoals) + '.'));
-    }
-    if (c.saves) {
-      tail.push((c.keeper || 'The goalkeeper') + ' made ' + say(c.saves) + ' save'
-        + (c.saves === 1 ? '' : 's') + '.');
-    }
-    if (c.pensSaved.length) tail.push(listOf(c.pensSaved) + ' saved a penalty.');
-    if (c.reds.length) tail.push(listOf(c.reds) + (c.reds.length === 1 ? ' was sent off.' : ' were sent off.'));
-    if (c.yellows.length) {
-      tail.push(listOf(c.yellows) + (c.yellows.length === 1 ? ' was booked.' : ' were booked.'));
-    }
-    if (tail.length) paras.push(tail.join(' '));
-
-    if (notes.late.length) paras.push(notes.late.join(' '));
-
-    if (c.motm) {
-      paras.push(pick([
-        c.motm + ' was named Player of the Match.',
-        'Player of the Match: ' + c.motm + '.',
-        c.motm + ' took the Player of the Match award.',
-      ], seed, 3));
-    }
-
-    return paras.join('\n\n');
-  }
-
-  function ordinal(n) {
-    return n === 4 ? 'fourth' : n === 5 ? 'fifth' : n === 6 ? 'sixth' : n === 7 ? 'seventh'
-      : n === 8 ? 'eighth' : n === 9 ? 'ninth' : n === 10 ? 'tenth' : n + 'th';
-  }
+  /* The report writer lives in its own chunk, control-report.js, and is
+     fetched the first time somebody presses Build the report. It was here,
+     and it was 15KB of pure functions with one caller inside a file already
+     over budget carrying the fixtures panel and the results table as well.
+     See src/admin/lazy/15-report.js. */
 
   function openMatch(o) {
     var opts = o || {};
@@ -1775,7 +1474,9 @@
         var themG = $('#m-them', back).value;
         var motmNum = $('#m-motm', back).value;
         var captNum = $('#m-capt', back).value;
-        var article = buildReport({
+        var facts = {
+          id: rec.key || '',
+          iso: $('#m-date', back).value || '',
           us: SEED.club || "Sue's Angels FC",
           opp: $('#m-opp', back).value.trim(),
           home: homeNow,
@@ -1806,13 +1507,47 @@
           cleanSheet: counts.cleanSheets.map(nameOf),
           pensSaved: counts.penaltiesSaved.map(nameOf),
           bullets: bullets,
+        };
+        /* THE WRITER IS ITS OWN CHUNK, fetched on this press and not before.
+           See src/admin/lazy/15-report.js. Everything above is the dialog
+           reading its own form; nothing below knows how a report is written. */
+        var btn = $('[data-build]', back);
+        var was = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Writing…';
+        var done = function () { btn.disabled = false; btn.textContent = 'Build it again'; };
+        U.chunk('report').then(function () {
+          /* Two facts a person would reach for and no tab on this form holds:
+             how the club has done against this opponent before, and where
+             this match sits in a run of pre-season friendlies. Both are in
+             the match list the panel already ships. */
+          var ctx = window.CPR.context(SEED.matches || [], SEED.baselineFixtures || [], facts);
+          facts.h2h = ctx.h2h;
+          facts.friendlyOf = ctx.friendlyOf;
+          return window.CPR.write(facts, {
+            token: CP.state.session && CP.state.session.access_token,
+          });
+        }).then(function (r) {
+          done();
+          var out = $('#m-polished', back);
+          out.value = r.text;
+          $('[data-pwords]', back).textContent = words(r.text);
+          /* WHICH ONE WROTE IT, always. A report that quietly changed
+             character depending on a server setting would be worse than
+             either of them, and the club has to know what it is reading
+             before it presses Save. */
+          if (r.source === 'written') {
+            toast('Report written from your notes. Read it through and change anything you like.', 'success');
+          } else {
+            toast('Report composed from the facts recorded (' + r.note
+              + '). Read it through and change anything you like.', 'success');
+          }
+          out.focus();
+        }).catch(function () {
+          done();
+          btn.textContent = was;
+          toast('The report writer could not be downloaded. Check your connection and press it again.', 'error');
         });
-        var out = $('#m-polished', back);
-        out.value = article;
-        $('[data-pwords]', back).textContent = words(article);
-        $('[data-build]', back).textContent = 'Build it again';
-        toast('Report built. Read it through and change anything you like.', 'success');
-        out.focus();
         return;
       }
       if (e.target.matches('[data-clear-report]')) {

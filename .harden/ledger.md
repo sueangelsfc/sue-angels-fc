@@ -105,3 +105,71 @@ duplicates; the two-implementations problem.
 - The service worker's cache behaviour across a version change.
 - `api/publish.js`, `api/notify-enquiry.js` and `api/subscribe.js`: read, not
   invoked. The enquiry double-write is the one with a known past failure.
+
+---
+
+## Run 2026-08-03 (second, boundary-focused)
+
+**Swept:** the panel ↔ frontend boundary specifically. Passes 1 (panel
+promises), 3 (data reaching the page), 7 (two implementations), plus the API
+routes that the first run marked overdue.
+
+Method worth repeating: put a recognisable value against **every key the panel
+writes**, rebuild, and grep the output for it. Eight keys, three did not come
+out the way they went in. Two of those three turned out to be the probe using
+the wrong shape, which is itself the finding: guessing at a shape is how these
+drift.
+
+**Found and fixed**
+- The cause page's **donate link** ignored the stored record. The panel writes
+  `stripeLink`, the production record holds `clubUrl` from an older version of
+  that screen, the page read `stripeLink || link` and fell back to a link
+  hard-coded in the template that happened to be the same address. Right by
+  coincidence, on a donate button. → `8a2e19e`
+- **A name is not a statistic.** Making player stats competitive-only (earlier
+  the same day) also made the NAME index competitive-only, so anybody who has
+  only played a friendly appeared on his own team sheet as "No. 901" — the
+  exact thing the panel's trialist screen exists to prevent. A regression
+  introduced and caught within hours. → `8a2e19e`
+- **`/api/claude` was gated by an origin check that is not a lock.** It allowed
+  any request with no Origin header, which is every script and every server.
+  Harmless today only because `ANTHROPIC_API_KEY` has never been set; one
+  environment variable from an open proxy to a paid API. Nothing on the site
+  calls it. Now behind the same `is_club_admin()` question `/api/publish` asks.
+  → `8a2e19e`
+- **The panel called a new signing "Retained."** The two implementations of
+  squad status disagreed on 12 of 180 answers, because the panel answers
+  "active" for a season with no entry where the site answers "absent", and
+  absence is what makes "new" derivable. → `a711235`
+
+**Checked, and sound**
+- Every other panel-written key reaches its page: `roster:photos`,
+  `hero:home` (all three widths into the srcset), `roster:coaches`,
+  `roster:status`, `roster:s2627`, `sponsor:*` slots, a player's season
+  sponsor, `team_badges`, `recognition`, `articles`, `gallery`, `matches`,
+  `fixtures`.
+- `sponsor:pipeline` publishes nowhere, as intended.
+- `/api/publish` answers 401 unauthenticated and its `SUPABASE_ANON_KEY` read
+  is an intentional override over `runtime.json`, not the stale bug the docs
+  once described.
+- `/api/subscribe` and `/api/notify-enquiry` no-op gracefully with no key set —
+  which is exactly what the enquiry double-write depends on.
+- No table or key the panel writes is unread except the pipeline.
+
+**Left deliberately**
+- **`/api/claude` kept rather than deleted.** Nothing calls it, but it is now
+  administrator-gated and inert without a key, and deleting a deployed endpoint
+  is an outward-facing decision that belongs to the club. Would change on a
+  word from them.
+
+**Overdue** (still)
+- The consent gate and the two third-party scripts behind it.
+- The service worker's behaviour across a version change.
+- The `enquiries` double-write end to end: both halves are known to no-op
+  without keys, but the path with `RESEND_API_KEY` set has never been run.
+
+**Note for the next run**
+The two-implementations pass paid for itself. `src/test/panel-vs-site.mjs` now
+runs a real differential over 180 answers rather than a spot check. Any other
+rule written twice deserves the same: candidates are `detectFormation`,
+`slugify` and the match-report composer, all of which exist on both sides.

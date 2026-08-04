@@ -2157,6 +2157,59 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   }
 }
 
+/* ==========================================================================
+   PAUSING AN ANIMATION MUST NEVER BE ABLE TO HIDE ANYTHING
+
+   The home page ran 85 infinite CSS animations at once and 76 of them were
+   animating with no part of the element in the viewport, which on a phone is
+   the compositor dropping frames until content flickers. Pausing what cannot
+   be seen fixes that, and the obvious implementation - pause whole sections -
+   would have caused the very fault it was fixing.
+
+   `.camp__cell` runs `camp-grow`, which fades in from opacity 0 with
+   fill-mode `both`. Pause one mid-entrance and it holds at whatever opacity it
+   reached. Scroll quickly past that band and thirty-four cells freeze part-way
+   in: content disappearing.
+
+   So the rule is that nothing with an ENTRANCE may be paused, and this
+   asserts it from the shipped CSS rather than from the intention.
+   ========================================================================== */
+{
+  const js = fs.readFileSync(path.join(ROOT, 'sa.js'), 'utf8');
+  const homeCss = fs.readFileSync(path.join(ROOT, 'home.css'), 'utf8');
+
+  check('the pause rule ships', /is-still/.test(homeCss) && /animation-play-state:paused/.test(homeCss));
+  check('the pause rule is scoped to html.js so a missing script cannot freeze the site',
+    /html\.js [^{]*is-still/.test(homeCss),
+    'an unscoped rule would pause everything if the observer never arrived');
+  check('the observer ships', /is-still/.test(js));
+
+  /* WHAT IT IS ALLOWED TO PAUSE. Read off the shipped bundle, so widening the
+     selector without thinking about entrances fails here. */
+  /* Read backwards from the toggle, which is the one string the minifier
+     cannot rename. The first attempt matched only the narrow form, so
+     widening the selector failed the check for the WRONG reason - it reported
+     "not declared" rather than "you widened it". A check that fails
+     unhelpfully is barely better than one that does not fail. */
+  const upTo = js.slice(0, js.indexOf('is-still'));
+  const sel = [...upTo.matchAll(/\(["']([^"']*\.pa[^"']*|[^"']*section[^"']*)["']\)/g)].pop()?.[1];
+  check('the paused set is declared', !!sel, String(sel));
+  if (sel) {
+    check('only the aura is paused', sel.trim() === '.pa',
+      `${sel} - anything with an entrance animation must not be in this list`);
+  }
+
+  /* And the aura's own animations must stay safe to stop: pure transform, or
+     an opacity range that never reaches zero and carries no fill mode. */
+  const breathe = (homeCss.match(/@keyframes pa-breathe\{([^}]*\}[^}]*)\}/) || [])[1] || '';
+  const zeroOpacity = /opacity:\s*0(?![.\d])/.test(breathe);
+  check('the aura never animates to fully transparent', !zeroOpacity,
+    'a paused blob could then be invisible');
+  check('the aura animation carries no fill mode',
+    !/animation:[^;]*pa-(turn|breathe)[^;]*\b(both|forwards)\b/.test(homeCss),
+    'a fill mode would make a paused animation hold its value permanently');
+}
+
 /* ---- Report ---- */
 console.log(`\n${'='.repeat(66)}`);
 if (warns.length) {

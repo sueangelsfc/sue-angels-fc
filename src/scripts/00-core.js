@@ -539,15 +539,30 @@
      Only animation-play-state, never opacity or display, so this can never
      hide anything. See the note beside `.is-still` in 20-home.css. */
   if ('IntersectionObserver' in window) {
-    /* THE BLOBS INDIVIDUALLY, not their container. `.pageaura` is
-       `position:absolute; inset:0`, so on this page it is 8,135px tall and
-       never leaves the viewport: observing it paused nothing at all, while the
-       twenty-four blobs inside it kept turning and breathing forever. Each
-       blob has its own box and nineteen of the twenty-four are off screen at
-       the top of the page, which is thirty-eight animations that were running
-       for nobody even after the sections around them had stopped. */
-    var stillable = $$('section, .pa, footer');
-    if (stillable.length > 2) {
+    /* ONLY THE AURA BLOBS, and the reason is worth stating because pausing
+       whole sections looked obviously right and would have caused the exact
+       fault it was fixing.
+
+       `.camp__cell` runs two animations: `camp-grow`, which fades it in from
+       opacity 0 with fill-mode `both`, and `camp-wave`, which drifts forever.
+       Pause one of those cells mid-entrance and it stops at whatever opacity
+       it had reached and STAYS there. Scroll quickly past the campaign band on
+       a phone and thirty-four cells could freeze part-way in. Content
+       disappearing, which is what this is meant to stop.
+
+       So nothing with an entrance is paused. The aura blobs qualify because
+       `pa-turn` is pure transform and `pa-breathe` moves opacity between 0.66
+       and 1 with no fill mode: a paused blob sits somewhere in that range, on
+       a soft background gradient, which is imperceptible and can never be
+       invisible.
+
+       `.pageaura` itself is `position:absolute; inset:0`, so it is the height
+       of the page and never off screen: observing the container paused
+       nothing. Nineteen of the twenty-four blobs have their own box outside
+       the viewport at the top of the page, which is thirty-eight infinite
+       animations running for nobody. */
+    var stillable = $$('.pa');
+    if (stillable.length > 1) {
       var stiller = new IntersectionObserver(function (entries) {
         entries.forEach(function (en) {
           en.target.classList.toggle('is-still', !en.isIntersecting);

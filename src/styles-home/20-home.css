@@ -614,6 +614,29 @@ b{font-weight: 700;}
 .cmp__num{font-stretch: var(--wide-num);
   font-variant-numeric: tabular-nums;}
 .volt{color: var(--volt);}
+/* ==========================================================================
+   AN ANIMATION OFF SCREEN IS WORK THE BROWSER CANNOT SHOW
+
+   The home page ran 85 infinite CSS animations at once - 24 aura blobs each
+   turning and breathing, 34 wave elements, a comet, a glow, a ticker - and 76
+   of them were animating with no part of them in the viewport. Every one is a
+   composited layer the browser keeps repainting for nobody, and on a phone
+   that is what "glitchy, things disappearing and reappearing" actually is:
+   the compositor dropping frames until content flickers.
+
+   Paused when the section holding them leaves the viewport, resumed when it
+   comes back. Nothing about how the site LOOKS changes: an animation is only
+   ever paused while it cannot be seen.
+
+   Two deliberate choices. It is `html.js` scoped and defaults to RUNNING, so
+   a script that never arrives leaves the site exactly as it is today rather
+   than freezing it. And it pauses animation only, never opacity or display,
+   so it cannot hide anything: the reveal above is a TRANSITION, which
+   animation-play-state does not touch.
+   ========================================================================== */
+html.js .is-still,
+html.js .is-still *{animation-play-state: paused !important;}
+
 html.js .rv{opacity: 0;
   transform: translateY(26px);
   transition: opacity 0.75s var(--ease-out-expo), transform 0.75s var(--ease-out-expo);

@@ -515,4 +515,38 @@
       });
     });
   }
+
+  /* ==========================================================================
+     STOP ANIMATING WHAT NOBODY CAN SEE
+
+     Measured on the live home page: 85 infinite CSS animations running at
+     once, 76 of them with no part of the element in the viewport. Twenty-four
+     aura blobs each turning AND breathing, thirty-four wave elements, a
+     comet, a glow, a ticker. Every one is a composited layer the browser
+     repaints forever for nobody, and on a phone the result is the compositor
+     dropping frames until content flickers in and out. Which is exactly what
+     the club reported.
+
+     Each section is paused when it leaves the viewport and resumed when it
+     returns, so an animation only ever stops while it cannot be seen.
+
+     THE MARGIN IS THE WHOLE TRICK. A section resumes a full viewport height
+     before it arrives, so nothing is ever caught mid-pause on screen: by the
+     time any of it is visible it has been running for a screen's worth of
+     scrolling. Pausing at the exact boundary would have traded a frame-rate
+     problem for a visible one.
+
+     Only animation-play-state, never opacity or display, so this can never
+     hide anything. See the note beside `.is-still` in 20-home.css. */
+  if ('IntersectionObserver' in window) {
+    var stillable = $$('section, .pageaura, footer');
+    if (stillable.length > 2) {
+      var stiller = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          en.target.classList.toggle('is-still', !en.isIntersecting);
+        });
+      }, { rootMargin: '100% 0px 100% 0px' });
+      stillable.forEach(function (el) { stiller.observe(el); });
+    }
+  }
 })();

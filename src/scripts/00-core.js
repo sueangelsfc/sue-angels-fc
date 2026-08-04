@@ -539,7 +539,14 @@
      Only animation-play-state, never opacity or display, so this can never
      hide anything. See the note beside `.is-still` in 20-home.css. */
   if ('IntersectionObserver' in window) {
-    var stillable = $$('section, .pageaura, footer');
+    /* THE BLOBS INDIVIDUALLY, not their container. `.pageaura` is
+       `position:absolute; inset:0`, so on this page it is 8,135px tall and
+       never leaves the viewport: observing it paused nothing at all, while the
+       twenty-four blobs inside it kept turning and breathing forever. Each
+       blob has its own box and nineteen of the twenty-four are off screen at
+       the top of the page, which is thirty-eight animations that were running
+       for nobody even after the sections around them had stopped. */
+    var stillable = $$('section, .pa, footer');
     if (stillable.length > 2) {
       var stiller = new IntersectionObserver(function (entries) {
         entries.forEach(function (en) {

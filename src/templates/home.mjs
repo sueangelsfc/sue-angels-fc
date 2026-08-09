@@ -906,7 +906,7 @@ export function home(d) {
 
   const featPlayer = featuredFor('spotlight', d.homeLayout, d);
   const spotShot = featPlayer ? d.photoFor(featPlayer.num) : '';
-  const spotlightBand = featPlayer ? `<section class="sec sec--spot" id="spotlight" aria-labelledby="spot-h">
+  const spotlightBand = featPlayer ? `<section class="sec sec--spotlight" id="spotlight" aria-labelledby="spot-h">
       <div class="wrap">
         ${rail('spotlight', 'The squad')}
         <div class="fspot rv glassbox">
@@ -940,7 +940,7 @@ export function home(d) {
   const ps = preseasonFor(d);
   const psDone = ps.played.length;
   const psRow = (label, value) => `<div class="psn__k"><dt>${esc(label)}</dt><dd>${esc(String(value))}</dd></div>`;
-  const preseasonBand = `<section class="sec sec--psn" id="preseason" aria-labelledby="psn-h">
+  const preseasonBand = `<section class="sec sec--preseason" id="preseason" aria-labelledby="psn-h">
       <div class="wrap">
         ${rail('preseason', 'Pre-season')}
         <div class="nhead rv">

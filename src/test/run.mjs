@@ -2423,8 +2423,13 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     const rec = { order: ['table', 'news', 'who', 'awards', 'campaign', 'results', 'faq', 'cta'], hidden: ['news'] };
     const off = publishedBands(rec, dL);
     const on = publishedBands({ ...rec, hidden: [] }, dL);
+    /* Position asserted RELATIVE to its neighbour, not as a fixed index. The
+       first version said index 1, which stopped being true the moment a band
+       was added ahead of it in the default order - a test that breaks when
+       something legitimate changes teaches people to edit tests. */
     check('home layout: hiding a band does not move it',
-      on.indexOf('news') === 1 && !off.includes('news'), on.join(','));
+      on.indexOf('news') === on.indexOf('table') + 1 && !off.includes('news'),
+      on.join(','));
   }
 
   /* The two copies of the rule agree. The panel's is read out of the SHIPPED
@@ -2704,7 +2709,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   {
     const { home } = await import(path.join(ROOT, 'src', 'templates', 'home.mjs'));
     const out = home({ ...dP, homeLayout: { order: ['preseason', 'ahead'], hidden: [] } });
-    check('the pre-season band renders when chosen', /sec--psn/.test(out.body));
+    check('the pre-season band renders when chosen', /sec--preseason/.test(out.body));
     check('the season ahead band renders when chosen', /sec--ahead/.test(out.body));
     check('the pre-season band says friendlies count towards nothing',
       /count towards no|counts towards any/i.test(out.body));

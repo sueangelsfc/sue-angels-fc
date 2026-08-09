@@ -30,6 +30,22 @@ import { preseasonFor, seasonAhead } from './preseason.mjs';
    vocabulary: somebody who has just read "Ask the Angels" on the home page can
    find it in the list without translating. */
 export const HOME_BANDS = [
+  /* PRE-SEASON LEADS, and it is first HERE rather than in a saved record
+     because the club has never saved one: with no record the page takes this
+     order, so this list is the club's front page until somebody rearranges it
+     in the panel, at which point their record wins outright.
+
+     It is safe to lead with because it takes itself off. `homeBandFilled`
+     reports it empty the moment a competitive match is played, so the day
+     League Eight starts the front page goes back to leading with the news
+     without anybody remembering to change it. A hard-coded lead that could
+     not do that would be a promise to go stale. */
+  {
+    key: 'preseason',
+    name: 'Pre-season',
+    what: 'The friendly programme, the record across it, who has scored and who has '
+      + 'made a first appearance. Takes itself off the page once the league starts.',
+  },
   {
     key: 'news',
     name: 'Club news',
@@ -106,13 +122,6 @@ export const HOME_BANDS = [
     off: true,
     pick: 'player',
     auto: 'The club’s leading scorer',
-  },
-  {
-    key: 'preseason',
-    name: 'Pre-season',
-    what: 'The friendly programme, the record across it, who has scored and who has '
-      + 'made a first appearance. Takes itself off the page once the league starts.',
-    off: true,
   },
   {
     key: 'ahead',

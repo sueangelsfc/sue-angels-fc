@@ -1119,6 +1119,36 @@ export function home(d) {
       </div>
     </section>` : '';
 
+  /* Where to turn up, for an opponent, a trialist or a parent. The address is
+     one record in club.mjs and the map link is built from its own mapQuery, so
+     nothing here is a second copy of the club's address. */
+  const G = CLUB.ground || {};
+  const groundBand = G.name ? `<section class="sec sec--ground" id="ground" aria-labelledby="grd-h">
+      <div class="wrap">
+        ${rail('ground', 'Where the club plays')}
+        <div class="nhead rv">
+          <div>
+            <p class="eyebrow">Home</p>
+            <h2 class="h2" id="grd-h">Where the club plays<span class="volt">.</span></h2>
+          </div>
+          <a class="nhead__all" href="/contact.html">Get in touch ${ARROW}</a>
+        </div>
+        <div class="grd rv">
+          <div class="grd__t">
+            <b>${esc(G.name)}</b>
+            <span>${esc([G.street, G.district, G.locality].filter(Boolean).join(', '))}</span>
+            <a class="btn btn--ghost btn--sm" href="https://www.google.com/maps/search/?api=1&query=${attr(encodeURIComponent(G.mapQuery || G.name))}"
+               target="_blank" rel="noopener">Open in maps ${ARROW}</a>
+          </div>
+          <dl class="grd__k">
+            <div><dt>Matchday</dt><dd>Sunday mornings</dd></div>
+            <div><dt>Division</dt><dd>${esc(d.divisionOf(d.latestSeason))}</dd></div>
+            <div><dt>Founded</dt><dd>2025</dd></div>
+          </dl>
+        </div>
+      </div>
+    </section>` : '';
+
   /* ================= FOOTER ================= */
   const footerHtml = siteFooter();
 
@@ -1251,6 +1281,7 @@ export function home(d) {
       staff: staffBand,
       records: recordsBand,
       milestones: milestonesBand,
+      ground: groundBand,
     })[k] || '').join(''),
     bodyClass: 'is-home',
     css: 'home.css',

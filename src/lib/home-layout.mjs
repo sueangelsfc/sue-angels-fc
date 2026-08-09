@@ -25,7 +25,7 @@
 import { hasReport } from './prose.mjs';
 import { preseasonFor, seasonAhead } from './preseason.mjs';
 import { clubRecords, milestones } from './stats.mjs';
-import { SPONSORS } from './club.mjs';
+import { SPONSORS, CLUB } from './club.mjs';
 
 /* The default order, which is also the order these were written in. `name` is
    what the band calls itself ON THE PAGE, so the panel and the website use one
@@ -148,12 +148,17 @@ export const HOME_BANDS = [
     key: 'records',
     name: 'Club records',
     what: 'Biggest win, longest unbeaten run, most goals, most appearances. All derived.',
-    off: true,
   },
   {
     key: 'milestones',
     name: 'Milestones in sight',
     what: 'Who is within a few of a round number. Works itself out and empties when nobody is close.',
+  },
+  {
+    key: 'ground',
+    name: 'Where the club plays',
+    what: 'The home ground, how to reach it and when. For opponents, trialists and anybody '
+      + 'turning up for the first time.',
     off: true,
   },
 ];
@@ -196,6 +201,7 @@ export function homeBandFilled(key, d) {
   /* Milestones empty themselves. Nobody is always within three of a round
      number, and a heading over an empty list is worse than no heading. */
   if (key === 'milestones') return milestones((d && d.players) || []).length > 0;
+  if (key === 'ground') return !!(CLUB.ground && CLUB.ground.name);
   return KNOWN.has(key);
 }
 

@@ -201,3 +201,13 @@
 }
 .hband__pick { display: block; margin-block-start: var(--space-2); max-width: 46ch; }
 .hband__pick .select { width: 100%; }
+/* Unsaved work. Warning, not error: nothing is broken, it simply has not been
+   written yet, and the operator is one press from fixing it. */
+.cp-unsaved {
+  margin-block-end: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--warning);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--warning) 10%, transparent);
+  font-size: var(--step--1);
+}

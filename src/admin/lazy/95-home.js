@@ -198,9 +198,26 @@
           + 'Numbers down the left of the page follow it.</p>';
       }
 
+      /* THE WARNING GOES WHERE THE CHANGE WAS MADE. Save writes to the
+         database and Publish rebuilds from it, so a screen edited and not
+         saved is invisible to Publish - which is exactly what happened: the
+         home page was rearranged, the big button at the top was pressed, and
+         the site was reported as ignoring the panel. Nothing had been written.
+         U.dirty also drives the Publish confirm and the close-tab prompt. */
+      function setDirty(v) {
+        dirty = !!v;
+        if (U.dirty) U.dirty(dirty);
+        var save = $('[data-hl-save]', host);
+        if (save) save.disabled = !dirty;
+        var warn = $('[data-hl-unsaved]', host);
+        if (warn) warn.hidden = !dirty;
+      }
+
       function paint() {
         $('[data-hl-list]', host).innerHTML = listHtml();
         $('[data-hl-status]', host).innerHTML = statusHtml();
+        var warn = $('[data-hl-unsaved]', host);
+        if (warn) warn.hidden = !dirty;
         $('[data-hl-save]', host).disabled = !dirty;
       }
 
@@ -212,6 +229,9 @@
         actions: '<button class="btn btn--primary" data-hl-save disabled>Save the order</button>'
           + (saved ? '<button class="btn btn--quiet" data-hl-reset>Put the standard order back</button>' : ''),
         body:
+          '<p class="cp-unsaved" data-hl-unsaved hidden>Not saved yet. <b>Publish to site</b> '
+            + 'rebuilds the website from the database, and these changes are not in it until '
+            + 'you press <b>Save the order</b>.</p>' +
           '<div data-hl-status></div>' +
           '<div data-hl-list></div>' +
           '<p class="cp-note" style="margin-top:var(--space-4)">Most bands work out their own '
@@ -237,8 +257,7 @@
         var key = li.getAttribute('data-band');
         var val = e.target.value;
         if (val) state.pick[key] = val; else delete state.pick[key];
-        dirty = true;
-        $('[data-hl-save]', host).disabled = false;
+        setDirty(true);
         /* A stale-pick warning beside a chooser that has just been changed is
            answering a question nobody is asking any more. */
         var flag = li.querySelector('.hband__pick .hband__flag');
@@ -282,6 +301,7 @@
           out.pick = {};
           KEYS.forEach(function (k) { if (state.pick[k]) out.pick[k] = state.pick[k]; });
           CP.upsert('player_photos', 'home:layout', out).then(function () {
+            setDirty(false);
             toast('Order saved. Press Publish to site to put it live.', 'success');
             refresh('home');
           }).catch(function (err) { toast(err.message, 'error'); });
@@ -310,6 +330,7 @@
         } else {
           return;
         }
+        setDirty(true);
         paint();
       });
     });

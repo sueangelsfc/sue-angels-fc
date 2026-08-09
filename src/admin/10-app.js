@@ -279,6 +279,11 @@
     matchLabel: matchLabel,
     youtubeId: youtubeId,
     refresh: function (key) { return refresh(key); },
+    /* A module calls this the moment it holds an edit that is not in the
+       database yet, and again with false once it is. Everything else - the
+       warning strip, the Publish confirm, the close-tab prompt - follows from
+       this one flag. */
+    dirty: function (v) { return setDirty(v); },
     /* Fetch a chunk that is not a panel. The report writer is the first of
        these: it belongs to a BUTTON rather than to a section, so CHUNK_OF
        cannot reach it and the module asks for it by name when pressed. Same
@@ -787,6 +792,9 @@
        else, listeners included. */
     var body = old.cloneNode(false);
     old.parentNode.replaceChild(body, old);
+    /* The element holding the edits has just been thrown away, so whatever was
+       unsaved is gone and the warning must go with it. */
+    setDirty(false);
 
     need(key)
       .then(function () {
@@ -832,8 +840,45 @@
      saved but not published. The confirm says exactly that, because
      "Publish" meaning "the thing you already saved now becomes visible" is
      not obvious from the word alone. */
+  /* ---- Unsaved work, said out loud ------------------------------------
+     Save writes to the database and Publish rebuilds the site from it, which
+     means a screen edited but not saved is invisible to Publish. The confirm
+     below has always said so in a sentence, and a sentence in a dialog is not
+     a warning: the club rearranged the home page, pressed the big obvious
+     button at the top, and reported that the site was ignoring the panel. It
+     was not. Nothing had ever been written.
+
+     So the panel now knows when a screen is dirty, says so where the change
+     was made, refuses to let Publish go past it quietly, and asks before the
+     tab closes. Held here rather than per module so every future screen gets
+     it by setting one flag. */
+  var dirty = false;
+  function setDirty(v) {
+    dirty = !!v;
+    document.documentElement.classList.toggle('is-dirty', dirty);
+  }
+  window.addEventListener('beforeunload', function (e) {
+    if (!dirty) return;
+    e.preventDefault();
+    e.returnValue = '';
+  });
+
   var pub = $('#cp-publish');
   if (pub) pub.addEventListener('click', function () {
+    if (dirty) {
+      confirmAction({
+        title: 'You have changes that are not saved',
+        body: 'Publishing rebuilds the website from the database, and unsaved changes '
+          + 'are not in the database yet. They would not appear on the site.',
+        detail: 'Close this, press Save on the screen you were editing, then publish.',
+        confirmLabel: 'Publish without them',
+      }).then(function (yes) { if (yes) { setDirty(false); publishNow(); } });
+      return;
+    }
+    publishNow();
+  });
+
+  function publishNow() {
     /* No client-side guard here, deliberately, and unlike every other write.
        Permission is the database's answer and this button's whole job is to go
        and get it. Refusing on the browser's copy of that answer means a wrong
@@ -871,7 +916,7 @@
           toast('Could not reach the server.', 'error');
         });
     });
-  });
+  }
 
   var menu = $('#cp-menu');
   if (menu) menu.addEventListener('click', function () {

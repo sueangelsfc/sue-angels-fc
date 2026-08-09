@@ -647,7 +647,9 @@ b{font-weight: 700;}
    freeze cells part-way in. That is the fault this whole block exists to fix,
    so the selector is deliberately narrow. */
 html.js .pa.is-still,
-html.js .pa.is-still *{animation-play-state: paused !important;}
+html.js .pa.is-still *,
+html.js.is-scrolling .pa,
+html.js.is-scrolling .pa *{animation-play-state: paused !important;}
 
 /* The campaign strip: thirty-five cells drifting 2.5px, for ever, whether or
    not the band is anywhere near the screen. Paused by NAME rather than by
@@ -659,8 +661,13 @@ html.js .pa.is-still *{animation-play-state: paused !important;}
    and the list pauses the second alone, so an entrance can never be caught
    half way. The three-class selector wins over the two-class one, which is
    how the revealed case takes precedence. */
-html.js .camp.is-still .camp__cell{animation-play-state: paused;}
-html.js .camp.is-in.is-still .camp__cell{animation-play-state: running, paused;}
+html.js .camp.is-still .camp__cell,
+html.js.is-scrolling .camp:not(.is-in) .camp__cell{animation-play-state: paused;}
+/* The revealed case keeps the list form while scrolling too. A band's entrance
+   fires BECAUSE you scrolled to it, so a blanket pause here would stop the one
+   animation that has to keep running. */
+html.js .camp.is-in.is-still .camp__cell,
+html.js.is-scrolling .camp.is-in .camp__cell{animation-play-state: running, paused;}
 
 /* 0.75s was tuned for a reveal that fired once the band was already on
    screen, and it now starts a quarter of a screen early. Kept long enough to

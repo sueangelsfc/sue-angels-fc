@@ -508,6 +508,48 @@
   }
 
   /* ==========================================================================
+     AND STOP ANIMATING WHILE THE PAGE IS MOVING
+
+     Pausing what is off screen was not enough, and the measurement says why.
+     A screen recording of a scroll, sampled frame by frame, changed on only
+     147 of 653 frames: the page was repainting about twelve times a second
+     while the display ran at sixty.
+
+     The aura is why. Each blob is a multi-stop radial gradient sized in
+     viewport widths, and the broad tier runs from 190vw to 330vw. Totalled
+     across twenty-four of them: 7.4 megapixels on a phone, 101 on a laptop,
+     and 207 on the machine that recording was made on - about 788MB of
+     texture, all of it under a transform that never stops. No GPU holds that
+     as composited layers, so it is re-rasterised, and everything else queues
+     behind it.
+
+     The motion itself is worth almost nothing while scrolling: pa-turn is a
+     220-second rotation, so over a one-second flick a blob turns about two
+     degrees. It costs the most at the exact moment it can be seen the least.
+
+     So it stops while the page is moving and starts again a fifth of a second
+     after it stops. Nothing about how the site looks at rest changes, which is
+     the point: the aura is the site's signature and this does not touch it.
+
+     Passive listener, and the class is only ever toggled on the root, so the
+     work per scroll event is one boolean and one timer. It defaults to
+     running, so a script that never arrives leaves the site as it is today.
+     ========================================================================== */
+  (function () {
+    var root = document.documentElement;
+    var timer = null;
+    var moving = false;
+    window.addEventListener('scroll', function () {
+      if (!moving) { moving = true; root.classList.add('is-scrolling'); }
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        moving = false;
+        root.classList.remove('is-scrolling');
+      }, 200);
+    }, { passive: true });
+  })();
+
+  /* ==========================================================================
      STOP ANIMATING WHAT NOBODY CAN SEE
 
      Measured on the live home page: 85 infinite CSS animations running at

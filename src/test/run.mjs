@@ -2247,6 +2247,33 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     && !/\.camp[^{]*\.is-still[^{]*\*\s*\{/.test(homeCss),
     'the revealed case must pause the wave alone and leave camp-grow running');
 
+  /* ---- And nothing animates while the page is moving --------------------
+     A frame-by-frame reading of a scroll recording changed on 147 of 653
+     frames: about twelve repaints a second against a sixty-hertz display. The
+     aura is 7.4 megapixels of rotating gradient on a phone and 207 on a large
+     desktop, and pa-turn is a 220-second rotation, so during a one-second
+     flick it moves two degrees. It costs the most exactly when it shows least,
+     so it stops while the page moves. */
+  check('the aura stops while the page is scrolling',
+    /html\.js\.is-scrolling \.pa[^{]*\{animation-play-state:paused/.test(homeCss),
+    'the largest per-frame cost on the page must not run during a scroll');
+  check('the scroll marker is html.js scoped', !/(^|[^.])\.is-scrolling/.test(
+    homeCss.replace(/html\.js\.is-scrolling/g, 'X')),
+    'an unscoped rule would freeze the aura if the listener never arrived');
+  check('the scroll listener ships and is passive',
+    /addEventListener\("scroll"[\s\S]{0,220}is-scrolling/.test(js)
+    && /is-scrolling[\s\S]{0,400}passive:!0/.test(js.slice(js.indexOf('is-scrolling') - 400)),
+    'a non-passive scroll listener would itself block scrolling');
+
+  /* THE ENTRANCE STILL HAS TO RUN. A band's entrance fires BECAUSE somebody
+     scrolled to it, so this is the one case where pausing on scroll would be
+     visible: a blanket rule here freezes thirty-five cells part-way in, at the
+     exact moment they are being looked at. */
+  check('scrolling pauses the campaign wave by name, never the entrance',
+    /html\.js\.is-scrolling \.camp\.is-in \.camp__cell\{animation-play-state:running,paused/.test(homeCss)
+    && !/html\.js\.is-scrolling \.camp[^{,]*\*/.test(homeCss),
+    'the revealed band must keep camp-grow running while scrolling');
+
   /* And the aura's own animations must stay safe to stop: pure transform, or
      an opacity range that never reaches zero and carries no fill mode. */
   const breathe = (homeCss.match(/@keyframes pa-breathe\{([^}]*\}[^}]*)\}/) || [])[1] || '';

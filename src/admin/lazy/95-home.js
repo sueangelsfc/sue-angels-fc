@@ -227,6 +227,7 @@
           + 'page. Move them into the order you want people to meet them in, and turn off '
           + 'anything that is not worth a screen this month.',
         actions: '<button class="btn btn--primary" data-hl-save disabled>Save the order</button>'
+          + '<button class="btn btn--ghost" data-hl-all>Show everything</button>'
           + (saved ? '<button class="btn btn--quiet" data-hl-reset>Put the standard order back</button>' : ''),
         body:
           '<p class="cp-unsaved" data-hl-unsaved hidden>Not saved yet. <b>Publish to site</b> '
@@ -267,6 +268,22 @@
       host.addEventListener('click', function (e) {
         var btn = e.target.closest ? e.target.closest('button') : null;
         if (!btn) return;
+
+        /* SHOW EVERYTHING. A saved record carries the complete hidden list, so
+           a band that was off by default on the day it was written stays off
+           afterwards however the site's own default changes - correctly, since
+           the club's record is authoritative. That is right and it is also a
+           trap: three bands were pinned off by a record written before they
+           existed, and nothing but this screen could ever turn them on. One
+           press rather than one per band. */
+        if (btn.hasAttribute('data-hl-all')) {
+          if (!guard()) return;
+          state.hidden = state.hidden.filter(function (k) { return bandOf(k).empty; });
+          setDirty(true);
+          paint();
+          toast('Everything is on. Press Save the order, then Publish to site.', 'success');
+          return;
+        }
 
         if (btn.hasAttribute('data-hl-reset')) {
           if (!guard()) return;

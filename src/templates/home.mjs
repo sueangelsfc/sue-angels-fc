@@ -24,7 +24,7 @@ import { sizeAttrs } from '../lib/imagesize.mjs';
 import { CLUB, SPONSORS, FAQS, NEXT_FIXTURE, SEASON_AWARDS , SOCIALS} from '../lib/club.mjs';
 import { teamSummary, formGuide, isLeague, clubRecords, milestones } from '../lib/stats.mjs';
 import { publishedBands, featuredFor } from '../lib/home-layout.mjs';
-import { preseasonFor, seasonAhead } from '../lib/preseason.mjs';
+import { preseasonFor, seasonAhead, sameClub, relatedClub, recordOf } from '../lib/preseason.mjs';
 import { reportText, house, FRIENDLY_NOTE_SHORT, FRIENDLY_NOTE } from '../lib/prose.mjs';
 
 /* THE OPENING OF A REPORT, for the front page to quote.
@@ -1122,7 +1122,7 @@ export function home(d) {
   /* Where to turn up, for an opponent, a trialist or a parent. The address is
      one record in club.mjs and the map link is built from its own mapQuery, so
      nothing here is a second copy of the club's address. */
-  const G = CLUB.ground || {};
+  const G = CLUB.venue || {};
   const groundBand = G.name ? `<section class="sec sec--ground" id="ground" aria-labelledby="grd-h">
       <div class="wrap">
         ${rail('ground', 'Where the club plays')}
@@ -1142,10 +1142,70 @@ export function home(d) {
           </div>
           <dl class="grd__k">
             <div><dt>Matchday</dt><dd>Sunday mornings</dd></div>
-            <div><dt>Division</dt><dd>${esc(d.divisionOf(d.latestSeason))}</dd></div>
+            <div><dt>League</dt><dd>${esc(d.divisionOf(d.latestSeason))}</dd></div>
             <div><dt>Founded</dt><dd>2025</dd></div>
           </dl>
         </div>
+      </div>
+    </section>` : '';
+
+  /* THE NEXT MATCH, PREVIEWED. The hero already carries the fixture; this adds
+     what the archive holds on that opponent, which is the part a supporter or
+     an opponent actually wants. `sameClub` keeps a first team apart from a
+     2.0 exactly as the season-ahead band does. */
+  const nx = d.nextFixture;
+  const nxMet = nx ? d.played.filter((m) => sameClub(m.opponent, nx.opponent)) : [];
+  const nxRel = nx && !nxMet.length ? d.played.filter((m) => relatedClub(m.opponent, nx.opponent)) : [];
+  const nxRec = recordOf(nxMet);
+  const nextUpBand = nx ? `<section class="sec sec--nextup" id="nextup" aria-labelledby="nxt-h">
+      <div class="wrap">
+        ${rail('nextup', 'The next match')}
+        <div class="nhead rv">
+          <div>
+            <p class="eyebrow">${esc(nx.competition || nx.label || 'Next up')} · ${esc(nx.dateLabel || dayMonthYear(nx.iso || nx.date))}</p>
+            <h2 class="h2" id="nxt-h">${esc(shortClub(nx.opponent))}<span class="volt">.</span></h2>
+          </div>
+          <a class="nhead__all" href="/fixtures.html">All fixtures ${ARROW}</a>
+        </div>
+        <div class="nxt rv">
+          <span class="nxt__b">${oppBadge(nx.opponent, d.badges, 56, 56)}</span>
+          <div class="nxt__t">
+            <p class="nxt__w">${esc(nx.weAreHome ? 'At home' : 'Away')}${nx.venue ? `, ${esc(nx.venue)}` : ''}${nx.kick ? ` · ${esc(nx.kick)}` : ''}</p>
+            <p class="nxt__h">${nxMet.length
+              ? esc(`Played ${nxRec.p}, won ${nxRec.w}${nxRec.d ? `, drawn ${nxRec.d}` : ''}${nxRec.l ? `, lost ${nxRec.l}` : ''} · ${nxRec.gf}-${nxRec.ga}.`)
+              : nxRel.length
+                ? esc(`A first meeting. The club has played their ${shortClub(nxRel[0].opponent)}, not this side.`)
+                : 'A first meeting.'}</p>
+          </div>
+        </div>
+      </div>
+    </section>` : '';
+
+  /* Every player. A crest stands in where the club has no photograph, which is
+     sixteen of them: the alternative is leaving those men off the page. */
+  const squadList = (d.squad && d.squad.length ? d.squad : d.players) || [];
+  const squadBand = squadList.length ? `<section class="sec sec--squad" id="squad" aria-labelledby="sqd-h">
+      <div class="wrap">
+        ${rail('squad', 'The squad')}
+        <div class="nhead rv">
+          <div>
+            <p class="eyebrow">${esc(String(squadList.length))} players</p>
+            <h2 class="h2" id="sqd-h">The squad<span class="volt">.</span></h2>
+          </div>
+          <a class="nhead__all" href="/squad.html">Every profile ${ARROW}</a>
+        </div>
+        <ul class="sqd rv">
+          ${squadList.map((p) => {
+            const shot = d.photoFor(p.num);
+            return `<li class="sqd__c"><a href="/players/${attr(p.slug)}.html">
+              ${shot
+                ? `<img class="sqd__i" src="${attr(shot)}" alt="" width="120" height="120" loading="lazy" decoding="async" />`
+                : `<span class="sqd__i sqd__i--none"><img src="${STAR}" alt="" width="34" height="42" loading="lazy" decoding="async" /></span>`}
+              <b>${esc(p.name)}</b>
+              <span>${esc(p.position || '')}</span>
+            </a></li>`;
+          }).join('\n          ')}
+        </ul>
       </div>
     </section>` : '';
 
@@ -1282,6 +1342,8 @@ export function home(d) {
       records: recordsBand,
       milestones: milestonesBand,
       ground: groundBand,
+      nextup: nextUpBand,
+      squad: squadBand,
     })[k] || '').join(''),
     bodyClass: 'is-home',
     css: 'home.css',

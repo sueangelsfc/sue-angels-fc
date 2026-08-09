@@ -57,6 +57,11 @@ export const HOME_BANDS = [
     what: 'The clubs in the new division and what the archive already holds on each of them.',
   },
   {
+    key: 'nextup',
+    name: 'The next match',
+    what: 'The next fixture previewed, with whatever the archive holds on that opponent.',
+  },
+  {
     key: 'report',
     name: 'A match report',
     what: 'A match report: the headline, the score and the opening, with a link to the whole thing.',
@@ -136,13 +141,11 @@ export const HOME_BANDS = [
     key: 'sponsors',
     name: 'Who backs the club',
     what: 'The club’s partners, their marks on a white tile so the colours stay true.',
-    off: true,
   },
   {
     key: 'staff',
     name: 'The people running it',
     what: 'The manager and the coaching staff, with what each of them does.',
-    off: true,
   },
   {
     key: 'records',
@@ -155,11 +158,15 @@ export const HOME_BANDS = [
     what: 'Who is within a few of a round number. Works itself out and empties when nobody is close.',
   },
   {
+    key: 'squad',
+    name: 'The squad',
+    what: 'Every player, with a photograph where the club has one.',
+  },
+  {
     key: 'ground',
     name: 'Where the club plays',
     what: 'The home ground, how to reach it and when. For opponents, trialists and anybody '
       + 'turning up for the first time.',
-    off: true,
   },
 ];
 
@@ -201,7 +208,11 @@ export function homeBandFilled(key, d) {
   /* Milestones empty themselves. Nobody is always within three of a round
      number, and a heading over an empty list is worse than no heading. */
   if (key === 'milestones') return milestones((d && d.players) || []).length > 0;
-  if (key === 'ground') return !!(CLUB.ground && CLUB.ground.name);
+  if (key === 'ground') return !!(CLUB.venue && CLUB.venue.name);
+  /* Empties itself the moment there is no next match to preview, which is what
+     happens at the end of a season. */
+  if (key === 'nextup') return !!(d && d.nextFixture && d.nextFixture.opponent);
+  if (key === 'squad') return ((d && d.squad) || (d && d.players) || []).length > 0;
   return KNOWN.has(key);
 }
 

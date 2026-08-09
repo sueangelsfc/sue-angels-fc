@@ -639,12 +639,36 @@ b{font-weight: 700;}
    so it cannot hide anything: the reveal above is a TRANSITION, which
    animation-play-state does not touch.
    ========================================================================== */
-html.js .is-still,
-html.js .is-still *{animation-play-state: paused !important;}
+/* THE BLANKET RULE IS SCOPED TO THE AURA, and must stay that way. `.pa` is
+   safe to stop anywhere: pa-turn is pure transform and pa-breathe moves
+   opacity between 0.66 and 1 with no fill mode, so a paused blob is somewhere
+   in that range on a soft gradient. Applying `*` to a section instead would
+   reach `.camp__cell`, which fades in from opacity 0 with fill-mode both, and
+   freeze cells part-way in. That is the fault this whole block exists to fix,
+   so the selector is deliberately narrow. */
+html.js .pa.is-still,
+html.js .pa.is-still *{animation-play-state: paused !important;}
 
+/* The campaign strip: thirty-five cells drifting 2.5px, for ever, whether or
+   not the band is anywhere near the screen. Paused by NAME rather than by
+   blanket, using the list form of animation-play-state, because these cells
+   run two animations and only the second may be stopped.
+
+   Before the band is revealed there is one animation (the wave) and it is
+   safe to pause outright. After, there are two - the entrance then the wave -
+   and the list pauses the second alone, so an entrance can never be caught
+   half way. The three-class selector wins over the two-class one, which is
+   how the revealed case takes precedence. */
+html.js .camp.is-still .camp__cell{animation-play-state: paused;}
+html.js .camp.is-in.is-still .camp__cell{animation-play-state: running, paused;}
+
+/* 0.75s was tuned for a reveal that fired once the band was already on
+   screen, and it now starts a quarter of a screen early. Kept long enough to
+   read as an entrance, short enough that at an ordinary scroll speed the band
+   has finished arriving before you have. */
 html.js .rv{opacity: 0;
   transform: translateY(26px);
-  transition: opacity 0.75s var(--ease-out-expo), transform 0.75s var(--ease-out-expo);
+  transition: opacity 0.55s var(--ease-out-expo), transform 0.55s var(--ease-out-expo);
   transition-delay: var(--d, 0s);}
 html.js .rv.is-in{opacity: 1; transform: translateY(0);}
 .btn{display: inline-flex; align-items: center; justify-content: center; gap: 8px;

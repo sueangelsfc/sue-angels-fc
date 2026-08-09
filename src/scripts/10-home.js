@@ -1602,11 +1602,25 @@
       rvs.forEach(function (el) { el.classList.add('is-in'); });
       return;
     }
+    /* REVEAL AHEAD OF ARRIVAL, not on it.
+
+       This asked for 18% of the element to be visible inside a viewport that
+       had already been shrunk 6% at the bottom. A band is most of a screen
+       tall, so 18% of one is well over a hundred pixels: nothing began to
+       appear until it was properly on screen, and only then did a 0.75s fade
+       start. Scrolling down the page, every band was blank when you got to it
+       and filled in afterwards, which is what "nothing smoothly loads when you
+       scroll" is.
+
+       A threshold of 0 fires as the edge crosses, and a POSITIVE bottom margin
+       extends the root below the fold, so a band starts its fade while it is
+       still a fifth of a screen away and is finished by the time it is read.
+       The reveal still only ever adds a class, and still latches. */
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
         if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); }
       });
-    }, { threshold: 0.18, rootMargin: '0px 0px -6% 0px' });
+    }, { threshold: 0, rootMargin: "0px 0px 25% 0px" });
     rvs.forEach(function (el) { io.observe(el); });
     var vh = window.innerHeight || document.documentElement.clientHeight || 900;
     rvs.forEach(function (el) { if (el.getBoundingClientRect().top < vh) el.classList.add('is-in'); });

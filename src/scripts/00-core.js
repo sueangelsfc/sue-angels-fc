@@ -158,20 +158,11 @@
     });
   });
 
-  /* ---- Scroll reveal --------------------------------------------------
-     Only ever adds a class. The hidden state is scoped to html.js in CSS, so
-     if this never runs nothing is hidden. */
-  var reveals = $$('.reveal');
-  if (reveals.length && 'IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting) { en.target.classList.add('is-in'); io.unobserve(en.target); }
-      });
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
-    reveals.forEach(function (el) { io.observe(el); });
-  } else {
-    reveals.forEach(function (el) { el.classList.add('is-in'); });
-  }
+  /* The scroll reveal used to be here too, watching `.reveal`. No page has
+     carried that class since the rebuild, so it observed nothing and did
+     nothing - but it read exactly like the real one, which is worse than
+     absent: diagnosing why bands appeared late meant tuning a threshold on a
+     dead observer first. The live one is in 10-home.js and watches `.rv`. */
 
   /* ---- Filter chips --------------------------------------------------- */
   $$('[data-filter-list]').forEach(function (list) {
@@ -561,7 +552,17 @@
        nothing. Nineteen of the twenty-four blobs have their own box outside
        the viewport at the top of the page, which is thirty-eight infinite
        animations running for nobody. */
-    var stillable = $$('.pa');
+    /* THE CAMPAIGN BAND JOINS THEM, but by name and not by blanket. Its
+       thirty-five cells were the single largest group of infinite animations
+       on the page and none of them was ever paused, because the first version
+       of this could only pause a whole subtree and doing that here would
+       freeze the entrance. The stylesheet pauses `camp-wave` alone through the
+       list form of animation-play-state, so this only has to mark the band.
+
+       `.camp` is one element rather than thirty-five observers, and it is a
+       normal section with its own box, so unlike `.pageaura` it genuinely
+       leaves the viewport. */
+    var stillable = $$('.pa').concat($$('.camp'));
     if (stillable.length > 1) {
       var stiller = new IntersectionObserver(function (entries) {
         entries.forEach(function (en) {

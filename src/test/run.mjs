@@ -2209,17 +2209,43 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   /* WHAT IT IS ALLOWED TO PAUSE. Read off the shipped bundle, so widening the
      selector without thinking about entrances fails here. */
   /* Read backwards from the toggle, which is the one string the minifier
-     cannot rename. The first attempt matched only the narrow form, so
-     widening the selector failed the check for the WRONG reason - it reported
-     "not declared" rather than "you widened it". A check that fails
-     unhelpfully is barely better than one that does not fail. */
+     cannot rename.
+
+     TWICE NOW this check has been written so that it could not see the thing
+     it exists to catch. The first version matched only the narrow form, so
+     widening the selector failed for the WRONG reason: "not declared" rather
+     than "you widened it". The second only matched a selector containing
+     `.pa` or `section`, so when `.camp` was added to the observed set it went
+     on passing, blind, reporting `.pa` from an expression that no longer said
+     only `.pa`. A check that cannot fail is worse than no check, because it
+     is counted in the total.
+
+     So the whole expression is read now, not one string inside it. */
   const upTo = js.slice(0, js.indexOf('is-still'));
-  const sel = [...upTo.matchAll(/\(["']([^"']*\.pa[^"']*|[^"']*section[^"']*)["']\)/g)].pop()?.[1];
-  check('the paused set is declared', !!sel, String(sel));
-  if (sel) {
-    check('only the aura is paused', sel.trim() === '.pa',
-      `${sel} - anything with an entrance animation must not be in this list`);
-  }
+  const expr = upTo.slice(upTo.lastIndexOf('IntersectionObserver' in {} ? '' : 'in window){'));
+  const observed = [...expr.matchAll(/\(["'](\.[a-z][a-z0-9_-]*)["']\)/g)].map((m) => m[1]);
+  check('the paused set is declared', observed.length > 0, observed.join(' '));
+  check('the paused set is exactly the aura and the campaign band',
+    observed.join(',') === '.pa,.camp',
+    `${observed.join(',')} - adding one here without a by-name pause rule below will freeze an entrance`);
+
+  /* THE SAFETY PROPERTY, which is what the list above is only a proxy for.
+
+     A blanket pause reaches every descendant, so it is safe only where nothing
+     has an entrance. `.pa` qualifies. `.camp` does not: its cells fade in from
+     opacity 0 with fill-mode both, so they may only be paused BY NAME through
+     the list form of animation-play-state, which stops the wave and leaves the
+     entrance running. Asserted from the shipped CSS, so writing
+     `.camp.is-still *` fails here even though the observer would look right. */
+  const blanket = [...homeCss.matchAll(/([^{}]*\.is-still[^{}]*\*)\s*\{[^}]*animation-play-state:paused/g)]
+    .map((m) => m[1]);
+  check('only the aura is paused by blanket',
+    blanket.every((s) => /\.pa\.is-still/.test(s)),
+    `${blanket.join(' | ')} - a blanket pause over anything with an entrance freezes it part-way in`);
+  check('the campaign band is paused by name, not by blanket',
+    /\.camp\.is-in\.is-still[^{]*\{animation-play-state:running,paused/.test(homeCss)
+    && !/\.camp[^{]*\.is-still[^{]*\*\s*\{/.test(homeCss),
+    'the revealed case must pause the wave alone and leave camp-grow running');
 
   /* And the aura's own animations must stay safe to stop: pure transform, or
      an opacity range that never reaches zero and carries no fill mode. */

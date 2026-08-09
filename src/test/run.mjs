@@ -2414,11 +2414,30 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
      directly: opt one in and it appears, leave it out and it does not. */
   {
     const off = HOME_BANDS.filter((b) => b.off).map((b) => b.key);
-    check('home layout: bands added later start off', off.length > 0
-      && off.every((k) => !publishedBands({ order: SHIPPED.split(','), hidden: [] }, dL).includes(k)));
-    const optedIn = { order: [off[0], ...SHIPPED.split(',')], hidden: off.slice(1) };
-    check('home layout: opting a band in publishes it',
-      publishedBands(optedIn, dL)[0] === off[0], publishedBands(optedIn, dL).join(','));
+    if (off.length) {
+      check('home layout: bands added later start off',
+        off.every((k) => !publishedBands({ order: SHIPPED.split(','), hidden: [] }, dL).includes(k)));
+      const optedIn = { order: [off[0], ...SHIPPED.split(',')], hidden: off.slice(1) };
+      check('home layout: opting a band in publishes it',
+        publishedBands(optedIn, dL)[0] === off[0], publishedBands(optedIn, dL).join(','));
+    } else {
+      /* EVERY BAND IS ON BY DEFAULT, so the off rule has no live instance to
+         exercise. It still has to be here for the next band that arrives
+         default-off, so its presence is asserted from the source rather than
+         from behaviour, and this check says out loud why it is doing that
+         instead of quietly passing on nothing. */
+      const src = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'home-layout.mjs'), 'utf8');
+      check('home layout: the off rule survives having nothing to protect',
+        /if \(b\.off && !named\.has\(b\.key\)\) hidden\.add\(b\.key\)/.test(src),
+        'no band is default-off today, so this guards the rule for the next one that is');
+      /* The mirror of the old check, and a real property: a record written
+         before a band existed does not name it, and a band that is default-ON
+         must then be published rather than dropped. */
+      const older = { order: SHIPPED.split(',').slice(0, 4), hidden: [] };
+      const pubd = publishedBands(older, dL);
+      check('home layout: a band a record predates is still published',
+        SHIPPED.split(',').every((k) => pubd.includes(k)), pubd.join(','));
+    }
   }
 
   /* A PICK THAT NO LONGER RESOLVES FALLS BACK, rather than leaving a heading

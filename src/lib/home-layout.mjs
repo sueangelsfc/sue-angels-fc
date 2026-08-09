@@ -109,14 +109,18 @@ export const HOME_BANDS = [
     what: 'Trials, volunteering, media and sponsorship. The way in.',
   },
 
-  /* ---- The three the club can add ------------------------------------------
-     Off until somebody turns them on, which is what keeps "no record" meaning
-     the page exactly as it shipped. Each one publishes something the club
-     already makes and the front page has never shown: seven match reports
-     between 341 and 757 words, 606 photographs across seven albums, and
-     thirty-seven players.
+  /* ---- The ones that take a PICK ------------------------------------------
+     EVERY band is on by default now. The club asked for the whole set, and a
+     default of "everything" is also the honest one: a band that has nothing to
+     say reports itself empty and the page drops it, so nothing here can put a
+     heading over a hole.
 
-     Each also takes a PICK. The default is derived (the newest report, the
+     A saved record still wins outright. That is what stops this list quietly
+     rearranging a front page somebody has already arranged - and it is also
+     why the panel has "Put the standard order back", which deletes the record
+     and returns the page to exactly this.
+
+     Each of these takes a PICK. The default is derived (the newest report, the
      newest album, the season's leading scorer) so the band keeps itself
      current with nobody maintaining it; choosing one is an editorial override
      and the panel says how old it has gone. That is the honest split: the
@@ -125,7 +129,6 @@ export const HOME_BANDS = [
     key: 'photos',
     name: 'Photographs',
     what: 'A row of pictures from one album, with a link to the album.',
-    off: true,
     pick: 'album',
     auto: 'The newest album',
   },
@@ -133,7 +136,6 @@ export const HOME_BANDS = [
     key: 'spotlight',
     name: 'A player',
     what: 'One player: photograph, position and what he has done for the club.',
-    off: true,
     pick: 'player',
     auto: 'The club’s leading scorer',
   },

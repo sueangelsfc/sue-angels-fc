@@ -5520,6 +5520,7 @@
       "data": {
         "as": 2,
         "hs": 0,
+        "id": "r20260802-pure",
         "iso": "2026-08-02",
         "away": "Sue's Angels FC",
         "date": "02 Aug 2026",
@@ -5527,7 +5528,86 @@
         "kick": "12:30",
         "kind": "score",
         "motm": null,
-        "bench": [],
+        "bench": [
+          {
+            "on": true,
+            "num": 21,
+            "onAt": 45,
+            "role": "IFB",
+            "spells": [
+              {
+                "pos": "RWB",
+                "half": "2",
+                "role": "IFB"
+              },
+              {
+                "pos": "LWB",
+                "half": "2",
+                "role": "OFB"
+              }
+            ],
+            "positions": [
+              "RWB",
+              "LWB"
+            ]
+          },
+          {
+            "on": true,
+            "num": 903,
+            "onAt": 15,
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "1",
+                "role": ""
+              },
+              {
+                "pos": "ST",
+                "half": "2",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "ST"
+            ]
+          },
+          {
+            "on": true,
+            "num": 13,
+            "onAt": 45,
+            "spells": [
+              {
+                "pos": "AM",
+                "half": "2",
+                "role": ""
+              },
+              {
+                "pos": "CM",
+                "half": "2",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "AM",
+              "CM"
+            ]
+          },
+          {
+            "on": true,
+            "num": 902,
+            "onAt": 45,
+            "spells": [
+              {
+                "pos": "CB",
+                "half": "2",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "CB"
+            ]
+          }
+        ],
         "goals": [
           {
             "num": 12,
@@ -5551,9 +5631,10 @@
             "situation": "open"
           }
         ],
-        "saves": null,
+        "saves": 6,
+        "shape": "3-4-2-1",
         "venue": "Barn Elms Sports centre",
-        "keeper": null,
+        "keeper": 28,
         "assists": [
           {
             "num": 12,
@@ -5563,11 +5644,18 @@
           }
         ],
         "captain": 23,
-        "savedAt": "2026-08-02T23:44:46.600Z",
+        "savedAt": "2026-08-03T14:59:01.340Z",
         "redCards": [],
         "starters": [
           {
             "num": 28,
+            "spells": [
+              {
+                "pos": "GK",
+                "half": "1",
+                "role": ""
+              }
+            ],
             "positions": [
               "GK"
             ]
@@ -5575,6 +5663,13 @@
           {
             "num": 29,
             "role": "OFB",
+            "spells": [
+              {
+                "pos": "LWB",
+                "half": "1",
+                "role": "OFB"
+              }
+            ],
             "positions": [
               "LWB"
             ]
@@ -5582,6 +5677,13 @@
           {
             "num": 34,
             "role": "BPD",
+            "spells": [
+              {
+                "pos": "LCB",
+                "half": "1",
+                "role": "BPD"
+              }
+            ],
             "positions": [
               "LCB"
             ]
@@ -5589,25 +5691,111 @@
           {
             "num": 10,
             "role": "BPD",
+            "spells": [
+              {
+                "pos": "CB",
+                "half": "1",
+                "role": "BPD"
+              },
+              {
+                "pos": "DM",
+                "half": "2",
+                "role": ""
+              }
+            ],
             "positions": [
-              "CB"
+              "CB",
+              "DM"
             ]
           },
           {
-            "num": 23,
+            "num": 900,
+            "spells": [
+              {
+                "pos": "RCB",
+                "half": "1",
+                "role": ""
+              }
+            ],
             "positions": [
-              "RDM"
+              "RCB"
+            ]
+          },
+          {
+            "num": 901,
+            "role": "OFB",
+            "spells": [
+              {
+                "pos": "RWB",
+                "half": "1",
+                "role": "OFB"
+              },
+              {
+                "pos": "RWB",
+                "half": "2",
+                "role": "OFB"
+              }
+            ],
+            "positions": [
+              "RWB"
             ]
           },
           {
             "num": 35,
+            "spells": [
+              {
+                "pos": "LDM",
+                "half": "1",
+                "role": ""
+              }
+            ],
             "positions": [
               "LDM"
             ]
           },
           {
+            "num": 23,
+            "spells": [
+              {
+                "pos": "RDM",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "RDM"
+            ]
+          },
+          {
+            "num": 37,
+            "role": "TRQ",
+            "spells": [
+              {
+                "pos": "LAM",
+                "half": "1",
+                "role": "TRQ"
+              },
+              {
+                "pos": "CM",
+                "half": "2",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "LAM",
+              "CM"
+            ]
+          },
+          {
             "num": 12,
             "role": "TRQ",
+            "spells": [
+              {
+                "pos": "RAM",
+                "half": "1",
+                "role": "TRQ"
+              }
+            ],
             "positions": [
               "RAM"
             ]
@@ -5615,22 +5803,34 @@
           {
             "num": 3,
             "role": "TM",
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "1",
+                "role": "TM"
+              }
+            ],
             "positions": [
               "ST"
             ]
           }
         ],
-        "formation": "3-3-1",
-        "commentary": "",
-        "cleanSheets": [],
+        "formation": "3-4-2-1",
+        "commentary": "Pure Football will be in League Eight with us this season, so it was a useful early look at them.\nThe youngsters were quality at the back alongside Jim.\nJeev impressed in the first half.\nStewart was given the armband and looked rusty, understandably in a first pre-season game.\nAde showed signs of quality, with some beautiful touches and passes, and it was his pass that put Leon through for the second.\nHarry brought that engine in the middle, on the front foot all afternoon, never stopped running.\nLeon, LJ to the lads, made an impact on his first start.\nGood to see the boys come off the bench.\nBoth scorers joined from Sheen Park over the summer.\nA tough afternoon in the heat, shaking off the rust.\nThanks to Pure Football for hosting and good luck to them for the season.",
+        "cleanSheets": [
+          {
+            "num": 28
+          }
+        ],
         "competition": "Pre-season friendly",
         "yellowCards": [],
         "penaltiesSaved": [],
+        "polishedReport": "Sue's Angels FC beat Pure Football FC 2.0 2-0 away in a pre-season friendly on Sunday 2 August 2026, at Barn Elms Sports centre, a solid win.\n\nSue's Angels FC lined up in a 3-4-2-1. Stewart Luwawa wore the armband.\n\nOn the scoresheet: Ade Owolona (with his left foot from inside the box) and Leon Burnett (with his right foot from outside the box, sent through by Ade Owolona).\n\nNeither Ade Owolona nor Leon Burnett had started a competitive match for the club before this one. Luke Munns has kept thirteen clean sheets for the club.\n\nPure Football will be in League Eight with us this season, so it was a useful early look at them. The youngsters were quality at the back alongside Jim.\n\nJeev impressed in the first half. Stewart was given the armband and looked rusty, understandably in a first pre-season game.\n\nHarry brought that engine in the middle, on the front foot all afternoon, never stopped running. Good to see the boys come off the bench.\n\nBoth scorers joined from Sheen Park over the summer. A tough afternoon in the heat, shaking off the rust.\n\nAde showed signs of quality, with some beautiful touches and passes, and it was his pass that put Leon through for the second. Leon, LJ to the lads, made an impact on his first start.\n\nThe clubs have met before: 2 meetings and 2 wins, 12 scored and 1 conceded. The last two finished 5-0 at home in Sep 25 and 7-1 away in Nov 25.\n\nThanks to Pure Football for hosting and good luck to them for the season.\n\nMATCH DETAILS\nLine-up: Luke Munns (Goalkeeper), Samakab Nur (Left wing back), Sean Sheehan (Left centre back), Jim El Bayati (Centre back), Sam Nichols (Right centre back), Daniel Thorz (Right wing back), Jeev Thilaganathan (Left defensive midfielder), Stewart Luwawa (Right defensive midfielder), Harry Pyke (Left attacking midfielder), Ade Owolona (Right attacking midfielder), Leon Burnett (Striker).\nShape: 3-4-2-1.\nCaptain: Stewart Luwawa.\nGoals: Ade Owolona, Leon Burnett.\nClean sheet: Luke Munns.\nSaves: Luke Munns 6.",
         "penaltiesMissed": [],
         "opponentRedCards": [],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-08-02T23:44:46.6+00:00"
+      "updated_at": "2026-08-03T14:59:01.341+00:00"
     }
   ],
   "articles": [
@@ -5767,8 +5967,8 @@
       "key": "m1782655099171kahr",
       "data": {
         "id": "m1782655099171kahr",
-        "src": "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/al1782655092218ggwj/0-1782655092218.jpg",
-        "date": "2026-06-28T13:58:19.171Z",
+        "src": "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/al1782655092218ggwj/15-1782655098313.jpg",
+        "date": "2026-06-28",
         "sort": 1782655099171,
         "tags": [
           "Andrew Allen",
@@ -5778,9 +5978,10 @@
           "Richard Epathite",
           "Dean Knight",
           "Stephen Epathite",
-          "Jim El Bayati"
+          "Jim El Bayati",
+          "Kafele Brown"
         ],
-        "cover": "",
+        "cover": "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/al1782655092218ggwj/15-1782655098313.jpg",
         "title": "Sue's Angels 5-0 Pure Football 2.0 | League Ten • Matchday 1 • 21 September 2025",
         "photos": [
           "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/al1782655092218ggwj/0-1782655092218.jpg",
@@ -5802,6 +6003,7 @@
           "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/al1782655092218ggwj/16-1782655098832.jpg"
         ],
         "caption": "Sue's Angels 5-0 Pure Football 2.0 | League Ten • Matchday 1 • 21 September 2025",
+        "matchId": "",
         "category": "Matchday",
         "awayBadge": "assets/badge/pure-fc.png",
         "homeBadge": "assets/badge/sue-angels-shield.png",
@@ -5815,7 +6017,8 @@
           ],
           [],
           [
-            "Daniel McLane"
+            "Daniel McLane",
+            "Andrew Allen"
           ],
           [
             "Stewart Luwawa",
@@ -5837,7 +6040,8 @@
             "Daniel McLane"
           ],
           [
-            "Dean Knight"
+            "Dean Knight",
+            "Kafele Brown"
           ],
           [
             "Daniel McLane"
@@ -5851,11 +6055,14 @@
           [
             "Andrew Allen"
           ],
-          []
+          [
+            "Dean Knight",
+            "Richard Epathite"
+          ]
         ],
         "photographer": "Louis Allen"
       },
-      "updated_at": "2026-06-28T17:15:11.56+00:00"
+      "updated_at": "2026-08-03T10:12:39.131+00:00"
     },
     {
       "key": "m1782658809837fibs",
@@ -8467,29 +8674,70 @@
             "last": "Owolona",
             "first": "Ade",
             "position": "Midfielder"
+          },
+          {
+            "num": 37,
+            "last": "Pyke",
+            "first": "Harry",
+            "position": "Midfielder"
           }
         ]
       },
-      "updated_at": "2026-08-02T16:44:53.061+00:00"
+      "updated_at": "2026-08-03T10:54:55.801+00:00"
     },
     {
       "key": "roster:status",
       "data": {
         "status": {
-          "1": "departed",
+          "1": {
+            "25/26": {
+              "key": "departed",
+              "from": "2026-01-01"
+            }
+          },
           "2": "retained",
-          "3": "new",
+          "3": {
+            "25/26": {
+              "key": "active",
+              "from": "2026-08-01"
+            }
+          },
           "4": "retained",
           "6": "retained",
-          "7": "retired",
+          "7": {
+            "25/26": {
+              "key": "retired",
+              "from": "2026-05-31"
+            }
+          },
           "8": "departed",
-          "10": "retired",
-          "11": "departed",
-          "12": "new",
+          "10": {
+            "25/26": {
+              "key": "retired",
+              "from": "2026-05-31"
+            }
+          },
+          "11": {
+            "25/26": {
+              "key": "departed",
+              "from": "2026-05-31"
+            }
+          },
+          "12": {
+            "25/26": {
+              "key": "active",
+              "from": "2026-08-01"
+            }
+          },
           "13": "returned",
           "14": "departed",
           "15": "departed",
-          "16": "departed",
+          "16": {
+            "25/26": {
+              "key": "departed",
+              "from": "2026-05-31"
+            }
+          },
           "19": "departed",
           "20": "retained",
           "21": "retained",
@@ -8497,15 +8745,73 @@
           "23": "retained",
           "24": "departed",
           "25": "retained",
+          "26": {
+            "25/26": "departed"
+          },
           "28": "retained",
           "29": "retained",
           "30": "retained",
+          "33": {
+            "25/26": {
+              "key": "departed",
+              "from": "2026-01-01"
+            }
+          },
           "34": "retained",
           "35": "retained",
-          "36": "departed"
+          "36": "departed",
+          "37": {
+            "25/26": {
+              "key": "active",
+              "from": "2026-08-01"
+            }
+          }
         }
       },
-      "updated_at": "2026-08-02T16:48:07.511+00:00"
+      "updated_at": "2026-08-03T10:55:04.819+00:00"
+    },
+    {
+      "key": "roster:trialists",
+      "data": {
+        "players": [
+          {
+            "num": 901,
+            "from": "2026-08-01",
+            "name": "Daniel Thorz",
+            "added": "2026-08-03"
+          },
+          {
+            "num": 904,
+            "from": "2026-08-01",
+            "name": "Liam"
+          },
+          {
+            "num": 903,
+            "from": "2026-08-01",
+            "name": "Liam Kirby",
+            "added": "2026-08-03"
+          },
+          {
+            "num": 902,
+            "from": "2026-08-01",
+            "name": "Rabbi Sharif",
+            "added": "2026-08-03"
+          },
+          {
+            "num": 900,
+            "from": "2026-08-01",
+            "name": "Sam Nichols",
+            "added": "2026-08-03"
+          },
+          {
+            "num": 905,
+            "from": "2026-08-01",
+            "name": "Liam Alford",
+            "until": "2026-08-31"
+          }
+        ]
+      },
+      "updated_at": "2026-08-03T11:40:45.648+00:00"
     },
     {
       "key": "sponsor:matchreport",

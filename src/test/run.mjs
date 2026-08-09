@@ -1602,7 +1602,25 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const live = JSON.parse(fs.readFileSync(
     path.join(ROOT, 'src', 'data', 'recovered-live.json'), 'utf8'));
   const { house } = await import(path.join(ROOT, 'src', 'lib', 'prose.mjs'));
-  const flat = (s) => String(s).replace(/&#?\w+;/g, '').replace(/[^a-z0-9]+/gi, '').toLowerCase();
+  /* TAGS COME OUT FIRST, and this checker was wrong about that for a while.
+     It stripped entities and then every non-alphanumeric, which turns a tag
+     into its own letters rather than removing it: `<br />` became `br` and
+     `<a href="/players/luke-munns.html">Luke Munns</a>` became
+     `ahrefplayerslukemunnshtmllukemunnsa`. The probe is built from the plain
+     article text, so any tag INSIDE the paragraph it probes puts letters
+     between two words that are adjacent in the source and the match fails.
+
+     Nothing showed it until a report ended in a MATCH DETAILS block, which is
+     the first report content to carry line breaks inside one paragraph. The
+     report was on the page in full; the checker could not see it. A checker
+     that reports the site as broken when the site is fine is worse than no
+     checker, because the next person spends their afternoon on the wrong
+     file. */
+  const flat = (s) => String(s)
+    .replace(/<[^>]*>/g, '')
+    .replace(/&#?\w+;/g, '')
+    .replace(/[^a-z0-9]+/gi, '')
+    .toLowerCase();
   const built = [...pages].filter(([f]) => f.startsWith('matches/'))
     .map(([f, h]) => [f, flat(h)]);
   const unpublished = [];

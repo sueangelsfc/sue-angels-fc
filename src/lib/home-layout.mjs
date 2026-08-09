@@ -46,6 +46,14 @@ export const HOME_BANDS = [
     what: 'The friendly programme, the record across it, who has scored and who has '
       + 'made a first appearance. Takes itself off the page once the league starts.',
   },
+  /* Beside pre-season, because they are one thought: the friendlies being
+     played and the division they are preparation for. It retires on the same
+     kind of evidence, when the division has started. */
+  {
+    key: 'ahead',
+    name: 'The season ahead',
+    what: 'The clubs in the new division and what the archive already holds on each of them.',
+  },
   {
     key: 'news',
     name: 'Club news',
@@ -122,12 +130,6 @@ export const HOME_BANDS = [
     off: true,
     pick: 'player',
     auto: 'The club’s leading scorer',
-  },
-  {
-    key: 'ahead',
-    name: 'The season ahead',
-    what: 'The clubs in the new division and what the archive already holds on each of them.',
-    off: true,
   },
 ];
 

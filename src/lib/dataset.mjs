@@ -313,6 +313,12 @@ export function buildDataset() {
      because that is what the page's srcset promises; the home template falls
      back to the built-in banner when there is no record, so removing it puts
      the original back rather than leaving a hole. */
+  /* WHICH BANDS THE HOME PAGE SHOWS, AND IN WHAT ORDER. Passed through raw:
+     home-layout.mjs is what decides what a missing, empty or nonsense record
+     means, and it decides it once for the page and the panel together. Reading
+     it here would be a second opinion. */
+  const homeLayout = blob('home:layout') || null;
+
   const heroRow = blob('hero:home') || {};
   const hero = heroRow.w1344 ? {
     src: heroRow.w1344,
@@ -1020,7 +1026,7 @@ export function buildDataset() {
     statusLabelIn: (num, season) => statusLabelIn(statusRecord, num, season, statusOpts),
     isPlayingStatus: isPlaying,
     coaches, table, leagueScorers, leagueScorersByComp, nextDivisionTable, leagueResults,
-    articles, recognition, galleries, playerPhotos, donate, hero, trialists,
+    articles, recognition, galleries, playerPhotos, donate, hero, homeLayout, trialists,
     photoFor, photoSeasons, shotFor, sponsorships,
     seasons, seasonInfo, competitions, knownClubs, badges,
     currentSeason: ps.CURRENT_SEASON,

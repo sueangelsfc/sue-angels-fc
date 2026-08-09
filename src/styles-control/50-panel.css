@@ -137,3 +137,65 @@
   color: var(--text-muted);
   text-align: start;
 }
+
+/* ---- The home page's running order ---------------------------------------
+   A numbered list, because that is what it produces: the numbers here are the
+   ones that appear down the left of the home page. A band that is hidden or
+   empty shows "--" rather than a number, so it is visibly out of the count
+   instead of quietly renumbering everything below it.
+
+   Buttons, not drag and drop. This screen is used on a phone as often as a
+   laptop, and a drag target that has to be held and dragged past a scrolling
+   list is the least reliable control there is on touch. Two arrows always
+   work, and they work from a keyboard. */
+.hbands {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.hband {
+  display: grid;
+  grid-template-columns: 2.75rem 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+.hband__n {
+  font-family: var(--font-display);
+  font-variation-settings: 'wdth' var(--width-num, 100);
+  font-size: var(--step-0);
+  font-weight: 700;
+  color: var(--brand);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.hband__t { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.hband__t b { font-size: var(--step--1); }
+.hband__t span { font-size: var(--step--2); color: var(--text-muted); }
+.hband__flag { color: var(--warning) !important; }
+.hband__b { display: flex; gap: var(--space-2); flex-shrink: 0; }
+
+/* Off is stated by weight and by the number going away, not by a second
+   colour: the panel's status tokens are for feedback about the panel, and
+   "this band is not showing" is a setting rather than a warning. */
+.hband.is-off { opacity: 0.55; }
+.hband.is-off .hband__n { color: var(--text-subtle); }
+.hband.is-pinned { background: transparent; border-style: dashed; }
+.hband.is-pinned .hband__n {
+  font-size: var(--step--2);
+  font-family: var(--font-body);
+  color: var(--text-subtle);
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .hband { grid-template-columns: 2.25rem 1fr; }
+  .hband__b { grid-column: 1 / -1; justify-content: flex-end; }
+  .hband__b .btn { min-height: 44px; min-width: 44px; }
+}

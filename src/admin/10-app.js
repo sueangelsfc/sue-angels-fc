@@ -733,6 +733,7 @@
     covers: 'covers',
     videos: 'video',
     hero: 'hero',
+    home: 'home',
   };
   var pending = {};
   /* Fetch a chunk by its own name. `need` maps a panel to one; CPU.chunk

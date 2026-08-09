@@ -848,6 +848,10 @@ const BUDGET = {
   'control-covers.js': 4,
   'control-video.js': 3,
   'control-hero.js': 3,
+  /* The running order of the home page. A list, two arrows and a switch, and
+     it is 2.2KB because the explanation of what each band IS comes from the
+     build rather than being typed here twice. */
+  'control-home.js': 3,
 };
 for (const [f, kb] of Object.entries(BUDGET)) {
   const raw = fs.readFileSync(path.join(ROOT, f));
@@ -2208,6 +2212,171 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   check('the aura animation carries no fill mode',
     !/animation:[^;]*pa-(turn|breathe)[^;]*\b(both|forwards)\b/.test(homeCss),
     'a fill mode would make a paused animation hold its value permanently');
+}
+
+/* ---- The home page's running order is the club's ---------------------------
+   The order was one line of home.mjs and is a record now. Four things have to
+   hold for that to be an improvement rather than a new way to break the front
+   page:
+
+     - absent means the page as it shipped, so nothing needs migrating
+     - a hidden or empty band leaves NO GAP in the numbers down the left
+     - the panel and the generator resolve a record to the SAME order
+     - no page hard-codes the order any more
+
+   The third is the one worth the trouble. There are deliberately two copies of
+   the rule, one that must run in Node during a build and one that must run in
+   a browser with no build step, and a preview that disagrees with what gets
+   published is worse than no preview. So both are run over the same records
+   here and compared. */
+{
+  const { resolveHomeLayout, publishedBands, HOME_BANDS, HOME_BAND_KEYS } =
+    await import(path.join(ROOT, 'src', 'lib', 'home-layout.mjs'));
+  const { buildDataset: bdL } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const dL = bdL();
+  const DEFAULT = HOME_BAND_KEYS.join(',');
+
+  /* Absent, empty, and full of names nothing has ever heard of. */
+  for (const [label, rec] of [
+    ['no record', null],
+    ['an empty record', {}],
+    ['a record of the wrong shape', { order: 'news', hidden: 7 }],
+    ['a record naming nothing real', { order: ['nope', 42, null], hidden: ['gone'] }],
+  ]) {
+    const r = resolveHomeLayout(rec);
+    check(`home layout: ${label} means the standard order`,
+      r.order.join(',') === DEFAULT && r.hidden.size === 0 && r.isDefault,
+      r.order.join(','));
+  }
+
+  /* A band the record does not name arrives among its own neighbours rather
+     than at the bottom of the page. This is what stops a band added next
+     season looking broken for everybody who has ever touched this screen. */
+  {
+    const r = resolveHomeLayout({ order: ['cta', 'news'] });
+    check('home layout: an unnamed band keeps its neighbours',
+      r.order.indexOf('who') === r.order.indexOf('news') + 1
+      && r.order.indexOf('awards') === r.order.indexOf('who') + 1
+      && r.order.length === HOME_BAND_KEYS.length,
+      r.order.join(','));
+    check('home layout: every band survives a partial record',
+      HOME_BAND_KEYS.every((k) => r.order.includes(k)));
+  }
+
+  /* Hiding is separate from ordering, so turning a band off and on again puts
+     it back where it was rather than at the end. */
+  {
+    const rec = { order: ['table', 'news', 'who', 'awards', 'campaign', 'results', 'faq', 'cta'], hidden: ['news'] };
+    const off = publishedBands(rec, dL);
+    const on = publishedBands({ ...rec, hidden: [] }, dL);
+    check('home layout: hiding a band does not move it',
+      on.indexOf('news') === 1 && !off.includes('news'), on.join(','));
+  }
+
+  /* The two copies of the rule agree. The panel's is read out of the SHIPPED
+     chunk, minified, exactly as a browser gets it. */
+  {
+    const chunkL = fs.readFileSync(path.join(ROOT, 'control-home.js'), 'utf8');
+    const wL = {
+      CP: {}, CPM: {}, CPU: { $: () => null, esc: (s) => s },
+      SA_SEED: { homeBands: HOME_BANDS.map((b) => ({ ...b, empty: false })) },
+    };
+    // eslint-disable-next-line no-new-func
+    new Function('window', `with(window){${chunkL}}`)(wL);
+    const panelResolve = wL.CPH && wL.CPH.resolve;
+    check('the panel ships its copy of the ordering rule', typeof panelResolve === 'function');
+    if (typeof panelResolve === 'function') {
+      const cases = [
+        null, {}, { order: [] }, { order: ['cta', 'news'] },
+        { order: ['nope', 'news'], hidden: ['gone', 'faq'] },
+        { order: ['table', 'results', 'news'], hidden: ['who'] },
+        { order: ['news', 'news', 'who'] },
+        { order: HOME_BAND_KEYS.slice().reverse(), hidden: HOME_BAND_KEYS.slice(0, 3) },
+      ];
+      let agree = 0;
+      for (const c of cases) {
+        const a = resolveHomeLayout(c);
+        const b = panelResolve(c);
+        const same = a.order.join(',') === b.order.join(',')
+          && [...a.hidden].sort().join(',') === b.hidden.slice().sort().join(',');
+        if (same) agree += 1;
+        check(`panel and site resolve alike: ${JSON.stringify(c)}`, same,
+          `site ${a.order.join(',')} / panel ${b.order.join(',')}`);
+      }
+      check('every ordering case agrees', agree === cases.length);
+    }
+  }
+
+  /* And the page that actually shipped. Its bands must be in the resolved
+     order, and its numbers must run 01, 02, 03 with nothing missing. */
+  {
+    const homeHtml = pages.get('index.html') || '';
+    const drawn = [...homeHtml.matchAll(/<section class="sec sec--([a-z]+)"/g)].map((m) => m[1]);
+    const expect = publishedBands(dL.homeLayout, dL);
+    check('the home page ships in the resolved order',
+      drawn.join(',') === expect.join(','), `${drawn.join(',')} vs ${expect.join(',')}`);
+
+    const nums = [...homeHtml.matchAll(/xrail__n">(\d\d)</g)].map((m) => Number(m[1]));
+    check('the reference numbers run without a gap',
+      nums.every((n, i) => n === i + 1) && nums.length === expect.length,
+      nums.join(','));
+  }
+
+  /* The panel is handed the band list rather than holding its own, so the two
+     cannot describe the same band differently. */
+  {
+    const seedL = JSON.parse(fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8')
+      .replace(/^[^{]*/, '').replace(/;?\s*$/, ''));
+    const seeded = (seedL.homeBands || []).map((b) => b.key).join(',');
+    check('the panel is seeded exactly the bands the site draws',
+      seeded === DEFAULT, seeded);
+    check('every seeded band carries the name the page uses',
+      (seedL.homeBands || []).every((b, i) => b.name === HOME_BANDS[i].name && b.what));
+    /* The two that can be empty are the two the site says can be empty. An
+       "empty" flag that were merely decorative would put a switch beside a
+       band the page drops anyway. */
+    const emptyable = (seedL.homeBands || []).filter((b) => 'empty' in b).length;
+    check('the panel knows which bands are currently empty',
+      emptyable === HOME_BANDS.length, `${emptyable} of ${HOME_BANDS.length}`);
+  }
+
+  /* THE PANEL'S OWN CLASSES ARE DEFINED. Check 12d reads the generated pages
+     and can only see classes that are in the HTML; this screen builds its
+     markup in the browser, so a typo there produces an unstyled list and no
+     test notices. Read out of the shipped chunk and looked up in the shipped
+     sheet, both minified. */
+  {
+    const chunkC = fs.readFileSync(path.join(ROOT, 'control-home.js'), 'utf8');
+    const cssC = fs.readFileSync(path.join(ROOT, 'control.css'), 'utf8');
+    /* Read as TOKENS, not by parsing class="...". A class attribute in this
+       chunk is built by concatenation - `class="hband' + (off ? ' is-off' : '')
+       + '"` - so anything matching on the quotes swallows the JavaScript
+       between them and then asks the stylesheet for a rule named `.hband'+(c||v?`.
+       That is the checker being wrong about the code, which is the failure
+       mode worth guarding against in a checker this cheap to write. */
+    const used = new Set();
+    for (const m of chunkC.matchAll(/\bhbands?(?:__[a-z]+)?\b/g)) used.add(m[0]);
+    check('the running-order list uses classes it defines', used.size >= 5, `${used.size} found`);
+    for (const c of used) {
+      check(`control.css defines .${c}`, cssC.includes(`.${c}`));
+    }
+    /* And the state class the rows toggle, which never appears in a class=""
+       literal because classList puts it there. */
+    for (const c of ['is-off', 'is-pinned']) {
+      check(`control.css defines .hband.${c}`, new RegExp(`\\.hband\\.${c}\\b`).test(cssC));
+    }
+  }
+
+  /* No page hard-codes the order. The rail number used to be typed at the call
+     site, 1 through 8, which was correct for exactly one arrangement. */
+  {
+    const src = fs.readFileSync(path.join(ROOT, 'src', 'templates', 'home.mjs'), 'utf8');
+    check('the home page does not type its own band numbers',
+      !/\brail\(\s*\d/.test(src),
+      'a typed rail number is right for one arrangement of the page and no other');
+    check('the home page composes from the resolved order',
+      /publishedBands\(/.test(src) && !/body:\s*hero\s*\+\s*ticker\s*\+\s*newsBand/.test(src));
+  }
 }
 
 /* ---- Report ---- */

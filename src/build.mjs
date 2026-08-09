@@ -15,6 +15,7 @@ import { page, esc, CLUB_ID } from './lib/html.mjs';
 import { CLUB, SEPSIS } from './lib/club.mjs';
 import { teamSummary, fmtDate, isUs, isLeague} from './lib/stats.mjs';
 import { home, oppBadge } from './templates/home.mjs';
+import { HOME_BANDS, homeBandFilled } from './lib/home-layout.mjs';
 import * as P from './templates/pages.mjs';
 import { about } from './templates/about.mjs';
 import { cause } from './templates/cause.mjs';
@@ -345,6 +346,21 @@ const adminSeed = {
      the house rule against inventing anything means nothing will pad it out
      to look as though they had. */
   reportWords: { min: 700, max: 900, perMoment: 22, base: 150 },
+  /* THE HOME PAGE'S BANDS, handed to the panel rather than listed there.
+     The panel offers exactly what the page can draw, in the order the page
+     currently draws it, because it is given the list instead of holding its
+     own copy of it. A band renamed here is renamed in the panel on the next
+     publish, and a band the panel invented would simply not appear.
+
+     `empty` is the honest part: a band with nothing in it is not published
+     whatever the club chooses, so the switch beside it says so rather than
+     appearing to do something. */
+  homeBands: HOME_BANDS.map((b) => ({
+    key: b.key,
+    name: b.name,
+    what: b.what,
+    empty: !homeBandFilled(b.key, d),
+  })),
   /* WHAT THE CLUB KNOWS ABOUT EACH PLAYER, so a match report can say
      something a person would say. The panel knew a name, a number and a
      position, so every report described eleven interchangeable men: it could

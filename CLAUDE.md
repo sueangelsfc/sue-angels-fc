@@ -29,7 +29,7 @@ src/
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        1,920-check suite against the generated output
+  test/run.mjs        2,613-check suite against the generated output
 ```
 
 **Run `npm run build` after any change under `src/`.** Nothing in `src/` is served; only the generated root files are.
@@ -37,14 +37,17 @@ src/
 ### Why a generator
 1. **Shell drift is impossible.** Header, nav and footer are defined once in `html.mjs`. The old site copy-pasted them into 20 files and they drifted (three different brand `aria-label`s, two different mobile CTA labels).
 2. **Real URLs.** Every player (`/players/<slug>.html`), match (`/matches/<id>.html`), article and album gets its own crawlable file with content in the HTML.
-3. **Vercel needs no build step.** `buildCommand: null`. No build can fail on deploy.
+3. **The deploy runs the generator.** `buildCommand` is `npm run sync && npm run build && npm run verify`, set by `45492af` when the Publish button landed. It was `null`, and this note said no build could fail on deploy; that has not been true since. A deploy now pulls the database, regenerates and checks the derived figures, so **a bad record can fail a deploy** and anything the panel reads must resolve to something sane rather than throwing.
 4. **Works with JavaScript disabled.** Every page ships complete markup.
 
-### The database does not reach the site on its own
+### The database reaches the site when somebody publishes
 The control panel writes to **Supabase**. The generator reads
 **`src/data/recovered-live.json`**, which is a snapshot of exactly those seven
-tables. Nothing connects them automatically, so a save in the panel changes the
-database and **not the website** until the snapshot is refreshed.
+tables. A save in the panel changes the database and **not the website** until
+that snapshot is refreshed, which is what **Publish to site** now does: the
+deploy hook fires a Vercel build and the build's own `buildCommand` runs
+`npm run sync` first. Nothing refreshes on a schedule, so an unpublished save
+is invisible for as long as nobody presses it.
 
 ```bash
 npm run sync        # pull the seven content tables into the snapshot
@@ -168,6 +171,12 @@ The panel's stylesheet was `src/styles/70-control.css`, inside `sa.css`, so ever
 - **Covers are drawn, not found.** Two badges, the score and the date for a match; the crest and the headline for an article. Canvas, in the browser, saved to the record and used as the share image. A real photograph always wins.
 - The boot screen holds for **three seconds, end to end**, however long the badge takes to assemble; the beat count adapts rather than the total. `TOTAL` in `home.mjs` is the only number to change.
 - **The home page banner is pickable** and produces the same three widths the build does (640/960/1344), so the srcset and the preload hint stay true. Removing it restores the original.
+- **The home page's running order is the club's**, in Control panel → Home page. Eight bands (news, who, awards, campaign, results, table, FAQ, CTA), each movable, each able to be turned off, written to `home:layout`. It was one line of `home.mjs`, which made it a decision from July that the club could not revisit: in August the promotion to League Eight was news while an empty League Eight table led the page. `src/lib/home-layout.mjs` is the single definition and it is total, never throwing whatever the record holds, because a deploy now runs the generator and a record that threw would fail the club's own publish.
+  - **The hero is pinned** and is named as pinned in the list. It carries the page's one h1 and the next-match card, and a list of eight where the page has nine invites somebody to go hunting for a bug.
+  - **The rail numbers down the page are derived from the published order.** They were typed at the call site, 1 to 8, which is correct for exactly one arrangement: hiding a band left the strip reading 04 then 06. A band that is hidden **or empty** takes no number, so `news` with no articles cannot leave a gap.
+  - **The panel is handed the band list by the build** (`SEED.homeBands`) rather than holding its own, so it cannot offer a band the site does not draw, and it is told which bands are currently empty so a switch never promises something the page will ignore.
+  - **There are two copies of the ordering rule**, one in Node for the generator and one in the browser for the preview, and the suite runs both over the same records and fails if they part company. A preview that disagrees with what gets published is worse than no preview.
+  - Absent means the standard order: no record, an empty record and a record full of names nothing has heard of all produce the page byte for byte as it ships.
 - Four video slots per match: footage, before, after, anything else. Direct upload is capped at 60MB with the reason on the button, because a full match is a gigabyte.
 - **Recognition follows its type.** A season award, a trophy, a club record, a Player of the Month and the captaincy are five different shapes, and the awards page reads different fields from each. The form asks for the right ones and clears the ones belonging to a type an entry has been changed away from, while still preserving anything it has never heard of.
 - **The sponsorship pipeline** is the club's own prospect list: who has been contacted, who has committed, and how much of the season's target that is. Nothing in it is published. The retired one lived in browser storage on one laptop.
@@ -189,7 +198,7 @@ Read leads in **Control panel → Inbox**; RLS blocks anonymous reads, so signin
 ```bash
 npm run build     # regenerate every route (run after any src/ change)
 npm run verify    # assert derived stats against the published league table
-npm test          # 1,920 checks against the generated output
+npm test          # 2,613 checks against the generated output
 npm run serve     # local preview on :4321
 ```
 

@@ -20,6 +20,7 @@ export const MODULES = [
   { key: 'news', label: 'News', icon: 'news' },
   { key: 'media', label: 'Gallery albums', icon: 'camera' },
   { key: 'covers', label: 'Cover pictures', icon: 'camera' },
+  { key: 'home', label: 'Home page', icon: 'news' },
   { key: 'hero', label: 'Home page banner', icon: 'camera' },
   { key: 'phototag', label: 'Tag players in photos', icon: 'users' },
   { key: 'videos', label: 'Video and interviews', icon: 'play' },

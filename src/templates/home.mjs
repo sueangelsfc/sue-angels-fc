@@ -23,6 +23,7 @@ import { esc, attr, clubCrest, NAV } from '../lib/html.mjs';
 import { sizeAttrs } from '../lib/imagesize.mjs';
 import { CLUB, SPONSORS, FAQS, NEXT_FIXTURE, SEASON_AWARDS , SOCIALS} from '../lib/club.mjs';
 import { teamSummary, formGuide, isLeague} from '../lib/stats.mjs';
+import { publishedBands } from '../lib/home-layout.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 
@@ -77,10 +78,23 @@ const railRefs = (d) => {
    about a year that would go out of date on its own. */
 let RAIL_REF = railRefs({ nextSeason: '' });
 
-const rail = (n, label) => `<div class="xrail" aria-hidden="true">
+/* WHICH NUMBER EACH BAND WEARS, filled in by home() once the published order
+   is known. It used to be typed at the call site, 1 through 8, which was true
+   for exactly one arrangement of the page: the moment the club hid a band or
+   moved one, the strip read 01, 03, 02, 04 down the page, or started at 02.
+   Same fault as a typed season, on a shorter fuse.
+
+   Keyed by band rather than positional for the same reason RAIL_REF is a
+   module-level let: the bands are built as template literals in source order,
+   long before anything knows which of them the club publishes. */
+let RAIL_N = {};
+const rail = (key, label) => {
+  const n = RAIL_N[key] || 1;
+  return `<div class="xrail" aria-hidden="true">
       <span class="xrail__l"><span class="xrail__n">${esc(String(n).padStart(2, '0'))}</span><span class="xrail__t">${esc(label)}</span></span>
       <span class="xrail__r">${esc(RAIL_REF[(n - 1) % RAIL_REF.length])}</span>
     </div>`;
+};
 
 /* Opponent badge as a bare image, the way the reference draws it. Falls back
    to the shared lettered mark when the club has no badge on file.
@@ -190,6 +204,14 @@ function bars(values, { max, min = 2, fill } = {}) {
 
 export function home(d) {
   RAIL_REF = railRefs(d);
+
+  /* WHAT THIS PAGE SHOWS, AND IN WHAT ORDER, decided before a single band is
+     built because the reference strip numbers them from it. Set in Control
+     panel -> Home page; with no record this is the standard order and the page
+     is identical to the one that shipped. See lib/home-layout.mjs. */
+  const shown = publishedBands(d.homeLayout, d);
+  RAIL_N = {};
+  shown.forEach((k, i) => { RAIL_N[k] = i + 1; });
   const all = teamSummary(d.competitive);
   const league = teamSummary(d.played.filter(isLeague));
   /* The form strip reads left to right in the order the games were played. */
@@ -385,7 +407,7 @@ export function home(d) {
   /* ================= 01 CLUB NEWS ================= */
   const newsBand = news.length ? `<section class="sec sec--news" id="news" aria-labelledby="news-h">
       <div class="wrap">
-        ${rail(1, 'Club news')}
+        ${rail('news', 'Club news')}
         <div class="nhead rv">
           <div>
             <p class="eyebrow">Off the pitch</p>
@@ -433,7 +455,7 @@ export function home(d) {
 
   const whoBand = `<section class="sec sec--who" id="who" aria-labelledby="who-h">
       <div class="wrap">
-        ${rail(2, 'More than a result')}
+        ${rail('who', 'More than a result')}
         <div class="who__intro rv">
           <div class="who__lead">
             <p class="eyebrow">Who we are</p>
@@ -509,7 +531,7 @@ export function home(d) {
 
   const awardsBand = `<section class="sec sec--awards" id="awards" aria-labelledby="awards-h">
       <div class="wrap">
-        ${rail(3, 'Award winners')}
+        ${rail('awards', 'Award winners')}
         <div class="aw__head rv">
           <p class="eyebrow">${esc(d.currentSeason)} End of season</p>
           <h2 class="h2" id="awards-h">Award winners<span class="volt">.</span></h2>
@@ -580,7 +602,7 @@ export function home(d) {
 
   const campaignBand = `<section class="sec sec--campaign" id="campaign" aria-labelledby="cmp-h">
       <div class="wrap">
-        ${rail(4, 'The campaign')}
+        ${rail('campaign', 'The campaign')}
         <div class="cmp__head rv">
           <div class="cmp__headlede">
             <h2 class="h2" id="cmp-h">The campaign<span class="volt">.</span></h2>
@@ -707,7 +729,7 @@ export function home(d) {
 
   const resultsBand = `<section class="sec sec--results" id="results" aria-labelledby="res-h">
       <div class="wrap rl__head rv">
-        ${rail(5, 'Recent results')}
+        ${rail('results', 'Recent results')}
         <div>
           <h2 class="h2" id="res-h">Recent results<span class="volt">.</span></h2>
         </div>
@@ -748,7 +770,7 @@ export function home(d) {
   /* ================= 06 THE TABLE ================= */
   const tableBand = d.table.length ? `<section class="sec sec--table" id="table" aria-labelledby="tbl-h">
       <div class="wrap tbl__head rv">
-        ${rail(6, 'The table')}
+        ${rail('table', 'The table')}
         <div>
           <h2 class="h2" id="tbl-h">The table<span class="volt">.</span></h2>
         </div>
@@ -782,7 +804,7 @@ export function home(d) {
   /* ================= 07 ASK THE ANGELS ================= */
   const faqBand = `<section class="sec sec--faq" id="faq" aria-labelledby="faq-h">
       <div class="wrap rv">
-        ${rail(7, 'Ask the Angels')}
+        ${rail('faq', 'Ask the Angels')}
         <h2 class="h2" id="faq-h">Ask the Angels<span class="volt">.</span></h2>
       </div>
       <div class="wrap">
@@ -802,7 +824,7 @@ export function home(d) {
 
   const ctaBand = `<section class="sec sec--cta" aria-labelledby="cta-h">
       <div class="wrap">
-        ${rail(8, 'Pull on the shirt')}
+        ${rail('cta', 'Pull on the shirt')}
         <div class="cta2 rv">
           <span class="cta2__glow" aria-hidden="true"></span>
           <img class="cta2__badge" src="${STAR}" alt=""${sizeAttrs(STAR)} aria-hidden="true" loading="lazy" decoding="async" />
@@ -927,7 +949,23 @@ export function home(d) {
   const preMain = bootScreen + sitePreMain(auraFor('index.html'));
 
   return {
-    body: hero + ticker + newsBand + whoBand + awardsBand + campaignBand + resultsBand + tableBand + faqBand + wordstrip + ctaBand,
+    /* The hero is pinned: it carries the page's one h1 and the next-match card,
+       and a home page that opens on the league table is not a home page.
+       Everything after it is the club's to arrange.
+
+       The wordstrip travels with the CTA rather than sitting at a fixed point
+       in the page, because that is what it is: the lead-in flourish to Pull on
+       the shirt, not a divider at a particular height. */
+    body: hero + ticker + shown.map((k) => ({
+      news: newsBand,
+      who: whoBand,
+      awards: awardsBand,
+      campaign: campaignBand,
+      results: resultsBand,
+      table: tableBand,
+      faq: faqBand,
+      cta: wordstrip + ctaBand,
+    })[k] || '').join(''),
     bodyClass: 'is-home',
     css: 'home.css',
     shell: 'home',

@@ -124,9 +124,32 @@ body{position: relative;
 .pageaura{position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden;
   --pa-mul: 1;                       /* global intensity — dialled right down in light theme */}
 
+/* THE CEILING IS THE WHOLE BUG, and it only ever bound on a wide screen.
+
+   Blob widths are authored in viewport widths and the broad tier runs to
+   330vw, so the ceiling is what decides the cost - and at 5200px it decided
+   nothing on a phone and everything on a laptop. Totalled over twenty-four
+   blobs, all of them under a transform that never stops:
+
+     phone   390px    7.4 Mpx     28MB    biggest blob 1273px
+     laptop 1440px    101 Mpx    385MB    biggest blob 4700px
+     laptop 1728px    138 Mpx    528MB    biggest blob 5200px
+     desktop 2686px   207 Mpx    788MB    biggest blob 5200px
+
+   The club reported it working well on a phone and terribly on a laptop,
+   which is exactly the shape of that table: 28MB fits, 385MB does not, and
+   past the compositor's budget the layers stop being promoted and every frame
+   becomes a repaint.
+
+   1400px is chosen so the PHONE IS UNTOUCHED - its largest blob is 1273px and
+   never reaches the ceiling, so the one configuration known to be smooth is
+   byte for byte what it was. A laptop drops from 385MB to about 92MB.
+
+   The cost is quadratic in this number. Raising it back to 5200 is a 14-fold
+   increase on a laptop, which is why the suite asserts it. */
 .pa{position: absolute;
   left: var(--pa-x, 50%); top: var(--pa-y, 50%);
-  width: clamp(200px, var(--pa-w, 70vw), 5200px);
+  width: clamp(200px, var(--pa-w, 70vw), 1400px);
   aspect-ratio: var(--pa-ar, 1.6);
   animation: pa-turn var(--pa-dur, 220s) linear var(--pa-delay, 0s) infinite;}
 .pa i{display: block; width: 100%; height: 100%;

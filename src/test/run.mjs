@@ -2274,6 +2274,35 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     && !/html\.js\.is-scrolling \.camp[^{,]*\*/.test(homeCss),
     'the revealed band must keep camp-grow running while scrolling');
 
+  /* ---- The aura's size ceiling ------------------------------------------
+     The one number that decided whether the site was smooth, and it only ever
+     bound on a wide screen: blob widths are authored in viewport widths up to
+     330vw, so a phone never reached the ceiling and a laptop was pinned to
+     it. Totalled over twenty-four blobs, all under a transform that never
+     stops, at the old ceiling of 5200px:
+
+       phone   390px    7.4 Mpx     28MB
+       laptop 1440px    101 Mpx    385MB
+       desktop 2686px   207 Mpx    788MB
+
+     Which is exactly the report: fine on a phone, terrible on a laptop. Past
+     the compositor's budget the layers stop being promoted and every frame
+     becomes a repaint.
+
+     The cost is QUADRATIC in this number, so it is asserted rather than left
+     to judgement. 1400 keeps the phone untouched, its largest blob being
+     1273px, and takes a laptop from 385MB to about 92MB. */
+  {
+    const cap = /\.pa\{[^}]*?width:clamp\(200px,var\(--pa-w,\s*70vw\),(\d+)px\)/.exec(homeCss);
+    check('the aura declares a size ceiling', !!cap, 'clamp() ceiling not found in the shipped sheet');
+    if (cap) {
+      check('the aura ceiling is low enough for a laptop', Number(cap[1]) <= 1400,
+        `${cap[1]}px - cost is quadratic; 5200px was 385MB of rotating texture at 1440px wide`);
+      check('the aura ceiling is above the largest phone blob', Number(cap[1]) >= 1300,
+        `${cap[1]}px would shrink the aura on a phone, which is the size that works`);
+    }
+  }
+
   /* And the aura's own animations must stay safe to stop: pure transform, or
      an opacity range that never reaches zero and carries no fill mode. */
   const breathe = (homeCss.match(/@keyframes pa-breathe\{([^}]*\}[^}]*)\}/) || [])[1] || '';

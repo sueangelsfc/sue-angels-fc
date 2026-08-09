@@ -14,7 +14,7 @@
 .cp-when:empty { display: none; }
 .cp-when__f { display: grid; gap: 2px; flex: 1 1 128px; min-width: 0; }
 .cp-when__f span {
-  font-family: var(--ui);
+  font-family: var(--font-body);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.1em;

@@ -199,3 +199,5 @@
   .hband__b { grid-column: 1 / -1; justify-content: flex-end; }
   .hband__b .btn { min-height: 44px; min-width: 44px; }
 }
+.hband__pick { display: block; margin-block-start: var(--space-2); max-width: 46ch; }
+.hband__pick .select { width: 100%; }

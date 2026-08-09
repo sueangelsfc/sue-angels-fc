@@ -71,6 +71,14 @@
     });
     var hidden = ((rec && Object.prototype.toString.call(rec.hidden) === '[object Array]')
       ? rec.hidden : []).filter(function (k) { return KEYS.indexOf(k) >= 0; });
+    /* Off until asked for, and asked for means named in the stored order.
+       Same rule and same reason as the generator's: reading `hidden` alone
+       would switch every newly added band on for anybody who had already
+       arranged their home page, because their record cannot mention a band
+       that did not exist when it was written. */
+    BANDS.forEach(function (b) {
+      if (b.off && raw.indexOf(b.key) < 0 && hidden.indexOf(b.key) < 0) hidden.push(b.key);
+    });
     return { order: order, hidden: hidden };
   }
 
@@ -88,6 +96,12 @@
          until Save the order, so a run of moves is one write and one audit
          entry rather than nine. */
       var state = resolve(saved);
+      state.pick = {};
+      if (saved && saved.pick) {
+        KEYS.forEach(function (k) {
+          if (saved.pick[k] != null && saved.pick[k] !== '') state.pick[k] = String(saved.pick[k]);
+        });
+      }
       var dirty = false;
 
       function isHidden(k) { return state.hidden.indexOf(k) >= 0; }
@@ -99,6 +113,35 @@
         return state.order.filter(function (k) {
           return !isHidden(k) && !bandOf(k).empty;
         });
+      }
+
+      /* WHAT THIS BAND WILL PUBLISH, in the panel's own words.
+
+         A band that takes a pick has two states worth telling apart, and the
+         difference matters months later: "whatever is newest" keeps itself
+         right with nobody touching it, and a chosen one is frozen at the day
+         somebody chose it. A panel that showed only a dropdown would make
+         those look identical. */
+      function chooserHtml(key) {
+        var b = bandOf(key);
+        if (!b.pick || !b.options || !b.options.length) return '';
+        var cur = state.pick[key] || '';
+        var found = !cur || b.options.some(function (o) { return o.id === cur; });
+        return '<span class="hband__pick">' +
+          '<label class="sr-only" for="hp-' + esc(key) + '">What ' + esc(b.name) + ' shows</label>' +
+          '<select class="select input--sm" id="hp-' + esc(key) + '" data-pick>' +
+            '<option value=""' + (cur ? '' : ' selected') + '>' +
+              esc(b.auto) + ' (keeps itself up to date)</option>' +
+            b.options.map(function (o) {
+              return '<option value="' + esc(o.id) + '"' + (o.id === cur ? ' selected' : '') + '>'
+                + esc(o.label) + '</option>';
+            }).join('') +
+          '</select>' +
+          (found
+            ? ''
+            : '<span class="hband__flag">The one chosen here is no longer on the site, so the page '
+              + 'is showing ' + esc(String(b.auto).toLowerCase()) + ' instead. Choose again to fix it.</span>') +
+        '</span>';
       }
 
       function rowHtml(key, i) {
@@ -115,6 +158,7 @@
               ? '<span class="hband__flag">Nothing in it at the moment, so the page leaves it out '
                 + 'whichever way this is set.</span>'
               : '') +
+            chooserHtml(key) +
           '</span>' +
           '<span class="hband__b">' +
             '<button class="btn btn--ghost btn--sm" type="button" data-up ' +
@@ -170,15 +214,36 @@
         body:
           '<div data-hl-status></div>' +
           '<div data-hl-list></div>' +
-          '<p class="cp-note" style="margin-top:var(--space-4)">What each band SHOWS is worked out '
-            + 'by the site: the results band is always the last seven played, the table is the '
-            + 'league as it stands, the news band is the six newest articles. This screen sets '
-            + 'the running order, not the contents.</p>',
+          '<p class="cp-note" style="margin-top:var(--space-4)">Most bands work out their own '
+            + 'contents and cannot be pointed anywhere: the results band is always the last seven '
+            + 'played, the table is the league as it stands, the news band is the six newest '
+            + 'articles. The three with a dropdown are the ones you can aim. Leave one on its '
+            + 'automatic setting and it keeps up with the season by itself; choose a particular '
+            + 'one and it stays there until you change it.</p>',
         where: [['Home page', '/']],
         whereNote: 'after you press Publish to site',
       });
 
       paint();
+
+      /* A chooser does NOT repaint the list. Its own <select> is the only
+         thing that changed, repainting would rebuild the element the operator
+         is still interacting with, and on a phone that shuts the native picker
+         the moment a choice is made. Only the Save button's state moves. */
+      host.addEventListener('change', function (e) {
+        if (!e.target.matches('[data-pick]')) return;
+        var li = e.target.closest('[data-band]');
+        if (!li) return;
+        var key = li.getAttribute('data-band');
+        var val = e.target.value;
+        if (val) state.pick[key] = val; else delete state.pick[key];
+        dirty = true;
+        $('[data-hl-save]', host).disabled = false;
+        /* A stale-pick warning beside a chooser that has just been changed is
+           answering a question nobody is asking any more. */
+        var flag = li.querySelector('.hband__pick .hband__flag');
+        if (flag) flag.remove();
+      });
 
       host.addEventListener('click', function (e) {
         var btn = e.target.closest ? e.target.closest('button') : null;
@@ -210,6 +275,12 @@
           if (saved) for (var k in saved) if (Object.prototype.hasOwnProperty.call(saved, k)) out[k] = saved[k];
           out.order = state.order.slice();
           out.hidden = state.hidden.slice();
+          /* Only the picks that are actually set. Writing an empty string per
+             band would store "the club chose the automatic one", which is a
+             different claim from "the club has not chosen", and the second is
+             the one that should survive a band being renamed. */
+          out.pick = {};
+          KEYS.forEach(function (k) { if (state.pick[k]) out.pick[k] = state.pick[k]; });
           CP.upsert('player_photos', 'home:layout', out).then(function () {
             toast('Order saved. Press Publish to site to put it live.', 'success');
             refresh('home');

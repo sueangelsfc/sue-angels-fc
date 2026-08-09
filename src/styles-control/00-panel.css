@@ -857,7 +857,7 @@ body:has(.cp) .atmos__blob { animation: none; }
 .cp-newtrial__body [data-nt-name] { flex: 1 1 170px; min-width: 0; }
 .cp-newtrial__f { display: grid; gap: 2px; flex: 0 1 150px; min-width: 0; }
 .cp-newtrial__f span {
-  font-family: var(--ui);
+  font-family: var(--font-body);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.1em;

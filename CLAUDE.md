@@ -29,7 +29,7 @@ src/
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        2,613-check suite against the generated output
+  test/run.mjs        2,756-check suite against the generated output
 ```
 
 **Run `npm run build` after any change under `src/`.** Nothing in `src/` is served; only the generated root files are.
@@ -177,6 +177,16 @@ The panel's stylesheet was `src/styles/70-control.css`, inside `sa.css`, so ever
   - **The panel is handed the band list by the build** (`SEED.homeBands`) rather than holding its own, so it cannot offer a band the site does not draw, and it is told which bands are currently empty so a switch never promises something the page will ignore.
   - **There are two copies of the ordering rule**, one in Node for the generator and one in the browser for the preview, and the suite runs both over the same records and fails if they part company. A preview that disagrees with what gets published is worse than no preview.
   - Absent means the standard order: no record, an empty record and a record full of names nothing has heard of all produce the page byte for byte as it ships.
+  - **Three more bands the club can add**, all off until switched on: **a match report**, **photographs** from one album, and **a player**. Each publishes something the club already makes that the front page has never shown, and each takes a **pick**: leave it automatic (the newest report, the newest album, the leading scorer) and it keeps up with the season on its own; choose a particular one and it stays until changed. `featuredFor()` resolves it, and **a pick that stops resolving falls back to the automatic one** rather than leaving a heading over a hole, because a pick points at content edited on other screens and can outlive it.
+  - **A band added later must not switch itself on.** The off rule reads the stored ORDER, not `hidden`: an existing record says `hidden: []`, which is authoritative and cannot mention a band that did not exist when it was written, so reading `hidden` alone would publish every new band on every site that had ever touched the screen.
+  - The panel's dropdowns are seeded from the same functions the page resolves with, so it cannot offer a match whose report was cleared or an album that was deleted. The suite asserts every option it offers resolves.
+
+### An undefined custom property deletes its declaration
+It does not fall back to something sensible: the whole declaration is invalid at computed-value time, so the property takes its inherited or initial value and the rule silently does nothing.
+
+**`sa.css` and `home.css` are different vocabularies.** A rebuilt page loads `home.css` plus its route band and nothing else. `--space-*`, `--step-*`, `--text-muted`, `--radius-*` and `--brand` are sa.css names; home.css has `--fg`, `--ink-1/2/3`, `--volt`, `--display`, `--ui`, `--r`, `--r-sm`, `--wide-num` and literal px. A card written in the wrong one has no padding, no radius and no surface, and it reads as a layout mistake rather than a spelling mistake.
+
+`npm test` now asserts that every bare `var(--x)` in the sheets a page links is declared by one of them, by an inline style, or by a script's `setProperty`. Three real defects were shipped when it was written: `--ink-1` (used by the champions page and the sub-page nav, defined nowhere), `--ui` (which `control.css` borrowed from a sheet `control.html` does not load) and `--w` (fine, set inline by the build). `var(--x, fallback)` is safe by construction and is not flagged.
 - Four video slots per match: footage, before, after, anything else. Direct upload is capped at 60MB with the reason on the button, because a full match is a gigabyte.
 - **Recognition follows its type.** A season award, a trophy, a club record, a Player of the Month and the captaincy are five different shapes, and the awards page reads different fields from each. The form asks for the right ones and clears the ones belonging to a type an entry has been changed away from, while still preserving anything it has never heard of.
 - **The sponsorship pipeline** is the club's own prospect list: who has been contacted, who has committed, and how much of the season's target that is. Nothing in it is published. The retired one lived in browser storage on one laptop.
@@ -198,7 +208,7 @@ Read leads in **Control panel → Inbox**; RLS blocks anonymous reads, so signin
 ```bash
 npm run build     # regenerate every route (run after any src/ change)
 npm run verify    # assert derived stats against the published league table
-npm test          # 2,613 checks against the generated output
+npm test          # 2,756 checks against the generated output
 npm run serve     # local preview on :4321
 ```
 

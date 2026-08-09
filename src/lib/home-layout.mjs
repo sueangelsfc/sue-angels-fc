@@ -22,6 +22,7 @@
    it shipped, band for band. Nothing already saved needs migrating and
    deleting the record puts the original back.
    ========================================================================== */
+import { hasReport } from './prose.mjs';
 
 /* The default order, which is also the order these were written in. `name` is
    what the band calls itself ON THE PAGE, so the panel and the website use one
@@ -68,6 +69,43 @@ export const HOME_BANDS = [
     name: 'Pull on the shirt',
     what: 'Trials, volunteering, media and sponsorship. The way in.',
   },
+
+  /* ---- The three the club can add ------------------------------------------
+     Off until somebody turns them on, which is what keeps "no record" meaning
+     the page exactly as it shipped. Each one publishes something the club
+     already makes and the front page has never shown: seven match reports
+     between 341 and 757 words, 606 photographs across seven albums, and
+     thirty-seven players.
+
+     Each also takes a PICK. The default is derived (the newest report, the
+     newest album, the season's leading scorer) so the band keeps itself
+     current with nobody maintaining it; choosing one is an editorial override
+     and the panel says how old it has gone. That is the honest split: the
+     site decides what is most recent, the club decides when to overrule it. */
+  {
+    key: 'report',
+    name: 'A match report',
+    what: 'A match report: the headline, the score and the opening, with a link to the whole thing.',
+    off: true,
+    pick: 'match',
+    auto: 'The most recent report',
+  },
+  {
+    key: 'photos',
+    name: 'Photographs',
+    what: 'A row of pictures from one album, with a link to the album.',
+    off: true,
+    pick: 'album',
+    auto: 'The newest album',
+  },
+  {
+    key: 'spotlight',
+    name: 'A player',
+    what: 'One player: photograph, position and what he has done for the club.',
+    off: true,
+    pick: 'player',
+    auto: 'The club’s leading scorer',
+  },
 ];
 
 const KEYS = HOME_BANDS.map((b) => b.key);
@@ -85,7 +123,78 @@ const KNOWN = new Set(KEYS);
 export function homeBandFilled(key, d) {
   if (key === 'news') return ((d && d.articles) || []).length > 0;
   if (key === 'table') return ((d && d.table) || []).length > 0;
+  if (key === 'report') return reportsIn(d).length > 0;
+  if (key === 'photos') return albumsIn(d).length > 0;
+  if (key === 'spotlight') return playersIn(d).length > 0;
   return KNOWN.has(key);
+}
+
+/* ---- What each pick can choose from ---------------------------------------
+   One definition, used by the page to resolve a pick and by the build to seed
+   the panel's dropdown. The panel therefore cannot offer a match with no
+   report, or an album that was deleted, because it is handed the same list the
+   page reads. Ordered newest first: the first entry IS the derived default. */
+
+/* `hasReport` rather than a second length test. What counts as a report is
+   already decided once in prose.mjs ("long enough to be a report rather than a
+   caption": three matches carry a scoreline in a sentence and do not qualify),
+   and a band that disagreed with it would put a heading promising the full
+   report over a note. */
+export function reportsIn(d) {
+  return ((d && d.played) || [])
+    .filter(hasReport)
+    .slice()
+    .sort((a, b) => String(b.iso || '').localeCompare(String(a.iso || '')));
+}
+
+export function albumsIn(d) {
+  return ((d && d.galleries) || []).slice()
+    .sort((a, b) => String(b.matchIso || b.date || '').localeCompare(String(a.matchIso || a.date || '')));
+}
+
+/* Leading scorer first, so an untouched spotlight names whoever is having the
+   season. Goals, then assists, then appearances, so it is never a coin toss
+   that changes on rebuild. */
+export function playersIn(d) {
+  return ((d && d.players) || []).slice().sort((a, b) =>
+    (b.goals || 0) - (a.goals || 0)
+    || (b.assists || 0) - (a.assists || 0)
+    || (b.starts || 0) - (a.starts || 0)
+    || String(a.name || '').localeCompare(String(b.name || '')));
+}
+
+const CHOICES = { report: reportsIn, photos: albumsIn, spotlight: playersIn };
+const IDENT = {
+  report: (m) => String(m.id || m.slug || ''),
+  photos: (g) => String(g.key || g.slug || ''),
+  spotlight: (p) => String(p.num),
+};
+
+/* THE ITEM A BAND PUBLISHES: the club's pick when it still resolves, and the
+   derived default otherwise.
+
+   "Otherwise" is doing real work. A pick is a pointer into content the club
+   edits elsewhere, so it can be aimed at a match whose report was cleared, an
+   album that was deleted or a player who left. Falling back to the newest
+   keeps the band publishing something true rather than leaving a heading over
+   a hole, and the panel says when a pick has stopped resolving. */
+export function featuredFor(key, rec, d) {
+  const list = (CHOICES[key] || (() => []))(d);
+  if (!list.length) return null;
+  const want = rec && rec.pick && rec.pick[key];
+  if (want == null || want === '') return list[0];
+  const ident = IDENT[key];
+  return list.find((x) => ident(x) === String(want)) || list[0];
+}
+
+/* Whether the club's pick is the one being published, for the panel to say so
+   plainly rather than showing a chosen name beside a different picture. */
+export function pickResolves(key, rec, d) {
+  const want = rec && rec.pick && rec.pick[key];
+  if (want == null || want === '') return true;
+  const list = (CHOICES[key] || (() => []))(d);
+  const ident = IDENT[key];
+  return list.some((x) => ident(x) === String(want));
 }
 
 /* Turn the stored record into an order and a hidden set.
@@ -127,16 +236,34 @@ export function resolveHomeLayout(rec) {
     seen.add(b.key);
   });
 
+  /* OFF UNTIL ASKED FOR, and asked for means NAMED IN THE ORDER.
+
+     A band added to the site after a club has already arranged its home page
+     must not switch itself on for them. Reading `hidden` alone would do
+     exactly that: an existing record says `hidden: []`, which is authoritative
+     and does not mention a band that did not exist when it was written, so
+     every new band would arrive already published on every site that had ever
+     touched this screen.
+
+     The order is the tell. The panel always writes every band it knows into
+     `order`, so a band missing from a stored order is one the record predates,
+     and a default-off band that nobody has opted into stays off. */
+  const named = new Set(raw.filter((k) => KNOWN.has(k)));
   const hidden = new Set(
     ((rec && Array.isArray(rec.hidden)) ? rec.hidden : []).filter((k) => KNOWN.has(k)),
   );
+  for (const b of HOME_BANDS) {
+    if (b.off && !named.has(b.key)) hidden.add(b.key);
+  }
 
+  const defaultHidden = HOME_BANDS.filter((b) => b.off).map((b) => b.key).join(',');
   return {
     order,
     hidden,
     /* True when this is the page as it ships, which is what lets the panel say
        "the standard order" rather than describing a change nobody made. */
-    isDefault: hidden.size === 0 && order.join(',') === KEYS.join(','),
+    isDefault: order.join(',') === KEYS.join(',')
+      && [...hidden].sort().join(',') === defaultHidden.split(',').sort().join(','),
   };
 }
 

@@ -2248,23 +2248,77 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
    published is worse than no preview. So both are run over the same records
    here and compared. */
 {
-  const { resolveHomeLayout, publishedBands, HOME_BANDS, HOME_BAND_KEYS } =
+  const { resolveHomeLayout, publishedBands, HOME_BANDS, HOME_BAND_KEYS,
+    featuredFor, pickResolves, reportsIn } =
     await import(path.join(ROOT, 'src', 'lib', 'home-layout.mjs'));
   const { buildDataset: bdL } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
   const dL = bdL();
   const DEFAULT = HOME_BAND_KEYS.join(',');
 
-  /* Absent, empty, and full of names nothing has ever heard of. */
+  /* Absent, empty, full of names nothing has ever heard of, and - the one that
+     matters once bands can be added - a record written before those bands
+     existed. All five must PUBLISH the eight the page shipped with. Asserted on
+     what reaches the page rather than on the raw order, because the order now
+     names bands that are off by default and the published list is the claim. */
+  const SHIPPED = HOME_BANDS.filter((b) => !b.off).map((b) => b.key).join(',');
   for (const [label, rec] of [
     ['no record', null],
     ['an empty record', {}],
     ['a record of the wrong shape', { order: 'news', hidden: 7 }],
     ['a record naming nothing real', { order: ['nope', 42, null], hidden: ['gone'] }],
+    ['a record written before the new bands existed',
+      { order: SHIPPED.split(','), hidden: [] }],
   ]) {
+    check(`home layout: ${label} publishes the page as it shipped`,
+      publishedBands(rec, dL).join(',') === SHIPPED,
+      publishedBands(rec, dL).join(','));
     const r = resolveHomeLayout(rec);
-    check(`home layout: ${label} means the standard order`,
-      r.order.join(',') === DEFAULT && r.hidden.size === 0 && r.isDefault,
-      r.order.join(','));
+    check(`home layout: ${label} keeps every band in the standard order`,
+      r.order.join(',') === DEFAULT, r.order.join(','));
+  }
+  check('home layout: no record is reported as the default', resolveHomeLayout(null).isDefault);
+
+  /* A NEW BAND MUST NOT SWITCH ITSELF ON. This is the whole reason the off
+     rule reads the order rather than the hidden list, so it is asserted
+     directly: opt one in and it appears, leave it out and it does not. */
+  {
+    const off = HOME_BANDS.filter((b) => b.off).map((b) => b.key);
+    check('home layout: bands added later start off', off.length > 0
+      && off.every((k) => !publishedBands({ order: SHIPPED.split(','), hidden: [] }, dL).includes(k)));
+    const optedIn = { order: [off[0], ...SHIPPED.split(',')], hidden: off.slice(1) };
+    check('home layout: opting a band in publishes it',
+      publishedBands(optedIn, dL)[0] === off[0], publishedBands(optedIn, dL).join(','));
+  }
+
+  /* A PICK THAT NO LONGER RESOLVES FALLS BACK, rather than leaving a heading
+     over a hole. A pick points into content edited on other screens, so it can
+     outlive the thing it names. */
+  {
+    const all = { order: HOME_BAND_KEYS, hidden: [] };
+    const auto = featuredFor('report', all, dL);
+    const broken = featuredFor('report', { ...all, pick: { report: 'no-such-match' } }, dL);
+    check('home layout: a broken pick falls back to the derived one',
+      broken && auto && broken.id === auto.id);
+    check('home layout: a broken pick is reported as broken',
+      pickResolves('report', all, dL)
+      && !pickResolves('report', { ...all, pick: { report: 'no-such-match' } }, dL));
+    const list = reportsIn(dL);
+    if (list.length > 1) {
+      const chosen = featuredFor('report', { ...all, pick: { report: list[1].id } }, dL);
+      check('home layout: a pick that resolves wins over the newest',
+        chosen && chosen.id === list[1].id);
+    }
+    /* Every seeded option must resolve, or the panel is offering something the
+       page cannot draw - the exact failure the seed exists to prevent. */
+    for (const key of ['report', 'photos', 'spotlight']) {
+      const seeded = (JSON.parse(fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8')
+        .replace(/^[^{]*/, '').replace(/;?\s*$/, '')).homeBands || [])
+        .find((b) => b.key === key);
+      const opts = (seeded && seeded.options) || [];
+      check(`every ${key} the panel offers resolves on the site`,
+        opts.length > 0 && opts.every((o) => pickResolves(key, { pick: { [key]: o.id } }, dL)),
+        `${opts.length} options`);
+    }
   }
 
   /* A band the record does not name arrives among its own neighbours rather
@@ -2395,6 +2449,78 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     check('the home page composes from the resolved order',
       /publishedBands\(/.test(src) && !/body:\s*hero\s*\+\s*ticker\s*\+\s*newsBand/.test(src));
   }
+}
+
+/* ---- Every custom property a page uses is defined by a sheet it loads -----
+   The sibling of check 12d, and written after making its mistake.
+
+   An undefined custom property does not fall back to something sensible. It
+   makes the whole declaration invalid at computed value time, so the property
+   takes its inherited or initial value and the rule silently does nothing. A
+   card written with sa.css's names - --space-6, --step-2, --text-muted,
+   --brand - on a page that loads home.css had no padding, no radius, no
+   surface and inherited type. It read as a layout mistake and it was a
+   spelling mistake, and nothing in the suite could see it.
+
+   The comment above --text-on-brand records the same fault happening once
+   before, where an SVG fill resolved to `none` and painted nothing at all.
+   Twice is enough to test for.
+
+   Three genuine defects were sitting in the output when this was written:
+   --ink-1, used by the champions page and the sub-page nav and defined
+   nowhere; --ui, which control.css borrowed from a sheet control.html does
+   not load; and --w, which is fine. */
+{
+  /* A token set by an inline style is REAL even though no sheet declares it:
+     the bars carry `style="--w: 87.9%"` from the build. Collected across every
+     page, because the sheet that reads one is shared by pages that have no
+     bar on them - p-matches.css is loaded by both results.html, which sets it,
+     and fixtures.html, which has no record bars to set it on. */
+  const runtimeSet = new Set();
+  for (const [, h] of pages) {
+    for (const m of h.matchAll(/style="[^"]*?(--[a-z0-9-]+)\s*:/gi)) runtimeSet.add(m[1]);
+  }
+  /* And by script. The player page's plot measures its own path and writes the
+     length back, which no stylesheet could declare because only the browser
+     knows it: `line.style.setProperty('--len', len)`. A token has three honest
+     sources - a sheet, an inline style, a script - and a checker that knew
+     only the first would report the drawing animation as broken. */
+  for (const f of fs.readdirSync(ROOT).filter((n) => n.endsWith('.js'))) {
+    const js = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    for (const m of js.matchAll(/setProperty\(\s*['"](--[a-z0-9-]+)['"]/gi)) runtimeSet.add(m[1]);
+  }
+
+  const sheetCache = new Map();
+  const readSheet = (f) => {
+    if (!sheetCache.has(f)) {
+      const p = path.join(ROOT, f);
+      sheetCache.set(f, fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : '');
+    }
+    return sheetCache.get(f);
+  };
+
+  let checked = 0;
+  for (const [f, h] of pages) {
+    const links = [...h.matchAll(/<link rel="stylesheet" href="\/([^"?]+)/g)].map((m) => m[1]);
+    if (!links.length) continue;
+    const css = links.map(readSheet).join('\n');
+    if (!css) continue;
+    const defined = new Set([...css.matchAll(/(--[a-z0-9-]+)\s*:/gi)].map((m) => m[1]));
+    for (const m of h.matchAll(/(--[a-z0-9-]+)\s*:/gi)) defined.add(m[1]);
+
+    /* `var(--x, fallback)` is safe by construction, so only a bare `var(--x)`
+       counts. That is the whole difference between a token that degrades and
+       one that deletes its declaration. */
+    const used = new Set();
+    for (const m of css.matchAll(/var\(\s*(--[a-z0-9-]+)\s*([,)])/gi)) {
+      if (m[2] === ')') used.add(m[1]);
+    }
+    const missing = [...used].filter((t) => !defined.has(t) && !runtimeSet.has(t));
+    checked += 1;
+    check(`${f}: every custom property it uses is defined`, missing.length === 0,
+      `${missing.join(', ')} - used by ${links.join(' + ')} and declared by neither`);
+  }
+  check('the custom-property check ran over every page', checked >= 20, `${checked} pages`);
 }
 
 /* ---- Report ---- */

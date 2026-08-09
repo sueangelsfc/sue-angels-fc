@@ -23,7 +23,22 @@ import { esc, attr, clubCrest, NAV } from '../lib/html.mjs';
 import { sizeAttrs } from '../lib/imagesize.mjs';
 import { CLUB, SPONSORS, FAQS, NEXT_FIXTURE, SEASON_AWARDS , SOCIALS} from '../lib/club.mjs';
 import { teamSummary, formGuide, isLeague} from '../lib/stats.mjs';
-import { publishedBands } from '../lib/home-layout.mjs';
+import { publishedBands, featuredFor } from '../lib/home-layout.mjs';
+import { reportText, house, FRIENDLY_NOTE_SHORT } from '../lib/prose.mjs';
+
+/* THE OPENING OF A REPORT, for the front page to quote.
+
+   Two paragraphs, and only ones that are prose. A report can open on a
+   markdown heading, and it closes on the MATCH DETAILS block, which is a
+   line-up and a list of figures: pulled onto the home page as a teaser it
+   would read as a wall of names under a headline. */
+function reportOpening(m, take = 2) {
+  return house(reportText(m))
+    .split(/\n\s*\n/)
+    .map((p) => p.replace(/\s*\n\s*/g, ' ').trim())
+    .filter((p) => p && !/^#/.test(p) && !/^MATCH DETAILS\b/.test(p))
+    .slice(0, take);
+}
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 
@@ -842,6 +857,80 @@ export function home(d) {
       </div>
     </section>`;
 
+  /* ================= THE THREE THE CLUB CAN ADD =================
+     Off until Control panel -> Home page turns one on, so a site with no
+     record is byte for byte the page that shipped. Each publishes something
+     the club already makes and the front page has never shown.
+
+     Each takes the club's pick when there is one and the newest otherwise, so
+     a band nobody maintains still moves on by itself. featuredFor() is what
+     decides; this only draws. */
+  const featMatch = featuredFor('report', d.homeLayout, d);
+  const reportBand = featMatch ? `<section class="sec sec--report" id="report" aria-labelledby="rep-h">
+      <div class="wrap">
+        ${rail('report', 'Match report')}
+        <div class="frep rv glassbox">
+          <div class="frep__body">
+            <p class="eyebrow">${esc(featMatch.competition)} · ${esc(dayMonthYear(featMatch.iso || featMatch.date))}</p>
+            <h2 class="h2" id="rep-h">${esc(shortClub(featMatch.opponent))}<span class="volt">.</span></h2>
+            <p class="frep__score">${esc(featMatch.ourScoreline || featMatch.scoreline)} ${esc(featMatch.weAreHome ? 'at home' : 'away')}</p>
+            ${reportOpening(featMatch).map((p) => `<p class="frep__p">${esc(p)}</p>`).join('\n            ')}
+            <a class="btn btn--volt" href="/matches/${attr(featMatch.slug)}.html">Read the full report ${ARROW}</a>
+          </div>
+        </div>
+      </div>
+    </section>` : '';
+
+  const featAlbum = featuredFor('photos', d.homeLayout, d);
+  const albumShots = featAlbum ? (featAlbum.photos || []).slice(0, 8) : [];
+  const photosBand = albumShots.length ? `<section class="sec sec--photos" id="photos" aria-labelledby="pho-h">
+      <div class="wrap">
+        ${rail('photos', 'Photographs')}
+        <div class="nhead rv">
+          <div>
+            <p class="eyebrow">${esc(featAlbum.competition || 'The album')}</p>
+            <h2 class="h2" id="pho-h">Photographs<span class="volt">.</span></h2>
+          </div>
+          <a class="nhead__all" href="/gallery/${attr(featAlbum.slug)}.html">All ${esc(String(featAlbum.photoCount || albumShots.length))} ${ARROW}</a>
+        </div>
+      </div>
+      <!-- The whole strip is one link to the album. Eight separate links to the
+           same page is eight stops for a keyboard and eight identical entries
+           in a screen reader's link list. -->
+      <a class="fpho rv" href="/gallery/${attr(featAlbum.slug)}.html"
+         aria-label="${attr(`Photographs: ${featAlbum.title}`)}">
+        ${albumShots.map((src) => `<img class="fpho__i" src="${attr(src)}" alt="" width="320" height="213" loading="lazy" decoding="async" />`).join('\n        ')}
+      </a>
+    </section>` : '';
+
+  const featPlayer = featuredFor('spotlight', d.homeLayout, d);
+  const spotShot = featPlayer ? d.photoFor(featPlayer.num) : '';
+  const spotlightBand = featPlayer ? `<section class="sec sec--spot" id="spotlight" aria-labelledby="spot-h">
+      <div class="wrap">
+        ${rail('spotlight', 'The squad')}
+        <div class="fspot rv glassbox">
+          ${spotShot
+            ? `<img class="fspot__photo" src="${attr(spotShot)}" alt="" width="220" height="220" loading="lazy" decoding="async" />`
+            : `<span class="fspot__photo fspot__photo--none"><img src="${STAR}" alt="" width="90" height="111" loading="lazy" decoding="async" /></span>`}
+          <div class="fspot__body">
+            <p class="eyebrow">${esc(featPlayer.position || 'Squad')}</p>
+            <h2 class="h2" id="spot-h">${esc(featPlayer.name)}<span class="volt">.</span></h2>
+            <dl class="fspot__nums">
+              ${[['Starts', featPlayer.starts], ['Goals', featPlayer.goals],
+                 ['Assists', featPlayer.assists], ['Clean sheets', featPlayer.cleanSheets]]
+                .filter(([, v]) => Number(v) > 0)
+                .map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(String(v))}</dd></div>`).join('\n              ')}
+            </dl>
+            <!-- Say what the figures count. They are every competitive match
+                 since 2025, not this season, and a run of bare numbers under a
+                 name invites the reader to assume whichever they had in mind. -->
+            <p class="fspot__note">Competitive matches, every season. ${esc(FRIENDLY_NOTE_SHORT)}</p>
+            <a class="btn btn--ghost" href="/players/${attr(featPlayer.slug)}.html">His record ${ARROW}</a>
+          </div>
+        </div>
+      </div>
+    </section>` : '';
+
   /* ================= FOOTER ================= */
   const footerHtml = siteFooter();
 
@@ -965,6 +1054,9 @@ export function home(d) {
       table: tableBand,
       faq: faqBand,
       cta: wordstrip + ctaBand,
+      report: reportBand,
+      photos: photosBand,
+      spotlight: spotlightBand,
     })[k] || '').join(''),
     bodyClass: 'is-home',
     css: 'home.css',

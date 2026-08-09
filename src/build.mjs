@@ -15,7 +15,7 @@ import { page, esc, CLUB_ID } from './lib/html.mjs';
 import { CLUB, SEPSIS } from './lib/club.mjs';
 import { teamSummary, fmtDate, isUs, isLeague} from './lib/stats.mjs';
 import { home, oppBadge } from './templates/home.mjs';
-import { HOME_BANDS, homeBandFilled } from './lib/home-layout.mjs';
+import { HOME_BANDS, homeBandFilled, reportsIn, albumsIn, playersIn } from './lib/home-layout.mjs';
 import * as P from './templates/pages.mjs';
 import { about } from './templates/about.mjs';
 import { cause } from './templates/cause.mjs';
@@ -355,12 +355,55 @@ const adminSeed = {
      `empty` is the honest part: a band with nothing in it is not published
      whatever the club chooses, so the switch beside it says so rather than
      appearing to do something. */
-  homeBands: HOME_BANDS.map((b) => ({
+  /* One date format for every list the panel offers, read off the ISO date
+     the site sorts by rather than the free text the record was typed with. */
+  homeBands: ((pickDate) => HOME_BANDS.map((b) => ({
     key: b.key,
     name: b.name,
     what: b.what,
     empty: !homeBandFilled(b.key, d),
-  })),
+    ...(b.off ? { off: true } : {}),
+    /* WHAT THIS BAND CAN BE POINTED AT, drawn from the same functions the page
+       resolves a pick with, so the dropdown cannot offer a match whose report
+       was cleared or an album that was deleted. First entry is the derived
+       default, which is why `auto` describes it rather than naming it: the
+       answer changes on its own and a name typed here would go stale. */
+    ...(b.pick ? {
+      pick: b.pick,
+      auto: b.auto,
+      options: {
+        /* DATES FROM `iso`, NOT `date`. `date` is whatever was typed into the
+           record and the seven reports carry two different conventions
+           ("02 Aug 2026" beside "31 May 26"); `dateLabel` is undefined on
+           every one of them, so the fallback WAS the value. A list the club
+           picks from by eye needs one format.
+
+           And the result in words. `ourScoreline` is us-first, which is the
+           house rule when no venue is shown, but "FC Porto of London (0-3)" is
+           only unambiguous to somebody who already knows that. Won and lost
+           cannot be read the wrong way round. */
+        match: () => reportsIn(d).map((m) => ({
+          id: String(m.id || m.slug),
+          label: `${pickDate(m.iso || m.date)} · ${m.opponent} · `
+            + `${{ W: 'won', D: 'drew', L: 'lost' }[m.outcome] || 'played'} `
+            + `${m.ourScoreline || m.scoreline} ${m.weAreHome ? 'at home' : 'away'}`,
+        })),
+        album: () => albumsIn(d).map((g) => ({
+          id: String(g.key || g.slug),
+          label: `${g.title} · ${g.photoCount || (g.photos || []).length} photographs`,
+        })),
+        player: () => playersIn(d).map((p) => ({
+          id: String(p.num),
+          label: `${p.name}${p.goals ? ` · ${p.goals} goals` : ''}`,
+        })),
+      }[b.pick]() ,
+    } : {}),
+  })))((iso) => {
+    const t = new Date(String(iso));
+    return Number.isNaN(+t) ? String(iso) : t.toLocaleDateString('en-GB', {
+      day: 'numeric', month: 'short', year: 'numeric',
+    });
+  }),
   /* WHAT THE CLUB KNOWS ABOUT EACH PLAYER, so a match report can say
      something a person would say. The panel knew a name, a number and a
      position, so every report described eleven interchangeable men: it could

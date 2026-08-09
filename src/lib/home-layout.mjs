@@ -23,6 +23,7 @@
    deleting the record puts the original back.
    ========================================================================== */
 import { hasReport } from './prose.mjs';
+import { preseasonFor, seasonAhead } from './preseason.mjs';
 
 /* The default order, which is also the order these were written in. `name` is
    what the band calls itself ON THE PAGE, so the panel and the website use one
@@ -106,6 +107,19 @@ export const HOME_BANDS = [
     pick: 'player',
     auto: 'The club’s leading scorer',
   },
+  {
+    key: 'preseason',
+    name: 'Pre-season',
+    what: 'The friendly programme, the record across it, who has scored and who has '
+      + 'made a first appearance. Takes itself off the page once the league starts.',
+    off: true,
+  },
+  {
+    key: 'ahead',
+    name: 'The season ahead',
+    what: 'The clubs in the new division and what the archive already holds on each of them.',
+    off: true,
+  },
 ];
 
 const KEYS = HOME_BANDS.map((b) => b.key);
@@ -126,6 +140,20 @@ export function homeBandFilled(key, d) {
   if (key === 'report') return reportsIn(d).length > 0;
   if (key === 'photos') return albumsIn(d).length > 0;
   if (key === 'spotlight') return playersIn(d).length > 0;
+  /* PRE-SEASON EMPTIES ITSELF. The band is only true while the club is in
+     pre-season, so it is treated as empty once a competitive match has been
+     played and the page drops it without anybody switching it off. A band
+     still calling September's league football "pre-season" in October is the
+     failure this prevents. */
+  if (key === 'preseason') {
+    const ps = preseasonFor(d);
+    return !ps.isOver && (ps.played.length > 0 || ps.toCome.length > 0);
+  }
+  /* And the season ahead stops being ahead once it is under way. */
+  if (key === 'ahead') {
+    const a = seasonAhead(d);
+    return a.clubs.length > 0 && !a.started;
+  }
   return KNOWN.has(key);
 }
 

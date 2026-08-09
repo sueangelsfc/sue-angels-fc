@@ -29,7 +29,7 @@ src/
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        2,756-check suite against the generated output
+  test/run.mjs        2,784-check suite against the generated output
 ```
 
 **Run `npm run build` after any change under `src/`.** Nothing in `src/` is served; only the generated root files are.
@@ -180,6 +180,16 @@ The panel's stylesheet was `src/styles/70-control.css`, inside `sa.css`, so ever
   - **Three more bands the club can add**, all off until switched on: **a match report**, **photographs** from one album, and **a player**. Each publishes something the club already makes that the front page has never shown, and each takes a **pick**: leave it automatic (the newest report, the newest album, the leading scorer) and it keeps up with the season on its own; choose a particular one and it stays until changed. `featuredFor()` resolves it, and **a pick that stops resolving falls back to the automatic one** rather than leaving a heading over a hole, because a pick points at content edited on other screens and can outlive it.
   - **A band added later must not switch itself on.** The off rule reads the stored ORDER, not `hidden`: an existing record says `hidden: []`, which is authoritative and cannot mention a band that did not exist when it was written, so reading `hidden` alone would publish every new band on every site that had ever touched the screen.
   - The panel's dropdowns are seeded from the same functions the page resolves with, so it cannot offer a match whose report was cleared or an album that was deleted. The suite asserts every option it offers resolves.
+  - **Pre-season** and **The season ahead** are two more, both off until switched on, both derived in `src/lib/preseason.mjs`. Pre-season shows the friendly programme, the record across it, who has scored and who has made a first appearance for the club. The season ahead lists the new division's clubs and what the archive holds on each.
+  - **Both retire themselves on evidence, not on a date.** Pre-season reports itself empty once a competitive match has been played that season, and the season ahead once the division has started. A band still calling September's league football "pre-season" in October is what this prevents, and a date would not have prevented it.
+  - **A first appearance is a claim about a person**, so it is derived from the archive: anybody named in a pre-season team sheet who appears in no earlier match record. Leon Burnett scored in the Pure Football friendly and is correctly *not* listed, because he played in October. The suite asserts both directions.
+
+### A team qualifier is not noise
+`clubIdentity()` in `preseason.mjs` strips the legal suffix (FC, AFC, Football Club) and **keeps** the team qualifier (1st Team, 2.0, B, Reserves, Sundays, Vets). Two clubs match only when what remains is equal.
+
+League Eight 26/27 contains **Pure Football FC 1st Team**. The club beat **Pure Football FC 2.0** in a pre-season friendly on 2 August. Reduce both far enough and they are one string, and the site publishes "played 3, won 3" against a side it has never met, on the page a new opponent is most likely to read. Where the base matches but the qualifier does not, that is a **related side** and the page says so in words: "New. The club has played their Pure Football FC 2.0, not this side."
+
+This is the same rule as `oppBadge()`'s, for the same reason: match on equality of the reduced forms, never on one containing the other.
 
 ### An undefined custom property deletes its declaration
 It does not fall back to something sensible: the whole declaration is invalid at computed-value time, so the property takes its inherited or initial value and the rule silently does nothing.
@@ -208,7 +218,7 @@ Read leads in **Control panel → Inbox**; RLS blocks anonymous reads, so signin
 ```bash
 npm run build     # regenerate every route (run after any src/ change)
 npm run verify    # assert derived stats against the published league table
-npm test          # 2,756 checks against the generated output
+npm test          # 2,784 checks against the generated output
 npm run serve     # local preview on :4321
 ```
 

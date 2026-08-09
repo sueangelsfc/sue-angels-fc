@@ -2605,6 +2605,115 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   check('the custom-property check ran over every page', checked >= 20, `${checked} pages`);
 }
 
+/* ---- Pre-season, and the season ahead -------------------------------------
+   Both bands make claims about named people and named clubs, which is a
+   higher bar than a layout. Each one is checked against the archive it was
+   derived from. */
+{
+  const { preseasonFor, seasonAhead, sameClub, relatedClub, recordOf, sheetNums } =
+    await import(path.join(ROOT, 'src', 'lib', 'preseason.mjs'));
+  const { homeBandFilled: filled } = await import(path.join(ROOT, 'src', 'lib', 'home-layout.mjs'));
+  const { buildDataset: bdP } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const dP = bdP();
+
+  /* THE ONE THAT MATTERS. League Eight contains "Pure Football FC 1st Team"
+     and the club beat "Pure Football FC 2.0" in a friendly. Squash those far
+     enough and the site publishes a played-3-won-3 record against a side it
+     has never met, on the page a new opponent is most likely to read. The
+     legal suffix comes off, the team qualifier stays on. */
+  check('a first team is not the same side as a 2.0',
+    !sameClub('Pure Football FC 1st Team', 'Pure Football FC 2.0'));
+  check('but they are recognised as the same club',
+    relatedClub('Pure Football FC 1st Team', 'Pure Football FC 2.0'));
+  check('a legal suffix is still noise',
+    sameClub('Barnes Stormers FC', 'Barnes Stormers')
+    && sameClub('BPR FC', 'BPR') && sameClub('Kew Antigua', 'Kew Antigua FC'));
+  check('a B team is not the first team', !sameClub('Sutton Knights', 'Sutton Knights B'));
+
+  const ps = preseasonFor(dP);
+  const ah = seasonAhead(dP);
+
+  /* Every figure recomputed from the match list rather than trusted. */
+  {
+    const friendlies = dP.played.filter((m) => m.season === ps.season && m.friendly);
+    check('pre-season counts every friendly of the season and nothing else',
+      ps.played.length === friendlies.length
+      && ps.played.every((m) => m.friendly && m.season === ps.season),
+      `${ps.played.length} vs ${friendlies.length}`);
+    const again = recordOf(ps.played);
+    check('the pre-season record is the record of those matches',
+      JSON.stringify(again) === JSON.stringify(ps.record));
+    check('no competitive match is counted as pre-season',
+      !ps.played.some((m) => !m.friendly));
+  }
+
+  /* A FIRST APPEARANCE IS A CLAIM ABOUT A PERSON. Anybody named must have no
+     earlier appearance anywhere in the archive, and anybody who does have one
+     must not be listed however new a signing he is. */
+  {
+    const firstIso = (ps.played[0] || {}).iso || '';
+    let wrong = [];
+    for (const p of ps.debutants) {
+      const earlier = dP.played.filter((m) => String(m.iso || '') < firstIso
+        && sheetNums(m).map(String).includes(String(p.num)));
+      if (earlier.length) wrong.push(`${p.name} played ${earlier[0].iso}`);
+    }
+    check('nobody called a first appearance has played before', wrong.length === 0, wrong.join('; '));
+
+    /* And the converse, which is what stops the check being vacuous: somebody
+       who HAS played before must be absent from the list. */
+    const played2526 = dP.played.filter((m) => String(m.iso || '') < firstIso);
+    const veterans = new Set(played2526.flatMap((m) => sheetNums(m).map(String)));
+    const listed = new Set(ps.debutants.map((p) => String(p.num)));
+    check('a returning player is not called a debutant',
+      ![...listed].some((n) => veterans.has(n)));
+    check('the debutant check has something to bite on', veterans.size > 5, `${veterans.size} prior players`);
+  }
+
+  /* Head to head against the new division must agree with the site's own
+     match records, club by club. */
+  {
+    let bad = [];
+    for (const c of ah.clubs) {
+      const mine = dP.played.filter((m) => sameClub(m.opponent, c.name));
+      if (mine.length !== c.record.p) bad.push(`${c.name}: ${c.record.p} vs ${mine.length}`);
+      if (!c.met && mine.length) bad.push(`${c.name}: marked unmet but has ${mine.length}`);
+    }
+    check('every head-to-head agrees with the match records', bad.length === 0, bad.join('; '));
+    check('the season ahead names a full division', ah.clubs.length >= 5, `${ah.clubs.length} opponents`);
+  }
+
+  /* BOTH BANDS RETIRE THEMSELVES. A band still calling September's league
+     football "pre-season" in October is the failure this prevents, and a date
+     would not prevent it. */
+  {
+    check('pre-season shows while the club is in it', filled('preseason', dP),
+      'one friendly played and five to come is exactly when this band is true');
+    const after = { ...dP, played: [...dP.played, {
+      season: ps.season, iso: '2026-09-06', friendly: false, outcome: 'W',
+      countsGoals: true, ourGoals: 1, theirGoals: 0, opponent: 'Haydons Park', detail: {},
+    }] };
+    check('pre-season takes itself off once a competitive match is played',
+      !filled('preseason', after));
+    check('the season ahead retires when the division has started',
+      filled('ahead', dP) && !filled('ahead',
+        { ...dP, nextDivisionTable: { ...dP.nextDivisionTable, started: true } }));
+  }
+
+  /* And it reaches the page when switched on. */
+  {
+    const { home } = await import(path.join(ROOT, 'src', 'templates', 'home.mjs'));
+    const out = home({ ...dP, homeLayout: { order: ['preseason', 'ahead'], hidden: [] } });
+    check('the pre-season band renders when chosen', /sec--psn/.test(out.body));
+    check('the season ahead band renders when chosen', /sec--ahead/.test(out.body));
+    check('the pre-season band says friendlies count towards nothing',
+      /count towards no|counts towards any/i.test(out.body));
+    check('the pre-season band lists every fixture in the programme',
+      (out.body.match(/class="psn__m/g) || []).length === ps.total,
+      `${(out.body.match(/class="psn__m/g) || []).length} rows for ${ps.total} matches`);
+  }
+}
+
 /* ---- Report ---- */
 console.log(`\n${'='.repeat(66)}`);
 if (warns.length) {

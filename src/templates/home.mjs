@@ -24,7 +24,8 @@ import { sizeAttrs } from '../lib/imagesize.mjs';
 import { CLUB, SPONSORS, FAQS, NEXT_FIXTURE, SEASON_AWARDS , SOCIALS} from '../lib/club.mjs';
 import { teamSummary, formGuide, isLeague} from '../lib/stats.mjs';
 import { publishedBands, featuredFor } from '../lib/home-layout.mjs';
-import { reportText, house, FRIENDLY_NOTE_SHORT } from '../lib/prose.mjs';
+import { preseasonFor, seasonAhead } from '../lib/preseason.mjs';
+import { reportText, house, FRIENDLY_NOTE_SHORT, FRIENDLY_NOTE } from '../lib/prose.mjs';
 
 /* THE OPENING OF A REPORT, for the front page to quote.
 
@@ -931,6 +932,95 @@ export function home(d) {
       </div>
     </section>` : '';
 
+  /* ================= PRE-SEASON =================
+     The gap between winning one division and starting the next, which the
+     site had no way to say. Everything here is counted from the match records
+     and the fixture list; the only sentence that is not derived is the one
+     saying none of it counts, which is the whole point of the band. */
+  const ps = preseasonFor(d);
+  const psDone = ps.played.length;
+  const psRow = (label, value) => `<div class="psn__k"><dt>${esc(label)}</dt><dd>${esc(String(value))}</dd></div>`;
+  const preseasonBand = `<section class="sec sec--psn" id="preseason" aria-labelledby="psn-h">
+      <div class="wrap">
+        ${rail('preseason', 'Pre-season')}
+        <div class="nhead rv">
+          <div>
+            <p class="eyebrow">${esc(ps.season)} · Building for ${esc(ps.division)}</p>
+            <h2 class="h2" id="psn-h">Pre-season<span class="volt">.</span></h2>
+          </div>
+          <a class="nhead__all" href="/fixtures.html">The full fixture list ${ARROW}</a>
+        </div>
+
+        <p class="psn__lede rv">${esc(
+          `${ps.total} friendl${ps.total === 1 ? 'y' : 'ies'} before ${ps.division} begins. `
+          + (psDone === 0 ? 'None played yet.'
+            : psDone === ps.total ? 'All played.'
+              : `${psDone} played, ${ps.toCome.length} to come.`))}</p>
+
+        ${psDone ? `<dl class="psn__nums rv">
+          ${psRow('Played', ps.record.p)}
+          ${psRow('Won', ps.record.w)}
+          ${ps.record.d ? psRow('Drawn', ps.record.d) : ''}
+          ${ps.record.l ? psRow('Lost', ps.record.l) : ''}
+          ${psRow('Goals', `${ps.record.gf}-${ps.record.ga}`)}
+          ${ps.record.cleanSheets ? psRow('Clean sheets', ps.record.cleanSheets) : ''}
+        </dl>` : ''}
+
+        <ol class="psn__list rv">
+          ${ps.played.map((m) => `<li class="psn__m psn__m--done">
+            <span class="psn__d">${esc(dayMonthYear(m.iso || m.date))}</span>
+            <span class="psn__o">${oppBadge(m.opponent, d.badges, 22, 22, 'psn__b')}<b>${esc(shortClub(m.opponent))}</b></span>
+            <span class="psn__r"><a href="/matches/${attr(m.slug)}.html">${esc(m.ourScoreline || m.scoreline)}</a> <i>${esc(m.weAreHome ? 'H' : 'A')}</i></span>
+          </li>`).join('\n          ')}
+          ${ps.toCome.map((f) => `<li class="psn__m">
+            <span class="psn__d">${esc(f.dateLabel || dayMonthYear(f.iso || f.date))}</span>
+            <span class="psn__o">${oppBadge(f.opponent, d.badges, 22, 22, 'psn__b')}<b>${esc(shortClub(f.opponent))}</b></span>
+            <span class="psn__r"><em>${esc(f.kick || 'To play')}</em> <i>${esc(f.weAreHome ? 'H' : 'A')}</i></span>
+          </li>`).join('\n          ')}
+        </ol>
+
+        ${(ps.scorers.length || ps.debutants.length) ? `<div class="psn__who rv">
+          ${ps.scorers.length ? `<p><b>Scored:</b> ${ps.scorers.map((s) =>
+            `<a href="/players/${attr(s.player.slug)}.html">${esc(s.player.name)}</a>${s.n > 1 ? ` (${s.n})` : ''}`).join(', ')}.</p>` : ''}
+          ${ps.debutants.length ? `<p><b>First time in the shirt:</b> ${ps.debutants.map((p) =>
+            `<a href="/players/${attr(p.slug)}.html">${esc(p.name)}</a>`).join(', ')}.</p>` : ''}
+        </div>` : ''}
+
+        <p class="psn__note rv">${esc(FRIENDLY_NOTE)}</p>
+      </div>
+    </section>`;
+
+  /* ================= THE SEASON AHEAD =================
+     Ten clubs, and what the archive already holds on each. Most of them are
+     new, and saying so is the honest headline of a promotion. */
+  const ahead = seasonAhead(d);
+  const aheadBand = `<section class="sec sec--ahead" id="ahead" aria-labelledby="ahd-h">
+      <div class="wrap">
+        ${rail('ahead', 'The season ahead')}
+        <div class="nhead rv">
+          <div>
+            <p class="eyebrow">${esc(ahead.division)} · ${esc(ahead.season)}</p>
+            <h2 class="h2" id="ahd-h">The season ahead<span class="volt">.</span></h2>
+          </div>
+          <a class="nhead__all" href="/league.html">The table ${ARROW}</a>
+        </div>
+        <p class="psn__lede rv">${esc(
+          `${ahead.clubs.length + 1} clubs. ${ahead.met === 0 ? 'All of them new to us.'
+            : `${ahead.met} the club has played before, ${ahead.fresh} it has not.`}`)}</p>
+        <ul class="ahd rv">
+          ${ahead.clubs.map((c) => `<li class="ahd__c${c.met ? ' ahd__c--met' : ''}">
+            <span class="ahd__b">${oppBadge(c.name, d.badges, 34, 34)}</span>
+            <b class="ahd__n">${esc(shortClub(c.name))}</b>
+            <span class="ahd__w">${c.met
+              ? esc(`Played ${c.record.p}, won ${c.record.w}${c.record.d ? `, drawn ${c.record.d}` : ''}${c.record.l ? `, lost ${c.record.l}` : ''} · ${c.record.gf}-${c.record.ga}`)
+              : c.relatedCount
+                ? esc(`New. The club has played their ${shortClub(c.relatedName)}, not this side.`)
+                : 'New to the club.'}</span>
+          </li>`).join('\n          ')}
+        </ul>
+      </div>
+    </section>`;
+
   /* ================= FOOTER ================= */
   const footerHtml = siteFooter();
 
@@ -1057,6 +1147,8 @@ export function home(d) {
       report: reportBand,
       photos: photosBand,
       spotlight: spotlightBand,
+      preseason: preseasonBand,
+      ahead: aheadBand,
     })[k] || '').join(''),
     bodyClass: 'is-home',
     css: 'home.css',

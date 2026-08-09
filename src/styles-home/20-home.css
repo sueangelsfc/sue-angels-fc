@@ -1959,3 +1959,68 @@ html.js .lg-panel[hidden]{display: none;}
   .fspot__nums{gap: 12px 24px;}
   .fspot__nums dd{font-size: 24px;}
 }
+
+/* ---- Pre-season, and the season ahead ------------------------------------
+   This sheet's tokens: --fg, --ink-2, --ink-3, --volt, --display, --ui, --r,
+   --r-sm, --line-d, --wide-num. Not sa.css's, which the home page does not
+   load and which silently delete the declaration they appear in. */
+.psn__lede{max-width: 60ch; color: var(--ink-2); margin-top: 18px; font-size: 17px;}
+.psn__nums{display: flex; flex-wrap: wrap; gap: 12px 30px; margin: 22px 0 6px;}
+.psn__k dt{font-family: var(--ui); font-size: 10.5px; font-weight: 650;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3);}
+.psn__k dd{margin: 4px 0 0; font-family: var(--display);
+  font-variation-settings: 'wdth' var(--wide-num);
+  font-size: 30px; font-weight: 800; line-height: 1; color: var(--fg);}
+
+.psn__list{list-style: none; margin: 22px 0 0; padding: 0;
+  border-top: 1px solid var(--line-d);}
+.psn__m{display: grid; grid-template-columns: 8.5rem 1fr auto;
+  align-items: center; gap: 14px;
+  padding: 13px 0; border-bottom: 1px solid var(--line-d);}
+.psn__d{font-family: var(--ui); font-size: 11px; font-weight: 650;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3);}
+.psn__o{display: flex; align-items: center; gap: 10px; min-width: 0;}
+.psn__o b{font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.psn__b{flex-shrink: 0;}
+.psn__r{display: flex; align-items: center; gap: 10px; font-family: var(--display);
+  font-variation-settings: 'wdth' var(--wide-num); font-weight: 800; font-size: 17px;}
+.psn__r a{color: var(--volt);}
+.psn__r em{font-style: normal; font-family: var(--ui); font-size: 11px;
+  font-weight: 650; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3);}
+.psn__r i{font-style: normal; font-family: var(--ui); font-size: 10.5px;
+  font-weight: 700; color: var(--ink-3);
+  border: 1px solid var(--line-d); border-radius: 4px; padding: 2px 5px; min-width: 20px; text-align: center;}
+/* A match already played reads first: the opponent goes to full strength and
+   the ones still to come sit back. Weight and not a second colour. */
+.psn__m--done .psn__o b{color: var(--fg);}
+.psn__m:not(.psn__m--done) .psn__o b{color: var(--ink-2);}
+
+.psn__who{margin-top: 20px; color: var(--ink-2); font-size: 15px;}
+.psn__who p{margin-bottom: 6px;}
+.psn__who b{color: var(--fg);}
+.psn__who a{color: var(--volt);}
+.psn__note{margin-top: 16px; max-width: 62ch;
+  font-family: var(--ui); font-size: 12px; color: var(--ink-3);}
+
+.ahd{list-style: none; margin: 22px 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px;}
+.ahd__c{display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto;
+  gap: 2px 12px; align-items: center;
+  padding: 14px; border: 1px solid var(--line-d); border-radius: var(--r-sm);}
+.ahd__b{grid-row: span 2; display: flex; align-items: center;}
+.ahd__n{font-size: 15px; align-self: end;}
+.ahd__w{font-family: var(--ui); font-size: 11.5px; line-height: 1.45;
+  color: var(--ink-3); align-self: start;}
+/* Met before is a fact, not a status, so it is marked by the club's own
+   accent on the edge rather than by a success colour: nothing on this site
+   colours football data green. */
+.ahd__c--met{border-color: rgba(var(--volt-rgb), 0.4);}
+.ahd__c--met .ahd__w{color: var(--ink-2);}
+
+@media (max-width: 640px){
+  .psn__m{grid-template-columns: 1fr auto; gap: 4px 12px;}
+  .psn__d{grid-column: 1 / -1;}
+  .psn__nums{gap: 12px 22px;}
+  .psn__k dd{font-size: 24px;}
+  .ahd{grid-template-columns: 1fr;}
+}

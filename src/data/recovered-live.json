@@ -5831,6 +5831,71 @@
         "penaltiesConceded": 0
       },
       "updated_at": "2026-08-03T14:59:01.341+00:00"
+    },
+    {
+      "key": "r20260809-galacticos",
+      "data": {
+        "as": 2,
+        "hs": 2,
+        "iso": "2026-08-09",
+        "away": "Sue's Angels FC",
+        "date": "09 Aug 2026",
+        "home": "Galacticos Elect",
+        "kick": "10:00",
+        "kind": "score",
+        "motm": null,
+        "bench": [],
+        "goals": [
+          {
+            "num": 12,
+            "zone": "box",
+            "assist": null,
+            "minute": null,
+            "penalty": false,
+            "bodyPart": "left",
+            "situation": "open"
+          },
+          {
+            "num": 3,
+            "zone": null,
+            "assist": {
+              "num": 12,
+              "type": "pass"
+            },
+            "minute": null,
+            "penalty": false,
+            "bodyPart": "right",
+            "situation": "open"
+          }
+        ],
+        "saves": null,
+        "shape": "",
+        "venue": "",
+        "keeper": null,
+        "assists": [
+          {
+            "num": 12,
+            "type": "pass",
+            "minute": null,
+            "forGoalBy": 3
+          }
+        ],
+        "captain": null,
+        "savedAt": "2026-08-09T15:21:41.654Z",
+        "redCards": [],
+        "starters": [],
+        "formation": null,
+        "commentary": "",
+        "cleanSheets": [],
+        "competition": "Pre-season friendly",
+        "yellowCards": [],
+        "opponentGoals": [],
+        "penaltiesSaved": [],
+        "penaltiesMissed": [],
+        "opponentRedCards": [],
+        "penaltiesConceded": 0
+      },
+      "updated_at": "2026-08-09T15:21:41.655+00:00"
     }
   ],
   "articles": [
@@ -8647,6 +8712,34 @@
       "updated_at": "2026-06-11T19:02:48.579+00:00"
     },
     {
+      "key": "home:layout",
+      "data": {
+        "pick": {},
+        "order": [
+          "preseason",
+          "ahead",
+          "news",
+          "who",
+          "awards",
+          "results",
+          "table",
+          "cta",
+          "faq",
+          "campaign",
+          "report",
+          "photos",
+          "spotlight"
+        ],
+        "hidden": [
+          "report",
+          "photos",
+          "spotlight",
+          "campaign"
+        ]
+      },
+      "updated_at": "2026-08-09T17:32:27.584+00:00"
+    },
+    {
       "key": "roster:coaches",
       "data": [
         {
@@ -8836,7 +8929,6 @@
     {
       "key": "f20260809-galacticos",
       "data": {
-        "iso": "2026-08-09",
         "away": "Sue's Angels FC",
         "date": "09 Aug 2026",
         "home": "Galacticos Elect",
@@ -8845,7 +8937,7 @@
         "venue": "",
         "competition": "Pre-season friendly"
       },
-      "updated_at": "2026-08-02T23:50:26.643+00:00"
+      "updated_at": "2026-08-09T15:21:52.798+00:00"
     },
     {
       "key": "f20260812-kingsmeadow",

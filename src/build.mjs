@@ -15,7 +15,7 @@ import { page, esc, CLUB_ID } from './lib/html.mjs';
 import { CLUB, SEPSIS } from './lib/club.mjs';
 import { teamSummary, fmtDate, isUs, isLeague} from './lib/stats.mjs';
 import { home, oppBadge } from './templates/home.mjs';
-import { HOME_BANDS, homeBandFilled, reportsIn, albumsIn, playersIn } from './lib/home-layout.mjs';
+import { HOME_BANDS, HOME_AREAS, homeBandFilled, reportsIn, albumsIn, playersIn } from './lib/home-layout.mjs';
 import * as P from './templates/pages.mjs';
 import { about } from './templates/about.mjs';
 import { cause } from './templates/cause.mjs';
@@ -363,8 +363,12 @@ const adminSeed = {
      appearing to do something. */
   /* One date format for every list the panel offers, read off the ISO date
      the site sorts by rather than the free text the record was typed with. */
+  /* The areas, handed over with the bands, so the panel groups by exactly the
+     set the site defines and cannot offer an area no band belongs to. */
+  homeAreas: HOME_AREAS.map((a) => ({ key: a.key, name: a.name, what: a.what })),
   homeBands: ((pickDate) => HOME_BANDS.map((b) => ({
     key: b.key,
+    area: b.area,
     name: b.name,
     what: b.what,
     empty: !homeBandFilled(b.key, d),

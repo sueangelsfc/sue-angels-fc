@@ -41,6 +41,7 @@
   var SEED = window.SA_SEED || {};
 
   var BANDS = SEED.homeBands || [];
+  var AREAS = SEED.homeAreas || [];
   var KEYS = BANDS.map(function (b) { return b.key; });
 
   /* THE SAME RULE AS src/lib/home-layout.mjs resolveHomeLayout(), and it has to
@@ -103,6 +104,7 @@
         });
       }
       var dirty = false;
+      var area = '';   // '' is every area
 
       function isHidden(k) { return state.hidden.indexOf(k) >= 0; }
 
@@ -161,11 +163,14 @@
             chooserHtml(key) +
           '</span>' +
           '<span class="hband__b">' +
-            '<button class="btn btn--ghost btn--sm" type="button" data-up ' +
+            (area
+              ? '<span class="hband__lock">Clear the filter to move this</span>'
+              : '') +
+            (area ? '' : '<button class="btn btn--ghost btn--sm" type="button" data-up ' +
               (i === 0 ? 'disabled' : '') + ' aria-label="Move ' + esc(b.name) + ' up">↑</button>' +
             '<button class="btn btn--ghost btn--sm" type="button" data-down ' +
               (i === state.order.length - 1 ? 'disabled' : '') +
-              ' aria-label="Move ' + esc(b.name) + ' down">↓</button>' +
+              ' aria-label="Move ' + esc(b.name) + ' down">↓</button>') +
             '<button class="btn btn--quiet btn--sm" type="button" data-toggle>' +
               (off ? 'Show' : 'Hide') + '</button>' +
           '</span>' +
@@ -173,6 +178,7 @@
       }
 
       function listHtml() {
+        var rows = state.order;
         return '<ol class="hbands">' +
           '<li class="hband is-pinned">' +
             '<span class="hband__n">Top</span>' +
@@ -182,7 +188,11 @@
               + 'has been played.</span></span>' +
             '<span class="hband__b"></span>' +
           '</li>' +
-          state.order.map(rowHtml).join('') +
+          rows.map(function (k, i) {
+            /* i is the position in the WHOLE order, not in the filtered view,
+               so the first and last arrows stay disabled on the right rows. */
+            return (!area || bandOf(k).area === area) ? rowHtml(k, i) : '';
+          }).join('') +
         '</ol>';
       }
 
@@ -213,7 +223,32 @@
         if (warn) warn.hidden = !dirty;
       }
 
+      /* THE AREA FILTER NARROWS WHAT YOU SEE AND NEVER WHAT YOU CAN MOVE.
+         The running order is one flat list because the page is one column, so
+         an area's bands are not adjacent in it. Leaving the arrows live under
+         a filter would let somebody move a band past neighbours hidden from
+         them, and the result would look like the panel had reordered itself.
+         With a filter on the arrows come off and the screen says why. */
+      function areasHtml() {
+        if (!AREAS.length) return '';
+        var counts = {};
+        state.order.forEach(function (k) {
+          var a = bandOf(k).area || '';
+          counts[a] = (counts[a] || 0) + 1;
+        });
+        return '<div class="hareas" role="group" aria-label="Filter by area">' +
+          '<button class="harea' + (area ? '' : ' is-on') + '" type="button" data-area="">' +
+            'All <b>' + state.order.length + '</b></button>' +
+          AREAS.map(function (a) {
+            return '<button class="harea' + (area === a.key ? ' is-on' : '') + '" type="button" '
+              + 'data-area="' + esc(a.key) + '" title="' + esc(a.what || '') + '">'
+              + esc(a.name) + ' <b>' + (counts[a.key] || 0) + '</b></button>';
+          }).join('') +
+        '</div>';
+      }
+
       function paint() {
+        $('[data-hl-areas]', host).innerHTML = areasHtml();
         $('[data-hl-list]', host).innerHTML = listHtml();
         $('[data-hl-status]', host).innerHTML = statusHtml();
         var warn = $('[data-hl-unsaved]', host);
@@ -233,6 +268,7 @@
           '<p class="cp-unsaved" data-hl-unsaved hidden>Not saved yet. <b>Publish to site</b> '
             + 'rebuilds the website from the database, and these changes are not in it until '
             + 'you press <b>Save the order</b>.</p>' +
+          '<div data-hl-areas></div>' +
           '<div data-hl-status></div>' +
           '<div data-hl-list></div>' +
           '<p class="cp-note" style="margin-top:var(--space-4)">Most bands work out their own '
@@ -276,6 +312,12 @@
            trap: three bands were pinned off by a record written before they
            existed, and nothing but this screen could ever turn them on. One
            press rather than one per band. */
+        if (btn.hasAttribute('data-area')) {
+          area = btn.getAttribute('data-area');
+          paint();
+          return;
+        }
+
         if (btn.hasAttribute('data-hl-all')) {
           if (!guard()) return;
           state.hidden = state.hidden.filter(function (k) { return bandOf(k).empty; });

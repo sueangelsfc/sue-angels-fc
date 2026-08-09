@@ -898,9 +898,25 @@ const BUDGET = {
   'control-video.js': 3,
   'control-hero.js': 3,
   /* The running order of the home page. A list, two arrows and a switch, and
-     it is 2.2KB because the explanation of what each band IS comes from the
-     build rather than being typed here twice. */
-  'control-home.js': 3,
+     it was 2.2KB because the explanation of what each band IS comes from the
+     build rather than being typed here twice.
+
+     3 -> 4, stated rather than slipped past, because the block above names
+     raising as the failure mode.
+
+     What bought it: about 900 bytes for the area filter. The screen was eight
+     bands when it was written and is twenty now, which is past the point where
+     one flat list can be scanned, so each band carries an area and the list can
+     be narrowed to one. The chips also had to come with the rule that the
+     arrows come off while a filter is on: an area's bands are not adjacent in
+     the running order, so moving one under a filter would carry it past
+     neighbours hidden from the operator.
+
+     Deliberately NOT bought by loosening anything else, and the area names
+     themselves are seeded by the build rather than typed here, for the same
+     reason the band names are. Fetched only by somebody who opens this one
+     screen. */
+  'control-home.js': 4,
 };
 for (const [f, kb] of Object.entries(BUDGET)) {
   const raw = fs.readFileSync(path.join(ROOT, f));

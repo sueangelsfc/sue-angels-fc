@@ -44,6 +44,7 @@ export const HOME_BANDS = [
      not do that would be a promise to go stale. */
   {
     key: 'preseason',
+    area: 'now',
     name: 'Pre-season',
     what: 'The friendly programme, the record across it, who has scored and who has '
       + 'made a first appearance. Takes itself off the page once the league starts.',
@@ -53,16 +54,19 @@ export const HOME_BANDS = [
      kind of evidence, when the division has started. */
   {
     key: 'ahead',
+    area: 'now',
     name: 'The season ahead',
     what: 'The clubs in the new division and what the archive already holds on each of them.',
   },
   {
     key: 'nextup',
+    area: 'now',
     name: 'The next match',
     what: 'The next fixture previewed, with whatever the archive holds on that opponent.',
   },
   {
     key: 'report',
+    area: 'now',
     name: 'A match report',
     what: 'A match report: the headline, the score and the opening, with a link to the whole thing.',
     pick: 'match',
@@ -70,41 +74,49 @@ export const HOME_BANDS = [
   },
   {
     key: 'news',
+    area: 'now',
     name: 'Club news',
     what: 'The six most recent articles, newest first.',
   },
   {
     key: 'who',
+    area: 'club',
     name: 'More than a result',
     what: 'Who the club is and why it plays, with the link to the cause.',
   },
   {
     key: 'awards',
+    area: 'people',
     name: 'Award winners',
     what: 'Season awards, Player of the Month and the club records.',
   },
   {
     key: 'campaign',
+    area: 'pitch',
     name: 'The campaign',
     what: 'The season so far: played, won, goals, clean sheets, the form strip.',
   },
   {
     key: 'results',
+    area: 'pitch',
     name: 'Recent results',
     what: 'The last seven matches played, with scores and opponents.',
   },
   {
     key: 'table',
+    area: 'pitch',
     name: 'The table',
     what: 'The league table as it stands, with the club marked.',
   },
   {
     key: 'faq',
+    area: 'join',
     name: 'Ask the Angels',
     what: 'The questions new players, parents and sponsors actually ask.',
   },
   {
     key: 'cta',
+    area: 'join',
     name: 'Pull on the shirt',
     what: 'Trials, volunteering, media and sponsorship. The way in.',
   },
@@ -127,6 +139,7 @@ export const HOME_BANDS = [
      site decides what is most recent, the club decides when to overrule it. */
   {
     key: 'photos',
+    area: 'club',
     name: 'Photographs',
     what: 'A row of pictures from one album, with a link to the album.',
     pick: 'album',
@@ -134,6 +147,7 @@ export const HOME_BANDS = [
   },
   {
     key: 'spotlight',
+    area: 'people',
     name: 'A player',
     what: 'One player: photograph, position and what he has done for the club.',
     pick: 'player',
@@ -141,36 +155,67 @@ export const HOME_BANDS = [
   },
   {
     key: 'sponsors',
+    area: 'club',
     name: 'Who backs the club',
     what: 'The club’s partners, their marks on a white tile so the colours stay true.',
   },
   {
     key: 'staff',
+    area: 'people',
     name: 'The people running it',
     what: 'The manager and the coaching staff, with what each of them does.',
   },
   {
     key: 'records',
+    area: 'pitch',
     name: 'Club records',
     what: 'Biggest win, longest unbeaten run, most goals, most appearances. All derived.',
   },
   {
     key: 'milestones',
+    area: 'pitch',
     name: 'Milestones in sight',
     what: 'Who is within a few of a round number. Works itself out and empties when nobody is close.',
   },
   {
     key: 'squad',
+    area: 'people',
     name: 'The squad',
     what: 'Every player, with a photograph where the club has one.',
   },
   {
     key: 'ground',
+    area: 'club',
     name: 'Where the club plays',
     what: 'The home ground, how to reach it and when. For opponents, trialists and anybody '
       + 'turning up for the first time.',
   },
 ];
+
+/* ---- Areas ---------------------------------------------------------------
+   Twenty bands is too many to scan as one undifferentiated list, so each one
+   belongs to an area and the panel can filter by it.
+
+   An area is a PANEL device and nothing else. The page order is still one flat
+   list, because the page is one column and reading it top to bottom is the
+   whole point; grouping the running order by area would mean the panel showed
+   an arrangement the website does not have. So the filter narrows what you can
+   see and never what you can move: with a filter on, the arrows come off and
+   the screen says why, rather than letting somebody move a band past
+   neighbours that are hidden from them. */
+export const HOME_AREAS = [
+  { key: 'now', name: 'Happening now',
+    what: 'Timely. Each of these takes itself off the page when it stops being true.' },
+  { key: 'pitch', name: 'On the pitch',
+    what: 'Results, the table and the figures, all counted from the match records.' },
+  { key: 'people', name: 'The people',
+    what: 'Players and staff.' },
+  { key: 'club', name: 'The club',
+    what: 'Who the club is, who backs it and where it plays.' },
+  { key: 'join', name: 'Getting involved',
+    what: 'The way in, and the questions people ask before they take it.' },
+];
+export const HOME_AREA_KEYS = HOME_AREAS.map((a) => a.key);
 
 const KEYS = HOME_BANDS.map((b) => b.key);
 const KNOWN = new Set(KEYS);

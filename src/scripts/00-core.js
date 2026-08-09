@@ -507,6 +507,20 @@
     });
   }
 
+  /* ---- The performance probe, on request only -------------------------
+     Three scroll fixes were reasoned out from a laptop and the club still
+     reported the stutter, so ?perf=1 measures it on the device that has it:
+     frames per second while scrolling, the worst frame, and every long task
+     the browser will own up to. It also switches each suspect off in turn so
+     the cause is found by evidence.
+
+     Four lines here and not one byte fetched unless the URL asks. */
+  if (location.search.indexOf('perf=1') > -1) {
+    var probe = document.createElement('script');
+    probe.src = '/perf.js?t=' + (+new Date());
+    document.head.appendChild(probe);
+  }
+
   /* ==========================================================================
      AND STOP ANIMATING WHILE THE PAGE IS MOVING
 

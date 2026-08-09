@@ -150,6 +150,12 @@ write('sa.css', css);
 write('home.css', homeCss);
 write('sa.js', js);
 
+/* The performance probe. Emitted always so it is there when somebody needs
+   it, fetched only by a URL carrying ?perf=1, and referenced by no page - so
+   it costs an ordinary visitor nothing at all. Deliberately NOT part of
+   sa.js: the whole point is that it is absent unless asked for. */
+write('perf.js', minifyJs(fs.readFileSync(path.join(ROOT, 'src', 'perf', 'perf.js'), 'utf8')));
+
 /* The service worker, stamped with the same content hash the pages carry, so
    a deploy renames the cache and `activate` drops every older one. The
    retired site hard-coded its cache name and relied on somebody remembering

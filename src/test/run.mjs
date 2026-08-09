@@ -526,6 +526,55 @@ for (const [f, h] of pages) {
     check('records: win and defeat cards read from the club\'s side',
       bad.length === 0, bad.join(', '));
   }
+
+  /* AND ON EVERY OTHER PAGE, which is the lock this needed from the start.
+     The rule was enforced on records.html alone, so the moment a scoreline
+     card appeared anywhere else nothing was watching: clubRecords() in
+     stats.mjs kept returning the raw home-away scoreline, nothing rendered it,
+     and the day a home page band did, "Biggest win 0-12" shipped.
+
+     Read structurally rather than by class name, so it covers a card this
+     check has never heard of: any element whose text is a bare scoreline,
+     followed within a short distance by a label claiming a win or a defeat. */
+  {
+    const bad = [];
+    for (const [f, h] of pages) {
+      for (const m of h.matchAll(/>(\d{1,2})-(\d{1,2})<\/span>([\s\S]{0,220})/g)) {
+        const [, a, b, after] = m;
+        const label = after.replace(/<[^>]+>/g, ' ').slice(0, 90).toLowerCase();
+        /* Only where the opponent is named without a venue. "Home"/"Away"
+           beside it means the two clubs are in home-away order and the raw
+           scoreline is correct. */
+        if (/\b(home|away|neutral)\b/.test(label)) continue;
+        const us = Number(a); const them = Number(b);
+        if (/\b(biggest win|best win|record win)\b/.test(label) && us < them) {
+          bad.push(`${f}: "${label.trim().slice(0, 40)}" shows ${us}-${them}`);
+        }
+        if (/\b(heaviest defeat|worst defeat)\b/.test(label) && us > them) {
+          bad.push(`${f}: "${label.trim().slice(0, 40)}" shows ${us}-${them}`);
+        }
+      }
+    }
+    check('every page: a win card never shows fewer goals for than against',
+      bad.length === 0, bad.join(' | '));
+  }
+
+  /* And the shared derivation itself, so this cannot go latent again in a
+     function nothing currently renders. */
+  {
+    const { clubRecords: cr } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+    const { buildDataset: bdR } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+    const dR = bdR();
+    const wrong = cr(dR.competitive, dR.players).filter((r) => {
+      const s = /^(\d+)-(\d+)$/.exec(String(r.value));
+      if (!s) return false;
+      const us = Number(s[1]); const them = Number(s[2]);
+      return (/win/i.test(r.label) && us < them) || (/defeat/i.test(r.label) && us > them);
+    });
+    check('clubRecords() returns scorelines from the club\'s side',
+      wrong.length === 0,
+      wrong.map((r) => `${r.label} ${r.value}`).join(', '));
+  }
 }
 
 /* ---- 13. Robots and sitemap ---- */

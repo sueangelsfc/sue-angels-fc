@@ -464,3 +464,205 @@
   .camp__comet{opacity: 0;}
   .camp__tip{transition: none;}
 }
+
+/* ==========================================================================
+   THE HOME PAGE'S OWN BANDS
+
+   Moved here out of 20-home.css, which is the CORE every rebuilt page
+   loads. None of these classes appears on any page but the home page, so
+   a hundred other pages were downloading them to render nothing. This
+   file is p-campaign.css, linked by index.html alone.
+   ========================================================================== */
+
+/* ---- The three bands the club can add ------------------------------------
+   Written against THIS sheet's tokens. The first version used --space-6,
+   --step-2, --text-muted and --brand, which are sa.css's vocabulary: the home
+   page links home.css and its page band and nothing else, so every one of
+   those resolved to nothing. An undefined custom property does not fall back
+   to a sensible default, it makes the whole declaration invalid at computed
+   value time, so the card had no padding, no radius, no surface and inherited
+   type. It looked like a layout mistake and it was a spelling mistake.
+
+   The orange here is --volt. --brand is the same colour under sa.css's name.
+
+   These ship to everybody and draw for nobody until a band is turned on. That
+   is deliberate: a stylesheet whose contents depended on a database record
+   would make the performance budget pass or fail on club data rather than on
+   code. It costs 0.3KB gzipped, which is what leaning on .cta2__glass,
+   .eyebrow, .h2 and .btn instead of restating them buys. */
+.frep{position: relative; z-index: 1;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(6, 20, 31, 0.42);
+  padding: clamp(28px, 4vw, 52px);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);}
+.frep__score{font-family: var(--display);
+  font-variation-settings: 'wdth' var(--wide-num);
+  font-size: clamp(26px, 3.4vw, 40px); font-weight: 800; line-height: 1;
+  color: var(--volt); margin: 10px 0 22px;}
+.frep__p{max-width: 62ch; margin-bottom: 14px; color: var(--ink-2); line-height: 1.62;}
+.frep .btn{margin-top: 8px;}
+
+/* One row that scrolls sideways rather than wrapping: eight photographs
+   stacked would be most of a phone screen for what is only a teaser. */
+.fpho{display: grid; grid-auto-flow: column;
+  /* A FIXED column, not minmax(180px, 1fr). Inside an overflow container a
+     1fr track has no definite space to resolve against, so all eight collapsed
+     to the 180px floor and the strip looked undersized on every screen wide
+     enough to show more. */
+  grid-auto-columns: clamp(200px, 23vw, 300px);
+  gap: 10px; overflow-x: auto;
+  padding: 0 24px; margin-top: 22px;
+  /* scroll-padding, or the snap points sit at the container's edge and the
+     browser scrolls 24px on load to reach the first one, cutting the padding
+     off the left of the strip and reading as a broken layout. */
+  scroll-padding-inline: 24px;
+  scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;}
+.fpho__i{width: 100%; aspect-ratio: 3 / 2; object-fit: cover;
+  border-radius: var(--r-sm); scroll-snap-align: start; display: block;
+  transition: transform 0.45s var(--ease-out-expo);}
+.fpho:hover .fpho__i{transform: scale(0.985);}
+.fpho__i:hover{transform: scale(1.03);}
+
+.fspot{position: relative; z-index: 1;
+  display: flex; flex-wrap: wrap; align-items: center; gap: clamp(20px, 3vw, 44px);
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(6, 20, 31, 0.42);
+  padding: clamp(28px, 4vw, 52px);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);}
+.fspot__photo{width: 180px; height: 180px; border-radius: 50%;
+  object-fit: cover; flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.14);}
+.fspot__photo--none{display: grid; place-items: center; background: rgba(255, 255, 255, 0.05);}
+.fspot__body{flex: 1 1 20rem; min-width: 0;}
+.fspot__nums{display: flex; flex-wrap: wrap; gap: 14px 34px; margin: 20px 0 14px;}
+.fspot__nums dt{font-family: var(--ui); font-size: 10.5px; font-weight: 650;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3);}
+.fspot__nums dd{margin: 4px 0 0; font-family: var(--display);
+  font-variation-settings: 'wdth' var(--wide-num);
+  font-size: 30px; font-weight: 800; line-height: 1; color: var(--fg);}
+.fspot__note{font-family: var(--ui); font-size: 11px; color: var(--ink-3);
+  max-width: 52ch; margin-bottom: 16px;}
+
+@media (max-width: 640px){
+  .fspot__photo{width: 120px; height: 120px;}
+  .fspot__nums{gap: 12px 24px;}
+  .fspot__nums dd{font-size: 24px;}
+}
+
+/* ---- Pre-season, and the season ahead ------------------------------------
+   This sheet's tokens: --fg, --ink-2, --ink-3, --volt, --display, --ui, --r,
+   --r-sm, --line-d, --wide-num. Not sa.css's, which the home page does not
+   load and which silently delete the declaration they appear in. */
+.psn__lede{max-width: 60ch; color: var(--ink-2); margin-top: 18px; font-size: 17px;}
+.psn__nums{display: flex; flex-wrap: wrap; gap: 12px 30px; margin: 22px 0 6px;}
+.psn__k dt{font-family: var(--ui); font-size: 10.5px; font-weight: 650;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3);}
+.psn__k dd{margin: 4px 0 0; font-family: var(--display);
+  font-variation-settings: 'wdth' var(--wide-num);
+  font-size: 30px; font-weight: 800; line-height: 1; color: var(--fg);}
+
+.psn__list{list-style: none; margin: 22px 0 0; padding: 0;
+  border-top: 1px solid var(--line-d);}
+.psn__m{display: grid; grid-template-columns: 8.5rem 1fr auto;
+  align-items: center; gap: 14px;
+  padding: 13px 0; border-bottom: 1px solid var(--line-d);}
+.psn__d{font-family: var(--ui); font-size: 11px; font-weight: 650;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3);}
+.psn__o{display: flex; align-items: center; gap: 10px; min-width: 0;}
+.psn__o b{font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.psn__b{flex-shrink: 0;}
+.psn__r{display: flex; align-items: center; gap: 10px; font-family: var(--display);
+  font-variation-settings: 'wdth' var(--wide-num); font-weight: 800; font-size: 17px;}
+.psn__r a{color: var(--volt);}
+.psn__r em{font-style: normal; font-family: var(--ui); font-size: 11px;
+  font-weight: 650; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3);}
+.psn__r i{font-style: normal; font-family: var(--ui); font-size: 10.5px;
+  font-weight: 700; color: var(--ink-3);
+  border: 1px solid var(--line-d); border-radius: 4px; padding: 2px 5px; min-width: 20px; text-align: center;}
+/* A match already played reads first: the opponent goes to full strength and
+   the ones still to come sit back. Weight and not a second colour. */
+.psn__m--done .psn__o b{color: var(--fg);}
+.psn__m:not(.psn__m--done) .psn__o b{color: var(--ink-2);}
+
+.psn__who{margin-top: 20px; color: var(--ink-2); font-size: 15px;}
+.psn__who p{margin-bottom: 6px;}
+.psn__who b{color: var(--fg);}
+.psn__who a{color: var(--volt);}
+.psn__note{margin-top: 16px; max-width: 62ch;
+  font-family: var(--ui); font-size: 12px; color: var(--ink-3);}
+
+.ahd{list-style: none; margin: 22px 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px;}
+.ahd__c{display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto;
+  gap: 2px 12px; align-items: center;
+  padding: 14px; border: 1px solid var(--line-d); border-radius: var(--r-sm);}
+.ahd__b{grid-row: span 2; display: flex; align-items: center;}
+.ahd__n{font-size: 15px; align-self: end;}
+.ahd__w{font-family: var(--ui); font-size: 11.5px; line-height: 1.45;
+  color: var(--ink-3); align-self: start;}
+/* Met before is a fact, not a status, so it is marked by the club's own
+   accent on the edge rather than by a success colour: nothing on this site
+   colours football data green. */
+.ahd__c--met{border-color: rgba(var(--volt-rgb), 0.4);}
+.ahd__c--met .ahd__w{color: var(--ink-2);}
+
+@media (max-width: 640px){
+  .psn__m{grid-template-columns: 1fr auto; gap: 4px 12px;}
+  .psn__d{grid-column: 1 / -1;}
+  .psn__nums{gap: 12px 22px;}
+  .psn__k dd{font-size: 24px;}
+  .ahd{grid-template-columns: 1fr;}
+}
+
+/* ---- Four more the club can add ----------------------------------------- */
+/* A partner's mark is theirs. White tile, never recoloured, never a filter. */
+.spo{list-style: none; margin: 22px 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px;}
+.spo__c{display: grid; gap: 4px; text-align: center;}
+.spo__tile{display: grid; place-items: center; background: #fff;
+  border-radius: var(--r-sm); padding: 18px; min-height: 96px;}
+.spo__tile img{max-width: 100%; max-height: 60px; width: auto; height: auto;}
+.spo__c b{font-size: 14px; margin-top: 6px;}
+.spo__c span{font-family: var(--ui); font-size: 11px; color: var(--ink-3);}
+
+.stf{list-style: none; margin: 22px 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px;}
+.stf__c{display: grid; justify-items: center; text-align: center; gap: 3px;
+  padding: 20px 14px; border: 1px solid var(--line-d); border-radius: var(--r-sm);}
+.stf__p{width: 96px; height: 96px; border-radius: 50%; object-fit: cover;
+  border: 1px solid var(--line-d); margin-bottom: 8px;}
+.stf__p--none{display: grid; place-items: center; background: rgba(255,255,255,0.05);}
+.stf__c b{font-size: 15px;}
+.stf__c span{font-family: var(--ui); font-size: 11.5px; color: var(--ink-3); line-height: 1.4;}
+
+.rcd{list-style: none; margin: 22px 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px;}
+.rcd__c{display: grid; gap: 2px; padding: 16px;
+  border: 1px solid var(--line-d); border-radius: var(--r-sm);}
+.rcd__v{font-family: var(--display); font-variation-settings: 'wdth' var(--wide-num);
+  font-size: 30px; font-weight: 800; line-height: 1; color: var(--volt);}
+.rcd__l{font-size: 14px; margin-top: 6px;}
+.rcd__w{font-family: var(--ui); font-size: 11.5px; color: var(--ink-3); line-height: 1.4;}
+.rcd__w a{color: var(--ink-2);}
+
+.mst{list-style: none; margin: 22px 0 0; padding: 0;
+  border-top: 1px solid var(--line-d);}
+.mst__c{display: grid; grid-template-columns: 3rem 1fr auto; align-items: center; gap: 14px;
+  padding: 13px 0; border-bottom: 1px solid var(--line-d);}
+/* The gap to the milestone is the number that matters, so it is the number
+   that is large. The running total sits at the end as reference. */
+.mst__n{font-family: var(--display); font-variation-settings: 'wdth' var(--wide-num);
+  font-size: 28px; font-weight: 800; line-height: 1; color: var(--volt); text-align: center;}
+.mst__t{display: grid; gap: 2px; min-width: 0;}
+.mst__t b{font-size: 15px;}
+.mst__t b a{color: var(--fg);}
+.mst__t > span{font-family: var(--ui); font-size: 11.5px; color: var(--ink-3);}
+.mst__v{font-family: var(--ui); font-size: 12px; font-weight: 650; color: var(--ink-3);
+  font-variant-numeric: tabular-nums;}
+
+@media (max-width: 640px){
+  .spo, .stf{grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));}
+  .rcd{grid-template-columns: 1fr;}
+}

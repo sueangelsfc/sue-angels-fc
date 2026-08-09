@@ -540,6 +540,20 @@ export function leaderboard(rows, key, n = 10) {
 }
 
 /* ---- Club records ---------------------------------------------------- */
+/* EVERY CARD HERE NAMES THE OPPONENT WITH NO VENUE BESIDE IT, so the club's
+   own goals come first: `ourScoreline`, never `scoreline`.
+
+   Matches are stored home-goals-first, which is right wherever the two clubs
+   appear in home-away order beside the score and wrong on a card that says
+   only "v Balham Bteckerz". Fifteen of the club's thirty matches were away,
+   and the biggest win in its history read 0-12.
+
+   That has now been fixed twice. The first time was on the records PAGE,
+   which builds its own cards and had its own correction; this function kept
+   the raw scoreline and nothing rendered it, so the bug sat here latent until
+   a home page band read it and printed 0-12 under "Biggest win". A correction
+   that lives in one renderer is not a fix, it is a patch that the next
+   renderer will not know about. */
 export function clubRecords(matches, players) {
   const played = matches.filter((m) => m.played);
   const big = biggestWin(matches);
@@ -551,7 +565,7 @@ export function clubRecords(matches, players) {
   const first = played.slice().sort((a, b) => (a.iso || '').localeCompare(b.iso || ''))[0];
 
   const recs = [
-    big && { value: big.scoreline, label: 'Biggest win', who: `v ${big.opponent}, ${fmtDate(big.date)}`, href: `/matches/${big.slug}.html` },
+    big && { value: big.ourScoreline, label: 'Biggest win', who: `v ${big.opponent}, ${fmtDate(big.date)}`, href: `/matches/${big.slug}.html` },
     { value: longestRun(matches, (m) => m.outcome === 'W'), label: 'Longest winning run', who: 'consecutive matches' },
     { value: longestRun(matches, (m) => m.outcome !== 'L'), label: 'Longest unbeaten run', who: 'consecutive matches' },
     { value: longestRun(matches, (m) => m.theirGoals === 0, { goalRecordOnly: true }), label: 'Consecutive clean sheets', who: 'matches without conceding' },
@@ -559,8 +573,8 @@ export function clubRecords(matches, players) {
     topAssist && { value: topAssist.assists, label: 'Most assists', who: topAssist.name, href: `/players/${topAssist.slug}.html` },
     topApps && { value: topApps.apps, label: 'Most appearances', who: topApps.name, href: `/players/${topApps.slug}.html` },
     topMotm && { value: topMotm.motm, label: 'Most Player of the Match awards', who: topMotm.name, href: `/players/${topMotm.slug}.html` },
-    first && { value: first.scoreline, label: 'First competitive result', who: `v ${first.opponent}, ${fmtDate(first.date)}`, href: `/matches/${first.slug}.html` },
-    worst && { value: worst.scoreline, label: 'Heaviest defeat', who: `v ${worst.opponent}, ${fmtDate(worst.date)}` },
+    first && { value: first.ourScoreline, label: 'First competitive result', who: `v ${first.opponent}, ${fmtDate(first.date)}`, href: `/matches/${first.slug}.html` },
+    worst && { value: worst.ourScoreline, label: 'Heaviest defeat', who: `v ${worst.opponent}, ${fmtDate(worst.date)}` },
   ].filter(Boolean);
 
   return recs.filter((r) => r.value !== 0 && r.value !== '0');
@@ -860,4 +874,45 @@ export function playerProfile(player, matches, squad) {
     timeline,
     last: timeline.slice(-10).reverse(),
   };
+}
+
+/* ==========================================================================
+   MILESTONES IN SIGHT
+
+   Who is close to a round number, worked out rather than remembered. Charlie
+   Dunkley is on 24 appearances, 24 goals and 19 assists, which is three
+   milestones in one afternoon and exactly the kind of thing a club notices
+   afterwards and wishes it had said beforehand.
+
+   COMPETITIVE ONLY, like every other figure the site publishes, and
+   appearances are STARTS, because Sunday-league returns do not record
+   substitute appearances or minutes. The band says both out loud rather than
+   letting a reader assume the more flattering reading.
+   ========================================================================== */
+const MILESTONE_STEPS = [
+  { key: 'starts', label: 'appearances', step: 25 },
+  { key: 'goals', label: 'goals', step: 25 },
+  { key: 'assists', label: 'assists', step: 10 },
+  { key: 'cleanSheets', label: 'clean sheets', step: 10 },
+];
+
+export function milestones(players, within = 3) {
+  const out = [];
+  for (const p of players || []) {
+    for (const m of MILESTONE_STEPS) {
+      const v = Number(p[m.key]) || 0;
+      /* Nobody is "approaching" their first. A milestone is a number somebody
+         has been building towards, so the first step only counts once they are
+         most of the way to it. */
+      if (v < m.step / 2) continue;
+      const next = Math.ceil((v + 1) / m.step) * m.step;
+      const away = next - v;
+      if (away > within) continue;
+      out.push({ player: p, label: m.label, value: v, next, away });
+    }
+  }
+  /* Closest first, then the bigger milestone, so "one goal from 25" leads
+     "three assists from 20". */
+  return out.sort((a, b) => a.away - b.away || b.next - a.next
+    || String(a.player.name).localeCompare(String(b.player.name)));
 }

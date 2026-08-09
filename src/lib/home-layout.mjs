@@ -24,6 +24,8 @@
    ========================================================================== */
 import { hasReport } from './prose.mjs';
 import { preseasonFor, seasonAhead } from './preseason.mjs';
+import { clubRecords, milestones } from './stats.mjs';
+import { SPONSORS } from './club.mjs';
 
 /* The default order, which is also the order these were written in. `name` is
    what the band calls itself ON THE PAGE, so the panel and the website use one
@@ -53,6 +55,13 @@ export const HOME_BANDS = [
     key: 'ahead',
     name: 'The season ahead',
     what: 'The clubs in the new division and what the archive already holds on each of them.',
+  },
+  {
+    key: 'report',
+    name: 'A match report',
+    what: 'A match report: the headline, the score and the opening, with a link to the whole thing.',
+    pick: 'match',
+    auto: 'The most recent report',
   },
   {
     key: 'news',
@@ -108,14 +117,6 @@ export const HOME_BANDS = [
      and the panel says how old it has gone. That is the honest split: the
      site decides what is most recent, the club decides when to overrule it. */
   {
-    key: 'report',
-    name: 'A match report',
-    what: 'A match report: the headline, the score and the opening, with a link to the whole thing.',
-    off: true,
-    pick: 'match',
-    auto: 'The most recent report',
-  },
-  {
     key: 'photos',
     name: 'Photographs',
     what: 'A row of pictures from one album, with a link to the album.',
@@ -130,6 +131,30 @@ export const HOME_BANDS = [
     off: true,
     pick: 'player',
     auto: 'The club’s leading scorer',
+  },
+  {
+    key: 'sponsors',
+    name: 'Who backs the club',
+    what: 'The club’s partners, their marks on a white tile so the colours stay true.',
+    off: true,
+  },
+  {
+    key: 'staff',
+    name: 'The people running it',
+    what: 'The manager and the coaching staff, with what each of them does.',
+    off: true,
+  },
+  {
+    key: 'records',
+    name: 'Club records',
+    what: 'Biggest win, longest unbeaten run, most goals, most appearances. All derived.',
+    off: true,
+  },
+  {
+    key: 'milestones',
+    name: 'Milestones in sight',
+    what: 'Who is within a few of a round number. Works itself out and empties when nobody is close.',
+    off: true,
   },
 ];
 
@@ -165,6 +190,12 @@ export function homeBandFilled(key, d) {
     const a = seasonAhead(d);
     return a.clubs.length > 0 && !a.started;
   }
+  if (key === 'sponsors') return (SPONSORS || []).length > 0;
+  if (key === 'staff') return ((d && d.coaches) || []).length > 0;
+  if (key === 'records') return clubRecords((d && d.competitive) || [], (d && d.players) || []).length > 0;
+  /* Milestones empty themselves. Nobody is always within three of a round
+     number, and a heading over an empty list is worse than no heading. */
+  if (key === 'milestones') return milestones((d && d.players) || []).length > 0;
   return KNOWN.has(key);
 }
 

@@ -22,7 +22,7 @@
 import { esc, attr, clubCrest, NAV } from '../lib/html.mjs';
 import { sizeAttrs } from '../lib/imagesize.mjs';
 import { CLUB, SPONSORS, FAQS, NEXT_FIXTURE, SEASON_AWARDS , SOCIALS} from '../lib/club.mjs';
-import { teamSummary, formGuide, isLeague} from '../lib/stats.mjs';
+import { teamSummary, formGuide, isLeague, clubRecords, milestones } from '../lib/stats.mjs';
 import { publishedBands, featuredFor } from '../lib/home-layout.mjs';
 import { preseasonFor, seasonAhead } from '../lib/preseason.mjs';
 import { reportText, house, FRIENDLY_NOTE_SHORT, FRIENDLY_NOTE } from '../lib/prose.mjs';
@@ -1021,6 +1021,104 @@ export function home(d) {
       </div>
     </section>`;
 
+  /* ================= FOUR MORE THE CLUB CAN ADD ================= */
+
+  /* Partners' own marks, on a white tile so their colours stay true. They are
+     never recoloured to suit the page: a sponsor's brand is theirs. */
+  const sponsorsBand = `<section class="sec sec--sponsors" id="sponsors" aria-labelledby="spo-h">
+      <div class="wrap">
+        ${rail('sponsors', 'Who backs the club')}
+        <div class="nhead rv">
+          <div>
+            <p class="eyebrow">Partners</p>
+            <h2 class="h2" id="spo-h">Who backs the club<span class="volt">.</span></h2>
+          </div>
+          <a class="nhead__all" href="/sponsors.html">Partner with us ${ARROW}</a>
+        </div>
+        <ul class="spo rv">
+          ${SPONSORS.map((s) => `<li class="spo__c">
+            <span class="spo__tile"><img src="${attr(s.logo)}" alt="${attr(s.name)}"${sizeAttrs(s.logo)} loading="lazy" decoding="async" /></span>
+            <b>${esc(s.name)}</b>
+            <span>${esc(s.tier)}</span>
+          </li>`).join('\n          ')}
+        </ul>
+      </div>
+    </section>`;
+
+  const staffBand = (d.coaches || []).length ? `<section class="sec sec--staff" id="staff" aria-labelledby="stf-h">
+      <div class="wrap">
+        ${rail('staff', 'The people running it')}
+        <div class="nhead rv">
+          <div>
+            <p class="eyebrow">Management</p>
+            <h2 class="h2" id="stf-h">The people running it<span class="volt">.</span></h2>
+          </div>
+          <a class="nhead__all" href="/coaches.html">All staff ${ARROW}</a>
+        </div>
+        <ul class="stf rv">
+          ${d.coaches.map((c) => `<li class="stf__c">
+            ${c.photo
+              ? `<img class="stf__p" src="${attr(c.photo.startsWith('/') ? c.photo : `/${c.photo}`)}" alt="" width="96" height="96" loading="lazy" decoding="async" />`
+              : `<span class="stf__p stf__p--none"><img src="${STAR}" alt="" width="40" height="49" loading="lazy" decoding="async" /></span>`}
+            <b>${esc(c.name)}</b>
+            <span>${esc(c.short || c.role || '')}</span>
+          </li>`).join('\n          ')}
+        </ul>
+      </div>
+    </section>` : '';
+
+  /* Read from clubRecords() in stats.mjs, which is what the records page
+     reads, so the two cannot disagree about the club's own history. */
+  const recs = clubRecords(d.competitive, d.players);
+  const recordsBand = recs.length ? `<section class="sec sec--records" id="records" aria-labelledby="rec-h">
+      <div class="wrap">
+        ${rail('records', 'Club records')}
+        <div class="nhead rv">
+          <div>
+            <p class="eyebrow">Since 2025</p>
+            <h2 class="h2" id="rec-h">Club records<span class="volt">.</span></h2>
+          </div>
+          <a class="nhead__all" href="/records.html">Every record ${ARROW}</a>
+        </div>
+        <ul class="rcd rv">
+          ${recs.slice(0, 8).map((r) => `<li class="rcd__c">
+            <span class="rcd__v">${esc(String(r.value))}</span>
+            <b class="rcd__l">${esc(r.label)}</b>
+            <span class="rcd__w">${r.href ? `<a href="${attr(r.href)}">${esc(r.who)}</a>` : esc(r.who)}</span>
+          </li>`).join('\n          ')}
+        </ul>
+        <p class="psn__note rv">Competitive matches only. ${esc(FRIENDLY_NOTE_SHORT)}</p>
+      </div>
+    </section>` : '';
+
+  /* Empties itself: nobody is always within three of a round number, and a
+     heading over an empty list is worse than no heading. */
+  const mstones = milestones(d.players);
+  const milestonesBand = mstones.length ? `<section class="sec sec--milestones" id="milestones" aria-labelledby="mst-h">
+      <div class="wrap">
+        ${rail('milestones', 'Milestones in sight')}
+        <div class="nhead rv">
+          <div>
+            <p class="eyebrow">Worth watching</p>
+            <h2 class="h2" id="mst-h">Milestones in sight<span class="volt">.</span></h2>
+          </div>
+          <a class="nhead__all" href="/stats.html">Every figure ${ARROW}</a>
+        </div>
+        <ul class="mst rv">
+          ${mstones.slice(0, 6).map((m) => `<li class="mst__c">
+            <span class="mst__n">${esc(String(m.away))}</span>
+            <span class="mst__t">
+              <b><a href="/players/${attr(m.player.slug)}.html">${esc(m.player.name)}</a></b>
+              <span>${esc(`${m.away === 1 ? 'one' : m.away} ${m.label.replace(/s$/, '')}${m.away === 1 ? '' : 's'} from ${m.next}`)}</span>
+            </span>
+            <span class="mst__v">${esc(`${m.value}/${m.next}`)}</span>
+          </li>`).join('\n          ')}
+        </ul>
+        <p class="psn__note rv">Competitive matches only, and appearances count starts:
+          Sunday-league returns do not record substitutes or minutes, so neither is claimed.</p>
+      </div>
+    </section>` : '';
+
   /* ================= FOOTER ================= */
   const footerHtml = siteFooter();
 
@@ -1149,6 +1247,10 @@ export function home(d) {
       spotlight: spotlightBand,
       preseason: preseasonBand,
       ahead: aheadBand,
+      sponsors: sponsorsBand,
+      staff: staffBand,
+      records: recordsBand,
+      milestones: milestonesBand,
     })[k] || '').join(''),
     bodyClass: 'is-home',
     css: 'home.css',

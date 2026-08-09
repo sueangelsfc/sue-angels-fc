@@ -905,7 +905,11 @@ export function home(d) {
     </section>` : '';
 
   const featPlayer = featuredFor('spotlight', d.homeLayout, d);
-  const spotShot = featPlayer ? d.photoFor(featPlayer.num) : '';
+  /* shotFor, not photoFor. photoFor is the raw record and the sync strips the
+     base64 payload out of it, so it answers '' for everybody; shotFor is the
+     resolver that also knows which files on disk may be trusted, which is what
+     stops a new signing inheriting a previous holder's shirt number and face. */
+  const spotShot = featPlayer ? d.shotFor(featPlayer.num) : '';
   const spotlightBand = featPlayer ? `<section class="sec sec--spotlight" id="spotlight" aria-labelledby="spot-h">
       <div class="wrap">
         ${rail('spotlight', 'The squad')}
@@ -1196,7 +1200,7 @@ export function home(d) {
         </div>
         <ul class="sqd rv">
           ${squadList.map((p) => {
-            const shot = d.photoFor(p.num);
+            const shot = d.shotFor(p.num);
             return `<li class="sqd__c"><a href="/players/${attr(p.slug)}.html">
               ${shot
                 ? `<img class="sqd__i" src="${attr(shot)}" alt="" width="120" height="120" loading="lazy" decoding="async" />`

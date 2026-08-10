@@ -40,6 +40,7 @@ import { POSITION_LABEL, POSITION_XY, positionName } from '../lib/positions.mjs'
 import { playerProfile, fmtDate } from '../lib/stats.mjs';
 import { FRIENDLY_NOTE_SHORT } from '../lib/prose.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
+import { photoCredit } from './gallery.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -895,7 +896,7 @@ export function playerPage(p, d) {
                 width="480" height="480" loading="lazy" decoding="async"
                 ${sh.focus ? `style="object-position:${esc(sh.focus[0])}% ${esc(sh.focus[1])}%"` : ''} />
             </a>
-            ${sh.album.photographer ? `<span class="pf-shot__by">${esc(sh.album.photographer)}</span>` : ''}
+            ${sh.album.photographer ? `<span class="pf-shot__by">${photoCredit(sh.album.photographer)}</span>` : ''}
           </li>`;
   }).join('\n          ')}
         </ul>

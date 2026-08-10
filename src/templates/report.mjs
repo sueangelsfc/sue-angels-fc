@@ -19,6 +19,7 @@ import { fmtDate, isUs, matchTimeline } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
 import { articleBody } from './news.mjs';
 import { reportText, hasReport as hasReportOf, FRIENDLY_NOTE } from '../lib/prose.mjs';
+import { photoCredit } from './gallery.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -241,7 +242,7 @@ export function matchReport(m, d) {
     : `<img class="mr-album__crest" src="${STAR}" alt="" width="76" height="94" loading="lazy" decoding="async" />`}
           <span class="mr-album__body">
             <b>${esc(album.photos.length)} photograph${album.photos.length === 1 ? '' : 's'}</b>
-            <i>${esc(album.photographer ? `Shot by ${album.photographer}` : 'From the club album')}</i>
+            <i>${album.photographer ? `Shot by ${photoCredit(album.photographer)}` : 'From the club album'}</i>
             <span class="mr-album__go">See the album ${ARROW}</span>
           </span>
         </a>

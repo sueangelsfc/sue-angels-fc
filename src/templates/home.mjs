@@ -20,6 +20,7 @@
    scripting blocked.
    ========================================================================== */
 import { esc, attr, clubCrest, NAV } from '../lib/html.mjs';
+import { photoCredit } from './gallery.mjs';
 import { sizeAttrs } from '../lib/imagesize.mjs';
 import {
   CLUB, SPONSORS, SPONSOR_TIERS, FAQS, NEXT_FIXTURE, SEASON_AWARDS, SOCIALS,
@@ -2219,7 +2220,9 @@ export function home(d) {
       <div class="wrap">
         ${bandHead('photographers', 'Who takes the pictures', `${shooters.length} behind the camera`, '/gallery.html', 'The gallery', 'pgr-h')}
         ${rowList(shooters.map((s) => ({
-    a: `<b>${esc(s.name)}</b>`,
+    /* Through photoCredit, so a photographer who has given the club a link
+       gets one here and on all five gallery credits at the same moment. */
+    a: `<b>${photoCredit(s.name)}</b>`,
     b: esc(`${s.albums} ${s.albums === 1 ? 'album' : 'albums'}`),
     c: esc(`${s.photos} pictures`),
   })))}

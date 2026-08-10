@@ -15,7 +15,7 @@
    small rather than running one long line under a photograph.
    ========================================================================== */
 import { esc, attr } from '../lib/html.mjs';
-import { CLUB } from '../lib/club.mjs';
+import { CLUB, photographerChannels } from '../lib/club.mjs';
 import { fmtDate, slugify } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor } from './home.mjs';
 
@@ -112,6 +112,27 @@ const tagLinks = (names, squad) => {
   }).filter(Boolean);
 };
 
+/* ==========================================================================
+   A PHOTOGRAPHER'S CREDIT, IN ONE PLACE
+
+   The name is printed in six places: two on the gallery index, three on an
+   album page and one in the home-page band. Adding a link to five of them is
+   the drift this codebase keeps writing itself notes about, so all six ask
+   this instead.
+
+   No channels means plain text, byte for byte what it printed before, which
+   is why nobody has to be listed in PHOTOGRAPHERS for this to be correct.
+   `rel="noopener"` because these open somebody else's site.
+   ========================================================================== */
+export function photoCredit(name) {
+  const n = String(name || '').trim();
+  if (!n) return '';
+  const ch = photographerChannels(n);
+  if (!ch.length) return esc(n);
+  const first = ch[0];
+  return `<a class="gl-by" href="${attr(first.href)}" rel="noopener" target="_blank">${esc(n)}</a>`;
+}
+
 /* Newest match first. `date` on the record is when the album was UPLOADED,
    which for all seven of these was the same afternoon in June 2026, so
    sorting on it ordered seven matchdays spanning September to February by
@@ -143,7 +164,7 @@ export function gallery(d) {
               <span class="gl-card__body">
                 <b class="gl-card__fixture">${esc(fixture)}</b>
                 <span class="gl-card__detail">${esc(detail)}</span>
-                ${g.photographer ? `<span class="gl-card__by">Photographs by ${esc(g.photographer)}</span>` : ''}
+                ${g.photographer ? `<span class="gl-card__by">Photographs by ${photoCredit(g.photographer)}</span>` : ''}
               </span>
             </a>
           </li>`;
@@ -154,7 +175,7 @@ export function gallery(d) {
         <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Matchday</p>
         <h1 class="gl-hero__title" id="gl-h">The gallery<span class="volt">.</span></h1>
         <p class="gl-hero__lede">${esc(totalPhotos)} photographs across ${esc(albums.length)}
-          matchdays${credits.length ? `, shot by ${esc(credits.join(', '))}` : ''}. Every one of
+          matchdays${credits.length ? `, shot by ${credits.map(photoCredit).join(', ')}` : ''}. Every one of
           them taken by someone who gave up their Sunday to do it.</p>
       </div>
     </section>`;
@@ -223,7 +244,7 @@ export function galleryAlbum(g, d) {
           ${esc(g.category || 'Matchday')}${g.shownDate ? ` · ${esc(fmtDate(g.shownDate))}` : ''}</p>
         <h1 class="gl-album__title" id="ga-h">${esc(fixture)}</h1>
         ${detail ? `<p class="gl-album__detail">${esc(detail)}</p>` : ''}
-        <p class="gl-album__meta">${esc(photos.length)} photograph${photos.length === 1 ? '' : 's'}${g.photographer ? ` · shot by ${esc(g.photographer)}` : ''}</p>
+        <p class="gl-album__meta">${esc(photos.length)} photograph${photos.length === 1 ? '' : 's'}${g.photographer ? ` · shot by ${photoCredit(g.photographer)}` : ''}</p>
         ${/* THE MATCH THESE ARE OF. 175 photographs of a game whose report,
               team sheet and goalscorers sit on another page, and until now
               nothing joined them. */
@@ -263,7 +284,7 @@ export function galleryAlbum(g, d) {
             itself.</p>
         </div>` : ''}
         ${g.photographer ? `<p class="gl-credit">All photographs in this album by
-          <b>${esc(g.photographer)}</b>.</p>` : ''}
+          <b>${photoCredit(g.photographer)}</b>.</p>` : ''}
       </div>
     </section>` : '';
 

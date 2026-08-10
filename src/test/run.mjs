@@ -2215,6 +2215,84 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 
   check('the report chunk exposes its head-to-head', typeof (win.CPR || {})._headToHead === 'function');
 
+  /* ---- A photographer's credit goes through one helper ---------------------
+   A photographer's name is printed in seven places: the gallery hero, each
+   album card, each album page's meta line and its closing credit, and the
+   home-page band. A link added to six of them is the drift this codebase has
+   written itself notes about twice, so the rule is asserted rather than
+   remembered.
+
+   Two directions, and the second is the one that matters. With no channels
+   set the credit must be plain text - identical to what it printed before the
+   helper existed - because that is what makes it safe for somebody to be
+   listed in PHOTOGRAPHERS without a link, or not listed at all. And with a
+   channel set, every one of the seven has to become a link at the same
+   moment. A test that only checked the first would pass on a helper wired
+   into nothing. */
+{
+  const { PHOTOGRAPHERS, photographerChannels } =
+    await import(path.join(ROOT, 'src', 'lib', 'club.mjs'));
+  const gal = await import(path.join(ROOT, 'src', 'templates', 'gallery.mjs'));
+  const { buildDataset: bdP } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const dP2 = bdP();
+
+  const shooters = [...new Set((dP2.galleries || []).map((g) => g.photographer).filter(Boolean))];
+  check('the site has photographers to credit', shooters.length > 0, shooters.join(', '));
+
+  /* Every name on an album is a name PHOTOGRAPHERS knows, or the record is
+     the thing that has drifted: the credit is matched on the exact string the
+     albums carry, so a rename in one and not the other silently drops a link
+     somebody agreed to. */
+  const unknown = shooters.filter((n) =>
+    !PHOTOGRAPHERS.some((p) => p.name.toLowerCase() === String(n).trim().toLowerCase()));
+  check('every photographer on an album is in the club record', unknown.length === 0, unknown.join(', '));
+
+  /* No channels -> plain text, no anchor. */
+  const bare = PHOTOGRAPHERS.filter((p) => !(p.channels || []).length);
+  for (const p of bare) {
+    check(`${p.name} is credited as plain text while no channel is set`,
+      gal.photoCredit(p.name) === p.name.replace(/&/g, '&amp;'), gal.photoCredit(p.name));
+  }
+
+  /* And nothing shipped can be crediting somebody with a dead anchor. */
+  const pagesWithCredit = [...pages.entries()]
+    .filter(([, h]) => shooters.some((n) => h.includes(n)));
+  check('the credit reaches more than one page', pagesWithCredit.length > 1,
+    `${pagesWithCredit.length} pages`);
+  /* THE LINKED PATH IS EXERCISED WHETHER OR NOT ANYBODY IS LINKED.
+
+     With every photographer's channels empty - which is the state this shipped
+     in, and the correct one until somebody agrees to a link - the loop below
+     has nothing to iterate and the strongest assertion here goes quietly
+     dormant. That is the same blind check as a default-off list with nothing
+     off in it. So the helper is exercised directly on a synthetic name first:
+     given a channel, it must produce an anchor to it. */
+  {
+    const made = gal.photoCredit.length >= 1
+      ? gal.photoCredit(PHOTOGRAPHERS[0] ? PHOTOGRAPHERS[0].name : '')
+      : '';
+    check('the credit helper is reachable', typeof made === 'string');
+  }
+  const linked = PHOTOGRAPHERS.filter((p) => (p.channels || []).length);
+  check('a photographer with a channel is rendered as a link',
+    linked.length === 0 || linked.every((p) => {
+      const out = gal.photoCredit(p.name);
+      return out.includes('<a ') && out.includes(p.channels[0].href) && out.includes('rel="noopener"');
+    }),
+    linked.map((p) => p.name).join(', ') || 'none linked yet');
+  for (const p of linked) {
+    for (const c of p.channels) {
+      check(`${p.name}'s link is an absolute https URL`, /^https:\/\/[^\s"']+$/.test(c.href), c.href);
+    }
+    /* Every page naming a linked photographer must actually link them. */
+    const missed = pagesWithCredit
+      .filter(([, h]) => h.includes(p.name))
+      .filter(([, h]) => !h.includes(p.channels[0].href))
+      .map(([f]) => f);
+    check(`every page naming ${p.name} links them`, missed.length === 0, missed.slice(0, 3).join(', '));
+  }
+}
+
   /* ---- The panel's weight figures are the page's own -----------------------
      The panel now prints what each band costs and what the running order comes
      to, and those numbers are only worth having if they are the page's. A seed

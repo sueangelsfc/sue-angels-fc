@@ -139,6 +139,40 @@ export const SPONSORS = [
   { name: 'HLO', tier: 'Club partner', logo: '/assets/sponsors/hlo.svg' },
 ];
 
+/* ==========================================================================
+   WHO SHOOTS FOR THE CLUB
+
+   Three people turn up with a camera and 606 photographs on this site are
+   theirs. The credit was a bare string on each album record, repeated in six
+   places, and there was nowhere to put a link even where somebody was happy
+   to have one.
+
+   `name` MUST be the string the album records already carry, because that is
+   what the credit is matched on. A mismatch does not break anything: the
+   credit falls back to plain text, which is exactly what it was before.
+
+   `channels` is optional and absent means no link, which is the safe default
+   and the reason nobody has to be listed here at all. Nothing is added to it
+   that the person has not agreed to: a photographer is a private individual,
+   not a business with a public storefront, and a wrong handle on a club page
+   sends supporters to a stranger.
+   ========================================================================== */
+export const PHOTOGRAPHERS = [
+  { name: 'Richie Luwawa', channels: [] },
+  { name: 'Jimi El Bayati', channels: [] },
+  { name: 'Louis Allen', channels: [] },
+];
+
+/* The credit for one photographer: their channels, or nothing. Every place
+   that prints a photographer's name asks this, so a link added here appears
+   in all six at once and cannot appear in five. */
+export function photographerChannels(name) {
+  const key = String(name || '').trim().toLowerCase();
+  if (!key) return [];
+  const rec = PHOTOGRAPHERS.find((p) => p.name.toLowerCase() === key);
+  return (rec && rec.channels) || [];
+}
+
 /* The partners the sponsors page leads on, in billing order.
 
    `trade` is only filled in where the partner's own mark or copy states it,

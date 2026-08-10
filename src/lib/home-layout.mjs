@@ -24,8 +24,11 @@
    ========================================================================== */
 import { hasReport } from './prose.mjs';
 import { preseasonFor, seasonAhead } from './preseason.mjs';
-import { clubRecords, milestones } from './stats.mjs';
-import { SPONSORS, CLUB } from './club.mjs';
+import {
+  clubRecords, milestones, currentRun, goalKinds, opponentRecords,
+  byCompetition, homeAwaySplit, teamSummary,
+} from './stats.mjs';
+import { SPONSORS, SPONSOR_TIERS, CLUB } from './club.mjs';
 
 /* The default order, which is also the order these were written in. `name` is
    what the band calls itself ON THE PAGE, so the panel and the website use one
@@ -65,6 +68,20 @@ export const HOME_BANDS = [
     what: 'The next fixture previewed, with whatever the archive holds on that opponent.',
   },
   {
+    key: 'fixtures',
+    area: 'now',
+    off: true,
+    name: 'What is coming up',
+    what: 'The next few fixtures after that one, with dates, venues and kick-off times.',
+  },
+  {
+    key: 'lastout',
+    area: 'now',
+    off: true,
+    name: 'The last time out',
+    what: 'The most recent result in full: the score, who scored and what it did to the run.',
+  },
+  {
     key: 'report',
     area: 'now',
     name: 'A match report',
@@ -79,6 +96,14 @@ export const HOME_BANDS = [
     what: 'The six most recent articles, newest first.',
   },
   {
+    key: 'onthisday',
+    area: 'now',
+    off: true,
+    name: 'On this day',
+    what: 'What the club was doing on this date in an earlier season. Empty on most '
+      + 'days of the year, which is what makes it worth reading on the days it is not.',
+  },
+  {
     key: 'who',
     area: 'club',
     name: 'More than a result',
@@ -89,6 +114,13 @@ export const HOME_BANDS = [
     area: 'people',
     name: 'Award winners',
     what: 'Season awards, Player of the Month and the club records.',
+  },
+  {
+    key: 'potm',
+    area: 'people',
+    off: true,
+    name: 'Player of the Month',
+    what: 'The most recent Player of the Month on their own, with the reason it was given.',
   },
   {
     key: 'campaign',
@@ -103,10 +135,88 @@ export const HOME_BANDS = [
     what: 'The last seven matches played, with scores and opponents.',
   },
   {
+    key: 'streak',
+    area: 'pitch',
+    off: true,
+    name: 'The run',
+    what: 'The runs the club is on now, each one beside the longest it has managed.',
+  },
+  {
     key: 'table',
     area: 'pitch',
     name: 'The table',
     what: 'The league table as it stands, with the club marked.',
+  },
+  {
+    key: 'competitions',
+    area: 'pitch',
+    off: true,
+    name: 'League and cup',
+    what: 'The record split by competition, so a cup run reads separately from a league season.',
+  },
+  {
+    key: 'homeaway',
+    area: 'pitch',
+    off: true,
+    name: 'Home and away',
+    what: 'The same season read twice: at the home ground, and on the road.',
+  },
+  {
+    key: 'headtohead',
+    area: 'pitch',
+    off: true,
+    name: 'Every club played',
+    what: 'One row for each opponent the club has met, with the record against them.',
+  },
+
+  /* ---- The figures --------------------------------------------------------
+     Six bands that publish nothing the club types in. Each one is a
+     leaderboard the stats engine already derives for the stats page, so a
+     figure here and a figure there cannot disagree, and each empties itself
+     when the column it reads is all zeroes. */
+  {
+    key: 'scorers',
+    area: 'numbers',
+    off: true,
+    name: 'Who scores the goals',
+    what: 'The leading scorers, counted from the match records.',
+  },
+  {
+    key: 'creators',
+    area: 'numbers',
+    off: true,
+    name: 'Who makes them',
+    what: 'The leading providers of assists.',
+  },
+  {
+    key: 'appearances',
+    area: 'numbers',
+    off: true,
+    name: 'Who turns up',
+    what: 'Most appearances for the club. Starts only, because Sunday-league returns '
+      + 'do not record substitutes or minutes.',
+  },
+  {
+    key: 'motm',
+    area: 'numbers',
+    off: true,
+    name: 'Man of the match',
+    what: 'Who has been given it most often, from the match records themselves.',
+  },
+  {
+    key: 'goalkinds',
+    area: 'numbers',
+    off: true,
+    name: 'How the goals come',
+    what: 'Open play, set pieces and penalties, with a line saying how many of the '
+      + 'goals carry enough detail to be counted.',
+  },
+  {
+    key: 'cleansheets',
+    area: 'numbers',
+    off: true,
+    name: 'Clean sheets',
+    what: 'How often the club has kept one, and the longest it has gone without conceding.',
   },
   {
     key: 'faq',
@@ -119,6 +229,20 @@ export const HOME_BANDS = [
     area: 'join',
     name: 'Pull on the shirt',
     what: 'Trials, volunteering, media and sponsorship. The way in.',
+  },
+  {
+    key: 'back',
+    area: 'join',
+    off: true,
+    name: 'Back the club',
+    what: 'What sponsorship actually buys, tier by tier, with the way to ask about it.',
+  },
+  {
+    key: 'give',
+    area: 'join',
+    off: true,
+    name: 'Chip in',
+    what: 'The club’s donation link, which is set in Control panel → Donations.',
   },
 
   /* ---- The ones that take a PICK ------------------------------------------
@@ -167,13 +291,13 @@ export const HOME_BANDS = [
   },
   {
     key: 'records',
-    area: 'pitch',
+    area: 'numbers',
     name: 'Club records',
     what: 'Biggest win, longest unbeaten run, most goals, most appearances. All derived.',
   },
   {
     key: 'milestones',
-    area: 'pitch',
+    area: 'numbers',
     name: 'Milestones in sight',
     what: 'Who is within a few of a round number. Works itself out and empties when nobody is close.',
   },
@@ -182,6 +306,35 @@ export const HOME_BANDS = [
     area: 'people',
     name: 'The squad',
     what: 'Every player, with a photograph where the club has one.',
+  },
+  {
+    key: 'captains',
+    area: 'people',
+    off: true,
+    name: 'Who wears the armband',
+    what: 'Who has captained the club and how often, counted from the team sheets.',
+  },
+  {
+    key: 'newfaces',
+    area: 'people',
+    off: true,
+    name: 'New at the club',
+    what: 'Anybody in their first season here. Worked out from who has played rather '
+      + 'than from anything anybody has to keep up to date.',
+  },
+  {
+    key: 'seasons',
+    area: 'club',
+    off: true,
+    name: 'Every season',
+    what: 'One row per season since 2025, with the record and the division.',
+  },
+  {
+    key: 'honours',
+    area: 'club',
+    off: true,
+    name: 'What the club has won',
+    what: 'The trophies, set in Control panel → Recognition.',
   },
   {
     key: 'ground',
@@ -207,11 +360,17 @@ export const HOME_AREAS = [
   { key: 'now', name: 'Happening now',
     what: 'Timely. Each of these takes itself off the page when it stops being true.' },
   { key: 'pitch', name: 'On the pitch',
-    what: 'Results, the table and the figures, all counted from the match records.' },
+    what: 'Results, the table and the record, match by match.' },
+  /* Split out of "On the pitch" when it reached twelve bands, which is past
+     what an area is for. The line between them is what the reader is looking
+     at: a match, or a column. */
+  { key: 'numbers', name: 'The figures',
+    what: 'Leaderboards and totals, every one of them counted from the match records '
+      + 'rather than typed in, so nobody has to keep them true.' },
   { key: 'people', name: 'The people',
     what: 'Players and staff.' },
   { key: 'club', name: 'The club',
-    what: 'Who the club is, who backs it and where it plays.' },
+    what: 'Who the club is, what it has won, who backs it and where it plays.' },
   { key: 'join', name: 'Getting involved',
     what: 'The way in, and the questions people ask before they take it.' },
 ];
@@ -260,7 +419,124 @@ export function homeBandFilled(key, d) {
      happens at the end of a season. */
   if (key === 'nextup') return !!(d && d.nextFixture && d.nextFixture.opponent);
   if (key === 'squad') return ((d && d.squad) || (d && d.players) || []).length > 0;
+  /* The campaign is a chart of cumulative goals, so it needs matches carrying
+     a goal record. It had no entry here at all and always claimed content,
+     which was true of every dataset it had ever been handed and stopped being
+     true when the layout could hand it any of them. */
+  if (key === 'campaign') return ((d && d.played) || []).some((m) => m.countsGoals);
+
+  /* ---- The twenty added in August ---------------------------------------
+     Same contract as everything above: answer for a dataset holding almost
+     nothing without throwing, because the deploy runs the generator and a
+     record that threw here would fail the club's own publish. */
+  const comp = (d && d.competitive) || [];
+  const players = (d && d.players) || [];
+  const some = (col) => players.some((p) => (Number(p[col]) || 0) > 0);
+
+  /* One fixture is the next match, which the hero and `nextup` already carry.
+     This band is what comes AFTER that, so one fixture is an empty band. */
+  if (key === 'fixtures') return ((d && d.upcoming) || []).length > 1;
+  if (key === 'lastout') return ((d && d.played) || []).length > 0;
+  if (key === 'onthisday') return onThisDay(d).length > 0;
+  if (key === 'streak') return currentRun(comp).length > 0;
+  /* A split with one side to it is not a split. */
+  if (key === 'competitions') return byCompetition(comp.filter((m) => m.played)).length > 1;
+  if (key === 'homeaway') {
+    const s = homeAwaySplit(comp.filter((m) => m.played));
+    return s.home.played > 0 && s.away.played > 0;
+  }
+  if (key === 'headtohead') return opponentRecords(comp).length > 0;
+  if (key === 'scorers') return some('goals');
+  if (key === 'creators') return some('assists');
+  if (key === 'appearances') return some('apps');
+  if (key === 'motm') return some('motm');
+  if (key === 'goalkinds') return goalKinds(comp).rows.length > 0;
+  if (key === 'cleansheets') return teamSummary(comp.filter((m) => m.played)).cleanSheets > 0;
+  if (key === 'potm') return potmLatest(d) != null;
+  if (key === 'captains') return some('captained');
+  if (key === 'newfaces') return newFaces(d).length > 0;
+  /* COUNTED THE WAY THE BAND DRAWS IT. This asked `d.seasons.length > 1`,
+     which counts seasons the club has a RECORD for, and the band draws one row
+     per season with competitive matches PLAYED. In August those are two
+     different numbers: 26/27 exists and holds six pre-season friendlies, so
+     the switch promised a comparison and the page drew a single row. A band
+     that empties itself on a different question from the one it renders is
+     the panel promising something the page then declines. */
+  if (key === 'seasons') return seasonsPlayed(d).length > 1;
+  if (key === 'honours') return honoursIn(d).length > 0;
+  if (key === 'back') return (SPONSOR_TIERS || []).length > 0;
+  /* The club owns this link in Control panel -> Donations. With no link there
+     is nowhere for the button to go, so the band is not published. */
+  if (key === 'give') return !!(d && d.donate && (d.donate.clubUrl || d.donate.stripeLink));
   return KNOWN.has(key);
+}
+
+/* ---- Four small derivations the bands and the panel both need -------------
+   Here rather than in the template because `homeBandFilled` has to answer the
+   same question the band will, and a second copy of the rule is a second
+   chance for the switch to promise something the page then drops. */
+
+/* Matches played on this date in an EARLIER year. Same day and month, and the
+   year has to be behind us: an anniversary of something that happened today
+   is just today. `d.todayISO` is the day the site was generated, derived once
+   in dataset.mjs beside the fixture list so the two cannot disagree. */
+export function onThisDay(d) {
+  const today = (d && d.todayISO) || '';
+  if (today.length < 10) return [];
+  const md = today.slice(5);
+  const year = today.slice(0, 4);
+  return ((d && d.played) || [])
+    .filter((m) => m.iso && m.iso.slice(5) === md && m.iso.slice(0, 4) < year)
+    .sort((a, b) => String(b.iso).localeCompare(String(a.iso)));
+}
+
+/* A SEASON'S MONTHS IN THE ORDER A SEASON HAS THEM, which is not the order
+   the calendar has them. A Player of the Month record carries a month NAME and
+   a season, and no date at all, so "the latest one" has to be worked out from
+   the name. Sorting on the row key instead picks whichever was typed in last:
+   the club entered September, February and March, then went back and filled in
+   January, and the front page would have led with January in May. */
+const SEASON_MONTHS = ['August', 'September', 'October', 'November', 'December',
+  'January', 'February', 'March', 'April', 'May', 'June', 'July'];
+const monthRank = (m) => {
+  const i = SEASON_MONTHS.indexOf(String(m || '').trim());
+  /* A month nothing recognises sorts oldest rather than newest, so a typo can
+     never take the front page off a real one. */
+  return i < 0 ? -1 : i;
+};
+
+export function potmLatest(d) {
+  const rows = ((d && d.recognition) || []).filter((r) => r && r.type === 'potm');
+  if (!rows.length) return null;
+  return rows.slice().sort((a, b) => String(b.season || '').localeCompare(String(a.season || ''))
+    || monthRank(b.month) - monthRank(a.month)
+    || String(b.key || b.id || '').localeCompare(String(a.key || a.id || '')))[0];
+}
+
+/* The seasons the club has actually played competitive football in, which is
+   what "Every season" lists. A season the club has a record for but has not
+   played a competitive match in yet is not a row. */
+export function seasonsPlayed(d) {
+  return ((d && d.seasons) || []).filter((s) =>
+    ((d && d.competitive) || []).some((m) => m.played && m.season === s.name));
+}
+
+export function honoursIn(d) {
+  return ((d && d.recognition) || []).filter((r) => r && r.type === 'trophy')
+    .slice().sort((a, b) => String(b.season || '').localeCompare(String(a.season || '')));
+}
+
+/* IN THEIR FIRST SEASON AT THE CLUB, and derived rather than set, exactly as
+   the squad pages derive it: the panel does not offer "new signing" as a
+   choice, because that would be a second source for a fact the archive
+   already answers. See src/lib/squad-status.mjs. */
+export function newFaces(d) {
+  const season = (d && d.latestSeason) || '';
+  if (!season || !d || typeof d.statusLabelIn !== 'function') return [];
+  return ((d && d.squad) || (d && d.players) || []).filter((p) => {
+    const s = d.statusLabelIn(p.num, season);
+    return s && s.key === 'new';
+  });
 }
 
 /* ---- What each pick can choose from ---------------------------------------

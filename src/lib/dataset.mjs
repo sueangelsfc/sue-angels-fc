@@ -1006,6 +1006,12 @@ export function buildDataset() {
 
   return {
     matches, played, competitive, friendlies, fixtures, upcoming, nextFixture, awaiting, orphanDetails,
+    /* THE DAY THE SITE WAS GENERATED, derived once here with `upcoming` and
+       `nextFixture` rather than a second time by whoever needs it. Anything
+       asking what today is has to get the same answer as the fixture list did,
+       or the page can say a match is still to come and that today is the day
+       after it. */
+    todayISO,
     unknownVenues: [...unknownVenues],
     /* The merged baseline+database match list, before normalisation. The
        control panel needs it to pre-fill a match whose scoreline still comes

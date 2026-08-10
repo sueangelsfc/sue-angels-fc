@@ -21,9 +21,14 @@
    ========================================================================== */
 import { esc, attr, clubCrest, NAV } from '../lib/html.mjs';
 import { sizeAttrs } from '../lib/imagesize.mjs';
-import { CLUB, SPONSORS, FAQS, NEXT_FIXTURE, SEASON_AWARDS , SOCIALS} from '../lib/club.mjs';
-import { teamSummary, formGuide, isLeague, clubRecords, milestones } from '../lib/stats.mjs';
-import { publishedBands, featuredFor } from '../lib/home-layout.mjs';
+import { CLUB, SPONSORS, SPONSOR_TIERS, FAQS, NEXT_FIXTURE, SEASON_AWARDS , SOCIALS} from '../lib/club.mjs';
+import {
+  teamSummary, formGuide, isLeague, clubRecords, milestones, leaderboard,
+  currentRun, goalKinds, opponentRecords, byCompetition, homeAwaySplit, longestRun,
+} from '../lib/stats.mjs';
+import {
+  publishedBands, featuredFor, onThisDay, potmLatest, honoursIn, newFaces,
+} from '../lib/home-layout.mjs';
 import { preseasonFor, seasonAhead, sameClub, relatedClub, recordOf } from '../lib/preseason.mjs';
 import { reportText, house, FRIENDLY_NOTE_SHORT, FRIENDLY_NOTE } from '../lib/prose.mjs';
 
@@ -616,7 +621,15 @@ export function home(d) {
 
   const monthOf = (m) => monthYear(m.iso || m.date);
 
-  const campaignBand = `<section class="sec sec--campaign" id="campaign" aria-labelledby="cmp-h">
+  /* THE CHART NEEDS MATCHES, and it read `scored[0]` for its first axis label
+     without checking there was one. A dataset with nothing played threw here,
+     which is a crash rather than an empty band: the deploy runs the generator,
+     so it would have failed the club's own publish rather than degrading. It
+     could not happen while this band was hard-coded onto a page with 33
+     matches behind it, and became reachable the moment the layout could hand
+     the page any dataset it liked. `homeBandFilled` answers the same question,
+     so the switch cannot promise a chart the page then declines to draw. */
+  const campaignBand = !scored.length ? '' : `<section class="sec sec--campaign" id="campaign" aria-labelledby="cmp-h">
       <div class="wrap">
         ${rail('campaign', 'The campaign')}
         <div class="cmp__head rv">
@@ -1213,6 +1226,379 @@ export function home(d) {
       </div>
     </section>` : '';
 
+  /* ==========================================================================
+     TWENTY MORE THE CLUB CAN ADD
+
+     All of them off until switched on in Control panel -> Home page. Not
+     because they are unfinished: because the club has already arranged its
+     front page, and twenty bands arriving switched on would have doubled the
+     length of a page nobody asked to change. That is the rule in
+     home-layout.mjs and this is the first time it has had to hold.
+
+     None of them asks the club to type anything in. Every one reads something
+     the site already holds and empties itself when that thing runs out, which
+     is what makes it safe to leave one on and forget about it.
+     ========================================================================== */
+
+  /* Three shapes, shared. Five leaderboards drawn five different ways would
+     be five sets of column widths to keep in step for no reader's benefit. */
+  const bySlug = new Map((d.players || []).map((p) => [p.num, p]));
+  const playerLink = (num, fallback) => {
+    const p = bySlug.get(num);
+    const name = p ? p.name : (fallback || d.nameFor(num) || '');
+    return p ? `<a href="/players/${attr(p.slug)}.html">${esc(name)}</a>` : esc(name);
+  };
+
+  /* A leaderboard: rank, name, figure. Rank is the reader's position in the
+     list and never a shirt number. */
+  const leaderList = (rows, col, unit) => `<ol class="lbd rv">
+          ${rows.map((p, i) => `<li class="lbd__r">
+            <span class="lbd__n">${esc(String(i + 1))}</span>
+            <span class="lbd__p">${playerLink(p.num, p.name)}<i>${esc(p.position || '')}</i></span>
+            <span class="lbd__v">${esc(String(p[col]))}<i>${esc(unit)}</i></span>
+          </li>`).join('\n          ')}
+        </ol>`;
+
+  /* A tile: one big figure, what it is, and the smaller thing that gives it
+     scale. The third line is the point of the shape - a figure with nothing
+     beside it invites the reader to supply their own comparison. */
+  const tileGrid = (tiles) => `<ul class="tiles rv">
+          ${tiles.filter(Boolean).map((t) => `<li class="tiles__t">
+            <span class="tiles__v">${esc(String(t.v))}</span>
+            <b class="tiles__l">${esc(t.l)}</b>
+            ${t.s ? `<span class="tiles__s">${esc(t.s)}</span>` : ''}
+          </li>`).join('\n          ')}
+        </ul>`;
+
+  /* A row: something on the left, a middle, and a figure on the right. */
+  const rowList = (rows) => `<ul class="hrow rv">
+          ${rows.map((r) => `<li class="hrow__r">
+            <span class="hrow__a">${r.a}</span>
+            <span class="hrow__b">${r.b}</span>
+            <span class="hrow__c">${r.c}</span>
+          </li>`).join('\n          ')}
+        </ul>`;
+
+  const bandHead = (key, title, eyebrow, href, linkText, id) => `${rail(key, title)}
+        <div class="nhead rv">
+          <div>
+            <p class="eyebrow">${esc(eyebrow)}</p>
+            <h2 class="h2" id="${attr(id)}">${esc(title)}<span class="volt">.</span></h2>
+          </div>
+          ${href ? `<a class="nhead__all" href="${attr(href)}">${esc(linkText)} ${ARROW}</a>` : ''}
+        </div>`;
+
+  /* ---- What is coming up --------------------------------------------------
+     The fixtures AFTER the next one, because the hero and the next-match band
+     both already carry that one and a list repeating it reads as a mistake. */
+  const soon = (d.upcoming || []).slice(1, 6);
+  const fixturesBand = soon.length ? `<section class="sec sec--fixtures" id="fixtures" aria-labelledby="fix-h">
+      <div class="wrap">
+        ${bandHead('fixtures', 'What is coming up', `${d.upcoming.length} to play`, '/fixtures.html', 'The full list', 'fix-h')}
+        ${rowList(soon.map((f) => ({
+    a: `${oppBadge(f.opponent, d.badges, 22, 22, 'psn__b')}<b>${esc(shortClub(f.opponent))}</b>`,
+    b: esc(`${f.dateLabel || dayMonthYear(f.iso || f.date)}${f.competition ? ` · ${f.competition}` : ''}`),
+    c: `${esc(f.weAreHome ? 'Home' : 'Away')}${f.kick ? ` <i>${esc(f.kick)}</i>` : ''}`,
+  })))}
+      </div>
+    </section>` : '';
+
+  /* ---- The last time out --------------------------------------------------
+     The most recent result, whatever it was. A club that only puts its wins on
+     the front page is telling you which ones it lost. */
+  const lastM = d.played.slice().sort((a, b) => (b.iso || '').localeCompare(a.iso || ''))[0];
+  const lastGoals = (lastM && lastM.detail && lastM.detail.goals) || [];
+  const lastScorers = [...lastGoals.reduce((m, g) => m.set(g.num, (m.get(g.num) || 0) + 1), new Map())];
+  const lastOutBand = lastM ? `<section class="sec sec--lastout" id="lastout" aria-labelledby="lst-h">
+      <div class="wrap">
+        ${bandHead('lastout', 'The last time out', esc(`${lastM.competition} · ${dayMonthYear(lastM.iso || lastM.date)}`), `/matches/${lastM.slug}.html`, 'The full match', 'lst-h')}
+        <div class="lout rv">
+          <span class="lout__b">${oppBadge(lastM.opponent, d.badges, 56, 56)}</span>
+          <div class="lout__t">
+            <p class="lout__s"><b>${esc(lastM.isWalkover ? 'Walkover' : (lastM.ourScoreline || lastM.scoreline))}</b>
+              <span>${esc(`${lastM.weAreHome ? 'at home to' : 'away at'} ${shortClub(lastM.opponent)}`)}</span></p>
+            ${lastScorers.length ? `<p class="lout__w"><b>Scored:</b> ${lastScorers
+    .map(([num, n]) => `${playerLink(num)}${n > 1 ? ` (${n})` : ''}`).join(', ')}.</p>` : ''}
+            ${lastM.isWalkover ? `<p class="psn__note">${esc(FRIENDLY_NOTE_SHORT)}</p>` : ''}
+          </div>
+        </div>
+      </div>
+    </section>` : '';
+
+  /* ---- On this day --------------------------------------------------------
+     Empty on most days of the year, and that is the shape of the thing rather
+     than a fault in it. `d.todayISO` is the day the site was generated, so
+     this is as current as the last publish and says its own date so nobody has
+     to guess how fresh it is. */
+  const otd = onThisDay(d);
+  const onThisDayBand = otd.length ? `<section class="sec sec--onthisday" id="onthisday" aria-labelledby="otd-h">
+      <div class="wrap">
+        ${bandHead('onthisday', 'On this day', esc(dayMonthYear(d.todayISO)), '/results.html', 'Every result', 'otd-h')}
+        ${rowList(otd.map((m) => ({
+    a: `${oppBadge(m.opponent, d.badges, 22, 22, 'psn__b')}<b>${esc(shortClub(m.opponent))}</b>`,
+    b: esc(`${m.iso.slice(0, 4)} · ${m.competition}`),
+    c: `<a href="/matches/${attr(m.slug)}.html">${esc(m.isWalkover ? 'W/O' : (m.ourScoreline || m.scoreline))}</a>`,
+  })))}
+      </div>
+    </section>` : '';
+
+  /* ---- The run ------------------------------------------------------------
+     Each live run beside the longest the club has managed, because a run with
+     no scale beside it reads as a verdict. Two wins is the start of something
+     or the end of something depending entirely on the ten beside it. */
+  const runs = currentRun(d.competitive);
+  const runBand = runs.length ? `<section class="sec sec--streak" id="streak" aria-labelledby="run-h">
+      <div class="wrap">
+        ${bandHead('streak', 'The run', 'As it stands', '/records.html', 'Every record', 'run-h')}
+        ${tileGrid(runs.map((r) => ({
+    v: r.n,
+    l: r.n === 1 ? r.one : r.label,
+    s: r.all ? 'Everything the club has played'
+      : `Best: ${r.best}${r.since ? ` · since ${dayMonthYear(r.since.iso)}` : ''}`,
+  })))}
+        <p class="psn__note rv">Competitive matches only. ${esc(FRIENDLY_NOTE_SHORT)}</p>
+      </div>
+    </section>` : '';
+
+  /* ---- League and cup -----------------------------------------------------
+     A club that reads only its league record is hiding its cup exits inside
+     it. Split, they are two different seasons. */
+  const comps = byCompetition(d.competitive.filter((m) => m.played));
+  const compsBand = comps.length > 1 ? `<section class="sec sec--competitions" id="competitions" aria-labelledby="cmp2-h">
+      <div class="wrap">
+        ${bandHead('competitions', 'League and cup', `${comps.length} competitions`, '/results.html', 'Every result', 'cmp2-h')}
+        ${rowList(comps.map((c) => ({
+    a: `<b>${esc(c.competition)}</b>`,
+    b: esc(`Played ${c.played}, won ${c.won}${c.drawn ? `, drawn ${c.drawn}` : ''}${c.lost ? `, lost ${c.lost}` : ''}`),
+    c: esc(`${c.goalsFor}-${c.goalsAgainst}`),
+  })))}
+      </div>
+    </section>` : '';
+
+  /* ---- Home and away ------------------------------------------------------ */
+  const ha = homeAwaySplit(d.competitive.filter((m) => m.played));
+  const homeAwayBand = (ha.home.played && ha.away.played) ? `<section class="sec sec--homeaway" id="homeaway" aria-labelledby="ha-h">
+      <div class="wrap">
+        ${bandHead('homeaway', 'Home and away', esc(G.name || 'The home ground'), '/results.html', 'Every result', 'ha-h')}
+        ${tileGrid([
+    { v: `${ha.home.won}/${ha.home.played}`, l: 'Won at home', s: `${ha.home.goalsFor}-${ha.home.goalsAgainst} · ${ha.home.cleanSheets} clean sheets` },
+    { v: `${ha.away.won}/${ha.away.played}`, l: 'Won away', s: `${ha.away.goalsFor}-${ha.away.goalsAgainst} · ${ha.away.cleanSheets} clean sheets` },
+    { v: ha.home.goalsPerGame, l: 'Goals a game at home', s: `${ha.home.concededPerGame} conceded` },
+    { v: ha.away.goalsPerGame, l: 'Goals a game away', s: `${ha.away.concededPerGame} conceded` },
+  ])}
+        <p class="psn__note rv">Competitive matches only. ${esc(FRIENDLY_NOTE_SHORT)}</p>
+      </div>
+    </section>` : '';
+
+  /* ---- Every club played --------------------------------------------------
+     Grouped on the opponent as the records hold it, never on a reduced form:
+     Pure Football FC 1st Team and Pure Football FC 2.0 are two clubs, and one
+     row covering both would claim a record against a side never met. */
+  const h2h = opponentRecords(d.competitive);
+  const headToHeadBand = h2h.length ? `<section class="sec sec--headtohead" id="headtohead" aria-labelledby="h2h-h">
+      <div class="wrap">
+        ${bandHead('headtohead', 'Every club played', `${h2h.length} opponents`, '/results.html', 'Every result', 'h2h-h')}
+        ${rowList(h2h.slice(0, 12).map((r) => ({
+    a: `${oppBadge(r.opponent, d.badges, 22, 22, 'psn__b')}<b>${esc(shortClub(r.opponent))}</b>`,
+    b: esc(`Played ${r.played}, won ${r.won}${r.drawn ? `, drawn ${r.drawn}` : ''}${r.lost ? `, lost ${r.lost}` : ''}`),
+    c: esc(`${r.goalsFor}-${r.goalsAgainst}`),
+  })))}
+        ${h2h.length > 12 ? `<p class="psn__note rv">${esc(`The twelve played most often, of ${h2h.length}.`)}</p>` : ''}
+      </div>
+    </section>` : '';
+
+  /* ---- The five leaderboards ----------------------------------------------
+     leaderboard() drops trialists and anybody on nought, which is what makes
+     these empty themselves rather than publishing a column of zeroes. */
+  const topScorers = leaderboard(d.players, 'goals', 8);
+  const scorersBand = topScorers.length ? `<section class="sec sec--scorers" id="scorers" aria-labelledby="sc-h">
+      <div class="wrap">
+        ${bandHead('scorers', 'Who scores the goals', `${all.goalsFor} scored`, '/stats.html', 'Every figure', 'sc-h')}
+        ${leaderList(topScorers, 'goals', 'goals')}
+      </div>
+    </section>` : '';
+
+  const topCreators = leaderboard(d.players, 'assists', 8);
+  const creatorsBand = topCreators.length ? `<section class="sec sec--creators" id="creators" aria-labelledby="cr-h">
+      <div class="wrap">
+        ${bandHead('creators', 'Who makes them', 'Assists', '/stats.html', 'Every figure', 'cr-h')}
+        ${leaderList(topCreators, 'assists', 'assists')}
+      </div>
+    </section>` : '';
+
+  const topApps = leaderboard(d.players, 'apps', 8);
+  const appearancesBand = topApps.length ? `<section class="sec sec--appearances" id="appearances" aria-labelledby="ap-h">
+      <div class="wrap">
+        ${bandHead('appearances', 'Who turns up', 'Appearances', '/squad.html', 'The squad', 'ap-h')}
+        ${leaderList(topApps, 'apps', 'starts')}
+        <p class="psn__note rv">Starts only. Sunday-league returns do not record substitutes
+          or minutes, so neither is claimed.</p>
+      </div>
+    </section>` : '';
+
+  const topMotm = leaderboard(d.players, 'motm', 8);
+  const motmBand = topMotm.length ? `<section class="sec sec--motm" id="motm" aria-labelledby="mo-h">
+      <div class="wrap">
+        ${bandHead('motm', 'Man of the match', 'From the team sheets', '/stats.html', 'Every figure', 'mo-h')}
+        ${leaderList(topMotm, 'motm', 'awards')}
+      </div>
+    </section>` : '';
+
+  const topCaps = leaderboard(d.players, 'captained', 6);
+  const captainsBand = topCaps.length ? `<section class="sec sec--captains" id="captains" aria-labelledby="cap-h">
+      <div class="wrap">
+        ${bandHead('captains', 'Who wears the armband', 'From the team sheets', '/squad.html', 'The squad', 'cap-h')}
+        ${leaderList(topCaps, 'captained', 'times')}
+      </div>
+    </section>` : '';
+
+  /* ---- How the goals come -------------------------------------------------
+     The share is over the goals that actually record how they were struck, and
+     the band says which number that is. A percentage quoted over a quarter of
+     the evidence, published without saying so, gets repeated back as fact. */
+  const gk = goalKinds(d.competitive);
+  const goalKindsBand = gk.rows.length ? `<section class="sec sec--goalkinds" id="goalkinds" aria-labelledby="gk-h">
+      <div class="wrap">
+        ${bandHead('goalkinds', 'How the goals come', `${gk.total} goals`, '/stats.html', 'Every figure', 'gk-h')}
+        <ul class="gkin rv">
+          ${gk.rows.map((r) => `<li class="gkin__r">
+            <b>${esc(r.label)}</b>
+            <span class="gkin__bar"><i style="width:${attr(String(r.pct))}%"></i></span>
+            <span class="gkin__n">${esc(String(r.n))}<i>${esc(`${r.pct}%`)}</i></span>
+          </li>`).join('\n          ')}
+        </ul>
+        <p class="psn__note rv">${esc(gk.unknown
+    ? `Counted over the ${gk.known} goals of ${gk.total} that record how they were struck. The other ${gk.unknown} are not guessed at.`
+    : `All ${gk.total} goals, from the match records. Walkovers carry no goals and are not counted.`)}</p>
+      </div>
+    </section>` : '';
+
+  /* ---- Clean sheets ------------------------------------------------------- */
+  const csRun = longestRun(d.competitive, (m) => m.theirGoals === 0, { goalRecordOnly: true });
+  const cleanSheetsBand = all.cleanSheets ? `<section class="sec sec--cleansheets" id="cleansheets" aria-labelledby="cs-h">
+      <div class="wrap">
+        ${bandHead('cleansheets', 'Clean sheets', 'At the back', '/records.html', 'Every record', 'cs-h')}
+        ${tileGrid([
+    { v: all.cleanSheets, l: 'Clean sheets', s: `of ${all.onGoalRecord} matches with a goal record` },
+    { v: `${cleanPct}%`, l: 'Of matches played', s: `${all.goalsAgainst} conceded in all` },
+    { v: csRun, l: csRun === 1 ? 'In a row' : 'In a row, at best', s: 'Longest run without conceding' },
+    { v: all.concededPerGame, l: 'Conceded a game', s: `${all.goalsPerGame} scored` },
+  ])}
+        <p class="psn__note rv">Competitive matches only. ${esc(FRIENDLY_NOTE_SHORT)}</p>
+      </div>
+    </section>` : '';
+
+  /* ---- Player of the Month ------------------------------------------------
+     The latest one on its own, with the reason. Which one is latest is worked
+     out from the month NAME, because these records carry no date: see
+     potmLatest() in home-layout.mjs. */
+  const potm = potmLatest(d);
+  const potmPlayer = potm ? bySlug.get(Number(potm.playerId)) : null;
+  const potmShot = potmPlayer ? d.shotFor(potmPlayer.num) : '';
+  const potmBand = potm ? `<section class="sec sec--potm" id="potm" aria-labelledby="pom-h">
+      <div class="wrap">
+        ${bandHead('potm', 'Player of the Month', esc(`${potm.month || ''} ${potm.season || ''}`.trim()), '/awards.html', 'Every award', 'pom-h')}
+        <div class="pom rv">
+          ${potmShot
+    ? `<img class="pom__photo" src="${attr(potmShot)}" alt="" width="160" height="160" loading="lazy" decoding="async" />`
+    : `<span class="pom__photo pom__photo--none"><img src="${STAR}" alt="" width="48" height="59" loading="lazy" decoding="async" /></span>`}
+          <div class="pom__body">
+            <b>${potmPlayer ? playerLink(potmPlayer.num) : esc(potm.playerName || potm.title || 'Player of the Month')}</b>
+            ${potm.reason || potm.description ? `<p>${esc(potm.reason || potm.description)}</p>` : ''}
+          </div>
+        </div>
+      </div>
+    </section>` : '';
+
+  /* ---- New at the club ----------------------------------------------------
+     Derived from who has played, never set, so it cannot disagree with the
+     squad pages and nobody has to remember to expire it. */
+  const faces = newFaces(d);
+  const newFacesBand = faces.length ? `<section class="sec sec--newfaces" id="newfaces" aria-labelledby="nf-h">
+      <div class="wrap">
+        ${bandHead('newfaces', 'New at the club', esc(`First season · ${d.latestSeason}`), '/squad.html', 'The squad', 'nf-h')}
+        <ul class="sqd rv">
+          ${faces.map((p) => {
+    const shot = d.shotFor(p.num);
+    return `<li class="sqd__c"><a href="/players/${attr(p.slug)}.html">
+              ${shot
+    ? `<img class="sqd__i" src="${attr(shot)}" alt="" width="120" height="120" loading="lazy" decoding="async" />`
+    : `<span class="sqd__i sqd__i--none"><img src="${STAR}" alt="" width="34" height="42" loading="lazy" decoding="async" /></span>`}
+              <b>${esc(p.name)}</b>
+              <span>${esc(p.position || '')}</span>
+            </a></li>`;
+  }).join('\n          ')}
+        </ul>
+      </div>
+    </section>` : '';
+
+  /* ---- Every season -------------------------------------------------------
+     The division comes from divisionOf(), not from the season record's own
+     `league` field, which reads TBC until a season starts. */
+  const seasonRows = (d.seasons || []).map((s) => {
+    const list = d.competitive.filter((m) => m.played && m.season === s.name);
+    return { name: s.name, sum: teamSummary(list), div: d.divisionOf(s.name) };
+  }).filter((s) => s.sum.played > 0);
+  /* More than one, or it is not a comparison. One row under "Every season" is
+     the campaign band with the detail taken out. */
+  const seasonsBand = seasonRows.length > 1 ? `<section class="sec sec--seasons" id="seasons" aria-labelledby="ssn-h">
+      <div class="wrap">
+        ${bandHead('seasons', 'Every season', 'Since 2025', '/results.html', 'Every result', 'ssn-h')}
+        ${rowList(seasonRows.map((s) => ({
+    a: `<b>${esc(s.name)}</b>`,
+    b: esc(`${s.div} · played ${s.sum.played}, won ${s.sum.won}${s.sum.drawn ? `, drawn ${s.sum.drawn}` : ''}${s.sum.lost ? `, lost ${s.sum.lost}` : ''}`),
+    c: esc(`${s.sum.goalsFor}-${s.sum.goalsAgainst}`),
+  })))}
+      </div>
+    </section>` : '';
+
+  /* ---- What the club has won ---------------------------------------------- */
+  const honours = honoursIn(d);
+  const honoursBand = honours.length ? `<section class="sec sec--honours" id="honours" aria-labelledby="hon-h">
+      <div class="wrap">
+        ${bandHead('honours', 'What the club has won', 'Honours', '/awards.html', 'Every award', 'hon-h')}
+        <ul class="rcd rv">
+          ${honours.map((h) => `<li class="rcd__c">
+            <span class="rcd__v">${esc(String(h.value || h.season || ''))}</span>
+            <b class="rcd__l">${esc(h.title || '')}</b>
+            <span class="rcd__w">${esc(h.season || '')}</span>
+          </li>`).join('\n          ')}
+        </ul>
+      </div>
+    </section>` : '';
+
+  /* ---- Back the club ------------------------------------------------------
+     What sponsorship actually buys. The cause is deliberately not in here:
+     it has its own page and a death is not a selling point. */
+  const backBand = (SPONSOR_TIERS || []).length ? `<section class="sec sec--back" id="back" aria-labelledby="bk-h">
+      <div class="wrap">
+        ${bandHead('back', 'Back the club', 'Sponsorship', '/sponsors.html', 'The full pack', 'bk-h')}
+        <ul class="tier rv">
+          ${SPONSOR_TIERS.map((t) => `<li class="tier__c">
+            <b>${esc(t.name)}</b>
+            <p>${esc(t.body)}</p>
+            <ul>${(t.items || []).map((i) => `<li>${esc(i)}</li>`).join('')}</ul>
+          </li>`).join('\n          ')}
+        </ul>
+      </div>
+    </section>` : '';
+
+  /* ---- Chip in ------------------------------------------------------------
+     The link is the club's, set in Control panel -> Donations. With no link
+     the band is not published at all rather than showing a button going
+     nowhere. */
+  const giveUrl = (d.donate && (d.donate.clubUrl || d.donate.stripeLink)) || '';
+  const giveBand = giveUrl ? `<section class="sec sec--give" id="give" aria-labelledby="gv-h">
+      <div class="wrap">
+        ${bandHead('give', 'Chip in', 'Donations', '', '', 'gv-h')}
+        <div class="giv rv">
+          <p>Pitch hire, match fees, kit and referees. Every donation goes into running
+            the football, and any amount is a help.</p>
+          <a class="btn btn--volt" href="${attr(giveUrl)}" target="_blank" rel="noopener">Donate ${ARROW}</a>
+        </div>
+      </div>
+    </section>` : '';
+
   /* ================= FOOTER ================= */
   const footerHtml = siteFooter();
 
@@ -1348,6 +1734,26 @@ export function home(d) {
       ground: groundBand,
       nextup: nextUpBand,
       squad: squadBand,
+      fixtures: fixturesBand,
+      lastout: lastOutBand,
+      onthisday: onThisDayBand,
+      streak: runBand,
+      competitions: compsBand,
+      homeaway: homeAwayBand,
+      headtohead: headToHeadBand,
+      scorers: scorersBand,
+      creators: creatorsBand,
+      appearances: appearancesBand,
+      motm: motmBand,
+      goalkinds: goalKindsBand,
+      cleansheets: cleanSheetsBand,
+      potm: potmBand,
+      captains: captainsBand,
+      newfaces: newFacesBand,
+      seasons: seasonsBand,
+      honours: honoursBand,
+      back: backBand,
+      give: giveBand,
     })[k] || '').join(''),
     bodyClass: 'is-home',
     css: 'home.css',

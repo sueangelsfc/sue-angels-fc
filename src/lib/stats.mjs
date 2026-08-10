@@ -916,3 +916,102 @@ export function milestones(players, within = 3) {
   return out.sort((a, b) => a.away - b.away || b.next - a.next
     || String(a.player.name).localeCompare(String(b.player.name)));
 }
+
+/* ---- The run the club is on RIGHT NOW ---------------------------------
+   Not the longest run in the archive, which is what longestStreak() answers
+   and what the records page publishes. This counts backwards from the most
+   recent match and stops at the first one that breaks it, so it is a claim
+   about today and it collapses to nothing the moment the club loses.
+
+   Walkovers are the awkward case and they are handled per run rather than
+   globally. A walkover is a win and belongs in an unbeaten run; it carries no
+   goal record at all, so it can neither extend nor break a scoring run and is
+   skipped there. Counting it as a scoreless draw is what once moved six rows
+   of the league table. */
+const RUN_KINDS = [
+  { key: 'won', label: 'wins in a row', one: 'win', test: (m) => m.outcome === 'W' },
+  { key: 'unbeaten', label: 'unbeaten', one: 'match unbeaten', test: (m) => m.outcome !== 'L' },
+  {
+    key: 'clean', label: 'clean sheets in a row', one: 'clean sheet',
+    test: (m) => m.theirGoals === 0, goalRecordOnly: true,
+  },
+  {
+    key: 'scoring', label: 'matches scoring', one: 'match scoring',
+    test: (m) => m.ourGoals > 0, goalRecordOnly: true,
+  },
+];
+
+export function currentRun(matches) {
+  const all = (matches || []).filter((m) => m.played)
+    .slice().sort((a, b) => (b.iso || '').localeCompare(a.iso || ''));
+  if (!all.length) return [];
+  return RUN_KINDS.map((k) => {
+    const scope = k.goalRecordOnly ? all.filter((m) => m.countsGoals) : all;
+    let n = 0;
+    for (const m of scope) { if (!k.test(m)) break; n += 1; }
+    const from = n ? scope[n - 1] : null;
+    return {
+      key: k.key, n, label: k.label, one: k.one,
+      /* EVERY RUN CARRIES THE BEST ONE, because a live run means nothing on
+         its own. "Two wins in a row" under a photograph of a club that won
+         eighteen league matches without losing reads as a bad season rather
+         than as the second week of a new one. The best gives it a scale, and
+         it is the same figure the records page publishes. */
+      best: longestStreak(matches || [], k.test, { goalRecordOnly: k.goalRecordOnly }).length,
+      /* Where it started, so the band can say since when rather than only how
+         many. A run covering everything the club has ever played has no
+         "since": it started at the beginning. */
+      since: n && n < scope.length ? from : null,
+      all: n > 0 && n === scope.length,
+    };
+  }).filter((r) => r.best > 1);
+}
+
+/* ---- How the goals come -----------------------------------------------
+   Read off the goal records themselves, using the vocabulary in football.mjs
+   so the panel, the pages and this cannot describe the same goal three ways.
+
+   COVERAGE IS RETURNED, not hidden. Four of the club's goals record a body
+   part and 141 do not, so any band drawing this has to be able to say what
+   share of the goals it is actually describing. A percentage over a quarter
+   of the evidence, published without saying so, is the sort of figure that
+   gets repeated back as fact. */
+export function goalKinds(matches) {
+  const goals = (matches || []).filter((m) => m.played && m.countsGoals)
+    .flatMap((m) => (m.detail && m.detail.goals) || []);
+  const total = goals.length;
+  const kinds = [
+    { key: 'penalty', label: 'Penalties', test: (g) => !!g.penalty },
+    { key: 'set', label: 'From a set piece', test: (g) => !g.penalty && g.type === 'set' },
+    { key: 'open', label: 'From open play', test: (g) => !g.penalty && g.type && g.type !== 'set' },
+  ];
+  const rows = kinds.map((k) => {
+    const n = goals.filter(k.test).length;
+    return { key: k.key, label: k.label, n, pct: total ? Math.round((n / total) * 100) : 0 };
+  }).filter((r) => r.n > 0);
+  const known = goals.filter((g) => g.penalty || g.type).length;
+  return { rows, total, known, unknown: total - known };
+}
+
+/* ---- Every club played ------------------------------------------------
+   One row per opponent, newest meeting first. Grouped on the opponent name as
+   the match records hold it: this is deliberately NOT the reduced-form match
+   that oppBadge() and clubIdentity() do, because a badge lookup wants "these
+   are the same club" and a head-to-head wants "these are the same OPPONENT".
+   Pure Football FC 2.0 and Pure Football FC 1st Team are two sides and a
+   record that merged them would claim wins over a team never played. */
+export function opponentRecords(matches) {
+  const map = new Map();
+  for (const m of (matches || []).filter((x) => x.played)) {
+    const k = m.opponent || '';
+    if (!k) continue;
+    if (!map.has(k)) map.set(k, []);
+    map.get(k).push(m);
+  }
+  return [...map.entries()].map(([opponent, list]) => {
+    const s = teamSummary(list);
+    const latest = list.slice().sort((a, b) => (b.iso || '').localeCompare(a.iso || ''))[0];
+    return { opponent, latest, ...s };
+  }).sort((a, b) => b.played - a.played
+    || String(a.opponent).localeCompare(String(b.opponent)));
+}

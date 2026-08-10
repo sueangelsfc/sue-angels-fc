@@ -2491,12 +2491,29 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
      than at the bottom of the page. This is what stops a band added next
      season looking broken for everybody who has ever touched this screen. */
   {
-    const r = resolveHomeLayout({ order: ['cta', 'news'] });
+    const named = ['cta', 'news'];
+    const r = resolveHomeLayout({ order: named });
+    /* THE RULE, NOT ONE PAIR OF BANDS. This asserted that `who` followed
+       `news` and `awards` followed `who`, which was true of the default order
+       on the day it was written and stopped being true the moment a band was
+       added between them - it broke on `onthisday` landing where it belongs.
+       A test that fails when something legitimate changes teaches people to
+       edit tests, so this states the property instead: every band the record
+       does not name sits immediately after the nearest band above it in the
+       default order that the resolved order also holds. */
+    const bad = [];
+    for (const [i, key] of HOME_BAND_KEYS.entries()) {
+      if (named.includes(key)) continue;
+      let expectAfter = null;
+      for (let j = i - 1; j >= 0; j -= 1) {
+        if (r.order.includes(HOME_BAND_KEYS[j])) { expectAfter = HOME_BAND_KEYS[j]; break; }
+      }
+      const want = expectAfter === null ? 0 : r.order.indexOf(expectAfter) + 1;
+      if (r.order.indexOf(key) !== want) bad.push(`${key} wanted ${want} got ${r.order.indexOf(key)}`);
+    }
     check('home layout: an unnamed band keeps its neighbours',
-      r.order.indexOf('who') === r.order.indexOf('news') + 1
-      && r.order.indexOf('awards') === r.order.indexOf('who') + 1
-      && r.order.length === HOME_BAND_KEYS.length,
-      r.order.join(','));
+      bad.length === 0 && r.order.length === HOME_BAND_KEYS.length,
+      bad.join(' · ') || r.order.join(','));
     check('home layout: every band survives a partial record',
       HOME_BAND_KEYS.every((k) => r.order.includes(k)));
   }
@@ -2701,7 +2718,8 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 {
   const { preseasonFor, seasonAhead, sameClub, relatedClub, recordOf, sheetNums } =
     await import(path.join(ROOT, 'src', 'lib', 'preseason.mjs'));
-  const { homeBandFilled: filled } = await import(path.join(ROOT, 'src', 'lib', 'home-layout.mjs'));
+  const { homeBandFilled: filled, publishedBands } =
+    await import(path.join(ROOT, 'src', 'lib', 'home-layout.mjs'));
   const { buildDataset: bdP } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
   const dP = bdP();
 
@@ -2800,6 +2818,205 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     check('the pre-season band lists every fixture in the programme',
       (out.body.match(/class="psn__m/g) || []).length === ps.total,
       `${(out.body.match(/class="psn__m/g) || []).length} rows for ${ps.total} matches`);
+  }
+
+  /* ---- Every band, switched on -----------------------------------------
+     THE BUILT PAGE DOES NOT CHECK THESE. Twenty bands ship off, so the whole
+     suite above ran over a home page that contains none of them and passed
+     without looking at one line of their markup. A band nobody has switched
+     on yet is exactly the band that gets shipped broken, and it breaks on the
+     day the club switches it on rather than on the day it was written.
+
+     So render the page the way "Show everything" would leave it and put it
+     through the checks that matter, from the same sheets index.html links. */
+  {
+    const { home } = await import(path.join(ROOT, 'src', 'templates', 'home.mjs'));
+    const { HOME_BANDS: BANDS } = await import(path.join(ROOT, 'src', 'lib', 'home-layout.mjs'));
+    const ON = { order: BANDS.map((b) => b.key), hidden: [] };
+    const full = home({ ...dP, homeLayout: ON }).body;
+    const want = publishedBands(ON, dP);
+    const drawnOnIndex = ((pages.get('index.html') || '')
+      .match(/<section class="sec sec--/g) || []).length;
+    const drawn = [...full.matchAll(/<section class="sec sec--([a-z0-9]+)"/g)].map((m) => m[1]);
+
+    check('every band the layout publishes is actually drawn',
+      want.every((k) => drawn.includes(k)) && drawn.length === want.length,
+      `published ${want.length}, drawn ${drawn.length}: `
+      + `${want.filter((k) => !drawn.includes(k)).join(',') || 'none missing'}`);
+
+    /* Nothing on the page may be a rendering accident that reads as content. */
+    for (const bad of ['[object Object]', 'undefined', 'NaN', 'null']) {
+      check(`no band prints ${bad}`, !full.includes(`>${bad}<`) && !full.includes(` ${bad} `),
+        bad);
+    }
+    check('no band calls the league a Division', !/\bDivision\b/.test(full));
+    check('no band uses an em dash', !full.includes('—'));
+    /* A named entity written into a template string and then escaped comes out
+       as `&amp;middot;` and RENDERS as the literal text "&middot;", which is
+       what happened in 61 places. `&amp;` followed by a name is the signature,
+       and it is the only one: a bare `&nbsp;` in a raw context is correct and
+       the campaign band uses one deliberately, so testing for named entities
+       generally flags working markup. */
+    check('no band ships a named entity through esc()',
+      !/&amp;[A-Za-z]{2,};/.test(full),
+      (full.match(/&amp;[A-Za-z]{2,};/g) || []).slice(0, 3).join(' '));
+
+    /* The reference strip numbers the bands that are PUBLISHED, so with forty
+       of them on it has to read 01 to 39 with no gaps and no repeats. This is
+       the check that caught the numbers being typed at the call site. */
+    const rails = [...full.matchAll(/xrail__n">(\d\d)</g)].map((m) => Number(m[1]));
+    check('the rail numbers every published band in order with no gaps',
+      rails.length === want.length && rails.every((n, i) => n === i + 1),
+      `${rails.length} rails for ${want.length} bands: ${rails.join(',')}`);
+
+    /* THE SPLIT-CSS BUG, for markup that is not in any built file. 12d checks
+       the pages on disk; these bands are not on disk until somebody switches
+       them on, so they get the same check here against the two sheets
+       index.html actually links. */
+    {
+      const sheets = [...(pages.get('index.html') || '')
+        .matchAll(/<link rel="stylesheet" href="\/([^?"]+)/g)].map((m) => m[1]);
+      const defined = new Set();
+      for (const s of sheets) {
+        let text = '';
+        try { text = fs.readFileSync(path.join(ROOT, s), 'utf8'); } catch { /* missing */ }
+        for (const m of text.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)) defined.add(m[1]);
+      }
+      const used = new Set();
+      for (const m of full.matchAll(/\sclass="([^"]+)"/g)) {
+        for (const c of m[1].trim().split(/\s+/)) if (c && !/^(is-|has-|js$|no-js)/.test(c)) used.add(c);
+      }
+      /* SAME DISTINCTION 12d MAKES, and leaving it out is what made this fail
+         on working markup. A class defined NOWHERE is a bare identifier: every
+         `sec--x` modifier is one, on purpose, and so are several hooks. A class
+         defined in a band this page does NOT load is the split bug: it is
+         styled on some other page and silently is not styled here. Only the
+         second is a failure. */
+      const elsewhere = new Set();
+      for (const s of fs.readdirSync(ROOT).filter((f) => f.endsWith('.css'))) {
+        let text = '';
+        try { text = fs.readFileSync(path.join(ROOT, s), 'utf8'); } catch { /* missing */ }
+        for (const m of text.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)) elsewhere.add(m[1]);
+      }
+      const gaps = [...used].filter((c) => !defined.has(c)).filter((c) => elsewhere.has(c));
+      check(`every class the switched-on bands use is styled by a sheet the page loads (${sheets.length} sheets)`,
+        gaps.length === 0, gaps.join(' '));
+    }
+
+    /* Every link out of the new bands has to land on a file the build wrote.
+       These bands link to player and match pages by slug, which is the sort of
+       reference that rots quietly when a record is edited elsewhere. */
+    {
+      const links = [...full.matchAll(/href="(\/[^"#?]*)"/g)].map((m) => m[1]);
+      const dead = [...new Set(links)].filter((href) => {
+        const rel = href.replace(/^\//, '');
+        if (!rel) return false;
+        return !fs.existsSync(path.join(ROOT, rel))
+          && !fs.existsSync(path.join(ROOT, `${rel}.html`))
+          && !fs.existsSync(path.join(ROOT, rel, 'index.html'));
+      });
+      check('every link out of the switched-on bands resolves', dead.length === 0,
+        dead.slice(0, 5).join(' '));
+    }
+
+    /* WHAT SWITCHING EVERYTHING ON ACTUALLY COSTS.
+
+       THE BAND RUN, not the document: the head, hero, footer and scripts are
+       the same whatever the club chooses, so the run is the part the layout
+       controls and the only part worth a ceiling. As a whole document with
+       every band on the page comes to about 181KB raw and 27KB gzipped, which
+       is over the per-page budgets of 160KB and 22KB that the shipped files
+       are held to.
+
+       That is the club's call and not a fault, so it is recorded rather than
+       blocked. But it is recorded, because the cost of a band is invisible at
+       the moment somebody flicks a switch and this is the only place the
+       total is ever computed.
+
+       If this fails, the answer is not to raise it. It is that the front page
+       has grown past what a front page is, and the fix is fewer bands. */
+    {
+      const raw = Buffer.byteLength(full) / 1024;
+      const gzKb = zlib.gzipSync(Buffer.from(full), { level: 9 }).length / 1024;
+      check('the band run with every band on stays under 24KB gzipped',
+        gzKb <= 24, `${gzKb.toFixed(1)}KB gzipped, ${raw.toFixed(0)}KB raw, ${want.length} bands`);
+      console.log(`  every band on: ${gzKb.toFixed(1)}KB gz / ${raw.toFixed(0)}KB raw of bands`
+        + ` across ${want.length} of ${BANDS.length} (the site currently ships ${drawnOnIndex})`);
+    }
+
+    /* SQUAD NUMBERS ARE NEVER SHOWN. Five of these bands are leaderboards with
+       a small numeral beside every player name, which is the exact shape a
+       shirt number would take. Assert the column is the ranking: 1, 2, 3 down
+       each list, whatever the players' numbers are. */
+    {
+      const bad = [];
+      for (const key of ['scorers', 'creators', 'appearances', 'motm', 'captains']) {
+        const at = full.indexOf(`sec sec--${key}"`);
+        if (at < 0) continue;
+        const seg = full.slice(at, full.indexOf('</section>', at));
+        const ns = [...seg.matchAll(/lbd__n">(\d+)</g)].map((m) => Number(m[1]));
+        if (!ns.length || !ns.every((n, i) => n === i + 1)) bad.push(`${key}: ${ns.join(',')}`);
+      }
+      check('a leaderboard numbers its rows 1..n, never by shirt number',
+        bad.length === 0, bad.join(' | '));
+    }
+
+    /* AND EACH ONE EMPTIES ITSELF. This is the property that makes it safe to
+       switch a band on and forget it: when the thing it reads runs out, the
+       band is not published rather than publishing a heading over a hole.
+       Tested by taking the source away, which is the only way to know the
+       band is reading it rather than reading something that happens to
+       correlate with it. */
+    {
+      const zeroed = dP.players.map((p) => ({ ...p, goals: 0, assists: 0, apps: 0, motm: 0, captained: 0 }));
+      const cases = [
+        ['fixtures', { ...dP, upcoming: dP.upcoming.slice(0, 1) }],
+        ['lastout', { ...dP, played: [] }],
+        ['streak', { ...dP, competitive: [] }],
+        ['competitions', { ...dP, competitive: [] }],
+        ['homeaway', { ...dP, competitive: [] }],
+        ['headtohead', { ...dP, competitive: [] }],
+        ['scorers', { ...dP, players: zeroed }],
+        ['creators', { ...dP, players: zeroed }],
+        ['appearances', { ...dP, players: zeroed }],
+        ['motm', { ...dP, players: zeroed }],
+        ['captains', { ...dP, players: zeroed }],
+        ['goalkinds', { ...dP, competitive: [] }],
+        ['cleansheets', { ...dP, competitive: [] }],
+        ['potm', { ...dP, recognition: [] }],
+        ['honours', { ...dP, recognition: [] }],
+        ['give', { ...dP, donate: {} }],
+        ['newfaces', { ...dP, squad: [], players: [] }],
+      ];
+      const stuck = [];
+      for (const [key, starved] of cases) {
+        if (!filled(key, dP)) { stuck.push(`${key} was already empty`); continue; }
+        if (filled(key, starved)) { stuck.push(`${key} still claims content`); continue; }
+        if (home({ ...starved, homeLayout: ON }).body.includes(`sec sec--${key}"`)) {
+          stuck.push(`${key} still draws`);
+        }
+      }
+      check(`every switched-on band empties itself when its source runs out (${cases.length})`,
+        stuck.length === 0, stuck.join(' | '));
+
+      /* `seasons` is the other direction, and it is empty TODAY: the club has
+         played competitive football in one season, and one row under "Every
+         season" is the campaign band with the detail removed. So assert it is
+         off now and comes on by itself the moment 26/27 has a competitive
+         match, which is the whole claim the band makes. */
+      const nextSeasonPlayed = {
+        ...dP,
+        competitive: [...dP.competitive, {
+          id: 'test-2627', slug: 'test-2627', season: dP.nextSeason, played: true,
+          countsGoals: true, ourGoals: 1, theirGoals: 0, outcome: 'W', weAreHome: true,
+          competition: 'League Eight', opponent: 'A Club', iso: '2026-09-06', detail: {},
+        }],
+      };
+      check('every season stays off until there is a second one to compare',
+        !filled('seasons', dP) && filled('seasons', nextSeasonPlayed)
+        && !home({ ...dP, homeLayout: ON }).body.includes('sec sec--seasons"')
+        && home({ ...nextSeasonPlayed, homeLayout: ON }).body.includes('sec sec--seasons"'));
+    }
   }
 }
 

@@ -701,3 +701,155 @@
 .sqd__c span{font-family: var(--ui); font-size: 10px; color: var(--ink-3);
   letter-spacing: 0.04em;}
 .sqd__c a:hover b{color: var(--volt);}
+
+/* ==========================================================================
+   THE TWENTY ADDED IN AUGUST
+
+   Eight shapes, not twenty. Five leaderboards drawn five different ways would
+   be five sets of column widths to keep in step, for no reader's benefit, so
+   .lbd, .tiles and .hrow are each shared by several bands and the band decides
+   only what goes in them.
+
+   Every value here is a home.css name. sa.css has --space-*, --step-*,
+   --text-muted and --brand; this page does not load sa.css, and an undefined
+   custom property does not fall back to something sensible - the whole
+   declaration is invalid at computed-value time and the rule silently does
+   nothing. A card in the wrong vocabulary has no padding, no radius and no
+   surface, and reads as a layout mistake rather than a spelling one.
+   ========================================================================== */
+
+/* ---- Leaderboard: rank, name, figure -------------------------------------
+   Used by who scores the goals, who makes them, who turns up, man of the
+   match and who wears the armband.
+
+   The rank column is the reader's position in this list. It is NOT a shirt
+   number and never will be: the club does not show squad numbers anywhere in
+   the UI, and a column of small numerals beside player names is exactly what
+   would be misread as one. It is set in the accent, at a size the name beats,
+   so it reads as ordering rather than as identity. */
+.lbd{list-style: none; margin: 22px 0 0; padding: 0;
+  border-top: 1px solid var(--line-d);}
+.lbd__r{display: grid; grid-template-columns: 2.2rem 1fr auto; align-items: center; gap: 14px;
+  padding: 12px 0; border-bottom: 1px solid var(--line-d);}
+.lbd__n{font-family: var(--ui); font-size: 12px; font-weight: 650; color: var(--ink-3);
+  font-variant-numeric: tabular-nums; text-align: center;}
+.lbd__p{display: grid; gap: 1px; min-width: 0;}
+.lbd__p a{font-size: 15px; font-weight: 700; color: var(--fg);}
+.lbd__p a:hover{color: var(--volt);}
+.lbd__p i{font-style: normal; font-family: var(--ui); font-size: 10.5px;
+  color: var(--ink-3); letter-spacing: 0.04em;}
+.lbd__v{font-family: var(--display); font-variation-settings: 'wdth' var(--wide-num);
+  font-size: 24px; font-weight: 800; line-height: 1; color: var(--volt);
+  display: flex; align-items: baseline; gap: 6px;}
+.lbd__v i{font-style: normal; font-family: var(--ui); font-size: 10.5px; font-weight: 650;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3);
+  font-variation-settings: normal;}
+
+/* ---- Tiles: a figure, what it is, and what gives it scale ----------------
+   Used by the run, home and away, and clean sheets. The third line is the
+   point of the shape: a figure with nothing beside it invites the reader to
+   supply their own comparison, and "two wins in a row" under a club that won
+   eighteen straight reads as a bad season rather than a new one. */
+.tiles{list-style: none; margin: 22px 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;}
+.tiles__t{display: grid; gap: 2px; padding: 16px;
+  border: 1px solid var(--line-d); border-radius: var(--r-sm);}
+.tiles__v{font-family: var(--display); font-variation-settings: 'wdth' var(--wide-num);
+  font-size: 30px; font-weight: 800; line-height: 1; color: var(--volt);}
+.tiles__l{font-size: 14px; margin-top: 6px;}
+.tiles__s{font-family: var(--ui); font-size: 11.5px; color: var(--ink-3); line-height: 1.4;}
+
+/* ---- Rows: a thing, a middle, a figure -----------------------------------
+   Used by what is coming up, on this day, league and cup, every club played
+   and every season. */
+.hrow{list-style: none; margin: 22px 0 0; padding: 0;
+  border-top: 1px solid var(--line-d);}
+.hrow__r{display: grid; grid-template-columns: minmax(9rem, 1.1fr) 2fr auto;
+  align-items: center; gap: 14px;
+  padding: 12px 0; border-bottom: 1px solid var(--line-d);}
+.hrow__a{display: flex; align-items: center; gap: 9px; min-width: 0;}
+.hrow__a b{font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.hrow__b{font-family: var(--ui); font-size: 11.5px; color: var(--ink-3); line-height: 1.4;}
+.hrow__c{font-family: var(--ui); font-size: 13px; font-weight: 650; color: var(--ink-2);
+  font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap;}
+.hrow__c a{color: var(--volt);}
+.hrow__c i{font-style: normal; color: var(--ink-3); font-weight: 400;}
+
+/* ---- How the goals come --------------------------------------------------
+   A bar per kind. One hue: the accent is the only accent, and share is carried
+   by length rather than by a second colour. */
+.gkin{list-style: none; margin: 22px 0 0; padding: 0; display: grid; gap: 12px;}
+.gkin__r{display: grid; grid-template-columns: minmax(8rem, 12rem) 1fr auto;
+  align-items: center; gap: 14px;}
+.gkin__r b{font-size: 14px;}
+.gkin__bar{height: 10px; border-radius: 999px; background: rgba(255,255,255,0.07);
+  overflow: hidden;}
+.gkin__bar i{display: block; height: 100%; border-radius: 999px; background: var(--volt);}
+.gkin__n{font-family: var(--display); font-variation-settings: 'wdth' var(--wide-num);
+  font-size: 20px; font-weight: 800; line-height: 1; color: var(--fg);
+  display: flex; align-items: baseline; gap: 7px;}
+.gkin__n i{font-style: normal; font-family: var(--ui); font-size: 11px; font-weight: 650;
+  color: var(--ink-3); font-variation-settings: normal;}
+
+/* ---- The last time out --------------------------------------------------- */
+.lout{display: flex; align-items: center; gap: clamp(16px, 2.5vw, 30px);
+  margin-top: 22px; padding: clamp(20px, 3vw, 34px);
+  border: 1px solid var(--line-d); border-radius: 24px;
+  background: rgba(6, 20, 31, 0.42);}
+.lout__b{flex-shrink: 0; display: flex;}
+.lout__t{min-width: 0;}
+.lout__s{display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;}
+.lout__s b{font-family: var(--display); font-variation-settings: 'wdth' var(--wide-num);
+  font-size: clamp(26px, 3.2vw, 38px); font-weight: 800; line-height: 1;}
+.lout__s span{font-size: 15px; color: var(--ink-2);}
+.lout__w{margin-top: 8px; font-family: var(--ui); font-size: 12.5px; color: var(--ink-3);
+  line-height: 1.5;}
+.lout__w a{color: var(--ink-2);}
+.lout__w a:hover{color: var(--volt);}
+
+/* ---- Player of the Month ------------------------------------------------- */
+.pom{display: flex; align-items: center; gap: clamp(18px, 3vw, 34px);
+  margin-top: 22px; padding: clamp(20px, 3vw, 34px);
+  border: 1px solid var(--line-d); border-radius: 24px;
+  background: rgba(6, 20, 31, 0.42);}
+.pom__photo{width: clamp(96px, 13vw, 150px); height: clamp(96px, 13vw, 150px);
+  border-radius: 50%; object-fit: cover; border: 1px solid var(--line-d); flex-shrink: 0;}
+.pom__photo--none{display: grid; place-items: center; background: rgba(255,255,255,0.05);}
+.pom__body{min-width: 0;}
+.pom__body b{font-family: var(--display); font-size: clamp(20px, 2.4vw, 28px); font-weight: 800;}
+.pom__body b a{color: var(--fg);}
+.pom__body b a:hover{color: var(--volt);}
+.pom__body p{margin-top: 8px; font-size: 14.5px; color: var(--ink-2); line-height: 1.6;
+  max-width: 56ch;}
+
+/* ---- Back the club ------------------------------------------------------- */
+.tier{list-style: none; margin: 22px 0 0; padding: 0;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px;}
+.tier__c{padding: 20px; border: 1px solid var(--line-d); border-radius: var(--r-sm);}
+.tier__c b{font-size: 15px;}
+.tier__c > p{margin-top: 6px; font-family: var(--ui); font-size: 12px; color: var(--ink-3);
+  line-height: 1.5;}
+.tier__c ul{list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 5px;}
+.tier__c ul li{font-family: var(--ui); font-size: 11.5px; color: var(--ink-2);
+  padding-left: 15px; position: relative;}
+.tier__c ul li::before{content: '·'; position: absolute; left: 4px; color: var(--volt);}
+
+/* ---- Chip in ------------------------------------------------------------- */
+.giv{display: flex; align-items: center; justify-content: space-between;
+  gap: clamp(18px, 3vw, 40px); flex-wrap: wrap;
+  margin-top: 22px; padding: clamp(20px, 3vw, 34px);
+  border: 1px solid var(--line-d); border-radius: 24px;
+  background: rgba(6, 20, 31, 0.42);}
+.giv p{font-size: 15px; color: var(--ink-2); line-height: 1.6; max-width: 52ch;}
+
+@media (max-width: 640px){
+  .tiles, .tier{grid-template-columns: 1fr;}
+  /* The middle column is the first thing to go: on a phone the club and the
+     figure are what the row is for, and the sentence between them wraps to
+     its own line rather than squeezing both. */
+  .hrow__r{grid-template-columns: 1fr auto; gap: 4px 12px;}
+  .hrow__b{grid-column: 1 / -1; order: 3;}
+  .gkin__r{grid-template-columns: 1fr auto; gap: 4px 12px;}
+  .gkin__bar{grid-column: 1 / -1; order: 3;}
+  .lout, .pom{flex-direction: column; align-items: flex-start;}
+}

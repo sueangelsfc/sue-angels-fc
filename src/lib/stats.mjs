@@ -1015,3 +1015,212 @@ export function opponentRecords(matches) {
   }).sort((a, b) => b.played - a.played
     || String(a.opponent).localeCompare(String(b.opponent)));
 }
+
+/* ==========================================================================
+   THE THIRTY ADDED IN AUGUST
+
+   Same contract as everything above: derived from the match records, never
+   typed, and each one returns enough for its band to say what it is counting
+   over. Several of these read detail the club has only sometimes filled in,
+   and every one of those returns its own coverage rather than quietly
+   averaging over the records that happen to have it.
+   ========================================================================== */
+
+/* How the wins came, by margin. A club that wins 18 of 18 says nothing about
+   HOW until you split them, and "eleven by three or more" is the sentence the
+   unbeaten record is actually made of. Walkovers carry no goal record, so
+   they have no margin and are counted separately rather than as 0. */
+export function winMargins(matches) {
+  const wins = (matches || []).filter((m) => m.played && m.outcome === 'W');
+  const scored = wins.filter((m) => m.countsGoals);
+  const map = new Map();
+  for (const m of scored) {
+    const by = Math.abs((m.ourGoals || 0) - (m.theirGoals || 0));
+    map.set(by, (map.get(by) || 0) + 1);
+  }
+  const rows = [...map.entries()]
+    .map(([margin, n]) => ({ margin, n, pct: Math.round((n / scored.length) * 100) }))
+    .sort((a, b) => a.margin - b.margin);
+  return { rows, wins: wins.length, scored: scored.length, awarded: wins.length - scored.length };
+}
+
+/* The scorelines that come up most often, written the club's way round.
+   `ourScoreline`, never `scoreline`: matches are stored home-goals-first, and
+   a list of bare scores with no venue beside them reading "0-12" under "most
+   common" is the same bug that once put 0-12 under Biggest win. */
+export function commonScorelines(matches, n = 6) {
+  const map = new Map();
+  for (const m of (matches || []).filter((x) => x.played && x.countsGoals)) {
+    const s = m.ourScoreline || '';
+    if (!s) continue;
+    map.set(s, (map.get(s) || 0) + 1);
+  }
+  return [...map.entries()]
+    .map(([scoreline, count]) => ({ scoreline, count }))
+    .sort((a, b) => b.count - a.count || a.scoreline.localeCompare(b.scoreline))
+    .slice(0, n);
+}
+
+/* The record month by month, oldest first. Keyed on the ISO year-month so two
+   Septembers in different seasons are two rows: a club in its second season
+   comparing "September" against "September" without the year is comparing a
+   division it was promoted out of with the one it went into. */
+const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+export function byMonth(matches) {
+  const map = new Map();
+  for (const m of (matches || []).filter((x) => x.played && x.iso)) {
+    const key = String(m.iso).slice(0, 7);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(m);
+  }
+  return [...map.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([key, list]) => ({
+      key,
+      label: `${MONTH_SHORT[Number(key.slice(5, 7)) - 1]} ${key.slice(2, 4)}`,
+      ...teamSummary(list),
+    }));
+}
+
+/* From the spot. Scored comes off the goal records, missed and conceded off
+   the match detail, and the takers are counted from the goals so the band can
+   name who takes them without a second list to keep in step. */
+export function penaltyRecord(matches, nameFor) {
+  const played = (matches || []).filter((m) => m.played);
+  const goals = played.flatMap((m) => (m.detail && m.detail.goals) || []);
+  const pens = goals.filter((g) => g.penalty);
+  const missed = played.flatMap((m) => (m.detail && m.detail.penaltiesMissed) || []);
+  const conceded = played.flatMap((m) => (m.detail && m.detail.penaltiesConceded) || []);
+  const map = new Map();
+  for (const g of pens) map.set(g.num, (map.get(g.num) || 0) + 1);
+  const takers = [...map.entries()]
+    .map(([num, n]) => ({ num, n, name: (nameFor && nameFor(num)) || '' }))
+    .sort((a, b) => b.n - a.n || String(a.name).localeCompare(String(b.name)));
+  return {
+    scored: pens.length,
+    missed: missed.length,
+    conceded: conceded.length,
+    takers,
+    /* Awarded, which is scored plus missed, because a conversion rate over
+       scored alone is 100% by construction. */
+    awarded: pens.length + missed.length,
+  };
+}
+
+/* Cards, AS RECORDED, and the second half of that phrase is the whole point.
+   Eight yellows and two reds across 35 matches is not a disciplinary record,
+   it is what got written down: Sunday-league match returns often do not carry
+   cards at all. So this reports how many matches carry any card record beside
+   the totals, and a band drawing it has to say so. */
+export function disciplineRecord(matches) {
+  const played = (matches || []).filter((m) => m.played);
+  /* KEY PRESENCE, not truthiness. An empty array is a record saying nobody
+     was booked, and it is the commonest case: 30 of the club's 33 matches. A
+     truthiness test counts those as "recorded" too, which happens to give the
+     right answer here and would give the wrong one the moment a match was
+     entered with no card list at all. */
+  const has = (m) => !!m.detail && ('yellowCards' in m.detail || 'redCards' in m.detail);
+  return {
+    yellow: played.flatMap((m) => (m.detail && m.detail.yellowCards) || []).length,
+    red: played.flatMap((m) => (m.detail && m.detail.redCards) || []).length,
+    conceded: played.flatMap((m) => (m.detail && m.detail.opponentRedCards) || []).length,
+    played: played.length,
+    recorded: played.filter(has).length,
+  };
+}
+
+/* Which shapes the club sets up in, and how each one has gone. */
+export function formationUse(matches) {
+  const map = new Map();
+  for (const m of (matches || []).filter((x) => x.played && x.detail && x.detail.formation)) {
+    const f = String(m.detail.formation);
+    if (!map.has(f)) map.set(f, []);
+    map.get(f).push(m);
+  }
+  const total = [...map.values()].reduce((n, l) => n + l.length, 0);
+  return {
+    rows: [...map.entries()]
+      .map(([formation, list]) => ({
+        formation,
+        n: list.length,
+        won: list.filter((m) => m.outcome === 'W').length,
+        pct: total ? Math.round((list.length / total) * 100) : 0,
+      }))
+      .sort((a, b) => b.n - a.n || a.formation.localeCompare(b.formation)),
+    total,
+    of: (matches || []).filter((x) => x.played).length,
+  };
+}
+
+/* Every ground the club has played on, with the record there. */
+export function venueRecords(matches) {
+  const map = new Map();
+  for (const m of (matches || []).filter((x) => x.played && x.venue)) {
+    const v = String(m.venue);
+    if (!map.has(v)) map.set(v, []);
+    map.get(v).push(m);
+  }
+  return [...map.entries()]
+    .map(([venue, list]) => ({ venue, home: list.some((m) => m.weAreHome), ...teamSummary(list) }))
+    .sort((a, b) => b.played - a.played || a.venue.localeCompare(b.venue));
+}
+
+/* How the squad breaks down, by the position group each player is recorded
+   in. Derived from the squad, not set anywhere: there is no "how many
+   defenders" field and there must not be one, because it would disagree with
+   the team sheets the moment somebody moved. */
+const GROUP_NAME = { gk: 'Goalkeepers', def: 'Defenders', mid: 'Midfielders', fwd: 'Forwards' };
+const GROUP_ORDER = ['gk', 'def', 'mid', 'fwd'];
+export function squadShape(players) {
+  const list = (players || []).filter((p) => !p.trialist);
+  return GROUP_ORDER
+    .map((key) => ({
+      key,
+      label: GROUP_NAME[key],
+      n: list.filter((p) => p.positionGroup === key).length,
+    }))
+    .filter((r) => r.n > 0);
+}
+
+/* The longest run of consecutive appearances in which a player scored. Read
+   off each player's OWN sequence of appearances, not the club's fixture list,
+   so a run is not broken by a match somebody was not involved in. */
+export function scoringRuns(players, matches, n = 6) {
+  return (players || [])
+    .filter((p) => !p.trialist && (p.goals || 0) > 0)
+    .map((p) => ({ player: p, run: playerStreak(p, matches, (r) => (r.goals || 0) > 0) }))
+    .filter((r) => r.run.length > 1)
+    .sort((a, b) => b.run.length - a.run.length
+      || (b.player.goals || 0) - (a.player.goals || 0)
+      || String(a.player.name).localeCompare(String(b.player.name)))
+    .slice(0, n);
+}
+
+/* THE CLUB'S FIRSTS. A club founded in 2025 has all of them inside two
+   seasons, and none of them is stored anywhere: they are the earliest record
+   that satisfies each test. Every card names the opponent with no venue
+   beside it, so every scoreline is `ourScoreline`. */
+export function clubFirsts(matches, nameFor) {
+  const asc = (matches || []).filter((m) => m.played)
+    .slice().sort((a, b) => String(a.iso || '').localeCompare(String(b.iso || '')));
+  if (!asc.length) return [];
+  const out = [];
+  const card = (label, m, who) => {
+    if (!m) return;
+    out.push({
+      label,
+      value: m.isWalkover ? 'W/O' : (m.ourScoreline || m.scoreline || ''),
+      who: `${who ? `${who} · ` : ''}${m.opponent}`,
+      date: m.iso,
+      href: m.slug ? `/matches/${m.slug}.html` : '',
+    });
+  };
+  card('First match', asc[0]);
+  card('First win', asc.find((m) => m.outcome === 'W'));
+  const firstGoal = asc.find((m) => m.countsGoals && (m.ourGoals || 0) > 0);
+  const scorer = firstGoal && ((firstGoal.detail && firstGoal.detail.goals) || [])[0];
+  card('First goal', firstGoal, scorer && nameFor ? nameFor(scorer.num) : '');
+  card('First clean sheet', asc.find((m) => m.countsGoals && m.theirGoals === 0));
+  card('First cup tie', asc.find((m) => isCup(m)));
+  return out;
+}

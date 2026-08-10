@@ -21,13 +21,19 @@
    ========================================================================== */
 import { esc, attr, clubCrest, NAV } from '../lib/html.mjs';
 import { sizeAttrs } from '../lib/imagesize.mjs';
-import { CLUB, SPONSORS, SPONSOR_TIERS, FAQS, NEXT_FIXTURE, SEASON_AWARDS , SOCIALS} from '../lib/club.mjs';
+import {
+  CLUB, SPONSORS, SPONSOR_TIERS, FAQS, NEXT_FIXTURE, SEASON_AWARDS, SOCIALS,
+  JOIN_PATHS, JOIN_FAQS,
+} from '../lib/club.mjs';
 import {
   teamSummary, formGuide, isLeague, clubRecords, milestones, leaderboard,
   currentRun, goalKinds, opponentRecords, byCompetition, homeAwaySplit, longestRun,
+  winMargins, commonScorelines, byMonth, penaltyRecord, disciplineRecord,
+  formationUse, venueRecords, squadShape, scoringRuns, clubFirsts,
 } from '../lib/stats.mjs';
 import {
   publishedBands, featuredFor, onThisDay, potmLatest, honoursIn, newFaces,
+  previewFor, otherResults, leadershipIn, recordHoldersIn, reportsIn, albumsIn,
 } from '../lib/home-layout.mjs';
 import { preseasonFor, seasonAhead, sameClub, relatedClub, recordOf } from '../lib/preseason.mjs';
 import { reportText, house, FRIENDLY_NOTE_SHORT, FRIENDLY_NOTE } from '../lib/prose.mjs';
@@ -1599,6 +1605,534 @@ export function home(d) {
       </div>
     </section>` : '';
 
+  /* ==========================================================================
+     THIRTY MORE, ALSO OFF
+
+     Same rule as the twenty before them and for the same reason. Seventy bands
+     is not a page; it is a set of parts the club builds a page out of, and the
+     ones nobody has chosen must cost the visitor nothing.
+
+     Four of these are empty on the club's own records today: the preview until
+     somebody writes one, "waiting on a score" whenever the results are up to
+     date, "on this day" on most days, and "every season" until there is a
+     second season to compare. All four fill by themselves.
+     ========================================================================== */
+
+  /* ---- The preview -------------------------------------------------------- */
+  const prev = previewFor(d);
+  const previewBand = prev ? `<section class="sec sec--preview" id="preview" aria-labelledby="prv-h">
+      <div class="wrap">
+        ${bandHead('preview', 'The preview', esc(`${prev.fixture.competition || 'Next up'} · ${shortClub(prev.fixture.opponent)}`), '/fixtures.html', 'All fixtures', 'prv-h')}
+        <div class="prv rv">
+          <span class="prv__b">${oppBadge(prev.fixture.opponent, d.badges, 48, 48)}</span>
+          <div class="prv__t">${reportOpening({ detail: { commentary: prev.text } }, 3)
+    .map((p) => `<p>${esc(p)}</p>`).join('\n            ') || `<p>${esc(prev.text)}</p>`}</div>
+        </div>
+      </div>
+    </section>` : '';
+
+  /* ---- Waiting on a score -------------------------------------------------
+     A match whose date has been and gone with no result typed in. These carry
+     no goals and no outcome and nothing derived ever counts them, so this band
+     is the only place on the site they appear: without it, the morning after a
+     match the club's own game is simply missing until somebody opens the
+     panel. */
+  const awaitingBand = (d.awaiting || []).length ? `<section class="sec sec--awaiting" id="awaiting" aria-labelledby="awt-h">
+      <div class="wrap">
+        ${bandHead('awaiting', 'Waiting on a score', `${d.awaiting.length} played`, '/results.html', 'Every result', 'awt-h')}
+        ${rowList(d.awaiting.map((m) => ({
+    a: `${oppBadge(m.opponent, d.badges, 22, 22, 'psn__b')}<b>${esc(shortClub(m.opponent))}</b>`,
+    b: esc(`${m.dateLabel || dayMonthYear(m.iso || m.date)}${m.competition ? ` · ${m.competition}` : ''}`),
+    c: `<i>${esc('Result to come')}</i>`,
+  })))}
+        <p class="psn__note rv">Played, and the score is not in yet. Nothing derived counts
+          these: they carry no goals and no outcome until somebody enters one.</p>
+      </div>
+    </section>` : '';
+
+  /* ---- The latest story ---------------------------------------------------- */
+  const lead = d.articles[0];
+  const leadNewsBand = lead ? `<section class="sec sec--leadnews" id="leadnews" aria-labelledby="lds-h">
+      <div class="wrap">
+        ${bandHead('leadnews', 'The latest story', esc(lead.category || 'Club news'), '/news.html', 'All news', 'lds-h')}
+        <a class="lead rv" href="/news/${attr(lead.slug)}.html">
+          ${lead.cover
+    ? `<img class="lead__i" src="${attr(lead.cover)}" alt="" width="520" height="340" loading="lazy" decoding="async" />`
+    : `<span class="lead__i lead__i--none"><img src="${STAR}" alt="" width="54" height="66" loading="lazy" decoding="async" /></span>`}
+          <span class="lead__t">
+            <b>${esc(lead.title)}</b>
+            ${lead.lede ? `<span class="lead__d">${esc(lead.lede)}</span>` : ''}
+            <span class="lead__m">${esc(lead.date || '')}${lead.author ? ` · ${esc(lead.author)}` : ''}</span>
+          </span>
+        </a>
+      </div>
+    </section>` : '';
+
+  /* ---- Around the league --------------------------------------------------
+     The division's other results. The site already holds all ninety, because
+     it prints them on the league page; this is the ones the club was not in,
+     which is the half a supporter cannot get from the results band. */
+  const others = otherResults(d).slice(0, 10);
+  const aroundLeagueBand = others.length ? `<section class="sec sec--aroundleague" id="aroundleague" aria-labelledby="arl-h">
+      <div class="wrap">
+        ${bandHead('aroundleague', 'Around the league', esc(d.divisionOf(d.currentSeason)), '/league.html', 'The whole division', 'arl-h')}
+        ${rowList(others.map((r) => ({
+    a: `<b>${esc(shortClub(r.home))}</b>`,
+    b: esc(r.date || ''),
+    c: `${esc(`${r.hs}-${r.as}`)} <i>${esc(shortClub(r.away))}</i>`,
+  })))}
+        <p class="psn__note rv">${esc(`The ten most recent of ${otherResults(d).length} the club was not involved in.`)}</p>
+      </div>
+    </section>` : '';
+
+  /* ---- How the club lines up ---------------------------------------------- */
+  const fu = formationUse(d.competitive);
+  const formationsBand = fu.rows.length ? `<section class="sec sec--formations" id="formations" aria-labelledby="frm-h">
+      <div class="wrap">
+        ${bandHead('formations', 'How the club lines up', `${fu.rows.length} shapes`, '/results.html', 'Every result', 'frm-h')}
+        <ul class="gkin rv">
+          ${fu.rows.map((r) => `<li class="gkin__r">
+            <b>${esc(r.formation)}</b>
+            <span class="gkin__bar"><i style="width:${attr(String(r.pct))}%"></i></span>
+            <span class="gkin__n">${esc(String(r.n))}<i>${esc(`${r.won} won`)}</i></span>
+          </li>`).join('\n          ')}
+        </ul>
+        <p class="psn__note rv">${esc(`From the ${fu.total} team sheets of ${fu.of} that record a shape.`)}</p>
+      </div>
+    </section>` : '';
+
+  /* ---- The awarded matches ------------------------------------------------
+     The awkward part of the record, said out loud. Three of the club's
+     matches were awarded and carry no score, which is exactly why the rest of
+     the figures are believable. */
+  const wos = d.competitive.filter((m) => m.played && m.isWalkover);
+  const walkoversBand = wos.length ? `<section class="sec sec--walkovers" id="walkovers" aria-labelledby="wov-h">
+      <div class="wrap">
+        ${bandHead('walkovers', 'The awarded matches', `${wos.length} of ${all.played}`, '/results.html', 'Every result', 'wov-h')}
+        ${rowList(wos.map((m) => ({
+    a: `${oppBadge(m.opponent, d.badges, 22, 22, 'psn__b')}<b>${esc(shortClub(m.opponent))}</b>`,
+    b: esc(`${dayMonthYear(m.iso || m.date)} · ${m.competition}`),
+    c: `<a href="/matches/${attr(m.slug)}.html">${esc('W/O')}</a>`,
+  })))}
+        <p class="psn__note rv">${esc(`Awarded rather than played. They count as matches and as points, `
+    + `and they carry no goals at all, which is how the official table treats them: `
+    + `${all.played - wos.length} results plus ${wos.length} awarded is ${all.points} points.`)}</p>
+      </div>
+    </section>` : '';
+
+  /* ---- How the wins came --------------------------------------------------- */
+  const wm = winMargins(d.competitive);
+  const marginsBand = wm.rows.length ? `<section class="sec sec--margins" id="margins" aria-labelledby="mrg-h">
+      <div class="wrap">
+        ${bandHead('margins', 'How the wins came', `${wm.wins} wins`, '/results.html', 'Every result', 'mrg-h')}
+        <ul class="gkin rv">
+          ${wm.rows.map((r) => `<li class="gkin__r">
+            <b>${esc(`By ${r.margin}`)}</b>
+            <span class="gkin__bar"><i style="width:${attr(String(Math.max(3, r.pct)))}%"></i></span>
+            <span class="gkin__n">${esc(String(r.n))}<i>${esc(`${r.pct}%`)}</i></span>
+          </li>`).join('\n          ')}
+        </ul>
+        <p class="psn__note rv">${esc(wm.awarded
+    ? `Over the ${wm.scored} wins with a score. The other ${wm.awarded} were awarded and have no margin.`
+    : `Over all ${wm.scored} wins.`)}</p>
+      </div>
+    </section>` : '';
+
+  /* ---- Goals and assists together ------------------------------------------ */
+  const contribRows = d.players
+    .filter((p) => !p.trialist && ((p.goals || 0) + (p.assists || 0)) > 0)
+    .map((p) => ({ ...p, contrib: (p.goals || 0) + (p.assists || 0) }))
+    .sort((a, b) => b.contrib - a.contrib || (b.goals || 0) - (a.goals || 0)
+      || String(a.name).localeCompare(String(b.name)))
+    .slice(0, 8);
+  const contributionsBand = contribRows.length ? `<section class="sec sec--contributions" id="contributions" aria-labelledby="ctr-h">
+      <div class="wrap">
+        ${bandHead('contributions', 'Goals and assists', `${all.goalsFor} scored`, '/stats.html', 'Every figure', 'ctr-h')}
+        <ol class="lbd rv">
+          ${contribRows.map((p, i) => `<li class="lbd__r">
+            <span class="lbd__n">${esc(String(i + 1))}</span>
+            <span class="lbd__p">${playerLink(p.num, p.name)}<i>${esc(`${p.goals} scored · ${p.assists} made`)}</i></span>
+            <span class="lbd__v">${esc(String(p.contrib))}<i>total</i></span>
+          </li>`).join('\n          ')}
+        </ol>
+      </div>
+    </section>` : '';
+
+  /* ---- The division's scorers ---------------------------------------------
+     Typed in from the league rather than derived, which is a different kind of
+     figure from everything else here, so the band says so. */
+  const lsc = (d.leagueScorers || []).slice(0, 10);
+  const leagueScorersBand = lsc.length ? `<section class="sec sec--leaguescorers" id="leaguescorers" aria-labelledby="lsc-h">
+      <div class="wrap">
+        ${bandHead('leaguescorers', 'The division’s scorers', esc(d.divisionOf(d.currentSeason)), '/league.html', 'The whole division', 'lsc-h')}
+        <ol class="lbd rv">
+          ${lsc.map((r, i) => `<li class="lbd__r${r.us ? ' lbd__r--us' : ''}">
+            <span class="lbd__n">${esc(String(r.pos || i + 1))}</span>
+            <span class="lbd__p"><b>${esc(r.name)}</b><i>${esc(shortClub(r.club))}</i></span>
+            <span class="lbd__v">${esc(String(r.goals))}<i>goals</i></span>
+          </li>`).join('\n          ')}
+        </ol>
+        <p class="psn__note rv">The league’s own chart, transcribed rather than derived, so
+          it is only as current as the last time somebody updated it.</p>
+      </div>
+    </section>` : '';
+
+  /* ---- The biggest wins ---------------------------------------------------- */
+  const bigs = d.competitive
+    .filter((m) => m.played && m.countsGoals && m.outcome === 'W')
+    .map((m) => ({ m, by: (m.ourGoals || 0) - (m.theirGoals || 0) }))
+    .sort((a, b) => b.by - a.by || String(b.m.iso).localeCompare(String(a.m.iso)))
+    .slice(0, 6);
+  const bigWinsBand = bigs.length ? `<section class="sec sec--bigwins" id="bigwins" aria-labelledby="bgw-h">
+      <div class="wrap">
+        ${bandHead('bigwins', 'The biggest wins', 'By margin', '/records.html', 'Every record', 'bgw-h')}
+        ${rowList(bigs.map(({ m }) => ({
+    a: `${oppBadge(m.opponent, d.badges, 22, 22, 'psn__b')}<b>${esc(shortClub(m.opponent))}</b>`,
+    b: esc(`${dayMonthYear(m.iso || m.date)} · ${m.competition}`),
+    c: `<a href="/matches/${attr(m.slug)}.html">${esc(m.ourScoreline || m.scoreline)}</a>`,
+  })))}
+      </div>
+    </section>` : '';
+
+  /* ---- From the spot -------------------------------------------------------
+     Awarded is scored plus missed, because a conversion rate over the ones
+     that went in is a hundred per cent by construction. */
+  const pen = penaltyRecord(d.competitive, d.nameFor);
+  const penaltiesBand = (pen.scored + pen.missed + pen.conceded) ? `<section class="sec sec--penalties" id="penalties" aria-labelledby="pen-h">
+      <div class="wrap">
+        ${bandHead('penalties', 'From the spot', `${pen.awarded} awarded`, '/stats.html', 'Every figure', 'pen-h')}
+        ${tileGrid([
+    { v: pen.scored, l: 'Scored', s: pen.awarded ? `of ${pen.awarded} awarded` : '' },
+    pen.missed ? { v: pen.missed, l: pen.missed === 1 ? 'Missed' : 'Missed', s: `${Math.round((pen.scored / pen.awarded) * 100)}% put away` } : null,
+    pen.conceded ? { v: pen.conceded, l: 'Conceded', s: 'Given away at the other end' } : null,
+    pen.takers.length ? { v: pen.takers.length, l: pen.takers.length === 1 ? 'Taker' : 'Takers', s: pen.takers.map((t) => `${t.name} ${t.n}`).join(' · ') } : null,
+  ])}
+        <p class="psn__note rv">Competitive matches only. ${esc(FRIENDLY_NOTE_SHORT)}</p>
+      </div>
+    </section>` : '';
+
+  /* ---- Bookings -----------------------------------------------------------
+     The denominator is said out loud. Eight yellows in 33 matches is only a
+     disciplinary record if those 33 records actually carry a card list, and
+     saying how many do is the difference between a figure and a claim. */
+  const disc = disciplineRecord(d.competitive);
+  const disciplineBand = (disc.recorded && (disc.yellow + disc.red + disc.conceded)) ? `<section class="sec sec--discipline" id="discipline" aria-labelledby="dsc-h">
+      <div class="wrap">
+        ${bandHead('discipline', 'Bookings', `${disc.recorded} matches recorded`, '/stats.html', 'Every figure', 'dsc-h')}
+        ${tileGrid([
+    { v: disc.yellow, l: disc.yellow === 1 ? 'Yellow card' : 'Yellow cards', s: `${(disc.yellow / Math.max(disc.recorded, 1)).toFixed(2)} a match` },
+    { v: disc.red, l: disc.red === 1 ? 'Red card' : 'Red cards', s: disc.red ? 'Across the whole archive' : 'None' },
+    disc.conceded ? { v: disc.conceded, l: 'Opponents sent off', s: 'At the other end' } : null,
+  ])}
+        <p class="psn__note rv">${esc(disc.recorded === disc.played
+    ? `As the records carry them, over all ${disc.played} competitive matches.`
+    : `As the records carry them, over the ${disc.recorded} matches of ${disc.played} `
+      + 'that hold a card list at all. Nothing is estimated for the rest.')}</p>
+      </div>
+    </section>` : '';
+
+  /* ---- The scorelines ------------------------------------------------------ */
+  const lines = commonScorelines(d.competitive, 6);
+  const scorelinesBand = lines.length ? `<section class="sec sec--scorelines" id="scorelines" aria-labelledby="scl-h">
+      <div class="wrap">
+        ${bandHead('scorelines', 'The scorelines', 'Most often', '/results.html', 'Every result', 'scl-h')}
+        ${rowList(lines.map((r) => ({
+    a: `<b>${esc(r.scoreline)}</b>`,
+    b: esc(r.count === 1 ? 'Once' : `${r.count} times`),
+    c: esc(`${Math.round((r.count / all.onGoalRecord) * 100)}%`),
+  })))}
+        <p class="psn__note rv">${esc(`The club's goals first, over the ${all.onGoalRecord} matches carrying a score.`)}</p>
+      </div>
+    </section>` : '';
+
+  /* ---- Month by month ------------------------------------------------------ */
+  const months = byMonth(d.competitive);
+  const monthsBand = months.length > 1 ? `<section class="sec sec--months" id="months" aria-labelledby="mth-h">
+      <div class="wrap">
+        ${bandHead('months', 'Month by month', `${months.length} months`, '/results.html', 'Every result', 'mth-h')}
+        ${rowList(months.map((m) => ({
+    a: `<b>${esc(m.label)}</b>`,
+    b: esc(`Played ${m.played}, won ${m.won}${m.drawn ? `, drawn ${m.drawn}` : ''}${m.lost ? `, lost ${m.lost}` : ''}`),
+    c: esc(`${m.goalsFor}-${m.goalsAgainst}`),
+  })))}
+      </div>
+    </section>` : '';
+
+  /* ---- The captaincy ------------------------------------------------------
+     Who HOLDS the armband, which is not the question "who wears the armband"
+     answers: that one counts team sheets, this one is the club's own
+     appointment and lives in the recognition record. */
+  const lead2 = leadershipIn(d);
+  const capRow = (label, name) => (name ? `<li class="rcd__c">
+            <span class="rcd__v">${SVG.trophy}</span>
+            <b class="rcd__l">${esc(name)}</b>
+            <span class="rcd__w">${esc(label)}</span>
+          </li>` : '');
+  const leadershipBand = lead2 ? `<section class="sec sec--leadership" id="leadership" aria-labelledby="ldr-h">
+      <div class="wrap">
+        ${bandHead('leadership', 'The captaincy', esc(lead2.season || ''), '/squad.html', 'The squad', 'ldr-h')}
+        <ul class="rcd rcd--ico rv">
+          ${capRow('Club captain', lead2.clubCaptainName)}
+          ${capRow('Vice captain', lead2.viceCaptainName)}
+          ${capRow('Third choice', lead2.thirdChoiceCaptainName)}
+        </ul>
+      </div>
+    </section>` : '';
+
+  /* ---- How the squad breaks down ------------------------------------------- */
+  const shape = squadShape(d.squad && d.squad.length ? d.squad : d.players);
+  const positionsBand = shape.length ? `<section class="sec sec--positions" id="positions" aria-labelledby="pos-h">
+      <div class="wrap">
+        ${bandHead('positions', 'How the squad breaks down', `${shape.reduce((n, r) => n + r.n, 0)} players`, '/squad.html', 'The squad', 'pos-h')}
+        ${tileGrid(shape.map((r) => ({ v: r.n, l: r.label, s: '' })))}
+        <p class="psn__note rv">Grouped by where each player has actually lined up, not by
+          anything anybody sets. Move somebody and this moves with them.</p>
+      </div>
+    </section>` : '';
+
+  /* ---- Scoring runs -------------------------------------------------------- */
+  const runsList = scoringRuns(d.players, d.competitive, 6);
+  const scoringRunsBand = runsList.length ? `<section class="sec sec--scoringruns" id="scoringruns" aria-labelledby="srn-h">
+      <div class="wrap">
+        ${bandHead('scoringruns', 'Scoring runs', 'Consecutive appearances', '/stats.html', 'Every figure', 'srn-h')}
+        ${rowList(runsList.map((r) => ({
+    a: `<b>${playerLink(r.player.num, r.player.name)}</b>`,
+    /* playerStreak returns MATCHES in `from`/`to`, not the appearance records
+       it walked to find them. */
+    b: esc(r.run.from && r.run.to
+      ? `${dayMonthYear(r.run.from.iso)} to ${dayMonthYear(r.run.to.iso)}`
+      : ''),
+    c: esc(`${r.run.length} in a row`),
+  })))}
+        <p class="psn__note rv">Read off each player’s own appearances, so a match he was
+          not involved in does not break the run.</p>
+      </div>
+    </section>` : '';
+
+  /* ---- Firsts and honours (the ones somebody set) -------------------------- */
+  const holders = recordHoldersIn(d);
+  const recordHoldersBand = holders.length ? `<section class="sec sec--recordholders" id="recordholders" aria-labelledby="rch-h">
+      <div class="wrap">
+        ${bandHead('recordholders', 'Firsts and honours', 'Set by the club', '/records.html', 'Every record', 'rch-h')}
+        <ul class="rcd rv">
+          ${holders.map((r) => `<li class="rcd__c">
+            <!-- The SEASON in the figure slot, not the value. On a club_record
+                 the value is usually a person: "Jim El Bayati" set in 30px
+                 display type wrapped to two lines and read as a headline with
+                 the record itself demoted underneath it. The season is short,
+                 it is the thing that differs between cards, and it leaves the
+                 name where a name belongs. -->
+            <span class="rcd__v">${esc(String(r.season || ''))}</span>
+            <b class="rcd__l">${esc(r.title || '')}</b>
+            <span class="rcd__w">${esc(String(r.playerName || r.value || ''))}</span>
+          </li>`).join('\n          ')}
+        </ul>
+        <p class="psn__note rv">The ones the archive cannot work out on its own. Everything
+          countable is in Club records.</p>
+      </div>
+    </section>` : '';
+
+  /* ---- Follow the club ----------------------------------------------------- */
+  const followBand = (SOCIALS || []).length ? `<section class="sec sec--follow" id="follow" aria-labelledby="flw-h">
+      <div class="wrap">
+        ${bandHead('follow', 'Follow the club', 'Every week', '', '', 'flw-h')}
+        <ul class="soc rv">
+          ${SOCIALS.map((s) => `<li><a class="soc__c" href="${attr(s.href)}" rel="me noopener" target="_blank">
+            ${SVG[s.icon] || ''}<b>${esc(s.label || s.icon)}</b>
+          </a></li>`).join('\n          ')}
+        </ul>
+      </div>
+    </section>` : '';
+
+  /* ---- Four ways in -------------------------------------------------------- */
+  const joinPathsBand = (JOIN_PATHS || []).length ? `<section class="sec sec--joinpaths" id="joinpaths" aria-labelledby="jpt-h">
+      <div class="wrap">
+        ${bandHead('joinpaths', 'Four ways in', 'Get involved', '/join.html', 'The whole thing', 'jpt-h')}
+        <ul class="tier rv">
+          ${JOIN_PATHS.map((p) => `<li class="tier__c">
+            <b>${esc(p.title)}</b>
+            <p>${esc(p.body)}</p>
+          </li>`).join('\n          ')}
+        </ul>
+      </div>
+    </section>` : '';
+
+  /* ---- Questions about joining -------------------------------------------- */
+  const joinFaqsBand = (JOIN_FAQS || []).length ? `<section class="sec sec--joinfaqs" id="joinfaqs" aria-labelledby="jfq-h">
+      <div class="wrap rv">
+        ${rail('joinfaqs', 'Questions about joining')}
+        <h2 class="h2" id="jfq-h">Questions about joining<span class="volt">.</span></h2>
+      </div>
+      <div class="wrap">
+        <div class="faq rv">
+          ${JOIN_FAQS.map((f) => `<details class="faq__item">
+            <summary class="faq__q">${esc(f.q)}<span class="faq__ico" aria-hidden="true">+</span></summary>
+            <div class="faq__a"><p>${esc(f.a)}</p></div>
+          </details>`).join('\n          ')}
+        </div>
+      </div>
+    </section>` : '';
+
+  /* ---- Get in touch -------------------------------------------------------
+     A REAL form, and it writes to the enquiries table AND posts the notify
+     endpoint, because a form that only emailed would record nothing while
+     RESEND_API_KEY is unset. Its ids are prefixed so they cannot collide with
+     the footer's, which sits on the same page. */
+  const contactBand = `<section class="sec sec--contact" id="contact" aria-labelledby="cnt-h">
+      <div class="wrap">
+        ${bandHead('contact', 'Get in touch', 'The club', '/contact.html', 'Other ways', 'cnt-h')}
+        <form class="cform rv" data-enquiry data-enquiry-type="general" data-enquiry-requires-message novalidate>
+          <div class="cform__sum" data-error-summary hidden>
+            <b>Please check the form</b>
+            <ul data-error-list></ul>
+          </div>
+          <p class="cform__f">
+            <label for="hc-name">Your name</label>
+            <input id="hc-name" name="name" type="text" autocomplete="name" required />
+            <span class="cform__e" data-error-for="name" hidden></span>
+          </p>
+          <p class="cform__f">
+            <label for="hc-email">Email</label>
+            <input id="hc-email" name="email" type="email" inputmode="email" autocomplete="email" required />
+            <span class="cform__e" data-error-for="email" hidden></span>
+          </p>
+          <p class="cform__f cform__f--wide">
+            <label for="hc-message">What can we help with?</label>
+            <textarea id="hc-message" name="message" rows="3" required></textarea>
+            <span class="cform__e" data-error-for="message" hidden></span>
+          </p>
+          <p class="cform__c">
+            <label><input type="checkbox" name="consent" value="yes" />
+              <span>You can contact me about this enquiry.</span></label>
+            <span class="cform__e" data-error-for="consent" hidden></span>
+          </p>
+          <p class="cform__go">
+            <button class="btn btn--volt" type="submit">Send ${ARROW}</button>
+            <span class="cform__s" data-enquiry-status role="status" aria-live="polite"></span>
+          </p>
+        </form>
+        <p class="psn__note rv">It goes to ${esc(CLUB.email)} and into the club’s own inbox,
+          so nothing is lost if the email does not land.</p>
+      </div>
+    </section>`;
+
+  /* ---- The monthly email --------------------------------------------------- */
+  const newsletterBand = `<section class="sec sec--newsletter" id="newsletter" aria-labelledby="nws-h">
+      <div class="wrap">
+        ${bandHead('newsletter', 'The monthly email', 'Once a month', '', '', 'nws-h')}
+        <div class="giv rv">
+          <p>Results, the next fixtures and what the club is up to. Once a month, and
+            nothing else. Leaving is one click from the bottom of any of them.</p>
+          <form class="cform cform--inline" data-subscribe novalidate>
+            <label class="sr-only" for="hn-email">Email address</label>
+            <input id="hn-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" required />
+            <button class="btn btn--volt" type="submit">Sign up</button>
+            <span class="cform__s" data-sub-msg role="status" aria-live="polite"></span>
+          </form>
+        </div>
+      </div>
+    </section>`;
+
+  /* ---- Every match --------------------------------------------------------- */
+  const everyMatchBand = d.played.length ? `<section class="sec sec--everymatch" id="everymatch" aria-labelledby="evm-h">
+      <div class="wrap">
+        ${bandHead('everymatch', 'Every match', `${d.played.length} played`, '/results.html', 'With the detail', 'evm-h')}
+        ${rowList(d.played.slice().sort((a, b) => String(b.iso || '').localeCompare(String(a.iso || '')))
+    .map((m) => ({
+      a: `${oppBadge(m.opponent, d.badges, 20, 20, 'psn__b')}<b>${esc(shortClub(m.opponent))}</b>`,
+      b: esc(`${dayMonthYear(m.iso || m.date)} · ${m.competition} · ${m.weAreHome ? 'Home' : 'Away'}`),
+      c: `<a href="/matches/${attr(m.slug)}.html">${esc(m.isWalkover ? 'W/O' : (m.ourScoreline || m.scoreline))}</a>`,
+    })))}
+      </div>
+    </section>` : '';
+
+  /* ---- The club's firsts --------------------------------------------------- */
+  const firsts = clubFirsts(d.competitive, d.nameFor);
+  const firstsBand = firsts.length ? `<section class="sec sec--firsts" id="firsts" aria-labelledby="fst-h">
+      <div class="wrap">
+        ${bandHead('firsts', 'The club’s firsts', 'Since 2025', '/records.html', 'Every record', 'fst-h')}
+        <ul class="rcd rv">
+          ${firsts.map((f) => `<li class="rcd__c">
+            <span class="rcd__v">${f.href ? `<a href="${attr(f.href)}">${esc(f.value)}</a>` : esc(f.value)}</span>
+            <b class="rcd__l">${esc(f.label)}</b>
+            <span class="rcd__w">${esc(`${f.who} · ${dayMonthYear(f.date)}`)}</span>
+          </li>`).join('\n          ')}
+        </ul>
+      </div>
+    </section>` : '';
+
+  /* ---- The match reports --------------------------------------------------- */
+  const reps = reportsIn(d).slice(0, 10);
+  const reportsBand = reps.length ? `<section class="sec sec--reports" id="reports" aria-labelledby="rps-h">
+      <div class="wrap">
+        ${bandHead('reports', 'The match reports', `${reportsIn(d).length} written`, '/results.html', 'Every result', 'rps-h')}
+        ${rowList(reps.map((m) => ({
+      a: `${oppBadge(m.opponent, d.badges, 20, 20, 'psn__b')}<b>${esc(shortClub(m.opponent))}</b>`,
+      b: esc(`${dayMonthYear(m.iso || m.date)} · ${m.competition}`),
+      c: `<a href="/matches/${attr(m.slug)}.html">${esc(m.isWalkover ? 'W/O' : (m.ourScoreline || m.scoreline))}</a>`,
+    })))}
+      </div>
+    </section>` : '';
+
+  /* ---- The albums ---------------------------------------------------------- */
+  const albs = albumsIn(d);
+  const albumsBand = albs.length ? `<section class="sec sec--albums" id="albums" aria-labelledby="alb-h">
+      <div class="wrap">
+        ${bandHead('albums', 'The albums', `${albs.length} albums`, '/gallery.html', 'The gallery', 'alb-h')}
+        <ul class="alb rv">
+          ${albs.map((g) => `<li class="alb__c"><a href="/gallery/${attr(g.slug)}.html">
+            ${g.cover
+    ? `<img class="alb__i" src="${attr(g.cover)}" alt="" width="300" height="200" loading="lazy" decoding="async" />`
+    : `<span class="alb__i alb__i--none"><img src="${STAR}" alt="" width="40" height="49" loading="lazy" decoding="async" /></span>`}
+            <b>${esc(g.title || '')}</b>
+            <span>${esc(`${g.photoCount || (g.photos || []).length} pictures`)}</span>
+          </a></li>`).join('\n          ')}
+        </ul>
+      </div>
+    </section>` : '';
+
+  /* ---- The clubs played ---------------------------------------------------- */
+  const wallClubs = opponentRecords(d.competitive);
+  const clubsWallBand = wallClubs.length ? `<section class="sec sec--clubswall" id="clubswall" aria-labelledby="cwl-h">
+      <div class="wrap">
+        ${bandHead('clubswall', 'The clubs played', `${wallClubs.length} clubs`, '/results.html', 'Every result', 'cwl-h')}
+        <ul class="wall rv">
+          ${wallClubs.map((r) => `<li class="wall__c">
+            ${oppBadge(r.opponent, d.badges, 46, 46)}
+            <span>${esc(shortClub(r.opponent))}</span>
+          </li>`).join('\n          ')}
+        </ul>
+      </div>
+    </section>` : '';
+
+  /* ---- What is in here ----------------------------------------------------- */
+  const whatsInHereBand = d.played.length ? `<section class="sec sec--whatsinhere" id="whatsinhere" aria-labelledby="wih-h">
+      <div class="wrap">
+        ${bandHead('whatsinhere', 'What is in here', 'The archive', '/results.html', 'Start reading', 'wih-h')}
+        ${tileGrid([
+    { v: d.played.length, l: 'Matches', s: `${d.competitive.filter((m) => m.played).length} competitive` },
+    { v: reportsIn(d).length, l: 'Match reports', s: 'Written up in full' },
+    { v: albs.reduce((n, g) => n + (g.photoCount || (g.photos || []).length), 0), l: 'Photographs', s: `across ${albs.length} albums` },
+    { v: (d.players || []).length, l: 'Players', s: `${(d.coaches || []).length} coaching staff` },
+    { v: (d.articles || []).length, l: 'Articles', s: 'Club news' },
+    { v: wallClubs.length, l: 'Opponents', s: 'Clubs met since 2025' },
+  ])}
+      </div>
+    </section>` : '';
+
+  /* ---- Where the club has played ------------------------------------------- */
+  const vens = venueRecords(d.competitive);
+  const venuesBand = vens.length ? `<section class="sec sec--venues" id="venues" aria-labelledby="vns-h">
+      <div class="wrap">
+        ${bandHead('venues', 'Where the club has played', `${vens.length} grounds`, '/contact.html', 'Find the home ground', 'vns-h')}
+        ${rowList(vens.map((v) => ({
+    a: `<b>${esc(v.venue)}</b>`,
+    b: esc(`${v.home ? 'Home' : 'Away'} · played ${v.played}, won ${v.won}${v.drawn ? `, drawn ${v.drawn}` : ''}${v.lost ? `, lost ${v.lost}` : ''}`),
+    c: esc(`${v.goalsFor}-${v.goalsAgainst}`),
+  })))}
+      </div>
+    </section>` : '';
+
   /* ================= FOOTER ================= */
   const footerHtml = siteFooter();
 
@@ -1754,6 +2288,36 @@ export function home(d) {
       honours: honoursBand,
       back: backBand,
       give: giveBand,
+      preview: previewBand,
+      awaiting: awaitingBand,
+      leadnews: leadNewsBand,
+      aroundleague: aroundLeagueBand,
+      formations: formationsBand,
+      walkovers: walkoversBand,
+      margins: marginsBand,
+      contributions: contributionsBand,
+      leaguescorers: leagueScorersBand,
+      bigwins: bigWinsBand,
+      penalties: penaltiesBand,
+      discipline: disciplineBand,
+      scorelines: scorelinesBand,
+      months: monthsBand,
+      leadership: leadershipBand,
+      positions: positionsBand,
+      scoringruns: scoringRunsBand,
+      recordholders: recordHoldersBand,
+      follow: followBand,
+      joinpaths: joinPathsBand,
+      joinfaqs: joinFaqsBand,
+      contact: contactBand,
+      newsletter: newsletterBand,
+      everymatch: everyMatchBand,
+      firsts: firstsBand,
+      reports: reportsBand,
+      albums: albumsBand,
+      clubswall: clubsWallBand,
+      whatsinhere: whatsInHereBand,
+      venues: venuesBand,
     })[k] || '').join(''),
     bodyClass: 'is-home',
     css: 'home.css',

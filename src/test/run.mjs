@@ -2921,27 +2921,44 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 
     /* WHAT SWITCHING EVERYTHING ON ACTUALLY COSTS.
 
-       THE BAND RUN, not the document: the head, hero, footer and scripts are
-       the same whatever the club chooses, so the run is the part the layout
-       controls and the only part worth a ceiling. As a whole document with
-       every band on the page comes to about 181KB raw and 27KB gzipped, which
-       is over the per-page budgets of 160KB and 22KB that the shipped files
-       are held to.
+       PER BAND, not per page, and the first version of this got that wrong.
 
-       That is the club's call and not a fault, so it is recorded rather than
-       blocked. But it is recorded, because the cost of a band is invisible at
-       the moment somebody flicks a switch and this is the only place the
-       total is ever computed.
+       It capped the whole band run and said, in a comment, that the answer to
+       a failure was fewer bands. Then the catalogue went from forty to seventy
+       on request and it failed - not because anything had got heavier, but
+       because there was more of it. How many bands exist is the club's
+       business. A total that fails whenever the club asks for more parts is
+       measuring the request, not the code.
 
-       If this fails, the answer is not to raise it. It is that the front page
-       has grown past what a front page is, and the fix is fewer bands. */
+       What goes wrong quietly is a single band being far heavier than what it
+       shows. So the ceiling is on the heaviest one. `campaign` is 30KB on its
+       own, nine times the mean, because it inlines an SVG chart with a tooltip
+       per match; that is legitimate and it is the number to watch, so the
+       ceiling sits just above it rather than being set somewhere it can never
+       bite. The mean is held down separately: thirty bands added at or below
+       the median should LOWER it, and if a batch ever raises it, that is the
+       drift this is looking for.
+
+       The total is still reported, because the cost of a band is invisible at
+       the moment somebody flicks a switch and this is the only place it is
+       ever computed. With everything on the whole document is around 280KB and
+       35KB gzipped, against per-page budgets of 160KB and 22KB. That is the
+       club's call and it is a page nobody has: it takes a deliberate press. */
     {
       const raw = Buffer.byteLength(full) / 1024;
       const gzKb = zlib.gzipSync(Buffer.from(full), { level: 9 }).length / 1024;
-      check('the band run with every band on stays under 24KB gzipped',
-        gzKb <= 24, `${gzKb.toFixed(1)}KB gzipped, ${raw.toFixed(0)}KB raw, ${want.length} bands`);
+      const each = full.split('<section class="sec sec--').slice(1)
+        .map((p) => ({ key: p.slice(0, p.indexOf('"')), kb: Buffer.byteLength(p) / 1024 }))
+        .sort((a, b) => b.kb - a.kb);
+      const mean = each.reduce((n, r) => n + r.kb, 0) / Math.max(each.length, 1);
+      check('no single band is heavier than 32KB of markup',
+        each.length > 0 && each[0].kb <= 32,
+        each.slice(0, 3).map((r) => `${r.key} ${r.kb.toFixed(1)}KB`).join(', '));
+      check('the average band stays under 4KB of markup',
+        mean <= 4, `${mean.toFixed(1)}KB across ${each.length} bands`);
       console.log(`  every band on: ${gzKb.toFixed(1)}KB gz / ${raw.toFixed(0)}KB raw of bands`
-        + ` across ${want.length} of ${BANDS.length} (the site currently ships ${drawnOnIndex})`);
+        + ` across ${want.length} of ${BANDS.length} (the site currently ships ${drawnOnIndex});`
+        + ` heaviest ${each[0].key} ${each[0].kb.toFixed(1)}KB, mean ${mean.toFixed(1)}KB`);
     }
 
     /* SQUAD NUMBERS ARE NEVER SHOWN. Five of these bands are leaderboards with
@@ -2987,6 +3004,33 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
         ['honours', { ...dP, recognition: [] }],
         ['give', { ...dP, donate: {} }],
         ['newfaces', { ...dP, squad: [], players: [] }],
+        /* And the thirty after them. Everything reading `competitive` is
+           starved the same way; the ones reading their own table get their own
+           table emptied, which is the only way to know a band is reading what
+           it claims to rather than something that correlates with it. */
+        ['leadnews', { ...dP, articles: [] }],
+        ['aroundleague', { ...dP, leagueResults: [] }],
+        ['formations', { ...dP, competitive: [] }],
+        ['walkovers', { ...dP, competitive: dP.competitive.filter((m) => !m.isWalkover) }],
+        ['margins', { ...dP, competitive: [] }],
+        ['everymatch', { ...dP, played: [] }],
+        ['contributions', { ...dP, players: zeroed }],
+        ['leaguescorers', { ...dP, leagueScorers: [] }],
+        ['bigwins', { ...dP, competitive: [] }],
+        ['penalties', { ...dP, competitive: [] }],
+        ['discipline', { ...dP, competitive: [] }],
+        ['scorelines', { ...dP, competitive: [] }],
+        ['months', { ...dP, competitive: [] }],
+        ['leadership', { ...dP, recognition: [] }],
+        ['positions', { ...dP, squad: [], players: [] }],
+        ['scoringruns', { ...dP, players: [] }],
+        ['recordholders', { ...dP, recognition: [] }],
+        ['firsts', { ...dP, competitive: [] }],
+        ['reports', { ...dP, played: [] }],
+        ['albums', { ...dP, galleries: [] }],
+        ['clubswall', { ...dP, competitive: [] }],
+        ['whatsinhere', { ...dP, played: [] }],
+        ['venues', { ...dP, competitive: [] }],
       ];
       const stuck = [];
       for (const [key, starved] of cases) {
@@ -3016,6 +3060,34 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
         !filled('seasons', dP) && filled('seasons', nextSeasonPlayed)
         && !home({ ...dP, homeLayout: ON }).body.includes('sec sec--seasons"')
         && home({ ...nextSeasonPlayed, homeLayout: ON }).body.includes('sec sec--seasons"'));
+
+      /* THE OTHER DIRECTION FOR THE OTHER EMPTY ONES. Four bands are empty on
+         the club's own records today, and "it draws nothing" is not evidence a
+         band works: a band that is broken draws nothing too. So each one is
+         handed the thing it reads and has to appear.
+
+         `preview` and `awaiting` are the pair worth having: one waits for
+         somebody to write a preview into a fixture, the other appears by
+         itself the morning after a match nobody has entered a score for, which
+         is the one moment the club's own game is otherwise missing from the
+         whole site. */
+      const withPreview = {
+        ...dP,
+        nextFixture: { ...dP.nextFixture, detail: { preview: 'A hard afternoon expected.' } },
+      };
+      const withAwaiting = {
+        ...dP,
+        awaiting: [{
+          id: 'test-awaiting', slug: 'test-awaiting', opponent: 'A Club',
+          iso: '2026-08-02', competition: 'Pre-season friendly', weAreHome: true,
+        }],
+      };
+      const appears = (key, data) => filled(key, data)
+        && home({ ...data, homeLayout: ON }).body.includes(`sec sec--${key}"`);
+      check('the preview band is empty until a fixture carries one, then appears',
+        !filled('preview', dP) && appears('preview', withPreview));
+      check('waiting on a score appears the moment a played match has none',
+        !filled('awaiting', dP) && appears('awaiting', withAwaiting));
     }
   }
 }

@@ -26,9 +26,13 @@ import { hasReport } from './prose.mjs';
 import { preseasonFor, seasonAhead } from './preseason.mjs';
 import {
   clubRecords, milestones, currentRun, goalKinds, opponentRecords,
-  byCompetition, homeAwaySplit, teamSummary,
+  byCompetition, homeAwaySplit, teamSummary, winMargins, commonScorelines,
+  byMonth, penaltyRecord, disciplineRecord, formationUse, venueRecords,
+  squadShape, scoringRuns, clubFirsts,
 } from './stats.mjs';
-import { SPONSORS, SPONSOR_TIERS, CLUB } from './club.mjs';
+import {
+  SPONSORS, SPONSOR_TIERS, CLUB, SOCIALS, JOIN_PATHS, JOIN_FAQS,
+} from './club.mjs';
 
 /* The default order, which is also the order these were written in. `name` is
    what the band calls itself ON THE PAGE, so the panel and the website use one
@@ -90,10 +94,34 @@ export const HOME_BANDS = [
     auto: 'The most recent report',
   },
   {
+    key: 'preview',
+    area: 'now',
+    off: true,
+    name: 'The preview',
+    what: 'What the club has written about the match to come, from the preview field '
+      + 'on the fixture. Empty until somebody writes one.',
+  },
+  {
+    key: 'awaiting',
+    area: 'now',
+    off: true,
+    name: 'Waiting on a score',
+    what: 'A match whose date has been and gone with no result typed in yet. Empty '
+      + 'whenever the records are up to date, which is most of the time.',
+  },
+  {
     key: 'news',
     area: 'now',
     name: 'Club news',
     what: 'The six most recent articles, newest first.',
+  },
+  {
+    key: 'leadnews',
+    area: 'now',
+    off: true,
+    name: 'The latest story',
+    what: 'The newest article on its own, with its picture and its opening. For when '
+      + 'one piece should lead the page rather than sit in a row of six.',
   },
   {
     key: 'onthisday',
@@ -162,11 +190,33 @@ export const HOME_BANDS = [
     what: 'The same season read twice: at the home ground, and on the road.',
   },
   {
-    key: 'headtohead',
+    key: 'aroundleague',
     area: 'pitch',
     off: true,
-    name: 'Every club played',
-    what: 'One row for each opponent the club has met, with the record against them.',
+    name: 'Around the league',
+    what: 'The rest of the division’s results, the ones the club was not in.',
+  },
+  {
+    key: 'formations',
+    area: 'pitch',
+    off: true,
+    name: 'How the club lines up',
+    what: 'The shapes the club sets up in and how often, counted from the team sheets.',
+  },
+  {
+    key: 'walkovers',
+    area: 'pitch',
+    off: true,
+    name: 'The awarded matches',
+    what: 'The ties awarded rather than played, and why they carry no score. This is '
+      + 'the awkward part of the record said out loud rather than left to be noticed.',
+  },
+  {
+    key: 'margins',
+    area: 'pitch',
+    off: true,
+    name: 'How the wins came',
+    what: 'The wins split by margin, because a won column says nothing about how.',
   },
 
   /* ---- The figures --------------------------------------------------------
@@ -180,6 +230,57 @@ export const HOME_BANDS = [
     off: true,
     name: 'Who scores the goals',
     what: 'The leading scorers, counted from the match records.',
+  },
+  {
+    key: 'contributions',
+    area: 'numbers',
+    off: true,
+    name: 'Goals and assists',
+    what: 'The two columns added together, which is a different order from either.',
+  },
+  {
+    key: 'leaguescorers',
+    area: 'numbers',
+    off: true,
+    name: 'The division’s scorers',
+    what: 'The league’s own scoring chart, with the club’s players marked. Typed in '
+      + 'from the league, not derived, so it lags until somebody updates it.',
+  },
+  {
+    key: 'bigwins',
+    area: 'numbers',
+    off: true,
+    name: 'The biggest wins',
+    what: 'The heaviest results, by margin, newest first where two are level.',
+  },
+  {
+    key: 'penalties',
+    area: 'numbers',
+    off: true,
+    name: 'From the spot',
+    what: 'Scored, missed and conceded, and who takes them.',
+  },
+  {
+    key: 'discipline',
+    area: 'numbers',
+    off: true,
+    name: 'Bookings',
+    what: 'Yellows and reds as the records carry them, with the number of matches '
+      + 'those records cover said plainly beside them.',
+  },
+  {
+    key: 'scorelines',
+    area: 'numbers',
+    off: true,
+    name: 'The scorelines',
+    what: 'Which results come up most often, written the club’s way round.',
+  },
+  {
+    key: 'months',
+    area: 'numbers',
+    off: true,
+    name: 'Month by month',
+    what: 'The record for each month of the season, oldest first.',
   },
   {
     key: 'creators',
@@ -323,11 +424,36 @@ export const HOME_BANDS = [
       + 'than from anything anybody has to keep up to date.',
   },
   {
-    key: 'seasons',
-    area: 'club',
+    key: 'leadership',
+    area: 'people',
     off: true,
-    name: 'Every season',
-    what: 'One row per season since 2025, with the record and the division.',
+    name: 'The captaincy',
+    what: 'Club captain, vice and third choice, set in Control panel → Recognition. '
+      + 'Who HOLDS the armband, which is not the same question as who has worn it.',
+  },
+  {
+    key: 'positions',
+    area: 'people',
+    off: true,
+    name: 'How the squad breaks down',
+    what: 'Goalkeepers, defenders, midfielders and forwards, counted from where '
+      + 'people have actually played.',
+  },
+  {
+    key: 'scoringruns',
+    area: 'people',
+    off: true,
+    name: 'Scoring runs',
+    what: 'The longest run of consecutive appearances with a goal in it, read off each '
+      + 'player’s own matches so a game he missed does not break the run.',
+  },
+  {
+    key: 'recordholders',
+    area: 'people',
+    off: true,
+    name: 'Firsts and honours',
+    what: 'The club records somebody has set by hand in Control panel → Recognition, '
+      + 'as opposed to the ones the archive works out on its own.',
   },
   {
     key: 'honours',
@@ -337,11 +463,127 @@ export const HOME_BANDS = [
     what: 'The trophies, set in Control panel → Recognition.',
   },
   {
+    key: 'follow',
+    area: 'club',
+    off: true,
+    name: 'Follow the club',
+    what: 'Instagram, TikTok and Facebook, from the club record so a dead handle is '
+      + 'removed in one place.',
+  },
+  {
     key: 'ground',
     area: 'club',
     name: 'Where the club plays',
     what: 'The home ground, how to reach it and when. For opponents, trialists and anybody '
       + 'turning up for the first time.',
+  },
+
+  /* ---- Getting involved ---------------------------------------------------
+     Two of these carry a real form. They post to the same two places the
+     footer does, the table AND the endpoint, because a form that only emails
+     records nothing when the key is unset - which is exactly the bug that
+     once left `enquiries` empty. */
+  {
+    key: 'joinpaths',
+    area: 'join',
+    off: true,
+    name: 'Four ways in',
+    what: 'Play, volunteer, sponsor or help with the media, each with what it involves.',
+  },
+  {
+    key: 'joinfaqs',
+    area: 'join',
+    off: true,
+    name: 'Questions about joining',
+    what: 'The questions a trialist asks, which are not the ones on Ask the Angels.',
+  },
+  {
+    key: 'contact',
+    area: 'join',
+    off: true,
+    name: 'Get in touch',
+    what: 'A short enquiry form on the front page. Writes to the inbox AND emails, so a '
+      + 'lead is recorded even when the mail key is unset. Read it in Control panel → Inbox.',
+  },
+  {
+    key: 'newsletter',
+    area: 'join',
+    off: true,
+    name: 'The monthly email',
+    what: 'The supporter sign-up, the same one as the footer. Read the list in '
+      + 'Control panel → Inbox.',
+  },
+
+  /* ---- The archive --------------------------------------------------------
+     Everything the club has done, looked at as a whole rather than as this
+     week. These are the bands that get longer every season rather than
+     changing, which is a different kind of band from the ones above and the
+     reason this is its own area. */
+  {
+    key: 'headtohead',
+    area: 'archive',
+    off: true,
+    name: 'Every club played',
+    what: 'One row for each opponent the club has met, with the record against them.',
+  },
+  {
+    key: 'seasons',
+    area: 'archive',
+    off: true,
+    name: 'Every season',
+    what: 'One row per season since 2025, with the record and the division.',
+  },
+  {
+    key: 'everymatch',
+    area: 'archive',
+    off: true,
+    name: 'Every match',
+    what: 'The whole archive in one list, newest first. Long by design.',
+  },
+  {
+    key: 'firsts',
+    area: 'archive',
+    off: true,
+    name: 'The club’s firsts',
+    what: 'First match, first win, first goal, first clean sheet, first cup tie. Not '
+      + 'stored anywhere: each one is the earliest record that answers to it.',
+  },
+  {
+    key: 'reports',
+    area: 'archive',
+    off: true,
+    name: 'The match reports',
+    what: 'Every match the club has written up, newest first.',
+  },
+  {
+    key: 'albums',
+    area: 'archive',
+    off: true,
+    name: 'The albums',
+    what: 'Every photograph album, with its cover and how many pictures are in it.',
+  },
+  {
+    key: 'clubswall',
+    area: 'archive',
+    off: true,
+    name: 'The clubs played',
+    what: 'Every opponent’s crest in one wall. Mala Vida FC has no badge on file and '
+      + 'takes the lettered mark.',
+  },
+  {
+    key: 'whatsinhere',
+    area: 'archive',
+    off: true,
+    name: 'What is in here',
+    what: 'How much the site actually holds: matches, reports, photographs, players, '
+      + 'articles. Counted at build, so it cannot drift.',
+  },
+  {
+    key: 'venues',
+    area: 'archive',
+    off: true,
+    name: 'Where the club has played',
+    what: 'Every ground, with the record there.',
   },
 ];
 
@@ -372,7 +614,14 @@ export const HOME_AREAS = [
   { key: 'club', name: 'The club',
     what: 'Who the club is, what it has won, who backs it and where it plays.' },
   { key: 'join', name: 'Getting involved',
-    what: 'The way in, and the questions people ask before they take it.' },
+    what: 'The way in, and the questions people ask before they take it. Two of these '
+      + 'carry a form, and what they collect lands in Control panel → Inbox.' },
+  /* A different KIND of band from the rest, not just a different subject:
+     these get longer every season rather than changing, and they are the ones
+     to reach for when somebody wants the whole picture rather than this week. */
+  { key: 'archive', name: 'The archive',
+    what: 'Everything the club has done, looked at as a whole rather than as this week. '
+      + 'These grow with the seasons instead of turning over.' },
 ];
 export const HOME_AREA_KEYS = HOME_AREAS.map((a) => a.key);
 
@@ -468,7 +717,95 @@ export function homeBandFilled(key, d) {
   /* The club owns this link in Control panel -> Donations. With no link there
      is nowhere for the button to go, so the band is not published. */
   if (key === 'give') return !!(d && d.donate && (d.donate.clubUrl || d.donate.stripeLink));
+
+  /* ---- The thirty added after them --------------------------------------
+     Same contract again, and several of these are empty on the club's own
+     records TODAY. That is the answer working, not a gap: `awaiting` is empty
+     whenever the results are up to date, `preview` until somebody writes one,
+     and both fill by themselves the moment the thing they read exists. */
+  const played = (d && d.played) || [];
+  const compPlayed = comp.filter((m) => m.played);
+
+  if (key === 'preview') return !!previewFor(d);
+  if (key === 'awaiting') return ((d && d.awaiting) || []).length > 0;
+  if (key === 'leadnews') return ((d && d.articles) || []).length > 0;
+  /* The club's own results are already the results band. This is the REST of
+     the division, so a division where the club played every listed match has
+     nothing to add. */
+  if (key === 'aroundleague') return otherResults(d).length > 0;
+  if (key === 'formations') return formationUse(comp).rows.length > 0;
+  if (key === 'walkovers') return compPlayed.some((m) => m.isWalkover);
+  if (key === 'margins') return winMargins(comp).rows.length > 0;
+  if (key === 'everymatch') return played.length > 0;
+  if (key === 'contributions') return players.some((p) => (p.goals || 0) + (p.assists || 0) > 0);
+  if (key === 'leaguescorers') return ((d && d.leagueScorers) || []).length > 0;
+  if (key === 'bigwins') return compPlayed.some((m) => m.outcome === 'W' && m.countsGoals);
+  if (key === 'penalties') {
+    const p = penaltyRecord(comp);
+    return p.scored + p.missed + p.conceded > 0;
+  }
+  if (key === 'discipline') {
+    const c = disciplineRecord(comp);
+    return c.recorded > 0 && (c.yellow + c.red + c.conceded) > 0;
+  }
+  if (key === 'scorelines') return commonScorelines(comp).length > 0;
+  /* One month is not a month-by-month. */
+  if (key === 'months') return byMonth(comp).length > 1;
+  if (key === 'leadership') return !!leadershipIn(d);
+  if (key === 'positions') return squadShape((d && d.squad) || players).length > 0;
+  if (key === 'scoringruns') return scoringRuns(players, comp).length > 0;
+  if (key === 'recordholders') return recordHoldersIn(d).length > 0;
+  if (key === 'follow') return (SOCIALS || []).length > 0;
+  if (key === 'joinpaths') return (JOIN_PATHS || []).length > 0;
+  if (key === 'joinfaqs') return (JOIN_FAQS || []).length > 0;
+  /* Both forms always have somewhere to post: the table write is what records
+     a lead, and it does not depend on a key being set. */
+  if (key === 'contact' || key === 'newsletter') return true;
+  if (key === 'firsts') return clubFirsts(comp).length > 0;
+  if (key === 'reports') return reportsIn(d).length > 0;
+  if (key === 'albums') return albumsIn(d).length > 0;
+  if (key === 'clubswall') return opponentRecords(comp).length > 0;
+  if (key === 'whatsinhere') return played.length > 0;
+  if (key === 'venues') return venueRecords(comp).length > 0;
   return KNOWN.has(key);
+}
+
+/* ---- What the last few bands read ----------------------------------------
+   Exported for the same reason the others are: the band and its emptiness
+   test have to be answering one question, not two that agree today. */
+
+/* The written preview for the match to come. `polishedPreview` first, because
+   that is the one the panel's writer produces and the raw field is the
+   coach's notes it was made from. */
+export function previewFor(d) {
+  const nx = d && d.nextFixture;
+  const det = (nx && nx.detail) || {};
+  const text = det.polishedPreview || det.preview || '';
+  return String(text).trim() ? { fixture: nx, text: String(text).trim() } : null;
+}
+
+/* The division's other results: the ninety the site already holds under
+   "Around the league", minus the club's own. Matched on either side naming
+   the club, because the same rows carry it as home or away. */
+export function otherResults(d) {
+  const us = /sue.?s angels/i;
+  return ((d && d.leagueResults) || [])
+    .filter((r) => !us.test(String(r.home || '')) && !us.test(String(r.away || '')));
+}
+
+export function leadershipIn(d) {
+  return ((d && d.recognition) || [])
+    .filter((r) => r && r.type === 'leadership')
+    .slice().sort((a, b) => String(b.season || '').localeCompare(String(a.season || '')))[0] || null;
+}
+
+/* The club records somebody has SET, which is a different list from the ones
+   `clubRecords()` derives. Both are true and they are not the same thing: the
+   archive can work out the biggest win, and it cannot work out who the first
+   club captain was. */
+export function recordHoldersIn(d) {
+  return ((d && d.recognition) || []).filter((r) => r && r.type === 'club_record')
+    .slice().sort((a, b) => String(b.season || '').localeCompare(String(a.season || '')));
 }
 
 /* ---- Four small derivations the bands and the panel both need -------------

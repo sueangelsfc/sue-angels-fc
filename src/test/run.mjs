@@ -926,8 +926,19 @@ const BUDGET = {
      nobody else - which is this file's whole rule, arriving by a different
      door: last time it was thirteen modules in one file, this time one
      module's data in everybody's file. control-seed.js went 12.0 to 7.0KB
-     gzipped for every panel visitor, and that is the number this bought. */
-  'control-home.js': 9,
+     gzipped for every panel visitor, and that is the number this bought.
+
+     Then it went 9 -> 11, and this is the THIRD time this number has moved for
+     a reason that is not the module getting bigger. The catalogue grew, so the
+     descriptions grew: seventy-five bands at about ninety characters each is
+     6.6KB of the chunk, and that text is the only thing on the screen that
+     says what a band actually does.
+
+     Which is the same fault the page-weight ceiling had, on a smaller scale. A
+     budget that fails whenever the club asks for more parts is measuring the
+     request. So the CODE is budgeted separately, just below, and this number
+     covers code plus data and exists only to catch a runaway. */
+  'control-home.js': 11,
   /* AND THE SHARED SEED GETS A CEILING, having never had one. It is the first
      thing control.html loads and it is not deferred, so it is on the critical
      path for every screen - which is exactly the position that had gone
@@ -938,6 +949,34 @@ for (const [f, kb] of Object.entries(BUDGET)) {
   const raw = fs.readFileSync(path.join(ROOT, f));
   const size = zlib.gzipSync(raw, { level: 9 }).length / 1024;
   check(`${f} within ${kb}KB gzipped`, size <= kb,
+    `${size.toFixed(1)}KB gzipped, ${(raw.length / 1024).toFixed(0)}KB raw`);
+}
+
+/* CODE, BUDGETED APART FROM DATA.
+
+   Two of the shipped chunks carry data that scales with what the club has
+   asked for: the home screen's seventy-five band descriptions, and the match
+   form's pick lists. Budgeting the emitted file alone conflates "somebody
+   wrote more JavaScript" with "the club wanted more bands", and only the first
+   of those is drift. The number that moved three times in three commits was
+   the conflated one.
+
+   So the SOURCE module is measured too. It is unminified, so the figure is not
+   comparable to the chunk's and is not meant to be: what it is for is that it
+   moves when, and only when, somebody edits the code.
+
+   The two ceilings are set just above where each file stands, because that is
+   what makes them bite. 10-match.js is 32KB gzipped of SOURCE against a 15.7KB
+   emitted chunk, which is the ratio you get from a file that is mostly comment:
+   it is the one CLAUDE.md already names as wanting a split, and this is the
+   line that will say so when it grows again. */
+for (const [f, kb] of Object.entries({
+  'src/admin/lazy/95-home.js': 8,
+  'src/admin/lazy/10-match.js': 34,
+})) {
+  const raw = fs.readFileSync(path.join(ROOT, f));
+  const size = zlib.gzipSync(raw, { level: 9 }).length / 1024;
+  check(`${f} code within ${kb}KB gzipped`, size <= kb,
     `${size.toFixed(1)}KB gzipped, ${(raw.length / 1024).toFixed(0)}KB raw`);
 }
 
@@ -3197,6 +3236,12 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
         ['clubswall', { ...dP, competitive: [] }],
         ['whatsinhere', { ...dP, played: [] }],
         ['venues', { ...dP, competitive: [] }],
+        /* And the five after those. */
+        ['goalsource', { ...dP, competitive: [] }],
+        ['defeats', { ...dP, competitive: [] }],
+        ['rate', { ...dP, players: [] }],
+        ['potmhistory', { ...dP, recognition: [] }],
+        ['photographers', { ...dP, galleries: [] }],
       ];
       const stuck = [];
       for (const [key, starved] of cases) {

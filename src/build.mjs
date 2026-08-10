@@ -295,7 +295,18 @@ const adminSeed = {
      A suggestion list rather than a fixed menu, on purpose: the club will
      play somewhere new and a form that refuses the name of the ground it is
      standing on is worse than one that lets a typo through. */
-  venues: [...new Set(d.matches.map((m) => m.venue).filter(Boolean))].sort(),
+  /* Grounds played at UNION the canonical list, not just the former. The
+     suggestion list existed to stop the same pitch being spelled three ways,
+     and derived from matches alone it can only offer a spelling AFTER
+     somebody has already typed it - which is one fixture too late, and
+     exactly how "The Matthew Arnold School, Staines-upon-Thames, Staines
+     TW18 1PF" got stored for a ground the club had not played at yet.
+     venues.json holds the spelling the site wants; offering it first is the
+     cheap half of the fix. */
+  venues: [...new Set([
+    ...d.matches.map((m) => m.venue).filter(Boolean),
+    ...(JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'venues.json'), 'utf8')).known || []),
+  ])].sort(),
   /* The transcribed pre-season list. Carries the competition and kick-off the
      dataset resolved for each one, which the raw file does not hold: without
      it the report writer could not tell that a fixture was a friendly, so

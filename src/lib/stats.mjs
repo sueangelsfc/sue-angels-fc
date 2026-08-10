@@ -1224,3 +1224,63 @@ export function clubFirsts(matches, nameFor) {
   card('First cup tie', asc.find((m) => isCup(m)));
   return out;
 }
+
+/* ---- Five more, August ----------------------------------------------------
+   Each one checked against the records before it was written. A sixth was
+   dropped in the checking: players who have appeared in more than one season
+   is zero, because only two matches of 26/27 have been played, so a band
+   about the club's founding core would have published an empty heading. */
+
+/* WHERE THE GOALS COME FROM, meaning which part of the side scores them, not
+   which part of the pitch. Zone is recorded on 3 goals of 141 and could not
+   carry a band; the scorer's position group is known for every goal, so this
+   asks the question the evidence can actually answer. */
+export function goalsByGroup(matches, players) {
+  const by = new Map((players || []).map((p) => [p.num, p.positionGroup]));
+  const out = new Map();
+  let unknown = 0;
+  const goals = (matches || []).filter((m) => m.played)
+    .flatMap((m) => (m.detail && m.detail.goals) || []);
+  for (const g of goals) {
+    const grp = by.get(g.num);
+    if (!grp) { unknown += 1; continue; }
+    out.set(grp, (out.get(grp) || 0) + 1);
+  }
+  const total = [...out.values()].reduce((n, v) => n + v, 0);
+  return {
+    rows: GROUP_ORDER.filter((k) => out.has(k)).map((key) => ({
+      key,
+      label: GROUP_NAME[key],
+      n: out.get(key),
+      pct: total ? Math.round((out.get(key) / total) * 100) : 0,
+    })),
+    total,
+    /* Goals whose scorer is not in the squad list, said rather than dropped. */
+    unknown,
+    of: goals.length,
+  };
+}
+
+/* THE DEFEATS. The mirror of the biggest wins, and it belongs on the same
+   page for the same reason the walkovers band does: a record is believable in
+   proportion to how plainly it says what went the other way. */
+export function heaviestDefeats(matches, n = 6) {
+  return (matches || [])
+    .filter((m) => m.played && m.countsGoals && m.outcome === 'L')
+    .map((m) => ({ m, by: (m.theirGoals || 0) - (m.ourGoals || 0) }))
+    .sort((a, b) => b.by - a.by || String(b.m.iso).localeCompare(String(a.m.iso)))
+    .slice(0, n);
+}
+
+/* GOALS PER APPEARANCE, over a floor. Without a floor this is a list of
+   whoever happened to score on their only outing, which says nothing about
+   anybody: the floor is stated on the band rather than applied quietly. */
+export function scoringRate(players, min = 5, n = 6) {
+  return (players || [])
+    .filter((p) => !p.trialist && (p.apps || 0) >= min && (p.goals || 0) > 0)
+    .map((p) => ({ player: p, rate: (p.goals || 0) / (p.apps || 1) }))
+    .sort((a, b) => b.rate - a.rate
+      || (b.player.goals || 0) - (a.player.goals || 0)
+      || String(a.player.name).localeCompare(String(b.player.name)))
+    .slice(0, n);
+}

@@ -8718,26 +8718,40 @@
         "order": [
           "preseason",
           "ahead",
+          "nextup",
           "news",
           "who",
           "awards",
-          "results",
-          "table",
+          "records",
+          "milestones",
           "cta",
           "faq",
+          "results",
+          "table",
           "campaign",
           "report",
           "photos",
-          "spotlight"
+          "spotlight",
+          "sponsors",
+          "staff",
+          "squad",
+          "ground"
         ],
         "hidden": [
           "report",
           "photos",
           "spotlight",
-          "campaign"
+          "campaign",
+          "results",
+          "table",
+          "staff",
+          "sponsors",
+          "squad",
+          "ground",
+          "faq"
         ]
       },
-      "updated_at": "2026-08-09T17:32:27.584+00:00"
+      "updated_at": "2026-08-10T10:32:55.548+00:00"
     },
     {
       "key": "roster:coaches",
@@ -8943,15 +8957,16 @@
       "key": "f20260812-kingsmeadow",
       "data": {
         "iso": "2026-08-12",
-        "away": "Kingsmeadow United",
+        "away": "Sue's Angels FC",
         "date": "12 Aug 2026",
-        "home": "Sue's Angels FC",
-        "kick": "19:00",
+        "home": "Kingsmeadow United",
+        "kick": "19:45",
         "kind": "fixture",
-        "venue": "The Reeves, Snakey Ln, Feltham TW13 7NB",
+        "venue": "The Matthew Arnold School, Staines-upon-Thames, Staines TW18 1PF",
+        "neutral": true,
         "competition": "Pre-season friendly"
       },
-      "updated_at": "2026-08-02T23:50:39.197+00:00"
+      "updated_at": "2026-08-10T10:29:46.849+00:00"
     },
     {
       "key": "f20260816-brentford",

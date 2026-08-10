@@ -29,7 +29,10 @@
 
     "Prince Georges Playing Fields": "Prince George’s Playing Fields",
 
-    "Tattenham Rovers Tattenham Rovers": "Tattenham Rovers"
+    "Tattenham Rovers Tattenham Rovers": "Tattenham Rovers",
+
+    "The Matthew Arnold School, Staines-upon-Thames, Staines TW18 1PF":
+      "The Matthew Arnold School"
   },
 
   "known": [
@@ -41,6 +44,7 @@
     "Prince George’s Playing Fields",
     "Robert Parker Stadium",
     "Tattenham Rovers",
+    "The Matthew Arnold School",
     "The Reeves Sports Club",
     "Wandsworth Common",
     "Woking Veterans Sundays"

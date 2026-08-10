@@ -28,7 +28,7 @@ import {
   clubRecords, milestones, currentRun, goalKinds, opponentRecords,
   byCompetition, homeAwaySplit, teamSummary, winMargins, commonScorelines,
   byMonth, penaltyRecord, disciplineRecord, formationUse, venueRecords,
-  squadShape, scoringRuns, clubFirsts,
+  squadShape, scoringRuns, clubFirsts, goalsByGroup, heaviestDefeats, scoringRate,
 } from './stats.mjs';
 import {
   SPONSORS, SPONSOR_TIERS, CLUB, SOCIALS, JOIN_PATHS, JOIN_FAQS,
@@ -283,6 +283,31 @@ export const HOME_BANDS = [
     what: 'The record for each month of the season, oldest first.',
   },
   {
+    key: 'goalsource',
+    area: 'numbers',
+    off: true,
+    name: 'Where the goals come from',
+    what: 'Which part of the side scores them, counted from the scorer’s position. '
+      + 'Not which part of the pitch: that is recorded on 3 goals of 141.',
+  },
+  {
+    key: 'defeats',
+    area: 'numbers',
+    off: true,
+    name: 'The defeats',
+    what: 'The results that went the other way. The mirror of the biggest wins, and '
+      + 'there for the same reason: a record reads as true in proportion to how '
+      + 'plainly it says what did not.',
+  },
+  {
+    key: 'rate',
+    area: 'numbers',
+    off: true,
+    name: 'Goals per game',
+    what: 'The scorers by rate rather than by total, over a stated minimum of '
+      + 'appearances so it is not a list of whoever scored on their only outing.',
+  },
+  {
     key: 'creators',
     area: 'numbers',
     off: true,
@@ -446,6 +471,21 @@ export const HOME_BANDS = [
     name: 'Scoring runs',
     what: 'The longest run of consecutive appearances with a goal in it, read off each '
       + 'player’s own matches so a game he missed does not break the run.',
+  },
+  {
+    key: 'potmhistory',
+    area: 'people',
+    off: true,
+    name: 'Every Player of the Month',
+    what: 'The whole run of monthly winners, not just the latest one.',
+  },
+  {
+    key: 'photographers',
+    area: 'club',
+    off: true,
+    name: 'Who takes the pictures',
+    what: 'The people behind the camera, credited from the albums they shot. '
+      + 'The one band on this list about somebody who is never in the photograph.',
   },
   {
     key: 'recordholders',
@@ -776,7 +816,43 @@ export function homeBandFilled(key, d) {
   if (key === 'clubswall') return opponentRecords(comp).length > 0;
   if (key === 'whatsinhere') return played.length > 0;
   if (key === 'venues') return venueRecords(comp).length > 0;
+
+  /* ---- And the five after those ----------------------------------------- */
+  if (key === 'goalsource') return goalsByGroup(comp, players).rows.length > 0;
+  if (key === 'defeats') return heaviestDefeats(comp).length > 0;
+  if (key === 'rate') return scoringRate(players).length > 0;
+  if (key === 'potmhistory') return potmAll(d).length > 0;
+  if (key === 'photographers') return photographersIn(d).length > 0;
   return KNOWN.has(key);
+}
+
+/* Every monthly winner, newest first. Ordered on `monthRank`, which is the
+   one the latest-winner band already uses: the football calendar, not the
+   calendar year and not alphabetical. Two orderings of a season's months in
+   one file would eventually disagree, and the way they would show it is this
+   band listing April above March while the band above it led with March. */
+export function potmAll(d) {
+  return ((d && d.recognition) || []).filter((r) => r && r.type === 'potm')
+    .slice()
+    .sort((a, b) => String(b.season || '').localeCompare(String(a.season || ''))
+      || monthRank(b.month) - monthRank(a.month));
+}
+
+/* WHO SHOT EACH ALBUM, counted. The one band about somebody who is never in
+   the photograph, which is most of why it is worth having: the club has three
+   people who turn up with a camera and nothing on the site said so. */
+export function photographersIn(d) {
+  const out = new Map();
+  for (const g of (d && d.galleries) || []) {
+    const who = String(g.photographer || '').trim();
+    if (!who) continue;
+    const cur = out.get(who) || { name: who, albums: 0, photos: 0 };
+    cur.albums += 1;
+    cur.photos += Number(g.photoCount || (g.photos || []).length) || 0;
+    out.set(who, cur);
+  }
+  return [...out.values()].sort((a, b) => b.photos - a.photos || b.albums - a.albums
+    || a.name.localeCompare(b.name));
 }
 
 /* ---- What the last few bands read ----------------------------------------

@@ -30,10 +30,12 @@ import {
   currentRun, goalKinds, opponentRecords, byCompetition, homeAwaySplit, longestRun,
   winMargins, commonScorelines, byMonth, penaltyRecord, disciplineRecord,
   formationUse, venueRecords, squadShape, scoringRuns, clubFirsts,
+  goalsByGroup, heaviestDefeats, scoringRate,
 } from '../lib/stats.mjs';
 import {
   publishedBands, featuredFor, onThisDay, potmLatest, honoursIn, newFaces,
   previewFor, otherResults, leadershipIn, recordHoldersIn, reportsIn, albumsIn,
+  potmAll, photographersIn,
 } from '../lib/home-layout.mjs';
 import { preseasonFor, seasonAhead, sameClub, relatedClub, recordOf } from '../lib/preseason.mjs';
 import { reportText, house, FRIENDLY_NOTE_SHORT, FRIENDLY_NOTE } from '../lib/prose.mjs';
@@ -2133,6 +2135,97 @@ export function home(d) {
       </div>
     </section>` : '';
 
+  /* ---- Where the goals come from ----------------------------------------
+     Which part of the SIDE, not which part of the pitch. Zone is recorded on
+     3 goals of 141 and could not carry a band; the scorer's position group is
+     known for every one, so this asks the question the evidence can answer. */
+  const gsrc = goalsByGroup(d.competitive, d.players);
+  const goalSourceBand = gsrc.rows.length ? `<section class="sec sec--goalsource" id="goalsource" aria-labelledby="gsr-h">
+      <div class="wrap">
+        ${bandHead('goalsource', 'Where the goals come from', `${gsrc.total} goals`, '/stats.html', 'Every figure', 'gsr-h')}
+        <ul class="gkin rv">
+          ${gsrc.rows.map((r) => `<li class="gkin__r">
+            <b>${esc(r.label)}</b>
+            <span class="gkin__bar"><i style="width:${attr(String(Math.max(3, r.pct)))}%"></i></span>
+            <span class="gkin__n">${esc(String(r.n))}<i>${esc(`${r.pct}%`)}</i></span>
+          </li>`).join('\n          ')}
+        </ul>
+        <p class="psn__note rv">${esc(gsrc.total === gsrc.of
+    ? `Counted by where the scorer plays, over all ${gsrc.of} of the club’s recorded goals.`
+    : `Counted by where the scorer plays, over ${gsrc.total} of the club’s ${gsrc.of} `
+      + `recorded goals. The other ${gsrc.unknown} were scored by somebody no longer on the squad list.`)}</p>
+      </div>
+    </section>` : '';
+
+  /* ---- The defeats ------------------------------------------------------
+     The mirror of the biggest wins, and there for the same reason as the
+     walkovers band: a record reads as true in proportion to how plainly it
+     says what did not go the club's way. */
+  const losses = heaviestDefeats(d.competitive, 6);
+  const defeatsBand = losses.length ? `<section class="sec sec--defeats" id="defeats" aria-labelledby="dfl-h">
+      <div class="wrap">
+        ${bandHead('defeats', 'The defeats', `${all.lost} of ${all.played}`, '/results.html', 'Every result', 'dfl-h')}
+        ${rowList(losses.map(({ m }) => ({
+    a: `${oppBadge(m.opponent, d.badges, 22, 22, 'psn__b')}<b>${esc(shortClub(m.opponent))}</b>`,
+    b: esc(`${dayMonthYear(m.iso || m.date)} · ${m.competition}`),
+    c: `<a href="/matches/${attr(m.slug)}.html">${esc(m.ourScoreline || m.scoreline)}</a>`,
+  })))}
+        <p class="psn__note rv">Competitive matches only. ${esc(FRIENDLY_NOTE_SHORT)}</p>
+      </div>
+    </section>` : '';
+
+  /* ---- Goals per game ---------------------------------------------------- */
+  const RATE_MIN = 5;
+  const rates = scoringRate(d.players, RATE_MIN, 6);
+  const rateBand = rates.length ? `<section class="sec sec--rate" id="rate" aria-labelledby="rte-h">
+      <div class="wrap">
+        ${bandHead('rate', 'Goals per game', 'By rate, not total', '/stats.html', 'Every figure', 'rte-h')}
+        <ol class="lbd rv">
+          ${rates.map((r, i) => `<li class="lbd__r">
+            <span class="lbd__n">${esc(String(i + 1))}</span>
+            <span class="lbd__p">${playerLink(r.player.num, r.player.name)}<i>${esc(`${r.player.goals} in ${r.player.apps}`)}</i></span>
+            <span class="lbd__v">${esc(r.rate.toFixed(2))}<i>a game</i></span>
+          </li>`).join('\n          ')}
+        </ol>
+        <p class="psn__note rv">${esc(`Anybody with ${RATE_MIN} appearances or more. Below that a `
+    + 'single goal on a single outing tops the list and says nothing about anybody. '
+    + 'Appearances count starts: Sunday-league returns do not record substitutes.')}</p>
+      </div>
+    </section>` : '';
+
+  /* ---- Every Player of the Month ----------------------------------------- */
+  const potmList = potmAll(d);
+  const potmHistoryBand = potmList.length ? `<section class="sec sec--potmhistory" id="potmhistory" aria-labelledby="pmh-h">
+      <div class="wrap">
+        ${bandHead('potmhistory', 'Every Player of the Month', `${potmList.length} so far`, '/awards.html', 'Every award', 'pmh-h')}
+        ${rowList(potmList.map((r) => {
+    const nm = r.playerName || (r.playerId != null ? d.nameFor(r.playerId) : '') || '';
+    const p = d.players.find((x) => String(x.num) === String(r.playerId));
+    return {
+      a: `<b>${p ? playerLink(p.num, nm) : esc(nm)}</b>`,
+      b: esc(r.season || ''),
+      c: esc(r.month || ''),
+    };
+  }))}
+      </div>
+    </section>` : '';
+
+  /* ---- Who takes the pictures --------------------------------------------
+     The one band on the page about somebody who is never in the photograph,
+     which is most of why it is worth having: three people turn up with a
+     camera and nothing on the site said so. */
+  const shooters = photographersIn(d);
+  const photographersBand = shooters.length ? `<section class="sec sec--photographers" id="photographers" aria-labelledby="pgr-h">
+      <div class="wrap">
+        ${bandHead('photographers', 'Who takes the pictures', `${shooters.length} behind the camera`, '/gallery.html', 'The gallery', 'pgr-h')}
+        ${rowList(shooters.map((s) => ({
+    a: `<b>${esc(s.name)}</b>`,
+    b: esc(`${s.albums} ${s.albums === 1 ? 'album' : 'albums'}`),
+    c: esc(`${s.photos} pictures`),
+  })))}
+      </div>
+    </section>` : '';
+
   /* ================= FOOTER ================= */
   const footerHtml = siteFooter();
 
@@ -2318,6 +2411,11 @@ export function home(d) {
       clubswall: clubsWallBand,
       whatsinhere: whatsInHereBand,
       venues: venuesBand,
+      goalsource: goalSourceBand,
+      defeats: defeatsBand,
+      rate: rateBand,
+      potmhistory: potmHistoryBand,
+      photographers: photographersBand,
     })[k] || '').join(''),
     bodyClass: 'is-home',
     css: 'home.css',

@@ -977,12 +977,32 @@ export function buildDataset() {
 
   /* ---- Seasons ---- */
   const seasonInfo = ps.SEASON_INFO || {};
+
   const seasons = (ps.ALL_SEASONS || []).map((name) => {
     const list = matches.filter((m) => m.season === name);
     const info = seasonInfo.current?.name === name ? seasonInfo.current
       : seasonInfo.next?.name === name ? seasonInfo.next : {};
     return { name, ...info, matchCount: list.length };
   });
+  /* ---- WHAT THE CLUB HAS WON, AND IN WHICH DIVISION -----------------------
+
+     Derived, because the two places that stated it were each right only by
+     coincidence and both were going to become wrong without anybody touching
+     them.
+
+     `CLUB.division` is the club's CURRENT division. Thirty-seven player pages
+     told Google "part of the squad that won League Ten unbeaten" by reading
+     it, so the claim was true only while the club still played in the division
+     it had won - which stopped being true on promotion. Changing that one
+     constant would have rewritten a historical fact on 37 pages.
+
+     The archive knows: a season carries its own league name and its status, so
+     the title season names itself and keeps naming itself correctly however
+     many the club wins. */
+  const titles = (seasons || [])
+    .filter((s) => String(s.status || '').toUpperCase() === 'CHAMPIONS')
+    .map((s) => ({ season: s.name, division: s.league || divisionOf(s.name) }));
+  const lastTitle = titles.length ? titles[titles.length - 1] : null;
 
   const competitions = (ps.COMPETITIONS || []).filter((c) => c.key !== 'all');
   const knownClubs = ps.KNOWN_CLUBS || [];
@@ -1034,7 +1054,7 @@ export function buildDataset() {
     coaches, table, leagueScorers, leagueScorersByComp, nextDivisionTable, leagueResults,
     articles, recognition, galleries, playerPhotos, donate, hero, homeLayout, trialists,
     photoFor, photoSeasons, shotFor, sponsorships,
-    seasons, seasonInfo, competitions, knownClubs, badges,
+    seasons, seasonInfo, titles, lastTitle, competitions, knownClubs, badges,
     currentSeason: ps.CURRENT_SEASON,
     nextSeason,
     latestSeason,

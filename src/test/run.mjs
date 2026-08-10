@@ -2215,7 +2215,80 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 
   check('the report chunk exposes its head-to-head', typeof (win.CPR || {})._headToHead === 'function');
 
-  /* ---- A photographer's credit goes through one helper ---------------------
+  /* ---- A HISTORICAL CLAIM IS NOT MADE OUT OF A CURRENT FACT ----------------
+
+   Eight page descriptions and the home page's own title said what division the
+   club had WON by reading `CLUB.division`, which is the division the club
+   plays in NOW. Those two were the same string until promotion and are not any
+   more, so updating that constant - which is the entire purpose of that
+   constant - would have rewritten a historical fact on eight pages, and on
+   thirty-seven player pages besides.
+
+   Asserted on the shipped output rather than on the source, because what
+   matters is what a search engine reads. Any page claiming the club won,
+   or was unbeaten in, or holds a record in a division must name the division
+   the archive says it won. */
+{
+  const { buildDataset: bdT } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const dT = bdT();
+  const won = dT.lastTitle;
+  check('the archive knows which division the club won', !!won && !!won.division && !!won.season,
+    JSON.stringify(won));
+
+  if (won) {
+    /* Every division name the site has ever played in, so the check can tell a
+       wrong one from the right one rather than only spotting a literal. */
+    const others = [...new Set((dT.seasons || []).map((x) => x.league)
+      .concat(dT.divisionOf(dT.nextSeason)))]
+      .filter((x) => x && x !== won.division && /^League /.test(x));
+    const CLAIM = /(won|champions?|unbeaten|title[- ]winning|record in)/i;
+    const wrong = [];
+    for (const [f, h] of pages) {
+      const t = (h.match(/<title>([^<]*)</) || [])[1] || '';
+      const dsc = (h.match(/<meta name="description" content="([^"]*)"/) || [])[1] || '';
+      for (const chunk of [t, dsc]) {
+        if (!CLAIM.test(chunk)) continue;
+        for (const div of others) {
+          /* The claim and the wrong division in the same sentence. A page may
+             legitimately mention the new division elsewhere - the home page
+             says promoted to League Eight - so proximity is what is tested. */
+          /* BOTH ORDERS. The first version only matched claim-then-division
+             and so read straight past "League Eight Champions", which is the
+             home page's own title and the single most visible instance of
+             this bug. A claim can sit on either side of the division name. */
+          const after = new RegExp(`(won|unbeaten|champions?|title[- ]winning|record in)[^.]{0,30}${div}`, 'i');
+          const before = new RegExp(`${div}[^.]{0,30}(champions?|title|winners?|record)`, 'i');
+          if (after.test(chunk) || before.test(chunk)) wrong.push(`${f}: ${chunk.slice(0, 70)}`);
+        }
+      }
+    }
+    check('no page claims the club won a division it did not win',
+      wrong.length === 0, wrong.slice(0, 3).join(' · '));
+
+    /* And the right one is actually named somewhere, or the check above would
+       pass on a site that had stopped mentioning the title at all. */
+    const names = [...pages.values()].filter((h) => {
+      const dsc = (h.match(/<meta name="description" content="([^"]*)"/) || [])[1] || '';
+      return new RegExp(`${won.division}`, 'i').test(dsc) && CLAIM.test(dsc);
+    }).length;
+    check(`pages still name ${won.division} as the division won`, names > 3, `${names} pages`);
+  }
+
+  /* A CAREER FIGURE MUST NOT CLAIM A SEASON. The player descriptions carried
+     the player's whole record for the club under "in 25/26", which reads
+     correctly only while every career IS one season. */
+  {
+    const bad = [...pages.entries()].filter(([f]) => f.startsWith('players/'))
+      .filter(([, h]) => {
+        const dsc = (h.match(/<meta name="description" content="([^"]*)"/) || [])[1] || '';
+        return /(starts?|goals?|assists?)[^.]*\bin \d\d\/\d\d\b/.test(dsc);
+      }).map(([f]) => f);
+    check('no player description dates a career figure to one season',
+      bad.length === 0, bad.slice(0, 3).join(', '));
+  }
+}
+
+/* ---- A photographer's credit goes through one helper ---------------------
    A photographer's name is printed in seven places: the gallery hero, each
    album card, each album page's meta line and its closing credit, and the
    home-page band. A link added to six of them is the drift this codebase has

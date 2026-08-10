@@ -789,9 +789,32 @@ const meta = (slug, fallbackTitle, desc) => ({
   description: DESC[slug] || desc || R[slug]?.desc || '',
 });
 
+/* THE DIVISION THE CLUB WON, AND WHEN.
+
+   These eight strings said `CLUB.division`, which is the division the club
+   plays in NOW, to state what the club had WON. Updating that constant on
+   promotion - which is the entire purpose of that constant - would have had
+   them claiming the club won League Eight.
+
+   BUT THEY ARE FALLBACKS, and the honest version of this note says so: `meta()`
+   is `R[slug]?.title || fallbackTitle` and `DESC[slug] || desc`, and every one
+   of these eight slugs has a hand-written literal in DESC or in
+   recovered-pages.json that wins. So the shipped wording never came from here
+   and was never at risk. This is the fallback being made correct rather than a
+   live bug being fixed, and the mutation probe for it is right to report that
+   changing it back alters nothing.
+
+   The live instance of the same fault was the 37 player descriptions, which
+   have no such override - see the note at the player route below.
+
+   Derived from the archive, which carries each season's own league name and
+   whether it was won, so it also stays right through a second title. */
+const TITLE_DIV = (d.lastTitle && d.lastTitle.division) || CLUB.division;
+const TITLE_SEASON = (d.lastTitle && d.lastTitle.season) || d.currentSeason;
+
 const routes = [
-  { file: 'index.html', tpl: () => home(d), ...meta('home', `${CLUB.name} - ${CLUB.division} Champions`,
-      `London Sunday-league football club, founded in memory of ${CLUB.memorial.name}. ${CLUB.division} champions, unbeaten in our inaugural season.`),
+  { file: 'index.html', tpl: () => home(d), ...meta('home', `${CLUB.name} - ${TITLE_DIV} Champions`,
+      `London Sunday-league football club, founded in memory of ${CLUB.memorial.name}. ${TITLE_DIV} champions, unbeaten in our inaugural season.`),
     clubExtra },
 
   { file: 'about.html', tpl: () => about(d), ...meta('about', `Our story · ${CLUB.name}`,
@@ -801,10 +824,10 @@ const routes = [
       `${CLUB.name} was founded in memory of ${CLUB.memorial.name}, who we lost to sepsis. Why we play, the signs of sepsis to know, and how to support the cause.`) },
 
   { file: 'champions.html', tpl: () => champions(d), ...meta('champions', `Champions · ${CLUB.name}`,
-      `${CLUB.division} champions ${d.currentSeason}: the season in numbers, unbeaten and promoted.`) },
+      `${TITLE_DIV} champions ${TITLE_SEASON}: the season in numbers, unbeaten and promoted.`) },
 
   { file: 'awards.html', tpl: () => awards(d), ...meta('awards', `Awards · ${CLUB.name}`,
-      `${CLUB.name} Player of the Month, Man of the Match and end of season awards, plus the best defensive record in ${CLUB.division} history.`) },
+      `${CLUB.name} Player of the Month, Man of the Match and end of season awards, plus the best defensive record in ${TITLE_DIV} history.`) },
 
   { file: 'squad.html', tpl: () => squad(d), ...meta('squad', `Squad · ${CLUB.name}`,
       `The ${CLUB.name} first-team squad, grouped by position. Tap any player for their full performance profile.`) },
@@ -813,16 +836,16 @@ const routes = [
       `${CLUB.name} player stats: goals, assists and appearances across the season, derived from our own match records.`) },
 
   { file: 'coaches.html', tpl: () => coaches(d), ...meta('coaches', `Coaches · ${CLUB.name}`,
-      `Meet the coaching staff guiding ${CLUB.name}, the people shaping our ${CLUB.division} champions on and off the pitch.`) },
+      `Meet the coaching staff guiding ${CLUB.name}, the people shaping our ${TITLE_DIV} champions on and off the pitch.`) },
 
   { file: 'fixtures.html', tpl: () => fixtures(d), ...meta('fixtures', `Fixtures · ${CLUB.name}`,
       `Upcoming ${CLUB.name} fixtures across league and cups. Each one moves to the results page once it has been played.`) },
 
   { file: 'results.html', tpl: () => results(d), ...meta('results', `Results · ${CLUB.name}`,
-      `Every ${CLUB.name} result across league and cups, from our unbeaten ${CLUB.division} title-winning season.`) },
+      `Every ${CLUB.name} result across league and cups, from our unbeaten ${TITLE_DIV} title-winning season.`) },
 
   { file: 'league.html', tpl: () => league(d), ...meta('league', `League table · ${CLUB.name}`,
-      `The full ${CLUB.division} ${d.currentSeason} table, every result across the division, and the league's leading scorers.`) },
+      `The full ${TITLE_DIV} ${TITLE_SEASON} table, every result across the division, and the league's leading scorers.`) },
 
   { file: 'records.html', tpl: () => records(d), ...meta('records', `Club records · ${CLUB.name}`,
       `Every ${CLUB.name} club record: honours, most goals, appearances, clean sheets, the longest runs and the club firsts.`) },
@@ -837,7 +860,7 @@ const routes = [
       `Matchday photography from ${CLUB.name}, season by season.`) },
 
   { file: 'videos.html', tpl: () => videos(d), ...meta('videos', `Videos · ${CLUB.name}`,
-      `${CLUB.name} matchday videos and highlights from our unbeaten ${CLUB.division} season.`) },
+      `${CLUB.name} matchday videos and highlights from our unbeaten ${TITLE_DIV} season.`) },
 
   { file: 'sponsors.html', tpl: () => sponsors(d), ...meta('sponsors', `Sponsors · ${CLUB.name}`,
       `Meet the partners backing ${CLUB.name}, and find out how your business can sponsor a London Sunday-league club with a cause at its heart.`) },
@@ -912,10 +935,23 @@ for (const p of profilePlayers) {
     /* Starts, not appearances: the engine counts only the eleven named on a
        team sheet, so calling that figure appearances in a meta description
        would overstate it for anyone who mostly came off the bench. */
+    /* NO SEASON ON A CAREER FIGURE, and no CLUB.division on a historical one.
+       Both of these were true only by coincidence.
+
+       `pr.starts/goals/assists` are the player's whole record for the club,
+       and the sentence said "in 25/26" over them. That reads correctly today
+       only because every player's career IS one season; the first competitive
+       26/27 appearance makes it a season claim over a career total, in the
+       one sentence Google prints under the result.
+
+       And `CLUB.division` means the division the club plays in NOW. Using it
+       to say what the club WON meant that promotion silently rewrote a
+       historical fact on all thirty-seven of these pages. `d.lastTitle` is
+       derived from the archive, which knows both the season and its league. */
     description: fitDesc(
       `${p.name}, ${p.position} for ${CLUB.name}. ${plural(pr.starts, 'start')}, `
-      + `${plural(pr.goals, 'goal')} and ${plural(pr.assists, 'assist')} in ${d.currentSeason}.`,
-      `Part of the squad that won ${CLUB.division} unbeaten.`,
+      + `${plural(pr.goals, 'goal')} and ${plural(pr.assists, 'assist')} for the club.`,
+      d.lastTitle ? `Part of the squad that won ${d.lastTitle.division} unbeaten in ${d.lastTitle.season}.` : '',
       `${CLUB.name}, ${CLUB.venue.district}.`,
       `Sunday-league football in south-west London.`),
     path: `/players/${p.slug}.html`,

@@ -1,3 +1,5 @@
+/* The club's story and its honours: every season named here is the one the
+   club WON, not the one it happens to be playing. */
 /* ==========================================================================
    OUR STORY  (/about.html, "Our story" under The Club)
 
@@ -99,9 +101,9 @@ export function about(d) {
           <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> The story</p>
           <h1 class="ab-hero__title" id="ab-h">Built in <span class="volt">her name.</span></h1>
           <p class="ab-hero__lede">Founded in ${esc(CLUB.founded)} in memory of ${esc(CLUB.memorial.name)}.
-            ${esc(d.divisionOf(d.currentSeason))} champions, first season, unbeaten.</p>
+            ${esc(d.titleDivision)} champions, first season, unbeaten.</p>
           <div class="ab-hero__btns">
-            <a class="btn btn--volt" href="/champions.html">The ${esc(d.currentSeason)} story ${ARROW}</a>
+            <a class="btn btn--volt" href="/champions.html">The ${esc(d.titleSeason)} story ${ARROW}</a>
             <a class="btn btn--ghost" href="/join.html">Get involved</a>
           </div>
         </div>
@@ -116,7 +118,7 @@ export function about(d) {
             <div><dt>Trophies</dt><dd>${esc(trophies.length)}</dd></div>
             <div class="ab-plate__wide"><dt>All competitions</dt>
               <dd>P${esc(all.played)} W${esc(all.won)} D${esc(all.drawn)} L${esc(all.lost)} · GF ${esc(all.goalsFor)} GA ${esc(all.goalsAgainst)}</dd></div>
-            <div class="ab-plate__wide"><dt>${esc(d.divisionOf(d.currentSeason))} ${esc(d.currentSeason)}</dt>
+            <div class="ab-plate__wide"><dt>${esc(d.titleDivision)} ${esc(d.titleSeason)}</dt>
               <dd>P${esc(league.played)} W${esc(league.won)} D${esc(league.drawn)} L${esc(league.lost)} · ${esc(league.points)} pts</dd></div>
           </dl>
         </aside>
@@ -161,7 +163,7 @@ export function about(d) {
               <p class="ab-feat__k">Top scorer</p>
               <b class="ab-feat__v">${esc(topScorer.goals)}</b>
               <p class="ab-feat__w">${esc(topScorer.name)}</p>
-              <p class="ab-feat__note">goals in ${esc(all.played)} matches, ${esc(d.currentSeason)}</p>
+              <p class="ab-feat__note">goals in ${esc(all.played)} matches, ${esc(d.titleSeason)}</p>
             </div>
           </article>` : ''}
 
@@ -214,7 +216,7 @@ export function about(d) {
       title: 'Title confirmed',
       opp: lastLeague.opponent,
       score: scoreOf(lastLeague),
-      body: `${d.divisionOf(d.currentSeason)} clinched. ${league.won} wins from ${league.played}, ${league.points} points.`,
+      body: `${d.titleDivision} clinched. ${league.won} wins from ${league.played}, ${league.points} points.`,
     },
     {
       when: monthYear(lastLeague?.iso || lastLeague?.date),
@@ -230,7 +232,7 @@ export function about(d) {
 
   const timelineBand = `<section class="sec ab-time" aria-labelledby="ab-time-h">
       <div class="wrap">
-        ${rail(3, d.currentSeason, `GF ${all.goalsFor} · GA ${all.goalsAgainst}`)}
+        ${rail(3, d.titleSeason, `GF ${all.goalsFor} · GA ${all.goalsAgainst}`)}
         <h2 class="h2 rv" id="ab-time-h">How it happened</h2>
         <ol class="ab-beats rv">
           ${beats.map((b, i) => `<li class="ab-beat">
@@ -263,7 +265,7 @@ export function about(d) {
         ${rail(4, 'The division', `${facedNames.length} clubs met`)}
         <div class="ab-faced__head rv">
           <h2 class="h2" id="ab-faced-h">Who we <span class="volt">faced.</span></h2>
-          <p class="ab-faced__sub">Every club we met on the way to the ${esc(d.divisionOf(d.currentSeason))} title. We beat all of them.</p>
+          <p class="ab-faced__sub">Every club we met on the way to the ${esc(d.titleDivision)} title. We beat all of them.</p>
         </div>
         <ul class="ab-crests rv">
           ${facedNames.map((n) => `<li class="ab-crest">
@@ -281,7 +283,7 @@ export function about(d) {
         <div class="ab-cause__grid rv">
           <figure class="ab-cause__fig">
             <img class="ab-cause__img" src="/assets/hero/team.webp"
-                 alt="${attr(CLUB.name)} squad, ${attr(d.divisionOf(d.currentSeason))} champions"
+                 alt="${attr(CLUB.name)} squad, ${attr(d.titleDivision)} champions"
                  width="640" height="800" loading="lazy" decoding="async" />
             <figcaption class="ab-cause__cap">
               <img src="${STAR}" alt="" width="26" height="32" loading="lazy" decoding="async" />

@@ -32,7 +32,7 @@ export function about(d) {
           family and friends carry every day, and it is the reason this club exists.</p>
           <p>We play for her, and we talk openly about sepsis so that fewer people have to go through the same thing.</p>
           <h2>The first season</h2>
-          <p>The club entered ${esc(d.divisionOf(d.currentSeason))} of the ${esc(CLUB.league)} for the ${esc(d.currentSeason)}
+          <p>The club entered ${esc(d.titleDivision)} of the ${esc(CLUB.league)} for the ${esc(d.titleSeason)}
           season as a brand new side. It finished the league campaign unbeaten, champions at the first attempt,
           and promoted into ${esc(d.divisionOf(d.nextSeason))}.</p>
           <p>Across all competitions the Angels played ${esc(all.played)} matches and won ${esc(all.won)},
@@ -52,7 +52,7 @@ export function about(d) {
             ${statTile({ value: String(CLUB.founded), label: 'Founded', glass: true, brand: true })}
             ${statTile({ value: String(all.played), label: 'Matches played', glass: true })}
             ${statTile({ value: String(d.squad.length), label: 'Squad members', glass: true })}
-            ${statTile({ value: '1st', label: `${d.divisionOf(d.currentSeason)} finish`, glass: true, brand: true })}
+            ${statTile({ value: '1st', label: `${d.titleDivision} finish`, glass: true, brand: true })}
           </div>
           <a class="btn btn--primary btn--block" href="/sepsis.html">${icon('heart')} Our cause: sepsis awareness</a>
         </div>
@@ -172,7 +172,7 @@ export function champions(d) {
   return { body: `
   ${pageHero({
     crumbs: trail({ label: 'Champions', href: '/champions.html' }),
-    eyebrow: `${esc(d.currentSeason)} · ${esc(d.divisionOf(d.currentSeason))}`,
+    eyebrow: `${esc(d.titleSeason)} · ${esc(d.titleDivision)}`,
     title: 'Champions.<br>Unbeaten.',
     lede: `Eighteen league games, eighteen wins, ${esc(ls.goalsFor)} goals scored and ${esc(ls.goalsAgainst)} conceded. Promoted into ${esc(d.divisionOf(d.nextSeason))}.`,
   })}
@@ -193,8 +193,8 @@ export function champions(d) {
 
   <section class="section">
     <div class="wrap wrap--wide">
-      ${sectionHead({ index: '01', eyebrow: 'How it finished', title: `${esc(d.divisionOf(d.currentSeason))} final table` })}
-      ${leagueTable(d.table, { caption: `${CLUB.league} · ${d.divisionOf(d.currentSeason)} · ${d.currentSeason} final standings` })}
+      ${sectionHead({ index: '01', eyebrow: 'How it finished', title: `${esc(d.titleDivision)} final table` })}
+      ${leagueTable(d.table, { caption: `${CLUB.league} · ${d.titleDivision} · ${d.titleSeason} final standings` })}
       <div class="ltable__legend">
         <span class="ltable__key"><span class="ltable__swatch"></span> Sue’s Angels FC</span>
         ${d.promotionSpots ? `<span>Top ${esc(d.promotionSpots)} promoted</span>` : ''}
@@ -404,12 +404,12 @@ export function league(d) {
   ${pageHero({
     crumbs: trail({ label: 'League table', href: '/league.html' }),
     eyebrow: esc(CLUB.league),
-    title: `${esc(d.divisionOf(d.currentSeason))}.`,
-    lede: `The full ${esc(d.currentSeason)} table, every result across the division, and the league’s leading scorers.`,
+    title: `${esc(d.divisionOf(d.tableSeason))}.`,
+    lede: `The full ${esc(d.tableSeason)} table, every result across the division, and the league’s leading scorers.`,
   })}
   <section class="section section--flush">
     <div class="wrap wrap--wide">
-      ${leagueTable(d.table, { caption: `${d.divisionOf(d.currentSeason)} · ${d.currentSeason} final standings` })}
+      ${leagueTable(d.table, { caption: `${d.divisionOf(d.tableSeason)} · ${d.tableSeason} final standings` })}
       <div class="ltable__legend">
         <span class="ltable__key"><span class="ltable__swatch"></span> Sue’s Angels FC</span>
         ${d.promotionSpots ? `<span>Top ${esc(d.promotionSpots)} promoted</span>` : ''}
@@ -421,7 +421,7 @@ export function league(d) {
       ${sectionHead({ index: '01', eyebrow: 'Across the division', title: 'Leading scorers' })}
       <div class="table-wrap scroll-x">
         <table class="data">
-          <caption>${esc(d.divisionOf(d.currentSeason))} leading scorers · ${esc(d.currentSeason)}</caption>
+          <caption>${esc(d.divisionOf(d.tableSeason))} leading scorers · ${esc(d.tableSeason)}</caption>
           <thead><tr>
             <th scope="col">#</th><th scope="col">Player</th><th scope="col">Club</th>
             <th scope="col">Goals</th><th scope="col">Assists</th><th scope="col">Apps</th>

@@ -1284,3 +1284,50 @@ export function scoringRate(players, min = 5, n = 6) {
       || String(a.player.name).localeCompare(String(b.player.name)))
     .slice(0, n);
 }
+
+/* ==========================================================================
+   WHICH SEASON IS WHICH
+
+   One typed string, '25/26', was answering three different questions across
+   88 call sites, and it was right only because all three answers happened to
+   be the same season. These are the two that have to be derived; the third,
+   the season the club WON, comes off the season records themselves.
+
+   They live here rather than inside dataset.mjs so the suite can run the
+   REAL derivation against a simulated fixture list instead of a second copy
+   of it. A test that re-implements the rule proves the two implementations
+   agree and nothing about whether the rule is right.
+   ========================================================================== */
+
+/* THE SEASON THE CLUB'S FIGURES DESCRIBE: the latest season with a
+   competitive match played. Pre-season friendlies must not move it, which is
+   the whole reason this reads `competitive` - in August the club has six
+   26/27 friendlies on the record and is still, correctly, a 25/26 club. */
+export function figuresSeason(competitive, fallback = '') {
+  const names = [...new Set(
+    (competitive || []).filter((m) => m.played && m.season).map((m) => m.season),
+  )].sort();
+  return names[names.length - 1] || fallback;
+}
+
+/* THE SEASON `table` DESCRIBES, asked of the table rather than the calendar.
+   The site holds exactly one transcribed standing, so taking the latest season
+   with league matches would caption last season's final table with this
+   season's name from the first whistle of a new one. Its own row reconciles
+   with exactly one season's league record, which is the same comparison
+   `npm run verify` makes to prove the transcription honest. */
+export function tableSeasonOf(table, competitive, fallback = '') {
+  const ours = (table || []).find((r) => r.us);
+  if (!ours) return fallback;
+  const names = [...new Set(
+    (competitive || []).filter((m) => m.season).map((m) => m.season),
+  )].sort().reverse();
+  for (const name of names) {
+    const lg = (competitive || []).filter((m) => m.played && isLeague(m) && m.season === name);
+    if (!lg.length) continue;
+    const won = lg.filter((m) => m.outcome === 'W').length;
+    const gf = lg.reduce((n, m) => n + (m.ourGoals || 0), 0);
+    if (lg.length === ours.played && won === ours.won && gf === ours.goalsFor) return name;
+  }
+  return fallback;
+}

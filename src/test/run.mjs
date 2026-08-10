@@ -2215,7 +2215,118 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 
   check('the report chunk exposes its head-to-head', typeof (win.CPR || {})._headToHead === 'function');
 
-  /* ---- A HISTORICAL CLAIM IS NOT MADE OUT OF A CURRENT FACT ----------------
+  /* ---- 6 SEPTEMBER, SIMULATED ---------------------------------------------
+
+   `CURRENT_SEASON` was one typed string doing three jobs across 88 call sites,
+   and it read correctly only because all three answers were the same season.
+   They are three derived names now - `currentSeason`, `tableSeason` and
+   `titleSeason`/`titleDivision` - and TODAY THEY ARE STILL ALL '25/26'.
+
+   Which means no build of the current data can tell whether a call site is
+   asking for the right one. A byte-identical output proves the refactor did not
+   break anything; it proves nothing about whether it was classified correctly.
+   The only test that can is to move the clock: put one competitive League Eight
+   match on the record and see what follows it.
+
+   That simulation has already found one real error in this very change -
+   `tableSeason` was derived off the latest league season and flipped to 26/27,
+   which would have captioned last season's League Ten final standings "League
+   Eight 26/27" on the league page. It is worth keeping. */
+{
+  const { buildDataset: bdK } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const baseK = bdK();
+  const { figuresSeason: figS, tableSeasonOf: tabS } =
+    await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+  const kick = {
+    id: 'sim-le8', slug: 'sim-le8', date: '06 Sep 2026', iso: '2026-09-06',
+    home: "Sue's Angels FC", away: 'Haydons Park', hs: 2, as: 1, kind: 'score',
+    played: true, countsGoals: true, competition: 'League Eight', season: '26/27',
+    weAreHome: true, opponent: 'Haydons Park', ourGoals: 2, theirGoals: 1,
+    outcome: 'W', scoreline: '2-1', ourScoreline: '2-1', homeAway: 'Home',
+    friendly: false, isWalkover: false, detail: {},
+  };
+  const withK = {
+    ...baseK,
+    played: [...baseK.played, kick],
+    competitive: [...baseK.competitive, kick],
+    matches: [...baseK.matches, kick],
+  };
+  /* THE REAL DERIVATIONS, imported, not a second copy written here.
+
+     The first version of this block recomputed both rules inline, so mutating
+     the shipped ones changed nothing and three mutation probes reported MISSED
+     over working checks. That is the same fault this file criticises elsewhere:
+     a test that re-implements the rule proves the two implementations agree
+     and nothing about whether the rule is right. They live in stats.mjs now
+     precisely so this can call them. */
+  withK.currentSeason = figS(withK.competitive, baseK.currentSeason);
+  withK.tableSeason = tabS(withK.table, withK.competitive, withK.currentSeason);
+
+  check('a first League Eight match moves the season the figures describe',
+    withK.currentSeason === '26/27', withK.currentSeason);
+
+  /* AND A PRE-SEASON FRIENDLY DOES NOT. This is the reason the derivation
+     reads `competitive` and not `matches`, and it is live right now: the club
+     has 26/27 friendlies on the record in August and is still, correctly, a
+     25/26 club by every figure on the site. Handing it the full match list is
+     a one-word slip at the call site that would move the whole season today. */
+  {
+    const friendly = { ...kick, id: 'sim-fr', competition: 'Pre-season friendly', season: '26/27' };
+    const onlyFriendlies = baseK.competitive.filter((m) => m.season !== '26/27');
+    check('a pre-season friendly does not move the season',
+      figS([...onlyFriendlies, friendly].filter((m) => !/friendly/i.test(m.competition || '')),
+        baseK.currentSeason) === '25/26');
+    check('the shipped dataset is not counting friendlies as the season',
+      baseK.currentSeason === '25/26'
+      && baseK.played.some((m) => m.season === '26/27' && m.played),
+      `${baseK.currentSeason}, with ${baseK.played.filter((m) => m.season === '26/27').length} 26/27 matches played`);
+  }
+  check('it does NOT move the season the table describes',
+    withK.tableSeason === '25/26', withK.tableSeason);
+  check('and it never moves the season the club won',
+    withK.titleSeason === '25/26' && withK.titleDivision === 'League Ten',
+    `${withK.titleSeason} ${withK.titleDivision}`);
+
+  /* And the pages themselves. A historical claim naming 26/27 is the failure
+     this whole split exists to prevent. */
+  const tpl = {
+    home: (await import(path.join(ROOT, 'src', 'templates', 'home.mjs'))).home,
+    about: (await import(path.join(ROOT, 'src', 'templates', 'about.mjs'))).about,
+    champions: (await import(path.join(ROOT, 'src', 'templates', 'champions.mjs'))).champions,
+    league: (await import(path.join(ROOT, 'src', 'templates', 'league.mjs'))).league,
+    join: (await import(path.join(ROOT, 'src', 'templates', 'join.mjs'))).join,
+  };
+  const flat = (h) => String(h).replace(/<[^>]+>/g, ' ').replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ');
+  /* THE EXACT STRINGS A MIS-MIGRATED CALL SITE WOULD EMIT, not a loose
+     proximity match. The first version of this check flagged two sentences
+     that were correct: a two-row season table where "won 29" and the next
+     row's "26/27" sat twenty characters apart, and "sealed promotion as
+     champions, stepping up to League Eight for the 26/27 season", which is
+     true and well put. A checker that cries wolf on good copy gets the copy
+     changed to suit it.
+     Each phrase below is what one of the migrated sites produces if it goes
+     back to `currentSeason`, so a hit is the bug and nothing else is. */
+  const WRONG = [
+    'League Eight Champions', 'League Eight champions', 'League Eight winners',
+    'won League Eight', 'unbeaten to the League Eight',
+    'Champions of League Eight', 'League Eight title',
+    '26/27 · Champions', 'Champions 26/27', '26/27 End of season',
+    'League Eight 26/27 final standings', 'final standings, 26/27',
+    'League Eight · 26/27 final', 'League Eight 26/27 leading scorers',
+    'League Eight finish', 'League Eight 26/27 final standings',
+  ];
+  for (const [name, fn] of Object.entries(tpl)) {
+    let text = '';
+    try { const r = fn(withK); text = flat(r && r.body ? r.body : r); }
+    catch (e) { check(`${name} still renders after the first League Eight match`, false, e.message); continue; }
+    const hits = WRONG.filter((w) => text.includes(w));
+    check(`${name} claims no League Eight honour the club has not won`,
+      hits.length === 0, hits.join(' · '));
+  }
+}
+
+/* ---- A HISTORICAL CLAIM IS NOT MADE OUT OF A CURRENT FACT ----------------
 
    Eight page descriptions and the home page's own title said what division the
    club had WON by reading `CLUB.division`, which is the division the club

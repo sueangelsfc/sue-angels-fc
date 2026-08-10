@@ -74,7 +74,7 @@ export function league(d) {
       <div class="wrap">
         <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> ${esc(CLUB.league)}</p>
         <h1 class="lg-hero__title" id="lg-h">The league<span class="volt">.</span></h1>
-        <p class="lg-hero__lede">${esc(d.divisionOf(d.currentSeason))} ${esc(d.currentSeason)}: the table, every
+        <p class="lg-hero__lede">${esc(d.divisionOf(d.tableSeason))} ${esc(d.tableSeason)}: the table, every
           result across the division, and the players topping its charts. Taken from the league's
           own record rather than from ours.</p>
       </div>
@@ -83,12 +83,12 @@ export function league(d) {
   /* ================= 01 THE TABLE ================= */
   const tableBand = `<section class="sec lg-table" id="table" aria-labelledby="lg-tbl-h">
       <div class="wrap">
-        ${rail(1, 'The standings', `${d.divisionOf(d.currentSeason)} ${d.currentSeason}`)}
+        ${rail(1, 'The standings', `${d.divisionOf(d.tableSeason)} ${d.tableSeason}`)}
         <h2 class="h2 rv" id="lg-tbl-h">How the division <span class="volt">finished.</span></h2>
 
         <div class="lg-tabs rv" data-league-tabs>
           <a class="lg-tab is-on" href="#table" data-league="ten">
-            <b>${esc(d.divisionOf(d.currentSeason))}</b><i>${esc(d.currentSeason)} · final</i>
+            <b>${esc(d.divisionOf(d.tableSeason))}</b><i>${esc(d.tableSeason)} · final</i>
           </a>
           <a class="lg-tab" href="#table" data-league="eight">
             <b>${esc(next.division || d.divisionOf(d.nextSeason))}</b><i>${esc(next.season || d.nextSeason)} · ${next.started ? 'in play' : 'not started'}</i>
@@ -98,7 +98,7 @@ export function league(d) {
         <div class="lg-panel rv" data-league-panel="ten">
           <div class="lg-tablewrap">
             <table class="lg-tbl">
-              <caption class="sr-only">${esc(d.divisionOf(d.currentSeason))} ${esc(d.currentSeason)} final standings</caption>
+              <caption class="sr-only">${esc(d.divisionOf(d.tableSeason))} ${esc(d.tableSeason)} final standings</caption>
               <thead>
                 <tr>
                   <th scope="col" class="lg-tbl__pos">#</th>
@@ -189,7 +189,7 @@ export function league(d) {
         ${['league', 'all'].map((which) => `<div class="lg-panel rv" data-chart-panel="${which}" id="${which === 'league' ? 'scorers' : `scorers-${which}`}">
           <div class="lg-tablewrap">
             <table class="lg-tbl lg-sc">
-              <caption class="sr-only">Leading scorers, ${which === 'league' ? `${d.divisionOf(d.currentSeason)} only` : 'all competitions'}</caption>
+              <caption class="sr-only">Leading scorers, ${which === 'league' ? `${d.divisionOf(d.tableSeason)} only` : 'all competitions'}</caption>
               <thead>
                 <tr>
                   <th scope="col" class="lg-sc__pos">#</th>
@@ -391,7 +391,7 @@ export function league(d) {
           <span class="cta2__glow" aria-hidden="true"></span>
           <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
-            <p class="eyebrow cta2__eyebrow">${esc(d.currentSeason)} · Champions</p>
+            <p class="eyebrow cta2__eyebrow">${esc(d.titleSeason)} · Champions</p>
             <h2 class="h2" id="lg-cta-h">Won at the first <span class="volt">attempt.</span></h2>
             <p class="cta2__sub">Eighteen games, eighteen wins, and promotion to
               ${esc(d.divisionOf(d.nextSeason))}. The season told properly.</p>

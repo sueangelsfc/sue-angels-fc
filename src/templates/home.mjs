@@ -359,7 +359,7 @@ export function home(d) {
             <p class="hx__record drop" style="--dd:.46s">
               ${SVG.heroStar}
               <b>${esc(league.won)} wins from ${esc(league.played)}</b>
-              <span>${esc(d.divisionOf(d.currentSeason))} Champions ${esc(d.currentSeason)}</span>
+              <span>${esc(d.titleDivision)} Champions ${esc(d.titleSeason)}</span>
             </p>
 
             <div class="hx__sponsors drop" style="--dd:.54s" aria-label="Club partners">
@@ -423,7 +423,7 @@ export function home(d) {
     `Played ${league.played}`,
     `Won ${league.won}`,
     'Unbeaten',
-    `${d.divisionOf(d.currentSeason)} Champions ${d.currentSeason}`,
+    `${d.titleDivision} Champions ${d.titleSeason}`,
     `Promoted to ${d.divisionOf(d.nextSeason)}`,
     { motto: CLUB.memorial.motto.replace(/\.$/, '') },
   ].map((t) => (typeof t === 'object'
@@ -499,11 +499,11 @@ export function home(d) {
         <div class="bento rv" style="--d:.08s">
 
           <article class="bento__card bento__card--tall">
-            <img class="bento__img" src="/assets/hero/team.webp" alt="${attr(CLUB.name)} squad, ${attr(d.divisionOf(d.currentSeason))} champions" width="640" height="800" loading="lazy" decoding="async" />
+            <img class="bento__img" src="/assets/hero/team.webp" alt="${attr(CLUB.name)} squad, ${attr(d.titleDivision)} champions" width="640" height="800" loading="lazy" decoding="async" />
             <span class="bento__imgshade" aria-hidden="true"></span>
             <span class="bento__label bento__label--on">${SVG.star} Champions</span>
             <div class="bento__tallfoot">
-              <h3 class="bento__h3">${esc(d.divisionOf(d.currentSeason))} winners</h3>
+              <h3 class="bento__h3">${esc(d.titleDivision)} winners</h3>
               <div class="bento__table">
                 ${tlRow(firstMatch, 'First fixture', `Won ${firstMatch ? (firstMatch.ourScoreline || firstMatch.scoreline) : ''}`)}
                 ${tlRow(clincher, 'Title clinched', `Won ${clincher ? (clincher.ourScoreline || clincher.scoreline) : ''}`)}
@@ -525,7 +525,7 @@ export function home(d) {
             <span class="bento__glow" aria-hidden="true"></span>
             <span class="bento__label">${SVG.star} The record</span>
             <b class="bento__stat">${esc(Math.round((league.won / Math.max(league.played, 1)) * 100))}<span>%</span></b>
-            <span class="bento__statcap">Win rate · ${esc(d.divisionOf(d.currentSeason))} ${esc(d.currentSeason)}</span>
+            <span class="bento__statcap">Win rate · ${esc(d.titleDivision)} ${esc(d.titleSeason)}</span>
           </article>
 
           <article class="bento__card bento__card--partners">
@@ -563,7 +563,7 @@ export function home(d) {
       <div class="wrap">
         ${rail('awards', 'Award winners')}
         <div class="aw__head rv">
-          <p class="eyebrow">${esc(d.currentSeason)} End of season</p>
+          <p class="eyebrow">${esc(d.titleSeason)} End of season</p>
           <h2 class="h2" id="awards-h">Award winners<span class="volt">.</span></h2>
         </div>
       </div>
@@ -644,7 +644,7 @@ export function home(d) {
         <div class="cmp__head rv">
           <div class="cmp__headlede">
             <h2 class="h2" id="cmp-h">The campaign<span class="volt">.</span></h2>
-            <p class="cmp__thesis">${esc(all.won)} wins in ${esc(all.played)}, unbeaten to the ${esc(d.divisionOf(d.currentSeason)).replace(' ', '&nbsp;')} title. The ${esc(d.currentSeason)} season, measured in full.</p>
+            <p class="cmp__thesis">${esc(all.won)} wins in ${esc(all.played)}, unbeaten to the ${esc(d.titleDivision).replace(' ', '&nbsp;')} title. The ${esc(d.titleSeason)} season, measured in full.</p>
           </div>
           <a class="btn btn--ghost cmp__cta" href="/champions.html">Champions ${ARROW}</a>
         </div>
@@ -655,7 +655,7 @@ export function home(d) {
                a single ratio against a limit wants a meter, and 46 gauge ticks
                were chrome around one number. -->
           <article class="camp__hero">
-            <p class="camp__k">${esc(d.divisionOf(d.currentSeason))} ${esc(d.currentSeason)}</p>
+            <p class="camp__k">${esc(d.titleDivision)} ${esc(d.titleSeason)}</p>
             <p class="camp__heroval"><b>${esc(league.won)}</b><span>from ${esc(league.played)}</span></p>
             <p class="camp__herolede">Every league game won. The season finished unbeaten,
               ${esc(league.points)} points from ${esc(league.played * 3)}.</p>
@@ -829,7 +829,7 @@ export function home(d) {
           </a>`).join('\n          ')}
         </div>
         <table class="sr-only">
-          <caption>${esc(d.divisionOf(d.currentSeason))} final standings, ${esc(d.currentSeason)}</caption>
+          <caption>${esc(d.divisionOf(d.tableSeason))} final standings, ${esc(d.tableSeason)}</caption>
           <thead><tr><th scope="col">Position</th><th scope="col">Club</th><th scope="col">Played</th>
             <th scope="col">Won</th><th scope="col">Goal difference</th><th scope="col">Points</th></tr></thead>
           <tbody>${d.table.map((r) => `<tr><td>${esc(r.pos)}</td><th scope="row">${esc(r.club)}</th>
@@ -1678,7 +1678,7 @@ export function home(d) {
   const others = otherResults(d).slice(0, 10);
   const aroundLeagueBand = others.length ? `<section class="sec sec--aroundleague" id="aroundleague" aria-labelledby="arl-h">
       <div class="wrap">
-        ${bandHead('aroundleague', 'Around the league', esc(d.divisionOf(d.currentSeason)), '/league.html', 'The whole division', 'arl-h')}
+        ${bandHead('aroundleague', 'Around the league', esc(d.divisionOf(d.tableSeason)), '/league.html', 'The whole division', 'arl-h')}
         ${rowList(others.map((r) => ({
     a: `<b>${esc(shortClub(r.home))}</b>`,
     b: esc(r.date || ''),
@@ -1767,7 +1767,7 @@ export function home(d) {
   const lsc = (d.leagueScorers || []).slice(0, 10);
   const leagueScorersBand = lsc.length ? `<section class="sec sec--leaguescorers" id="leaguescorers" aria-labelledby="lsc-h">
       <div class="wrap">
-        ${bandHead('leaguescorers', 'The division’s scorers', esc(d.divisionOf(d.currentSeason)), '/league.html', 'The whole division', 'lsc-h')}
+        ${bandHead('leaguescorers', 'The division’s scorers', esc(d.divisionOf(d.tableSeason)), '/league.html', 'The whole division', 'lsc-h')}
         <ol class="lbd rv">
           ${lsc.map((r, i) => `<li class="lbd__r${r.us ? ' lbd__r--us' : ''}">
             <span class="lbd__n">${esc(String(r.pos || i + 1))}</span>

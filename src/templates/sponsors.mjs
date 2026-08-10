@@ -104,7 +104,7 @@ export function sponsors(d) {
         <figure class="sp-shot">
           <img src="/assets/hero/team.webp" alt="The ${attr(CLUB.name)} squad in the matchday kit, with the kit sponsor's name across the front of every shirt"
                width="1200" height="500" decoding="async" />
-          <figcaption>The squad that won ${esc(d.divisionOf(d.currentSeason))} unbeaten, in the shirt your name goes on.</figcaption>
+          <figcaption>The squad that won ${esc(d.titleDivision)} unbeaten, in the shirt your name goes on.</figcaption>
         </figure>
       </div>
     </section>`;
@@ -166,7 +166,7 @@ export function sponsors(d) {
           <div class="sp-why__arg">
             <h2 class="h2" id="sp-why-h">More than a logo on a <span class="volt">shirt.</span></h2>
             <p class="sp-why__lede">${esc(CLUB.short)} is not a typical grassroots side. We are
-              ${esc(d.divisionOf(d.currentSeason))} champions, unbeaten in our first season, built around a cause that
+              ${esc(d.titleDivision)} champions, unbeaten in our first season, built around a cause that
               matters, with a growing audience that puts local businesses in front of the right people.</p>
             <p class="sp-why__stat">
               <b>${esc(league.won)}</b><i>from ${esc(league.played)}</i>

@@ -418,7 +418,7 @@ function matchesPage(d, mode) {
           <span class="cta2__glow" aria-hidden="true"></span>
           <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
-            <p class="eyebrow cta2__eyebrow">${esc(d.currentSeason)} · Champions</p>
+            <p class="eyebrow cta2__eyebrow">${esc(d.titleSeason)} · Champions</p>
             <h2 class="h2" id="mt-cta-h">Thirty-three matches, one <span class="volt">title.</span></h2>
             <p class="cta2__sub">The whole season, told properly: the unbeaten league run, the
               numbers behind it, and the players who did it.</p>

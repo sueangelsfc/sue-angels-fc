@@ -819,7 +819,7 @@ export function playerPage(p, d) {
 
   /* ================= 07 HONOURS ================= */
   const honours = [
-    ...seasonAwards.map((a) => ({ k: a.title, v: d.currentSeason })),
+    ...seasonAwards.map((a) => ({ k: a.title, v: a.season || d.titleSeason })),
     ...potm.map((a) => ({ k: 'Player of the Month', v: `${a.month} ${a.season || d.currentSeason}` })),
     captainOf ? { k: captainOf, v: d.currentSeason } : null,
     ...accolades.map((a) => ({ k: a, v: `${d.currentSeason} squad` })),

@@ -101,7 +101,7 @@ export function coaches(d) {
   /* ---- Honours ---- */
   const trophies = (d.recognition || []).filter((r) => r.type === 'trophy');
   const honours = [
-    ...trophies.map((t) => ({ k: t.title, v: t.season || d.currentSeason })),
+    ...trophies.map((t) => ({ k: t.title, v: t.season || d.titleSeason })),
     league.lost === 0 && league.played
       ? { k: 'Unbeaten league season', v: `${league.played} games · ${league.won}W ${league.drawn}D` } : null,
   ].filter(Boolean);

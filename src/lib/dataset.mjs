@@ -10,7 +10,8 @@ import { POSITION_GROUPS, positionName } from './positions.mjs';
 import { readStatusRecord, statusIn, statusLabelIn, isPlaying } from './squad-status.mjs';
 import { houseRecord } from './prose.mjs';
 import { normaliseMatch, normaliseTable, playerStats, slugify, isUs, seasonOf, toISO, isLeague, isCup,
-  isCompetitive, isFriendly } from './stats.mjs';
+  isCompetitive, isFriendly, figuresSeason, tableSeasonOf,
+} from './stats.mjs';
 
 const DATA_DIR = path.join(process.cwd(), 'src', 'data');
 const read = (f) => JSON.parse(fs.readFileSync(path.join(DATA_DIR, f), 'utf8'));
@@ -1004,6 +1005,39 @@ export function buildDataset() {
     .map((s) => ({ season: s.name, division: s.league || divisionOf(s.name) }));
   const lastTitle = titles.length ? titles[titles.length - 1] : null;
 
+  /* ---- THE THREE SEASONS THIS SITE TALKS ABOUT ---------------------------
+
+     `CURRENT_SEASON` was one typed string, '25/26', doing three jobs at once
+     across eighty-eight call sites. It reads correctly today only because all
+     three answers happen to be the same season, and they stop being the same
+     on 6 September when League Eight starts. Flipping it by hand in a scratch
+     build changed 53 files and made 144 pages say the squad won League Ten in
+     26/27, which is what a single name meaning three things looks like when
+     one of them moves.
+
+     So they are three names, each derived from the archive:
+
+     `currentSeason`  THE SEASON THE CLUB'S FIGURES DESCRIBE. The latest season
+                      with a competitive match played. Pre-season friendlies do
+                      not move it, which is why it is still 25/26 in August
+                      with six 26/27 friendlies on the record, and why it moves
+                      itself on the first competitive whistle of League Eight.
+
+     `lastTitle`      THE SEASON THE CLUB WON, and the division it won. A fact
+                      about the past that must never move.
+
+     `tableSeason`    THE SEASON `d.table` DESCRIBES. The published table is a
+                      transcription and there is only one; a page captioning it
+                      with the season the club is now PLAYING would relabel
+                      last season's final standings the moment a new season
+                      started.
+
+     Derived, not typed, so none of them needs a release to stay true. */
+  const currentSeason = figuresSeason(competitive, ps.CURRENT_SEASON || latestSeason);
+  const tableSeason = tableSeasonOf(table, competitive, currentSeason);
+  const titleSeason = (lastTitle && lastTitle.season) || currentSeason;
+  const titleDivision = (lastTitle && lastTitle.division) || divisionOf(currentSeason);
+
   const competitions = (ps.COMPETITIONS || []).filter((c) => c.key !== 'all');
   const knownClubs = ps.KNOWN_CLUBS || [];
   /* The recovered registry misses clubs whose badge files are already in
@@ -1055,7 +1089,8 @@ export function buildDataset() {
     articles, recognition, galleries, playerPhotos, donate, hero, homeLayout, trialists,
     photoFor, photoSeasons, shotFor, sponsorships,
     seasons, seasonInfo, titles, lastTitle, competitions, knownClubs, badges,
-    currentSeason: ps.CURRENT_SEASON,
+    currentSeason,
+    tableSeason, titleSeason, titleDivision,
     nextSeason,
     latestSeason,
     leagueTotalGames: ps.LEAGUE_TOTAL_GAMES,

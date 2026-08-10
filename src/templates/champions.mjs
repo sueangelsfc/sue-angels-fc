@@ -1,3 +1,7 @@
+/* EVERY SEASON ON THIS PAGE IS THE TITLE SEASON. The page exists to tell
+   the story of the one the club won, so it reads d.titleSeason and
+   d.titleDivision throughout rather than 'the current season', which will
+   be a different season from the first whistle of League Eight. */
 /* ==========================================================================
    CHAMPIONS  (/champions.html, "Champions" under The Club)
 
@@ -67,10 +71,10 @@ export function champions(d) {
   const hero = `<section class="ch-hero" aria-labelledby="ch-h">
       <div class="wrap ch-hero__grid">
         <div>
-          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> ${esc(d.divisionOf(d.currentSeason))} ${esc(d.currentSeason)}</p>
+          <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> ${esc(d.titleDivision)} ${esc(d.titleSeason)}</p>
           <h1 class="ch-hero__title" id="ch-h">Champions<span class="volt">.</span></h1>
           <p class="ch-hero__lede">${esc(league.won)} games, ${esc(league.won)} wins. ${esc(CLUB.name)} took the
-            ${esc(d.divisionOf(d.currentSeason))} title at the first attempt without losing a match, and go up to
+            ${esc(d.titleDivision)} title at the first attempt without losing a match, and go up to
             ${esc(d.divisionOf(d.nextSeason))} for ${esc(d.nextSeason)}.</p>
           <div class="ch-hero__btns">
             <a class="btn btn--volt" href="#table">The final table ${ARROW}</a>
@@ -84,7 +88,7 @@ export function champions(d) {
           <ul class="ch-cab__list" aria-label="Honours">
             ${trophies.map((t) => `<li>
               <b>${esc(t.title)}</b>
-              <span>${esc(t.season || d.currentSeason)}</span>
+              <span>${esc(t.season || d.titleSeason)}</span>
             </li>`).join('\n            ')}
           </ul>
         </div>
@@ -115,11 +119,11 @@ export function champions(d) {
   /* ================= 02 THE FINAL TABLE ================= */
   const tableBand = table.length ? `<section class="sec ch-table" id="table" aria-labelledby="ch-table-h">
       <div class="wrap">
-        ${rail(2, 'The final table', `${esc(d.divisionOf(d.currentSeason))} ${esc(d.currentSeason)}`)}
+        ${rail(2, 'The final table', `${esc(d.titleDivision)} ${esc(d.titleSeason)}`)}
         <h2 class="h2 rv" id="ch-table-h">How it finished<span class="volt">.</span></h2>
         <div class="ch-tablewrap rv">
           <table class="ch-tbl">
-            <caption class="sr-only">${esc(d.divisionOf(d.currentSeason))} ${esc(d.currentSeason)} final standings</caption>
+            <caption class="sr-only">${esc(d.titleDivision)} ${esc(d.titleSeason)} final standings</caption>
             <thead>
               <tr>
                 <th scope="col" class="ch-tbl__pos">#</th>
@@ -180,7 +184,7 @@ export function champions(d) {
   /* ================= 04 WHO WON IT ================= */
   const scorersBand = scorers.length ? `<section class="sec ch-scorers" aria-labelledby="ch-sc-h">
       <div class="wrap">
-        ${rail(4, 'Who won it', `${esc(d.divisionOf(d.currentSeason))} scorers`)}
+        ${rail(4, 'Who won it', `${esc(d.titleDivision)} scorers`)}
         <h2 class="h2 rv" id="ch-sc-h">The division's leading <span class="volt">scorers.</span></h2>
         <ol class="ch-sc__list rv">
           ${scorers.map((s) => `<li class="ch-sc${s.us ? ' is-us' : ''}">
@@ -251,7 +255,7 @@ export function champions(d) {
           <span class="cta2__glow" aria-hidden="true"></span>
           <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
-            <p class="eyebrow cta2__eyebrow">${esc(d.currentSeason)} · Champions</p>
+            <p class="eyebrow cta2__eyebrow">${esc(d.titleSeason)} · Champions</p>
             <h2 class="h2" id="ch-cta-h">Back the <span class="volt">champions.</span></h2>
             <p class="cta2__sub">A season like this is built by everyone around the club. Sponsors,
               volunteers and supporters all had a hand in it.</p>

@@ -84,7 +84,7 @@ export function contact(d) {
     { k: 'Founded', v: String(CLUB.founded) },
     { k: 'Club type', v: CLUB.type },
     { k: 'League', v: CLUB.league },
-    { k: 'League', v: `${d.divisionOf(d.nextSeason)}, promoted as ${d.divisionOf(d.currentSeason)} champions` },
+    { k: 'League', v: `${d.divisionOf(d.nextSeason)}, promoted as ${d.titleDivision} champions` },
     { k: 'Home ground', v: `${CLUB.venue.name}, ${CLUB.venue.district}` },
     { k: 'Plays for', v: `${CLUB.charity.name}, in memory of ${CLUB.memorial.name}` },
     { k: 'Squad', v: `${d.squad.length} players` },

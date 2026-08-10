@@ -130,7 +130,14 @@ export function join(d) {
      invites the reader to compare two different things. The league record is
      the one that earned the promotion, and it is the one the published table
      agrees with. Derived by filtering, never typed in. */
-  const s = teamSummary((d.played || []).filter(isLeague));
+  /* THE TITLE SEASON'S LEAGUE RECORD, not every league match ever played.
+     This was every league match across every season under a caption naming
+     one division: correct only while the club had played in exactly one. From
+     the first League Eight match it would have counted two divisions together
+     and labelled the total "League Ten, unbeaten", on the page a prospective
+     player reads first. */
+  const s = teamSummary((d.played || [])
+    .filter((m) => isLeague(m) && m.season === d.titleSeason));
 
   /* A real upcoming fixture if one is stored, otherwise the code baseline.
      Same precedence the homepage uses, so the two cannot disagree. */
@@ -153,7 +160,7 @@ export function join(d) {
           and a person on the other end of it.</p>
         <ul class="jn-hero__facts">
           <li><b>${esc(d.divisionOf(d.nextSeason))}</b><span>Where we play next</span></li>
-          <li><b>P${esc(s.played)} W${esc(s.won)} D${esc(s.drawn)} L${esc(s.lost)}</b><span>${esc(d.divisionOf(d.currentSeason))}${s.lost === 0 ? ', unbeaten' : ''}</span></li>
+          <li><b>P${esc(s.played)} W${esc(s.won)} D${esc(s.drawn)} L${esc(s.lost)}</b><span>${esc(d.titleDivision)}${s.lost === 0 ? ', unbeaten' : ''}</span></li>
           <li><b>${esc(CLUB.venue.shortName)}, ${esc(CLUB.venue.district)}</b><span>Our home ground</span></li>
         </ul>
         <p class="jn-hero__btns">

@@ -124,11 +124,22 @@ const tagLinks = (names, squad) => {
    is why nobody has to be listed in PHOTOGRAPHERS for this to be correct.
    `rel="noopener"` because these open somebody else's site.
    ========================================================================== */
-export function photoCredit(name) {
+export function photoCredit(name, { insideLink = false } = {}) {
   const n = String(name || '').trim();
   if (!n) return '';
   const ch = photographerChannels(n);
-  if (!ch.length) return esc(n);
+  /* AN ANCHOR INSIDE AN ANCHOR IS NOT MARKUP, it is a parse error with a
+     layout bug attached. Two of the nine credits sit inside a link that
+     already owns the whole card - the gallery card, which opens the album, and
+     the match page's album block. The browser closes the outer <a> and hoists
+     the inner one out, so the credit escaped its card and rendered at heading
+     size outside the border. Nothing in the markup tests saw it; a screenshot
+     did.
+     There is no clever fix here and there should not be: the card's job is to
+     open the album, and a second target inside it would be ambiguous to tap
+     even if it parsed. The credit stays plain text and the same name is a link
+     on the seven places that are not nested. */
+  if (!ch.length || insideLink) return esc(n);
   const first = ch[0];
   return `<a class="gl-by" href="${attr(first.href)}" rel="noopener" target="_blank">${esc(n)}</a>`;
 }
@@ -164,7 +175,7 @@ export function gallery(d) {
               <span class="gl-card__body">
                 <b class="gl-card__fixture">${esc(fixture)}</b>
                 <span class="gl-card__detail">${esc(detail)}</span>
-                ${g.photographer ? `<span class="gl-card__by">Photographs by ${photoCredit(g.photographer)}</span>` : ''}
+                ${g.photographer ? `<span class="gl-card__by">Photographs by ${photoCredit(g.photographer, { insideLink: true })}</span>` : ''}
               </span>
             </a>
           </li>`;

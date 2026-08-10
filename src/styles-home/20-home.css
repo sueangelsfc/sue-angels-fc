@@ -1882,3 +1882,31 @@ html.js .lg-panel[hidden]{display: none;}
   .consent__btns{margin-left: 0; width: 100%;}
   .consent__btns .btn{flex: 1;}
 }
+
+/* ==========================================================================
+   A PHOTOGRAPHER'S CREDIT, WHEN IT IS A LINK
+
+   In home.css rather than a page band, because the credit appears on the
+   gallery index, an album page, a match page, a player profile and the home
+   page, and those load five different bands. Put in any one of them it would
+   be styled on one page and bare on four, which is the split bug this file's
+   own notes describe twice.
+
+   It INHERITS its colour. The credit sits inside five different parents, each
+   of which has already decided what that text should look like, and a link
+   that repainted itself would be five inconsistencies rather than one style.
+   The underline is what says it is a link; the accent is kept for the hover,
+   because orange is the only accent hue and a page with nine credits on it
+   should not read as nine buttons.
+   ========================================================================== */
+.gl-by{
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
+}
+.gl-by:hover, .gl-by:focus-visible{
+  color: var(--volt);
+  text-decoration-color: currentColor;
+}

@@ -2254,6 +2254,64 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
       gal.photoCredit(p.name) === p.name.replace(/&/g, '&amp;'), gal.photoCredit(p.name));
   }
 
+  /* THE CREDIT'S OWN CLASS IS STYLED BY A SHEET ITS PAGES LOAD.
+
+     Check 12d cannot catch this one, and its reason is sound: a class defined
+     NOWHERE is treated as a bare identifier, because most of them are - every
+     `sec--x` modifier, and a good many hooks. `.gl-by` shipped defined nowhere
+     and looked exactly like one of those, while actually being a link that was
+     meant to be styled and was not.
+
+     So it is asserted directly rather than by weakening a rule that is right.
+     home.css is the sheet, because the credit appears on five page types
+     loading five different bands and any band would style one of them. */
+  {
+    const creditPages = ['gallery.html', 'index.html'];
+    for (const f of creditPages) {
+      const h = pages.get(f) || '';
+      if (!h) continue;
+      const sheets = [...h.matchAll(/<link rel="stylesheet" href="\/([^?"]+)/g)].map((m) => m[1]);
+      /* A BOUNDARY, not a substring. `includes('.gl-by')` is satisfied by
+         `.gl-by-unused`, so renaming the rule to something nothing uses left
+         the check green over an unstyled link - the probe for this check
+         caught the checker rather than the code, which is the failure mode
+         worth guarding in a check this cheap to write. */
+      const styled = sheets.some((sh) => {
+        try {
+          return /\.gl-by(?![\w-])/.test(fs.readFileSync(path.join(ROOT, sh), 'utf8'));
+        } catch { return false; }
+      });
+      check(`${f} styles the photographer credit link it prints`,
+        !h.includes('class="gl-by"') || styled, sheets.join(', '));
+    }
+  }
+
+  /* NO ANCHOR INSIDE AN ANCHOR, ON ANY PAGE.
+
+     This is a general HTML rule and it is here because breaking it cost a
+     rendered page: the gallery card is entirely a link to the album, so a
+     credit link inside it made the browser close the outer <a> and hoist the
+     inner one out. The credit escaped its card and drew at heading size
+     outside the border. Every markup check in this file passed, because the
+     markup was exactly what the template meant to emit - it is the PARSE that
+     differs from it, and only a browser or a nesting count can see that.
+
+     Counted rather than parsed: walk the open/close tags before each anchor
+     and require the depth to be zero. Cheap, and it holds for every page
+     rather than for the one that happened to break. */
+  {
+    const depthBad = [];
+    for (const [f, h] of pages) {
+      const marks = [...h.matchAll(/<a\b|<\/a>/g)].map((m) => [m.index, m[0] === '</a>' ? -1 : 1]);
+      let d = 0;
+      let worst = 0;
+      for (const [, delta] of marks) { d += delta; if (d > worst) worst = d; }
+      if (worst > 1) depthBad.push(`${f} (depth ${worst})`);
+    }
+    check('no page nests a link inside another link', depthBad.length === 0,
+      depthBad.slice(0, 4).join(', '));
+  }
+
   /* And nothing shipped can be crediting somebody with a dead anchor. */
   const pagesWithCredit = [...pages.entries()]
     .filter(([, h]) => shooters.some((n) => h.includes(n)));
@@ -2285,11 +2343,27 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
       check(`${p.name}'s link is an absolute https URL`, /^https:\/\/[^\s"']+$/.test(c.href), c.href);
     }
     /* Every page naming a linked photographer must actually link them. */
+    /* A page links them UNLESS its only credit sits inside another link, in
+       which case plain text is the correct output rather than a miss. The
+       first version of this check did not know about that case and would have
+       forced back the nested anchor it exists alongside. */
+    const insideAnotherLink = (h) => {
+      const i = h.indexOf(p.name);
+      if (i < 0) return false;
+      let d = 0;
+      for (const m of h.matchAll(/<a\b|<\/a>/g)) {
+        if (m.index >= i) break;
+        d += m[0] === '</a>' ? -1 : 1;
+      }
+      return d > 0;
+    };
     const missed = pagesWithCredit
       .filter(([, h]) => h.includes(p.name))
       .filter(([, h]) => !h.includes(p.channels[0].href))
+      .filter(([, h]) => !insideAnotherLink(h))
       .map(([f]) => f);
-    check(`every page naming ${p.name} links them`, missed.length === 0, missed.slice(0, 3).join(', '));
+    check(`every page naming ${p.name} links them, or is inside another link`,
+      missed.length === 0, missed.slice(0, 3).join(', '));
   }
 }
 

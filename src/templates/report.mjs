@@ -242,7 +242,7 @@ export function matchReport(m, d) {
     : `<img class="mr-album__crest" src="${STAR}" alt="" width="76" height="94" loading="lazy" decoding="async" />`}
           <span class="mr-album__body">
             <b>${esc(album.photos.length)} photograph${album.photos.length === 1 ? '' : 's'}</b>
-            <i>${album.photographer ? `Shot by ${photoCredit(album.photographer)}` : 'From the club album'}</i>
+            <i>${album.photographer ? `Shot by ${photoCredit(album.photographer, { insideLink: true })}` : 'From the club album'}</i>
             <span class="mr-album__go">See the album ${ARROW}</span>
           </span>
         </a>

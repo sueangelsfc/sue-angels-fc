@@ -158,7 +158,9 @@ export const SPONSORS = [
    sends supporters to a stranger.
    ========================================================================== */
 export const PHOTOGRAPHERS = [
-  { name: 'Richie Luwawa', channels: [] },
+  /* Confirmed by the club on 10 August 2026. It is not inferred from the
+     name matching, which is all this end could ever establish. */
+  { name: 'Richie Luwawa', channels: [{ label: 'Instagram', href: 'https://www.instagram.com/luwxwa/' }] },
   { name: 'Jimi El Bayati', channels: [] },
   { name: 'Louis Allen', channels: [] },
 ];

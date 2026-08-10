@@ -179,6 +179,15 @@
 .hband__t b { font-size: var(--step--1); }
 .hband__t span { font-size: var(--step--2); color: var(--text-muted); }
 .hband__flag { color: var(--warning) !important; }
+/* What the band costs the page. Quiet and tabular so the column can be
+   compared down its length by eye, which is the only reason it is here: the
+   useful fact is that Every match is fifteen times the lightest band, and that
+   is a comparison rather than a number. Not a status colour - the weight of a
+   band is a fact about it, not a warning about it. */
+.hband__kb {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.62;
+}
 .hband__b { display: flex; gap: var(--space-2); flex-shrink: 0; }
 
 /* Off is stated by weight and by the number going away, not by a second

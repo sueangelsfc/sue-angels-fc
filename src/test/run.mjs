@@ -915,8 +915,24 @@ const BUDGET = {
      Deliberately NOT bought by loosening anything else, and the area names
      themselves are seeded by the build rather than typed here, for the same
      reason the band names are. Fetched only by somebody who opens this one
-     screen. */
-  'control-home.js': 4,
+     screen.
+
+     Then it went 4 -> 9, and NOT because the module grew: the module is 3.4KB
+     and unchanged. `homeBands` is 15KB of raw JSON describing seventy bands
+     and their pick lists, it is read by this screen alone, and it was living
+     in control-seed.js, which is loaded first and not deferred. Every one of
+     the eighteen panels was paying for it to render the Inbox. It rides with
+     this chunk now, so the cost falls on whoever opens Home page and on
+     nobody else - which is this file's whole rule, arriving by a different
+     door: last time it was thirteen modules in one file, this time one
+     module's data in everybody's file. control-seed.js went 12.0 to 7.0KB
+     gzipped for every panel visitor, and that is the number this bought. */
+  'control-home.js': 9,
+  /* AND THE SHARED SEED GETS A CEILING, having never had one. It is the first
+     thing control.html loads and it is not deferred, so it is on the critical
+     path for every screen - which is exactly the position that had gone
+     unguarded while the chunks around it were all budgeted. 7.0KB now. */
+  'control-seed.js': 8,
 };
 for (const [f, kb] of Object.entries(BUDGET)) {
   const raw = fs.readFileSync(path.join(ROOT, f));
@@ -2160,6 +2176,88 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 
   check('the report chunk exposes its head-to-head', typeof (win.CPR || {})._headToHead === 'function');
 
+  /* ---- The panel's weight figures are the page's own -----------------------
+     The panel now prints what each band costs and what the running order comes
+     to, and those numbers are only worth having if they are the page's. A seed
+     computed once at build and never reconciled is exactly the kind of figure
+     that goes quietly wrong: a band edited to draw twice as much markup would
+     still be advertised at its old size, and the screen would keep saying so
+     with total confidence.
+
+     So render the page with everything on, measure each band, and require the
+     seed to agree byte for byte. */
+  {
+    const { home: homeH } = await import(path.join(ROOT, 'src', 'templates', 'home.mjs'));
+    const { HOME_BANDS: HB, homeBandFilled: hbf } =
+      await import(path.join(ROOT, 'src', 'lib', 'home-layout.mjs'));
+    /* From the HOME CHUNK, not the shared seed: that is where these figures
+       live now, and reading them from the old address would assert against
+       `undefined` and pass whenever both sides were missing. */
+    const wH = { SA_SEED: {}, CPM: {}, CPU: { $: () => null, $$: () => [], esc: String } };
+    try {
+      new Function('window', 'document', fs.readFileSync(path.join(ROOT, 'control-home.js'), 'utf8'))(
+        wH, { querySelector: () => null, querySelectorAll: () => [] },
+      );
+    } catch { /* registers itself; no DOM needed */ }
+    const page = (wH.SA_SEED || {}).homePage || {};
+    const seeded = page.bytes || {};
+    const body = homeH({ ...DH, homeLayout: { order: HB.map((b) => b.key), hidden: [] } }).body;
+    const actual = {};
+    for (const part of body.split('<section class="sec sec--').slice(1)) {
+      actual[part.slice(0, part.indexOf('"'))] = Buffer.byteLength(part) + 24;
+    }
+
+    const drawn = Object.keys(actual);
+    check('the panel is given a weight for every band the page draws',
+      drawn.length > 60 && drawn.every((k) => seeded[k] > 0),
+      `${drawn.length} drawn, ${drawn.filter((k) => !seeded[k]).join(',') || 'all seeded'}`);
+
+    const wrong = drawn.filter((k) => seeded[k] !== actual[k])
+      .map((k) => `${k} seed ${seeded[k]} vs ${actual[k]}`);
+    check('every weight the panel prints is the one the page produces',
+      wrong.length === 0, wrong.slice(0, 3).join(', '));
+
+    /* An empty band is not drawn, so it must not carry a figure either: the
+       panel deliberately prints nothing rather than 0KB, and a stale
+       measurement left behind for a band that has since emptied would make it
+       print one. */
+    const ghosts = Object.keys(seeded).filter((k) => !actual[k]);
+    check('no band carries a weight the page never draws', ghosts.length === 0, ghosts.join(','));
+
+    /* And the reference the comparison is made against. */
+    const std = HB.filter((b) => !b.off && hbf(b.key, DH))
+      .reduce((n, b) => n + (actual[b.key] || 0), 0);
+    check('the standard order the panel compares against is the standard order',
+      page.standard === std, `seed ${page.standard} vs ${std}`);
+    check('the standard order is a real fraction of everything on',
+      std > 0 && std < Object.values(actual).reduce((n, v) => n + v, 0),
+      `${(std / 1024).toFixed(0)}KB standard`);
+
+    /* THE SENTENCE THE PANEL PRINTS, from the shipped chunk's own arithmetic
+       rather than a second copy of it here. A test that re-implements the sum
+       proves the two implementations agree and nothing about what is on the
+       screen. */
+    const CPH = wH.CPH || {};
+    if (typeof CPH.weighUp === 'function') {
+      const { order: ordC, hidden: hidC } =
+        (await import(path.join(ROOT, 'src', 'lib', 'home-layout.mjs'))).resolveHomeLayout(DH.homeLayout);
+      const liveC = ordC.filter((k) => !hidC.has(k) && hbf(k, DH));
+      const said = CPH.weighUp(liveC);
+      const trueTotal = liveC.reduce((n, k) => n + (actual[k] || 0), 0);
+      check('the weight the panel states is the weight of the page it describes',
+        said.total === trueTotal, `panel ${said.total} vs page ${trueTotal}`);
+      check('the panel states the size in words as well as a number',
+        /comes? to \d/.test(said.text) && /standard order/.test(said.text), said.text);
+      /* Every band on must read as more than the standard order, which is the
+         one direction this comparison exists to make obvious. */
+      const allOn = HB.map((b) => b.key).filter((k) => actual[k]);
+      check('switching everything on reads as heavier than the standard order',
+        CPH.weighUp(allOn).diff > 0, CPH.weighUp(allOn).text);
+    } else {
+      check('the panel exposes its weight arithmetic', false, 'CPH.weighUp missing');
+    }
+  }
+
   if (win.CPR && win.CPR._headToHead) {
     const opponents = [...new Set((DH.played || []).map((m) => m.opponent))].filter(Boolean);
     check('there are opponents to reconcile', opponents.length > 5, `${opponents.length} found`);
@@ -2434,6 +2532,33 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const dL = bdL();
   const DEFAULT = HOME_BAND_KEYS.join(',');
 
+  /* THE HOME SCREEN'S SEED NOW RIDES WITH ITS CHUNK, so it is read from there
+     rather than from control-seed.js. Executed rather than pattern-matched:
+     the chunk is minified, and a regex over minified JS is a way of finding
+     out that the shape changed only once something is already broken. Running
+     it proves the assignment reaches window.SA_SEED the way the browser will
+     do it, which is the actual claim. */
+  const homeSeedOf = () => {
+    const w = { SA_SEED: {}, CPM: {}, CPU: { $: () => null, $$: () => [], esc: String } };
+    try {
+      new Function('window', 'document', fs.readFileSync(path.join(ROOT, 'control-home.js'), 'utf8'))(
+        w, { querySelector: () => null, querySelectorAll: () => [] },
+      );
+    } catch { /* the module registers itself and needs no DOM to do it */ }
+    return w.SA_SEED || {};
+  };
+  check('the home chunk carries its own seed to the browser',
+    (homeSeedOf().homeBands || []).length === HOME_BANDS.length,
+    `${(homeSeedOf().homeBands || []).length} bands`);
+  /* And the shared seed no longer does, which is the half that saves the
+     bytes: leaving a copy behind would cost exactly what the move saved. */
+  {
+    const shared = JSON.parse(fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8')
+      .replace(/^[^{]*/, '').replace(/;?\s*$/, ''));
+    const left = ['homeBands', 'homeAreas', 'homePage'].filter((k) => k in shared);
+    check('the shared seed every panel loads carries no home-page data', left.length === 0, left.join(','));
+  }
+
   /* Absent, empty, full of names nothing has ever heard of, and - the one that
      matters once bands can be added - a record written before those bands
      existed. All five must PUBLISH the eight the page shipped with. Asserted on
@@ -2521,9 +2646,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     /* Every seeded option must resolve, or the panel is offering something the
        page cannot draw - the exact failure the seed exists to prevent. */
     for (const key of ['report', 'photos', 'spotlight']) {
-      const seeded = (JSON.parse(fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8')
-        .replace(/^[^{]*/, '').replace(/;?\s*$/, '')).homeBands || [])
-        .find((b) => b.key === key);
+      const seeded = (homeSeedOf().homeBands || []).find((b) => b.key === key);
       const opts = (seeded && seeded.options) || [];
       check(`every ${key} the panel offers resolves on the site`,
         opts.length > 0 && opts.every((o) => pickResolves(key, { pick: { [key]: o.id } }, dL)),
@@ -2629,8 +2752,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   /* The panel is handed the band list rather than holding its own, so the two
      cannot describe the same band differently. */
   {
-    const seedL = JSON.parse(fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8')
-      .replace(/^[^{]*/, '').replace(/;?\s*$/, ''));
+    const seedL = homeSeedOf();
     const seeded = (seedL.homeBands || []).map((b) => b.key).join(',');
     check('the panel is seeded exactly the bands the site draws',
       seeded === DEFAULT, seeded);

@@ -44,6 +44,48 @@
   var AREAS = SEED.homeAreas || [];
   var KEYS = BANDS.map(function (b) { return b.key; });
 
+  /* ---- WHAT EACH BAND COSTS THE PAGE ---------------------------------------
+     Measured by the build, not guessed here. Raw markup, because raw bytes add
+     up and the panel can total whatever is selected and be exactly right; a
+     per-band gzipped figure could only ever be an estimate, and an estimate
+     shown to one decimal place is a lie with a unit on it.
+
+     This exists because the cost of a band was invisible at the moment
+     somebody flicked the switch. The only place it was computed was a test the
+     club never runs, so the answer arrived as a failing build after the fact.
+     Every match is thirty times the weight of the lightest band and nothing on
+     this screen said so.
+
+     At module scope rather than inside the render, so the suite can run this
+     exact arithmetic instead of a second copy of it. */
+  var PAGE = SEED.homePage || {};
+  var BYTES = PAGE.bytes || {};
+  function weightOf(k) { return BYTES[k] || 0; }
+  function kb(n) { return (n / 1024).toFixed(n < 10240 ? 1 : 0) + 'KB'; }
+
+  /* The sentence under the list. Compared against THE STANDARD ORDER rather
+     than a ceiling: a ceiling would have to model the fixed part of the page,
+     and a budget readout that is optimistic by a few KB is worse than none.
+     The standard order is measured, and it is a button on this same screen, so
+     the comparison names the way back as well as the size. */
+  function weighUp(keys) {
+    var total = keys.reduce(function (t, k) { return t + weightOf(k); }, 0);
+    var std = PAGE.standard || 0;
+    var diff = total - std;
+    return {
+      total: total,
+      standard: std,
+      diff: diff,
+      text: 'Those ' + (keys.length === 1 ? 'band comes' : 'bands come') + ' to '
+        + kb(total) + ' of markup.'
+        + (!std ? ''
+          : Math.abs(diff) < 1024
+            ? ' That is about what the standard order comes to.'
+            : ' That is ' + kb(Math.abs(diff)) + (diff > 0 ? ' more' : ' less')
+              + ' than the standard order, which is ' + kb(std) + '.'),
+    };
+  }
+
   /* THE SAME RULE AS src/lib/home-layout.mjs resolveHomeLayout(), and it has to
      stay the same rule: this screen shows the club the order the website is
      going to publish, so the two answering differently would make the preview
@@ -108,6 +150,7 @@
 
       function isHidden(k) { return state.hidden.indexOf(k) >= 0; }
 
+
       /* What the website will actually publish: chosen, not hidden, and not
          empty. This is also what the numbers down the left of the home page
          count, so an empty or hidden band cannot leave 04 followed by 06. */
@@ -159,7 +202,10 @@
             (empty
               ? '<span class="hband__flag">Nothing in it at the moment, so the page leaves it out '
                 + 'whichever way this is set.</span>'
-              : '') +
+              /* Not shown on an empty band: it is not drawn, so it costs
+                 nothing, and "0KB" beside it would read as a measurement
+                 rather than an absence. */
+              : '<span class="hband__kb">' + esc(kb(weightOf(key))) + ' of the page</span>') +
             chooserHtml(key) +
           '</span>' +
           '<span class="hband__b">' +
@@ -205,7 +251,10 @@
         }
         return '<p class="cp-note">The home page will show <b>' + n + '</b> '
           + (n === 1 ? 'band' : 'bands') + ' under the next match, in this order. '
-          + 'Numbers down the left of the page follow it.</p>';
+          + 'Numbers down the left of the page follow it.</p>'
+          + '<p class="cp-note">' + esc(weighUp(live()).text)
+          + ' A longer page is slower to load and slower to read, and every band here is '
+          + 'something somebody has to scroll past to reach the next one.</p>';
       }
 
       /* THE WARNING GOES WHERE THE CHANGE WAS MADE. Save writes to the
@@ -397,5 +446,5 @@
 
   /* Exposed so the suite can run this copy of the rule against the
      generator's over the same records and prove they answer alike. */
-  window.CPH = { resolve: resolve };
+  window.CPH = { resolve: resolve, weighUp: weighUp, weightOf: weightOf };
 })();

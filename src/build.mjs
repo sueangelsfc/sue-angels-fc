@@ -366,6 +366,55 @@ const adminSeed = {
   /* The areas, handed over with the bands, so the panel groups by exactly the
      set the site defines and cannot offer an area no band belongs to. */
   homeAreas: HOME_AREAS.map((a) => ({ key: a.key, name: a.name, what: a.what })),
+  /* WHAT THE PAGE WEIGHS AND WHAT EACH BAND COSTS, so switching one on is an
+     informed decision rather than a surprise on the next build.
+
+     This was written after the archive went on and the home page landed 230
+     bytes inside its own ceiling. The note in the suite said the fix was to
+     turn a band off - which is not a fix, it is telling the club to undo what
+     it asked for. The actual gap is that the cost of a band is invisible at
+     the moment somebody flicks the switch, and the only place it was ever
+     computed was a test the club never runs.
+
+     RAW MARKUP, not gzipped, and that is deliberate. Raw bytes ADD UP: the
+     panel can total whatever is selected and be exactly right. Gzipped bytes
+     do not, because a band compresses against everything else on the page, so
+     a per-band gzip figure could only ever be an estimate and an estimate
+     shown to two decimal places is a lie with a unit on it. The gzipped
+     ceiling is the tighter of the two and the build reports it on every run;
+     the panel deals in the number it can be honest about.
+
+     NO CEILING AND NO PREDICTED TOTAL, which is the second thing this got
+     wrong before it was written properly. Comparing a running total against
+     the page's 160KB ceiling means knowing the fixed part of the document -
+     the head, the hero, the scripts - and every cheap way of getting that is
+     either order-dependent on a file the build has not written yet, or
+     optimistic by the few KB it leaves out. A budget readout that is
+     optimistic is worse than none.
+
+     So the panel compares against something real instead: what THE STANDARD
+     ORDER comes to. That is the right reference for two reasons - it is
+     measured rather than modelled, and it is a button on this same screen, so
+     "you are 40KB above the standard order" names both the problem and the
+     way back from it. */
+  homePage: (() => {
+    const body = home({ ...d, homeLayout: { order: HOME_BANDS.map((b) => b.key), hidden: [] } }).body;
+    const bytes = {};
+    /* +24 puts back the opening tag the split consumed, so a band's figure is
+       the whole element rather than everything after its class attribute. */
+    for (const part of body.split('<section class="sec sec--').slice(1)) {
+      bytes[part.slice(0, part.indexOf('"'))] = Buffer.byteLength(part) + 24;
+    }
+    return {
+      bytes,
+      /* The bands the page draws with no record at all, which is exactly what
+         "Put the standard order back" produces. Empty ones contribute nothing
+         because they are not drawn. */
+      standard: HOME_BANDS
+        .filter((b) => !b.off && homeBandFilled(b.key, d))
+        .reduce((n, b) => n + (bytes[b.key] || 0), 0),
+    };
+  })(),
   homeBands: ((pickDate) => HOME_BANDS.map((b) => ({
     key: b.key,
     area: b.area,
@@ -507,6 +556,29 @@ const adminSeed = {
    and busts independently of the code, and control.js goes back to being
    code. A plain script rather than a fetch, because the modules read
    window.SA_SEED synchronously as they define themselves. */
+/* ---- The home-page data rides with the home-page chunk -------------------
+   `homeBands` is 15KB of raw JSON, the biggest thing in the seed by a factor
+   of two, and it is read by exactly one screen. control-seed.js is loaded
+   first and NOT deferred, so every one of the eighteen panels was paying for
+   seventy band descriptions and their pick lists to render the Inbox.
+
+   That is the same fault the lazy split was built to fix, arriving by a
+   different door: last time it was thirteen modules in one file, this time it
+   is one module's data in everybody's file. Growing the catalogue from eight
+   bands to seventy is what made it worth finding.
+
+   So these three keys are lifted out and prepended to control-home.js, which
+   is fetched the first time somebody opens Home page and by nobody else. The
+   module reads `window.SA_SEED` at its own top, and this assignment runs
+   above it in the same file, so it is merged before anything looks. */
+const HOME_SEED_KEYS = ['homeBands', 'homeAreas', 'homePage'];
+const homeSeed = {};
+for (const k of HOME_SEED_KEYS) {
+  homeSeed[k] = adminSeed[k];
+  delete adminSeed[k];
+}
+const homeSeedJs = `window.SA_SEED=Object.assign(window.SA_SEED||{},${JSON.stringify(homeSeed)});\n`;
+
 const adminSeedJs = `window.SA_SEED=${JSON.stringify(adminSeed)};\n`;
 const seedV = crypto.createHash('sha256').update(adminSeedJs).digest('hex').slice(0, 8);
 write('control-seed.js', adminSeedJs);
@@ -522,7 +594,11 @@ const lazyDir = path.join(ROOT, 'src', 'admin', 'lazy');
 const chunkUrls = {};
 for (const f of fs.readdirSync(lazyDir).filter((x) => x.endsWith('.js')).sort()) {
   const name = f.replace(/^\d+-|\.js$/g, '');
-  const body = minifyJs(fs.readFileSync(path.join(lazyDir, f), 'utf8'));
+  /* The home chunk carries its own data, prepended UNMINIFIED-then-minified
+     with the module so the two ship and cache as one file. Nothing else needs
+     a seed of its own; if another screen ever grows one, this is the shape. */
+  const src = (name === 'home' ? homeSeedJs : '') + fs.readFileSync(path.join(lazyDir, f), 'utf8');
+  const body = minifyJs(src);
   const v = crypto.createHash('sha256').update(body).digest('hex').slice(0, 8);
   write(`control-${name}.js`, body);
   chunkUrls[name] = `control-${name}.js?v=${v}`;

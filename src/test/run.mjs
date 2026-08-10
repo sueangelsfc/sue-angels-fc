@@ -1487,14 +1487,46 @@ check('no unlinked page stylesheet', orphanBands.length === 0, orphanBands.join(
    from two. */
 const heavy = [];
 const rawHeavy = [];
+/* THE HEAVIEST BANDS ON THE OFFENDING PAGE, named in the failure.
+
+   The home page is composed in the control panel now, so the commonest way to
+   fail this is no longer a developer adding markup: it is somebody switching a
+   band on. "index.html 22.4KB gz" tells them a number and nothing they can act
+   on. Naming the three heaviest bands turns it into a decision about which
+   switch to flick. */
+const heaviestBands = (h) => h.split('<section class="sec sec--').slice(1)
+  .map((p) => ({ key: p.slice(0, p.indexOf('"')), kb: Buffer.byteLength(p) / 1024 }))
+  .sort((a, b) => b.kb - a.kb).slice(0, 3)
+  .map((r) => `${r.key} ${r.kb.toFixed(1)}KB`).join(' ');
+
 for (const [f, h] of pages) {
   const raw = Buffer.byteLength(h) / 1024;
   const gz = zlib.gzipSync(Buffer.from(h), { level: 9 }).length / 1024;
-  if (gz > 22) heavy.push(`${f} ${gz.toFixed(1)}KB gz`);
-  if (raw > 160) rawHeavy.push(`${f} ${raw.toFixed(0)}KB raw`);
+  const worst = heaviestBands(h);
+  if (gz > 22) heavy.push(`${f} ${gz.toFixed(1)}KB gz${worst ? ` (heaviest: ${worst})` : ''}`);
+  if (raw > 160) rawHeavy.push(`${f} ${raw.toFixed(0)}KB raw${worst ? ` (heaviest: ${worst})` : ''}`);
 }
 check('no page over 22KB of gzipped HTML', heavy.length === 0, heavy.slice(0, 5).join(', '));
 check('no page over 160KB of raw HTML (DOM size)', rawHeavy.length === 0, rawHeavy.slice(0, 5).join(', '));
+
+/* AND HOW MUCH ROOM THE FRONT PAGE HAS LEFT, printed whether or not it fails.
+
+   The club composes this page and the deploy does NOT run this suite: the
+   build command is sync, build, verify. So a page over budget still publishes,
+   and this ceiling is a signal to whoever is reading rather than a gate on the
+   club. Printing the margin is the only way it is seen before it is breached.
+
+   With the archive on it is 21.8KB of a 22KB ceiling. `everymatch` is the band
+   that grows on its own, about 0.4KB a match, so a full League Eight season
+   takes it past this without anybody touching the code. That is the one to
+   watch, and turning it off is the fix. */
+{
+  const home = pages.get('index.html') || '';
+  const gz = zlib.gzipSync(Buffer.from(home), { level: 9 }).length / 1024;
+  const bands = (home.match(/<section class="sec sec--/g) || []).length;
+  console.log(`  home page: ${gz.toFixed(1)}KB gz of a 22KB ceiling across ${bands} bands`
+    + ` · heaviest ${heaviestBands(home)}`);
+}
 
 const heroKb = fs.statSync(path.join(ROOT, 'assets/hero/kit-crest-1344.webp')).size / 1024;
 check('hero image under 250KB', heroKb < 250, `${heroKb.toFixed(0)}KB`);
@@ -2407,7 +2439,19 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
      existed. All five must PUBLISH the eight the page shipped with. Asserted on
      what reaches the page rather than on the raw order, because the order now
      names bands that are off by default and the published list is the claim. */
-  const SHIPPED = HOME_BANDS.filter((b) => !b.off).map((b) => b.key).join(',');
+  /* THE REFERENCE IS THE NO-RECORD PAGE, not a second definition of it.
+
+     This was `HOME_BANDS.filter(b => !b.off)`, which is the list of bands that
+     are ON by default and not the list the page publishes: publishedBands also
+     drops the empty ones. The two agreed until a band was both on by default
+     and empty, which is what the archive going on made of `seasons` - one
+     season played is nothing to compare, so it does not draw.
+
+     What these five cases are actually claiming is that a missing, empty,
+     malformed or legacy record all produce THE SAME PAGE AS NO RECORD. So the
+     reference is that page, computed once, and there is nothing left to keep
+     in step. */
+  const SHIPPED = publishedBands(null, dL).join(',');
   for (const [label, rec] of [
     ['no record', null],
     ['an empty record', {}],

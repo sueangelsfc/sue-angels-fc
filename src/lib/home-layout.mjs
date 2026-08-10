@@ -514,36 +514,50 @@ export const HOME_BANDS = [
       + 'Control panel → Inbox.',
   },
 
-  /* ---- The archive --------------------------------------------------------
+  /* ---- The archive, AND IT IS ON ------------------------------------------
      Everything the club has done, looked at as a whole rather than as this
      week. These are the bands that get longer every season rather than
      changing, which is a different kind of band from the ones above and the
-     reason this is its own area. */
+     reason this is its own area.
+
+     THESE NINE CARRY NO `off` FLAG, and that is the club's decision rather
+     than an oversight. Everything else added after the original twenty is off
+     until somebody asks for it, because a front page that has been arranged
+     must not rearrange itself. The club asked for the archive, so it is part
+     of the shipped order now.
+
+     What that means mechanically: the off rule hides a band the stored order
+     does not name, and with no flag there is nothing to hide. The club's own
+     record predates all nine and does not mention them, so they arrive
+     published, and they arrive at the BOTTOM because the insertion rule places
+     each after the nearest band above it that the stored order holds - which
+     for the archive is the end of the page. That is where an archive belongs,
+     so it is left there rather than pinned.
+
+     Turning one off in the panel still wins outright: that writes it into
+     `hidden`, which is authoritative and beats this list. */
   {
     key: 'headtohead',
     area: 'archive',
-    off: true,
     name: 'Every club played',
     what: 'One row for each opponent the club has met, with the record against them.',
   },
   {
     key: 'seasons',
     area: 'archive',
-    off: true,
     name: 'Every season',
-    what: 'One row per season since 2025, with the record and the division.',
+    what: 'One row per season since 2025, with the record and the division. Empty until '
+      + 'there is a second season to compare.',
   },
   {
     key: 'everymatch',
     area: 'archive',
-    off: true,
     name: 'Every match',
     what: 'The whole archive in one list, newest first. Long by design.',
   },
   {
     key: 'firsts',
     area: 'archive',
-    off: true,
     name: 'The club’s firsts',
     what: 'First match, first win, first goal, first clean sheet, first cup tie. Not '
       + 'stored anywhere: each one is the earliest record that answers to it.',
@@ -551,21 +565,18 @@ export const HOME_BANDS = [
   {
     key: 'reports',
     area: 'archive',
-    off: true,
     name: 'The match reports',
     what: 'Every match the club has written up, newest first.',
   },
   {
     key: 'albums',
     area: 'archive',
-    off: true,
     name: 'The albums',
     what: 'Every photograph album, with its cover and how many pictures are in it.',
   },
   {
     key: 'clubswall',
     area: 'archive',
-    off: true,
     name: 'The clubs played',
     what: 'Every opponent’s crest in one wall. Mala Vida FC has no badge on file and '
       + 'takes the lettered mark.',
@@ -573,7 +584,6 @@ export const HOME_BANDS = [
   {
     key: 'whatsinhere',
     area: 'archive',
-    off: true,
     name: 'What is in here',
     what: 'How much the site actually holds: matches, reports, photographs, players, '
       + 'articles. Counted at build, so it cannot drift.',
@@ -581,7 +591,6 @@ export const HOME_BANDS = [
   {
     key: 'venues',
     area: 'archive',
-    off: true,
     name: 'Where the club has played',
     what: 'Every ground, with the record there.',
   },

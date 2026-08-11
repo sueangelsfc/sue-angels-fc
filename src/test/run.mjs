@@ -2215,7 +2215,85 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 
   check('the report chunk exposes its head-to-head', typeof (win.CPR || {})._headToHead === 'function');
 
-  /* ---- 6 SEPTEMBER, SIMULATED ---------------------------------------------
+  /* ---- OUTBOUND CITATIONS, AND ONLY TRUE ONES -----------------------------
+
+   An answer engine reads an outbound link to an authority as credibility, and
+   an audit scored this site 0 out of 7 on it: not one page body carried a
+   citation. The site's own habit is to name its evidence, so this was a gap in
+   the writing as much as in the SEO.
+
+   THE RULE IS NOT "TWO LINKS PER PAGE". It is that a page which rests on an
+   external source names it. Six pages still carry fewer than two and are meant
+   to: 404 and the Google verification token have no content, and news, videos,
+   live and the gallery are the club's own work with nothing external behind
+   them. Two decorative links there would be worth less than none, and this
+   check says so out loud rather than quietly ratcheting.
+   ========================================================================== */
+{
+  const { SOURCES } = await import(path.join(ROOT, 'src', 'lib', 'club.mjs'));
+  const bodyOf = (h) => h
+    .replace(/<footer[\s\S]*?<\/footer>/gi, '')
+    .replace(/<nav[\s\S]*?<\/nav>/gi, '')
+    .replace(/<header[\s\S]*?<\/header>/gi, '');
+  const outbound = (h) => [...new Set([...bodyOf(h).matchAll(/href="(https?:\/\/[^"]+)"/g)]
+    .map((m) => m[1]))].filter((u) => !/suesangelsfc\.co\.uk/.test(u));
+
+  /* The pages with nothing true to cite, named on purpose. Adding a page here
+     is a decision to say it has no source, not a way to silence the check. */
+  const NO_SOURCE = new Set([
+    '404.html', 'googlef4b3315c2212b0ef.html',
+    'news.html', 'videos.html', 'live.html', 'gallery.html',
+  ]);
+  const thin = [...pages.entries()]
+    .filter(([f]) => !f.includes('/') && f.endsWith('.html') && f !== 'control.html')
+    .filter(([f]) => !NO_SOURCE.has(f))
+    .filter(([, h]) => outbound(h).length < 2)
+    .map(([f]) => f);
+  check('every content page cites at least two external sources',
+    thin.length === 0, thin.join(', '));
+
+  /* And each cited host is one the club record actually names, so a citation
+     cannot drift into whatever a page happened to link. */
+  const allowed = new Set(Object.values(SOURCES).map((x) => new URL(x.href).host));
+  const known = [...pages.entries()].filter(([f]) => f === 'league.html' || f === 'index.html');
+  for (const [f, h] of known) {
+    const hosts = outbound(h).map((u) => { try { return new URL(u).host; } catch { return ''; } });
+    const cited = hosts.filter((x) => allowed.has(x));
+    check(`${f} cites a source the club record names`, cited.length >= 2, hosts.join(', '));
+  }
+
+  /* THE SOURCE LINE IS STYLED. Same trap as .gl-by: a class defined nowhere
+     reads to check 12d as a bare identifier, and this one is meant to be
+     styled. Boundary match, because `.srcnote-x` would satisfy a substring. */
+  {
+    const h = pages.get('league.html') || '';
+    const sheets = [...h.matchAll(/<link rel="stylesheet" href="\/([^?"]+)/g)].map((m) => m[1]);
+    const styled = sheets.some((sh) => {
+      try { return /\.srcnote(?![\w-])/.test(fs.readFileSync(path.join(ROOT, sh), 'utf8')); }
+      catch { return false; }
+    });
+    check('the source line is styled by a sheet its pages load',
+      !h.includes('class="srcnote"') || styled, sheets.join(', '));
+  }
+
+  /* ---- FAQ STRUCTURED DATA DESCRIBES THE PAGE IT IS ON -------------------
+     The home page shipped FAQPage markup naming five questions whatever the
+     club had chosen, and the club has Ask the Angels switched off - so it told
+     a search engine it carried content it did not. That is the one thing this
+     site is otherwise careful about, and an AEO audit scored the FAQ signal 0
+     having gone looking for the questions the schema promised. */
+  for (const [f, h] of pages) {
+    if (f.includes('/') || !f.endsWith('.html')) continue;
+    const hasSchema = /"@type"\s*:\s*"FAQPage"/.test(h);
+    if (!hasSchema) continue;
+    const visible = (h.match(/<summary[^>]*>[^<]*\?/g) || []).length
+      + (h.match(/<h[23][^>]*>[^<]*\?<\/h[23]>/g) || []).length;
+    check(`${f}: FAQ markup matches questions the page actually shows`,
+      visible >= 2, `${visible} visible questions`);
+  }
+}
+
+/* ---- 6 SEPTEMBER, SIMULATED ---------------------------------------------
 
    `CURRENT_SEASON` was one typed string doing three jobs across 88 call sites,
    and it read correctly only because all three answers were the same season.

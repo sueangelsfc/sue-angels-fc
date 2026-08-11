@@ -31,6 +31,7 @@ import { teamSummary, fmtDate } from '../lib/stats.mjs';
 import { seasonViews, defaultView, seasonBar, seasonPanels, matchNote } from '../lib/seasons.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
 import { hasReport as hasWrittenReport, FRIENDLY_FLAG, FRIENDLY_NOTE_SHORT } from '../lib/prose.mjs';
+import { sourceNote } from '../lib/blocks.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -436,6 +437,7 @@ function matchesPage(d, mode) {
   return {
     body: siteHeader(isFixtures ? '/fixtures.html' : '/results.html')
       + (isFixtures ? fixHero + fixBand : hero + recordBand + awaitingBand + listBand)
+      + sourceNote(['fulltime', 'surreyfa'])
       + ctaBand,
     bodyClass: `is-home is-sub is-matches${isFixtures ? ' is-fixtures' : ''}`,
     css: 'home.css',

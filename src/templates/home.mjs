@@ -40,6 +40,7 @@ import {
 } from '../lib/home-layout.mjs';
 import { preseasonFor, seasonAhead, sameClub, relatedClub, recordOf } from '../lib/preseason.mjs';
 import { reportText, house, FRIENDLY_NOTE_SHORT, FRIENDLY_NOTE } from '../lib/prose.mjs';
+import { sourceNote } from '../lib/blocks.mjs';
 
 /* THE OPENING OF A REPORT, for the front page to quote.
 
@@ -550,6 +551,11 @@ export function home(d) {
           </article>
 
         </div>
+        <!-- The club exists because somebody died of sepsis, so the medical
+             authority is named where the cause is explained rather than left
+             to the reader to go and find. Both are already named in the site's
+             own disclaimer; this is the link that was missing. -->
+        ${sourceNote(['sepsisTrust', 'nhs'], { lead: 'On sepsis, read' })}
       </div>
     </section>`;
 
@@ -2426,7 +2432,17 @@ export function home(d) {
     preMain,
     footerHtml,
     preloadImage: heroPic.src,
-    faqSchema: {
+    /* THE SCHEMA FOLLOWS THE BAND.
+
+       This shipped FAQPage structured data whatever the club had chosen, and
+       the club has Ask the Angels switched off - so the home page was telling
+       a search engine it carried five questions and answers that were not on
+       it. Structured data is supposed to describe the page, and an answer
+       engine that fetches the page and cannot find them has been misled about
+       the one thing this site is otherwise careful about.
+       It cost points too: an AEO audit scored the FAQ signal 0, having looked
+       for the visible questions the schema promised. */
+    faqSchema: shown.includes('faq') ? {
       '@context': 'https://schema.org',
       '@type': 'FAQPage',
       mainEntity: FAQS.map((f) => ({
@@ -2434,7 +2450,7 @@ export function home(d) {
         name: f.q,
         acceptedAnswer: { '@type': 'Answer', text: f.a },
       })),
-    },
+    } : null,
   };
 }
 

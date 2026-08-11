@@ -21,6 +21,7 @@ import { CLUB } from '../lib/club.mjs';
 import { seasonViews, defaultView, seasonBar, seasonPanels, matchNote } from '../lib/seasons.mjs';
 import { teamSummary, playerStats, leaderboard, longestRun, fmtDate, parseDate, isLeague} from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
+import { sourceNote } from '../lib/blocks.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -419,6 +420,7 @@ export function awards(d) {
         awarded for ${esc(v.label)} yet. Player of the Month, Man of the Match and the end of
         season awards appear here as the season is recorded in the control panel.</p></div></section>`;
   }, { attr })
+      + sourceNote(['fulltime', 'surreyfa'])
       + ctaBand,
     bodyClass: 'is-home is-sub is-awards',
     css: 'home.css',

@@ -25,6 +25,7 @@ import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { teamSummary, isLeague} from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor } from './home.mjs';
+import { sourceNote } from '../lib/blocks.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -458,7 +459,8 @@ export function squad(d) {
     </section>`;
 
   return {
-    body: siteHeader('/squad.html') + hero + firstBand + pastBand + ctaBand,
+    body: siteHeader('/squad.html') + hero + firstBand + pastBand + ctaBand
+      + sourceNote(['fulltime', 'surreyfa']),
     bodyClass: 'is-home is-sub is-squad',
     css: 'home.css',
     shell: 'home',

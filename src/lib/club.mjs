@@ -140,6 +140,57 @@ export const SPONSORS = [
 ];
 
 /* ==========================================================================
+   WHERE THE SITE'S FIGURES COME FROM
+
+   Almost everything published here is derived from the club's own match
+   records, and two things are not: the league table with the division's
+   ninety results and scoring chart, which are transcribed from FA Full-Time,
+   and the sepsis information, which belongs to people qualified to give it.
+
+   Saying so is worth doing on its own terms - a transcribed figure with no
+   source is a claim, and this site's whole habit is to name the evidence - and
+   it is also what an answer engine reads as credibility. The site scored 21/25
+   on trustworthiness with one red: no outbound citations in any page body.
+
+   A SOURCE IS ONLY ADDED WHERE THE PAGE ACTUALLY RESTS ON IT. Records, squad
+   and awards pages are built from the club's own archive and cite nothing,
+   because there is nothing true for them to cite, and two decorative links
+   would be worth less than none.
+
+   fulltime.thefa.com and sepsistrust.org both answer 403 to an automated
+   request. That is Cloudflare turning away a bot, not a dead link: both are
+   already linked from the live site. The suite's link checker must not read
+   the status as broken.
+   ========================================================================== */
+export const SOURCES = {
+  fulltime: {
+    name: 'FA Full-Time',
+    href: 'https://fulltime.thefa.com/',
+    what: 'the league table, every result across the division and the scoring chart',
+  },
+  /* SURREY FA, not London FA. The club is in Hanworth and either would have
+     looked plausible; only one is provable from the records. The archive holds
+     four ties in the Surrey FA Sunday Lower Junior County Cup, so Surrey is
+     the county FA this club actually competes under, and a citation that is
+     merely plausible is the kind this site does not make. */
+  surreyfa: {
+    name: 'Surrey FA',
+    href: 'https://www.surreyfa.com/',
+    what: 'the county cup the club competes in, and player registration',
+  },
+  sepsisTrust: {
+    name: 'The UK Sepsis Trust',
+    href: 'https://www.sepsistrust.org/',
+    what: 'what sepsis is, the signs to know and support for families',
+  },
+  nhs: {
+    name: 'NHS',
+    href: 'https://www.nhs.uk/conditions/sepsis/',
+    what: 'the NHS guidance on sepsis',
+  },
+};
+
+/* ==========================================================================
    WHO SHOOTS FOR THE CLUB
 
    Three people turn up with a camera and 606 photographs on this site are

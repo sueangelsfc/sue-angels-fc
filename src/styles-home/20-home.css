@@ -1910,3 +1910,29 @@ html.js .lg-panel[hidden]{display: none;}
   color: var(--volt);
   text-decoration-color: currentColor;
 }
+
+/* ==========================================================================
+   WHERE THIS PAGE'S FIGURES CAME FROM
+
+   In home.css because the source line appears on fourteen pages loading
+   fourteen different bands, the same reason .gl-by lives here. Quiet: it is a
+   citation, not a call to action, and a page carrying one should not look like
+   it is trying to send you away.
+   ========================================================================== */
+.srcnote{
+  max-width: var(--wrap, 1240px);
+  margin: 0 auto;
+  padding: 26px clamp(16px, 4vw, 40px) 40px;
+  font-family: var(--ui);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+.srcnote a{
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
+}
+.srcnote a:hover, .srcnote a:focus-visible{ color: var(--volt); text-decoration-color: currentColor; }

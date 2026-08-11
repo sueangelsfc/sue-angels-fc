@@ -18,6 +18,7 @@
 import { esc, attr, NAV } from '../lib/html.mjs';
 import { CLUB, SEPSIS } from '../lib/club.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor } from './home.mjs';
+import { sourceNote } from '../lib/blocks.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -280,7 +281,9 @@ export function cause(d) {
 
   return {
     body: siteHeader('/sepsis.html') + hero + factsBand + storyBand + whatBand
-      + signsBand + helpBand + donateBand + ctaBand,
+      + signsBand + helpBand + donateBand
+      + sourceNote(['sepsisTrust', 'nhs'], { lead: 'This page is awareness, not medical advice. For guidance, read' })
+      + ctaBand,
     bodyClass: 'is-home is-sub is-cause',
     css: 'home.css',
     shell: 'home',

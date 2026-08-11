@@ -28,6 +28,7 @@ import { esc, attr, NAV, CLUB_ID } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { teamSummary, leaderboard, biggestWin, fmtDate, isLeague} from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge, auraFor } from './home.mjs';
+import { sourceNote } from '../lib/blocks.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -341,7 +342,9 @@ export function about(d) {
 
   return {
     body: siteHeader('/about.html') + hero + mottoBand + recordBand + timelineBand
-      + facedBand + causeBand + valuesBand + ctaBand,
+      + facedBand + causeBand + valuesBand
+      + sourceNote(['sepsisTrust', 'nhs'], { lead: 'On sepsis, read' })
+      + ctaBand,
     bodyClass: 'is-home is-sub',
     css: 'home.css',
     shell: 'home',

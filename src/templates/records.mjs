@@ -28,6 +28,7 @@ import {
   fmtDate, longestStreak, playerStreak, teamSummary, leaderboard,
   biggestWin, heaviestDefeat, slugify, isLeague } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
+import { sourceNote } from '../lib/blocks.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 /* Resolved in src/lib/dataset.mjs, not here. Each page kept its own copy of
@@ -472,6 +473,7 @@ export function records(d) {
     const b = bodyFor(v);
     return b.honoursBand + b.perfectBand + b.recordsBand + b.streaksBand + b.firstsBand + b.leadBand;
   }, { attr })
+      + sourceNote(['fulltime', 'surreyfa'], { lead: 'League and cup figures reconcile with' })
       + ctaBand,
     schema: [{
       '@context': 'https://schema.org',

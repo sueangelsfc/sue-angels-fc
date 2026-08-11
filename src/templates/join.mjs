@@ -24,6 +24,7 @@ import { esc, attr, icon } from '../lib/html.mjs';
 import { CLUB, JOIN_PATHS, JOIN_FAQS, ENQUIRY_TYPES, NEXT_FIXTURE } from '../lib/club.mjs';
 import { fmtDate, teamSummary, isLeague} from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor } from './home.mjs';
+import { sourceNote } from '../lib/blocks.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -276,7 +277,7 @@ export function join(d) {
     bodyClass: 'is-home is-sub is-join',
     preMain: sitePreMain(auraFor('join.html')),
     footerHtml: siteFooter(),
-    body: siteHeader('/join.html') + hero + routesBand + formBand + trainBand + faqBand + ctaBand,
+    body: siteHeader('/join.html') + hero + routesBand + formBand + trainBand + faqBand + ctaBand + sourceNote(['surreyfa', 'fulltime']),
     schema: [{
       '@context': 'https://schema.org',
       '@type': 'WebPage',

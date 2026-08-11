@@ -26,6 +26,7 @@ import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { fmtDate, isUs, byCompetition, slugify } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
+import { sourceNote } from '../lib/blocks.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 /* Photographs are filed by shirt number. The number is the filename only: it
@@ -405,7 +406,7 @@ export function league(d) {
     </section>`;
 
   return {
-    body: siteHeader('/league.html') + hero + tableBand + scorersBand + aroundBand
+    body: siteHeader('/league.html') + hero + tableBand + scorersBand + aroundBand + sourceNote(['fulltime', 'surreyfa'])
       + compsBand + sourceBand + ctaBand,
     bodyClass: 'is-home is-sub is-league',
     css: 'home.css',

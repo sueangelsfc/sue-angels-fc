@@ -5,6 +5,7 @@
    ========================================================================== */
 import { esc, attr, icon, clubCrest, crest, emptyState } from './html.mjs';
 import { fmtDate } from './stats.mjs';
+import { SOURCES } from './club.mjs';
 
 /* ---- Fixture / result card -------------------------------------------- */
 export function fixtureCard(m, badges, { glass = false, href = true } = {}) {
@@ -245,4 +246,26 @@ export function honourRow(r, nameFor) {
       <p class="honour__meta">${label}</p>
     </div>
   </div>`;
+}
+
+/* ==========================================================================
+   WHERE THIS PAGE'S FIGURES CAME FROM
+
+   One block, because a source line written per page is a source line that
+   ends up saying something slightly different on each of them. Takes the keys
+   of SOURCES the page genuinely rests on and names them in a sentence.
+
+   `rel="noopener"` and a new tab, like every other outbound link here. NOT
+   `nofollow`: these are citations the club is deliberately making, and telling
+   a search engine not to follow a citation is the opposite of the point.
+   ========================================================================== */
+export function sourceNote(keys, { lead = 'Checked against' } = {}) {
+  const list = (keys || []).map((k) => SOURCES[k]).filter(Boolean);
+  if (!list.length) return '';
+  const links = list.map((sx) =>
+    `<a href="${attr(sx.href)}" rel="noopener" target="_blank">${esc(sx.name)}</a>`);
+  const joined = links.length === 1 ? links[0]
+    : `${links.slice(0, -1).join(', ')} and ${links[links.length - 1]}`;
+  const what = list.length === 1 ? ` for ${esc(list[0].what)}` : '';
+  return `<p class="srcnote">${esc(lead)} ${joined}${what}.</p>`;
 }

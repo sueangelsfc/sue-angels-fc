@@ -73,7 +73,7 @@ export function videos(d) {
           ${clips.map(({ m, id }) => `<li class="lv-card">
             <a class="lv-card__link" href="https://www.youtube.com/watch?v=${attr(id)}" rel="noopener" target="_blank">
               <span class="lv-card__thumb">
-                <img class="lv-card__crest" src="${STAR}" alt="" width="76" height="94" loading="lazy" decoding="async" />
+                <img class="lv-card__crest" src="${STAR}" alt="Sue’s Angels FC star" width="76" height="94" loading="lazy" decoding="async" />
                 <span class="lv-card__play" aria-hidden="true"></span>
               </span>
               <span class="lv-card__body">
@@ -124,7 +124,7 @@ export function videos(d) {
       <div class="wrap">
         <div class="cta2">
           <span class="cta2__glow" aria-hidden="true"></span>
-          <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
+          <img class="cta2__badge" src="${STAR}" alt="Sue’s Angels FC star" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
             <p class="eyebrow cta2__eyebrow">${esc(d.divisionOf(d.nextSeason))}</p>
             <h2 class="h2" id="vd-cta-h">More of it next <span class="volt">season.</span></h2>

@@ -72,16 +72,20 @@ const photosOf = (g) => (g.photos || []).filter(Boolean);
    match it was. They sit over the cover as well, so the fixture is readable
    before you have read the title. */
 const badgePair = (g) => {
-  const one = (src, cls) => {
+  const one = (src, cls, who) => {
     if (!src) return '';
     /* The stored badge for our own club is the retired lime shield. The
        rebuild's crest is the orange star, so ours is swapped rather than
        shipping the old brand next to the new one. */
     const path = /sue-angels/i.test(src) ? STAR : (src.startsWith('/') ? src : `/${src}`);
-    return `<img class="gl-fix__b${cls}" src="${attr(path)}" alt="" width="34" height="34" loading="lazy" decoding="async" />`;
+    /* The wrapper is aria-hidden, so this alt is inert for a screen reader:
+       the fixture is named in the text beside it. It is here because an image
+       should still say what it shows, and because a crawler reading the markup
+       does not honour aria-hidden the way an assistive technology does. */
+    return `<img class="gl-fix__b${cls}" src="${attr(path)}" alt="${attr(who ? `${who} club crest` : '')}" width="34" height="34" loading="lazy" decoding="async" />`;
   };
   if (!g.homeBadge && !g.awayBadge) return '';
-  return `<span class="gl-fix" aria-hidden="true">${one(g.homeBadge, '')}<i>v</i>${one(g.awayBadge, '')}</span>`;
+  return `<span class="gl-fix" aria-hidden="true">${one(g.homeBadge, '', g.home)}<i>v</i>${one(g.awayBadge, '', g.away)}</span>`;
 };
 
 /* A tag is stored EITHER as a bare name or as a record: the tagger writes
@@ -144,6 +148,39 @@ export function photoCredit(name, { insideLink = false } = {}) {
   return `<a class="gl-by" href="${attr(first.href)}" rel="noopener" target="_blank">${esc(n)}</a>`;
 }
 
+/* The alt for one photograph in an album: who is in the frame.
+
+   NOTE TO SELF, TWICE NOW. The first version of this note was written as an
+   HTML comment inside the per-photo template - so it shipped once per
+   photograph, 175 times on one album page, and put 87KB on it. The same leak
+   as report.mjs two commits ago, except that one was per page and this one was
+   inside a .map(). A comment about markup belongs in the JavaScript, not in
+   the string being repeated. */
+function altFor(tags, fixture, i, total) {
+  const names = (tags || []).map(tagName).filter(Boolean);
+  if (!names.length) return `Photograph ${i + 1} of ${total}`;
+  /* NO FIXTURE PREFIX. Every photograph on an album page repeated the fixture,
+     which is the page's own h1 - so a screen reader heard "Sue's Angels 7-0
+     Barnes Stormers" 175 times on one page, and the album pages went 40KB over
+     the raw DOM budget the moment these alts were added. The context is the
+     page; the alt is who is in the frame.
+
+     Names are added while the string fits the 125 an image description is
+     meant to, and the remainder is counted. Adaptive rather than a fixed
+     count, because names differ in length far more than a count allows for. */
+  const LIMIT = 125;
+  const take = [];
+  for (const n of names) {
+    const rest = names.length - take.length - 1;
+    const tail = rest > 0 ? ` and ${rest} other${rest === 1 ? '' : 's'}` : '';
+    if ([...take, n].join(', ').concat(tail).length > LIMIT) break;
+    take.push(n);
+  }
+  if (!take.length) return `Photograph ${i + 1} of ${total}`;
+  const rest = names.length - take.length;
+  return take.join(', ') + (rest > 0 ? ` and ${rest} other${rest === 1 ? '' : 's'}` : '');
+}
+
 /* Newest match first. `date` on the record is when the album was UPLOADED,
    which for all seven of these was the same afternoon in June 2026, so
    sorting on it ordered seven matchdays spanning September to February by
@@ -167,8 +204,8 @@ export function gallery(d) {
             <a class="gl-card__link" href="/gallery/${attr(g.slug)}.html">
               <span class="gl-card__shot">
                 ${g.cover
-    ? `<img src="${attr(g.cover)}" alt="" width="640" height="427" loading="lazy" decoding="async" />`
-    : `<img class="gl-card__crest" src="${STAR}" alt="" width="76" height="94" loading="lazy" decoding="async" />`}
+    ? `<img src="${attr(g.cover)}" alt="${attr(g.title || 'Matchday photograph')}" width="640" height="427" loading="lazy" decoding="async" />`
+    : `<img class="gl-card__crest" src="${STAR}" alt="Sue’s Angels FC star" width="76" height="94" loading="lazy" decoding="async" />`}
                 ${badgePair(g)}
                 <span class="gl-card__count">${esc(n)} photo${n === 1 ? '' : 's'}</span>
               </span>
@@ -207,7 +244,7 @@ export function gallery(d) {
       <div class="wrap">
         <div class="cta2">
           <span class="cta2__glow" aria-hidden="true"></span>
-          <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
+          <img class="cta2__badge" src="${STAR}" alt="Sue’s Angels FC star" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
             <p class="eyebrow cta2__eyebrow">Behind the lens</p>
             <h2 class="h2" id="gl-cta-h">Shot by the people who <span class="volt">turn up.</span></h2>
@@ -278,9 +315,7 @@ export function galleryAlbum(g, d) {
     const tagged = tagLinks(photoTags[String(i)] || [], d.squad);
     return `<li class="gl-shot${tagged.length ? ' is-tagged' : ''}">
             <a href="${attr(src)}" rel="noopener" target="_blank">
-              <img src="${attr(src)}" alt="${attr(tagged.length
-      ? `${fixture}: ${(photoTags[String(i)] || []).map(tagName).filter(Boolean).join(', ')}`
-      : `${fixture}, photograph ${i + 1} of ${photos.length}`)}"
+              <img src="${attr(src)}" alt="${attr(altFor(photoTags[String(i)] || [], fixture, i, photos.length))}"
                 width="600" height="400" loading="lazy" decoding="async" />
             </a>
             ${tagged.length ? `<span class="gl-shot__tags">${tagged.join('')}</span>` : ''}
@@ -309,8 +344,8 @@ export function galleryAlbum(g, d) {
     return `<li class="gl-card">
             <a class="gl-card__link" href="/gallery/${attr(o.slug)}.html">
               <span class="gl-card__shot">
-                ${o.cover ? `<img src="${attr(o.cover)}" alt="" width="640" height="427" loading="lazy" decoding="async" />`
-      : `<img class="gl-card__crest" src="${STAR}" alt="" width="76" height="94" loading="lazy" decoding="async" />`}
+                ${o.cover ? `<img src="${attr(o.cover)}" alt="${attr(o.title || 'Matchday photograph')}" width="640" height="427" loading="lazy" decoding="async" />`
+      : `<img class="gl-card__crest" src="${STAR}" alt="Sue’s Angels FC star" width="76" height="94" loading="lazy" decoding="async" />`}
                 ${badgePair(o)}
                 <span class="gl-card__count">${esc(photosOf(o).length)} photos</span>
               </span>

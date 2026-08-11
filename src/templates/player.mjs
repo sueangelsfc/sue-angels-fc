@@ -236,7 +236,7 @@ export function playerPage(p, d) {
         <div class="pf-hero__shot">
           ${shot
     ? `<img src="${attr(shot)}" alt="${attr(p.name)}" width="420" height="560" decoding="async" />`
-    : `<img class="pf-hero__crest" src="${STAR}" alt="" width="260" height="322" decoding="async" />`}
+    : `<img class="pf-hero__crest" src="${STAR}" alt="Sue’s Angels FC star" width="260" height="322" decoding="async" />`}
         </div>
         <div>
           <p class="pf-chips">
@@ -843,7 +843,7 @@ export function playerPage(p, d) {
       <div class="wrap">
         <div class="cta2">
           <span class="cta2__glow" aria-hidden="true"></span>
-          <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
+          <img class="cta2__badge" src="${STAR}" alt="Sue’s Angels FC star" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
             <p class="eyebrow cta2__eyebrow">The rest of the squad</p>
             <h2 class="h2" id="pf-cta-h">Everyone who wore the <span class="volt">shirt.</span></h2>

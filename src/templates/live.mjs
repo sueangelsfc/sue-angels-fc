@@ -53,7 +53,7 @@ export function live(d) {
   const replays = (d.played || []).filter((m) => m.detail && m.detail.videoId);
 
   const badge = (club) => (isUs(club)
-    ? `<img class="lv-badge is-us" src="${STAR}" alt="" width="34" height="34" loading="lazy" />`
+    ? `<img class="lv-badge is-us" src="${STAR}" alt="Sue’s Angels FC star" width="34" height="34" loading="lazy" />`
     : oppBadge(club, d.badges, 34, 34, 'lv-badge'));
 
   /* ================= HERO ================= */
@@ -77,7 +77,7 @@ export function live(d) {
         <h2 class="h2 rv" id="lv-s-h">Where the match <span class="volt">plays.</span></h2>
         <div class="lv-frame rv">
           <div class="lv-frame__inner">
-            <img class="lv-frame__crest" src="${STAR}" alt="" width="120" height="148" loading="lazy" decoding="async" />
+            <img class="lv-frame__crest" src="${STAR}" alt="Sue’s Angels FC star" width="120" height="148" loading="lazy" decoding="async" />
             <p class="lv-frame__k">Being set up</p>
             <p class="lv-frame__t">Live streaming is on the way.</p>
             <p class="lv-frame__b">The club is setting up live streaming on YouTube. Subscribe to
@@ -110,7 +110,7 @@ export function live(d) {
           ${replays.map((m) => `<li class="lv-card">
             <a class="lv-card__link" href="https://www.youtube.com/watch?v=${attr(m.detail.videoId)}" rel="noopener" target="_blank">
               <span class="lv-card__thumb">
-                <img class="lv-card__crest" src="${STAR}" alt="" width="76" height="94" loading="lazy" decoding="async" />
+                <img class="lv-card__crest" src="${STAR}" alt="Sue’s Angels FC star" width="76" height="94" loading="lazy" decoding="async" />
                 <span class="lv-card__play" aria-hidden="true"></span>
               </span>
               <span class="lv-card__body">
@@ -137,7 +137,7 @@ export function live(d) {
       <div class="wrap">
         <div class="cta2">
           <span class="cta2__glow" aria-hidden="true"></span>
-          <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
+          <img class="cta2__badge" src="${STAR}" alt="Sue’s Angels FC star" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
             <p class="eyebrow cta2__eyebrow">${esc(d.divisionOf(d.nextSeason))} · ${esc(d.nextSeason)}</p>
             <h2 class="h2" id="lv-cta-h">Be there when we <span class="volt">kick off.</span></h2>

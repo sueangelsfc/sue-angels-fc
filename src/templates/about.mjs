@@ -44,7 +44,7 @@ const hasShot = (num) => {
 };
 const playerShot = (p, cls) => (p && hasShot(p.num)
   ? `<img class="${attr(cls)}" src="/assets/players/${attr(p.num)}.webp" alt="${attr(p.name)}" width="200" height="260" loading="lazy" decoding="async" />`
-  : `<img class="${attr(cls)} ${attr(cls)}--none" src="${STAR}" alt="" width="200" height="260" loading="lazy" decoding="async" aria-hidden="true" />`);
+  : `<img class="${attr(cls)} ${attr(cls)}--none" src="${STAR}" alt="Sue’s Angels FC star" width="200" height="260" loading="lazy" decoding="async" aria-hidden="true" />`);
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const monthYear = (str) => {
@@ -131,7 +131,7 @@ export function about(d) {
       <div class="wrap">
         ${rail(1, 'Why we exist', `Est. ${CLUB.founded}`)}
         <div class="ab-motto__panel rv">
-          <img class="ab-motto__mark" src="${STAR}" alt="" width="260" height="322" loading="lazy" decoding="async" aria-hidden="true" />
+          <img class="ab-motto__mark" src="${STAR}" alt="Sue’s Angels FC star" width="260" height="322" loading="lazy" decoding="async" aria-hidden="true" />
           <blockquote class="ab-motto__quote" id="ab-motto-h">“${esc(CLUB.memorial.motto)}”</blockquote>
           <p class="ab-motto__sub">A club that means something on the pitch and off it. That is the whole idea.</p>
           <p class="ab-motto__attrib">In memory of ${esc(CLUB.memorial.name)}</p>
@@ -287,7 +287,7 @@ export function about(d) {
                  alt="${attr(CLUB.name)} squad, ${attr(d.titleDivision)} champions"
                  width="640" height="800" loading="lazy" decoding="async" />
             <figcaption class="ab-cause__cap">
-              <img src="${STAR}" alt="" width="26" height="32" loading="lazy" decoding="async" />
+              <img src="${STAR}" alt="Sue’s Angels FC star" width="26" height="32" loading="lazy" decoding="async" />
               Playing for sepsis awareness since ${esc(CLUB.founded)}
             </figcaption>
           </figure>
@@ -326,7 +326,7 @@ export function about(d) {
       <div class="wrap">
         <div class="cta2">
           <span class="cta2__glow" aria-hidden="true"></span>
-          <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
+          <img class="cta2__badge" src="${STAR}" alt="Sue’s Angels FC star" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
           <p class="eyebrow cta2__eyebrow">${esc(d.nextSeason)} · The next chapter</p>
           <h2 class="h2" id="ab-cta-h">Pull on the <span class="volt">shirt.</span></h2>

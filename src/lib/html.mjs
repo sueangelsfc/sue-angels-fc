@@ -88,7 +88,15 @@ export function clubCrest(name, badges, size = '') {
   const src = typeof rec === 'string' ? rec : rec?.src;
   if (src) {
     const path = src.startsWith('/') ? src : `/${src}`;
-    return `<span class="${cls}" data-aspect="${attr(rec?.aspect || 'circle')}"><img src="${attr(path)}" alt="" width="40" height="40" loading="lazy" decoding="async"></span>`;
+    /* NAMED, not empty. A crest carried alt="" everywhere on the site, which
+       is the textbook pattern for a logo sitting beside its own name - and on
+       this site it very often is not beside it: on the league table it has a
+       table cell of its own, where a screen reader reached it and announced
+       nothing at all. Naming what it shows costs a little duplication in the
+       places where the name IS adjacent, and buys an accessible name in the
+       many where it is not. An AEO audit reading the same markup drew the same
+       conclusion: 1/3 on image alt text, over 4,087 images. */
+    return `<span class="${cls}" data-aspect="${attr(rec?.aspect || 'circle')}"><img src="${attr(path)}" alt="${attr(`${name} club crest`)}" width="40" height="40" loading="lazy" decoding="async"></span>`;
   }
   const initial = String(name || '?').replace(/^(the|afc|fc)\s+/i, '').charAt(0).toUpperCase();
   return `<span class="${cls} crest--letter" aria-hidden="true">${esc(initial)}</span>`;

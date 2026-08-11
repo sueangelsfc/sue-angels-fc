@@ -203,8 +203,8 @@ export function squad(d) {
             <a class="pc__link" href="/players/${attr(p.slug)}.html" data-tilt>
               <span class="pc__shot">
                 ${shot
-    ? `<img src="${attr(shot)}" alt="" width="320" height="480" loading="lazy" decoding="async" />`
-    : `<img class="pc__crest" src="${STAR}" alt="" width="200" height="248" loading="lazy" decoding="async" />`}
+    ? `<img src="${attr(shot)}" alt="${attr(`${p.name}, ${p.position || 'player'} for Sue’s Angels FC`)}" width="320" height="480" loading="lazy" decoding="async" />`
+    : `<img class="pc__crest" src="${STAR}" alt="Sue’s Angels FC star" width="200" height="248" loading="lazy" decoding="async" />`}
               </span>
               <!-- One row for both chips rather than two independently pinned
                    corners. Pinned, a long leader badge ("Most clean sheets")
@@ -443,7 +443,7 @@ export function squad(d) {
       <div class="wrap">
         <div class="cta2">
           <span class="cta2__glow" aria-hidden="true"></span>
-          <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
+          <img class="cta2__badge" src="${STAR}" alt="Sue’s Angels FC star" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
             <p class="eyebrow cta2__eyebrow">Want to play here?</p>
             <h2 class="h2" id="sq-cta-h">Trials are open for <span class="volt">${esc(d.nextSeason)}.</span></h2>

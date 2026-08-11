@@ -2215,7 +2215,73 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 
   check('the report chunk exposes its head-to-head', typeof (win.CPR || {})._headToHead === 'function');
 
-  /* ---- OUTBOUND CITATIONS, AND ONLY TRUE ONES -----------------------------
+  /* ---- IMAGE ALT COVERAGE ------------------------------------------------
+
+   Every image on this site carried alt="" unless something had gone out of its
+   way to fill it: 38% of 4,087 had text, and nineteen of the twenty-one root
+   pages were under half. That is the textbook pattern for a logo sitting next
+   to its own name, and on this site the crest very often is NOT next to its
+   name - on the crest wall and the next-match card it is the only label there
+   is, and a screen reader reached it and announced nothing.
+
+   So crests name the club and photographs name the person, both through the
+   shared helpers rather than at ninety call sites. THE ENGINE CONFIRMS IT: an
+   @accesslint/core audit of the squad cards and a league table row reports no
+   violations, which was the thing worth checking before touching 938 images.
+
+   The honest cost is in the league table, where the crest and the club name
+   share one cell, so a screen reader now hears "Brockwell Violets FC club
+   crest Brockwell Violets". Verbose, not wrong, and the trade is deliberate.
+
+   The star placeholder says it is the club star, because that is what it
+   shows. It is not a photograph of anybody and must not claim to be. */
+{
+  const cover = (h) => {
+    const im = [...h.matchAll(/<img[^>]*>/g)];
+    const named = im.filter((m) => {
+      const a = (m[0].match(/\salt="([^"]*)"/) || [])[1];
+      return a && a.trim();
+    }).length;
+    return { n: im.length, named, pct: im.length ? (named / im.length) * 100 : 100 };
+  };
+  const thin = [];
+  let total = 0; let named = 0;
+  for (const [f, h] of pages) {
+    const c = cover(h);
+    total += c.n; named += c.named;
+    if (c.pct < 50) thin.push(`${f} ${Math.round(c.pct)}%`);
+  }
+  check('every page describes at least half its images',
+    thin.length === 0, thin.slice(0, 5).join(', '));
+  check('site-wide image alt coverage is over 80%',
+    named / total > 0.8, `${Math.round((named / total) * 100)}% of ${total}`);
+
+  /* AND NOT AT ANY LENGTH. An album page repeated the fixture in all 175 of
+     its photo alts, which is the page's own h1 said 175 times. */
+  const long = [];
+  for (const [f, h] of pages) {
+    for (const m of h.matchAll(/<img[^>]*>/g)) {
+      const a = (m[0].match(/\salt="([^"]*)"/) || [])[1] || '';
+      if (a.length > 160) long.push(`${f}: ${a.length} chars`);
+    }
+  }
+  check('no alt text runs past 160 characters', long.length === 0, long.slice(0, 3).join(', '));
+
+  /* The star placeholder must never carry a person's name: it is the club
+     mark shown where a photograph is missing, and saying otherwise would put
+     a name on a picture of somebody who is not in it. */
+  const wrongStar = [];
+  for (const [f, h] of pages) {
+    for (const m of h.matchAll(/<img[^>]*badge-star[^>]*>/g)) {
+      const a = (m[0].match(/\salt="([^"]*)"/) || [])[1] || '';
+      if (a && !/star|crest/i.test(a)) wrongStar.push(`${f}: ${a.slice(0, 40)}`);
+    }
+  }
+  check('the star placeholder never claims to be a photograph of somebody',
+    wrongStar.length === 0, wrongStar.slice(0, 3).join(', '));
+}
+
+/* ---- OUTBOUND CITATIONS, AND ONLY TRUE ONES -----------------------------
 
    An answer engine reads an outbound link to an authority as credibility, and
    an audit scored this site 0 out of 7 on it: not one page body carried a

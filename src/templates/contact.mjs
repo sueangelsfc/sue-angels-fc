@@ -150,7 +150,7 @@ export function contact(d) {
             </p>
           </div>
           <div class="ct-ground__side">
-            <img class="ct-ground__crest" src="${STAR}" alt="" width="120" height="148" loading="lazy" decoding="async" />
+            <img class="ct-ground__crest" src="${STAR}" alt="Sue’s Angels FC star" width="120" height="148" loading="lazy" decoding="async" />
             <p class="ct-ground__note">No postcode is published here because nobody has published
               one the club can stand behind, and a wrong one sends a visiting team to the other side
               of Hanworth. The map link goes to the ground by name.</p>
@@ -213,7 +213,7 @@ export function contact(d) {
       <div class="wrap">
         <div class="cta2">
           <span class="cta2__glow" aria-hidden="true"></span>
-          <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
+          <img class="cta2__badge" src="${STAR}" alt="Sue’s Angels FC star" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
             <p class="eyebrow cta2__eyebrow">${esc(d.divisionOf(d.nextSeason))} · ${esc(d.nextSeason)}</p>
             <h2 class="h2" id="ct-cta-h">Still not the answer you <span class="volt">wanted?</span></h2>

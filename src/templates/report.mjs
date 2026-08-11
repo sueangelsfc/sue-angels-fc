@@ -46,7 +46,7 @@ export function matchReport(m, d) {
   const det = m.detail || {};
   const nameFor = d.nameFor || ((n) => `No. ${n}`);
   const badge = (club, size = 68) => (isUs(club)
-    ? `<img class="mr-badge is-us" src="${STAR}" alt="" width="${size}" height="${size}" loading="eager" />`
+    ? `<img class="mr-badge is-us" src="${STAR}" alt="Sue’s Angels FC star" width="${size}" height="${size}" loading="eager" />`
     : oppBadge(club, d.badges, size, size, 'mr-badge'));
 
   const scorers = (det.goals || []).map((g) => ({
@@ -239,7 +239,7 @@ export function matchReport(m, d) {
         <a class="mr-album__link rv" href="${attr(`/gallery/${album.slug}.html`)}">
           ${album.cover
     ? `<img class="mr-album__shot" src="${attr(album.cover)}" alt="" width="640" height="427" loading="lazy" decoding="async" />`
-    : `<img class="mr-album__crest" src="${STAR}" alt="" width="76" height="94" loading="lazy" decoding="async" />`}
+    : `<img class="mr-album__crest" src="${STAR}" alt="Sue’s Angels FC star" width="76" height="94" loading="lazy" decoding="async" />`}
           <span class="mr-album__body">
             <b>${esc(album.photos.length)} photograph${album.photos.length === 1 ? '' : 's'}</b>
             <i>${album.photographer ? `Shot by ${photoCredit(album.photographer, { insideLink: true })}` : 'From the club album'}</i>

@@ -237,7 +237,7 @@ export function champions(d) {
       <div class="wrap">
         ${rail(6, 'What happens now', `${esc(d.divisionOf(d.nextSeason))} · ${esc(d.nextSeason)}`)}
         <div class="ch-next__panel rv">
-          <img class="ch-next__mark" src="${STAR}" alt="" width="260" height="322" loading="lazy" decoding="async" aria-hidden="true" />
+          <img class="ch-next__mark" src="${STAR}" alt="Sue’s Angels FC star" width="260" height="322" loading="lazy" decoding="async" aria-hidden="true" />
           <h2 class="h2" id="ch-next-h">Up to <span class="volt">${esc(d.divisionOf(d.nextSeason))}.</span></h2>
           <p>${promoRec ? esc(promoRec.description) : `Promotion sealed as champions, stepping up to ${d.divisionOf(d.nextSeason)}.`}</p>
           <p>${titleRec ? esc(titleRec.description) : ''}</p>
@@ -254,7 +254,7 @@ export function champions(d) {
       <div class="wrap">
         <div class="cta2">
           <span class="cta2__glow" aria-hidden="true"></span>
-          <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
+          <img class="cta2__badge" src="${STAR}" alt="Sue’s Angels FC star" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
             <p class="eyebrow cta2__eyebrow">${esc(d.titleSeason)} · Champions</p>
             <h2 class="h2" id="ch-cta-h">Back the <span class="volt">champions.</span></h2>

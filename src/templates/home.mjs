@@ -181,7 +181,10 @@ export function oppBadgeSrc(name, badges) {
 export function oppBadge(name, badges, w, h, cls = '') {
   const path = oppBadgeSrc(name, badges);
   if (!path) return clubCrest(name, badges, cls);
-  return `<img${cls ? ` class="${attr(cls)}"` : ''} src="${attr(path)}" alt="" width="${attr(w)}" height="${attr(h)}" loading="lazy" decoding="async" />`;
+  /* Named for the same reason clubCrest is: this one badge function draws the
+     crest in the league table, every result row, the crest wall and the
+     next-match card, and in half of those it is the only thing in its cell. */
+  return `<img${cls ? ` class="${attr(cls)}"` : ''} src="${attr(path)}" alt="${attr(`${name} club crest`)}" width="${attr(w)}" height="${attr(h)}" loading="lazy" decoding="async" />`;
 }
 
 /* Club names read short on match furniture, the way a scoreboard writes them. */
@@ -330,7 +333,7 @@ export function home(d) {
 
         <header class="hx__nav">
           <a class="hx__brand" href="#top" aria-label="${attr(CLUB.name)}, back to top">
-            <img src="${STAR}" alt="" width="40" height="50" decoding="async" />
+            <img src="${STAR}" alt="Sue’s Angels FC star" width="40" height="50" decoding="async" />
             <span>Sue's Angels FC</span>
           </a>
           <nav class="hx__mainnav" aria-label="Main">
@@ -461,7 +464,7 @@ export function home(d) {
               <a class="ncard__cover" href="/news/${attr(a.slug)}.html" aria-label="${attr(`${a.category}: ${a.title}`)}">
                 ${a.cover
                   ? `<img class="ncard__photo" src="${attr(a.cover)}" alt="" width="320" height="320" loading="lazy" decoding="async" />`
-                  : `<span class="ncard__badge"><img src="${STAR}" alt="" width="120" height="148" loading="lazy" decoding="async" /></span>`}
+                  : `<span class="ncard__badge"><img src="${STAR}" alt="Sue’s Angels FC star" width="120" height="148" loading="lazy" decoding="async" /></span>`}
                 <span class="ncard__pill">${esc(a.category)}</span>
               </a>
               <h3 class="ncard__title"><a href="/news/${attr(a.slug)}.html">${esc(a.title)}</a></h3>
@@ -584,7 +587,7 @@ export function home(d) {
             return `<article class="cf__card" data-num="${attr(a.num)}">
             <span class="cf__glow" aria-hidden="true"></span>
             <div class="cf__inner">
-              <img class="cf__photo" src="/assets/players/${attr(a.num)}.webp" alt="${attr(a.name)}" width="330" height="440" loading="lazy" decoding="async" /><span class="cf__grad" aria-hidden="true"></span><img class="cf__crest" src="${STAR}" alt="" width="28" height="28" loading="lazy" decoding="async" />
+              <img class="cf__photo" src="/assets/players/${attr(a.num)}.webp" alt="${attr(a.name)}" width="330" height="440" loading="lazy" decoding="async" /><span class="cf__grad" aria-hidden="true"></span><img class="cf__crest" src="${STAR}" alt="Sue’s Angels FC star" width="28" height="28" loading="lazy" decoding="async" />
               <div class="cf__cardbody">
                 <p class="cf__cat">${esc(a.title)}</p>
                 <h3 class="cf__name">${esc(first)} <b>${esc(rest)}</b></h3>
@@ -768,7 +771,7 @@ export function home(d) {
 
   /* ================= 05 RECENT RESULTS ================= */
   const teamRow = (name, isUs, score, winner) => `<div class="rcard2__team">${isUs
-    ? `<img class="rcard2__crest" src="${STAR}" alt="" width="26" height="32" loading="lazy" decoding="async" />`
+    ? `<img class="rcard2__crest" src="${STAR}" alt="Sue’s Angels FC star" width="26" height="32" loading="lazy" decoding="async" />`
     : oppBadge(name, d.badges, 26, 32, 'rcard2__crest')}<b>${esc(shortClub(name))}</b><span class="rcard2__score${isUs && winner ? ' rcard2__score--volt' : !isUs && winner ? ' rcard2__score--win' : ''}">${esc(score)}</span></div>`;
 
   const resultsBand = `<section class="sec sec--results" id="results" aria-labelledby="res-h">
@@ -829,7 +832,7 @@ export function home(d) {
           ${d.table.slice(0, 6).map((r) => `<a class="tbl__row${r.us ? ' tbl__row--us' : r.pos === 2 ? ' tbl__row--runner' : ''}" href="/league.html" aria-hidden="true" tabindex="-1">
             <span class="tbl__pos">${esc(r.pos)}</span>
             <span class="tbl__club">${r.us
-              ? `<img src="${STAR}" alt="" width="26" height="32" loading="lazy" decoding="async" />`
+              ? `<img src="${STAR}" alt="Sue’s Angels FC star" width="26" height="32" loading="lazy" decoding="async" />`
               : oppBadge(r.club, d.badges, 26, 26)}${esc(r.club)}</span>
             <span>${esc(r.played)}</span><span>${esc(r.won)}</span><span>${r.goalDifference > 0 ? '+' : ''}${esc(r.goalDifference)}</span><b class="tbl__pts" data-pts="${attr(r.points)}">${esc(r.points)}</b>
           </a>`).join('\n          ')}
@@ -871,7 +874,7 @@ export function home(d) {
         ${rail('cta', 'Pull on the shirt')}
         <div class="cta2 rv">
           <span class="cta2__glow" aria-hidden="true"></span>
-          <img class="cta2__badge" src="${STAR}" alt=""${sizeAttrs(STAR)} aria-hidden="true" loading="lazy" decoding="async" />
+          <img class="cta2__badge" src="${STAR}" alt="Sue’s Angels FC star"${sizeAttrs(STAR)} aria-hidden="true" loading="lazy" decoding="async" />
           <div class="cta2__glass glassbox">
             <p class="eyebrow cta2__eyebrow">${esc(d.nextSeason)} · The next chapter</p>
             <h2 class="h1b" id="cta-h">Pull on the shirt<span class="volt">.</span></h2>
@@ -944,7 +947,7 @@ export function home(d) {
         <div class="fspot rv glassbox">
           ${spotShot
             ? `<img class="fspot__photo" src="${attr(spotShot)}" alt="" width="220" height="220" loading="lazy" decoding="async" />`
-            : `<span class="fspot__photo fspot__photo--none"><img src="${STAR}" alt="" width="90" height="111" loading="lazy" decoding="async" /></span>`}
+            : `<span class="fspot__photo fspot__photo--none"><img src="${STAR}" alt="Sue’s Angels FC star" width="90" height="111" loading="lazy" decoding="async" /></span>`}
           <div class="fspot__body">
             <p class="eyebrow">${esc(featPlayer.position || 'Squad')}</p>
             <h2 class="h2" id="spot-h">${esc(featPlayer.name)}<span class="volt">.</span></h2>
@@ -1091,7 +1094,7 @@ export function home(d) {
           ${d.coaches.map((c) => `<li class="stf__c">
             ${c.photo
               ? `<img class="stf__p" src="${attr(c.photo.startsWith('/') ? c.photo : `/${c.photo}`)}" alt="" width="96" height="96" loading="lazy" decoding="async" />`
-              : `<span class="stf__p stf__p--none"><img src="${STAR}" alt="" width="40" height="49" loading="lazy" decoding="async" /></span>`}
+              : `<span class="stf__p stf__p--none"><img src="${STAR}" alt="Sue’s Angels FC star" width="40" height="49" loading="lazy" decoding="async" /></span>`}
             <b>${esc(c.name)}</b>
             <span>${esc(c.short || c.role || '')}</span>
           </li>`).join('\n          ')}
@@ -1232,7 +1235,7 @@ export function home(d) {
             return `<li class="sqd__c"><a href="/players/${attr(p.slug)}.html">
               ${shot
                 ? `<img class="sqd__i" src="${attr(shot)}" alt="" width="120" height="120" loading="lazy" decoding="async" />`
-                : `<span class="sqd__i sqd__i--none"><img src="${STAR}" alt="" width="34" height="42" loading="lazy" decoding="async" /></span>`}
+                : `<span class="sqd__i sqd__i--none"><img src="${STAR}" alt="Sue’s Angels FC star" width="34" height="42" loading="lazy" decoding="async" /></span>`}
               <b>${esc(p.name)}</b>
               <span>${esc(p.position || '')}</span>
             </a></li>`;
@@ -1516,7 +1519,7 @@ export function home(d) {
         <div class="pom rv">
           ${potmShot
     ? `<img class="pom__photo" src="${attr(potmShot)}" alt="" width="160" height="160" loading="lazy" decoding="async" />`
-    : `<span class="pom__photo pom__photo--none"><img src="${STAR}" alt="" width="48" height="59" loading="lazy" decoding="async" /></span>`}
+    : `<span class="pom__photo pom__photo--none"><img src="${STAR}" alt="Sue’s Angels FC star" width="48" height="59" loading="lazy" decoding="async" /></span>`}
           <div class="pom__body">
             <b>${potmPlayer ? playerLink(potmPlayer.num) : esc(potm.playerName || potm.title || 'Player of the Month')}</b>
             ${potm.reason || potm.description ? `<p>${esc(potm.reason || potm.description)}</p>` : ''}
@@ -1538,7 +1541,7 @@ export function home(d) {
     return `<li class="sqd__c"><a href="/players/${attr(p.slug)}.html">
               ${shot
     ? `<img class="sqd__i" src="${attr(shot)}" alt="" width="120" height="120" loading="lazy" decoding="async" />`
-    : `<span class="sqd__i sqd__i--none"><img src="${STAR}" alt="" width="34" height="42" loading="lazy" decoding="async" /></span>`}
+    : `<span class="sqd__i sqd__i--none"><img src="${STAR}" alt="Sue’s Angels FC star" width="34" height="42" loading="lazy" decoding="async" /></span>`}
               <b>${esc(p.name)}</b>
               <span>${esc(p.position || '')}</span>
             </a></li>`;
@@ -1667,7 +1670,7 @@ export function home(d) {
         <a class="lead rv" href="/news/${attr(lead.slug)}.html">
           ${lead.cover
     ? `<img class="lead__i" src="${attr(lead.cover)}" alt="" width="520" height="340" loading="lazy" decoding="async" />`
-    : `<span class="lead__i lead__i--none"><img src="${STAR}" alt="" width="54" height="66" loading="lazy" decoding="async" /></span>`}
+    : `<span class="lead__i lead__i--none"><img src="${STAR}" alt="Sue’s Angels FC star" width="54" height="66" loading="lazy" decoding="async" /></span>`}
           <span class="lead__t">
             <b>${esc(lead.title)}</b>
             ${lead.lede ? `<span class="lead__d">${esc(lead.lede)}</span>` : ''}
@@ -2092,7 +2095,7 @@ export function home(d) {
           ${albs.map((g) => `<li class="alb__c"><a href="/gallery/${attr(g.slug)}.html">
             ${g.cover
     ? `<img class="alb__i" src="${attr(g.cover)}" alt="" width="300" height="200" loading="lazy" decoding="async" />`
-    : `<span class="alb__i alb__i--none"><img src="${STAR}" alt="" width="40" height="49" loading="lazy" decoding="async" /></span>`}
+    : `<span class="alb__i alb__i--none"><img src="${STAR}" alt="Sue’s Angels FC star" width="40" height="49" loading="lazy" decoding="async" /></span>`}
             <b>${esc(g.title || '')}</b>
             <span>${esc(`${g.photoCount || (g.photos || []).length} pictures`)}</span>
           </a></li>`).join('\n          ')}
@@ -2474,7 +2477,7 @@ export function siteFooter() {
       <div class="ft2__main">
         <div class="ft2__brand">
           <a class="ft2__logo" href="/" aria-label="${attr(CLUB.name)} home">
-            <img src="${STAR}" alt="" width="36" height="45" loading="lazy" decoding="async" />
+            <img src="${STAR}" alt="Sue’s Angels FC star" width="36" height="45" loading="lazy" decoding="async" />
             <span>Sue's Angels <b>FC</b></span>
           </a>
           <!-- The footer is shared by every page and has no dataset to ask,
@@ -2761,7 +2764,7 @@ export function siteHeader(current) {
 
   return `<header class="hx__nav pghead">
           <a class="hx__brand" href="/" aria-label="${attr(CLUB.name)}, home">
-            <img src="${STAR}" alt="" width="40" height="50" decoding="async" />
+            <img src="${STAR}" alt="Sue’s Angels FC star" width="40" height="50" decoding="async" />
             <span>Sue's Angels FC</span>
           </a>
           <nav class="hx__mainnav" aria-label="Main">

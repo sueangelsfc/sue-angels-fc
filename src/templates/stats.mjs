@@ -241,11 +241,11 @@ export function stats(d) {
     const inner = `<span class="st-lead__shot${l.tie && tieShots.length > 1 ? ' is-split' : ''}">
                 ${l.tie && tieShots.some((t) => t.src)
     ? tieShots.map((t) => (t.src
-      ? `<img src="${attr(t.src)}" alt="" width="160" height="220" loading="lazy" decoding="async" />`
-      : `<span class="st-lead__blank"><img src="${STAR}" alt="" width="70" height="87" loading="lazy" decoding="async" /></span>`)).join('\n                ')
+      ? `<img src="${attr(t.src)}" alt="${attr(t.n || '')}" width="160" height="220" loading="lazy" decoding="async" />`
+      : `<span class="st-lead__blank"><img src="${STAR}" alt="Sue’s Angels FC star" width="70" height="87" loading="lazy" decoding="async" /></span>`)).join('\n                ')
     : shot
-      ? `<img src="${attr(shot)}" alt="" width="220" height="220" loading="lazy" decoding="async" />`
-      : `<img class="st-lead__crest" src="${STAR}" alt="" width="120" height="149" loading="lazy" decoding="async" />`}
+      ? `<img src="${attr(shot)}" alt="${attr((l.p && l.p.name) || '')}" width="220" height="220" loading="lazy" decoding="async" />`
+      : `<img class="st-lead__crest" src="${STAR}" alt="Sue’s Angels FC star" width="120" height="149" loading="lazy" decoding="async" />`}
               </span>
               <span class="st-lead__body">
                 <span class="st-lead__k">${esc(l.label)}</span>
@@ -373,8 +373,8 @@ export function stats(d) {
                 <th scope="row" class="st-tbl__who">
                   <a href="/players/${attr(p.slug)}.html">
                     <span class="st-tbl__face">${shot
-    ? `<img src="${attr(shot)}" alt="" width="30" height="30" loading="lazy" decoding="async" />`
-    : `<img class="st-tbl__crest" src="${STAR}" alt="" width="18" height="22" loading="lazy" decoding="async" />`}</span>
+    ? `<img src="${attr(shot)}" alt="${attr(p.name || '')}" width="30" height="30" loading="lazy" decoding="async" />`
+    : `<img class="st-tbl__crest" src="${STAR}" alt="Sue’s Angels FC star" width="18" height="22" loading="lazy" decoding="async" />`}</span>
                     <i>${esc(initial(p.first))}</i>
                     <b>${esc(p.last)}</b>
                   </a>
@@ -472,7 +472,7 @@ export function stats(d) {
       <div class="wrap">
         <div class="cta2">
           <span class="cta2__glow" aria-hidden="true"></span>
-          <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
+          <img class="cta2__badge" src="${STAR}" alt="Sue’s Angels FC star" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
             <p class="eyebrow cta2__eyebrow">Want to play here?</p>
             <h2 class="h2" id="st-cta-h">Trials are open for <span class="volt">${esc(d.nextSeason)}.</span></h2>

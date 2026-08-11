@@ -67,7 +67,7 @@ export function league(d) {
      them across the division archive, and a wrapping span was 30 bytes and a
      DOM node each for nothing that padding and object-fit cannot do. */
   const badge = (club) => (isUs(club)
-    ? `<img class="lg-badge is-us" src="${STAR}" alt="" width="26" height="26" loading="lazy" />`
+    ? `<img class="lg-badge is-us" src="${STAR}" alt="Sue’s Angels FC star" width="26" height="26" loading="lazy" />`
     : oppBadge(club, d.badges, 26, 26, 'lg-badge'));
 
   /* ================= HERO ================= */
@@ -166,7 +166,7 @@ export function league(d) {
     const src = shotByName.get(slugify(row.name));
     return `<span class="lg-sc__face">${src
       ? `<img src="${attr(src)}" alt="" width="34" height="34" loading="lazy" decoding="async" />`
-      : `<img class="lg-sc__face--crest" src="${STAR}" alt="" width="18" height="22" loading="lazy" decoding="async" />`}</span>`;
+      : `<img class="lg-sc__face--crest" src="${STAR}" alt="Sue’s Angels FC star" width="18" height="22" loading="lazy" decoding="async" />`}</span>`;
   };
 
   const chartRows = (rows) => rows.map((r) => `<tr${r.us ? ' class="is-us"' : ''}>
@@ -390,7 +390,7 @@ export function league(d) {
       <div class="wrap">
         <div class="cta2">
           <span class="cta2__glow" aria-hidden="true"></span>
-          <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
+          <img class="cta2__badge" src="${STAR}" alt="Sue’s Angels FC star" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
             <p class="eyebrow cta2__eyebrow">${esc(d.titleSeason)} · Champions</p>
             <h2 class="h2" id="lg-cta-h">Won at the first <span class="volt">attempt.</span></h2>

@@ -135,7 +135,7 @@ export function coaches(d) {
             <div class="co-card__shot">
               ${shot
     ? `<img src="${attr(shot)}" alt="${attr(c.name)}" width="360" height="480" loading="lazy" decoding="async" />`
-    : `<img class="co-card__crest" src="${STAR}" alt="" width="180" height="223" loading="lazy" decoding="async" />`}
+    : `<img class="co-card__crest" src="${STAR}" alt="Sue’s Angels FC star" width="180" height="223" loading="lazy" decoding="async" />`}
             </div>
             <div class="co-card__body">
               <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> ${esc(roleOf(c))}${c.since ? ` · since ${esc(c.since)}` : ''}</p>
@@ -216,7 +216,7 @@ export function coaches(d) {
         ${honours.length ? `<ul class="co-honours rv">
           ${honours.map((h) => `<li>
             <span class="co-honours__mark" aria-hidden="true">
-              <img src="${STAR}" alt="" width="26" height="32" loading="lazy" decoding="async" />
+              <img src="${STAR}" alt="Sue’s Angels FC star" width="26" height="32" loading="lazy" decoding="async" />
             </span>
             <b>${esc(h.k)}</b>
             <i>${esc(h.v)}</i>
@@ -230,8 +230,8 @@ export function coaches(d) {
               ${used.map((p) => `<li>
                 <a href="/players/${attr(p.slug)}.html">
                   <span class="co-used__face">${playerShot(p.num)
-    ? `<img src="${attr(playerShot(p.num))}" alt="" width="30" height="30" loading="lazy" decoding="async" />`
-    : `<img class="co-used__crest" src="${STAR}" alt="" width="16" height="20" loading="lazy" decoding="async" />`}</span>
+    ? `<img src="${attr(playerShot(p.num))}" alt="${attr(p.name || '')}" width="30" height="30" loading="lazy" decoding="async" />`
+    : `<img class="co-used__crest" src="${STAR}" alt="Sue’s Angels FC star" width="16" height="20" loading="lazy" decoding="async" />`}</span>
                   <span class="co-used__n">${esc(p.name)}</span>
                   ${p.code ? `<span class="co-used__pos">${esc(p.code)}</span>` : ''}
                   <span class="co-used__v">${esc(p.starts)}</span>
@@ -263,8 +263,8 @@ export function coaches(d) {
         ${performers.length ? `<ul class="co-best rv">
           ${performers.map((x) => `<li>
             <span class="co-best__face">${playerShot(x.p.num)
-    ? `<img src="${attr(playerShot(x.p.num))}" alt="" width="52" height="52" loading="lazy" decoding="async" />`
-    : `<img class="co-best__crest" src="${STAR}" alt="" width="26" height="32" loading="lazy" decoding="async" />`}</span>
+    ? `<img src="${attr(playerShot(x.p.num))}" alt="${attr(x.p.name || '')}" width="52" height="52" loading="lazy" decoding="async" />`
+    : `<img class="co-best__crest" src="${STAR}" alt="Sue’s Angels FC star" width="26" height="32" loading="lazy" decoding="async" />`}</span>
             <span class="co-best__k">${esc(x.k)}</span>
             <a class="co-best__n" href="/players/${attr(x.p.slug)}.html">${esc(x.p.name)}</a>
             <span class="co-best__v">${esc(x.v(x.p))} ${esc(x.unit)}</span>
@@ -278,7 +278,7 @@ export function coaches(d) {
       <div class="wrap">
         <div class="cta2">
           <span class="cta2__glow" aria-hidden="true"></span>
-          <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
+          <img class="cta2__badge" src="${STAR}" alt="Sue’s Angels FC star" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
             <p class="eyebrow cta2__eyebrow">${esc(d.divisionOf(d.nextSeason))} · Next season</p>
             <h2 class="h2" id="co-cta-h">Play under this <span class="volt">staff.</span></h2>

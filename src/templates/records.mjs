@@ -261,8 +261,8 @@ export function records(d) {
   const face = (p, size = 44) => {
     const src = p ? shotFor(p.num) : '';
     return `<span class="rc-face" style="--f:${size}px">${src
-      ? `<img src="${attr(src)}" alt="" width="${size}" height="${size}" loading="lazy" decoding="async" />`
-      : `<img class="rc-face__crest" src="${STAR}" alt="" width="${Math.round(size * 0.5)}" height="${Math.round(size * 0.62)}" loading="lazy" decoding="async" />`}</span>`;
+      ? `<img src="${attr(src)}" alt="${attr((p && p.name) || '')}" width="${size}" height="${size}" loading="lazy" decoding="async" />`
+      : `<img class="rc-face__crest" src="${STAR}" alt="Sue’s Angels FC star" width="${Math.round(size * 0.5)}" height="${Math.round(size * 0.62)}" loading="lazy" decoding="async" />`}</span>`;
   };
 
   /* ================= 01 HONOURS ================= */
@@ -280,7 +280,7 @@ export function records(d) {
         <h2 class="h2 rv" id="rc-hon-h">What the club has <span class="volt">won.</span></h2>
         <ul class="rc-trophies rv">
           ${trophies.map((t) => `<li class="rc-trophy">
-            <img class="rc-trophy__star" src="${STAR}" alt="" width="44" height="54" loading="lazy" decoding="async" />
+            <img class="rc-trophy__star" src="${STAR}" alt="Sue’s Angels FC star" width="44" height="54" loading="lazy" decoding="async" />
             <p class="rc-trophy__season">${esc(t.season)}</p>
             <p class="rc-trophy__title">${esc(t.title)}</p>
             <p class="rc-trophy__body">${esc(t.description || '')}</p>
@@ -321,10 +321,10 @@ export function records(d) {
     ? c.holders.map((p) => `<a class="rc-card__who" href="/players/${attr(p.slug)}.html">${face(p, 34)}<span>${esc(p.name)}</span></a>`).join('\n            ')
     : c.teams
       ? c.teams.map((t) => `<span class="rc-card__team">
-              <span class="rc-card__who is-team"><img class="rc-card__crest" src="${STAR}" alt="" width="20" height="25" loading="lazy" decoding="async" /><span>${esc(t.who)}</span></span>
+              <span class="rc-card__who is-team"><img class="rc-card__crest" src="${STAR}" alt="Sue’s Angels FC star" width="20" height="25" loading="lazy" decoding="async" /><span>${esc(t.who)}</span></span>
               <span class="rc-card__sub">${esc(t.note)}</span>
             </span>`).join('\n            ')
-      : `<p class="rc-card__who is-team"><img class="rc-card__crest" src="${STAR}" alt="" width="20" height="25" loading="lazy" decoding="async" /><span>${esc(c.who || '')}</span></p>`}
+      : `<p class="rc-card__who is-team"><img class="rc-card__crest" src="${STAR}" alt="Sue’s Angels FC star" width="20" height="25" loading="lazy" decoding="async" /><span>${esc(c.who || '')}</span></p>`}
             ${c.teams ? '' : `<p class="rc-card__sub">${esc(c.sub || '')}</p>`}
           </li>`;
 
@@ -444,7 +444,7 @@ export function records(d) {
       <div class="wrap">
         <div class="cta2">
           <span class="cta2__glow" aria-hidden="true"></span>
-          <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
+          <img class="cta2__badge" src="${STAR}" alt="Sue’s Angels FC star" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
             <p class="eyebrow cta2__eyebrow">${esc(d.titleSeason)} · Champions</p>
             <h2 class="h2" id="rc-cta-h">Records are there to be <span class="volt">broken.</span></h2>

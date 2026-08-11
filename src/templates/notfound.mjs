@@ -52,7 +52,7 @@ export function notFound(d) {
   const hero = `<section class="nf-hero" aria-labelledby="nf-h">
       <div class="wrap">
         <div class="nf-hero__in">
-          <img class="nf-hero__crest" src="${STAR}" alt="" width="500" height="620" loading="eager" decoding="async" />
+          <img class="nf-hero__crest" src="${STAR}" alt="Sue’s Angels FC star" width="500" height="620" loading="eager" decoding="async" />
           <p class="eyebrow nf-hero__eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Error 404</p>
           <h1 class="nf-hero__title" id="nf-h">Off target<span class="volt">.</span></h1>
           <p class="nf-hero__lede">That page does not exist. It may have moved, or the link that

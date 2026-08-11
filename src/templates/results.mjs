@@ -119,7 +119,7 @@ function matchesPage(d, mode) {
 
     const side = (club, score, isUs) => `<span class="mt-side${isUs ? ' is-us' : ''}">
               <span class="mt-side__badge">${isUs
-    ? `<img src="${STAR}" alt="" width="22" height="27" loading="lazy" decoding="async" />`
+    ? `<img src="${STAR}" alt="Sue’s Angels FC star" width="22" height="27" loading="lazy" decoding="async" />`
     : oppBadge(club, d.badges, 22, 22)}</span>
               <span class="mt-side__club">${esc(shortClub(club))}</span>
               ${score === null ? '' : `<span class="mt-side__score">${esc(score)}</span>`}
@@ -399,7 +399,7 @@ function matchesPage(d, mode) {
       <div class="wrap">
         <div class="cta2">
           <span class="cta2__glow" aria-hidden="true"></span>
-          <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
+          <img class="cta2__badge" src="${STAR}" alt="Sue’s Angels FC star" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
             <p class="eyebrow cta2__eyebrow">Been and gone</p>
             <h2 class="h2" id="mt-cta-h">Every match already <span class="volt">played.</span></h2>
@@ -417,7 +417,7 @@ function matchesPage(d, mode) {
       <div class="wrap">
         <div class="cta2">
           <span class="cta2__glow" aria-hidden="true"></span>
-          <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
+          <img class="cta2__badge" src="${STAR}" alt="Sue’s Angels FC star" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
             <p class="eyebrow cta2__eyebrow">${esc(d.titleSeason)} · Champions</p>
             <h2 class="h2" id="mt-cta-h">Thirty-three matches, one <span class="volt">title.</span></h2>

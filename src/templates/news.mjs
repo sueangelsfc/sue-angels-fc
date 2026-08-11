@@ -102,7 +102,7 @@ export function news(d) {
     ? `<span class="nw-card__score"><b>${esc(a.match.scoreline || 'v')}</b><i>${esc(a.match.competition)}${a.match.round ? ` · ${esc(a.match.round)}` : ''}</i></span>`
     : a.cover && a.cover !== 'None'
       ? `<img class="nw-card__img" src="${attr(a.cover)}" alt="" width="640" height="400" loading="lazy" decoding="async" />`
-      : `<img class="nw-card__crest" src="${STAR}" alt="" width="76" height="94" loading="lazy" decoding="async" />`}
+      : `<img class="nw-card__crest" src="${STAR}" alt="Sue’s Angels FC star" width="76" height="94" loading="lazy" decoding="async" />`}
                 <span class="nw-card__date">${esc(fmtDate(a.date))}</span>
               </span>
               <span class="nw-card__body">
@@ -144,7 +144,7 @@ export function news(d) {
       <div class="wrap">
         <div class="cta2">
           <span class="cta2__glow" aria-hidden="true"></span>
-          <img class="cta2__badge" src="${STAR}" alt="" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
+          <img class="cta2__badge" src="${STAR}" alt="Sue’s Angels FC star" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
             <p class="eyebrow cta2__eyebrow">The team sheet</p>
             <h2 class="h2" id="nw-cta-h">Never miss a <span class="volt">word.</span></h2>
@@ -210,7 +210,7 @@ export function newsArticle(a, d) {
             <a class="nw-card__link" href="/news/${attr(articleSlug(m))}.html">
               <span class="nw-card__top">
                 <span class="nw-card__cat">${esc(catLabel(m.category))}</span>
-                <img class="nw-card__crest" src="${STAR}" alt="" width="76" height="94" loading="lazy" decoding="async" />
+                <img class="nw-card__crest" src="${STAR}" alt="Sue’s Angels FC star" width="76" height="94" loading="lazy" decoding="async" />
                 <span class="nw-card__date">${esc(fmtDate(m.date))}</span>
               </span>
               <span class="nw-card__body">

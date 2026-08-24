@@ -85,10 +85,14 @@
 *::before,
 *::after{box-sizing: border-box; margin: 0; padding: 0;}
 html{overflow-x: hidden; scroll-behavior: smooth;}
-/* Positioned so .pageaura can size itself to the whole DOCUMENT. Without it,
-   the field's inset resolves against the initial containing block and the
-   atmosphere is only ever one viewport tall. */
-body{position: relative;
+/* `position: relative` is no longer load-bearing for the atmosphere: the
+   field is fixed to the viewport now, so it never needed the document's
+   height. Kept because other absolutely positioned descendants resolve
+   against it, and removing it is a change with a wider blast radius than
+   this one. `html` sets no background, so body's propagates to the canvas
+   and body paints no box of its own, which is what lets the field sit at
+   z-index -1 and still be seen. */
+body{
   background: var(--navy-deep);
   color: var(--fg);
   font-family: var(--body);
@@ -98,140 +102,71 @@ body{position: relative;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   position: relative;}
-/* ---- Page atmosphere: liquid caustics --------------------------------
-   Sweeping orange ribbons over near-black.
+/* ---- Page atmosphere -------------------------------------------------
+   One still image behind every page, and nothing moving.
 
-   A ribbon is an ARC, and an arc is a ring gradient: transparent core, bright
-   annulus, soft falloff. Give the ring an aspect ratio and a rotation and it
-   becomes a sweeping curve; centre it off the page and only that sweep shows.
-   Pools are the diffuse glow the ribbons swim in.
+   This was twenty-four `.pa` spans, each an animated radial gradient turning
+   and breathing on its own infinite loop. Measured on a mid-tier phone the
+   field cost 12.7s of main-thread work against 1.8s with motion forced off,
+   and Lighthouse could not score the page at all because it never reached
+   CPU idle: the animations are infinite, so the quiet period never arrives.
 
-   ABSOLUTE to the document, not fixed to the viewport. Fixed made the field
-   hang in front of the reader and track the scroll, which reads as one shape
-   following the mouse rather than as light living on the page. Absolute needs
-   `body{position:relative}` below, or inset resolves against the initial
-   containing block and the field is only ever one viewport tall.
+   It also produced every pixel of the home page's 0.90 CLS. `.pageaura` was
+   `position:absolute; inset:0` against a relative body, so it grew whenever
+   the document did, and each blob sat at a PERCENTAGE `top` of that height.
+   A 24px sponsor logo arriving late moved an 874x1386 ribbon, and it is the
+   ribbon the browser scores, not the logo.
 
-   `html` sets no background, so body's propagates to the canvas and body
-   paints no box of its own, which is what lets z-index -1 sit above it.
+   FIXED, not absolute, is what makes that unrepeatable. A viewport-sized
+   layer cannot resize when the document does, so the shift is gone by
+   construction rather than by tuning. It also means the mesh is composed in
+   view at every scroll position instead of being stretched down a page that
+   might be ten thousand pixels long.
 
-   Motion is split across two elements because one element cannot run two
-   transform animations: .pa turns and drifts, .pa i breathes. Periods are
-   long by design - a ribbon takes minutes to sweep, so the field is never
-   caught moving, only different when you look back.
+   --pa-mul survives untouched. It is the per-page intensity dial (1 on the
+   home page, 0.22 on the gallery) and all sixteen page sheets still set it;
+   it now drives the image's opacity instead of each blob's alpha. --pa-peak
+   is what the strongest page lands on, so the whole field brightens or
+   dims from one number here rather than from sixteen edits. */
+.pageaura{position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  --pa-mul: 1;        /* per-page intensity — every page sheet overrides it */
+  --pa-peak: 0.55;}   /* what --pa-mul: 1 resolves to. See the note below. */
 
-   Animated on transform and opacity only, so this stays off the main thread. */
-.pageaura{position: absolute; inset: 0; z-index: -1; pointer-events: none; overflow: hidden;
-  --pa-mul: 1;                       /* global intensity — dialled right down in light theme */}
+/* WHY 0.55 AND NOT MORE. The field is red and the brand accent is orange, so
+   they are adjacent hues at similar luminance and the accent is what fails
+   first - not the body text, which is the opposite of the usual worry.
 
-/* THE CEILING IS THE WHOLE BUG, and it only ever bound on a wide screen.
+   Measured against the brightest 5% of the image, rgb(207 45 25), composited
+   over --navy-deep, --volt #FF6A2A against that field:
 
-   Blob widths are authored in viewport widths and the broad tier runs to
-   330vw, so the ceiling is what decides the cost - and at 5200px it decided
-   nothing on a phone and everything on a laptop. Totalled over twenty-four
-   blobs, all of them under a transform that never stops:
+     opacity   body text   accent
+     0.45      11.52:1     4.38:1
+     0.55       9.82:1     3.74:1     <- here
+     0.65       8.36:1     3.18:1
+     0.75       7.07:1     2.69:1     accent below 3:1
+     1.00       4.77:1     1.82:1
 
-     phone   390px    7.4 Mpx     28MB    biggest blob 1273px
-     laptop 1440px    101 Mpx    385MB    biggest blob 4700px
-     laptop 1728px    138 Mpx    528MB    biggest blob 5200px
-     desktop 2686px   207 Mpx    788MB    biggest blob 5200px
+   White body copy clears AA at every value, right up to the raw image. The
+   accent does not: past about 0.68 an orange eyebrow on a red field stops
+   being legible as orange. 0.55 is the most of the picture that can show
+   with the accent still clear of 3:1, with a little room left over. */
 
-   The club reported it working well on a phone and terribly on a laptop,
-   which is exactly the shape of that table: 28MB fits, 385MB does not, and
-   past the compositor's budget the layers stop being promoted and every frame
-   becomes a repaint.
+/* The mesh sits on its own layer so --pa-mul dims the light without also
+   dimming the grain above it.
 
-   1400px is chosen so the PHONE IS UNTOUCHED - its largest blob is 1273px and
-   never reaches the ceiling, so the one configuration known to be smooth is
-   byte for byte what it was. A laptop drops from 385MB to about 92MB.
+   `cover` keeps it full-bleed at any aspect. The source is a 0.56 portrait
+   and a desktop viewport is about 1.78, so a wide screen shows a horizontal
+   band of the image rather than the whole composition, which is what an
+   abstract field is for and why it survives the crop.
 
-   The cost is quadratic in this number. Raising it back to 5200 is a 14-fold
-   increase on a laptop, which is why the suite asserts it. */
-.pa{position: absolute;
-  left: var(--pa-x, 50%); top: var(--pa-y, 50%);
-  width: clamp(200px, var(--pa-w, 70vw), 1400px);
-  aspect-ratio: var(--pa-ar, 1.6);
-  animation: pa-turn var(--pa-dur, 220s) linear var(--pa-delay, 0s) infinite;}
-.pa i{display: block; width: 100%; height: 100%;
-  animation: pa-breathe var(--pa-bdur, 110s) ease-in-out var(--pa-bdelay, 0s) infinite;}
-
-/* The ribbon. Every stop is the same hue with only alpha moving: fading to
-   `transparent` interpolates through transparent BLACK, which greys the tail
-   and draws a dark rim exactly where the filament should be brightest. */
-.pa--ring i{background: radial-gradient(closest-side,
-  rgb(var(--pa-c, 252 140 54) / 0)                                             0%,
-  rgb(var(--pa-c, 252 140 54) / 0)                                            52%,
-  rgb(var(--pa-c, 252 140 54) / calc(var(--pa-a, 0.4) * var(--pa-mul, 1) * 0.10)) 60%,
-  rgb(var(--pa-c, 252 140 54) / calc(var(--pa-a, 0.4) * var(--pa-mul, 1) * 0.55)) 67%,
-  rgb(var(--pa-c, 252 140 54) / calc(var(--pa-a, 0.4) * var(--pa-mul, 1)))        71%,
-  rgb(var(--pa-c, 252 140 54) / calc(var(--pa-a, 0.4) * var(--pa-mul, 1) * 0.42)) 76%,
-  rgb(var(--pa-c, 252 140 54) / calc(var(--pa-a, 0.4) * var(--pa-mul, 1) * 0.10)) 84%,
-  rgb(var(--pa-c, 252 140 54) / 0)                                            100%);}
-
-/* A filament: the same ring, drawn tight. The references' hairlines are not a
-   different shape from the broad ribbons, only a narrower annulus at higher
-   alpha, which is why one primitive serves both. */
-.pa--line i{background: radial-gradient(closest-side,
-  rgb(var(--pa-c, 255 178 92) / 0)                                             0%,
-  rgb(var(--pa-c, 255 178 92) / 0)                                            66%,
-  rgb(var(--pa-c, 255 178 92) / calc(var(--pa-a, 0.6) * var(--pa-mul, 1) * 0.18)) 69%,
-  rgb(var(--pa-c, 255 178 92) / calc(var(--pa-a, 0.6) * var(--pa-mul, 1)))        71.5%,
-  rgb(var(--pa-c, 255 178 92) / calc(var(--pa-a, 0.6) * var(--pa-mul, 1) * 0.22)) 74%,
-  rgb(var(--pa-c, 255 178 92) / 0)                                            80%);}
-
-/* The glow the ribbons swim in. */
-.pa--pool i{background: radial-gradient(closest-side,
-  rgb(var(--pa-c, 205 92 28) / calc(var(--pa-a, 0.14) * var(--pa-mul, 1)))        0%,
-  rgb(var(--pa-c, 205 92 28) / calc(var(--pa-a, 0.14) * var(--pa-mul, 1) * 0.62)) 38%,
-  rgb(var(--pa-c, 205 92 28) / calc(var(--pa-a, 0.14) * var(--pa-mul, 1) * 0.26)) 64%,
-  rgb(var(--pa-c, 205 92 28) / 0)                                              100%);}
-
-/* A plume. Vertical rather than radial, anchored at its foot so it rises the
-   way a flame does, and masked soft at the sides so it is a smear of light
-   rather than a bar. */
-/* The base clamp floors width at 200px for the enormous rings; a plume that
-   wide is a slab, so it takes its own, much smaller clamp. */
-.pa--plume{aspect-ratio: auto;
-  width: clamp(26px, var(--pa-w, 8vw), 420px);
-  height: var(--pa-h, 24%);
-  animation-name: pa-plumedrift;}
-/* The foot fades too. A gradient at full alpha on its first stop ends on a
-   hard horizontal line, which is what made these read as stacked blocks
-   rather than flames. Soft at both ends, brightest a third of the way up. */
-.pa--plume i{transform-origin: bottom center;
-  background: linear-gradient(0deg,
-    rgb(var(--pa-c, 252 140 54) / 0)                                                 0%,
-    rgb(var(--pa-c, 252 140 54) / calc(var(--pa-a, 0.35) * var(--pa-mul, 1) * 0.55))  8%,
-    rgb(var(--pa-c, 252 140 54) / calc(var(--pa-a, 0.35) * var(--pa-mul, 1)))        24%,
-    rgb(var(--pa-c, 252 140 54) / calc(var(--pa-a, 0.35) * var(--pa-mul, 1) * 0.58)) 48%,
-    rgb(var(--pa-c, 252 140 54) / calc(var(--pa-a, 0.35) * var(--pa-mul, 1) * 0.22)) 72%,
-    rgb(var(--pa-c, 252 140 54) / 0)                                               100%);
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 32%, #000 68%, transparent 100%);
-  mask-image: linear-gradient(90deg, transparent 0%, #000 32%, #000 68%, transparent 100%);
-  animation-name: pa-flicker;}
-@keyframes pa-plumedrift{
-  0%, 100% { transform: translate(-50%, -50%) translate3d(calc(var(--pa-drift, 10px) * -0.4), 0, 0); }
-  50%      { transform: translate(-50%, -50%) translate3d(calc(var(--pa-drift, 10px) * 0.4), 0, 0); }
-}
-@keyframes pa-flicker{
-  0%, 100% { transform: scaleY(0.72); opacity: 0.6; }
-  50%      { transform: scaleY(1.08); opacity: 1; }
-}
-
-/* Centring is folded into the keyframes because the box also turns: a
-   negative margin would fight the rotation origin. */
-@keyframes pa-turn{
-  from { transform: translate(-50%, -50%) translate3d(0, 0, 0)
-                    rotate(var(--pa-rot, 0deg)); }
-  50%  { transform: translate(-50%, -50%) translate3d(var(--pa-drift, 10px), calc(var(--pa-drift, 10px) * -0.6), 0)
-                    rotate(calc(var(--pa-rot, 0deg) + var(--pa-spin, 360deg) * 0.5)); }
-  to   { transform: translate(-50%, -50%) translate3d(0, 0, 0)
-                    rotate(calc(var(--pa-rot, 0deg) + var(--pa-spin, 360deg))); }
-}
-@keyframes pa-breathe{
-  0%, 100% { transform: scale(0.94); opacity: 0.66; }
-  50%      { transform: scale(1.1);  opacity: 1; }
-}
+   The grain is NOT baked into the file. It is the fixed feTurbulence layer
+   below, at native resolution, which is why the image can ship blurred at
+   720px and 12.6KB: there is no high-frequency detail left to lose, and
+   fine noise is the most expensive thing there is to push through a lossy
+   codec. Baking it in cost 253KB and would have doubled the texture. */
+.pageaura::before{content: ''; position: absolute; inset: 0;
+  background: url('assets/brand/aura-field.webp') center / cover no-repeat;
+  opacity: calc(var(--pa-mul, 1) * var(--pa-peak, 0.55));}
 
 /* Grain. Half of why the reference reads as light through liquid rather than
    as vector shapes: without it the gradients band visibly on a dark screen.
@@ -243,13 +178,6 @@ body{position: relative;
 
 
 
-/* Motion is the whole point of this, so reduced motion stops it dead and
-   leaves the curtain hanging at a settled height rather than removing it. */
-@media (prefers-reduced-motion: reduce){
-.pa,
-.pa i{animation: none;}
-.pa i{transform: scale(1); opacity: 0.85;}
-}
 .sec.sec--news,
 .sec.sec--who,
 .sec.sec--awards,
@@ -523,6 +451,10 @@ b{font-weight: 700;}
 .hx__cell > span{display: flex; flex-direction: column;
   font-family: var(--ui); font-size: 12px; font-weight: 650;
   color: var(--fg); line-height: 1.15;}
+/* Matches .hx__metatext b below. These two cells used <i>, which is italic by
+   default and was the only italic on the card. */
+.hx__cell b{display: block; font-weight: 650; font-style: normal;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;}
 .hx__cell small{font-size: 8.5px; font-weight: 650;
   letter-spacing: 0.14em; text-transform: uppercase;
   color: rgba(255, 255, 255, 0.45);
@@ -662,17 +594,10 @@ b{font-weight: 700;}
    so it cannot hide anything: the reveal above is a TRANSITION, which
    animation-play-state does not touch.
    ========================================================================== */
-/* THE BLANKET RULE IS SCOPED TO THE AURA, and must stay that way. `.pa` is
-   safe to stop anywhere: pa-turn is pure transform and pa-breathe moves
-   opacity between 0.66 and 1 with no fill mode, so a paused blob is somewhere
-   in that range on a soft gradient. Applying `*` to a section instead would
-   reach `.camp__cell`, which fades in from opacity 0 with fill-mode both, and
-   freeze cells part-way in. That is the fault this whole block exists to fix,
-   so the selector is deliberately narrow. */
-html.js .pa.is-still,
-html.js .pa.is-still *,
-html.js.is-scrolling .pa,
-html.js.is-scrolling .pa *{animation-play-state: paused !important;}
+/* The aura used to be paused here too, twenty-four blobs' worth. It is a
+   still image now and has no animation to stop, so the campaign strip is the
+   only thing left that needs this. The selector stays deliberately narrow for
+   the reason below: anything with an ENTRANCE must never be paused. */
 
 /* The campaign strip: thirty-five cells drifting 2.5px, for ever, whether or
    not the band is anywhere near the screen. Paused by NAME rather than by

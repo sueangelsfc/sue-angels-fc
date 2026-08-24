@@ -27,7 +27,7 @@ import { seasonViews, defaultView, seasonBar, seasonPanels, matchNote } from '..
 import {
   fmtDate, longestStreak, playerStreak, teamSummary, leaderboard,
   biggestWin, heaviestDefeat, slugify, isLeague } from '../lib/stats.mjs';
-import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
+import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -463,9 +463,7 @@ export function records(d) {
     css: 'home.css',
     shell: 'home',
     bodyClass: 'is-home is-sub is-records',
-    /* auraFor returns the NAME of an aura variant, not markup: it is an
-       argument to sitePreMain, not something to concatenate beside it. */
-    preMain: sitePreMain(auraFor('records.html')),
+    preMain: sitePreMain(),
     footerHtml: siteFooter(),
     body: siteHeader('/records.html') + hero
       + `<section class="sec rc-seasons"><div class="wrap">${seasonBar(VIEWS, DEFAULT, matchNote, { esc, attr })}</div></section>`

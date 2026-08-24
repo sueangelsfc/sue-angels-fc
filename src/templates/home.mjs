@@ -31,7 +31,7 @@ import {
   currentRun, goalKinds, opponentRecords, byCompetition, homeAwaySplit, longestRun,
   winMargins, commonScorelines, byMonth, penaltyRecord, disciplineRecord,
   formationUse, venueRecords, squadShape, scoringRuns, clubFirsts,
-  goalsByGroup, heaviestDefeats, scoringRate,
+  goalsByGroup, heaviestDefeats, scoringRate, fmtDate,
 } from '../lib/stats.mjs';
 import {
   publishedBands, featuredFor, onThisDay, potmLatest, honoursIn, newFaces,
@@ -391,11 +391,11 @@ export function home(d) {
             <div class="hx__cells">
               <span class="hx__cell">
                 ${SVG.calendar}
-                <span><small>Date</small><i data-nx-date>${esc(next.dateLabel || dayMonthYear(next.iso || next.date))}</i></span>
+                <span><small>Date</small><b data-nx-date>${esc(next.dateLabel || fmtDate(next.iso || next.date, { weekday: true, year: false }))}</b></span>
               </span>
               <span class="hx__cell">
                 ${SVG.clock}
-                <span><small>Kick-off</small><i data-nx-kick>${esc(next.kick || 'TBC')}</i></span>
+                <span><small>Kick-off</small><b data-nx-kick>${esc(next.kick || 'To be confirmed')}</b></span>
               </span>
             </div>
 
@@ -2342,7 +2342,7 @@ export function home(d) {
     })();
     </script>`;
 
-  const preMain = bootScreen + sitePreMain(auraFor('index.html'));
+  const preMain = bootScreen + sitePreMain();
 
   return {
     /* The hero is pinned: it carries the page's one h1 and the next-match card,
@@ -2530,205 +2530,18 @@ export function siteFooter() {
    first three are decorative and aria-hidden; emitting them here rather than
    injecting them with JavaScript keeps the page identical with scripting
    blocked. */
-/* The five masses of the page atmosphere. Emitted as real markup rather than
-   injected by script, so the background exists with JavaScript blocked.
+/* The atmosphere is a still image now, painted by `.pageaura` in
+   20-home.css, so there is no markup to generate for it and no per-page
+   variant to choose: what differed between pages was density and brightness,
+   and `--pa-mul` in each page's own sheet already carries that. The generator
+   that used to live here built twenty-four animated spans per page from a
+   seeded PRNG, a hue ramp and a set of variant tier tables. It is gone with
+   them, along with `auraFor`, which every template imported to name a variant
+   that nothing consumes any more. */
 
-   Each carries its own hue, size, path and pair of periods. The periods are
-   chosen to share no small common factor, so the field never resolves back
-   into an arrangement the reader has already seen. Hues run from the amber
-   highlight down to a deep ember: all one family, because orange is the only
-   accent hue in the system. */
-/* Six wander shapes as unit vectors, seven waypoints each. A patch scales one
-   of these by its own amplitude, so no two trace the same route even where
-   they share a shape. */
-const PATHS = [
-  [[1, -0.5], [-0.8, 0.8], [1.3, 0.4], [-1.1, -0.7], [0.7, 0.9], [-0.5, -0.3], [0.4, 0.5]],
-  [[-0.9, 0.6], [1.1, 0.3], [-0.5, -0.8], [0.9, 1.0], [-1.2, 0.2], [0.6, -0.5], [-0.3, 0.7]],
-  [[0.7, 0.9], [-1.2, -0.3], [0.9, -0.7], [-0.6, 0.9], [1.1, -0.2], [-0.8, 0.4], [0.5, 0.6]],
-  [[-1.1, -0.6], [0.5, 1.0], [-0.9, 0.3], [1.2, -0.8], [-0.4, 0.6], [0.9, 0.2], [-0.6, -0.4]],
-  [[1.2, 0.3], [-0.6, -0.9], [0.4, 0.8], [-1.3, 0.4], [0.9, -0.6], [-0.4, 0.7], [0.7, -0.2]],
-  [[-0.7, 0.8], [1.0, -0.4], [-1.2, 0.5], [0.6, 0.9], [-0.5, -0.7], [1.1, 0.3], [-0.9, -0.2]],
-];
 
-/* ---- The field: liquid caustics ---------------------------------------
-   Sweeping orange light over near-black, in the language of the supplied
-   references.
-
-   Three primitives build all of it:
-
-     pool    the diffuse glow everything else swims in. A soft radial falloff.
-     ring    a ribbon. An arc is a ring gradient - transparent core, bright
-             annulus, soft falloff - and a ring far wider than the viewport
-             shows only a segment of its circumference, which is the sweep.
-             A ring that FITS on screen reads as a closed loop instead, so
-             these are deliberately enormous and centred off the page.
-     plume   a vertical column rising from below, for the flame reference.
-
-   A `line` is just a ring with a very narrow annulus and high alpha: the thin
-   bright filaments in the references are the same shape as the broad ribbons,
-   drawn tight.
-
-   VARIANTS let each page take its own field while sharing one system. They
-   differ in density, brightness, and the balance of broad mass against thin
-   filament - not in hue, because orange is the only accent in the system.
-   Add a page by naming a variant here and passing it to sitePreMain(). */
-/* The ramp, deep to hot. Every step is held between roughly 19 and 35 degrees
-   of hue, which is the orange band either side of the brand's #FF7034 (22
-   degrees). The previous deep end sat near 9 degrees, which is brick red, and
-   it was what made the darker shapes read brown rather than orange. */
-const AURA_HUES = [
-  '150 62 20', '178 76 24', '205 92 28', '228 108 34',
-  '243 124 42', '252 140 54', '255 158 70', '255 178 92', '255 200 124',
-];
-
-const AURA_VARIANTS = {
-  /* Broad ribbons over a warm bed. The house default. */
-  ember: { seed: 20260731, tiers: [
-    { k: 'pool', n: 7, w: [70, 130],  ar: [1.2, 2.2], a: [0.10, 0.17], dur: [190, 340], bdur: [90, 170], hue: [0, 4] },
-    { k: 'ring', n: 8, w: [190, 330], ar: [1.3, 2.6], a: [0.34, 0.52], dur: [150, 300], bdur: [70, 150], hue: [3, 7] },
-    { k: 'ring', n: 9, w: [95, 180],  ar: [1.1, 2.2], a: [0.36, 0.58], dur: [110, 240], bdur: [55, 120], hue: [4, 8] },
-  ] },
-
-  /* Sparse and high-contrast: mostly black, a couple of broad folds, and
-     several hairline filaments cutting across them. */
-  fold: { seed: 5512207, tiers: [
-    { k: 'pool', n: 4,  w: [80, 140],  ar: [1.4, 2.4], a: [0.09, 0.14], dur: [220, 380], bdur: [110, 190], hue: [0, 3] },
-    { k: 'ring', n: 5,  w: [200, 340], ar: [1.5, 2.8], a: [0.30, 0.44], dur: [170, 320], bdur: [80, 160], hue: [3, 6] },
-    { k: 'line', n: 10, w: [140, 300], ar: [1.2, 2.6], a: [0.48, 0.74], dur: [130, 280], bdur: [60, 130], hue: [5, 9] },
-  ] },
-
-  /* Flames rising from below, black above. Columns rather than arcs. */
-  plume: { seed: 9180433, tiers: [
-    { k: 'pool',  n: 5,  w: [90, 150], ar: [1.6, 2.6], a: [0.09, 0.15], dur: [200, 330], bdur: [100, 180], hue: [0, 3] },
-    { k: 'plume', n: 14, w: [8, 20],   ar: [1, 1],     a: [0.24, 0.40], dur: [26, 52],   bdur: [26, 52],   hue: [3, 7] },
-    { k: 'plume', n: 18, w: [2.5, 7],  ar: [1, 1],     a: [0.30, 0.52], dur: [15, 34],   bdur: [15, 34],   hue: [5, 9] },
-  ] },
-
-  /* Dense curling swirls with one dominant bright mass. */
-  swirl: { seed: 3390871, tiers: [
-    { k: 'pool', n: 8,  w: [80, 150],  ar: [1.1, 1.9], a: [0.12, 0.20], dur: [180, 320], bdur: [85, 165], hue: [1, 5] },
-    { k: 'ring', n: 10, w: [110, 240], ar: [1.1, 2.0], a: [0.34, 0.54], dur: [120, 260], bdur: [60, 130], hue: [4, 8] },
-    { k: 'line', n: 8,  w: [80, 190],  ar: [1.1, 2.2], a: [0.44, 0.68], dur: [100, 210], bdur: [50, 110], hue: [5, 9] },
-  ] },
-
-  /* The brightest of the set: broad soft folds filling most of the frame. */
-  silk: { seed: 7745019, tiers: [
-    { k: 'pool', n: 10, w: [90, 170],  ar: [1.1, 2.0], a: [0.16, 0.26], dur: [200, 360], bdur: [95, 175], hue: [2, 6] },
-    { k: 'ring', n: 9,  w: [170, 320], ar: [1.2, 2.4], a: [0.38, 0.58], dur: [160, 300], bdur: [75, 150], hue: [4, 8] },
-    { k: 'line', n: 4,  w: [120, 260], ar: [1.2, 2.4], a: [0.40, 0.60], dur: [140, 270], bdur: [65, 140], hue: [6, 9] },
-  ] },
-};
-
-/* Which page wears which field. Decided once here rather than as a literal
-   scattered through each template, so the site can be seen as a whole.
-
-   The logic is legibility first: the calmest fields go behind the pages you
-   actually read or scan, and the loud ones behind short pages that are mostly
-   a heading and a call to action.
-
-     fold   sparsest and blackest -> long reads and dense tables
-     ember  broad and even        -> the default, and the squad pages
-     silk   warm and generous     -> the celebratory pages
-     swirl  bright and busy       -> short pages only
-
-   `plume` is deliberately unassigned: it does not yet match its reference. */
-const PAGE_AURA = {
-  'index.html': 'ember',
-  'about.html': 'fold',
-  'sepsis.html': 'fold',
-  'champions.html': 'silk',
-  'awards.html': 'swirl',
-  'squad.html': 'ember',
-  'stats.html': 'fold',
-  'coaches.html': 'ember',
-  'fixtures.html': 'fold',
-  'results.html': 'fold',
-  'league.html': 'fold',
-  'records.html': 'fold',
-  'live.html': 'swirl',
-  'news.html': 'ember',
-  'gallery.html': 'swirl',
-  'videos.html': 'swirl',
-  'sponsors.html': 'fold',
-  'join.html': 'swirl',
-  'contact.html': 'swirl',
-  '404.html': 'swirl',
-};
-
-/* Route -> variant, defaulting to the house field for anything unlisted (the
-   player, match, article and album detail routes included). */
-export const auraFor = (file) => PAGE_AURA[String(file).replace(/^\//, '')] || 'ember';
-
-/* Deterministic pseudo-random, so a rebuild produces byte-identical output
-   and the asset hash stays stable. Math.random would reshuffle every field on
-   every build and churn the cache for no visual gain. Each variant carries
-   its own seed, which is what makes them look unrelated. */
-function lcg(seed) {
-  let s = seed >>> 0;
-  return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
-}
-
-function buildAura(name) {
-  const v = AURA_VARIANTS[name] || AURA_VARIANTS.ember;
-  const rnd = lcg(v.seed);
-  const pick = ([lo, hi]) => lo + rnd() * (hi - lo);
-  const out = [];
-  v.tiers.forEach((t, ti) => {
-    for (let i = 0; i < t.n; i++) {
-      const vertical = t.k === 'plume';
-      out.push({
-        tier: ti,
-        kind: t.k,
-        c: AURA_HUES[Math.min(AURA_HUES.length - 1, Math.floor(pick(t.hue)))],
-        /* Arcs are centred well outside the page so only their sweep shows.
-           Plumes stay within it, because a plume is meant to be seen whole. */
-        x: vertical
-          ? `${(2 + ((i + 0.5) / t.n) * 96 + (rnd() - 0.5) * (60 / t.n)).toFixed(1)}%`
-          : `${(-55 + rnd() * 210).toFixed(1)}%`,
-        /* Plumes take a free vertical position. Sharing the lattice with x
-           made both track the index, so they stair-stepped diagonally down
-           the page instead of standing independently. */
-        y: vertical
-          ? `${(rnd() * 104 - 4).toFixed(1)}%`
-          : `${(((i + 0.5) / t.n) * 100 + (rnd() - 0.5) * 26).toFixed(1)}%`,
-        w: `${pick(t.w).toFixed(1)}vw`,
-        h: vertical ? `${(14 + rnd() * 26).toFixed(1)}%` : '',
-        ar: +pick(t.ar).toFixed(2),
-        a: +pick(t.a).toFixed(3),
-        dur: +pick(t.dur).toFixed(0),
-        bdur: +pick(t.bdur).toFixed(0),
-        rot: Math.round(rnd() * 360),
-        /* Alternating sense, so neighbouring ribbons counter-rotate and the
-           field never turns as one wheel. */
-        spin: i % 2 ? -1 : 1,
-        drift: +(6 + rnd() * 14).toFixed(1),
-      });
-    }
-  });
-  return out;
-}
-
-/* One dial, sitting at 1: pace is a property of each tier, not a single
-   number applied to everything. Raise it to slow the whole field further,
-   lower it to speed it up. */
-const AURA_PACE = 1;
-
-const auraMarkup = (name) => buildAura(name).map((m, n) => {
-  /* Negative delays start each shape part-way through its own cycle, so the
-     field is already varied on load rather than every ribbon setting off from
-     the same angle. The two offsets step at different rates so a shape's turn
-     and its breath never lock into one motion. */
-  return `<span class="pa pa--${m.kind}" style="--pa-c:${m.c};--pa-x:${m.x};--pa-y:${m.y};`
-    + `--pa-w:${m.w};${m.h ? `--pa-h:${m.h};` : ''}--pa-ar:${m.ar};--pa-a:${m.a};--pa-rot:${m.rot}deg;`
-    + `--pa-spin:${m.spin * 360}deg;--pa-drift:${m.drift}px;`
-    + `--pa-dur:${(m.dur * AURA_PACE).toFixed(0)}s;--pa-bdur:${(m.bdur * AURA_PACE).toFixed(0)}s;`
-    + `--pa-delay:-${(n * 11 + 5)}s;--pa-bdelay:-${(n * 7 + 3)}s;"><i></i></span>`;
-}).join('\n  ');
-
-export function sitePreMain(variant = 'ember') {
-  return `<div class="pageaura" aria-hidden="true">
-  ${auraMarkup(variant)}
-</div>
+export function sitePreMain() {
+  return `<div class="pageaura" aria-hidden="true"></div>
 <svg class="geo" viewBox="0 0 1200 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
   <circle class="geo__line" cx="1210" cy="150" r="430"/>
   <circle class="geo__arc" cx="1210" cy="150" r="286"/>

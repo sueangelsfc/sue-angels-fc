@@ -19,7 +19,7 @@
    ========================================================================== */
 import { esc, attr, icon } from '../lib/html.mjs';
 import { CLUB, FAQS } from '../lib/club.mjs';
-import { siteFooter, sitePreMain, siteHeader, auraFor } from './home.mjs';
+import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -232,7 +232,7 @@ export function contact(d) {
     css: 'home.css',
     shell: 'home',
     bodyClass: 'is-home is-sub is-contact',
-    preMain: sitePreMain(auraFor('contact.html')),
+    preMain: sitePreMain(),
     footerHtml: siteFooter(),
     body: siteHeader('/contact.html') + hero + directBand + groundBand + routeBand + factBand
       + faqBand + ctaBand,

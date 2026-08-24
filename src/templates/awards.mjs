@@ -20,7 +20,7 @@ import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { seasonViews, defaultView, seasonBar, seasonPanels, matchNote } from '../lib/seasons.mjs';
 import { teamSummary, playerStats, leaderboard, longestRun, fmtDate, parseDate, isLeague} from '../lib/stats.mjs';
-import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
+import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
@@ -425,7 +425,7 @@ export function awards(d) {
     bodyClass: 'is-home is-sub is-awards',
     css: 'home.css',
     shell: 'home',
-    preMain: sitePreMain(auraFor('awards.html')),
+    preMain: sitePreMain(),
     footerHtml: siteFooter(),
     schema: [{
       '@context': 'https://schema.org',

@@ -17,7 +17,7 @@
 import { esc, attr, icon } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { fmtDate, isUs } from '../lib/stats.mjs';
-import { siteFooter, sitePreMain, siteHeader, auraFor } from './home.mjs';
+import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -111,7 +111,7 @@ export function notFound(d) {
     css: 'home.css',
     shell: 'home',
     bodyClass: 'is-home is-sub is-404',
-    preMain: sitePreMain(auraFor('404.html')),
+    preMain: sitePreMain(),
     footerHtml: siteFooter(),
     body: siteHeader('/404.html') + hero + scoreStrip + placesBand,
     /* No schema. A 404 is noindex, so structured data on it is pure weight. */

@@ -39,7 +39,7 @@ import { BODY_PARTS, ZONES, SITUATIONS, ASSIST_TYPES } from '../lib/football.mjs
 import { POSITION_LABEL, POSITION_XY, positionName } from '../lib/positions.mjs';
 import { playerProfile, fmtDate } from '../lib/stats.mjs';
 import { FRIENDLY_NOTE_SHORT } from '../lib/prose.mjs';
-import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
+import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
 import { photoCredit } from './gallery.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
@@ -984,7 +984,7 @@ export function playerPage(p, d) {
     bodyClass: 'is-home is-sub is-player',
     css: 'home.css',
     shell: 'home',
-    preMain: sitePreMain(auraFor('squad.html')),
+    preMain: sitePreMain(),
     footerHtml: siteFooter(),
     profile: pr,
   };

@@ -17,7 +17,7 @@
    ========================================================================== */
 import { esc, attr, NAV } from '../lib/html.mjs';
 import { CLUB, SEPSIS } from '../lib/club.mjs';
-import { siteFooter, sitePreMain, siteHeader, auraFor } from './home.mjs';
+import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
@@ -287,7 +287,7 @@ export function cause(d) {
     bodyClass: 'is-home is-sub is-cause',
     css: 'home.css',
     shell: 'home',
-    preMain: sitePreMain(auraFor('sepsis.html')),
+    preMain: sitePreMain(),
     footerHtml: siteFooter(),
     schema: [{
       '@context': 'https://schema.org',

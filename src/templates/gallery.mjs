@@ -17,7 +17,7 @@
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB, photographerChannels } from '../lib/club.mjs';
 import { fmtDate, slugify } from '../lib/stats.mjs';
-import { siteFooter, sitePreMain, siteHeader, auraFor } from './home.mjs';
+import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -263,7 +263,7 @@ export function gallery(d) {
     css: 'home.css',
     shell: 'home',
     bodyClass: 'is-home is-sub is-gallery',
-    preMain: sitePreMain(auraFor('gallery.html')),
+    preMain: sitePreMain(),
     footerHtml: siteFooter(),
     body: siteHeader('/gallery.html') + hero + band + ctaBand,
     schema: [{
@@ -365,7 +365,7 @@ export function galleryAlbum(g, d) {
     css: 'home.css',
     shell: 'home',
     bodyClass: 'is-home is-sub is-gallery is-album',
-    preMain: sitePreMain(auraFor('gallery.html')),
+    preMain: sitePreMain(),
     footerHtml: siteFooter(),
     body: siteHeader('/gallery.html') + hero + grid + moreBand,
     schema: [{

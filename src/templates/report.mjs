@@ -16,7 +16,7 @@
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { fmtDate, isUs, matchTimeline } from '../lib/stats.mjs';
-import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
+import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
 import { articleBody } from './news.mjs';
 import { reportText, hasReport as hasReportOf, FRIENDLY_NOTE } from '../lib/prose.mjs';
 import { photoCredit } from './gallery.mjs';
@@ -262,7 +262,7 @@ export function matchReport(m, d) {
     css: 'home.css',
     shell: 'home',
     bodyClass: 'is-home is-sub is-report',
-    preMain: sitePreMain(auraFor('results.html')),
+    preMain: sitePreMain(),
     footerHtml: siteFooter(),
     body: siteHeader("/results.html") + hero + factsBand + reportBand + videoBand + albumBand + sponsorBand + backBand,
     hasReport: hasReportOf(m),

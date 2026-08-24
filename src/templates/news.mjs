@@ -18,7 +18,7 @@
 import { esc, attr, CLUB_ID } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { fmtDate, slugify, isUs } from '../lib/stats.mjs';
-import { siteFooter, sitePreMain, siteHeader, auraFor } from './home.mjs';
+import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
 import { reportText, hasReport } from '../lib/prose.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
@@ -162,7 +162,7 @@ export function news(d) {
     css: 'home.css',
     shell: 'home',
     bodyClass: 'is-home is-sub is-news',
-    preMain: sitePreMain(auraFor('news.html')),
+    preMain: sitePreMain(),
     footerHtml: siteFooter(),
     body: siteHeader('/news.html') + hero + feed + ctaBand,
     schema: [{
@@ -227,7 +227,7 @@ export function newsArticle(a, d) {
     css: 'home.css',
     shell: 'home',
     bodyClass: 'is-home is-sub is-news is-article',
-    preMain: sitePreMain(auraFor('news.html')),
+    preMain: sitePreMain(),
     footerHtml: siteFooter(),
     body: siteHeader('/news.html') + hero + body + moreBand,
     schema: [

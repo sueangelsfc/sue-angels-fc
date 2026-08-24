@@ -432,13 +432,17 @@ for (const f of shipped) {
 }
 
 /* ---- 12c. No helper's return value printed as page text ----
-   auraFor() returns the NAME of an atmosphere variant, to be passed into
-   sitePreMain(). Concatenated beside it instead, it printed the bare word
-   "ember" into the top of the records page as visible text. The mistake is
-   silent: valid HTML, no broken link, nothing a structural check would see,
-   and it looked like a rendering glitch rather than a bug in a template.
+   auraFor() used to return the NAME of an atmosphere variant, to be passed
+   into sitePreMain(). Concatenated beside it instead, it printed the bare
+   word "ember" into the top of the records page as visible text: valid HTML,
+   no broken link, nothing a structural check would see, and it looked like a
+   rendering glitch rather than a bug in a template.
 
-   Any of these words standing alone as body text is that mistake. */
+   The atmosphere is a still image now and auraFor is gone, so that exact
+   mistake can no longer be made. The check is kept because the CLASS of
+   mistake is not specific to it - a helper's return value concatenated where
+   markup was meant is silent in the same way - and because these four words
+   have no business standing alone as body text however they got there. */
 for (const [f, h] of pages) {
   const body = h.slice(h.indexOf('<body'));
   const stray = ['ember', 'fold', 'silk', 'swirl']
@@ -2939,8 +2943,8 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const expr = upTo.slice(upTo.lastIndexOf('IntersectionObserver' in {} ? '' : 'in window){'));
   const observed = [...expr.matchAll(/\(["'](\.[a-z][a-z0-9_-]*)["']\)/g)].map((m) => m[1]);
   check('the paused set is declared', observed.length > 0, observed.join(' '));
-  check('the paused set is exactly the aura and the campaign band',
-    observed.join(',') === '.pa,.camp',
+  check('the paused set is exactly the campaign band',
+    observed.join(',') === '.camp',
     `${observed.join(',')} - adding one here without a by-name pause rule below will freeze an entrance`);
 
   /* THE SAFETY PROPERTY, which is what the list above is only a proxy for.
@@ -2953,8 +2957,15 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
      `.camp.is-still *` fails here even though the observer would look right. */
   const blanket = [...homeCss.matchAll(/([^{}]*\.is-still[^{}]*\*)\s*\{[^}]*animation-play-state:paused/g)]
     .map((m) => m[1]);
-  check('only the aura is paused by blanket',
-    blanket.every((s) => /\.pa\.is-still/.test(s)),
+  /* This used to read "only the aura is paused by blanket". The aura was the
+     one thing a blanket was safe on, because pa-turn was pure transform and
+     pa-breathe never reached zero opacity. It is a still image now, so there
+     is nothing left that qualifies and the safe number of blanket pauses is
+     ZERO. Written as a count rather than as `every` over the matches, because
+     `every` on an empty array is true and the check would have gone quietly
+     vacuous the moment the aura left. */
+  check('nothing is paused by blanket',
+    blanket.length === 0,
     `${blanket.join(' | ')} - a blanket pause over anything with an entrance freezes it part-way in`);
   check('the campaign band is paused by name, not by blanket',
     /\.camp\.is-in\.is-still[^{]*\{animation-play-state:running,paused/.test(homeCss)
@@ -2962,15 +2973,10 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     'the revealed case must pause the wave alone and leave camp-grow running');
 
   /* ---- And nothing animates while the page is moving --------------------
-     A frame-by-frame reading of a scroll recording changed on 147 of 653
-     frames: about twelve repaints a second against a sixty-hertz display. The
-     aura is 7.4 megapixels of rotating gradient on a phone and 207 on a large
-     desktop, and pa-turn is a 220-second rotation, so during a one-second
-     flick it moves two degrees. It costs the most exactly when it shows least,
-     so it stops while the page moves. */
-  check('the aura stops while the page is scrolling',
-    /html\.js\.is-scrolling \.pa[^{]*\{animation-play-state:paused/.test(homeCss),
-    'the largest per-frame cost on the page must not run during a scroll');
+     The aura used to be the whole reason for this: 7.4 megapixels of rotating
+     gradient on a phone, 207 on a large desktop, and a scroll recording that
+     changed on 147 of 653 frames. It is a still image now and costs nothing
+     per frame, so the campaign band is what is left to stop. */
   check('the scroll marker is html.js scoped', !/(^|[^.])\.is-scrolling/.test(
     homeCss.replace(/html\.js\.is-scrolling/g, 'X')),
     'an unscoped rule would freeze the aura if the listener never arrived');
@@ -2988,44 +2994,71 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     && !/html\.js\.is-scrolling \.camp[^{,]*\*/.test(homeCss),
     'the revealed band must keep camp-grow running while scrolling');
 
-  /* ---- The aura's size ceiling ------------------------------------------
-     The one number that decided whether the site was smooth, and it only ever
-     bound on a wide screen: blob widths are authored in viewport widths up to
-     330vw, so a phone never reached the ceiling and a laptop was pinned to
-     it. Totalled over twenty-four blobs, all under a transform that never
-     stops, at the old ceiling of 5200px:
+  /* ---- The still field ---------------------------------------------------
+     The atmosphere was twenty-four animated blobs and is one image. Three
+     things have to hold, and the first is the one that matters.
 
-       phone   390px    7.4 Mpx     28MB
-       laptop 1440px    101 Mpx    385MB
-       desktop 2686px   207 Mpx    788MB
+     FIXED, NOT ABSOLUTE. `.pageaura` was `position:absolute; inset:0` against
+     a relative body, so it was the height of the DOCUMENT and grew whenever
+     the document did. Each blob sat at a percentage `top` of that height, so
+     a lazily-loaded sponsor logo arriving late moved an 874x1386 ribbon and
+     booked 0.75 CLS against it - the whole of the home page's 0.90. A fixed
+     layer is the size of the viewport and cannot resize when content lands,
+     so the shift is gone BY CONSTRUCTION rather than by tuning. Revert this
+     one declaration and the layout shift comes straight back, which is why it
+     is asserted from the shipped sheet.
 
-     Which is exactly the report: fine on a phone, terrible on a laptop. Past
-     the compositor's budget the layers stop being promoted and every frame
-     becomes a repaint.
+     NOTHING ANIMATES. Motion here cost 12.7s of main-thread work on a
+     throttled phone against 1.8s with it off, and left Lighthouse unable to
+     score the page at all: the animations were infinite, so the CPU-idle
+     period it waits for never arrived.
 
-     The cost is QUADRATIC in this number, so it is asserted rather than left
-     to judgement. 1400 keeps the phone untouched, its largest blob being
-     1273px, and takes a laptop from 385MB to about 92MB. */
+     THE IMAGE IS SMALL. It ships blurred with the grain stripped, because the
+     grain is the fixed feTurbulence layer above it. Baked in it was 253KB. */
   {
-    const cap = /\.pa\{[^}]*?width:clamp\(200px,var\(--pa-w,\s*70vw\),(\d+)px\)/.exec(homeCss);
-    check('the aura declares a size ceiling', !!cap, 'clamp() ceiling not found in the shipped sheet');
-    if (cap) {
-      check('the aura ceiling is low enough for a laptop', Number(cap[1]) <= 1400,
-        `${cap[1]}px - cost is quadratic; 5200px was 385MB of rotating texture at 1440px wide`);
-      check('the aura ceiling is above the largest phone blob', Number(cap[1]) >= 1300,
-        `${cap[1]}px would shrink the aura on a phone, which is the size that works`);
+    const field = /\.pageaura\{([^}]*)\}/.exec(homeCss);
+    check('the still field ships', !!field, 'no .pageaura rule in the shipped sheet');
+    if (field) {
+      check('the field is fixed to the viewport, not sized to the document',
+        /position:fixed/.test(field[1]),
+        `${field[1].slice(0, 90)} - absolute makes it grow with the document and every late image shifts it`);
+    }
+    check('the field carries no animation',
+      !/\.pageaura[^{]*\{[^}]*animation/.test(homeCss) && !/@keyframes pa-/.test(homeCss),
+      'an infinite animation here is what stopped the page ever reaching CPU idle');
+    /* Across every page, not just the home page: sitePreMain emits the field
+       for all of them and one template still calling the old generator would
+       be invisible here otherwise. */
+    const withBlobs = [...pages].filter(([, h]) => h.includes('class="pa pa--')).map(([f]) => f);
+    check('no aura blob markup is emitted', withBlobs.length === 0,
+      `${withBlobs.slice(0, 4).join(', ')} - the animated spans should not be in any page`);
+
+    /* The per-page intensity dial has to survive, or every page gets the home
+       page's strength: the gallery asks for 0.22 and reading over a full
+       brightness field is a different thing entirely. */
+    check('the field is still dimmed per page',
+      /opacity:calc\(var\(--pa-mul/.test(homeCss),
+      '--pa-mul must drive the image, or the per-page dials do nothing');
+    /* The dials are in the ROUTE sheets, not home.css: src/styles-home/pages/*
+       is emitted as p-<name>.css and only home.css carries the base rule. */
+    const dials = fs.readdirSync(ROOT)
+      .filter((f) => /^p-[a-z]+\.css$/.test(f))
+      .filter((f) => /--pa-mul:/.test(fs.readFileSync(path.join(ROOT, f), 'utf8')));
+    check('the route sheets still set their own intensity', dials.length >= 10,
+      `${dials.length} route sheets set --pa-mul`);
+
+    const img = /url\(([^)]*aura-field[^)]*)\)/.exec(homeCss);
+    check('the field image is referenced', !!img, 'no aura-field image in the sheet');
+    if (img) {
+      const p = img[1].replace(/^['"]|['"]$/g, '').replace(/^\//, '');
+      const st = fs.existsSync(path.join(ROOT, p)) ? fs.statSync(path.join(ROOT, p)) : null;
+      check('the field image ships', !!st, p);
+      if (st) {
+        check('the field image is small', st.size <= 40 * 1024,
+          `${(st.size / 1024).toFixed(1)}KB - grain belongs in the CSS layer, not baked into the file`);
+      }
     }
   }
-
-  /* And the aura's own animations must stay safe to stop: pure transform, or
-     an opacity range that never reaches zero and carries no fill mode. */
-  const breathe = (homeCss.match(/@keyframes pa-breathe\{([^}]*\}[^}]*)\}/) || [])[1] || '';
-  const zeroOpacity = /opacity:\s*0(?![.\d])/.test(breathe);
-  check('the aura never animates to fully transparent', !zeroOpacity,
-    'a paused blob could then be invisible');
-  check('the aura animation carries no fill mode',
-    !/animation:[^;]*pa-(turn|breathe)[^;]*\b(both|forwards)\b/.test(homeCss),
-    'a fill mode would make a paused animation hold its value permanently');
 }
 
 /* ---- The home page's running order is the club's ---------------------------

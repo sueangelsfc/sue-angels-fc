@@ -25,7 +25,7 @@ import { fileURLToPath } from 'node:url';
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { fmtDate, isUs, byCompetition, slugify } from '../lib/stats.mjs';
-import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
+import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -411,7 +411,7 @@ export function league(d) {
     bodyClass: 'is-home is-sub is-league',
     css: 'home.css',
     shell: 'home',
-    preMain: sitePreMain(auraFor('league.html')),
+    preMain: sitePreMain(),
     footerHtml: siteFooter(),
     schema: [{
       '@context': 'https://schema.org',

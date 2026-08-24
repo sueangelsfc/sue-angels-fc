@@ -26,7 +26,7 @@
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB, PARTNERS, SPONSOR_PACK } from '../lib/club.mjs';
 import { teamSummary, isLeague} from '../lib/stats.mjs';
-import { siteFooter, sitePreMain, siteHeader, auraFor } from './home.mjs';
+import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -300,7 +300,7 @@ export function sponsors(d) {
     bodyClass: 'is-home is-sub is-sponsors',
     css: 'home.css',
     shell: 'home',
-    preMain: sitePreMain(auraFor('sponsors.html')),
+    preMain: sitePreMain(),
     footerHtml: siteFooter(),
     schema: [{
       '@context': 'https://schema.org',

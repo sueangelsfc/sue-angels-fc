@@ -27,7 +27,7 @@ import { fileURLToPath } from 'node:url';
 import { esc, attr, NAV, CLUB_ID } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { teamSummary, leaderboard, biggestWin, fmtDate, isLeague} from '../lib/stats.mjs';
-import { siteFooter, sitePreMain, siteHeader, oppBadge, auraFor } from './home.mjs';
+import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
@@ -348,7 +348,7 @@ export function about(d) {
     bodyClass: 'is-home is-sub',
     css: 'home.css',
     shell: 'home',
-    preMain: sitePreMain(auraFor('about.html')),
+    preMain: sitePreMain(),
     footerHtml: siteFooter(),
     schema: [{
       '@context': 'https://schema.org',

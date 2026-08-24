@@ -13,7 +13,7 @@
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB, YOUTUBE_URL } from '../lib/club.mjs';
 import { fmtDate, isUs } from '../lib/stats.mjs';
-import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
+import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -156,7 +156,7 @@ export function live(d) {
     css: 'home.css',
     shell: 'home',
     bodyClass: 'is-home is-sub is-live',
-    preMain: sitePreMain(auraFor('live.html')),
+    preMain: sitePreMain(),
     footerHtml: siteFooter(),
     body: siteHeader('/live.html') + hero + streamBand + replayBand + ctaBand,
     schema: [{

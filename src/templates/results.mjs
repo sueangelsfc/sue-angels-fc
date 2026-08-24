@@ -29,7 +29,7 @@ import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { teamSummary, fmtDate } from '../lib/stats.mjs';
 import { seasonViews, defaultView, seasonBar, seasonPanels, matchNote } from '../lib/seasons.mjs';
-import { siteFooter, sitePreMain, siteHeader, auraFor, oppBadge } from './home.mjs';
+import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
 import { hasReport as hasWrittenReport, FRIENDLY_FLAG, FRIENDLY_NOTE_SHORT } from '../lib/prose.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
 
@@ -442,7 +442,7 @@ function matchesPage(d, mode) {
     bodyClass: `is-home is-sub is-matches${isFixtures ? ' is-fixtures' : ''}`,
     css: 'home.css',
     shell: 'home',
-    preMain: sitePreMain(auraFor(isFixtures ? 'fixtures.html' : 'results.html')),
+    preMain: sitePreMain(),
     footerHtml: siteFooter(),
     schema: [{
       '@context': 'https://schema.org',

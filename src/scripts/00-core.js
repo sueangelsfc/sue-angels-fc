@@ -618,8 +618,8 @@
        `.camp` is one element rather than thirty-five observers, and it is a
        normal section with its own box, so unlike `.pageaura` it genuinely
        leaves the viewport. */
-    var stillable = $$('.pa').concat($$('.camp'));
-    if (stillable.length > 1) {
+    var stillable = $('.camp');
+    if (stillable.length) {
       var stiller = new IntersectionObserver(function (entries) {
         entries.forEach(function (en) {
           en.target.classList.toggle('is-still', !en.isIntersecting);

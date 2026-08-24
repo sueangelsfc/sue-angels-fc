@@ -285,3 +285,34 @@
   font-size: var(--step--2);
   line-height: 1.4;
 }
+
+/* Show only: the counts as buttons. They were a sentence above the table
+   ("3 new signings, 20 in the squad"), which tells you how many and never
+   which, so the question that brings somebody to this screen still meant
+   reading twenty-five rows. */
+.cp-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-block: var(--space-4) var(--space-2);
+}
+.cp-filter {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: var(--space-1) var(--space-3);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: var(--step--2);
+  cursor: pointer;
+}
+.cp-filter b { color: var(--text); font-variant-numeric: tabular-nums; }
+.cp-filter:hover { border-color: var(--brand); color: var(--text); }
+.cp-filter.is-on {
+  background: var(--brand);
+  border-color: var(--brand);
+  /* Dark ink on orange in both themes: white on #FF7034 is 2.76:1. */
+  color: var(--text-on-brand);
+}
+.cp-filter.is-on b { color: var(--text-on-brand); }
+.cp-filter--warn { border-color: var(--warning); color: var(--text); }

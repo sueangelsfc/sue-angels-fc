@@ -78,6 +78,11 @@
      the worked-out labels describe IT. It starts on the current season
      because that is what anybody opening the panel in August is here for. */
   var editSeason = CURRENT;
+  /* The chosen filter survives a re-render, the way the chosen season does.
+     Setting a signing date refreshes the screen, and without this the list
+     jumped back to everyone at the exact moment somebody was working through
+     the three players the filter had just found for them. */
+  var showOnly = 'all';
 
   /* Three shapes have been written to roster:status and all three are read.
      A flat string is what the player was in the CURRENT season, which is
@@ -397,6 +402,54 @@
       STATUSES.forEach(function (x) { counts[x.key] = 0; });
       players.forEach(function (p) { counts[p.status] = (counts[p.status] || 0) + 1; });
 
+      /* ------------------------------------------------------------------
+         WHO IS NEW, WHO STAYED, WHO HAS GONE - ANSWERED, NOT SEARCHED FOR
+
+         Twenty-five players in one alphabetical list, each with a dropdown
+         and a worked-out badge, and the question the club actually arrives
+         with is "who is new this season". Answering it meant reading every
+         row and remembering. The counts were already in the paragraph above
+         the table as prose, which is the least useful place for them: you
+         can read that there are three new signings and still not know which
+         three.
+
+         So each count is a button and each button is a filter. The derived
+         three come first because they are the question; the set statuses
+         follow because they are the answer to a different one. A group with
+         nobody in it is not offered, so the bar never shows a filter that
+         empties the table.
+         ------------------------------------------------------------------ */
+      var groups = [];
+      var tally = {};
+      players.forEach(function (p) {
+        tally[p.tenure || '-'] = (tally[p.tenure || '-'] || 0) + 1;
+        tally['s:' + p.status] = (tally['s:' + p.status] || 0) + 1;
+        if (p.why && p.why.conflict) tally.flag = (tally.flag || 0) + 1;
+      });
+      groups.push({ id: 'all', label: 'Everyone', n: players.length });
+      ['new', 'retained', 'returned'].forEach(function (k) {
+        if (tally[k]) groups.push({ id: k, label: LABEL[k], n: tally[k] });
+      });
+      STATUSES.forEach(function (x) {
+        if (tally['s:' + x.key]) groups.push({ id: 's:' + x.key, label: x.label, n: tally['s:' + x.key] });
+      });
+      if (tally.flag) {
+        groups.push({ id: 'flag', label: 'Needs a signing date', n: tally.flag, warn: true });
+      }
+      /* A filter that no longer matches anybody - the last new signing was
+         given a date, so the group is gone - falls back to everyone rather
+         than showing an empty table with no pressed button to explain it. */
+      if (!groups.some(function (g) { return g.id === showOnly; })) showOnly = 'all';
+
+      var filterBar = '<div class="cp-filters" role="group" aria-label="Show only">' +
+        groups.map(function (g) {
+          var on = g.id === showOnly;
+          return '<button class="cp-filter' + (g.warn ? ' cp-filter--warn' : '') +
+            (on ? ' is-on' : '') + '" type="button" data-filter="' + esc(g.id) + '"' +
+            ' aria-pressed="' + (on ? 'true' : 'false') + '">' +
+            esc(g.label) + ' <b>' + esc(g.n) + '</b></button>';
+        }).join('') + '</div>';
+
       /* One tab per season. Everything under it is about that season: the
          counts, the dropdowns and the worked-out labels. Editing 25/26 does
          not touch 26/27, which is the whole point of the change. */
@@ -418,19 +471,21 @@
             + '<p>' + esc(players.length) + ' players. What somebody is is recorded <b>per season</b>, '
             + 'so this screen is about <b>' + esc(editSeason) + '</b> and nothing you change here '
             + 'touches another year. '
-            + STATUSES.filter(function (x) { return counts[x.key]; })
-              .map(function (x) { return '<b>' + esc(counts[x.key]) + '</b> ' + esc(x.label.toLowerCase()); })
-              .join(', ') + '.'
-            + ' Anyone not in the squad keeps their profile and their whole record; they move to '
+            + 'Anyone not in the squad keeps their profile and their whole record; they move to '
             + '<b>Those who came before</b> rather than disappearing.</p>'
             + '<p class="cp-note"><b>New signing</b>, <b>retained</b> and <b>back at the club</b> are '
             + 'not in the list because the site works them out: it knows which seasons each player has '
             + 'been in the squad, so it can tell a first season from a second from a return, and it '
-            + 'keeps doing so every year without anyone editing anything.</p>',
+            + 'keeps doing so every year without anyone editing anything.</p>'
+            + filterBar,
           actions: '<button class="btn btn--primary" data-add-player>Add a player</button>',
           body: table(['Player', 'Position', 'Photograph', 'In ' + editSeason, 'Worked out', ''],
             players.map(function (p) {
-              return '<tr data-num="' + p.num + '">' +
+              var tags = ['all', p.tenure || '', 's:' + p.status,
+                (p.why && p.why.conflict) ? 'flag' : ''].filter(Boolean).join(' ');
+              var shown = (' ' + tags + ' ').indexOf(' ' + showOnly + ' ') > -1;
+              return '<tr data-num="' + p.num + '" data-tags="' + esc(tags) + '"' +
+                (shown ? '' : ' hidden') + '>' +
                 '<td><b>' + esc(p.name) + '</b></td>' +
                 '<td>' + esc(p.pos || 'Worked out from where they have played') + '</td>' +
                 '<td>' + (p.photo
@@ -621,6 +676,25 @@
           refresh('squad');
           return;
         }
+        /* FILTERING IS A VIEW, NOT A REFRESH. Re-rendering would lose the
+           dropdown somebody is halfway through and would cost a round trip to
+           show rows that are already on the page. */
+        var flt = e.target.closest && e.target.closest('[data-filter]');
+        if (flt) {
+          var want = flt.getAttribute('data-filter');
+          showOnly = want;
+          $$('[data-filter]', host).forEach(function (b) {
+            var on = b === flt;
+            b.classList.toggle('is-on', on);
+            b.setAttribute('aria-pressed', on ? 'true' : 'false');
+          });
+          $$('tr[data-tags]', host).forEach(function (tr) {
+            var tags = (' ' + tr.getAttribute('data-tags') + ' ');
+            tr.hidden = tags.indexOf(' ' + want + ' ') < 0;
+          });
+          return;
+        }
+
         if (e.target.matches('[data-add-player]')) { if (guard()) playerForm(); return; }
 
         if (e.target.matches('[data-add-trialist]')) {

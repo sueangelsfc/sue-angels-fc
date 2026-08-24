@@ -5,6 +5,7 @@
 import fs from 'node:fs';
 import vm from 'node:vm';
 import * as SITE from '../lib/squad-status.mjs';
+import { seasonOf } from '../lib/stats.mjs';
 
 const SEASONS = ['23/24', '24/25', '25/26', '26/27'];
 const CURRENT = '26/27';
@@ -37,7 +38,8 @@ const sandbox = {
 sandbox.globalThis = sandbox;
 
 /* Expose the panel's internals at the end of its IIFE. */
-const tail = '__capture({ statusIn: statusIn, tenureIn: tenureIn, isPlaying: isPlaying, statusDetail: statusDetail });\n})();';
+const tail = '__capture({ statusIn: statusIn, tenureIn: tenureIn, isPlaying: isPlaying, '
+  + 'statusDetail: statusDetail, signedOn: signedOn, seasonOfDate: seasonOfDate });\n})();';
 const at = src.lastIndexOf('})();');
 const patched = src.slice(0, at) + tail;
 
@@ -101,6 +103,31 @@ RECORDS.forEach((rec, i) => {
     if (da !== db) diffs.push(`record ${i} ${season} detail: site ${da}, panel ${db}`);
   }
 });
+
+/* THE SIGNING DATE IS A THIRD PAIR OF COPIES. The panel needs it to explain
+   the badge it shows and the site needs it to decide whether a team sheet from
+   an earlier season belongs to this player, so the rule exists twice again.
+   Both are run over the same records here, for the same reason the ordering
+   rule is: a panel that disagrees with what gets published is worse than a
+   panel that says nothing. */
+RECORDS.forEach((rec, i) => {
+  const siteRec = SITE.readStatusRecord({ 7: rec });
+  const a = SITE.signedOn(siteRec, 7);
+  const b = captured.signedOn({ 7: rec }, 7) || null;
+  compared += 1;
+  if (a !== b) diffs.push(`record ${i} signedOn: site ${a}, panel ${b}`);
+});
+
+/* And the season a date falls in, which each derives for itself. June starts
+   the next season, so the boundary is where this goes wrong if it goes wrong
+   at all. */
+for (const iso of ['2026-05-31', '2026-06-01', '2026-07-12', '2025-12-31',
+  '2026-01-01', '2025-06-01', '2027-05-31']) {
+  const a = seasonOf(iso);
+  const b = captured.seasonOfDate(iso);
+  compared += 1;
+  if (a !== b) diffs.push(`seasonOf ${iso}: site ${a}, panel ${b}`);
+}
 
 export const result = { compared, diffs };
 

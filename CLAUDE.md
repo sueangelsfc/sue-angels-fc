@@ -178,23 +178,19 @@ The panel also carries `aria-busy` while a screen fetches its chunk and reads th
 
 Two things an audit of this claimed and got wrong, both worth not re-checking: the toast container has carried `role="region"` and `aria-live="polite"` since it was written, so saves have always been announced; and 15 of the 16 labels with no `for=` wrap their own control, which is valid.
 
-### The match form is not splittable as it stands, and why
-`control-match.js` is **15.7KB gzipped of a 16KB budget** - the largest chunk and the most-opened screen - so the obvious move is to lazy-load the editor the way the report writer already is. It was measured and rejected, and the measurement is here so it is not redone from scratch.
+### The match form is split, and how it was made safe
+`control-match.js` was **15.9KB gzipped of a 16KB budget** - the largest chunk in the panel and the most-opened - because the two LIST screens shipped the whole five-tab editor to anybody reading a table. It is now **4.9KB**, with the editor in `control-matchedit.js` (11.9KB) fetched the first time somebody opens a match.
 
-`openMatch` is 997 lines of 2,163, and 1,215 lines would move with it against 228 lines of genuinely shared helpers. That part is a clean seam. The blocker is state: the editor **reads 23 module-level bindings and mutates six** - `spellsByNum`, `benchDetail`, `TRIALISTS`, `SQUAD`, `STATUS`, `nameOfNum` - which the fixtures and results screens also read. Splitting means sharing mutable references across a chunk boundary, and `TRIALISTS`/`SQUAD` are reassigned rather than mutated in place, so the two chunks would silently diverge instead of failing.
+The seam was never the problem. The blocker was **state**: `openMatch` read 23 module bindings and REASSIGNED six that the lists also read (`SQUAD`, `TRIALISTS`, `STATUS`, `nameOfNum`, `spellsByNum`, `benchDetail`). A binding reassigned in one chunk leaves the other holding the old array, and the two drift apart in silence rather than failing. They are properties of **`window.CPMSTATE`** now - one object, shared by reference, mutated by property and never replaced - so reassignment becomes property assignment, which every holder sees.
 
-There is also **no runtime test coverage for the panel at all**: the suite is static analysis over generated output, and the panel is behind Supabase sign-in. A 1,200-line move of the club's result-entry screen with no way to exercise it afterwards is not worth 0.3KB of headroom.
+- The lists keep the 8 helpers they also use and hand them over on `window.CPMH`. One date parser, not two that can disagree.
+- The editor takes everything else from `window` and publishes `window.CPME.openMatch`. The three call sites go through `U.chunk('matchedit')` first, the same pattern the report writer already used.
+- `M.fixtures` and `M.results` never move. The first attempt swallowed `M.results` into the moved set because the definition scanner did not recognise `M.x = function` as a boundary, and everything between `openMatch` and the next `function` was absorbed.
 
-**What would make it safe, in order:** move those six derived caches onto one namespace object mutated by property and never reassigned; then a harness that loads a chunk in Node against a stubbed `window.CP`/`CPU` and calls `M.results(host)`, which the project could use for every module; then the split. The shared mutable state is worth fixing on its own merits - it is the same shape as the bug where two renders made one click save twice.
+### The panel can be loaded outside a browser
+`src/test/harness.mjs` is the panel's first runtime coverage of any kind. The suite was static analysis over generated output and the panel sits behind a Supabase sign-in, which is precisely why the split sat undone: 1,500 lines could move and nothing would say a word until the club tried to record a result.
 
-### A field that is wrong says so, where it is wrong
-The panel already validated - a dozen hand-written checks with the right plain words ("Pick a date.", "Name the opponent.", "The trialist needs a name."), all running before the save. What none of them did was tell the **field**: the message went to a shared error line or a toast, `aria-invalid` appeared nowhere, and focus never moved, so on a form scrolled past you were told something was wrong and left to hunt for it.
-
-- `markValidity()` in the shell checks a field against **its own declared constraints** on change. A field that declares nothing is always valid, so this is inert everywhere it has not been asked for - the check that matters is that one, because without it every optional box in the panel lights up.
-- Twenty fields declare `type="number"` with `min`/`max` and nothing checked them, so an impossible value went to the server to be refused there. On mobile data at the side of a pitch that is the expensive way to find out.
-- `CPU.invalid(el, message)` puts one sentence beside one control, marks it `aria-invalid` and takes focus there. The existing checks already have the right words; what they lacked was somewhere to put them. The fixture form's date and opponent use it.
-- Those two also carry `required` now, so the browser reports it **and clears it live** once fixed. The JavaScript guard is unchanged and still governs the save, so the attribute can only add an earlier hint, never change what gets stored.
-- `.cp-invalid` is inserted directly after the control, before any hint, so `aria-describedby` still resolves and the reading order is control, then what is wrong with it, then what it is for.
+**No chunk touches the DOM at load** - every one declares its helpers, registers its modules and waits - so a chunk loads against plain stubs (`CP`, `CPU`, `SA_SEED`) and can be asked the questions that matter: does it register what it should, do two chunks share the same state object, does a mutation in one show up in the other. **Rendering is deliberately not attempted**; it needs a real DOM, and a half-built one that answers wrongly is worse than none, so the stub `document` throws rather than pretending.
 
 ### How the editors work
 - Authorisation is the **database's** answer, surfaced in the UI. A non-registered account is shown as read-only rather than hitting a policy error.

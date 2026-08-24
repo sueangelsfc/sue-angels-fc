@@ -509,6 +509,68 @@ for (const f of shipped) {
     check('somebody who never played is left dateless', !l3.detail, l3.detail);
   }
 
+  /* THE MATCH EDITOR IS ITS OWN CHUNK, AND THE TWO HALVES STILL AGREE.
+
+     This is the first thing in the suite that RUNS panel code rather than
+     reading it. The panel had no runtime coverage of any kind - static
+     analysis over generated output, with the panel itself behind a sign-in -
+     which is exactly why this split sat undone: 1,500 lines could move and
+     nothing would say a word until the club tried to record a result.
+
+     No chunk touches the DOM at load, so a chunk can be loaded against stubs
+     and asked the questions the split depends on. Rendering needs a real DOM
+     and is deliberately not attempted: a half-built DOM that answers wrongly
+     is worse than none. */
+  {
+    const { loadChunks } = await import(path.join(ROOT, 'src', 'test', 'harness.mjs'));
+    const seedRawH = fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8');
+    const seedH = JSON.parse(/window\.SA_SEED\s*=\s*(\{[\s\S]*?\});/.exec(seedRawH)[1]);
+
+    /* Reading the results list must not drag the editor in. */
+    const listOnly = loadChunks(['control-match.js'], { seed: seedH, root: ROOT });
+    check('the lists load on their own', !!listOnly.CPM.fixtures && !!listOnly.CPM.results);
+    check('and do not bring the editor with them', listOnly.CPME === undefined,
+      'the editor is back in the chunk everybody opening a list downloads');
+    check('the lists publish what the editor will borrow',
+      Object.keys(listOnly.CPMH || {}).length === 8,
+      `${Object.keys(listOnly.CPMH || {}).length} helpers published`);
+    check('the shared state is built by the lists',
+      (listOnly.CPMSTATE.SQUAD || []).length > 0
+      && Object.keys(listOnly.CPMSTATE.nameOfNum || {}).length > 0);
+
+    /* Then the editor arrives, as it does when a match is opened. */
+    const both = loadChunks(['control-match.js', 'control-matchedit.js'], { seed: seedH, root: ROOT });
+    check('the editor registers itself when it arrives',
+      typeof both.CPME?.openMatch === 'function');
+    check('every helper the editor borrows actually resolved',
+      Object.values(both.CPMH).every((v) => typeof v === 'function'),
+      'the editor holds an undefined where a function should be');
+
+    /* THE WHOLE REASON THIS WAS BLOCKED. Six caches the lists and the editor
+       both read, and the editor REASSIGNS. Across a chunk boundary two copies
+       drift apart in silence rather than failing, so they are properties of
+       one object shared by reference. */
+    const st = both.CPMSTATE;
+    st.nameOfNum[9999] = 'Probe';
+    check('a mutation through the shared state is seen by both',
+      both.CPMSTATE.nameOfNum[9999] === 'Probe');
+    st.TRIALISTS = [{ num: 9999, name: 'Probe' }];
+    check('and so is a reassignment, which is what a plain binding could not do',
+      both.CPMSTATE.TRIALISTS.length === 1 && both.CPMSTATE.TRIALISTS[0].name === 'Probe');
+    check('the six shared caches all live on that object',
+      ['TRIALISTS', 'SQUAD', 'STATUS', 'nameOfNum', 'spellsByNum', 'benchDetail']
+        .every((k) => k in both.CPMSTATE));
+
+    /* And the lists must actually defer rather than call a function that left. */
+    const listSrc = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '10-match.js'), 'utf8');
+    check('the lists fetch the editor by name before opening a match',
+      (listSrc.match(/chunk\('matchedit'\)/g) || []).length === 3,
+      'a call site still expects the editor to be present');
+    check('no list calls openMatch directly any more',
+      !/(^|[^.\w])openMatch\s*\(/.test(listSrc.replace(/\/\*[\s\S]*?\*\//g, ' ')),
+      'that call throws the moment the chunk is not loaded');
+  }
+
   /* A FIELD THAT IS WRONG SAYS SO WHERE IT IS WRONG. The panel already
      validated - a dozen hand-written checks with good plain words, all before
      the save - but none of them told the FIELD: the message went to a shared
@@ -1410,7 +1472,13 @@ const BUDGET = {
   /* The forward-looking screen: a checklist and a squad picker, no images
      and no tables of history, so it has no business being large. */
   'control-matchday.js': 4,
-  'control-match.js': 16,
+  /* 16 -> 6. The five-tab editor left for control-matchedit.js, so this is now
+     the two LISTS: 15.9KB of a 16KB ceiling became 4.9KB. The ceiling comes
+     down with it, or the split quietly rots back. */
+  'control-match.js': 6,
+  /* The editor, fetched the first time somebody opens a match. Nobody who
+     only reads the results list pays for it. */
+  'control-matchedit.js': 13,
   /* 15 -> 16. What bought it: the length gauge under the notes box, and the
      word count beside the Build button.
 
@@ -1719,7 +1787,10 @@ for (const [f, kb] of Object.entries({
   const srcDir = path.join(ROOT, 'src', 'admin');
   const core = fs.readdirSync(srcDir).filter((f) => f.endsWith('.js')).sort()
     .map((f) => fs.readFileSync(path.join(srcDir, f), 'utf8')).join('\n');
-  const matchChunk = fs.readFileSync(path.join(srcDir, 'lazy', '10-match.js'), 'utf8');
+  /* Both halves of the match form. The editor moved to 11-matchedit.js, so a
+     check that reads only the list half passes by looking in the wrong place. */
+  const matchChunk = ['10-match.js', '11-matchedit.js']
+    .map((f) => fs.readFileSync(path.join(srcDir, 'lazy', f), 'utf8')).join('\n');
   const shippedCore = fs.readFileSync(path.join(ROOT, 'control.js'), 'utf8');
 
   /* The heavy modules are NOT in the core. */
@@ -1809,7 +1880,7 @@ for (const [f, kb] of Object.entries({
     const SEEDF = JSON.parse(seedRaw.replace(/^window\.SA_SEED=/, '').replace(/;\s*$/, ''));
     const PITCH_XY = {}, POS_GROUP = {};
     (SEEDF.positions || []).forEach((p) => { PITCH_XY[p.code] = [p.x, p.y]; POS_GROUP[p.code] = p.group; });
-    const src = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '10-match.js'), 'utf8');
+    const src = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '11-matchedit.js'), 'utf8');
     const body = /var RANKS = \[[\s\S]*?\n  \}\n/.exec(src);
     check('the formation detector can be isolated for testing', !!body);
     if (body) {
@@ -2333,7 +2404,13 @@ for (const [f, kb] of Object.entries({
      is written on the fixture and read by the match form, which fills the
      team sheet in from it. If that ever stops, the picker is asking the club
      for something nothing uses. */
-  const matchSrc = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '10-match.js'), 'utf8');
+  /* THE MATCH FORM IS TWO FILES NOW. The lists stayed in 10-match.js and the
+     five-tab editor moved to 11-matchedit.js, fetched when a match is opened.
+     These checks are about what the form DOES, not where it lives, so they
+     read both - otherwise a split silently turns them all green by looking in
+     the wrong place, which is exactly what it did. */
+  const matchSrc = ['10-match.js', '11-matchedit.js']
+    .map((f) => fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', f), 'utf8')).join('\n');
   check('the matchday squad is read by the team sheet',
     /Array\.isArray\(d\.squad\)/.test(matchSrc) && /pre\.slice\(0, 11\)/.test(matchSrc),
     'the fixture squad picker would write a field nothing consumes');

@@ -110,6 +110,7 @@
           sub: 'Three of these came with the site and cannot be removed from here, because deleting '
             + 'somebody from a record that does not contain them would do nothing and look broken. '
             + 'They can be edited freely: an edit is saved alongside and wins over the original.',
+          where: [['Coaches and staff', '/coaches.html']],
         })
         : '');
 

@@ -195,9 +195,10 @@
                   '<button class="btn btn--danger btn--sm" data-del>Remove</button>' +
                 '</div></td>' +
               '</tr>';
-            }).join(''))
+        }).join(''))
             : empty('No fixtures stored',
               'Add one above and it appears on the website at the next publish, including the next-match card on the home page.')),
+          where: [['Fixtures', '/fixtures.html']],
         });
 
       var err = $('[data-fx-err]', host);

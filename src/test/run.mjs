@@ -509,6 +509,70 @@ for (const f of shipped) {
     check('somebody who never played is left dateless', !l3.detail, l3.detail);
   }
 
+  /* EVERY SECTION SAYS WHERE ITS CONTENT SHOWS, OR SAYS WHY IT DOES NOT.
+     CLAUDE.md states the rule: a label that promises an outcome is a testable
+     claim, and "What the website publishes" was once false for six match
+     reports. 18 of 42 sections made no claim at all, which is not the same as
+     being exempt - it is just quiet.
+
+     Two of them genuinely published and now link: Fixtures to come to
+     /fixtures.html, The founding staff to /coaches.html. The rest publish
+     nothing, and are named here for the same reason the six pages with no
+     outbound citation are named in the SOURCES check: adding to this list is
+     a decision somebody makes on purpose, rather than a way to silence a
+     check. A NEW section with no `where:` fails until it is either linked or
+     argued for here. */
+  {
+    const PUBLISHES_NOTHING = new Set([
+      /* The dashboard reports on the site; it is not part of it. */
+      'Where the gaps are', 'Needs attention', 'Recently changed',
+      'What usually needs doing',
+      /* Settings, help and the audit trail. */
+      'Your access', 'How a change reaches the website', 'Who changed what',
+      'Backup', 'Club details',
+      /* The club's own prospect list. Nothing in it is published, by design. */
+      'Sponsorship pipeline', 'Chasing the ones that are not',
+      /* Matchday assembles what other screens publish; it has no page. */
+      'Matchday', 'The matchday squad',
+      /* Tables inside a section whose own heading already carries the link. */
+      'Match reports', 'Articles',
+    ]);
+
+    const adminDir = path.join(ROOT, 'src', 'admin');
+    const adminFiles = ['10-app.js'].concat(
+      fs.readdirSync(path.join(adminDir, 'lazy')).map((f) => path.join('lazy', f))
+    );
+    const unclaimed = [];
+    let withWhere = 0;
+    for (const rel of adminFiles) {
+      const srcA = fs.readFileSync(path.join(adminDir, rel), 'utf8');
+      let i = srcA.indexOf('sec({');
+      while (i > -1) {
+        let depth = 0;
+        let j = srcA.indexOf('{', i);
+        const from = j;
+        for (; j < srcA.length; j += 1) {
+          if (srcA[j] === '{') depth += 1;
+          else if (srcA[j] === '}') { depth -= 1; if (!depth) break; }
+        }
+        const blk = srcA.slice(from, j + 1);
+        const t = /title: *'([^']*)'/.exec(blk);
+        const title = t ? t[1] : '';
+        /* Not preceded by a letter: `where: [` and `nowhere: [` differ by a
+           prefix, and a substring match counts the second as the first. */
+        if (/(^|[^A-Za-z])where: *\[/.test(blk)) withWhere += 1;
+        /* A section built from a record - a per-match video panel, the match
+           editor - has no literal title and is one section repeated, so it is
+           covered by the screen it sits on. */
+        else if (title && !PUBLISHES_NOTHING.has(title)) unclaimed.push(`${rel}: ${title}`);
+        i = srcA.indexOf('sec({', j);
+      }
+    }
+    check('every panel section either links to where it shows or is a named exemption',
+      unclaimed.length === 0, unclaimed.join(' | '));
+    check('the where: rule is actually met somewhere', withWhere > 20, `${withWhere} sections link out`);
+  }
+
   /* THE HINT UNDER A FIELD REACHES A SCREEN READER. Every editor writes its
      own markup, so each puts the explanation in a `.cp-note` beside the
      control and none of them associates the two: the sentence saying what the

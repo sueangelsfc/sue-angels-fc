@@ -106,7 +106,7 @@
                       return '<option' + (s === l.status ? ' selected' : '') + '>' + esc(s) + '</option>';
                     }).join('') + '</select></td>' +
                   '<td><button class="btn btn--ghost btn--sm" data-edit>Edit</button> ' +
-                    '<button class="btn btn--quiet btn--sm" data-del>Remove</button></td>' +
+                    '<button class="btn btn--danger btn--sm" data-del>Remove</button></td>' +
                 '</tr>';
               }).join(''))
             : empty('No prospects yet',

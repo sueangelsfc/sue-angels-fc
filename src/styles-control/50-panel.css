@@ -251,3 +251,22 @@
   line-height: 1.3;
   text-align: end;
 }
+
+/* A row's actions wrap rather than widening the table.
+   Three buttons on one line is what pushed the fixtures table wide enough to
+   scroll, which put Remove off the right edge of a panel that gives no sign
+   there is anything to the right. Wrapping keeps every control reachable at
+   any width, and the gap stops two buttons touching when they do wrap. */
+.cp-rowacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: flex-end;
+}
+
+/* The second fact in a cell: a kick-off under a date, a competition under a
+   fixture. Present, and clearly not the thing the row is about. */
+.cp-dim {
+  color: var(--text-subtle);
+  font-size: var(--step--2);
+}

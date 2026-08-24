@@ -171,16 +171,29 @@
             + 'in from the fixture. Saving it records the result and takes the fixture off this list, '
             + 'because a match is either still to come or it has happened, never both.',
           body: (list.length
-            ? table(['Date', 'Fixture', 'Competition', 'Kick-off', ''], list.map(function (r) {
+            /* THREE COLUMNS, NOT FIVE, AND REMOVE IS NOT A WHISPER.
+               `table()` wraps in `.scroll-x`, so on any panel narrower than the
+               five columns needed the actions cell is the first thing off the
+               right edge - and the actions cell held the only way to delete a
+               fixture. Removing one was reported as impossible because the
+               button could not be seen: clipped by the scroll on a narrow
+               panel, and styled `btn--quiet` (transparent, no border) where the
+               two buttons beside it were solid and bordered. A destructive
+               action should be the plainest thing in the row to find, not the
+               faintest. Date and kick-off are one fact about when, competition
+               belongs under the fixture it describes, and three columns fit. */
+            ? table(['When', 'Fixture', ''], list.map(function (r) {
               var f = r.data || {};
               return '<tr data-key="' + esc(r.key) + '">' +
-                '<td>' + esc(f.date || '') + '</td>' +
-                '<td><b>' + esc(f.home || '') + '</b> v <b>' + esc(f.away || '') + '</b></td>' +
-                '<td>' + esc(f.competition || '') + '</td>' +
-                '<td>' + esc(f.kick || '') + '</td>' +
-                '<td><button class="btn btn--primary btn--sm" data-fx-result>Enter result</button> ' +
-                  '<button class="btn btn--ghost btn--sm" data-fx-edit>Edit</button> ' +
-                  '<button class="btn btn--quiet btn--sm" data-del>Remove</button></td>' +
+                '<td><b>' + esc(f.date || '') + '</b>' +
+                  (f.kick ? '<br><span class="cp-dim">' + esc(f.kick) + '</span>' : '') + '</td>' +
+                '<td><b>' + esc(f.home || '') + '</b> v <b>' + esc(f.away || '') + '</b>' +
+                  (f.competition ? '<br><span class="cp-dim">' + esc(f.competition) + '</span>' : '') + '</td>' +
+                '<td><div class="cp-rowacts">' +
+                  '<button class="btn btn--primary btn--sm" data-fx-result>Enter result</button>' +
+                  '<button class="btn btn--ghost btn--sm" data-fx-edit>Edit</button>' +
+                  '<button class="btn btn--danger btn--sm" data-del>Remove</button>' +
+                '</div></td>' +
               '</tr>';
             }).join(''))
             : empty('No fixtures stored',

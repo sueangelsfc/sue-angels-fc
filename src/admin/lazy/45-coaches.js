@@ -97,7 +97,7 @@
             '<td><button class="btn btn--ghost btn--sm" data-edit>Edit</button>' +
               (x.base
                 ? ''
-                : ' <button class="btn btn--quiet btn--sm" data-del>Remove</button>') +
+                : ' <button class="btn btn--danger btn--sm" data-del>Remove</button>') +
             '</td>' +
           '</tr>';
         }).join('')),

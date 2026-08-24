@@ -241,7 +241,7 @@
                 : '<span class="badge badge--warning">None</span>') + '</td>' +
               '<td><button class="btn btn--ghost btn--sm" data-edit>Edit</button> ' +
                 '<button class="btn btn--quiet btn--sm" data-raw>Raw</button> ' +
-                '<button class="btn btn--quiet btn--sm" data-del>Delete</button></td>' +
+                '<button class="btn btn--danger btn--sm" data-del>Delete</button></td>' +
             '</tr>';
           }).join(''))
           : empty('No articles yet', 'Write one and it appears on the news page and the home page feed.')),
@@ -426,7 +426,7 @@
               '<td>' + esc(d.photographer || '') + '</td>' +
               '<td><button class="btn btn--ghost btn--sm" data-edit>Open</button> ' +
                 '<button class="btn btn--quiet btn--sm" data-raw>Raw</button> ' +
-                '<button class="btn btn--quiet btn--sm" data-del>Delete</button></td>' +
+                '<button class="btn btn--danger btn--sm" data-del>Delete</button></td>' +
             '</tr>';
           }).join(''))
           : empty('No albums yet', 'Create one and add the photographs straight into it.')),
@@ -848,7 +848,7 @@
                 : '<span class="badge badge--warning">No</span>') + '</td>' +
               '<td><button class="btn btn--ghost btn--sm" data-edit>Edit</button> ' +
                 '<button class="btn btn--quiet btn--sm" data-raw>Raw</button> ' +
-                '<button class="btn btn--quiet btn--sm" data-del>Delete</button></td>' +
+                '<button class="btn btn--danger btn--sm" data-del>Delete</button></td>' +
             '</tr>';
           }).join(''))
           : empty('Nothing recorded yet', 'Player of the Month and the season awards appear on the awards page.')),
@@ -1043,7 +1043,7 @@
                 : '<span class="badge badge--warning">None</span>') + '</td>' +
               '<td>' + esc(d.aspect || 'circle') + '</td>' +
               '<td><button class="btn btn--ghost btn--sm" data-edit>Edit</button> ' +
-                '<button class="btn btn--quiet btn--sm" data-del>Delete</button></td>' +
+                '<button class="btn btn--danger btn--sm" data-del>Delete</button></td>' +
             '</tr>';
           }).join(''))
           : empty('No badges stored', 'Opponent crests come from the site’s own records until one is added here.')),
@@ -1175,7 +1175,7 @@
                 '<td>' + (d.url
                   ? '<a href="' + esc(d.url) + '" target="_blank" rel="noopener">their site</a>' : '') + '</td>' +
                 '<td><button class="btn btn--ghost btn--sm" data-edit>Edit</button> ' +
-                  '<button class="btn btn--quiet btn--sm" data-del>Remove</button></td>' +
+                  '<button class="btn btn--danger btn--sm" data-del>Remove</button></td>' +
               '</tr>';
             }).join(''))
             : ''),

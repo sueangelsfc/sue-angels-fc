@@ -408,6 +408,25 @@ for (const f of shipped) {
   check('sbInsert never asks for the row back', !/return=representation/.test(body));
 }
 
+/* ---- A destructive control is never the faintest thing in its row ----
+   The only way to delete a fixture was a `btn--quiet` button - transparent, no
+   border - sitting beside a solid one and a bordered one, in the last cell of a
+   five-column table inside `.scroll-x`. It was reported as not existing,
+   because on a panel narrower than the table it was off the right edge and even
+   in view it read as a caption. `btn--quiet` is for a link-like afterthought,
+   which is the opposite of what a delete is. */
+{
+  const lazy = fs.readdirSync(path.join(ROOT, 'src', 'admin', 'lazy'));
+  for (const f of lazy) {
+    const src = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', f), 'utf8');
+    const bad = (src.match(/class="btn[^"]*btn--quiet[^"]*"[^>]*\bdata-del\b/g) || []).length;
+    check(`${f}: no delete button styled as a whisper`, bad === 0);
+  }
+  const match = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '10-match.js'), 'utf8');
+  check('a fixture row offers a way to remove it', /data-del/.test(match));
+  check('fixture row actions can wrap rather than scroll away', /cp-rowacts/.test(match));
+}
+
 /* ---- 12b. The league page agrees with itself ----
    The league page renders the club's season twice from the same source: once
    as a row in the division table, once as W/D/L letters on each month of

@@ -369,7 +369,7 @@
                   ? '<span class="badge badge--neutral">' + esc(LABEL[p.tenure]) + '</span>'
                   : '<span class="cp-hint">Nothing to say</span>') + '</td>' +
                 '<td>' + (p.added
-                  ? '<button class="btn btn--quiet btn--sm" data-del-player>Remove</button> '
+                  ? '<button class="btn btn--danger btn--sm" data-del-player>Remove</button> '
                   : '') +
                   '<a class="btn btn--quiet btn--sm" href="/players/' + esc(slug(p.name)) +
                     '.html" target="_blank" rel="noopener">View</a></td>' +
@@ -407,7 +407,7 @@
                 '<td>' + (over
                   ? '<span class="badge badge--warning">Trial over</span>'
                   : '<span class="badge badge--success">Yes</span>') + '</td>' +
-                '<td><button class="btn btn--quiet btn--sm" data-del-trialist>Remove</button></td>' +
+                '<td><button class="btn btn--danger btn--sm" data-del-trialist>Remove</button></td>' +
               '</tr>';
             }).join(''))
             : empty('Nobody on trial',
@@ -426,7 +426,7 @@
                 '<td><b>' + esc(c.name) + '</b></td>' +
                 '<td>' + esc(c.role || 'Coach') + '</td>' +
                 '<td><button class="btn btn--ghost btn--sm" data-edit-staff>Edit</button> ' +
-                  '<button class="btn btn--quiet btn--sm" data-del-staff>Remove</button></td>' +
+                  '<button class="btn btn--danger btn--sm" data-del-staff>Remove</button></td>' +
               '</tr>';
             }).join(''))
             : empty('Nobody added here yet',

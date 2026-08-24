@@ -509,6 +509,67 @@ for (const f of shipped) {
     check('somebody who never played is left dateless', !l3.detail, l3.detail);
   }
 
+  /* EVERY REPORT AND EVERY ARTICLE SHARES A CARD OF ITS OWN. All thirty-eight
+     reports carried `og-match.jpg` and all five articles `og-news.jpg`, so a
+     link to the Kew Antigua win and a link to the Brentford defeat looked
+     identical in WhatsApp, which is where this club's football is actually
+     shared. scripts/make-covers.mjs draws them and the output is committed.
+
+     A missing cover is NOT a failure: the deploy has no browser, so a match
+     published from the panel keeps the generic card until somebody runs
+     `npm run covers`. What is checked is that no two pages claim the SAME
+     drawn cover, which would mean an id collision quietly pointing two
+     matches at one picture. */
+  {
+    const shareOf = (f) => {
+      const m1 = /property="og:image" content="([^"]+)"/.exec(fs.readFileSync(path.join(ROOT, f), 'utf8'));
+      return m1 ? m1[1] : '';
+    };
+    const drawn = new Map();
+    let generic = 0;
+    for (const f of htmlFiles.filter((x) => x.startsWith('matches/') || x.startsWith('news/'))) {
+      const img = shareOf(f);
+      if (!img) continue;
+      if (!/\/assets\/covers\//.test(img)) { generic += 1; continue; }
+      if (drawn.has(img)) {
+        check(`${f}: does not share a drawn cover with ${drawn.get(img)}`, false, img);
+      }
+      drawn.set(img, f);
+    }
+    check('drawn covers exist and are used', drawn.size > 0, `${drawn.size} pages`);
+    check('every drawn cover is a file that is actually there',
+      [...drawn.keys()].every((u) => fs.existsSync(
+        path.join(ROOT, u.replace(/^https?:\/\/[^/]+/, '').replace(/^\//, '')))));
+    if (generic) console.log(`  ${generic} report/article page(s) still on the generic card - run npm run covers`);
+  }
+
+  /* A FIXTURE THAT HAS BEEN PLAYED IS NOT OFFERED FOR IMPORT. The panel's
+     "N fixtures are not in the database yet" banner compared the code
+     baseline against the fixtures TABLE and never against results, so all
+     five played pre-season friendlies were offered - and importing them would
+     have put five finished matches back on "still to come" beneath reports of
+     their own scores. */
+  {
+    const seedSrc0 = fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8');
+    const m0 = /"baselineFixtures":(\[.*?\])(?=,")/s.exec(seedSrc0);
+    check('the panel is seeded with a baseline fixture list', !!m0);
+    if (m0) {
+      const offered = JSON.parse(m0[1]);
+      const { buildDataset } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+      const dF = buildDataset();
+      const playedDays = new Set((dF.matches || []).filter((x) => x.played)
+        .map((x) => String(x.id || '').slice(1, 9)));
+      const wrong = offered.filter((f) => playedDays.has(String(f.id || '').slice(1, 9)));
+      check('no played match is offered as a fixture to import',
+        wrong.length === 0, wrong.map((f) => f.id).join(', '));
+      /* And the filter has something to remove, or it proves nothing. */
+      const raw0 = JSON.parse(fs.readFileSync(
+        path.join(ROOT, 'src', 'data', 'fixtures-2627.json'), 'utf8')).fixtures || [];
+      check('the played-fixture filter is actually removing some',
+        raw0.length > offered.length, `${raw0.length} in the baseline, ${offered.length} offered`);
+    }
+  }
+
   /* NOBODY WHO HAS LEFT IS OFFERED FOR A LATER MATCH. `unavailableFrom` is
      derived once so no screen judges it for itself - three already did, and
      one had drifted to a different season boundary. */

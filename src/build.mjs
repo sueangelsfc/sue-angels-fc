@@ -316,6 +316,23 @@ const adminSeed = {
      "the first of six" came out as nothing at all. Taken from `d.fixtures`
      rather than defaulted here a second time, so the two cannot drift. */
   baselineFixtures: (JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'fixtures-2627.json'), 'utf8')).fixtures || [])
+    /* A FIXTURE THAT HAS BEEN PLAYED IS NOT MISSING FROM ANYTHING.
+       The panel offers to import any of these that is not a row in the
+       fixtures table, and it compared against FIXTURES only - never against
+       results. Five of the six pre-season friendlies have been played and
+       scored, and every one of them was being offered for import, so the
+       banner was inviting the club to create five fixture rows for matches
+       that are finished. Pressing it would have put five played matches back
+       on "still to come", underneath reports of their own scores, which is
+       precisely the state the club cleared by hand two days ago.
+
+       Filtered here rather than in the panel because the site is what knows a
+       match has been played, and a rule the panel judged for itself would be
+       a second answer to a question already settled. */
+    .filter((f) => {
+      const day = String(f.id || '').slice(1, 9);
+      return !(d.matches || []).some((m) => m.played && String(m.id || '').slice(1, 9) === day);
+    })
     .map((f) => {
       const resolved = (d.fixtures || []).find((x) => x.id === f.id) || {};
       return { ...f, competition: resolved.competition || '', kick: f.kick || resolved.kick || '' };
@@ -1054,6 +1071,15 @@ for (const p of profilePlayers) {
   }));
 }
 
+/* THE COVER DRAWN FOR THIS MATCH OR ARTICLE, if one has been. Written by
+   scripts/make-covers.mjs and committed; missing simply means nobody has run
+   it since that record was added, and the generic card takes over the way it
+   always did. Checked on disk rather than assumed, so a card that was never
+   drawn cannot be linked as though it were. */
+const drawnCover = (id) => (fs.existsSync(path.join(ROOT, 'assets', 'covers', `${id}.jpg`))
+  ? `${CLUB.url}/assets/covers/${id}.jpg`
+  : '');
+
 /* ---- Match centre ----
    Every PLAYED match gets a page. A fixture with no result has nothing to
    report yet and lives on /fixtures.html until it does, so writing a page for
@@ -1073,7 +1099,9 @@ for (const m of (groupLive('matches') ? d.played : [])) {
        the score and the date, and is far more use in a WhatsApp group than a
        generic card that says nothing about this match. Falls back to the
        generic one, so a match without a cover still shares properly. */
-    ogImage: m.detail?.cover || ogCard('og-match'),
+    /* The club's own picture first, then the card drawn from this match's
+       own record, then the generic one. */
+    ogImage: m.detail?.cover || drawnCover(m.id) || ogCard('og-match'),
     ogImageAlt: `${m.title}, ${m.competition}, ${fmtDate(m.date, { long: true })}`,
     path: `/matches/${m.slug}.html`,
     body: out.body,
@@ -1101,7 +1129,7 @@ for (const a of (groupLive('news') ? d.articles : [])) {
     description: fitDesc(String(a.lede || a.title), `${CLUB.name}, ${CLUB.venue.district}.`),
     /* The article's own cover, drawn or photographed, in preference to the
        generic news card. */
-    ogImage: a.cover || ogCard('og-news'),
+    ogImage: a.cover || drawnCover(`a-${slug}`) || ogCard('og-news'),
     ogImageAlt: `${a.title} - ${CLUB.name}`,
     path: `/news/${slug}.html`,
     body: out.body,

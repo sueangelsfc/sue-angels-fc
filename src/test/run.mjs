@@ -2170,7 +2170,14 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   }
   const res = PAGES['results.html'] || '';
   const cards = res.match(/<li class="mt[^"]*"[\s\S]*?<\/li>/g) || [];
-  const friendlyCards = cards.filter((c) => /data-comp="[^"]*friendly/.test(c));
+  /* PLAYED, which the filter has to say and did not. "Friendly · not counted"
+     is a statement about a RESULT, so a fixture that has not been played
+     cannot carry it and was never meant to: those cards carry a kick-off time
+     instead. The check passed for as long as every friendly on the page had
+     been played, and went red the moment the club had three in the diary -
+     reporting "3 of 5 unflagged" for three cards that were correct. */
+  const friendlyCards = cards.filter((c) => /data-comp="[^"]*friendly/.test(c)
+    && !/<li class="[^"]*\bis-fixture\b/.test(c));
   check('results: every played friendly card carries the flag',
     friendlyCards.length > 0
       && friendlyCards.every((c) => c.includes('Friendly · not counted')),
@@ -3078,7 +3085,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
    here and compared. */
 {
   const { resolveHomeLayout, publishedBands, HOME_BANDS, HOME_BAND_KEYS,
-    featuredFor, pickResolves, reportsIn } =
+    featuredFor, pickResolves, reportsIn, homeBandFilled } =
     await import(path.join(ROOT, 'src', 'lib', 'home-layout.mjs'));
   const { buildDataset: bdL } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
   const dL = bdL();
@@ -3154,9 +3161,25 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     if (off.length) {
       check('home layout: bands added later start off',
         off.every((k) => !publishedBands({ order: SHIPPED.split(','), hidden: [] }, dL).includes(k)));
-      const optedIn = { order: [off[0], ...SHIPPED.split(',')], hidden: off.slice(1) };
-      check('home layout: opting a band in publishes it',
-        publishedBands(optedIn, dL)[0] === off[0], publishedBands(optedIn, dL).join(','));
+      /* THE BAND HAS TO HAVE SOMETHING IN IT, and taking off[0] blindly does
+         not guarantee that. publishedBands drops an EMPTY band whether it was
+         opted in or not, which is the behaviour a switch that lies depends on:
+         a band promising content the page would ignore is the thing that rule
+         exists to prevent. off[0] is `fixtures`, and `fixtures` is empty
+         whenever the only upcoming match is the one the hero card takes - so
+         this read "opting a band in does not publish it" and was reporting a
+         correct refusal as a fault. Pick the first default-off band that
+         actually has content, and say so when none has. */
+      const optable = off.filter((k) => homeBandFilled(k, dL));
+      if (!optable.length) {
+        warn('home layout: no default-off band currently has content to opt in');
+      } else {
+        const pick = optable[0];
+        const optedIn = { order: [pick, ...SHIPPED.split(',')], hidden: off.filter((k) => k !== pick) };
+        check('home layout: opting a band in publishes it',
+          publishedBands(optedIn, dL)[0] === pick,
+          `${pick} -> ${publishedBands(optedIn, dL).slice(0, 6).join(',')}`);
+      }
     } else {
       /* EVERY BAND IS ON BY DEFAULT, so the off rule has no live instance to
          exercise. It still has to be here for the next band that arrives
@@ -3705,7 +3728,8 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     {
       const zeroed = dP.players.map((p) => ({ ...p, goals: 0, assists: 0, apps: 0, motm: 0, captained: 0 }));
       const cases = [
-        ['fixtures', { ...dP, upcoming: dP.upcoming.slice(0, 1) }],
+        ['fixtures', { ...dP, upcoming: dP.upcoming.slice(0, 1) },
+          { ...dP, upcoming: [...dP.upcoming, { ...(dP.upcoming[0] || {}), id: 'test-later', slug: 'test-later', iso: '2026-09-13', date: '13 Sep 2026' }] }],
         ['lastout', { ...dP, played: [] }],
         ['streak', { ...dP, competitive: [] }],
         ['competitions', { ...dP, competitive: [] }],
@@ -3756,9 +3780,15 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
         ['potmhistory', { ...dP, recognition: [] }],
         ['photographers', { ...dP, galleries: [] }],
       ];
+      /* A case may carry its OWN baseline as a third element. Most bands have
+         content in the live dataset, so dP is the honest starting point and
+         starving it proves the band reads what it claims to. A few do not, and
+         for those "already empty" is a fact about the club's week rather than
+         a defect in the band - so they bring a baseline that has something in
+         it, the same way the synthetic cases below do. */
       const stuck = [];
-      for (const [key, starved] of cases) {
-        if (!filled(key, dP)) { stuck.push(`${key} was already empty`); continue; }
+      for (const [key, starved, base = dP] of cases) {
+        if (!filled(key, base)) { stuck.push(`${key} was already empty`); continue; }
         if (filled(key, starved)) { stuck.push(`${key} still claims content`); continue; }
         if (home({ ...starved, homeLayout: ON }).body.includes(`sec sec--${key}"`)) {
           stuck.push(`${key} still draws`);
@@ -3810,8 +3840,13 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
         && home({ ...data, homeLayout: ON }).body.includes(`sec sec--${key}"`);
       check('the preview band is empty until a fixture carries one, then appears',
         !filled('preview', dP) && appears('preview', withPreview));
+      /* Asserted against a dataset with nothing awaiting, not against dP.
+         The club has three played friendlies with no score entered today, so
+         dP has the band FULL, and "starts empty" cannot be shown from it. The
+         band working is why dP looks like that. */
+      const dNoAwait = { ...dP, awaiting: [] };
       check('waiting on a score appears the moment a played match has none',
-        !filled('awaiting', dP) && appears('awaiting', withAwaiting));
+        !filled('awaiting', dNoAwait) && appears('awaiting', withAwaiting));
     }
   }
 }

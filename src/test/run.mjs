@@ -495,6 +495,24 @@ for (const f of shipped) {
   check('joinedAfter is imported where it is used',
     /import \{[^}]*joinedAfter[^}]*\} from '\.\/squad-status\.mjs'/.test(dsSrc));
 
+  /* THE COACHING TABLE PROMISES "everyone on the touchline". It listed the
+     `roster:coaches` row alone, so the founding staff - who live in the
+     site's own records - were invisible in the panel while appearing on the
+     website: one name on the screen, three on the coaches page. The panel is
+     seeded with everyone the page publishes, so the check is that the seed
+     and the page cannot part company. */
+  const dsCoaches = fs.readFileSync(path.join(ROOT, 'src', 'build.mjs'), 'utf8');
+  check('the panel is seeded with every coach the site publishes',
+    /coaches: d\.coaches\.map/.test(dsCoaches));
+  const squadSrc = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '30-squad.js'), 'utf8');
+  check('the coaching table reads that seed, not just the database row',
+    /SEED\.coaches/.test(squadSrc));
+  check('a founding coach can be edited', /data-base/.test(squadSrc));
+  /* And cannot be removed: the base record would still publish them, so the
+     button would appear to work and change nothing. */
+  check('a founding coach is offered no Remove',
+    /c\.base\s*\n?\s*\?\s*''/.test(squadSrc) || /c\.base[\s\S]{0,80}\?\s*''/.test(squadSrc));
+
   const seedSrc = fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8');
   check('the panel is seeded with which seasons name each record slot',
     /"namedIn":\s*\{\s*"\d/.test(seedSrc));
@@ -1032,11 +1050,15 @@ const BUDGET = {
      and stops a trial lasting the rest of a career. The screen carries a
      season bar, reads three stored shapes, and works out new / retained /
      back at the club rather than asking anybody to keep them true. */
-  /* 6 -> 7: the Squad screen now says WHY it worked out what it worked out,
-     and flags the one case no derivation can settle (a shirt number that
-     changed hands). That is code and copy for a real answer, not data growth,
-     and it is what stops a bare "Retained" badge being wrong and unarguable. */
-  'control-squad.js': 7,
+  /* 6 -> 8, in two steps and both of them code. The screen now says WHY it
+     worked out what it worked out and flags the one case no derivation can
+     settle; the counts became filters, including the two that are jobs rather
+     than facts (needs a photograph, needs a signing date); adding a player
+     finally asks the day he signed, which is the field whose absence caused
+     all of this; and adding a trialist is a form rather than
+     `window.prompt`, so a trial is asked for its end date at the moment
+     somebody knows it. Set against that, two tables lost columns. */
+  'control-squad.js': 8,
   'control-coaches.js': 4,
   'control-photos.js': 4,
   /* Takes a player's picture straight from the gallery: the club has already

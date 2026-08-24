@@ -231,6 +231,16 @@
     return i >= 0 && j >= 0 && i < j;
   }
 
+  /* Today, as the record writes dates. `new Date().toISOString()` is UTC, and
+     the club is an hour ahead of it from March to October: at 00:30 on a
+     Sunday in August that returns Saturday, which would date a trial to the
+     day before it started. */
+  function todayIso() {
+    var d = new Date();
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) +
+      '-' + ('0' + d.getDate()).slice(-2);
+  }
+
   function seasonOfDate(iso) {
     var m = /^(\d{4})-(\d{2})/.exec(iso || '');
     if (!m) return '';
@@ -384,6 +394,33 @@
     return ((row && row.data && row.data.coaches) || []).filter(function (c) { return c && c.name; });
   }
 
+  /* EVERYONE ON THE TOUCHLINE, WHICH IS WHAT THE HEADING PROMISED.
+     The table listed `roster:coaches` alone, so the founding staff - who live
+     in the site's own records - were invisible here while appearing on the
+     website. The club opened Coaching staff, saw one name, and the coaches
+     page had three. The note underneath explained it, which is not the same
+     as showing it.
+
+     They were always editable: dataset.mjs merges a roster:coaches entry over
+     the base BY ID, so saving one with a matching id overrides it. Nobody
+     could, because nothing offered them. Removing one is different and is not
+     offered: the base record would still publish them, so the button would
+     appear to work and change nothing. */
+  function everyCoach(rows) {
+    var own = staffList(rows);
+    var byId = {};
+    own.forEach(function (c, i) { byId[c.id || slug(c.name)] = i; });
+    var out = own.map(function (c, i) {
+      return { rec: c, i: i, base: false };
+    });
+    (SEED.coaches || []).forEach(function (c) {
+      var id = c.id || slug(c.name);
+      if (byId[id] != null) return;
+      out.push({ rec: c, i: -1, base: true });
+    });
+    return out;
+  }
+
   function slug(name) {
     return String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
   }
@@ -402,6 +439,7 @@
       var status = statusMap(rows);
       var added = addedPlayers(rows);
       var staff = staffList(rows);
+      var allCoaches = everyCoach(rows);
       var photoKeys = {};
       rows.forEach(function (r) { if (/^\d+$/.test(r.key)) photoKeys[r.key] = true; });
 
@@ -460,6 +498,7 @@
         tally[p.tenure || '-'] = (tally[p.tenure || '-'] || 0) + 1;
         tally['s:' + p.status] = (tally['s:' + p.status] || 0) + 1;
         if (p.why && p.why.conflict) tally.flag = (tally.flag || 0) + 1;
+        if (!p.photo) tally.nophoto = (tally.nophoto || 0) + 1;
       });
       groups.push({ id: 'all', label: 'Everyone', n: players.length });
       ['new', 'retained', 'returned'].forEach(function (k) {
@@ -468,6 +507,12 @@
       STATUSES.forEach(function (x) {
         if (tally['s:' + x.key]) groups.push({ id: 's:' + x.key, label: x.label, n: tally['s:' + x.key] });
       });
+      /* The two lists worth acting on, last because they are jobs rather than
+         facts. Photograph was a whole column saying Yes or None for everybody,
+         which is a lot of table to answer "who is missing one". */
+      if (tally.nophoto) {
+        groups.push({ id: 'nophoto', label: 'Needs a photograph', n: tally.nophoto, warn: true });
+      }
       if (tally.flag) {
         groups.push({ id: 'flag', label: 'Needs a signing date', n: tally.flag, warn: true });
       }
@@ -514,18 +559,24 @@
             + 'keeps doing so every year without anyone editing anything.</p>'
             + filterBar,
           actions: '<button class="btn btn--primary" data-add-player>Add a player</button>',
-          body: table(['Player', 'Position', 'Photograph', 'In ' + editSeason, 'Worked out', ''],
+          /* FOUR COLUMNS, NOT SIX. `table()` wraps in `.scroll-x`, and the
+             last column - which holds the only way to remove somebody - was
+             the first thing off the right edge, exactly as the fixtures table
+             was. Position and Photograph are facts ABOUT the player, so they
+             belong in his cell rather than in columns of their own, and the
+             two things this screen is actually for (what he is, and what the
+             site works out) get the room. */
+          body: table(['Player', 'In ' + editSeason, 'Worked out', ''],
             players.map(function (p) {
               var tags = ['all', p.tenure || '', 's:' + p.status,
-                (p.why && p.why.conflict) ? 'flag' : ''].filter(Boolean).join(' ');
+                (p.why && p.why.conflict) ? 'flag' : '',
+                p.photo ? '' : 'nophoto'].filter(Boolean).join(' ');
               var shown = (' ' + tags + ' ').indexOf(' ' + showOnly + ' ') > -1;
               return '<tr data-num="' + p.num + '" data-tags="' + esc(tags) + '"' +
                 (shown ? '' : ' hidden') + '>' +
-                '<td><b>' + esc(p.name) + '</b></td>' +
-                '<td>' + esc(p.pos || 'Worked out from where they have played') + '</td>' +
-                '<td>' + (p.photo
-                  ? '<span class="badge badge--success">Yes</span>'
-                  : '<span class="badge badge--warning">None</span>') + '</td>' +
+                '<td><b>' + esc(p.name) + '</b>' +
+                  '<small class="cp-hint">' + esc(p.pos || 'Position worked out from where they have played') +
+                    (p.photo ? '' : ' · no photograph') + '</small></td>' +
                 /* NOT AT THE CLUB IS NOT A CHOICE, SO IT IS NOT A DROPDOWN.
                    `absent` is derived, never set: it is what the record says
                    when a season ended before the player signed. The dropdown
@@ -591,7 +642,7 @@
                  the squad, after which they sign or they do not. Without an
                  end date a fortnight's trial from two seasons ago sits in
                  every team-sheet dropdown for good. */
-              var today = new Date().toISOString().slice(0, 10);
+              var today = todayIso();
               var over = t.until && today > t.until;
               var window = (t.from || t.added || '?') + ' to ' + (t.until || 'open');
               return '<tr data-trialist="' + i + '">' +
@@ -617,20 +668,28 @@
 
         sec({
           title: 'Coaching staff',
-          sub: 'Everyone on the touchline. A player moved into coaching appears here automatically.',
+          sub: 'Everyone on the touchline, which is everyone the coaches page shows. '
+            + 'A player moved into coaching appears here on his own.',
           actions: '<button class="btn btn--primary" data-add-staff>Add someone</button>',
-          body: (staff.length
-            ? table(['Name', 'Role', ''], staff.map(function (c, i) {
-              return '<tr data-staff="' + i + '">' +
-                '<td><b>' + esc(c.name) + '</b></td>' +
-                '<td>' + esc(c.role || 'Coach') + '</td>' +
-                '<td><button class="btn btn--ghost btn--sm" data-edit-staff>Edit</button> ' +
-                  '<button class="btn btn--danger btn--sm" data-del-staff>Remove</button></td>' +
+          body: (allCoaches.length
+            ? table(['Name', 'Role', ''], allCoaches.map(function (c) {
+              return '<tr' + (c.base ? '' : ' data-staff="' + c.i + '"') +
+                (c.base ? ' data-base="' + esc(c.rec.id || slug(c.rec.name)) + '"' : '') + '>' +
+                '<td><b>' + esc(c.rec.name) + '</b>' +
+                  (c.base ? '<small class="cp-hint">From the site’s own records</small>' : '') + '</td>' +
+                '<td>' + esc(c.rec.role || 'Coach') + '</td>' +
+                '<td><div class="cp-rowacts">' +
+                  '<button class="btn btn--ghost btn--sm" data-edit-staff>Edit</button>' +
+                  (c.base
+                    ? ''
+                    : '<button class="btn btn--danger btn--sm" data-del-staff>Remove</button>') +
+                '</div></td>' +
               '</tr>';
             }).join(''))
-            : empty('Nobody added here yet',
-              'The founding staff come from the site’s own records and always show. Anyone appointed since is added here.')),
+            : empty('Nobody on the staff yet', 'Add the manager and anyone else on the touchline.')),
           where: [['Coaches', '/coaches.html']],
+          whereNote: 'editing one of the founding staff writes an override; they cannot be removed '
+            + 'from here because the site’s own records would still publish them',
         });
 
       /* ---- Writing ---- */
@@ -743,23 +802,7 @@
 
         if (e.target.matches('[data-add-player]')) { if (guard()) playerForm(); return; }
 
-        if (e.target.matches('[data-add-trialist]')) {
-          if (!guard()) return;
-          var said = window.prompt('What is their name?');
-          if (said === null) return;
-          var name = said.trim();
-          if (!name) { toast('A name, please.', 'error'); return; }
-          /* From 900 up, so a trialist number can never be mistaken for a
-             squad number by any record that only stores the number. */
-          var used = {};
-          trialists.forEach(function (t) { used[t.num] = true; });
-          var num = 900;
-          while (used[num]) num++;
-          var today = new Date().toISOString().slice(0, 10);
-          saveTrialists(trialists.concat([{ num: num, name: name,
-            added: today, from: today }]), name + ' can now be picked. Set an end date when the trial finishes.');
-          return;
-        }
+        if (e.target.matches('[data-add-trialist]')) { if (guard()) trialistForm(); return; }
         var trow = e.target.closest('tr[data-trialist]');
         if (trow && e.target.matches('[data-del-trialist]')) {
           if (!guard()) return;
@@ -779,6 +822,20 @@
           return;
         }
         if (e.target.matches('[data-add-staff]')) { if (guard()) staffForm(null); return; }
+
+        /* A founding coach carries an id and no index, because he is not in
+           the database row yet. Saving him writes one with that id, which
+           dataset.mjs merges over the base rather than beside it. */
+        var brow = e.target.closest('tr[data-base]');
+        if (brow && e.target.matches('[data-edit-staff]')) {
+          if (!guard()) return;
+          var bid = brow.getAttribute('data-base');
+          var found = (SEED.coaches || []).filter(function (x) {
+            return (x.id || slug(x.name)) === bid;
+          })[0];
+          if (found) staffForm(null, { id: bid, name: found.name, role: found.role || 'Coach', bio: found.bio || [] });
+          return;
+        }
 
         var srow = e.target.closest('tr[data-staff]');
         if (srow && e.target.matches('[data-edit-staff]')) {
@@ -844,6 +901,18 @@
                     '>' + esc(x.label) + '</option>';
                 }).join('') +
               '</select></div>' +
+            /* THE ONE FIELD THAT WAS MISSING FROM THE ONE FORM THAT NEEDED IT.
+               Adding a player never asked when he signed, so every player
+               arrived with no date and somebody had to find the row again
+               afterwards to add it - which nobody did, which is how three new
+               signings came to be recorded as being at the club last season.
+               The moment you add somebody is the moment you know. */
+            '<div class="field"><label class="field__label" for="p-from">The day they signed</label>' +
+              '<input class="input" id="p-from" type="date">' +
+              '<small class="field__hint">Worth filling in. Without it the site works out ' +
+                'their first season from old team sheets, and a team sheet records which ' +
+                'slot somebody filled rather than who they are - so a slot used by a ' +
+                'previous player makes a first season look like a second.</small></div>' +
           '</div>' +
           '<div class="field" style="margin-top:var(--space-4)">' +
             '<label class="field__label" for="p-bio">A line about them (optional)</label>' +
@@ -862,7 +931,8 @@
           var rec = { num: num, first: first, last: last, position: $('#p-pos', back).value };
           if (bio) rec.bio = [bio];
           var chosen = $('#p-status', back).value;
-          var nextStatus = withStatus(status, num, editSeason, chosen);
+          var from = $('#p-from', back).value;
+          var nextStatus = withStatus(status, num, editSeason, chosen, from ? { from: from } : null);
           err.hidden = true;
           savePlayers(added.concat([rec]))
             .then(function () { return saveStatus(nextStatus); })
@@ -875,9 +945,65 @@
         });
       }
 
+      /* ---- Add a trialist ----
+         This was `window.prompt('What is their name?')`: a raw browser dialog
+         that cannot be styled, cannot be cancelled without losing what was
+         typed, and asks for exactly one of the three things a trial has. The
+         end date in particular was never asked for, and a trial with no end
+         is a fortnight from two seasons ago sitting in every team-sheet
+         dropdown for good, which is the one thing the trial window exists to
+         prevent. Same modal as adding a player, so the two feel like one
+         screen rather than two tools. */
+      function trialistForm() {
+        var back = modal('Add a trialist',
+          '<div class="field"><label class="field__label" for="t-name">Their name</label>' +
+            '<input class="input" id="t-name" autocomplete="off"></div>' +
+          '<div class="grid grid--2" style="margin-top:var(--space-4)">' +
+            '<div class="field"><label class="field__label" for="t-from">Trial starts</label>' +
+              '<input class="input" id="t-from" type="date" value="' + esc(todayIso()) + '"></div>' +
+            '<div class="field"><label class="field__label" for="t-until">Trial ends</label>' +
+              '<input class="input" id="t-until" type="date">' +
+              '<small class="field__hint">Leave it open if you do not know yet, but a trial ' +
+                'with no end never closes: they stay pickable on every team sheet until ' +
+                'somebody comes back and says otherwise.</small></div>' +
+          '</div>' +
+          '<p class="field__hint" style="margin-top:var(--space-3)">A trialist can be picked, ' +
+            'can score and can be named in a report. They get no profile, no squad card and ' +
+            'nothing in the club’s records until they sign.</p>');
+
+        $('[data-save]', back).addEventListener('click', function () {
+          var name = $('#t-name', back).value.trim();
+          var err = $('[data-err]', back);
+          if (!name) { err.textContent = 'A name, please.'; err.hidden = false; return; }
+          var from = $('#t-from', back).value || todayIso();
+          var until = $('#t-until', back).value;
+          if (until && until < from) {
+            err.textContent = 'The trial cannot end before it starts.';
+            err.hidden = false;
+            return;
+          }
+          err.hidden = true;
+          /* From 900 up, so a trialist can never be mistaken for a squad
+             member by any record that only stores the slot. */
+          var used = {};
+          trialists.forEach(function (t) { used[t.num] = true; });
+          var num = 900;
+          while (used[num]) num++;
+          var rec = { num: num, name: name, added: todayIso(), from: from };
+          if (until) rec.until = until;
+          back.remove();
+          saveTrialists(trialists.concat([rec]),
+            name + ' can now be picked' + (until ? ' until ' + U.fmtDate(until) : '') + '.');
+        });
+      }
+
       /* ---- Add or edit staff ---- */
-      function staffForm(i) {
-        var c = i == null ? { name: '', role: 'Coach', bio: [] } : staff[i];
+      /* `seed` is a founding coach being overridden for the first time: he is
+         not in `staff` yet, so there is no index, and his id has to travel
+         with the form or saving would create a second person rather than
+         replacing him. */
+      function staffForm(i, seed) {
+        var c = seed || (i == null ? { name: '', role: 'Coach', bio: [] } : staff[i]);
         var back = modal(i == null ? 'Add someone to the staff' : 'Edit ' + c.name,
           '<div class="grid grid--2">' +
             '<div class="field"><label class="field__label" for="s-name">Name</label>' +

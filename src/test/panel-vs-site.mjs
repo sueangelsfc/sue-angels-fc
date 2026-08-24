@@ -67,6 +67,15 @@ const RECORDS = [
   { '25/26': 'active', '26/27': 'staff' },
   { '25/26': 'active', '26/27': 'away' },
   { '26/27': { key: 'active', from: '2026-07-12' } },
+  /* THE SHAPE THE CLUB ACTUALLY WROTE, and the one this file did not cover:
+     In the squad for 25/26 as well AND a 2026 signing date. It is a
+     reasonable thing to record on a screen with a season tab, and it is the
+     record that made the site say "new" while the panel said "retained" -
+     statusIn honoured the date on both sides, and the panel's `wasHere`,
+     which is what tenure is worked out from, did not. Every record here was
+     a shape somebody imagined; this one is a shape somebody typed. */
+  { '25/26': { key: 'active', from: '2026-08-01' }, '26/27': { key: 'active', from: '2026-07-01' } },
+  { '25/26': 'active', '26/27': { key: 'active', from: '2026-07-01' } },
   { '25/26': { key: 'departed', from: '2026-06-14', to: 'Barnes Stormers' } },
   { '25/26': 'new' },        // a retired key that must collapse
   { '25/26': 'retained' },
@@ -78,22 +87,38 @@ const diffs = [];
 RECORDS.forEach((rec, i) => {
   const siteRec = SITE.readStatusRecord({ 7: rec });
   const panelMap = { 7: rec };
-  const opts = { seasons: SEASONS, latestSeason: CURRENT, wasHere: () => false };
+  /* `seasonOf` HAS TO BE HERE or the comparison is rigged. dataset.mjs passes
+     it, and statusIn's signing-date gate is written `opts.seasonOf && ...` -
+     so leaving it out silently disabled the gate on the SITE side while the
+     panel applied it, and the differential reported a disagreement that only
+     the harness had. A harness that does not build the options the product
+     builds is testing something nobody ships. */
+  const opts = { seasons: SEASONS, latestSeason: CURRENT, seasonOf,
+    /* FAITHFUL TO dataset.mjs, which is lenient for the latest season and
+       strict before it: nothing competitive has been played in 26/27, so
+       absence of evidence is not evidence of absence there. `() => false`
+       was strict everywhere, which is not what the site does. */
+    wasHere: (num, season) => season === CURRENT };
 
   for (const season of SEASONS) {
     const a = SITE.statusIn(siteRec, 7, season, opts);
     const b = captured.statusIn(panelMap, 7, season);
     compared += 1;
-    /* The site answers "absent" where the panel answers "active": the site
-       knows a season with no entry and no appearance means not at the club,
-       which the panel deliberately does not model. Treated as agreement. */
-    const same = a === b || (a === 'absent' && b === 'active');
+    /* THE PANEL MODELS "ABSENT" NOW, so this no longer excuses anything.
+       It used to: the site answers "absent" for a season with no entry and no
+       appearance, the panel answered "active", and the difference was waved
+       through as something the panel "deliberately does not model". That
+       excusal was hiding a real disagreement by the end - Christopher
+       Fernandes, stored as the flat word "returned", read "Retained" on this
+       screen and "New signing" on the website. The panel is seeded with the
+       same archive the site derives from, so it can give the same answer. */
+    const same = a === b;
     if (!same) diffs.push(`record ${i} ${season}: site ${a}, panel ${b}`);
 
     const ta = SITE.tenureIn(siteRec, 7, season, opts);
     const tb = captured.tenureIn(panelMap, 7, season);
     compared += 1;
-    if (ta !== tb && !(a === 'absent' && b === 'active')) {
+    if (ta !== tb) {
       diffs.push(`record ${i} ${season} tenure: site ${ta}, panel ${tb}`);
     }
 
@@ -129,7 +154,62 @@ for (const iso of ['2026-05-31', '2026-06-01', '2026-07-12', '2025-12-31',
   if (a !== b) diffs.push(`seasonOf ${iso}: site ${a}, panel ${b}`);
 }
 
-export const result = { compared, diffs };
+/* ==========================================================================
+   AND OVER THE CLUB'S OWN RECORDS
+
+   Everything above is fifteen record shapes somebody sat down and imagined,
+   and they all agreed while two real players did not. Leon Burnett is stored
+   as In the squad for 25/26 AND 26/27 with a 2026 signing date; Christopher
+   Fernandes is stored as the single flat word "returned". Neither shape was
+   in the list, and both read "Retained" on the Squad screen while the website
+   published "New signing".
+
+   So the same two implementations are run over the roster as it actually is.
+   Invented shapes find the cases you thought of; the real record finds the
+   ones you did not.
+   ========================================================================== */
+let realCompared = 0;
+const realDiffs = [];
+try {
+  const snap = JSON.parse(fs.readFileSync(
+    new URL('../data/recovered-live.json', import.meta.url), 'utf8'));
+  const statusRow = (snap.player_photos || []).find((r) => r.key === 'roster:status');
+  const rawStatus = (statusRow && statusRow.data && (statusRow.data.status || statusRow.data)) || {};
+  const { buildDataset } = await import('../lib/dataset.mjs');
+  const d = buildDataset();
+  const REAL_SEASONS = (d.seasons || []).map((x) => x.name || x);
+
+  /* The panel is re-evaluated with the SHIPPED seed, because its answers lean
+     on SEED.namedIn and SEED.clubSeason and a stub would not exercise them. */
+  const seedSrc = fs.readFileSync(new URL('../../control-seed.js', import.meta.url), 'utf8');
+  const seed = JSON.parse(seedSrc.replace(/^window\.SA_SEED=/, '').replace(/;\s*$/, ''));
+  const cap2 = {};
+  const sb2 = {
+    window: { CP: { readAll: () => Promise.resolve([]) }, CPM: {},
+      CPU: new Proxy({}, { get: () => () => {} }),
+      SA_SEED: Object.assign({}, seed, { clubSeason: d.latestSeason }) },
+    document: { createElement: () => ({ style: {}, classList: { add() {} } }) },
+    console,
+    __capture: (o) => Object.assign(cap2, o),
+  };
+  sb2.globalThis = sb2;
+  vm.createContext(sb2);
+  new vm.Script(src.slice(0, at) + tail).runInContext(sb2);
+  if (!cap2.statusIn) throw new Error('could not reach the panel internals with the real seed');
+
+  for (const p of d.squad) {
+    for (const season of REAL_SEASONS) {
+      realCompared += 1;
+      const a = d.statusIn(p.num, season);
+      const b = cap2.statusIn(rawStatus, p.num, season);
+      if (a !== b) realDiffs.push(`${p.name} ${season} status: site ${a}, panel ${b}`);
+    }
+  }
+} catch (e) {
+  realDiffs.push(`real-record comparison could not run: ${e.message}`);
+}
+
+export const result = { compared, diffs, realCompared, realDiffs };
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   console.log(`compared ${compared} answers across ${RECORDS.length} record shapes`);

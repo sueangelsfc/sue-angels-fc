@@ -196,3 +196,35 @@ html.js .nw-card[hidden]{display: none;}
 .lv-card__play::after{content: ''; position: absolute; left: 16px; top: 12px;
   border-style: solid; border-width: 9px 0 9px 13px;
   border-color: transparent transparent transparent var(--text-on-brand);}
+
+/* ---- The cover, and the plate drawn when there is none -------------------
+   The article page rendered no cover at all: `a.cover` was read by the card
+   and by nothing else, so an article with a cover picture showed it in the
+   list and lost it on its own page. And the no-cover fallback was a bare
+   crest on an empty panel - three identical ones down the news page, which
+   reads as three images that failed to load rather than as a decision.
+
+   Same plate in both places, so a card and the page it opens cannot drift. */
+.nw-cover{margin-top: clamp(22px, 3vw, 34px); border-radius: 20px;
+  overflow: hidden; border: 1px solid var(--line-d);
+  display: grid; place-items: center; aspect-ratio: 16 / 9;
+  background: linear-gradient(168deg, rgba(var(--volt-rgb), 0.13), rgba(var(--sink), 0.66) 72%);}
+.nw-cover__img{width: 100%; height: 100%; object-fit: cover;}
+
+.nw-plate{display: grid; justify-items: center; gap: 10px; padding: 0 20px; text-align: center;}
+.nw-plate__crest{width: clamp(52px, 6vw, 76px); height: auto; opacity: 0.9;}
+.nw-plate__rule{display: block; width: 34px; height: 1px;
+  background: rgba(var(--volt-rgb), 0.55);}
+.nw-plate__club{font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-3);}
+/* Bigger on the article page, where the plate is the whole 16:9 band rather
+   than a thumbnail. */
+.nw-cover .nw-plate{gap: 14px;}
+.nw-cover .nw-plate__crest{width: clamp(72px, 9vw, 116px);}
+.nw-cover .nw-plate__club{font-size: 10.5px;}
+
+/* The article body follows its own hero directly, so it does not need a full
+   section's 110px above it as well as the hero's padding below. With a cover
+   in between, that stacked up to a screen's worth of nothing between the
+   picture and the first sentence. */
+.nw-art{padding-block-start: clamp(30px, 4vw, 54px);}

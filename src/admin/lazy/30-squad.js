@@ -109,23 +109,29 @@
     return typeof entry === 'string' ? entry : (entry.key || '');
   }
   function statusIn(map, num, season) {
-    var rec = map[String(num)];
-    if (!rec) return 'active';
-    /* A SIGNING DATE BEATS A STATUS TYPED AGAINST AN EARLIER SEASON. Setting
-       somebody In the squad for 25/26 as well is a reasonable thing to do on
-       a screen with a season tab, and it contradicts a signing date in 2026.
-       The more specific statement wins: a day is a fact about a person, a
-       season tab is a screen. */
+    /* MIRRORS statusIn() IN src/lib/squad-status.mjs, step for step. It used
+       to default to 'active' for a season it knew nothing about, on the
+       reasoning that a player nobody has said anything about is in the squad.
+       That is the right default for the season being EDITED and the wrong one
+       for every season before it, and the site has always disagreed: it
+       answers 'absent' where there is no entry AND no appearance, which is
+       what makes "new signing" derivable at all.
+
+       The disagreement was excused in panel-vs-site.mjs as something the
+       panel "deliberately does not model". It models it now, so nothing is
+       excused, and the screen renders a plain "Not at the club in 25/26"
+       rather than a dropdown showing In the squad for a year he was not. */
     if (joinedAfter(map, num, season)) return 'absent';
+    var rec = map[String(num)];
+    if (rec && typeof rec === 'object' && rec[season]) return collapse(keyOf(rec[season]));
     if (typeof rec === 'string') {
       if (season === CURRENT) return collapse(rec);
-      return SEASONS.indexOf(season) < SEASONS.indexOf(CURRENT) ? 'active' : collapse(rec);
+    } else if (rec) {
+      for (var i = SEASONS.indexOf(season) - 1; i >= 0; i--) {
+        if (rec[SEASONS[i]]) return collapse(keyOf(rec[SEASONS[i]]));
+      }
     }
-    if (rec[season]) return collapse(keyOf(rec[season]));
-    for (var i = SEASONS.indexOf(season) - 1; i >= 0; i--) {
-      if (rec[SEASONS[i]]) return collapse(keyOf(rec[SEASONS[i]]));
-    }
-    return 'active';
+    return wasHere(map, num, season) ? 'active' : 'absent';
   }
 
   /* What was recorded beside the status for a season, if anything. */
@@ -154,22 +160,48 @@
      difference: statusIn() in src/lib/squad-status.mjs returns 'absent' for a
      season with no entry and no evidence, and that is precisely what makes
      "new" derivable. 12 of 180 answers differed before this. */
+  /* Whether ANYBODY has been named in a match in the club's season yet.
+     Nothing competitive has been played in it, so absence of evidence is not
+     evidence of absence and a squad member belongs to the season about to
+     start - the same exception dataset.mjs makes, for the same reason. */
+  var NAMED_IN_CURRENT = (SEED.squad || []).some(function (p) {
+    return ((SEED.namedIn || {})[String(p.num)] || []).indexOf(CURRENT) > -1;
+  });
+
   function wasHere(map, num, season) {
+    /* THE SIGNING DATE, HERE TOO. statusIn honours it and this did not, and
+       tenure is worked out from THIS function - so the panel called Leon
+       Burnett "Retained" for a season the site had already decided he was
+       absent for. Two functions, one rule, and only one of them had it. */
+    if (joinedAfter(map, num, season)) return false;
+
     var rec = map[String(num)];
-    if (!rec) return false;
+    if (rec && typeof rec === 'object' && rec[season]) {
+      return isPlaying(collapse(keyOf(rec[season])));
+    }
     if (typeof rec === 'string') {
-      /* A flat value is what the club last said, so it describes the current
-         season and every season before it that they were around for. */
-      return SEASONS.indexOf(season) <= SEASONS.indexOf(CURRENT) && isPlaying(collapse(rec));
+      /* A flat value is the last thing the club said, so it describes the
+         CURRENT season. It was read as describing every season before it as
+         well, which made Christopher Fernandes - stored as the single word
+         "returned" - look like a man who was here in 25/26. He was not named
+         in one match that season, and the site knew: it published "new
+         signing" while this screen said "Retained". */
+      if (season === CURRENT) return isPlaying(collapse(rec));
+    } else if (rec) {
+      /* Carried forward from the most recent earlier entry, the same way
+         statusIn does, so setting somebody departed does not make the next
+         season forget. */
+      for (var i = SEASONS.indexOf(season) - 1; i >= 0; i--) {
+        if (rec[SEASONS[i]]) return isPlaying(collapse(keyOf(rec[SEASONS[i]])));
+      }
     }
-    if (rec[season]) return isPlaying(collapse(keyOf(rec[season])));
-    /* Carried forward from the most recent earlier entry, the same way
-       statusIn does, so setting somebody departed does not make the next
-       season forget. Nothing earlier at all means he was not here. */
-    for (var i = SEASONS.indexOf(season) - 1; i >= 0; i--) {
-      if (rec[SEASONS[i]]) return isPlaying(collapse(keyOf(rec[SEASONS[i]])));
-    }
-    return false;
+
+    /* NOTHING RECORDED FOR THIS SEASON, so the archive answers - the same
+       evidence the site derives from, which this screen is now seeded with.
+       It used to answer "no" flat out, which is why the panel could not tell
+       a first season from a second the way the site could. */
+    if (season === CURRENT && !NAMED_IN_CURRENT) return true;
+    return ((SEED.namedIn || {})[String(num)] || []).indexOf(season) > -1;
   }
 
   /* ==========================================================================
@@ -254,7 +286,7 @@
 
   /* Returns { why, conflict } - the sentence under the badge, and the seasons
      the evidence claims but a recorded signing date rules out. */
-  function tenureWhy(map, num, season, key) {
+  function tenureWhy(map, num, season, key, base) {
     var named = namedSeasons(num);
     var from = signedOn(map, num);
     var joined = from ? seasonOfDate(from) : '';
@@ -279,9 +311,15 @@
     if (!before.length) return { why: 'Nothing earlier on the record.', conflict: false };
     return {
       why: 'Named on a team sheet in ' + list(before) + '.',
-      /* The weak kind of evidence: a number, not a person. Only worth raising
-         where it is the ONLY thing making this a second season. */
-      conflict: true,
+      /* WHEN THIS IS WORTH RAISING, WHICH IS RARELY. Every retained player was
+         named in an earlier season - that is what retained MEANS - so
+         flagging "no signing date and an earlier appearance" lit up 31 of 37
+         rows, and a warning on nearly every row is decoration rather than a
+         signal. The contradiction is narrower: somebody the club ADDED as a
+         signing who nonetheless carries an appearance from before, which is
+         exactly what a handed-on record slot produces. `base` is false only
+         for a player this panel signed. */
+      conflict: !base,
     };
   }
 
@@ -477,7 +515,7 @@
              out about him from the seasons around it. */
           status: statusIn(status, p.num, editSeason),
           tenure: tenureIn(status, p.num, editSeason),
-          why: tenureWhy(status, p.num, editSeason, tenureIn(status, p.num, editSeason)),
+          why: tenureWhy(status, p.num, editSeason, tenureIn(status, p.num, editSeason), p.base),
           signed: signedOn(status, p.num),
           base: p.base,
           first: p.first,

@@ -1334,7 +1334,7 @@ for (const [f, kb] of Object.entries({
      its own numbers would be breaking that rule while claiming to help. */
   'src/admin/lazy/95-home.js': 11,
   /* Source, so the bios riding with the chunk cannot hide code growth. */
-  'src/admin/lazy/30-squad.js': 18,
+  'src/admin/lazy/30-squad.js': 19,
   'src/admin/lazy/10-match.js': 34,
 })) {
   const raw = fs.readFileSync(path.join(ROOT, f));
@@ -2640,6 +2640,15 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const { result } = await import(path.join(ROOT, 'src', 'test', 'panel-vs-site.mjs'));
   check('the panel and the site were actually compared', result.compared >= 150,
     `only ${result.compared} answers compared`);
+  /* AND OVER THE CLUB'S OWN RECORDS, not only the fifteen shapes somebody
+     thought of. Two real disagreements were live while the invented shapes
+     all agreed: Leon Burnett read "Retained" on the Squad screen and "New
+     signing" on the site, and so did Christopher Fernandes, whose record is
+     the single flat word "returned". Neither shape was in the list. */
+  check('the panel and the site agree over every real player',
+    result.realDiffs.length === 0, result.realDiffs.slice(0, 3).join('; '));
+  check('and that comparison had real players in it',
+    result.realCompared >= 70, `${result.realCompared} answers`);
   check('the panel and the site agree about every squad status',
     result.diffs.length === 0, result.diffs.slice(0, 3).join('; '));
 }

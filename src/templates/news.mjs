@@ -22,6 +22,29 @@ import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
 import { reportText, hasReport } from '../lib/prose.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
+
+/* ==========================================================================
+   THE COVER, AND THE DEFAULT WHEN THERE IS NONE
+
+   The article page rendered NO cover at all. Not the drawn one, not a
+   photograph: `a.cover` was read by the news CARD and by nothing else, so
+   an article with a cover picture showed it in the list and lost it on its
+   own page. The code that drew one still exists in templates/detail.mjs,
+   in an `articlePage` nothing has called since the rebuild.
+
+   And where there is no cover the fallback was a bare crest floating on an
+   empty panel, three identical ones in a row down the news page, which
+   reads as three images that failed to load rather than as a decision. A
+   default cover is DRAWN: the crest, the club, and the kind of piece it is.
+   ========================================================================== */
+const coverPlate = (art, eager) => (art.cover && art.cover !== 'None'
+  ? `<img class="nw-cover__img" src="${attr(art.cover)}" alt="" width="1200" height="675" loading="${eager ? 'eager' : 'lazy'}" decoding="async" />`
+  : `<span class="nw-plate">
+      <img class="nw-plate__crest" src="${STAR}" alt="Sue’s Angels FC star" width="76" height="94" loading="${eager ? 'eager' : 'lazy'}" decoding="async" />
+      <span class="nw-plate__rule" aria-hidden="true"></span>
+      <span class="nw-plate__club">Sue’s Angels FC</span>
+    </span>`);
+
 const ARROW = '<span aria-hidden="true">→</span>';
 
 const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
@@ -102,7 +125,7 @@ export function news(d) {
     ? `<span class="nw-card__score"><b>${esc(a.match.scoreline || 'v')}</b><i>${esc(a.match.competition)}${a.match.round ? ` · ${esc(a.match.round)}` : ''}</i></span>`
     : a.cover && a.cover !== 'None'
       ? `<img class="nw-card__img" src="${attr(a.cover)}" alt="" width="640" height="400" loading="lazy" decoding="async" />`
-      : `<img class="nw-card__crest" src="${STAR}" alt="Sue’s Angels FC star" width="76" height="94" loading="lazy" decoding="async" />`}
+      : coverPlate(a, false)}
                 <span class="nw-card__date">${esc(fmtDate(a.date))}</span>
               </span>
               <span class="nw-card__body">
@@ -189,6 +212,7 @@ export function newsArticle(a, d) {
         <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> ${esc(catLabel(a.category))}</p>
         <h1 class="nw-art__title" id="na-h">${esc(a.title)}</h1>
         <p class="nw-art__meta">${esc(fmtDate(a.date, { long: true }))} · ${esc(words)} min read${a.author ? ` · ${esc(a.author)}` : ''}</p>
+        <div class="nw-cover">${coverPlate(a, true)}</div>
       </div>
     </section>`;
 

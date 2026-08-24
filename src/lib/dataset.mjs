@@ -243,7 +243,11 @@ export function buildDataset() {
      shown and to ask for a scoreline. */
   const awaiting = fixtures
     .filter((m) => m.iso && m.iso < todayISO)
-    .sort((a, b) => (b.iso || '').localeCompare(a.iso || ''));
+    .sort((a, b) => (b.iso || '').localeCompare(a.iso || ''))
+    /* Marked, never given `played`. A copy, so the row in `fixtures` is
+       untouched and nothing that reads that list inherits a flag meant only
+       for the way these are shown. */
+    .map((m) => ({ ...m, awaitingScore: true }));
 
   /* ---- Squad ---- */
   const posByNum = inferPositions(matches);

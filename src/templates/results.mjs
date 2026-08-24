@@ -125,7 +125,7 @@ function matchesPage(d, mode) {
               ${score === null ? '' : `<span class="mt-side__score">${esc(score)}</span>`}
             </span>`;
 
-    return `<li class="mt${m.played ? '' : ' is-fixture'}${isNext ? ' is-next' : ''}" style="--i:${i}"
+    return `<li class="mt${m.played ? '' : ' is-fixture'}${m.awaitingScore ? ' is-awaiting' : ''}${isNext ? ' is-next' : ''}" style="--i:${i}"
           data-comp="${attr(key(m.competition))}"
           data-venue="${attr(m.weAreHome ? 'home' : 'away')}"
           data-result="${attr(m.outcome === 'W' ? 'wins' : m.outcome === 'D' ? 'draws' : 'losses')}"
@@ -134,7 +134,7 @@ function matchesPage(d, mode) {
             <header class="mt__top">
               ${m.played
     ? `<span class="mt__res" data-res="${attr(m.outcome || '')}">${esc(m.outcome || '·')}</span>`
-    : `<span class="mt__tag">${isNext ? 'Next up' : 'To play'}</span>`}
+    : `<span class="mt__tag">${m.awaitingScore ? 'Played' : isNext ? 'Next up' : 'To play'}</span>`}
               <span class="mt__date">${esc(fmtDate(m.date, { weekday: true }))}</span>
             </header>
             <div class="mt__sides${m.played ? '' : ' is-fixture'}">
@@ -143,7 +143,9 @@ function matchesPage(d, mode) {
               ${side(away, as, !m.weAreHome)}
             </div>
             ${!m.played
-    ? `<p class="mt__note">${m.kick ? `Kick-off ${esc(m.kick)}` : 'Kick-off to be confirmed'}</p>`
+    ? `<p class="mt__note${m.awaitingScore ? ' is-flag' : ''}">${m.awaitingScore
+      ? 'Waiting on the score'
+      : m.kick ? `Kick-off ${esc(m.kick)}` : 'Kick-off to be confirmed'}</p>`
     : m.isWalkover
     ? `<p class="mt__note is-flag">Awarded · walkover</p>`
     : m.decidedOnPenalties

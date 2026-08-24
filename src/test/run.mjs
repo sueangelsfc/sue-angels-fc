@@ -2183,6 +2183,34 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
       && friendlyCards.every((c) => c.includes('Friendly · not counted')),
     `${friendlyCards.filter((c) => !c.includes('Friendly · not counted')).length} of ${friendlyCards.length} unflagged`);
 
+  /* ---- A played match with no score is not a fixture ----------------------
+     The rows come from the `fixtures` table and carry no `played` flag, which
+     is correct and deliberate: every derived figure reads `played` and must
+     not count a match whose score has not been typed in. But the card branched
+     on `played` ALONE, so inside a band whose own lede reads "These matches
+     have been played and the scoreline has not been entered yet" each card was
+     tagged "To play" and captioned "Kick-off 10:00". The page contradicted
+     itself in the same section, which is what makes it read as a fixture
+     leaking into the results. */
+  {
+    const start = res.indexOf('mt-awaiting');
+    if (start >= 0) {
+      const end = res.indexOf('mt-list', start);
+      const band = res.slice(start, end > start ? end : start + 12000);
+      const tags = [...band.matchAll(/mt__tag[^>]*>([^<]*)/g)].map((m) => m[1].trim());
+      const notes = [...band.matchAll(/mt__note[^>]*>([^<]*)/g)].map((m) => m[1].trim());
+      check('results: a played match awaiting a score is not tagged as still to play',
+        tags.length > 0 && tags.every((t) => t !== 'To play' && t !== 'Next up'),
+        tags.join(', '));
+      check('results: a played match awaiting a score carries no kick-off time',
+        notes.every((n) => !/^Kick-off/.test(n)),
+        notes.join(', '));
+      check('results: it asks for the score instead',
+        notes.length > 0 && notes.every((n) => /Waiting on the score/.test(n)),
+        notes.join(', '));
+    }
+  }
+
   /* 3. A player page may exclude a friendly. It may not deny it happened. */
   const denials = [];
   for (const m of friendlies) {

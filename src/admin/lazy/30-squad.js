@@ -67,7 +67,13 @@
   var STATUSES = VOCAB.set;
   var DERIVED = VOCAB.derived;
   var SEASONS = (SEED.seasons || []).slice();
-  var CURRENT = SEED.currentSeason || SEASONS[SEASONS.length - 1] || '';
+  /* THE SEASON THE CLUB IS IN, not the season its figures describe. This read
+     SEED.currentSeason, which counts competitive matches and is therefore
+     still 25/26 in August, so the screen opened on last season and three new
+     signings were recorded against it. It is also what a flat record means -
+     "what the club last said" - and the site resolves that against its LATEST
+     season, so the two disagreed on that as well. */
+  var CURRENT = SEED.clubSeason || SEASONS[SEASONS.length - 1] || SEED.currentSeason || '';
   var LABEL = {};
   var PLAYING = {};
   STATUSES.forEach(function (x) { LABEL[x.key] = x.label; PLAYING[x.key] = x.playing; });
@@ -105,6 +111,12 @@
   function statusIn(map, num, season) {
     var rec = map[String(num)];
     if (!rec) return 'active';
+    /* A SIGNING DATE BEATS A STATUS TYPED AGAINST AN EARLIER SEASON. Setting
+       somebody In the squad for 25/26 as well is a reasonable thing to do on
+       a screen with a season tab, and it contradicts a signing date in 2026.
+       The more specific statement wins: a day is a fact about a person, a
+       season tab is a screen. */
+    if (joinedAfter(map, num, season)) return 'absent';
     if (typeof rec === 'string') {
       if (season === CURRENT) return collapse(rec);
       return SEASONS.indexOf(season) < SEASONS.indexOf(CURRENT) ? 'active' : collapse(rec);
@@ -188,23 +200,45 @@
 
   /* The day the club says somebody signed, whichever season it was recorded
      against, earliest first. */
+  /* `from` MEANS SIX DIFFERENT THINGS and only two of them are joining. See
+     DETAIL_FIELDS below: it is "The day they signed" on In the squad and
+     "Trial started" on On trial, but also "The day they left", "The day they
+     retired", "Out since" and "The day they moved across". Read blind, a
+     player set to Left the club in September 2026 carries a join date of
+     September 2026, and the rule that uses this would then erase every season
+     he actually played. */
+  var JOINING = { active: 1, trial: 1 };
+
   function signedOn(map, num) {
     var rec = map[String(num)];
     if (!rec || typeof rec !== 'object') return '';
     var best = '';
     Object.keys(rec).forEach(function (season) {
       var e = rec[season];
-      var from = e && typeof e === 'object' ? e.from : '';
+      if (!e || typeof e !== 'object' || !JOINING[e.key]) return;
+      var from = e.from;
       if (/^\d{4}-\d{2}-\d{2}/.test(from || '') && (!best || from < best)) best = from.slice(0, 10);
     });
     return best;
+  }
+
+  /* True when `season` finished before the player joined. */
+  function joinedAfter(map, num, season) {
+    var from = signedOn(map, num);
+    if (!from) return false;
+    var i = SEASONS.indexOf(season);
+    var j = SEASONS.indexOf(seasonOfDate(from));
+    return i >= 0 && j >= 0 && i < j;
   }
 
   function seasonOfDate(iso) {
     var m = /^(\d{4})-(\d{2})/.exec(iso || '');
     if (!m) return '';
     var y = Number(m[1]);
-    var start = Number(m[2]) >= 6 ? y : y - 1;
+    /* 1 July starts the new season. The club sets this and the site's
+       seasonOf() in stats.mjs must agree; panel-vs-site.mjs runs both over
+       the boundary dates and caught this the moment they parted. */
+    var start = Number(m[2]) >= 7 ? y : y - 1;
     return String(start).slice(2) + '/' + String(start + 1).slice(2);
   }
 
@@ -389,6 +423,7 @@
           status: statusIn(status, p.num, editSeason),
           tenure: tenureIn(status, p.num, editSeason),
           why: tenureWhy(status, p.num, editSeason, tenureIn(status, p.num, editSeason)),
+          signed: signedOn(status, p.num),
           /* Whatever was recorded beside the status for this season, so the
              fields open with what is already there rather than blank. */
           detail: statusDetail(status, p.num, editSeason),
@@ -491,7 +526,18 @@
                 '<td>' + (p.photo
                   ? '<span class="badge badge--success">Yes</span>'
                   : '<span class="badge badge--warning">None</span>') + '</td>' +
-                '<td><select class="select" data-status aria-label="What ' + esc(p.name) +
+                /* NOT AT THE CLUB IS NOT A CHOICE, SO IT IS NOT A DROPDOWN.
+                   `absent` is derived, never set: it is what the record says
+                   when a season ended before the player signed. The dropdown
+                   has no option for it, so rendering one here left nothing
+                   selected and the browser fell back to the first option,
+                   showing "In the squad" for a season he was not at the club.
+                   A sentence says the true thing and cannot be used to
+                   re-assert the contradiction by accident. */
+                '<td>' + (p.status === 'absent'
+                  ? '<span class="cp-hint">Not at the club in ' + esc(editSeason) + '.' +
+                    (p.signed ? ' Signed ' + esc(U.fmtDate(p.signed)) + '.' : '') + '</span>'
+                  : '<select class="select" data-status aria-label="What ' + esc(p.name) +
                     ' was in ' + esc(editSeason) + '">' +
                   STATUSES.map(function (x) {
                     return '<option value="' + x.key + '"' + (p.status === x.key ? ' selected' : '') +
@@ -503,8 +549,8 @@
                   /* The fields that go with whichever status is chosen. They
                      save on change like the status does, so there is no
                      second button to press and nothing to forget. */
-                  '<div class="cp-when" data-when>' + detailFields(p.status, p.detail || {}) + '</div>' +
-                  '</td>' +
+                  '<div class="cp-when" data-when>' + detailFields(p.status, p.detail || {}) + '</div>'
+                  ) + '</td>' +
                 /* The site's own answer, shown but never editable, so it is
                    obvious it is derived rather than something to maintain -
                    AND the reason for it, because a bare badge is unarguable

@@ -453,6 +453,34 @@ for (const f of shipped) {
     statusMod.signedOn(dated, 3) === '2026-07-12');
   check('signedOn is null where the club has said nothing',
     statusMod.signedOn(bare, 3) === null);
+
+  /* `from` MEANS SIX THINGS and only two of them are joining. A player set to
+     Left the club in September 2026 carries `from: 2026-09-01`, and reading it
+     as a signing date would erase every season he actually played. */
+  const left = statusMod.readStatusRecord({
+    status: { 3: { '25/26': 'active', '26/27': { key: 'departed', from: '2026-09-01' } } },
+  });
+  check('a leaving date is not read as a signing date',
+    statusMod.signedOn(left, 3) === null);
+  check('a departure cannot erase the seasons already played',
+    statusMod.joinedAfter(left, 3, '25/26', SEASONS, seasonOf) === false);
+
+  /* THE GATE MUST BEAT AN EXPLICIT STATUS, not only a missing one. It first
+     lived in `wasHere`, which statusIn consults ONLY when a season has no
+     entry - so it did nothing for the three players it was written for, all
+     of whom had been set In the squad for 25/26 as well. */
+  const both = statusMod.readStatusRecord({
+    status: { 3: { '25/26': 'active', '26/27': { key: 'active', from: '2026-07-01' } } },
+  });
+  const opts = { seasons: SEASONS, latestSeason: '26/27', seasonOf, wasHere: () => true };
+  check('a signing date beats a status typed against an earlier season',
+    statusMod.statusIn(both, 3, '25/26', opts) === 'absent');
+  check('and does not touch its own season',
+    statusMod.statusIn(both, 3, '26/27', opts) === 'active');
+
+  /* 1 JULY starts the season. The club sets this. */
+  check('30 June belongs to the season ending', seasonOf('2026-06-30') === '25/26');
+  check('1 July belongs to the season starting', seasonOf('2026-07-01') === '26/27');
   /* The panel must be able to SHOW the evidence, or the badge stays
      unarguable-looking and the club has no way to spot the reused number. */
   /* AND THAT THE SITE ACTUALLY CONSULTS IT. The rule above is inert on
@@ -3896,27 +3924,51 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
       !ps.played.some((m) => !m.friendly));
   }
 
-  /* A FIRST APPEARANCE IS A CLAIM ABOUT A PERSON. Anybody named must have no
-     earlier appearance anywhere in the archive, and anybody who does have one
-     must not be listed however new a signing he is. */
+  /* A FIRST APPEARANCE IS A CLAIM ABOUT A PERSON, AND A TEAM SHEET STORES A
+     SLOT. This asserted that nobody in the list appears in an earlier team
+     sheet, which is the right shape and the wrong evidence, because record
+     slots get handed on. It passed while being wrong about a real person:
+     Leon Burnett signed in July 2026 and the slot he holds was used against
+     Brockwell Violets in October 2025, so the check certified his exclusion
+     from the band announcing him.
+
+     The rule is the same with the club's own statement allowed to win: an
+     earlier match counts against somebody only if it was played after the day
+     the club says they signed. Where nothing is recorded the sheet still
+     decides, so this stays as strict as it was for everybody else. */
   {
     const firstIso = (ps.played[0] || {}).iso || '';
+    const signedFor = (num) => (dP.signedOn ? dP.signedOn(num) : null);
+    const earlierFor = (num) => dP.played.filter((m) => {
+      if (String(m.iso || '') >= firstIso) return false;
+      if (!sheetNums(m).map(String).includes(String(num))) return false;
+      const on = signedFor(num);
+      return !(on && String(m.iso || '') < String(on));
+    });
     let wrong = [];
     for (const p of ps.debutants) {
-      const earlier = dP.played.filter((m) => String(m.iso || '') < firstIso
-        && sheetNums(m).map(String).includes(String(p.num)));
+      const earlier = earlierFor(p.num);
       if (earlier.length) wrong.push(`${p.name} played ${earlier[0].iso}`);
     }
     check('nobody called a first appearance has played before', wrong.length === 0, wrong.join('; '));
 
     /* And the converse, which is what stops the check being vacuous: somebody
        who HAS played before must be absent from the list. */
-    const played2526 = dP.played.filter((m) => String(m.iso || '') < firstIso);
-    const veterans = new Set(played2526.flatMap((m) => sheetNums(m).map(String)));
+    const veterans = new Set(dP.played
+      .filter((m) => String(m.iso || '') < firstIso)
+      .flatMap((m) => sheetNums(m).map(String))
+      .filter((n) => !earlierFor(n).length === false));
     const listed = new Set(ps.debutants.map((p) => String(p.num)));
     check('a returning player is not called a debutant',
       ![...listed].some((n) => veterans.has(n)));
     check('the debutant check has something to bite on', veterans.size > 5, `${veterans.size} prior players`);
+
+    /* THE SIGNING DATE IS DOING SOMETHING HERE. Without this the two checks
+       above would pass on a build where the rule had been removed, because
+       they would simply agree with each other about the wrong answer. */
+    const claimed = ps.debutants.filter((p) => signedFor(p.num));
+    check('at least one first appearance rests on a signing date', claimed.length > 0,
+      'no debutant has a recorded signing date, so the rule is untested here');
   }
 
   /* Head to head against the new division must agree with the site's own

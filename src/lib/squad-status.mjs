@@ -184,11 +184,28 @@ export function statusDetail(record, num, season) {
    evidence still decides, exactly as before, so nothing already saved has to
    be migrated and clubs that never fill this in lose nothing.
    ========================================================================== */
+/* `from` MEANS SIX DIFFERENT THINGS and only two of them are joining.
+   The panel labels it "The day they signed" on In the squad and "Trial
+   started" on On trial - but also "The day they left" on Left the club, "The
+   day they retired", "Out since" and "The day they moved across". Reading it
+   blind, as this did when it was written, meant a player set to Left the club
+   in September 2026 carried a join date of September 2026, and the rule below
+   would then erase every season he actually played. Harmless on today's
+   record by luck: every departure and retirement on it is dated May or
+   January, which lands in the season it belongs to. That is not a reason to
+   leave it.
+
+   The status is needed to read the date, so this takes the whole record
+   rather than just the detail. */
+const JOINING = new Set(['active', 'trial']);
+
 export function signedOn(record, num) {
   const all = (record && record.__detail) || {};
   const bySeason = all[String(num)] || {};
+  const keys = record[String(num)] || {};
   let first = '';
-  for (const entry of Object.values(bySeason)) {
+  for (const [season, entry] of Object.entries(bySeason)) {
+    if (!JOINING.has(keys[season])) continue;
     const d = entry && entry.from;
     if (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}/.test(d) && (!first || d < first)) first = d.slice(0, 10);
   }
@@ -227,6 +244,16 @@ export function statusIn(record, num, season, opts = {}) {
   const latest = opts.latestSeason || seasons[seasons.length - 1];
   const wasHere = opts.wasHere || (() => true);
   const rec = record[String(num)];
+
+  /* A SIGNING DATE BEATS A STATUS TYPED AGAINST AN EARLIER SEASON.
+     The gate for this used to live only in `wasHere`, which is consulted
+     ONLY when a season has no entry - so it did nothing for the three players
+     it was written for. The club had set them In the squad for 25/26 as well,
+     which is a reasonable thing to do on a screen with a season tab, and that
+     explicit entry returned straight from here without the date ever being
+     looked at. The two statements contradict each other and the more specific
+     one wins: a day is a fact about a person, a season tab is a screen. */
+  if (opts.seasonOf && joinedAfter(record, num, season, seasons, opts.seasonOf)) return 'absent';
 
   if (rec && !rec.__flat && rec[season]) return rec[season];
   if (rec && rec.__flat && season === latest) return rec.__flat;

@@ -72,13 +72,19 @@ export function fmtDate(str, opts = {}) {
   });
 }
 
-/* A season runs Sep-May, so Jun-Aug belongs to the season about to start. */
+/* A season runs Sep-May, so Jul-Aug belongs to the season about to start.
+   THE CLUB SETS THIS BOUNDARY AND IT IS 1 JULY: anything from 1 July 2026 is
+   26/27. It read `m >= 5`, which put the whole of June in the season ahead.
+   No match on the record is dated in June, so nothing moved when this was
+   corrected - which is exactly why it was worth correcting now rather than
+   discovering it on the first June friendly, when it would have filed a
+   match under the wrong season and taken a player's tenure with it. */
 export function seasonOf(dateStr) {
   const d = parseDate(dateStr);
   if (!d) return null;
   const y = d.getUTCFullYear();
   const m = d.getUTCMonth();
-  const start = m >= 5 ? y : y - 1; // June onwards starts the next season
+  const start = m >= 6 ? y : y - 1; // July onwards starts the next season
   return `${String(start).slice(2)}/${String(start + 1).slice(2)}`;
 }
 

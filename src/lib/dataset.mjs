@@ -7,7 +7,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { POSITION_GROUPS, positionName } from './positions.mjs';
-import { readStatusRecord, statusIn, statusLabelIn, isPlaying, joinedAfter } from './squad-status.mjs';
+import { readStatusRecord, statusIn, statusLabelIn, isPlaying, joinedAfter, signedOn } from './squad-status.mjs';
 import { houseRecord } from './prose.mjs';
 import { normaliseMatch, normaliseTable, playerStats, slugify, isUs, seasonOf, toISO, isLeague, isCup,
   isCompetitive, isFriendly, figuresSeason, tableSeasonOf,
@@ -663,6 +663,9 @@ export function buildDataset() {
   const statusOpts = {
     seasons: seasonsAll,
     latestSeason,
+    /* Passed in rather than imported, so this module keeps having no
+       dependencies of its own and the suite runs the shipped rule. */
+    seasonOf,
     wasHere: (num, season) => {
       /* THE SIGNING DATE WINS OVER THE SHIRT. A number on a team sheet is an
          inference about identity; a signing date is the club stating a fact
@@ -1096,6 +1099,9 @@ export function buildDataset() {
        page asking "what was he in 25/26" gets an answer about 25/26 rather
        than about today. */
     statusRecord,
+    /* The day the club says somebody signed, or null. Exposed because two
+       derivations need it and neither should re-read the record shape. */
+    signedOn: (num) => signedOn(statusRecord, num),
     /* WHICH SEASONS A SHIRT NUMBER IS NAMED IN, from the team sheets. The
        website already leans on this to tell a first season from a second; the
        panel could not see it, so a player it labelled "Retained" carried no

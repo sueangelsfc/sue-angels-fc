@@ -105,11 +105,24 @@ export function preseasonFor(d, season) {
   /* A FIRST APPEARANCE, worked out from the archive rather than announced.
      Anybody named in a pre-season team sheet who appears in no earlier match
      record is playing his first game for the club, friendly or not. The panel
-     is never asked and cannot disagree. */
+     is never asked and cannot disagree.
+
+     AND A MATCH BEFORE SOMEBODY SIGNED IS NOT THEIRS. A team sheet stores a
+     record slot, not a person, and slots get handed on: Leon Burnett signed
+     in July 2026 and the slot he holds was also used against Brockwell
+     Violets in October 2025, so this counted him as capped and left him out
+     of the list on the band announcing him. `d.signedOn` is the club's own
+     statement of when somebody joined, and it is the only thing that can
+     settle which of two people a slot meant. */
+  const signed = (num) => (d.signedOn ? d.signedOn(num) : null);
   const before = new Set();
   for (const m of d.played || []) {
     if (String(m.iso || '') >= String((played[0] || {}).iso || '9999')) continue;
-    for (const num of sheetNums(m)) before.add(String(num));
+    for (const num of sheetNums(m)) {
+      const on = signed(num);
+      if (on && String(m.iso || '') < String(on)) continue;
+      before.add(String(num));
+    }
   }
   const seen = new Set();
   const debutants = [];

@@ -531,6 +531,14 @@ const adminSeed = {
      taken. */
   seasons: (d.seasons || []).map((x) => x.name),
   currentSeason: d.currentSeason,
+  /* THE SEASON THE CLUB IS IN, which is not the season its figures describe.
+     `currentSeason` counts competitive matches, so in August it is correctly
+     still 25/26 - and the Squad screen used it for the season tab, so the
+     panel opened on last season. Three new signings were therefore recorded
+     as being in the 25/26 squad, because that was the tab showing when the
+     club added them. The screen asks "what is he this season" and has to mean
+     the season the club is living in. */
+  clubSeason: d.latestSeason,
   /* Fixture fields per match, so opening an existing record shows the real
      date and scoreline instead of an empty form. Rows edited in the panel
      carry their own copy and win over this. */

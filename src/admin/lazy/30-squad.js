@@ -355,6 +355,10 @@
     }).join('');
   }
 
+  /* Statuses that mean somebody has gone, so the archive's last-played date
+     is worth offering as a leaving date. */
+  var GONE = { departed: 1, retired: 1, staff: 1 };
+
   var DETAIL_FIELDS = {
     active: [['from', 'date', 'The day they signed']],
     trial: [['from', 'date', 'Trial started'], ['until', 'date', 'Trial ends']],
@@ -445,8 +449,21 @@
 
       /* The squad the website is built from, plus anyone added here since. */
       var seen = {};
+      /* SQUAD is the site's own merged list, so it already carries the
+         panel's overrides. `added` is only reached for somebody signed since
+         the last publish, and that record has to keep its parts or the edit
+         form would open with an empty name for the one player most likely to
+         need correcting. */
       var players = SQUAD.concat(added.map(function (p) {
-        return { num: p.num, name: (p.first + ' ' + p.last).trim(), pos: p.position || '' };
+        return {
+          num: p.num,
+          name: (p.first + ' ' + p.last).trim(),
+          pos: p.position || '',
+          first: p.first || '',
+          last: p.last || '',
+          base: false,
+          lastPlayed: '',
+        };
       })).filter(function (p) {
         if (seen[p.num]) return false;
         seen[p.num] = true;
@@ -462,6 +479,13 @@
           tenure: tenureIn(status, p.num, editSeason),
           why: tenureWhy(status, p.num, editSeason, tenureIn(status, p.num, editSeason)),
           signed: signedOn(status, p.num),
+          base: p.base,
+          first: p.first,
+          last: p.last,
+          /* The day he was last named in a side. Offered as a leaving date
+             only where the club has given none and only for somebody who has
+             gone: it is not the same fact, so it is never written silently. */
+          lastPlayed: p.lastPlayed || '',
           /* Whatever was recorded beside the status for this season, so the
              fields open with what is already there rather than blank. */
           detail: statusDetail(status, p.num, editSeason),
@@ -600,7 +624,16 @@
                   /* The fields that go with whichever status is chosen. They
                      save on change like the status does, so there is no
                      second button to press and nothing to forget. */
-                  '<div class="cp-when" data-when>' + detailFields(p.status, p.detail || {}) + '</div>'
+                  '<div class="cp-when" data-when>' + detailFields(p.status, p.detail || {}) + '</div>' +
+                  /* The archive can say when he was last named in a side.
+                     Offered only where he has gone and the club has said no
+                     date, because it is a different fact and confirming it is
+                     the club's to do. */
+                  (GONE[p.status] && !(p.detail || {}).from && p.lastPlayed
+                    ? '<small class="cp-flag">Last played ' + esc(U.fmtDate(p.lastPlayed)) +
+                      '. <button class="btn btn--quiet btn--sm" data-use-last="' +
+                      esc(p.lastPlayed) + '">Use that as the day he left</button></small>'
+                    : '')
                   ) + '</td>' +
                 /* The site's own answer, shown but never editable, so it is
                    obvious it is derived rather than something to maintain -
@@ -618,11 +651,16 @@
                         esc(LABEL.new) + '.</small>'
                       : '')
                   : '<span class="cp-hint">Nothing to say</span>') + '</td>' +
-                '<td>' + (p.added
-                  ? '<button class="btn btn--danger btn--sm" data-del-player>Remove</button> '
-                  : '') +
+                '<td><div class="cp-rowacts">' +
+                  '<button class="btn btn--ghost btn--sm" data-edit-player>Edit</button>' +
                   '<a class="btn btn--quiet btn--sm" href="/players/' + esc(slug(p.name)) +
-                    '.html" target="_blank" rel="noopener">View</a></td>' +
+                    '.html" target="_blank" rel="noopener">View</a>' +
+                  /* Removing an override would leave the baseline player
+                     standing, so a Remove on one would be a button that
+                     appears to work and changes nothing. Offered only for
+                     somebody this panel actually signed. */
+                  (p.base ? '' : '<button class="btn btn--danger btn--sm" data-del-player>Remove</button>') +
+                '</div></td>' +
               '</tr>';
             }).join('')),
           where: [['Squad', '/squad.html'], ['Every player profile', '/squad.html']],
@@ -802,6 +840,44 @@
 
         if (e.target.matches('[data-add-player]')) { if (guard()) playerForm(); return; }
 
+        var prow = e.target.closest('tr[data-num]');
+        if (prow && e.target.matches('[data-edit-player]')) {
+          if (!guard()) return;
+          var pnum = prow.getAttribute('data-num');
+          playerForm(players.filter(function (x) { return String(x.num) === String(pnum); })[0]);
+          return;
+        }
+        /* ONE PRESS TURNS THE ARCHIVE'S ANSWER INTO THE CLUB'S. The card
+           reads "Last played in January 2026" where nobody has said when
+           somebody left, which is true and is not a leaving date. Confirming
+           it writes a real one and the card then says "Left in January
+           2026". Never written on the club's behalf: they are different
+           facts and only the club can say they are the same here. */
+        if (prow && e.target.matches('[data-use-last]')) {
+          if (!guard()) return;
+          var lnum = prow.getAttribute('data-num');
+          var lp = e.target.getAttribute('data-use-last');
+          var lrow = players.filter(function (x) { return String(x.num) === String(lnum); })[0];
+          confirmAction({
+            title: 'Record ' + lrow.name + ' as leaving on ' + U.fmtDate(lp) + '?',
+            body: 'That is the last day he was named in a side.',
+            detail: 'It may not be the day he actually left, and once it is saved the site '
+              + 'says "Left in ' + U.fmtDate(lp) + '" rather than "Last played in ' + U.fmtDate(lp)
+              + '". Change it any time in the fields beside his status.',
+            confirmLabel: 'Record it',
+          }).then(function (yes) {
+            if (!yes) return;
+            var det = statusDetail(status, lrow.num, editSeason);
+            var keep = {};
+            Object.keys(det).forEach(function (k) { keep[k] = det[k]; });
+            keep.from = lp;
+            saveStatus(withStatus(status, lrow.num, editSeason, lrow.status, keep))
+              .then(function () { toast('Recorded', 'success'); refresh('squad'); })
+              .catch(function (e2) { toast(e2.message, 'error'); });
+          });
+          return;
+        }
+
         if (e.target.matches('[data-add-trialist]')) { if (guard()) trialistForm(); return; }
         var trow = e.target.closest('tr[data-trialist]');
         if (trow && e.target.matches('[data-del-trialist]')) {
@@ -879,17 +955,35 @@
       });
 
       /* ---- Add a player ---- */
-      function playerForm() {
-        var back = modal('Add a player',
+      /* EDIT, NOT JUST ADD. There was no way to change an existing player at
+         all: you could add one and, if the panel had added him, remove him.
+         A misspelt name, a wrong position or a bio somebody wanted to redo
+         needed a developer. The reason was in the data rather than the
+         screen - the site CONCATENATED the code baseline with the panel's
+         records, so an override produced two of the same man - and now that
+         they merge by number, editing anybody is an override the same way a
+         coach's is. */
+      function playerForm(p) {
+        var editing = p || null;
+        var bio0 = editing
+          ? ((SEED.squadBios || {})[String(editing.num)] || []).join('\n\n')
+          : '';
+        var back = modal(editing ? 'Edit ' + editing.name : 'Add a player',
           '<div class="grid grid--2">' +
             '<div class="field"><label class="field__label" for="p-first">First name</label>' +
-              '<input class="input" id="p-first" autocomplete="off"></div>' +
+              '<input class="input" id="p-first" autocomplete="off" value="' +
+                esc(editing ? (editing.first || '') : '') + '"></div>' +
             '<div class="field"><label class="field__label" for="p-last">Surname</label>' +
-              '<input class="input" id="p-last" autocomplete="off"></div>' +
+              '<input class="input" id="p-last" autocomplete="off" value="' +
+                esc(editing ? (editing.last || '') : '') + '"></div>' +
             '<div class="field"><label class="field__label" for="p-pos">Position</label>' +
               '<select class="select" id="p-pos">' +
-                POSITIONS.map(function (x) { return '<option>' + esc(x) + '</option>'; }).join('') +
+                POSITIONS.map(function (x) {
+                  return '<option' + (editing && editing.pos === x ? ' selected' : '') +
+                    '>' + esc(x) + '</option>';
+                }).join('') +
               '</select></div>' +
+            (editing ? '' :
             '<div class="field"><label class="field__label" for="p-status">What they are in ' +
                 esc(editSeason) + '</label>' +
               '<select class="select" id="p-status">' +
@@ -912,12 +1006,14 @@
               '<small class="field__hint">Worth filling in. Without it the site works out ' +
                 'their first season from old team sheets, and a team sheet records which ' +
                 'slot somebody filled rather than who they are - so a slot used by a ' +
-                'previous player makes a first season look like a second.</small></div>' +
+                'previous player makes a first season look like a second.</small></div>') +
           '</div>' +
           '<div class="field" style="margin-top:var(--space-4)">' +
             '<label class="field__label" for="p-bio">A line about them (optional)</label>' +
-            '<textarea class="textarea" id="p-bio" rows="3" ' +
-              'placeholder="Where they came from, what they bring. Shows on their profile."></textarea></div>' +
+            '<textarea class="textarea" id="p-bio" rows="4" ' +
+              'placeholder="Where they came from, what they bring. Shows on their profile.">' +
+              esc(bio0) + '</textarea>' +
+            '<small class="field__hint">Blank lines separate paragraphs.</small></div>' +
           '<p class="field__hint" style="margin-top:var(--space-3)">Their position is used until they '
             + 'have played: after that the site works it out from where they actually lined up.</p>');
 
@@ -926,22 +1022,44 @@
           var last = $('#p-last', back).value.trim();
           var err = $('[data-err]', back);
           if (!first || !last) { err.textContent = 'A first name and a surname, please.'; err.hidden = false; return; }
-          var bio = $('#p-bio', back).value.trim();
-          var num = freeNumber(players);
-          var rec = { num: num, first: first, last: last, position: $('#p-pos', back).value };
-          if (bio) rec.bio = [bio];
-          var chosen = $('#p-status', back).value;
-          var from = $('#p-from', back).value;
-          var nextStatus = withStatus(status, num, editSeason, chosen, from ? { from: from } : null);
+          var bio = $('#p-bio', back).value;
+          var num = editing ? editing.num : freeNumber(players);
+
+          /* AN OVERRIDE STARTS FROM THE RECORD AS IT STANDS. The panel may
+             already hold a row for this player carrying fields this form has
+             never heard of; the site merges an override field by field over
+             the baseline, so writing a bare object here would be lossless in
+             the site and lossy in the panel's own record. */
+          var prev = added.filter(function (a) { return String(a.num) === String(num); })[0] || {};
+          var rec = {};
+          Object.keys(prev).forEach(function (k) { rec[k] = prev[k]; });
+          rec.num = num;
+          rec.first = first;
+          rec.last = last;
+          rec.position = $('#p-pos', back).value;
+          /* Paragraphs, the way the coaches form already splits them. An
+             emptied box removes the bio rather than storing [''], which would
+             print a blank paragraph on the profile. */
+          var paras = bio.split(/\n{2,}/).map(function (x) { return x.trim(); }).filter(Boolean);
+          if (paras.length) rec.bio = paras; else delete rec.bio;
+
+          var nextAdded = added.filter(function (a) { return String(a.num) !== String(num); }).concat([rec]);
           err.hidden = true;
-          savePlayers(added.concat([rec]))
-            .then(function () { return saveStatus(nextStatus); })
-            .then(function () {
-              toast(first + ' ' + last + ' added to the squad', 'success');
-              back.remove();
-              refresh('squad');
-            })
-            .catch(function (e2) { err.textContent = e2.message; err.hidden = false; });
+
+          var work = savePlayers(nextAdded);
+          if (!editing) {
+            var chosen = $('#p-status', back).value;
+            var from = $('#p-from', back).value;
+            var nextStatus = withStatus(status, num, editSeason, chosen, from ? { from: from } : null);
+            work = work.then(function () { return saveStatus(nextStatus); });
+          }
+          work.then(function () {
+            toast(editing
+              ? first + ' ' + last + ' updated'
+              : first + ' ' + last + ' added to the squad', 'success');
+            back.remove();
+            refresh('squad');
+          }).catch(function (e2) { err.textContent = e2.message; err.hidden = false; });
         });
       }
 

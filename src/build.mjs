@@ -323,7 +323,25 @@ const adminSeed = {
   /* The squad, so a result is recorded by picking players rather than typing
      shirt numbers into JSON and hoping. Numbers are the storage key the match
      record already uses; they are never shown on the website. */
-  squad: d.squad.map((p) => ({ num: p.num, name: p.name, pos: p.position || '' })),
+  /* `first`/`last`/`bio` so the panel can EDIT somebody rather than only add
+     him, `base` so it knows an override from a signing (removing an override
+     leaves the baseline player standing, so a Remove button on one would do
+     nothing), and `lastPlayed` so a departure with no date can offer the day
+     he was last named in a side. */
+  squad: d.squad.map((p) => ({
+    num: p.num, name: p.name, pos: p.position || '',
+    first: p.first || '', last: p.last || '',
+    base: !p.signedHere,
+    lastPlayed: d.lastPlayedOn(p.num) || '',
+  })),
+  /* The bios ride with the Squad chunk, not here. They are 1.6KB gzipped of
+     prose read by one screen, and control-seed.js is not deferred, so in the
+     main seed every panel would pay for them to render the Inbox. Same rule
+     as the home bands, and the note by HOME_SEED_KEYS said this is the shape
+     to use when another screen grew one. */
+  squadBios: Object.fromEntries(d.squad
+    .filter((p) => (p.bio || []).length)
+    .map((p) => [String(p.num), p.bio])),
   /* THE CLUB'S OWN RECORD, so a report can close the way a report closes.
 
      "Eighteen wins from eighteen. Fifty-four points. Ninety goals scored
@@ -615,13 +633,20 @@ const adminSeed = {
    is fetched the first time somebody opens Home page and by nobody else. The
    module reads `window.SA_SEED` at its own top, and this assignment runs
    above it in the same file, so it is merged before anything looks. */
-const HOME_SEED_KEYS = ['homeBands', 'homeAreas', 'homePage'];
-const homeSeed = {};
-for (const k of HOME_SEED_KEYS) {
-  homeSeed[k] = adminSeed[k];
-  delete adminSeed[k];
+const CHUNK_SEED_KEYS = {
+  home: ['homeBands', 'homeAreas', 'homePage'],
+  /* Player bios: prose, read only by the screen that edits it. */
+  squad: ['squadBios'],
+};
+const chunkSeedJs = {};
+for (const [chunk, keys] of Object.entries(CHUNK_SEED_KEYS)) {
+  const lifted = {};
+  for (const k of keys) {
+    lifted[k] = adminSeed[k];
+    delete adminSeed[k];
+  }
+  chunkSeedJs[chunk] = `window.SA_SEED=Object.assign(window.SA_SEED||{},${JSON.stringify(lifted)});\n`;
 }
-const homeSeedJs = `window.SA_SEED=Object.assign(window.SA_SEED||{},${JSON.stringify(homeSeed)});\n`;
 
 /* One file, fetched by the Home page screen the first time somebody presses
    Preview and by nobody else. Not in the sitemap and not linked from any page,
@@ -646,7 +671,7 @@ for (const f of fs.readdirSync(lazyDir).filter((x) => x.endsWith('.js')).sort())
   /* The home chunk carries its own data, prepended UNMINIFIED-then-minified
      with the module so the two ship and cache as one file. Nothing else needs
      a seed of its own; if another screen ever grows one, this is the shape. */
-  const src = (name === 'home' ? homeSeedJs : '') + fs.readFileSync(path.join(lazyDir, f), 'utf8');
+  const src = (chunkSeedJs[name] || '') + fs.readFileSync(path.join(lazyDir, f), 'utf8');
   const body = minifyJs(src);
   const v = crypto.createHash('sha256').update(body).digest('hex').slice(0, 8);
   write(`control-${name}.js`, body);

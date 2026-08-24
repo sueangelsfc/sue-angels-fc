@@ -399,6 +399,9 @@ export function statusLabelIn(record, num, season, opts = {}) {
   const extra = statusDetail(record, num, season);
 
   if (set !== 'active') {
+    /* The archive's answer travels with what the club said, so setSentence
+       can fall back to it without knowing where either came from. */
+    if (opts.lastPlayed && !extra.from) extra.__lastPlayed = opts.lastPlayed(num);
     /* A SET STATUS, WITH WHAT THE CLUB SAID BESIDE IT. "On trial" is a
        window and now says when it opened; an injury says when it started and
        when he is expected back; a departure says where he went. Each falls
@@ -457,14 +460,31 @@ function setSentence(key, x) {
     if (until) return `Expected back ${until}`;
     return '';
   }
+  /* WHEN THE CLUB HAS NOT SAID WHEN, THE ARCHIVE CAN SAY WHEN THEY LAST
+     PLAYED, and those are not the same fact. Eight of the fourteen players
+     who have left carry no leaving date, so their card read "Left the club"
+     and stopped. The last team sheet naming them is real and useful and it is
+     printed as itself: "Last played in January 2026", never "Left in January
+     2026", because a man can play his final game in April and leave in June
+     and the site would be inventing the difference. The panel offers the same
+     date as a suggestion, one press to confirm it into a real leaving date -
+     at which point this falls away and the true sentence takes over. */
+  const lastPlayed = x.__lastPlayed ? onDate(x.__lastPlayed) : '';
+
   if (key === 'departed') {
     const to = said(x.to);
     if (to && from) return `Left for ${to} in ${from}`;
     if (to) return `Left for ${to}`;
     if (from) return `Left in ${from}`;
+    if (lastPlayed) return `Last played in ${lastPlayed}`;
     return '';
   }
-  if (key === 'retired' && from) return `Retired in ${from}`;
+  if (key === 'retired') {
+    if (from) return `Retired in ${from}`;
+    if (lastPlayed) return `Last played in ${lastPlayed}`;
+    return '';
+  }
+  if (key === 'staff' && !from && lastPlayed) return `Last played in ${lastPlayed}`;
   if (key === 'away') return said(x.note);
   return said(x.note);
 }

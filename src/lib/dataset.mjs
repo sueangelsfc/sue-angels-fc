@@ -345,8 +345,37 @@ export function buildDataset() {
      were exported by hand before the panel existed. Marking where each record
      came from is what lets the site refuse a photograph it cannot prove
      belongs to the person. */
-  const addedNums = new Set(addedPlayers.map((p) => String(p.num)));
-  const squad = [...(ps.SQUAD || []), ...addedPlayers].map((p) => {
+  /* SIGNED BY THE PANEL, WHICH IS NOT THE SAME AS EDITED IN IT. This gates
+     whether a photograph file on disk may be trusted for somebody: those
+     files were exported by hand before the panel existed, so they belong only
+     to players who were in the code baseline then. Now that a panel record
+     can be an OVERRIDE of a baseline player, "has a roster:s2627 row" no
+     longer means "the panel signed him" - correcting a spelling would have
+     taken away a photograph that was always his. */
+  const addedNums = new Set(addedPlayers
+    .map((p) => String(p.num))
+    .filter((n) => !(ps.SQUAD || []).some((b) => String(b.num) === n)));
+  /* MERGED BY NUMBER, NOT CONCATENATED. These two lists were joined end to
+     end, so a panel record sharing a number with a player from the code
+     baseline produced TWO of him: two cards, two profiles, one archive split
+     across them. That made editing an existing player impossible to offer, so
+     the panel could add somebody and remove somebody and never fix a
+     misspelt name. Merged, a panel record is an OVERRIDE - the same rule the
+     coaches already use - and the club can correct anybody.
+
+     Field by field, so an override that carries only a bio does not blank the
+     position it never mentioned. */
+  const baseSquad = [...(ps.SQUAD || [])];
+  for (const extra of addedPlayers) {
+    const at = baseSquad.findIndex((p) => String(p.num) === String(extra.num));
+    if (at > -1) baseSquad[at] = { ...baseSquad[at], ...extra };
+    else baseSquad.push(extra);
+  }
+  /* Who the code baseline knows, so the panel can tell an override from a
+     signing: removing an override leaves the baseline player standing, which
+     makes a Remove button on one a button that does nothing. */
+  const baseNums = new Set((ps.SQUAD || []).map((p) => String(p.num)));
+  const squad = baseSquad.map((p) => {
     const name = `${p.first} ${p.last}`.trim();
     const pos = posByNum.get(p.num);
     const isGk = p.gk || pos?.code === 'GK';
@@ -627,6 +656,26 @@ export function buildDataset() {
      has not typed since, which is how the site can tell a first season from
      a second from a return without being told. Nobody keeps it true; it is
      true because it is counted. */
+  /* THE LAST DAY SOMEBODY ACTUALLY PLAYED, from the team sheets.
+     Eight of the fourteen players who have left carry no leaving date, so
+     their card says "Left the club" and nothing else. The archive knows when
+     they were last named in a side, and that is worth showing - but it is NOT
+     a leaving date and must never be printed as one: a man can play his last
+     game in April and leave in June. It is published as what it is, and the
+     panel offers it as a suggestion the club can confirm into a real date in
+     one press. Four of the eight never played at all, so they stay dateless,
+     which is the honest answer rather than a guessed one. */
+  const lastPlayedBy = {};
+  for (const m of matches) {
+    const iso = String(m.iso || '');
+    if (!iso) continue;
+    const dt = m.detail || {};
+    for (const x of [...(dt.starters || []), ...(dt.bench || [])]) {
+      const k = String(x && x.num);
+      if (k && (!lastPlayedBy[k] || iso > lastPlayedBy[k])) lastPlayedBy[k] = iso;
+    }
+  }
+
   const appearedIn = {};
   for (const [name, list] of Object.entries(playersBySeason)) {
     appearedIn[name] = new Set(list
@@ -666,6 +715,7 @@ export function buildDataset() {
     /* Passed in rather than imported, so this module keeps having no
        dependencies of its own and the suite runs the shipped rule. */
     seasonOf,
+    lastPlayed: (num) => lastPlayedBy[String(num)] || null,
     wasHere: (num, season) => {
       /* THE SIGNING DATE WINS OVER THE SHIRT. A number on a team sheet is an
          inference about identity; a signing date is the club stating a fact
@@ -1102,6 +1152,7 @@ export function buildDataset() {
     /* The day the club says somebody signed, or null. Exposed because two
        derivations need it and neither should re-read the record shape. */
     signedOn: (num) => signedOn(statusRecord, num),
+    lastPlayedOn: (num) => lastPlayedBy[String(num)] || null,
     /* WHICH SEASONS A SHIRT NUMBER IS NAMED IN, from the team sheets. The
        website already leans on this to tell a first season from a second; the
        panel could not see it, so a player it labelled "Retained" carried no

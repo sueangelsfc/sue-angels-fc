@@ -478,6 +478,68 @@ for (const f of shipped) {
   check('and does not touch its own season',
     statusMod.statusIn(both, 3, '26/27', opts) === 'active');
 
+  /* LAST PLAYED IS NOT LEFT, and the site must never print it as though it
+     were. Eight of the fourteen departures carry no date, so the card said
+     "Left the club" and stopped; the archive knows when they were last named
+     in a side. It is published as itself. */
+  {
+    const opts = (last) => ({
+      seasons: SEASONS, latestSeason: '26/27', seasonOf, wasHere: () => true,
+      lastPlayed: () => last,
+    });
+    const gone = statusMod.readStatusRecord({ status: { 3: { '25/26': 'departed' } } });
+    const l1 = statusMod.statusLabelIn(gone, 3, '25/26', opts('2026-01-25'));
+    check('a departure with no date says when he last played',
+      l1.detail === 'Last played in January 2026', l1.detail);
+    check('and never calls it a leaving date',
+      !/^Left in/.test(l1.detail || ''), l1.detail);
+
+    /* A real leaving date wins, or the fallback would be overwriting what the
+       club actually said. */
+    const dated = statusMod.readStatusRecord({
+      status: { 3: { '25/26': { key: 'departed', from: '2026-05-31' } } },
+    });
+    const l2 = statusMod.statusLabelIn(dated, 3, '25/26', opts('2026-01-25'));
+    check('a recorded leaving date beats the archive',
+      l2.detail === 'Left in May 2026', l2.detail);
+
+    /* Somebody who never played gets no date at all, which is the honest
+       answer rather than a guessed one. */
+    const l3 = statusMod.statusLabelIn(gone, 3, '25/26', opts(null));
+    check('somebody who never played is left dateless', !l3.detail, l3.detail);
+  }
+
+  /* THE PANEL'S SQUAD LIST IS AN OVERRIDE, NOT A SECOND PLAYER. dataset.mjs
+     concatenated the code baseline with roster:s2627, so a panel record
+     sharing a number produced two of the same man. That is why the screen
+     could add and remove somebody but never edit anybody. */
+  {
+    const dsSrc2 = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'dataset.mjs'), 'utf8');
+    check('the squad merges the panel over the baseline by number',
+      /baseSquad\.findIndex\(\(p\) => String\(p\.num\) === String\(extra\.num\)\)/.test(dsSrc2));
+    /* AND IS BUILT FROM THE MERGED LIST. Checking the merge exists is not
+       checking it is used: reverting the map back to a concatenation left
+       this code sitting there unread and every check stayed green. No record
+       currently overrides a baseline number, so the duplicate can only be
+       caught here, in the source, until one does. */
+    check('and the squad is built from that merged list',
+      /const squad = baseSquad\.map\(/.test(dsSrc2));
+    /* Proven on the shipped output rather than on a dataset built here: a
+       duplicate would be two cards on the squad page. */
+    const squadHtml = fs.readFileSync(path.join(ROOT, 'squad.html'), 'utf8');
+    const profiles = (squadHtml.match(/\/players\/[a-z0-9-]+\.html/g) || []);
+    const uniq = new Set(profiles);
+    check('no player appears on the squad page twice',
+      profiles.length === uniq.size, `${profiles.length} links, ${uniq.size} players`);
+    const sq = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '30-squad.js'), 'utf8');
+    check('every player can be edited', /data-edit-player/.test(sq));
+    check('the archive date is offered, never written on the club\'s behalf',
+      /data-use-last/.test(sq) && /data-use-last[\s\S]{0,1400}confirmLabel: 'Record it'/.test(sq));
+    check('the bios ride with the squad chunk, not the seed',
+      !/squadBios/.test(fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8'))
+      && /squadBios/.test(fs.readFileSync(path.join(ROOT, 'control-squad.js'), 'utf8')));
+  }
+
   /* A PLACEHOLDER IS NOT A FACT. "Where they went" is a free-text field and
      it was filled in as "N/A", so a player's profile published "Left for
      N/A". No wording survives that, so the value is read as nothing said and
@@ -1089,7 +1151,14 @@ const BUDGET = {
      all of this; and adding a trialist is a form rather than
      `window.prompt`, so a trial is asked for its end date at the moment
      somebody knows it. Set against that, two tables lost columns. */
-  'control-squad.js': 8,
+  /* 8 -> 10, and it now carries DATA as well as code: the player bios ride
+     with this chunk rather than with control-seed.js, which is not deferred
+     and was making all eighteen panels pay 1.6KB of prose to render the
+     Inbox. The code itself gained the two things that were missing: editing
+     an existing player at all, and offering the archive's last-played date as
+     a leaving date. `src/admin/lazy/30-squad.js` is budgeted as SOURCE below
+     so an edit to the code shows up on its own, exactly as 95-home.js is. */
+  'control-squad.js': 10,
   'control-coaches.js': 4,
   'control-photos.js': 4,
   /* Takes a player's picture straight from the gallery: the club has already
@@ -1196,6 +1265,8 @@ for (const [f, kb] of Object.entries({
      club's arrangement is the club's, and a panel that reordered the page by
      its own numbers would be breaking that rule while claiming to help. */
   'src/admin/lazy/95-home.js': 11,
+  /* Source, so the bios riding with the chunk cannot hide code growth. */
+  'src/admin/lazy/30-squad.js': 18,
   'src/admin/lazy/10-match.js': 34,
 })) {
   const raw = fs.readFileSync(path.join(ROOT, f));

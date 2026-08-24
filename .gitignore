@@ -18,3 +18,7 @@ node_modules/
 .vercel/
 _sections.html
 .vercel
+
+# Scratch for scripts/make-covers.mjs. The script clears it on a clean run;
+# a run that is interrupted leaves it behind, and it must never be committed.
+.covers-tmp/

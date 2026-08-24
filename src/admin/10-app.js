@@ -422,7 +422,15 @@
       (SEED.squadWithPhoto || []).forEach(function (n) { photoSet[String(n)] = 1; });
       blobs.forEach(function (x) { if (/^\d+$/.test(x.key)) photoSet[x.key] = 1; });
       var withPhoto = Object.keys(photoSet).length;
-      var withCover = matches.filter(function (m) { return (m.data || {}).cover; }).length;
+      /* Counted the same way the covers panel counts it: a record has a
+         cover if the SITE ships one. The build draws a card for every match
+         and commits it, so counting stored covers alone put this tile at 0 of
+         38 while every one of the 38 was sharing a drawn card. */
+      var drawnSet = {};
+      (SEED.drawnCovers || []).forEach(function (k) { drawnSet[String(k)] = 1; });
+      var withCover = matches.filter(function (m) {
+        return (m.data || {}).cover || drawnSet[String(m.key)];
+      }).length;
 
       var warn = [];
       if (!CP.state.isAdmin) {

@@ -235,6 +235,19 @@ const bandFor = (file) => {
 
 /* ---- Data ---- */
 const d = buildDataset();
+
+/* THE COVER DRAWN FOR THIS MATCH OR ARTICLE, if one has been. Written by
+   scripts/make-covers.mjs and committed; missing simply means nobody has run
+   it since that record was added, and the generic card takes over the way it
+   always did. Checked on disk rather than assumed, so a card that was never
+   drawn cannot be linked as though it were.
+
+   Defined up here beside the dataset because BOTH the page writers and the
+   control panel's seed need it, and the seed is built first. */
+const drawnCover = (id) => (fs.existsSync(path.join(ROOT, 'assets', 'covers', `${id}.jpg`))
+  ? `${CLUB.url}/assets/covers/${id}.jpg`
+  : '');
+
 const all = teamSummary(d.played);
 const ourRow = d.table.find((r) => r.us);
 
@@ -315,6 +328,21 @@ const adminSeed = {
      it the report writer could not tell that a fixture was a friendly, so
      "the first of six" came out as nothing at all. Taken from `d.fixtures`
      rather than defaulted here a second time, so the two cannot drift. */
+  /* WHICH RECORDS ALREADY SHIP A DRAWN SHARE CARD. The covers panel asks
+     whether a record carries a stored `cover` and prints "None" when it does
+     not, which became wrong the moment the build started drawing a card for
+     every match and article: thirty-eight reports would have shown a red
+     None, and the button would have offered to draw forty-three that already
+     exist. Two answers to one question, which is the fault this repository
+     keeps having.
+
+     Keyed by what the PANEL holds - a match by its id, an article by its row
+     key - because an article's card is named for its slug and the panel has
+     never seen a slug. */
+  drawnCovers: [
+    ...(d.matches || []).filter((m) => drawnCover(m.id)).map((m) => m.id),
+    ...(d.articles || []).filter((a) => drawnCover(`a-${articleSlug(a)}`)).map((a) => a.key),
+  ].filter(Boolean),
   baselineFixtures: (JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'fixtures-2627.json'), 'utf8')).fixtures || [])
     /* A FIXTURE THAT HAS BEEN PLAYED IS NOT MISSING FROM ANYTHING.
        The panel offers to import any of these that is not a row in the
@@ -1070,15 +1098,6 @@ for (const p of profilePlayers) {
     ],
   }));
 }
-
-/* THE COVER DRAWN FOR THIS MATCH OR ARTICLE, if one has been. Written by
-   scripts/make-covers.mjs and committed; missing simply means nobody has run
-   it since that record was added, and the generic card takes over the way it
-   always did. Checked on disk rather than assumed, so a card that was never
-   drawn cannot be linked as though it were. */
-const drawnCover = (id) => (fs.existsSync(path.join(ROOT, 'assets', 'covers', `${id}.jpg`))
-  ? `${CLUB.url}/assets/covers/${id}.jpg`
-  : '');
 
 /* ---- Match centre ----
    Every PLAYED match gets a page. A fixture with no result has nothing to

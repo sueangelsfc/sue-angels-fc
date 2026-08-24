@@ -509,6 +509,48 @@ for (const f of shipped) {
     check('somebody who never played is left dateless', !l3.detail, l3.detail);
   }
 
+  /* THE PANEL'S IDEA OF A COVER MATCHES THE SITE'S. The covers panel asked
+     whether a record stores a `cover` and printed "None" otherwise. Once the
+     build began drawing and committing a card for every match and article,
+     that answer was wrong for all forty-three: the panel showed a red None on
+     thirty-eight reports that were each sharing their own card, and its bulk
+     button offered to redraw the lot. Seeded from the build so there is one
+     answer, and reconciled here against the pages that actually ship. */
+  {
+    const seedSrcC = fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8');
+    const mC = /"drawnCovers":(\[.*?\])(?=,")/s.exec(seedSrcC);
+    check('the panel is seeded with the drawn covers', !!mC);
+    if (mC) {
+      const seeded = new Set(JSON.parse(mC[1]));
+      /* Every id the panel is told about is a file that exists. */
+      const onDisk = new Set(fs.existsSync(path.join(ROOT, 'assets', 'covers'))
+        ? fs.readdirSync(path.join(ROOT, 'assets', 'covers'))
+          .filter((f) => f.endsWith('.jpg')).map((f) => f.slice(0, -4))
+        : []);
+      const { buildDataset } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+      const dC = buildDataset();
+      const artKeyToSlug = new Map((dC.articles || []).map((a) => [a.key, a]));
+      let bad = 0;
+      for (const k of seeded) {
+        const hit = onDisk.has(k)
+          || (artKeyToSlug.has(k) && [...onDisk].some((f) => f.startsWith('a-')));
+        if (!hit) bad += 1;
+      }
+      check('every drawn cover the panel is told about exists on disk', bad === 0, `${bad} missing`);
+
+      /* And the count agrees with the pages: a match page carrying a
+         /assets/covers/ share image is a match the panel must call covered. */
+      const pagesWithDrawn = htmlFiles.filter((f) => f.startsWith('matches/')).filter((f) => {
+        const m2 = /property="og:image" content="([^"]+)"/
+          .exec(fs.readFileSync(path.join(ROOT, f), 'utf8'));
+        return m2 && /\/assets\/covers\//.test(m2[1]);
+      }).length;
+      const seededMatches = [...seeded].filter((k) => /^[rf]\d/.test(k)).length;
+      check('the panel and the shipped pages agree on how many matches have a drawn cover',
+        pagesWithDrawn === seededMatches, `${pagesWithDrawn} pages, ${seededMatches} seeded`);
+    }
+  }
+
   /* EVERY REPORT AND EVERY ARTICLE SHARES A CARD OF ITS OWN. All thirty-eight
      reports carried `og-match.jpg` and all five articles `og-news.jpg`, so a
      link to the Kew Antigua win and a link to the Brentford defeat looked

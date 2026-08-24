@@ -303,8 +303,22 @@
       var articles = (r[1] || []).slice().sort(function (a, b) {
         return String((b.data || {}).sortISO || '').localeCompare(String((a.data || {}).sortISO || ''));
       });
-      var mNone = matches.filter(function (x) { return !(x.data || {}).cover; }).length;
-      var aNone = articles.filter(function (x) { return !(x.data || {}).cover; }).length;
+      /* A RECORD HAS A COVER IF THE SITE SHIPS ONE, not only if this table
+         stores one. The build draws a card for every match and article and
+         commits it, so asking about `cover` alone reported thirty-eight
+         reports as having none while all thirty-eight were sharing a drawn
+         card. The three states are different things and the club should be
+         able to tell them apart:
+
+           stored   a photograph, or a card drawn here. Always wins.
+           drawn    the card the build made from the record itself.
+           none     the generic club image, which is the only real gap.  */
+      var drawn = {};
+      (SEED.drawnCovers || []).forEach(function (k) { drawn[String(k)] = 1; });
+      var hasDrawn = function (x) { return !!drawn[String(x.key)]; };
+      var hasAny = function (x) { return !!(x.data || {}).cover || hasDrawn(x); };
+      var mNone = matches.filter(function (x) { return !hasAny(x); }).length;
+      var aNone = articles.filter(function (x) { return !hasAny(x); }).length;
 
       host.innerHTML =
         sec({
@@ -315,7 +329,8 @@
             + 'A real photograph is better and anything that already has one keeps it.',
           actions: (mNone || aNone)
             ? '<button class="btn btn--primary" data-all>Make the ' + esc(mNone + aNone) + ' that are missing</button>'
-            : '<span class="cp-note">Everything has a cover.</span>',
+            : '<span class="cp-note">Everything has a cover. Anything without one of its own is '
+              + 'sharing a card drawn from its own record.</span>',
           body: '<p class="cp-note" data-progress></p>',
           where: [['News', '/news.html'], ['Results', '/results.html']],
           whereNote: 'and in the card wherever a link is shared',
@@ -333,7 +348,9 @@
               '<td>' + (d.cover
                 ? '<img src="' + esc(d.cover) + '" alt="" width="96" height="50" '
                   + 'style="border-radius:6px;object-fit:cover;display:block">'
-                : '<span class="badge badge--warning">None</span>') + '</td>' +
+                : (drawn[String(x.key)]
+                  ? '<span class="cp-note">Drawn from the record</span>'
+                  : '<span class="badge badge--warning">None</span>')) + '</td>' +
               '<td><button class="btn btn--ghost btn--sm" data-make>' +
                 (d.cover ? 'Draw a new one' : 'Draw one') + '</button></td>' +
             '</tr>';
@@ -353,7 +370,9 @@
                 '<td>' + (d.cover
                   ? '<img src="' + esc(d.cover) + '" alt="" width="96" height="50" '
                     + 'style="border-radius:6px;object-fit:cover;display:block">'
-                  : '<span class="badge badge--warning">None</span>') + '</td>' +
+                  : (drawn[String(x.key)]
+                    ? '<span class="cp-note">Drawn from the record</span>'
+                    : '<span class="badge badge--warning">None</span>')) + '</td>' +
                 '<td><button class="btn btn--ghost btn--sm" data-make>' +
                   (d.cover ? 'Draw a new one' : 'Draw one') + '</button></td>' +
               '</tr>';
@@ -396,9 +415,13 @@
       host.addEventListener('click', function (e) {
         if (e.target.matches('[data-all]')) {
           if (!guard()) return;
-          var jobs = matches.filter(function (x) { return !(x.data || {}).cover; })
+          /* Only what has NO card at all. Filtering on the stored cover alone
+             would have queued all forty-three, redrawing every card the build
+             had already made and replacing a committed file with a canvas
+             render for no reason. */
+          var jobs = matches.filter(function (x) { return !hasAny(x); })
             .map(function (x) { return { run: function () { return forMatch(x); }, what: U.matchLabel(x.key) }; })
-            .concat(articles.filter(function (x) { return !(x.data || {}).cover; })
+            .concat(articles.filter(function (x) { return !hasAny(x); })
               .map(function (x) {
                 return { run: function () { return forArticle(x); }, what: (x.data || {}).title || 'article' };
               }));

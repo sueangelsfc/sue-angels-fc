@@ -129,11 +129,11 @@
           body:
             '<div class="grid grid--2">' +
               '<div class="field"><label class="field__label" for="fx-date">Date</label>' +
-                '<input class="input" id="fx-date" type="date"></div>' +
+                '<input class="input" id="fx-date" type="date" required></div>' +
               '<div class="field"><label class="field__label" for="fx-kick">Kick-off</label>' +
                 '<input class="input" id="fx-kick" type="time" value="11:00"></div>' +
               '<div class="field"><label class="field__label" for="fx-opp">Opponent</label>' +
-                '<input class="input" id="fx-opp" list="fx-clubs" placeholder="Start typing a club"></div>' +
+                '<input class="input" id="fx-opp" list="fx-clubs" placeholder="Start typing a club" required></div>' +
               '<div class="field"><label class="field__label" for="fx-comp">Competition</label>' +
                 '<input class="input" id="fx-comp" list="fx-comps" value="' + esc(SEED.division || '') + '"></div>' +
               '<div class="field"><label class="field__label" for="fx-ha">Home or away</label>' +
@@ -322,8 +322,14 @@
         if (e.target.matches('[data-fx-add]')) {
           if (!guard()) return;
           var f = readForm();
-          if (!f.iso) { err.textContent = 'Pick a date.'; err.hidden = false; return; }
-          if (!f.opponent) { err.textContent = 'Name the opponent.'; err.hidden = false; return; }
+          /* ON THE FIELD, NOT ONLY ON THE FORM. The words were already right;
+             they went to a shared error line at the top, so on a form scrolled
+             past you were told something was wrong and left to find it.
+             U.invalid puts the same sentence beside the control, marks it
+             aria-invalid and takes focus there. */
+          err.hidden = true;
+          if (!f.iso) { U.invalid($('#fx-date', host), 'Pick a date.'); return; }
+          if (!f.opponent) { U.invalid($('#fx-opp', host), 'Name the opponent.'); return; }
           if (have[f.key] && f.key !== editingKey) {
             err.textContent = 'A fixture with the key ' + f.key + ' already exists.';
             err.hidden = false; return;

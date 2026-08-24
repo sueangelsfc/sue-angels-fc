@@ -316,3 +316,17 @@
 }
 .cp-filter.is-on b { color: var(--text-on-brand); }
 .cp-filter--warn { border-color: var(--warning); color: var(--text); }
+
+/* A FIELD THAT IS WRONG SAYS SO, BESIDE ITSELF.
+   Inserted by the shell straight after the control, so it reads in source
+   order immediately after the thing it is about. `aria-invalid` carries the
+   same fact to a screen reader; this is the sighted half. */
+.cp-invalid {
+  margin: 4px 0 0;
+  font-size: var(--step--1);
+  color: var(--error);
+  font-weight: 500;
+}
+[aria-invalid="true"] {
+  border-color: var(--error);
+}

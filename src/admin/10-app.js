@@ -317,6 +317,23 @@
     matchLabel: matchLabel,
     youtubeId: youtubeId,
     refresh: function (key) { return refresh(key); },
+    /* Marks ONE field as wrong and puts the message beside it. The existing
+       checks already have the right words; what they lack is somewhere to put
+       them. Returns false so a guard reads `if (!U.invalid(el, 'Pick a
+       date.')) return;`. */
+    invalid: function (el, message) {
+      if (!el) return false;
+      el.setAttribute('aria-invalid', 'true');
+      var msg = el.nextElementSibling;
+      if (!(msg && msg.classList && msg.classList.contains('cp-invalid'))) {
+        msg = document.createElement('p');
+        msg.className = 'cp-invalid';
+        if (el.parentNode) el.parentNode.insertBefore(msg, el.nextSibling);
+      }
+      msg.textContent = message;
+      if (el.focus) el.focus();
+      return false;
+    },
     /* A module calls this the moment it holds an edit that is not in the
        database yet, and again with false once it is. Everything else - the
        warning strip, the Publish confirm, the close-tab prompt - follows from
@@ -1140,6 +1157,44 @@
       el.dispatchEvent(new Event('change', { bubbles: true }));
     });
   }
+
+  /* ======================================================================
+     A FIELD THAT IS WRONG SAYS SO, WHERE IT IS WRONG
+
+     The panel already validates: a dozen hand-written checks with good plain
+     messages - "Pick a date.", "Name the opponent.", "The trialist needs a
+     name." - all running before the save. What none of them does is tell the
+     FIELD. The message goes to a shared error line or a toast, `aria-invalid`
+     appears nowhere, and focus stays where it was, so on a long form the
+     person is told something is wrong and left to find it.
+
+     Twenty fields also declare a native constraint - `type="number"` with
+     `min`/`max`, a minute between 1 and 120 - and nothing checked them at
+     all, so an impossible value went to the server to be refused there, which
+     on mobile data at the side of a pitch is the expensive way to find out.
+
+     checkValidity() is the browser's own answer and needs no module to
+     cooperate: a field that declares nothing is always valid, so this is
+     inert everywhere it has not been asked for. */
+  function markValidity(el) {
+    if (!el.checkValidity || !el.willValidate) return true;
+    var ok = el.checkValidity();
+    el.setAttribute('aria-invalid', ok ? 'false' : 'true');
+    var msg = el.nextElementSibling;
+    var isMsg = msg && msg.classList && msg.classList.contains('cp-invalid');
+    if (ok) { if (isMsg) msg.remove(); return true; }
+    if (!isMsg) {
+      msg = document.createElement('p');
+      msg.className = 'cp-invalid';
+      if (el.parentNode) el.parentNode.insertBefore(msg, el.nextSibling);
+    }
+    msg.textContent = el.validationMessage;
+    return false;
+  }
+  document.addEventListener('change', function (e) {
+    var body = e.target && e.target.closest && e.target.closest('[data-panel-body]');
+    if (body) markValidity(e.target);
+  }, true);
 
   var draftTimer = null;
   document.addEventListener('input', function (e) {

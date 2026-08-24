@@ -187,6 +187,15 @@ There is also **no runtime test coverage for the panel at all**: the suite is st
 
 **What would make it safe, in order:** move those six derived caches onto one namespace object mutated by property and never reassigned; then a harness that loads a chunk in Node against a stubbed `window.CP`/`CPU` and calls `M.results(host)`, which the project could use for every module; then the split. The shared mutable state is worth fixing on its own merits - it is the same shape as the bug where two renders made one click save twice.
 
+### A field that is wrong says so, where it is wrong
+The panel already validated - a dozen hand-written checks with the right plain words ("Pick a date.", "Name the opponent.", "The trialist needs a name."), all running before the save. What none of them did was tell the **field**: the message went to a shared error line or a toast, `aria-invalid` appeared nowhere, and focus never moved, so on a form scrolled past you were told something was wrong and left to hunt for it.
+
+- `markValidity()` in the shell checks a field against **its own declared constraints** on change. A field that declares nothing is always valid, so this is inert everywhere it has not been asked for - the check that matters is that one, because without it every optional box in the panel lights up.
+- Twenty fields declare `type="number"` with `min`/`max` and nothing checked them, so an impossible value went to the server to be refused there. On mobile data at the side of a pitch that is the expensive way to find out.
+- `CPU.invalid(el, message)` puts one sentence beside one control, marks it `aria-invalid` and takes focus there. The existing checks already have the right words; what they lacked was somewhere to put them. The fixture form's date and opponent use it.
+- Those two also carry `required` now, so the browser reports it **and clears it live** once fixed. The JavaScript guard is unchanged and still governs the save, so the attribute can only add an earlier hint, never change what gets stored.
+- `.cp-invalid` is inserted directly after the control, before any hint, so `aria-describedby` still resolves and the reading order is control, then what is wrong with it, then what it is for.
+
 ### How the editors work
 - Authorisation is the **database's** answer, surfaced in the UI. A non-registered account is shown as read-only rather than hitting a policy error.
 - **Every editor is a form.** They used to be raw JSON textareas, defended on the grounds that a lossy form would drop fields the website reads. The premise was right and the conclusion was not: each form starts from the record as it stands, changes only the fields it covers, and writes the rest back untouched, so a JSONB shape it has never heard of survives being edited by it. A **Raw** button is still one click away on every record.

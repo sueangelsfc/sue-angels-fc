@@ -509,6 +509,40 @@ for (const f of shipped) {
     check('somebody who never played is left dateless', !l3.detail, l3.detail);
   }
 
+  /* A FIELD THAT IS WRONG SAYS SO WHERE IT IS WRONG. The panel already
+     validated - a dozen hand-written checks with good plain words, all before
+     the save - but none of them told the FIELD: the message went to a shared
+     error line or a toast, aria-invalid appeared nowhere, and focus never
+     moved, so on a long form you were told something was wrong and left to
+     find it. Twenty fields also declare a native constraint and nothing
+     checked them at all. */
+  {
+    const shell = fs.readFileSync(path.join(ROOT, 'src', 'admin', '10-app.js'), 'utf8');
+    check('the shell checks a field against its own constraints',
+      /function markValidity/.test(shell));
+    /* A field that declares nothing must be left completely alone, or this
+       lights up every optional box in the panel. */
+    check('a field declaring no constraint is untouched',
+      /if \(!el\.checkValidity \|\| !el\.willValidate\) return true;/.test(shell));
+    check('the wrong state is carried to a screen reader, not only drawn',
+      /setAttribute\('aria-invalid'/.test(shell));
+    check('a fixed field clears its message', /msg\.remove\(\)/.test(shell));
+    check('modules can put a message on one field', /invalid: function \(el, message\)/.test(shell));
+
+    const css = fs.readFileSync(path.join(ROOT, 'control.css'), 'utf8');
+    check('the invalid message is styled', /\.cp-invalid/.test(css));
+    check('and uses the error token rather than a literal colour',
+      /\.cp-invalid\s*\{[^}]*var\(--error\)/.test(css));
+
+    /* The two fields whose absence the fixture form already refused to save
+       now declare it, so the browser reports it and clears it live. */
+    const mf = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '10-match.js'), 'utf8');
+    check('the fixture date and opponent declare that they are required',
+      /id="fx-date"[^>]*required/.test(mf) && /id="fx-opp"[^>]*required/.test(mf));
+    check('and the fixture form marks the field rather than only the form',
+      /U\.invalid\(\$\('#fx-date'/.test(mf) && /U\.invalid\(\$\('#fx-opp'/.test(mf));
+  }
+
   /* EVERY SECTION SAYS WHERE ITS CONTENT SHOWS, OR SAYS WHY IT DOES NOT.
      CLAUDE.md states the rule: a label that promises an outcome is a testable
      claim, and "What the website publishes" was once false for six match

@@ -14,82 +14,82 @@
    Both call the functions below against a 2D context, so a graphic the club
    signs off cannot differ from one it publishes.
 
-   ---- THE DESIGN LANGUAGE, AND WHY IT IS THIS ONE --------------------------
+   ---- THIS IS THE CLUB'S OWN HOUSE STYLE, NOT AN INVENTED ONE --------------
 
-   The first version centred everything, set the headline enormous and let an
-   orange glow sit behind all of it. It read as generated: symmetrical,
-   saturated, nothing to look at twice.
+   Rebuilt against the graphics Sue's Angels actually post, which is a far
+   better brief than any reference from another club. What that style is:
 
-   This is built the way club design studios actually set these, which is a
-   PRINT language rather than a poster one:
+     THE BADGES ARE THE SUBJECT. On the club's own cards each crest is about a
+     quarter of the width. Earlier versions here set them at 96-130px, which
+     is a footnote, and it was the single biggest reason the cards did not
+     look like the club's.
 
-     A PANEL, INSET FROM THE EDGE. The card is not one flat surface. A darker
-     panel floats over the field with a hairline border, and the difference
-     between the two carries most of the depth.
+     A BLUEPRINT UNDER EVERYTHING. Faint CAD linework - circles, arcs, arrows,
+     dashed runs, dimension ticks - sitting well back. It is what stops the
+     black being empty.
 
-     A WORDMARK THAT RUNS UNDER IT. The club's name repeats across the full
-     width and the panel covers the middle of it, so it survives only as
-     fragments in the margins. The cropping is the point: it reads as a sheet
-     laid over a larger sheet.
+     ONE BIG RING. A hairline circle in the accent colour, nearly the width of
+     the card, with small square marks set on it. Everything important sits
+     inside it.
 
-     REGISTRATION MARKS. Crosshairs and corner ticks, as on a print proof.
-     Four strokes each, and they do more for the composition than any effect.
+     BRACKETS AND EDGE MARKS. Accent corner brackets, and a small filled
+     square at the middle of each edge.
 
-     TYPE THAT IS MOSTLY TINY. One word is large. Everything else is 11-15px,
-     letterspaced hard, upper case. Restraint is what stops it looking
-     automated - the reference sets its headline at about a tenth of the
-     frame, not a third of it.
+     RULED LABELS. Headings sit between two short rules: "- FULL TIME -".
 
-     ORANGE ONCE. Not a glow behind everything: a single accent per card, so
-     it means something when it appears. Everything else is paper on near
-     black, and the field is held back to keep it that way.
+     THE SPONSORS ARE PART OF THE CARD, on white tiles under "PROUDLY BACKED
+     BY", and a footer bar carries the Instagram handle and the website.
+
+     SQUARE. The club posts 1:1, not 4:5.
+
+   ---- COLOUR ---------------------------------------------------------------
+
+   The club's posted graphics are gold on near-black. ORANGE IS THE 26/27
+   COLOUR, so that is what these are set in: #FF7034, the same accent the
+   website uses, and the only hue on the card.
+
+   ---- TYPE -----------------------------------------------------------------
+
+   Saira, self-hosted, at wide widths. The club's cards are set in a squarish
+   technical face and the site ships neither one: home.css declares Geist (a
+   humanist grotesque) and retired Archivo altogether, so the earlier cards
+   were asking for a font that was not being served and rendering in whatever
+   the system offered. That is most of why they read as generated.
 
    ---- WHAT IT IS BUILT FROM ------------------------------------------------
 
-   Sixteen of thirty-six players have no photograph and only one true cutout
-   exists, so no layout here depends on one: they are built from the crest,
-   the opponent's badge, type and geometry, all of which are always present. A
-   photograph is used where there is a place for it, and its absence changes
-   nothing about whether the card reads.
-
-   NO SQUAD NUMBERS. The records key everything by `num` - goals, team sheets,
-   the man of the match - and the site never shows one. `nameOf` is the only
-   thing that turns one into a person.
+   Sixteen of thirty-six players have no photograph, so no layout depends on
+   one. NO SQUAD NUMBERS: the records key everything by `num` and the site
+   never shows one, so `nameOf` is the only thing that turns one into a name.
    ========================================================================== */
 
 export const ART_W = 1080;
-export const ART_H = 1350;
+export const ART_H = 1080;
 
-/* The club's own, verbatim. It closes every card and it is not shortened:
-   "what we do echoes" is a different sentence. */
+/* The club's own, verbatim, and not shortened: "what we do echoes" is a
+   different sentence. It is on the crest, so the cards carry it in the
+   footer rather than repeating it large. */
 export const MOTTO = 'What we do in life echoes in eternity.';
 
-const ORANGE = '#FF7034';
-const INK = '#07080A';
-const PAPER = '#F2F0EC';
-const DIM = 'rgba(242,240,236,0.46)';
-const FAINT = 'rgba(242,240,236,0.20)';
-const HAIR = 'rgba(242,240,236,0.13)';
+const ACCENT = '#FF7034';
+const ACCENT_DIM = 'rgba(255,112,52,0.30)';
+const INK = '#080A0E';
+const PAPER = '#FFFFFF';
+const DIM = 'rgba(255,255,255,0.62)';
+const BLUE = 'rgba(150,180,220,0.10)';
 
-const DISPLAY = 'Archivo';
-const BODY = 'Geist';
-
-/* The panel, and the margin it leaves. Every card is laid out against these
-   numbers, so moving the inset moves the whole composition together. */
-const M = 96;
-const PANEL = { x: M, y: 150, w: ART_W - M * 2, h: ART_H - 150 - 168 };
+const FACE = 'Saira';
 
 /* ---- Small helpers ------------------------------------------------------ */
 
 const upper = (s) => String(s == null ? '' : s).toUpperCase();
 
-/* A surname alone, which is how a line-up is read aloud and how every
-   broadcast graphic sets one.
+/* A surname alone, which is how a line-up is read aloud.
 
    THE LAST WORD IS NOT ALWAYS THE SURNAME. "Jim El Bayati" set as "BAYATI" is
    not his name, and a team sheet is the one place on this site where getting
-   somebody's name wrong is certain to be noticed by the person it belongs to.
-   A particle in front of the final word is part of it. */
+   somebody's name wrong is certain to be noticed by the person it belongs
+   to. A particle in front of the final word is part of it. */
 const PARTICLES = new Set(['el', 'al', 'van', 'von', 'de', 'del', 'della', 'der',
   'den', 'da', 'di', 'do', 'dos', 'du', 'la', 'le', 'bin', 'ibn', 'ter']);
 
@@ -102,15 +102,13 @@ export function surname(name) {
 }
 
 /* THE ONLY PLACE A SQUAD NUMBER TURNS INTO A PERSON. Everything the records
-   hold is keyed by number and nothing published may show one, so a lookup that
-   misses must never fall through to printing the number.
+   hold is keyed by number and nothing published may show one, so a lookup
+   that misses must never fall through to printing the number.
 
    IT MUST NOT SILENTLY DROP THEM EITHER. The 2 August team sheet carries
-   numbers 900 and 901 against a squad whose highest number is 37: two guests
-   in a pre-season friendly, entered as placeholders because they are not on
-   the roster. Filtering those out drew a card headed "Matchday squad" with
-   NINE names under it, which is worse than either alternative - a graphic
-   quietly wrong about who played. */
+   numbers 900 and 901 against a squad whose highest is 37: two guests in a
+   friendly, entered as placeholders. Filtering them drew a card headed
+   "Matchday squad" with NINE names under it. */
 export const GUEST = 'Guest';
 
 export function nameOf(num, squad) {
@@ -124,10 +122,12 @@ export function playerOf(num, squad) {
   return (squad || []).find((p) => String(p.num) === key) || null;
 }
 
-function fitText(ctx, text, maxW, startPx, { family = DISPLAY, weight = 800, min = 16 } = {}) {
+function fitText(ctx, text, maxW, startPx, opts = {}) {
+  const weight = opts.weight == null ? 700 : opts.weight;
+  const min = opts.min == null ? 14 : opts.min;
   let px = startPx;
   for (;;) {
-    ctx.font = `${weight} ${px}px "${family}"`;
+    ctx.font = `${weight} ${px}px "${FACE}"`;
     if (ctx.measureText(text).width <= maxW || px <= min) break;
     px -= 2;
   }
@@ -146,14 +146,18 @@ function wrapLines(ctx, text, maxW) {
   return lines;
 }
 
-/* Letterspaced small caps, drawn a character at a time because canvas has no
-   letterSpacing in every engine this has to run in. Returns the width so a
-   caller can centre something against it. */
+/* Letterspaced caps, a character at a time, because canvas has no
+   letterSpacing in every engine this has to run in. Returns the drawn width
+   so a caller can rule either side of it. */
 function tracked(ctx, text, x, y, opts = {}) {
-  const { size = 12, track = 4, weight = 700, family = BODY, align = 'left', color = PAPER } = opts;
+  const size = opts.size == null ? 20 : opts.size;
+  const track = opts.track == null ? 5 : opts.track;
+  const weight = opts.weight == null ? 700 : opts.weight;
+  const align = opts.align || 'left';
+  const color = opts.color || PAPER;
   const s = upper(text);
   ctx.save();
-  ctx.font = `${weight} ${size}px "${family}"`;
+  ctx.font = `${weight} ${size}px "${FACE}"`;
   ctx.fillStyle = color;
   ctx.textAlign = 'left';
   const total = ctx.measureText(s).width + track * Math.max(0, s.length - 1);
@@ -163,196 +167,114 @@ function tracked(ctx, text, x, y, opts = {}) {
   return total;
 }
 
-/* ---- The field ---------------------------------------------------------- */
+/* ---- The furniture ------------------------------------------------------ */
 
-/* Near black, the club's mesh held well back, and grain over everything.
-   HELD BACK ON PURPOSE: at full strength the orange field fought every element
-   on the card and the whole thing looked like a gradient with text on it. As a
-   texture it does its job, and the one accent per card is then the only colour
-   that carries meaning. */
-export function drawField(ctx, art, opts = {}) {
-  const strength = opts.strength == null ? 0.3 : opts.strength;
+/* The blueprint. Faint technical linework, deliberately not symmetrical and
+   deliberately running off every edge, because a drawing that fits neatly
+   inside the frame reads as decoration rather than as a sheet the card was
+   cut from. Seeded by hand rather than randomly so every card in a set has
+   the same drawing under it. */
+function drawBlueprint(ctx) {
   ctx.save();
-  ctx.fillStyle = INK;
-  ctx.fillRect(0, 0, ART_W, ART_H);
+  ctx.strokeStyle = BLUE;
+  ctx.lineWidth = 1;
 
-  if (art && art.width) {
-    const s = Math.max(ART_W / art.width, ART_H / art.height);
-    const w = art.width * s;
-    const h = art.height * s;
-    ctx.globalAlpha = strength;
-    ctx.drawImage(art, (ART_W - w) / 2, (ART_H - h) / 2, w, h);
-    ctx.globalAlpha = 1;
-    /* Pulls the saturation down without losing the light. A `saturation` blend
-       is not universal across engines, so a flat wash does the same job
-       predictably. */
-    ctx.fillStyle = 'rgba(7,8,10,0.42)';
-    ctx.fillRect(0, 0, ART_W, ART_H);
+  const circles = [
+    [96, 232, 78], [96, 232, 44], [58, 300, 120], [980, 250, 96],
+    [1006, 486, 150], [140, 880, 130], [880, 940, 92], [980, 806, 40],
+  ];
+  for (const [cx, cy, r] of circles) {
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
   }
-  ctx.restore();
-}
 
-/* Grain, drawn last so it sits over the type as it would on print.
+  ctx.setLineDash([7, 9]);
+  for (const [x1, y1, x2, y2] of [
+    [0, 168, 1080, 168], [0, 912, 1080, 912], [168, 0, 168, 1080], [912, 0, 912, 1080],
+  ]) { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+  ctx.setLineDash([]);
 
-   PUT_IMAGE_DATA IS NOT A DRAW. It writes raw pixels: it ignores
-   globalCompositeOperation, ignores globalAlpha, ignores the transform, and
-   it REPLACES the alpha channel rather than blending into it. Writing noise
-   at alpha 15 straight onto the card therefore did not veil the card, it
-   erased it - every version of this rendered as an almost black rectangle
-   with the whole composition underneath thrown away.
-
-   So the noise is built on its own small canvas, where putImageData is
-   correct because there is nothing to preserve, and then drawn back as a
-   repeating PATTERN, which does respect compositing. A 256px tile is 65k
-   pixels instead of 1.4M, so it is also about twenty times cheaper. */
-export function drawGrain(ctx, opts = {}) {
-  const amount = opts.amount == null ? 15 : opts.amount;
-  const size = 256;
-  const doc = (ctx.canvas && ctx.canvas.ownerDocument) || (typeof document === 'undefined' ? null : document);
-  if (!doc) return;
-  const tile = doc.createElement('canvas');
-  tile.width = size;
-  tile.height = size;
-  const tctx = tile.getContext('2d');
-  const img = tctx.createImageData(size, size);
-  const px = img.data;
-  for (let i = 0; i < px.length; i += 4) {
-    const n = (Math.random() * 255) | 0;
-    px[i] = n; px[i + 1] = n; px[i + 2] = n;
-    px[i + 3] = amount;
-  }
-  tctx.putImageData(img, 0, 0);
-
-  ctx.save();
-  ctx.globalCompositeOperation = 'overlay';
-  const pat = ctx.createPattern(tile, 'repeat');
-  if (pat) { ctx.fillStyle = pat; ctx.fillRect(0, 0, ART_W, ART_H); }
-  ctx.restore();
-}
-
-/* The club's name repeating across the full width. The panel is drawn over the
-   middle of it afterwards, so only the fragments in the margins survive - the
-   cropping is what makes the card read as a sheet on a larger sheet. */
-function drawWordmarkRun(ctx, y, opts = {}) {
-  const { size = 15, track = 3, alpha = 0.3 } = opts;
-  ctx.save();
-  ctx.font = `800 ${size}px "${DISPLAY}"`;
-  const unit = 'SUE’S ANGELS';
-  const gap = 26;
-  const unitW = ctx.measureText(unit).width + track * unit.length + gap;
-  ctx.fillStyle = `rgba(242,240,236,${alpha})`;
-  ctx.textAlign = 'left';
-  let x = -unitW * 0.45;
-  while (x < ART_W + unitW) {
-    let cx = x;
-    for (const ch of unit) { ctx.fillText(ch, cx, y); cx += ctx.measureText(ch).width + track; }
-    x += unitW;
-  }
-  ctx.restore();
-}
-
-/* A hairline circle, wider than the panel, so it leaves the frame on both
-   sides. Geometry rather than decoration: it gives the eye a path between the
-   badges and the type under them. */
-function drawArc(ctx, cx, cy, r) {
-  ctx.save();
-  ctx.strokeStyle = 'rgba(242,240,236,0.10)';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
-  ctx.stroke();
-  ctx.restore();
-}
-
-function crosshair(ctx, x, y, len, color) {
-  ctx.save();
-  ctx.strokeStyle = color || 'rgba(242,240,236,0.4)';
-  ctx.lineWidth = 1.2;
-  const l = len || 13;
-  ctx.beginPath();
-  ctx.moveTo(x - l, y); ctx.lineTo(x + l, y);
-  ctx.moveTo(x, y - l); ctx.lineTo(x, y + l);
-  ctx.stroke();
-  ctx.restore();
-}
-
-function cornerTicks(ctx, x, y, w, h, len, color) {
-  ctx.save();
-  ctx.strokeStyle = color || 'rgba(242,240,236,0.34)';
-  ctx.lineWidth = 1.2;
-  const l = len || 22;
-  for (const c of [[x, y, 1, 1], [x + w, y, -1, 1], [x, y + h, 1, -1], [x + w, y + h, -1, -1]]) {
+  /* Dimension arrows, as on a drawing. */
+  const arrow = (x, y, dir) => {
     ctx.beginPath();
-    ctx.moveTo(c[0] + c[2] * l, c[1]);
-    ctx.lineTo(c[0], c[1]);
-    ctx.lineTo(c[0], c[1] + c[3] * l);
+    ctx.moveTo(x, y); ctx.lineTo(x, y + dir * 62);
+    ctx.moveTo(x - 7, y + dir * 14); ctx.lineTo(x, y); ctx.lineTo(x + 7, y + dir * 14);
+    ctx.stroke();
+  };
+  arrow(842, 96, 1); arrow(958, 640, -1); arrow(120, 640, 1); arrow(700, 1000, -1);
+
+  ctx.strokeStyle = 'rgba(150,180,220,0.07)';
+  for (let i = 0; i < 5; i += 1) {
+    ctx.beginPath();
+    ctx.moveTo(22, 300 + i * 18); ctx.lineTo(40, 300 + i * 18);
     ctx.stroke();
   }
   ctx.restore();
 }
 
-/* THE SHARED FRAME. Every card calls this, draws its own content inside PANEL,
-   then calls closeCard. Two functions rather than four copies is what stops
-   the set drifting apart the way a hand-made set always does. */
-export function openCard(ctx, art, opts = {}) {
-  drawField(ctx, art, opts);
-
-  /* Behind the panel, so the panel crops it. */
-  drawWordmarkRun(ctx, 214);
-  drawWordmarkRun(ctx, ART_H - 268, { alpha: 0.18 });
-
-  /* OPAQUE ENOUGH TO ACTUALLY CROP. At 0.5 the wordmark read straight through
-     the panel at almost full strength, so the run looked like a band of text
-     lying across the card rather than something the panel was covering - which
-     is the whole effect. It has to hide what is behind it and still let the
-     field's light through at the edges, so it is nearly opaque, not half. */
+/* Accent brackets at the four corners, and a filled square at the middle of
+   each edge. Both come straight off the club's own cards. */
+function drawFrame(ctx) {
+  const m = 26;
+  const len = 54;
   ctx.save();
-  ctx.fillStyle = 'rgba(7,8,10,0.9)';
-  ctx.fillRect(PANEL.x, PANEL.y, PANEL.w, PANEL.h);
-  ctx.strokeStyle = HAIR;
-  ctx.lineWidth = 1;
-  ctx.strokeRect(PANEL.x + 0.5, PANEL.y + 0.5, PANEL.w - 1, PANEL.h - 1);
-  ctx.restore();
+  ctx.strokeStyle = ACCENT;
+  ctx.lineWidth = 3;
+  for (const [x, y, dx, dy] of [
+    [m, m, 1, 1], [ART_W - m, m, -1, 1], [m, ART_H - m, 1, -1], [ART_W - m, ART_H - m, -1, -1],
+  ]) {
+    ctx.beginPath();
+    ctx.moveTo(x + dx * len, y); ctx.lineTo(x, y); ctx.lineTo(x, y + dy * len);
+    ctx.stroke();
+  }
+  ctx.fillStyle = ACCENT;
+  const s = 13;
+  ctx.fillRect(ART_W / 2 - s / 2, m - s / 2, s, s);
+  ctx.fillRect(ART_W / 2 - s / 2, ART_H - m - s / 2, s, s);
+  ctx.fillRect(m - s / 2, ART_H / 2 - s / 2, s, s);
+  ctx.fillRect(ART_W - m - s / 2, ART_H / 2 - s / 2, s, s);
 
-  cornerTicks(ctx, PANEL.x, PANEL.y, PANEL.w, PANEL.h, 26);
+  /* The dotted run down the top left, which the club's cards all carry. */
+  for (let i = 0; i < 5; i += 1) ctx.fillRect(m - 4, m + 44 + i * 22, 8, 8);
+  ctx.restore();
 }
 
-/* The bottom line: the club, then the motto, in the smallest type on the card
-   and set like a copyright line, because that is exactly what a club puts
-   there. Grain goes on last, over everything. */
-export function closeCard(ctx, rightLabel) {
-  const y = PANEL.y + PANEL.h - 44;
+/* The ring. Everything that matters sits inside it. */
+function drawRing(ctx, cy, r) {
   ctx.save();
-  ctx.strokeStyle = HAIR;
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = ACCENT;
+  ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.moveTo(PANEL.x + 34, y - 30);
-  ctx.lineTo(PANEL.x + PANEL.w - 34, y - 30);
+  ctx.arc(ART_W / 2, cy, r, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.fillStyle = ACCENT;
+  const s = 12;
+  for (const a of [-Math.PI / 2, 0, Math.PI / 2, Math.PI]) {
+    ctx.fillRect(ART_W / 2 + Math.cos(a) * r - s / 2, cy + Math.sin(a) * r - s / 2, s, s);
+  }
+  ctx.restore();
+}
+
+/* A heading between two short rules. */
+function ruled(ctx, text, y, opts = {}) {
+  const size = opts.size == null ? 27 : opts.size;
+  const color = opts.color || PAPER;
+  const w = tracked(ctx, text, ART_W / 2, y, { size, track: 7, weight: 700, align: 'center', color });
+  ctx.save();
+  ctx.strokeStyle = opts.rule || ACCENT;
+  ctx.lineWidth = 2;
+  const gap = 26;
+  const len = opts.ruleLen == null ? 54 : opts.ruleLen;
+  const yy = y - size * 0.34;
+  ctx.beginPath();
+  ctx.moveTo(ART_W / 2 - w / 2 - gap, yy); ctx.lineTo(ART_W / 2 - w / 2 - gap - len, yy);
+  ctx.moveTo(ART_W / 2 + w / 2 + gap, yy); ctx.lineTo(ART_W / 2 + w / 2 + gap + len, yy);
   ctx.stroke();
   ctx.restore();
-
-  tracked(ctx, 'Sue’s Angels FC', PANEL.x + 34, y, { size: 11, track: 3.4, color: DIM });
-  tracked(ctx, MOTTO.replace(/\.$/, ''), PANEL.x + PANEL.w - 34, y,
-    { size: 11, track: 3.4, color: FAINT, align: 'right' });
-
-  if (rightLabel) {
-    tracked(ctx, rightLabel, ART_W / 2, PANEL.y - 42,
-      { size: 11, track: 4, color: FAINT, align: 'center' });
-  }
-
-  drawGrain(ctx);
 }
 
-/* A badge inside its own registration frame, which is how the reference sets
-   them and what stops two crests floating in space. `img` may be null - one
-   club in twenty-six has no badge, and that draws its initials on a ring
-   rather than leaving a hole. */
-export function drawBadge(ctx, img, cx, cy, size, fallbackName, opts = {}) {
-  const frame = opts.frame !== false;
-  if (frame) {
-    const half = size / 2 + 22;
-    cornerTicks(ctx, cx - half, cy - half, half * 2, half * 2, 12, 'rgba(242,240,236,0.26)');
-  }
+/* A badge, big. `img` may be null - one club in twenty-six has no crest, and
+   that draws its initials on a ring rather than leaving a hole. */
+export function drawBadge(ctx, img, cx, cy, size, fallbackName) {
   ctx.save();
   if (img && img.width) {
     const s = Math.min(size / img.width, size / img.height);
@@ -360,8 +282,8 @@ export function drawBadge(ctx, img, cx, cy, size, fallbackName, opts = {}) {
     const h = img.height * s;
     ctx.drawImage(img, cx - w / 2, cy - h / 2, w, h);
   } else {
-    ctx.strokeStyle = 'rgba(242,240,236,0.34)';
-    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = 'rgba(255,255,255,0.34)';
+    ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(cx, cy, size / 2, 0, Math.PI * 2);
     ctx.stroke();
@@ -370,250 +292,325 @@ export function drawBadge(ctx, img, cx, cy, size, fallbackName, opts = {}) {
     ctx.fillStyle = PAPER;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = `800 ${Math.round(size * 0.3)}px "${DISPLAY}"`;
+    ctx.font = `700 ${Math.round(size * 0.26)}px "${FACE}"`;
     ctx.fillText(initials, cx, cy + 1);
     ctx.textBaseline = 'alphabetic';
   }
   ctx.restore();
 }
 
-/* Both badges, each labelled beneath in small caps. The reference names its
-   two clubs in type rather than putting a giant "v" between them, and it is a
-   better read. */
-function drawFixtureBadges(ctx, o) {
-  const size = o.size || 104;
-  const gap = 232;
-  drawBadge(ctx, o.usBadge, ART_W / 2 - gap / 2, o.y, size, 'Sue’s Angels');
-  drawBadge(ctx, o.oppBadge, ART_W / 2 + gap / 2, o.y, size, o.opponent);
-  const lab = o.y + size / 2 + 62;
-  tracked(ctx, 'Sue’s Angels', ART_W / 2 - gap / 2, lab, { size: 11, track: 3.2, color: DIM, align: 'center' });
-  tracked(ctx, o.opponent || '', ART_W / 2 + gap / 2, lab, { size: 11, track: 3.2, color: DIM, align: 'center' });
+/* The sponsors, on white tiles, exactly as the club sets them. They are on
+   the card because they paid to be, so they are drawn from the same list the
+   website publishes rather than typed in here. */
+function drawSponsors(ctx, logos, y) {
+  const list = (logos || []).filter((l) => l && l.img && l.img.width).slice(0, 4);
+  if (!list.length) return;
+  ruled(ctx, 'Proudly backed by', y, { size: 17, ruleLen: 44, rule: ACCENT_DIM, color: DIM });
+
+  const tileW = 196;
+  const tileH = 78;
+  const gap = 14;
+  const total = list.length * tileW + (list.length - 1) * gap;
+  let x = (ART_W - total) / 2;
+  const top = y + 24;
+  for (const l of list) {
+    ctx.save();
+    ctx.fillStyle = PAPER;
+    ctx.fillRect(x, top, tileW, tileH);
+    /* Contain, never cover: a partner's mark is never cropped. */
+    const pad = 16;
+    const s = Math.min((tileW - pad * 2) / l.img.width, (tileH - pad * 2) / l.img.height);
+    const w = l.img.width * s;
+    const h = l.img.height * s;
+    ctx.drawImage(l.img, x + (tileW - w) / 2, top + (tileH - h) / 2, w, h);
+    ctx.restore();
+    x += tileW + gap;
+  }
 }
 
-/* The one large word. Small by poster standards, and deliberately so. */
-function headline(ctx, text, y, opts = {}) {
-  const max = opts.max || 96;
-  const px = fitText(ctx, upper(text), PANEL.w - 120, max);
+/* The footer bar: the handle on the left, the website on the right, with a
+   rule above. */
+function drawFooter(ctx) {
+  const y = ART_H - 46;
   ctx.save();
-  ctx.textAlign = 'center';
-  ctx.font = `800 ${px}px "${DISPLAY}"`;
-  ctx.fillStyle = opts.color || PAPER;
-  ctx.fillText(upper(text), ART_W / 2, y);
-  ctx.restore();
-  return px;
-}
-
-/* The single accent: a short orange rule. One per card. */
-function accentRule(ctx, cx, y, w) {
-  const width = w || 46;
-  ctx.save();
-  ctx.strokeStyle = ORANGE;
-  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(255,255,255,0.14)';
+  ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(cx - width / 2, y);
-  ctx.lineTo(cx + width / 2, y);
+  ctx.moveTo(72, y - 26); ctx.lineTo(ART_W - 72, y - 26);
+  ctx.stroke();
+
+  /* A rounded square with a dot: the Instagram glyph, drawn rather than
+     loaded, because it is four strokes and no asset. */
+  const ix = 76;
+  const iy = y - 11;
+  ctx.strokeStyle = ACCENT;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  const r = 5;
+  const b = 20;
+  ctx.moveTo(ix + r, iy - b / 2);
+  ctx.arcTo(ix + b, iy - b / 2, ix + b, iy + b / 2, r);
+  ctx.arcTo(ix + b, iy + b / 2, ix, iy + b / 2, r);
+  ctx.arcTo(ix, iy + b / 2, ix, iy - b / 2, r);
+  ctx.arcTo(ix, iy - b / 2, ix + b, iy - b / 2, r);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(ix + b / 2, iy, 4.5, 0, Math.PI * 2);
   ctx.stroke();
   ctx.restore();
+
+  tracked(ctx, '@suesangelsfc', 110, y - 4, { size: 17, track: 1.6, color: DIM });
+  tracked(ctx, 'www.suesangelsfc.co.uk', ART_W - 74, y - 4, { size: 17, track: 1.6, color: DIM, align: 'right' });
+}
+
+/* Every card opens and closes the same way, so the set cannot drift. */
+export function openCard(ctx) {
+  ctx.save();
+  ctx.fillStyle = INK;
+  ctx.fillRect(0, 0, ART_W, ART_H);
+  ctx.restore();
+  drawBlueprint(ctx);
+  drawFrame(ctx);
+}
+
+export function closeCard(ctx, assets) {
+  drawSponsors(ctx, assets && assets.sponsors, ART_H - 186);
+  drawFooter(ctx);
+}
+
+/* Both badges, big, with the club name under each. */
+function drawFixtureBadges(ctx, o) {
+  const size = o.size == null ? 214 : o.size;
+  const cy = o.y;
+  const off = o.off == null ? 300 : o.off;
+  drawBadge(ctx, o.leftBadge, ART_W / 2 - off, cy, size, o.leftName);
+  drawBadge(ctx, o.rightBadge, ART_W / 2 + off, cy, size, o.rightName);
+  const lab = cy + size / 2 + 46;
+  tracked(ctx, o.leftName || '', ART_W / 2 - off, lab, { size: 21, track: 3, align: 'center' });
+  tracked(ctx, o.rightName || '', ART_W / 2 + off, lab, { size: 21, track: 3, align: 'center' });
+  return lab;
 }
 
 /* ---- 1. Next game ------------------------------------------------------- */
 
 export function nextGame(ctx, m, assets = {}) {
-  openCard(ctx, assets.art, { strength: 0.3 });
-  drawArc(ctx, ART_W / 2, 730, 396);
+  openCard(ctx);
+  drawRing(ctx, 470, 372);
 
-  tracked(ctx, m.competition || 'Fixture', ART_W / 2, PANEL.y + 84,
-    { size: 12, track: 5, color: DIM, align: 'center' });
+  ruled(ctx, m.competition || 'Fixture', 148, { size: 23 });
 
-  headline(ctx, 'Next', 452, { max: 104 });
-  accentRule(ctx, ART_W / 2, 500);
-
+  /* Home club on the left, as a fixture is written. */
+  const weLeft = !!m.weAreHome;
   drawFixtureBadges(ctx, {
-    usBadge: assets.crest, oppBadge: assets.oppBadge, opponent: m.opponent, y: 690,
+    leftBadge: weLeft ? assets.crest : assets.oppBadge,
+    rightBadge: weLeft ? assets.oppBadge : assets.crest,
+    leftName: weLeft ? 'Sue’s Angels' : m.opponent,
+    rightName: weLeft ? m.opponent : 'Sue’s Angels',
+    y: 400,
   });
-  crosshair(ctx, ART_W / 2, 690, 10, 'rgba(242,240,236,0.24)');
 
-  tracked(ctx, m.dateLine || '', ART_W / 2, 934,
-    { size: 26, track: 7, weight: 800, family: DISPLAY, color: PAPER, align: 'center' });
+  tracked(ctx, 'vs', ART_W / 2, 414, { size: 40, track: 3, weight: 700, align: 'center', color: PAPER });
+  tracked(ctx, weLeft ? 'Home' : 'Away', ART_W / 2 - 300, 592, { size: 16, track: 3, align: 'center', color: ACCENT });
+  tracked(ctx, weLeft ? 'Away' : 'Home', ART_W / 2 + 300, 592, { size: 16, track: 3, align: 'center', color: ACCENT });
 
-  const where = [m.kick ? `${m.kick} kick-off` : null, m.venue || null, m.weAreHome ? 'Home' : 'Away']
-    .filter(Boolean).join('   ·   ');
-  tracked(ctx, where, ART_W / 2, 986, { size: 12, track: 3.4, color: DIM, align: 'center' });
+  ctx.save();
+  ctx.strokeStyle = ACCENT_DIM;
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(232, 640); ctx.lineTo(ART_W - 232, 640); ctx.stroke();
+  ctx.restore();
 
-  closeCard(ctx, 'Fixture');
+  tracked(ctx, m.dateLine || '', ART_W / 2, 700, { size: 30, track: 5, align: 'center' });
+  tracked(ctx, m.kick ? `${m.kick} kick off` : 'Kick-off to be confirmed', ART_W / 2, 754,
+    { size: 40, track: 4, align: 'center', color: ACCENT });
+  if (m.venue) tracked(ctx, m.venue, ART_W / 2, 806, { size: 21, track: 3, align: 'center', color: DIM });
+
+  closeCard(ctx, assets);
 }
 
 /* ---- 2. Matchday squad -------------------------------------------------- */
 
 export function matchdaySquad(ctx, m, assets = {}) {
-  openCard(ctx, assets.art, { strength: 0.24 });
+  openCard(ctx);
+  drawRing(ctx, 520, 396);
 
-  tracked(ctx, `v ${m.opponent || ''}`, ART_W / 2, PANEL.y + 84,
-    { size: 12, track: 5, color: DIM, align: 'center' });
+  ruled(ctx, 'Matchday squad', 148, { size: 25 });
 
-  headline(ctx, 'Matchday squad', 362, { max: 74 });
-  accentRule(ctx, ART_W / 2, 402);
+  drawBadge(ctx, assets.crest, ART_W / 2 - 300, 300, 176, 'Sue’s Angels');
+  drawBadge(ctx, assets.oppBadge, ART_W / 2 + 300, 300, 176, m.opponent);
+  tracked(ctx, 'v', ART_W / 2, 312, { size: 28, track: 2, align: 'center', color: DIM });
+  tracked(ctx, m.opponent || '', ART_W / 2, 424, { size: 19, track: 3, align: 'center', color: DIM });
 
   const starters = (m.starters || []).filter(Boolean);
   const subs = (m.subs || []).filter(Boolean);
-
-  const colL = PANEL.x + 58;
-  const colR = ART_W / 2 + 22;
-  tracked(ctx, 'Starting eleven', colL, 480, { size: 11, track: 3.4, color: ORANGE });
-
   const left = starters.slice(0, Math.ceil(starters.length / 2));
   const right = starters.slice(Math.ceil(starters.length / 2));
-  const rowH = 62;
-  const colW = PANEL.w / 2 - 82;
+
+  tracked(ctx, 'Starting eleven', ART_W / 2, 480, { size: 16, track: 4, align: 'center', color: ACCENT });
 
   ctx.save();
-  ctx.textAlign = 'left';
-  const draw = (list, x) => list.forEach((n, i) => {
-    const y = 540 + i * rowH;
-    /* A hairline under each name, stopping short of the column edge. It is
-       what turns a list into a team sheet. */
-    ctx.strokeStyle = HAIR;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x, y + 16);
-    ctx.lineTo(x + colW, y + 16);
-    ctx.stroke();
+  ctx.textAlign = 'center';
+  const rowH = 44;
+  const colW = 400;
+  const draw = (list, cx) => list.forEach((n, i) => {
+    const t = upper(surname(n));
+    ctx.font = `600 ${fitText(ctx, t, colW, 30, { weight: 600 })}px "${FACE}"`;
     ctx.fillStyle = PAPER;
-    const px = fitText(ctx, upper(surname(n)), colW - 14, 34, { weight: 700 });
-    ctx.font = `700 ${px}px "${DISPLAY}"`;
-    ctx.fillText(upper(surname(n)), x, y);
+    ctx.fillText(t, cx, 534 + i * rowH);
   });
-  draw(left, colL);
-  draw(right, colR);
+  draw(left, ART_W / 2 - 208);
+  draw(right, ART_W / 2 + 208);
   ctx.restore();
 
-  const listBottom = 540 + Math.max(left.length, right.length) * rowH;
-
-  if (!subs.length) {
-    /* Eleven names and then a third of the card empty reads as a graphic that
-       failed to finish. Saying so is shorter than the silence and it is true:
-       Sunday league team sheets frequently name nobody on the bench. */
-    tracked(ctx, 'No substitutes named', colL, listBottom + 26,
-      { size: 11, track: 3.4, color: FAINT });
-  } else {
-    tracked(ctx, 'Substitutes', colL, listBottom + 26, { size: 11, track: 3.4, color: ORANGE });
+  const bottom = 534 + Math.max(left.length, right.length) * rowH;
+  if (subs.length) {
+    tracked(ctx, 'Substitutes', ART_W / 2, bottom + 6, { size: 15, track: 4, align: 'center', color: ACCENT });
     ctx.save();
+    ctx.textAlign = 'center';
     ctx.fillStyle = DIM;
-    ctx.font = `500 20px "${BODY}"`;
-    ctx.textAlign = 'left';
-    wrapLines(ctx, subs.map((n) => surname(n)).join('  ·  '), PANEL.w - 116).slice(0, 2)
-      .forEach((l, i) => ctx.fillText(l, colL, listBottom + 62 + i * 30));
+    ctx.font = `500 20px "${FACE}"`;
+    wrapLines(ctx, subs.map((n) => upper(surname(n))).join('  ·  '), 760).slice(0, 2)
+      .forEach((l, i) => ctx.fillText(l, ART_W / 2, bottom + 40 + i * 28));
     ctx.restore();
+  } else {
+    /* Eleven names and then nothing reads as a graphic that failed to finish.
+       Sunday league sheets frequently name nobody on the bench, so it says so
+       rather than leaving the space silent. */
+    tracked(ctx, 'No substitutes named', ART_W / 2, bottom + 6,
+      { size: 15, track: 4, align: 'center', color: 'rgba(255,255,255,0.30)' });
   }
 
-  drawBadge(ctx, assets.crest, PANEL.x + PANEL.w - 90, PANEL.y + 96, 66, 'Sue’s Angels', { frame: false });
-  closeCard(ctx, m.competition || '');
+  closeCard(ctx, assets);
 }
 
 /* ---- 3. Man of the match ------------------------------------------------ */
 
 export function manOfTheMatch(ctx, m, assets = {}) {
-  openCard(ctx, assets.art, { strength: 0.34 });
-  drawArc(ctx, ART_W / 2, 604, 340);
+  openCard(ctx);
+  drawRing(ctx, 470, 372);
 
-  tracked(ctx, 'Man of the match', ART_W / 2, PANEL.y + 84,
-    { size: 13, track: 7, color: ORANGE, align: 'center' });
+  ruled(ctx, 'Man of the match', 148, { size: 25 });
 
   /* The portrait where one exists, the crest where it does not. Sixteen of
-     thirty-six have no photograph, so the FRAME is the constant and what sits
-     inside it is the variable: the card is composed identically either way. */
+     thirty-six have none, so the frame is the constant and what sits in it is
+     the variable: the card is composed identically either way. */
   const cx = ART_W / 2;
-  const cy = 580;
+  const cy = 430;
   const box = 300;
   ctx.save();
   ctx.beginPath();
-  ctx.rect(cx - box / 2, cy - box / 2, box, box);
+  ctx.arc(cx, cy, box / 2, 0, Math.PI * 2);
   ctx.clip();
   if (assets.photo && assets.photo.width) {
     const s = Math.max(box / assets.photo.width, box / assets.photo.height);
-    const w = assets.photo.width * s;
-    const h = assets.photo.height * s;
-    ctx.globalAlpha = 0.94;
-    ctx.drawImage(assets.photo, cx - w / 2, cy - h / 2, w, h);
+    ctx.drawImage(assets.photo, cx - (assets.photo.width * s) / 2, cy - (assets.photo.height * s) / 2,
+      assets.photo.width * s, assets.photo.height * s);
   } else {
-    ctx.fillStyle = 'rgba(242,240,236,0.03)';
+    ctx.fillStyle = 'rgba(255,255,255,0.03)';
     ctx.fillRect(cx - box / 2, cy - box / 2, box, box);
-    drawBadge(ctx, assets.crest, cx, cy, 176, 'Sue’s Angels', { frame: false });
+    drawBadge(ctx, assets.crest, cx, cy, 210, 'Sue’s Angels');
   }
   ctx.restore();
-  cornerTicks(ctx, cx - box / 2, cy - box / 2, box, box, 24, 'rgba(242,240,236,0.4)');
-  crosshair(ctx, cx - box / 2, cy + box / 2, 10, 'rgba(242,240,236,0.3)');
-  crosshair(ctx, cx + box / 2, cy - box / 2, 10, 'rgba(242,240,236,0.3)');
+  ctx.save();
+  ctx.strokeStyle = ACCENT;
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.arc(cx, cy, box / 2, 0, Math.PI * 2); ctx.stroke();
+  ctx.restore();
 
-  headline(ctx, m.player || '', 866, { max: 82 });
-  accentRule(ctx, ART_W / 2, 908);
+  const nm = upper(m.player || '');
+  ctx.save();
+  ctx.textAlign = 'center';
+  ctx.fillStyle = PAPER;
+  ctx.font = `700 ${fitText(ctx, nm, 900, 68, { weight: 700 })}px "${FACE}"`;
+  ctx.fillText(nm, ART_W / 2, 668);
+  ctx.restore();
 
   if (m.position) {
-    tracked(ctx, m.position, ART_W / 2, 954, { size: 12, track: 3.6, color: DIM, align: 'center' });
+    tracked(ctx, m.position, ART_W / 2, 712, { size: 19, track: 3.4, align: 'center', color: ACCENT });
   }
 
-  /* What he did it in. An award with no match attached is a poster. */
-  const sub = [m.opponent ? `v ${m.opponent}` : null, m.scoreLine || null, m.dateLine || null]
-    .filter(Boolean).join('   ·   ');
-  tracked(ctx, sub, ART_W / 2, 998, { size: 12, track: 3.2, color: DIM, align: 'center' });
+  ctx.save();
+  ctx.strokeStyle = ACCENT_DIM;
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(300, 748); ctx.lineTo(ART_W - 300, 748); ctx.stroke();
+  ctx.restore();
 
-  closeCard(ctx, m.competition || '');
+  /* What he did it in. An award with no match attached is a poster. */
+  const sub = [m.opponent ? `v ${m.opponent}` : null, m.scoreLine || null].filter(Boolean).join('   ·   ');
+  tracked(ctx, sub, ART_W / 2, 796, { size: 20, track: 3, align: 'center', color: DIM });
+  tracked(ctx, m.dateLine || '', ART_W / 2, 834, { size: 17, track: 3, align: 'center', color: 'rgba(255,255,255,0.42)' });
+
+  closeCard(ctx, assets);
 }
 
 /* ---- 4. Final result ---------------------------------------------------- */
 
 export function finalResult(ctx, m, assets = {}) {
-  openCard(ctx, assets.art, { strength: 0.32 });
-  drawArc(ctx, ART_W / 2, 600, 372);
+  openCard(ctx);
+  drawRing(ctx, 452, 380);
 
-  tracked(ctx, 'Full time', ART_W / 2, PANEL.y + 84,
-    { size: 13, track: 7, color: ORANGE, align: 'center' });
+  ruled(ctx, 'Full time', 148, { size: 29 });
+
+  const weLeft = !!m.weAreHome;
+  const ourScore = m.ourGoals;
+  const theirScore = m.theirGoals;
+
+  drawFixtureBadges(ctx, {
+    leftBadge: weLeft ? assets.crest : assets.oppBadge,
+    rightBadge: weLeft ? assets.oppBadge : assets.crest,
+    leftName: weLeft ? 'Sue’s Angels' : m.opponent,
+    rightName: weLeft ? m.opponent : 'Sue’s Angels',
+    y: 392,
+    size: 206,
+    off: 306,
+  });
 
   /* THE SCORE IS THE GRAPHIC. A walkover has none - the published table adds
-     no goals for one - so it says what it was rather than printing a scoreline
-     nobody ever recorded. */
+     no goals for one - so it says what it was instead of printing a scoreline
+     nobody ever recorded. The club's own colour marks OUR number. */
   ctx.save();
   ctx.textAlign = 'center';
-  ctx.fillStyle = PAPER;
   if (m.noScore) {
-    ctx.font = `800 ${fitText(ctx, upper(m.noScore), PANEL.w - 140, 62)}px "${DISPLAY}"`;
-    ctx.fillText(upper(m.noScore), ART_W / 2, 510);
+    ctx.fillStyle = PAPER;
+    ctx.font = `700 ${fitText(ctx, upper(m.noScore), 420, 44, { weight: 700 })}px "${FACE}"`;
+    ctx.fillText(upper(m.noScore), ART_W / 2, 406);
   } else {
-    /* Two numbers either side of a hairline rather than one string with a
-       dash: each score then sits under its own badge and it reads as a
-       scoreboard instead of as a sum. */
-    ctx.font = `800 150px "${DISPLAY}"`;
-    const off = 116;
-    ctx.fillText(String(m.ourGoals), ART_W / 2 - off, 530);
-    ctx.fillText(String(m.theirGoals), ART_W / 2 + off, 530);
-    ctx.strokeStyle = HAIR;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(ART_W / 2, 440);
-    ctx.lineTo(ART_W / 2, 548);
-    ctx.stroke();
+    ctx.font = `700 128px "${FACE}"`;
+    const l = weLeft ? ourScore : theirScore;
+    const r = weLeft ? theirScore : ourScore;
+    ctx.fillStyle = weLeft ? ACCENT : PAPER;
+    ctx.fillText(String(l), ART_W / 2 - 58, 434);
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = `500 74px "${FACE}"`;
+    ctx.fillText('-', ART_W / 2, 428);
+    ctx.font = `700 128px "${FACE}"`;
+    ctx.fillStyle = weLeft ? PAPER : ACCENT;
+    ctx.fillText(String(r), ART_W / 2 + 58, 434);
   }
   ctx.restore();
 
-  drawFixtureBadges(ctx, {
-    usBadge: assets.crest, oppBadge: assets.oppBadge, opponent: m.opponent, y: 706, size: 96,
-  });
-
+  /* Scorers, under the club's own badge, which is where the club puts them.
+     The minute is printed only where the record carries one. */
   if ((m.scorers || []).length) {
-    tracked(ctx, 'Scorers', ART_W / 2, 900, { size: 11, track: 3.6, color: ORANGE, align: 'center' });
+    const cx = ART_W / 2 + (weLeft ? -306 : 306);
+    tracked(ctx, 'Goalscorers', cx, 570, { size: 15, track: 3.4, align: 'center', color: ACCENT });
     ctx.save();
     ctx.textAlign = 'center';
     ctx.fillStyle = PAPER;
-    ctx.font = `600 26px "${BODY}"`;
-    wrapLines(ctx, m.scorers.join('   ·   '), PANEL.w - 130).slice(0, 2)
-      .forEach((l, i) => ctx.fillText(l, ART_W / 2, 946 + i * 36));
+    ctx.font = `600 19px "${FACE}"`;
+    m.scorers.slice(0, 5).forEach((s, i) => ctx.fillText(upper(s), cx, 600 + i * 26));
     ctx.restore();
   }
 
-  const foot = [m.competition, m.dateLine, m.weAreHome ? 'Home' : 'Away'].filter(Boolean).join('   ·   ');
-  tracked(ctx, foot, ART_W / 2, 1040, { size: 12, track: 3.2, color: DIM, align: 'center' });
+  ctx.save();
+  ctx.strokeStyle = ACCENT_DIM;
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(232, 762); ctx.lineTo(ART_W - 232, 762); ctx.stroke();
+  ctx.restore();
 
-  closeCard(ctx, m.venue || '');
+  tracked(ctx, m.dateLine || '', ART_W / 2, 814, { size: 26, track: 5, align: 'center' });
+
+  closeCard(ctx, assets);
 }
 
 export const CARDS = {
@@ -633,16 +630,17 @@ export const CARDS = {
 
 const MONTHS_LONG = ['January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'];
-const DAYS_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAYS_LONG = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-/* "SUN 30 AUGUST". No year: every one of these cards is published within days
-   of the match it describes, so the year is noise, and a card that outlives
-   that window has bigger problems than its date format. */
+/* "SUNDAY 16 AUGUST 2026", which is exactly how the club sets it on its own
+   graphics: full weekday, full month, and the year. The website drops the year
+   on a fixture card because the page around it dates itself; a graphic does
+   not, because it gets saved, reposted and looked at again months later. */
 export function dateLine(iso) {
   if (!iso) return '';
   const d = new Date(`${String(iso).slice(0, 10)}T12:00:00Z`);
   if (Number.isNaN(d.getTime())) return '';
-  return `${DAYS_SHORT[d.getUTCDay()]} ${d.getUTCDate()} ${MONTHS_LONG[d.getUTCMonth()]}`;
+  return `${DAYS_LONG[d.getUTCDay()]} ${d.getUTCDate()} ${MONTHS_LONG[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
 /* A goal as it is read out: "Owolona 20’". The minute is printed only where

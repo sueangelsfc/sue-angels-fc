@@ -956,10 +956,16 @@
 
     /* A DEBUT IS A DEBUT. The club asked for this in as many words: a first
        appearance counts as one whether or not the game counted. */
-    if (uncapped.length && uncapped.length <= 5) {
-      var who = uncapped.map(function (n) { return nameOf[n] || ('No. ' + n); }).filter(Boolean);
+    /* NAMES OR NOTHING. This read `nameOf[n] || ('No. ' + n)`, so a player
+       the roster could not name was announced in a published match report as
+       "No. 3 was making a first appearance for the club" - a squad number in
+       the club's own prose, on a site whose rule is that it never shows one,
+       and a worse sentence than the counted one it was falling back from. If
+       everyone can be named, name them; if anyone cannot, say how many. */
+    var named = uncapped.map(function (n) { return nameOf[n]; }).filter(Boolean);
+    if (uncapped.length && uncapped.length <= 5 && named.length === uncapped.length) {
+      var who = named;
       if (who.length) {
-        uncapped.forEach(function (n2) { debutants[n2] = 1; });
         out.push(who.length === 1
           ? who[0] + ' was making a first appearance for the club.'
           : listOf(who) + ' were all making a first appearance for the club.');
@@ -967,6 +973,10 @@
     } else if (uncapped.length) {
       out.push(Num(uncapped.length) + ' of the side had not played for the club before.');
     }
+    /* Marked whether or not the sentence above could name them. It used to be
+       set inside the naming branch, so a debut went unrecorded for the rest of
+       the report on exactly the occasions the report could say least about it. */
+    uncapped.forEach(function (n2) { debutants[n2] = 1; });
 
     if (trialists.length) {
       out.push(trialists.length === 1 ? 'A trialist was given a run.'

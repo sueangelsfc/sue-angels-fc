@@ -16,7 +16,6 @@ import { CLUB, SEPSIS } from './lib/club.mjs';
 import { teamSummary, fmtDate, isUs, isLeague} from './lib/stats.mjs';
 import { home, oppBadge } from './templates/home.mjs';
 import { HOME_BANDS, HOME_AREAS, homeBandFilled, reportsIn, albumsIn, playersIn } from './lib/home-layout.mjs';
-import * as P from './templates/pages.mjs';
 import { about } from './templates/about.mjs';
 import { cause } from './templates/cause.mjs';
 import { champions } from './templates/champions.mjs';

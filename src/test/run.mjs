@@ -468,8 +468,40 @@ for (const f of shipped) {
     /import \{[^}]*joinedAfter[^}]*\} from '\.\/squad-status\.mjs'/.test(dsSrc));
 
   const seedSrc = fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8');
-  check('the panel is seeded with which seasons name each shirt number',
+  check('the panel is seeded with which seasons name each record slot',
     /"namedIn":\s*\{\s*"\d/.test(seedSrc));
+}
+
+/* ---- The club does not use squad numbers, so nothing prints one ----
+   The storage key is a number, because a Sunday-league team sheet is a list of
+   numbers and the records are built on them. It is a KEY. The club plays with
+   no squad numbers, the site shows none, and three places were printing the
+   key at a reader anyway: a `<abbr title="Squad number">No.</abbr>` column in
+   a dead stats table, a match-report sentence that fell back to "No. 3 was
+   making a first appearance" whenever the roster could not name somebody, and
+   a Squad-screen reason reading "No. 3 is named in 25/26". The last is the
+   clearest case for the rule: it broke it AND said nothing, because it names
+   a thing nobody at the club recognises.
+
+   `data-num` attributes and filenames are untouched - they are how a row finds
+   its record and nobody reads them. */
+{
+  const NUMBERISH = /(?:No\.\s*|Shirt number|Squad number|squad number|shirt number)/;
+  for (const f of htmlFiles) {
+    const body = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    check(`${f}: publishes no squad number`, !/Squad number|shirt number/i.test(body));
+  }
+  const adminFiles = fs.readdirSync(path.join(ROOT, 'src', 'admin', 'lazy'))
+    .map((f) => ['src/admin/lazy/' + f, fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', f), 'utf8')])
+    .concat(fs.readdirSync(path.join(ROOT, 'src', 'admin')).filter((f) => f.endsWith('.js'))
+      .map((f) => ['src/admin/' + f, fs.readFileSync(path.join(ROOT, 'src', 'admin', f), 'utf8')]));
+  for (const [name, src] of adminFiles) {
+    /* Comments explain the storage key and must be free to name it. Only
+       strings the panel actually renders are checked. */
+    const strings = (src.replace(/\/\*[\s\S]*?\*\//g, '').match(/'(?:[^'\\]|\\.)*'/g) || []);
+    const bad = strings.filter((x) => NUMBERISH.test(x));
+    check(`${name}: shows no squad number`, bad.length === 0);
+  }
 }
 
 /* ---- 12b. The league page agrees with itself ----

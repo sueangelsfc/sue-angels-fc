@@ -136,42 +136,18 @@ export function leagueTable(rows, { caption = '', promotionSpots = 0 } = {}) {
   </div>`;
 }
 
-/* ---- Stats table ----------------------------------------------------- */
-export function statsTable(rows, { caption = '' } = {}) {
-  const body = rows.map((p) => `<tr>
-    <td>${esc(p.num)}</td>
-    <th scope="row" class="cell-club">${p.unknown ? esc(p.name) : `<a href="/players/${attr(p.slug)}.html">${esc(p.name)}</a>`}</th>
-    <td class="cell-club">${esc(p.position)}</td>
-    <td>${esc(p.apps)}</td>
-    <td>${esc(p.starts)}</td>
-    <td>${esc(p.goals)}</td>
-    <td>${esc(p.assists)}</td>
-    <td>${esc(p.goalContributions)}</td>
-    <td>${esc(p.motm)}</td>
-    <td>${esc(p.yellow)}</td>
-    <td>${esc(p.red)}</td>
-  </tr>`).join('');
+/* THE STATS TABLE THAT PUBLISHED SQUAD NUMBERS IS GONE, and so is
+   templates/pages.mjs, the 855 lines that were its only caller. Nothing
+   imported them: `import * as P` was in build.mjs and every `P.` in the file
+   turned out to be `NO_SITEMAP.has`. Rebuilding without it produced every one
+   of the 108 pages byte for byte.
 
-  return `<div class="table-wrap scroll-x">
-    <table class="data">
-      ${caption ? `<caption>${esc(caption)}</caption>` : ''}
-      <thead><tr>
-        <th scope="col"><abbr title="Squad number">No.</abbr></th>
-        <th scope="col">Player</th>
-        <th scope="col">Position</th>
-        <th scope="col"><abbr title="Appearances">Apps</abbr></th>
-        <th scope="col">Starts</th>
-        <th scope="col">Goals</th>
-        <th scope="col">Assists</th>
-        <th scope="col"><abbr title="Goals plus assists">G+A</abbr></th>
-        <th scope="col"><abbr title="Player of the Match awards">MOTM</abbr></th>
-        <th scope="col"><abbr title="Yellow cards">Y</abbr></th>
-        <th scope="col"><abbr title="Red cards">R</abbr></th>
-      </tr></thead>
-      <tbody>${body}</tbody>
-    </table>
-  </div>`;
-}
+   Worth naming what it was carrying rather than just deleting it quietly. Its
+   first column was `<abbr title="Squad number">No.</abbr>`, a published
+   column of shirt numbers, on a site whose rule is that it never shows one.
+   The live stats page comes from templates/stats.mjs and its left column is a
+   RANK, which is the rule working. Dead code does not stop being a liability
+   for being unreachable: it is the version somebody wires back up. */
 
 /* ---- Form guide ------------------------------------------------------ */
 export function formGuideBlock(form) {

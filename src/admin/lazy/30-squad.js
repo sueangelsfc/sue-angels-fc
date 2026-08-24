@@ -160,16 +160,22 @@
 
      The Worked out column was a bare badge. "Retained" with nothing beside it
      is unarguable-looking and was wrong for Leon Burnett, who signed in the
-     summer of 2026: number 3 is named in a team sheet from October 2025,
-     because somebody else wore 3 then. The site read that as evidence he was
-     here in 25/26, so his first season looked like his second and he was left
-     out of the first-appearance list on the page announcing him.
+     summer of 2026: the record slot he occupies was also used for somebody
+     else in October 2025. The site read that older team sheet as evidence he
+     was here in 25/26, so his first season looked like his second and he was
+     left out of the first-appearance list on the page announcing him.
 
-     Nothing can derive which of two men wore a number. So the column says
-     what it concluded, what it concluded it FROM, and where the evidence is
-     the weak kind it offers the one field that settles it: the day he signed.
-     A signing date is the club stating a fact about a person. A number on a
-     team sheet is a guess about identity from a shirt. The first wins.
+     A team sheet stores a slot, not a person, and slots get handed on. Nothing
+     can derive which of two people held one. So the column says what it
+     concluded, what it concluded it FROM, in seasons rather than in storage
+     keys, and where the evidence is the weak kind it offers the one field
+     that settles it: the day they signed. A signing date is the club stating
+     a fact about a person. The rest is inference. The fact wins.
+
+     NOTHING HERE PRINTS THE KEY. The club does not use squad numbers and the
+     site shows none, so a reason reading "No. 3 is named in 25/26" was both a
+     rule broken and useless: it names a thing nobody recognises. The reason
+     is the player and the seasons.
      ========================================================================== */
   function namedSeasons(num) {
     return ((SEED.namedIn || {})[String(num)] || []).slice();
@@ -213,16 +219,17 @@
     if (from) {
       return {
         why: 'Signed ' + U.fmtDate(from) + '.' + (ruledOut.length
-          ? ' No. ' + num + ' is named in ' + list(ruledOut) + ', before that, so '
-            + (ruledOut.length === 1 ? 'it is' : 'they are') + ' not counted as theirs.'
+          ? ' A team sheet from ' + list(ruledOut) + ' names their record slot, before '
+            + 'that date, so ' + (ruledOut.length === 1 ? 'it is' : 'they are')
+            + ' not counted as theirs.'
           : ''),
         conflict: false,
       };
     }
-    if (key === 'new') return { why: 'No. ' + num + ' is named in no team sheet before ' + season + '.', conflict: false };
+    if (key === 'new') return { why: 'Named in no team sheet before ' + season + '.', conflict: false };
     if (!before.length) return { why: 'Nothing earlier on the record.', conflict: false };
     return {
-      why: 'No. ' + num + ' is named in ' + list(before) + '.',
+      why: 'Named on a team sheet in ' + list(before) + '.',
       /* The weak kind of evidence: a number, not a person. Only worth raising
          where it is the ONLY thing making this a second season. */
       conflict: true,
@@ -447,14 +454,15 @@
                    obvious it is derived rather than something to maintain -
                    AND the reason for it, because a bare badge is unarguable
                    looking and was wrong. Where the only thing making this a
-                   second season is a shirt number from an earlier one, the
+                   second season is a team sheet from an earlier one, the
                    cell says so and points at the field that settles it. */
                 '<td>' + (p.tenure
                   ? '<span class="badge badge--neutral">' + esc(LABEL[p.tenure]) + '</span>' +
                     (p.why ? '<small class="cp-hint">' + esc(p.why.why) + '</small>' : '') +
                     (p.why && p.why.conflict
-                      ? '<small class="cp-flag">Shirt numbers get reused. If that was somebody ' +
-                        'else in this number, fill in <b>The day they signed</b> and this becomes ' +
+                      ? '<small class="cp-flag">A team sheet only records which slot somebody ' +
+                        'filled, and slots get handed on. If that earlier season was a different ' +
+                        'player, fill in <b>The day they signed</b> and this becomes ' +
                         esc(LABEL.new) + '.</small>'
                       : '')
                   : '<span class="cp-hint">Nothing to say</span>') + '</td>' +

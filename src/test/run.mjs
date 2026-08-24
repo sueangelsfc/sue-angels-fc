@@ -478,6 +478,37 @@ for (const f of shipped) {
   check('and does not touch its own season',
     statusMod.statusIn(both, 3, '26/27', opts) === 'active');
 
+  /* A PLACEHOLDER IS NOT A FACT. "Where they went" is a free-text field and
+     it was filled in as "N/A", so a player's profile published "Left for
+     N/A". No wording survives that, so the value is read as nothing said and
+     the sentence falls back to the date. */
+  for (const junk of ['N/A', 'n/a', '-', 'unknown', 'TBC', ' none ']) {
+    const rec = statusMod.readStatusRecord({
+      status: { 3: { '25/26': { key: 'departed', to: junk, from: '2026-05-31' } } },
+    });
+    const label = statusMod.statusLabelIn(rec, 3, '25/26',
+      { seasons: SEASONS, latestSeason: '26/27', seasonOf, wasHere: () => true });
+    check(`"${junk}" is not published as a destination`,
+      !/N\/A|unknown|TBC|none|Left for -/i.test(label.detail || ''), label.detail);
+  }
+  /* And a real destination still is, or the rule above would be a way of
+     silently dropping what the club typed. */
+  {
+    const rec = statusMod.readStatusRecord({
+      status: { 3: { '25/26': { key: 'departed', to: 'Barnes Stormers', from: '2026-05-31' } } },
+    });
+    const label = statusMod.statusLabelIn(rec, 3, '25/26',
+      { seasons: SEASONS, latestSeason: '26/27', seasonOf, wasHere: () => true });
+    check('a real destination is still published',
+      /Left for Barnes Stormers/.test(label.detail || ''), label.detail);
+  }
+  /* And nothing shipped says it either. */
+  for (const f of htmlFiles) {
+    const body = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    check(`${f}: publishes no placeholder as a fact`,
+      !/Left for (N\/A|n\/a|-|unknown|TBC|none)\b/i.test(body));
+  }
+
   /* 1 JULY starts the season. The club sets this. */
   check('30 June belongs to the season ending', seasonOf('2026-06-30') === '25/26');
   check('1 July belongs to the season starting', seasonOf('2026-07-01') === '26/27');

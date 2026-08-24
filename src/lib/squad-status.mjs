@@ -428,6 +428,21 @@ export function statusLabelIn(record, num, season, opts = {}) {
 }
 
 /* The line under a set status, where the club has given one. */
+/* A FREE-TEXT FIELD ATTRACTS A PLACEHOLDER, and a placeholder is not a fact.
+   "Where they went" was filled in as "N/A" - a perfectly reasonable thing to
+   type when somebody left for nowhere in particular - and the page published
+   "Left for N/A" on a player's profile. There is no wording that survives
+   that, so the value is treated as nothing said: the sentence falls back to
+   "Left in May 2026", which is true and is what the field was optional for.
+   Kept here rather than fixed in the record, because the next person to type
+   "-" would put it straight back. */
+const NOTHING_SAID = new Set(['n/a', 'na', 'n.a.', '-', '--', 'none', 'nil',
+  'unknown', 'not known', 'tbc', 'tba', '?', 'no', 'nowhere']);
+const said = (v) => {
+  const t = String(v == null ? '' : v).trim();
+  return t && !NOTHING_SAID.has(t.toLowerCase()) ? t : '';
+};
+
 function setSentence(key, x) {
   const from = x.from ? onDate(x.from) : '';
   const until = x.until ? onDate(x.until) : '';
@@ -443,14 +458,15 @@ function setSentence(key, x) {
     return '';
   }
   if (key === 'departed') {
-    if (x.to && from) return `Left for ${x.to} in ${from}`;
-    if (x.to) return `Left for ${x.to}`;
+    const to = said(x.to);
+    if (to && from) return `Left for ${to} in ${from}`;
+    if (to) return `Left for ${to}`;
     if (from) return `Left in ${from}`;
     return '';
   }
   if (key === 'retired' && from) return `Retired in ${from}`;
-  if (key === 'away' && x.note) return x.note;
-  return x.note || '';
+  if (key === 'away') return said(x.note);
+  return said(x.note);
 }
 
 /* "July 2026" from an ISO date; the string as typed if it is not one. */

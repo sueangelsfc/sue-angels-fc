@@ -178,6 +178,15 @@ The panel also carries `aria-busy` while a screen fetches its chunk and reads th
 
 Two things an audit of this claimed and got wrong, both worth not re-checking: the toast container has carried `role="region"` and `aria-live="polite"` since it was written, so saves have always been announced; and 15 of the 16 labels with no `for=` wrap their own control, which is valid.
 
+### The match form is not splittable as it stands, and why
+`control-match.js` is **15.7KB gzipped of a 16KB budget** - the largest chunk and the most-opened screen - so the obvious move is to lazy-load the editor the way the report writer already is. It was measured and rejected, and the measurement is here so it is not redone from scratch.
+
+`openMatch` is 997 lines of 2,163, and 1,215 lines would move with it against 228 lines of genuinely shared helpers. That part is a clean seam. The blocker is state: the editor **reads 23 module-level bindings and mutates six** - `spellsByNum`, `benchDetail`, `TRIALISTS`, `SQUAD`, `STATUS`, `nameOfNum` - which the fixtures and results screens also read. Splitting means sharing mutable references across a chunk boundary, and `TRIALISTS`/`SQUAD` are reassigned rather than mutated in place, so the two chunks would silently diverge instead of failing.
+
+There is also **no runtime test coverage for the panel at all**: the suite is static analysis over generated output, and the panel is behind Supabase sign-in. A 1,200-line move of the club's result-entry screen with no way to exercise it afterwards is not worth 0.3KB of headroom.
+
+**What would make it safe, in order:** move those six derived caches onto one namespace object mutated by property and never reassigned; then a harness that loads a chunk in Node against a stubbed `window.CP`/`CPU` and calls `M.results(host)`, which the project could use for every module; then the split. The shared mutable state is worth fixing on its own merits - it is the same shape as the bug where two renders made one click save twice.
+
 ### How the editors work
 - Authorisation is the **database's** answer, surfaced in the UI. A non-registered account is shown as read-only rather than hitting a policy error.
 - **Every editor is a form.** They used to be raw JSON textareas, defended on the grounds that a lossy form would drop fields the website reads. The premise was right and the conclusion was not: each form starts from the record as it stands, changes only the fields it covers, and writes the rest back untouched, so a JSONB shape it has never heard of survives being edited by it. A **Raw** button is still one click away on every record.

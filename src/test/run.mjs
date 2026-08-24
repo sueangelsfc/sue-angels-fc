@@ -1554,6 +1554,68 @@ for (const [f, kb] of Object.entries({
       'the old rule reported every day 1 to 19 as already played');
   }
 
+  /* ---- EVERY CROSS-PANEL LINK POINTS AT A REAL PANEL ----------------------
+
+     `data-goto="fixtres"` does nothing at all: the delegated listener calls
+     show() with a key no panel answers to, the click is swallowed and the
+     screen sits there. There is no error to see and nothing in the console,
+     which is the worst shape a bug can take on a screen the club uses alone.
+
+     Read off the shipped bundles rather than the sources, because that is what
+     the browser gets, and checked against the panel list the shell actually
+     renders. */
+  {
+    const ctlSrc = fs.readFileSync(path.join(ROOT, 'src', 'templates', 'control.mjs'), 'utf8');
+    const modBlock = ctlSrc.slice(ctlSrc.indexOf('export const MODULES'),
+      ctlSrc.indexOf('];', ctlSrc.indexOf('export const MODULES')));
+    const declared = [...modBlock.matchAll(/key: '([a-z]+)'/g)].map((m) => m[1]);
+    const panelSet = new Set(declared);
+
+    const targets = new Set();
+    for (const f of fs.readdirSync(ROOT).filter((x) => /^control(-[a-z-]+)?\.js$/.test(x))) {
+      const body = fs.readFileSync(path.join(ROOT, f), 'utf8');
+      for (const m of body.matchAll(/data-goto="([a-z]+)"/g)) targets.add(m[1]);
+      for (const m of body.matchAll(/data-goto=\\"'\s*\+\s*esc\(/g)) targets.add('(computed)');
+    }
+    const unknown = [...targets].filter((t) => t !== '(computed)' && !panelSet.has(t));
+    check('every cross-panel link names a real panel', unknown.length === 0, unknown.join(', '));
+
+    /* The computed ones come from the dashboard's warning list and the
+       matchday checklist, both of which build the key in code. Those are
+       covered by the panel-key check below rather than by reading markup. */
+    const appSrc = fs.readFileSync(path.join(ROOT, 'src', 'admin', '10-app.js'), 'utf8');
+    const mdSrc = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '12-matchday.js'), 'utf8');
+    const computed = [
+      ...[...appSrc.matchAll(/\],\s*'([a-z]+)'\]\);/g)].map((m) => m[1]),
+      ...[...mdSrc.matchAll(/\['[^']+', '([a-z]+)'\]/g)].map((m) => m[1]),
+    ];
+    check('there are computed panel links to check', computed.length > 0);
+    for (const t of new Set(computed)) {
+      check(`computed panel link is real: ${t}`, panelSet.has(t));
+    }
+
+    /* ---- The sidebar is grouped and every screen sits in one group -------
+       A module added without a group falls into whichever run precedes it,
+       silently, and lands under a heading that has nothing to do with it. */
+    const groups = [...modBlock.matchAll(/key: '([a-z]+)'[^}]*group: '([^']*)'/g)]
+      .map((m) => ({ key: m[1], group: m[2] }));
+    check('every sidebar entry declares a group', groups.length === declared.length,
+      `${groups.length} of ${declared.length}`);
+    check('only the dashboard sits outside a group',
+      groups.filter((g) => !g.group).map((g) => g.key).join(',') === 'dashboard');
+    /* Each group is one contiguous run, because the nav builder starts a new
+       list whenever the name changes: a screen listed away from its own group
+       would quietly produce a second list with the same label. */
+    const seen = [];
+    let runs = 0;
+    for (const g of groups) {
+      if (seen[seen.length - 1] !== g.group) { runs += 1; seen.push(g.group); }
+    }
+    check('no group is split across the sidebar',
+      runs === new Set(groups.map((g) => g.group)).size,
+      `${runs} runs for ${new Set(groups.map((g) => g.group)).size} groups`);
+  }
+
   /* ---- The squad field has a reader --------------------------------------
      A field with no consumer is a lie with a save button. The matchday squad
      is written on the fixture and read by the match form, which fills the

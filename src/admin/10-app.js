@@ -332,6 +332,12 @@
     fixtureIso: fixtureIso,
     dayOf: dayOf,
     dayIso: dayIso,
+    /* THE BADGE SLOT EXISTS ON ALL TWENTY-ONE NAV ITEMS and exactly one of
+       them ever filled it. A count is worth showing only where it means
+       "this needs doing now": a permanent 24 beside Results is wallpaper
+       within a week, and then the one that matters is wallpaper too. */
+    setCount: function (key, n) { return setCount(key, n); },
+    goto: function (key) { return show(key); },
   };
 
   /* ==========================================================================
@@ -548,11 +554,14 @@
           }) +
         '</div>';
 
-      host.addEventListener('click', function (e) {
-        var go = e.target.closest('[data-goto]');
-        if (go) show(go.getAttribute('data-goto'));
-      });
+      /* The [data-goto] listener that used to sit here is on the document now,
+         so it works from every panel rather than only from this one. */
       setCount('inbox', CP.state.isAdmin ? newEnq : 0);
+      /* WHAT THE SIDEBAR SHOULD SHOUT ABOUT. Two numbers, both meaning "this
+         needs doing now": a fixture owing a score or sitting on the list with
+         its result already in, and a next match still missing something. A
+         backlog count would be a permanent badge, which is no badge at all. */
+      setCount('fixtures', played.length + stale.length);
     });
   };
 
@@ -898,6 +907,17 @@
 
   $$('.cp-nav__item').forEach(function (b) {
     b.addEventListener('click', function () { show(b.getAttribute('data-module')); });
+  });
+
+  /* CROSS-PANEL LINKS WORK FROM ANY PANEL.
+     `data-goto` was bound inside the dashboard, so it was a dashboard feature
+     rather than a panel one: any other screen wanting to send somebody to
+     Fixtures had to carry its own listener and its own convention, and the
+     matchday screen promptly invented `data-go` for exactly that reason. One
+     delegated listener on the document, one attribute, every panel. */
+  document.addEventListener('click', function (e) {
+    var go = e.target.closest && e.target.closest('[data-goto]');
+    if (go) show(go.getAttribute('data-goto'));
   });
   /* ---- Publish -------------------------------------------------------
      Everything in this panel writes to the database. The website is

@@ -143,7 +143,7 @@
         return '<tr><td><b>' + esc(r[0]) + '</b></td>' +
           '<td>' + stateChip(r[1]) + '</td>' +
           '<td>' + esc(r[2]) +
-          (r[3] ? ' <button class="btn btn--ghost btn--sm" type="button" data-go="'
+          (r[3] ? ' <button class="btn btn--ghost btn--sm" type="button" data-goto="'
             + esc(r[3][1]) + '">' + esc(r[3][0]) + '</button>' : '') +
           '</td></tr>';
       }).join('') + '</tbody></table></div>';
@@ -205,7 +205,7 @@
           body: empty('No fixtures are waiting.',
             'Every fixture on record has its result in. Add the next one in Fixtures and it '
             + 'appears here with what it still needs.')
-            + '<p><button class="btn btn--primary" type="button" data-go="fixtures">'
+            + '<p><button class="btn btn--primary" type="button" data-goto="fixtures">'
             + 'Add a fixture</button></p>',
         });
         return;
@@ -256,6 +256,14 @@
               + 'sheet on the match page that shows it.'),
         });
 
+      /* The badge is what this match is still waiting on, counted from the
+         same rows the checklist draws, so the number and the screen can never
+         disagree. Nothing waiting, no badge. */
+      if (U.setCount) {
+        U.setCount('matchday', checklist(f, squad, result)
+          .filter(function (r) { return r[1] === 'waiting' || r[1] === 'incomplete'; }).length);
+      }
+
       var whichEl = $('#md-which', host);
       if (whichEl) {
         whichEl.addEventListener('change', function () {
@@ -265,9 +273,6 @@
       }
 
       host.addEventListener('click', function (e) {
-        var go = e.target.closest && e.target.closest('[data-go]');
-        if (go) { location.hash = '#' + go.getAttribute('data-go'); return; }
-
         if (e.target.matches('[data-clear-squad]')) {
           $$('[data-slot]', host).forEach(function (el) { el.value = ''; });
           return;

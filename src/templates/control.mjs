@@ -10,40 +10,73 @@
 import { esc, attr, icon, crest } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 
+/* ==========================================================================
+   THE SIDEBAR IS GROUPED, and it was twenty-one items in one flat column.
+
+   Flat is fine at eight. At twenty-one it stops being a list and becomes a
+   search: the four screens that handle pictures sat at positions 7, 9, 10 and
+   13 with News and the Home page in between them, so "where do I upload a
+   player's photograph" meant reading most of the column every time.
+
+   Grouped by the QUESTION being asked rather than by the table being written,
+   which is why Recognition sits with the squad and not with News: an award is
+   a fact about a player, and the club thinks of it that way even though it is
+   stored beside articles and gallery albums.
+
+   Labelled with aria-label on each list rather than with headings. control.html
+   already carries two h1 elements, one on the gate and one on the top bar, and
+   a run of h2 elements in the sidebar ahead of them would put the document's
+   heading order out for the sake of a label nothing needs read twice. */
 export const MODULES = [
-  { key: 'dashboard', label: 'Dashboard', icon: 'chart' },
-  /* Second, because it is the only screen that looks forward and it is the
-     one the club opens in the week. Fixtures is where a match is agreed;
-     this is where the match that is coming gets ready. */
-  { key: 'matchday', label: 'Matchday', icon: 'calendar' },
-  { key: 'fixtures', label: 'Fixtures', icon: 'calendar' },
-  { key: 'results', label: 'Results and reports', icon: 'shield' },
-  { key: 'squad', label: 'Squad and staff', icon: 'users' },
-  { key: 'coaches', label: 'Coaches', icon: 'users' },
-  { key: 'photos', label: 'Player photographs', icon: 'camera' },
-  { key: 'news', label: 'News', icon: 'news' },
-  { key: 'media', label: 'Gallery albums', icon: 'camera' },
-  { key: 'covers', label: 'Cover pictures', icon: 'camera' },
-  { key: 'home', label: 'Home page', icon: 'news' },
-  { key: 'hero', label: 'Home page banner', icon: 'camera' },
-  { key: 'phototag', label: 'Tag players in photos', icon: 'users' },
-  { key: 'videos', label: 'Video and interviews', icon: 'play' },
-  { key: 'recognition', label: 'Recognition', icon: 'trophy' },
-  { key: 'league', label: 'League table', icon: 'chart' },
-  { key: 'sponsors', label: 'Sponsors', icon: 'heart' },
-  { key: 'donations', label: 'Donations', icon: 'heart' },
-  { key: 'pipeline', label: 'Sponsorship pipeline', icon: 'chart' },
-  { key: 'inbox', label: 'Inbox', icon: 'mail' },
-  { key: 'settings', label: 'Settings', icon: 'shield' },
+  { key: 'dashboard', label: 'Dashboard', icon: 'chart', group: '' },
+
+  { key: 'matchday', label: 'Matchday', icon: 'calendar', group: 'The match' },
+  { key: 'fixtures', label: 'Fixtures', icon: 'calendar', group: 'The match' },
+  { key: 'results', label: 'Results and reports', icon: 'shield', group: 'The match' },
+
+  { key: 'squad', label: 'Squad and staff', icon: 'users', group: 'The club' },
+  { key: 'coaches', label: 'Coaches', icon: 'users', group: 'The club' },
+  { key: 'recognition', label: 'Recognition', icon: 'trophy', group: 'The club' },
+  { key: 'league', label: 'League table', icon: 'chart', group: 'The club' },
+
+  { key: 'news', label: 'News', icon: 'news', group: 'Words and pictures' },
+  { key: 'media', label: 'Gallery albums', icon: 'camera', group: 'Words and pictures' },
+  { key: 'photos', label: 'Player photographs', icon: 'camera', group: 'Words and pictures' },
+  { key: 'phototag', label: 'Tag players in photos', icon: 'users', group: 'Words and pictures' },
+  { key: 'covers', label: 'Cover pictures', icon: 'camera', group: 'Words and pictures' },
+  { key: 'videos', label: 'Video and interviews', icon: 'play', group: 'Words and pictures' },
+
+  { key: 'home', label: 'Home page', icon: 'news', group: 'The website' },
+  { key: 'hero', label: 'Home page banner', icon: 'camera', group: 'The website' },
+
+  { key: 'sponsors', label: 'Sponsors', icon: 'heart', group: 'Getting backing' },
+  { key: 'pipeline', label: 'Sponsorship pipeline', icon: 'chart', group: 'Getting backing' },
+  { key: 'donations', label: 'Donations', icon: 'heart', group: 'Getting backing' },
+
+  { key: 'inbox', label: 'Inbox', icon: 'mail', group: 'Admin' },
+  { key: 'settings', label: 'Settings', icon: 'shield', group: 'Admin' },
 ];
 
 export function control() {
-  const nav = MODULES.map((m) => `<li>
+  const item = (m) => `<li>
     <button class="cp-nav__item" type="button" data-module="${attr(m.key)}">
       ${icon(m.icon)}<span>${esc(m.label)}</span>
       <span class="cp-nav__count" data-count-for="${attr(m.key)}" hidden></span>
     </button>
-  </li>`).join('');
+  </li>`;
+
+  /* One list per group, in the order the modules are declared, so moving a
+     screen between groups is a one-word edit above and nothing here. */
+  const groups = [];
+  for (const m of MODULES) {
+    const last = groups[groups.length - 1];
+    if (last && last.name === m.group) last.items.push(m);
+    else groups.push({ name: m.group, items: [m] });
+  }
+  const nav = groups.map((g) => (g.name
+    ? `<p class="cp-nav__group" aria-hidden="true">${esc(g.name)}</p>
+    <ul class="cp-nav" role="list" aria-label="${attr(g.name)}">${g.items.map(item).join('')}</ul>`
+    : `<ul class="cp-nav" role="list">${g.items.map(item).join('')}</ul>`)).join('');
 
   const panels = MODULES.map((m) => `<section class="cp-panel" id="panel-${attr(m.key)}"
       role="tabpanel" aria-label="${attr(m.label)}" hidden>
@@ -120,7 +153,7 @@ export function control() {
         </span>
       </a>
       <nav aria-label="Control panel sections">
-        <ul class="cp-nav" role="list">${nav}</ul>
+        ${nav}
       </nav>
       <div class="cp-side__foot">
         <div class="cp-who">

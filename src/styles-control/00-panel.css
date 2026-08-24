@@ -91,6 +91,20 @@
 .cp-side__brand small { display: block; font-size: var(--step--2); color: var(--text-subtle); }
 
 .cp-nav { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+
+/* The group label. Quiet on purpose: it is a signpost read once on the way
+   past, not a thing to be looked at, so it sits at the smallest step in the
+   subtlest text colour and takes its space from the margin above it. */
+.cp-nav + .cp-nav__group { margin-top: var(--space-4); }
+.cp-nav__group {
+  margin: 0 0 var(--space-1);
+  padding-inline: var(--space-3);
+  font-size: var(--step--2);
+  font-weight: var(--weight-semi);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
 .cp-nav__item {
   display: flex;
   align-items: center;

@@ -391,6 +391,23 @@ for (const f of shipped) {
   check(`${f}: no service-role key`, !/service_role|sb_secret_|SUPABASE_SERVICE/.test(body));
 }
 
+/* ---- The anonymous write helper asks for nothing back ----
+   `Prefer: return=representation` is the right header for an ADMIN write and
+   is fatal on an anonymous one: handing the new row back needs a SELECT policy
+   on it, and anon has none on enquiries, supporters or band_views because they
+   are write-only by design. The insert is then refused with 42501 "new row
+   violates row-level security policy", which is exactly what a missing insert
+   policy looks like. That reading cost a day and had the club told its contact
+   form was recording nothing. This is the club's lead capture, so the header it
+   sends is asserted rather than assumed. */
+{
+  const core = fs.readFileSync(path.join(ROOT, 'src', 'scripts', '00-core.js'), 'utf8');
+  const fn = core.slice(core.indexOf('function sbInsert'));
+  const body = fn.slice(0, fn.indexOf('\n  }'));
+  check('sbInsert asks for return=minimal', /Prefer:\s*'return=minimal'/.test(body));
+  check('sbInsert never asks for the row back', !/return=representation/.test(body));
+}
+
 /* ---- 12b. The league page agrees with itself ----
    The league page renders the club's season twice from the same source: once
    as a row in the division table, once as W/D/L letters on each month of

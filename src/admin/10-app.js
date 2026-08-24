@@ -489,6 +489,36 @@
           + 'saying the same thing.', 'Clear ' + (s1 ? 'it' : 'them'), 'fixtures']);
       }
 
+      /* A REPORT SHARING THE GENERIC CARD. Every match and article has a card
+         drawn from its own record, committed alongside the generated HTML. A
+         match published from this panel does NOT get one, because the deploy
+         has no browser to draw it with - so it keeps the generic club image
+         until somebody runs `npm run covers`.
+
+         Until now the only thing that said so was `npm test`, which the club
+         has no reason to ever run. That made it a step somebody had to
+         remember, which is another way of saying it does not happen: a link
+         to a win and a link to a defeat go out looking identical, and nobody
+         finds out.
+
+         The action is the one the club can actually take. Drawing a cover in
+         this panel stores it on the record, and a stored cover beats the
+         drawn card and the generic image alike, so it fixes the share image
+         without a terminal. */
+      var noCard = matches.filter(function (m) {
+        return !(m.data || {}).cover && !drawnSet[String(m.key)];
+      }).length + articles.filter(function (a) {
+        return !(a.data || {}).cover && !drawnSet[String(a.key)];
+      }).length;
+      if (noCard) {
+        var c1 = noCard === 1;
+        warn.push([(c1 ? 'A match report or article is' : noCard + ' match reports and articles are')
+          + ' sharing the generic club image when the link is posted, rather than a card of '
+          + (c1 ? 'its' : 'their') + ' own. Drawing one here stores it on the record and fixes '
+          + (c1 ? 'it' : 'them') + ' straight away.',
+          c1 ? 'Draw the cover' : 'Draw the covers', 'covers']);
+      }
+
       /* The row a security check left behind. Deleting it needs the sign-in
          only the club has, which is why it is still there and why the club is
          the only one who can be told about it. */

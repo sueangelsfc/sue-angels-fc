@@ -10,6 +10,8 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 import { isPending } from '../lib/routes.mjs';
 import { CLUB } from '../lib/club.mjs';
+import * as statusMod from '../lib/squad-status.mjs';
+import { seasonOf } from '../lib/stats.mjs';
 
 const ROOT = process.cwd();
 let pass = 0;
@@ -425,6 +427,49 @@ for (const f of shipped) {
   const match = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '10-match.js'), 'utf8');
   check('a fixture row offers a way to remove it', /data-del/.test(match));
   check('fixture row actions can wrap rather than scroll away', /cp-rowacts/.test(match));
+}
+
+/* ---- A signing date beats a shirt number ----
+   Appearances are attributed by shirt number, and numbers get reused. Leon
+   Burnett is no. 3 and signed in the summer of 2026; somebody else wore 3
+   against Brockwell Violets in October 2025, so the site read that team sheet
+   as evidence he was here in 25/26 and left him out of the first-appearance
+   list on the page announcing him. Which of two men wore a number is a fact
+   only the club holds. Both directions are asserted, because a rule that only
+   ever says no would pass while doing nothing. */
+{
+  const SEASONS = ['25/26', '26/27'];
+  const bare = statusMod.readStatusRecord({ status: { 3: { '26/27': 'active' } } });
+  const dated = statusMod.readStatusRecord({
+    status: { 3: { '26/27': { key: 'active', from: '2026-07-12' } } },
+  });
+  check('no signing date: the team sheet still decides',
+    statusMod.joinedAfter(bare, 3, '25/26', SEASONS, seasonOf) === false);
+  check('a signing date rules out the season before it',
+    statusMod.joinedAfter(dated, 3, '25/26', SEASONS, seasonOf) === true);
+  check('a signing date does not rule out its own season',
+    statusMod.joinedAfter(dated, 3, '26/27', SEASONS, seasonOf) === false);
+  check('signedOn reads the date whichever season it hangs off',
+    statusMod.signedOn(dated, 3) === '2026-07-12');
+  check('signedOn is null where the club has said nothing',
+    statusMod.signedOn(bare, 3) === null);
+  /* The panel must be able to SHOW the evidence, or the badge stays
+     unarguable-looking and the club has no way to spot the reused number. */
+  /* AND THAT THE SITE ACTUALLY CONSULTS IT. The rule above is inert on
+     today's data, because no player has a signing date recorded yet - so
+     deleting the call site in dataset.mjs broke nothing and every check
+     stayed green. A rule nothing calls is not a rule. This is a source check
+     rather than a behavioural one for exactly that reason: there is no live
+     record to exercise it against until the club fills one in. */
+  const dsSrc = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'dataset.mjs'), 'utf8');
+  check('the site consults the signing date before the team sheet',
+    /joinedAfter\(statusRecord, num, season/.test(dsSrc));
+  check('joinedAfter is imported where it is used',
+    /import \{[^}]*joinedAfter[^}]*\} from '\.\/squad-status\.mjs'/.test(dsSrc));
+
+  const seedSrc = fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8');
+  check('the panel is seeded with which seasons name each shirt number',
+    /"namedIn":\s*\{\s*"\d/.test(seedSrc));
 }
 
 /* ---- 12b. The league page agrees with itself ----
@@ -927,7 +972,11 @@ const BUDGET = {
      and stops a trial lasting the rest of a career. The screen carries a
      season bar, reads three stored shapes, and works out new / retained /
      back at the club rather than asking anybody to keep them true. */
-  'control-squad.js': 6,
+  /* 6 -> 7: the Squad screen now says WHY it worked out what it worked out,
+     and flags the one case no derivation can settle (a shirt number that
+     changed hands). That is code and copy for a real answer, not data growth,
+     and it is what stops a bare "Retained" badge being wrong and unarguable. */
+  'control-squad.js': 7,
   'control-coaches.js': 4,
   'control-photos.js': 4,
   /* Takes a player's picture straight from the gallery: the club has already

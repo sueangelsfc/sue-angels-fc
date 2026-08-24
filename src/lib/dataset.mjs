@@ -7,7 +7,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { POSITION_GROUPS, positionName } from './positions.mjs';
-import { readStatusRecord, statusIn, statusLabelIn, isPlaying } from './squad-status.mjs';
+import { readStatusRecord, statusIn, statusLabelIn, isPlaying, joinedAfter } from './squad-status.mjs';
 import { houseRecord } from './prose.mjs';
 import { normaliseMatch, normaliseTable, playerStats, slugify, isUs, seasonOf, toISO, isLeague, isCup,
   isCompetitive, isFriendly, figuresSeason, tableSeasonOf,
@@ -659,15 +659,25 @@ export function buildDataset() {
   const currentIdx = seasonList.indexOf(ps.CURRENT_SEASON);
   const nextSeason = (currentIdx > -1 && seasonList[currentIdx + 1])
     || (ps.CURRENT_SEASON === latestSeason ? nextLabel(latestSeason) : latestSeason);
+  const seasonsAll = ps.ALL_SEASONS || [];
   const statusOpts = {
-    seasons: ps.ALL_SEASONS || [],
+    seasons: seasonsAll,
     latestSeason,
-    wasHere: (num, season) => (season === latestSeason
-      /* Nothing has been played yet, so absence of evidence is not evidence
-         of absence: a squad member belongs to the season about to start. */
-      ? !(appearedIn[season] && appearedIn[season].size)
-        || appearedIn[season].has(String(num))
-      : Boolean(appearedIn[season] && appearedIn[season].has(String(num)))),
+    wasHere: (num, season) => {
+      /* THE SIGNING DATE WINS OVER THE SHIRT. A number on a team sheet is an
+         inference about identity; a signing date is the club stating a fact
+         about a person. Number 3 was worn by somebody else in October 2025,
+         so reading that sheet as evidence made Leon Burnett's first season
+         look like his second. Where no date is recorded the evidence still
+         decides, so nothing already saved needs migrating. */
+      if (joinedAfter(statusRecord, num, season, seasonsAll, seasonOf)) return false;
+      return season === latestSeason
+        /* Nothing has been played yet, so absence of evidence is not evidence
+           of absence: a squad member belongs to the season about to start. */
+        ? !(appearedIn[season] && appearedIn[season].size)
+          || appearedIn[season].has(String(num))
+        : Boolean(appearedIn[season] && appearedIn[season].has(String(num)));
+    },
   };
 
   /* ---- Coaches ----
@@ -1086,6 +1096,20 @@ export function buildDataset() {
        page asking "what was he in 25/26" gets an answer about 25/26 rather
        than about today. */
     statusRecord,
+    /* WHICH SEASONS A SHIRT NUMBER IS NAMED IN, from the team sheets. The
+       website already leans on this to tell a first season from a second; the
+       panel could not see it, so a player it labelled "Retained" carried no
+       reason with it and there was no way to tell a genuine second season
+       from a shirt number that changed hands. One array per number, which is
+       small enough to seed. */
+    namedIn: (() => {
+      const by = {};
+      for (const season of Object.keys(appearedIn)) {
+        for (const num of appearedIn[season] || []) (by[num] = by[num] || []).push(season);
+      }
+      for (const num of Object.keys(by)) by[num].sort();
+      return by;
+    })(),
     statusIn: (num, season) => statusIn(statusRecord, num, season, statusOpts),
     statusLabelIn: (num, season) => statusLabelIn(statusRecord, num, season, statusOpts),
     isPlayingStatus: isPlaying,

@@ -162,6 +162,51 @@ export function statusDetail(record, num, season) {
   return (all[String(num)] && all[String(num)][season]) || {};
 }
 
+/* ==========================================================================
+   THE DAY SOMEBODY SIGNED BEATS A SHIRT NUMBER
+
+   Appearances are attributed by shirt number, because a Sunday-league team
+   sheet is a list of numbers. Numbers get reused. Leon Burnett is number 3
+   and signed in the summer of 2026; somebody else wore 3 against Brockwell
+   Violets in October 2025. The site read that team sheet as evidence Leon was
+   at the club in 25/26, so his first season looked like his second and he was
+   left out of the first-appearance list on the page announcing him.
+
+   No derivation can recover this. Which of two men wore a number is a fact
+   only the club holds, and the record already has the field for it: `from`,
+   the day somebody signed, which the panel asks for. It simply was not
+   allowed to win. It should always win, because the two are not the same kind
+   of evidence: a signing date is the club stating a fact about a person, and
+   a number on a team sheet is an inference about identity from a shirt.
+
+   So a season that ended before a player signed is a season he was not here
+   for, whatever a team sheet from it says. Where nothing is recorded the
+   evidence still decides, exactly as before, so nothing already saved has to
+   be migrated and clubs that never fill this in lose nothing.
+   ========================================================================== */
+export function signedOn(record, num) {
+  const all = (record && record.__detail) || {};
+  const bySeason = all[String(num)] || {};
+  let first = '';
+  for (const entry of Object.values(bySeason)) {
+    const d = entry && entry.from;
+    if (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}/.test(d) && (!first || d < first)) first = d.slice(0, 10);
+  }
+  return first || null;
+}
+
+/* True when `season` finished before the player joined. `seasonOf` is passed
+   in rather than imported so this module keeps having no dependencies, and so
+   the suite runs the shipped rule instead of a copy of it. */
+export function joinedAfter(record, num, season, seasons, seasonOf) {
+  const from = signedOn(record, num);
+  if (!from) return false;
+  const joined = seasonOf(from);
+  const i = seasons.indexOf(season);
+  const j = seasons.indexOf(joined);
+  return i >= 0 && j >= 0 && i < j;
+}
+
 const collapse = (key) => (RETIRED_KEYS.has(key) ? 'active' : key);
 
 /* WHAT SOMEBODY WAS IN A GIVEN SEASON.

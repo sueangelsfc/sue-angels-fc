@@ -270,3 +270,18 @@
   color: var(--text-subtle);
   font-size: var(--step--2);
 }
+
+/* The reason under a derived answer, and the one case where the reason is
+   the weak kind of evidence. A badge on its own reads as settled; "Retained,
+   because no. 3 is named in 25/26" invites the one correction only the club
+   can make. */
+.cp-flag {
+  display: block;
+  margin-block-start: var(--space-1);
+  padding: var(--space-2);
+  border-inline-start: 3px solid var(--warning);
+  background: color-mix(in oklab, var(--warning) 10%, transparent);
+  color: var(--text);
+  font-size: var(--step--2);
+  line-height: 1.4;
+}

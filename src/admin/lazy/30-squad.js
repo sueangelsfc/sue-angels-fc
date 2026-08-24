@@ -155,6 +155,85 @@
     return false;
   }
 
+  /* ==========================================================================
+     WHY THE SITE SAYS WHAT IT SAYS, AND THE ONE THING IT CANNOT KNOW
+
+     The Worked out column was a bare badge. "Retained" with nothing beside it
+     is unarguable-looking and was wrong for Leon Burnett, who signed in the
+     summer of 2026: number 3 is named in a team sheet from October 2025,
+     because somebody else wore 3 then. The site read that as evidence he was
+     here in 25/26, so his first season looked like his second and he was left
+     out of the first-appearance list on the page announcing him.
+
+     Nothing can derive which of two men wore a number. So the column says
+     what it concluded, what it concluded it FROM, and where the evidence is
+     the weak kind it offers the one field that settles it: the day he signed.
+     A signing date is the club stating a fact about a person. A number on a
+     team sheet is a guess about identity from a shirt. The first wins.
+     ========================================================================== */
+  function namedSeasons(num) {
+    return ((SEED.namedIn || {})[String(num)] || []).slice();
+  }
+
+  /* The day the club says somebody signed, whichever season it was recorded
+     against, earliest first. */
+  function signedOn(map, num) {
+    var rec = map[String(num)];
+    if (!rec || typeof rec !== 'object') return '';
+    var best = '';
+    Object.keys(rec).forEach(function (season) {
+      var e = rec[season];
+      var from = e && typeof e === 'object' ? e.from : '';
+      if (/^\d{4}-\d{2}-\d{2}/.test(from || '') && (!best || from < best)) best = from.slice(0, 10);
+    });
+    return best;
+  }
+
+  function seasonOfDate(iso) {
+    var m = /^(\d{4})-(\d{2})/.exec(iso || '');
+    if (!m) return '';
+    var y = Number(m[1]);
+    var start = Number(m[2]) >= 6 ? y : y - 1;
+    return String(start).slice(2) + '/' + String(start + 1).slice(2);
+  }
+
+  /* Returns { why, conflict } - the sentence under the badge, and the seasons
+     the evidence claims but a recorded signing date rules out. */
+  function tenureWhy(map, num, season, key) {
+    var named = namedSeasons(num);
+    var from = signedOn(map, num);
+    var joined = from ? seasonOfDate(from) : '';
+    var before = named.filter(function (s) {
+      return SEASONS.indexOf(s) < SEASONS.indexOf(season);
+    });
+    var ruledOut = joined ? before.filter(function (s) {
+      return SEASONS.indexOf(s) < SEASONS.indexOf(joined);
+    }) : [];
+
+    if (from) {
+      return {
+        why: 'Signed ' + U.fmtDate(from) + '.' + (ruledOut.length
+          ? ' No. ' + num + ' is named in ' + list(ruledOut) + ', before that, so '
+            + (ruledOut.length === 1 ? 'it is' : 'they are') + ' not counted as theirs.'
+          : ''),
+        conflict: false,
+      };
+    }
+    if (key === 'new') return { why: 'No. ' + num + ' is named in no team sheet before ' + season + '.', conflict: false };
+    if (!before.length) return { why: 'Nothing earlier on the record.', conflict: false };
+    return {
+      why: 'No. ' + num + ' is named in ' + list(before) + '.',
+      /* The weak kind of evidence: a number, not a person. Only worth raising
+         where it is the ONLY thing making this a second season. */
+      conflict: true,
+    };
+  }
+
+  function list(xs) {
+    if (xs.length === 1) return xs[0];
+    return xs.slice(0, -1).join(', ') + ' and ' + xs[xs.length - 1];
+  }
+
   function tenureIn(map, num, season) {
     var idx = SEASONS.indexOf(season);
     if (idx < 0) return null;
@@ -297,6 +376,7 @@
              out about him from the seasons around it. */
           status: statusIn(status, p.num, editSeason),
           tenure: tenureIn(status, p.num, editSeason),
+          why: tenureWhy(status, p.num, editSeason, tenureIn(status, p.num, editSeason)),
           /* Whatever was recorded beside the status for this season, so the
              fields open with what is already there rather than blank. */
           detail: statusDetail(status, p.num, editSeason),
@@ -364,9 +444,19 @@
                   '<div class="cp-when" data-when>' + detailFields(p.status, p.detail || {}) + '</div>' +
                   '</td>' +
                 /* The site's own answer, shown but never editable, so it is
-                   obvious it is derived rather than something to maintain. */
+                   obvious it is derived rather than something to maintain -
+                   AND the reason for it, because a bare badge is unarguable
+                   looking and was wrong. Where the only thing making this a
+                   second season is a shirt number from an earlier one, the
+                   cell says so and points at the field that settles it. */
                 '<td>' + (p.tenure
-                  ? '<span class="badge badge--neutral">' + esc(LABEL[p.tenure]) + '</span>'
+                  ? '<span class="badge badge--neutral">' + esc(LABEL[p.tenure]) + '</span>' +
+                    (p.why ? '<small class="cp-hint">' + esc(p.why.why) + '</small>' : '') +
+                    (p.why && p.why.conflict
+                      ? '<small class="cp-flag">Shirt numbers get reused. If that was somebody ' +
+                        'else in this number, fill in <b>The day they signed</b> and this becomes ' +
+                        esc(LABEL.new) + '.</small>'
+                      : '')
                   : '<span class="cp-hint">Nothing to say</span>') + '</td>' +
                 '<td>' + (p.added
                   ? '<button class="btn btn--danger btn--sm" data-del-player>Remove</button> '

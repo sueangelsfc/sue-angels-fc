@@ -562,6 +562,11 @@ const adminSeed = {
      replacement for it, so the team sheet asks for both and everything derived
      from where somebody stood is untouched by it. */
   roles: ROLE_VOCAB,
+  /* WHICH SEASONS EACH SHIRT NUMBER IS NAMED IN, so the Squad screen can say
+     WHY it worked out what it worked out, and can spot the one thing no
+     derivation can: a number that changed hands. Counted from the team sheets
+     in src/lib/dataset.mjs, not kept by anybody. */
+  namedIn: d.namedIn || {},
   /* What a player can BE, and in which season. The panel's dropdown is built
      from `set`; `derived` is the three the site works out for itself (new
      signing, retained, back at the club) and is here so the editor can SHOW

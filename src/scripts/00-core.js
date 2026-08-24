@@ -45,6 +45,10 @@
     }, 4600);
   }
   window.saToast = toast;
+  /* The band counter on the home page writes through this rather than opening
+     a second REST path. One helper, one set of headers, one place a broken
+     insert can be found. */
+  window.saInsert = sbInsert;
 
   /* ---- Theme ----------------------------------------------------------
      There isn't one. The club is black and orange and the site is black and

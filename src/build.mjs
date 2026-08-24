@@ -251,6 +251,10 @@ let adminJs = bundle('admin', adminFiles);
    code baseline but never entered as rows, so the panel can offer to import
    them in one action instead of six hand-typed JSON documents. */
 const isoById = new Map((d.matches || []).map((m) => [m.id, m.iso]));
+/* Filled by the band-weighing render inside `adminSeed.homePage`, and written
+   out below as its own file. See the note there. */
+let previews = {};
+
 const adminSeed = {
   club: CLUB.name,
   division: CLUB.nextDivision,
@@ -415,6 +419,23 @@ const adminSeed = {
        the whole element rather than everything after its class attribute. */
     for (const part of body.split('<section class="sec sec--').slice(1)) {
       bytes[part.slice(0, part.indexOf('"'))] = Buffer.byteLength(part) + 24;
+    }
+
+    /* THE MARKUP WAS ALREADY HERE AND WAS BEING THROWN AWAY.
+       This render exists to weigh every band, which means every band has just
+       been drawn in full. Fifty-three of them are switched off with real data
+       behind them, and the only way to see one was to switch it on, publish,
+       and look at the live site. Keeping what has already been rendered turns
+       that into a click.
+
+       Its own file rather than part of the seed: it is a quarter of a megabyte
+       and it is wanted by one button on one screen. `control-seed.js` sits on
+       the critical path for all twenty-one panels and has been down this road
+       once already, when the home screen's band list was in it. */
+    previews = {};
+    for (const part of body.split('<section class="sec sec--').slice(1)) {
+      previews[part.slice(0, part.indexOf('"'))] =
+        '<section class="sec sec--' + part.slice(0, part.lastIndexOf('</section>') + 10);
     }
     return {
       bytes,
@@ -589,6 +610,11 @@ for (const k of HOME_SEED_KEYS) {
   delete adminSeed[k];
 }
 const homeSeedJs = `window.SA_SEED=Object.assign(window.SA_SEED||{},${JSON.stringify(homeSeed)});\n`;
+
+/* One file, fetched by the Home page screen the first time somebody presses
+   Preview and by nobody else. Not in the sitemap and not linked from any page,
+   because it is not a page: it is the panel's copy of what each band draws. */
+write('home-previews.json', JSON.stringify(previews));
 
 const adminSeedJs = `window.SA_SEED=${JSON.stringify(adminSeed)};\n`;
 const seedV = crypto.createHash('sha256').update(adminSeedJs).digest('hex').slice(0, 8);

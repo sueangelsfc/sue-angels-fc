@@ -131,7 +131,12 @@
   }
 
   M.home = function (host) {
-    return CP.readAll('player_photos').then(function (rows) {
+    /* Both together: the layout is what the screen edits and the reach
+       figures are what it prints beside it, and one waiting on the other
+       would put a spinner on the screen for a number nobody asked for. */
+    return Promise.all([CP.readAll('player_photos'), loadReach()]).then(function (all) {
+      var rows = all[0];
+      reach = all[1];
       var row = rows.filter(function (r) { return r.key === 'home:layout'; })[0];
       var saved = (row && row.data) || null;
 
@@ -206,6 +211,7 @@
                  nothing, and "0KB" beside it would read as a measurement
                  rather than an absence. */
               : '<span class="hband__kb">' + esc(kb(weightOf(key))) + ' of the page</span>') +
+            reachLine(key) +
             chooserHtml(key) +
           '</span>' +
           '<span class="hband__b">' +
@@ -217,6 +223,8 @@
             '<button class="btn btn--ghost btn--sm" type="button" data-down ' +
               (i === state.order.length - 1 ? 'disabled' : '') +
               ' aria-label="Move ' + esc(b.name) + ' down">↓</button>') +
+            (empty ? '' : '<button class="btn btn--quiet btn--sm" type="button" data-preview>'
+              + 'Preview</button>') +
             '<button class="btn btn--quiet btn--sm" type="button" data-toggle>' +
               (off ? 'Show' : 'Hide') + '</button>' +
           '</span>' +
@@ -297,9 +305,15 @@
       }
 
       function paint() {
+        /* The notice repaints with everything else. Staged three season bands
+           and left it saying the page has none would be the screen arguing
+           with itself. */
+        var gap = $('[data-hl-gap]', host);
+        if (gap) gap.innerHTML = seasonGap(state);
         $('[data-hl-areas]', host).innerHTML = areasHtml();
         $('[data-hl-list]', host).innerHTML = listHtml();
         $('[data-hl-status]', host).innerHTML = statusHtml();
+        $('[data-hl-reach]', host).innerHTML = reachNote();
         var warn = $('[data-hl-unsaved]', host);
         if (warn) warn.hidden = !dirty;
         $('[data-hl-save]', host).disabled = !dirty;
@@ -317,8 +331,10 @@
           '<p class="cp-unsaved" data-hl-unsaved hidden>Not saved yet. <b>Publish to site</b> '
             + 'rebuilds the website from the database, and these changes are not in it until '
             + 'you press <b>Save the order</b>.</p>' +
+          '<div data-hl-gap>' + seasonGap(state) + '</div>' +
           '<div data-hl-areas></div>' +
           '<div data-hl-status></div>' +
+          '<div data-hl-reach></div>' +
           '<div data-hl-list></div>' +
           '<p class="cp-note" style="margin-top:var(--space-4)">Most bands work out their own '
             + 'contents and cannot be pointed anywhere: the results band is always the last seven '
@@ -416,9 +432,41 @@
           return;
         }
 
+        if (btn.hasAttribute('data-season-add')) {
+          SEASON_PICKS.forEach(function (k) {
+            var at = state.hidden.indexOf(k);
+            if (at >= 0) state.hidden.splice(at, 1);
+            if (state.order.indexOf(k) < 0) state.order.push(k);
+          });
+          /* After the next match, which is where somebody looking for the
+             season would expect them, and above everything the club chose for
+             its own reasons. */
+          var anchor = state.order.indexOf('nextup');
+          SEASON_PICKS.slice().reverse().forEach(function (k) {
+            var from = state.order.indexOf(k);
+            if (from < 0 || anchor < 0) return;
+            state.order.splice(from, 1);
+            state.order.splice(state.order.indexOf('nextup') + 1, 0, k);
+          });
+          dirty = true;
+          paint();
+          toast('Three bands staged. Press Save the order to keep them.');
+          return;
+        }
+
         var li = btn.closest('[data-band]');
         if (!li) return;
         var key = li.getAttribute('data-band');
+
+        /* Before the index check, because looking at a band is not editing it
+           and a band the club has never had in its order can still be looked
+           at. That is the whole point of the button. */
+        if (btn.hasAttribute('data-preview')) {
+          var meta = BANDS.filter(function (b) { return b.key === key; })[0];
+          showPreview(key, (meta && meta.name) || key);
+          return;
+        }
+
         var i = state.order.indexOf(key);
         if (i < 0) return;
 
@@ -447,4 +495,181 @@
   /* Exposed so the suite can run this copy of the rule against the
      generator's over the same records and prove they answer alike. */
   window.CPH = { resolve: resolve, weighUp: weighUp, weightOf: weightOf };
+
+  /* ==========================================================================
+     NOTHING ON THE PAGE ABOUT HOW THE SEASON IS GOING
+
+     Asked of the catalogue rather than of anybody's taste. "On the pitch" is
+     one of the seven areas and it holds ten bands, all of them about the
+     football being played: the results, the run, the table, home and away,
+     how the wins came. The club's front page draws NONE of them.
+
+     What it draws instead is four bands from Happening now, both of which
+     lead the page and are about the season COMING, plus last season's awards
+     and records. So the page can be read end to end without learning whether
+     the club is winning.
+
+     This does not switch anything on. The rule everywhere else here is that a
+     band arriving switched on would rearrange a front page the club has
+     already arranged, and a suggestion that helped itself to the order would
+     be the same thing wearing a better manner. It stages three and the club
+     presses Save, or ignores it. */
+  /* ==========================================================================
+     WHAT PEOPLE ACTUALLY REACH
+
+     The order of the front page was a judgement made once with nothing to
+     check it against. `band_views` records which bands a visit reached and
+     which it clicked out of, with no identifier of any kind attached, and
+     this turns those rows into a percentage beside each band.
+
+     IT DOES NOT REORDER ANYTHING. The rule everywhere on this screen is that
+     the club's arrangement is the club's, and a panel that sorted the page by
+     its own numbers would be breaking that rule while claiming to help. The
+     figures sit beside the arrows the club already has.
+
+     The table does not exist until migrations/004 has been run. That is not
+     an error and it is not hidden either: a feature nobody is told about is a
+     feature nobody uses, so the screen says the one thing that turns it on. */
+  var reach = null;
+  function loadReach() {
+    if (!CP.state.isAdmin || !CP.rest) return Promise.resolve(null);
+    return CP.rest('GET', 'band_views?select=seen,clicked&limit=5000')
+      .then(function (rows) {
+        if (!rows || !rows.length) return { visits: 0, seen: {}, clicked: {} };
+        var seen = {};
+        var clicked = {};
+        rows.forEach(function (r) {
+          (r.seen || []).forEach(function (k) { seen[k] = (seen[k] || 0) + 1; });
+          (r.clicked || []).forEach(function (k) { clicked[k] = (clicked[k] || 0) + 1; });
+        });
+        return { visits: rows.length, seen: seen, clicked: clicked };
+      })
+      .catch(function () { return null; });   /* no table, no feature, no noise */
+  }
+
+  function reachLine(key) {
+    if (!reach || !reach.visits) return '';
+    var pct = Math.round(((reach.seen[key] || 0) / reach.visits) * 100);
+    var clicks = reach.clicked[key] || 0;
+    return '<span class="hband__kb">Reached by ' + pct + '% of visits'
+      + (clicks ? ', clicked from ' + clicks + ' times' : '') + '</span>';
+  }
+
+  function reachNote() {
+    if (reach === null) {
+      return '<p class="cp-note">No band has a reach figure yet. They arrive once '
+        + '<b>migrations/004_band_views.sql</b> has been run on the database, after which the '
+        + 'website starts recording which bands people scroll to. Nothing identifying is stored: '
+        + 'one row is one visit and holds two lists of band names.</p>';
+    }
+    if (!reach.visits) {
+      return '<p class="cp-note">Reach is switched on and no visits have been recorded yet. '
+        + 'The first figures appear after the next publish.</p>';
+    }
+    return '<p class="cp-note">Reach is measured across <b>' + reach.visits + '</b> visit'
+      + (reach.visits === 1 ? '' : 's') + '. A band is counted as reached when half of it has '
+      + 'been on screen, so a band scrolled past in a fling does not count. The order stays '
+      + 'yours: these are figures beside the arrows, not a sort.</p>';
+  }
+
+  var SEASON_PICKS = ['results', 'streak', 'scorers'];
+  function seasonGap(state) {
+    var onPitch = state.order.filter(function (k) {
+      var b = BANDS.filter(function (x) { return x.key === k; })[0];
+      return b && b.area === 'pitch' && state.hidden.indexOf(k) < 0;
+    });
+    if (onPitch.length) return '';
+    var can = SEASON_PICKS.filter(function (k) {
+      var b = BANDS.filter(function (x) { return x.key === k; })[0];
+      return b && !b.empty;
+    });
+    if (!can.length) return '';
+    return '<div class="cp-note cp-note--warn" style="margin-bottom:var(--space-4)">'
+      + '<p><b>Nothing on the front page says how the season is going.</b> '
+      + 'On the pitch holds ten bands about the football being played and the page draws none '
+      + 'of them, so it can be read end to end without learning whether the club is winning. '
+      + 'Preview any of them from the list below.</p>'
+      + '<p>The three worth starting with are Recent results, The run and Who scores the goals. '
+      + 'The table is a fourth, once a League Eight one has been typed in.</p>'
+      + '<button class="btn btn--primary btn--sm" type="button" data-season-add>'
+      + 'Add those three</button> '
+      + '<span class="cp-where">Adds them after the next match and leaves them for you to move. '
+      + 'Nothing is written until you press Save the order.</span></div>';
+  }
+
+  /* ==========================================================================
+     SEE A BAND BEFORE SWITCHING IT ON
+
+     Fifty-three of the seventy are off with real data behind them, and the
+     only way to see one was to switch it on, publish, and look at the live
+     site. Three steps and a deploy to answer "what does this look like".
+
+     Nothing is rendered here. The build already draws every band in full,
+     because that is how it weighs them, and it now keeps what it drew instead
+     of throwing it away. This fetches that file once, on the first press, and
+     nobody who never presses Preview ever downloads it.
+
+     The stylesheet links are read off the home page rather than written down,
+     because the route sheet is named after a band and would go stale the day
+     that band was renamed. One fetch, always right. */
+  var previewCache = null;
+  function loadPreviews() {
+    if (previewCache) return Promise.resolve(previewCache);
+    return Promise.all([
+      fetch('/home-previews.json').then(function (r) {
+        if (!r.ok) throw new Error('preview file missing (' + r.status + ')');
+        return r.json();
+      }),
+      fetch('/').then(function (r) { return r.ok ? r.text() : ''; }).catch(function () { return ''; }),
+    ]).then(function (r) {
+      var css = [];
+      (r[1].match(/<link[^>]+rel="stylesheet"[^>]*>/g) || []).forEach(function (tag) {
+        var href = (tag.match(/href="([^"]+)"/) || [])[1];
+        if (href) css.push(href);
+      });
+      previewCache = { bands: r[0], css: css.length ? css : ['/home.css'] };
+      return previewCache;
+    });
+  }
+
+  function showPreview(key, name) {
+    return loadPreviews().then(function (p) {
+      var markup = p.bands[key];
+      if (!markup) { toast('No preview for this band. Publish once and it appears.', true); return; }
+      var back = document.createElement('div');
+      back.className = 'modal-backdrop';
+      back.setAttribute('role', 'dialog');
+      back.setAttribute('aria-modal', 'true');
+      back.setAttribute('aria-label', name + ' preview');
+      back.innerHTML =
+        '<div class="modal glass glass--lg" style="width:min(96vw,1180px);height:min(92vh,900px);' +
+          'display:flex;flex-direction:column">' +
+          '<div class="modal__head"><h2 class="mform__title">' + esc(name) + '</h2>' +
+            '<p class="cp-head__sub">Exactly what the page draws. It is not switched on by ' +
+            'looking at it.</p></div>' +
+          '<iframe title="' + esc(name) + ' as the page draws it" style="flex:1;width:100%;' +
+            'border:0;border-radius:var(--radius-sm);background:#000"></iframe>' +
+          '<div class="modal__foot"><button class="btn btn--ghost" data-close>Close</button></div>' +
+        '</div>';
+      document.body.appendChild(back);
+      /* srcdoc rather than a URL: there is no page to point at, and a document
+         built here resolves /home.css against this origin so the band is
+         styled exactly as the site styles it. */
+      back.querySelector('iframe').srcdoc =
+        '<!doctype html><html lang="en-GB"><head><base href="/">' +
+        p.css.map(function (h) { return '<link rel="stylesheet" href="' + h + '">'; }).join('') +
+        '</head><body class="is-home"><div class="pageaura" aria-hidden="true"></div>' +
+        '<main id="main">' + markup + '</main></body></html>';
+
+      function close() { back.remove(); document.removeEventListener('keydown', esc2); }
+      function esc2(e) { if (e.key === 'Escape') close(); }
+      back.addEventListener('click', function (e) {
+        if (e.target === back || e.target.matches('[data-close]')) close();
+      });
+      document.addEventListener('keydown', esc2);
+      back.querySelector('[data-close]').focus();
+    }).catch(function (err) {
+      toast('Could not open the preview: ' + (err && err.message ? err.message : 'unknown'), true);
+    });
+  }
 })();

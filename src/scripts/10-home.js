@@ -2090,4 +2090,98 @@
     var on = bar.querySelector('[data-view].is-on') || bar.querySelector('[data-view]');
     if (on) { show(on.getAttribute('data-view')); heroFollows(on); announce(on); }
   });
+
+  /* ==========================================================================
+     WHICH BANDS PEOPLE ACTUALLY REACH
+
+     The club can put the seventy bands in any order it likes and had nothing
+     to check the order against: it was a judgement made once in August with
+     no way of knowing whether anybody scrolled past the third one. This
+     records which bands were reached and which were clicked out of, and the
+     Home page screen sorts by it.
+
+     NO IDENTIFIER OF ANY KIND. One row is one page view and holds two arrays
+     of band names. No id, no session, no cookie, no user agent, no address,
+     no time finer than the day the database stamps on it. Nothing here can be
+     tied to a person, which is why it is not behind the consent gate that
+     Google Analytics and the Meta pixel are behind. If anything identifying
+     is ever added, it belongs behind that gate.
+
+     It is also entirely optional. `band_views` does not exist until somebody
+     runs migrations/004, the insert fails with a 404, and the failure is
+     swallowed: a counter is not worth a console error on a supporter's phone,
+     and the site behaves identically with the table and without it. */
+  (function () {
+    if (!window.saInsert || !document.body.classList.contains('is-home')) return;
+
+    var seen = {};
+    var clicked = {};
+    var bands = $$('main .sec[class*="sec--"]');
+    if (!bands.length) return;
+
+    function keyOf(el) {
+      var m = /sec--([a-z0-9-]+)/.exec(el.className);
+      return m ? m[1] : '';
+    }
+
+    if ('IntersectionObserver' in window) {
+      /* Reached, not merely rendered: half of it has to have been on screen.
+         A band that scrolled past in a fling is not a band somebody read, and
+         counting it would make every band look equally popular, which is the
+         one answer that would be no use at all. */
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          var k = keyOf(en.target);
+          if (k) seen[k] = 1;
+          io.unobserve(en.target);
+        });
+      }, { threshold: 0.5 });
+      bands.forEach(function (el) { io.observe(el); });
+    } else {
+      /* No observer, no guessing. An empty list is a true answer. */
+      return;
+    }
+
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('main .sec a[href]');
+      if (!a) return;
+      var k = keyOf(a.closest('.sec'));
+      if (k) clicked[k] = 1;
+    });
+
+    /* Sent once, when the page is being left, so one visit is one row however
+       far they scrolled. `visibilitychange` rather than `unload`, which does
+       not fire on a phone: a page backgrounded on iOS is very often a page
+       that is never coming back. */
+    var sent = false;
+    var OFF = 'sa-bandviews-off';
+    /* ONE FAILED REQUEST PER DEVICE, NOT ONE PER VISIT.
+       Until migrations/004 has been run the insert is a 404, and a 404 the
+       browser logs in red on every supporter's phone for a counter nobody
+       asked for is a bad trade. The first failure is remembered and this
+       stops trying. A boolean and nothing else: it identifies no one, and
+       clearing site data turns it back on, which is the correct behaviour for
+       a flag that only exists to avoid a wasted request. */
+    function send() {
+      if (sent) return;
+      try { if (localStorage.getItem(OFF)) return; } catch (e) { return; }
+      var list = Object.keys(seen);
+      if (!list.length) return;
+      sent = true;
+      window.saInsert('band_views', { seen: list, clicked: Object.keys(clicked) })
+        .catch(function (err) {
+          /* 404 is "the club has not switched this on", which is a settled
+             answer rather than a failure to retry. Anything else may be a
+             blip and is left alone. */
+          if (err && /-404$/.test(err.message || '')) {
+            try { localStorage.setItem(OFF, '1'); } catch (e2) { /* nothing to do */ }
+          }
+        });
+    }
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') send();
+    });
+    window.addEventListener('pagehide', send);
+  })();
 })();

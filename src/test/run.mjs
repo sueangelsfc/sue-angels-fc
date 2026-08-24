@@ -945,7 +945,7 @@ const BUDGET = {
      budget that fails whenever the club asks for more parts is measuring the
      request. So the CODE is budgeted separately, just below, and this number
      covers code plus data and exists only to catch a runaway. */
-  'control-home.js': 11,
+  'control-home.js': 12,
   /* AND THE SHARED SEED GETS A CEILING, having never had one. It is the first
      thing control.html loads and it is not deferred, so it is on the critical
      path for every screen - which is exactly the position that had gone
@@ -978,7 +978,26 @@ for (const [f, kb] of Object.entries(BUDGET)) {
    it is the one CLAUDE.md already names as wanting a split, and this is the
    line that will say so when it grows again. */
 for (const [f, kb] of Object.entries({
-  'src/admin/lazy/95-home.js': 8,
+  /* 8 -> 11, for three features, and the raise is the honest half of adding
+     them rather than a way of not noticing.
+
+     PREVIEW opens a band exactly as the page draws it without switching it
+     on. Fifty-three of the seventy are off with real data behind them and the
+     only way to see one was to switch it on, publish and look at the live
+     site, so the cost of asking "what is this" was a deploy. The band markup
+     itself is not in here: the build already draws every band to weigh it and
+     now keeps what it drew, in its own file, fetched on the first press by
+     whoever presses it.
+
+     THE SEASON NOTICE says when the front page draws nothing from On the
+     pitch, which is ten bands and the club currently publishes none of them.
+     It stages three and stops; the club presses Save or ignores it.
+
+     REACH prints how many visits actually got to each band, from band_views,
+     which stores no identifier of any kind. It does not sort anything: the
+     club's arrangement is the club's, and a panel that reordered the page by
+     its own numbers would be breaking that rule while claiming to help. */
+  'src/admin/lazy/95-home.js': 11,
   'src/admin/lazy/10-match.js': 34,
 })) {
   const raw = fs.readFileSync(path.join(ROOT, f));
@@ -1552,6 +1571,82 @@ for (const [f, kb] of Object.entries({
     check('a fixture next month does not sort before today',
       !(fixtureIso({ data: { date: '05 Sep 2026' } }) < '2026-08-24'),
       'the old rule reported every day 1 to 19 as already played');
+  }
+
+  /* ---- THE BAND PREVIEW FILE ----------------------------------------------
+     The Home screen's Preview button fetches this. If it stops being written
+     the button fails on a screen the club uses alone, so the file, its
+     coverage and the shape of what is in it are all asserted. */
+  {
+    const pv = JSON.parse(fs.readFileSync(path.join(ROOT, 'home-previews.json'), 'utf8'));
+    const keys = Object.keys(pv);
+    check('the band preview file ships', keys.length > 50, `${keys.length} bands`);
+    const malformed = keys.filter((k) =>
+      !pv[k].startsWith(`<section class="sec sec--${k}`) || !pv[k].trimEnd().endsWith('</section>'));
+    check('every preview is one whole section', malformed.length === 0,
+      malformed.slice(0, 3).join(', '));
+    /* The panel puts a Preview button on every band it does not call empty,
+       so a band the panel offers and the file does not hold is a dead press. */
+    const offered = fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8');
+    const seedBands = [...offered.matchAll(/"key":"([a-z0-9-]+)","area"/g)].map((m) => m[1]);
+    const missing = seedBands.filter((k) => !pv[k]
+      && !new RegExp(`"key":"${k}"[^}]*"empty":true`).test(offered));
+    check('every band the panel offers has a preview', missing.length === 0,
+      missing.slice(0, 4).join(', '));
+  }
+
+  /* ---- THE BAND COUNTER STORES NOTHING THAT IDENTIFIES ANYBODY ------------
+
+     migrations/004 says so in a comment and this screen says so to the club,
+     which makes it a claim rather than a note. One row is one visit and holds
+     two arrays of band names, and that is the whole of it.
+
+     The check is on what the insert BUILDS, not on the table: a column added
+     to the payload here would be shipped to every visitor's browser long
+     before anybody looked at the database. Asserted against the shipped
+     bundle, where the comments explaining the intention are gone and only the
+     code that runs is left. */
+  {
+    const homeSrc = fs.readFileSync(path.join(ROOT, 'src', 'scripts', '10-home.js'), 'utf8');
+    /* COMMENTS STRIPPED FIRST. The note above says this is asserted against
+       code rather than prose, and the first version was not: the block
+       explaining that nothing is stored contains the words "on screen" and
+       "cookie", so the check failed on its own explanation. A rule about what
+       the code touches has to read the code. */
+    const mark = homeSrc.indexOf('WHICH BANDS PEOPLE ACTUALLY REACH');
+    /* From AFTER the block that names it, not from inside it: slicing at the
+       marker leaves an unterminated comment whose opening the stripper cannot
+       see, so the whole explanation survived as if it were code. */
+    const tracker = homeSrc.slice(homeSrc.indexOf('*/', mark) + 2)
+      .replace(/\/\*[\s\S]*?\*\//g, ' ')
+      .replace(/(^|[^:])\/\/.*$/gm, '$1');
+    check('there is a band counter to check', tracker.length > 200);
+
+    const payload = /saInsert\('band_views',\s*\{([^}]*)\}/.exec(tracker);
+    check('the band counter builds one payload', !!payload);
+    if (payload) {
+      const fields = [...payload[1].matchAll(/(\w+):/g)].map((m) => m[1]).sort();
+      check('the payload is seen and clicked and nothing else',
+        fields.join(',') === 'clicked,seen', fields.join(','));
+    }
+
+    /* Nothing in the counter may reach for anything that identifies a person
+       or a device. Named individually so a failure says which one appeared. */
+    for (const forbidden of ['userAgent', 'referrer', 'screen.', 'language',
+      'crypto.randomUUID', 'Math.random', 'cookie', 'sessionStorage']) {
+      check(`the band counter does not touch ${forbidden}`, !tracker.includes(forbidden));
+    }
+    /* localStorage IS used, for exactly one thing: remembering that the table
+       does not exist so a 404 is not repeated on every visit. A boolean, and
+       it must stay a boolean. */
+    const stores = [...tracker.matchAll(/localStorage\.setItem\(([^)]*)\)/g)].map((m) => m[1]);
+    check('the counter writes one flag and no data', stores.length === 1
+      && /^OFF, '1'$/.test(stores[0].trim()), stores.join(' | '));
+
+    check('the counter only runs on the home page',
+      /classList\.contains\('is-home'\)/.test(tracker));
+    check('a band counts as reached only when half of it has been seen',
+      /threshold: 0\.5/.test(tracker));
   }
 
   /* ---- EVERY CROSS-PANEL LINK POINTS AT A REAL PANEL ----------------------

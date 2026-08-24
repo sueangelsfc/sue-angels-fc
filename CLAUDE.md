@@ -155,6 +155,20 @@ Modules: dashboard, fixtures, results and reports, squad and staff, player photo
 
 The panel's stylesheet was `src/styles/70-control.css`, inside `sa.css`, so every visitor to the website downloaded the whole panel's styling to render a page that cannot show a pixel of it. It is `control.css` now, linked by `control.html` alone. `sa.css` 24 → 19KB gzipped.
 
+### What was typed survives a failed save
+The panel knew when a screen was dirty and warned before the tab closed, and that warning was live on **exactly one screen**: `95-home.js` is the only module that ever calls `U.dirty`. Every other editor - the match form above all, five tabs and forty fields filled in on a phone at the side of a pitch - could lose the lot to a dropped connection, an expired token or a stray refresh, in silence. `render()` says so out loud: "whatever was unsaved is gone".
+
+A warning is not a save. The shell keeps a **draft of every editor as it is typed**, in `localStorage`, and offers it back on the way in. Held generically in the shell for the same reason `setDirty` is: thirteen modules that each have to remember is thirteen chances to forget, and the one that forgets is the one that loses a match report. A delegated listener sees every field in every editor, including screens not written yet.
+
+- It stores **field values, not the record**, so it needs to know nothing about what a match is.
+- It will only offer a draft back to a form of the **same shape** - the signature is the ordered field identities - because a form changed since would have the values poured into whatever fields lined up.
+- **Offered, never applied.** Restoring silently would overwrite the database with something the club may have abandoned, before they had seen either.
+- **Passwords and file inputs are never captured.** One cannot be stored, the other cannot be restored from a string.
+- A draft **expires after seven days**, and a full or blocked `localStorage` cannot take the panel down: a safety net that throws is worse than none.
+- It clears when `CP.upsert` **actually writes** - the store has already counted rows through `verifyWrote()`, so it is not a 204 being read as success.
+
+`control.js`'s budget went 11 → 12KB for this, deliberately and once. The obvious saving is to move the dashboard (12KB of source) into `lazy/`, and that is **not** the answer: everyone lands on the dashboard, so making it lazy saves nobody a download and turns one request into two before the first screen draws. It is in the shell for the same reason the draft code is.
+
 ### How the editors work
 - Authorisation is the **database's** answer, surfaced in the UI. A non-registered account is shown as read-only rather than hitting a policy error.
 - **Every editor is a form.** They used to be raw JSON textareas, defended on the grounds that a lossy form would drop fields the website reads. The premise was right and the conclusion was not: each form starts from the record as it stands, changes only the fields it covers, and writes the rest back untouched, so a JSONB shape it has never heard of survives being edited by it. A **Raw** button is still one click away on every record.

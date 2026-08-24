@@ -509,6 +509,45 @@ for (const f of shipped) {
     check('somebody who never played is left dateless', !l3.detail, l3.detail);
   }
 
+  /* WHAT WAS TYPED SURVIVES A FAILED SAVE. The close-tab warning was live on
+     exactly one screen, because 95-home.js is the only module that ever calls
+     U.dirty - so the match form, five tabs and forty fields filled in on a
+     phone at the side of a pitch, could lose the lot in silence. The shell
+     keeps a draft for every editor generically, and these are the properties
+     that make it safe rather than merely present. */
+  {
+    const shell = fs.readFileSync(path.join(ROOT, 'src', 'admin', '10-app.js'), 'utf8');
+    const start = shell.indexOf("var DRAFTS = 'sa-cp-drafts';");
+    check('the shell keeps drafts at all', start > -1);
+    if (start > -1) {
+      const helpers = shell.slice(start, shell.indexOf('var draftTimer', start));
+
+      /* A password must never reach localStorage, and a file input cannot be
+         restored from a string anyway. */
+      check('drafts never capture a password or a file input',
+        /el\.type !== 'password' && el\.type !== 'file'/.test(helpers));
+      check('the typing listener skips them too',
+        /e\.target\.type === 'password' \|\| e\.target\.type === 'file'/.test(shell));
+
+      /* A draft kept for ever is a liability, not a safety net. */
+      check('a draft expires', /DRAFT_TTL/.test(helpers) && /DRAFT_TTL/.test(helpers));
+
+      /* Restoring into a form that has changed shape would pour the values
+         into whatever fields happened to line up. */
+      check('a draft is refused when the form has changed shape',
+        /now\.sig\.join\(\) !== String\(d\.sig\)/.test(helpers));
+
+      /* localStorage throws when full or blocked; the panel must survive it. */
+      check('a full or blocked localStorage cannot take the panel down',
+        (helpers.match(/try \{/g) || []).length >= 2);
+
+      /* And the draft clears on a real write - the store has already counted
+         rows via verifyWrote, so this is not a 204 being read as success. */
+      check('a successful save clears the draft',
+        /CP\.upsert = function/.test(shell) && /dropDraft\(current\)/.test(shell));
+    }
+  }
+
   /* THE PANEL'S IDEA OF A COVER MATCHES THE SITE'S. The covers panel asked
      whether a record stores a `cover` and printed "None" otherwise. Once the
      build began drawing and committing a card for every match and article,
@@ -1179,7 +1218,20 @@ const BUDGET = {
      already are: this feature ships to 101 pages to run on one. */
   'sa.js': 16,
   'control.css': 5,
-  'control.js': 11,
+  /* 11 -> 12 for draft recovery, deliberately and once. The shell was at
+     10.78KB of 11, and what pushed it over is cross-cutting safety code that
+     CANNOT be lazy: a listener that loads on demand cannot catch typing that
+     already happened, and the whole point is that no module has to remember
+     to cooperate. 0.78KB gzipped, for every editor in the panel keeping what
+     was typed when a save fails.
+
+     The obvious saving is to move the dashboard - 12KB of source sitting in
+     the shell - into lazy/. It is NOT the answer and should not be tried:
+     everyone lands on the dashboard, so making it lazy saves nobody a
+     download and turns one request into two before the first screen draws.
+     It is in the shell for the same reason this is. Written down so it does
+     not get re-argued. */
+    'control.js': 12,
   /* The heaviest, and fairly: the pitch, the position names, five tabs, the
      goal detail (what it was struck with, where from, what the ball was doing,
      who made it and how), and the composer that turns a coach's bullets into a

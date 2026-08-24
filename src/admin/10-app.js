@@ -913,6 +913,36 @@
         if (!M[key]) { body.innerHTML = empty('Not built yet'); return null; }
         return M[key](body);
       })
+      /* OFFERED, NOT APPLIED. Restoring silently would overwrite what the
+         database holds with something the club may have abandoned on purpose,
+         and it would do it before they had seen either. So the draft sits in
+         a bar at the top of the screen saying when it was typed, and nothing
+         moves until somebody chooses. */
+      .then(function () {
+        var d = takeDraft(key, body);
+        if (!d) return;
+        var when = new Date(d.at);
+        var bar = document.createElement('div');
+        bar.className = 'cp-sec panel cp-card cp-note--warn';
+        bar.innerHTML = '<p class="cp-head__title">Unsaved changes from '
+          + esc(when.toLocaleString([], { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }))
+          + '</p><p class="cp-note">These were typed here and never reached the database. '
+          + 'Putting them back fills the screen in again; you still have to press Save.</p>'
+          + '<div class="cp-head__actions"><button class="btn btn--primary btn--sm" data-draft-restore>'
+          + 'Put them back</button> <button class="btn btn--ghost btn--sm" data-draft-discard>Discard</button></div>';
+        body.insertBefore(bar, body.firstChild);
+        bar.addEventListener('click', function (e) {
+          if (e.target.closest('[data-draft-restore]')) {
+            applyDraft(body, d);
+            bar.remove();
+            toast('Put back. Press Save to store them.');
+          } else if (e.target.closest('[data-draft-discard]')) {
+            dropDraft(key);
+            bar.remove();
+            setDirty(false);
+          }
+        });
+      })
       .catch(function (e) {
         body.innerHTML = '<div class="state" style="border-color:var(--error)">' +
           '<p class="state__title">Could not load this section</p>' +
@@ -985,6 +1015,112 @@
     e.preventDefault();
     e.returnValue = '';
   });
+
+  /* ======================================================================
+     WHAT WAS TYPED SURVIVES A FAILED SAVE
+
+     The panel knew when a screen was dirty and warned before the tab closed,
+     and that warning was live on exactly ONE screen: the home layout is the
+     only module that ever calls U.dirty. Every other editor - the match form
+     above all, five tabs and forty fields filled in on a phone at the side of
+     a pitch - could lose everything to a dropped connection, an expired
+     token, or a stray refresh, in silence. render() even says so out loud:
+     "whatever was unsaved is gone".
+
+     A warning is not a save. What matters is that the typing survives, so it
+     is kept as it is typed and offered back on the way in.
+
+     Held HERE, generically, rather than per module, for the same reason
+     setDirty is: thirteen modules that each have to remember is thirteen
+     chances to forget, and the module that forgets is the one that loses a
+     match report. A delegated listener on the panel body sees every field in
+     every editor, including ones not written yet.
+
+     What it stores is FIELD VALUES, not the record. It has no idea what a
+     match is and does not need one. That is also why it will only offer a
+     draft back to a form of the same shape: if the form has been changed
+     since, the signature will not match and the draft is dropped rather than
+     poured into whatever fields happen to line up.  */
+  var DRAFTS = 'sa-cp-drafts';
+  var DRAFT_TTL = 6048e5;
+
+  /* A field's identity within its panel: what modules actually set (`name` or
+     `id`), with the index to separate repeated rows that carry neither. */
+  function fieldsIn(root) {
+    return Array.prototype.filter.call(root.querySelectorAll('input,select,textarea'),
+      function (el) { return el.type !== 'password' && el.type !== 'file'; });
+  }
+  function snapshot(root) {
+    var sig = [], val = [];
+    fieldsIn(root).forEach(function (el, i) {
+      sig.push(el.tagName + (el.type || '') + (el.name || el.id || '') + i);
+      val.push(el.type === 'checkbox' || el.type === 'radio' ? !!el.checked : String(el.value));
+    });
+    return { sig: sig, val: val };
+  }
+  /* Read, expire and write in one place. A full or blocked localStorage must
+     never take the panel down: the draft is a safety net, and a net that
+     throws is worse than none. */
+  function drafts(mutate) {
+    var all;
+    try { all = JSON.parse(localStorage.getItem(DRAFTS) || '{}'); } catch (e) { all = {}; }
+    var now = Date.now();
+    Object.keys(all).forEach(function (k) {
+      if (!all[k] || (now - (all[k].at || 0)) >= DRAFT_TTL) delete all[k];
+    });
+    if (mutate) {
+      mutate(all);
+      try { localStorage.setItem(DRAFTS, JSON.stringify(all)); } catch (e) { /* full */ }
+    }
+    return all;
+  }
+  function dropDraft(k) { drafts(function (all) { delete all[k]; }); }
+  function takeDraft(key, root) {
+    var d = drafts()[key];
+    if (!d) return null;
+    var now = snapshot(root);
+    /* Same form, or nothing: a form that has changed shape since would have
+       the draft poured into whatever fields happened to line up. And nothing
+       to offer if it already matches what is on screen. */
+    if (now.sig.join() !== String(d.sig) || now.val.join() === String(d.val)) {
+      dropDraft(key);
+      return null;
+    }
+    return d;
+  }
+  function applyDraft(root, d) {
+    fieldsIn(root).forEach(function (el, i) {
+      if (d.val[i] === undefined) return;
+      if (el.type === 'checkbox' || el.type === 'radio') el.checked = !!d.val[i];
+      else el.value = d.val[i];
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  }
+
+  var draftTimer = null;
+  document.addEventListener('input', function (e) {
+    var body = e.target && e.target.closest && e.target.closest('[data-panel-body]');
+    if (!body || !current || e.target.type === 'password' || e.target.type === 'file') return;
+    setDirty(true);
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(function () {
+      drafts(function (all) { all[current] = { at: Date.now(), sig: snapshot(body).sig, val: snapshot(body).val }; });
+    }, 400);
+  }, true);
+
+  /* A DRAFT IS ONLY SAFE TO THROW AWAY ONCE THE ROW IS WRITTEN. Wrapped
+     around the store's own upsert so it clears on the same condition the
+     panel already trusts - verifyWrote() has counted rows, so this is a real
+     write and not a 204 being read as one. Every editor saves through here,
+     so none of them has to remember. */
+  var rawUpsert = CP.upsert;
+  CP.upsert = function (table, key, data) {
+    return rawUpsert(table, key, data).then(function (res) {
+      if (current) dropDraft(current);
+      setDirty(false);
+      return res;
+    });
+  };
 
   var pub = $('#cp-publish');
   if (pub) pub.addEventListener('click', function () {

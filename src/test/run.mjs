@@ -1690,6 +1690,45 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     .filter((f) => f.endsWith('.js')).sort()
     .map((f) => fs.readFileSync(path.join(ROOT, 'src', 'scripts', f), 'utf8')).join('\n');
 
+  /* $ IS querySelector AND $$ IS querySelectorAll, and treating the singular
+     one as a list is how the whole site went dark in August. `$('.camp')`
+     returns null on every page with no campaign band, `.length` on null
+     throws, and because esbuild merges the seventeen script files into one
+     comma expression, a throw in the first aborts every file after it. The
+     scroll reveal lives in the last of them, `.rv` is hidden under html.js,
+     and so 41 bands on the home page stayed at opacity 0 with the text
+     sitting fully present in the DOM behind them.
+
+     One character, seventeen root pages blank.
+
+     The check has to follow the assignment, because the bug did: the result
+     went into a variable on one line and was read as a list four lines
+     later. A regex looking only for `$(...).length` passes straight over it,
+     which is exactly what the first version of this check did. */
+  const LIST_PROPS = 'length|forEach|map|filter|slice|indexOf|some|every';
+  const singularAssign = /(?:var|let|const)\s+([A-Za-z_$][\w$]*)\s*=\s*(^|[^$\w])?\$\([^()]*\)\s*;/g;
+  const listAbuse = [];
+  for (const m of saSrc.matchAll(singularAssign)) {
+    if (saSrc[m.index + m[0].indexOf('$(') - 1] === '$') continue;   /* it was $$ */
+    const name = m[1];
+    /* STOP AT THE NEXT DECLARATION OF THE SAME NAME. `f` is declared four
+       times in 00-core.js, twice from $ and twice from $$, and a fixed
+       lookahead walked out of one function and into the next, reporting a
+       correctly null-checked `$('a, button', mnav)` because an unrelated
+       `f.length` sat forty lines below it. */
+    const rest = saSrc.slice(m.index + m[0].length);
+    const redecl = rest.search(new RegExp('(?:var|let|const)\\s+' + name.replace(/\$/g, '\\$') + '\\s*='));
+    const window = rest.slice(0, redecl === -1 ? 900 : Math.min(redecl, 900));
+    const read = new RegExp('\\b' + name.replace(/\$/g, '\\$') + '\\.(' + LIST_PROPS + ')\\b').exec(window);
+    if (read) listAbuse.push(m[0].trim() + '  ->  ' + read[0]);
+  }
+  /* And the direct form, which the assignment walk cannot see. */
+  for (const m of saSrc.matchAll(new RegExp('(^|[^$\\w])\\$\\([^()]*\\)\\s*\\.(' + LIST_PROPS + ')\\b', 'gm'))) {
+    listAbuse.push(m[0].trim());
+  }
+  check('no list property read off the single-element $ helper',
+    listAbuse.length === 0, listAbuse.slice(0, 3).join('   |   '));
+
   check('consent banner ships', /sa-consent/.test(saJs));
   check('saTrack is defined', /window\.saTrack\s*=/.test(saJs));
   /* Nothing third-party may be requested before the visitor has chosen. */

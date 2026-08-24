@@ -618,7 +618,13 @@
        `.camp` is one element rather than thirty-five observers, and it is a
        normal section with its own box, so unlike `.pageaura` it genuinely
        leaves the viewport. */
-    var stillable = $('.camp');
+    /* $$ AND NOT $. `$` is querySelector: on the seventeen root pages
+       with no campaign band it returns null, `null.length` threw, and
+       because that abort happened before the scroll reveal ran, every
+       `.rv` element on the page stayed at opacity 0. The page was fully
+       present in the DOM and completely invisible. This is the failure
+       in CLAUDE.md's list, item 7, and it takes one character. */
+    var stillable = $$('.camp');
     if (stillable.length) {
       var stiller = new IntersectionObserver(function (entries) {
         entries.forEach(function (en) {

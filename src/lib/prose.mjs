@@ -139,4 +139,10 @@ export function houseRecord(value, key) {
 export const FRIENDLY_FLAG = 'Friendly · not counted';
 export const FRIENDLY_NOTE = 'Friendlies stand on their own. Nothing from this match counts '
   + 'towards any club or player record on this site.';
+/* THE SAME SENTENCE UNDER A SET OF MATCHES, not one. `FRIENDLY_NOTE` sat under
+   the pre-season band's table of six friendlies saying "this match", which
+   reads as a note written for a match page and left where it did not belong.
+   Two callers, two numbers, so two strings, both here so neither drifts. */
+export const FRIENDLY_NOTE_SET = 'Friendlies stand on their own. Nothing from these matches '
+  + 'counts towards any club or player record on this site.';
 export const FRIENDLY_NOTE_SHORT = 'Friendlies count towards no club or player record here.';

@@ -9066,32 +9066,6 @@
   ],
   "fixtures": [
     {
-      "key": "f20260802-pure",
-      "data": {
-        "away": "Sue's Angels FC",
-        "date": "02 Aug 2026",
-        "home": "Pure Football FC 2.0",
-        "kick": "",
-        "kind": "fixture",
-        "venue": "",
-        "competition": "Pre-season friendly"
-      },
-      "updated_at": "2026-08-02T23:40:09.313+00:00"
-    },
-    {
-      "key": "f20260809-galacticos",
-      "data": {
-        "away": "Sue's Angels FC",
-        "date": "09 Aug 2026",
-        "home": "Galacticos Elect",
-        "kick": "10:00",
-        "kind": "fixture",
-        "venue": "",
-        "competition": "Pre-season friendly"
-      },
-      "updated_at": "2026-08-09T15:21:52.798+00:00"
-    },
-    {
       "key": "f20260830-bpr",
       "data": {
         "iso": "2026-08-30",

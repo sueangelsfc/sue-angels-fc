@@ -39,7 +39,7 @@ import {
   potmAll, photographersIn,
 } from '../lib/home-layout.mjs';
 import { preseasonFor, seasonAhead, sameClub, relatedClub, recordOf } from '../lib/preseason.mjs';
-import { reportText, house, FRIENDLY_NOTE_SHORT, FRIENDLY_NOTE } from '../lib/prose.mjs';
+import { reportText, house, FRIENDLY_NOTE_SHORT, FRIENDLY_NOTE_SET } from '../lib/prose.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
 
 /* THE OPENING OF A REPORT, for the front page to quote.
@@ -1021,7 +1021,7 @@ export function home(d) {
             `<a href="/players/${attr(p.slug)}.html">${esc(p.name)}</a>`).join(', ')}.</p>` : ''}
         </div>` : ''}
 
-        <p class="psn__note rv">${esc(FRIENDLY_NOTE)}</p>
+        <p class="psn__note rv">${esc(FRIENDLY_NOTE_SET)}</p>
       </div>
     </section>`;
 

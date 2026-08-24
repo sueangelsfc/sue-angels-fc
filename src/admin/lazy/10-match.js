@@ -1043,9 +1043,13 @@
     var wo0 = d.wo === 'H-W' ? (weAreHome ? 'us' : 'them')
       : d.wo === 'A-W' ? (weAreHome ? 'them' : 'us') : '';
 
+    /* THE SQUAD PICKED IN THE WEEK BECOMES THE TEAM SHEET.
+       Only when there is no team sheet yet: re-opening a saved match must
+       never have its eleven rewritten by a list picked days earlier. */
+    var pre = (!d.starters && !d.bench && Array.isArray(d.squad)) ? d.squad : [];
     var counts = {
-      starters: (d.starters || []).map(function (x) { return x.num; }),
-      bench: (d.bench || []).map(function (x) { return x.num; }),
+      starters: (d.starters || []).map(function (x) { return x.num; }).concat(pre.slice(0, 11)),
+      bench: (d.bench || []).map(function (x) { return x.num; }).concat(pre.slice(11)),
       yellowCards: (d.yellowCards || []).map(numOf),
       redCards: (d.redCards || []).map(numOf),
       cleanSheets: (d.cleanSheets || []).map(numOf),

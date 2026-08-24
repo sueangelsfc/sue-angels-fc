@@ -112,6 +112,11 @@
       <span class="cp-nav__count" data-count-for="dashboard" hidden></span>
     </button>
   </li><li>
+    <button class="cp-nav__item" type="button" data-module="matchday">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg><span>Matchday</span>
+      <span class="cp-nav__count" data-count-for="matchday" hidden></span>
+    </button>
+  </li><li>
     <button class="cp-nav__item" type="button" data-module="fixtures">
       <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18"/></svg><span>Fixtures</span>
       <span class="cp-nav__count" data-count-for="fixtures" hidden></span>
@@ -243,6 +248,14 @@
       </header>
       <div class="cp-body"><section class="cp-panel" id="panel-dashboard"
       role="tabpanel" aria-label="Dashboard" hidden>
+    <div class="cp-panel__loading" data-panel-loading>
+      <div class="skeleton skeleton--title"></div>
+      <div class="skeleton skeleton--text"></div>
+      <div class="skeleton skeleton--text"></div>
+    </div>
+    <div data-panel-body></div>
+  </section><section class="cp-panel" id="panel-matchday"
+      role="tabpanel" aria-label="Matchday" hidden>
     <div class="cp-panel__loading" data-panel-loading>
       <div class="skeleton skeleton--title"></div>
       <div class="skeleton skeleton--text"></div>
@@ -406,7 +419,7 @@
   </div>
 
   <div class="toasts" data-toasts role="region" aria-label="Notifications" aria-live="polite"></div>
-<script src="/control-seed.js?v=953d75df"></script>
-<script src="/control.js?v=fbb67340" defer></script>
+<script src="/control-seed.js?v=7ff26e85"></script>
+<script src="/control.js?v=1d6813af" defer></script>
 </body>
 </html>

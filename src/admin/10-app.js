@@ -255,6 +255,44 @@
      own files, and register themselves into it. See `need()` below. */
   var M = (window.CPM = {});
 
+  /* ==========================================================================
+     WHAT DAY IS THIS ROW?
+
+     Two fields answer that and they disagree. `date` is the pretty form,
+     "23 Aug 2026", written for a person to read. `iso` is machine order, and
+     the fixture form has written it since it was built, so newer rows carry
+     both and older ones only the first.
+
+     The dashboard compared `String(date).slice(0, 10)` against an ISO today,
+     which is "23 Aug 202" against "2026-08-24". That is not a date
+     comparison, it is an alphabetical one, and the rule it actually
+     implemented was the DAY OF THE MONTH: a fixture on the 1st to the 19th
+     always sorted before today and was reported as played, months in advance;
+     one on the 20th to the 31st never did, so a match played yesterday was
+     invisible on the only screen that could act on it.
+
+     Parsed by hand rather than through `new Date()`, which reads "23 Aug
+     2026" as local midnight and then `toISOString` shifts it back a day for
+     anyone west of Greenwich. */
+  var MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun',
+    'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+  function fixtureIso(row) {
+    var f = (row && row.data) || row || {};
+    if (/^\d{4}-\d{2}-\d{2}/.test(f.iso || '')) return String(f.iso).slice(0, 10);
+    var m = /^(\d{1,2})\s+([A-Za-z]{3})[a-z]*\.?\s+(\d{4})$/.exec(String(f.date || '').trim());
+    if (!m) return dayIso(row && row.key);
+    var mi = MONTHS.indexOf(m[2].toLowerCase());
+    if (mi < 0) return dayIso(row && row.key);
+    return m[3] + '-' + ('0' + (mi + 1)).slice(-2) + '-' + ('0' + m[1]).slice(-2);
+  }
+  /* Every row key is [rf]YYYYMMDD-slug, all 35 matches and all 6 fixtures, so
+     the key is the last resort and it is a good one. */
+  function dayOf(key) { return (String(key || '').match(/^[rf](\d{8})/) || [])[1] || ''; }
+  function dayIso(key) {
+    var d = dayOf(key);
+    return d ? d.slice(0, 4) + '-' + d.slice(4, 6) + '-' + d.slice(6, 8) : '';
+  }
+
   /* And this is what those files borrow rather than carrying second copies of.
      Everything here is defined above, so it is real by the time any chunk can
      possibly run: a chunk is only ever fetched from inside render(). */
@@ -289,6 +327,11 @@
        cannot reach it and the module asks for it by name when pressed. Same
        loader, same pending map, same retry-after-failure behaviour. */
     chunk: function (name) { return load(name); },
+    /* The matchday panel asks the same date question the dashboard does,
+       and a second copy of this rule is what produced the bug it fixes. */
+    fixtureIso: fixtureIso,
+    dayOf: dayOf,
+    dayIso: dayIso,
   };
 
   /* ==========================================================================
@@ -398,9 +441,22 @@
          idea of today is the moment it last ran, and this is a question about
          now. */
       var todayIso = new Date().toISOString().slice(0, 10);
+
+      /* A FIXTURE WHOSE RESULT IS ALREADY IN.
+         Entering a result through the fixture's own button clears the row.
+         Entering it straight into Results does not, and two of the six live
+         rows are exactly that. The website copes, because it merges on the
+         date and marks the match played, so the one screen this was wrong on
+         was the screen the club acts from: it counted both as still owing a
+         score and sent somebody to type in a result that was already there. */
+      var scored = {};
+      matches.forEach(function (m) {
+        if (/^r/.test(m.key || '')) scored[dayOf(m.key)] = 1;
+      });
+      var stale = fixtures.filter(function (f) { return scored[dayOf(f.key)]; });
       var played = fixtures.filter(function (f) {
-        var when = String((f.data || {}).date || '').slice(0, 10);
-        return when && when < todayIso;
+        var when = fixtureIso(f);
+        return when && when < todayIso && !scored[dayOf(f.key)];
       });
       if (played.length) {
         var one = played.length === 1;
@@ -409,6 +465,14 @@
           + (one ? 'it' : 'them') + ' as awaiting a result. Enter result fills the match form in '
           + 'from the fixture and clears it.',
         one ? 'Enter the result' : 'Enter the results', 'fixtures']);
+      }
+      if (stale.length) {
+        var s1 = stale.length === 1;
+        warn.push([(s1 ? 'A fixture is' : stale.length + ' fixtures are')
+          + ' still on the fixture list with the result already recorded, so the website is '
+          + 'working from the match and ' + (s1 ? 'this row is' : 'these rows are') + ' doing '
+          + 'nothing. Deleting ' + (s1 ? 'it' : 'them') + ' costs nothing and keeps the two lists '
+          + 'saying the same thing.', 'Clear ' + (s1 ? 'it' : 'them'), 'fixtures']);
       }
 
       /* The row a security check left behind. Deleting it needs the sign-in
@@ -728,6 +792,7 @@
      so once it has loaded nothing downstream can tell the difference. */
   var CHUNKS = window.CP_CHUNKS || {};
   var CHUNK_OF = {
+    matchday: 'matchday',
     fixtures: 'match', results: 'match',
     phototag: 'photos',
     squad: 'squad', coaches: 'coaches',

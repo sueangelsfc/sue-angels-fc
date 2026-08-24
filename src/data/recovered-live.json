@@ -5896,6 +5896,144 @@
         "penaltiesConceded": 0
       },
       "updated_at": "2026-08-09T15:21:41.655+00:00"
+    },
+    {
+      "key": "r20260812-kingsmeadow",
+      "data": {
+        "as": 0,
+        "hs": 5,
+        "iso": "2026-08-12",
+        "away": "Sue's Angels FC",
+        "date": "12 Aug 2026",
+        "home": "Kingsmeadow United",
+        "kick": "19:45",
+        "kind": "score",
+        "motm": null,
+        "bench": [],
+        "goals": [],
+        "saves": null,
+        "shape": "",
+        "venue": "The Matthew Arnold School, Staines-upon-Thames, Staines TW18 1PF",
+        "keeper": null,
+        "assists": [],
+        "captain": null,
+        "neutral": true,
+        "savedAt": "2026-08-24T12:24:10.902Z",
+        "redCards": [],
+        "starters": [],
+        "formation": null,
+        "commentary": "",
+        "cleanSheets": [],
+        "competition": "Pre-season friendly",
+        "yellowCards": [],
+        "opponentGoals": [],
+        "penaltiesSaved": [],
+        "penaltiesMissed": [],
+        "opponentRedCards": [],
+        "penaltiesConceded": 0
+      },
+      "updated_at": "2026-08-24T12:24:10.902+00:00"
+    },
+    {
+      "key": "r20260816-brentford",
+      "data": {
+        "as": 2,
+        "hs": 3,
+        "iso": "2026-08-16",
+        "away": "Sue's Angels FC",
+        "date": "16 Aug 2026",
+        "home": "Brentford Town",
+        "kick": "10:00",
+        "kind": "score",
+        "motm": null,
+        "bench": [],
+        "goals": [],
+        "saves": null,
+        "shape": "",
+        "venue": "",
+        "keeper": null,
+        "assists": [],
+        "captain": null,
+        "savedAt": "2026-08-24T12:24:30.884Z",
+        "redCards": [],
+        "starters": [],
+        "formation": null,
+        "commentary": "",
+        "cleanSheets": [],
+        "competition": "Pre-season friendly",
+        "yellowCards": [],
+        "opponentGoals": [],
+        "penaltiesSaved": [],
+        "penaltiesMissed": [],
+        "opponentRedCards": [],
+        "penaltiesConceded": 0
+      },
+      "updated_at": "2026-08-24T12:24:30.884+00:00"
+    },
+    {
+      "key": "r20260823-kew",
+      "data": {
+        "as": 2,
+        "hs": 1,
+        "iso": "2026-08-23",
+        "away": "Sue's Angels FC",
+        "date": "23 Aug 2026",
+        "home": "Kew Antigua",
+        "kick": "10:00",
+        "kind": "score",
+        "motm": null,
+        "bench": [],
+        "goals": [
+          {
+            "num": 30,
+            "zone": "box",
+            "assist": null,
+            "minute": null,
+            "penalty": false,
+            "bodyPart": "left",
+            "situation": "open"
+          },
+          {
+            "num": 25,
+            "zone": "box",
+            "assist": {
+              "num": 12,
+              "type": "cross"
+            },
+            "minute": null,
+            "penalty": false,
+            "bodyPart": "head",
+            "situation": "corner"
+          }
+        ],
+        "saves": null,
+        "shape": "",
+        "venue": "",
+        "keeper": null,
+        "assists": [
+          {
+            "num": 12,
+            "type": "cross",
+            "minute": null,
+            "forGoalBy": 25
+          }
+        ],
+        "captain": null,
+        "savedAt": "2026-08-24T12:26:37.283Z",
+        "redCards": [],
+        "starters": [],
+        "formation": null,
+        "commentary": "",
+        "cleanSheets": [],
+        "competition": "Pre-season friendly",
+        "yellowCards": [],
+        "opponentGoals": [],
+        "penaltiesSaved": [],
+        "penaltiesMissed": [],
+        "opponentRedCards": [],
+        "penaltiesConceded": 0
+      },
+      "updated_at": "2026-08-24T12:26:37.283+00:00"
     }
   ],
   "articles": [
@@ -8952,49 +9090,6 @@
         "competition": "Pre-season friendly"
       },
       "updated_at": "2026-08-09T15:21:52.798+00:00"
-    },
-    {
-      "key": "f20260812-kingsmeadow",
-      "data": {
-        "iso": "2026-08-12",
-        "away": "Sue's Angels FC",
-        "date": "12 Aug 2026",
-        "home": "Kingsmeadow United",
-        "kick": "19:45",
-        "kind": "fixture",
-        "venue": "The Matthew Arnold School, Staines-upon-Thames, Staines TW18 1PF",
-        "neutral": true,
-        "competition": "Pre-season friendly"
-      },
-      "updated_at": "2026-08-10T10:29:46.849+00:00"
-    },
-    {
-      "key": "f20260816-brentford",
-      "data": {
-        "iso": "2026-08-16",
-        "away": "Sue's Angels FC",
-        "date": "16 Aug 2026",
-        "home": "Brentford Town",
-        "kick": "10:00",
-        "kind": "fixture",
-        "venue": "",
-        "competition": "Pre-season friendly"
-      },
-      "updated_at": "2026-08-02T23:50:52.718+00:00"
-    },
-    {
-      "key": "f20260823-kew",
-      "data": {
-        "iso": "2026-08-23",
-        "away": "Sue's Angels FC",
-        "date": "23 Aug 2026",
-        "home": "Kew Antigua",
-        "kick": "10:00",
-        "kind": "fixture",
-        "venue": "",
-        "competition": "Pre-season friendly"
-      },
-      "updated_at": "2026-08-02T23:51:00.583+00:00"
     },
     {
       "key": "f20260830-bpr",

@@ -12,6 +12,10 @@ import { CLUB } from '../lib/club.mjs';
 
 export const MODULES = [
   { key: 'dashboard', label: 'Dashboard', icon: 'chart' },
+  /* Second, because it is the only screen that looks forward and it is the
+     one the club opens in the week. Fixtures is where a match is agreed;
+     this is where the match that is coming gets ready. */
+  { key: 'matchday', label: 'Matchday', icon: 'calendar' },
   { key: 'fixtures', label: 'Fixtures', icon: 'calendar' },
   { key: 'results', label: 'Results and reports', icon: 'shield' },
   { key: 'squad', label: 'Squad and staff', icon: 'users' },

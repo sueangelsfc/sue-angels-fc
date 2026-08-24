@@ -807,6 +807,9 @@ const BUDGET = {
      the results table the same way, because the table is what loads when the
      club opens Results and the dialog is only wanted once somebody presses
      Edit. */
+  /* The forward-looking screen: a checklist and a squad picker, no images
+     and no tables of history, so it has no business being large. */
+  'control-matchday.js': 4,
   'control-match.js': 16,
   /* 15 -> 16. What bought it: the length gauge under the notes box, and the
      word count beside the Build button.
@@ -1506,6 +1509,63 @@ for (const [f, kb] of Object.entries({
   check('routing does not gate on a module being loaded',
     !/M\[start\]\s*\?/.test(core) && /known\(start\)/.test(core),
     'a deferred panel would fall back to the dashboard when opened by URL');
+
+  /* ---- THE DATE RULE, RUN RATHER THAN READ ---------------------------------
+
+     The dashboard asked whether `String(f.data.date).slice(0, 10) < todayIso`,
+     and every fixture row stores its date as "23 Aug 2026". So the comparison
+     was "23 Aug 202" against "2026-08-24", which is alphabetical, and the rule
+     it actually implemented was the day of the month: fixtures on the 1st to
+     the 19th always reported as played, months in advance, and the 20th to the
+     31st never did. A match played yesterday was invisible on the one screen
+     that could act on it.
+
+     A regex over the source could only ever assert that some text is present.
+     This lifts the real function out of the shell and runs it, which is the
+     only way to know the rule is right rather than merely written. */
+  const dateRule = /var MONTHS = \[[\s\S]*?function dayIso\(key\) \{[\s\S]*?\n  \}/.exec(
+    fs.readFileSync(path.join(ROOT, 'src', 'admin', '10-app.js'), 'utf8'));
+  check('the fixture date rule is extractable', !!dateRule);
+  if (dateRule) {
+    const fixtureIso = new Function(dateRule[0] + '; return fixtureIso;')();
+    const cases = [
+      /* the pretty form, which is what every live row actually holds */
+      [{ data: { date: '23 Aug 2026' } }, '2026-08-23'],
+      [{ data: { date: '02 Aug 2026' } }, '2026-08-02'],
+      /* iso wins when both are there */
+      [{ data: { iso: '2026-08-30', date: '30 Aug 2026' } }, '2026-08-30'],
+      /* neither: every row key carries the date, all 41 of them */
+      [{ data: {}, key: 'f20260812-kingsmeadow' }, '2026-08-12'],
+      /* the turn of the year, where a timezone slip shows up as the wrong year */
+      [{ data: { date: '01 Jan 2027' } }, '2027-01-01'],
+      [{ data: { date: '31 Dec 2026' } }, '2026-12-31'],
+      /* nothing to go on is empty, never a guess */
+      [{ data: { date: 'to be confirmed' } }, ''],
+    ];
+    for (const [row, want] of cases) {
+      check(`fixture date: ${JSON.stringify(row.data.date || row.data.iso || row.key)} -> ${want || '(none)'}`,
+        fixtureIso(row) === want, `got ${JSON.stringify(fixtureIso(row))}`);
+    }
+    /* And the case the bug was: a match played yesterday must read as past. */
+    check('a fixture played yesterday sorts before today',
+      fixtureIso({ data: { date: '23 Aug 2026' } }) < '2026-08-24');
+    check('a fixture next month does not sort before today',
+      !(fixtureIso({ data: { date: '05 Sep 2026' } }) < '2026-08-24'),
+      'the old rule reported every day 1 to 19 as already played');
+  }
+
+  /* ---- The squad field has a reader --------------------------------------
+     A field with no consumer is a lie with a save button. The matchday squad
+     is written on the fixture and read by the match form, which fills the
+     team sheet in from it. If that ever stops, the picker is asking the club
+     for something nothing uses. */
+  const matchSrc = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '10-match.js'), 'utf8');
+  check('the matchday squad is read by the team sheet',
+    /Array\.isArray\(d\.squad\)/.test(matchSrc) && /pre\.slice\(0, 11\)/.test(matchSrc),
+    'the fixture squad picker would write a field nothing consumes');
+  check('a saved team sheet is never overwritten by the squad',
+    /!d\.starters && !d\.bench/.test(matchSrc),
+    're-opening a match would rewrite its eleven from a list picked days earlier');
 }
 
 /* What a visitor actually downloads on a cold load: the core plus the one
@@ -3741,9 +3801,9 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
        What goes wrong quietly is a single band being far heavier than what it
        shows. So the ceiling is on the heaviest one. `campaign` is 30KB on its
        own, nine times the mean, because it inlines an SVG chart with a tooltip
-       per match; that is legitimate and it is the number to watch, so the
-       ceiling sits just above it rather than being set somewhere it can never
-       bite. The mean is held down separately: thirty bands added at or below
+       per match; that is legitimate and it is the number to watch, so its
+       ceiling is a function of matches played rather than a flat figure it
+       was always going to outgrow. See the note beside the check. The mean is held down separately: thirty bands added at or below
        the median should LOWER it, and if a batch ever raises it, that is the
        drift this is looking for.
 
@@ -3759,9 +3819,29 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
         .map((p) => ({ key: p.slice(0, p.indexOf('"')), kb: Buffer.byteLength(p) / 1024 }))
         .sort((a, b) => b.kb - a.kb);
       const mean = each.reduce((n, r) => n + r.kb, 0) / Math.max(each.length, 1);
-      check('no single band is heavier than 32KB of markup',
-        each.length > 0 && each[0].kb <= 32,
-        each.slice(0, 3).map((r) => `${r.key} ${r.kb.toFixed(1)}KB`).join(', '));
+      /* THE SAME MISTAKE, ONE LEVEL DOWN.
+
+         The note above says a total that fails whenever the club asks for
+         more parts is measuring the request rather than the code. This
+         ceiling was doing exactly that to `campaign`, which inlines one
+         tooltip per match: measured across two syncs it is 5.3KB of fixed
+         markup plus 0.73KB for every match played. At 35 matches it was
+         31.0KB and the ceiling sat at 32. Three friendlies later it was
+         33.2KB and the suite went red, having learnt nothing except that the
+         club had played football. Two more seasons would put it past 70KB.
+
+         So the band that scales with the season gets a ceiling that scales
+         with it, and everything else keeps the flat one. What this still
+         catches is the thing worth catching: the per-match cost growing. The
+         allowance is about 7% above the measured line, so a tooltip getting
+         meaningfully fatter fails while a fixture list getting longer does
+         not. */
+      const perMatch = (key) => (key === 'campaign' ? 6 + 0.78 * (dP.played || []).length : 32);
+      const over = each.filter((r) => r.kb > perMatch(r.key));
+      check('no band is heavier than what it draws',
+        each.length > 0 && over.length === 0,
+        over.map((r) => `${r.key} ${r.kb.toFixed(1)}KB over ${perMatch(r.key).toFixed(1)}`).join(', ')
+          || each.slice(0, 3).map((r) => `${r.key} ${r.kb.toFixed(1)}KB`).join(', '));
       check('the average band stays under 4KB of markup',
         mean <= 4, `${mean.toFixed(1)}KB across ${each.length} bands`);
       console.log(`  every band on: ${gzKb.toFixed(1)}KB gz / ${raw.toFixed(0)}KB raw of bands`

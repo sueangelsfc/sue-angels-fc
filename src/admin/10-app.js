@@ -890,6 +890,7 @@
     var spinner = $('[data-panel-loading]', panel);
     var old = $('[data-panel-body]', panel);
     if (spinner) spinner.hidden = false;
+    panel.setAttribute('aria-busy', 'true');
 
     /* REPLACE the body element, do not empty it.
        Every module attaches its listeners to this element and relies on
@@ -948,7 +949,50 @@
           '<p class="state__title">Could not load this section</p>' +
           '<p class="state__body">' + esc(e.message) + '</p></div>';
       })
-      .then(function () { if (spinner) spinner.hidden = true; });
+      .then(function () {
+        if (spinner) spinner.hidden = true;
+        /* The panel was silent while it fetched its chunk and read the
+           database: a spinner is a picture, and aria-busy is the same fact
+           said out loud. */
+        panel.removeAttribute('aria-busy');
+        wireHints(body);
+      });
+  }
+
+  /* ======================================================================
+     THE HINT UNDER A FIELD IS PART OF THE FIELD
+
+     Every editor writes its own markup - there is no shared field builder -
+     so each one puts the explanation in a `.cp-note` beside the control and
+     none of them associates the two. Sighted users get the sentence that says
+     what the field does and what it affects on the website; a screen reader
+     reads the label and moves on, so the most useful half of the panel's own
+     writing is the half that never reaches the people who most need it.
+
+     Done here, once, after whatever the module drew, for the same reason the
+     drafts are: thirteen modules that each have to remember is thirteen
+     chances to forget. Ids are minted only where one is missing, and an
+     existing aria-describedby is never overwritten. */
+  var hintId = 0;
+  function wireHints(root) {
+    Array.prototype.forEach.call(root.querySelectorAll('input,select,textarea'), function (el) {
+      if (el.getAttribute('aria-describedby')) return;
+      /* IMMEDIATELY AFTER, AND NOTHING ELSE. The hint a module writes sits
+         directly after the control, or directly after the label wrapping it.
+
+         This first fell back to "the first .cp-note among my siblings", which
+         is not the same question: a field with no hint of its own picked up
+         the hint belonging to a field further up the section. A textarea for
+         match notes was described to a screen reader as "Shown on the results
+         page", which is the wrong sentence read with total confidence -
+         worse than the silence it was meant to fix. */
+      var scope = el.closest('label') || el;
+      var next = scope.nextElementSibling;
+      var note = (next && next.classList && next.classList.contains('cp-note')) ? next : null;
+      if (!note) return;
+      if (!note.id) { hintId += 1; note.id = 'cp-hint-' + hintId; }
+      el.setAttribute('aria-describedby', note.id);
+    });
   }
 
   function refresh(key) { render(key || current); }

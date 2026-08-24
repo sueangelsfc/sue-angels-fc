@@ -169,6 +169,15 @@ A warning is not a save. The shell keeps a **draft of every editor as it is type
 
 `control.js`'s budget went 11 → 12KB for this, deliberately and once. The obvious saving is to move the dashboard (12KB of source) into `lazy/`, and that is **not** the answer: everyone lands on the dashboard, so making it lazy saves nobody a download and turns one request into two before the first screen draws. It is in the shell for the same reason the draft code is.
 
+### The hint under a field is part of the field
+Every editor writes its own markup - there is no shared field builder - so each puts its explanation in a `.cp-note` beside the control and none of them associates the two. The sentence saying what a field does and what it changes on the website was reaching sighted users only. The shell wires `aria-describedby` after every render, generically, for the same reason it holds the drafts.
+
+**Only the element immediately after the field**, never a looser lookup. The first version fell back to "the first `.cp-note` among my siblings", so a field with no hint of its own picked up one belonging to a field further up the section: a match-notes textarea was described to a screen reader as "Shown on the results page". A wrong sentence read with total confidence is worse than the silence it replaced, and the suite's check for this is the negative one.
+
+The panel also carries `aria-busy` while a screen fetches its chunk and reads the database. A spinner is a picture; `aria-busy` is the same fact said out loud.
+
+Two things an audit of this claimed and got wrong, both worth not re-checking: the toast container has carried `role="region"` and `aria-live="polite"` since it was written, so saves have always been announced; and 15 of the 16 labels with no `for=` wrap their own control, which is valid.
+
 ### How the editors work
 - Authorisation is the **database's** answer, surfaced in the UI. A non-registered account is shown as read-only rather than hitting a policy error.
 - **Every editor is a form.** They used to be raw JSON textareas, defended on the grounds that a lossy form would drop fields the website reads. The premise was right and the conclusion was not: each form starts from the record as it stands, changes only the fields it covers, and writes the rest back untouched, so a JSONB shape it has never heard of survives being edited by it. A **Raw** button is still one click away on every record.

@@ -509,6 +509,33 @@ for (const f of shipped) {
     check('somebody who never played is left dateless', !l3.detail, l3.detail);
   }
 
+  /* THE HINT UNDER A FIELD REACHES A SCREEN READER. Every editor writes its
+     own markup, so each puts the explanation in a `.cp-note` beside the
+     control and none of them associates the two: the sentence saying what the
+     field does and what it changes on the website was for sighted users only.
+     Wired generically in the shell after each render.
+
+     The check that matters is the NEGATIVE one. The first version fell back
+     to "the first .cp-note among my siblings", so a field with no hint picked
+     up one belonging to a field further up - a match-notes textarea described
+     as "Shown on the results page". A wrong sentence read with total
+     confidence is worse than the silence it replaced. */
+  {
+    const shell = fs.readFileSync(path.join(ROOT, 'src', 'admin', '10-app.js'), 'utf8');
+    const start = shell.indexOf('var hintId = 0;');
+    check('the shell associates hints with their fields', start > -1);
+    if (start > -1) {
+      const wire = shell.slice(start, shell.indexOf('function refresh(key)', start));
+      check('a hint is taken only from the element immediately after the field',
+        /nextElementSibling/.test(wire) && !/querySelector\(':scope/.test(wire),
+        'a looser lookup attaches another field\'s hint');
+      check('an existing aria-describedby is never overwritten',
+        /getAttribute\('aria-describedby'\)\) return/.test(wire));
+      check('the panel says it is busy while a screen loads',
+        /aria-busy/.test(shell));
+    }
+  }
+
   /* WHAT WAS TYPED SURVIVES A FAILED SAVE. The close-tab warning was live on
      exactly one screen, because 95-home.js is the only module that ever calls
      U.dirty - so the match form, five tabs and forty fields filled in on a

@@ -633,6 +633,18 @@
                     ? '<small class="cp-flag">Last played ' + esc(U.fmtDate(p.lastPlayed)) +
                       '. <button class="btn btn--quiet btn--sm" data-use-last="' +
                       esc(p.lastPlayed) + '">Use that as the day he left</button></small>'
+                    : '') +
+                  /* THE RECORD AND THE ARCHIVE DISAGREE. A leaving date the
+                     club has given always wins, because it is a statement
+                     about a person rather than an inference - but when
+                     somebody is named in a side AFTER the day he is recorded
+                     as leaving, one of the two is wrong and only the club
+                     knows which. Said plainly, and nothing is changed. */
+                  (GONE[p.status] && (p.detail || {}).from && p.lastPlayed
+                    && p.lastPlayed > (p.detail || {}).from
+                    ? '<small class="cp-flag">The record says ' + esc(LABEL[p.status] || 'gone') +
+                      ' on ' + esc(U.fmtDate(p.detail.from)) + ', and he was named in a side on ' +
+                      esc(U.fmtDate(p.lastPlayed)) + '. One of the two is wrong.</small>'
                     : '')
                   ) + '</td>' +
                 /* The site's own answer, shown but never editable, so it is

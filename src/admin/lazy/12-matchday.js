@@ -153,9 +153,24 @@
      Names, never numbers. The site does not show a shirt number anywhere and
      neither does this: the value carries the number because that is what a
      team sheet stores, and the operator only ever sees a name. */
-  function slot(i, value) {
+  /* NOBODY WHO HAS LEFT IS OFFERED. This screen listed every player who has
+     ever been at the club, so the picker for a 26/27 fixture put fourteen
+     people in the list who had retired or moved on - and picking one writes
+     him onto the fixture, which the match form then reads as the team sheet.
+     The match form has always filtered; this screen was added later and never
+     did.
+
+     `goneFrom` is derived once in dataset.mjs rather than judged here, so
+     this is a date comparison and not a fourth copy of a rule that has
+     already drifted once. Anybody already picked stays in his own dropdown
+     however long ago he left: dropping a stored name out of the control that
+     holds it would blank him on the next save. */
+  function slot(i, value, iso) {
     var opts = ['<option value="">Not selected</option>'].concat(
-      SQUAD.map(function (p) {
+      SQUAD.filter(function (p) {
+        if (String(p.num) === String(value)) return true;
+        return !(p.goneFrom && iso && iso >= p.goneFrom);
+      }).map(function (p) {
         return '<option value="' + esc(p.num) + '"' +
           (String(p.num) === String(value) ? ' selected' : '') + '>' + esc(p.name) + '</option>';
       })).join('');
@@ -245,7 +260,7 @@
           sub: 'Who is down to play. Saving this fills in the team sheet when the result '
             + 'goes in, so it is the same typing done earlier rather than extra typing.',
           body: '<div class="grid grid--3">' +
-            Array.from({ length: SLOTS }, function (_, i) { return slot(i, squad[i]); }).join('') +
+            Array.from({ length: SLOTS }, function (_, i) { return slot(i, squad[i], iso); }).join('') +
             '</div>' +
             '<div class="cp-actions">' +
             '<button class="btn btn--primary" type="button" data-save-squad>Save squad</button> ' +

@@ -509,6 +509,74 @@ for (const f of shipped) {
     check('somebody who never played is left dateless', !l3.detail, l3.detail);
   }
 
+  /* NOBODY WHO HAS LEFT IS OFFERED FOR A LATER MATCH. `unavailableFrom` is
+     derived once so no screen judges it for itself - three already did, and
+     one had drifted to a different season boundary. */
+  {
+    const { buildDataset } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+    const dS = buildDataset();
+    const gone = dS.squad.map((p) => [p.name, dS.unavailableFrom(p.num), dS.lastPlayedOn(p.num)])
+      .filter(([, f]) => f);
+    check('somebody has actually left, so this is not vacuous', gone.length > 5, `${gone.length}`);
+
+    /* THE TIGHTEST HONEST ANSWER WHERE THE CLUB GAVE NO DATE, and the one
+       that made the blunt answer wrong: a man recorded as leaving in a season
+       he PLAYED in cannot be ruled out from that season's first day, or his
+       own appearance becomes ineligible. Only asserted where the club has
+       said nothing - where it HAS given a date, that date wins even if the
+       archive disagrees with it, because it is a statement about a person and
+       not an inference. The disagreement is real and the panel says so; it is
+       not a reason to fail the club's build. */
+    const said = (num) => {
+      for (const season of (dS.seasons || []).map((x) => x.name || x)) {
+        const d0 = statusMod.statusDetail(dS.statusRecord, num, season);
+        if (d0 && d0.from) return d0.from;
+      }
+      return '';
+    };
+    let derived = 0;
+    for (const p of dS.squad) {
+      const from = dS.unavailableFrom(p.num);
+      const last = dS.lastPlayedOn(p.num);
+      if (!from || !last || said(p.num)) continue;
+      derived += 1;
+      check(`${p.name} is still eligible for the last match he played`, last < from,
+        `last played ${last}, unavailable from ${from}`);
+    }
+    check('the derived cutoff was actually exercised', derived > 0, `${derived} players`);
+
+    /* WHERE THE TWO DISAGREE, THE PANEL SAYS SO. Two players on the record
+       are named in a side after the day they are recorded as leaving, which
+       means one of the two facts is wrong and only the club knows which. */
+    const clash = dS.squad.filter((p) => {
+      const from = said(p.num);
+      const last = dS.lastPlayedOn(p.num);
+      return from && last && last > from;
+    });
+    const sq0 = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '30-squad.js'), 'utf8');
+    check('the panel flags a record that disagrees with the archive',
+      /One of the two is wrong/.test(sq0));
+    check('and there is something for it to flag', clash.length > 0,
+      'no player is named in a side after his recorded leaving date');
+
+    /* And the panel actually uses it rather than listing everybody. */
+    const md = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '12-matchday.js'), 'utf8');
+    check('the matchday picker filters on who has left', /p\.goneFrom/.test(md));
+    check('and keeps anybody already picked in his own dropdown',
+      /String\(p\.num\) === String\(value\)\) return true/.test(md));
+
+    /* THE SEASON BOUNDARY IS ONE RULE. The match form had drifted to June
+       while stats.mjs and the squad screen moved to July, so a June friendly
+       would have been filed under the season ending and offered last
+       season's departed players. */
+    for (const f of ['10-match.js', '30-squad.js']) {
+      const src2 = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', f), 'utf8');
+      if (!/season/i.test(src2)) continue;
+      check(`${f}: no copy of the season rule still says June`,
+        !/getUTCMonth\(\) >= 5|\[2\]\) >= 6 \? y/.test(src2));
+    }
+  }
+
   /* THE PANEL'S SQUAD LIST IS AN OVERRIDE, NOT A SECOND PLAYER. dataset.mjs
      concatenated the code baseline with roster:s2627, so a panel record
      sharing a number produced two of the same man. That is why the screen

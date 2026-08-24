@@ -7,7 +7,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { POSITION_GROUPS, positionName } from './positions.mjs';
-import { readStatusRecord, statusIn, statusLabelIn, isPlaying, joinedAfter, signedOn } from './squad-status.mjs';
+import { readStatusRecord, statusIn, statusLabelIn, isPlaying, joinedAfter, signedOn,
+  statusDetail } from './squad-status.mjs';
 import { houseRecord } from './prose.mjs';
 import { normaliseMatch, normaliseTable, playerStats, slugify, isUs, seasonOf, toISO, isLeague, isCup,
   isCompetitive, isFriendly, figuresSeason, tableSeasonOf,
@@ -733,6 +734,41 @@ export function buildDataset() {
     },
   };
 
+  /* See `unavailableFrom` on the returned object. A season label is turned
+     back into its first day: 26/27 starts on 1 July 2026, the boundary the
+     club sets and seasonOf() uses. */
+  const GONE_KEYS = new Set(['departed', 'retired', 'staff']);
+  const seasonStart = (name) => {
+    const m = /^(\d{2})\/\d{2}$/.exec(String(name || ''));
+    return m ? `20${m[1]}-07-01` : '';
+  };
+  /* The day after, so somebody is still pickable for the last match he
+     actually played in. */
+  const dayAfter = (iso) => {
+    const d = new Date(`${iso}T12:00:00Z`);
+    if (Number.isNaN(+d)) return '';
+    d.setUTCDate(d.getUTCDate() + 1);
+    return d.toISOString().slice(0, 10);
+  };
+  const unavailableFrom = (num) => {
+    for (const season of seasonsAll) {
+      const key = statusIn(statusRecord, num, season, statusOpts);
+      if (!GONE_KEYS.has(key)) continue;
+      const detail = statusDetail(statusRecord, num, season);
+      if (detail.from) return detail.from;
+      /* NO LEAVING DATE, SO THE ARCHIVE ANSWERS. The season's first day is
+         the blunt answer and it is wrong for anybody who actually turned out
+         that season: David Jones is recorded as leaving in 25/26 and played
+         in January of it, so the season start would have made his own
+         appearance ineligible. The day after his last match is the tightest
+         thing the record can honestly say. */
+      const last = lastPlayedBy[String(num)];
+      if (last) return dayAfter(last);
+      return seasonStart(season) || null;
+    }
+    return null;
+  };
+
   /* ---- Coaches ----
      The recovered PageShell holds only the two founding staff. Anyone who has
      joined since lives in the production `roster:coaches` row, whose data the
@@ -1153,6 +1189,17 @@ export function buildDataset() {
        derivations need it and neither should re-read the record shape. */
     signedOn: (num) => signedOn(statusRecord, num),
     lastPlayedOn: (num) => lastPlayedBy[String(num)] || null,
+    /* THE DAY SOMEBODY STOPS BEING PICKABLE, derived once here so no screen
+       has to carry its own copy of the rule. Three already did, and one of
+       them - the match form - had quietly drifted to a different season
+       boundary from this file.
+
+       It is the leaving date where the club gave one, and otherwise the first
+       day of the season they are recorded as gone in, because being gone in a
+       season means gone for it and the season is the only granularity the
+       record has. Null for anybody still here, so a comparison against it is
+       the whole test: `!on || iso < on`. */
+    unavailableFrom: (num) => unavailableFrom(num),
     /* WHICH SEASONS A SHIRT NUMBER IS NAMED IN, from the team sheets. The
        website already leans on this to tell a first season from a second; the
        panel could not see it, so a player it labelled "Retained" carried no

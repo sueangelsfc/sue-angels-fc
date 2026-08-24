@@ -419,13 +419,16 @@
   var STATUS = {};      /* roster:status, read live below */
   var GONE = { retired: 1, departed: 1, staff: 1 };
 
-  /* A season runs Sep to May, so Jun to Aug belongs to the season about to
-     start. Same rule as seasonOf() in stats.mjs. */
+  /* A season runs Sep to May, so Jul and Aug belong to the season about to
+     start. THE CLUB SETS THIS BOUNDARY AND IT IS 1 JULY. Same rule as
+     seasonOf() in stats.mjs, which this had drifted from: it still read
+     `>= 5`, June, so a June friendly would have been filed under the season
+     ending and offered last season's departed players. */
   function seasonOfIso(iso) {
-    var d = new Date(iso + 'T12:00:00Z');
-    if (isNaN(d)) return null;
-    var y = d.getUTCFullYear();
-    var start = d.getUTCMonth() >= 5 ? y : y - 1;
+    var m = /^(\d{4})-(\d{2})/.exec(iso || '');
+    if (!m) return null;
+    var y = Number(m[1]);
+    var start = Number(m[2]) >= 7 ? y : y - 1;
     return String(start).slice(2) + '/' + String(start + 1).slice(2);
   }
 

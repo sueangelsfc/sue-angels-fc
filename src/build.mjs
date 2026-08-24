@@ -333,6 +333,11 @@ const adminSeed = {
     first: p.first || '', last: p.last || '',
     base: !p.signedHere,
     lastPlayed: d.lastPlayedOn(p.num) || '',
+    /* The day somebody stops being pickable, derived once in dataset.mjs so
+       no screen carries its own copy of the rule. Three already did and one
+       had drifted to a different season boundary. A screen filters with one
+       comparison: `!goneFrom || matchDate < goneFrom`. */
+    goneFrom: d.unavailableFrom(p.num) || '',
   })),
   /* The bios ride with the Squad chunk, not here. They are 1.6KB gzipped of
      prose read by one screen, and control-seed.js is not deferred, so in the

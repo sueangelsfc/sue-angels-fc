@@ -201,12 +201,12 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://hvbquuvxcswylyguplfb.supabase.co; media-src 'self'; connect-src 'self' https://hvbquuvxcswylyguplfb.supabase.co wss://hvbquuvxcswylyguplfb.supabase.co; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://connect.facebook.net; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob: https://hvbquuvxcswylyguplfb.supabase.co https://i.ytimg.com https://www.google-analytics.com https://www.facebook.com; media-src 'self'; connect-src 'self' https://hvbquuvxcswylyguplfb.supabase.co wss://hvbquuvxcswylyguplfb.supabase.co https://www.google-analytics.com https://www.googletagmanager.com; frame-src 'self' https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'; upgrade-insecure-requests"
         }
       ]
     },
     {
-      "source": "/sa.css",
+      "source": "/(.*).css",
       "headers": [
         {
           "key": "Cache-Control",
@@ -215,7 +215,7 @@
       ]
     },
     {
-      "source": "/sa.js",
+      "source": "/(.*).js",
       "headers": [
         {
           "key": "Cache-Control",

@@ -6325,6 +6325,103 @@ console.log(`\n${'='.repeat(66)}`);
 }
 
 /* ==========================================================================
+   THE CONTENT SECURITY POLICY, IN BOTH DIRECTIONS
+
+   A CSP fails silently whichever way it is wrong, and this site had it wrong
+   both ways at once.
+
+   TOO WIDE. `'unsafe-eval'`, `unpkg.com` and `cdn.jsdelivr.net` were in
+   script-src for the Babel-in-the-browser admin, retired in July. Nothing had
+   loaded from either host since, and no page would have rendered differently
+   with them removed: an unused permission is invisible.
+
+   TOO NARROW, which is worse. `sa.js` loads Google Analytics and the Meta
+   pixel once a visitor consents, and neither host was permitted - so the day
+   somebody set SA_GA_ID, analytics would have been blocked in the console of
+   a page that looked entirely fine. The panel's video screen draws YouTube
+   thumbnails from i.ytimg.com, which img-src did not allow, so those were
+   broken on the live panel.
+
+   So the policy is data in src/lib/csp.mjs, every host names the shipped file
+   that needs it, and this asks three questions. None of them is a judgement
+   call: a host whose file no longer mentions it is dead, a host the output
+   fetches and no directive permits is broken, and a vercel.json that disagrees
+   with the source is a hand edit.
+
+   It is asserted rather than generated because Vercel reads vercel.json BEFORE
+   running the build, so a generated one would always be a deploy behind.
+   ========================================================================== */
+{
+  const csp = await import(path.join(ROOT, 'src', 'lib', 'csp.mjs'));
+  const vercel = JSON.parse(fs.readFileSync(path.join(ROOT, 'vercel.json'), 'utf8'));
+  const shipped = vercel.headers
+    .flatMap((b) => b.headers)
+    .filter((h) => h.key === 'Content-Security-Policy')
+    .map((h) => h.value);
+
+  check('exactly one Content-Security-Policy header is served', shipped.length === 1,
+    `found ${shipped.length}`);
+  check('vercel.json carries the policy src/lib/csp.mjs describes',
+    shipped[0] === csp.renderCSP(),
+    'hand edited; the correct value is\n    ' + csp.renderCSP());
+
+  /* EVERY HOST STILL HAS A REASON. The file named by `provenBy` has to
+     actually mention the host, so an allowance outlives its cause by exactly
+     one test run. This is the check that unpkg and jsdelivr would have failed
+     from the day the .jsx admin was deleted. */
+  const dead = [];
+  const permitted = new Set(csp.claims().map((c) => c.host));
+  for (const c of csp.claims()) {
+    /* A transitive host is proven by its parent: no file of ours will ever
+       name the address gtag.js posts to, and grepping for one would only
+       prove we had guessed it. Stop loading gtag and this falls with it. */
+    if (c.requiredBy) {
+      if (!permitted.has(c.requiredBy)) {
+        dead.push(`${c.host}: nothing loads ${c.requiredBy} any more (${c.why})`);
+      }
+      continue;
+    }
+    const bare = c.host.replace(/^(https?|wss):\/\//, '');
+    let src = '';
+    try { src = fs.readFileSync(path.join(ROOT, c.provenBy), 'utf8'); } catch { src = ''; }
+    if (!src) { dead.push(`${c.host}: ${c.provenBy} does not exist`); continue; }
+    if (!src.includes(bare)) dead.push(`${c.host}: ${c.provenBy} no longer mentions it (${c.why})`);
+  }
+  check('every host in the policy names how it is proven',
+    csp.claims().every((c) => c.provenBy || c.requiredBy),
+    csp.claims().filter((c) => !c.provenBy && !c.requiredBy).map((c) => c.host).join(', '));
+  check('every host in the policy is still needed by the file that named it',
+    dead.length === 0, dead.join('   |   '));
+
+  /* AND EVERYTHING THE OUTPUT FETCHES IS PERMITTED. Only fetching contexts
+     are governed - a plain <a href> to the NHS is navigation, which CSP does
+     not touch - so this looks at the four attributes that are, plus the .src
+     assignments the scripts make, which is how the analytics loaders and the
+     panel's thumbnails are reached. */
+  const fetched = new Map();          /* host -> kind */
+  const note = (kind, url) => {
+    const m = /^(?:https?|wss):\/\/([a-z0-9.-]+)/i.exec(url);
+    if (m) fetched.set(m[1].toLowerCase() + ' as ' + kind, { kind, host: m[1].toLowerCase() });
+  };
+  const scan = (text) => {
+    for (const m of text.matchAll(/<script\b[^>]*?\bsrc=["']([^"']+)["']/gi)) note('script', m[1]);
+    for (const m of text.matchAll(/<img\b[^>]*?\bsrc=["']([^"']+)["']/gi)) note('img', m[1]);
+    for (const m of text.matchAll(/<iframe\b[^>]*?\bsrc=["']([^"']+)["']/gi)) note('frame', m[1]);
+    for (const m of text.matchAll(/\.src\s*=\s*["']([^"']+)["']/g)) note('script', m[1]);
+    for (const m of text.matchAll(/\bfetch\(\s*["']([^"']+)["']/g)) note('connect', m[1]);
+  };
+  for (const h of pages.values()) scan(h);
+  for (const f of fs.readdirSync(ROOT).filter((f) => /\.js$/.test(f))) {
+    scan(fs.readFileSync(path.join(ROOT, f), 'utf8'));
+  }
+  const blocked = [...fetched.values()]
+    .filter((f) => !csp.permits(f.kind, f.host))
+    .map((f) => `${f.host} fetched as ${f.kind}`);
+  check('nothing the output fetches is blocked by the policy',
+    blocked.length === 0, [...new Set(blocked)].join('   |   '));
+}
+
+/* ==========================================================================
    THE REPORT GOES LAST, AND THAT IS NOT A TIDINESS PREFERENCE
 
    It used to sit two thirds of the way down this file, because for a long

@@ -1906,6 +1906,60 @@ for (const [f, kb] of Object.entries({
      Control panel -> Results". Each half is asserted separately, because a
      field that renders and is never saved looks exactly like a working one
      until somebody reopens the record. */
+  /* MILESTONES IN SIGHT ARE FOR PEOPLE WHO CAN STILL REACH THEM. This is the
+     only band on the site that makes a claim about the future, and it made it
+     about everybody: William Clark retired in June 2026 and the front page
+     had him two assists from ten.
+
+     Crafted data, because the archive is one dataset and a filter that
+     removes nobody today would pass the same check. The real pages are
+     asserted underneath, which is where a regression would actually show. */
+  {
+    const { milestones: ms } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+    const mk = (name, status, extra) => Object.assign(
+      { name, slug: name.toLowerCase().replace(/ /g, '-'), status,
+        apps: 0, starts: 0, goals: 0, assists: 0, cleanSheets: 0 }, extra);
+
+    const rows = ms([
+      mk('Still Here', 'active', { assists: 9 }),
+      mk('Has Retired', 'retired', { assists: 9 }),
+      mk('Has Left', 'departed', { assists: 9 }),
+      mk('Now Coaching', 'staff', { assists: 9 }),
+      mk('Long Term Injured', 'injured', { assists: 9 }),
+      mk('Out This Season', 'away', { assists: 9 }),
+    ]).map((r) => r.player.name);
+    check('a milestone in sight is only claimed for somebody still at the club',
+      !rows.includes('Has Retired') && !rows.includes('Has Left')
+      && !rows.includes('Now Coaching'),
+      `claimed a future milestone for: ${rows.join(', ')}`);
+    /* Injured and unavailable are still AT the club, and dropping them would
+       be a different unkindness: a man out for the season is coming back. */
+    check('but injury or a season out does not remove somebody',
+      rows.includes('Still Here') && rows.includes('Long Term Injured')
+      && rows.includes('Out This Season'));
+
+    /* The step reads `apps`, and the label has always said appearances. They
+       were the same number until a substitute the record can prove was on the
+       pitch started counting, and then the band told the front page that a
+       man on 25 appearances was one away from 25. */
+    const reached = ms([mk('Already There', 'active', { apps: 25, starts: 24 })]);
+    check('somebody who has reached a milestone is not still approaching it',
+      !reached.some((r) => r.label === 'appearances'),
+      'the appearances milestone is counting starts under an appearances label');
+
+    /* And on the real page. */
+    const homeHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+    if (/sec--milestones/.test(homeHtml)) {
+      const band = homeHtml.split('sec--milestones')[1].split('</section>')[0];
+      const { buildDataset: bdM } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+      const gone = bdM().players.filter((pl) => ['retired', 'departed', 'staff']
+        .includes(pl.status)).map((pl) => pl.name);
+      const named = gone.filter((n) => band.includes(n));
+      check('and nobody who has left is named in the published band',
+        named.length === 0, `named: ${named.join(', ')}`);
+    }
+  }
+
   /* ONE LIST OF COACH TITLES. There were two, hard-coded in two screens, and
      they had drifted on the two most senior jobs at the club: Coaches offered
      "First-team manager"/"First team coach" and Squad offered

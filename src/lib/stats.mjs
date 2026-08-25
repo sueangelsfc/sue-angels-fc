@@ -14,6 +14,7 @@
    ========================================================================== */
 import { cameOn as subsCameOn } from './subs.mjs';
 import { clubIdentity } from './club-name.mjs';
+import { isPlaying } from './squad-status.mjs';
 
 export const US = "Sue's Angels FC";
 const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
@@ -958,15 +959,37 @@ export function playerProfile(player, matches, squad) {
    letting a reader assume the more flattering reading.
    ========================================================================== */
 const MILESTONE_STEPS = [
-  { key: 'starts', label: 'appearances', step: 25 },
+  /* `apps`, not `starts`. The label has always read "appearances" and the
+     figure was starts, which were the same number until an appearance started
+     counting a substitute the record can prove was on the pitch. They differ
+     for ten players now, and the band was telling the front page that Charlie
+     Dunkley was one appearance from 25 when he had already played 25. */
+  { key: 'apps', label: 'appearances', step: 25 },
   { key: 'goals', label: 'goals', step: 25 },
   { key: 'assists', label: 'assists', step: 10 },
   { key: 'cleanSheets', label: 'clean sheets', step: 10 },
 ];
 
+/* MILESTONES IN SIGHT ARE FOR PEOPLE WHO CAN STILL REACH THEM.
+
+   This is the one band on the site that makes a claim about the FUTURE, and
+   it was making it about everybody: William Clark has retired and the front
+   page had him two assists from ten. He is not two away from anything. The
+   same would have been true of the twelve who have left.
+
+   Their record is untouched, which is the point of the distinction. Every
+   appearance and every goal stays on the player page, in the leaderboards, in
+   the club records and in Those who came before; a career that is finished is
+   still a career. What stops is the club saying they are ABOUT to do
+   something. Past tense yes, future tense no.
+
+   The filter lives here rather than at the call site because the band and the
+   test that decides whether to draw the band both call this, and a band that
+   empties itself on a different question from the one it renders is how a
+   heading ends up over an empty list. */
 export function milestones(players, within = 3) {
   const out = [];
-  for (const p of players || []) {
+  for (const p of (players || []).filter((x) => isPlaying(x && x.status))) {
     for (const m of MILESTONE_STEPS) {
       const v = Number(p[m.key]) || 0;
       /* Nobody is "approaching" their first. A milestone is a number somebody

@@ -1149,8 +1149,8 @@ export function home(d) {
             <span class="mst__v">${esc(`${m.value}/${m.next}`)}</span>
           </li>`).join('\n          ')}
         </ul>
-        <p class="psn__note rv">Competitive matches only, and appearances count starts:
-          Sunday-league returns do not record substitutes or minutes, so neither is claimed.</p>
+        <p class="psn__note rv">Competitive matches only. Anyone who has retired or left the club
+          is not listed: their record stands on their own page, but they are not about to add to it.</p>
       </div>
     </section>` : '';
 

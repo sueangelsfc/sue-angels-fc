@@ -273,8 +273,23 @@ const adminSeed = {
   venue: `${CLUB.venue.shortName}, ${CLUB.venue.district}`,
   competitions: [...new Set([CLUB.nextDivision, CLUB.division,
     ...d.played.map((m) => m.competition), 'Pre-season friendly'])].filter(Boolean).sort(),
-  clubs: [...new Set(d.matches.flatMap((m) => [m.home, m.away]))]
-    .filter((n) => n && !isUs(n)).sort(),
+  /* EVERY CLUB THE PANEL MIGHT BE ASKED TO NAME, which is not the same as
+     every club it has played.
+
+     This was the played list alone, so four of the eight clubs in the new
+     division - Bristol City (London) Supporters, Junction Elite FC Sunday 3rd
+     Team, Pure Football FC 1st Team and TSM Rovers - were not offered when
+     the club came to enter a result against them. The name would then be
+     typed free-hand, and a club spelled a second way is a club counted twice:
+     that is exactly how the archive's "BPR Men's" and the fixture list's
+     "BPR FC" came to be two clubs on the home page at once.
+
+     The division list is the one place a club can be named before it has been
+     played, so it belongs here for the same reason it exists at all. */
+  clubs: [...new Set([
+    ...d.matches.flatMap((m) => [m.home, m.away]),
+    ...(((d.nextDivisionTable || {}).clubs) || []),
+  ])].filter((n) => n && !isUs(n)).sort(),
   /* WHICH OF THEM ALREADY HAVE A CREST, worked out the way the website works
      it out.
 

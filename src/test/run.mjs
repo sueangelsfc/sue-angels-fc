@@ -1906,6 +1906,22 @@ for (const [f, kb] of Object.entries({
      Control panel -> Results". Each half is asserted separately, because a
      field that renders and is never saved looks exactly like a working one
      until somebody reopens the record. */
+  /* EVERY CLUB THIS SEASON IS OFFERED. The dropdown was built from clubs
+     PLAYED, so four of the eight in the new division were missing and their
+     names would have been typed free-hand - which is how one club becomes two
+     spellings and two rows. Asserted against the division list rather than a
+     count, because a count passes while the wrong four are present. */
+  {
+    const seedJs = fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8');
+    const seedObj = JSON.parse(seedJs.replace(/^window\.SA_SEED=/, '').replace(/;\s*$/, ''));
+    const div = JSON.parse(fs.readFileSync(
+      path.join(ROOT, 'src', 'data', 'league-eight-2627.json'), 'utf8')).clubs
+      .filter((c) => !/sue.?s angels/i.test(c));
+    const missing = div.filter((c) => !(seedObj.clubs || []).includes(c));
+    check('the panel offers every club in the division it is about to play',
+      missing.length === 0, `not offered: ${missing.join(', ')}`);
+  }
+
   check('the match form asks where it was played',
     /id="m-venue"/.test(matchChunk),
     'the venue can only be set when a fixture is created, never corrected after');

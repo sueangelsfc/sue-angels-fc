@@ -99,11 +99,58 @@ export function toRows(cells, knownClubs) {
   return { rows, problems };
 }
 
+/* ---- A TABLE SOMEBODY PASTED IN ----------------------------------------
+   FA Full-Time's Cloudflare returns 403 to automated clients. Confirmed from
+   two unrelated addresses on 25 Aug 2026: this laptop and a GitHub Actions
+   runner, which is a different network entirely. So it is policy, not a rate
+   limit, and no amount of scheduling fixes it.
+
+   A person's own browser reaches the page perfectly well. So the useful thing
+   is not to keep trying to fetch it, it is to take what they copied and put
+   every check around it that the fetched path had. Typing nine rows of
+   figures into a JSON file by hand is exactly how a wrong table gets
+   published; pasting them into something that checks the arithmetic is not.
+
+   Deliberately forgiving about SHAPE and strict about CONTENT. Copying a
+   table out of a browser gives tabs, or runs of spaces, or pipes, depending
+   on where it lands, and none of that is the club's problem. What it will not
+   forgive is a row that does not add up. */
+export function fromText(text) {
+  const out = [];
+  for (const raw of String(text || '').split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line) continue;
+    /* A row is: a position, a club name, then eight figures. The club name is
+       whatever sits between them and may contain spaces, digits and
+       apostrophes - "Pure Football FC 2.0", "Junction Elite FC Sunday 3rd
+       Team" - so it is found by taking the last eight numbers off the end
+       rather than by splitting on whitespace. */
+    const m = line.replace(/\s*\|\s*/g, ' ').replace(/\t+/g, ' ')
+      .match(/^(\d+)\s+(.+?)\s+(-?\+?\d+)\s+(-?\+?\d+)\s+(-?\+?\d+)\s+(-?\+?\d+)\s+(-?\+?\d+)\s+(-?\+?\d+)\s+([-+]?\d+)\s+(-?\+?\d+)$/);
+    if (!m) continue;
+    out.push(m.slice(1, 11));
+  }
+  return out.length ? out : null;
+}
+
 /* ---- Main --------------------------------------------------------------- */
 const same = (a, b) => JSON.stringify(a || []) === JSON.stringify(b || []);
 
 async function main() {
   const data = JSON.parse(fs.readFileSync(FILE, 'utf8'));
+
+  /* --text <file> skips the fetch entirely and reads a pasted table. Every
+     check below it is the same. */
+  const ti = process.argv.indexOf('--text');
+  if (ti > -1) {
+    const file = process.argv[ti + 1];
+    if (!file || !fs.existsSync(file)) die(4, 'Pass --text with a file holding the pasted table.');
+    const cells = fromText(fs.readFileSync(file, 'utf8'));
+    if (!cells) die(4, 'Found no table rows in that file. A row is a position, a club and eight figures.');
+    say(`Read ${cells.length} rows from ${file}.`);
+    return finish(data, cells);
+  }
+
   const links = fulltimeLinks(data.fulltime);
   if (!links) die(4, 'No FA Full-Time ids on record for this division, so there is nothing to fetch.');
 
@@ -130,7 +177,12 @@ async function main() {
 
   const cells = findTable(html);
   if (!cells) die(4, 'Fetched the page but found no league table on it. The markup may have changed.');
+  return finish(data, cells);
+}
 
+/* Everything after the rows exist, whichever way they arrived. One path, so a
+   pasted table cannot be held to a lower standard than a fetched one. */
+function finish(data, cells) {
   const { rows, problems } = toRows(cells, data.clubs || []);
   if (problems.length) {
     die(5, `The table does not add up, so nothing was written:\n  - ${problems.join('\n  - ')}`);

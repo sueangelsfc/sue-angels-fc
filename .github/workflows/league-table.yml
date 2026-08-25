@@ -80,7 +80,13 @@ jobs:
           echo "code=$code" >> "$GITHUB_OUTPUT"
           case "$code" in
             0) if grep -q CHANGED /tmp/pull.log; then echo "changed=yes" >> "$GITHUB_OUTPUT"; else echo "changed=no" >> "$GITHUB_OUTPUT"; fi ;;
-            3) echo "::warning::FA Full-Time is blocking this runner. Not retrying and not working around it. Paste the table in instead." ; exit 0 ;;
+            # Confirmed on 25 Aug 2026 from this laptop AND from a GitHub
+            # runner, two unrelated networks: Full-Time's Cloudflare returns
+            # 403 to automated clients as policy, not as a rate limit. So this
+            # is the expected outcome until the FA changes that, and the job
+            # says so once and stops rather than pretending to have failed.
+            # The table gets in by hand: node scripts/pull-league-table.mjs --text <file>
+            3) echo "::warning::FA Full-Time is blocking this runner (expected). Paste the table instead: node scripts/pull-league-table.mjs --text <file>" ; exit 0 ;;
             4) echo "::warning::Fetched the page but found no league table on it. The markup may have changed." ; exit 0 ;;
             5) echo "::error::The table did not add up, so nothing was written. See the log." ; exit 1 ;;
             *) echo "::error::pull-league-table.mjs exited $code." ; exit 1 ;;

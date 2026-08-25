@@ -1005,7 +1005,16 @@
          worse than the silence it was meant to fix. */
       var scope = el.closest('label') || el;
       var next = scope.nextElementSibling;
-      var note = (next && next.classList && next.classList.contains('cp-note')) ? next : null;
+      /* `field__hint` is what the editors actually use beside a control;
+         `cp-note` is the class for a note about a whole section. This looked
+         for cp-note alone, which is the wrong half of the vocabulary: the
+         panel's 39 field hints all carry field__hint, so the wiring ran on
+         every render and attached itself to nothing. The suite asserted the
+         mechanism existed rather than that it caught anything, so it passed
+         while the feature was inert. */
+      var note = (next && next.classList
+        && (next.classList.contains('field__hint') || next.classList.contains('cp-note')))
+        ? next : null;
       if (!note) return;
       if (!note.id) { hintId += 1; note.id = 'cp-hint-' + hintId; }
       el.setAttribute('aria-describedby', note.id);

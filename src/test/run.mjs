@@ -682,10 +682,31 @@ for (const f of shipped) {
      confidence is worse than the silence it replaced. */
   {
     const shell = fs.readFileSync(path.join(ROOT, 'src', 'admin', '10-app.js'), 'utf8');
+    const adminSources = ['10-app.js'].concat(
+      fs.readdirSync(path.join(ROOT, 'src', 'admin', 'lazy')).map((f) => path.join('lazy', f))
+    ).map((rel) => fs.readFileSync(path.join(ROOT, 'src', 'admin', rel), 'utf8'));
     const start = shell.indexOf('var hintId = 0;');
     check('the shell associates hints with their fields', start > -1);
     if (start > -1) {
       const wire = shell.slice(start, shell.indexOf('function refresh(key)', start));
+      /* THE CLASS THE SHELL LOOKS FOR MUST BE THE CLASS THE EDITORS WRITE.
+         This first looked for `cp-note` alone - the class for a note about a
+         whole SECTION - while every one of the panel's field hints carries
+         `field__hint`. The wiring ran on every render and attached itself to
+         nothing, and the check above passed the whole time, because it asked
+         whether the mechanism existed rather than whether it caught anything.
+         Found by opening the panel in a browser and reading the attribute off
+         a real field. */
+      /* Comments stripped first: this block's own prose names both classes,
+         so testing the raw slice matched the explanation rather than the
+         code, and the probe for it passed while the code was wrong. */
+      const wireCode = wire.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ');
+      for (const cls of ['field__hint', 'cp-note']) {
+        if (!adminSources.some((x) => x.includes(cls))) continue;
+        check(`the shell recognises "${cls}", which the editors use for hints`,
+          wireCode.includes(cls),
+          'the wiring runs on every render and attaches to nothing');
+      }
       check('a hint is taken only from the element immediately after the field',
         /nextElementSibling/.test(wire) && !/querySelector\(':scope/.test(wire),
         'a looser lookup attaches another field\'s hint');

@@ -172,6 +172,8 @@ A warning is not a save. The shell keeps a **draft of every editor as it is type
 ### The hint under a field is part of the field
 Every editor writes its own markup - there is no shared field builder - so each puts its explanation in a `.cp-note` beside the control and none of them associates the two. The sentence saying what a field does and what it changes on the website was reaching sighted users only. The shell wires `aria-describedby` after every render, generically, for the same reason it holds the drafts.
 
+**The class it looks for is `field__hint` or `cp-note`.** It looked for `cp-note` alone at first - the class for a note about a whole SECTION - while every one of the panel's 25 field hints carries `field__hint`. The wiring ran on every render and attached itself to nothing, and the suite passed throughout, because the check asked whether the mechanism existed rather than whether it caught anything. Found by opening the panel in a browser and reading the attribute off a real field, which is the only thing that could have found it.
+
 **Only the element immediately after the field**, never a looser lookup. The first version fell back to "the first `.cp-note` among my siblings", so a field with no hint of its own picked up one belonging to a field further up the section: a match-notes textarea was described to a screen reader as "Shown on the results page". A wrong sentence read with total confidence is worse than the silence it replaced, and the suite's check for this is the negative one.
 
 The panel also carries `aria-busy` while a screen fetches its chunk and reads the database. A spinner is a picture; `aria-busy` is the same fact said out loud.

@@ -21,7 +21,12 @@ name: League Eight table
 on:
   schedule:
     - cron: "7 16 * * 0"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Read the table and report it, but change nothing. Use this to find out whether the runner can reach FA Full-Time at all."
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -46,10 +51,16 @@ jobs:
       # The season starts on Sunday 6 September 2026. Before that there is
       # nothing to read, and a job that runs anyway teaches everybody to
       # ignore it.
+      # The date gate is for the SCHEDULE only. A run somebody started by hand
+      # is a run somebody wants to happen, and the useful thing to test before
+      # September is whether the runner can reach the page at all.
       - name: Has the season started?
         id: season
         run: |
-          if [ "$(date -u +%Y-%m-%d)" \< "2026-09-06" ]; then
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "Started by hand, so running whatever the date."
+            echo "go=yes" >> "$GITHUB_OUTPUT"
+          elif [ "$(date -u +%Y-%m-%d)" \< "2026-09-06" ]; then
             echo "League Eight has not kicked off yet. Nothing to do."
             echo "go=no" >> "$GITHUB_OUTPUT"
           else
@@ -61,12 +72,14 @@ jobs:
         if: steps.season.outputs.go == 'yes'
         run: |
           set +e
-          node scripts/pull-league-table.mjs | tee /tmp/pull.log
+          DRY=""
+          [ "${{ inputs.dry_run }}" = "true" ] && DRY="--dry-run"
+          node scripts/pull-league-table.mjs $DRY | tee /tmp/pull.log
           code=${PIPESTATUS[0]}
           set -e
           echo "code=$code" >> "$GITHUB_OUTPUT"
           case "$code" in
-            0) grep -q CHANGED /tmp/pull.log && echo "changed=yes" >> "$GITHUB_OUTPUT" || echo "changed=no" >> "$GITHUB_OUTPUT" ;;
+            0) if grep -q CHANGED /tmp/pull.log; then echo "changed=yes" >> "$GITHUB_OUTPUT"; else echo "changed=no" >> "$GITHUB_OUTPUT"; fi ;;
             3) echo "::warning::FA Full-Time is blocking this runner. Not retrying and not working around it. Paste the table in instead." ; exit 0 ;;
             4) echo "::warning::Fetched the page but found no league table on it. The markup may have changed." ; exit 0 ;;
             5) echo "::error::The table did not add up, so nothing was written. See the log." ; exit 1 ;;

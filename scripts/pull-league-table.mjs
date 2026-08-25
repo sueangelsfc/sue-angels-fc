@@ -139,6 +139,16 @@ async function main() {
 
   if (same(rows, data.table)) { say('No change since the last run.'); process.exit(0); }
 
+  /* --dry-run answers one question - can this machine read the page at all -
+     without touching the record. Worth having because the interesting failure
+     is a network one, and finding that out on the first Sunday of the season
+     is finding it out too late. */
+  if (process.argv.includes('--dry-run')) {
+    say(`Would have written ${rows.length} rows. Dry run, so nothing was changed.`);
+    for (const r of rows) say(`  ${String(r.p).padStart(2)}  ${r.c.padEnd(34)} P${r.pl} W${r.w} D${r.d} L${r.l}  ${r.gf}-${r.ga}  ${r.pts}pts`);
+    process.exit(0);
+  }
+
   data.table = rows;
   data._tableRead = new Date().toISOString().slice(0, 10);
   fs.writeFileSync(FILE, `${JSON.stringify(data, null, 2)}\n`);

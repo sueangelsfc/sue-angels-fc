@@ -852,6 +852,21 @@ for (const f of shipped) {
       `league.html has ${seen.league.length}`);
     check('the fixtures page links the division fixture list',
       seen.fixtures.includes(want.fixtures));
+
+    /* CUP TIES ARE ASKED FOR. Fifteen of this club's matches are cup ties
+       across four competitions, so a fixture link showing league football
+       alone hides a quarter of the season - and a supporter checking a Sunday
+       would find nothing and conclude there was no game. `3` is Full-Time's
+       "include other groups and County Cups", and it is also its default,
+       which is why it is pinned rather than inherited: a link that works
+       because of somebody else's default changes when they change it. */
+    check('the fixture and result links ask for cup ties',
+      /selectedRelatedFixtureOption=3/.test(want.fixtures)
+      && /selectedRelatedFixtureOption=3/.test(want.results),
+      'cup ties are being inherited from Full-Time\'s default rather than requested');
+    check('and the table and scorers do not, being league football by definition',
+      !/selectedRelatedFixtureOption/.test(want.table)
+      && !/selectedRelatedFixtureOption/.test(want.scorers));
     check('the results page links the division results',
       seen.results.includes(want.results));
 

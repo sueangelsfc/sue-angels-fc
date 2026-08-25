@@ -25,27 +25,44 @@
 
 /* Every page takes the same query. selectedCompetition=0 is Full-Time's own
    "no cup filter" value and is required: without it the division pages fall
-   back to the whole league. */
+   back to the whole league.
+
+   CUP TIES ARE ASKED FOR, NOT INHERITED. This club plays four cup
+   competitions and fifteen of its matches are cup ties, so a fixture list
+   that showed league football alone would be missing a quarter of the
+   season - and worse, a supporter checking a Sunday would find nothing and
+   conclude there was no game.
+
+   `selectedRelatedFixtureOption=3` is Full-Time's "include other groups and
+   County Cups". It is ALSO its current default, which is exactly why it is
+   pinned: a link that works because of somebody else's default is a link that
+   changes when they change it, silently, and nothing here would notice.
+
+   It goes on the fixture and result lists only. A table is league football by
+   definition and the scoring charts have their own scope, so adding it there
+   would be noise pretending to be a decision. */
+const CUPS = 'selectedRelatedFixtureOption=3';
 const PAGES = {
-  table: 'table.html',
-  fixtures: 'fixtures.html',
-  results: 'results.html',
-  scorers: 'statLeaders.html',
+  table: { page: 'table.html' },
+  fixtures: { page: 'fixtures.html', cups: true },
+  results: { page: 'results.html', cups: true },
+  scorers: { page: 'statLeaders.html' },
 };
 
 export function fulltimeLinks(ids) {
   const { league, season, division, fixtureGroup } = ids || {};
   if (!league || !season || !division) return null;
-  const q = [
+  const base = [
     `league=${encodeURIComponent(league)}`,
     `selectedSeason=${encodeURIComponent(season)}`,
     `selectedDivision=${encodeURIComponent(division)}`,
     'selectedCompetition=0',
     ...(fixtureGroup ? [`selectedFixtureGroupKey=${encodeURIComponent(fixtureGroup)}`] : []),
-  ].join('&');
+  ];
   const out = {};
-  for (const [key, page] of Object.entries(PAGES)) {
-    out[key] = `https://fulltime.thefa.com/${page}?${q}`;
+  for (const [key, spec] of Object.entries(PAGES)) {
+    const q = spec.cups ? [...base, CUPS] : base;
+    out[key] = `https://fulltime.thefa.com/${spec.page}?${q.join('&')}`;
   }
   return out;
 }

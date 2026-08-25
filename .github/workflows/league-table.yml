@@ -1,0 +1,99 @@
+# ==========================================================================
+# THE LEAGUE EIGHT TABLE, ON A SUNDAY AFTERNOON
+#
+# Runs in GitHub's cloud, so it does not need anybody's laptop open.
+#
+# IT OPENS A PULL REQUEST. IT DOES NOT PUSH TO MAIN. A push to main deploys
+# to www.suesangelsfc.co.uk, and `npm run verify` cannot check a League Eight
+# table the way it checks the League Ten one: that reconciles against the
+# division's ninety transcribed results, and there are none on record for
+# 26/27 yet. The usual guard does not exist for this table, so a person is
+# the guard. Merging the PR is the publish.
+#
+# 16:07 UTC, not 16:07 local. GitHub cron is always UTC and Britain is not,
+# so a fixed UTC time drifts an hour against the clocks. This one is
+# deliberately set so it lands AT OR AFTER 16:00 local all year: 17:07 BST in
+# summer, 16:07 GMT in winter. Late is harmless, early misses results that
+# have not been submitted yet.
+# ==========================================================================
+name: League Eight table
+
+on:
+  schedule:
+    - cron: "7 16 * * 0"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: league-table
+  cancel-in-progress: false
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the site
+        uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # The season starts on Sunday 6 September 2026. Before that there is
+      # nothing to read, and a job that runs anyway teaches everybody to
+      # ignore it.
+      - name: Has the season started?
+        id: season
+        run: |
+          if [ "$(date -u +%Y-%m-%d)" \< "2026-09-06" ]; then
+            echo "League Eight has not kicked off yet. Nothing to do."
+            echo "go=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "go=yes" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Read the table from FA Full-Time
+        id: pull
+        if: steps.season.outputs.go == 'yes'
+        run: |
+          set +e
+          node scripts/pull-league-table.mjs | tee /tmp/pull.log
+          code=${PIPESTATUS[0]}
+          set -e
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          case "$code" in
+            0) grep -q CHANGED /tmp/pull.log && echo "changed=yes" >> "$GITHUB_OUTPUT" || echo "changed=no" >> "$GITHUB_OUTPUT" ;;
+            3) echo "::warning::FA Full-Time is blocking this runner. Not retrying and not working around it. Paste the table in instead." ; exit 0 ;;
+            4) echo "::warning::Fetched the page but found no league table on it. The markup may have changed." ; exit 0 ;;
+            5) echo "::error::The table did not add up, so nothing was written. See the log." ; exit 1 ;;
+            *) echo "::error::pull-league-table.mjs exited $code." ; exit 1 ;;
+          esac
+
+      # The same gate a person would run before publishing anything.
+      - name: Build, verify and test
+        if: steps.pull.outputs.changed == 'yes'
+        run: |
+          npm run build
+          npm run verify
+          npm test
+
+      - name: Open a pull request for review
+        if: steps.pull.outputs.changed == 'yes'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="league-table/$(date -u +%Y-%m-%d)"
+          git config user.name  "League Table Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add -A
+          git commit -m "$(printf 'The League Eight table, as the league has it on %s\n\nRead from FA Full-Time and checked before it was written: every row\nadds up (W+D+L is P, GF-GA is GD) and every club is one recorded in\nthis division. A points figure that is not 3W+D is reported rather\nthan rejected, because a deduction is real.\n\nOpened as a pull request rather than pushed. npm run verify\nreconciles the League Ten table against that division ninety\ntranscribed results, and there are no League Eight results on record\nto check this one against, so the usual guard does not exist here and\na person is the guard.\n\nCo-Authored-By: Claude Opus 5 <noreply@anthropic.com>' "$(date -u +'%d %B %Y')")"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --title "League Eight table: $(date -u +'%d %B %Y')" \
+            --body "$(printf 'Read from FA Full-Time this afternoon.\n\n```\n%s\n```\n\nBuild, `npm run verify` and the full suite all pass.\n\n**Merging this publishes it to www.suesangelsfc.co.uk.** Check the figures against the league page before you do: `npm run verify` reconciles the League Ten table against that division ninety results, and there are no League Eight results on record yet, so nothing has checked these numbers except the arithmetic within each row.' "$(sed -n '/^  [ 0-9]/p' /tmp/pull.log)")" \
+            --base main --head "$BRANCH"

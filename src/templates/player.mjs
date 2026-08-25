@@ -331,9 +331,9 @@ export function playerPage(p, d) {
                 <circle class="pf-plot__end" cx="${xy[xy.length - 1][0].toFixed(1)}" cy="${xy[xy.length - 1][1].toFixed(1)}" r="4" fill="var(--volt)" />
               </svg>
               <figcaption class="pf-plot__cap" data-readout>
-                <span class="pf-plot__lo">First start</span>
+                <span class="pf-plot__lo">First match</span>
                 <b>${esc(top)} ${esc(unit)}</b>
-                <span class="pf-plot__hi">Last start</span>
+                <span class="pf-plot__hi">Last match</span>
               </figcaption>
               <!-- Two hints, one shown per pointer. "Point at the line" is an
                    instruction a phone cannot follow, and it was the only thing
@@ -481,7 +481,7 @@ export function playerPage(p, d) {
           </section>` : ''}
 
           ${x.last.length ? `<section class="pf-sub" aria-labelledby="pf-l-${idx}">
-            ${rail(5, 'Most recent', `${x.last.length} ${x.last.length === 1 ? 'start' : 'starts'}`)}
+            ${rail(5, 'Most recent', `${x.last.length} ${x.last.length === 1 ? 'match' : 'matches'}`)}
             <h3 class="h2 rv" id="pf-l-${idx}">The last time <span class="volt">out.</span></h3>
             <ol class="pf-form rv">
               ${x.last.map((t) => `<li class="pf-form__item">
@@ -510,7 +510,7 @@ export function playerPage(p, d) {
         <div class="pf-tabs" data-season-tabs>
           ${seasons.map((s, i) => `<a class="pf-tab" href="#pf-s-${i}" data-season-tab="${i}">
             <b>${esc(s.name)}</b>
-            <i>${s.profile.starts ? `${s.profile.starts} ${s.profile.starts === 1 ? 'start' : 'starts'}` : 'Not started'}</i>
+            <i>${s.profile.apps ? `${s.profile.apps} ${s.profile.apps === 1 ? 'appearance' : 'appearances'}` : 'Not played'}</i>
           </a>`).join('\n          ')}
         </div>
         <div class="pf-panels">

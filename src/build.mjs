@@ -1074,7 +1074,7 @@ for (const p of profilePlayers) {
        historical fact on all thirty-seven of these pages. `d.lastTitle` is
        derived from the archive, which knows both the season and its league. */
     description: fitDesc(
-      `${p.name}, ${p.position} for ${CLUB.name}. ${plural(pr.starts, 'start')}, `
+      `${p.name}, ${p.position} for ${CLUB.name}. ${plural(pr.apps, 'appearance')}, `
       + `${plural(pr.goals, 'goal')} and ${plural(pr.assists, 'assist')} for the club.`,
       d.lastTitle ? `Part of the squad that won ${d.lastTitle.division} unbeaten in ${d.lastTitle.season}.` : '',
       `${CLUB.name}, ${CLUB.venue.district}.`,

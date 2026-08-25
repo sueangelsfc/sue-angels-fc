@@ -2340,6 +2340,16 @@ for (const [f, kb] of Object.entries({
         !/\bStarts\b/.test(html),
         'the page prints starts+substitute appearances under the word Starts');
     }
+    /* THE DESCRIPTION IS WHAT A SEARCH ENGINE READS, and it is derived from
+       the same profile, so it had the same fault where nobody would look:
+       "2 starts, 7 goals and 8 assists" in the meta tag and the JSON-LD. */
+    const wcHtml = fs.readFileSync(path.join(ROOT, 'players', 'william-clark.html'), 'utf8');
+    const desc = (wcHtml.match(/name="description" content="([^"]*)"/) || [])[1] || '';
+    check('a player description counts appearances, not starts',
+      /\b11 appearances\b/.test(desc), desc.slice(0, 90));
+    check('and the structured data says the same thing',
+      (wcHtml.match(/11 appearances/g) || []).length >= 2,
+      'the JSON-LD description disagrees with the meta description');
   }
 
   /* CARRYING AN OLD RECORD'S ASSISTS FORWARD

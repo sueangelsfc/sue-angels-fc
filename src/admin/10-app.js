@@ -536,6 +536,38 @@
           c1 ? 'Draw the cover' : 'Draw the covers', 'covers']);
       }
 
+      /* RECORDS THAT DISAGREE WITH THEMSELVES.
+
+         The match form has asked these four questions of the record in front
+         of it for a while, and asking them found three errors in the archive
+         that reading the data had not. But a question only the editor asks is
+         a question about the record somebody happens to have opened, and
+         nobody opens a match from October to check it: the three sat there,
+         written down in a developer's note, invisible to the only people who
+         could fix them.
+
+         Asked of everything stored, on the screen the club lands on. None of
+         them is a reason to refuse a save and none of them is guessed at -
+         each is the record contradicting itself in a way that shows on the
+         website, which is why the count is worth a line here. */
+      var byNum = {};
+      (SEED.squad || []).forEach(function (p) { byNum[String(p.num)] = p.name; });
+      var nameOfNum = function (n) { return byNum[String(n)] || 'Somebody'; };
+      var contradictory = matches.filter(function (m) {
+        return window.CPREC.matchProblems(m.data, nameOfNum).length > 0;
+      });
+      if (contradictory.length) {
+        var d1 = contradictory.length === 1;
+        warn.push([(d1
+          ? 'A match record disagrees with itself'
+          : contradictory.length + ' match records disagree with themselves')
+          + ': a goal credited to somebody not on the team sheet, a scoreline that does not '
+          + 'match the goals listed, or an unused substitute credited with something. '
+          + (d1 ? 'It shows' : 'They show') + ' on the website. Opening '
+          + (d1 ? 'it' : 'each one') + ' names the problem above the tabs.',
+        d1 ? 'Open the match' : 'Open the results', 'results']);
+      }
+
       /* The row a security check left behind. Deleting it needs the sign-in
          only the club has, which is why it is still there and why the club is
          the only one who can be told about it. */

@@ -111,10 +111,17 @@ export function boot({ rows = {}, empty = false, localStorage: ls, onScript, tra
     realAppend(node);
     if (node.localName === 'script' && node.getAttribute('src')) {
       const file = node.getAttribute('src').replace(/^\//, '').split('?')[0];
-      let err = null;
-      try { run(file); } catch (e) { err = e; }
-      if (err) { if (node.onerror) node.onerror(err); else throw err; }
-      else if (node.onload) node.onload();
+      /* A CHUNK THAT FAILS TO PARSE OR RUN IS A HARNESS FAULT, NOT A 404.
+         The shell turns onerror into "This section could not be downloaded",
+         which is the right sentence for a browser and completely wrong here:
+         a mutation probe whose target had moved threw inside `transform`, the
+         shell reported a connection problem, the rejection went unhandled and
+         Node printed the whole 30KB minified bundle as context. Re-thrown with
+         the real cause so the next one takes seconds rather than an hour. */
+      try { run(file); } catch (e) {
+        throw new Error('the panel harness could not run ' + file + ': ' + e.message);
+      }
+      if (node.onload) node.onload();
     }
     return node;
   };

@@ -2434,21 +2434,106 @@ for (const [f, kb] of Object.entries({
       check('every pane that offers players says which ring it is offering from',
         (code.match(/scopeBar\('(club|match)'\)/g) || []).length >= 5);
 
-      /* THE THREE QUESTIONS THE FORM ASKS OF A RECORD. Each one found real
-         errors in the archive, and each has to be asserted to EXIST here:
-         checks() reads the DOM, so it cannot be isolated and run the way
-         offer() and carryAssists() can, and a rule that quietly stops being
-         applied is exactly the failure this whole file keeps finding. */
-      check('the form compares the scoreline against the goals listed',
-        /goals\.length !== us/.test(code));
-      check('the form checks everybody named against the team sheet',
-        /not on the team sheet/.test(code) && /function credited\(\)/.test(code));
-      check('the form checks the armband and the Player of the Match too',
-        /'#m-capt'[\s\S]{0,80}'#m-motm'|'#m-motm'[\s\S]{0,80}'#m-capt'/.test(code),
-        'a captain who did not play would pass, which is how Old Freemen\'s was missed');
-      check('the form checks an unused substitute credited with something',
-        /\.benchDetail\[n\] \|\| \{\}\)\.on/.test(code)
-        && /unused substitute/.test(code));
+      /* THE FOUR QUESTIONS ARE ASKED, NOT GREPPED FOR.
+
+         They used to be asserted here by regular expression over the shipped
+         file, and the reason was written down beside them: checks() read the
+         DOM, so it could not be isolated and run the way offer() and
+         carryAssists() can. That is a weak check and it says so - a rule can
+         pass a regular expression while being applied to nothing, which is
+         precisely how one dropdown of nine came to be filtered.
+
+         They are a pure function over a record now (src/admin/05-record.js),
+         shared by the form and by the dashboard, so the shipped code can be
+         handed crafted records and asked what it says about them. */
+      {
+        const win = {};
+        const shell = fs.readFileSync(path.join(ROOT, 'control.js'), 'utf8');
+        /* Only the record module is wanted; the rest of the shell wants a
+           document. It is an IIFE of its own, so it runs alone. */
+        const recSrc = fs.readFileSync(path.join(ROOT, 'src', 'admin', '05-record.js'), 'utf8');
+        new Function('window', recSrc)(win);
+        check('the shipped shell carries the record checker',
+          /CPREC/.test(shell) && typeof win.CPREC.matchProblems === 'function');
+
+        const P = (d) => win.CPREC.matchProblems(d, (n) => 'P' + n);
+        const xi = Array.from({ length: 11 }, (_, i) => ({ num: i + 1 }));
+        const said = (d, re) => P(d).some((m) => re.test(m));
+
+        check('a complete record is not complained about',
+          P({ starters: xi, bench: [], goals: [{ num: 1 }], us: 1 }).length === 0,
+          P({ starters: xi, bench: [], goals: [{ num: 1 }], us: 1 }).join(' | '));
+        check('a team sheet that is not eleven is named',
+          said({ starters: xi.slice(0, 10), goals: [], us: 0 }, /names 10, not eleven/));
+        check('no team sheet at all is named',
+          said({ starters: [], goals: [], us: 0 }, /No team sheet/));
+        check('the scoreline is compared against the goals listed',
+          said({ starters: xi, goals: [{ num: 1 }], us: 3 }, /says 3 but 1 goal is listed/));
+        check('somebody named in the match but not on the sheet is found',
+          said({ starters: xi, goals: [{ num: 40 }], us: 1 }, /P40 is named in this match but not on the team sheet/));
+        /* The armband and the Player of the Match too - dropping those from
+           the question took the archive's count from three to two. */
+        for (const f of ['captain', 'motm', 'keeper']) {
+          check(`a ${f} who is not on the team sheet is found`,
+            said({ starters: xi, goals: [], us: 0, [f]: 40 }, /not on the team sheet/));
+        }
+        check('an unused substitute credited with something is found',
+          said({ starters: xi, bench: [{ num: 40 }], goals: [{ num: 40 }], us: 1 },
+            /unused substitute/));
+        check('a substitute the record says came on is not complained about',
+          !said({ starters: xi, bench: [{ num: 40, on: true }], goals: [{ num: 40 }], us: 1 },
+            /unused substitute/));
+        /* A fixture has not been played and a walkover was not, so neither
+           has a team sheet to disagree with. */
+        check('a fixture is not asked to have a team sheet',
+          P({ kind: 'fixture' }).length === 0);
+        check('a walkover is not asked to have a team sheet',
+          P({ kind: 'walkover' }).length === 0);
+
+        /* AND WHAT THE ARCHIVE ACTUALLY HOLDS, category by category.
+
+           This note used to say three, and three was the count of ONE of the
+           questions - the goal, the yellow card and the captain belonging to
+           somebody not on the team sheet. Asking the question of the stored
+           record rather than of the form found two more of exactly that kind:
+           an assist at Brockwell and one in the Woking cup tie, credited to
+           men who are on neither list.
+
+           They were invisible because the form asks about `goals[].assist`
+           and the flat `assists` array is derived on save, so it appears on
+           no tab. A question asked of the screen can only ever cover what is
+           on the screen, which is the whole reason these moved.
+
+           Named, not counted: `<=` passes when a check finds FEWER, which is
+           what a weakened check looks like. The club fixing one in the panel
+           is expected to fail this and to be settled by striking a line out. */
+        const live = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'recovered-live.json'), 'utf8'));
+        const askedOf = (re) => (live.matches || [])
+          .filter((m) => P(m.data).some((x) => re.test(x))).map((m) => m.key).sort();
+
+        check('the archive names five men in a match who are on no team sheet for it',
+          askedOf(/not on the team sheet/).join() === [
+            'r20251005-brockwell-h', 'r20251019-freemens', 'r20251207-woking-cc',
+            'r20260301-shepherds-a', 'r20260517-portolondon-drt',
+          ].join(), askedOf(/not on the team sheet/).join(', ') || 'none, so the question stopped being asked');
+
+        /* The bench's `on` field came after the archive, so every historical
+           substitute reads as unused. Eighteen matches credit one with
+           something. Ten players' appearance figures already move on the
+           evidence; this is the club being told it can settle the record. */
+        check('the archive names eighteen matches crediting an unused substitute',
+          askedOf(/unused substitute/).length === 18, `${askedOf(/unused substitute/).length}`);
+
+        /* Two league matches from 25/26 and five friendlies. Not a mistake in
+           the same way - nobody wrote a team sheet down - but the effect on
+           the website is the same: nobody is credited with playing. */
+        check('the archive names seven matches with no team sheet at all',
+          askedOf(/No team sheet/).length === 7, `${askedOf(/No team sheet/).length}`);
+
+        check('the archive names one match whose scoreline and goals disagree',
+          askedOf(/scoreline says/).join() === 'r20260816-brentford',
+          askedOf(/scoreline says/).join(', ') || 'none');
+      }
     }
   }
 

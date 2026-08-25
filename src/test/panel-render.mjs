@@ -35,13 +35,23 @@ async function everyPanel(ctx, keys, fn) {
 }
 
 /* A probe that silently changes nothing reports the check as weak when the
-   check is fine. `bust` refuses to be a no-op. */
+   check is fine. `bust` refuses to be a no-op.
+
+   It takes a REGULAR EXPRESSION as well as a string, because the target here
+   is minified and the minifier renames as the source moves: extracting the
+   record checks into their own file renamed one binding and a probe aimed at
+   `p.onSheet=h.starters...` stopped matching. It threw, exactly as designed -
+   but a pattern that survives a rename is better than one that has to be
+   re-aimed every time an unrelated function moves. */
 function bust(src, find, replace) {
-  if (!src.includes(find)) {
-    throw new Error('mutation probe found nothing to break: ' + JSON.stringify(find)
+  const found = find instanceof RegExp ? find.test(src) : src.includes(find);
+  if (!found) {
+    throw new Error('mutation probe found nothing to break: ' + String(find)
       + ' is not in the shipped file. The probe must be re-aimed, not deleted.');
   }
-  return src.split(find).join(replace);
+  return find instanceof RegExp
+    ? src.replace(new RegExp(find.source, find.flags.includes('g') ? find.flags : find.flags + 'g'), replace)
+    : src.split(find).join(replace);
 }
 
 export async function panelChecks() {
@@ -485,7 +495,7 @@ export async function panelProbes() {
          Note what does NOT work here - swapping the scope string, because
          the call sites carry the same literal and change with it. */
       transform: (src, file) => (file.includes('matchedit')
-        ? bust(src, 'p.onSheet=h.starters.concat(h.bench)', 'p.onSheet=[]')
+        ? bust(src, /\.onSheet=\w+\.starters\.concat\(\w+\.bench\)/, '.onSheet=[]')
         : src),
     });
     let red = false;

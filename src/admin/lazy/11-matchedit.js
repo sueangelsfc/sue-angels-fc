@@ -1387,68 +1387,37 @@
        Neither is a save to refuse. A result typed at the side of a pitch is
        worth having before the detail is known. It says so instead, on every
        tab, until it is fixed or knowingly saved. */
+    /* THE FOUR QUESTIONS ARE NOT ASKED HERE ANY MORE.
+
+       They used to read the form's own fields, which meant the suite could
+       only assert by regular expression that they still existed, and the
+       dashboard could not ask them at all - so the three records in the
+       archive that disagree with themselves could only be found by opening
+       each one. They are one pure function over a record now
+       (src/admin/05-record.js). This builds the record the form is holding
+       and hands it over. */
     function checks() {
-      var out = [];
-      var kind = $('#m-kind', back).value;
-      if (kind === 'fixture' || kind === 'walkover') return out;
-      var xi = counts.starters.length;
-      if (xi && xi !== 11) out.push('The team sheet names ' + xi + ', not eleven.');
-      if (!xi) out.push('No team sheet, so nobody is credited with playing in this match.');
-      var us = Number($('#m-us', back).value);
-      if ($('#m-us', back).value !== '' && goals.length !== us) {
-        out.push('The scoreline says ' + us + ' but ' + (goals.length || 'no')
-          + (goals.length === 1 ? ' goal is' : ' goals are') + ' listed.');
-      }
-      /* EVERYBODY CREDITED WITH ANYTHING IN THIS MATCH, in one pass, so the
-         two questions below are asked of the same set. */
-      function credited() {
-        var seen = {};
-        goals.forEach(function (g) {
-          if (g.num) seen[g.num] = 1;
-          if (g.assist && g.assist.num) seen[g.assist.num] = 1;
-        });
-        Object.keys(GROUPS).forEach(function (f) {
-          if (f !== 'bench') (counts[f] || []).forEach(function (n) { seen[n] = 1; });
-        });
-        [$('#m-keeper', back).value, $('#m-capt', back).value, $('#m-motm', back).value]
-          .forEach(function (v) { if (v) seen[v] = 1; });
-        return seen;
-      }
-
-      var on = {};
-      S.onSheet.forEach(function (n) { on[n] = 1; });
-      if (S.onSheet.length) {
-        var did = credited();
-        var stray = Object.keys(did).filter(function (n) { return !on[n]; });
-        if (stray.length) {
-          out.push(stray.map(nameOf).join(', ') + (stray.length === 1 ? ' is' : ' are')
-            + ' named in this match but not on the team sheet.');
-        }
-
-        /* A MAN WHO DID NOT COME ON CANNOT HAVE SCORED.
-
-           The bench holds whether each substitute got on, and absent means he
-           did not, which is the honest default for a name with nothing beside
-           it. The archive predates that field, so every historical substitute
-           reads as unused - and eleven of the thirty-five played matches
-           credit a goal, an assist or the Player of the Match award to one of
-           them. Two of them read badly on the website today: William Clark
-           has seven goals from two appearances, because appearances count
-           starts and he came off the bench for five of them.
-
-           This is not the same fault as the one above. He IS on the sheet.
-           The sheet says he watched. */
-        var idle = counts.bench.filter(function (n) {
-          return did[n] && !(S.benchDetail[n] || {}).on;
-        });
-        if (idle.length) {
-          out.push(idle.map(nameOf).join(', ')
-            + (idle.length === 1 ? ' is named on the bench as an unused substitute but is'
-              : ' are named on the bench as unused substitutes but are')
-            + ' credited with something in this match. Tick Came on, on the team sheet.');
-        }
-      }
-      return out;
+      var benched = counts.bench.map(function (n) {
+        return { num: n, on: !!(S.benchDetail[n] || {}).on };
+      });
+      var usField = $('#m-us', back).value;
+      return window.CPREC.matchProblems({
+        kind: $('#m-kind', back).value,
+        starters: counts.starters.map(function (n) { return { num: n }; }),
+        bench: benched,
+        goals: goals,
+        /* THE ORPHANS TOO. An assist that paired with no goal is on no tab -
+           the flat list is derived on save - so the form was blind to two
+           records in the archive that credit one to a man on neither the
+           eleven nor the bench. Whatever is saved is what is asked about. */
+        assists: orphanAssists,
+        yellowCards: (counts.yellowCards || []).map(function (n) { return { num: n }; }),
+        redCards: (counts.redCards || []).map(function (n) { return { num: n }; }),
+        keeper: $('#m-keeper', back).value,
+        captain: $('#m-capt', back).value,
+        motm: $('#m-motm', back).value,
+        us: usField === '' ? null : Number(usField),
+      }, nameOf);
     }
 
     function paintChecks() {

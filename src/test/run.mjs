@@ -1906,6 +1906,50 @@ for (const [f, kb] of Object.entries({
      Control panel -> Results". Each half is asserted separately, because a
      field that renders and is never saved looks exactly like a working one
      until somebody reopens the record. */
+  /* A TEAM SHEET STORES A SLOT, AND SLOTS GET HANDED ON. Leon Burnett signed
+     in July 2026 and wears the number somebody wore against Brockwell Violets
+     in October 2025, so his page published "0 appearances in 25/26, plus 1
+     unused" for a match played nine months before he joined.
+
+     Crafted, because exactly one player in the archive is affected and one
+     example cannot tell a working rule from a lucky one. The real squad is
+     asserted underneath. */
+  {
+    const { playerStats: psT } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+    const sheet = (iso, num) => ({
+      id: `m${iso}`, iso, played: true, countsGoals: true, theirGoals: 1, ourGoals: 0,
+      detail: { starters: [{ num, positions: ['ST'] }], bench: [], goals: [] },
+    });
+    const squadT = [{ num: 3, first: 'New', last: 'Signing' }];
+    const before = psT([sheet('2025-10-05', 3)], squadT, {}, () => '2026-07-01');
+    check('a match played before somebody signed is not credited to them',
+      (before.find((p) => p.num === 3) || { starts: 0 }).starts === 0,
+      'the previous holder of a shirt number has his matches handed on with it');
+    const after = psT([sheet('2026-08-02', 3)], squadT, {}, () => '2026-07-01');
+    check('but a match after they signed still counts',
+      (after.find((p) => p.num === 3) || { starts: 0 }).starts === 1);
+    const noDate = psT([sheet('2025-10-05', 3)], squadT, {}, () => null);
+    check('and with no signing date on record nothing changes',
+      (noDate.find((p) => p.num === 3) || { starts: 0 }).starts === 1,
+      'players the club has given no date would need migrating, which is not safe');
+
+    /* On the real squad: nobody may hold a match from before they joined. */
+    const { buildDataset: bdS } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+    const dS = bdS();
+    const isoOf = (id) => (dS.matches.find((m) => m.id === id) || {}).iso;
+    const wrong = [];
+    for (const pl of dS.players) {
+      const from = dS.signedOn(pl.num);
+      if (!from) continue;
+      for (const r of pl.matches || []) {
+        const i = isoOf(r.id);
+        if (i && String(i) < String(from)) wrong.push(`${pl.name} <- ${i}`);
+      }
+    }
+    check('and no player on the site holds a match from before they signed',
+      wrong.length === 0, wrong.join(', '));
+  }
+
   /* MILESTONES IN SIGHT ARE FOR PEOPLE WHO CAN STILL REACH THEM. This is the
      only band on the site that makes a claim about the future, and it made it
      about everybody: William Clark retired in June 2026 and the front page

@@ -400,7 +400,7 @@ export function longestRun(matches, predicate, opts = {}) {
    Appearances, starts, goals, assists, cards, clean sheets and MOTM all come
    from the match detail records. A player who never appears in any detail
    record correctly reports zeroes rather than being omitted. */
-export function playerStats(matches, squad, trialists = {}) {
+export function playerStats(matches, squad, trialists = {}, signedOn = () => null) {
   const table = new Map();
   const ensure = (num) => {
     if (!table.has(num)) {
@@ -427,8 +427,29 @@ export function playerStats(matches, squad, trialists = {}) {
   for (const m of matches) {
     const d = m.detail;
     if (!d) continue;
-    const starters = (d.starters || []).map((x) => x.num);
-    const bench = (d.bench || []).map((x) => x.num);
+
+    /* A TEAM SHEET STORES A SLOT, AND SLOTS GET HANDED ON.
+
+       Leon Burnett signed in July 2026 and wears the number somebody else
+       wore against Brockwell Violets in October 2025. The sheet records the
+       number, so every figure derived from it credited that October bench
+       place to a man who was not at the club for another nine months, and his
+       page published it: "0 appearances in 25/26, plus 1 unused".
+
+       `signedOn()` is the club's own statement of when somebody joined, and
+       the site already trusts it to decide which of two people a slot meant -
+       for the season chips and for who counts as making a first appearance.
+       It was simply never asked here, which is where the figures are made.
+
+       Only a player the club has actually given a date is affected: with no
+       date there is nothing to compare and the slot counts as it always did,
+       so no existing record has to be migrated for this to be safe. */
+    const notYetHere = (n) => {
+      const from = signedOn(n);
+      return !!(from && m.iso && String(m.iso) < String(from));
+    };
+    const starters = (d.starters || []).map((x) => x.num).filter((n) => !notYetHere(n));
+    const bench = (d.bench || []).map((x) => x.num).filter((n) => !notYetHere(n));
 
     /* ======================================================================
        WHAT COUNTS AS AN APPEARANCE

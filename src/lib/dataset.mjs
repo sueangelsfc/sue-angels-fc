@@ -277,6 +277,10 @@ export function buildDataset() {
      being things anybody types and start being worked out. Both the old flat
      shape and the per-season one are read, so nothing already saved is lost. */
   const statusRecord = readStatusRecord(rawStatus);
+  /* When the club says somebody joined. Passed into playerStats so a shirt
+     number handed on does not credit its previous holder's matches to the
+     man wearing it now. Null for anyone the club has given no date. */
+  const signedOnNum = (num) => signedOn(statusRecord, num);
   /* The player's status TODAY, which is what a page with no season in mind
      wants. Kept under the old name so every existing caller is unaffected. */
   /* The most recent thing the club has said about a player, which is what a
@@ -520,7 +524,7 @@ export function buildDataset() {
      player's goals, not his assists, not his appearances. See isFriendly() in
      stats.mjs for why. Friendlies are counted separately, below, so they can
      be shown on their own rather than disappearing. */
-  const players = playerStats(matches.filter(isCompetitive), squad, trialists);
+  const players = playerStats(matches.filter(isCompetitive), squad, trialists, signedOnNum);
   const statsByNum = new Map(players.map((p) => [p.num, p]));
 
   /* NAMING SOMEBODY IS NOT A STATISTIC, and separating the two is the whole
@@ -535,7 +539,8 @@ export function buildDataset() {
 
      So the name index is built over EVERY match. It answers "who is number
      901", which is true regardless of what the match counted towards. */
-  const nameByNum = new Map(playerStats(matches, squad, trialists).map((p) => [p.num, p.name]));
+  const nameByNum = new Map(playerStats(matches, squad, trialists, signedOnNum)
+    .map((p) => [p.num, p.name]));
   const nameFor = (num) => nameByNum.get(num) || `No. ${num}`;
 
   /* THE SAME ENGINE, RUN ONCE PER SEASON.
@@ -550,6 +555,7 @@ export function buildDataset() {
   for (const name of (ps.ALL_SEASONS || [])) {
     playersBySeason[name] = playerStats(
       matches.filter((m) => m.season === name && isCompetitive(m)), squad, trialists,
+      signedOnNum,
     );
   }
 
@@ -647,7 +653,7 @@ export function buildDataset() {
   const friendliesBySeason = {};
   for (const name of (ps.ALL_SEASONS || [])) {
     friendliesBySeason[name] = new Map(
-      playerStats(friendlies.filter((m) => m.season === name), squad, trialists)
+      playerStats(friendlies.filter((m) => m.season === name), squad, trialists, signedOnNum)
         .filter((p) => p.starts || p.subApps)
         .map((p) => [p.num, p]),
     );

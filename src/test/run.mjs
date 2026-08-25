@@ -1899,6 +1899,27 @@ for (const [f, kb] of Object.entries({
     'the match form has moved back into the bundle everybody downloads');
   check('photo tagger is not in the control.js core', !/M\.phototag\s*=\s*function/.test(core));
 
+  /* THE GROUND IS EDITABLE ON A MATCH, not only on a fixture. The fixture
+     form has always had a venue field and the match form never did, so a
+     ground could be set once and never corrected - eight matches in the
+     archive carry none - while venues.json told the club to name it "in
+     Control panel -> Results". Each half is asserted separately, because a
+     field that renders and is never saved looks exactly like a working one
+     until somebody reopens the record. */
+  check('the match form asks where it was played',
+    /id="m-venue"/.test(matchChunk),
+    'the venue can only be set when a fixture is created, never corrected after');
+  check('and writes what was typed into the record',
+    /venue:\s*\$\(['"]#m-venue['"], back\)\.value\.trim\(\)/.test(matchChunk),
+    'the field renders but the save still carries the old value forward');
+  check('the ground is offered from the one venue list',
+    /list="m-venues"/.test(matchChunk)
+    && /optionList\(['"]m-venues['"], SEED\.venues\)/.test(matchChunk),
+    'a ground already spelled one way can be spelled a second way here');
+  check('and the venue field says where it shows',
+    /for="m-venue"[\s\S]{0,700}?field__hint/.test(matchChunk),
+    'a field with no hint is a field whose effect on the site is invisible');
+
   /* THE REPORT WRITER IS ITS OWN CHUNK and must stay out of both the core and
      the match chunk. It was inside the match chunk, which is what took that
      file to 17KB gzipped: 15KB of pure functions with exactly one caller,

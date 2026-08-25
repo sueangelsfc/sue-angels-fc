@@ -1072,6 +1072,26 @@
               '<div class="field"><label class="field__label" for="m-comp">Competition</label>' +
                 '<input class="input" id="m-comp" list="m-comps" value="' +
                   esc(d.competition || SEED.division || '') + '"></div>' +
+
+              /* THE GROUND. The fixture form has always had this and the
+                 match form never did, so a venue could be set once and then
+                 never corrected: eight matches in the archive carry none, and
+                 the only way to give one was to edit the raw JSON. venues.json
+                 tells the club to name the ground "in Control panel ->
+                 Results", which was not true until this field existed.
+
+                 Same datalist as the fixture form, from the same list, so a
+                 ground already spelled one way is not spelled a second way
+                 here. That list is a correction map rather than a
+                 spell-checker, so free text still saves - some of these are
+                 an opponent's club name, which is how a Sunday-league player
+                 says where the game was. */
+              '<div class="field"><label class="field__label" for="m-venue">Where it was played</label>' +
+                '<input class="input" id="m-venue" list="m-venues" value="' +
+                  esc(d.venue || '') + '" placeholder="' +
+                  esc(weAreHome ? (SEED.venue || '') : 'Their ground') + '">' +
+                '<p class="field__hint">Shown on the match page and on the fixture card. ' +
+                  'Left empty, the card says the venue is still to be confirmed.</p></div>' +
               '<div class="field"><label class="field__label" for="m-kind">How it finished</label>' +
                 '<select class="select" id="m-kind">' +
                   ['score', 'walkover', 'penalty', 'fixture'].map(function (k) {
@@ -1100,6 +1120,7 @@
 
             '<p class="cp-note" data-kindnote style="margin-top:var(--space-4)"></p>' +
             optionList('m-clubs', SEED.clubs) + optionList('m-comps', SEED.competitions) +
+            optionList('m-venues', SEED.venues) +
           '</div>' +
 
           /* ---- Team sheet ---- */
@@ -1642,7 +1663,7 @@
           opp: $('#m-opp', back).value.trim(),
           home: homeNow,
           competition: $('#m-comp', back).value.trim(),
-          venue: d.venue || '',
+          venue: $('#m-venue', back).value.trim(),
           date: longDate($('#m-date', back).value),
           kind: kindNow,
           woUs: $('#m-wo', back).value === 'us',
@@ -1818,6 +1839,7 @@
         home: home ? SEED.club : oppName,
         away: home ? oppName : SEED.club,
         competition: $('#m-comp', back).value.trim(),
+        venue: $('#m-venue', back).value.trim(),
         kind: kind,
         starters: startersNow(),
         /* The bench carries what each substitute actually did: whether he

@@ -106,7 +106,7 @@ export function sponsors(d) {
       <div class="wrap">
         <figure class="sp-shot">
           <img src="/assets/hero/team.webp" alt="The ${attr(CLUB.name)} squad in the matchday kit, with the kit sponsor's name across the front of every shirt"
-               width="1200" height="500" decoding="async" />
+               width="1200" height="500" decoding="async" loading="lazy" />
           <figcaption>The squad that won ${esc(d.titleDivision)} unbeaten, in the shirt your name goes on.</figcaption>
         </figure>
       </div>

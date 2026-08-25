@@ -6033,17 +6033,85 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   }
 }
 
-/* ---- Report ---- */
 console.log(`\n${'='.repeat(66)}`);
-if (warns.length) {
-  console.log(`\n${warns.length} warning(s):`);
-  warns.slice(0, 10).forEach((w) => console.log(`  ! ${w}`));
-}
-if (fails.length) {
-  console.log(`\n${fails.length} FAILURE(S):`);
-  fails.forEach((f) => console.log(`  x ${f}`));
-  console.log(`\n${pass} passed, ${fails.length} failed`);
-  process.exit(1);
+
+/* ==========================================================================
+   IMAGES WERE NOT BUDGETED, AND THEY ARE THE BIGGEST THING ON THE PAGE
+
+   sa.css, home.css, sa.js, control.js and every lazy chunk have a gzipped
+   ceiling apiece, and images had none - so the whole budgeting apparatus
+   watched 32KB of stylesheet while 231KB of photograph walked past it. On the
+   home page the images are more than the HTML, the CSS and the JavaScript put
+   together, and somebody could have added a two-megabyte hero without a
+   single budget going red.
+
+   What is measured here is the CRITICAL payload: images that are not
+   lazy-loaded, which is what a visitor waits for before the page is done.
+   A lazy image below the fold costs the first view nothing and is therefore
+   not this budget's business.
+
+   Raw bytes, not gzipped, because these formats are already compressed and a
+   gzip figure would be a fiction dressed as precision.
+   ========================================================================== */
+{
+  const manifest = path.join(ROOT, 'src', 'data', 'build-manifest.json');
+  check('the build says which pages it wrote', fs.existsSync(manifest));
+  const routes = fs.existsSync(manifest)
+    ? JSON.parse(fs.readFileSync(manifest, 'utf8')).routes : [];
+  const bytesOf = (u) => {
+    const f = path.join(ROOT, u.replace(/^https?:\/\/[^/]+/, '').replace(/^\//, '').split(/[?#]/)[0]);
+    try { return fs.statSync(f).size; } catch { return 0; }
+  };
+
+  const EAGER_CEILING = 288 * 1024;   // heaviest page; index.html is at 231KB
+  const EAGER_MEAN = 96 * 1024;       // across every page; currently 62KB
+  const NEEDS_SRCSET = 100 * 1024;    // above this a phone must not get the desktop file
+
+  let totalEager = 0;
+  let worst = ['', 0];
+  let imgs = 0;
+  const noDimensions = [];
+  const noSrcset = [];
+  for (const r of routes) {
+    const html = fs.readFileSync(path.join(ROOT, r), 'utf8');
+    let eager = 0;
+    for (const tag of html.match(/<img\b[^>]*>/g) || []) {
+      imgs += 1;
+      /* No width and height is a layout shift, which Core Web Vitals measures
+         and a reader experiences as the page jumping under their thumb. */
+      if (!/\bwidth=/.test(tag) || !/\bheight=/.test(tag)) noDimensions.push(`${r}: ${tag.slice(0, 70)}`);
+      if (/loading="lazy"/.test(tag)) continue;
+      const m = /src="([^"]+)"/.exec(tag);
+      if (!m) continue;
+      const b = bytesOf(m[1]);
+      eager += b;
+      if (b > NEEDS_SRCSET && !/srcset=/.test(tag)) noSrcset.push(`${r}: ${(b / 1024).toFixed(0)}KB ${m[1]}`);
+    }
+    totalEager += eager;
+    if (eager > worst[1]) worst = [r, eager];
+  }
+  const mean = routes.length ? totalEager / routes.length : 0;
+
+  check('there are images to budget', imgs > 500, `${imgs} images`);
+  check('no page makes a visitor wait for more than 288KB of images',
+    worst[1] <= EAGER_CEILING, `${worst[0]} at ${(worst[1] / 1024).toFixed(0)}KB`);
+  check('the average page keeps its eager images under 96KB',
+    mean <= EAGER_MEAN, `${(mean / 1024).toFixed(0)}KB across ${routes.length} pages`);
+  check('every image says how big it is, so nothing shifts as it loads',
+    noDimensions.length === 0, noDimensions.slice(0, 3).join(' | '));
+  /* THE ONE THAT CAUGHT SOMETHING. The sponsors hero was 131KB of a 1600px
+     photograph, eager, with no srcset, shown about 350px wide on a phone. */
+  check('a large eager image offers a phone something smaller than the desktop file',
+    noSrcset.length === 0, noSrcset.slice(0, 3).join(' | '));
+  check('probe: there is at least one large eager image, so the srcset rule has a subject',
+    routes.some((r) => {
+      const html = fs.readFileSync(path.join(ROOT, r), 'utf8');
+      return (html.match(/<img\b[^>]*>/g) || []).some((t) => !/loading="lazy"/.test(t)
+        && bytesOf((/src="([^"]+)"/.exec(t) || [, ''])[1]) > NEEDS_SRCSET);
+    }), 'no eager image is over 100KB, so that check proves nothing');
+
+  console.log(`  images: ${imgs} across ${routes.length} pages · heaviest eager payload `
+    + `${(worst[1] / 1024).toFixed(0)}KB (${worst[0]}) · mean ${(mean / 1024).toFixed(0)}KB`);
 }
 
 /* ==========================================================================
@@ -6072,9 +6140,20 @@ if (fails.length) {
   const wanted = new Map();
   let fromRecord = 0;
   let fromShape = 0;
+  /* `m.detail` is where the stored record hangs off a normalised match. The
+     first version of this read `m.data || m`, found neither field on any
+     match, and concluded the club had recorded nothing - which made every
+     assertion below it wrong. It failed from the moment it was written and
+     said nothing, because the failure report was two thirds of the way up
+     this file and these checks are appended after it. Both halves of that are
+     fixed: the report is last now, and this reads the right property. */
+  /* COMPETITIVE ONLY, because that is what `d.players` publishes:
+     dataset.mjs builds the career figures from `matches.filter(isCompetitive)`
+     and gives the friendlies their own band. Counting the pre-season clean
+     sheet here made the keeper's published 13 look like a missing 14th. */
   for (const m of dCS.matches) {
-    if (!m.played || m.theirGoals !== 0) continue;
-    const raw = m.data || m;
+    if (!m.played || m.theirGoals !== 0 || m.friendly) continue;
+    const raw = m.detail || {};
     const club = [...new Set([...numsOf(raw.cleanSheetContributors), ...numsOf(raw.cleanSheets)])];
     const shape = (raw.starters || [])
       .filter((x) => /GK|CB|LB|RB|WB/.test((x.positions || []).join('')))
@@ -6111,9 +6190,20 @@ if (fails.length) {
      exactly what the code did before, so if that still passes, this check is
      measuring nothing. */
   let probeRed = false;
+  /* `m.detail` is where the stored record hangs off a normalised match. The
+     first version of this read `m.data || m`, found neither field on any
+     match, and concluded the club had recorded nothing - which made every
+     assertion below it wrong. It failed from the moment it was written and
+     said nothing, because the failure report was two thirds of the way up
+     this file and these checks are appended after it. Both halves of that are
+     fixed: the report is last now, and this reads the right property. */
+  /* COMPETITIVE ONLY, because that is what `d.players` publishes:
+     dataset.mjs builds the career figures from `matches.filter(isCompetitive)`
+     and gives the friendlies their own band. Counting the pre-season clean
+     sheet here made the keeper's published 13 look like a missing 14th. */
   for (const m of dCS.matches) {
-    if (!m.played || m.theirGoals !== 0) continue;
-    const raw = m.data || m;
+    if (!m.played || m.theirGoals !== 0 || m.friendly) continue;
+    const raw = m.detail || {};
     const club = [...new Set([...numsOf(raw.cleanSheetContributors), ...numsOf(raw.cleanSheets)])];
     if (!club.length) continue;
     const shape = (raw.starters || [])
@@ -6152,4 +6242,25 @@ if (fails.length) {
   }
 }
 
+/* ==========================================================================
+   THE REPORT GOES LAST, AND THAT IS NOT A TIDINESS PREFERENCE
+
+   It used to sit two thirds of the way down this file, because for a long
+   time that WAS the end. Three blocks were appended after it - the image
+   budgets, the clean-sheet provenance and the whole panel render suite - and
+   every one of them could fail in complete silence: `fails` was pushed to
+   after the report had already been printed, `process.exit(1)` had already
+   been skipped, and the last line said "All N checks passed" unconditionally.
+
+   So the newest hundred-odd checks, including every one written to catch the
+   bugs that had actually shipped, were incapable of failing the build. Found
+   by breaking one on purpose and watching the suite congratulate itself.
+
+   Nothing may be added below this point. */
+if (fails.length) {
+  console.log(`\n${fails.length} FAILURE(S):`);
+  fails.forEach((f) => console.log(`  x ${f}`));
+  console.log(`\n${pass} passed, ${fails.length} failed`);
+  process.exit(1);
+}
 console.log(`\nAll ${pass} checks passed.`);

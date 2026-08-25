@@ -487,14 +487,50 @@ export function playerStats(matches, squad, trialists = {}, signedOn = () => nul
 
     const appeared = new Set(starters);
 
+    /* ======================================================================
+       WHO KEPT THE CLEAN SHEET IS SOMETHING THE CLUB RECORDS
+
+       This credited whoever STARTED in a position matching /GK|CB|LB|RB|WB/,
+       and that was the best available answer only for as long as there was no
+       other one. There is: the match form asks who kept the clean sheet, the
+       club has answered on fourteen matches, and both answers were stored and
+       read by nothing.
+
+       `cleanSheets` is the keeper. `cleanSheetContributors` is the back line
+       in front of him, and it is not the same list - Brockwell away records
+       five defenders and does NOT name the keeper, so neither field alone is
+       the answer and the union is.
+
+       They disagree with the position rule on TWELVE of the fourteen, and
+       five players' totals move. That is the shape the project already has a
+       rule about: a field with no consumer is a lie with a save button. It
+       had a save button, a hint saying where it showed on the website, and
+       no reader.
+
+       The rule still stands where nothing was recorded, which is the ten
+       older matches, so nothing in the archive loses a clean sheet it had.
+       And the credit is no longer confined to starters: a man the club names
+       is a man the club names, whether he began the match or came on. */
+    const csRecorded = [...new Set([
+      ...(d.cleanSheetContributors || []),
+      ...(d.cleanSheets || []),
+    ].map((x) => (x && x.num != null ? x.num : x))
+      .map(Number)
+      .filter((n) => Number.isFinite(n)))];
+    const csFromShape = (d.starters || [])
+      .filter((x) => /GK|CB|LB|RB|WB/.test((x.positions || []).join('')))
+      .map((x) => Number(x.num));
+    const keptIt = new Set(
+      (m.theirGoals === 0 && m.played)
+        ? (csRecorded.length ? csRecorded : csFromShape)
+        : [],
+    );
+
     for (const num of starters) {
       const p = ensure(num);
       p.starts++; p.apps++;
       p.matches.push({ id: m.id, role: 'start' });
-      if (m.theirGoals === 0 && m.played) {
-        const pos = (d.starters.find((s) => s.num === num)?.positions || []).join('');
-        if (/GK|CB|LB|RB|WB/.test(pos)) p.cleanSheets++;
-      }
+      if (keptIt.has(Number(num))) { p.cleanSheets++; keptIt.delete(Number(num)); }
     }
     for (const num of bench) {
       const p = ensure(num);
@@ -510,6 +546,10 @@ export function playerStats(matches, squad, trialists = {}, signedOn = () => nul
         p.matches.push({ id: m.id, role: 'bench' });
       }
     }
+    /* Whoever the club named and the eleven did not account for: a substitute
+       defender, or a keeper who came on. Named by the club is evidence in
+       exactly the way a name on the bench with nothing beside it is not. */
+    for (const num of keptIt) ensure(num).cleanSheets++;
     /* Per-match tallies are recorded on the player's own match entry as well
        as on the season total. A scoring streak cannot be derived from a
        season total, and re-reading every match detail to work one out would

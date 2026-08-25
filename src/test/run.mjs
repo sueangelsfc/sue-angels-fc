@@ -6047,6 +6047,85 @@ if (fails.length) {
 }
 
 /* ==========================================================================
+   WHO KEPT THE CLEAN SHEET IS THE CLUB'S ANSWER, NOT A REGEX
+
+   The match form asks who kept the clean sheet, stores the keeper in
+   `cleanSheets` and the back line in `cleanSheetContributors`, and until now
+   the site read neither: it credited whoever STARTED in a position matching
+   /GK|CB|LB|RB|WB/. The two disagreed on twelve of the fourteen matches the
+   club has answered for, and five players' totals were wrong.
+
+   The rule the project already had covers this - "a field with no consumer is
+   a lie with a save button" - and this one had a save button, a hint saying
+   where it showed on the website, and no reader. So the check is not "does
+   stats.mjs mention the field": it is "does the published figure equal what
+   the club recorded".
+   ========================================================================== */
+{
+  const { buildDataset: bdCS } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const dCS = bdCS();
+  const numsOf = (a) => (a || [])
+    .map((x) => (x && x.num != null ? x.num : x))
+    .map(Number)
+    .filter((n) => Number.isFinite(n));
+
+  const wanted = new Map();
+  let fromRecord = 0;
+  let fromShape = 0;
+  for (const m of dCS.matches) {
+    if (!m.played || m.theirGoals !== 0) continue;
+    const raw = m.data || m;
+    const club = [...new Set([...numsOf(raw.cleanSheetContributors), ...numsOf(raw.cleanSheets)])];
+    const shape = (raw.starters || [])
+      .filter((x) => /GK|CB|LB|RB|WB/.test((x.positions || []).join('')))
+      .map((x) => Number(x.num));
+    if (club.length) fromRecord += 1; else fromShape += 1;
+    for (const n of (club.length ? club : shape)) wanted.set(n, (wanted.get(n) || 0) + 1);
+  }
+
+  check('the archive holds clean sheets the club has answered for',
+    fromRecord >= 10, `${fromRecord} recorded, ${fromShape} left to the position rule`);
+  check('the position rule still covers the matches nobody answered for',
+    fromShape > 0, 'nothing would exercise the fallback');
+
+  /* `dCS.players`, not `dCS.playerStats`. The first draft of this check read
+     a property that does not exist, so `|| []` made it iterate nothing and
+     pass while proving nothing - the precise failure this whole file is
+     written against, committed inside the check that was meant to prevent it.
+     The count below is asserted so an empty list can never look like agreement
+     again. */
+  const roster = dCS.players || [];
+  check('there are players to check the clean-sheet figures against',
+    roster.length > 20, `${roster.length} players`);
+  const wrong = [];
+  for (const p of roster) {
+    const want = wanted.get(Number(p.num)) || 0;
+    if ((p.cleanSheets || 0) !== want) wrong.push(`#${p.num} publishes ${p.cleanSheets}, record says ${want}`);
+  }
+  check('every published clean-sheet figure is the one the club recorded',
+    wrong.length === 0, wrong.slice(0, 6).join(' | '));
+  check('the clean-sheet check is looking at figures that are not all zero',
+    roster.some((p) => (p.cleanSheets || 0) > 0));
+
+  /* THE MUTATION PROBE. Falling back to the position rule everywhere is
+     exactly what the code did before, so if that still passes, this check is
+     measuring nothing. */
+  let probeRed = false;
+  for (const m of dCS.matches) {
+    if (!m.played || m.theirGoals !== 0) continue;
+    const raw = m.data || m;
+    const club = [...new Set([...numsOf(raw.cleanSheetContributors), ...numsOf(raw.cleanSheets)])];
+    if (!club.length) continue;
+    const shape = (raw.starters || [])
+      .filter((x) => /GK|CB|LB|RB|WB/.test((x.positions || []).join('')))
+      .map((x) => Number(x.num));
+    if ([...new Set(club)].sort().join() !== [...new Set(shape)].sort().join()) { probeRed = true; break; }
+  }
+  check('probe: the club record and the position rule genuinely differ, so the check above is not vacuous',
+    probeRed, 'every recorded clean sheet happens to match the regex, so this proves nothing');
+}
+
+/* ==========================================================================
    THE PANEL, RENDERED
 
    Everything above this point reads generated output or loads a chunk against

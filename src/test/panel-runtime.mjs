@@ -1,0 +1,183 @@
+/* ==========================================================================
+   THE PANEL, RENDERED
+
+   `harness.mjs` loads a chunk and asks whether it registered its modules.
+   That is the contract the lazy split depends on and it is worth having, but
+   it stops before the part where the bugs live. Every panel defect found in
+   the last month was found by a person opening a browser: one of nine player
+   dropdowns filtered, the field hints attached to nothing, a screen titled
+   "Fixtures 0". Static analysis cannot see any of those, and each one had a
+   check sitting next to it asserting that the MECHANISM existed.
+
+   So this boots the real thing. The real `control.html`, the real
+   `control-seed.js`, the real `control.js`, the real lazy chunks fetched
+   through the shell's own `need()`/`load()` path - into `src/test/dom.mjs`,
+   which throws rather than guessing. Then it renders all twenty-one panels
+   and asks questions about what actually came out.
+
+   WHAT IS STUBBED, AND WHAT IS NOT. Only the network is: `CP`'s reads answer
+   from a fixture, its writes are recorded. Every line of shell code, every
+   line of module code and every byte of markup is the shipped one.
+   ========================================================================== */
+
+import fs from 'node:fs';
+import path from 'node:path';
+import { makeWindow, DomEvent, flushMutations, fullStorage } from './dom.mjs';
+
+const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..');
+
+/* The panels the shell ships, taken from the markup rather than a list here,
+   so a new panel is covered the day it is added. */
+export function panelKeys(html) {
+  return [...html.matchAll(/data-module="([\w-]+)"/g)].map((m) => m[1]);
+}
+
+/* ---- A store that answers from rows instead of from Supabase ---------- */
+function fixtureStore(rows, { empty = false } = {}) {
+  const writes = [];
+  const give = (t) => (empty ? [] : (rows[t] || []));
+  return {
+    writes,
+    TABLES: ['matches', 'fixtures', 'team_badges', 'player_photos', 'articles', 'gallery', 'recognition'],
+    state: { isAdmin: true, role: 'admin', user: { id: 'test', email: 'test@example.com' }, session: { access_token: 't' } },
+    signIn: () => Promise.resolve(true),
+    signOut: () => Promise.resolve(),
+    refresh: () => Promise.resolve(null),
+    loadRole: () => Promise.resolve(true),
+    startRefreshTimer: () => {},
+    rest: () => Promise.resolve([]),
+    readAll: (t) => Promise.resolve(give(t)),
+    upsert: (t, k, d) => { writes.push({ op: 'upsert', t, k, d }); return Promise.resolve([{ key: k, data: d }]); },
+    remove: (t, k) => { writes.push({ op: 'remove', t, k }); return Promise.resolve([{ key: k }]); },
+    audit: () => {},
+    readEnquiries: () => Promise.resolve(empty ? [] : (rows.enquiries || [])),
+    readSupporters: () => Promise.resolve(empty ? [] : (rows.supporters || [])),
+    listBucket: () => Promise.resolve([]),
+    upload: () => Promise.resolve(''),
+    verifyWrote: () => true,
+  };
+}
+
+/* ---- Boot ------------------------------------------------------------- */
+
+/* The shell fetches a chunk by appending a <script> to <head> and waiting for
+   onload. Rather than pre-loading the chunks and bypassing that, the append
+   is intercepted and the file is executed for real - so CHUNK_OF, the chunk
+   filenames the build stamps into CP_CHUNKS, and each chunk's registration
+   are all exercised exactly as they are in a browser. */
+export function boot({ rows = {}, empty = false, localStorage: ls, onScript, transform } = {}) {
+  const html = fs.readFileSync(path.join(ROOT, 'control.html'), 'utf8');
+  const win = makeWindow({ localStorage: ls });
+  const doc = win.document;
+
+  const bodyHtml = (/<body[^>]*>([\s\S]*)<\/body>/i.exec(html) || [, ''])[1]
+    .replace(/<script[\s\S]*?<\/script>/gi, '');
+  doc.body.innerHTML = bodyHtml;
+
+  const loaded = [];
+  const run = (file) => {
+    const p = path.join(ROOT, file);
+    if (!fs.existsSync(p)) throw new Error('chunk not on disk: ' + file);
+    loaded.push(file);
+    if (onScript) onScript(file);
+    /* MUTATION PROBES. A check that has never been seen to fail is a check
+       nobody has tested. `transform` rewrites a chunk's source on the way in,
+       so a probe can break the exact mechanism a check guards and prove the
+       check goes red - the same discipline the rest of the suite uses, now
+       reaching code that only exists at runtime. */
+    let src = fs.readFileSync(p, 'utf8');
+    if (transform) src = transform(src, file);
+    const fn = new Function('window', 'document', 'location', 'history', 'localStorage',
+      'sessionStorage', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval',
+      'fetch', 'FileReader', 'Event', 'CustomEvent', 'MutationObserver', 'navigator',
+      'requestAnimationFrame', 'Image', 'FormData', 'Blob', 'URL', 'atob', 'btoa', 'alert',
+      '"use strict";' + src);
+    fn(win, doc, win.location, { replaceState: () => {}, pushState: () => {} },
+      win.localStorage, win.sessionStorage,
+      (f, ms, ...a) => setTimeout(f, ms, ...a), (t) => clearTimeout(t),
+      () => 0, () => {},
+      win.fetch, function FileReaderStub() {}, DomEvent, DomEvent,
+      win.MutationObserver, win.navigator, win.requestAnimationFrame,
+      function ImageStub() {}, function FormDataStub() {}, function BlobStub() {},
+      { createObjectURL: () => 'blob:test', revokeObjectURL: () => {} },
+      (s) => Buffer.from(String(s), 'base64').toString('binary'),
+      (s) => Buffer.from(String(s), 'binary').toString('base64'),
+      () => {});
+  };
+
+  /* The interception. A <script> appended to <head> is a chunk request. */
+  const realAppend = doc.head.appendChild.bind(doc.head);
+  doc.head.appendChild = (node) => {
+    realAppend(node);
+    if (node.localName === 'script' && node.getAttribute('src')) {
+      const file = node.getAttribute('src').replace(/^\//, '').split('?')[0];
+      let err = null;
+      try { run(file); } catch (e) { err = e; }
+      if (err) { if (node.onerror) node.onerror(err); else throw err; }
+      else if (node.onload) node.onload();
+    }
+    return node;
+  };
+
+  /* CP_CHUNKS is stamped by the build onto the front of control.js itself, so
+     loading the file is what supplies the hashed chunk URLs. Nothing here
+     supplies them: if the build stopped emitting them, the chunks would 404
+     here exactly as they would in a browser. */
+  run('control-seed.js');
+  run('control.js');
+  const chunkMap = win.CP_CHUNKS || {};
+
+  /* The store is replaced by MUTATION, not reassignment: the shell captured
+     `var CP = window.CP` when it ran, so a fresh object would leave it
+     holding the real one. Same trap the match split hit with CPMSTATE. */
+  const store = fixtureStore(rows, { empty });
+  Object.keys(store).forEach((k) => { win.CP[k] = store[k]; });
+
+  return { win, doc, store, loaded, chunkMap, html, run };
+}
+
+/* Renders one panel and waits for the shell to finish. `render()` is three
+   chained promises deep and each `.then` is a microtask, so draining the
+   queue a few times is what "await the render" means here. */
+export async function settle(ctx) {
+  for (let i = 0; i < 60; i += 1) await Promise.resolve();
+  await new Promise((r) => setTimeout(r, 0));
+  for (let i = 0; i < 60; i += 1) await Promise.resolve();
+}
+
+/* Opens a panel THE WAY A PERSON DOES - by clicking its nav button - so the
+   whole of show() runs: the panel swap, the active state, the heading. Going
+   straight to render() would skip exactly the code that once titled a screen
+   "Fixtures 0". */
+export async function openPanel(ctx, key) {
+  const btn = ctx.doc.querySelector('[data-module="' + key + '"]');
+  if (!btn) throw new Error('no nav button for ' + key);
+  click(btn);
+  await settle(ctx);
+  const panel = ctx.doc.querySelector('#panel-' + key);
+  const body = panel.querySelector('[data-panel-body]');
+  return { panel, body, html: body ? body.innerHTML : '' };
+}
+
+export async function renderPanel(ctx, key) {
+  const errors = [];
+  const before = ctx.doc.querySelector('#panel-' + key);
+  if (!before) throw new Error('no panel markup for ' + key);
+  ctx.win.CPU.refresh(key);
+  for (let i = 0; i < 60; i += 1) await Promise.resolve();
+  await new Promise((r) => setTimeout(r, 0));
+  for (let i = 0; i < 60; i += 1) await Promise.resolve();
+  const panel = ctx.doc.querySelector('#panel-' + key);
+  const body = panel.querySelector('[data-panel-body]');
+  return { panel, body, errors, html: body ? body.innerHTML : '' };
+}
+
+/* Fires the shell's own click path: a real bubbling event from a real node. */
+export function click(el) { return el.dispatchEvent(new DomEvent('click', { bubbles: true })); }
+export function type(el, value) {
+  el.value = value;
+  el.dispatchEvent(new DomEvent('input', { bubbles: true }));
+  el.dispatchEvent(new DomEvent('change', { bubbles: true }));
+}
+
+export { flushMutations, fullStorage, DomEvent, ROOT };

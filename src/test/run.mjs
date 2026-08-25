@@ -518,9 +518,15 @@ for (const f of shipped) {
      nothing would say a word until the club tried to record a result.
 
      No chunk touches the DOM at load, so a chunk can be loaded against stubs
-     and asked the questions the split depends on. Rendering needs a real DOM
-     and is deliberately not attempted: a half-built DOM that answers wrongly
-     is worse than none. */
+     and asked the questions the split depends on.
+
+     RENDERING IS NOW ATTEMPTED, and the caveat that used to sit here still
+     holds: a half-built DOM that answers wrongly is worse than none. That is
+     why src/test/dom.mjs throws on every selector, API and construct whose
+     behaviour would differ from a browser's rather than guessing, and why
+     src/test/panel-render.mjs boots the SHIPPED control.html, control.js and
+     lazy chunks into it instead of a fixture. The block below stays: these
+     are questions about the split itself, which do not need a document. */
   {
     const { loadChunks } = await import(path.join(ROOT, 'src', 'test', 'harness.mjs'));
     const seedRawH = fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8');
@@ -6039,4 +6045,32 @@ if (fails.length) {
   console.log(`\n${pass} passed, ${fails.length} failed`);
   process.exit(1);
 }
+
+/* ==========================================================================
+   THE PANEL, RENDERED
+
+   Everything above this point reads generated output or loads a chunk against
+   stubs. This renders the shipped panel - real markup, real shell, real lazy
+   chunks fetched through the shell's own loader - into src/test/dom.mjs and
+   asks questions about what came out.
+
+   It exists because the panel's three worst bugs were all the same shape: a
+   correct mechanism wired to almost nothing, with a check beside it asserting
+   that the mechanism existed. One player dropdown of nine was filtered. The
+   field hints attached to nothing for weeks. A screen was titled "Fixtures 0".
+   Static analysis cannot tell any of those from working code.
+
+   Every check here has a mutation probe proving it goes red, and writing them
+   found that one of the checks was measuring the wrong thing: counting
+   database writes after three renders passes whether the listeners stacked or
+   not, because the button validates before it saves. It counts listeners now.
+   ========================================================================== */
+{
+  const { panelChecks, panelProbes } = await import(path.join(ROOT, 'src', 'test', 'panel-render.mjs'));
+  for (const c of await panelChecks()) check(c.name, c.cond, c.detail);
+  for (const p of await panelProbes()) {
+    check(p.name, p.cond, p.detail || 'the probe changed nothing, so it proves nothing');
+  }
+}
+
 console.log(`\nAll ${pass} checks passed.`);

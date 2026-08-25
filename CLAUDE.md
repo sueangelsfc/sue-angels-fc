@@ -137,6 +137,52 @@ the public pages comes back at 118, and almost all of those are structural
 wrappers a template groups with and never styles - a judgement call, so it is
 printed with the other figures rather than failing a build.
 
+### Rendered in a real browser, in CI
+
+`npm run visual` drives a headless Chrome over the DevTools protocol with **no
+dependency at all** - Node 22 has a global `WebSocket`, so no Puppeteer and no
+Playwright. It asks four questions of every page family at 320, 768 and 1280,
+and of all 21 panel screens, and each is a fact rather than a matter of taste:
+
+- **Did anything throw?** A `ReferenceError` in `sa.js` shipped for weeks and
+  was found by a person opening the live site and reading the console.
+- **Is any text past the edge of the page?**
+- **Is any text drawn at no size?**
+- **Is any text unreadable against the background it is actually on?**
+
+The panel is booted the way `panel-render.mjs` boots it - the shipped files
+with the network stubbed - because that is the screen the club types on.
+
+**It refuses to guess.** Text over a gradient or a photograph has no single
+background colour, so it is counted as unverifiable and reported rather than
+failed: 6,909 of 11,509 pieces of text on this site are on a gradient, and a
+check that assumed the top stop would fail dozens of readable things.
+
+**Three flaws in the check, all found by probing it rather than reading it.**
+It measured `<option>` elements, which have no layout box because the select
+paints them. It measured children of `display:none` parents, so the mobile
+nav's label read as invisible text on every desktop screen. And its overflow
+question was `documentElement.scrollWidth > clientWidth`, which is **dead on
+this site**: `home.css` sets `html{overflow-x:hidden}` on purpose, for the
+atmosphere layers, so the document can never report horizontal scroll. A
+3000px-wide element proved it said nothing. It asks about text now.
+
+**One bug in nine places.** Every component drawing a small secondary label
+inside a selected orange pill picked its own dark-ink alpha - 0.6, 0.62, 0.66,
+0.72 - and not one reached AA, at 9 to 11px. `--text-on-brand-2` is the one
+token now, at 0.8, which is 5.05:1. And `--error` was doing two opposite jobs:
+text on a dark panel (wants light) and the fill behind white on `.btn--danger`
+(wants dark). Lifting it for the first took the second to 4.08:1, which is the
+tell that they were never one colour. `--error-solid` is the fill.
+
+**`.github/workflows/checks.yml` runs it, and runs the suite.** Until it
+existed nothing ran any of this except a person remembering to: the pre-push
+hook covers a push from the laptop it is installed on and nothing else - not a
+merge, not the web editor, not another machine. **It does not gate the
+deploy**, deliberately: Vercel's own `buildCommand` already refuses to publish
+broken output, and everything here is a signal to whoever is reading rather
+than a reason to stop the club publishing a result.
+
 ### What the deploy refuses to publish
 `npm run verify` reconciles the derived figures against the published league table. That is a real check and it is not a check on the **output**: every page could ship a broken share image and the deploy would be perfectly happy. Not hypothetical - all forty-three share cards pointed at the host `co.ukundefined` for weeks, because `drawnCover()` read a `CLUB.url` that does not exist.
 
@@ -514,6 +560,7 @@ Read leads in **Control panel → Inbox**; RLS blocks anonymous reads, so signin
 ```bash
 npm run build     # regenerate every route (run after any src/ change)
 npm run covers    # redraw the committed share cards (needs a local Chrome)
+npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
 npm test          # 3,592 checks against the generated output and the rendered panel
@@ -621,11 +668,10 @@ claiming they are finished.
   gap into a job.
 - **The probe row in `enquiries`.** Deleting it needs the sign-in only the club
   has. One press, in the Inbox.
-- **Layout, in the panel's tests.** `src/test/dom.mjs` has no cascade and
-  refuses `getComputedStyle` rather than inventing one. The class-contract
-  check closes the part of that gap that can be closed without a cascade; a
-  visual regression still needs a browser, and the honest answer is that
-  nothing in the suite will catch one.
+- **Layout, in `npm test` itself.** `src/test/dom.mjs` has no cascade and
+  refuses `getComputedStyle` rather than inventing one, which keeps the suite
+  runnable anywhere in eight seconds. `npm run visual` is the browser (below),
+  and it runs in CI rather than in the suite for that reason.
 - **Inline scripts in the CSP.** `script-src` keeps `'unsafe-inline'` because
   the theme is applied by an inline head script before first paint and every
   page carries JSON-LD, which `script-src` also governs. Hashing those would

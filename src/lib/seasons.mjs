@@ -82,11 +82,53 @@ export function seasonBar(views, active, note, { esc, attr, label = 'Season' } =
 }
 
 /* The panels. `render(v)` returns the body for one view. */
+/* EVERY PANEL SHIPS IN THE HTML, SO EVERY id IN ONE SHIPS AS MANY TIMES.
+
+   That is the whole point of the design - the season a page opens on is the
+   only one that needs JavaScript to change, and with the script blocked the
+   page still shows it - and it is also, unnoticed for months, five duplicate
+   ids per season on awards and six on club records, each one the target of
+   an `aria-labelledby`. A duplicate id is not untidy markup: `getElementById`
+   and every aria reference resolve to the FIRST one, so on club records four
+   headings out of six were being announced against a section from a season
+   the reader was not looking at.
+
+   Fixed here rather than in each template, for the same reason the bar is:
+   a page adding a season filter writes no JavaScript, and it should not have
+   to remember this either. The panel the page OPENS on keeps its ids
+   untouched, so `/awards.html#potm` still lands on something visible.
+
+   Only ids DEFINED inside the panel are rewritten, and the references are
+   rewritten with them; a link to an anchor elsewhere on the page is left
+   exactly as it was. */
+const REFS = ['for', 'aria-labelledby', 'aria-describedby', 'aria-controls',
+  'aria-owns', 'aria-flowto', 'headers', 'list'];
+
+export function uniquifyIds(html, suffix) {
+  const own = new Set();
+  for (const m of html.matchAll(/\sid="([^"]+)"/g)) own.add(m[1]);
+  if (!own.size) return html;
+  const rename = (id) => (own.has(id) ? id + '--' + suffix : id);
+
+  let out = html.replace(/(\sid=")([^"]+)(")/g, (_, a, id, c) => a + rename(id) + c);
+  /* An aria reference takes a LIST of ids, so each is renamed on its own and
+     a mix of local and foreign targets survives intact. */
+  for (const attrName of REFS) {
+    out = out.replace(new RegExp('(\\s' + attrName + '=")([^"]+)(")', 'g'),
+      (_, a, v, c) => a + v.split(/\s+/).filter(Boolean).map(rename).join(' ') + c);
+  }
+  out = out.replace(/(\shref="#)([^"]+)(")/g, (_, a, id, c) => a + rename(id) + c);
+  return out;
+}
+
 export function seasonPanels(views, active, render, { attr } = {}) {
   return `<div data-season-views>
-        ${views.map((v, i) => `<div class="sn-view" data-season-view="${attr(v.id)}"${i === active ? '' : ' hidden'}>
-          ${render(v)}
-        </div>`).join('\n        ')}
+        ${views.map((v, i) => {
+    const inner = render(v);
+    return `<div class="sn-view" data-season-view="${attr(v.id)}"${i === active ? '' : ' hidden'}>
+          ${i === active ? inner : uniquifyIds(inner, String(v.id))}
+        </div>`;
+  }).join('\n        ')}
       </div>`;
 }
 

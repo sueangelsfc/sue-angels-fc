@@ -90,7 +90,12 @@ export function control() {
 
   return `
   <!-- ============ AUTH GATE ============ -->
-  <div class="cp-gate" id="cp-gate">
+  <!-- A NAMED REGION, NOT A BARE DIV. Everything before sign-in was outside
+       every landmark, which is content a screen reader has no way to jump to.
+       Not a second <main> either: the panel's own <main> is always in the
+       document (its parent is what gets hidden), and two of them is a page
+       with no single main. -->
+  <section class="cp-gate" id="cp-gate" aria-label="Sign in to the control panel">
     <div class="cp-gate__card glass glass--lg">
       <span class="cp-gate__crest">${crest('', `${CLUB.name} crest`)}</span>
       <h1 class="cp-gate__title">Control panel</h1>
@@ -140,7 +145,7 @@ export function control() {
       </p>
       <a class="btn btn--quiet btn--sm" href="/">Back to the website</a>
     </div>
-  </div>
+  </section>
 
   <!-- ============ APP ============ -->
   <div class="cp" id="cp-app" hidden>

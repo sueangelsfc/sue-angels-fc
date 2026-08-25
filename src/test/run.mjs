@@ -6410,6 +6410,116 @@ console.log(`\n${'='.repeat(66)}`);
 }
 
 /* ==========================================================================
+   WHAT AN ACCESSIBILITY ENGINE FOUND, KEPT FOUND
+
+   The suite already asserts a great deal about markup - one h1, heading
+   order, alt attributes present, labels, contrast on every token pair - and
+   an @accesslint/core audit of every page family still found four things it
+   had no question for. Each is written here as the question, so the audit
+   does not have to be re-run to know they have not come back.
+
+     1. Five duplicate ids per season on awards, six on club records, each
+        one the target of an aria-labelledby. Every season panel ships in the
+        HTML by design and every id in one shipped as many times.
+     2. A player's photograph labelled with his name INSIDE a link that
+        prints his name, so a screen reader said it twice.
+     3. Complementary landmarks nested inside a section, announced in the
+        landmark list as peers of the page's own main content.
+     4. Links distinguished from the sentence around them by colour alone.
+
+   The first three are structural and are asked of every page. The fourth
+   needs a cascade, so it is asked of the one rule that had it wrong.
+   ========================================================================== */
+{
+  /* 1. NO PAGE MAY DEFINE THE SAME id TWICE. getElementById and every aria
+     reference resolve to the first one, so on club records four headings out
+     of six were being announced against a season the reader was not on. */
+  const dupes = [];
+  for (const [f, h] of pages) {
+    const seen = new Map();
+    for (const m of h.matchAll(/\sid="([^"]+)"/g)) seen.set(m[1], (seen.get(m[1]) || 0) + 1);
+    const twice = [...seen].filter(([, n]) => n > 1).map(([id]) => id);
+    if (twice.length) dupes.push(`${f}: ${twice.slice(0, 4).join(', ')}`);
+  }
+  check('no page defines the same id twice', dupes.length === 0, dupes.slice(0, 4).join('   |   '));
+
+  /* And every aria reference on every page lands on something. The panel has
+     had this check since it was rendered; the pages never did. */
+  const dangling = [];
+  for (const [f, h] of pages) {
+    const ids = new Set([...h.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
+    for (const attrName of ['aria-labelledby', 'aria-describedby', 'aria-controls']) {
+      for (const m of h.matchAll(new RegExp('\\s' + attrName + '="([^"]+)"', 'g'))) {
+        for (const id of m[1].split(/\s+/).filter(Boolean)) {
+          if (!ids.has(id)) dangling.push(`${f}: ${attrName}="${id}"`);
+        }
+      }
+    }
+  }
+  check('every aria reference on every page points at an element that is there',
+    dangling.length === 0, [...new Set(dangling)].slice(0, 4).join('   |   '));
+
+  /* 2. A PHOTOGRAPH NAMES ITS SUBJECT UNLESS THE NAME IS ALREADY THERE. The
+     site's rule is that a face is labelled, because on a crest wall the
+     picture is the only label there is. Inside a link that prints the name
+     beside it, the same rule makes a reader hear it twice. */
+  const echoed = [];
+  for (const [f, raw] of pages) {
+    const h = raw.replace(/<!--[\s\S]*?-->/g, '');
+    for (const m of h.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a>/g)) {
+      const inner = m[1];
+      const img = /<img\b[^>]*\balt="([^"]+)"/.exec(inner);
+      if (!img) continue;
+      const alt = img[1].trim();
+      if (!alt) continue;
+      const text = inner.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      if (text && text.toLowerCase().includes(alt.toLowerCase())) echoed.push(`${f}: "${alt}"`);
+    }
+  }
+  check('no image repeats the text of the link it sits inside',
+    echoed.length === 0, [...new Set(echoed)].slice(0, 4).join('   |   '));
+
+  /* 3. A COMPLEMENTARY LANDMARK IS A PEER OF THE MAIN CONTENT. Nested inside
+     a section it is announced as though it were one, which puts a plate of
+     facts about one band in the same list as the page itself. Two of these
+     shipped; both are named regions now, which nest legitimately. */
+  const nested = [];
+  for (const [f, raw] of pages) {
+    /* COMMENTS OUT FIRST. The first version of this check reported index.html,
+       and what it had found was the sentence explaining why a plate is a
+       role="group" and not an <aside> - written in a comment, in the markup,
+       by the fix for this very rule. A check that reads commented-out markup
+       as shipped markup is worse than none. */
+    const h = raw.replace(/<!--[\s\S]*?-->/g, '');
+    /* Walk the tags and record how deep in sectioning content each <aside>
+       opens. A regex cannot nest, so this counts openings and closings. */
+    let depth = 0;
+    for (const m of h.matchAll(/<(\/?)(section|article|nav|aside|main)\b[^>]*>/g)) {
+      const closing = m[1] === '/';
+      const tag = m[2];
+      if (tag === 'aside' && !closing && depth > 0) nested.push(f);
+      if (tag === 'main') continue;              /* main is the frame, not a nest */
+      if (closing) depth = Math.max(0, depth - 1); else depth += 1;
+    }
+  }
+  check('no complementary landmark is nested inside another section',
+    nested.length === 0, [...new Set(nested)].slice(0, 4).join(', '));
+
+  /* 4. A LINK IN A SENTENCE NEEDS MORE THAN COLOUR. Everywhere else on this
+     site a link is a card, a button or a whole line and is obvious without
+     the hue; the pre-season band puts them mid-sentence. Asked of the rule
+     rather than of the rendered page, because this one needs a cascade. */
+  /* The rule is in whichever sheet the band ships in, which is the route
+     band rather than home.css: a page loads home.css plus its own band. */
+  const sheets = fs.readdirSync(ROOT).filter((f) => f.endsWith('.css'))
+    .map((f) => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n');
+  const inlineLinkRules = [...sheets.matchAll(/\.psn__who a\{([^}]*)\}/g)].map((m) => m[1]);
+  check('a link inside a sentence is not distinguished by colour alone',
+    inlineLinkRules.length > 0 && inlineLinkRules.every((r) => /text-decoration/.test(r)),
+    inlineLinkRules.join(' | ') || 'the rule this asks about is no longer in the sheet');
+}
+
+/* ==========================================================================
    THE CONTENT SECURITY POLICY, IN BOTH DIRECTIONS
 
    A CSP fails silently whichever way it is wrong, and this site had it wrong

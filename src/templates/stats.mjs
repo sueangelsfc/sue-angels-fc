@@ -239,14 +239,19 @@ export function stats(d) {
     /* A tie shows both faces rather than a crest: the players exist, they are
        both named, and a blank badge was the weakest panel in the row. */
     const tieShots = l.tie ? (l.holders || []).map((h) => ({ n: h.p.name, src: shotFor(h.p.num) })) : [];
+    /* alt="" throughout, and deliberately. The site's rule is that a
+       photograph names its subject, because a face on a crest wall is the
+       only label there is; here `st-lead__name` prints the name inside the
+       same link, a few lines down, so naming the picture makes a screen
+       reader read every leader twice. */
     const inner = `<span class="st-lead__shot${l.tie && tieShots.length > 1 ? ' is-split' : ''}">
                 ${l.tie && tieShots.some((t) => t.src)
     ? tieShots.map((t) => (t.src
-      ? `<img src="${attr(t.src)}" alt="${attr(t.n || '')}" width="160" height="220" loading="lazy" decoding="async" />`
-      : `<span class="st-lead__blank"><img src="${STAR}" alt="Sue’s Angels FC star" width="70" height="87" loading="lazy" decoding="async" /></span>`)).join('\n                ')
+      ? `<img src="${attr(t.src)}" alt="" width="160" height="220" loading="lazy" decoding="async" />`
+      : `<span class="st-lead__blank"><img src="${STAR}" alt="" width="70" height="87" loading="lazy" decoding="async" /></span>`)).join('\n                ')
     : shot
-      ? `<img src="${attr(shot)}" alt="${attr((l.p && l.p.name) || '')}" width="220" height="220" loading="lazy" decoding="async" />`
-      : `<img class="st-lead__crest" src="${STAR}" alt="Sue’s Angels FC star" width="120" height="149" loading="lazy" decoding="async" />`}
+      ? `<img src="${attr(shot)}" alt="" width="220" height="220" loading="lazy" decoding="async" />`
+      : `<img class="st-lead__crest" src="${STAR}" alt="" width="120" height="149" loading="lazy" decoding="async" />`}
               </span>
               <span class="st-lead__body">
                 <span class="st-lead__k">${esc(l.label)}</span>

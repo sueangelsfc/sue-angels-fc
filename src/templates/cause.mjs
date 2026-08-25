@@ -82,12 +82,14 @@ export function cause(d) {
             <a class="btn btn--ghost" href="#donate">Donate in her memory</a>
           </div>
         </div>
-        <aside class="cz-plate glassbox" aria-label="In memory">
+        <!-- A named region rather than a complementary landmark: see the
+             same note in about.mjs. It belongs to the section it is in. -->
+        <section class="cz-plate glassbox" aria-label="In memory">
           <img class="cz-plate__crest" src="${STAR}" alt="${attr(CLUB.name)} crest"
                width="150" height="186" decoding="async" />
           <p class="cz-plate__name">${esc(CLUB.memorial.name)}</p>
           <p class="cz-plate__motto">“${esc(CLUB.memorial.motto)}”</p>
-        </aside>
+        </section>
       </div>
     </section>`;
 
@@ -207,11 +209,11 @@ export function cause(d) {
             early, and no doctor or paramedic will mind you asking.</p>
         </div>
 
-        <aside class="cz-note rv" role="note">
+        <div class="cz-note rv" role="note">
           <p class="cz-note__lead">Trust your instinct. If someone is getting worse quickly, please do not
             wait. Ask the question: could it be sepsis?</p>
           <p class="cz-note__small">${esc(SEPSIS.disclaimer)}</p>
-        </aside>
+        </div>
       </div>
     </section>`;
 

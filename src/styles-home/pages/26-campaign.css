@@ -589,7 +589,14 @@
 .psn__who{margin-top: 20px; color: var(--ink-2); font-size: 15px;}
 .psn__who p{margin-bottom: 6px;}
 .psn__who b{color: var(--fg);}
-.psn__who a{color: var(--volt);}
+/* UNDERLINED, NOT JUST ORANGE. These sit mid-sentence in a paragraph -
+   "Scored: Ade Owolona (2), Leon Burnett (2)" - and colour was the only
+   thing separating a link from the words around it, which is WCAG 1.4.1
+   exactly: a reader who cannot distinguish the hue cannot see there is a
+   link there at all. Everywhere else on the site a link is a card, a button
+   or a whole line, and is obvious without the colour. */
+.psn__who a{color: var(--volt); text-decoration: underline;
+  text-decoration-thickness: 1px; text-underline-offset: 2px;}
 .psn__note{margin-top: 16px; max-width: 62ch;
   font-family: var(--ui); font-size: 12px; color: var(--ink-3);}
 

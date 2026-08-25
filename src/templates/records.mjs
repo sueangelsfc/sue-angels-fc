@@ -258,11 +258,23 @@ export function records(d) {
     milestone('assists', 10, 'First to 10 assists'),
   ].filter(Boolean);
 
-  const face = (p, size = 44) => {
+  /* A PHOTOGRAPH NAMES ITS SUBJECT - UNLESS THE NAME IS ALREADY THERE.
+
+     The site's rule is that a face is labelled, because on a crest wall or a
+     next-match card the picture is the only label there is. Inside a link
+     that prints the name right beside it, the same rule makes a screen
+     reader say "Stewart Luwawa, Stewart Luwawa", and a repeated name reads
+     as a duplicated row rather than as a photograph of somebody.
+
+     So `named: false` where the caller has already said it. The picture is
+     then decorative in the precise sense: removing it loses nothing, because
+     the text carries the whole meaning. */
+  const face = (p, size = 44, named = true) => {
     const src = p ? shotFor(p.num) : '';
+    const who = named ? attr((p && p.name) || '') : '';
     return `<span class="rc-face" style="--f:${size}px">${src
-      ? `<img src="${attr(src)}" alt="${attr((p && p.name) || '')}" width="${size}" height="${size}" loading="lazy" decoding="async" />`
-      : `<img class="rc-face__crest" src="${STAR}" alt="Sue’s Angels FC star" width="${Math.round(size * 0.5)}" height="${Math.round(size * 0.62)}" loading="lazy" decoding="async" />`}</span>`;
+      ? `<img src="${attr(src)}" alt="${who}" width="${size}" height="${size}" loading="lazy" decoding="async" />`
+      : `<img class="rc-face__crest" src="${STAR}" alt="${named ? 'Sue’s Angels FC star' : ''}" width="${Math.round(size * 0.5)}" height="${Math.round(size * 0.62)}" loading="lazy" decoding="async" />`}</span>`;
   };
 
   /* ================= 01 HONOURS ================= */
@@ -318,7 +330,7 @@ export function records(d) {
             <p class="rc-card__v">${esc(c.value)}</p>
             <p class="rc-card__l">${esc(c.label)}${(c.holders && c.holders.length > 1) || c.shared ? ' <i>shared</i>' : ''}</p>
             ${c.holders
-    ? c.holders.map((p) => `<a class="rc-card__who" href="/players/${attr(p.slug)}.html">${face(p, 34)}<span>${esc(p.name)}</span></a>`).join('\n            ')
+    ? c.holders.map((p) => `<a class="rc-card__who" href="/players/${attr(p.slug)}.html">${face(p, 34, false)}<span>${esc(p.name)}</span></a>`).join('\n            ')
     : c.teams
       ? c.teams.map((t) => `<span class="rc-card__team">
               <span class="rc-card__who is-team"><img class="rc-card__crest" src="${STAR}" alt="Sue’s Angels FC star" width="20" height="25" loading="lazy" decoding="async" /><span>${esc(t.who)}</span></span>
@@ -364,7 +376,7 @@ export function records(d) {
             <span class="rc-streak__v">${esc(s.value)}<i>${esc(s.unit)}</i></span>
             <span class="rc-streak__body">
               <b>${esc(s.label)}</b>
-              <a class="rc-streak__who" href="/players/${attr(s.p.slug)}.html">${face(s.p, 30)}<span>${esc(s.p.name)}</span></a>
+              <a class="rc-streak__who" href="/players/${attr(s.p.slug)}.html">${face(s.p, 30, false)}<span>${esc(s.p.name)}</span></a>
               <span class="rc-streak__when">${esc(s.when)}</span>
             </span>
             <span class="rc-streak__scope">Player</span>

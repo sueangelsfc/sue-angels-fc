@@ -229,9 +229,12 @@ export function coaches(d) {
             <ol class="co-used">
               ${used.map((p) => `<li>
                 <a href="/players/${attr(p.slug)}.html">
+                  <!-- alt="", and deliberately: his name is the next span,
+                       inside this same link, so naming the photograph makes a
+                       screen reader read the row twice. -->
                   <span class="co-used__face">${playerShot(p.num)
-    ? `<img src="${attr(playerShot(p.num))}" alt="${attr(p.name || '')}" width="30" height="30" loading="lazy" decoding="async" />`
-    : `<img class="co-used__crest" src="${STAR}" alt="Sue’s Angels FC star" width="16" height="20" loading="lazy" decoding="async" />`}</span>
+    ? `<img src="${attr(playerShot(p.num))}" alt="" width="30" height="30" loading="lazy" decoding="async" />`
+    : `<img class="co-used__crest" src="${STAR}" alt="" width="16" height="20" loading="lazy" decoding="async" />`}</span>
                   <span class="co-used__n">${esc(p.name)}</span>
                   ${p.code ? `<span class="co-used__pos">${esc(p.code)}</span>` : ''}
                   <span class="co-used__v">${esc(p.starts)}</span>

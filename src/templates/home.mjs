@@ -503,7 +503,7 @@ export function home(d) {
         <div class="bento rv" style="--d:.08s">
 
           <article class="bento__card bento__card--tall">
-            <img class="bento__img" src="/assets/hero/team.webp" alt="${attr(CLUB.name)} squad, ${attr(d.titleDivision)} champions" width="640" height="800" loading="lazy" decoding="async" />
+            <img class="bento__img" src="/assets/hero/team-800.webp" srcset="/assets/hero/team-480.webp 480w, /assets/hero/team-800.webp 800w, /assets/hero/team-1200.webp 1200w" sizes="(max-width: 760px) 100vw, 640px" alt="${attr(CLUB.name)} squad, ${attr(d.titleDivision)} champions" width="640" height="800" loading="lazy" decoding="async" />
             <span class="bento__imgshade" aria-hidden="true"></span>
             <span class="bento__label bento__label--on">${SVG.star} Champions</span>
             <div class="bento__tallfoot">

@@ -105,7 +105,14 @@ export function sponsors(d) {
       </div>
       <div class="wrap">
         <figure class="sp-shot">
-          <img src="/assets/hero/team.webp" alt="The ${attr(CLUB.name)} squad in the matchday kit, with the kit sponsor's name across the front of every shirt"
+          <!-- A PHONE SHOWS THIS ABOUT 325px WIDE. It was one 1600px file, 131KB,
+               handed to every visitor whatever they were reading it on. The
+               widths are the same three the home page hero has always offered;
+               the smallest is 33KB. -->
+          <img src="/assets/hero/team-1200.webp"
+               srcset="/assets/hero/team-480.webp 480w, /assets/hero/team-800.webp 800w, /assets/hero/team-1200.webp 1200w"
+               sizes="(max-width: 760px) 100vw, min(1200px, 92vw)"
+               alt="The ${attr(CLUB.name)} squad in the matchday kit, with the kit sponsor's name across the front of every shirt"
                width="1200" height="500" decoding="async" loading="lazy" />
           <figcaption>The squad that won ${esc(d.titleDivision)} unbeaten, in the shirt your name goes on.</figcaption>
         </figure>

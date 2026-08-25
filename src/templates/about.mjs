@@ -283,7 +283,8 @@ export function about(d) {
         ${rail(5, 'Off the field · Sue’s story', CLUB.charity.name)}
         <div class="ab-cause__grid rv">
           <figure class="ab-cause__fig">
-            <img class="ab-cause__img" src="/assets/hero/team.webp"
+            <img class="ab-cause__img" src="/assets/hero/team-800.webp"
+                 srcset="/assets/hero/team-480.webp 480w, /assets/hero/team-800.webp 800w, /assets/hero/team-1200.webp 1200w" sizes="(max-width: 760px) 100vw, 640px"
                  alt="${attr(CLUB.name)} squad, ${attr(d.titleDivision)} champions"
                  width="640" height="800" loading="lazy" decoding="async" />
             <figcaption class="ab-cause__cap">

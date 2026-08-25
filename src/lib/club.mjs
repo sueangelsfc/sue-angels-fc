@@ -132,7 +132,7 @@ export { POSITION_GROUPS, POSITION_LABEL } from './positions.mjs';
 /* Current partners, recovered from the deployed site. Sponsor logos are the
    partners' own marks and are never recoloured or restyled. */
 export const SPONSORS = [
-  { name: "Bloomin' Marvellous", tier: 'Main kit sponsor', logo: '/assets/sponsors/bloomin-marvellous.png' },
+  { name: "Bloomin' Marvellous", tier: 'Main kit sponsor', logo: '/assets/sponsors/bloomin-marvellous.webp' },
   { name: 'Sporting Solutions', tier: 'Founding kit partner', logo: '/assets/sponsors/sporting-solutions.webp' },
   { name: 'Hodgson Roofing', tier: 'Warm-up and training top sponsor', logo: '/assets/sponsors/hodgson-roofing.webp' },
   { name: 'Staines Rugby', tier: 'Ground-share partner', logo: '/assets/sponsors/staines-rugby.png' },
@@ -270,7 +270,7 @@ export const PARTNERS = [
       { label: 'Instagram', href: 'https://www.instagram.com/bloominmarvellousuk/' },
       { label: 'LinkedIn', href: 'https://www.linkedin.com/company/bloomin-marvellous-landscapes-ltd-uk' },
     ],
-    logo: '/assets/sponsors/bloomin-marvellous.png',
+    logo: '/assets/sponsors/bloomin-marvellous.webp',
   },
   {
     name: 'Sporting Solutions Ltd',

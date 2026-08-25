@@ -6080,12 +6080,17 @@ console.log(`\n${'='.repeat(66)}`);
       /* No width and height is a layout shift, which Core Web Vitals measures
          and a reader experiences as the page jumping under their thumb. */
       if (!/\bwidth=/.test(tag) || !/\bheight=/.test(tag)) noDimensions.push(`${r}: ${tag.slice(0, 70)}`);
-      if (/loading="lazy"/.test(tag)) continue;
       const m = /src="([^"]+)"/.exec(tag);
       if (!m) continue;
       const b = bytesOf(m[1]);
-      eager += b;
+      /* THE SRCSET RULE IS ABOUT SIZE, NOT TIMING, so it is asked BEFORE the
+         lazy check. Making an oversized image lazy takes it off the critical
+         path and does not stop a phone eventually downloading a desktop file
+         to show it 325px wide - which is exactly what the sponsors hero did
+         once it was made lazy. Both questions get asked of every image. */
       if (b > NEEDS_SRCSET && !/srcset=/.test(tag)) noSrcset.push(`${r}: ${(b / 1024).toFixed(0)}KB ${m[1]}`);
+      if (/loading="lazy"/.test(tag)) continue;
+      eager += b;
     }
     totalEager += eager;
     if (eager > worst[1]) worst = [r, eager];
@@ -6101,14 +6106,14 @@ console.log(`\n${'='.repeat(66)}`);
     noDimensions.length === 0, noDimensions.slice(0, 3).join(' | '));
   /* THE ONE THAT CAUGHT SOMETHING. The sponsors hero was 131KB of a 1600px
      photograph, eager, with no srcset, shown about 350px wide on a phone. */
-  check('a large eager image offers a phone something smaller than the desktop file',
+  check('a large image offers a phone something smaller than the desktop file',
     noSrcset.length === 0, noSrcset.slice(0, 3).join(' | '));
-  check('probe: there is at least one large eager image, so the srcset rule has a subject',
+  check('probe: there is at least one image over 100KB, so the srcset rule has a subject',
     routes.some((r) => {
       const html = fs.readFileSync(path.join(ROOT, r), 'utf8');
-      return (html.match(/<img\b[^>]*>/g) || []).some((t) => !/loading="lazy"/.test(t)
-        && bytesOf((/src="([^"]+)"/.exec(t) || [, ''])[1]) > NEEDS_SRCSET);
-    }), 'no eager image is over 100KB, so that check proves nothing');
+      return (html.match(/<img\b[^>]*>/g) || [])
+        .some((t) => bytesOf((/src="([^"]+)"/.exec(t) || [, ''])[1]) > NEEDS_SRCSET);
+    }), 'nothing is over 100KB, so that check proves nothing');
 
   console.log(`  images: ${imgs} across ${routes.length} pages · heaviest eager payload `
     + `${(worst[1] / 1024).toFixed(0)}KB (${worst[0]}) · mean ${(mean / 1024).toFixed(0)}KB`);

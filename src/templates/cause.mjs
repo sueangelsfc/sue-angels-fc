@@ -130,7 +130,9 @@ export function cause(d) {
               people have to go through the same thing.</p>
           </div>
           <figure class="cz-story__fig">
-            <img src="/assets/hero/team.webp" alt="${attr(CLUB.name)} players celebrating together"
+            <img src="/assets/hero/team-800.webp"
+                 srcset="/assets/hero/team-480.webp 480w, /assets/hero/team-800.webp 800w, /assets/hero/team-1200.webp 1200w" sizes="(max-width: 760px) 100vw, 640px"
+                 alt="${attr(CLUB.name)} players celebrating together"
                  width="640" height="800" loading="lazy" decoding="async" />
             <figcaption>Every match carries her name a little further.</figcaption>
           </figure>

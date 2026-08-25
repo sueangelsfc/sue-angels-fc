@@ -2116,7 +2116,13 @@
 
     var seen = {};
     var clicked = {};
-    var bands = $$('main .sec[class*="sec--"]');
+    /* NOT `$$`. That helper is defined inside the first IIFE in this file
+       and this block is in a later one, so the call threw a ReferenceError on
+       every page built on the home design - which is most of them - and took
+       this whole counter down with it. It was invisible because everything
+       here is optional and fails quietly by design. */
+    var bands = Array.prototype.slice.call(
+      document.querySelectorAll('main .sec[class*="sec--"]'));
     if (!bands.length) return;
 
     function keyOf(el) {

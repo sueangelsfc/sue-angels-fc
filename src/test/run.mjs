@@ -6552,6 +6552,70 @@ let orphanClasses = new Map();
 }
 
 /* ==========================================================================
+   A HELPER USED WHERE IT WAS NEVER DEFINED
+
+   `$$` is declared inside the first IIFE in src/scripts/10-home.js. The band
+   counter appended at the bottom of that file is inside a LATER one, and
+   called `$$` anyway - so every page built on the home design, which is most
+   of them, threw `ReferenceError: $$ is not defined` on load and lost the
+   whole block with it.
+
+   It shipped and stayed shipped because everything in that block is optional
+   and designed to fail quietly. Nothing looked wrong. The suite reads
+   generated markup and never runs sa.js; the panel is rendered in tests and
+   the public bundle is not. It was found by opening the live site and reading
+   the console, which is the only thing that could have found it.
+
+   So: every use of a shared helper is checked against the IIFE it is in. Not
+   a general scope analysis - that would need a parser - but these four names
+   are the ones that are declared once at the top of a file and reached for
+   everywhere, which is exactly the shape that goes wrong.
+   ========================================================================== */
+{
+  const HELPERS = ['$$', '$', 'on', 'esc'];
+  const outOfScope = [];
+  const dir = path.join(ROOT, 'src', 'scripts');
+  for (const file of fs.readdirSync(dir).filter((f) => f.endsWith('.js'))) {
+    const src = fs.readFileSync(path.join(dir, file), 'utf8');
+    /* Split on TOP-LEVEL IIFEs - a `(function () {` at column zero. Each is
+       its own scope and each declares its own helpers or does without. */
+    const starts = [...src.matchAll(/^\(function \(\) \{/gm)].map((m) => m.index);
+    if (!starts.length) continue;
+    starts.push(src.length);
+    for (let i = 0; i < starts.length - 1; i += 1) {
+      const chunk = src.slice(starts[i], starts[i + 1]);
+      for (const h of HELPERS) {
+        const esc2 = h.replace(/\$/g, '\\$');
+        /* NOT `\b` after the name. `$` is not a word character, so `\$\$\b`
+           demands a word character immediately after the second $ - which
+           `var $$ = ...` does not have - and the declaration never matched.
+           The first version of this check reported every correct file. */
+        const declared = new RegExp('(?:var|let|const|function)\\s+' + esc2 + '(?![\\w$])').test(chunk);
+        if (declared) continue;
+        /* A call, not a mention: `$$(` or `$(`, and not preceded by a word
+           character or another $ (which would be a different identifier). */
+        const used = new RegExp('(^|[^\\w$.])' + esc2 + '\\s*\\(', 'm').exec(chunk);
+        if (used) {
+          const line = src.slice(0, starts[i] + used.index).split('\n').length;
+          outOfScope.push(`${file}:${line} uses ${h}() and its IIFE does not declare it`);
+        }
+      }
+    }
+  }
+  check('no script calls a helper the scope it is in never declared',
+    outOfScope.length === 0, outOfScope.slice(0, 4).join('   |   '));
+
+  /* And the belt to that brace: the shipped bundle must not name one of them
+     at all after minification, because the minifier renames every helper it
+     can see and leaves a free variable exactly as it found it. A bare `$$` in
+     sa.js IS the bug, with no analysis required. */
+  const saBundle = fs.readFileSync(path.join(ROOT, 'sa.js'), 'utf8');
+  const free = HELPERS.filter((h) => new RegExp('(^|[^\\w$.])' + h.replace(/\$/g, '\\$') + '\\s*\\(').test(saBundle));
+  check('the shipped bundle names no helper the minifier could not resolve',
+    free.length === 0, free.join(', ') + ' survived minification, which means it was a free variable');
+}
+
+/* ==========================================================================
    THE TWO ENDPOINTS A STRANGER CAN CALL
 
    /api/publish and /api/claude ask the database whether the caller is a club

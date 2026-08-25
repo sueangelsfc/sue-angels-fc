@@ -1205,6 +1205,23 @@
     if (body) markValidity(e.target);
   }, true);
 
+  /* A DIALOG IS NOT INSIDE THE PANEL BODY. wireHints runs on what a module
+     draws into its panel, and the biggest form in the whole panel - the match
+     editor, 76 fields and 14 hints - is not drawn there at all: it is
+     appended straight to <body> as a modal, after the render that would have
+     wired it. So the screen with the most explaining to do had none of it
+     reaching a screen reader.
+
+     A childList watch on body alone, NOT subtree: a modal is a direct child,
+     and watching the whole tree would run this on every keystroke that
+     changes a row. wireHints skips anything already described, so opening the
+     same dialog twice costs one pass over its fields. */
+  new MutationObserver(function (recs) {
+    recs.forEach(function (r) {
+      [].forEach.call(r.addedNodes, function (n) { if (n.nodeType === 1) wireHints(n); });
+    });
+  }).observe(document.body, { childList: true });
+
   var draftTimer = null;
   document.addEventListener('input', function (e) {
     var body = e.target && e.target.closest && e.target.closest('[data-panel-body]');

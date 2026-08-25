@@ -712,6 +712,18 @@ for (const f of shipped) {
         'a looser lookup attaches another field\'s hint');
       check('an existing aria-describedby is never overwritten',
         /getAttribute\('aria-describedby'\)\) return/.test(wire));
+      /* A DIALOG IS NOT INSIDE THE PANEL BODY. The match editor - the biggest
+         form in the panel, 69 fields and 14 hints - is appended straight to
+         <body> after the render that would have wired it, so the screen with
+         the most explaining to do had none of it reaching a screen reader.
+         Watched on body's direct children only: a modal is one, and watching
+         the subtree would run this on every keystroke that redraws a row. */
+      check('hints are wired for dialogs added outside the panel body',
+        /MutationObserver/.test(shell) && /observe\(document\.body/.test(shell),
+        'the match editor gets no wiring at all');
+      check('and the watch is not on the whole subtree',
+        /observe\(document\.body, \{ childList: true \}\)/.test(shell),
+        'this would fire on every keystroke that redraws a row');
       check('the panel says it is busy while a screen loads',
         /aria-busy/.test(shell));
     }

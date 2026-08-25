@@ -2350,6 +2350,13 @@ for (const [f, kb] of Object.entries({
     check('and the structured data says the same thing',
       (wcHtml.match(/11 appearances/g) || []).length >= 2,
       'the JSON-LD description disagrees with the meta description');
+    /* The win rate is one figure computed once and printed in three places -
+       a tile, a bar and a rank row - and two of them still said "when they
+       started" after the tile was changed. One number, one sentence. */
+    const fz = fs.readFileSync(path.join(ROOT, 'players', 'frazier-isaias-osunkoya.html'), 'utf8');
+    check('the win rate is described the same way everywhere it appears',
+      !/Won when (they )?start/.test(fz),
+      'the same percentage is labelled two different ways on one page');
   }
 
   /* CARRYING AN OLD RECORD'S ASSISTS FORWARD

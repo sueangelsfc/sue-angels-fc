@@ -366,11 +366,11 @@ export function playerPage(p, d) {
   const barsFor = (x) => (gk ? [
     bar('Clean sheets', x.cleanSheets, x.cleanSheetPct, `${x.cleanSheetPct}% of ${x.onRecord}`),
     bar('Games conceding', x.onRecord - x.cleanSheets, x.onRecord ? Math.round(((x.onRecord - x.cleanSheets) / x.onRecord) * 100) : 0),
-    bar('Won when they started', `${x.winPct}%`, x.winPct, `${x.won} of ${x.won + x.drawn + x.lost}`),
+    bar('Won when playing', `${x.winPct}%`, x.winPct, `${x.won} of ${x.won + x.drawn + x.lost}`),
   ] : [
     bar('Goals', x.goals, x.involvements ? Math.round((x.goals / x.involvements) * 100) : 0),
     bar('Assists', x.assists, x.involvements ? Math.round((x.assists / x.involvements) * 100) : 0),
-    bar('Won when they started', `${x.winPct}%`, x.winPct, `${x.won} of ${x.won + x.drawn + x.lost}`),
+    bar('Won when playing', `${x.winPct}%`, x.winPct, `${x.won} of ${x.won + x.drawn + x.lost}`),
   ]);
 
   const ranksFor = (x) => [
@@ -378,7 +378,7 @@ export function playerPage(p, d) {
     !gk && x.goalRank ? { v: ordinal(x.goalRank), k: 'Goalscorer in the squad', s: `${x.goals} scored` } : null,
     !gk && x.assistRank ? { v: ordinal(x.assistRank), k: 'Assister in the squad', s: `${x.assists} made` } : null,
     x.motmRank ? { v: ordinal(x.motmRank), k: 'Man of the Match in the squad', s: `${x.motm} awarded` } : null,
-    { v: `${x.winPct}%`, k: 'Won when they started', s: `${x.won}W ${x.drawn}D ${x.lost}L` },
+    { v: `${x.winPct}%`, k: 'Won when playing', s: `${x.won}W ${x.drawn}D ${x.lost}L` },
   ].filter(Boolean);
 
   /* A season with no matches in the record. Said plainly, because a grid of

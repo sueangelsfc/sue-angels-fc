@@ -29,7 +29,7 @@ src/
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        3,445-check suite against the generated output
+  test/run.mjs        3,448-check suite against the generated output
 ```
 
 **Run `npm run build` after any change under `src/`.** Nothing in `src/` is served; only the generated root files are.
@@ -366,7 +366,7 @@ Read leads in **Control panel → Inbox**; RLS blocks anonymous reads, so signin
 ```bash
 npm run build     # regenerate every route (run after any src/ change)
 npm run verify    # assert derived stats against the published league table
-npm test          # 3,445 checks against the generated output
+npm test          # 3,448 checks against the generated output
 npm run serve     # local preview on :4321
 ```
 

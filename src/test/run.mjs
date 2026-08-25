@@ -6409,6 +6409,9 @@ console.log(`\n${'='.repeat(66)}`);
   }
 }
 
+/* Filled by the block below and printed with the other figures. */
+let orphanClasses = new Map();
+
 /* ==========================================================================
    WHAT AN ACCESSIBILITY ENGINE FOUND, KEPT FOUND
 
@@ -6504,6 +6507,35 @@ console.log(`\n${'='.repeat(66)}`);
   }
   check('no complementary landmark is nested inside another section',
     nested.length === 0, [...new Set(nested)].slice(0, 4).join(', '));
+
+  /* AND THE SAME QUESTION OF THE PAGES, REPORTED RATHER THAN GATED.
+
+     The panel is gated on this (see panel-render.mjs) because it came back
+     clean at five, all five real. The pages come back at over a hundred, and
+     almost all of them are structural wrappers a template uses to group
+     something and never styles - `pf-panels`, `hx__navtrig` - which is a
+     judgement call and so belongs here as a figure rather than as a failure.
+     It is worth printing because the one time it is not a wrapper, it is a
+     component rendering as bare text. */
+  orphanClasses = new Map();
+  {
+    const sheetOf = {};
+    for (const f of fs.readdirSync(ROOT).filter((x) => x.endsWith('.css'))) {
+      sheetOf[f] = new Set([...fs.readFileSync(path.join(ROOT, f), 'utf8')
+        .matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)].map((m) => m[1]));
+    }
+    for (const h of pages.values()) {
+      const def = new Set();
+      for (const m of h.matchAll(/<link[^>]+href="\/([\w.-]+\.css)/g)) {
+        for (const c of (sheetOf[m[1]] || [])) def.add(c);
+      }
+      for (const m of h.matchAll(/\sclass="([^"]*)"/g)) {
+        for (const c of m[1].split(/\s+/).filter(Boolean)) {
+          if (!def.has(c)) orphanClasses.set(c, (orphanClasses.get(c) || 0) + 1);
+        }
+      }
+    }
+  }
 
   /* 4. A LINK IN A SENTENCE NEEDS MORE THAN COLOUR. Everywhere else on this
      site a link is a card, a button or a whole line and is obvious without
@@ -6615,6 +6647,9 @@ console.log(`\n${'='.repeat(66)}`);
   check('nothing the output fetches is blocked by the policy',
     blocked.length === 0, [...new Set(blocked)].join('   |   '));
 }
+
+console.log(`  classes drawn by a page and defined by no sheet it loads: ${orphanClasses.size}`
+  + ` (the panel is gated at zero; these are mostly unstyled wrappers)`);
 
 /* ==========================================================================
    THE REPORT GOES LAST, AND THAT IS NOT A TIDINESS PREFERENCE

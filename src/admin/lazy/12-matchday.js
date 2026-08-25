@@ -129,9 +129,14 @@
     return rows;
   }
 
+  /* THE PANEL'S OWN BADGE, NOT A CLASS OF THIS SCREEN'S OWN. `cp-chip` and
+     its three modifiers were defined by no stylesheet, so this rendered as
+     bare text where the rest of the panel shows a coloured pill. Invisible to
+     a suite that reads markup and to a test DOM with no cascade, which is why
+     it survived: nothing here is wrong except that it looks like nothing. */
   function stateChip(state) {
-    return '<span class="cp-chip cp-chip--' +
-      (state === 'ready' ? 'ok' : state === 'waiting' || state === 'incomplete' ? 'warn' : 'mute') +
+    return '<span class="badge badge--' +
+      (state === 'ready' ? 'success' : state === 'waiting' || state === 'incomplete' ? 'warning' : 'neutral') +
       '">' + esc(state) + '</span>';
   }
 
@@ -262,7 +267,7 @@
           body: '<div class="grid grid--3">' +
             Array.from({ length: SLOTS }, function (_, i) { return slot(i, squad[i], iso); }).join('') +
             '</div>' +
-            '<div class="cp-actions">' +
+            '<div class="cp-head__actions">' +
             '<button class="btn btn--primary" type="button" data-save-squad>Save squad</button> ' +
             '<button class="btn btn--ghost" type="button" data-clear-squad>Clear</button>' +
             '</div>' +

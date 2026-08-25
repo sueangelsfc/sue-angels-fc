@@ -380,6 +380,41 @@ export async function panelChecks() {
   }
 
   /* ---------------------------------------------------------------------
+     5c. EVERY CLASS THE PANEL DRAWS IS DEFINED BY A SHEET IT LOADS.
+
+     This DOM has no cascade and refuses getComputedStyle rather than
+     inventing one, which is the honest thing to do and leaves a real gap: a
+     screen can render perfectly correct markup and look like nothing.
+
+     A class no stylesheet mentions is the one part of that gap that can be
+     closed without a cascade, and it is not hypothetical. `cp-chip` and its
+     three modifiers were defined nowhere, so matchday's readiness column
+     showed bare text where every other screen shows a coloured pill, and
+     `cp-actions` left two buttons unspaced. Nothing was wrong with them
+     except that they looked like nothing, which is exactly the class of bug
+     markup checks and a cascade-free DOM both walk straight past.
+
+     control.html loads sa.css and control.css, so both count. */
+  {
+    const sheets = ['sa.css', 'control.css']
+      .map((f) => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n');
+    const defined = new Set([...sheets.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)].map((m) => m[1]));
+    const orphan = new Map();
+    const uctx = PR.boot({ rows });
+    for (const k of keys) {
+      const r = await PR.openPanel(uctx, k);
+      for (const el of r.body.querySelectorAll('*')) {
+        for (const c of (el.getAttribute('class') || '').split(/\s+/).filter(Boolean)) {
+          if (!defined.has(c)) orphan.set(c, (orphan.get(c) || 0) + 1);
+        }
+      }
+    }
+    check('every class the panel draws is defined by a stylesheet it loads',
+      orphan.size === 0,
+      [...orphan].map(([c, n]) => `${c} x${n}`).join(', '));
+  }
+
+  /* ---------------------------------------------------------------------
      6. WHAT WAS TYPED SURVIVES. Driven end to end: type into a real field,
      let the debounce fire, re-open the screen, take the offer back. */
   const dctx = PR.boot({ rows });

@@ -29,7 +29,7 @@ src/
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        3,415-check suite against the generated output
+  test/run.mjs        3,441-check suite against the generated output
 ```
 
 **Run `npm run build` after any change under `src/`.** Nothing in `src/` is served; only the generated root files are.
@@ -238,6 +238,20 @@ Neither is a save to refuse. A result typed at the side of a pitch is worth havi
 
 **The suite names the three, it does not count them.** `<=` passes when a check finds *fewer*, which is what a weakened check looks like — dropping the armband from the question took it from three to two and the suite said nothing. Same device as `PUBLISHES_NOTHING`: the club fixing one in the panel is expected to fail the check and to be settled by striking a line out. And because `checks()` reads the DOM it cannot be isolated the way `offer()` and `carryAssists()` can, so each of its three questions is separately asserted to still exist.
 
+### Who came on, and for whom
+
+The sheet recorded that a starter went off (`subbedOff`) and that a substitute came on (`on`, `onAt`), and **nothing joined the two**, so the match page said so in words: *"Sunday-league match returns do not record minutes or substitutions, so neither is shown rather than estimated."* From 26/27 the club records the pair. `src/lib/subs.mjs`.
+
+A substitution is one event, `{minute, off, on}`, and the record is a list of them.
+
+- **A man can come back on.** Sunday league runs rolling changes, and the old shape could not express one at all: `subbedOff` and `on` are one boolean each, so a player is one thing or the other for the whole match. Two events say it exactly — off at 62, on at 78 — and both are true.
+- **He is not then "the man who came off".** `wentOff()` drops anybody whose last event was coming on, because he finished the match on the pitch and that is what the page means.
+- **Each row's dropdowns are walked forward through the list**, so they offer who was actually available at that moment: you can only take off somebody on the pitch and only bring on somebody who is not. That makes a return offerable with no special case, because a man taken off is off the pitch and so is back in the second list.
+- **`subbedOff` and the bench's `on`/`onAt` are derived from the list on save**, never typed twice, so anything not yet taught about `subs` still reads the match correctly.
+- **Reading backward, nothing is invented.** A match saved before this opens showing what *is* known — he came on, at this minute — with the man he replaced blank rather than guessed, and the suite asserts the archive is never given a pairing it never held.
+- **The note only appears where they are genuinely absent.** A sentence saying substitutions are not recorded becomes false on the first match that records one.
+- **An unminuted substitution is not minute zero.** Same trap as the assist pairing; it sorts to the end.
+
 ### An empty minute is not minute zero
 
 An assist is a field **on** the goal; the flat `assists` array is derived on save. A record written the old way is carried forward by pairing each goal with an assist in the same minute by somebody else — and that rule tested `minute != null`. **The archive's minutes are mostly the empty string**, which is not null, and `Number('') === Number('')` is `0 === 0`, so every goal matched every assist and took the first one every time, so it matched the *same* one.
@@ -352,7 +366,7 @@ Read leads in **Control panel → Inbox**; RLS blocks anonymous reads, so signin
 ```bash
 npm run build     # regenerate every route (run after any src/ change)
 npm run verify    # assert derived stats against the published league table
-npm test          # 3,415 checks against the generated output
+npm test          # 3,441 checks against the generated output
 npm run serve     # local preview on :4321
 ```
 
@@ -443,6 +457,6 @@ Four rules, each of them written after the failure it prevents. `harden-site` au
 - **Stripe donations** are built and the panel owns the link (Control panel → Donations). The cause page falls back to the link that is live today if the record is empty.
 - **16 of 36 players have no photograph, and the gallery cannot currently supply one.** All 624 photo tags are a bare name, which means "somewhere in this frame", and none is marked as the **subject**. Only 5 of the 16 are tagged at all, and every frame is one of two useless kinds: unambiguous but a wide match shot where the player is about forty pixels tall among five team-mates, or close enough to crop but carrying two names with nothing saying which face is which. Cropping one of those is how a player ends up wearing somebody else's face, which has happened here. The machinery is right and the data is not: **Control panel → Photo tagging → mark a subject** promotes that frame to the front of Player photographs → From the gallery, which now sorts by subject, then by fewest other people tagged, and says which it is showing.
 - **No photograph of Susan Anne Martin exists in the repo.** The cause page opens on the crest. If the family can clear a photo it belongs there.
-- **Appearances count starts only.** Sunday-league match returns do not record minutes or substitute appearances, so neither is shown rather than estimated.
+- **An appearance is a start, or a substitute the record can prove was on the pitch.** It used to be starts only, and the reasoning was sound while the evidence did not exist. Two things supply it now: the bench carries `on`, and where nobody has ticked it the match record often proves it anyway. **A man who scored played, whatever the sheet says about him.** That gap published as **William Clark, seven goals from two appearances** — he came off the bench for five of them. Ten players moved, every one on evidence. A name on the bench with nothing beside it is still not an appearance, which is the part of the old rule that was right, and the suite's check for it is the negative one. Somebody credited in a match he is on no sheet for gets nothing either: that is a broken record, and three are in the archive.
 - Videos page links out to YouTube; per-video embedding awaits catalogued rows.
 - **The league table is transcribed, and now checked against the results it is made of.** It never needed fetching: the site already holds all ninety division matches because it prints them under "Around the league", and a ten-club double round robin is exactly ninety. `deriveTable()` in `stats.mjs` builds the table from them and `npm run verify` asserts the two agree, so a mistyped figure or a wrong division result stops the build. That is the loud failure the retired `TableSync.jsx` was meant to provide, with no third-party proxy and no hard-coded fallback in the path. **Walkovers are the whole difficulty**: seven of the ninety were awarded, and counting them as scoreless draws moved six rows out of ten and cost the club six points. Where two clubs are level on every figure (Old Freemen's and Shepherd's Tuesday both finished P18 W5 D2 L11, 28-36, 17) the order is the league's to decide, so the check compares club by club and only asserts that the published order makes sense of its own figures. A live 26/27 table still has to be typed in as the season goes: Full-Time's league id is recorded nowhere, and the season starts 6 September.

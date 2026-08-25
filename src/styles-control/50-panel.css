@@ -489,3 +489,50 @@
   padding: 2px;
 }
 .cp-sec__note { margin-block-start: var(--space-4); }
+
+/* ---- A substitution: minute, off, on ------------------------------------
+   One line each, the same shape as a starter's row, because it is the same
+   kind of fact: a name and what happened to him. */
+.subs { display: grid; gap: 4px; margin-block-start: var(--space-2); }
+.sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding-block: var(--space-2);
+  border-block-end: 1px solid var(--border);
+}
+.sub:last-child { border-block-end: 0; }
+.sub__n {
+  flex: 0 0 auto;
+  width: 18px;
+  font-size: var(--step--2);
+  color: var(--text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+.sub__min .input { width: 74px; text-align: center; }
+.sub__lbl {
+  flex: 0 0 auto;
+  font-size: var(--step--2);
+  color: var(--text-subtle);
+}
+.sub__p { flex: 1 1 130px; min-width: 0; padding-block: 5px; }
+.sub__x {
+  margin-inline-start: auto;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-subtle);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+.sub__x:hover { border-color: var(--error); color: var(--error); }
+@media (pointer: coarse) {
+  .sub__p, .sub__min .input { min-height: 44px; font-size: 16px; }
+  .sub { display: grid; grid-template-columns: auto 1fr auto; }
+  .sub__p { grid-column: 2; }
+}

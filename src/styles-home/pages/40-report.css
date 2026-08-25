@@ -146,3 +146,19 @@
   .mr-album__link{transition: none;}
   .mr-album__link:hover{transform: none;}
 }
+
+/* ---- Substitutions ------------------------------------------------------
+   Who came on for whom, and when. The sheet above says who was in the squad;
+   this says what happened to it. Written in home.css's vocabulary (--ink-*,
+   --ui, --volt, --line-d) because that is what a report page loads: an
+   sa.css name here would be an undefined custom property, which deletes its
+   own declaration rather than falling back. */
+.mr-subs{list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 6px;}
+.mr-subs li{display: flex; align-items: baseline; gap: 10px;
+  font-size: 13.5px; line-height: 1.5; color: var(--ink-2);}
+.mr-subs__min{flex: 0 0 3.2em; font-family: var(--ui); font-size: 11px;
+  font-weight: 700; letter-spacing: .06em; color: var(--volt);
+  font-variant-numeric: tabular-nums;}
+.mr-subs__min:empty:before{content: "–"; color: var(--ink-3);}
+.mr-subs__pair{min-width: 0;}
+.mr-subs__pair b{color: var(--fg); font-weight: 600;}

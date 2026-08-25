@@ -3,9 +3,16 @@
    Every published number is computed here from match records. Nothing is
    hard-coded on a page, so two pages can never disagree about the same fact.
 
-   Shared verbatim between the generator (build time) and the browser
-   (client-side filtering), which is why it is dependency-free.
+   THIS FILE IS SERVER-SIDE. The header used to say it was shared verbatim
+   with the browser "which is why it is dependency-free", and that has not
+   been true for some time: nothing shipped to a page imports it, the public
+   scripts filter the DOM against markup the generator already wrote, and
+   where the panel needs one of these rules it carries its own copy which
+   panel-vs-site.mjs reconciles against this one. A comment forbidding an
+   import for a reason that no longer holds is a comment that makes somebody
+   duplicate a rule instead.
    ========================================================================== */
+import { cameOn as subsCameOn } from './subs.mjs';
 
 export const US = "Sue's Angels FC";
 const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
@@ -420,9 +427,41 @@ export function playerStats(matches, squad, trialists = {}) {
     if (!d) continue;
     const starters = (d.starters || []).map((x) => x.num);
     const bench = (d.bench || []).map((x) => x.num);
-    // Only bench players who actually came on count as appearances. The
-    // records do not track this, so bench presence is reported separately
-    // and never inflated into an appearance.
+
+    /* ======================================================================
+       WHAT COUNTS AS AN APPEARANCE
+
+       Starts only, until now, and the reason was sound: Sunday-league returns
+       do not record substitutions, so a bench listing is not evidence of
+       having played and folding it in would inflate a figure nobody can
+       check.
+
+       The bench carries `on` now, which IS that evidence when somebody has
+       filled it in. And where nobody has, the match record often proves it
+       anyway: a man who scored played, whatever the sheet says about him. On
+       the live site that gap read as William Clark, seven goals from two
+       appearances, because he came off the bench for five of them.
+
+       So an appearance is a start, or a substitute the record can show was on
+       the pitch: `on` ticked, or credited with something in this match. Both
+       are evidence and neither is an estimate. A name on the bench with
+       nothing beside it is still not an appearance, which is the part of the
+       original rule that was right.
+       ====================================================================== */
+    const cameOn = new Set((d.bench || []).filter((b) => b.on).map((b) => b.num));
+    const proven = new Set();
+    const prove = (n) => { if (n != null && n !== '') proven.add(Number(n)); };
+    for (const g of d.goals || []) {
+      prove(g.num);
+      if (g.assist) prove(g.assist.num);
+    }
+    for (const a of d.assists || []) prove(a.num);
+    for (const f of ['yellowCards', 'redCards', 'cleanSheets', 'penaltiesSaved', 'penaltiesMissed']) {
+      for (const x of d[f] || []) prove(x && x.num != null ? x.num : x);
+    }
+    prove(d.keeper); prove(d.motm); prove(d.captain);
+    const playedOffBench = (n) => cameOn.has(n) || proven.has(n);
+
     const appeared = new Set(starters);
 
     for (const num of starters) {
@@ -437,7 +476,16 @@ export function playerStats(matches, squad, trialists = {}) {
     for (const num of bench) {
       const p = ensure(num);
       p.subApps++;
-      if (!appeared.has(num)) p.matches.push({ id: m.id, role: 'bench' });
+      if (appeared.has(num)) continue;
+      if (playedOffBench(num)) {
+        p.apps++;
+        appeared.add(num);
+        /* A role of its own, so everything downstream can still tell a start
+           from a substitute appearance from an unused bench listing. */
+        p.matches.push({ id: m.id, role: 'sub' });
+      } else {
+        p.matches.push({ id: m.id, role: 'bench' });
+      }
     }
     /* Per-match tallies are recorded on the player's own match entry as well
        as on the season total. A scoring streak cannot be derived from a
@@ -781,14 +829,21 @@ export function monthlyStats(matches, month, year) {
    sheets in its rings and sixteen in the panel below them, which is what
    happens when the same figure is worked out twice.
 
-   `apps` here is starts, as everywhere else in this engine: Sunday-league
-   returns do not record who came off the bench, so bench outings are carried
-   separately in `bench` rather than folded into a total nobody can verify. */
+   `apps` here is starts plus substitute appearances the record can PROVE -
+   `on` ticked, or credited with something in that match - exactly as
+   playerStats counts them. A name on the bench with nothing beside it is
+   still not an appearance and is carried separately in `bench`. */
 export function playerProfile(player, matches, squad) {
   const byId = new Map(matches.map((m) => [m.id, m]));
   const mine = (player.matches || []).filter((r) => byId.has(r.id));
+  /* Starts AND substitute appearances, which is what "the matches he played
+     in" means. Starts alone put eleven appearances at the top of William
+     Clark's page and two in the table underneath it, and left his timeline
+     running to two goals under a heading saying seven: the totals above were
+     already counted across every match he was involved in, and only this set
+     was not. One page, one figure. */
   const played = mine
-    .filter((r) => r.role === 'start')
+    .filter((r) => r.role === 'start' || r.role === 'sub')
     .map((r) => byId.get(r.id))
     .filter((m) => m && m.played)
     .sort((a, b) => (a.iso || '').localeCompare(b.iso || ''));
@@ -803,8 +858,8 @@ export function playerProfile(player, matches, squad) {
      player was involved in, INCLUDING the ones he came on in. Counting them
      only from starts lost a substitute's goals: it took one off Frazier's 31
      and would have quietly under-reported every impact player at the club.
-     Starts, clean sheets and the win record stay on starts alone, because
-     those are claims about a match the player began. */
+     Clean sheets and the win record follow the same set: they are claims
+     about a match the player was on the pitch for, not about one he began. */
   let goals = 0, assists = 0, motm = 0;
   for (const r of mine) {
     const m = byId.get(r.id);

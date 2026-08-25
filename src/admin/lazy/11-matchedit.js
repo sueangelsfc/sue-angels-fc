@@ -671,6 +671,65 @@
   }
 
 
+  /* ==========================================================================
+     WHO CAME ON, AND FOR WHOM
+
+     The sheet recorded that a starter went off and that a substitute came on,
+     and nothing joined the two, so the report page said so: "Sunday-league
+     match returns do not record minutes or substitutions, so neither is shown
+     rather than estimated." For 26/27 the club records the pair.
+
+     A MAN CAN COME BACK ON. Sunday league runs rolling changes and the old
+     shape could not express one at all: `subbedOff` and `on` are a boolean
+     each, so a player is one thing or the other for the whole match. Two
+     events say it exactly - off at 55, on at 75 - and both are true.
+
+     Each dropdown offers who was actually available AT THAT POINT, walked
+     forward through the list: you can only take off somebody on the pitch,
+     and only bring on somebody who is not. That makes a return offerable
+     without a special case, because a man taken off is off the pitch and so
+     is back in the second list.
+     ========================================================================== */
+  function subRows(rows, starters, bench) {
+    if (!rows.length) {
+      return '<p class="me__none">No substitutions recorded. Leave it empty for a match '
+        + 'where nobody was changed, or where the club no longer knows.</p>';
+    }
+    /* Who is on the pitch before each event, so each row's two lists are the
+       lists that were true when it happened. */
+    var pitch = starters.slice();
+    var squad = starters.concat(bench);
+    return '<div class="subs">' + rows.map(function (r, i) {
+      var onNow = {};
+      pitch.forEach(function (n) { onNow[n] = 1; });
+      var offOpts = squad.filter(function (n) { return onNow[n] || String(n) === String(r.off); });
+      var onOpts = squad.filter(function (n) { return !onNow[n] || String(n) === String(r.on); });
+      var opt = function (list, chosen) {
+        return '<option value="">Nobody</option>' + list.map(function (n) {
+          return '<option value="' + n + '"' + (String(n) === String(chosen) ? ' selected' : '') +
+            '>' + esc(nameOf(n)) + '</option>';
+        }).join('');
+      };
+      var html = '<div class="sub" data-sub="' + i + '">' +
+        '<span class="sub__n">' + (i + 1) + '</span>' +
+        '<label class="sub__min"><span class="sr-only">Minute of substitution ' + (i + 1) + '</span>' +
+          '<input class="input input--sm" type="number" min="1" max="130" data-sub-min ' +
+            'value="' + esc(r.minute == null ? '' : r.minute) + '" placeholder="min"></label>' +
+        '<span class="sub__lbl">Off</span>' +
+        '<select class="select sub__p" data-sub-off aria-label="Who came off, substitution ' +
+          (i + 1) + '">' + opt(offOpts, r.off) + '</select>' +
+        '<span class="sub__lbl">On</span>' +
+        '<select class="select sub__p" data-sub-on aria-label="Who came on, substitution ' +
+          (i + 1) + '">' + opt(onOpts, r.on) + '</select>' +
+        '<button type="button" class="sub__x" data-sub-del data-i="' + i +
+          '" aria-label="Remove substitution ' + (i + 1) + '">&times;</button>' +
+      '</div>';
+      if (r.off != null && r.off !== '') pitch = pitch.filter(function (n) { return String(n) !== String(r.off); });
+      if (r.on != null && r.on !== '') pitch = pitch.concat([Number(r.on)]);
+      return html;
+    }).join('') + '</div>';
+  }
+
   function xiRows(starters) {
     if (!starters.length) {
       return '<p class="me__none">Nobody picked yet. Choose the starting eleven above.</p>';
@@ -779,6 +838,23 @@
        from. Set before the first paint so the very first frame is already
        narrowed, rather than after the first time somebody touches the date. */
     S.onSheet = counts.starters.concat(counts.bench);
+
+    /* THE SUBSTITUTIONS, read forward from whatever the record holds. A match
+       saved before this existed carries the flags and no pairing, so it opens
+       showing what IS known - he came on, at this minute - with the man he
+       replaced blank rather than guessed. */
+    var subs = Array.isArray(d.subs)
+      ? d.subs.map(function (x) {
+        return {
+          minute: x.minute == null || x.minute === '' ? '' : x.minute,
+          off: x.off == null ? '' : x.off,
+          on: x.on == null ? '' : x.on,
+        };
+      })
+      : (d.bench || []).filter(function (b) { return b && b.on; }).map(function (b) {
+        return { minute: b.onAt == null ? '' : b.onAt, off: '', on: b.num };
+      }).concat((d.starters || []).filter(function (x) { return x && x.subbedOff; })
+        .map(function (x) { return { minute: '', off: x.num, on: '' }; }));
     /* Goals and assists are records, not tallies: each carries a minute and,
        for a goal, how it was scored. */
     /* Older records carry `type`/`setType` and a separate assists array. Read
@@ -823,20 +899,71 @@
       if (first) posByNum[n] = first.pos;
     });
 
+    /* THE SUBSTITUTIONS AS SAVED, and the old flags derived from them.
+
+       `subs` is the record now, but `subbedOff` and the bench's `on`/`onAt`
+       are written alongside it so anything that has not been taught about the
+       list still reads the match correctly. Derived, never typed twice: two
+       fields for one fact is two fields that can disagree.
+
+       A man taken off and sent back on is NOT marked subbedOff, because he
+       finished the match on the pitch and that flag is what the page means by
+       "came off". */
+    function subsFor() {
+      return subs.map(function (r) {
+        var out = {};
+        if (r.minute !== '' && r.minute != null) out.minute = Number(r.minute);
+        if (r.off !== '' && r.off != null) out.off = Number(r.off);
+        if (r.on !== '' && r.on != null) out.on = Number(r.on);
+        return out;
+      }).filter(function (r) { return r.off != null || r.on != null; })
+        .sort(function (a2, b2) {
+          return (a2.minute == null) - (b2.minute == null)
+            || (a2.minute || 0) - (b2.minute || 0);
+        });
+    }
+
+    function endedOnPitch(num) {
+      var list = subsFor().filter(function (r) {
+        return String(r.off) === String(num) || String(r.on) === String(num);
+      });
+      var last = list[list.length - 1];
+      return !last || String(last.on) === String(num);
+    }
+
     function sheetFor(nums, isBench) {
+      var events = subsFor();
+      var onFromSubs = {};
+      var atFromSubs = {};
+      events.forEach(function (r) {
+        if (r.on != null) {
+          onFromSubs[r.on] = 1;
+          if (atFromSubs[r.on] == null && r.minute != null) atFromSubs[r.on] = r.minute;
+        }
+      });
+      var offFromSubs = {};
+      events.forEach(function (r) {
+        if (r.off != null && !endedOnPitch(r.off)) offFromSubs[r.off] = 1;
+      });
       return nums.map(function (n) {
         var spells = (S.spellsByNum[n] || []).filter(function (sp) { return sp.pos || sp.role; });
         var flat = flattenSpells(spells);
         var out = { num: n, positions: flat.positions };
         if (flat.role) out.role = flat.role;
         if (spells.length) out.spells = spells;
+        if (!isBench && offFromSubs[n]) out.subbedOff = true;
         if (isBench) {
           var b = S.benchDetail[n] || {};
           /* Absent means he did not get on, so nothing already saved has to be
-             touched and an unused substitute stays an unused substitute. */
-          if (b.on) {
+             touched and an unused substitute stays an unused substitute. The
+             substitution list overrides the tick: naming him as coming on IS
+             the record of him coming on. */
+          var came = !!b.on || !!onFromSubs[n];
+          var at = onFromSubs[n] && atFromSubs[n] != null ? atFromSubs[n]
+            : (b.onAt !== '' && b.onAt != null ? Number(b.onAt) : null);
+          if (came) {
             out.on = true;
-            if (b.onAt !== '' && b.onAt != null) out.onAt = Number(b.onAt);
+            if (at != null) out.onAt = at;
           } else {
             out.positions = [];
             delete out.role;
@@ -984,6 +1111,13 @@
                 '<div data-xi></div>' +
                 '<h4 class="mform__h">Substitutes</h4>' +
                 pickerGroup('bench', GROUPS.bench.label, counts.bench, GROUPS.bench.hint, GROUPS.bench.empty) +
+                '<h4 class="mform__h">Who came on, and for whom</h4>' +
+                '<div data-subs></div>' +
+                '<button type="button" class="btn btn--ghost btn--sm" data-sub-add ' +
+                  'style="margin-top:var(--space-3)">Add a substitution</button>' +
+                '<p class="field__hint">Each one is a swap: the man coming off and the man '
+                  + 'coming on. Somebody brought off and sent back on later is two '
+                  + 'substitutions, which is how a rolling change is recorded.</p>' +
                 '<h4 class="mform__h">Captain</h4>' +
                 '<div data-capt>' + oneOfSheet('m-capt', 'Who wore the armband', d.captain) + '</div>' +
                 scopeBar('match') +
@@ -1180,6 +1314,12 @@
       wrap.innerHTML = pickerSelect(field, cfg.label || field, cfg.hint, counts[field]) +
         '<div data-picked="' + field + '">' + pickedList(field, counts[field], cfg.empty) + '</div>';
     }
+    function paintSubs() {
+      var box = $('[data-subs]', back);
+      if (!box) return;
+      box.innerHTML = subRows(subs, counts.starters, counts.bench);
+    }
+
     function repaintGoals() {
       $('[data-goals]', back).innerHTML = goalRows(goals);
       paintChecks();
@@ -1208,6 +1348,7 @@
         box.innerHTML = oneOfSheet(id, label, sel.value);
       });
       repaintGoals();
+      paintSubs();
       $$('[data-scopenote]', back).forEach(function (n) {
         n.textContent = scopeNote(n.getAttribute('data-scopenote'));
       });
@@ -1457,6 +1598,15 @@
         return;
       }
 
+      if (e.target.matches('[data-sub-add]')) {
+        subs.push({ minute: '', off: '', on: '' });
+        paintSubs(); paintChecks(); return;
+      }
+      if (e.target.matches('[data-sub-del]')) {
+        subs.splice(Number(e.target.getAttribute('data-i')), 1);
+        paintSubs(); paintChecks(); return;
+      }
+
       if (e.target.matches('[data-add-goal]')) {
         goals.push({ num: counts.starters[0] || S.SQUAD[0].num, minute: null,
           bodyPart: '', zone: '', situation: '', assist: null });
@@ -1673,6 +1823,9 @@
         /* The bench carries what each substitute actually did: whether he
            got on, when, and where he played once he did. */
         bench: benchNow(),
+        /* The pairs. `subbedOff` and the bench's `on`/`onAt` above are derived
+           from this, so the record says one thing once. */
+        subs: subsFor(),
         goals: goals.map(function (g) {
           return {
             num: g.num,
@@ -1791,6 +1944,19 @@
         afterSheet();
         return;
       }
+      /* ---- A substitution ------------------------------------------------
+         Changing one changes who is available in every row after it, so the
+         whole list is repainted rather than the row that moved. */
+      var subEl = e.target.closest('[data-sub]');
+      if (subEl) {
+        var si = Number(subEl.getAttribute('data-sub'));
+        if (e.target.matches('[data-sub-off]')) subs[si].off = e.target.value;
+        else if (e.target.matches('[data-sub-on]')) subs[si].on = e.target.value;
+        else if (e.target.matches('[data-sub-min]')) { subs[si].minute = e.target.value; paintChecks(); return; }
+        else return;
+        paintSubs(); paintChecks(); return;
+      }
+
       /* ---- A spell: which half, where, and what he was asked to do ---- */
       var spellEl = e.target.closest('[data-spell]');
       if (spellEl) {

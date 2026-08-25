@@ -14,6 +14,7 @@
    what created the dead links in the first place.
    ========================================================================== */
 import { esc, attr } from '../lib/html.mjs';
+import { substitutions } from '../lib/subs.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { fmtDate, isUs, matchTimeline } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
@@ -69,6 +70,9 @@ export function matchReport(m, d) {
     num: s.num,
   }));
   const bench = (det.bench || []).map((s) => ({ name: nameFor(s.num), num: s.num }));
+  /* Who came on for whom, and when. src/lib/subs.mjs reads the club's list
+     when there is one and the old flags when there is not. */
+  const subs = substitutions(det).filter((s) => s.on != null || s.off != null);
   const motm = det.motm != null ? nameFor(det.motm) : '';
 
   /* SPONSORSHIPS SOLD IN THE PANEL, honoured here.
@@ -157,8 +161,19 @@ export function matchReport(m, d) {
             ${starters.map((s) => `<li><b>${esc(s.name)}</b>${s.pos ? `<i>${esc(s.pos)}</i>` : ''}</li>`).join('\n            ')}
           </ol>
           ${bench.length ? `<p class="mr-bench"><span>Bench</span> ${bench.map((b) => esc(b.name)).join(' · ')}</p>` : ''}
-          <p class="mr-sheet__note">Sunday-league match returns do not record minutes or
-            substitutions, so neither is shown rather than estimated.</p>
+          ${subs.length ? `<ul class="mr-subs">
+            ${subs.map((s) => `<li>
+              <span class="mr-subs__min">${esc(s.minute != null ? `${s.minute}'` : '')}</span>
+              <span class="mr-subs__pair">${s.on != null ? `<b>${esc(nameFor(s.on))}</b>` : ''}${s.on != null && s.off != null ? ' for ' : ''}${s.off != null ? esc(nameFor(s.off)) : ''}</span>
+            </li>`).join('\n            ')}
+          </ul>` : ''}
+          ${/* THE NOTE IS NOT ALWAYS TRUE ANY MORE. It said Sunday-league
+                returns do not record substitutions, which was a fair account
+                of the archive and becomes a false statement about a match the
+                club HAS recorded them for. It appears only where they are
+                genuinely absent. */''}
+          ${subs.length ? '' : `<p class="mr-sheet__note">Sunday-league match returns do not record minutes or
+            substitutions, so neither is shown rather than estimated.</p>`}
         </div>` : ''}
       </div>
     </section>`;

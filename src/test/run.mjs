@@ -1550,8 +1550,18 @@ const BUDGET = {
      thirty-five matches fail that check today.
 
      The comments are not what bought it - the build strips them, and 94KB of
-     source emits as 40KB. It is code. */
-  'control-matchedit.js': 14,
+     source emits as 40KB. It is code.
+
+     14 -> 15 for substitutions. The sheet recorded that a starter went off
+     and that a substitute came on and nothing joined the two, so the match
+     page said as much in words: "Sunday-league match returns do not record
+     minutes or substitutions, so neither is shown rather than estimated."
+     The club records the pair now, and a man can come off and go back on,
+     which the old shape could not express at all - `subbedOff` and `on` are
+     one boolean each. Each row's two dropdowns are walked forward through the
+     list so they offer who was actually available at that moment, which is
+     what makes a return offerable without a special case. */
+  'control-matchedit.js': 15,
   /* 15 -> 16. What bought it: the length gauge under the notes box, and the
      word count beside the Build button.
 
@@ -2154,6 +2164,163 @@ for (const [f, kb] of Object.entries({
       'a hidden count badge can leak a digit into the page title');
     check('a zero count is hidden rather than printed',
       /el\.hidden = !n;/.test(shell));
+  }
+
+  /* ==========================================================================
+     SUBSTITUTIONS, AND COMING BACK ON
+
+     The sheet recorded that a starter went off and that a substitute came on,
+     and nothing joined the two, so the match page said so in words. The club
+     records the pair for 26/27.
+
+     The rolling change is the case worth testing hardest: `subbedOff` and
+     `on` are one boolean each, so the old shape could not express a man
+     coming off and going back on at all, and the derived flags have to get
+     him right - he finished on the pitch, so he is not "the man who came
+     off", however many times he left it.
+     ========================================================================== */
+  {
+    const { substitutions, cameOn, wentOff, onPitchAfter } =
+      await import(path.join(ROOT, 'src', 'lib', 'subs.mjs'));
+
+    const rolling = {
+      starters: [{ num: 1 }, { num: 7 }, { num: 9 }],
+      bench: [{ num: 18 }, { num: 21 }],
+      subs: [{ minute: 62, off: 7, on: 18 }, { minute: 78, off: 18, on: 7 }],
+    };
+    check('a substitution records who came off and who came on',
+      JSON.stringify(substitutions(rolling)[0]) === JSON.stringify({ minute: 62, off: 7, on: 18 }));
+    check('both men in a rolling change are counted as having come on',
+      [...cameOn(rolling)].sort((a, b) => a - b).join(',') === '7,18');
+    /* THE ONE THE OLD SHAPE COULD NOT SAY. He left the pitch at 62 and was
+       back on at 78, so he did not come off in the sense the page means. */
+    check('a man who came off and went back on did not come off',
+      !wentOff(rolling).has(7), 'a returning player is being reported as substituted');
+    check('and the man he replaced, who stayed off, did',
+      wentOff(rolling).has(18));
+    check('the eleven at the final whistle is right after a rolling change',
+      [...onPitchAfter(rolling.starters, substitutions(rolling))].sort((a, b) => a - b).join(',') === '1,7,9');
+    check('who is on the pitch is walked forward event by event',
+      [...onPitchAfter(rolling.starters, substitutions(rolling), 1)].sort((a, b) => a - b).join(',') === '1,9,18');
+
+    /* Ordered by minute, and an event with no minute is not minute zero -
+       the same trap the assist pairing fell into. */
+    const jumbled = { starters: [], bench: [], subs: [
+      { minute: 80, off: 3, on: 4 }, { off: 5, on: 6 }, { minute: 20, off: 1, on: 2 }] };
+    check('substitutions are ordered by minute',
+      substitutions(jumbled).map((x) => x.on).join(',') === '2,4,6',
+      'an unminuted substitution was sorted to the front as minute zero');
+
+    /* READING BACKWARD. Thirty-five matches are already saved with the flags
+       and no pairing. They must keep working, and must not acquire a pairing
+       nobody recorded. */
+    const archive = { starters: [{ num: 7, subbedOff: true }], bench: [{ num: 18, on: true, onAt: 60 }] };
+    const back = substitutions(archive);
+    check('a record saved before this reads its flags forward',
+      back.length === 2 && cameOn(archive).has(18) && wentOff(archive).has(7));
+    check('and it does not invent a pairing nobody recorded',
+      back.every((x) => x.off == null || x.on == null),
+      'the archive was given substitutions it never held');
+    check('an empty pair is not a substitution',
+      substitutions({ subs: [{ minute: 40 }] }).length === 0);
+
+    /* THE READER. A field with no consumer is a lie with a save button, and
+       the match page carried a sentence that a recorded substitution makes
+       false. */
+    const rep = fs.readFileSync(path.join(ROOT, 'src', 'templates', 'report.mjs'), 'utf8');
+    /* Bound to the CONDITION, not just to the class name. Checking that the
+       markup exists somewhere in the file passed with the block switched off,
+       because the disabled markup is still in the file. */
+    check('the match page publishes substitutions',
+      /subs\.length \? `<ul class="mr-subs">/.test(rep) && /substitutions\(det\)/.test(rep),
+      'the panel would save substitutions nothing reads');
+    check('and stops saying they are not recorded once they are',
+      /subs\.length \? '' :/.test(rep),
+      'the page claims substitutions are unrecorded on a match that records them');
+    /* The report page is a rebuilt page: it loads home.css plus its own band,
+       so an sa.css token here is an undefined property that deletes its own
+       declaration. */
+    const rcss = fs.readFileSync(path.join(ROOT, 'src', 'styles-home', 'pages', '40-report.css'), 'utf8');
+    const subsCss = (rcss.match(/\.mr-subs[\s\S]*$/) || [''])[0];
+    check('the substitution styles use the vocabulary the report page loads',
+      !/var\(--(space|step|text-|radius|brand|surface)/.test(subsCss),
+      'an sa.css token on a home.css page silently deletes its own rule');
+  }
+
+  /* ==========================================================================
+     WHAT COUNTS AS AN APPEARANCE
+
+     Starts only, until now, on the sound reasoning that Sunday-league returns
+     do not record substitutions and an unverifiable figure is worse than a
+     narrow one. Two things changed that: the bench carries `on`, which IS the
+     evidence when somebody has filled it in, and where nobody has, the match
+     record often proves it anyway. A man who scored played.
+
+     On the live site the gap read as William Clark, SEVEN GOALS FROM TWO
+     APPEARANCES, because he came off the bench for five of them.
+
+     None of this is an estimate, and the check that matters is the negative
+     one: a name on the bench with nothing beside it is still not an
+     appearance.
+     ========================================================================== */
+  {
+    const { playerStats, playerProfile } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+    const M = (detail) => ({
+      id: 'm1', iso: '2026-01-04', date: '04 Jan 26', played: true, countsGoals: true,
+      competition: 'League Ten', opponent: 'Test FC', outcome: 'W', ourGoals: 1, theirGoals: 0,
+      weAreHome: true, detail,
+    });
+    const xi = Array.from({ length: 11 }, (_, i) => ({ num: i + 1, positions: ['CM'] }));
+    /* A squad big enough to hold the eleven and the substitute under test. */
+    const SQ = Array.from({ length: 41 }, (_, i) => ({ num: i, name: `P${i}`, slug: `p${i}` }));
+    const appsOf = (detail, num) => {
+      const row = playerStats([M(detail)], SQ).find((p) => p.num === num);
+      return row ? row.apps : 0;
+    };
+
+    check('a starter appears', appsOf({ starters: xi, bench: [] }, 1) === 1);
+    /* THE NEGATIVE ONE. The old rule's whole point, and the part worth
+       keeping: a name on the bench proves nothing on its own. */
+    check('a name on the bench with nothing beside it is not an appearance',
+      appsOf({ starters: xi, bench: [{ num: 40 }] }, 40) === 0,
+      'bench presence is being inflated into an appearance');
+    check('a substitute the record says came on appears',
+      appsOf({ starters: xi, bench: [{ num: 40, on: true }] }, 40) === 1);
+    for (const [what, detail] of [
+      ['scored', { starters: xi, bench: [{ num: 40 }], goals: [{ num: 40 }] }],
+      ['assisted', { starters: xi, bench: [{ num: 40 }], assists: [{ num: 40 }] }],
+      ['was booked', { starters: xi, bench: [{ num: 40 }], yellowCards: [{ num: 40 }] }],
+      ['kept goal', { starters: xi, bench: [{ num: 40 }], keeper: 40 }],
+      ['wore the armband', { starters: xi, bench: [{ num: 40 }], captain: 40 }],
+      ['was Player of the Match', { starters: xi, bench: [{ num: 40 }], motm: 40 }],
+    ]) {
+      check(`a substitute who ${what} appears, whatever the bench says`,
+        appsOf(detail, 40) === 1, 'the record proves he played and the figure denies it');
+    }
+    check('a substitute is not counted twice for coming on and scoring',
+      appsOf({ starters: xi, bench: [{ num: 40, on: true }], goals: [{ num: 40 }] }, 40) === 1);
+    check('a starter who also scores is still one appearance',
+      appsOf({ starters: xi, bench: [], goals: [{ num: 1 }] }, 1) === 1);
+    /* Somebody credited in a match he is on NO sheet for is a broken record,
+       not an appearance. Three of those are in the archive and the panel now
+       names them; inventing an appearance would hide them. */
+    check('a man on no team sheet at all does not get an appearance from scoring',
+      appsOf({ starters: xi, bench: [], goals: [{ num: 40 }] }, 40) === 0,
+      'a record that disagrees with itself is being papered over');
+
+    /* ONE FIGURE, NOT TWO. The top of a player page and the table underneath
+       it are worked out by different functions, and they were about to
+       disagree: eleven appearances above, two below. */
+    const { buildDataset: bdApps } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+    const dP = bdApps();
+    let disagreed = [];
+    for (const p of dP.players) {
+      const prof = playerProfile(p, dP.matches, dP.players);
+      const sum = prof.byCompetition.reduce((t, r) => t + r.apps, 0);
+      if (sum !== p.apps) disagreed.push(`${p.name}: ${p.apps} vs ${sum}`);
+    }
+    check('every player page agrees with itself about how many times he played',
+      disagreed.length === 0, disagreed.join(' · '));
   }
 
   /* CARRYING AN OLD RECORD'S ASSISTS FORWARD

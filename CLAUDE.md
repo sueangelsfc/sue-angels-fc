@@ -22,14 +22,17 @@ src/
     html.mjs          page shell: <head>, header, nav, footer, icons, crest
     blocks.mjs        football components: fixture cards, tables, line-ups
     verify-dataset.mjs asserts derived figures against the published table
+    csp.mjs           the security policy as data, every host carrying its evidence
+    seasons.mjs       the season bar, the panels, and the ids that must not collide
   templates/          one module per route family
   styles/*.css        concatenated in filename order into sa.css
   styles-control/     the panel's own sheet, control.css, linked by control.html alone
   scripts/*.js        concatenated into sa.js (public)
+  admin/05-record.js  does a match record add up? asked by the form AND the dashboard
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        3,546-check suite against the generated output
+  test/run.mjs        3,592-check suite against the generated output
   test/dom.mjs        a small, strict DOM that throws rather than guessing
   test/panel-render.mjs  the panel, rendered, and asked what came out
 ```
@@ -41,6 +44,98 @@ src/
 2. **Real URLs.** Every player (`/players/<slug>.html`), match (`/matches/<id>.html`), article and album gets its own crawlable file with content in the HTML.
 3. **The deploy runs the generator.** `buildCommand` is `npm run sync && npm run build && npm run verify && npm run guard`, set by `45492af` when the Publish button landed and given its guard later. It was `null`, and this note said no build could fail on deploy; that has not been true since. A deploy now pulls the database, regenerates and checks the derived figures, so **a bad record can fail a deploy** and anything the panel reads must resolve to something sane rather than throwing.
 4. **Works with JavaScript disabled.** Every page ships complete markup.
+
+### The security policy is data, and it is wrong in both directions or neither
+
+`src/lib/csp.mjs` holds the Content-Security-Policy, and every host in it
+carries the evidence that it is still needed. A CSP fails silently whichever
+way it is wrong, and this one was wrong both ways at once.
+
+- **Too wide.** `'unsafe-eval'`, `unpkg.com` and `cdn.jsdelivr.net` were there
+  for the Babel-in-the-browser admin retired in July, and `https://www.youtube.com`
+  sat in `frame-src` as "embedded match footage" when the only `<iframe>` on the
+  site is the nocookie one. No page would have rendered differently with any of
+  them gone: **an unused permission is invisible.**
+- **Too narrow, which is worse.** `sa.js` loads Google Analytics and the Meta
+  pixel once a visitor consents and neither host was permitted, so the day
+  somebody set `SA_GA_ID` analytics would have failed in the console of a page
+  that looked entirely fine. The panel draws YouTube thumbnails from
+  `i.ytimg.com`, which `img-src` did not allow, so those were broken live.
+
+Two kinds of evidence, because there are two kinds of host. **`provenBy`** is a
+shipped file that names it, and the suite greps that file, so an allowance
+outlives its cause by one test run. **`requiredBy`** is for an address only a
+third-party script ever reaches - where gtag posts, the Meta beacon - which no
+file of ours will ever mention; grepping for one would prove we had guessed it,
+not that it was needed, so the evidence is the permitted parent that pulls it
+in. Stop loading gtag and they fall with it.
+
+**Asserted against `vercel.json`, never generated into it.** Vercel reads that
+file BEFORE the build runs, so a generated one would always be a deploy behind,
+which is a worse bug than the drift it would prevent.
+
+### The two endpoints a stranger can call
+
+`/api/publish` and `/api/claude` ask the database whether the caller is a club
+administrator. `/api/notify-enquiry` and `/api/subscribe` cannot: they are what
+the public forms post to. That makes them the only two places where a
+stranger's text reaches a third party the club pays for, and `api/_public.js`
+is what guards them.
+
+- **Everything the caller sent is escaped.** notify-enquiry interpolated `type`
+  and `source` straight into the notification email's HTML. Only `email` was
+  validated, by a regular expression that happens to exclude a tag; truncating
+  the other two to 120 characters is not validation.
+- **A brake on a loop, and it says it is not a rate limiter.** These are
+  serverless functions, so the counter lives in one warm instance and a cold
+  start begins from nothing. It blunts a naive flood from one address. A
+  comment implying a guarantee it cannot make would be worse than the hole.
+  A real limiter needs shared state, and the club already has Supabase.
+
+### What an accessibility engine found, kept found
+
+The suite asserted a great deal about markup - one h1, heading order, alt
+attributes present, labels, contrast on every token pair - and an
+`@accesslint/core` audit of every page family and of the panel still found five
+things it had no question for. All five are fixed and all five are questions now.
+
+- **Duplicate ids on every season-filtered page**, five per season on awards and
+  six on club records, each the target of an `aria-labelledby`. Every panel
+  ships in the HTML by design, so every id in one shipped as many times, and
+  four headings out of six on club records were announced against a season the
+  reader was not looking at. Fixed in **`seasonPanels`**, not in each template,
+  for the same reason the bar is there: *a page adding a season filter writes no
+  JavaScript*, and it should not have to remember this either. The panel the
+  page OPENS on keeps its ids untouched, so `/awards.html#potm` still lands on
+  something visible.
+- **A photograph labelled with a name the link already prints**, so a screen
+  reader read the row twice. The site's rule stands - a face on a crest wall is
+  the only label there is - with `alt=""` where the caller has already said it.
+- **Complementary landmarks nested inside a section**, and the panel's whole
+  sign-in screen outside every landmark, which is content nothing can jump to.
+- **Links distinguished from the sentence around them by colour alone.**
+  Everywhere else a link is a card, a button or a whole line and is obvious
+  without the hue; the pre-season band puts them mid-sentence.
+
+Writing the checks found three more of the same defects the page audit had
+missed, and one fault of my own: the landmark check read a **comment** -
+explaining why a plate is not an `<aside>` - as though it were an `<aside>`.
+A check that reads commented-out markup as shipped markup is worse than none.
+
+### A class the panel draws that nothing styles
+
+The test DOM has no cascade and refuses `getComputedStyle` rather than
+inventing one, which is right and leaves a real gap: a screen can render
+correct markup and look like nothing. **A class no stylesheet mentions is the
+part of that gap that can be closed without a cascade**, and it found five, all
+real. `cp-chip` and its three modifiers were defined nowhere, so matchday's
+readiness column showed bare text where every other screen shows a coloured
+pill, and `cp-actions` left two buttons unspaced.
+
+**Gated at zero for the panel, reported for the pages.** The same question of
+the public pages comes back at 118, and almost all of those are structural
+wrappers a template groups with and never styles - a judgement call, so it is
+printed with the other figures rather than failing a build.
 
 ### What the deploy refuses to publish
 `npm run verify` reconciles the derived figures against the published league table. That is a real check and it is not a check on the **output**: every page could ship a broken share image and the deploy would be perfectly happy. Not hypothetical - all forty-three share cards pointed at the host `co.ukundefined` for weeks, because `drawnCover()` read a `CLUB.url` that does not exist.
@@ -262,7 +357,13 @@ Neither is a save to refuse. A result typed at the side of a pitch is worth havi
 
 **Asking the same question about the armband and the Player of the Match found a third bad record.** Old Freemen's, 19 Oct 25: a captain who is not on his own team sheet. Two of the three were found by the check rather than by reading the data.
 
-**The suite names the three, it does not count them.** `<=` passes when a check finds *fewer*, which is what a weakened check looks like — dropping the armband from the question took it from three to two and the suite said nothing. Same device as `PUBLISHES_NOTHING`: the club fixing one in the panel is expected to fail the check and to be settled by striking a line out. And because `checks()` reads the DOM it cannot be isolated the way `offer()` and `carryAssists()` can, so each of its three questions is separately asserted to still exist.
+**The questions are asked, not grepped for, and they are asked of everything.** They used to live inside the editor, reading the form's own fields, and that had two costs. The suite could only assert they EXISTED, by regular expression over the shipped file - and a rule can pass a regular expression while being applied to nothing, which is exactly how one player dropdown of nine came to be the only filtered one. And the dashboard could not ask them at all, so a record that disagrees with itself could only be found by opening it; nobody opens a match from October to check it.
+
+They are one pure function over a record now, **`src/admin/05-record.js`**, shared by the form and the dashboard, and the suite hands the shipped function crafted records.
+
+**Asking the stored record rather than the form found two more.** An assist at Brockwell and one in the Woking cup tie, credited to men on neither the eleven nor the bench. They were invisible because the form asks about `goals[].assist` and the flat `assists` array is derived on save, so it is on no tab: *a question asked of the screen can only cover what is on the screen.* The form takes the orphans too now.
+
+**The archive, named rather than counted:** five men in a match on no team sheet for it (`r20251005-brockwell-h`, `r20251019-freemens`, `r20251207-woking-cc`, `r20260301-shepherds-a`, `r20260517-portolondon-drt`), eighteen matches crediting an unused substitute, seven with no team sheet at all, and one whose scoreline and goals disagree (`r20260816-brentford`). `<=` passes when a check finds *fewer*, which is what a weakened check looks like, so each is asserted by name. The club fixing one in the panel is expected to fail the check and to be settled by striking a line out. **The dashboard counts them on the screen the club lands on**, with a button to the results list.
 
 ### Who came on, and for whom
 
@@ -340,7 +441,8 @@ What it can now prove, none of which was checkable before:
 - **A goal carries what it was struck with, where from, what the ball was doing, and who made it and how.** The vocabulary is `src/lib/football.mjs`, following Opta's qualifiers, and it is shared by the panel, the stats engine and the pages so they cannot describe the same goal differently. The assist is a field ON the goal; the flat `assists` array is derived on save so everything downstream keeps working. Goalkeepers have saves. All of it surfaces on the player profile, with a line saying how many of his goals the detail actually covers.
 - **Share covers are drawn at build time and committed.** `npm run covers` writes `assets/covers/<id>.jpg` for every played match and every article, 1200x630, from the same records the pages are derived from: both badges either side, **VS** before a match is played and the score after, with home on the left the way the scoreline is written. Articles get the crest and the headline. 43 cards, 2.5MB. Before this every report shipped `og-match.jpg` and every article `og-news.jpg`, so a link to a win and a link to a defeat looked identical in WhatsApp. **The deploy cannot draw them** - Vercel's build has no browser - so the output is committed like the generated HTML, and a match published from the panel keeps the generic card until somebody runs the script. It degrades rather than breaking, and `npm test` prints how many pages are still on the generic card. Two Chrome details cost an hour: `--headless=new` hangs on macOS trying to open a display link, and without `--user-data-dir` a headless launch hands the URL to the Chrome already open and waits for a window that never appears. Chrome does not exit after `--screenshot` either, so the script polls for the file and kills it.
 - **The panel is told which cards the build drew** (`SEED.drawnCovers`, keyed by match id and article row key). Cover pictures asked whether a record stored a `cover` and printed **None** otherwise, which was wrong for all 43 the moment the build started committing cards: 38 reports showed a red None while each was sharing its own card, and the bulk button offered to redraw every one of them over a committed file. Three states now - **stored** (a photograph or a card drawn in the panel, always wins), **drawn** (the build's card), **none** (the generic image, the only real gap) - and the dashboard tile counts the same way. The suite reconciles the seeded list against the covers on disk and against the pages that ship them.
-- **The dashboard says when something is sharing the generic card.** The deploy cannot draw a cover, so a match published from the panel keeps the generic club image until `npm run covers` runs, and the only thing that said so was `npm test` - which the club has no reason to run. That made it a step somebody had to remember, which is another way of saying it does not happen. The warning's action is the one the club can take without a terminal: drawing a cover in the panel stores it on the record, and a stored cover beats both the drawn card and the generic image.
+- **A cover is drawn when the record is saved.** This was the last step in publishing that only a person could take: the build draws a card for every match and article, but the DEPLOY cannot, because Vercel has no browser. So `npm run covers` ran on a laptop or not at all, and a result recorded in the panel shared the generic club image until somebody remembered. **A step somebody has to remember is another way of saying it does not happen.** The two drawers moved out of the Cover pictures screen to module scope, publish themselves on `window.CPCOVERS`, and the match editor and the news editor call `ensure()` after a save. A record that already carries a cover is left alone - a real photograph beats a drawn card - and a failure to draw one never turns a saved match into an error, because the result is worth more than the picture. Driven end to end in the suite rather than asserted: the chunk must be fetched, the canvas drawn on, the card must carry the scoreline, and the cover must come back onto the record.
+- **The dashboard still says when something is sharing the generic card**, for the records that predate this. 106 of the 108 pages ship a card of their own; the two that do not are the noindex panel and the news index, which is not an article.
 - **Covers are drawn, not found.** Two badges, the score and the date for a match; the crest and the headline for an article. Canvas, in the browser, saved to the record and used as the share image. A real photograph always wins.
 - The boot screen holds for **three seconds, end to end**, however long the badge takes to assemble; the beat count adapts rather than the total. `TOTAL` in `home.mjs` is the only number to change.
 - **The home page banner is pickable** and produces the same three widths the build does (640/960/1344), so the srcset and the preload hint stay true. Removing it restores the original.
@@ -411,13 +513,14 @@ Read leads in **Control panel → Inbox**; RLS blocks anonymous reads, so signin
 ## Commands
 ```bash
 npm run build     # regenerate every route (run after any src/ change)
+npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 3,546 checks against the generated output and the rendered panel
+npm test          # 3,592 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 
-`npm test` covers: document structure, one h1 per page, heading order, alt text, resolvable assets and internal links, JSON-LD validity, asset-version consistency, overflow guards, reduced motion, both themes, WCAG AA contrast on every text token pair, form labelling, security headers, no service-role key in output, sitemap/robots correctness, and performance budgets. Budgets are **gzipped KB**, one per bundle, and they are ceilings over a split thing rather than one big one: `sa.css` 22, `home.css` 26, `sa.js` 24, `control.css` 6, `control.js` 13, `control-seed.js` 8, and one per lazy panel chunk. **Code is budgeted apart from data**: `control-home.js` carries seventy-five band descriptions, so its emitted ceiling moved three times for growth that was not code, and `src/admin/lazy/95-home.js` and `10-match.js` are now measured as source so an edit to the code shows up on its own. **The deploy does not run this suite** (`sync && build && verify && guard`), so a page over budget still publishes: these are a signal to whoever is reading, not a gate on the club. The home page's margin is printed on every run for that reason. It also asserts the split stays split: that the match form and the photo tagger are not in the core, that every deferred panel maps to a chunk that exists and is cache-busted, and that routing does not gate on a module having been downloaded.
+`npm test` covers: document structure, one h1 per page, heading order, alt text, resolvable assets and internal links, JSON-LD validity, asset-version consistency, overflow guards, reduced motion, both themes, WCAG AA contrast on every text token pair, form labelling, security headers, no service-role key in output, sitemap/robots correctness, and performance budgets. It also asks, of every page, that **no id is defined twice**, that **every aria reference lands**, that **no image repeats the text of the link it sits inside**, and that **no complementary landmark is nested** - the four things an `@accesslint/core` audit found that nothing here had a question for. And of the API: that the gated endpoints ask the database who is calling, and that the two anonymous ones throttle and escape everything the caller sent. Budgets are **gzipped KB**, one per bundle, and they are ceilings over a split thing rather than one big one: `sa.css` 22, `home.css` 26, `sa.js` 24, `control.css` 6, `control.js` 13, `control-seed.js` 8, and one per lazy panel chunk. **Code is budgeted apart from data**: `control-home.js` carries seventy-five band descriptions, so its emitted ceiling moved three times for growth that was not code, and `src/admin/lazy/95-home.js` and `10-match.js` are now measured as source so an edit to the code shows up on its own. **The deploy does not run this suite** (`sync && build && verify && guard`), so a page over budget still publishes: these are a signal to whoever is reading, not a gate on the club. The home page's margin is printed on every run for that reason. It also asserts the split stays split: that the match form and the photo tagger are not in the core, that every deferred panel maps to a chunk that exists and is cache-busted, and that routing does not gate on a module having been downloaded.
 
 **Images are budgeted too, and were not.** Every bundle had a gzipped ceiling and images had none, so the whole apparatus watched 32KB of stylesheet while 231KB of photograph walked past it - on the home page the images outweigh the HTML, the CSS and the JavaScript together. Now measured: the heaviest page's **eager** payload (288KB ceiling, index.html at 231KB), the mean across all 108 (96KB ceiling, currently 62KB), `width` and `height` on all 2,954 images, and a **srcset on anything over 100KB**. Raw bytes, not gzipped: these formats are already compressed and a gzip figure would be a fiction dressed as precision.
 
@@ -503,10 +606,35 @@ Four rules, each of them written after the failure it prevents. `harden-site` au
 9. **Footer headings.** They are `h2`; as `h3` they created an `h1 → h3` jump on any page whose main content had no `h2`.
 10. **A check that runs after the report is not a check.** `run.mjs` printed its failures and called `process.exit(1)` two thirds of the way down the file, because for a long time that was the end of it. Three blocks were later appended **after** that point - the image budgets, the clean-sheet provenance and the entire panel render suite - and every one of them was incapable of failing the build: their failures were pushed to `fails` after the report had printed, and the last line says "All N checks passed" unconditionally. So the newest hundred-odd checks, every one written to catch a bug that had actually shipped, ran and were thrown away. It also hid that the clean-sheet checks had been wrong from the moment they were written (they read `m.data`; a normalised match carries the stored record on `m.detail`). **The report is the last thing in the file now and nothing may be added below it.** Found by breaking a check on purpose and watching the suite congratulate itself.
 
+## What is at its ceiling and what is not
+
+Every area of this project has been pushed as far as code can push it. Four are
+bounded by something code cannot supply, and saying which is more useful than
+claiming they are finished.
+
+- **The record itself.** 17 players have no photograph and the gallery cannot
+  supply one (see below); seven matches have no team sheet; two pre-season
+  goals are unattributed; one cup tie has no stored shootout result; Mala Vida
+  FC has no badge anywhere. Every one of these is a fact somebody has to enter
+  in the panel, and every one of them is now **counted on the dashboard** with
+  a button to the screen that fixes it. That is the part code can do: turn a
+  gap into a job.
+- **The probe row in `enquiries`.** Deleting it needs the sign-in only the club
+  has. One press, in the Inbox.
+- **Layout, in the panel's tests.** `src/test/dom.mjs` has no cascade and
+  refuses `getComputedStyle` rather than inventing one. The class-contract
+  check closes the part of that gap that can be closed without a cascade; a
+  visual regression still needs a browser, and the honest answer is that
+  nothing in the suite will catch one.
+- **Inline scripts in the CSP.** `script-src` keeps `'unsafe-inline'` because
+  the theme is applied by an inline head script before first paint and every
+  page carries JSON-LD, which `script-src` also governs. Hashing those would
+  mean a distinct header for each of 108 routes.
+
 ## Outstanding / known limitations
 - **`team_badges` is empty (0 rows), and that is not the same as having no crests.** 25 of 26 opponents resolve a badge through `oppBadge()`, which tries an uploaded row, then `badges-extra.json`, then the recovered registry, then a needle (`woking` finds Woking Vets for "Woking Veterans Sundays"). Only **Mala Vida FC** has none. Counting the table instead of asking the resolver is what made the dashboard report "0 of 26" and invite the club to re-find 25 badges it already had. `fixtures` has **1** row - the BPR friendly of 30 August, written by the panel. This note said 6 and `fixtures-2627.json` said 0, and the truth was neither: the six pre-season friendlies are transcribed in that file from the club's July announcement, and exactly one of them has since been entered in the panel as well. The transcribed rows lose to a real row on the date-and-clubs identity test, so the duplicate never reached the site, which is why nobody noticed.
 - **What is still to come is derived once**, in `dataset.mjs` as `d.upcoming` / `d.nextFixture`, against the day the site was generated. Six pages each used to sort `fixtures` and take the first without checking whether the date had passed, so the morning after a match the home page still led with it and the countdown ran backwards. Two of the six filtered on `m.played`, which a fixture row does not carry. Nothing re-derives it now.
-- **A probe row exists in production `enquiries`** (`name = __probe_delete_me`), created while auditing RLS. Anonymous clients cannot delete it; remove it from Control panel → Inbox once signed in.
+- **A probe row exists in production `enquiries`** (`name = __probe_delete_me`), created while auditing RLS. Anonymous clients cannot delete it; remove it from Control panel → Inbox once signed in. **The dashboard says so on the screen the club lands on**, with a button to the inbox, because a note in this file is not a thing anybody who can fix it ever reads.
 - **One cup tie has no stored shootout result** (`r20260412-kew-ccup`, Kew Antigua 2-2). It is shown as penalty-decided with no winner claimed rather than inventing one.
 - **Stripe donations** are built and the panel owns the link (Control panel → Donations). The cause page falls back to the link that is live today if the record is empty.
 - **16 of 36 players have no photograph, and the gallery cannot currently supply one.** All 624 photo tags are a bare name, which means "somewhere in this frame", and none is marked as the **subject**. Only 5 of the 16 are tagged at all, and every frame is one of two useless kinds: unambiguous but a wide match shot where the player is about forty pixels tall among five team-mates, or close enough to crop but carrying two names with nothing saying which face is which. Cropping one of those is how a player ends up wearing somebody else's face, which has happened here. The machinery is right and the data is not: **Control panel → Photo tagging → mark a subject** promotes that frame to the front of Player photographs → From the gallery, which now sorts by subject, then by fewest other people tagged, and says which it is showing.

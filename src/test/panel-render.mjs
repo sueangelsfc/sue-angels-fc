@@ -17,6 +17,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import * as PR from './panel-runtime.mjs';
+import { Element } from './dom.mjs';
 
 const ROOT = PR.ROOT;
 
@@ -27,6 +28,41 @@ function fixtureRows() {
     rows[k] = Array.isArray(v) ? v : Object.entries(v || {}).map(([key, data]) => ({ key, data }));
   }
   return rows;
+}
+
+
+/* Every authored selector in a stylesheet, split on commas, with the ones the
+   test DOM's engine cannot parse counted rather than silently dropped. Also
+   returns the bare class names, which is the weaker question kept as a
+   fallback for exactly those unparseable selectors. */
+export function cssSelectors(css) {
+  const names = new Set([...css.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)].map((m) => m[1]));
+  const bodies = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  const raw = [];
+  for (const m of bodies.matchAll(/(^|[}{;])\s*([^{}@;]+)\{/g)) {
+    for (const part of m[2].split(',')) {
+      const sel = part.trim();
+      /* A pseudo-element or state selector describes a rendering this DOM has
+         no concept of; the base selector before it is what matters here. */
+      const base = sel.replace(/::?[a-z-]+(\([^)]*\))?/g, '').trim();
+      if (base && !/[>~+]/.test(base)) raw.push(base);
+      else if (base) raw.push(base);
+    }
+  }
+  /* A SELECTOR THAT NAMES NO CLASS OR ID IS NOT STYLING, IT IS THE RESET.
+     `*{box-sizing:border-box;margin:0;padding:0}` matches every element on
+     the page, so "is this element reached by some rule" is true of
+     everything and the check passes whatever it is shown. It did: a probe
+     that put `cp-chip` back - the class this check exists because of - went
+     straight through. Excluding type-only selectors is what makes the
+     question mean "styled deliberately" rather than "exists". */
+  const selectors = []; let skipped = 0;
+  const probe = new Element('div', null);
+  for (const sel of [...new Set(raw)]) {
+    if (!/[.#]/.test(sel)) continue;
+    try { probe.matches(sel); selectors.push(sel); } catch { skipped += 1; }
+  }
+  return { selectors, names, skipped };
 }
 
 /* The panel a person actually opens: nav click, not a direct render call. */
@@ -380,38 +416,53 @@ export async function panelChecks() {
   }
 
   /* ---------------------------------------------------------------------
-     5c. EVERY CLASS THE PANEL DRAWS IS DEFINED BY A SHEET IT LOADS.
+     5c. EVERY ELEMENT THE PANEL DRAWS IS STYLED BY SOMETHING.
 
      This DOM has no cascade and refuses getComputedStyle rather than
      inventing one, which is the honest thing to do and leaves a real gap: a
-     screen can render perfectly correct markup and look like nothing.
+     screen can render perfectly correct markup and look like nothing. An
+     element no rule reaches is the part of that gap that can be closed
+     without a cascade, and it is not hypothetical - `cp-chip` and its three
+     modifiers were defined nowhere, so matchday's readiness column showed
+     bare text where every other screen shows a coloured pill.
 
-     A class no stylesheet mentions is the one part of that gap that can be
-     closed without a cascade, and it is not hypothetical. `cp-chip` and its
-     three modifiers were defined nowhere, so matchday's readiness column
-     showed bare text where every other screen shows a coloured pill, and
-     `cp-actions` left two buttons unspaced. Nothing was wrong with them
-     except that they looked like nothing, which is exactly the class of bug
-     markup checks and a cascade-free DOM both walk straight past.
+     ASKED WITH THE SELECTOR ENGINE, NOT WITH A GREP. The first version asked
+     whether each class NAME appeared in a sheet, which is a different and
+     much worse question: it cannot see `.gl-fix img` or `.cp-list > li`, so
+     an element styled by a descendant selector reads as unstyled. Over the
+     public pages that version returned 118 and a browser returns zero -
+     every one a false positive. The DOM has a real matcher, so this uses it,
+     and falls back to the name test only for selectors the engine refuses,
+     which keeps a refusal from being reported as a defect.
 
      control.html loads sa.css and control.css, so both count. */
   {
     const sheets = ['sa.css', 'control.css']
       .map((f) => fs.readFileSync(path.join(ROOT, f), 'utf8')).join('\n');
-    const defined = new Set([...sheets.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)].map((m) => m[1]));
+    const { selectors, names, skipped } = cssSelectors(sheets);
     const orphan = new Map();
     const uctx = PR.boot({ rows });
     for (const k of keys) {
       const r = await PR.openPanel(uctx, k);
       for (const el of r.body.querySelectorAll('*')) {
-        for (const c of (el.getAttribute('class') || '').split(/\s+/).filter(Boolean)) {
-          if (!defined.has(c)) orphan.set(c, (orphan.get(c) || 0) + 1);
-        }
+        const cls = (el.getAttribute('class') || '').split(/\s+/).filter(Boolean);
+        if (!cls.length) continue;
+        if (selectors.some((sel) => { try { return el.matches(sel); } catch { return false; } })) continue;
+        /* Nothing the engine could parse reaches it. Before calling that a
+           defect, accept a bare name match, because a selector this DOM
+           cannot parse is unknown rather than absent. */
+        if (cls.some((c) => names.has(c))) continue;
+        cls.forEach((c) => orphan.set(c, (orphan.get(c) || 0) + 1));
       }
     }
-    check('every class the panel draws is defined by a stylesheet it loads',
+    check('every element the panel draws is reached by some rule',
       orphan.size === 0,
       [...orphan].map(([c, n]) => `${c} x${n}`).join(', '));
+    /* The check's own coverage, said out loud: a matcher that quietly refused
+       most of the sheet would pass everything and look like a clean result. */
+    check('the selector engine understands most of the panel stylesheet',
+      skipped / (selectors.length + skipped) < 0.25,
+      `${skipped} of ${selectors.length + skipped} selectors could not be parsed`);
   }
 
   /* ---------------------------------------------------------------------

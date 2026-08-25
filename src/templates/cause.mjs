@@ -186,10 +186,15 @@ export function cause(d) {
         <ol class="cz-signs__grid rv">
           ${SEPSIS.adultSigns.map((s, i) => `<li class="cz-sign" style="--i:${i}">
             <span class="cz-sign__letter" aria-hidden="true">${esc(s.letter)}</span>
-            <span class="cz-sign__text">
+            <!-- A div, not a span. This holds an <h3> and a <p>, and a
+                 <span> may only contain phrasing content, so that was invalid
+                 HTML. It rendered correctly by luck: .cz-sign is a grid, so
+                 the span was blockified as a grid item and a div is exactly
+                 equivalent here. -->
+            <div class="cz-sign__text">
               <h3 class="cz-sign__title">${esc(s.title)}</h3>
               <p class="cz-sign__body">${esc(s.body)}</p>
-            </span>
+            </div>
           </li>`).join('\n          ')}
         </ol>
 

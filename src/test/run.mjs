@@ -6510,32 +6510,86 @@ let orphanClasses = new Map();
 
   /* AND THE SAME QUESTION OF THE PAGES, REPORTED RATHER THAN GATED.
 
-     The panel is gated on this (see panel-render.mjs) because it came back
-     clean at five, all five real. The pages come back at over a hundred, and
-     almost all of them are structural wrappers a template uses to group
-     something and never styles - `pf-panels`, `hx__navtrig` - which is a
-     judgement call and so belongs here as a figure rather than as a failure.
-     It is worth printing because the one time it is not a wrapper, it is a
-     component rendering as bare text. */
+     Asked the way the panel's version asks it (see panel-render.mjs): with a
+     real selector matcher, and ignoring any selector that names no class or
+     id, because `*{box-sizing:border-box}` matches every element on the page
+     and makes "is this styled" true of everything.
+
+     The first version of this did neither. It compared class NAMES against
+     the sheet, so `.gl-fix img` and `.ct-lines > li` read as unstyled, and it
+     printed 118 - a number made almost entirely of false positives, which is
+     worse than printing nothing because somebody would eventually go and
+     chase it. What is left is structural wrappers and SVG groups carrying
+     presentation attributes, which is a judgement call and so is a figure
+     here rather than a failure. */
   orphanClasses = new Map();
   {
-    const sheetOf = {};
+    const { Document } = await import(path.join(ROOT, 'src', 'test', 'dom.mjs'));
+    const { cssSelectors } = await import(path.join(ROOT, 'src', 'test', 'panel-render.mjs'));
+    const cssOf = {};
     for (const f of fs.readdirSync(ROOT).filter((x) => x.endsWith('.css'))) {
-      sheetOf[f] = new Set([...fs.readFileSync(path.join(ROOT, f), 'utf8')
-        .matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)].map((m) => m[1]));
+      cssOf[f] = fs.readFileSync(path.join(ROOT, f), 'utf8');
     }
-    for (const h of pages.values()) {
-      const def = new Set();
-      for (const m of h.matchAll(/<link[^>]+href="\/([\w.-]+\.css)/g)) {
-        for (const c of (sheetOf[m[1]] || [])) def.add(c);
-      }
-      for (const m of h.matchAll(/\sclass="([^"]*)"/g)) {
-        for (const c of m[1].split(/\s+/).filter(Boolean)) {
-          if (!def.has(c)) orphanClasses.set(c, (orphanClasses.get(c) || 0) + 1);
-        }
+    const compiled = {};
+    /* One page per family is enough and keeps this to a couple of seconds:
+       every page in a family is the same template over different records. */
+    const family = new Map();
+    for (const [f] of pages) {
+      const key = f.includes('/') ? f.split('/')[0] : f;
+      if (!family.has(key)) family.set(key, f);
+    }
+    for (const f of family.values()) {
+      const html = pages.get(f);
+      const linked = [...html.matchAll(/<link[^>]+href="\/([\w.-]+\.css)/g)].map((m) => m[1]);
+      const cacheKey = linked.join('|');
+      if (!compiled[cacheKey]) compiled[cacheKey] = cssSelectors(linked.map((l) => cssOf[l] || '').join('\n'));
+      const { selectors, names } = compiled[cacheKey];
+      const doc = new Document();
+      const body = (/<body[^>]*>([\s\S]*)<\/body>/i.exec(html) || [, ''])[1]
+        .replace(/<script[\s\S]*?<\/script>/gi, '');
+      try { doc.body.innerHTML = body; } catch { continue; }
+      for (const el of doc.body.querySelectorAll('*')) {
+        const cls = (el.getAttribute('class') || '').split(/\s+/).filter(Boolean);
+        if (!cls.length) continue;
+        if (selectors.some((sel) => { try { return el.matches(sel); } catch { return false; } })) continue;
+        if (cls.some((c) => names.has(c))) continue;
+        cls.forEach((c) => orphanClasses.set(c, (orphanClasses.get(c) || 0) + 1));
       }
     }
   }
+
+  /* 5. A SPAN MAY NOT HOLD A HEADING.
+
+     Phrasing content may only contain phrasing content, and `cz-sign__text`
+     was a <span> wrapping an <h3> and a <p> - six times on the sepsis page.
+     It rendered correctly by luck: .cz-sign is a grid, so the span was
+     blockified as a grid item. Nothing looked wrong, no audit flagged it, and
+     it was invalid HTML the whole time. Found by asking why that class was
+     the only orphan in the list that read like a typo rather than a wrapper. */
+  const PHRASING = new Set(['span', 'b', 'i', 'em', 'strong', 'small', 'label',
+    'a', 'abbr', 'code', 'q', 'cite', 'sub', 'sup']);
+  const FLOW = new Set(['div', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol',
+    'dl', 'table', 'section', 'article', 'aside', 'form', 'figure', 'blockquote',
+    'hr', 'header', 'footer', 'nav', 'main']);
+  const VOIDISH = new Set(['img', 'br', 'input', 'hr', 'meta', 'link', 'source',
+    'use', 'path', 'circle', 'rect', 'area', 'col', 'embed', 'track', 'wbr']);
+  const nesting = new Map();
+  for (const [f, raw] of pages) {
+    const h = raw.replace(/<!--[\s\S]*?-->/g, '');
+    const stack = [];
+    for (const m of h.matchAll(/<(\/?)([a-zA-Z][\w-]*)([^>]*)>/g)) {
+      const tag = m[2].toLowerCase();
+      if (m[1] === '/') {
+        for (let i = stack.length - 1; i >= 0; i -= 1) if (stack[i] === tag) { stack.length = i; break; }
+        continue;
+      }
+      const holder = stack.find((t) => PHRASING.has(t));
+      if (holder && FLOW.has(tag)) nesting.set(`${f}: <${holder}> holds <${tag}>`, 1);
+      if (!/\/$/.test(m[3]) && !VOIDISH.has(tag)) stack.push(tag);
+    }
+  }
+  check('no phrasing element on any page holds flow content',
+    nesting.size === 0, [...nesting.keys()].slice(0, 3).join('   |   '));
 
   /* 4. A LINK IN A SENTENCE NEEDS MORE THAN COLOUR. Everywhere else on this
      site a link is a card, a button or a whole line and is obvious without
@@ -6773,8 +6827,10 @@ let orphanClasses = new Map();
     blocked.length === 0, [...new Set(blocked)].join('   |   '));
 }
 
-console.log(`  classes drawn by a page and defined by no sheet it loads: ${orphanClasses.size}`
-  + ` (the panel is gated at zero; these are mostly unstyled wrappers)`);
+console.log(`  classes on an element no rule reaches, one page per family: ${orphanClasses.size}`
+  + ` (the panel is gated at zero; these are layout wrappers and SVG groups)`
+  + (orphanClasses.size ? `
+    ${[...orphanClasses.keys()].sort().join(", ")}` : ""));
 
 /* ==========================================================================
    THE REPORT GOES LAST, AND THAT IS NOT A TIDINESS PREFERENCE

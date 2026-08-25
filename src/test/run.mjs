@@ -5080,8 +5080,10 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
    higher bar than a layout. Each one is checked against the archive it was
    derived from. */
 {
-  const { preseasonFor, seasonAhead, sameClub, relatedClub, recordOf, sheetNums } =
-    await import(path.join(ROOT, 'src', 'lib', 'preseason.mjs'));
+  const { preseasonFor, seasonAhead, sameClub, relatedClub, recordOf, sheetNums,
+    clubIdentity } = await import(path.join(ROOT, 'src', 'lib', 'preseason.mjs'));
+  const { opponentRecords: opponentRecordsT } =
+    await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
   const { homeBandFilled: filled, publishedBands } =
     await import(path.join(ROOT, 'src', 'lib', 'home-layout.mjs'));
   const { buildDataset: bdP } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
@@ -5100,6 +5102,71 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     sameClub('Barnes Stormers FC', 'Barnes Stormers')
     && sameClub('BPR FC', 'BPR') && sameClub('Kew Antigua', 'Kew Antigua FC'));
   check('a B team is not the first team', !sameClub('Sutton Knights', 'Sutton Knights B'));
+
+  /* "Men's" is noise in a men's league, and leaving it in cost the home page
+     its credibility in two bands of one document: the next-match band said "A
+     first meeting" while the head-to-head band eight bands below said "BPR
+     Men's · Played 2, won 2". The archive spells them "BPR Men's" and the
+     fixture list "BPR FC". A women's side IS a different set of players, so
+     the asymmetry is asserted too. */
+  check('a mens suffix is noise, so one club spelled two ways is one club',
+    sameClub("BPR FC", "BPR Men's") && sameClub('Barnes Stormers', "Barnes Stormers Men's"));
+  check('a womens side is not the mens side',
+    !sameClub("Barnes Stormers Men's", "Barnes Stormers Women's")
+    && !sameClub('Barnes Stormers', 'Barnes Stormers Ladies'));
+  check('stripping mens does not reach inside another word',
+    sameClub("Old Freemen's", 'Old Freemens') && clubIdentity("Old Freemen's") === 'old freemens');
+
+  /* THE THING THE FIX WAS FOR. Whatever the two bands say, they must say the
+     same thing, because they are on the same page about the same club. */
+  {
+    const nx = dP.nextFixture;
+    if (nx) {
+      const met = dP.played.filter((m) => sameClub(m.opponent, nx.opponent));
+      const h2hRow = opponentRecordsT(dP.played)
+        .filter((r) => sameClub(r.opponent, nx.opponent))[0];
+      check('the next-match band and the head-to-head agree on the next opponent',
+        (met.length > 0) === !!h2hRow
+        && (!h2hRow || h2hRow.played === recordOf(met).p));
+    } else check('the next-match band and the head-to-head agree on the next opponent', true);
+  }
+
+  /* One club may hold only one row, however many ways it has been spelled.
+
+     Asserted against a CRAFTED list, not against today's archive. Every name
+     in the archive currently reduces uniquely, so the same check over
+     dP.played passes without grouping being implemented at all - which is the
+     shape of check this suite has been caught by twice. The real archive is
+     still asserted below, because the invariant has to hold there too, but it
+     is the crafted list that proves the code does anything. */
+  {
+    const mk = (opponent, iso, ours, theirs) => ({
+      opponent, iso, played: true, countsGoals: true,
+      ourGoals: ours, theirGoals: theirs,
+      outcome: ours > theirs ? 'W' : ours < theirs ? 'L' : 'D',
+    });
+    const rows = opponentRecordsT([
+      mk("BPR Men's", '2026-02-01', 4, 2),
+      mk("BPR Men's", '2026-05-24', 2, 0),
+      mk('BPR FC', '2026-09-06', 3, 1),
+      mk('Pure Football FC 2.0', '2025-09-21', 5, 0),
+      mk('Pure Football FC 1st Team', '2026-09-13', 1, 1),
+    ]);
+    const bpr = rows.filter((r) => /bpr/i.test(r.opponent));
+    check('one club spelled two ways is one row',
+      bpr.length === 1 && bpr[0].played === 3,
+      `got ${bpr.length} row(s): ${bpr.map((r) => `${r.opponent} P${r.played}`).join(', ')}`);
+    check('the row is labelled with the most recent spelling',
+      bpr.length === 1 && bpr[0].opponent === 'BPR FC',
+      `labelled ${bpr[0] && bpr[0].opponent}`);
+    check('a 2.0 and a first team are still two rows',
+      rows.filter((r) => /pure football/i.test(r.opponent)).length === 2);
+
+    const ids = opponentRecordsT(dP.played).map((r) => clubIdentity(r.opponent));
+    check('and no club in the archive holds two rows',
+      new Set(ids).size === ids.length,
+      `duplicated: ${ids.filter((x, i) => ids.indexOf(x) !== i).join(', ')}`);
+  }
 
   const ps = preseasonFor(dP);
   const ah = seasonAhead(dP);

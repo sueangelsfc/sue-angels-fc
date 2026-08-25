@@ -13,6 +13,7 @@
    duplicate a rule instead.
    ========================================================================== */
 import { cameOn as subsCameOn } from './subs.mjs';
+import { clubIdentity } from './club-name.mjs';
 
 export const US = "Sue's Angels FC";
 const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
@@ -1061,24 +1062,38 @@ export function goalKinds(matches) {
 }
 
 /* ---- Every club played ------------------------------------------------
-   One row per opponent, newest meeting first. Grouped on the opponent name as
-   the match records hold it: this is deliberately NOT the reduced-form match
-   that oppBadge() and clubIdentity() do, because a badge lookup wants "these
-   are the same club" and a head-to-head wants "these are the same OPPONENT".
-   Pure Football FC 2.0 and Pure Football FC 1st Team are two sides and a
-   record that merged them would claim wins over a team never played. */
+   One row per opponent, newest meeting first.
+
+   Grouped on clubIdentity(), which keeps the SIDE and drops the legal suffix.
+   Pure Football FC 2.0 and Pure Football FC 1st Team have different
+   identities and stay two rows, because they are two sides and a record that
+   merged them would claim wins over a team never played. That was the whole
+   reason this used to group on the raw stored name.
+
+   Grouping on the raw name solved that and created the opposite fault: the
+   name is whatever somebody typed into the panel, so one club spelled two
+   ways becomes two clubs. The archive holds "BPR Men's" and the fixture list
+   "BPR FC". Nobody notices in a list of 22 rows, and both rows are wrong -
+   each claims a complete record against a club the other row also played.
+   clubIdentity() answers both questions at once: it is the same reduction the
+   next-match band and the season-ahead band already use, so a club cannot be
+   one opponent on one band and two on another.
+
+   The row is LABELLED with the most recent spelling, because the newest
+   record is the club's current name for them. */
 export function opponentRecords(matches) {
   const map = new Map();
   for (const m of (matches || []).filter((x) => x.played)) {
-    const k = m.opponent || '';
-    if (!k) continue;
+    if (!m.opponent) continue;
+    const k = clubIdentity(m.opponent) || m.opponent;
     if (!map.has(k)) map.set(k, []);
     map.get(k).push(m);
   }
-  return [...map.entries()].map(([opponent, list]) => {
+  return [...map.values()].map((list) => {
     const s = teamSummary(list);
-    const latest = list.slice().sort((a, b) => (b.iso || '').localeCompare(a.iso || ''))[0];
-    return { opponent, latest, ...s };
+    const byDate = list.slice().sort((a, b) => (b.iso || '').localeCompare(a.iso || ''));
+    const latest = byDate[0];
+    return { opponent: latest.opponent, latest, ...s };
   }).sort((a, b) => b.played - a.played
     || String(a.opponent).localeCompare(String(b.opponent)));
 }

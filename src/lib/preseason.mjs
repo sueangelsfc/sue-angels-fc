@@ -13,39 +13,16 @@
 
    The one thing that cannot be derived is the day League Eight begins,
    because no league fixture has been published. It is carried in
-   src/data/season-2627.json with its source, and the page says "the season
+   src/data/league-eight-2627.json with its source, and the page says "the season
    starts" rather than "we play", because a start date is not a fixture.
    ========================================================================== */
 import { isFriendly } from './stats.mjs';
 
-/* ---- Naming an opponent, carefully ---------------------------------------
-   A club's LEGAL suffix is noise and its TEAM QUALIFIER is not.
-
-   League Eight contains "Pure Football FC 1st Team". The club beat "Pure
-   Football FC 2.0" in a friendly eight days ago. Reduce both far enough and
-   they are the same string, and the site would then publish a record of
-   played 3, won 3 against a side it has never met. That is worse than saying
-   nothing: it is a specific false claim about a specific opponent, on the one
-   page a new opponent is most likely to read.
-
-   So the suffix comes off and the qualifier stays on. Two clubs match only if
-   what is left is equal. Where the BASE matches but the qualifier does not,
-   that is recorded as a related side and said out loud. */
-const LEGAL = /\b(fc|afc|a\.f\.c|f\.c|football club|club)\b/gi;
-const squash = (s) => String(s || '').toLowerCase().replace(/[’']/g, '')
-  .replace(LEGAL, ' ').replace(/[^a-z0-9]+/g, ' ').trim();
-
-const QUALIFIER = /\b(1st|2nd|3rd|4th|first|second|third|reserves?|res|[abc]|\d+\s*0|sunday|sundays|saturday|vets|veterans|youth|dev|development)\b/g;
-
-export const clubIdentity = (name) => squash(name).replace(/\s+/g, ' ');
-export const clubBase = (name) => squash(name).replace(QUALIFIER, ' ')
-  .replace(/\bteam\b/g, ' ').replace(/\s+/g, ' ').trim();
-
-/* Exactly the same club and side. */
-export const sameClub = (a, b) => !!clubIdentity(a) && clubIdentity(a) === clubIdentity(b);
-/* The same club, a different side of it. */
-export const relatedClub = (a, b) => !sameClub(a, b)
-  && !!clubBase(a) && clubBase(a) === clubBase(b);
+/* The opponent-naming rule lives in club-name.mjs, dependency-free, because
+   stats.mjs needs the same reduction and this file already imports stats.mjs.
+   Re-exported here so every existing importer keeps working. */
+export { clubIdentity, clubBase, sameClub, relatedClub } from './club-name.mjs';
+import { clubIdentity, clubBase, sameClub, relatedClub } from './club-name.mjs';
 
 /* ---- The record across a set of matches -----------------------------------
    Walkovers carry no goals, exactly as every other figure on the site counts

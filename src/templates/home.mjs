@@ -23,7 +23,7 @@ import { esc, attr, clubCrest, NAV } from '../lib/html.mjs';
 import { photoCredit } from './gallery.mjs';
 import { sizeAttrs } from '../lib/imagesize.mjs';
 import {
-  CLUB, SPONSORS, SPONSOR_TIERS, FAQS, NEXT_FIXTURE, SEASON_AWARDS, SOCIALS,
+  CLUB, SPONSOR_TIERS, FAQS, NEXT_FIXTURE, SEASON_AWARDS, SOCIALS,
   JOIN_PATHS, JOIN_FAQS,
 } from '../lib/club.mjs';
 import {
@@ -369,7 +369,7 @@ export function home(d) {
             <div class="hx__sponsors drop" style="--dd:.54s" aria-label="Club partners">
               <span class="hx__sponsorlabel">Proudly backed by</span>
               <div class="hx__chips">
-                ${SPONSORS.slice(0, 4).map((s) => `<a class="hx__chip" href="/sponsors.html" aria-label="${attr(`${s.name}, ${s.tier}`)}"><img src="${attr(s.logo)}" alt="${attr(s.name)}"${sizeAttrs(s.logo)} loading="lazy" decoding="async" /></a>`).join('\n                ')}
+                ${d.partners.filter((s) => s.onStrip).slice(0, 4).map((s) => `<a class="hx__chip" href="/sponsors.html" aria-label="${attr(`${s.short}, ${s.role}`)}"><img src="${attr(s.logo)}" alt="${attr(s.short)}"${sizeAttrs(s.logo)} loading="lazy" decoding="async" /></a>`).join('\n                ')}
               </div>
             </div>
           </div>
@@ -538,7 +538,7 @@ export function home(d) {
               ${/* No width/height here: the tile fixes the box (min-height plus a
                     per-slot max-height), and declaring an intrinsic ratio would
                     resize the marks against their own artwork. */''}
-              ${SPONSORS.slice(0, 4).map((s) => `<span class="bento__logo"><img src="${attr(s.logo)}" alt="${attr(s.name)}"${sizeAttrs(s.logo)} loading="lazy" decoding="async" /></span>`).join('\n              ')}
+              ${d.partners.filter((s) => s.onStrip).slice(0, 4).map((s) => `<span class="bento__logo"><img src="${attr(s.logo)}" alt="${attr(s.short)}"${sizeAttrs(s.logo)} loading="lazy" decoding="async" /></span>`).join('\n              ')}
             </div>
             <a class="bento__link" href="/sponsors.html">Partner with us ${ARROW}</a>
           </article>
@@ -1071,10 +1071,10 @@ export function home(d) {
           <a class="nhead__all" href="/sponsors.html">Partner with us ${ARROW}</a>
         </div>
         <ul class="spo rv">
-          ${SPONSORS.map((s) => `<li class="spo__c">
-            <span class="spo__tile"><img src="${attr(s.logo)}" alt="${attr(s.name)}"${sizeAttrs(s.logo)} loading="lazy" decoding="async" /></span>
-            <b>${esc(s.name)}</b>
-            <span>${esc(s.tier)}</span>
+          ${d.partners.filter((s) => s.onStrip).map((s) => `<li class="spo__c">
+            <span class="spo__tile"><img src="${attr(s.logo)}" alt="${attr(s.short)}"${sizeAttrs(s.logo)} loading="lazy" decoding="async" /></span>
+            <b>${esc(s.short)}</b>
+            <span>${esc(s.role)}</span>
           </li>`).join('\n          ')}
         </ul>
       </div>

@@ -832,9 +832,17 @@
     $$('.cp-nav__item').forEach(function (b) {
       b.classList.toggle('is-active', b.getAttribute('data-module') === key);
     });
-    var mod = $('[data-module="' + key + '"]');
+    /* THE TITLE IS THE LABEL, NOT THE WHOLE BUTTON.
+
+       It read the nav button's textContent, and the button also holds the
+       count badge. setCount writes the number and then HIDES the span when it
+       is zero - hidden, but still in textContent - so the header of the
+       Fixtures screen said "Fixtures 0" and the Inbox said "Inbox 0". A
+       screen titled with a stray digit reads as a counter that has broken,
+       which is worse than no counter at all. */
+    var lab = $('[data-module="' + key + '"] .cp-nav__label');
     var title = $('[data-cp-title]');
-    if (mod && title) title.textContent = mod.textContent.trim();
+    if (lab && title) title.textContent = lab.textContent.trim();
     if (location.hash.slice(1) !== key) history.replaceState(null, '', '#' + key);
     render(key);
     var side = $('.cp-side');

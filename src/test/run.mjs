@@ -626,8 +626,12 @@ for (const f of shipped) {
       /* Settings, help and the audit trail. */
       'Your access', 'How a change reaches the website', 'Who changed what',
       'Backup', 'Club details',
-      /* The club's own prospect list. Nothing in it is published, by design. */
-      'Sponsorship pipeline', 'Chasing the ones that are not',
+      /* The club's own prospect list. Nothing in it is published, by design.
+         "Who else might back the club" is the pointer to it from the Sponsors
+         screen; it now carries the pipeline's own figures rather than being a
+         paragraph saying the pipeline is elsewhere, but it still publishes
+         nothing, which is the whole point of the pipeline. */
+      'Sponsorship pipeline', 'Who else might back the club',
       /* Matchday assembles what other screens publish; it has no page. */
       'Matchday', 'The matchday squad',
       /* Tables inside a section whose own heading already carries the link. */
@@ -1462,8 +1466,20 @@ const BUDGET = {
      everyone lands on the dashboard, so making it lazy saves nobody a
      download and turns one request into two before the first screen draws.
      It is in the shell for the same reason this is. Written down so it does
-     not get re-argued. */
-    'control.js': 12,
+     not get re-argued.
+
+     12 -> 13, and this one bought no feature. It bought HEADROOM. The
+     previous raise set the ceiling at the measured size: control.js was
+     12,287 bytes gzipped against a 12,288-byte limit, one byte under. A
+     ceiling with one byte of slack does not guard against growth, it fails on
+     the next edit whatever that edit is - here a three-line bug fix that
+     stopped the panel titling a screen "Fixtures 0", which is a stray digit
+     from a hidden count badge leaking into the header. A ceiling that blocks
+     a bug fix is measuring the wrong thing.
+
+     A budget should be set ABOVE what a file weighs, not at it, or the number
+     is a description rather than a limit. 12.0KB of 13. */
+    'control.js': 13,
   /* The heaviest, and fairly: the pitch, the position names, five tabs, the
      goal detail (what it was struck with, where from, what the ball was doing,
      who made it and how), and the composer that turns a coach's bullets into a
@@ -1609,8 +1625,25 @@ const BUDGET = {
   /* News, gallery, recognition, badges and sponsors. The album editor is the
      weight: photographs visible, removable, reorderable and taggable in the
      album itself, four operations that all have to keep the parallel tag list
-     in step. */
-  'control-content.js': 11,
+     in step.
+
+     11 -> 14. Two things bought it, and they are different kinds of thing.
+
+     CODE (~1.3KB): the club's partners are editable. They were in club.mjs,
+     defended on the grounds that a logo is a contractual asset - true of the
+     logo FILE and of nothing else on the record - so changing a main kit
+     sponsor meant finding a developer, which the club had to do for 26/27.
+     "How do I add a sponsor?" had no answer on the screen called Sponsors.
+
+     DATA (~1.3KB): each partner carries a paragraph, their placements and
+     their links. That rides HERE rather than in control-seed.js, which every
+     panel loads: adding it there put the shared seed 0.8KB over its own
+     ceiling for somebody opening the Inbox, which is the homeBands lesson
+     arriving again. Measured, moved, and the seed came back under.
+
+     This chunk is fetched by whoever opens News, Gallery, Recognition, Badges
+     or Sponsors, and by nobody else. */
+  'control-content.js': 14,
   /* Squad status is a fact about a player IN A SEASON, which is what stops
      "Retained for 26/27" being a string somebody has to remember to change
      and stops a trial lasting the rest of a career. The screen carries a
@@ -1998,6 +2031,113 @@ for (const [f, kb] of Object.entries({
       check('every pane that offers players says which ring it is offering from',
         (code.match(/scopeBar\('(club|match)'\)/g) || []).length >= 5);
     }
+  }
+
+  /* ==========================================================================
+     THE CLUB'S PARTNERS ARE ONE LIST, AND THE PANEL CAN WRITE IT
+
+     They were two lists in club.mjs that had already drifted: SPONSORS for the
+     home page strip and PARTNERS for the sponsors page, holding the same four
+     businesses with two of them named differently on the two pages, plus a
+     fifth in the strip that has never been on the page. Neither was editable,
+     so changing a main kit sponsor - which the club did for 26/27 - meant
+     finding a developer.
+
+     The load-bearing check is the first one. Absent has to mean the code
+     baseline, byte for byte, or a club that has never opened the screen would
+     find its sponsors page rearranged by a refactor.
+     ========================================================================== */
+  {
+    const { SPONSORS, PARTNERS } = await import(path.join(ROOT, 'src', 'lib', 'club.mjs'));
+    const { partnersFrom, PARTNERS_KEY, onStrip, onPage } =
+      await import(path.join(ROOT, 'src', 'lib', 'partners.mjs'));
+
+    const base = partnersFrom({});
+    check('with nothing stored, the home strip is the code list, in order',
+      JSON.stringify(onStrip(base).map((p) => [p.short, p.role, p.logo]))
+      === JSON.stringify(SPONSORS.map((s) => [s.name, s.tier, s.logo])),
+      'the home page strip would change on a site that has never touched the screen');
+    check('with nothing stored, the sponsors page is the code list, in order',
+      JSON.stringify(onPage(base).map((p) => [p.name, p.role, p.logo]))
+      === JSON.stringify(PARTNERS.map((p) => [p.name, p.role, p.logo])),
+      'the sponsors page would change on a site that has never touched the screen');
+    /* The drift is preserved rather than quietly corrected: whether the site
+       should say "Sporting Solutions" or "Sporting Solutions Ltd" is the
+       club's decision, and it can now be made in the panel. */
+    check('a partner named two ways is carried forward with both names',
+      base.some((p) => p.name !== p.short),
+      'the two lists were silently reconciled, which is a change to the live site');
+
+    const one = (over) => partnersFrom({
+      player_photos: [{ key: PARTNERS_KEY, data: { list: [{ name: 'Test Co', ...over }] } }],
+    });
+    check('a stored list wins outright over the code baseline',
+      one({}).length === 1 && one({})[0].name === 'Test Co');
+    check('a new partner appears in both places unless told otherwise',
+      one({}) [0].onStrip === true && one({})[0].onPage === true);
+    check('a partner can be kept off the home page strip',
+      onStrip(one({ onStrip: false })).length === 0);
+    check('a partner can be kept off the sponsors page',
+      onPage(one({ onPage: false })).length === 0);
+    check('a short name falls back to the name',
+      one({}) [0].short === 'Test Co');
+    /* An empty or unusable record is not a club with no sponsors. It is a
+       club that has not filled the screen in, and the pages it already
+       publishes must not empty themselves. */
+    for (const [what, data] of [['an empty list', { list: [] }], ['no list at all', {}],
+      ['a list of nameless entries', { list: [{ role: 'x' }] }]]) {
+      check(`${what} falls back to the code baseline rather than emptying the pages`,
+        partnersFrom({ player_photos: [{ key: PARTNERS_KEY, data }] }).length === base.length);
+    }
+
+    /* ONE SOURCE. The whole point is that the two pages cannot disagree
+       again, which they can the moment a template imports a list directly. */
+    for (const f of ['home.mjs', 'sponsors.mjs']) {
+      const src = fs.readFileSync(path.join(ROOT, 'src', 'templates', f), 'utf8');
+      check(`${f} reads the one partner list rather than importing its own`,
+        !/import[^;]*\b(SPONSORS|PARTNERS)\b[^;]*from/.test(src),
+        'a template is back on its own copy of the partners');
+    }
+
+    /* The panel writes what the site reads. Two spellings of one row key is a
+       screen that saves into a hole. */
+    const panel = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '40-content.js'), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '');
+    check('the panel writes the row key the site reads',
+      panel.includes(`var PARTNERS_KEY = '${PARTNERS_KEY}'`),
+      'the sponsors screen saves to a key the generator does not read');
+    check('the partner editor is on the sponsors screen',
+      /data-newpartner/.test(panel) && /partnerForm/.test(panel));
+    /* The editor opens showing what the site publishes. Without the seed it
+       would open empty and invite somebody to retype five live partners. */
+    const seedRaw = fs.readFileSync(path.join(ROOT, 'control-content.js'), 'utf8');
+    check('the editor is seeded with the partners the site is publishing',
+      /^window\.SA_SEED=Object\.assign\(window\.SA_SEED\|\|\{\},\{"?partners"?:/.test(seedRaw));
+    check('and the shared seed does not carry them, because one screen reads them',
+      !/"partners":/.test(fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8'))
+      && !/[,{]partners:/.test(fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8')),
+      'partner prose is in the seed every panel downloads');
+  }
+
+  /* THE PANEL TITLE IS THE LABEL, NOT THE WHOLE NAV BUTTON.
+
+     It read the button's textContent, and the button also holds the count
+     badge. setCount writes the number and then hides the span - hidden, but
+     still in textContent - so the Fixtures screen was headed "Fixtures 0" and
+     the Inbox "Inbox 0". */
+  {
+    const html = fs.readFileSync(path.join(ROOT, 'control.html'), 'utf8');
+    const items = (html.match(/class="cp-nav__item"/g) || []).length;
+    const labels = (html.match(/class="cp-nav__label"/g) || []).length;
+    check('every nav item carries a label element of its own',
+      items > 0 && items === labels, `${items} items, ${labels} labels`);
+    const shell = fs.readFileSync(path.join(ROOT, 'src', 'admin', '10-app.js'), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '');
+    check('the screen title is read from the label, not the whole button',
+      /cp-nav__label'\]?\)?;[\s\S]{0,120}title\.textContent = lab\.textContent/.test(shell),
+      'a hidden count badge can leak a digit into the page title');
+    check('a zero count is hidden rather than printed',
+      /el\.hidden = !n;/.test(shell));
   }
 
   /* CARRYING AN OLD RECORD'S ASSISTS FORWARD

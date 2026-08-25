@@ -661,6 +661,12 @@ const adminSeed = {
     id: c.id || c.slug, name: c.name, role: c.role || '', short: c.short || '',
     photo: c.photo || '', photoUrl: c.photoUrl || '', bio: c.bio || [],
   })),
+  /* The partners as the website builds them, so the editor opens showing what
+     the two pages actually show - including the four that still come from the
+     code baseline because nobody has saved the list yet. Without this the
+     screen would open empty and invite somebody to type in five partners the
+     site is already publishing. */
+  partners: d.partners,
 };
 /* The seed is DATA, and it grew: the squad, every match's fixture fields, the
    known clubs and competitions. Inlined it pushed control.js past its budget
@@ -687,6 +693,12 @@ const CHUNK_SEED_KEYS = {
   home: ['homeBands', 'homeAreas', 'homePage'],
   /* Player bios: prose, read only by the screen that edits it. */
   squad: ['squadBios'],
+  /* The partners carry a paragraph each, their placements and their links -
+     2KB gzipped of prose read by one section of one screen. In the shared
+     seed it put control-seed.js 0.8KB over its ceiling for every panel
+     visitor, which is the same fault as homeBands above and was caught the
+     same way: by the budget, the first time the data was added. */
+  content: ['partners'],
 };
 const chunkSeedJs = {};
 for (const [chunk, keys] of Object.entries(CHUNK_SEED_KEYS)) {

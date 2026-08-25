@@ -31,7 +31,7 @@ import {
   squadShape, scoringRuns, clubFirsts, goalsByGroup, heaviestDefeats, scoringRate,
 } from './stats.mjs';
 import {
-  SPONSORS, SPONSOR_TIERS, CLUB, SOCIALS, JOIN_PATHS, JOIN_FAQS,
+  SPONSOR_TIERS, CLUB, SOCIALS, JOIN_PATHS, JOIN_FAQS,
 } from './club.mjs';
 
 /* The default order, which is also the order these were written in. `name` is
@@ -706,7 +706,10 @@ export function homeBandFilled(key, d) {
     const a = seasonAhead(d);
     return a.clubs.length > 0 && !a.started;
   }
-  if (key === 'sponsors') return (SPONSORS || []).length > 0;
+  /* A BAND EMPTIES ITSELF ON THE QUESTION IT RENDERS. This asked the code
+     baseline, and the band draws d.partners: a club that removed every
+     partner in the panel would have kept a heading over an empty strip. */
+  if (key === 'sponsors') return ((d && d.partners) || []).filter((p) => p.onStrip).length > 0;
   if (key === 'staff') return ((d && d.coaches) || []).length > 0;
   if (key === 'records') return clubRecords((d && d.competitive) || [], (d && d.players) || []).length > 0;
   /* Milestones empty themselves. Nobody is always within three of a round

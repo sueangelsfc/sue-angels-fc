@@ -60,7 +60,7 @@ export const MODULES = [
 export function control() {
   const item = (m) => `<li>
     <button class="cp-nav__item" type="button" data-module="${attr(m.key)}">
-      ${icon(m.icon)}<span>${esc(m.label)}</span>
+      ${icon(m.icon)}<span class="cp-nav__label">${esc(m.label)}</span>
       <span class="cp-nav__count" data-count-for="${attr(m.key)}" hidden></span>
     </button>
   </li>`;

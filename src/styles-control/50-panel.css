@@ -467,3 +467,25 @@
   color: var(--text-subtle);
 }
 .mform__scope:empty { display: none; }
+
+/* A partner in a table: their mark beside their name, because a logo is how
+   anybody at the club recognises which partner a row is. */
+.cp-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.cp-logo img {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 28px;
+  object-fit: contain;
+  /* The partners' own marks, several of them dark artwork on transparency, so
+     they sit on white here exactly as they do on the website. Never recoloured
+     and never filtered. */
+  background: #fff;
+  border-radius: 3px;
+  padding: 2px;
+}
+.cp-sec__note { margin-block-start: var(--space-4); }

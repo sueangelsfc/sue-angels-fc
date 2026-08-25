@@ -1132,10 +1132,76 @@
       what: 'Named alongside the award on every match report.' },
   ];
 
+  /* ==========================================================================
+     THE CLUB'S PARTNERS ARE EDITABLE
+
+     They were code, and the section said so at length: the logos are
+     contractual assets, changing one is a deliberate code change, "it is on
+     purpose". True of the LOGO FILE and of nothing else on the record. The
+     name, the tier, the trade, the blurb, the placements and the links are
+     words, and the club changed its main kit sponsor for 26/27 - which under
+     that arrangement meant finding a developer. "How do I add a sponsor?" had
+     no answer on the one screen called Sponsors.
+
+     The logo is uploaded like a badge and kept as a PNG so a transparent mark
+     stays transparent. The record is one row holding the ordered list,
+     because the order IS the billing order.
+
+     Absent means the code baseline, so a club that never opens this gets the
+     pages it has today, byte for byte. See src/lib/partners.mjs.
+     ========================================================================== */
+  var PARTNERS_KEY = 'sponsor:partners';
+
+  function moneyish(n) { return '£' + Math.round(Number(n) || 0).toLocaleString('en-GB'); }
+
+  var LINK_HOSTS = [['instagram', 'Instagram'], ['linkedin', 'LinkedIn'], ['facebook', 'Facebook'],
+    ['x.com', 'X'], ['twitter', 'X'], ['tiktok', 'TikTok'], ['youtube', 'YouTube']];
+  function linkLabel(href) {
+    var h = String(href).toLowerCase();
+    for (var i = 0; i < LINK_HOSTS.length; i++) {
+      if (h.indexOf(LINK_HOSTS[i][0]) > -1) return LINK_HOSTS[i][1];
+    }
+    return 'Website';
+  }
+
   M.sponsors = function (host) {
     return CP.readAll('player_photos').then(function (rows) {
       var stored = rows.filter(function (r) { return r.key.indexOf('sponsor:') === 0
-        && r.key !== 'sponsor:pipeline'; });
+        && r.key !== 'sponsor:pipeline' && r.key !== PARTNERS_KEY; });
+
+      /* The stored list wins outright; with nothing stored the build hands
+         over what the site is publishing, so the table opens showing the four
+         partners already on the shirt rather than empty. */
+      var prow = rows.filter(function (r) { return r.key === PARTNERS_KEY; })[0];
+      var pstored = (prow && prow.data && prow.data.list) || [];
+      var PARTNERS = (pstored.length ? pstored : (SEED.partners || []))
+        .filter(function (p) { return p && p.name; })
+        .map(function (p) {
+          return Object.assign({}, p, {
+            onStrip: p.onStrip !== false, onPage: p.onPage !== false,
+          });
+        });
+      var strip = PARTNERS.filter(function (p) { return p.onStrip; });
+      var page = PARTNERS.filter(function (p) { return p.onPage; });
+
+      /* The pipeline's own row, read here so the pointer below carries a
+         figure instead of a sentence about another screen. */
+      var pipeRow = rows.filter(function (r) { return r.key === 'sponsor:pipeline'; })[0];
+      var pipeData = (pipeRow && pipeRow.data) || {};
+      var pipeLeads = (pipeData.leads || []).filter(function (l) { return l && l.company; });
+      var pipeline = {
+        leads: pipeLeads,
+        committedTxt: moneyish(pipeLeads
+          .filter(function (l) { return l.status === 'Committed'; })
+          .reduce(function (t, l) { return t + (Number(l.amount) || 0); }, 0)),
+        targetTxt: moneyish(Number(pipeData.target) || 4000),
+      };
+
+      function savePartners(next, msg) {
+        return CP.upsert('player_photos', PARTNERS_KEY, { list: next })
+          .then(function () { toast(msg || 'Saved', 'success'); refresh('sponsors'); })
+          .catch(function (e) { toast(e.message, 'error'); });
+      }
       var byKey = {};
       stored.forEach(function (r) {
         var raw = r.data;
@@ -1204,19 +1270,54 @@
         }) +
 
         sec({
-          title: 'Chasing the ones that are not',
-          sub: 'Who has been approached, who is thinking about it, and how much of the season’s '
-            + 'target is committed, all live under <b>Sponsorship pipeline</b>.',
-          actions: '<button class="btn btn--glass btn--sm" data-goto-pipeline>Open the pipeline</button>',
+          title: 'The club’s partners',
+          sub: 'The businesses on the shirt and across the sponsors page. Add one the day a deal '
+            + 'is signed. <b>' + esc(strip.length) + '</b> on the home page strip, <b>'
+            + esc(page.length) + '</b> with a full write-up on the sponsors page.',
+          actions: '<button class="btn btn--primary" data-newpartner>Add a partner</button>',
+          body: table(['Partner', 'What they are', 'Where they show', ''],
+            PARTNERS.map(function (p, i) {
+              return '<tr data-pi="' + i + '">' +
+                '<td><div class="cp-logo">' +
+                  (p.logo ? '<img src="' + esc(p.logo) + '" alt="' + esc(p.name) + '">' : '') +
+                  '<b>' + esc(p.name) + '</b></div></td>' +
+                '<td>' + esc(p.role || '') +
+                  (p.since ? '<br><span class="cp-dim">since ' + esc(p.since) + '</span>' : '') + '</td>' +
+                '<td>' +
+                  (p.onStrip ? '<span class="badge badge--success">Home page</span> ' : '') +
+                  (p.onPage ? '<span class="badge badge--success">Sponsors page</span>' : '') +
+                  (!p.onStrip && !p.onPage ? '<span class="badge badge--warning">Nowhere</span>' : '') +
+                '</td>' +
+                '<td><div class="cp-rowacts">' +
+                  (i > 0 ? '<button class="btn btn--ghost btn--sm" data-pup aria-label="Move ' +
+                    esc(p.name) + ' up">Up</button>' : '') +
+                  '<button class="btn btn--ghost btn--sm" data-pedit>Edit</button>' +
+                  '<button class="btn btn--danger btn--sm" data-pdel>Remove</button>' +
+                '</div></td>' +
+              '</tr>';
+            }).join('')) +
+            /* Under the table, not above it: a caveat about rows only makes
+               sense once the rows are on screen. `sub` is read first. */
+            '<p class="cp-note cp-sec__note">The order is the billing order and the home page '
+              + 'shows the first four. A logo is the partner’s own mark and is never recoloured, '
+              + 'so upload the file they gave you rather than one taken off their website.</p>',
+          where: [['Sponsors', '/sponsors.html'], ['Home page', '/']],
         }) +
 
+        /* THE POINTER HAS TO CARRY A FIGURE. This was a whole section whose
+           only content was "the pipeline is over there", which is a nav item
+           doing an impression of a screen. It says what is in the pipeline
+           now, so it is worth the space it takes. */
         sec({
-          title: 'The club’s partners',
-          sub: 'The five businesses on the shirt and across the sponsors page. Their logos are '
-            + 'contractual assets and ship as optimised static files, so changing one is a '
-            + 'deliberate code change rather than something anybody can do by accident from a '
-            + 'phone. That is why they are not editable here, and it is on purpose.',
-          where: [['Sponsors', '/sponsors.html']],
+          title: 'Who else might back the club',
+          sub: pipeline.leads.length
+            ? '<b>' + esc(pipeline.leads.length) + '</b> prospect'
+              + (pipeline.leads.length === 1 ? '' : 's') + ' on the list, <b>'
+              + esc(pipeline.committedTxt) + '</b> committed of ' + esc(pipeline.targetTxt)
+              + ' for the season. Nothing in the pipeline is published.'
+            : 'Nobody on the list yet. The pipeline is the club’s own record of who has been '
+              + 'asked and what they said, and none of it is published.',
+          actions: '<button class="btn btn--glass btn--sm" data-goto-pipeline>Open the pipeline</button>',
         });
 
       function form(key) {
@@ -1247,9 +1348,129 @@
         });
       }
 
+      /* ---- A partner ------------------------------------------------------
+         Every field says where it lands, because the two pages show different
+         parts of this record and a blurb typed for the sponsors page that
+         never appears anywhere is the failure this whole panel exists to
+         avoid. */
+      function partnerForm(i) {
+        var p = i == null
+          ? { name: '', short: '', role: '', since: '', trade: '', body: '', detail: '',
+              placements: [], links: [], logo: '', onStrip: true, onPage: true }
+          : PARTNERS[i];
+        var back = dialog(i == null ? 'Add a partner' : p.name,
+          '<div class="grid grid--2">' +
+            field('pt-name', 'Name', text('pt-name', p.name, 'Their business, as they write it'),
+              'The name on the sponsors page.') +
+            field('pt-short', 'Short name', text('pt-short', p.short, 'Leave blank to use the name'),
+              'Used where the logo is the content and the name is only read aloud.') +
+            field('pt-role', 'What they are to the club',
+              text('pt-role', p.role, 'Main kit sponsor'),
+              'Printed under their logo. "Main kit sponsor", "Ground-share partner".') +
+            field('pt-since', 'Backing us since', text('pt-since', p.since, '26/27'),
+              'Optional. A season, not a date.') +
+          '</div>' +
+          field('pt-trade', 'What they do', text('pt-trade', p.trade, 'Roofing, garden design'),
+            'Optional. One line, on the sponsors page.') +
+          field('pt-body', 'The one-liner', text('pt-body', p.body),
+            'The short line under their name on the sponsors page.') +
+          field('pt-detail', 'The write-up', area('pt-detail', p.detail, 4),
+            'A paragraph on the sponsors page. Leave it blank and they simply get the one-liner.') +
+          field('pt-place', 'What they get, one per line',
+            area('pt-place', (p.placements || []).join('\n'), 4),
+            'Listed on the sponsors page. "Front of the matchday shirt", "Named in match reports".') +
+          field('pt-links', 'Their links, one per line as Label | https://…',
+            area('pt-links', (p.links || []).map(function (l) {
+              return (l.label || 'Website') + ' | ' + l.href;
+            }).join('\n'), 3),
+            'Optional.') +
+          imageField('pt-logo', 'Their logo', p.logo, {
+            max: 600, keepAlpha: true,
+            hint: 'Their own mark, never recoloured. Kept as a PNG so a transparent '
+              + 'background stays transparent. Upload the file they gave you.',
+          }) +
+          '<div class="grid grid--2" style="margin-top:var(--space-4)">' +
+            field('pt-strip', 'On the home page',
+              choose('pt-strip', p.onStrip ? 'yes' : 'no', [['yes', 'Yes'], ['no', 'No']]),
+              'The logo strip. The first four in this list are the ones shown.') +
+            field('pt-page', 'On the sponsors page',
+              choose('pt-page', p.onPage ? 'yes' : 'no', [['yes', 'Yes'], ['no', 'No']]),
+              'The full write-up with their links and what they get.') +
+          '</div>', 720);
+        wireUploads(back);
+
+        $('[data-save]', back).addEventListener('click', function () {
+          var name = val(back, 'pt-name');
+          if (!name) { fail(back, 'Name the partner.'); return; }
+          var lines = function (id) {
+            return val(back, id).split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+          };
+          /* Everything the record already held that this form does not ask
+             for is written back untouched, so a field a future version adds
+             survives being edited by this one. */
+          var rec = Object.assign({}, i == null ? {} : PARTNERS[i], {
+            name: name,
+            short: val(back, 'pt-short') || name,
+            role: val(back, 'pt-role'),
+            since: val(back, 'pt-since'),
+            trade: val(back, 'pt-trade'),
+            body: val(back, 'pt-body'),
+            detail: val(back, 'pt-detail'),
+            placements: lines('pt-place'),
+            links: lines('pt-links').map(function (l) {
+              var bits = l.split('|');
+              var href = (bits[1] || bits[0] || '').trim();
+              /* A LABEL PASTED WITHOUT ONE IS NOT ALWAYS "WEBSITE". Somebody
+                 pasting three URLs on three lines got three links all reading
+                 Website, including the partner's Instagram, which is what the
+                 published page would then say. Named from the host where the
+                 host says what it is. */
+              return { label: (bits[1] ? bits[0].trim() : linkLabel(href)), href: href };
+            }).filter(function (l) { return l.href; }),
+            logo: val(back, 'pt-logo'),
+            onStrip: val(back, 'pt-strip') === 'yes',
+            onPage: val(back, 'pt-page') === 'yes',
+          });
+          var next = PARTNERS.slice();
+          if (i == null) next.push(rec); else next[i] = rec;
+          back.remove();
+          savePartners(next, i == null ? 'Partner added' : 'Saved');
+        });
+      }
+
       host.addEventListener('click', function (e) {
         if (e.target.matches('[data-new]')) { if (guard()) form(null); return; }
         if (e.target.matches('[data-goto-pipeline]')) { location.hash = '#pipeline'; return; }
+
+        if (e.target.matches('[data-newpartner]')) { if (guard()) partnerForm(null); return; }
+        var ptr = e.target.closest('tr[data-pi]');
+        if (ptr) {
+          var pi = Number(ptr.getAttribute('data-pi'));
+          if (e.target.matches('[data-pedit]')) { if (guard()) partnerForm(pi); return; }
+          if (e.target.matches('[data-pup]')) {
+            if (!guard()) return;
+            var moved = PARTNERS.slice();
+            moved.splice(pi - 1, 0, moved.splice(pi, 1)[0]);
+            savePartners(moved, PARTNERS[pi].name + ' moved up');
+            return;
+          }
+          if (e.target.matches('[data-pdel]')) {
+            if (!guard()) return;
+            confirmAction({
+              title: 'Remove ' + PARTNERS[pi].name + '?',
+              body: 'They come off the sponsors page and the home page at the next publish.',
+              detail: 'If the deal has simply ended, it may be worth turning both switches off '
+                + 'in Edit instead: that keeps the record of the partnership.',
+              confirmLabel: 'Remove',
+            }).then(function (yes) {
+              if (!yes) return;
+              var left = PARTNERS.slice();
+              left.splice(pi, 1);
+              savePartners(left, 'Removed');
+            });
+          }
+          return;
+        }
         var tr = e.target.closest('tr[data-key]');
         if (!tr) return;
         var full = tr.getAttribute('data-key');

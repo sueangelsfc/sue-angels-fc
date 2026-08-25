@@ -29,7 +29,7 @@ src/
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        3,390-check suite against the generated output
+  test/run.mjs        3,410-check suite against the generated output
 ```
 
 **Run `npm run build` after any change under `src/`.** Nothing in `src/` is served; only the generated root files are.
@@ -131,6 +131,8 @@ Plus private `enquiries` and `supporters`.
 
 `player_photos` is a general blob store, not just photographs: it also holds `roster:*`, `coach:*`, `donate:config` and `sponsor:*` records.
 
+`sponsor:partners` is the club's partner list, one row holding the ordered list because the order is the billing order. See `src/lib/partners.mjs`.
+
 **A tag is stored EITHER as a bare name or as `{name, role}`.** The tagger writes the second the moment it knows anything beyond the name, and both shapes are in the database. Reading only the first is what put the literal text `[object Object]` under 624 gallery photographs and into their alt text. Everything reading a tag goes through `tagName()` in `src/templates/gallery.mjs`.
 
 ### Security posture
@@ -181,6 +183,31 @@ Every editor writes its own markup - there is no shared field builder - so each 
 The panel also carries `aria-busy` while a screen fetches its chunk and reads the database. A spinner is a picture; `aria-busy` is the same fact said out loud.
 
 Two things an audit of this claimed and got wrong, both worth not re-checking: the toast container has carried `role="region"` and `aria-live="polite"` since it was written, so saves have always been announced; and 15 of the 16 labels with no `for=` wrap their own control, which is valid.
+
+### How the club adds a sponsor
+
+Two different things, and the screen never said which was which.
+
+- **Sponsorships** are the small things sold during a season, one at a time: the match report, the match ball, Player of the Match, a player's season. They live in the database, **Record a sponsorship** adds one, and `report.mjs` and `player.mjs` print the credit. This always worked.
+- **Partners** are the businesses on the shirt and across the sponsors page. These were in `club.mjs` and **could not be added at all**. The panel explained why at length: the logos are contractual assets, changing one is a deliberate code change, "it is on purpose". That is true of the logo **file** and of nothing else on the record. The name, the tier, the trade, the blurb, the placements and the links are words. The club changed its main kit sponsor for 26/27, which under that arrangement meant finding a developer, and the one screen called Sponsors had no answer to "how do I add a sponsor?".
+
+`src/lib/partners.mjs` is now the one list, editable in **Control panel → Sponsors**. The logo is uploaded like a badge and kept as a PNG so a transparent mark stays transparent.
+
+**There were two lists and they had already drifted.** `SPONSORS` is the home page logo strip and `PARTNERS` the sponsors page; they hold the same four businesses in the same order, and two are named differently on the two pages ("Sporting Solutions" against "Sporting Solutions Ltd", "Staines Rugby" against "Staines Rugby Club"). A fifth, HLO, is in the strip and has never been on the page, which nothing recorded as a decision. One record per partner now, carrying **where it appears** rather than being duplicated per place: `onStrip`, `onPage`, and a `short` name for where the logo is the content and the text is only read aloud.
+
+- **The baseline reproduces both pages byte for byte**, drift included. Correcting a partner's name on the live site is the club's decision, not this file's; what changed is that the disagreement is visible in one place where somebody can settle it. The suite asserts the strip and the page still equal the two code lists exactly.
+- **Absent, empty, and full of nameless entries all mean the code baseline.** A club that has never opened the screen gets the pages it has today. An empty record is not a club with no sponsors.
+- **A new partner appears in both places unless told otherwise**, which is what somebody adding a sponsor expects. The home strip shows the first four; the order is the billing order and the panel says so under the table.
+- **The partner prose rides with `control-content.js`, not the shared seed.** Each partner carries a paragraph, their placements and their links; putting that in `control-seed.js` pushed it 0.8KB over its ceiling for somebody opening the Inbox. Same lesson as `homeBands`, caught the same way, by the budget, the first time the data was added.
+- A link pasted without a label is named from its host, so a partner's Instagram is not published as "Website".
+
+**The pointer to the pipeline carries a figure.** "Chasing the ones that are not" was a whole section whose only content was that the pipeline is a different nav item, which is a nav item doing an impression of a screen. It reads the pipeline's own row and says how many prospects and how much is committed.
+
+### The panel title was the whole nav button
+
+It read the button's `textContent`, and the button holds the count badge. `setCount` writes the number and then **hides** the span, and a hidden span is still in `textContent`, so the Fixtures screen was headed **"Fixtures 0"** and the Inbox "Inbox 0". A screen titled with a stray digit reads as a counter that has broken. The label has its own class and the title is read from that.
+
+**The fixtures list comes before the form.** The screen is called Fixtures and opened on a six-field form with what is actually coming up below the fold. Adding a fixture happens a handful of times a season; looking at the list is why anybody opens the screen.
 
 ### Who a match can name
 
@@ -300,7 +327,7 @@ It does not fall back to something sensible: the whole declaration is invalid at
 `npm test` now asserts that every bare `var(--x)` in the sheets a page links is declared by one of them, by an inline style, or by a script's `setProperty`. Three real defects were shipped when it was written: `--ink-1` (used by the champions page and the sub-page nav, defined nowhere), `--ui` (which `control.css` borrowed from a sheet `control.html` does not load) and `--w` (fine, set inline by the build). `var(--x, fallback)` is safe by construction and is not flagged.
 - Four video slots per match: footage, before, after, anything else. Direct upload is capped at 60MB with the reason on the button, because a full match is a gigabyte.
 - **Recognition follows its type.** A season award, a trophy, a club record, a Player of the Month and the captaincy are five different shapes, and the awards page reads different fields from each. The form asks for the right ones and clears the ones belonging to a type an entry has been changed away from, while still preserving anything it has never heard of.
-- **The sponsorship pipeline** is the club's own prospect list: who has been contacted, who has committed, and how much of the season's target that is. Nothing in it is published. The retired one lived in browser storage on one laptop.
+- **The sponsorship pipeline** is the club's own prospect list: who has been contacted, who has committed, and how much of the season's target that is. Nothing in it is published. The retired one lived in browser storage on one laptop. Its header was four tiles carrying two facts, two of them both labelled *Committed* (one counting pounds, one counting people) and one reading `0 of 0` wrapped across two lines. Two money figures, the bar that already draws the percentage, and a count per stage, which is the thing that says what to do today. **With nobody on the list there are no figures at all**: four tiles of zero above an empty table reads as broken rather than as new.
 - **Squad status is a fact about a player IN A SEASON**, `src/lib/squad-status.mjs`. It was one value per player with no date, so "Retained for 26/27" was a literal string in two files (wrong from July 2027, fixable only by a developer), "New signing" never expired, and a trial never ended. `roster:status` is `{num: {season: key}}` now; the old flat shape still reads, taken as the latest season. The club sets seven things (in the squad, on trial, injured, unavailable this season, retired, left, moved into coaching) and the site **works out three**: new signing, retained, back at the club. They are derived from **who was named in a match that season**, so nobody keeps them true and they stay true as seasons pass. Moving somebody into coaching still writes both `roster:status` and `roster:coaches`, because in real life it is one decision.
 - **Images are resized in the browser before they leave it.** A phone produces four or five megabytes and nothing on the site is drawn wider than about 1200px. Player photographs are cut square to 520px and stored inline on the `player_photos` row, which is where the existing nineteen live. Badges and article covers go to the storage bucket and the record keeps the address, because a page showing five inline would carry them all as base64. A badge is kept as a PNG so a transparent crest stays transparent.
 - Every destructive action goes through a confirm dialog. Writes are attributed to `audit_log` via `log_admin_action()`.
@@ -319,11 +346,11 @@ Read leads in **Control panel → Inbox**; RLS blocks anonymous reads, so signin
 ```bash
 npm run build     # regenerate every route (run after any src/ change)
 npm run verify    # assert derived stats against the published league table
-npm test          # 3,390 checks against the generated output
+npm test          # 3,410 checks against the generated output
 npm run serve     # local preview on :4321
 ```
 
-`npm test` covers: document structure, one h1 per page, heading order, alt text, resolvable assets and internal links, JSON-LD validity, asset-version consistency, overflow guards, reduced motion, both themes, WCAG AA contrast on every text token pair, form labelling, security headers, no service-role key in output, sitemap/robots correctness, and performance budgets. Budgets are **gzipped KB**, one per bundle, and they are ceilings over a split thing rather than one big one: `sa.css` 22, `home.css` 26, `sa.js` 24, `control.css` 6, `control.js` 16, `control-seed.js` 8, and one per lazy panel chunk. **Code is budgeted apart from data**: `control-home.js` carries seventy-five band descriptions, so its emitted ceiling moved three times for growth that was not code, and `src/admin/lazy/95-home.js` and `10-match.js` are now measured as source so an edit to the code shows up on its own. **The deploy does not run this suite** (`sync && build && verify`), so a page over budget still publishes: these are a signal to whoever is reading, not a gate on the club. The home page's margin is printed on every run for that reason. It also asserts the split stays split: that the match form and the photo tagger are not in the core, that every deferred panel maps to a chunk that exists and is cache-busted, and that routing does not gate on a module having been downloaded.
+`npm test` covers: document structure, one h1 per page, heading order, alt text, resolvable assets and internal links, JSON-LD validity, asset-version consistency, overflow guards, reduced motion, both themes, WCAG AA contrast on every text token pair, form labelling, security headers, no service-role key in output, sitemap/robots correctness, and performance budgets. Budgets are **gzipped KB**, one per bundle, and they are ceilings over a split thing rather than one big one: `sa.css` 22, `home.css` 26, `sa.js` 24, `control.css` 6, `control.js` 13, `control-seed.js` 8, and one per lazy panel chunk. **Code is budgeted apart from data**: `control-home.js` carries seventy-five band descriptions, so its emitted ceiling moved three times for growth that was not code, and `src/admin/lazy/95-home.js` and `10-match.js` are now measured as source so an edit to the code shows up on its own. **The deploy does not run this suite** (`sync && build && verify`), so a page over budget still publishes: these are a signal to whoever is reading, not a gate on the club. The home page's margin is printed on every run for that reason. It also asserts the split stays split: that the match form and the photo tagger are not in the core, that every deferred panel maps to a chunk that exists and is cache-busted, and that routing does not gate on a module having been downloaded.
 
 ## Deployment
 **The domain is on the Vercel project `sue-angels-fc-b469`.** Three projects on this account look like the right one and only that one is:

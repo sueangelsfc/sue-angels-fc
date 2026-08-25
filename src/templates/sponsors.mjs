@@ -24,7 +24,7 @@
    restyled, sized rather than cropped.
    ========================================================================== */
 import { esc, attr } from '../lib/html.mjs';
-import { CLUB, PARTNERS, SPONSOR_PACK } from '../lib/club.mjs';
+import { CLUB, SPONSOR_PACK } from '../lib/club.mjs';
 import { teamSummary, isLeague} from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
 
@@ -59,6 +59,9 @@ const STEPS = [
 ];
 
 export function sponsors(d) {
+  /* One list for the strip and this page, read from the record the panel
+     writes. See src/lib/partners.mjs. */
+  const PARTNERS = d.partners.filter((p) => p.onPage);
   const league = teamSummary((d.played || []).filter(isLeague));
 
   /* Every claim in this band is checkable, so each one carries the thing that

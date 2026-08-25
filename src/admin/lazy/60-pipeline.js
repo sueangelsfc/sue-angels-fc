@@ -66,6 +66,20 @@
           .catch(function (e) { toast(e.message, 'error'); });
       }
 
+      /* WHERE EVERY PROSPECT STANDS, COUNTED. The header was four tiles
+         carrying two facts: "£0 committed of £4,000" and "0% of the target"
+         are the same sentence twice, and two of the four were both labelled
+         Committed - one counting pounds and one counting people. The number
+         that reads "0 of 0" is a display-size figure in a narrow tile, so it
+         wrapped onto two lines under a heading that then read "0 of / 0".
+
+         What actually tells you what to do today is how many are sitting at
+         each stage. Money is two figures, not four, and the percentage lives
+         on the bar that already draws it. */
+      var byStage = STATUSES.map(function (name) {
+        return { name: name, n: leads.filter(function (l) { return l.status === name; }).length };
+      });
+
       host.innerHTML =
         sec({
           title: 'Sponsorship pipeline',
@@ -75,16 +89,24 @@
           actions: '<button class="btn btn--primary" data-add>Add a prospect</button>'
             + '<button class="btn btn--ghost btn--sm" data-target>Change the target</button>'
             + (leads.length ? '<button class="btn btn--ghost btn--sm" data-csv>Export CSV</button>' : ''),
-          body:
-            '<div class="grid grid--4" style="margin-bottom:var(--space-4)">' +
-              U.tile(money(committedSum), 'Committed', 'of ' + money(target)) +
-              U.tile(money(warmSum), 'Still in play', 'contacted or in talks') +
-              U.tile(committed.length + ' of ' + leads.length, 'Committed', 'prospects') +
-              U.tile(pct + '%', 'Of the target') +
-            '</div>' +
-            '<div class="pipebar" role="img" aria-label="' + esc(pct) + ' per cent of the target committed">' +
-              '<span class="pipebar__fill" style="width:' + pct + '%"></span>' +
-            '</div>',
+          /* WITH NOBODY ON THE LIST THERE IS NOTHING TO REPORT. Four tiles of
+             zero above an empty table is a dashboard describing a thing that
+             does not exist yet, and it reads as broken rather than as new. */
+          body: leads.length
+            ? '<div class="grid grid--2" style="margin-bottom:var(--space-4)">' +
+                U.tile(money(committedSum), 'Committed', 'of ' + money(target) + ' for the season') +
+                U.tile(money(warmSum), 'Still in play',
+                  'across ' + byStage[1].n + ' contacted and ' + byStage[2].n + ' in talks') +
+              '</div>' +
+              '<div class="pipebar" role="img" aria-label="' + esc(pct)
+                + ' per cent of the season’s target committed">' +
+                '<span class="pipebar__fill" style="width:' + pct + '%"></span>' +
+              '</div>' +
+              '<p class="cp-note cp-sec__note">' + esc(pct) + '% of the season’s target is committed. '
+                + esc(byStage.map(function (x) { return x.n + ' ' + x.name.toLowerCase(); }).join(' · '))
+                + '.</p>'
+            : '<p class="cp-note">The season’s target is <b>' + esc(money(target))
+                + '</b>. Add the first prospect and the figures start here.</p>',
         }) +
 
         sec({

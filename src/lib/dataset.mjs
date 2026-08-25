@@ -10,6 +10,7 @@ import { POSITION_GROUPS, positionName } from './positions.mjs';
 import { readStatusRecord, statusIn, statusLabelIn, isPlaying, joinedAfter, signedOn,
   statusDetail } from './squad-status.mjs';
 import { houseRecord } from './prose.mjs';
+import { partnersFrom } from './partners.mjs';
 import { normaliseMatch, normaliseTable, playerStats, slugify, isUs, seasonOf, toISO, isLeague, isCup,
   isCompetitive, isFriendly, figuresSeason, tableSeasonOf,
 } from './stats.mjs';
@@ -462,6 +463,11 @@ export function buildDataset() {
     .filter((r) => String(r.key).startsWith('sponsor:') && r.key !== 'sponsor:pipeline')
     .map((r) => [String(r.key).slice(8), typeof r.data === 'string' ? { name: r.data } : (r.data || {})])
     .filter(([, v]) => v && v.name));
+
+  /* THE CLUB'S PARTNERS, which the panel can now write. Absent means the code
+     baseline, so a club that has never opened the screen gets the pages it has
+     today, byte for byte. See src/lib/partners.mjs. */
+  const partners = partnersFrom(live);
 
   const photoSeasons = [...new Set(
     Object.values(photoRec).flatMap((r) => Object.keys(r || {})),
@@ -1219,7 +1225,7 @@ export function buildDataset() {
     isPlayingStatus: isPlaying,
     coaches, table, leagueScorers, leagueScorersByComp, nextDivisionTable, leagueResults,
     articles, recognition, galleries, playerPhotos, donate, hero, homeLayout, trialists,
-    photoFor, photoSeasons, shotFor, sponsorships,
+    photoFor, photoSeasons, shotFor, sponsorships, partners,
     seasons, seasonInfo, titles, lastTitle, competitions, knownClubs, badges,
     currentSeason,
     tableSeason, titleSeason, titleDivision,

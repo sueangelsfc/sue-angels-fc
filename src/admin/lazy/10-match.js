@@ -157,6 +157,47 @@
           })
           : '') +
 
+        /* THE LIST COMES FIRST. The screen is called Fixtures and it opened on
+           a six-field form, with what is actually coming up below the fold.
+           Adding a fixture happens a handful of times a season; looking at the
+           list is why anybody opens this screen, and the club had to scroll
+           past a form to do it. */
+        sec({
+          title: 'Fixtures to come',
+          sub: 'When a match has been played, <b>Enter result</b> opens the match form already filled '
+            + 'in from the fixture. Saving it records the result and takes the fixture off this list, '
+            + 'because a match is either still to come or it has happened, never both.',
+          body: (list.length
+            /* THREE COLUMNS, NOT FIVE, AND REMOVE IS NOT A WHISPER.
+               `table()` wraps in `.scroll-x`, so on any panel narrower than the
+               five columns needed the actions cell is the first thing off the
+               right edge - and the actions cell held the only way to delete a
+               fixture. Removing one was reported as impossible because the
+               button could not be seen: clipped by the scroll on a narrow
+               panel, and styled `btn--quiet` (transparent, no border) where the
+               two buttons beside it were solid and bordered. A destructive
+               action should be the plainest thing in the row to find, not the
+               faintest. Date and kick-off are one fact about when, competition
+               belongs under the fixture it describes, and three columns fit. */
+            ? table(['When', 'Fixture', ''], list.map(function (r) {
+              var f = r.data || {};
+              return '<tr data-key="' + esc(r.key) + '">' +
+                '<td><b>' + esc(f.date || '') + '</b>' +
+                  (f.kick ? '<br><span class="cp-dim">' + esc(f.kick) + '</span>' : '') + '</td>' +
+                '<td><b>' + esc(f.home || '') + '</b> v <b>' + esc(f.away || '') + '</b>' +
+                  (f.competition ? '<br><span class="cp-dim">' + esc(f.competition) + '</span>' : '') + '</td>' +
+                '<td><div class="cp-rowacts">' +
+                  '<button class="btn btn--primary btn--sm" data-fx-result>Enter result</button>' +
+                  '<button class="btn btn--ghost btn--sm" data-fx-edit>Edit</button>' +
+                  '<button class="btn btn--danger btn--sm" data-del>Remove</button>' +
+                '</div></td>' +
+              '</tr>';
+        }).join(''))
+            : empty('Nothing in the diary',
+              'Add one below and it appears on the website at the next publish, including the next-match card on the home page.')),
+          where: [['Fixtures', '/fixtures.html']],
+        }) +
+
         sec({
           title: 'Add a fixture',
           sub: 'The club’s own name is never typed: choose home or away and the rest follows.',
@@ -197,42 +238,6 @@
             '</div>',
           where: [['Fixtures', '/fixtures.html'], ['Home page next-match card', '/']],
           whereNote: 'after you publish',
-        }) +
-
-        sec({
-          title: 'Fixtures to come',
-          sub: 'When a match has been played, <b>Enter result</b> opens the match form already filled '
-            + 'in from the fixture. Saving it records the result and takes the fixture off this list, '
-            + 'because a match is either still to come or it has happened, never both.',
-          body: (list.length
-            /* THREE COLUMNS, NOT FIVE, AND REMOVE IS NOT A WHISPER.
-               `table()` wraps in `.scroll-x`, so on any panel narrower than the
-               five columns needed the actions cell is the first thing off the
-               right edge - and the actions cell held the only way to delete a
-               fixture. Removing one was reported as impossible because the
-               button could not be seen: clipped by the scroll on a narrow
-               panel, and styled `btn--quiet` (transparent, no border) where the
-               two buttons beside it were solid and bordered. A destructive
-               action should be the plainest thing in the row to find, not the
-               faintest. Date and kick-off are one fact about when, competition
-               belongs under the fixture it describes, and three columns fit. */
-            ? table(['When', 'Fixture', ''], list.map(function (r) {
-              var f = r.data || {};
-              return '<tr data-key="' + esc(r.key) + '">' +
-                '<td><b>' + esc(f.date || '') + '</b>' +
-                  (f.kick ? '<br><span class="cp-dim">' + esc(f.kick) + '</span>' : '') + '</td>' +
-                '<td><b>' + esc(f.home || '') + '</b> v <b>' + esc(f.away || '') + '</b>' +
-                  (f.competition ? '<br><span class="cp-dim">' + esc(f.competition) + '</span>' : '') + '</td>' +
-                '<td><div class="cp-rowacts">' +
-                  '<button class="btn btn--primary btn--sm" data-fx-result>Enter result</button>' +
-                  '<button class="btn btn--ghost btn--sm" data-fx-edit>Edit</button>' +
-                  '<button class="btn btn--danger btn--sm" data-del>Remove</button>' +
-                '</div></td>' +
-              '</tr>';
-        }).join(''))
-            : empty('No fixtures stored',
-              'Add one above and it appears on the website at the next publish, including the next-match card on the home page.')),
-          where: [['Fixtures', '/fixtures.html']],
         });
 
       var err = $('[data-fx-err]', host);

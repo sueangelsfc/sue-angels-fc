@@ -814,6 +814,51 @@ for (const f of shipped) {
     }
   }
 
+  /* A SHARE IMAGE HAS TO RESOLVE, not merely contain the right path.
+
+     Every check above asked whether the og:image URL mentioned
+     /assets/covers/, and all 43 of them did - while every one of them read
+     `https://www.suesangelsfc.co.ukundefined/assets/covers/<id>.jpg`, because
+     drawnCover() interpolated CLUB.url and the field is CLUB.site. The cards
+     were drawn, committed, and correctly matched to their records, and not one
+     had ever loaded: every match report and every article shared to WhatsApp
+     had a broken preview from the day covers landed.
+
+     So this resolves the URL instead of pattern-matching it. Anything on the
+     club's own origin must exist as a file; anything else must be a real
+     absolute URL (the gallery covers are Supabase storage). */
+  {
+    const ORIGIN = 'https://www.suesangelsfc.co.uk/';
+    const broken = [];
+    let resolved = 0;
+    for (const f of htmlFiles) {
+      const html = fs.readFileSync(path.join(ROOT, f), 'utf8');
+      for (const m of html.matchAll(/(?:property="og:image"|name="twitter:image") content="([^"]+)"/g)) {
+        const u = m[1];
+        if (/undefined|null/.test(u)) { broken.push(`${f}: ${u}`); continue; }
+        if (u.startsWith(ORIGIN)) {
+          if (!fs.existsSync(path.join(ROOT, u.slice(ORIGIN.length)))) broken.push(`${f}: missing ${u}`);
+          else resolved += 1;
+        } else if (!/^https:\/\/[a-z0-9.-]+\.[a-z]{2,}\//i.test(u)) {
+          broken.push(`${f}: not an absolute URL - ${u}`);
+        } else resolved += 1;
+      }
+    }
+    check('every share image resolves to a real file or a real URL',
+      broken.length === 0, broken.slice(0, 6).join(' | '));
+    check('and enough of them were actually found to mean something', resolved > 100);
+  }
+
+  /* NO SHIPPED URL SAYS "undefined". The cover bug spelled it out in the
+     canonical origin of 43 pages and nothing noticed, because every check was
+     looking at the path rather than the whole string. */
+  {
+    const dirty = htmlFiles.filter((f) => /(?:href|content|src)="[^"]*\b(?:undefined|\[object Object\])\b/
+      .test(fs.readFileSync(path.join(ROOT, f), 'utf8')));
+    check('no page ships a URL or attribute containing undefined',
+      dirty.length === 0, `${dirty.length}: ${dirty.slice(0, 5).join(', ')}`);
+  }
+
   /* EVERY REPORT AND EVERY ARTICLE SHARES A CARD OF ITS OWN. All thirty-eight
      reports carried `og-match.jpg` and all five articles `og-news.jpg`, so a
      link to the Kew Antigua win and a link to the Brentford defeat looked
@@ -1308,10 +1353,24 @@ for (const [f, h] of pages) {
     continue;
   }
   /* Only our own origin can be checked on disk; a Supabase-hosted album cover
-     is verified by the link checker's own rules, not here. */
-  if (url.startsWith('https://www.suesangelsfc.co.uk/')) {
+     is verified by the link checker's own rules, not here.
+
+     THE HOST IS NAMED, NOT ASSUMED. This used to be `if (startsWith(origin))
+     { check on disk }` with no else, so a URL that did not look like our
+     origin was silently exempt - and that is precisely what a CORRUPTED
+     origin looks like. All 43 drawn covers shipped as
+     `https://www.suesangelsfc.co.ukundefined/assets/covers/<id>.jpg`: one
+     `https://`, starts with http, and does not begin with our origin plus a
+     slash, so every branch of this check passed it straight through. The
+     escape hatch for other people's hosts was also the escape hatch for our
+     own host being wrong. An unknown host now has to be added here on
+     purpose. */
+  const host = (url.match(/^https?:\/\/([^/]+)/) || [])[1] || '';
+  if (host === 'www.suesangelsfc.co.uk') {
     const rel = url.replace('https://www.suesangelsfc.co.uk/', '');
     if (!fs.existsSync(path.join(ROOT, rel))) badOg.push(`${f}: og:image missing on disk (${rel})`);
+  } else if (!/^[a-z0-9]+\.supabase\.co$/.test(host)) {
+    badOg.push(`${f}: og:image on an unrecognised host "${host}"`);
   }
 }
 check('every og:image is one resolvable URL', badOg.length === 0, badOg.slice(0, 4).join(' | '));

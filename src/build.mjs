@@ -245,8 +245,19 @@ const d = buildDataset();
 
    Defined up here beside the dataset because BOTH the page writers and the
    control panel's seed need it, and the seed is built first. */
+/* ROOT-RELATIVE, exactly like ogCard(). absUrl() in html.mjs puts CLUB.site
+   on the front of anything that is not already absolute, so returning an
+   absolute URL here would double it and returning a bad one poisons it.
+
+   This said `${CLUB.url}`, and there is no CLUB.url - the field is CLUB.site.
+   So every one of the 43 drawn covers shipped as
+   `https://www.suesangelsfc.co.ukundefined/assets/covers/<id>.jpg`, in og:image,
+   twitter:image and the JSON-LD primaryImageOfPage alike. The cards were drawn,
+   committed and correctly linked to the right record, and not one of them has
+   ever loaded: every match report and every article shared to WhatsApp,
+   Facebook or X has had a broken preview since the day covers landed. */
 const drawnCover = (id) => (fs.existsSync(path.join(ROOT, 'assets', 'covers', `${id}.jpg`))
-  ? `${CLUB.url}/assets/covers/${id}.jpg`
+  ? `/assets/covers/${id}.jpg`
   : '');
 
 const all = teamSummary(d.played);

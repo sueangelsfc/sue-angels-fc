@@ -314,6 +314,62 @@ export async function panelChecks() {
     a11y.noAlt.length === 0, a11y.noAlt.slice(0, 3).join(', '));
 
   /* ---------------------------------------------------------------------
+     5b. SAVING A MATCH DRAWS ITS SHARE PICTURE.
+
+     This was the last step in publishing that only a person could take. The
+     build draws the cards, but the DEPLOY cannot: Vercel has no browser, so
+     `npm run covers` runs on a laptop or not at all, and a result published
+     from the panel shared the generic club image until somebody remembered.
+     A step somebody has to remember is another way of saying it does not
+     happen.
+
+     Driven for real, because the wiring is the whole thing: press Save on a
+     match with no cover and the covers chunk must be fetched, something must
+     actually be drawn, and a cover must be written back onto the record. The
+     canvas is a recorder (see dom.mjs) - it counts drawing calls and cannot
+     make a picture, which is exactly the question worth asking here. */
+  {
+    const cctx = PR.boot({ rows, canvas: true });
+    const cres = await PR.openPanel(cctx, 'results');
+    let opened = null;
+    for (const tr of cres.body.querySelectorAll('tr[data-key]')) {
+      const m = rows.matches.find((x) => x.key === tr.getAttribute('data-key'));
+      if (m && !(m.data || {}).cover && (m.data.starters || []).length >= 11) {
+        PR.click(tr.querySelector('[data-edit]'));
+        await PR.settle(cctx);
+        PR.flushMutations(cctx.doc.body);
+        await PR.settle(cctx);
+        opened = cctx.doc.querySelector('.modal-backdrop');
+        break;
+      }
+    }
+    check('a match with no share picture can be opened', !!opened);
+    if (opened) {
+      cctx.store.writes.length = 0;
+      PR.click(opened.querySelector('[data-save]'));
+      await PR.settle(cctx);
+      await PR.settle(cctx);
+      const w = cctx.store.writes;
+      const drew = cctx.win.canvasLog();
+      check('saving a match draws something on a canvas', drew.calls.length > 20,
+        `${drew.calls.length} drawing calls`);
+      check('the drawn card carries the scoreline it is a card of',
+        drew.text.some((t) => /\d\s*-\s*\d|W\/O/.test(t)), drew.text.slice(0, 6).join(' | '));
+      check('the drawn card is uploaded', w.some((x) => x.op === 'upload'));
+      /* THE POINT OF ALL OF IT: the record comes back with a cover on it, so
+         the next publish ships a real card and nobody had to run anything. */
+      const wrote = w.filter((x) => x.op === 'upsert' && x.t === 'matches');
+      check('the cover is written back onto the match record',
+        wrote.some((x) => !!(x.d || {}).cover),
+        `${wrote.length} match writes, none carrying a cover`);
+      /* And the save itself is still a save: the picture is worth less than
+         the result and must never be what a failure is reported about. */
+      check('the match itself was saved first', wrote.length >= 2 || (wrote[0] && wrote[0].d),
+        `${wrote.length} writes`);
+    }
+  }
+
+  /* ---------------------------------------------------------------------
      6. WHAT WAS TYPED SURVIVES. Driven end to end: type into a real field,
      let the debounce fire, re-open the screen, take the offer back. */
   const dctx = PR.boot({ rows });
@@ -539,6 +595,45 @@ export async function panelProbes() {
       detail: `${unnamed.length} controls left unnamed`,
     });
   }
+
+
+  /* PROBE 6: cut the cover out of the save and confirm the record notices.
+     Aimed at the minified call itself rather than at the chunk name, because
+     a save that fetched the chunk and then drew nothing is exactly the shape
+     this check exists to catch. */
+  {
+    const ctx = PR.boot({
+      rows,
+      canvas: true,
+      transform: (src, file) => (file === 'control-matchedit.js'
+        ? bust(src, 'CPCOVERS.ensure("matches"', 'CPCOVERS.nothing&&0&&window.CPCOVERS.ensure("matches"')
+        : src),
+    });
+    const res = await PR.openPanel(ctx, 'results');
+    let drewAnything = true;
+    for (const tr of res.body.querySelectorAll('tr[data-key]')) {
+      const m = rows.matches.find((x) => x.key === tr.getAttribute('data-key'));
+      if (m && !(m.data || {}).cover && (m.data.starters || []).length >= 11) {
+        PR.click(tr.querySelector('[data-edit]'));
+        await PR.settle(ctx);
+        PR.flushMutations(ctx.doc.body);
+        await PR.settle(ctx);
+        const modal = ctx.doc.querySelector('.modal-backdrop');
+        ctx.store.writes.length = 0;
+        PR.click(modal.querySelector('[data-save]'));
+        await PR.settle(ctx);
+        await PR.settle(ctx);
+        drewAnything = ctx.store.writes.some((w) => w.op === 'upsert' && (w.d || {}).cover);
+        break;
+      }
+    }
+    results.push({
+      name: 'probe: cutting the cover out of the save turns the cover check red',
+      cond: drewAnything === false,
+      detail: 'a cover was still written with the drawing call removed',
+    });
+  }
+
 
   return results;
 }

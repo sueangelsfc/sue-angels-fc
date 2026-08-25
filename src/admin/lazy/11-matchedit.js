@@ -1927,7 +1927,19 @@
         if (opts.fromFixture) return CP.remove('fixtures', opts.fromFixture);
         return null;
       }).then(function () {
-        toast(opts.fromFixture ? 'Result recorded and the fixture cleared' : 'Match saved', 'success');
+        /* A COVER IS DRAWN HERE, NOT REMEMBERED LATER. Without this the club
+           publishes a result and the link shares the generic club image until
+           somebody runs `npm run covers` on a laptop, because the deploy has
+           no browser to draw with. A record that already carries a cover is
+           left alone, and a failure to draw one never turns a saved match
+           into an error: the result matters more than the picture. */
+        if (next.cover) return null;
+        return U.chunk('covers')
+          .then(function () { return window.CPCOVERS.ensure('matches', key, next); })
+          .catch(function () { return null; });
+      }).then(function (drew) {
+        toast((opts.fromFixture ? 'Result recorded and the fixture cleared' : 'Match saved')
+          + (drew ? ', and a share picture drawn for it' : ''), 'success');
         back.remove();
         if (opts.after) opts.after();
         else refresh('results');

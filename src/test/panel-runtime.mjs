@@ -53,7 +53,7 @@ function fixtureStore(rows, { empty = false } = {}) {
     readEnquiries: () => Promise.resolve(empty ? [] : (rows.enquiries || [])),
     readSupporters: () => Promise.resolve(empty ? [] : (rows.supporters || [])),
     listBucket: () => Promise.resolve([]),
-    upload: () => Promise.resolve(''),
+    upload: (bucket, name) => { writes.push({ op: 'upload', name: name }); return Promise.resolve('https://example.test/' + name); },
     verifyWrote: () => true,
   };
 }
@@ -65,9 +65,9 @@ function fixtureStore(rows, { empty = false } = {}) {
    is intercepted and the file is executed for real - so CHUNK_OF, the chunk
    filenames the build stamps into CP_CHUNKS, and each chunk's registration
    are all exercised exactly as they are in a browser. */
-export function boot({ rows = {}, empty = false, localStorage: ls, onScript, transform } = {}) {
+export function boot({ rows = {}, empty = false, localStorage: ls, onScript, transform, canvas = false } = {}) {
   const html = fs.readFileSync(path.join(ROOT, 'control.html'), 'utf8');
-  const win = makeWindow({ localStorage: ls });
+  const win = makeWindow({ localStorage: ls, canvas });
   const doc = win.document;
 
   const bodyHtml = (/<body[^>]*>([\s\S]*)<\/body>/i.exec(html) || [, ''])[1]
@@ -98,7 +98,7 @@ export function boot({ rows = {}, empty = false, localStorage: ls, onScript, tra
       () => 0, () => {},
       win.fetch, function FileReaderStub() {}, DomEvent, DomEvent,
       win.MutationObserver, win.navigator, win.requestAnimationFrame,
-      function ImageStub() {}, function FormDataStub() {}, function BlobStub() {},
+      win.Image, function FormDataStub() {}, function BlobStub() {},
       { createObjectURL: () => 'blob:test', revokeObjectURL: () => {} },
       (s) => Buffer.from(String(s), 'base64').toString('binary'),
       (s) => Buffer.from(String(s), 'binary').toString('base64'),

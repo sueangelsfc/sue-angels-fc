@@ -292,6 +292,64 @@
     return CP.upload('gallery', name, blob);
   }
 
+
+  /* ==========================================================================
+     DRAWN WHEN THE RECORD IS SAVED, NOT WHEN SOMEBODY REMEMBERS
+
+     These two used to live inside the section below, which made having a
+     cover a thing the club had to come to this screen and ask for. That was
+     the one remaining step in publishing that only a person could take, and
+     the build cannot take it for them: Vercel has no browser, so
+     `npm run covers` runs on a laptop or not at all, and a match published
+     from the panel kept the generic club image until it did.
+
+     So the match editor and the news editor call `ensure()` after a save.
+     A record that already has a cover is left alone - a real photograph beats
+     a drawn card and the club may have chosen one - and a failure here is
+     never allowed to turn a successful save into an error, because the
+     picture is worth less than the result.
+     ========================================================================== */
+  function forMatch(rec) {
+    var d = rec.data || {};
+    var home = d.home || US;
+    var away = d.away || '';
+    return matchCover({
+      home: home,
+      away: away,
+      score: (d.hs != null && d.as != null) ? d.hs + ' - ' + d.as
+        : d.kind === 'walkover' ? 'W/O' : '',
+      date: d.date || '',
+      competition: d.competition || '',
+    }).then(function (blob) {
+      return upload(blob, 'cover-match').then(function (url) {
+        var next = Object.assign({}, d, { cover: url });
+        return CP.upsert('matches', rec.key, next);
+      });
+    });
+  }
+
+  function forArticle(rec) {
+    var d = rec.data || {};
+    return newsCover({ title: d.title || 'Sue’s Angels FC', category: d.cat, date: d.date })
+      .then(function (blob) {
+        return upload(blob, 'cover-news').then(function (url) {
+          var next = Object.assign({}, d, { cover: url });
+          return CP.upsert('articles', rec.key, next);
+        });
+      });
+  }
+
+  /* Draw one only if the record has none. Resolves either way; the caller is
+     a save that has already succeeded and must not be made to fail. */
+  function ensure(table, key, data) {
+    if (!key || (data && data.cover)) return Promise.resolve(null);
+    var rec = { key: key, data: data || {} };
+    var job = table === 'articles' ? forArticle(rec) : forMatch(rec);
+    return job.then(function () { return 'drawn'; }).catch(function () { return null; });
+  }
+
+  window.CPCOVERS = { forMatch: forMatch, forArticle: forArticle, ensure: ensure };
+
   /* ==========================================================================
      THE SECTION
      ========================================================================== */
@@ -381,36 +439,6 @@
         });
 
       var note = $('[data-progress]', host);
-
-      function forMatch(rec) {
-        var d = rec.data || {};
-        var home = d.home || US;
-        var away = d.away || '';
-        return matchCover({
-          home: home,
-          away: away,
-          score: (d.hs != null && d.as != null) ? d.hs + ' - ' + d.as
-            : d.kind === 'walkover' ? 'W/O' : '',
-          date: d.date || '',
-          competition: d.competition || '',
-        }).then(function (blob) {
-          return upload(blob, 'cover-match').then(function (url) {
-            var next = Object.assign({}, d, { cover: url });
-            return CP.upsert('matches', rec.key, next);
-          });
-        });
-      }
-
-      function forArticle(rec) {
-        var d = rec.data || {};
-        return newsCover({ title: d.title || 'Sue’s Angels FC', category: d.cat, date: d.date })
-          .then(function (blob) {
-            return upload(blob, 'cover-news').then(function (url) {
-              var next = Object.assign({}, d, { cover: url });
-              return CP.upsert('articles', rec.key, next);
-            });
-          });
-      }
 
       host.addEventListener('click', function (e) {
         if (e.target.matches('[data-all]')) {

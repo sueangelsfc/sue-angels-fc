@@ -152,6 +152,16 @@
       back.remove();
       if (after) after();
       refresh(panel);
+      /* AN ARTICLE GETS ITS SHARE PICTURE NOW. The deploy has no browser, so
+         a piece published from here would otherwise share the generic club
+         image until somebody ran `npm run covers` on a laptop. Drawn after
+         the dialog has closed and the save has been reported, because it is
+         worth less than the article and must never delay or fail it. */
+      if (tbl !== 'articles' || next.cover) return;
+      U.chunk('covers')
+        .then(function () { return window.CPCOVERS.ensure('articles', key, next); })
+        .then(function (drew) { if (drew) toast('Share picture drawn for it', 'success'); })
+        .catch(function () { /* the article is saved; the picture can wait */ });
     }).catch(function (e) { fail(back, e.message); });
   }
 

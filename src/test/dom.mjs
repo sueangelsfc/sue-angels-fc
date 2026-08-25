@@ -449,6 +449,32 @@ class Element extends Node {
   get offsetHeight() { return nope('offsetHeight (this DOM has no layout)'); }
 }
 
+/* Every 2D call a canvas takes, counted rather than rasterised. The point is
+   not the picture - this cannot make one - but whether the code under test
+   drew anything at all and got as far as asking for a blob. */
+const CTX_METHODS = ['scale', 'save', 'restore', 'beginPath', 'arc', 'fill', 'stroke',
+  'fillRect', 'clearRect', 'drawImage', 'fillText', 'strokeText', 'moveTo', 'lineTo',
+  'closePath', 'rect', 'clip', 'translate', 'rotate', 'setTransform', 'createRadialGradient',
+  'createLinearGradient', 'roundRect', 'quadraticCurveTo', 'bezierCurveTo'];
+
+function recordingContext(log) {
+  const ctx = {};
+  for (const m of CTX_METHODS) {
+    ctx[m] = (...args) => {
+      log.calls.push(m);
+      if (m === 'fillText' || m === 'strokeText') log.text.push(String(args[0]));
+      /* A gradient must answer addColorStop or the caller throws. */
+      if (m.startsWith('create')) return { addColorStop() {} };
+      return undefined;
+    };
+  }
+  /* measureText has to return a width or fitText loops forever. A single
+     number per character is wrong in the way a real font is not, which is
+     fine: this asks whether the drawing ran, never how it looked. */
+  ctx.measureText = (t) => ({ width: String(t).length * 10 });
+  return ctx;
+}
+
 class DocumentFragment extends Element {
   constructor(doc) { super('#fragment', doc); this.nodeType = 11; }
 }
@@ -670,7 +696,26 @@ class Document extends Element {
     this.documentElement.appendChild(this.body);
     this.activeElement = this.body;
   }
-  createElement(tag) { return new Element(tag, this); }
+  createElement(tag) {
+    const el = new Element(tag, this);
+    /* A CANVAS IS A RASTER SURFACE AND THIS DOM HAS NONE. Refused by default,
+       exactly like getComputedStyle and getBoundingClientRect: a canvas that
+       quietly accepted every drawing call and produced nothing would report
+       the cover drawer as working while it made no picture at all. A test
+       that genuinely needs one asks for it (`makeWindow({ canvas: true })`)
+       and gets a recorder, which is honest about being one. */
+    if (String(tag).toLowerCase() === 'canvas') {
+      if (!this._canvas) {
+        el.getContext = () => nope('canvas.getContext: this DOM has no raster surface. '
+          + 'Pass { canvas: true } to makeWindow to get a recording context instead.');
+        el.toBlob = () => nope('canvas.toBlob: nothing was drawn, because this DOM cannot draw.');
+      } else {
+        el.getContext = () => recordingContext(this._canvas);
+        el.toBlob = (cb, type) => { this._canvas.blobs += 1; cb({ size: 1, type: type || 'image/png' }); };
+      }
+    }
+    return el;
+  }
   createElementNS(ns, tag) { return new Element(tag, this); }
   createTextNode(t) { return new TextNode(t); }
   createDocumentFragment() { return new DocumentFragment(this); }
@@ -731,6 +776,8 @@ export function flushMutations(el) {
 
 export function makeWindow(opts = {}) {
   const document = new Document();
+  /* Opt-in, and it is a recorder rather than a renderer - see createElement. */
+  if (opts.canvas) document._canvas = { calls: [], text: [], blobs: 0 };
   const win = {
     document,
     localStorage: opts.localStorage || new Storage(),
@@ -757,6 +804,21 @@ export function makeWindow(opts = {}) {
     removeEventListener: (t, fn) => document.removeEventListener(t, fn),
     dispatchEvent: (e) => document.dispatchEvent(e),
   };
+  /* AN IMAGE THAT NEVER ANSWERS IS A HANG, NOT A STUB. This DOM cannot
+     fetch, so it says so at once by firing onerror - which the cover drawer
+     already handles, falling back to the club's initials in a disc. The
+     first version answered neither way, and the effect was not a failing
+     check but a promise that never settled: the cover drew nothing, wrote
+     nothing, threw nothing, and the test simply saw an empty canvas. */
+  win.Image = function Image() {
+    const img = { width: 0, height: 0, onload: null, onerror: null, crossOrigin: '' };
+    Object.defineProperty(img, 'src', {
+      set() { setTimeout(() => { if (img.onerror) img.onerror(); }, 0); },
+      get() { return ''; },
+    });
+    return img;
+  };
+  if (opts.canvas) win.canvasLog = () => document._canvas;
   win.window = win;
   win.self = win;
   document.defaultView = win;

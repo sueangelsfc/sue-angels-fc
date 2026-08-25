@@ -44,12 +44,16 @@ jobs:
       # The generator is the build. Output is committed, so the first thing
       # worth knowing is whether the committed output still matches src/ -
       # editing src/ without rebuilding is the easiest way to ship nothing.
+      # `:!node_modules` is not tidiness. This repo COMMITS its dependencies,
+      # and esbuild ships a platform binary, so `npm ci` on Linux replaces the
+      # macOS one that is checked in and the whole tree differs before the
+      # generator has run at all. The question here is about generated OUTPUT.
       - name: The output matches the source
         run: |
           npm run build
-          if ! git diff --quiet; then
+          if ! git diff --quiet -- . ':!node_modules'; then
             echo "::error::Generated output is stale. Run: npm run build && git add -A"
-            git diff --stat | tail -20
+            git diff --stat -- . ':!node_modules' | tail -20
             exit 1
           fi
 

@@ -260,6 +260,13 @@ const drawnCover = (id) => (fs.existsSync(path.join(ROOT, 'assets', 'covers', `$
   ? `/assets/covers/${id}.jpg`
   : '');
 
+/* Handed to the templates so a drawn card can be SHOWN, not only shared.
+   Attached here rather than inside dataset.mjs because whether a card exists
+   is a question about the build's own output directory, which the dataset
+   knows nothing about. Templates pass the id; the id for an article is
+   `a-<slug>`, the same one make-covers.mjs writes. */
+d.drawnCoverSrc = drawnCover;
+
 const all = teamSummary(d.played);
 const ourRow = d.table.find((r) => r.us);
 

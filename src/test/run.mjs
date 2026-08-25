@@ -814,6 +814,42 @@ for (const f of shipped) {
     }
   }
 
+  /* A DRAWN COVER IS SHOWN, NOT ONLY SHARED. All 43 were used as og:image and
+     appeared nowhere on the site: a report card drew a bare scoreline on an
+     empty plate while a picture of both badges and the score sat on disk
+     beside it. */
+  {
+    const newsHtml = fs.readFileSync(path.join(ROOT, 'news.html'), 'utf8');
+    const shown = [...newsHtml.matchAll(/<img class="nw-card__img" src="([^"]+)"/g)].map((m) => m[1]);
+    check('the news cards show the covers the build drew',
+      shown.length > 0 && shown.every((u) => u.startsWith('/assets/covers/')
+        && fs.existsSync(path.join(ROOT, u.slice(1)))),
+      `${shown.length} card images, ${shown.filter((u) => !fs.existsSync(path.join(ROOT, u.slice(1)))).length} missing`);
+
+    /* The box follows the picture. 16/10 is the plate's shape; a 1200x630 card
+       in it loses 16% of its width to object-fit: cover, and that is where the
+       competition label and the club mark live. */
+    check('a card showing a picture takes the picture\'s shape',
+      !/class="nw-card__top"[^>]*>\s*<img class="nw-card__img"/.test(newsHtml)
+      && (newsHtml.match(/nw-card__top has-img/g) || []).length === shown.length,
+      'has-img is not set on every card that shows one, so the cover is cropped');
+
+    /* The drawn card is composed WITH its category and date in the same two
+       corners the card overlays its own, so laying them on top printed each
+       twice a few pixels apart. */
+    check('a composed cover is not overprinted with a second date and chip',
+      !/nw-card__top has-img[\s\S]{0,400}?nw-card__(?:cat|date)/.test(newsHtml),
+      'the card draws its own chip or date over one the picture already carries');
+
+    /* And the article page, which showed a crest plate while its own card
+       existed. */
+    const arts = htmlFiles.filter((f) => f.startsWith('news/'));
+    const withCover = arts.filter((f) => /class="nw-cover has-img"/
+      .test(fs.readFileSync(path.join(ROOT, f), 'utf8'))).length;
+    check('every article page leads with its own drawn cover',
+      arts.length > 0 && withCover === arts.length, `${withCover} of ${arts.length}`);
+  }
+
   /* A SHARE IMAGE HAS TO RESOLVE, not merely contain the right path.
 
      Every check above asked whether the og:image URL mentioned
@@ -4093,14 +4129,51 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
    The star placeholder says it is the club star, because that is what it
    shows. It is not a photograph of anybody and must not claim to be. */
 {
+  /* AN EMPTY ALT INSIDE A LINK THAT NAMES ITSELF IS A DECISION, NOT AN
+     OMISSION, and counting it as an omission asks for the wrong fix.
+
+     The news cards each show the share card drawn for that match - both
+     badges, the score, the competition - inside a link whose own text reads
+     "Pure Football FC 2.0 0-2 Sue's Angels FC". The image is redundant with
+     its link, which is exactly when WCAG wants alt="": the accessible name
+     comes from the link text, and describing the image as well makes a screen
+     reader announce the same match twice. This check flagged news.html at 20%
+     and the only way to satisfy it would have been to introduce that
+     duplication.
+
+     So an image is ACCOUNTED FOR when it is named, or when it is empty-alt
+     inside a link that carries text of its own. What is never acceptable is
+     an img with no alt attribute at all - that is somebody forgetting, and it
+     is asserted separately and absolutely below rather than at 50%. */
+  const inNamedLink = (h, at) => {
+    const a = h.lastIndexOf('<a ', at);
+    if (a < 0) return false;
+    const end = h.indexOf('</a>', at);
+    if (end < 0) return false;
+    const open = h.indexOf('>', a);
+    if (open < 0 || h.slice(a, end).includes('</a>')) return false;
+    return h.slice(open + 1, end).replace(/<[^>]+>/g, ' ').trim().length > 0;
+  };
   const cover = (h) => {
     const im = [...h.matchAll(/<img[^>]*>/g)];
     const named = im.filter((m) => {
       const a = (m[0].match(/\salt="([^"]*)"/) || [])[1];
-      return a && a.trim();
+      if (a && a.trim()) return true;
+      return a === '' && inNamedLink(h, m.index);
     }).length;
     return { n: im.length, named, pct: im.length ? (named / im.length) * 100 : 100 };
   };
+
+  /* The absolute one. No page may ship an <img> with no alt attribute. */
+  {
+    const naked = [];
+    for (const [f, h] of pages) {
+      const n = [...h.matchAll(/<img[^>]*>/g)].filter((m) => !/\salt=/.test(m[0])).length;
+      if (n) naked.push(`${f} (${n})`);
+    }
+    check('no image anywhere ships without an alt attribute',
+      naked.length === 0, naked.slice(0, 5).join(', '));
+  }
   const thin = [];
   let total = 0; let named = 0;
   for (const [f, h] of pages) {

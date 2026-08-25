@@ -109,6 +109,15 @@
   aspect-ratio: 16 / 10; overflow: hidden;
   background: linear-gradient(168deg, rgba(var(--volt-rgb), 0.13), rgba(var(--sink), 0.66) 72%);}
 .nw-card__img{width: 100%; height: 100%; object-fit: cover;}
+/* THE BOX FOLLOWS THE PICTURE WHEN THERE IS ONE.
+
+   16/10 is the shape the crest plate was composed for. A drawn share card is
+   1200x630, and object-fit: cover cropped 16% off its width - which is not a
+   neutral trim, because the card puts the competition label at the far left
+   and the club mark at the far right, so both went. The plate keeps 16/10;
+   only a real picture changes the shape. */
+.nw-card__top.has-img{aspect-ratio: 1200 / 630;}
+.nw-cover.has-img{aspect-ratio: 1200 / 630;}
 .nw-card__crest{width: clamp(52px, 6vw, 76px); height: auto; opacity: 0.9;}
 .nw-card__cat{position: absolute; top: 14px; left: 16px;
   font-family: var(--ui); font-size: 9px; font-weight: 700;

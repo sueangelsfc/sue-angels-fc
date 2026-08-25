@@ -105,8 +105,27 @@ const reportEntries = (d) => (d.played || [])
        heading is dropped because the card draws its own title from the
        scoreline. */
     lede: reportText(m).replace(/^#+[^\n]*\n+/, ''),
+    /* A report's stored cover lives on the match record, not beside it, so it
+       is lifted here and the card can ask one question of both shapes. */
+    cover: (m.detail || {}).cover || '',
     match: m,
   }));
+
+/* THE CARD THE BUILD ALREADY DREW.
+
+   43 of these are committed under assets/covers and every one of them was
+   being used as a share image and shown nowhere on the site. A report's card
+   drew a bare scoreline on an empty plate while a picture of both badges, the
+   score, the competition and the date sat on disk beside it.
+
+   Order is the same three states the dashboard counts and for the same
+   reason: a real photograph or a card drawn in the panel is STORED and always
+   wins, the build's card is DRAWN, and neither means the plate. A match
+   published from the panel has no drawn card until somebody runs
+   `npm run covers`, so the plate has to remain rather than leaving a hole. */
+const drawnFor = (d, a) => (d.drawnCoverSrc
+  ? d.drawnCoverSrc(a.isReport ? a.match.id : `a-${articleSlug(a)}`)
+  : '');
 
 export function news(d) {
   const items = sorted([...(d.articles || []), ...reportEntries(d)]);
@@ -119,14 +138,29 @@ export function news(d) {
     const href = a.isReport ? a.href : `/news/${articleSlug(a)}.html`;
     return `<li class="nw-card${cls ? ` ${cls}` : ''}${a.isReport ? ' is-report' : ''}" data-cat="${attr(slugify(a.category || 'news'))}">
             <a class="nw-card__link" href="${attr(href)}">
-              <span class="nw-card__top">
-                <span class="nw-card__cat">${esc(catLabel(a.category))}</span>
-                ${a.isReport
-    ? `<span class="nw-card__score"><b>${esc(a.match.scoreline || 'v')}</b><i>${esc(a.match.competition)}${a.match.round ? ` · ${esc(a.match.round)}` : ''}</i></span>`
-    : a.cover && a.cover !== 'None'
-      ? `<img class="nw-card__img" src="${attr(a.cover)}" alt="" width="640" height="400" loading="lazy" decoding="async" />`
-      : coverPlate(a, false)}
-                <span class="nw-card__date">${esc(fmtDate(a.date))}</span>
+              ${(() => {
+    /* THE DRAWN CARD ALREADY CARRIES THE CHIP AND THE DATE.
+
+       It is composed with the category top-left and the date bottom-left, in
+       the same two corners this card overlays its own - so laying them on top
+       printed each one twice, a few pixels apart, which reads as a rendering
+       fault rather than a label.
+
+       A STORED photograph carries neither, so it keeps both. The distinction
+       is what the picture IS, not whether there is one. */
+    const stored = a.cover && a.cover !== 'None' ? a.cover : '';
+    const drawn = stored ? '' : drawnFor(d, a);
+    const src = stored || drawn;
+    const body = src
+      ? `<img class="nw-card__img" src="${attr(src)}" alt="" width="1200" height="630" loading="lazy" decoding="async" />`
+      : a.isReport
+        ? `<span class="nw-card__score"><b>${esc(a.match.scoreline || 'v')}</b><i>${esc(a.match.competition)}${a.match.round ? ` · ${esc(a.match.round)}` : ''}</i></span>`
+        : coverPlate(a, false);
+    return `<span class="nw-card__top${src ? ' has-img' : ''}">
+                ${drawn ? '' : `<span class="nw-card__cat">${esc(catLabel(a.category))}</span>`}
+                ${body}
+                ${drawn ? '' : `<span class="nw-card__date">${esc(fmtDate(a.date))}</span>`}`;
+  })()}
               </span>
               <span class="nw-card__body">
                 <b class="nw-card__title">${esc(a.title)}</b>
@@ -212,7 +246,14 @@ export function newsArticle(a, d) {
         <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> ${esc(catLabel(a.category))}</p>
         <h1 class="nw-art__title" id="na-h">${esc(a.title)}</h1>
         <p class="nw-art__meta">${esc(fmtDate(a.date, { long: true }))} · ${esc(words)} min read${a.author ? ` · ${esc(a.author)}` : ''}</p>
-        <div class="nw-cover">${coverPlate(a, true)}</div>
+        <div class="nw-cover${(a.cover && a.cover !== 'None') || drawnFor(d, a) ? ' has-img' : ''}">${(() => {
+    /* Same three states as the card, and eager because this one is the
+       page's own hero rather than something below the fold. */
+    const src = (a.cover && a.cover !== 'None') ? a.cover : drawnFor(d, a);
+    return src
+      ? `<img class="nw-cover__img" src="${attr(src)}" alt="" width="1200" height="630" fetchpriority="high" decoding="async" />`
+      : coverPlate(a, true);
+  })()}</div>
       </div>
     </section>`;
 

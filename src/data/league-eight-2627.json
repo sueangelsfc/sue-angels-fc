@@ -1,5 +1,12 @@
 {
   "_source": "FA Full-Time, Southern Sunday Football League, League Eight 26/27. league=3545957 · season 2026-27=709965053 · division League Eight=879497042. Table and club list read 25 August 2026. These ids were recorded nowhere before, which is why the division had to be re-found by hand each time it was checked.",
+  "_fulltimeNote": "The four ids FA Full-Time needs to address this division. They were prose in _source above and are fields now, because the site builds live links out of them: a number quoted in a sentence is a number nothing can use. Changing division or season is a change to these four values and to nothing else.",
+  "fulltime": {
+    "league": "3545957",
+    "season": "709965053",
+    "division": "879497042",
+    "fixtureGroup": "1_383208413"
+  },
   "_note": "The division Sue's Angels were promoted into. No matches have been played, so every figure is zero and FA Full-Time lists the clubs alphabetically rather than by position. The page says so rather than presenting an alphabetical list as a standing.\n\nNINE CLUBS, NOT TEN. Tyne & Thames FC were listed here and are not in the division: they are absent from Full-Time's League Eight table, from its club and team filters, and from every fixture published. They are not in League Six, Seven or Nine either, so they have left the league rather than been placed elsewhere in it. The site was naming them as a confirmed 26/27 opponent on the league page.\n\nNINE CLUBS IS NOT EIGHTEEN MATCHES. A ten-club double round robin is 18 games, which is what the club played to win League Ten; nine clubs is 16. Nothing here derives a total - the list is club names only, and every figure the site publishes about a season is counted from match records - but the difference is the sort of thing a reader assumes, so it is written down.",
   "season": "26/27",
   "division": "League Eight",

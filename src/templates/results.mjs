@@ -436,9 +436,31 @@ function matchesPage(d, mode) {
 
   const isFixtures = mode === 'fixtures';
 
+  /* THE LEAGUE'S OWN LIST, LIVE. What this page shows is what the club holds:
+     a fixture reaches it when somebody enters it in the panel and publishes,
+     and the league can move a kick-off or call a game off in between. So the
+     league's own page for the division is one click away, on the page where
+     somebody is actually looking for a date.
+
+     Drawn only where there is a division to link to - `d.fulltime` is null
+     when no ids are on record - and only where the league is the authority:
+     the club's own record is the authority for a cup tie or a friendly, and
+     Full-Time's division page carries neither. */
+  const ft = d.fulltime;
+  const liveBand = ft ? `<section class="sec mt-live">
+      <div class="wrap">
+        <p class="mt-live__p">${esc(isFixtures
+    ? 'Cup ties and friendlies are the club’s own record. League dates and kick-offs are the league’s, and it can change them:'
+    : 'League results across the division are the league’s own record:')}
+          <a class="mt-live__a" href="${attr(isFixtures ? ft.fixtures : ft.results)}" rel="noopener noreferrer" target="_blank">${esc(
+    isFixtures ? 'the division’s fixture list on FA Full-Time' : 'the division’s results on FA Full-Time')}<span class="sr-only">, opens in a new tab</span></a>.</p>
+      </div>
+    </section>` : '';
+
   return {
     body: siteHeader(isFixtures ? '/fixtures.html' : '/results.html')
       + (isFixtures ? fixHero + fixBand : hero + recordBand + awaitingBand + listBand)
+      + liveBand
       + sourceNote(['fulltime', 'surreyfa'])
       + ctaBand,
     bodyClass: `is-home is-sub is-matches${isFixtures ? ' is-fixtures' : ''}`,

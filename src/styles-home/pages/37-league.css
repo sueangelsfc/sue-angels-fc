@@ -145,6 +145,12 @@
 .lg-source{padding-top: 0 !important;}
 .lg-source__p{max-width: 78ch; font-size: 13px; line-height: 1.75; color: var(--ink-3);}
 .lg-source__p a{color: var(--volt-text); text-decoration: underline; text-underline-offset: 3px;}
+/* The league's own live pages. Reuses .lg-chip rather than inventing a
+   near-identical pill: these sit under the same prose as the tab chips above
+   and reading as a different kind of control would imply they do a different
+   kind of thing. Only the top margin is tightened, because .lg-chiprow is
+   spaced to follow a heading and here it follows a paragraph. */
+.lg-source__live{margin-top: clamp(14px, 1.8vw, 18px);}
 
 /* ---- Responsive ---------------------------------------------------------- */
 @media (max-width: 720px){

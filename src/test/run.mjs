@@ -814,6 +814,78 @@ for (const f of shipped) {
     }
   }
 
+  /* THE LEAGUE'S OWN PAGES ARE LINKED, AND THE LINKS ARE REAL.
+
+     The one Full-Time link on the site pointed at fulltime.thefa.com, which
+     is a search box: a citation nobody can follow is barely a citation. These
+     are deep links into this exact division, built from four recorded ids.
+
+     Checked by REBUILDING the URL from the ids rather than by matching a
+     pattern, because the failure that matters here is not a missing link, it
+     is a link that goes to the wrong division - which looks identical on the
+     page and lands the reader in somebody else's league. */
+  {
+    const { fulltimeLinks } = await import(path.join(ROOT, 'src', 'lib', 'fulltime.mjs'));
+    const ids = JSON.parse(fs.readFileSync(
+      path.join(ROOT, 'src', 'data', 'league-eight-2627.json'), 'utf8')).fulltime;
+    check('the division records the ids Full-Time needs to address it',
+      !!(ids && ids.league && ids.season && ids.division),
+      'a page cannot link into a division it cannot name');
+
+    const want = fulltimeLinks(ids) || {};
+    const unesc2 = (x) => x.replace(/&amp;/g, '&');
+    const seen = {};
+    for (const [f, page] of [['league.html', 'league'], ['fixtures.html', 'fixtures'],
+      ['results.html', 'results']]) {
+      const h = fs.readFileSync(path.join(ROOT, f), 'utf8');
+      seen[page] = [...h.matchAll(/href="(https:\/\/fulltime\.thefa\.com\/[^"]+)"/g)]
+        .map((m) => unesc2(m[1]));
+    }
+    const known = new Set(Object.values(want));
+    const stray = Object.entries(seen).flatMap(([pg, us]) =>
+      us.filter((u) => !known.has(u)).map((u) => `${pg}: ${u}`));
+    check('every Full-Time link points at this division and no other',
+      stray.length === 0, stray.slice(0, 3).join(' | '));
+
+    check('the league page links the table, the fixtures and the scorers',
+      ['table', 'fixtures', 'scorers'].every((k) => seen.league.includes(want[k])),
+      `league.html has ${seen.league.length}`);
+    check('the fixtures page links the division fixture list',
+      seen.fixtures.includes(want.fixtures));
+    check('the results page links the division results',
+      seen.results.includes(want.results));
+
+    /* The bare fulltime.thefa.com link is NOT a fault and is deliberately not
+       asserted away. sourceNote() names the organisation on eight pages as
+       provenance - "checked against FA Full-Time" - and that note spans every
+       season and both divisions the club has played in, including 25/26 League
+       Ten, whose Full-Time ids are not on record. Naming the body is right
+       there; a deep link into next season's division would be wrong.
+
+       What must hold is that the three pages ABOUT this division carry the
+       division's own pages, which is asserted above, and that no deep link
+       goes anywhere but this division, which is asserted below. */
+    const deep = [];
+    for (const f of htmlFiles) {
+      const h = fs.readFileSync(path.join(ROOT, f), 'utf8');
+      for (const m of h.matchAll(/href="(https:\/\/fulltime\.thefa\.com\/[^"]*\?[^"]+)"/g)) {
+        const u = unesc2(m[1]);
+        if (!known.has(u)) deep.push(`${f}: ${u.slice(0, 60)}`);
+      }
+    }
+    check('no page deep-links into a division that is not this one',
+      deep.length === 0, deep.slice(0, 3).join(' | '));
+
+    /* Off-site links open in a new tab and say so to a screen reader. */
+    for (const [f] of [['league.html'], ['fixtures.html'], ['results.html']]) {
+      const h = fs.readFileSync(path.join(ROOT, f), 'utf8');
+      const tags = [...h.matchAll(/<a[^>]*fulltime\.thefa\.com[^>]*>/g)].map((m) => m[0]);
+      check(`${f} opens Full-Time safely in a new tab`,
+        tags.length > 0 && tags.every((t) => /target="_blank"/.test(t) && /rel="[^"]*noopener/.test(t)),
+        `${tags.length} links`);
+    }
+  }
+
   /* A DRAWN COVER IS SHOWN, NOT ONLY SHARED. All 43 were used as og:image and
      appeared nowhere on the site: a report card drew a bare scoreline on an
      empty plate while a picture of both badges and the score sat on disk

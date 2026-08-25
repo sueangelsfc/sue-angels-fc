@@ -196,3 +196,10 @@ html.js .mt[hidden]{display: none;}
 .mt-lede{margin: clamp(12px, 1.8vw, 18px) 0 clamp(16px, 2vw, 22px); max-width: 60ch;
   font-size: 15px; line-height: 1.7; color: var(--ink-3);}
 .mt-awaiting .mt{opacity: 0.86;}
+
+/* ---- The league's own page, live ----------------------------------------
+   Same weight and colour as the league page's source note, because it is the
+   same kind of sentence: this is transcribed, here is where it came from. */
+.mt-live{padding-top: 0 !important;}
+.mt-live__p{max-width: 78ch; font-size: 13px; line-height: 1.75; color: var(--ink-3);}
+.mt-live__a{color: var(--volt-text); text-decoration: underline; text-underline-offset: 3px;}

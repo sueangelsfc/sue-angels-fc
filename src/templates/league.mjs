@@ -374,14 +374,36 @@ export function league(d) {
     </section>` : '';
 
   /* ================= SOURCE ================= */
+  /* GO AND CHECK IT. Everything above is transcribed, and the one Full-Time
+     link on the site pointed at fulltime.thefa.com, which is a search box: a
+     citation nobody can follow is barely a citation. These are the league's
+     own live pages for this exact division, built from the four ids in
+     src/data/league-eight-2627.json rather than written out.
+
+     `d.fulltime` is null when a division has no ids on record, and then the
+     row is not drawn and the prose falls back to naming Full-Time without
+     pretending to link into it. A half-built query lands a reader in somebody
+     else's league, which is worse than no link because it looks like it
+     worked. */
+  const ft = d.fulltime;
+  const liveRow = ft ? `<div class="lg-chiprow lg-source__live rv">
+          ${[
+    ['table', 'The table, live'],
+    ['fixtures', 'Fixtures'],
+    ['scorers', 'Leading scorers'],
+  ].map(([key, label]) => `<a class="lg-chip" href="${attr(ft[key])}" rel="noopener noreferrer" target="_blank">${esc(label)}<span class="sr-only"> on FA Full-Time, opens in a new tab</span></a>`).join('\n          ')}
+        </div>` : '';
+
   const sourceBand = `<section class="sec lg-source">
       <div class="wrap">
         <p class="lg-source__p">Table, division results and player charts on this page are the
           league's own record, captured from
-          <a href="${FULLTIME}" rel="noopener" target="_blank">FA Full-Time</a>, the official
+          <a href="${attr(ft ? ft.table : FULLTIME)}" rel="noopener" target="_blank">FA Full-Time</a>, the official
           record for the ${esc(CLUB.league)}. They are kept separate from ${esc(CLUB.short)}'
           match data, which is what every other page on this site is built from, and the two
-          count some things differently.</p>
+          count some things differently.${ft ? ` What is on this page is a snapshot; these
+          are ${esc(next.division || d.divisionOf(d.nextSeason))}'s own pages, updated by the league.` : ''}</p>
+        ${liveRow}
       </div>
     </section>`;
 

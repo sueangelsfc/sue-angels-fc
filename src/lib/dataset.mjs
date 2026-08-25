@@ -11,6 +11,7 @@ import { readStatusRecord, statusIn, statusLabelIn, isPlaying, joinedAfter, sign
   statusDetail } from './squad-status.mjs';
 import { houseRecord } from './prose.mjs';
 import { partnersFrom } from './partners.mjs';
+import { fulltimeLinks } from './fulltime.mjs';
 import { normaliseMatch, normaliseTable, playerStats, slugify, isUs, seasonOf, toISO, isLeague, isCup,
   isCompetitive, isFriendly, figuresSeason, tableSeasonOf,
 } from './stats.mjs';
@@ -833,6 +834,10 @@ export function buildDataset() {
     const played = competitive.some((m) => m.season === forSeason && isLeague(m));
     return { ...t, division: t.division || divisionOf(forSeason), started: t.started || played };
   })();
+  /* The league's own pages for this division, built from the ids recorded
+     beside its club list. Null when there are none, and every caller is
+     written to draw nothing rather than an empty link. */
+  const fulltime = fulltimeLinks(nextDivisionTable.fulltime);
   const leagueResults = (ps.LEAGUE_RESULTS || []);
 
   /* ---- Articles ---- */
@@ -1230,6 +1235,7 @@ export function buildDataset() {
     statusLabelIn: (num, season) => statusLabelIn(statusRecord, num, season, statusOpts),
     isPlayingStatus: isPlaying,
     coaches, table, leagueScorers, leagueScorersByComp, nextDivisionTable, leagueResults,
+    fulltime,
     articles, recognition, galleries, playerPhotos, donate, hero, homeLayout, trialists,
     photoFor, photoSeasons, shotFor, sponsorships, partners,
     seasons, seasonInfo, titles, lastTitle, competitions, knownClubs, badges,

@@ -29,7 +29,7 @@ src/
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        3,441-check suite against the generated output
+  test/run.mjs        3,445-check suite against the generated output
 ```
 
 **Run `npm run build` after any change under `src/`.** Nothing in `src/` is served; only the generated root files are.
@@ -366,7 +366,7 @@ Read leads in **Control panel → Inbox**; RLS blocks anonymous reads, so signin
 ```bash
 npm run build     # regenerate every route (run after any src/ change)
 npm run verify    # assert derived stats against the published league table
-npm test          # 3,441 checks against the generated output
+npm test          # 3,445 checks against the generated output
 npm run serve     # local preview on :4321
 ```
 
@@ -458,5 +458,7 @@ Four rules, each of them written after the failure it prevents. `harden-site` au
 - **16 of 36 players have no photograph, and the gallery cannot currently supply one.** All 624 photo tags are a bare name, which means "somewhere in this frame", and none is marked as the **subject**. Only 5 of the 16 are tagged at all, and every frame is one of two useless kinds: unambiguous but a wide match shot where the player is about forty pixels tall among five team-mates, or close enough to crop but carrying two names with nothing saying which face is which. Cropping one of those is how a player ends up wearing somebody else's face, which has happened here. The machinery is right and the data is not: **Control panel → Photo tagging → mark a subject** promotes that frame to the front of Player photographs → From the gallery, which now sorts by subject, then by fewest other people tagged, and says which it is showing.
 - **No photograph of Susan Anne Martin exists in the repo.** The cause page opens on the crest. If the family can clear a photo it belongs there.
 - **An appearance is a start, or a substitute the record can prove was on the pitch.** It used to be starts only, and the reasoning was sound while the evidence did not exist. Two things supply it now: the bench carries `on`, and where nobody has ticked it the match record often proves it anyway. **A man who scored played, whatever the sheet says about him.** That gap published as **William Clark, seven goals from two appearances** — he came off the bench for five of them. Ten players moved, every one on evidence. A name on the bench with nothing beside it is still not an appearance, which is the part of the old rule that was right, and the suite's check for it is the negative one. Somebody credited in a match he is on no sheet for gets nothing either: that is a broken record, and three are in the archive.
+
+  **The label had to move with the figure.** `playerProfile` returned `starts: played.length` and `played` stopped meaning starts, so eleven appearances published under the word **Starts**. It returns both now, they differ for ten players, and the squad cards, the stats table and the player pages all say *Appearances*. Three pages carried a note explaining that starts were shown *because* the engine could not count substitutes; that reason is gone and so are the notes. The suite fails any of those pages that prints the word Starts, because with ten players it would now be a false statement rather than a narrow one.
 - Videos page links out to YouTube; per-video embedding awaits catalogued rows.
 - **The league table is transcribed, and now checked against the results it is made of.** It never needed fetching: the site already holds all ninety division matches because it prints them under "Around the league", and a ten-club double round robin is exactly ninety. `deriveTable()` in `stats.mjs` builds the table from them and `npm run verify` asserts the two agree, so a mistyped figure or a wrong division result stops the build. That is the loud failure the retired `TableSync.jsx` was meant to provide, with no third-party proxy and no hard-coded fallback in the path. **Walkovers are the whole difficulty**: seven of the ninety were awarded, and counting them as scoreless draws moved six rows out of ten and cost the club six points. Where two clubs are level on every figure (Old Freemen's and Shepherd's Tuesday both finished P18 W5 D2 L11, 28-36, 17) the order is the league's to decide, so the check compares club by club and only asserts that the published order makes sense of its own figures. A live 26/27 table still has to be typed in as the season goes: Full-Time's league id is recorded nowhere, and the season starts 6 September.

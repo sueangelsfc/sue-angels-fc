@@ -2321,6 +2321,25 @@ for (const [f, kb] of Object.entries({
     }
     check('every player page agrees with itself about how many times he played',
       disagreed.length === 0, disagreed.join(' · '));
+
+    /* THE FIGURE AND ITS LABEL. playerProfile returned `starts: played.length`,
+       and `played` stopped meaning starts, so William Clark's eleven
+       appearances published under the word "Starts". Both figures are
+       returned now and they are different numbers for ten players, so a page
+       that has picked up the wrong one shows it. */
+    const clark = dP.players.find((p) => p.name === 'William Clark');
+    const cp = playerProfile(clark, dP.matches, dP.players);
+    check('a profile reports starts and appearances separately',
+      cp.starts !== cp.apps && cp.starts === clark.starts && cp.apps === clark.apps,
+      `starts ${cp.starts}, apps ${cp.apps}, row ${clark.starts}/${clark.apps}`);
+    /* Ten players have more appearances than starts, so any page still
+       calling the appearance figure a start is now saying something false. */
+    for (const f of ['players/william-clark.html', 'squad.html', 'stats.html']) {
+      const html = fs.readFileSync(path.join(ROOT, f), 'utf8');
+      check(`${f} does not call an appearance a start`,
+        !/\bStarts\b/.test(html),
+        'the page prints starts+substitute appearances under the word Starts');
+    }
   }
 
   /* CARRYING AN OLD RECORD'S ASSISTS FORWARD

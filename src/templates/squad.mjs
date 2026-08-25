@@ -156,18 +156,23 @@ export function squad(d) {
   const badgesByView = new Map(VIEWS.map((v) => [v, badgesFor(v)]));
   const badges = badgesByView.get(VIEWS[0]) || new Map();
 
-  /* "Starts", not "Apps". The engine counts an appearance only when a player
-     is named in the eleven, because Sunday-league returns do not record who
-     actually came on. Calling that figure "apps" produced cards like 2 apps
-     and 7 goals, which reads as broken data rather than as a substitute who
-     scored: William Clark started twice and was on the bench fifteen times.
-     Bench is shown alongside instead of folded in. */
+  /* "Apps" AGAIN, and this time it is true. This used to say "Starts, not
+     Apps", because the engine counted an appearance only when a player was
+     named in the eleven and calling that figure apps produced cards reading
+     2 apps and 7 goals - William Clark, who started twice and came off the
+     bench for nine more.
+
+     That is the fault, not the label. An appearance is a start or a
+     substitute the record can PROVE was on the pitch, so Clark's card reads
+     11 and 7 and the card is right. Unused bench outings keep their own
+     column rather than being folded in, which is the part the old note had
+     correct. */
   const sixOf = (p, view) => {
     const s = statsIn(view, p.num);
     return p.gk
-      ? [s.starts || 0, s.cleanSheets || 0, s.motm || 0,
+      ? [s.apps || 0, s.cleanSheets || 0, s.motm || 0,
         s.subApps || 0, s.cleanSheets || 0, s.motm || 0]
-      : [s.starts || 0, s.goals || 0, s.assists || 0,
+      : [s.apps || 0, s.goals || 0, s.assists || 0,
         s.subApps || 0, (s.goals || 0) + (s.assists || 0), s.motm || 0];
   };
 
@@ -176,8 +181,8 @@ export function squad(d) {
     const shot = shotFor(p.num, d, season);
     const inSeasons = (p.seasons || [season]).join(' ');
     const keys = p.gk
-      ? ['Starts', 'Clean', 'MOTM', 'Bench', 'Clean sheets', 'MOTM']
-      : ['Starts', 'Goals', 'Assists', 'Bench', 'Involved', 'MOTM'];
+      ? ['Apps', 'Clean', 'MOTM', 'Bench', 'Clean sheets', 'MOTM']
+      : ['Apps', 'Goals', 'Assists', 'Bench', 'Involved', 'MOTM'];
     const six = sixOf(p, VIEWS[0]);
     const heads = keys.slice(0, 3).map((k, n) => ({ v: six[n], k }));
     const extra = keys.slice(3).map((k, n) => ({ v: six[n + 3], k }));
@@ -401,9 +406,9 @@ export function squad(d) {
         <div class="sq-groups rv">
         ${grid(first)}
         </div>
-        <p class="sq-note">Starts are counted from the eleven named on each team sheet. Sunday-league
-          returns do not record who came off the bench, so substitute appearances are shown
-          separately rather than folded into a total we cannot verify.</p>
+        <p class="sq-note">An appearance is a start, or a substitute the match record shows was
+          on the pitch. A name on the bench with nothing beside it is not an appearance and is
+          counted separately, because Sunday-league returns do not always record who came on.</p>
       </div>
     </section>`;
 

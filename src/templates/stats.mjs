@@ -13,10 +13,11 @@
    document is complete and correct with the script blocked, and gains the
    filter when it runs.
 
-   "Starts", not "Apps", as everywhere else: the engine counts an appearance
-   only when a player is named in the eleven, because Sunday-league returns do
-   not record who came off the bench. Bench outings get their own column
-   rather than being folded into a total nobody can verify.
+   "Apps" again, and this time it is true. It said "Starts, not Apps" while
+   the engine counted an appearance only from the eleven; an appearance is now
+   a start or a substitute the record can prove was on the pitch. Unused bench
+   outings keep their own column rather than being folded into a total nobody
+   can verify, which is the part of that note that was right.
    ========================================================================== */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -85,7 +86,7 @@ export function stats(d) {
     };
   });
 
-  const figures = (r) => [r.starts || 0, r.subApps || 0, r.goals || 0, r.assists || 0,
+  const figures = (r) => [r.apps || 0, r.subApps || 0, r.goals || 0, r.assists || 0,
     (r.goals || 0) + (r.assists || 0), r.cleanSheets || 0, r.motm || 0];
 
   /* Anyone who was on a team sheet at all. A player with no involvement of
@@ -95,7 +96,7 @@ export function stats(d) {
     .filter(({ r }) => (r.starts || 0) + (r.subApps || 0) > 0)
     .sort((a, b) => ((b.r.goals || 0) + (b.r.assists || 0)) - ((a.r.goals || 0) + (a.r.assists || 0))
       || (b.r.goals || 0) - (a.r.goals || 0)
-      || (b.r.starts || 0) - (a.r.starts || 0));
+      || (b.r.apps || 0) - (a.r.apps || 0));
 
   const clubGoals = rows.reduce((n, x) => n + (x.r.goals || 0), 0);
   const clubAssists = rows.reduce((n, x) => n + (x.r.assists || 0), 0);
@@ -107,7 +108,7 @@ export function stats(d) {
     .filter(({ r }) => (r.starts || 0) + (r.subApps || 0) > 0)
     .sort((a, b) => ((b.r.goals || 0) + (b.r.assists || 0)) - ((a.r.goals || 0) + (a.r.assists || 0))
       || (b.r.goals || 0) - (a.r.goals || 0)
-      || (b.r.starts || 0) - (a.r.starts || 0));
+      || (b.r.apps || 0) - (a.r.apps || 0));
 
   /* THE VIEWS. Every season the club has had, newest last, plus its whole
      history. "All seasons" is not a season and never says "not started": it
@@ -225,7 +226,7 @@ export function stats(d) {
         label: w.cats.map((c) => c.label).join(' · '),
         sub: w.cats.length > 1
           ? w.cats.map((c) => `${c.v} ${c.unit}`).join(' and ')
-          : `${lead.v} ${lead.unit} in ${w.r.starts} start${w.r.starts === 1 ? '' : 's'}`,
+          : `${lead.v} ${lead.unit} in ${w.r.apps} appearance${w.r.apps === 1 ? '' : 's'}`,
         extra: w.cats.slice(1),
       };
     }).sort((a, b) => b.cats.length - a.cats.length).concat(tieCards);
@@ -266,7 +267,7 @@ export function stats(d) {
 
   /* ================= 02 THE TABLE ================= */
   const COLS = [
-    { k: 'starts', label: 'St', full: 'Starts', i: 0 },
+    { k: 'apps', label: 'Ap', full: 'Appearances', i: 0 },
     { k: 'bench', label: 'Bn', full: 'On the bench', i: 1 },
     { k: 'goals', label: 'G', full: 'Goals', i: 2 },
     { k: 'assists', label: 'A', full: 'Assists', i: 3 },
@@ -379,7 +380,7 @@ export function stats(d) {
                     <b>${esc(p.last)}</b>
                   </a>
                 </th>
-                <td>${esc(r.starts || 0)}</td>
+                <td>${esc(r.apps || 0)}</td>
                 <td>${esc(r.subApps || 0)}</td>
                 <td>${esc(r.goals || 0)}</td>
                 <td>${esc(r.assists || 0)}</td>
@@ -395,9 +396,9 @@ export function stats(d) {
           </table>
           <p class="st-empty" data-stats-empty hidden><b data-empty-msg>No player matches that filter.</b></p>
         </div>
-        <p class="st-note">Starts are the eleven named on each team sheet. Sunday-league returns do
-          not record who came off the bench, so bench outings are counted separately rather than
-          folded into an appearance total we cannot verify.</p>
+        <p class="st-note">An appearance is a start, or a substitute the match record shows was on
+          the pitch. Sunday-league returns do not always record who came on, so a name on the bench
+          with nothing beside it is counted in the bench column and not as an appearance.</p>
       </div>
     </section>`;
 

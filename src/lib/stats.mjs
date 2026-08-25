@@ -913,7 +913,13 @@ export function playerProfile(player, matches, squad) {
   };
 
   return {
-    starts: played.length,
+    /* TWO FIGURES, BECAUSE THEY ARE TWO FACTS. `played` used to be starts and
+       this key was named for it; `played` now includes substitute
+       appearances, so returning it as `starts` published William Clark's
+       eleven appearances under the word "Starts". Both are here and each page
+       says which it means. */
+    apps: played.length,
+    starts: mine.filter((r) => r.role === 'start').length,
     bench,
     goals,
     assists,

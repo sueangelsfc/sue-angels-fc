@@ -257,8 +257,8 @@ export function playerPage(p, d) {
             <i>${esc(p.first)}</i>
           </h1>
           ${seasonSponsor}
-          <p class="pf-hero__lede">${esc(pr.starts)} ${pr.starts === 1 ? 'start' : 'starts'} for
-            ${esc(CLUB.name)} in ${esc(d.currentSeason)}${pr.bench ? `, plus ${esc(pr.bench)} on the bench` : ''}.
+          <p class="pf-hero__lede">${esc(pr.apps)} ${pr.apps === 1 ? 'appearance' : 'appearances'} for
+            ${esc(CLUB.name)} in ${esc(d.currentSeason)}${pr.starts < pr.apps ? `, ${esc(pr.starts)} from the start` : ''}${pr.bench ? `, plus ${esc(pr.bench)} unused` : ''}.
             ${gk
     ? `${esc(pr.cleanSheets)} clean ${pr.cleanSheets === 1 ? 'sheet' : 'sheets'} and ${esc(pr.conceded)} conceded.`
     : `${esc(pr.goals)} ${pr.goals === 1 ? 'goal' : 'goals'} and ${esc(pr.assists)} ${pr.assists === 1 ? 'assist' : 'assists'}.`}</p>
@@ -291,7 +291,7 @@ export function playerPage(p, d) {
 
     return `<figure class="pf-plot rv" data-plot>
               <svg viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="${attr(key)}-t" preserveAspectRatio="none">
-                <title id="${attr(key)}-t">Running total of ${esc(unit)}, reaching ${esc(top)} across ${esc(series.length)} starts</title>
+                <title id="${attr(key)}-t">Running total of ${esc(unit)}, reaching ${esc(top)} across ${esc(series.length)} matches</title>
                 <defs>
                   <linearGradient id="${attr(key)}-g" x1="0" y1="0" x2="0" y2="1">
                     <!-- The gradient runs over the shape's own box, so a
@@ -348,19 +348,19 @@ export function playerPage(p, d) {
      code renders every season's panel. */
 
   const tilesFor = (x) => (gk ? [
-    { v: x.starts, k: 'Starts', sub: `of ${x.teamGames} played`, pct: x.teamGames ? Math.round((x.starts / x.teamGames) * 100) : 0 },
+    { v: x.apps, k: 'Appearances', sub: `of ${x.teamGames} played${x.starts < x.apps ? `, ${x.starts} from the start` : ''}`, pct: x.teamGames ? Math.round((x.apps / x.teamGames) * 100) : 0 },
     { v: x.cleanSheets, k: 'Clean sheets', sub: `of ${x.onRecord} on record`, pct: x.cleanSheetPct },
     { v: x.conceded, k: 'Conceded' },
     { v: x.concededPerGame, k: 'Conceded a game' },
     { v: x.motm, k: 'Man of the Match' },
-    { v: `${x.winPct}%`, k: 'Won when starting', pct: x.winPct },
+    { v: `${x.winPct}%`, k: 'Won when playing', pct: x.winPct },
   ] : [
-    { v: x.starts, k: 'Starts', sub: `of ${x.teamGames} played`, pct: x.teamGames ? Math.round((x.starts / x.teamGames) * 100) : 0 },
-    { v: x.bench, k: 'On the bench' },
+    { v: x.apps, k: 'Appearances', sub: `of ${x.teamGames} played${x.starts < x.apps ? `, ${x.starts} from the start` : ''}`, pct: x.teamGames ? Math.round((x.apps / x.teamGames) * 100) : 0 },
+    { v: x.bench, k: 'Unused sub' },
     { v: x.goals, k: 'Goals' },
     { v: x.assists, k: 'Assists' },
-    { v: x.perGame, k: 'Goals + assists a start' },
-    { v: `${x.winPct}%`, k: 'Won when starting', pct: x.winPct },
+    { v: x.perGame, k: 'Goals + assists a game' },
+    { v: `${x.winPct}%`, k: 'Won when playing', pct: x.winPct },
   ]);
 
   const barsFor = (x) => (gk ? [
@@ -398,7 +398,7 @@ export function playerPage(p, d) {
       return `<div class="pf-empty">
             <p class="pf-empty__k">${esc(name)}</p>
             <p class="pf-empty__t">No competitive match yet.</p>
-            <p class="pf-empty__b">${esc(f.starts === 1 ? 'One friendly' : `${f.starts} friendlies`)}
+            <p class="pf-empty__b">${esc(f.apps === 1 ? 'One friendly' : `${f.apps} friendlies`)}
               in ${esc(name)}${did ? `, ${esc(did)}` : ''}. ${esc(FRIENDLY_NOTE_SHORT)}
               The figures on this page fill in once the league season starts.</p>
           </div>`;
@@ -413,14 +413,14 @@ export function playerPage(p, d) {
   };
 
   const seasonPanel = (sn, x, idx) => {
-    if (!x.starts && !x.bench) {
+    if (!x.apps && !x.bench) {
       return `<div class="pf-panel" id="pf-s-${idx}" data-season-panel="${idx}">
           ${emptyPanel(sn)}
         </div>`;
     }
     return `<div class="pf-panel" id="pf-s-${idx}" data-season-panel="${idx}">
           <section class="pf-sub" aria-labelledby="pf-n-${idx}">
-            ${rail(1, 'The season', `${sn} · ${x.starts} starts`)}
+            ${rail(1, 'The season', `${sn} · ${x.apps} ${x.apps === 1 ? 'appearance' : 'appearances'}`)}
             <h3 class="h2 rv" id="pf-n-${idx}">${esc(sn)} in <span class="volt">numbers.</span></h3>
             <ul class="pf-tiles rv">
               ${tilesFor(x).map(statTile).join('\n              ')}
@@ -428,7 +428,7 @@ export function playerPage(p, d) {
           </section>
 
           <section class="pf-sub" aria-labelledby="pf-r-${idx}">
-            ${rail(2, gk ? 'Defensive record' : 'Attacking record', `${x.starts} starts`)}
+            ${rail(2, gk ? 'Defensive record' : 'Attacking record', `${x.apps} ${x.apps === 1 ? 'appearance' : 'appearances'}`)}
             <h3 class="h2 rv" id="pf-r-${idx}">The <span class="volt">record.</span></h3>
             <div class="pf-record__grid rv">
               <ul class="pf-bars">
@@ -445,7 +445,7 @@ export function playerPage(p, d) {
           </section>
 
           ${x.timeline.length > 1 ? `<section class="pf-sub" aria-labelledby="pf-c-${idx}">
-            ${rail(3, 'Through the season', `${x.timeline.length} starts`)}
+            ${rail(3, 'Through the season', `${x.timeline.length} ${x.timeline.length === 1 ? 'match' : 'matches'}`)}
             <h3 class="h2 rv" id="pf-c-${idx}">${gk ? 'Clean sheets' : 'Goals and assists'} as they
               <span class="volt">came.</span></h3>
             ${chartFor(x, `pf-plot-${idx}`)}
@@ -460,7 +460,7 @@ export function playerPage(p, d) {
                 <thead>
                   <tr>
                     <th scope="col">Competition</th>
-                    <th scope="col"><abbr title="Starts">St</abbr></th>
+                    <th scope="col"><abbr title="Appearances">Ap</abbr></th>
                     ${gk
     ? '<th scope="col"><abbr title="Clean sheets">CS</abbr></th><th scope="col"><abbr title="Conceded">GA</abbr></th>'
     : '<th scope="col"><abbr title="Goals">G</abbr></th><th scope="col"><abbr title="Assists">A</abbr></th>'}
@@ -558,8 +558,8 @@ export function playerPage(p, d) {
   const best = (key) => Math.max(0, ...pool.map((x) => x[key] || 0));
 
   const compare = (gk
-    ? [{ key: 'cleanSheets', label: 'Clean sheets' }, { key: 'starts', label: 'Starts' }, { key: 'motm', label: 'Man of the Match' }]
-    : [{ key: 'goals', label: 'Goals' }, { key: 'assists', label: 'Assists' }, { key: 'starts', label: 'Starts' }, { key: 'motm', label: 'Man of the Match' }]
+    ? [{ key: 'cleanSheets', label: 'Clean sheets' }, { key: 'apps', label: 'Appearances' }, { key: 'motm', label: 'Man of the Match' }]
+    : [{ key: 'goals', label: 'Goals' }, { key: 'assists', label: 'Assists' }, { key: 'apps', label: 'Appearances' }, { key: 'motm', label: 'Man of the Match' }]
   ).map((m) => {
     const mineV = m.key === 'starts' ? all.starts : all[m.key] || 0;
     const b = Math.max(best(m.key), mineV, 1);

@@ -12,12 +12,17 @@
 // Until the key is set this is a harmless no-op (returns ok:false) and never
 // blocks the visitor's download.
 
+import { tooMany, esc } from './_public.js';
+
 const ALLOWED_ORIGINS = ['https://www.suesangelsfc.co.uk', 'https://suesangelsfc.co.uk'];
 
 export default async function handler(req, res) {
   const origin = req.headers.origin || '';
   if (origin && !ALLOWED_ORIGINS.includes(origin)) { res.status(403).json({ ok: false, error: 'forbidden' }); return; }
   if (req.method !== 'POST') { res.status(405).json({ ok: false, error: 'method' }); return; }
+  /* Anonymous by necessity, so a brake on a loop. See api/_public.js for
+     exactly what this is and is not. */
+  if (tooMany(req)) { res.status(429).json({ ok: false, error: 'too-many' }); return; }
 
   const KEY = process.env.RESEND_API_KEY;
   const TO = (process.env.NOTIFY_TO || 'suesangelsfc@gmail.com').split(',').map((s) => s.trim()).filter(Boolean);
@@ -34,15 +39,19 @@ export default async function handler(req, res) {
 
   const isPack = /pack/i.test(type) || source === 'sponsor-pack';
   const subject = isPack ? 'New sponsorship pack download' : 'New website enquiry';
+  /* ESCAPED, ALL OF IT. `type` and `source` are whatever was posted and were
+     going into this HTML raw; `email` passes a regular expression that
+     excludes a tag, which is a reason to be confident about `email` and no
+     reason at all to be confident about the other two. */
   const line = isPack
-    ? `<b>${email}</b> just downloaded the sponsorship pack on suesangelsfc.co.uk.`
-    : `<b>${email}</b> just sent an enquiry on suesangelsfc.co.uk.`;
+    ? `<b>${esc(email)}</b> just downloaded the sponsorship pack on suesangelsfc.co.uk.`
+    : `<b>${esc(email)}</b> just sent an enquiry on suesangelsfc.co.uk.`;
   const html = `<div style="font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#111">
     <p style="font:700 12px sans-serif;letter-spacing:.12em;text-transform:uppercase;color:#C24E12;margin:0 0 6px">Sue's Angels FC</p>
     <h2 style="margin:0 0 10px;font-size:20px">${subject}</h2>
     <p style="margin:0 0 10px">${line}</p>
-    <p style="margin:0 0 14px;color:#555;font-size:13px">Type: ${type}${source ? ' · Source: ' + source : ''}</p>
-    <p style="margin:0"><a href="mailto:${email}" style="background:#D6F23A;color:#0A1426;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:700">Reply to ${email}</a></p>
+    <p style="margin:0 0 14px;color:#555;font-size:13px">Type: ${esc(type)}${source ? ' · Source: ' + esc(source) : ''}</p>
+    <p style="margin:0"><a href="mailto:${encodeURIComponent(email)}" style="background:#D6F23A;color:#0A1426;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:700">Reply to ${esc(email)}</a></p>
   </div>`;
 
   try {

@@ -17,6 +17,8 @@
 //      capture still records every sign-up), so the form never breaks.
 // ────────────────────────────────────────────────────────────────────────────
 
+import { tooMany } from './_public.js';
+
 export default async function handler(req, res) {
   const ALLOWED_ORIGINS = [
     'https://www.suesangelsfc.co.uk',
@@ -35,6 +37,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(204).end();
   if (!originAllowed)          return res.status(403).json({ ok: false, error: 'origin' });
   if (req.method !== 'POST')   return res.status(405).json({ ok: false, error: 'post_only' });
+  if (tooMany(req))            return res.status(429).json({ ok: false, error: 'too_many' });
 
   const KEY = process.env.MAILERLITE_API_KEY;
   // Not configured yet → succeed quietly (Supabase still has the email).
@@ -44,7 +47,8 @@ export default async function handler(req, res) {
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = {}; } }
   body = body || {};
   const email = String(body.email || '').trim();
-  const name = String(body.name || '').trim();
+  /* Bounded. It was not, and it is forwarded to a third party. */
+  const name = String(body.name || '').slice(0, 120).trim();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return res.status(400).json({ ok: false, error: 'invalid_email' });
 
   const payload = { email, fields: {} };

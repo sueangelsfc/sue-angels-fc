@@ -6552,6 +6552,67 @@ let orphanClasses = new Map();
 }
 
 /* ==========================================================================
+   THE TWO ENDPOINTS A STRANGER CAN CALL
+
+   /api/publish and /api/claude ask the database whether the caller is a club
+   administrator. /api/notify-enquiry and /api/subscribe cannot: they are what
+   the forms on the public site post to, so they are anonymous by necessity,
+   and that makes them the only two places on this project where a stranger's
+   text reaches a third party the club pays for.
+
+   Both had a hole. notify-enquiry built its notification email by
+   interpolating the caller's `type` and `source` straight into HTML - only
+   `email` was validated, so a tag, a link or an onerror handler went into a
+   message the club opens in its own inbox, and truncating to 120 characters
+   is not validation. And neither throttled anything, so once RESEND_API_KEY
+   is set a loop against notify-enquiry is a mail flood aimed at the club's
+   own address, sent by a machine that never visited the site.
+   ========================================================================== */
+{
+  const api = (f) => fs.readFileSync(path.join(ROOT, 'api', f), 'utf8');
+  const PUBLIC = ['notify-enquiry.js', 'subscribe.js'];
+  const GATED = ['publish.js', 'claude.js'];
+
+  for (const f of GATED) {
+    check(`/api/${f.replace('.js', '')} asks the database who is calling`,
+      /rpc\/is_club_admin/.test(api(f)),
+      'the origin header is a filter, not a lock: it allows a request with none');
+  }
+  for (const f of PUBLIC) {
+    const src = api(f);
+    check(`/api/${f.replace('.js', '')} throttles a caller`,
+      /tooMany\(req\)/.test(src) && /429/.test(src));
+    /* Every value that came from the caller and reaches an HTML string has
+       to go through esc(). Asked of the template literals themselves: an
+       interpolation of a bare identifier inside a string carrying a tag. */
+    const htmlBits = [...src.matchAll(/`[^`]*<[a-z][^`]*`/g)].map((m) => m[0]);
+    const raw = [];
+    for (const bit of htmlBits) {
+      for (const m of bit.matchAll(/\$\{([^}]*)\}/g)) {
+        const expr = m[1].trim();
+        if (/^(esc|encodeURIComponent)\(/.test(expr)) continue;
+        /* Values this file computed itself, from its own literals. */
+        if (/^(subject|line|isPack)$/.test(expr)) continue;
+        if (/\besc\(/.test(expr)) continue;
+        raw.push(`${f}: \${${expr}}`);
+      }
+    }
+    check(`/api/${f.replace('.js', '')} escapes everything the caller sent`,
+      raw.length === 0, raw.slice(0, 3).join('   |   '));
+  }
+
+  /* No endpoint may name a key. They read process.env, and a literal that
+     looks like one is either a leak or a placeholder nobody removed. */
+  const keyish = [];
+  for (const f of [...PUBLIC, ...GATED, '_public.js']) {
+    for (const m of api(f).matchAll(/["'`](re_[A-Za-z0-9_]{10,}|sk-[A-Za-z0-9_-]{10,}|eyJ[A-Za-z0-9_.-]{30,})["'`]/g)) {
+      keyish.push(`${f}: ${m[1].slice(0, 12)}…`);
+    }
+  }
+  check('no API endpoint carries a key of its own', keyish.length === 0, keyish.join(', '));
+}
+
+/* ==========================================================================
    THE CONTENT SECURITY POLICY, IN BOTH DIRECTIONS
 
    A CSP fails silently whichever way it is wrong, and this site had it wrong

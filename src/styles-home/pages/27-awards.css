@@ -124,7 +124,7 @@
   border-color: rgba(var(--volt-rgb), 0.3); transform: translateY(-1px);}
 .aw-potm__tab.is-on{background: var(--volt); border-color: var(--volt);}
 .aw-potm__tab.is-on b{color: var(--navy);}
-.aw-potm__tab.is-on i{color: rgba(23, 26, 30, 0.72);}
+.aw-potm__tab.is-on i{color: var(--text-on-brand-2);}
 
 .aw-potm__panels{display: grid; gap: 16px; margin-top: 18px;}
 .aw-potm__panel{display: grid; gap: clamp(22px, 3vw, 44px);

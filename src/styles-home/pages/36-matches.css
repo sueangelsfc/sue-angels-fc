@@ -78,7 +78,7 @@
 .mt-chip:hover{background: rgba(var(--volt-rgb), 0.09);
   border-color: rgba(var(--volt-rgb), 0.3); transform: translateY(-1px);}
 .mt-chip.is-on{background: var(--volt); border-color: var(--volt); color: var(--text-on-brand);}
-.mt-chip.is-on span{color: rgba(26, 10, 2, 0.62);}
+.mt-chip.is-on span{color: var(--text-on-brand-2);}
 .mt-chip:focus-visible{outline: 2px solid var(--volt); outline-offset: 3px;}
 .mt-count{margin-top: 18px;
   font-family: var(--ui); font-size: 10px; font-weight: 700;

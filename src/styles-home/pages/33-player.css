@@ -352,7 +352,7 @@ html[data-theme="light"] .pf-ring circle:first-child{stroke: rgba(17, 19, 21, 0.
   border-color: rgba(var(--volt-rgb), 0.32); transform: translateY(-1px);}
 .pf-tab.is-on{background: var(--volt); border-color: var(--volt);}
 .pf-tab.is-on b{color: var(--text-on-brand);}
-.pf-tab.is-on i{color: rgba(26, 10, 2, 0.66);}
+.pf-tab.is-on i{color: var(--text-on-brand-2);}
 .pf-tab:focus-visible{outline: 2px solid var(--volt); outline-offset: 3px;}
 html.js .pf-panel[hidden]{display: none;}
 

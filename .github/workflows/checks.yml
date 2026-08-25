@@ -1,0 +1,91 @@
+# ==========================================================================
+# THE CHECKS, ON EVERY PUSH
+#
+# Until now nothing ran these except a person remembering to. The pre-push
+# hook covers a push from the laptop it is installed on, and covers nothing
+# else: a commit made in the GitHub web editor, a merge of a pull request, or
+# a push from a machine that has never run `git config core.hooksPath`.
+#
+# IT DOES NOT GATE THE DEPLOY, AND THAT IS DELIBERATE. Vercel builds from
+# `main` the moment it is pushed, and its own buildCommand already refuses to
+# publish output that is broken (`sync && build && verify && guard`). This job
+# is the wider net: the budgets, the accessibility rules, the panel render
+# suite and the browser pass, all of which are a signal to whoever is reading
+# rather than a reason to stop the club publishing a result. A failure here
+# is a red tick and an email, not a site that will not deploy.
+#
+# THE BROWSER PASS IS THE ONLY THING HERE THAT NEEDS A BROWSER, which is why
+# it is a separate job: `npm test` must stay runnable anywhere in eight
+# seconds, and a Chrome is a line of YAML here and an install on a laptop.
+# ==========================================================================
+name: Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  suite:
+    name: Build, verify, guard, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci --no-audit --no-fund
+
+      # The generator is the build. Output is committed, so the first thing
+      # worth knowing is whether the committed output still matches src/ -
+      # editing src/ without rebuilding is the easiest way to ship nothing.
+      - name: The output matches the source
+        run: |
+          npm run build
+          if ! git diff --quiet; then
+            echo "::error::Generated output is stale. Run: npm run build && git add -A"
+            git diff --stat | tail -20
+            exit 1
+          fi
+
+      - name: Derived figures reconcile with the published table
+        run: npm run verify
+
+      - name: Nothing here would ship broken
+        run: npm run guard
+
+      - name: The suite
+        run: npm test
+
+  visual:
+    name: Rendered in a browser
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci --no-audit --no-fund
+
+      # ubuntu-latest ships a Chrome, but which one and where has moved
+      # before. Asking for it explicitly is a line of YAML against a job that
+      # fails for a reason nobody can see from the log.
+      - name: A Chrome
+        uses: browser-actions/setup-chrome@v1
+        id: chrome
+        with:
+          chrome-version: stable
+
+      # The check renders the committed output, so it has to be current for
+      # the same reason the suite job rebuilds first.
+      - run: npm run build
+
+      - name: Every page family and every panel screen, rendered
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: npm run visual

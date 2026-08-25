@@ -83,6 +83,16 @@
      per channel is not a colour anybody will notice changing. */
   --error: #D45443;
   --error-bg: #D454431F;
+  /* A SECOND RED, BECAUSE ONE TOKEN WAS DOING TWO OPPOSITE JOBS.
+     --error is TEXT on a dark panel, so it has to be light enough to read
+     there. .btn--danger is a solid FILL with white on it, so it has to be
+     dark enough for white to read on it. Those pull in opposite directions
+     and --error was serving both: white on it was 4.28:1 before this file
+     touched anything and 4.08:1 after --error was correctly lifted for its
+     text job. Fixing one made the other worse, which is the tell that they
+     were never the same colour. 5.94:1 with white, and 5.26:1 through the
+     brightness(1.08) the hover applies. */
+  --error-solid: #B23A2B;
   --info: var(--brand-600);
   --info-bg: rgb(var(--brand-rgb) / 0.12);
 

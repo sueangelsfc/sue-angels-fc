@@ -121,7 +121,7 @@
 .sn-tab:hover{background: rgba(var(--volt-rgb), 0.08);
   border-color: rgba(var(--volt-rgb), 0.3);}
 .sn-tab.is-on{background: var(--volt); border-color: var(--volt); color: var(--text-on-brand);}
-.sn-tab.is-on span{color: rgba(26, 10, 2, 0.62);}
+.sn-tab.is-on span{color: var(--text-on-brand-2);}
 .sn-tab:focus-visible{outline: 2px solid var(--volt); outline-offset: 2px;}
 .sn-view[hidden]{display: none;}
 

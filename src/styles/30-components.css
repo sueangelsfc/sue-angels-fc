@@ -81,7 +81,7 @@
 .btn--quiet:hover { text-decoration: underline; text-underline-offset: 4px; }
 
 /* Danger - destructive confirmations only */
-.btn--danger { background: var(--error); color: #fff; }
+.btn--danger { background: var(--error-solid); color: #fff; }
 .btn--danger:hover { filter: brightness(1.08); }
 
 /* Loading */

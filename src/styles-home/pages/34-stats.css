@@ -105,7 +105,7 @@
 .st-chip:hover{background: rgba(var(--volt-rgb), 0.09);
   border-color: rgba(var(--volt-rgb), 0.32); transform: translateY(-1px);}
 .st-chip.is-on{background: var(--volt); border-color: var(--volt); color: var(--text-on-brand);}
-.st-chip.is-on span{color: rgba(26, 10, 2, 0.62);}
+.st-chip.is-on span{color: var(--text-on-brand-2);}
 .st-chip:focus-visible{outline: 2px solid var(--volt); outline-offset: 3px;}
 
 /* ---- 02 The table ------------------------------------------------------- */
@@ -233,7 +233,7 @@ html.js .st-tbl thead th[data-sort] button:focus-visible{outline: 2px solid var(
   border-color: rgba(var(--volt-rgb), 0.32); transform: translateY(-1px);}
 .st-season.is-on{background: var(--volt); border-color: var(--volt);}
 .st-season.is-on b{color: var(--text-on-brand);}
-.st-season.is-on i{color: rgba(26, 10, 2, 0.66);}
+.st-season.is-on i{color: var(--text-on-brand-2);}
 .st-season:focus-visible{outline: 2px solid var(--volt); outline-offset: 3px;}
 
 .st-tools{display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;

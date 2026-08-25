@@ -56,7 +56,7 @@
 .sq-chip:hover{background: rgba(var(--volt-rgb), 0.09);
   border-color: rgba(var(--volt-rgb), 0.3); transform: translateY(-1px);}
 .sq-chip.is-on{background: var(--volt); border-color: var(--volt); color: var(--text-on-brand);}
-.sq-chip.is-on span{color: rgba(26, 10, 2, 0.6);}
+.sq-chip.is-on span{color: var(--text-on-brand-2);}
 .sq-chip:focus-visible{outline: 2px solid var(--volt); outline-offset: 3px;}
 
 /* ---- Position groups ---------------------------------------------------- */
@@ -197,7 +197,7 @@ html.js .sq-grp[hidden]{display: none;}
 html[data-theme="light"] .pc__link::after{
   background: linear-gradient(180deg, rgba(6, 8, 10, 0.42) 0%, transparent 34%,
     rgba(6, 8, 10, 0.7) 70%, rgba(6, 8, 10, 0.92) 100%);}
-html[data-theme="light"] .sq-chip.is-on span{color: rgba(26, 10, 2, 0.62);}
+html[data-theme="light"] .sq-chip.is-on span{color: var(--text-on-brand-2);}
 
 /* ---- Responsive --------------------------------------------------------- */
 @media (max-width: 860px){
@@ -336,7 +336,7 @@ html.js .sq-cards .pc__link:focus-visible{--lift: -5px;}
   border-color: var(--volt, #FF7034);
   color: var(--ink, #101012);
 }
-.sq-season.is-on span { color: rgb(0 0 0 / 0.62); }
+.sq-season.is-on span { color: var(--text-on-brand-2); }
 .sq-season:focus-visible { outline: 2px solid var(--volt, #FF7034); outline-offset: 2px; }
 
 /* A position nobody filled that season is hidden rather than offered as a

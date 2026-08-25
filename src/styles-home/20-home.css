@@ -15,6 +15,14 @@
      page loads, so every use here silently fell back, and an SVG fill with no
      fallback resolved to `none` and painted nothing at all. */
   --text-on-brand: #1A0A02;
+  /* THE SECOND LINE ON AN ORANGE PILL, ONCE.
+     Nine components draw a small secondary label inside a selected pill -
+     the season tabs, the competition chips, the squad filters, the player
+     and league tabs - and every one of them picked its own dark-ink alpha:
+     0.6, 0.62, 0.66, 0.72. Not one of them reached AA, and at 9 to 11px they
+     are the smallest type on the page. 0.8 is 5.05:1 on the orange and the
+     figure it prints is the whole point of the label. */
+  --text-on-brand-2: rgba(26, 10, 2, 0.8);
   /* --ink-1 was used by the champions page and the sub-page nav and defined
      nowhere, so a club name, a scorer's name and a nav link all fell back to
      inherited colour. Same fault as --text-on-brand above, which is why that

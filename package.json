@@ -14,7 +14,8 @@
     "pack": "node scripts/make-pack.mjs",
     "sync": "node scripts/sync.mjs",
     "publish": "npm run sync && npm run build && npm run verify && npm run guard && npm test",
-    "covers": "node scripts/make-covers.mjs"
+    "covers": "node scripts/make-covers.mjs",
+    "visual": "node scripts/visual.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.24.0"

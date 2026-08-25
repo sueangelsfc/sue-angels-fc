@@ -371,6 +371,18 @@ for (const [name, fg, bg, min] of PAIRS) {
     check(`contrast control.css: ${label} (${r.toFixed(2)}:1)`, r >= 4.5,
       `${fg} on ${on} = ${r.toFixed(2)}:1`);
   }
+  /* THE SOLID DANGER BUTTON, which is a different question from the one
+     above and pulls the opposite way: --error has to be light enough to read
+     as text on a dark panel, and this fill has to be dark enough for white to
+     read on it. They were the same token, so fixing the first made the second
+     worse - 4.28:1 before, 4.08:1 after. Both are checked now, which is the
+     only thing that stops one being traded for the other again. */
+  {
+    const fill = val('--error-solid');
+    const r = ratio('#ffffff', fill);
+    check(`contrast control.css: white on the danger button (${r.toFixed(2)}:1)`, r >= 4.5,
+      `#ffffff on ${fill} = ${r.toFixed(2)}:1`);
+  }
   /* The three status colours are UI feedback and never decorate football
      data, but a toast nobody can read is still a toast nobody can read. */
   for (const t of ['--success', '--warning', '--error']) {

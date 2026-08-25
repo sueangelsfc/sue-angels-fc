@@ -317,6 +317,70 @@ for (const [name, fg, bg, min] of PAIRS) {
   }
 }
 
+/* ---- 10c. Contrast in the CONTROL PANEL, which nobody was checking ----
+
+   sa.css and home.css have had every text token pair checked for a while.
+   control.css never has, and it is where the club actually spends its time:
+   a match report is typed on that screen, on a phone, at the side of a pitch.
+   Its own sheet sets `color:` 116 times.
+
+   It reads its values from sa.css's tokens, so this resolves them the same
+   way rather than restating them - a token that changes changes the test with
+   it. The pairs are the ones the panel actually draws: three text weights on
+   the page, on a panel, and on the inset surface the tables and chips use,
+   plus the ink on the orange button and the three status colours, which the
+   panel is the only thing on this site allowed to use. */
+{
+  const tokenSrc = fs.readFileSync(path.join(ROOT, 'src', 'styles', '00-tokens.css'), 'utf8');
+  const tok = Object.fromEntries([...tokenSrc.matchAll(/(--[\w-]+):\s*([^;]+);/g)]
+    .map((m) => [m[1], m[2].trim()]));
+  /* Flatten an alpha colour onto what it sits on, or its luminance is a
+     fiction: --surface-inset is #07070880, half transparent. */
+  const flat = (v, onto) => {
+    const hex8 = /^#([0-9a-f]{6})([0-9a-f]{2})$/i.exec(v);
+    if (!hex8) return v;
+    const a = parseInt(hex8[2], 16) / 255;
+    const px = (h, i) => parseInt(h.slice(i * 2, i * 2 + 2), 16);
+    const under = onto.replace('#', '');
+    const mix = [0, 1, 2].map((i) => Math.round(px(hex8[1], i) * a + px(under, i) * (1 - a)));
+    return `#${mix.map((c) => c.toString(16).padStart(2, '0')).join('')}`;
+  };
+  const val = (k, onto) => {
+    let v = tok[k];
+    for (let i = 0; i < 5 && /^var\(/.test(v || ''); i += 1) v = tok[/var\((--[\w-]+)\)/.exec(v)[1]];
+    return flat(v, onto || '#000000');
+  };
+  const bg = val('--bg');
+  const surface = val('--surface', bg);
+  const inset = val('--surface-inset', surface);
+  const brand = val('--brand');
+  const CP_PAIRS = [
+    ['body text on the page', '--text', bg],
+    ['muted text on the page', '--text-muted', bg],
+    ['subtle text on the page', '--text-subtle', bg],
+    ['body text on a panel', '--text', surface],
+    ['muted text on a panel', '--text-muted', surface],
+    ['subtle text on a panel', '--text-subtle', surface],
+    ['subtle text on an inset row', '--text-subtle', inset],
+    ['brand text on a panel', '--brand-text', surface],
+    ['ink on the orange button', '--text-on-brand', brand],
+  ];
+  for (const [label, t, on] of CP_PAIRS) {
+    const fg = val(t, on);
+    const r = ratio(fg, on);
+    check(`contrast control.css: ${label} (${r.toFixed(2)}:1)`, r >= 4.5,
+      `${fg} on ${on} = ${r.toFixed(2)}:1`);
+  }
+  /* The three status colours are UI feedback and never decorate football
+     data, but a toast nobody can read is still a toast nobody can read. */
+  for (const t of ['--success', '--warning', '--error']) {
+    const fg = val(t, surface);
+    const r = ratio(fg, surface);
+    check(`contrast control.css: ${t.slice(2)} on a panel (${r.toFixed(2)}:1)`, r >= 4.5,
+      `${fg} on ${surface} = ${r.toFixed(2)}:1`);
+  }
+}
+
 /* ---- 11. Forms are labelled and accessible ---- */
 for (const [f, h] of pages) {
   const inputs = [...h.matchAll(/<(input|textarea|select)\b[^>]*>/g)].map((m) => m[0]);

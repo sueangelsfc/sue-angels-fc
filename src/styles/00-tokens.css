@@ -76,8 +76,13 @@
   --success-bg: #3F9A6A1F;
   --warning: #C98A2B;
   --warning-bg: #C98A2B1F;
-  --error: #D0503F;
-  --error-bg: #D0503F1F;
+  /* Lifted from #D0503F, which was 4.43:1 on the panel's own surface and so
+     just under AA. This is the colour a validation message and a failed-save
+     toast are printed in - the text somebody reads when something has gone
+     wrong, on a phone, at the side of a pitch. 4.66:1 now, and four points
+     per channel is not a colour anybody will notice changing. */
+  --error: #D45443;
+  --error-bg: #D454431F;
   --info: var(--brand-600);
   --info-bg: rgb(var(--brand-rgb) / 0.12);
 

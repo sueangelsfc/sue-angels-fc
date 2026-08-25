@@ -200,6 +200,10 @@ Every editor writes its own markup - there is no shared field builder - so each 
 
 **A dialog is not inside the panel body.** `wireHints` runs on what a module draws into its panel, and the biggest form in the whole panel - the match editor, 69 fields and 14 hints - is appended straight to `<body>` after that render. So the screen with the most explaining to do had none of it reaching a screen reader. A `MutationObserver` on **body's direct children only** catches it; watching the subtree would run on every keystroke that redraws a row. 0 → 10 fields described in the editor.
 
+**A RUN of them, not just the first.** `aria-describedby` takes a list, and the match notes field carries two paragraphs: the explanation, and a live gauge saying how much has been written. Only the explanation was ever announced, so the half that changes as you type reached nobody. The run stops at the first element that is not a hint, which is what still keeps a field from picking up a sentence belonging to the next one.
+
+**And the class has to mean what it says.** Three notes in the match editor carried `field__hint` while describing a whole block - the trialist panel, the substitutions list, a status line beside a button. They are `cp-note` now. "Every field hint is announced" was true before only because those three were never going to be announced by anything.
+
 **Only the element immediately after the field**, never a looser lookup. The first version fell back to "the first `.cp-note` among my siblings", so a field with no hint of its own picked up one belonging to a field further up the section: a match-notes textarea was described to a screen reader as "Shown on the results page". A wrong sentence read with total confidence is worse than the silence it replaced, and the suite's check for this is the negative one.
 
 The panel also carries `aria-busy` while a screen fetches its chunk and reads the database. A spinner is a picture; `aria-busy` is the same fact said out loud.

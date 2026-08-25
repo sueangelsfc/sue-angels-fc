@@ -239,7 +239,7 @@
         '<button type="button" class="btn btn--ghost btn--sm" data-nt-add ' +
           'data-nt-field="' + esc(field) + '">Add and pick him</button>' +
       '</div>' +
-      '<p class="field__hint">He gets a number from 900 up, plays in this match like anybody '
+      '<p class="cp-note">He gets a number from 900 up, plays in this match like anybody '
         + 'else, and appears in no club record. Leave the dates empty if you do not know them '
         + 'yet; with an end date he stops being offered once the trial is over.</p>' +
     '</details>';
@@ -1136,7 +1136,7 @@
                 '<div data-subs></div>' +
                 '<button type="button" class="btn btn--ghost btn--sm" data-sub-add ' +
                   'style="margin-top:var(--space-3)">Add a substitution</button>' +
-                '<p class="field__hint">Each one is a swap: the man coming off and the man '
+                '<p class="cp-note">Each one is a swap: the man coming off and the man '
                   + 'coming on. Somebody brought off and sent back on later is two '
                   + 'substitutions, which is how a rolling change is recorded.</p>' +
                 '<h4 class="mform__h">Captain</h4>' +
@@ -1279,7 +1279,7 @@
                    got or why. The difference matters more than almost
                    anything else on this screen, so it sits next to the button
                    until the next press. */
-                '<p class="field__hint" data-build-said hidden></p>' +
+                '<p class="cp-note" data-build-said hidden></p>' +
               '<span class="cp-note">Your bullets, plus everything recorded on the other tabs, '
                 + 'written out as an article you can edit.</span>' +
             '</div>' +

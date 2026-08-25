@@ -1020,12 +1020,22 @@
          every render and attached itself to nothing. The suite asserted the
          mechanism existed rather than that it caught anything, so it passed
          while the feature was inert. */
-      var note = (next && next.classList
-        && (next.classList.contains('field__hint') || next.classList.contains('cp-note')))
-        ? next : null;
-      if (!note) return;
-      if (!note.id) { hintId += 1; note.id = 'cp-hint-' + hintId; }
-      el.setAttribute('aria-describedby', note.id);
+      /* A RUN of hints, not just the first. The match notes field carries an
+         explanation AND a live gauge saying how much has been written, in two
+         paragraphs; only the explanation was ever announced, so the half that
+         changes as you type reached nobody. aria-describedby takes a list, so
+         it gets one. Still only what sits IMMEDIATELY after the control - the
+         run stops at the first element that is not a hint, which is what keeps
+         a field from picking up a sentence belonging to the next one. */
+      var ids = [];
+      while (next && next.classList
+        && (next.classList.contains('field__hint') || next.classList.contains('cp-note'))) {
+        if (!next.id) { hintId += 1; next.id = 'cp-hint-' + hintId; }
+        ids.push(next.id);
+        next = next.nextElementSibling;
+      }
+      if (!ids.length) return;
+      el.setAttribute('aria-describedby', ids.join(' '));
     });
   }
 

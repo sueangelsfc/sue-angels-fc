@@ -266,6 +266,29 @@ export async function panelChecks() {
     check('the match editor\'s own hints reach a screen reader too',
       described >= 8, `${described} of ${dFields.length} fields described`);
 
+    /* A CLASS THAT MEANS WHAT IT SAYS. `field__hint` is a note about a
+       control; `cp-note` is a note about a section. Three notes in this
+       editor claimed the first while describing a whole block - the trialist
+       panel, the substitutions list, and a status line beside a button - so
+       "every field hint is announced" was true only because those three were
+       never going to be announced by anything. */
+    const strayHints = modal.querySelectorAll('.field__hint').filter((h) => {
+      const prev = h.previousElementSibling;
+      return !(prev && (['input', 'select', 'textarea'].includes(prev.localName)
+        || (prev.localName === 'label' && prev.querySelector('input,select,textarea'))
+        || prev.classList.contains('field__hint')));
+    });
+    check('every field hint in the match editor is beside a field',
+      strayHints.length === 0,
+      strayHints.map((h) => h.textContent.slice(0, 50)).join(' | '));
+
+    /* The notes field carries an explanation AND a live gauge saying how much
+       has been written. aria-describedby takes a list, and until it was given
+       one the half that changes as you type reached nobody. */
+    const multi = dFields.filter((f) => (f.getAttribute('aria-describedby') || '').split(' ').filter(Boolean).length > 1);
+    check('a field with two notes beside it is announced with both',
+      multi.length >= 1, `${multi.length} fields carry more than one description`);
+
     /* Each row's dropdowns are walked forward through the substitution list,
        so you can only take off somebody who is on the pitch. */
     const off = modal.querySelectorAll('[data-sub-off]').map(opts);

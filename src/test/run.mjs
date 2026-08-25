@@ -814,6 +814,47 @@ for (const f of shipped) {
     }
   }
 
+  /* THE NEW DIVISION HAS SOMEWHERE TO PUT A TABLE.
+
+     The standings renderer was written inline inside the League Ten panel, so
+     League Eight - the division the club plays in this season - could draw a
+     list of club NAMES and nothing else. "Update the league table" on the
+     first Sunday would have been a code change, discovered at the moment the
+     results came in.
+
+     Rendered here from a crafted standing rather than from today's data,
+     because today there is no table on record and a check over today's data
+     would pass with no renderer at all. */
+  {
+    const { league } = await import(path.join(ROOT, 'src', 'templates', 'league.mjs'));
+    const { buildDataset: bdL } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+    const dL = bdL();
+    const rows = [
+      { pos: 1, club: "Sue's Angels FC", played: 2, won: 2, drawn: 0, lost: 0, goalsFor: 6, goalsAgainst: 1, goalDifference: 5, points: 6, us: true },
+      { pos: 2, club: 'Haydons Park', played: 2, won: 0, drawn: 0, lost: 2, goalsFor: 1, goalsAgainst: 6, goalDifference: -5, points: 0, us: false },
+    ];
+    const live = league({
+      ...dL,
+      nextDivisionTable: { ...dL.nextDivisionTable, started: true, rows },
+    });
+    const panel = (live.body.split('data-league-panel="eight"')[1] || '').split('</section>')[0];
+    check('the new division can render a real standing, not just a club list',
+      /<table class="lg-tbl"/.test(panel) && /\+5/.test(panel) && /lg-tbl__pts">6</.test(panel),
+      'League Eight has nowhere to put a figure, so updating the table needs code');
+    check('and the club is marked in its own division table',
+      /<tr class="is-us"/.test(panel));
+
+    /* With no rows it must still be the alphabetical list, because that is
+       what is true before a ball is kicked. */
+    const fresh = league({
+      ...dL,
+      nextDivisionTable: { ...dL.nextDivisionTable, started: false, rows: [] },
+    });
+    const freshPanel = (fresh.body.split('data-league-panel="eight"')[1] || '').split('</section>')[0];
+    check('and falls back to the club list until there is one',
+      /lg-clubs/.test(freshPanel) && !/<table class="lg-tbl"/.test(freshPanel));
+  }
+
   /* THE LEAGUE'S OWN PAGES ARE LINKED, AND THE LINKS ARE REAL.
 
      The one Full-Time link on the site pointed at fulltime.thefa.com, which
@@ -5640,15 +5681,33 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     }] };
     check('pre-season takes itself off once a competitive match is played',
       !filled('preseason', after));
+    /* BOTH STATES ARE CONSTRUCTED, neither is read off today.
+
+       This asserted `filled('ahead', dP)` - that the band is fillable RIGHT
+       NOW - which is true only while the new division has not kicked off. It
+       was a time bomb set for the first matchday: transcribe League Eight's
+       opening table and `started` flips, the band correctly retires, and two
+       checks go red having caught nothing. Found by putting a real table on
+       the record and running the suite, which is the only thing that could
+       have found it before 6 September. */
+    const notStarted = { ...dP, nextDivisionTable: { ...dP.nextDivisionTable, started: false } };
+    const hasStarted = { ...dP, nextDivisionTable: { ...dP.nextDivisionTable, started: true } };
+    check('the season ahead shows while the division is still to start',
+      filled('ahead', notStarted));
     check('the season ahead retires when the division has started',
-      filled('ahead', dP) && !filled('ahead',
-        { ...dP, nextDivisionTable: { ...dP.nextDivisionTable, started: true } }));
+      !filled('ahead', hasStarted));
   }
 
-  /* And it reaches the page when switched on. */
+  /* And it reaches the page when switched on. Rendered from the not-yet-started
+     state for the same reason: both bands are about a season that has not begun,
+     so a dataset where it has begun is the wrong thing to render them from. */
   {
     const { home } = await import(path.join(ROOT, 'src', 'templates', 'home.mjs'));
-    const out = home({ ...dP, homeLayout: { order: ['preseason', 'ahead'], hidden: [] } });
+    const beforeKickoff = {
+      ...dP,
+      nextDivisionTable: { ...dP.nextDivisionTable, started: false },
+    };
+    const out = home({ ...beforeKickoff, homeLayout: { order: ['preseason', 'ahead'], hidden: [] } });
     check('the pre-season band renders when chosen', /sec--preseason/.test(out.body));
     check('the season ahead band renders when chosen', /sec--ahead/.test(out.body));
     check('the pre-season band says friendlies count towards nothing',

@@ -832,7 +832,24 @@ export function buildDataset() {
     const t = read('league-eight-2627.json');
     const forSeason = t.season || latestSeason;
     const played = competitive.some((m) => m.season === forSeason && isLeague(m));
-    return { ...t, division: t.division || divisionOf(forSeason), started: t.started || played };
+    /* THE NEW DIVISION'S OWN STANDING, once the league publishes one.
+       Transcribed into `table` in the same compact shape as the League Ten
+       one - p/c/pl/w/d/l/gf/ga/gd/pts - and normalised by the same function,
+       so the two tables cannot disagree about what a row is. Absent until
+       then, and the page falls back to the alphabetical club list.
+
+       `started` follows the EVIDENCE either way: a transcribed row with a
+       match played in it is a started season even before the club has played
+       in it, which happens whenever the division kicks off on a weekend the
+       club is not involved in. */
+    const rows = normaliseTable(t.table || []);
+    const anyPlayed = rows.some((r) => (r.played || 0) > 0);
+    return {
+      ...t,
+      division: t.division || divisionOf(forSeason),
+      started: t.started || played || anyPlayed,
+      rows,
+    };
   })();
   /* The league's own pages for this division, built from the ids recorded
      beside its club list. Null when there are none, and every caller is

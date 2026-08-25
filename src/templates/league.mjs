@@ -82,24 +82,21 @@ export function league(d) {
     </section>`;
 
   /* ================= 01 THE TABLE ================= */
-  const tableBand = `<section class="sec lg-table" id="table" aria-labelledby="lg-tbl-h">
-      <div class="wrap">
-        ${rail(1, 'The standings', `${d.divisionOf(d.tableSeason)} ${d.tableSeason}`)}
-        <h2 class="h2 rv" id="lg-tbl-h">How the division <span class="volt">finished.</span></h2>
+  /* ONE STANDINGS RENDERER, TWO DIVISIONS.
 
-        <div class="lg-tabs rv" data-league-tabs>
-          <a class="lg-tab is-on" href="#table" data-league="ten">
-            <b>${esc(d.divisionOf(d.tableSeason))}</b><i>${esc(d.tableSeason)} · final</i>
-          </a>
-          <a class="lg-tab" href="#table" data-league="eight">
-            <b>${esc(next.division || d.divisionOf(d.nextSeason))}</b><i>${esc(next.season || d.nextSeason)} · ${next.started ? 'in play' : 'not started'}</i>
-          </a>
-        </div>
+     It was written inline inside the League Ten panel, so League Eight - the
+     division the club actually plays in this season - had nowhere for a
+     figure to go. Its panel could draw a list of club NAMES and nothing else,
+     which meant that on the first Sunday of the season "update the league
+     table" was a code change rather than a data one, and nobody would have
+     found that out until the results were in.
 
-        <div class="lg-panel rv" data-league-panel="ten">
-          <div class="lg-tablewrap">
+     Same markup for both, so a live table cannot drift from the finished one
+     it sits beside under a tab. `up` is the promotion cut and is 0 for a
+     division where nothing has been decided yet. */
+  const standings = (rows, caption, up = 0) => `<div class="lg-tablewrap">
             <table class="lg-tbl">
-              <caption class="sr-only">${esc(d.divisionOf(d.tableSeason))} ${esc(d.tableSeason)} final standings</caption>
+              <caption class="sr-only">${esc(caption)}</caption>
               <thead>
                 <tr>
                   <th scope="col" class="lg-tbl__pos">#</th>
@@ -115,7 +112,7 @@ export function league(d) {
                 </tr>
               </thead>
               <tbody>
-                ${table.map((r) => `<tr${r.us ? ' class="is-us"' : ''}${r.pos <= up ? ' data-up' : ''}>
+                ${rows.map((r) => `<tr${r.us ? ' class="is-us"' : ''}${up && r.pos <= up ? ' data-up' : ''}>
                   <td class="lg-tbl__pos">${esc(r.pos)}</td>
                   <th scope="row" class="lg-tbl__club">${badge(r.club)}${esc(shortClub(r.club))}</th>
                   <td>${esc(r.played)}</td>
@@ -129,23 +126,53 @@ export function league(d) {
                 </tr>`).join('\n                ')}
               </tbody>
             </table>
-          </div>
+          </div>`;
+
+  /* The new division's own standing, when the league has published one.
+     Empty until then, and the panel falls back to the club list. */
+  const nextRows = next.rows || [];
+
+  const tableBand = `<section class="sec lg-table" id="table" aria-labelledby="lg-tbl-h">
+      <div class="wrap">
+        ${rail(1, 'The standings', `${d.divisionOf(d.tableSeason)} ${d.tableSeason}`)}
+        <h2 class="h2 rv" id="lg-tbl-h">How the division <span class="volt">finished.</span></h2>
+
+        <div class="lg-tabs rv" data-league-tabs>
+          <a class="lg-tab is-on" href="#table" data-league="ten">
+            <b>${esc(d.divisionOf(d.tableSeason))}</b><i>${esc(d.tableSeason)} · final</i>
+          </a>
+          <a class="lg-tab" href="#table" data-league="eight">
+            <b>${esc(next.division || d.divisionOf(d.nextSeason))}</b><i>${esc(next.season || d.nextSeason)} · ${next.started ? 'in play' : 'not started'}</i>
+          </a>
+        </div>
+
+        <div class="lg-panel rv" data-league-panel="ten">
+          ${standings(table, `${d.divisionOf(d.tableSeason)} ${d.tableSeason} final standings`, up)}
           ${up ? `<p class="lg-note">Top ${esc(up)} promoted to ${esc(d.divisionOf(d.nextSeason))}.</p>` : ''}
         </div>
 
         <div class="lg-panel rv" data-league-panel="eight">
-          ${next.started ? '' : `<div class="lg-fresh">
+          ${nextRows.length ? `${standings(nextRows, `${next.division || d.divisionOf(d.nextSeason)} ${next.season || d.nextSeason} standings`, 0)}
+          <p class="lg-note">${esc(`${(() => {
+    /* Guarded rather than reading nextRows[0], which is the same trap the
+       campaign band fell into: unreachable while the caller checks the
+       length, and a crash the moment anything renders this directly. */
+    const most = nextRows.reduce((n, r) => Math.max(n, r.played || 0), 0);
+    return most === 0 ? 'Named alphabetically until a match is played.'
+      : `After ${most} matchday${most === 1 ? '' : 's'}.`;
+  })()} The league's own table.`)}</p>`
+    : `<div class="lg-fresh">
             <p class="lg-fresh__k">${esc(next.division || d.divisionOf(d.nextSeason))} · ${esc(next.season || d.nextSeason)}</p>
             <p class="lg-fresh__t">Not a table yet.</p>
             <p class="lg-fresh__b">No match has been played, so every club sits on nothing and the
               league lists them alphabetically. These are the ${esc((next.clubs || []).length)} sides
               ${esc(CLUB.short)} come up against, in that order rather than any standing.</p>
-          </div>`}
+          </div>
           <ol class="lg-clubs">
             ${(next.clubs || []).map((c) => `<li${isUs(c) ? ' class="is-us"' : ''}>
               ${badge(c)}<span>${esc(shortClub(c))}</span>
             </li>`).join('\n            ')}
-          </ol>
+          </ol>`}
         </div>
       </div>
     </section>`;

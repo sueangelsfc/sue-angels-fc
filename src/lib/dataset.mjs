@@ -60,8 +60,16 @@ function inferPositions(matches) {
   return out;
 }
 
-export function buildDataset() {
-  const ps = read('recovered-pageshell.json');
+/* `overrides.live` replaces the database snapshot, and exists for one reason:
+   the suite needs to render every page against a club that has recorded
+   NOTHING. That is not a hypothetical state. `npm run sync` pulls whatever
+   Supabase returns, the deploy runs the generator, and the generator throwing
+   now fails the club's own publish - so an empty table must produce an empty
+   page, not an exception. The campaign band read `scored[0]` with no guard and
+   crashed on exactly this, and was unreachable only for as long as the band
+   was hard-coded onto a page with 33 matches behind it. */
+export function buildDataset(overrides = {}) {
+  const ps = overrides.pageshell || read('recovered-pageshell.json');
   /* Club-written prose gets the house typography on the way in, once, rather
      than at each of the places that render a piece of it. See prose.mjs: it
      sets dashes, apostrophes and the league's name and changes nothing else.
@@ -71,7 +79,7 @@ export function buildDataset() {
      normalising belongs to the build, so a report typed with an em dash is
      published without one and still reads back into the panel as the coach
      typed it. */
-  const live = houseRecord(read('recovered-live.json'));
+  const live = houseRecord(overrides.live || read('recovered-live.json'));
 
   /* ---- Match detail records, keyed by match id ---- */
   const detailById = new Map();

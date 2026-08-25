@@ -6036,6 +6036,83 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 console.log(`\n${'='.repeat(66)}`);
 
 /* ==========================================================================
+   A CLUB THAT HAS RECORDED NOTHING STILL GETS A SITE
+
+   The deploy runs the generator, so a template that throws no longer produces
+   a bad page - it fails the club's own publish. And an empty table is not a
+   hypothetical: `npm run sync` pulls whatever Supabase returns.
+
+   The campaign band is the proof that this needs testing rather than
+   reasoning about. It read `scored[0]` for its first axis label with no
+   guard, and was safe only for as long as it was hard-coded onto a page with
+   thirty-three matches behind it. The moment the home layout could hand it
+   any dataset, it was one switch away from taking the build down.
+
+   So every page template is rendered against a club with no matches, no
+   players, no articles, no albums and no recognition. `buildDataset` takes an
+   override for exactly this and for nothing else.
+
+   WHICH FUNCTIONS. The list is read out of `build.mjs`'s own import
+   statements and intersected with what each module exports, so it is exactly
+   the set of page templates the build calls and cannot drift from it. Two
+   cheaper rules were tried and both were wrong: every export threw on the
+   per-item renderers (`matchReport(m, d)` and friends take an item this test
+   has none of), and `fn.length === 1` swept in module helpers like
+   `splitTitle` and `catLabel`, which return a string that is not a page. A
+   new page template is covered the day it is imported.
+   ========================================================================== */
+{
+  const { buildDataset: bdE } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const bare = {
+    matches: [], fixtures: [], team_badges: [],
+    player_photos: [], articles: [], gallery: [], recognition: [],
+  };
+  let dE = null;
+  let built = true;
+  try { dE = bdE({ live: bare, pageshell: {} }); } catch (e) { built = false; dE = e; }
+  check('the generator survives a database with nothing in it',
+    built, built ? '' : String(dE && dE.message));
+
+  if (built) {
+    check('an empty club really is empty, so the renders below are not the archive again',
+      dE.players.length === 0 && dE.squad.length === 0 && (dE.articles || []).length === 0,
+      `${dE.players.length} players, ${dE.squad.length} squad`);
+
+    const buildSrc = fs.readFileSync(path.join(ROOT, 'src', 'build.mjs'), 'utf8');
+    /* Per-item renderers and the panel are excluded by name and by reason:
+       each takes something this test does not have. */
+    const PER_ITEM = new Set(['newsArticle', 'matchReport', 'galleryAlbum',
+      'matchPage', 'articlePage', 'playerPage', 'control', 'articleSlug', 'splitTitle']);
+    const wanted = new Map();
+    for (const m of buildSrc.matchAll(/import \{([^}]+)\} from '\.\/templates\/([\w-]+\.mjs)'/g)) {
+      for (const nm of m[1].split(',').map((x) => x.trim()).filter(Boolean)) {
+        if (!PER_ITEM.has(nm)) wanted.set(nm, m[2]);
+      }
+    }
+    check('build.mjs still imports its page templates by name', wanted.size >= 18,
+      `${wanted.size} found`);
+
+    const broke = [];
+    let rendered = 0;
+    for (const [name, file] of wanted) {
+      const mod = await import(path.join(ROOT, 'src', 'templates', file));
+      const fn = mod[name];
+      if (typeof fn !== 'function') { broke.push(`${file}:${name} is not exported`); continue; }
+      try {
+        const out = fn(dE);
+        const body = typeof out === 'string' ? out : (out && out.body);
+        if (typeof body !== 'string') broke.push(`${file}:${name} returned no markup`);
+        else rendered += 1;
+      } catch (e) { broke.push(`${file}:${name} threw: ${e.message.slice(0, 90)}`); }
+    }
+    check('every page renders for a club that has recorded nothing',
+      broke.length === 0, broke.slice(0, 4).join(' | '));
+    check('there are pages being rendered, so the check above is not vacuous',
+      rendered >= 20, `${rendered} templates`);
+  }
+}
+
+/* ==========================================================================
    IMAGES WERE NOT BUDGETED, AND THEY ARE THE BIGGEST THING ON THE PAGE
 
    sa.css, home.css, sa.js, control.js and every lazy chunk have a gzipped

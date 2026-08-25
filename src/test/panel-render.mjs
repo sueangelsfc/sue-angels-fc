@@ -148,6 +148,51 @@ export async function panelChecks() {
     badWhere.length === 0, badWhere.slice(0, 5).join(' | '));
 
   /* ---------------------------------------------------------------------
+     3b. EVERY CONTROL HAS A NAME, AND EVERY ARIA REFERENCE LANDS.
+
+     These are the rules an automated audit would apply, computed on the
+     rendered DOM rather than sampled by hand once. The panel passes all of
+     them today; the point of writing them down is that it goes on passing
+     when somebody adds the twenty-second screen. `aria-describedby` pointing
+     at an id that is not in the document is the specific failure worth
+     naming: it reads to a screen reader as no description at all, which is
+     indistinguishable from never having written one. */
+  const a11y = { unnamed: [], anon: [], dangling: [], noScope: 0, posTab: 0, noAlt: [] };
+  const accessibleName = (el) => {
+    if ((el.getAttribute('aria-label') || '').trim()) return true;
+    const lb = el.getAttribute('aria-labelledby');
+    if (lb && lb.split(/\s+/).some((id) => id && ctx.doc.querySelector('#' + id))) return true;
+    if ((el.getAttribute('title') || '').trim()) return true;
+    const id = el.getAttribute('id');
+    if (id && ctx.doc.querySelector('label[for="' + id + '"]')) return true;
+    const wrap = el.closest('label');
+    return !!(wrap && wrap.textContent.trim());
+  };
+  const scanA11y = (root, where) => {
+    for (const el of root.querySelectorAll('input,select,textarea')) {
+      if ((el.getAttribute('type') || '').toLowerCase() === 'hidden') continue;
+      if (!accessibleName(el)) a11y.unnamed.push(where + ' ' + el.localName + '#' + (el.getAttribute('id') || ''));
+    }
+    for (const el of root.querySelectorAll('button,a')) {
+      if (el.textContent.trim() || accessibleName(el)) continue;
+      a11y.anon.push(where + ' <' + el.localName + '> ' + el.outerHTML.slice(0, 70));
+    }
+    for (const el of root.querySelectorAll('[aria-describedby],[aria-labelledby],[aria-controls],[aria-owns]')) {
+      for (const a of ['aria-describedby', 'aria-labelledby', 'aria-controls', 'aria-owns']) {
+        const v = el.getAttribute(a);
+        if (!v) continue;
+        for (const id of v.split(/\s+/)) {
+          if (id && !ctx.doc.querySelector('#' + id)) a11y.dangling.push(where + ' ' + a + '="' + id + '"');
+        }
+      }
+    }
+    for (const th of root.querySelectorAll('th')) if (!th.getAttribute('scope')) a11y.noScope += 1;
+    for (const el of root.querySelectorAll('[tabindex]')) if (+el.getAttribute('tabindex') > 0) a11y.posTab += 1;
+    for (const im of root.querySelectorAll('img')) if (im.getAttribute('alt') === null) a11y.noAlt.push(where);
+  };
+  await everyPanel(ctx, keys, (k, r) => { if (r.body) scanA11y(r.body, k); });
+
+  /* ---------------------------------------------------------------------
      4. A SCREEN WITH NO DATA STILL DRAWS. The club's own publish runs the
      generator, so a screen that throws on an empty table takes the deploy
      with it. Every screen is rendered against seven empty tables. */
@@ -231,6 +276,19 @@ export async function panelChecks() {
         `off ${off.join(',')} on ${on.join(',')}`);
     }
   }
+
+  if (modal) scanA11y(modal, 'match editor');
+  check('every control in the panel has a name a screen reader can read',
+    a11y.unnamed.length === 0, a11y.unnamed.slice(0, 5).join(' | '));
+  check('no button or link in the panel is announced as unlabelled',
+    a11y.anon.length === 0, a11y.anon.slice(0, 3).join(' | '));
+  check('every aria reference in the panel points at an element that is there',
+    a11y.dangling.length === 0, a11y.dangling.slice(0, 5).join(' | '));
+  check('every table header in the panel says which way it heads', a11y.noScope === 0,
+    `${a11y.noScope} without scope`);
+  check('nothing in the panel jumps the tab order', a11y.posTab === 0);
+  check('no image in the panel is missing its alt attribute entirely',
+    a11y.noAlt.length === 0, a11y.noAlt.slice(0, 3).join(', '));
 
   /* ---------------------------------------------------------------------
      6. WHAT WAS TYPED SURVIVES. Driven end to end: type into a real field,
@@ -429,6 +487,33 @@ export async function panelProbes() {
       name: 'probe: titling a screen from the whole nav button brings the hidden count back',
       cond: good === 'Fixtures' && bad !== good && /0/.test(bad),
       detail: `label: "${good}"; whole button: "${bad}"`,
+    });
+  }
+
+  /* PROBE 5: take the labels away and confirm the accessible-name check
+     notices. Without this, "every control has a name" is a sentence that has
+     never been tested against a control that has not. */
+  {
+    const ctx = PR.boot({
+      rows,
+      transform: (src, file) => (file.includes('control-match.js') || file === 'control.js'
+        ? src.split('<label').join('<span').split('</label>').join('</span>')
+        : src),
+    });
+    const r = await PR.openPanel(ctx, 'fixtures');
+    const doc = ctx.doc;
+    const namedNow = (el) => {
+      if ((el.getAttribute('aria-label') || '').trim()) return true;
+      const id = el.getAttribute('id');
+      if (id && doc.querySelector('label[for="' + id + '"]')) return true;
+      const w = el.closest('label');
+      return !!(w && w.textContent.trim());
+    };
+    const unnamed = r.body.querySelectorAll('input,select,textarea').filter((e) => !namedNow(e));
+    results.push({
+      name: 'probe: stripping the labels turns the accessible-name check red',
+      cond: unnamed.length > 0,
+      detail: `${unnamed.length} controls left unnamed`,
     });
   }
 

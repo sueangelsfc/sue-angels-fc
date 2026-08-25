@@ -1,13 +1,61 @@
 {
-  "_source": "Club announcement, 20 July 2026: \"Sue's Angels FC Confirm Pre-Season Fixtures\" (Supabase articles row art-1784578485992)",
-  "_note": "The production `fixtures` table is empty; the schedule was published as a news article instead, which is why nothing reached the site. Transcribed here so the build has it. Opponent names use the badge registry's spelling where one exists (Pure Football FC 2.0, Kew Antigua, BPR FC) so the crests resolve; Galacticos Elect, Kingsmeadow United and Brentford Town are new opponents with no badge on file yet. No kick-off times were announced, so none are claimed.",
-  "_replaceWhen": "Delete this file once the fixtures live in the Supabase `fixtures` table, which the control panel writes to.",
+  "_source": "Two sources, and each row says which. The six pre-season friendlies come from the club announcement of 20 July 2026, \"Sue's Angels FC Confirm Pre-Season Fixtures\" (Supabase articles row art-1784578485992). The League Eight fixtures are transcribed from FA Full-Time, Southern Sunday Football League: league 3545957, season 2026-27 = 709965053, division League Eight = 879497042, read 25 August 2026.",
+  "_note": "The production `fixtures` table is empty; the schedule was published as a news article instead, which is why nothing reached the site. Transcribed here so the build has it. Opponent names use the badge registry's spelling where one exists (Pure Football FC 2.0, Kew Antigua, BPR FC) so the crests resolve; Galacticos Elect, Kingsmeadow United and Brentford Town are new opponents with no badge on file yet.\n\nA row with no `competition` is taken as a pre-season friendly, which is what the six announced in July are. The League Eight rows name their competition, so the same file can hold both and a league fixture is never counted as a friendly - which matters, because pre-season retires itself on the first competitive match of the season rather than on a date.\n\nFA FULL-TIME HAS PUBLISHED ONLY THE FIRST TWO MATCHDAYS of League Eight, five fixtures across the division. Nothing here is guessed to fill the rest of the season: an absent fixture is an unpublished fixture, and the site says what is known.",
+  "_replaceWhen": "Delete this file once the fixtures live in the Supabase `fixtures` table, which the control panel writes to. Until then the club adding a fixture in the panel wins over anything here, row by row, on the date-and-clubs identity test in dataset.mjs.",
   "fixtures": [
-    { "id": "f20260802-pure", "date": "02 Aug 2026", "home": "Pure Football FC 2.0", "away": "Sue's Angels FC" },
-    { "id": "f20260809-galacticos", "date": "09 Aug 2026", "home": "Galacticos Elect", "away": "Sue's Angels FC" },
-    { "id": "f20260812-kingsmeadow", "date": "12 Aug 2026", "home": "Sue's Angels FC", "away": "Kingsmeadow United" },
-    { "id": "f20260816-brentford", "date": "16 Aug 2026", "home": "Brentford Town", "away": "Sue's Angels FC" },
-    { "id": "f20260823-kew", "date": "23 Aug 2026", "home": "Kew Antigua", "away": "Sue's Angels FC" },
-    { "id": "f20260830-bpr", "date": "30 Aug 2026", "home": "Sue's Angels FC", "away": "BPR FC" }
+    {
+      "id": "f20260802-pure",
+      "date": "02 Aug 2026",
+      "home": "Pure Football FC 2.0",
+      "away": "Sue's Angels FC"
+    },
+    {
+      "id": "f20260809-galacticos",
+      "date": "09 Aug 2026",
+      "home": "Galacticos Elect",
+      "away": "Sue's Angels FC"
+    },
+    {
+      "id": "f20260812-kingsmeadow",
+      "date": "12 Aug 2026",
+      "home": "Sue's Angels FC",
+      "away": "Kingsmeadow United"
+    },
+    {
+      "id": "f20260816-brentford",
+      "date": "16 Aug 2026",
+      "home": "Brentford Town",
+      "away": "Sue's Angels FC"
+    },
+    {
+      "id": "f20260823-kew",
+      "date": "23 Aug 2026",
+      "home": "Kew Antigua",
+      "away": "Sue's Angels FC"
+    },
+    {
+      "id": "f20260830-bpr",
+      "date": "30 Aug 2026",
+      "home": "Sue's Angels FC",
+      "away": "BPR FC"
+    },
+    {
+      "id": "f20260906-tlb",
+      "date": "06 Sep 2026",
+      "kick": "11:00",
+      "home": "Sue's Angels FC",
+      "away": "Three Little Birds FC",
+      "venue": "The Reeves Sports Club",
+      "competition": "League Eight"
+    },
+    {
+      "id": "f20260913-haydons",
+      "date": "13 Sep 2026",
+      "kick": "10:30",
+      "home": "Sue's Angels FC",
+      "away": "Haydons Park",
+      "venue": "The Reeves Sports Club",
+      "competition": "League Eight"
+    }
   ]
 }

@@ -3,7 +3,7 @@
 
    Two derivations the site had no way to express. The club is in the gap
    between winning League Ten and starting League Eight: six friendlies, one
-   played, a new division whose ten clubs are known, and nothing on the site
+   played, a new division whose clubs are known, and nothing on the site
    that says any of it.
 
    Both are DERIVED. Nothing here is typed: which matches are pre-season, what
@@ -11,10 +11,16 @@
    appearance, whether pre-season is over, and what the club already knows
    about each new opponent all come out of the match records.
 
-   The one thing that cannot be derived is the day League Eight begins,
-   because no league fixture has been published. It is carried in
-   src/data/league-eight-2627.json with its source, and the page says "the season
-   starts" rather than "we play", because a start date is not a fixture.
+   The one thing that cannot be derived is who is IN the new division, because
+   a club list is not a match record. It is carried in
+   src/data/league-eight-2627.json with the FA Full-Time ids it was read from,
+   so the next person to check it does not have to find the division again.
+
+   That file is also the only place a club can be dropped. Tyne & Thames were
+   in it and are not in the division, and nothing here could have noticed:
+   every figure on this page is derived from matches, and a club the club has
+   never played contributes no match to derive from. A name in a list is the
+   one kind of fact the site has to be told.
    ========================================================================== */
 import { isFriendly } from './stats.mjs';
 
@@ -145,7 +151,7 @@ export function sheetNums(m) {
 }
 
 /* ---- The season ahead ----------------------------------------------------
-   The ten clubs of the new division, and what the archive already holds on
+   The clubs of the new division, and what the archive already holds on
    each. Two thirds of them the club has never met, and saying so plainly is
    the point: it is a promotion, and most of the division is new. */
 export function seasonAhead(d) {

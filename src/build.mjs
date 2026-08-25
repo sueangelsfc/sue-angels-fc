@@ -1390,3 +1390,19 @@ if (!CHECK) {
     console.log(`removed ${orphans.length} page(s) whose record is gone: ${orphans.join(' ')}`);
   }
 }
+
+/* ---- WHAT THIS BUILD WROTE ---------------------------------------------
+   The repo root is not the same thing as the site: it also holds scraped
+   third-party pages, recovery copies and tooling caches. Anything walking the
+   directory to find "the site" finds those too, and judges them - which is how
+   a deploy gate ends up reporting three hundred failures about a WordPress
+   plugin's flag icons and gets switched off within the hour.
+
+   The generator knows exactly what it wrote, so it says so. scripts/guard.mjs
+   reads this and judges nothing else. */
+if (!CHECK) {
+  write('src/data/build-manifest.json', JSON.stringify({
+    generatedFrom: 'src/build.mjs',
+    routes: written.filter((r) => r.endsWith('.html')).sort(),
+  }, null, 2) + '\n');
+}

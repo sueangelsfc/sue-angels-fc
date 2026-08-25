@@ -408,8 +408,7 @@
   };
 
   var POSITIONS = ['Goalkeeper', 'Defender', 'Midfielder', 'Forward'];
-  var ROLES = ['Manager', 'Assistant manager', 'Coach', 'Goalkeeping coach',
-    'Physiotherapist', 'Team secretary', 'Kit manager'];
+  var ROLES = SEED.coachRoles || [];
 
   /* The record the panel owns, read defensively: it has been written by three
      different generations of this tool. */

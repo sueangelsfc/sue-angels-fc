@@ -39,9 +39,7 @@
   var SEED = window.SA_SEED || {};
   var BASELINE = SEED.coaches || [];
 
-  var ROLES = ['First-team manager', 'Assistant manager', 'First team coach',
-    'Goalkeeping coach', 'Fitness coach', 'Physiotherapist', 'Team secretary',
-    'Kit manager', 'Club chairman'];
+  var ROLES = SEED.coachRoles || [];
 
   function slug(name) {
     return String(name).toLowerCase().replace(/['’]/g, '')

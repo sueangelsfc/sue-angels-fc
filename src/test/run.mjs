@@ -1906,6 +1906,35 @@ for (const [f, kb] of Object.entries({
      Control panel -> Results". Each half is asserted separately, because a
      field that renders and is never saved looks exactly like a working one
      until somebody reopens the record. */
+  /* ONE LIST OF COACH TITLES. There were two, hard-coded in two screens, and
+     they had drifted on the two most senior jobs at the club: Coaches offered
+     "First-team manager"/"First team coach" and Squad offered
+     "Manager"/"Coach". The club's own records use the first pair, so the
+     Squad screen offered neither title anybody holds - at the one moment it
+     writes a role at all, when a player moves into coaching.
+
+     Three separate checks, because this can fail three ways: a screen can go
+     back to hard-coding, a screen can stop reading the shared list, and the
+     shared list can stop covering what the club actually calls people. */
+  {
+    const squadSrc = fs.readFileSync(path.join(srcDir, 'lazy', '30-squad.js'), 'utf8');
+    const coachSrc = fs.readFileSync(path.join(srcDir, 'lazy', '45-coaches.js'), 'utf8');
+    check('neither screen hard-codes its own list of coach titles',
+      !/var ROLES = \[/.test(squadSrc) && !/var ROLES = \[/.test(coachSrc),
+      'a second list of job titles is back, and two lists drift');
+    check('both screens read the one coach-title list',
+      /SEED\.coachRoles/.test(squadSrc) && /SEED\.coachRoles/.test(coachSrc));
+
+    const seedJs2 = fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8');
+    const seed2 = JSON.parse(seedJs2.replace(/^window\.SA_SEED=/, '').replace(/;\s*$/, ''));
+    const offered = new Set((seed2.coachRoles || []).map((r) => r.toLowerCase()));
+    const held = [...new Set((seed2.coaches || []).map((c) => c.role).filter(Boolean))];
+    const unoffered = held.filter((r) => !offered.has(String(r).toLowerCase()));
+    check('every title a coach actually holds is on the list',
+      held.length > 0 && unoffered.length === 0,
+      `held but never offered: ${unoffered.join(', ')}`);
+  }
+
   /* EVERY CLUB THIS SEASON IS OFFERED. The dropdown was built from clubs
      PLAYED, so four of the eight in the new division were missing and their
      names would have been typed free-hand - which is how one club becomes two

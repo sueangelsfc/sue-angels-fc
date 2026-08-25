@@ -15,6 +15,7 @@ import { page, esc, CLUB_ID } from './lib/html.mjs';
 import { CLUB, SEPSIS } from './lib/club.mjs';
 import { teamSummary, fmtDate, isUs, isLeague} from './lib/stats.mjs';
 import { home, oppBadge } from './templates/home.mjs';
+import { COACH_ROLES } from './lib/coach-roles.mjs';
 import { HOME_BANDS, HOME_AREAS, homeBandFilled, reportsIn, albumsIn, playersIn } from './lib/home-layout.mjs';
 import { about } from './templates/about.mjs';
 import { cause } from './templates/cause.mjs';
@@ -286,6 +287,9 @@ const adminSeed = {
 
      The division list is the one place a club can be named before it has been
      played, so it belongs here for the same reason it exists at all. */
+  /* One list of coach titles for both screens that write one. See
+     src/lib/coach-roles.mjs: there were two and they had drifted. */
+  coachRoles: COACH_ROLES,
   clubs: [...new Set([
     ...d.matches.flatMap((m) => [m.home, m.away]),
     ...(((d.nextDivisionTable || {}).clubs) || []),

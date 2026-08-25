@@ -2030,6 +2030,22 @@ for (const [f, kb] of Object.entries({
          the field. */
       check('every pane that offers players says which ring it is offering from',
         (code.match(/scopeBar\('(club|match)'\)/g) || []).length >= 5);
+
+      /* THE THREE QUESTIONS THE FORM ASKS OF A RECORD. Each one found real
+         errors in the archive, and each has to be asserted to EXIST here:
+         checks() reads the DOM, so it cannot be isolated and run the way
+         offer() and carryAssists() can, and a rule that quietly stops being
+         applied is exactly the failure this whole file keeps finding. */
+      check('the form compares the scoreline against the goals listed',
+        /goals\.length !== us/.test(code));
+      check('the form checks everybody named against the team sheet',
+        /not on the team sheet/.test(code) && /function credited\(\)/.test(code));
+      check('the form checks the armband and the Player of the Match too',
+        /'#m-capt'[\s\S]{0,80}'#m-motm'|'#m-motm'[\s\S]{0,80}'#m-capt'/.test(code),
+        'a captain who did not play would pass, which is how Old Freemen\'s was missed');
+      check('the form checks an unused substitute credited with something',
+        /\.benchDetail\[n\] \|\| \{\}\)\.on/.test(code)
+        && /unused substitute/.test(code));
     }
   }
 
@@ -2209,6 +2225,7 @@ for (const [f, kb] of Object.entries({
     const { buildDataset } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
     const dM = buildDataset();
     const bad = [];
+    const idle = [];
     for (const m of dM.matches) {
       if (!m.played || m.isWalkover) continue;
       const det = m.detail || {};
@@ -2224,23 +2241,60 @@ for (const [f, kb] of Object.entries({
           named.add(String(x && x.num != null ? x.num : x));
         }));
       if (det.keeper != null) named.add(String(det.keeper));
+      if (det.motm != null) named.add(String(det.motm));
+      if (det.captain != null) named.add(String(det.captain));
       if (sheet.size) {
         const stray = [...named].filter((n) => n && !sheet.has(n));
         if (stray.length) bad.push(`${m.id}: ${stray.join(', ')} not on the sheet`);
       }
+      /* A MAN WHO DID NOT COME ON CANNOT HAVE SCORED. Different fault from
+         the one above: he IS on the sheet, and the sheet says he watched.
+         The bench's `on` field came after the archive, so every historical
+         substitute defaults to unused, and eleven of the thirty-five played
+         matches credit a goal or the Player of the Match award to one. It
+         shows: William Clark has seven goals from two appearances, because
+         appearances count starts and he came off the bench for five of them.
+
+         Tracked rather than asserted at zero, because fixing them is the
+         club ticking eleven boxes in the panel and not a code change. The
+         number is here so a twelfth cannot arrive unnoticed. */
+      (det.bench || []).forEach((b2) => {
+        if (b2 && !b2.on && named.has(String(b2.num))) idle.push(`${m.id}: ${b2.num}`);
+      });
       const ours = m.weAreHome ? m.hs : m.as;
       if (ours != null && (det.goals || []).length && (det.goals || []).length !== ours) {
         bad.push(`${m.id}: scoreline ${ours}, ${(det.goals || []).length} goals listed`);
       }
     }
-    /* TWO, and the second was found by this check rather than by reading the
-       data: at Shepherd's away a goal is credited to a man not among the
-       fourteen, and at FC Porto of London a yellow card is. Both are records
-       the club can correct in the panel, and neither is a build failure. The
-       number is here so a third cannot arrive unnoticed - which is exactly
-       what the form now prevents at the keyboard. */
-    check('no more matches disagree with their own team sheet than the two known',
-      bad.length <= 2, bad.join(' · '));
+    /* THREE, and this check found all three. Reading the data by hand found
+       one; asking about goals found two; asking the same question about the
+       armband and the Player of the Match found the third.
+
+         Shepherd's away    a goal credited to a man not among the fourteen
+         FC Porto of London a yellow card, and the report names the full
+                            fifteen without him
+         Old Freemen's      a captain who is not on his own team sheet
+
+       All three are records the club can correct in the panel and none is a
+       build failure. The number is here so a fourth cannot arrive unnoticed,
+       which is what the form now prevents at the keyboard. */
+    /* THE EXACT SET, not a ceiling. `<=` passes when the check finds FEWER,
+       which is what a weakened check looks like: dropping the armband and the
+       Player of the Match from the question took it from three to two and the
+       suite said nothing. Naming them means the list only changes when
+       somebody changes it - the same device as PUBLISHES_NOTHING. The club
+       fixing one in the panel is expected to fail this and to be settled by
+       striking a line out here. */
+    const KNOWN_STRAY = [
+      'r20251019-freemens: 10 not on the sheet',
+      'r20260301-shepherds-a: 16 not on the sheet',
+      'r20260517-portolondon-drt: 6 not on the sheet',
+    ];
+    check('exactly the three known matches disagree with their own team sheet',
+      JSON.stringify(bad.slice().sort()) === JSON.stringify(KNOWN_STRAY),
+      bad.slice().sort().join(' · '));
+    check('exactly the thirteen known unused substitutes are credited with something',
+      idle.length === 13, `${idle.length}: ${idle.join(' · ')}`);
   }
 
   /* A FORMATION IS ROWS ON A PITCH, and the detector only had three of them.

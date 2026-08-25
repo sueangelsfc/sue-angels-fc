@@ -29,7 +29,7 @@ src/
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        3,410-check suite against the generated output
+  test/run.mjs        3,415-check suite against the generated output
 ```
 
 **Run `npm run build` after any change under `src/`.** Nothing in `src/` is served; only the generated root files are.
@@ -232,6 +232,12 @@ Neither is a save to refuse. A result typed at the side of a pitch is worth havi
 
 **Each tab carries what it holds** (`11 + 3`, `5`, `written`). The only way to find out whether the cards had been entered was to go and look at all five, and the commonest way to record a match badly is to stop before the end.
 
+**A man who did not come on cannot have scored.** A second question, and a different fault from the one above: he *is* on the sheet, and the sheet says he watched. The bench's `on` field came after the archive, so every historical substitute reads as unused, and **thirteen credits across eleven of the thirty-five played matches** go to one. It shows on the website: William Clark has seven goals from two appearances, because appearances count starts and he came off the bench for five of them.
+
+**Asking the same question about the armband and the Player of the Match found a third bad record.** Old Freemen's, 19 Oct 25: a captain who is not on his own team sheet. Two of the three were found by the check rather than by reading the data.
+
+**The suite names the three, it does not count them.** `<=` passes when a check finds *fewer*, which is what a weakened check looks like — dropping the armband from the question took it from three to two and the suite said nothing. Same device as `PUBLISHES_NOTHING`: the club fixing one in the panel is expected to fail the check and to be settled by striking a line out. And because `checks()` reads the DOM it cannot be isolated the way `offer()` and `carryAssists()` can, so each of its three questions is separately asserted to still exist.
+
 ### An empty minute is not minute zero
 
 An assist is a field **on** the goal; the flat `assists` array is derived on save. A record written the old way is carried forward by pairing each goal with an assist in the same minute by somebody else — and that rule tested `minute != null`. **The archive's minutes are mostly the empty string**, which is not null, and `Number('') === Number('')` is `0 === 0`, so every goal matched every assist and took the first one every time, so it matched the *same* one.
@@ -346,7 +352,7 @@ Read leads in **Control panel → Inbox**; RLS blocks anonymous reads, so signin
 ```bash
 npm run build     # regenerate every route (run after any src/ change)
 npm run verify    # assert derived stats against the published league table
-npm test          # 3,410 checks against the generated output
+npm test          # 3,415 checks against the generated output
 npm run serve     # local preview on :4321
 ```
 

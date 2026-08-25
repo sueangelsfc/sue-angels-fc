@@ -330,3 +330,140 @@
 [aria-invalid="true"] {
   border-color: var(--error);
 }
+
+/* ==========================================================================
+   THE MATCH FORM: WHAT IS IN THE RECORD, SAID ON THE FORM
+
+   Two additions, both of them about the same failing. The form asked for a
+   match in five tabs and then told you nothing about what it had: no count on
+   a tab you had not opened, and no comparison between the scoreline typed on
+   the first tab and the goals listed on the third. Two of the thirty-five
+   matches in the archive disagree with themselves, and both would have been
+   caught at the keyboard by a line of text.
+   ========================================================================== */
+
+/* What a tab holds, on the tab. */
+.tab__n {
+  margin-inline-start: 6px;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-inset);
+  color: var(--text-subtle);
+  font: normal var(--step--2) / 1.6 var(--font-body);
+  font-variant-numeric: tabular-nums;
+}
+.tab__n:empty { display: none; }
+.tab[aria-selected="true"] .tab__n {
+  background: rgb(var(--brand-rgb) / .18);
+  color: var(--brand-text);
+}
+
+/* What does not add up. Warning, never error: none of it blocks a save,
+   because a scoreline recorded at the side of a pitch is worth having before
+   the detail is known. */
+.mform__checks {
+  margin-block-end: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--warning);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--warning) 10%, transparent);
+  font-size: var(--step--1);
+}
+.mform__checks b { color: var(--warning); }
+.mform__checks ul {
+  margin: var(--space-2) 0 0;
+  padding-inline-start: var(--space-5);
+  color: var(--text-muted);
+}
+
+/* HOW MANY A DROPDOWN IS OFFERING, beside the label that names it. A list
+   narrowed to the team sheet is indistinguishable from a broken one unless it
+   says how many it holds and the hint underneath says why. */
+.field__label:has(.field__of) {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.field__of {
+  flex: 0 0 auto;
+  font-style: normal;
+  font-weight: var(--weight-medium);
+  font-size: var(--step--2);
+  color: var(--text-subtle);
+  font-variant-numeric: tabular-nums;
+}
+.field__of.is-full { color: var(--success); }
+.field__of.is-over { color: var(--error); }
+
+/* ---- The eleven, one line each ------------------------------------------
+   Nothing in this list lined up. The name column was as wide as the name, so
+   eleven position dropdowns started at eleven different places, and each row
+   spilled onto three lines because the half selector and a remove button were
+   drawn for a player who never moved. A fixed name column and a single row
+   for the ordinary case: eleven names, eleven positions, in two columns you
+   can read down. */
+.xi__row--one { flex-wrap: nowrap; }
+.xi__row--one .xi__head {
+  flex: 0 0 clamp(140px, 32%, 210px);
+  min-width: 0;
+}
+.xi__row--one .xi__name { font-size: var(--step--1); color: var(--text); }
+.spells--one {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+}
+.spell--one {
+  flex: 1 1 auto;
+  flex-wrap: nowrap;
+  min-width: 0;
+  gap: var(--space-2);
+}
+/* The two selects share what is left equally instead of keeping the fixed
+   bases they need in the stacked layout, where "Left centre back" and "Played
+   as (optional)" were both cut off mid-word. */
+.spell--one .select {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline: var(--space-2) var(--space-1);
+}
+/* "Right centre back" is longer than "No special role", so the position takes
+   the larger share rather than both being cut off at the same width. */
+.spell--one .spell__p { flex-grow: 1.2; }
+
+/* "Add where else he played" was a full-width centred orange button under
+   every one of the eleven: the loudest thing in the list, and the least used.
+   A quiet link at the end of the line he belongs to. */
+.spell__more {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border: 0;
+  background: none;
+  color: var(--text-subtle);
+  font: inherit;
+  font-size: var(--step--2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.spell__more:hover { color: var(--brand-text); }
+.spells:not(.spells--one) .spell__more { justify-self: start; }
+@media (max-width: 700px) {
+  .xi__row--one { flex-wrap: wrap; }
+  .xi__row--one .xi__head { flex: 1 1 100%; }
+  .spells--one { flex-wrap: wrap; }
+}
+@media (pointer: coarse) { .spell__more { min-height: 44px; } }
+
+/* The ring a pane draws from, said where the pane begins. */
+.mform__scope {
+  margin-block-end: var(--space-4);
+  font-size: var(--step--2);
+  color: var(--text-subtle);
+}
+.mform__scope:empty { display: none; }

@@ -29,7 +29,7 @@ src/
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        2,816-check suite against the generated output
+  test/run.mjs        3,390-check suite against the generated output
 ```
 
 **Run `npm run build` after any change under `src/`.** Nothing in `src/` is served; only the generated root files are.
@@ -182,6 +182,45 @@ The panel also carries `aria-busy` while a screen fetches its chunk and reads th
 
 Two things an audit of this claimed and got wrong, both worth not re-checking: the toast container has carried `role="region"` and `aria-live="polite"` since it was written, so saves have always been announced; and 15 of the 16 labels with no `for=` wrap their own control, which is valid.
 
+### Who a match can name
+
+Two rings, one gate, and **every player dropdown on the match form goes through `offer()`**.
+
+- **club** — anyone at the club on the match's date. The ring for *building* the sheet: the eleven and the bench.
+- **match** — the men on the team sheet, and nobody else. Everything after the sheet is a claim about *this match* (he scored, he was booked, he kept goal, he wore the armband) and none of it can be true of somebody who was not on it.
+
+`control-match.js` works out who was at the club that day and does it well. **The failure was where that answer was asked for.** Counted in a browser against real data: **one dropdown of the nine was filtered.** The eleven's picker is repainted once the dialog is in the document, so it reads the date field; every other picker is built as a string *before* the dialog exists, so `matchIso()` finds no date field, returns `''`, and the filter waves everybody through. The bench offered 44 names where the eleven's offered 34. Same shape as the field hints: a correct mechanism attached to almost nothing, its tests asking only whether it existed.
+
+- **The team sheet is the gate for the whole match.** Under match scope, the Shepherd's goal credited to a man not among the fourteen could not have been entered.
+- **An empty sheet narrows nothing**, so match scope falls back to club scope and the goals can still be typed before the team sheet.
+- **Whoever is already stored is always offered**, however the rings fall, or opening an old record would blank its captain on the next save.
+- **Everything downstream of the sheet is repainted when the sheet or the date moves** (`afterSheet()`), so a substitute named on tab two reaches the scorer dropdown on tab three without a reload.
+- **The ring is explained once per pane, not once per field.** The first version printed the same sentence under all five pickers on Cards and keeping; five identical explanations reads as a template misfiring and buries the hint that *is* specific to the field. Each picker keeps only its own count ("14 to choose from").
+
+### Does the record add up?
+
+The form asks for the same match twice — a scoreline on the first tab, the goals on the third — and never compared them. **Two of the archive's thirty-five played matches disagree with themselves**: Shepherd's away credits a goal to a man not on the sheet, and FC Porto of London a yellow card (that second one was found by the check, not by reading the data).
+
+Neither is a save to refuse. A result typed at the side of a pitch is worth having before the detail is known, so it **says so** — above the tabs, on every tab, until it is fixed or knowingly saved: an eleven that is not eleven, no team sheet at all, a scoreline that disagrees with the goals listed, and anybody named in the match who is not on its sheet. The suite runs the same three questions over everything published and fails if a third arrives.
+
+**Each tab carries what it holds** (`11 + 3`, `5`, `written`). The only way to find out whether the cards had been entered was to go and look at all five, and the commonest way to record a match badly is to stop before the end.
+
+### An empty minute is not minute zero
+
+An assist is a field **on** the goal; the flat `assists` array is derived on save. A record written the old way is carried forward by pairing each goal with an assist in the same minute by somebody else — and that rule tested `minute != null`. **The archive's minutes are mostly the empty string**, which is not null, and `Number('') === Number('')` is `0 === 0`, so every goal matched every assist and took the first one every time, so it matched the *same* one.
+
+Opening the Shepherd's match and pressing **Save** rewrote it with one man credited for all five goals and the four real assisters kept on the end as orphans: **five assists in, nine out, one of them quadrupled.** Nobody had to do anything wrong; opening a record and saving it was enough, and the form gives no sign of it because the flat list is on no tab.
+
+A minute has to *be* one, and an assist comes out of the pool once used. Whatever is left in the pool is exactly what never paired — a truer definition of an orphan than asking the goals afterwards, which compared on minute again and so counted the same assist twice. `carryAssists()` is at module scope **because a rule that can silently multiply the club's assist record is one the suite has to be able to run on its own.**
+
+### One spell is one line
+
+A starter took ninety-five pixels: his name in the smallest type on the screen, a full spell block underneath (which half, where, what he was asked to do, a remove button) and a centred orange "Add where else he played" under that, eleven times over. A thousand pixels of scrolling to read eleven names, with the name the least visible thing in its own row, and eleven position dropdowns starting at eleven different x positions because the name column was as wide as the name.
+
+Almost nobody moves. **One spell in the first half means he played there all match**, so the half is not a fact about him and the remove button has nothing to remove: both come off, the row is one line, and moving him is a quiet link away. **Only when the half is the first** — a single spell recorded as the second is a fact somebody entered, and hiding it would be the form disagreeing with the record.
+
+The eleven's count moved into the label it counts, too. It sat in a flex row beside the picker, and the picker carries a hint and a collapsible trialist row, so the one number that matters was pushed to the bottom of a 90px block and printed level with "Somebody on trial?".
+
 ### The match form is split, and how it was made safe
 `control-match.js` was **15.9KB gzipped of a 16KB budget** - the largest chunk in the panel and the most-opened - because the two LIST screens shipped the whole five-tab editor to anybody reading a table. It is now **4.9KB**, with the editor in `control-matchedit.js` (11.9KB) fetched the first time somebody opens a match.
 
@@ -280,11 +319,11 @@ Read leads in **Control panel → Inbox**; RLS blocks anonymous reads, so signin
 ```bash
 npm run build     # regenerate every route (run after any src/ change)
 npm run verify    # assert derived stats against the published league table
-npm test          # 2,816 checks against the generated output
+npm test          # 3,390 checks against the generated output
 npm run serve     # local preview on :4321
 ```
 
-`npm test` covers: document structure, one h1 per page, heading order, alt text, resolvable assets and internal links, JSON-LD validity, asset-version consistency, overflow guards, reduced motion, both themes, WCAG AA contrast on every text token pair, form labelling, security headers, no service-role key in output, sitemap/robots correctness, and performance budgets. Budgets are **gzipped KB**, one per bundle, and they are ceilings over a split thing rather than one big one: `sa.css` 22, `home.css` 26, `sa.js` 24, `control.css` 7, `control.js` 16, `control-seed.js` 8, and one per lazy panel chunk. **Code is budgeted apart from data**: `control-home.js` carries seventy-five band descriptions, so its emitted ceiling moved three times for growth that was not code, and `src/admin/lazy/95-home.js` and `10-match.js` are now measured as source so an edit to the code shows up on its own. **The deploy does not run this suite** (`sync && build && verify`), so a page over budget still publishes: these are a signal to whoever is reading, not a gate on the club. The home page's margin is printed on every run for that reason. It also asserts the split stays split: that the match form and the photo tagger are not in the core, that every deferred panel maps to a chunk that exists and is cache-busted, and that routing does not gate on a module having been downloaded.
+`npm test` covers: document structure, one h1 per page, heading order, alt text, resolvable assets and internal links, JSON-LD validity, asset-version consistency, overflow guards, reduced motion, both themes, WCAG AA contrast on every text token pair, form labelling, security headers, no service-role key in output, sitemap/robots correctness, and performance budgets. Budgets are **gzipped KB**, one per bundle, and they are ceilings over a split thing rather than one big one: `sa.css` 22, `home.css` 26, `sa.js` 24, `control.css` 6, `control.js` 16, `control-seed.js` 8, and one per lazy panel chunk. **Code is budgeted apart from data**: `control-home.js` carries seventy-five band descriptions, so its emitted ceiling moved three times for growth that was not code, and `src/admin/lazy/95-home.js` and `10-match.js` are now measured as source so an edit to the code shows up on its own. **The deploy does not run this suite** (`sync && build && verify`), so a page over budget still publishes: these are a signal to whoever is reading, not a gate on the club. The home page's margin is printed on every run for that reason. It also asserts the split stays split: that the match form and the photo tagger are not in the core, that every deferred panel maps to a chunk that exists and is cache-busted, and that routing does not gate on a module having been downloaded.
 
 ## Deployment
 **The domain is on the Vercel project `sue-angels-fc-b469`.** Three projects on this account look like the right one and only that one is:

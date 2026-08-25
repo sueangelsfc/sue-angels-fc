@@ -1437,7 +1437,19 @@ const BUDGET = {
      the right answer then is to split sa.js per page the way the stylesheets
      already are: this feature ships to 101 pages to run on one. */
   'sa.js': 16,
-  'control.css': 5,
+  /* 5 -> 6, once, for the match form telling you what is in the record: the
+     count on a tab you have not opened, the strip saying what does not add
+     up, the tally beside each picker's label, and the eleven collapsed from a
+     three-line block each to one line. 0.2KB gzipped for a screen that is
+     used at the side of a pitch on a phone, where a starter used to cost
+     ninety-five pixels and eleven of them a thousand.
+
+     Nothing in the panel's sheet ships to the public - control.html links it
+     alone - so this is a cost the club pays once, not one every visitor to
+     the fixtures page pays. That is the whole reason the sheet was split out
+     of sa.css, and it is why the ceiling here can move for a real feature
+     when sa.css's cannot. */
+  'control.css': 6,
   /* 11 -> 12 for draft recovery, deliberately and once. The shell was at
      10.78KB of 11, and what pushed it over is cross-cutting safety code that
      CANNOT be lazy: a listener that loads on demand cannot catch typing that
@@ -1510,8 +1522,20 @@ const BUDGET = {
      down with it, or the split quietly rots back. */
   'control-match.js': 6,
   /* The editor, fetched the first time somebody opens a match. Nobody who
-     only reads the results list pays for it. */
-  'control-matchedit.js': 13,
+     only reads the results list pays for it.
+
+     13 -> 14, once and deliberately, for the two-ring player filter and the
+     checks that come with it. What bought it: every dropdown on the form now
+     goes through offer(), and everything downstream of the team sheet is
+     repainted when the sheet or the date moves, so the "who was at the club
+     that day" rule stops being live on one picker of nine; and the form now
+     compares the scoreline against the goals listed and names anybody
+     credited in a match he is not on the sheet for. Two of the archive's
+     thirty-five matches fail that check today.
+
+     The comments are not what bought it - the build strips them, and 94KB of
+     source emits as 40KB. It is code. */
+  'control-matchedit.js': 14,
   /* 15 -> 16. What bought it: the length gauge under the notes box, and the
      word count beside the Build button.
 
@@ -1895,6 +1919,188 @@ for (const [f, kb] of Object.entries({
         pensSaved: [], saves: 0, roles: [] });
       check(`a minute separated by "${sep}" is read as a minute`, r.includes('A save.'));
     }
+  }
+
+  /* ==========================================================================
+     WHO THE MATCH FORM WILL OFFER
+
+     The panel works out who was at the club on the day of a match, and that
+     rule was live on exactly one dropdown of the nine. Every other picker was
+     built as a string before the dialog was in the document, so the date
+     field it reads did not exist yet, `matchIso()` returned '' and the filter
+     let everybody through. Counted in a browser against real data: the bench
+     offered 44 names where the eleven's picker offered 34.
+
+     That is the same shape as the field hints - a correct mechanism attached
+     to almost nothing - and it is the shape a check has to be written against
+     carefully, because a check that asks whether offer() EXISTS would have
+     passed the whole time. These run the function and count what comes back,
+     and there is a static check underneath asserting nothing bypasses it.
+     ========================================================================== */
+  {
+    const src = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '11-matchedit.js'), 'utf8');
+    const fn = /  function playerOf\(num\) \{[\s\S]*?\n  \}\n\n  function offer\([\s\S]*?\n  \}\n/.exec(src);
+    check('the player filter can be isolated for testing', !!fn);
+    if (fn) {
+      const SQUAD = [1, 2, 3, 4, 5].map((n) => ({ num: n, name: `P${n}`, pos: '', trial: false }));
+      const make = (onSheet) => {
+        const S = { SQUAD, onSheet, nameOfNum: {} };
+        /* Standing in for control-match.js's own date filter: everyone but
+           player 5, so a fall-through to the club ring shows as a 4. It keeps
+           `keep` the way the real one does, because that rule is the reason
+           an old record survives being opened. */
+        const pickable = (keep, skip) => SQUAD.filter((p) =>
+          (p.num !== 5 || String(p.num) === String(keep)) && !(skip || {})[p.num]);
+        return new Function('S', 'pickable', 'nameOf',
+          `${fn[0]}; return offer;`)(S, pickable, (n) => `P${n}`);
+      };
+      const nums = (list) => list.map((p) => Number(p.num));
+
+      check('with a team sheet, a match dropdown offers only the men on it',
+        JSON.stringify(nums(make([2, 3])('match'))) === '[2,3]');
+      check('with no team sheet, it falls back to who was at the club',
+        JSON.stringify(nums(make([])('match'))) === '[1,2,3,4]');
+      check('the eleven and the bench are picked from the club, not the sheet',
+        JSON.stringify(nums(make([2, 3])('club'))) === '[1,2,3,4]');
+      /* The one rule that stops the filter from destroying records: whoever
+         is already stored in a field is offered however the rings fall, or
+         opening an old match would blank its captain on the next save. */
+      check('somebody already recorded is still offered when he is not on the sheet',
+        nums(make([2, 3])('match', 9)).includes(9));
+      check('and he is offered even when he has left the club',
+        nums(make([])('match', 5)).includes(5));
+      check('a player already on a list is not offered to it twice',
+        !nums(make([2, 3])('match', null, { 2: true })).includes(2));
+
+      /* NOTHING BYPASSES IT. The defect was never that offer() was wrong; it
+         was that eight dropdowns were built without asking it. Comments are
+         stripped first, or this reads its own explanation. */
+      const code = src.replace(/\/\*[\s\S]*?\*\//g, '');
+      const gate = /  function playerOf\(num\) \{[\s\S]*?\n  \}\n\n  function offer\([\s\S]*?\n  \}\n/
+        .exec(code);
+      check('the gate itself can be cut out before looking for bypasses', !!gate);
+      const outside = gate ? code.replace(gate[0], '') : code;
+      check('no player dropdown is built straight from the squad',
+        !/S\.SQUAD\s*\.\s*map\(/.test(outside), 'a select is drawing from the whole squad');
+      check('no player dropdown calls the date filter behind offer()’s back',
+        !/[^.\w]pickable\(/.test(outside), 'a select bypasses the match ring');
+
+      /* Every list downstream of the team sheet has to be redrawn when the
+         sheet or the date moves, or a substitute named on tab two never
+         reaches the scorer dropdown on tab three. */
+      check('changing the date rebuilds every list, not just the pickers',
+        /id === 'm-date'\)\s*\{\s*paintXI\(\);\s*afterSheet\(\);/.test(code));
+      check('adding or dropping a player rebuilds every list downstream',
+        (code.match(/\n\s*afterSheet\(\);/g) || []).length >= 4);
+      /* Said once per pane. Five identical sentences on one screen reads as a
+         template that has misfired and buries the hint that is specific to
+         the field. */
+      check('every pane that offers players says which ring it is offering from',
+        (code.match(/scopeBar\('(club|match)'\)/g) || []).length >= 5);
+    }
+  }
+
+  /* CARRYING AN OLD RECORD'S ASSISTS FORWARD
+
+     The pairing rule tested `minute != null`, and the archive's minutes are
+     mostly the empty STRING. `Number('') === Number('')` is `0 === 0`, so
+     every goal matched every assist and took the same one every time: opening
+     the Shepherd's match and saving it credited one man with all five goals
+     and kept the four real assisters on the end as orphans. Five in, nine
+     out. Run here on the shape the archive actually holds. */
+  {
+    const src = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '11-matchedit.js'), 'utf8');
+    const fn = /  function minOf\(v\) \{[\s\S]*?\n  \}\n\n  function carryAssists\([\s\S]*?\n  \}\n/.exec(src);
+    check('the assist carry-forward can be isolated for testing', !!fn);
+    if (fn) {
+      const carry = new Function(`${fn[0]}; return carryAssists;`)();
+      const sit = () => '';
+      /* The archive's own shape: five goals and five assists, every minute an
+         empty string. Five must come out, not nine. */
+      const blank = carry(
+        [25, 18, 18, 16, 18].map((n) => ({ num: n, minute: '' })),
+        [27, 7, 20, 20, 18].map((n) => ({ num: n, minute: '', type: 'pass' })), sit);
+      const flat = blank.goals.filter((g) => g.assist).map((g) => g.assist.num)
+        .concat(blank.orphans.map((a) => a.num));
+      check('an empty minute pairs with nothing',
+        blank.goals.every((g) => !g.assist), 'a blank minute was read as minute zero');
+      check('five assists in, five assists out',
+        flat.length === 5, `${flat.length} came out`);
+      check('and they are the five that went in',
+        JSON.stringify(flat.slice().sort()) === JSON.stringify([27, 7, 20, 20, 18].sort()));
+
+      /* With real minutes it still has to do its job, and do it once. */
+      const timed = carry(
+        [{ num: 1, minute: 10 }, { num: 2, minute: 40 }, { num: 3, minute: 70 }],
+        [{ num: 9, minute: 10, type: 'pass' }, { num: 8, minute: 40, type: 'cross' }], sit);
+      check('a goal is still paired with an assist in the same minute',
+        timed.goals[0].assist && timed.goals[0].assist.num === 9);
+      check('the pairing keeps how the chance was made',
+        timed.goals[1].assist && timed.goals[1].assist.type === 'cross');
+      check('a goal with no assist in its minute gets none',
+        !timed.goals[2].assist);
+      check('nothing is left over when everything paired', timed.orphans.length === 0);
+
+      /* Two goals in the same minute must not share one assist. */
+      const same = carry(
+        [{ num: 1, minute: 55 }, { num: 2, minute: 55 }],
+        [{ num: 9, minute: 55, type: 'pass' }], sit);
+      check('one assist is not handed to two goals',
+        !!same.goals[0].assist && !same.goals[1].assist);
+
+      check('a man is never recorded as assisting his own goal',
+        !carry([{ num: 9, minute: 30 }], [{ num: 9, minute: 30, type: 'pass' }], sit)
+          .goals[0].assist);
+      check('an assist that pairs with no goal is kept rather than dropped',
+        carry([], [{ num: 4, minute: 12, type: 'pass' }], sit).orphans.length === 1);
+    }
+  }
+
+  /* DOES A SAVED MATCH ADD UP?
+
+     The form asks for the same match twice - a scoreline on one tab, the
+     goals on another - and until now never compared them. It does, and this
+     runs the same three questions over everything already published so a
+     record that disagrees with itself is named rather than sitting there.
+
+     Both of these are real and neither is a build failure: they are records
+     the club can fix in the panel, and the numbers stop them growing. */
+  {
+    const { buildDataset } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+    const dM = buildDataset();
+    const bad = [];
+    for (const m of dM.matches) {
+      if (!m.played || m.isWalkover) continue;
+      const det = m.detail || {};
+      const sheet = new Set([].concat(det.starters || [], det.bench || [])
+        .map((x) => String(x && x.num != null ? x.num : x)));
+      const named = new Set();
+      (det.goals || []).forEach((g) => {
+        if (g.num != null) named.add(String(g.num));
+        if (g.assist && g.assist.num != null) named.add(String(g.assist.num));
+      });
+      ['yellowCards', 'redCards', 'cleanSheets', 'penaltiesSaved', 'penaltiesMissed']
+        .forEach((f) => (det[f] || []).forEach((x) => {
+          named.add(String(x && x.num != null ? x.num : x));
+        }));
+      if (det.keeper != null) named.add(String(det.keeper));
+      if (sheet.size) {
+        const stray = [...named].filter((n) => n && !sheet.has(n));
+        if (stray.length) bad.push(`${m.id}: ${stray.join(', ')} not on the sheet`);
+      }
+      const ours = m.weAreHome ? m.hs : m.as;
+      if (ours != null && (det.goals || []).length && (det.goals || []).length !== ours) {
+        bad.push(`${m.id}: scoreline ${ours}, ${(det.goals || []).length} goals listed`);
+      }
+    }
+    /* TWO, and the second was found by this check rather than by reading the
+       data: at Shepherd's away a goal is credited to a man not among the
+       fourteen, and at FC Porto of London a yellow card is. Both are records
+       the club can correct in the panel, and neither is a build failure. The
+       number is here so a third cannot arrive unnoticed - which is exactly
+       what the form now prevents at the keyboard. */
+    check('no more matches disagree with their own team sheet than the two known',
+      bad.length <= 2, bad.join(' · '));
   }
 
   /* A FORMATION IS ROWS ON A PITCH, and the detector only had three of them.

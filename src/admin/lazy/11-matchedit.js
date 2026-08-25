@@ -58,6 +58,161 @@
 
   function nameOf(num) { return S.nameOfNum[num] || ('Player ' + num); }
 
+  /* ==========================================================================
+     AN EMPTY MINUTE IS NOT MINUTE ZERO, AND ONE ASSIST IS NOT FIVE
+
+     An assist used to be a flat list beside the goals; it is a field ON the
+     goal now, and a record written the old way is carried forward by pairing
+     each goal with an assist in the SAME MINUTE by somebody else.
+
+     That rule tested `minute != null`. The archive's minutes are mostly the
+     empty STRING, which is not null, and `Number('') === Number('')` is
+     `0 === 0`, so every goal matched every assist - and it took the first
+     match every time, so it matched the SAME one. Opening the Shepherd's
+     match and pressing Save rewrote it with one man credited for all five
+     goals and the four real assisters kept on the end as orphans: five
+     assists in, nine out, one of them quadrupled. Nobody had to do anything
+     wrong. Opening a record and saving it was enough, and the form gives no
+     sign of it because the flat list is not on any tab.
+
+     A minute has to BE one, and an assist comes out of the pool once it has
+     been used. Whatever is left in the pool at the end is exactly what never
+     paired, which is a truer definition of an orphan than asking the goals
+     about it afterwards - the old one compared on minute again and so counted
+     the same assist twice.
+
+     Its own function, at module scope, because a rule that can silently
+     multiply the club's assist record is a rule the suite has to be able to
+     run on its own.
+     ========================================================================== */
+  function minOf(v) {
+    if (v == null || v === '') return null;
+    var n = Number(v);
+    return isFinite(n) ? n : null;
+  }
+
+  function carryAssists(rawGoals, oldAssists, situationOf) {
+    var pool = oldAssists.slice();
+    var goals = rawGoals.map(function (g) {
+      var assist = g.assist && g.assist.num
+        ? { num: g.assist.num, type: g.assist.type || 'pass' } : null;
+      var gm = minOf(g.minute);
+      if (!assist && gm != null) {
+        var idx = -1;
+        pool.forEach(function (a, i) {
+          if (idx < 0 && minOf(a.minute) === gm && a.num !== g.num) idx = i;
+        });
+        if (idx >= 0) {
+          assist = { num: pool[idx].num, type: pool[idx].type };
+          pool.splice(idx, 1);
+        }
+      }
+      return {
+        num: g.num,
+        minute: g.minute != null ? g.minute : null,
+        bodyPart: g.bodyPart || '',
+        zone: g.zone || '',
+        situation: situationOf(g),
+        assist: assist,
+      };
+    });
+    return { goals: goals, orphans: pool };
+  }
+
+  /* ==========================================================================
+     WHO THIS MATCH CAN NAME
+
+     control-match.js works out who was at the club on the day of the match,
+     and does it well. Where that answer was ASKED FOR was the trouble: one
+     dropdown of the nine was filtered. The eleven's picker is repainted once
+     the dialog is in the document, so it reads the date field; every other
+     picker is built as a string BEFORE the dialog exists, so `matchIso()`
+     finds no date field, returns '', and the filter waves everybody through.
+     The bench offered 44 for a fixture in a season half those men had left
+     before. Same shape as the field hints: a correct mechanism attached to
+     almost nothing, its tests asking only whether it existed.
+
+     Both rings are applied here, in one place, and every dropdown goes
+     through it:
+
+       club  - anyone at the club on the match's date. This is the ring for
+               BUILDING the sheet: the eleven and the bench.
+       match - the men on the team sheet, and nobody else. Everything after
+               the sheet is a claim about THIS MATCH - he scored, he was
+               booked, he kept goal, he wore the armband - and none of those
+               can be true of somebody who was not on it.
+
+     The archive has one already: on 1 March at Shepherd's a goal is recorded
+     for a man not among the fourteen, so the site credits him a goal in a
+     match he did not play. Under match scope it could not have been entered.
+
+     Two things keep it from being a cage: an empty sheet narrows nothing, so
+     match scope falls back to club scope and goals can still be typed first;
+     and whoever is ALREADY stored in a field is always offered, so opening an
+     old record can never silently blank it.
+     ========================================================================== */
+  var SCOPE_OF = { starters: 'club', bench: 'club' };
+
+  /* The numbers on the sheet as it stands, set by openMatch and refreshed
+     every time somebody is added to or dropped from the eleven or the bench.
+     A property of the shared state, like S.benchDetail beside it, rather than
+     a module binding that a future split would have to move. */
+  S.onSheet = [];
+
+  /* A stored player who has since been removed from the squad still has to
+     appear in his own dropdown, so this never returns nothing. */
+  function playerOf(num) {
+    return S.SQUAD.filter(function (p) { return String(p.num) === String(num); })[0]
+      || { num: num, name: nameOf(num), pos: '', trial: false };
+  }
+
+  function offer(scope, keep, skip) {
+    var out = skip || {};
+    if (scope === 'match') {
+      var on = (S.onSheet || []).filter(function (n) { return !out[n]; });
+      if (on.length) {
+        var list = on.map(playerOf);
+        if (keep != null && keep !== '' && !out[keep]
+          && !on.some(function (n) { return String(n) === String(keep); })) {
+          list.push(playerOf(keep));
+        }
+        return list;
+      }
+    }
+    return pickable(keep, out);
+  }
+
+  /* WHY A NAME IS NOT IN THE LIST.
+
+     A dropdown that has quietly dropped somebody is indistinguishable from a
+     broken one, and the club would be right to read it as broken. Every
+     picker says which ring it is showing and how to widen it, so a missing
+     name is an instruction rather than a mystery. */
+  /* SAID ONCE PER PANE, NOT ONCE PER FIELD.
+
+     Cards and keeping has five pickers on it, all drawing from the same ring,
+     and the first version printed the same sentence under every one of them.
+     Five identical explanations on one screen is worse than none: it reads as
+     a template that has misfired and it buries the hint that IS specific to
+     the field ("add a player twice if they were booked twice"). The ring is a
+     property of the pane, so it is stated where the pane begins. */
+  function scopeBar(scope) {
+    return '<p class="cp-note mform__scope" data-scopenote="' + scope + '"></p>';
+  }
+
+  function scopeNote(scope) {
+    var on = (S.onSheet || []).length;
+    if (scope === 'match') {
+      return on
+        ? 'The ' + on + ' on the team sheet. Anybody else has to go on the sheet first.'
+        : 'No team sheet yet, so everyone at the club that day is offered.';
+    }
+    var when = matchIso();
+    return when
+      ? 'Everyone at the club on ' + prettyDate(when) + '. Set the date first if it is wrong.'
+      : 'Set the date and this narrows to the squad as it was that day.';
+  }
+
   /* ADDING A TRIALIST WITHOUT LEAVING THE TEAM SHEET.
 
      A trialist was added in Squad and staff and only then appeared here, which
@@ -95,9 +250,11 @@
        player cannot be added to the eleven twice. */
     var on = {};
     (chosen || []).forEach(function (n) { on[n] = true; });
-    var free = pickable(null, on);
+    var scope = SCOPE_OF[field] || 'match';
+    var free = offer(scope, null, on);
     return '<div class="field">' +
-      '<label class="field__label" for="add-' + esc(field) + '">' + esc(label) + '</label>' +
+      '<label class="field__label" for="add-' + esc(field) + '">' + esc(label) +
+        '<i class="field__of">' + free.length + ' to choose from</i></label>' +
       '<select class="select" id="add-' + esc(field) + '" data-add="' + esc(field) + '"' +
         (free.length ? '' : ' disabled') + '>' +
         '<option value="">' + (free.length ? 'Choose a player' : 'Everyone is already on the list') + '</option>' +
@@ -155,14 +312,23 @@
     '</div>';
   }
 
-  function selectField(id, label, options, value) {
+  function selectField(id, label, options, value, note) {
     return '<div class="field"><label class="field__label" for="' + id + '">' + esc(label) + '</label>' +
       '<select class="select" id="' + id + '">' +
       '<option value="">Not recorded</option>' +
       options.map(function (o) {
         return '<option value="' + esc(o.v) + '"' + (String(o.v) === String(value) ? ' selected' : '') + '>' +
           esc(o.t) + '</option>';
-      }).join('') + '</select></div>';
+      }).join('') + '</select>' +
+      (note ? '<p class="field__hint">' + esc(note) + '</p>' : '') + '</div>';
+  }
+
+  /* The three lone selects that name one man for the match: the armband, the
+     Player of the Match, the goalkeeper. Same ring as the picker lists. */
+  function oneOfSheet(id, label, value) {
+    return selectField(id, label,
+      offer('match', value).map(function (p) { return { v: p.num, t: p.name }; }),
+      value);
   }
 
 
@@ -321,7 +487,7 @@
   }
   function playerOptions(chosen, blank) {
     return (blank ? '<option value="">' + esc(blank) + '</option>' : '') +
-      S.SQUAD.map(function (p) {
+      offer('match', chosen).map(function (p) {
         return '<option value="' + p.num + '"' + (p.num === chosen ? ' selected' : '') +
           '>' + esc(p.name) + (p.trial ? ' (on trial)' : '') + '</option>';
       }).join('');
@@ -436,14 +602,31 @@
   }
 
   /* One spell: which half, where, and what he was asked to do there. */
-  function spellRow(field, i, j, sp) {
+  /* ONE SPELL IS ONE LINE.
+
+     A starter took ninety-five pixels: his name in the smallest type on the
+     screen, a full spell block underneath - which half, where, what he was
+     asked to do, a remove button - and a centred orange "Add where else he
+     played" under that, eleven times over. A thousand pixels of scrolling to
+     read eleven names, with the name the least visible thing in its own row.
+
+     Almost nobody moves. One spell in the first half means he played there
+     all match, so the half is not a fact about him and the remove button has
+     nothing to remove: both come off and moving him is one quiet link away.
+
+     Only when the half is the FIRST. A single spell recorded as the second is
+     a fact somebody entered, and hiding it would be the form disagreeing with
+     the record. */
+  function spellRow(field, i, j, sp, lone) {
     var code = sp.pos || '';
-    return '<div class="spell" data-spell="' + i + ':' + j + '" data-field="' + esc(field) + '">' +
+    return '<div class="spell' + (lone ? ' spell--one' : '') + '" data-spell="' + i + ':' + j +
+      '" data-field="' + esc(field) + '">' +
+      (lone ? '' :
       '<select class="select spell__h" data-sp-half aria-label="Which part of the game">' +
         HALVES.map(function (h) {
           return '<option value="' + h[0] + '"' + (String(sp.half) === h[0] ? ' selected' : '') +
             '>' + h[1] + '</option>';
-        }).join('') + '</select>' +
+        }).join('') + '</select>') +
       '<select class="select spell__p" data-sp-pos aria-label="Where he played">' +
         '<option value="">Where did he play</option>' +
         ['gk', 'def', 'mid', 'fwd'].map(function (g) {
@@ -457,8 +640,9 @@
             }).join('') + '</optgroup>';
         }).join('') + '</select>' +
       spellRole(code, sp.role) +
+      (lone ? '' :
       '<button type="button" class="spell__x" data-sp-drop ' +
-        'aria-label="Remove this spell">&times;</button>' +
+        'aria-label="Remove this spell">&times;</button>') +
     '</div>';
   }
 
@@ -468,7 +652,7 @@
     var options = rolesFor(code);
     if (!options.length) return '<span class="spell__norole"></span>';
     return '<select class="select spell__r" data-sp-role aria-label="What he was asked to do">' +
-      '<option value="">Played as (optional)</option>' +
+      '<option value="">No special role</option>' +
       options.map(function (r) {
         return '<option value="' + r.code + '"' + (r.code === chosen ? ' selected' : '') +
           ' title="' + esc(r.note || '') + '">' + esc(r.name) + '</option>';
@@ -476,10 +660,13 @@
   }
 
   function spellList(field, i, spells) {
-    return '<div class="spells" data-spells="' + i + '" data-field="' + esc(field) + '">' +
-      spells.map(function (sp, j) { return spellRow(field, i, j, sp); }).join('') +
-      '<button type="button" class="btn btn--quiet btn--sm" data-sp-add ' +
-        'data-field="' + esc(field) + '" data-i="' + i + '">Add where else he played</button>' +
+    var lone = spells.length === 1 && String(spells[0].half || '1') === '1';
+    return '<div class="spells' + (lone ? ' spells--one' : '') +
+      '" data-spells="' + i + '" data-field="' + esc(field) + '">' +
+      spells.map(function (sp, j) { return spellRow(field, i, j, sp, lone); }).join('') +
+      '<button type="button" class="spell__more" data-sp-add ' +
+        'data-field="' + esc(field) + '" data-i="' + i + '">' +
+        (lone ? 'Moved' : 'Add where else he played') + '</button>' +
     '</div>';
   }
 
@@ -496,7 +683,8 @@
       var spells = S.spellsByNum[st.num] || spellsOf(st);
       if (!spells.length) spells = [{ half: '1', pos: '', role: '' }];
       S.spellsByNum[st.num] = spells;
-      return '<div class="xi__row">' +
+      var lone = spells.length === 1 && String(spells[0].half || '1') === '1';
+      return '<div class="xi__row' + (lone ? ' xi__row--one' : '') + '">' +
         '<div class="xi__head">' +
           '<span class="xi__n">' + (i + 1) + '</span>' +
           '<span class="xi__name">' + esc(nameOf(st.num)) + '</span>' +
@@ -531,7 +719,7 @@
   /* The five lists that are only ever "these players were on it". The eleven
      is not one of them: a starter carries a position too. */
   var GROUPS = {
-    bench: { label: 'Substitutes', empty: 'No substitutes named.',
+    bench: { label: 'Add a substitute', empty: 'No substitutes named.',
       hint: 'Anyone who was available but did not start.' },
     yellowCards: { label: 'Yellow cards', empty: 'No yellow cards.',
       hint: 'Add a player twice if they were booked twice.' },
@@ -587,6 +775,10 @@
       penaltiesSaved: (d.penaltiesSaved || []).map(numOf),
       penaltiesMissed: (d.penaltiesMissed || []).map(numOf),
     };
+    /* The sheet as it stands, which is the ring every list after it draws
+       from. Set before the first paint so the very first frame is already
+       narrowed, rather than after the first time somebody touches the date. */
+    S.onSheet = counts.starters.concat(counts.bench);
     /* Goals and assists are records, not tallies: each carries a minute and,
        for a goal, how it was scored. */
     /* Older records carry `type`/`setType` and a separate assists array. Read
@@ -606,32 +798,12 @@
     var oldAssists = (d.assists || []).map(function (a) {
       return { num: a.num, minute: a.minute != null ? a.minute : null, type: a.type || 'pass' };
     });
-    var goals = (d.goals || []).map(function (g) {
-      var assist = g.assist && g.assist.num ? { num: g.assist.num, type: g.assist.type || 'pass' } : null;
-      if (!assist && g.minute != null) {
-        /* The old pairing rule: an assist in the same minute by somebody else.
-           Used once, here, to carry the record forward rather than every time
-           a page wants to know who made a goal. */
-        var m = oldAssists.filter(function (a) {
-          return a.minute != null && Number(a.minute) === Number(g.minute) && a.num !== g.num;
-        })[0];
-        if (m) assist = { num: m.num, type: m.type };
-      }
-      return {
-        num: g.num,
-        minute: g.minute != null ? g.minute : null,
-        bodyPart: g.bodyPart || '',
-        zone: g.zone || '',
-        situation: legacySituation(g),
-        assist: assist,
-      };
-    });
+
+    var carried = carryAssists(d.goals || [], oldAssists, legacySituation);
+    var goals = carried.goals;
     /* Assists that never matched a goal are kept so nothing is lost, but they
        are not editable here: an assist without a goal is not a thing. */
-    var orphanAssists = oldAssists.filter(function (a) {
-      return !goals.some(function (g) { return g.assist && g.assist.num === a.num
-        && Number(g.minute) === Number(a.minute); });
-    });
+    var orphanAssists = carried.orphans;
     /* SPELLS, keyed by shirt number, for the eleven and for the bench. A
        player has as many as he had: a half, a position and a role each. The
        flat `positions` and `role` the website reads are derived from these
@@ -753,6 +925,10 @@
 
         '<div class="mform__body">' +
 
+          /* Said once, above the tabs' content, so it is on screen whichever
+             part of the match you are looking at. */
+          '<div class="mform__checks" data-checks hidden role="status"></div>' +
+
           /* ---- The match ---- */
           '<div data-mpane="match">' +
             '<div class="grid grid--2">' +
@@ -801,18 +977,16 @@
 
           /* ---- Team sheet ---- */
           '<div data-mpane="team" hidden>' +
+            scopeBar('club') +
             '<div class="tsheet">' +
               '<div>' +
-                '<div class="picker">' +
-                  '<div data-xi-pick style="flex:1 1 220px"></div>' +
-                  '<span class="picker__count" data-xi-count></span>' +
-                '</div>' +
+                '<div data-xi-pick></div>' +
                 '<div data-xi></div>' +
                 '<h4 class="mform__h">Substitutes</h4>' +
                 pickerGroup('bench', GROUPS.bench.label, counts.bench, GROUPS.bench.hint, GROUPS.bench.empty) +
                 '<h4 class="mform__h">Captain</h4>' +
-                selectField('m-capt', 'Who wore the armband',
-                  pickable(d.captain).map(function (p) { return { v: p.num, t: p.name }; }), d.captain) +
+                '<div data-capt>' + oneOfSheet('m-capt', 'Who wore the armband', d.captain) + '</div>' +
+                scopeBar('match') +
               '</div>' +
               '<div>' +
                 '<div data-pitch></div>' +
@@ -826,6 +1000,7 @@
               + 'is optional. What you fill in is what the match report writes and what the '
               + 'season’s statistics count, and what you leave blank the site simply does not '
               + 'claim to know.</p>' +
+            scopeBar('match') +
             '<div data-goals>' + goalRows(goals) + '</div>' +
             '<button type="button" class="btn btn--primary btn--sm" data-add-goal ' +
               'style="margin-top:var(--space-4)">Add a goal</button>' +
@@ -833,6 +1008,7 @@
 
           /* ---- Cards and keeping ---- */
           '<div data-mpane="disc" hidden>' +
+            scopeBar('match') +
             '<div class="grid grid--2">' +
               pickerGroup('yellowCards', GROUPS.yellowCards.label, counts.yellowCards,
                 GROUPS.yellowCards.hint, GROUPS.yellowCards.empty) +
@@ -846,9 +1022,7 @@
             '</div>' +
             '<h4 class="mform__h">The goalkeeper</h4>' +
             '<div class="grid grid--2">' +
-              '<div class="field"><label class="field__label" for="m-keeper">Who kept goal</label>' +
-                '<select class="select" id="m-keeper">' + playerOptions(d.keeper, 'Not recorded') +
-                '</select></div>' +
+              '<div data-keeper>' + oneOfSheet('m-keeper', 'Who kept goal', d.keeper) + '</div>' +
               '<div class="field"><label class="field__label" for="m-saves">Saves</label>' +
                 '<input class="input" id="m-saves" type="number" min="0" value="' +
                   esc(d.saves != null ? d.saves : '') + '" placeholder="How many he made">' +
@@ -867,8 +1041,8 @@
 
           /* ---- Report ---- */
           '<div data-mpane="report" hidden>' +
-            selectField('m-motm', 'Player of the Match',
-              pickable(d.motm).map(function (p) { return { v: p.num, t: p.name }; }), d.motm) +
+            '<div data-motm>' + oneOfSheet('m-motm', 'Player of the Match', d.motm) + '</div>' +
+            scopeBar('match') +
 
             /* THE SHAPE, DERIVED AND OVERRIDABLE.
                It was derived only, on the reasoning that a derived figure
@@ -988,9 +1162,15 @@
         pickerSelect('starters', 'Add a starter', 'Give each one a position and the shape draws itself.', counts.starters);
       $('[data-xi]', back).innerHTML = xiRows(startersNow());
       $('[data-pitch]', back).innerHTML = pitchSvg(startersNow());
-      var c = $('[data-xi-count]', back);
+      /* THE COUNT BELONGS TO THE FIELD IT COUNTS. It sat in a flex row
+         beside the picker, and the picker carries a hint and a collapsible
+         trialist row, so the count was pushed to the bottom of a 90px block
+         and printed level with "Somebody on trial?" - the one number on the
+         screen that matters, orphaned from the thing it describes. It is the
+         label's own tally now, where every other picker keeps its own. */
+      var c = $('[data-xi-pick] .field__of', back);
       c.textContent = counts.starters.length + ' of 11';
-      c.className = 'picker__count' +
+      c.className = 'field__of' +
         (counts.starters.length === 11 ? ' is-full' : counts.starters.length > 11 ? ' is-over' : '');
     }
     function paintGroup(field) {
@@ -1000,7 +1180,120 @@
       wrap.innerHTML = pickerSelect(field, cfg.label || field, cfg.hint, counts[field]) +
         '<div data-picked="' + field + '">' + pickedList(field, counts[field], cfg.empty) + '</div>';
     }
-    function repaintGoals() { $('[data-goals]', back).innerHTML = goalRows(goals); }
+    function repaintGoals() {
+      $('[data-goals]', back).innerHTML = goalRows(goals);
+      paintChecks();
+    }
+
+    /* THE SHEET CHANGED, SO EVERYTHING DOWNSTREAM OF IT FOLLOWS. Adding a
+       substitute has to put him in the scorer dropdown without a reload. Each
+       repaint reads the value off the select first and hands it back as
+       `keep`, so a man already named survives it. The goal cards are safe to
+       redraw because every edit is written into `goals` as it is made; typing
+       a minute does NOT come through here, or the field would lose focus on
+       every keystroke. */
+    function afterSheet() {
+      S.onSheet = counts.starters.concat(counts.bench);
+      /* The bench is in here too. It is club-scope like the eleven, but it
+         was the clearest casualty of the old wiring: built as a string before
+         the dialog existed, it offered all forty-four for every match ever
+         played until somebody happened to touch the date. */
+      Object.keys(GROUPS).forEach(paintGroup);
+      ['capt', 'motm', 'keeper'].forEach(function (k) {
+        var box = $('[data-' + k + ']', back);
+        if (!box) return;
+        var sel = box.querySelector('select');
+        var id = sel.id;
+        var label = box.querySelector('.field__label').textContent;
+        box.innerHTML = oneOfSheet(id, label, sel.value);
+      });
+      repaintGoals();
+      $$('[data-scopenote]', back).forEach(function (n) {
+        n.textContent = scopeNote(n.getAttribute('data-scopenote'));
+      });
+    }
+
+    /* DOES THE RECORD ADD UP?
+
+       The form asks for the same match twice - a scoreline on the first tab,
+       the goals on the third - and never compared them. Two of the archive's
+       thirty-five matches disagree with themselves: Shepherd's away credits a
+       goal to a man not on the sheet, and Brentford Town says the club scored
+       two with no goals listed and no team sheet, so two goals belong to
+       nobody and nobody has an appearance.
+
+       Neither is a save to refuse. A result typed at the side of a pitch is
+       worth having before the detail is known. It says so instead, on every
+       tab, until it is fixed or knowingly saved. */
+    function checks() {
+      var out = [];
+      var kind = $('#m-kind', back).value;
+      if (kind === 'fixture' || kind === 'walkover') return out;
+      var xi = counts.starters.length;
+      if (xi && xi !== 11) out.push('The team sheet names ' + xi + ', not eleven.');
+      if (!xi) out.push('No team sheet, so nobody is credited with playing in this match.');
+      var us = Number($('#m-us', back).value);
+      if ($('#m-us', back).value !== '' && goals.length !== us) {
+        out.push('The scoreline says ' + us + ' but ' + (goals.length || 'no')
+          + (goals.length === 1 ? ' goal is' : ' goals are') + ' listed.');
+      }
+      var on = {};
+      S.onSheet.forEach(function (n) { on[n] = 1; });
+      if (S.onSheet.length) {
+        var stray = {};
+        goals.forEach(function (g) {
+          if (g.num && !on[g.num]) stray[g.num] = 1;
+          if (g.assist && g.assist.num && !on[g.assist.num]) stray[g.assist.num] = 1;
+        });
+        Object.keys(GROUPS).forEach(function (f) {
+          (counts[f] || []).forEach(function (n) { if (!on[n]) stray[n] = 1; });
+        });
+        var kp = $('#m-keeper', back).value;
+        if (kp && !on[kp]) stray[kp] = 1;
+        var names = Object.keys(stray).map(nameOf);
+        if (names.length) {
+          out.push(names.join(', ') + (names.length === 1 ? ' is' : ' are')
+            + ' named in this match but not on the team sheet.');
+        }
+      }
+      return out;
+    }
+
+    function paintChecks() {
+      var box = $('[data-checks]', back);
+      if (!box) return;
+      var list = checks();
+      box.hidden = !list.length;
+      box.innerHTML = list.length
+        ? '<b>' + list.length + (list.length === 1 ? ' thing does' : ' things do')
+          + ' not add up</b><ul>' + list.map(function (t) {
+            return '<li>' + esc(t) + '</li>';
+          }).join('') + '</ul>'
+        : '';
+      paintTabCounts();
+    }
+
+    /* WHAT IS ON THE TAB YOU HAVE NOT OPENED. The only way to find out
+       whether the cards were entered was to go and look at all five, and the
+       commonest way to record a match badly is to stop before the end. */
+    function paintTabCounts() {
+      var xi = counts.starters.length;
+      var bn = counts.bench.length;
+      var cards = counts.yellowCards.length + counts.redCards.length;
+      var have = {
+        team: xi || bn ? xi + (bn ? ' + ' + bn : '') : '',
+        goals: goals.length || '',
+        disc: cards || '',
+        report: ($('#m-polished', back) || {}).value ? 'written'
+          : ($('#m-report', back) || {}).value ? 'notes' : '',
+      };
+      $$('[data-mtab]', back).forEach(function (t) {
+        var v = have[t.getAttribute('data-mtab')];
+        var b = t.querySelector('.tab__n');
+        if (!b) { b = document.createElement('i'); b.className = 'tab__n'; t.appendChild(b); }
+        b.textContent = v === '' || v == null ? '' : String(v);
+      });
+    }
 
     /* The header says which match this is, in words, and keeps saying it as
        the date and the opponent are typed. */
@@ -1030,6 +1323,7 @@
     }
 
     paintXI();
+    afterSheet();
     paintTitle();
     paintKind();
 
@@ -1094,6 +1388,7 @@
             if (!posByNum[n]) posByNum[n] = defaultPos(n);
             paintXI();
           } else paintGroup(field);
+          afterSheet();
           /* Cleared and still focused, so a second trialist is another name
              and another Enter rather than another hunt for the field.
 
@@ -1128,6 +1423,7 @@
         var field = drop.getAttribute('data-drop');
         counts[field].splice(Number(drop.getAttribute('data-i')), 1);
         if (field === 'starters') paintXI(); else paintGroup(field);
+        afterSheet();
         return;
       }
 
@@ -1446,7 +1742,7 @@
          is what makes correcting a mistyped date correct the squad with it. */
       if (e.target.id === 'm-date') {
         paintXI();
-        Object.keys(GROUPS).forEach(paintGroup);
+        afterSheet();
       }
       /* Adding somebody to a list. The dropdown returns to its prompt so the
          next person can be added straight away. */
@@ -1460,6 +1756,9 @@
           if (!posByNum[num]) posByNum[num] = defaultPos(num);
           paintXI();
         } else paintGroup(field);
+        /* A substitute named here has to reach the scorer dropdown, and a man
+           taken off the sheet has to leave it. */
+        afterSheet();
         return;
       }
       /* ---- A spell: which half, where, and what he was asked to do ---- */
@@ -1551,6 +1850,14 @@
         goals[Number(gr.getAttribute('data-goal'))].minute =
           e.target.value === '' ? null : Number(e.target.value);
       }
+    });
+
+    /* The checks read the whole form, so anything typed anywhere can change
+       them. Their own listener rather than a line at the foot of the editors'
+       handlers, which return early in a dozen branches, and registered LAST
+       so it runs after those handlers have written what was typed. */
+    ['input', 'change'].forEach(function (ev) {
+      back.addEventListener(ev, function () { paintChecks(); });
     });
   }
 

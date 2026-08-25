@@ -82,6 +82,13 @@ deliberately larger than the viewport, and wide tables sit in an
 authoritative measure is `documentElement.scrollWidth > clientWidth`; an
 element-level check reports these as failures and they are not.
 
-Last full pass: Aug 2026 - 25 pages clean at 320/375/430/768/1280, including
-the match-page album card and the player-profile chips. Document overflow 0
-everywhere; type floor covers every sub-9px element.
+Last full pass: 25 Aug 2026 - 26 routes clean at 320, with 375 and 768 spot
+checks across the home page, sponsors, squad, stats, results, the news and
+gallery indexes, two player profiles, two match pages, two articles and
+control.html. Document overflow 0 everywhere.
+
+That pass followed the responsive-image work: /assets/hero/team.webp gained
+480/800/1200 variants and four pages gained a srcset and sizes, and the
+sponsors hero became lazy. A sizes attribute that disagrees with the layout is
+an overflow waiting to happen, which is why the sweep was re-run rather than
+assumed.

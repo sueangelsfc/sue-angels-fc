@@ -36,9 +36,16 @@ if ! node src/test/run.mjs >/dev/null 2>&1; then
 fi
 
 # 4. No service-role key may ever be pushed.
-if git grep -qIl -e 'service_role' -e 'sb_secret_' -- ':!*.md' ':!scripts/hooks/*' ':!src/test/*' 2>/dev/null; then
+#
+#    The exclusions are the files whose JOB is to name the string: the notes,
+#    this hook, the suite, and now scripts/guard.mjs, which is the deploy's own
+#    leak check and holds the word in a regular expression. A file that looks
+#    for the key reads identically to a file that leaks one under a grep, and
+#    the answer is to name the searchers rather than to soften the search.
+SECRET_SCAN_EXCLUDE=( ':!*.md' ':!scripts/hooks/*' ':!scripts/guard.mjs' ':!src/test/*' )
+if git grep -qIl -e 'service_role' -e 'sb_secret_' -- "${SECRET_SCAN_EXCLUDE[@]}" 2>/dev/null; then
   say "BLOCKED: a service-role key reference is present in tracked files."
-  git grep -Il -e 'service_role' -e 'sb_secret_' -- ':!*.md' ':!scripts/hooks/*' ':!src/test/*' | head
+  git grep -Il -e 'service_role' -e 'sb_secret_' -- "${SECRET_SCAN_EXCLUDE[@]}" | head
   fail=1
 fi
 

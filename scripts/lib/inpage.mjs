@@ -16,25 +16,70 @@
    almost every panel on a gradient, and a check that assumed the top stop
    would fail dozens of things that are perfectly readable.
    ========================================================================== */
+/* NO BACKTICKS BELOW THIS LINE, INCLUDING IN COMMENTS. Everything after it
+   is one template literal, so a backtick around a CSS property name in a
+   comment ends the string and the file stops parsing. It cost three round
+   trips to learn twice. */
 export const AUDIT = String.raw`(() => {
   const out = { overflow: null, unreadable: [], invisible: [], unverifiable: 0, measured: 0 };
 
-  /* 1. IS ANYTHING PUSHED OFF THE SIDE OF THE PAGE?
+  /* 1. DOES THE PAGE ACTUALLY SCROLL SIDEWAYS?
 
-     NOT documentElement.scrollWidth > clientWidth, which is the usual
-     measure and is DEAD ON THIS SITE: home.css sets html{overflow-x:hidden}
-     deliberately, because the four atmosphere layers behind every page are
-     larger than the viewport by design. With that rule in place the document
-     can never report horizontal scroll, so the usual check passes whatever it
-     is shown - proven by putting a 3000px-wide element on the page and
-     watching it say nothing.
+     This took three attempts and the first two were both wrong.
 
-     So the question is asked of TEXT instead: something a reader is meant to
-     read, whose box ends past the right edge. The atmosphere layers hold no
-     text, so they are silent here without needing to be special-cased, and a
-     wide table inside its own overflow-x scroller is a thing you scroll on
-     purpose rather than a broken page. */
-  const overflowing = [];
+     documentElement.scrollWidth > clientWidth is the usual measure and is
+     DEAD here: home.css sets html{overflow-x:hidden} on purpose, for the
+     atmosphere layers, so the document can never report horizontal scroll. A
+     3000px-wide element on the page proved it said nothing at all.
+
+     Asking it of TEXT instead - is any element with text past the right edge
+     - is not dead, and is wrong the other way: it reported 69 elements on the
+     all-bands page, and every one was inside a ticker, a card carousel or a
+     chart whose own ancestor clips it. Content a local container clips is
+     contained, not spilling, and telling the two apart is a judgement call,
+     which is the one thing these questions must not be.
+
+     So: neutralise the page-level clip, force a reflow, and ask the document
+     the ordinary question. The atmosphere layers are position:fixed and
+     contribute nothing to scrollWidth, so they stay silent without a special
+     case, and the answer is the one a reader would give - can you drag the
+     page sideways. Restored immediately, before anything else is measured.
+
+     AND IT IS A WEAK GATE ON THIS SITE, which is worth saying rather than
+     leaving somebody to discover. .sec{overflow:hidden} is global, so every
+     band absorbs its own overflow and the document can only be made to scroll
+     by markup outside a band. What a reader on a phone actually experiences
+     is text CLIPPED inside a band, and that is counted below and reported
+     rather than failed, because a ticker, a card carousel and a chart all
+     clip on purpose and telling those from an accident is a judgement. */
+  const de = document.documentElement;
+  {
+    const wasHtml = de.style.overflowX;
+    const wasBody = document.body.style.overflowX;
+    de.style.overflowX = 'visible';
+    document.body.style.overflowX = 'visible';
+    void de.offsetWidth;
+    const by = de.scrollWidth - de.clientWidth;
+    if (by > 1) {
+      let worst = null; let max = 0;
+      for (const el of document.querySelectorAll('body *')) {
+        const r = el.getBoundingClientRect();
+        /* Something six viewports wide is a decorative layer, not the thing
+           that made the page scroll by 40px. */
+        if (r.width > 0 && r.right > max && r.width < de.clientWidth * 6) {
+          max = r.right; worst = String(el.className || el.tagName).slice(0, 50);
+        }
+      }
+      out.overflow = { by, worst };
+    }
+    de.style.overflowX = wasHtml;
+    document.body.style.overflowX = wasBody;
+  }
+
+  /* Text a container cuts off. Reported, never failed - see the note above.
+     Deliberate truncation (nowrap + ellipsis) and anything inside a scroller
+     are excluded, because both are things a reader can resolve. */
+  const clippedText = [];
 
   const chan = (v) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); };
   const lum = (c) => 0.2126 * chan(c.r) + 0.7152 * chan(c.g) + 0.0722 * chan(c.b);
@@ -103,27 +148,47 @@ export const AUDIT = String.raw`(() => {
        a screen reader and no sighted person ever sees it, so its contrast is
        not a question and its size is the whole point. checkVisibility says
        true for it, correctly, because it IS rendered. */
-    const clipped = cs.position === 'absolute'
-      && r.width <= 1.5 && r.height <= 1.5
-      && (cs.overflow === 'hidden' || cs.clipPath !== 'none' || cs.clip !== 'auto');
-    if (clipped) continue;
+    /* THE 1px BOX IS NOT THE TEST. .sr-only sets width:1px;height:1px, and
+       on a <table> that does nothing at all - a table sizes to its content -
+       so the league table's screen-reader copy measures 512x331 and is hidden
+       by clip-path: inset(50%) alone. Testing for the small box reported 46
+       of its cells as text cut off by a container. The clip is what hides it,
+       so the clip is what to look for. */
+    const isSrOnly = (n, box) => {
+      const s2 = getComputedStyle(n);
+      if (s2.position !== 'absolute') return false;
+      if (/inset\(\s*50%/.test(s2.clipPath)) return true;
+      if (/rect\(\s*0(px)?[,\s]/.test(s2.clip)) return true;
+      return box.width <= 1.5 && box.height <= 1.5
+        && (s2.overflowX === 'hidden' || s2.clipPath !== 'none' || s2.clip !== 'auto');
+    };
+    if (isSrOnly(el, r)) continue;
+    /* AND ANYTHING INSIDE ONE. The first version tested the element itself
+       only, so the league table's screen-reader copy - a whole <table> inside
+       a 1px .sr-only box - reported 46 of its cells as text cut off by a
+       container. Every descendant of a visually hidden element is visually
+       hidden; asking about its layout is asking the wrong question. */
+    let inSrOnly = false;
+    for (let n = el.parentElement; n && n !== document.body; n = n.parentElement) {
+      if (isSrOnly(n, n.getBoundingClientRect())) { inSrOnly = true; break; }
+    }
+    if (inSrOnly) continue;
 
     const label = String(el.tagName.toLowerCase() + (el.className ? '.' + el.className : '')).slice(0, 60);
     const text = el.textContent.trim().slice(0, 40);
 
-    /* 1b. Off the side of the page. Measured on the same elements as the
-       contrast question, for the reason in the note at the top. */
+    /* 1b. Cut off by a container. */
     if (r.right > window.innerWidth + 1 || r.left < -1) {
-      let scroller = false;
-      for (let n = el.parentElement; n; n = n.parentElement) {
+      let contained = false; let scroller = false;
+      for (let n = el.parentElement; n && n !== document.body; n = n.parentElement) {
         const ox = getComputedStyle(n).overflowX;
         if (ox === 'auto' || ox === 'scroll') { scroller = true; break; }
+        if (ox === 'hidden' || ox === 'clip') contained = true;
       }
-      if (!scroller && r.width > 0) {
-        overflowing.push({
-          sel: label, text,
-          past: Math.round(Math.max(r.right - window.innerWidth, -r.left)),
-        });
+      const ellipsis = cs.textOverflow === 'ellipsis' && cs.whiteSpace === 'nowrap';
+      if (contained && !scroller && !ellipsis) {
+        const band = el.closest('[class*="sec--"]');
+        clippedText.push(band ? (/sec--([a-z0-9-]+)/.exec(band.className) || [, '?'])[1] : 'outside a band');
       }
     }
 
@@ -160,10 +225,7 @@ export const AUDIT = String.raw`(() => {
     }
   }
 
-  if (overflowing.length) {
-    overflowing.sort((a, b) => b.past - a.past);
-    out.overflow = { by: overflowing[0].past, worst: overflowing[0].sel, text: overflowing[0].text,
-      count: overflowing.length };
-  }
+  out.clipped = {};
+  for (const b of clippedText) out.clipped[b] = (out.clipped[b] || 0) + 1;
   return out;
 })()`;

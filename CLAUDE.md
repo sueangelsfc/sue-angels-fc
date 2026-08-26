@@ -153,19 +153,49 @@ and of all 21 panel screens, and each is a fact rather than a matter of taste:
 The panel is booted the way `panel-render.mjs` boots it - the shipped files
 with the network stubbed - because that is the screen the club types on.
 
-**It refuses to guess.** Text over a gradient or a photograph has no single
-background colour, so it is counted as unverifiable and reported rather than
-failed: 6,909 of 11,509 pieces of text on this site are on a gradient, and a
-check that assumed the top stop would fail dozens of readable things.
+**It renders the home page with every band switched on.** The club has 17 of
+the 75 on, so the built `index.html` holds 17 and a browser looking at it sees
+17 - and the other 58 are the ones nobody would notice breaking, because the
+defect appears the day somebody flicks a switch in the panel. `npm test`
+renders the page this way for the same reason. The generator writes
+`__all-bands.html` when `SA_ALL_BANDS` is set, and the check deletes it again
+whatever happens.
 
-**Three flaws in the check, all found by probing it rather than reading it.**
-It measured `<option>` elements, which have no layout box because the select
-paints them. It measured children of `display:none` parents, so the mobile
-nav's label read as invisible text on every desktop screen. And its overflow
-question was `documentElement.scrollWidth > clientWidth`, which is **dead on
-this site**: `home.css` sets `html{overflow-x:hidden}` on purpose, for the
-atmosphere layers, so the document can never report horizontal scroll. A
-3000px-wide element proved it said nothing. It asks about text now.
+**It found two real mobile bugs in bands nobody can see.** The campaign band's
+grid used a bare `1fr`, which is `minmax(auto, 1fr)`, so the 606px inline SVG
+chart forced the track open: at 320px the whole band laid out at **648px
+inside a 272px grid**, clipped by `.sec{overflow:hidden}` so nothing scrolled
+and nothing looked wrong. And the league table band's heading row was a
+no-wrap flex row, so **Full table** sat 44px off the side of a phone.
+
+**It refuses to guess, twice over.** Text over a gradient or a photograph has
+no single background colour, so it is counted as unverifiable and reported
+rather than failed: 7,092 of 16,275 pieces of text are on a gradient, and a
+check that assumed the top stop would fail dozens of readable things. And text
+a container clips is **reported per band, never failed**, because a ticker, a
+carousel and a chart all clip on purpose and telling those from an accident is
+a judgement.
+
+**Five flaws in the check, every one found by probing it rather than reading
+it.** It measured `<option>` elements, which have no layout box because the
+select paints them. It measured children of `display:none` parents, so the
+mobile nav's label read as invisible text on every desktop screen. It tested
+the visually-hidden pattern by looking for a 1px box, and `.sr-only` on a
+`<table>` does not collapse - a table sizes to its content - so the league
+table's screen-reader copy reported 46 of its cells as clipped; the clip is
+what hides it, so the clip is what to look for.
+
+**And the overflow question was wrong twice.**
+`documentElement.scrollWidth > clientWidth` is the usual measure and is dead
+here: `home.css` sets `html{overflow-x:hidden}` on purpose, so the document
+can never report horizontal scroll, and a 3000px element proved it said
+nothing. Asking it of text instead is not dead and is wrong the other way - it
+reported 69 elements, every one inside a ticker or a chart that clips them by
+design. It neutralises the page-level clip and asks the document now, and
+**says out loud that this is a weak gate on this site**: `.sec{overflow:hidden}`
+is global, so every band absorbs its own overflow and only markup outside a
+band can make the page scroll. What a reader on a phone experiences is text
+clipped inside a band, which is the figure reported beside it.
 
 **One bug in nine places.** Every component drawing a small secondary label
 inside a selected orange pill picked its own dark-ink alpha - 0.6, 0.62, 0.66,

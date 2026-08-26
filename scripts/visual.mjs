@@ -27,6 +27,7 @@
    Exit codes: 0 clean · 1 a failure · 2 no Chrome (CI treats that as a
    failure; a laptop is told to install one).
    ========================================================================== */
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
@@ -75,6 +76,34 @@ function routes() {
     if (!seen.has(key)) seen.set(key, '/' + r.replace(/^\//, ''));
   }
   return [...seen.values()].sort();
+}
+
+/* ---- The home page with every band switched on -------------------------
+
+   The club has 17 of the 75 bands on, so the built index.html holds 17 and a
+   browser looking at it sees 17. The other 58 are the ones nobody would
+   notice breaking: they appear the day somebody flicks a switch in the panel,
+   which is the worst possible moment to discover a defect.
+
+   `npm test` renders the page this way for exactly the same reason. The
+   generator writes it when SA_ALL_BANDS is set; this asks for it, drives it,
+   and deletes it again whatever happens - a stray 270KB page in the repo
+   root is the kind of thing that gets committed by accident once. */
+const ALL_BANDS = '__all-bands.html';
+
+function makeAllBands() {
+  const out = spawnSync(process.execPath, [path.join(ROOT, 'src/build.mjs')], {
+    cwd: ROOT, env: { ...process.env, SA_ALL_BANDS: '1' }, encoding: 'utf8',
+  });
+  if (out.status !== 0) {
+    console.error('could not build the all-bands page:', (out.stderr || '').slice(-400));
+    return null;
+  }
+  return fs.existsSync(path.join(ROOT, ALL_BANDS)) ? '/' + ALL_BANDS : null;
+}
+
+function dropAllBands() {
+  try { fs.rmSync(path.join(ROOT, ALL_BANDS), { force: true }); } catch { /* nothing to do */ }
 }
 
 const fails = [];
@@ -126,10 +155,7 @@ async function main() {
   });
 
   const report = (where, a) => {
-    if (a.overflow) {
-      fail(where, `${a.overflow.count} text element(s) past the edge, worst by ${a.overflow.by}px:`
-        + ` ${a.overflow.worst} "${a.overflow.text}"`);
-    }
+    if (a.overflow) fail(where, `scrolls sideways by ${a.overflow.by}px (widest: ${a.overflow.worst})`);
     for (const i of a.invisible.slice(0, 3)) fail(where, `text at no size: ${i.sel} "${i.text}" ${i.w}x${i.h}`);
     for (const u of a.unreadable.slice(0, 4)) {
       fail(where, `unreadable ${u.got}:1 (needs ${u.need}) ${u.fg} on ${u.bg} at ${u.size}px`
@@ -138,8 +164,12 @@ async function main() {
   };
 
   let measured = 0; let unverifiable = 0; let pages = 0;
+  const clippedBy = new Map();
 
-  for (const route of routes()) {
+  const extra = makeAllBands();
+  if (!extra) fail('__all-bands.html', 'could not be generated, so 58 of the 75 bands went unchecked');
+
+  for (const route of [...routes(), ...(extra ? [extra] : [])]) {
     for (const w of WIDTHS) {
       await resize(w);
       await goto(`http://localhost:${PORT}${route}`);
@@ -148,6 +178,7 @@ async function main() {
       const a = await ask(AUDIT);
       report(`${route} @${w}`, a);
       measured += a.measured; unverifiable += a.unverifiable;
+      for (const [b, n] of Object.entries(a.clipped || {})) clippedBy.set(b, Math.max(clippedBy.get(b) || 0, n));
     }
   }
 
@@ -196,13 +227,21 @@ async function main() {
     const a = await ask(AUDIT);
     report(`panel:${key}`, a);
     measured += a.measured; unverifiable += a.unverifiable;
+    for (const [b, n] of Object.entries(a.clipped || {})) clippedBy.set(b, Math.max(clippedBy.get(b) || 0, n));
   }
 
   await browser.close();
   server.close();
+  dropAllBands();
 
   console.log(`\n  ${pages} page families x ${WIDTHS.length} widths, plus ${(panels || []).length} panel screens`);
   console.log(`  ${measured} pieces of text measured for contrast · ${unverifiable} on a gradient or photograph, which cannot be measured this way`);
+  /* Reported, not failed: a ticker, a carousel and a chart all clip on
+     purpose, and this is the number to look at when somebody says a page is
+     cut off on their phone. */
+  const clipTotal = [...clippedBy.values()].reduce((a, b) => a + b, 0);
+  console.log(`  ${clipTotal} pieces of text clipped by a container at some width, across ${clippedBy.size} bands`
+    + (clippedBy.size ? `\n    ${[...clippedBy].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([b, n]) => b + ' ' + n).join(', ')}` : ''));
 
   if (fails.length) {
     console.log(`\n${fails.length} FAILURE(S):`);
@@ -213,4 +252,8 @@ async function main() {
   console.log('\nNothing here renders wrongly.');
 }
 
-main().catch((e) => { console.error('visual check could not run:', e.message); process.exit(1); });
+main().catch((e) => {
+  dropAllBands();
+  console.error('visual check could not run:', e.message);
+  process.exit(1);
+});

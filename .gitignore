@@ -22,3 +22,7 @@ _sections.html
 # Scratch for scripts/make-covers.mjs. The script clears it on a clean run;
 # a run that is interrupted leaves it behind, and it must never be committed.
 .covers-tmp/
+
+# Written only by `npm run visual`, and deleted again as soon as it has been
+# rendered. Never a route: it is the home page with all 75 bands switched on.
+__all-bands.html

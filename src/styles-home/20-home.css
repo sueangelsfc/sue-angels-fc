@@ -1340,7 +1340,11 @@ html.js .rv.is-in{opacity: 1; transform: translateY(0);}
   border-bottom: 1px solid var(--line-d);
   color: var(--fg);
   padding: 84px 0;}
-.tbl__head{display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 26px;}
+/* flex-wrap, so the button drops to its own line rather than off the page.
+   Three items in a nowrap row - the rail, the heading and Full table - come
+   to more than 320px, and .sec{overflow:hidden} clipped the button rather
+   than letting anything scroll, so on a phone it was simply not there. */
+.tbl__head{display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 20px; margin-bottom: 26px;}
 .tbl{border: 1px solid var(--line-d); border-radius: 20px; overflow: hidden;
   background: rgba(255, 255, 255, 0.02);}
 .tbl__row{display: grid;

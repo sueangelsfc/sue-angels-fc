@@ -1066,6 +1066,49 @@ for (const r of routes) {
   }));
 }
 
+/* ---- The home page with EVERY band switched on --------------------------
+
+   Not a route. Written only when SA_ALL_BANDS is set, which is what
+   `npm run visual` does, and deleted again as soon as it has been rendered.
+
+   The reason is the one src/test/run.mjs already gives for rendering the page
+   this way: the built files contain none of the off bands. The club has 17 of
+   the 75 switched on, so a headless browser looking at index.html sees 17,
+   and the other 58 could each carry a defect that appears the day somebody
+   flicks a switch. That is exactly what happened with the nine components
+   drawing an unreadable label on a selected pill - all nine were on bands
+   that DO ship, and there is no reason to think the other 58 are cleaner.
+
+   It goes through page() rather than being assembled by the caller, because a
+   hand-rolled wrapper that forgot the stylesheet would render an unstyled
+   document and every check against it would pass for the wrong reason.
+
+   fs.writeFileSync, not write(): write() records what the generator produced
+   and scripts/guard.mjs judges exactly that list. A file that is deleted
+   thirty seconds later does not belong on it. */
+if (!CHECK && process.env.SA_ALL_BANDS) {
+  const everything = home({ ...d, homeLayout: { order: HOME_BANDS.map((b) => b.key), hidden: [] } });
+  fs.writeFileSync(path.join(ROOT, '__all-bands.html'), page({
+    title: `Every band · ${CLUB.name}`,
+    description: 'Not a published page. The home page with every band switched on, for the browser pass.',
+    path: '/__all-bands.html',
+    body: everything.body,
+    bodyClass: everything.bodyClass || '',
+    schema: [],
+    ogImage: ogCard('og-default'),
+    ogImageAlt: `${CLUB.name} club crest`,
+    noindex: true,
+    css: everything.css || 'sa.css',
+    pageCss: everything.css === 'home.css' ? bandFor('index.html') : null,
+    shell: everything.shell,
+    footerHtml: everything.footerHtml,
+    preMain: everything.preMain,
+    preloadImage: everything.preloadImage,
+    assetV: everything.css === 'home.css' ? homeV : assetV,
+    jsV: assetV,
+  }));
+}
+
 /* ---- Control panel ----
    noindex, and it renders its own shell rather than the public header/footer. */
 {

@@ -152,7 +152,15 @@
 .camp__table td{color: var(--ink-2);}
 
 @media (max-width: 980px){
-  .camp{grid-template-columns: 1fr;}
+  /* minmax(0, 1fr), NOT 1fr. A bare `1fr` is `minmax(auto, 1fr)`, so a child
+     with an intrinsic width wider than the track forces the track open - the
+     classic grid blowout. The inline SVG chart is 606px of intrinsic width,
+     and at 320px this column computed to 648px inside a 272px grid: the whole
+     band, hero and figures and chart, laid out at twice the viewport and
+     clipped by .sec{overflow:hidden} so nothing scrolled and nothing looked
+     obviously wrong. Found by rendering the page with every band switched on,
+     which is the only way to see a band the club has turned off. */
+  .camp{grid-template-columns: minmax(0, 1fr);}
   .camp__kpis{grid-template-columns: repeat(2, minmax(0, 1fr));}
 }
 @media (max-width: 560px){

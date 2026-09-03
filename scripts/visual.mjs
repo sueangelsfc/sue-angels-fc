@@ -208,7 +208,48 @@ async function main() {
     window.CP.readAll = (t) => Promise.resolve(F[t] || []);
     window.CP.readEnquiries = () => Promise.resolve([]);
     window.CP.readSupporters = () => Promise.resolve([]);
-    window.CP.rest = () => Promise.resolve([]);
+    /* CP.rest served an empty array, and the one screen built entirely on it
+       therefore rendered its "nothing recorded yet" state at all three
+       widths: the world map, the daily trend, the day-against-hour heatmap
+       and every table on Website stats were never drawn in a real browser at
+       all. That is the defect this whole file exists to catch - a check that
+       runs happily over markup that was never produced - so the stub answers
+       page_stats with figures wide enough to draw the lot. */
+    window.CP.rest = (method, q) => {
+      const day = (n) => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10);
+      if (/page_stats_hourly\\?/.test(q || '')) {
+        const out = [];
+        for (let d = 0; d < 20; d += 1) {
+          for (const h of [8, 12, 17, 20, 22]) {
+            out.push({ day: day(d), hour: h, path: '/index.html', views: 1 + ((d + h) % 9) });
+          }
+        }
+        return Promise.resolve(out);
+      }
+      if (/page_stats\\?/.test(q || '')) {
+        const zones = ['Europe/London', 'America/New_York', 'Australia/Sydney',
+          'Africa/Lagos', 'Asia/Tokyo', 'Antarctica/Troll'];
+        const paths = ['/index.html', '/squad.html', '/results.html',
+          '/players/charlie-dunkley.html', '/matches/r20260816-brentford.html',
+          '/news/promoted-to-league-eight.html', '/gallery/first-season.html'];
+        const srcs = ['', 'google.com', 'facebook.com', 'instagram.com'];
+        const devs = ['mobile', 'desktop', 'tablet'];
+        const out = [];
+        for (let d = 0; d < 20; d += 1) {
+          paths.forEach((pth, i) => {
+            out.push({
+              day: day(d), path: pth, zone: zones[(d + i) % zones.length],
+              source: srcs[(d + i) % srcs.length], device: devs[i % devs.length],
+              views: 1 + ((d * 3 + i * 5) % 11),
+              seconds_total: 20 + ((d + i) % 7) * 30,
+              depth_total: 30 + ((d * 7 + i) % 60),
+            });
+          });
+        }
+        return Promise.resolve(out);
+      }
+      return Promise.resolve([]);
+    };
     window.CP.upsert = () => Promise.resolve([]);
     window.CP.remove = () => Promise.resolve([]);
     window.CP.upload = () => Promise.resolve('');
@@ -226,6 +267,23 @@ async function main() {
     for (const l of log) fail(`panel:${key}`, l);
     const a = await ask(AUDIT);
     report(`panel:${key}`, a);
+
+    /* The stats screen is the one built entirely on CP.rest, so it is the one
+       that can silently go back to rendering its empty state and take every
+       chart on it out of this check without failing anything. It is asked
+       directly whether it drew them. */
+    if (key === 'stats') {
+      const drewIt = await ask(`(() => ({
+        land: (document.querySelector('.cpm__land')?.getAttribute('d') || '').split('M').length - 1,
+        bubbles: document.querySelectorAll('.cpm__hit').length,
+        heat: document.querySelectorAll('.cph__v').length,
+        trend: document.querySelectorAll('.cpc__dot').length,
+      }))()`);
+      if (drewIt.land < 2000) fail('panel:stats', `the world map drew ${drewIt.land} land dots`);
+      if (!drewIt.bubbles) fail('panel:stats', 'no country markers on the map');
+      if (drewIt.heat !== 168) fail('panel:stats', `the heatmap drew ${drewIt.heat} cells, not 7 x 24`);
+      if (drewIt.trend < 2) fail('panel:stats', `the daily trend drew ${drewIt.trend} points`);
+    }
     measured += a.measured; unverifiable += a.unverifiable;
     for (const [b, n] of Object.entries(a.clipped || {})) clippedBy.set(b, Math.max(clippedBy.get(b) || 0, n));
   }

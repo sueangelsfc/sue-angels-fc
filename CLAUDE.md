@@ -627,6 +627,53 @@ stayed and how far down they got. `migrations/007_page_stats.sql`,
 - **`sa.js` 16 → 17KB, and the 444 bytes are named** in `run.mjs` beside the
   ceiling, measured by building without the beacon and with it. The ceiling's
   own comment demands that; this is the first raise to answer it.
+- **When it is read is a second table, and that is the whole design.** The
+  obvious way to add the hour is a column on `page_stats`, and it is the wrong
+  one: that table's privacy property holds because the key is coarse enough
+  that real readers collide in it, and a 24-way split of a key already
+  carrying day, page, zone, source and device turns most buckets back into one
+  view each - the single reader from Europe/Zurich, on the sponsors page, at
+  23:00. `page_stats_hourly` is keyed (day, hour, path) and carries **no zone,
+  no source and no device**, so it can say "eleven views of the squad page at
+  8pm on Tuesday" and can never say who. The two cannot be joined back into a
+  visit because neither holds anything to join on. `migrations/008_page_stats_detail.sql`.
+- **The hour is the READER'S, not the server's.** "People read this at eight in
+  the evening" is a fact about a habit; converted to a server clock it is a
+  fact about nothing.
+- **The world map is data, not a picture, and carries no library.**
+  `MAP_GRID` is a 150x64 bitmap of where land is, rasterised once from Natural
+  Earth's 110m outline and stored as 1,600 characters of base64. One `<path>`
+  of round-capped dots draws all 2,856 land cells, because a zero-length
+  subpath with a round cap paints a dot: one DOM node instead of 2,856. The
+  bubbles are circles at each country's centroid, sized by **area** rather
+  than radius so twice the views does not look like four times.
+- **Nothing on the screen ever measures the page.** No `getBoundingClientRect`,
+  no `getComputedStyle`, no canvas: every chart is sized in its own viewBox
+  and scaled by CSS, which is what lets the whole screen render in the suite's
+  DOM - it has neither layout nor a cascade and throws rather than inventing
+  them.
+- **`control-stats.js` 5 → 11KB and `control.css` 6 → 7KB, both measured.**
+  Strip the grid and the two lookup tables out of the shipped chunk and it
+  gzips to 7.7KB, so the data is 2.4KB of the 10.2. The sheet grew 383 bytes
+  for the four components the panel did not already have. The alternative was
+  a charting library, which would have cost more than all of it.
+- **The browser check was rendering the empty state, and that is the defect
+  this whole file exists to catch.** `scripts/visual.mjs` stubbed `CP.rest` to
+  `[]`, so the one screen built entirely on it drew "nothing recorded yet" at
+  all three widths and the map, the trend, the heatmap and every table on it
+  were never rendered in a real browser at all. The stub serves figures now,
+  and the check **asks the screen directly** whether it drew 2,856 land dots,
+  a marker, 168 heatmap cells and a trend - proved by breaking the threshold
+  and watching it go red.
+- **Four defects found by the probes, not by reading the code.** The heatmap
+  bucketed a missing hour under the key `2:NaN`, so a site still shipping the
+  old beacon would have drawn 168 empty squares that read as a week nobody
+  visited; empty cells were hidden by putting the opacity on the same element
+  as the outline, so the grid drew as five floating bars; a check read
+  squad.html's figure off the day table's "most read" column and reported 10
+  for a page with 7; and the drill-down check matched `7 of the period's 24
+  views` inside **`17` of the period's 24 views**, so it passed on an
+  unfiltered panel.
 - **Inert until the migration is run**, like 002 and 004. Until then every
   call is a 404, the failure is swallowed, and the screen names the file that
   turns it on rather than showing an empty page that reads as broken.

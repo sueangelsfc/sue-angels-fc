@@ -537,31 +537,52 @@ export async function panelChecks() {
      field hints wired to nothing, both passed checks that asked only whether
      the mechanism existed. */
   {
+    /* CURRENT period. Figures chosen so every total below can be checked by
+       hand: index.html is 10 + 4 across two zones, squad.html 6 + 1 across two
+       days, and the player page is there to exercise the section grouping. */
     const statRows = [
-      /* Same page, two different zones: the page total has to be the sum, and
-         the two zones have to stay apart. */
       { day: '2026-09-01', path: '/index.html', zone: 'Europe/London', source: '', device: 'mobile', views: 10, seconds_total: 300, depth_total: 500 },
       { day: '2026-09-01', path: '/index.html', zone: 'America/New_York', source: 'google.com', device: 'desktop', views: 4, seconds_total: 200, depth_total: 200 },
       { day: '2026-09-02', path: '/squad.html', zone: 'Europe/London', source: 'facebook.com', device: 'mobile', views: 6, seconds_total: 120, depth_total: 300 },
       /* A zone the map has never heard of. It must become its region, not
          vanish and not be guessed at. */
       { day: '2026-09-02', path: '/squad.html', zone: 'Antarctica/Troll', source: '', device: '', views: 1, seconds_total: 10, depth_total: 50 },
+      { day: '2026-09-02', path: '/players/joe.html', zone: 'Europe/London', source: '', device: 'mobile', views: 3, seconds_total: 90, depth_total: 180 },
     ];
-    const serve = () => statRows;
+    /* The period BEFORE, which is a different query and must not be mixed in
+       with the one above: 24 against 6 is up 300%. */
+    const prevRows = [
+      { day: '2026-08-04', path: '/index.html', zone: 'Europe/London', source: '', device: 'mobile', views: 6, seconds_total: 60, depth_total: 300 },
+    ];
+    /* The hourly table, which carries no zone, no source and no device by
+       design. 20:00 is the busiest hour at 9 + 7. */
+    const hourRows = [
+      { day: '2026-09-01', hour: 20, path: '/index.html', views: 9 },
+      { day: '2026-09-01', hour: 9, path: '/index.html', views: 5 },
+      { day: '2026-09-02', hour: 20, path: '/squad.html', views: 7 },
+    ];
+    const serve = (method, q) => {
+      if (/page_stats_hourly\?/.test(q)) return hourRows;
+      if (/day=lt\./.test(q)) return prevRows;
+      return statRows;
+    };
     const ctx = await PR.boot({ rows: { rest: serve } });
     const host = await PR.openPanel(ctx, 'stats');
     const text = host.body.textContent.replace(/\s+/g, ' ');
 
     check('website stats totals every view it was given',
-      /21 page views/.test(text), text.slice(0, 200));
+      /24 page views/.test(text), text.slice(0, 200));
 
     /* THE FIGURE, not merely the row. The headline total is summed straight
        off the rows, so a broken roll() leaves it correct and only the per-page
        column goes wrong - which is exactly what a probe caught this check
-       failing to notice. index.html is 10 + 4 across two zones, squad.html is
-       6 + 1 across two days. */
+       failing to notice. */
+    /* Anchored on the LINK, not on the path appearing anywhere in the row.
+       The day-by-day table carries a "most read" column holding the same path,
+       and it comes first in the document, so a looser match read squad.html's
+       figure off a date row and reported 10 for a page with 7. */
     const cellFor = (p) => {
-      const row = (host.html.match(new RegExp('<tr>(?:(?!</tr>).)*' + p + '(?:(?!</tr>).)*</tr>')) || [])[0] || '';
+      const row = (host.html.match(new RegExp('<tr>(?:(?!</tr>).)*<a href="' + p + '"(?:(?!</tr>).)*</tr>')) || [])[0] || '';
       return (row.match(/<b>(\d+)<\/b>/) || [])[1];
     };
     check('website stats sums one page across zones and days',
@@ -590,6 +611,113 @@ export async function panelChecks() {
       /<td>Direct or unknown<\/td>/.test(host.html),
       'the sources table needs a labelled row, not an empty cell');
 
+    /* ---- The world map ------------------------------------------------
+       Not "is there an svg" but "is the right country plotted, with the right
+       figure on it". The land itself is a single path of round-capped dots,
+       so its presence is one assertion and its size is another: an empty `d`
+       would still be an element. */
+    const dots = (host.html.match(/class="cpm__land" d="([^"]*)"/) || [])[1] || '';
+    check('the world map draws land rather than an empty element',
+      dots.split('M').length > 2000,
+      `${dots.split('M').length - 1} land dots, expected a few thousand`);
+
+    /* 10 + 6 + 3 = 19 of 24 views are from the United Kingdom, and the bubble
+       has to say so: a marker in the right place carrying the wrong number is
+       the failure this is here for. */
+    check('a country readers came from gets a marker carrying its own figure',
+      /<circle class="cpm__hit"[^>]*><title>United Kingdom: 19 views, 79%<\/title>/.test(host.html),
+      (host.html.match(/<title>[^<]*<\/title>/g) || []).join(' ').slice(0, 200));
+
+    check('a country with no known position is left off the map and kept in the table',
+      !/<title>Antarctica/.test(host.html) && /Antarctica/.test(text),
+      'the region has no centroid, so it belongs in the table and not on the map');
+
+    /* ---- When people read it -------------------------------------------
+       The heatmap buckets by weekday AND hour, so the two views at 20:00 on
+       different days must stay in different cells; the profile sums them. */
+    check('the day-against-hour heatmap ships a cell for every hour of every day',
+      (host.html.match(/class="cph__v"/g) || []).length === 168,
+      `${(host.html.match(/class="cph__v"/g) || []).length} cells, expected 7 x 24`);
+
+    check('an hour on one day is not merged with the same hour on another',
+      /20:00, 9 views/.test(host.html) && /20:00, 7 views/.test(host.html),
+      'the heatmap must key on weekday and hour, not hour alone');
+
+    check('the hour profile sums the same hour across the period',
+      /Busiest hour is 20:00 to 20:59/.test(text) && /20:59 with 16 views/.test(text),
+      text.slice(text.indexOf('Busiest hour'), text.indexOf('Busiest hour') + 120));
+
+    /* Every coloured square says its own figure to a screen reader. 168 silent
+       cells is a picture, not a table. */
+    check('every heatmap cell states its figure in text as well as in colour',
+      (host.html.match(/class="sr-only">[A-Z][a-z]+day \d\d:00, /g) || []).length === 168,
+      'each cell needs a visually hidden label');
+
+    /* ---- Dates -----------------------------------------------------------
+       The club asked for dates, so the day table is a row per day carrying
+       the weekday, not a chart somebody has to read off an axis. */
+    check('the day-by-day table names the weekday beside the date',
+      /<td>1 Sep<\/td><td>Tuesday<\/td>/.test(host.html)
+        && /<td>2 Sep<\/td><td>Wednesday<\/td>/.test(host.html),
+      (host.html.match(/<td>\d+ Sep<\/td><td>\w+<\/td>/g) || []).join(' '));
+
+    check('the daily trend is drawn from the days it was given',
+      /class="cpc__dot"/.test(host.html)
+        && (host.html.match(/class="cpc__dot"/g) || []).length === 2,
+      'one dot per day in the period');
+
+    /* ---- Up or down on the period before -------------------------------- */
+    check('a headline figure says how it compares with the period before',
+      /up 300% on the 30 days before/.test(text),
+      text.slice(0, 400));
+
+    /* ---- Sections --------------------------------------------------------
+       108 rows of paths does not answer "are the match reports being read". */
+    check('pages are grouped into the parts of the site the club thinks in',
+      /<td>Player profiles<\/td>/.test(host.html) && /<td>Home page<\/td>/.test(host.html),
+      'the section table must name the area, not just the path');
+
+    /* ---- One page on its own ---------------------------------------------
+       Pressing the button must FILTER, not merely open a panel: the figures
+       inside it are the whole point and they have to be this page's. */
+    const btn = host.body.querySelector('[data-page="/squad.html"]');
+    check('every page row offers a way to look at that page alone', !!btn,
+      'the page table needs a drill-down control');
+    if (btn) {
+      btn.click();
+      const drillBody = ctx.doc.querySelector('#panel-stats [data-panel-body]');
+      /* The figure is read out of its own <b>, not out of the sentence: "17 of
+         the period's 24 views" CONTAINS "7 of the period's 24 views", so the
+         obvious text match passed on an unfiltered panel and the probe below
+         is what said so. */
+      const drill = drillBody.innerHTML;
+      check('looking at one page shows that page and not the whole site',
+        /This page on its own/.test(drill)
+          && /<b>7<\/b> of the period’s 24 views \(29%\)/.test(drill),
+        drill.slice(drill.indexOf('This page'), drill.indexOf('This page') + 240));
+
+      /* The drill-down redraws the whole screen, so the way back has to exist
+         or the club is stuck on one page's figures until they reload. */
+      const close = drillBody.querySelector('[data-page=""]');
+      check('there is a way back out of one page to the whole site', !!close,
+        'the focused panel needs a close control');
+      if (close) {
+        close.click();
+        const back = ctx.doc.querySelector('#panel-stats [data-panel-body]').textContent;
+        check('closing one page returns the whole site',
+          !/This page on its own/.test(back), 'the focused panel should be gone');
+      }
+    }
+
+    /* ---- Taking it away --------------------------------------------------- */
+    check('the figures can be downloaded rather than only looked at',
+      !!host.body.querySelector('[data-csv]'), 'the club owns these figures');
+
+    /* ---- The spread, not the average -------------------------------------- */
+    check('how far people read is reported as a spread and not only a mean',
+      /Read to the bottom, over 75%/.test(host.html) && /A glance, under 10 seconds/.test(host.html),
+      'an average scroll of half a page has two opposite explanations');
+
     /* PROBE: break the zone map and the country check must go red. Without
        this, "a time zone is reported as a country" passes on a screen that
        prints the raw zone string, which is what it is there to catch. */
@@ -604,6 +732,64 @@ export async function panelChecks() {
       !/United Kingdom/.test(rawText),
       'the check would pass without a working map');
 
+    /* PROBE: take the centroid away and the bubble must go with it, leaving
+       the country in the table. Without this the map check would pass on a
+       screen that drew a marker in the sea. */
+    const noPlaceCtx = await PR.boot({
+      rows: { rest: serve },
+      transform: (src, file) => (file === 'control-stats.js'
+        ? bust(src, 'United Kingdom -2 54|', 'Kingdomless -2 54|')
+        : src),
+    });
+    const noPlace = await PR.openPanel(noPlaceCtx, 'stats');
+    check('probe: with no centroid the map check notices the missing marker',
+      !/<title>United Kingdom: /.test(noPlace.html)
+        && /United Kingdom/.test(noPlace.body.textContent),
+      'the bubble check would pass without a working centroid list');
+
+    /* PROBE: cut the hourly table off and both the heatmap and the profile
+       checks must go red, and the screen must say which file turns it on. */
+    const noHourCtx = await PR.boot({
+      rows: { rest: serve },
+      transform: (src, file) => (file === 'control-stats.js'
+        ? bust(src, 'page_stats_hourly?select=', 'page_stats_hourlyX?select=')
+        : src),
+    });
+    const noHour = (await PR.openPanel(noHourCtx, 'stats')).html;
+    check('probe: with no hourly rows the heatmap checks notice',
+      !/class="cph__v"/.test(noHour) && !/Busiest hour is/.test(noHour),
+      'the heatmap checks would pass without the hourly table');
+
+    /* PROBE: stop the previous window being a different query and the
+       comparison must stop claiming a rise. This is the check that the delta
+       is read from the period BEFORE rather than from the period itself. */
+    const noPrevCtx = await PR.boot({
+      rows: { rest: serve },
+      transform: (src, file) => (file === 'control-stats.js'
+        ? bust(src, '&day=lt.', '&dayX=lt.')
+        : src),
+    });
+    const noPrev = (await PR.openPanel(noPrevCtx, 'stats')).body.textContent;
+    check('probe: with no previous window the comparison stops claiming a rise',
+      !/up 300%/.test(noPrev),
+      'the comparison check would pass while reading its own period');
+
+    /* PROBE: invert the drill-down filter and the focused panel must stop
+       agreeing with the page it names. */
+    const badFocusCtx = await PR.boot({
+      rows: { rest: serve },
+      transform: (src, file) => (file === 'control-stats.js'
+        ? bust(src, /\.path===(\w+)\b/, '.path!==$1')
+        : src),
+    });
+    const badHost = await PR.openPanel(badFocusCtx, 'stats');
+    const badBtn = badHost.body.querySelector('[data-page="/squad.html"]');
+    if (badBtn) badBtn.click();
+    const badDrill = badFocusCtx.doc.querySelector('#panel-stats [data-panel-body]').innerHTML;
+    check('probe: with the drill-down filter inverted the figures stop matching',
+      !/<b>7<\/b> of the period’s 24 views/.test(badDrill),
+      'the drill-down check would pass on an unfiltered panel');
+
     /* The screen must survive the table not existing, because it will not
        exist until somebody runs the migration - and it must name the file
        rather than showing an empty page that reads as broken. */
@@ -611,6 +797,18 @@ export async function panelChecks() {
     const offText = (await PR.openPanel(offCtx, 'stats')).body.textContent.replace(/\s+/g, ' ');
     check('with no page_stats table the screen names the migration that turns it on',
       /007_page_stats\.sql/.test(offText), offText.slice(0, 200));
+
+    /* 007 run and 008 not is a real state and a different one: everything else
+       on the screen works, and the hour is the only thing missing. Saying
+       "nothing yet" there would send somebody looking for traffic when what is
+       missing is a file nobody has executed. */
+    const onlyDaily = (method, q) => (/page_stats_hourly\?/.test(q)
+      ? Promise.reject(new Error('404')) : statRows);
+    const halfCtx = await PR.boot({ rows: { rest: onlyDaily } });
+    const half = (await PR.openPanel(halfCtx, 'stats')).body.textContent.replace(/\s+/g, ' ');
+    check('with 007 run and 008 not the screen names the second migration',
+      /008_page_stats_detail\.sql/.test(half) && /24 page views/.test(half),
+      half.slice(0, 200));
   }
 
   return out;

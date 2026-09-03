@@ -1,0 +1,183 @@
+/* ==========================================================================
+   WEBSITE STATS
+
+   Four components the panel did not already have, and nothing else: the rest
+   of that screen is a `cpt` tile, a `pipebar` share and a `data` table on
+   purpose. A stats page is where somebody is most tempted to reach for a
+   charting library, and everything here is inline SVG or a table.
+
+   EVERY ONE OF THESE IS SIZED IN ITS OWN COORDINATES and scaled by CSS. No
+   rule here depends on a measured pixel, which is what lets the whole screen
+   render in the suite's DOM - it has no layout and no cascade and throws
+   rather than inventing either.
+   ========================================================================== */
+
+/* ---- Two columns where there is room, one where there is not ---- */
+.cp2 {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+}
+
+/* A heading inside a section, under the section's own. `h4` because `sec()`
+   writes the `h3`, and skipping a level is the heading-order defect this
+   project fails a build over on the public pages. */
+.cp-sub {
+  margin: var(--space-5) 0 var(--space-2);
+  font-size: var(--step--1);
+  font-weight: var(--weight-bold);
+  color: var(--text-muted);
+}
+.cp-sub:first-child { margin-block-start: 0; }
+
+/* ==========================================================================
+   THE WORLD
+
+   A 150x64 bitmap of where land is, drawn as one path of round-capped dots.
+   The dots are the map; the circles on top are the countries readers came
+   from, and they are the only thing here in the brand hue because they are
+   the only thing here that is data.
+   ========================================================================== */
+.cpm {
+  margin-block-end: var(--space-4);
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-inset);
+}
+.cpm__svg { display: block; width: 100%; height: auto; }
+
+/* A zero-length subpath with a round cap paints a dot, so 2,856 land cells
+   are one element rather than 2,856 of them. */
+.cpm__land {
+  fill: none;
+  stroke: var(--text-subtle);
+  stroke-width: 0.62;
+  stroke-linecap: round;
+  opacity: 0.45;
+}
+.cpm__hit {
+  fill: var(--brand);
+  fill-opacity: 0.5;
+  stroke: var(--brand);
+  stroke-width: 0.5;
+}
+
+/* ==========================================================================
+   VIEWS PER DAY
+
+   An area, a line and a dot per day. The dots carry a `<title>` each, so the
+   figures are reachable by hovering and by a screen reader without a tooltip
+   engine - and the table underneath carries every one of them anyway, so
+   nothing here is the only place a number appears.
+   ========================================================================== */
+.cpc {
+  margin-block-end: var(--space-4);
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-inset);
+}
+.cpc__svg { display: block; width: 100%; height: auto; }
+.cpc__grid { stroke: var(--border); stroke-width: 1; }
+.cpc__ax {
+  fill: var(--text-subtle);
+  font-size: 11px;
+  font-family: var(--font-body);
+}
+.cpc__area { fill: var(--brand); fill-opacity: 0.14; stroke: none; }
+.cpc__line {
+  fill: none;
+  stroke: var(--brand);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.cpc__dot { fill: var(--brand); }
+
+/* ==========================================================================
+   DAY OF THE WEEK AGAINST HOUR OF THE DAY
+
+   Opacity carries the count, because orange is the only accent hue here and a
+   second one would be a scale pretending to be a category. Every cell says
+   its own figure twice: a `title` for a mouse and a visually hidden span for
+   a screen reader, since a grid of 168 coloured squares is otherwise silent.
+   ========================================================================== */
+.cph {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 420px;
+  margin-block-end: var(--space-3);
+}
+.cph__c {
+  font-size: var(--step--2);
+  color: var(--text-muted);
+  text-align: right;
+  padding-right: var(--space-2);
+  white-space: nowrap;
+  font-weight: var(--weight-medium);
+}
+.cph__t {
+  font-size: var(--step--2);
+  color: var(--text-subtle);
+  text-align: left;
+  padding-block-end: 4px;
+}
+/* THE EMPTY WELL IS ON THE CELL, NOT ON THE SQUARE INSIDE IT. Opacity was
+   carrying the count on the square and the square also carried the outline,
+   so an hour with no views went to opacity 0 and took its own outline with
+   it: 168 squares drew as five vertical bars floating in the dark, which
+   reads as a sparse chart rather than as a week with quiet hours in it.
+   `background-clip: content-box` turns the cell's own 1px padding into the
+   gap between squares, so the well is always visible and only the fill
+   varies. */
+.cph__v {
+  padding: 1px;
+  /* --border, not --surface-inset: the inset is #07070880, which on a dark
+     card is a shade of the card and left the empty wells as invisible as the
+     opacity trick did. The border token is the faintest thing on this panel
+     that can still be seen, which is exactly what an empty hour should be. */
+  background: var(--border);
+  background-clip: content-box;
+}
+.cph__x {
+  display: block;
+  height: 18px;
+  border-radius: 2px;
+  background: var(--brand);
+}
+.cph__scale {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--step--2);
+  color: var(--text-subtle);
+  margin-block-end: var(--space-3);
+}
+
+/* The hour profile is the day-by-day spark with a fixed 24 bars, so it keeps
+   the same component and only stops the bars growing wide enough to read as
+   blocks. */
+.cp-spark--hours { height: 70px; gap: 3px; }
+
+/* ==========================================================================
+   UP OR DOWN ON THE PERIOD BEFORE
+
+   In words as well as a mark. An arrow on its own is a claim made by shape
+   and colour, and this panel has one accent hue to make it with; "up 12% on
+   the 30 days before" survives being read aloud and being read in grey.
+   ========================================================================== */
+.cpd {
+  display: block;
+  font-size: var(--step--2);
+  color: var(--text-subtle);
+  line-height: 1.3;
+}
+.cpd i { font-style: normal; }
+.cpd--up { color: var(--brand); }
+.cpd--down { color: var(--text-muted); }
+.cpd--flat { color: var(--text-subtle); }
+
+/* The busiest day in the day-by-day table, marked by weight rather than by a
+   fill: the row is already in a table that reads top to bottom by date, and a
+   coloured band would compete with the bars beside it. */
+.data tr.is-top td { font-weight: var(--weight-bold); }

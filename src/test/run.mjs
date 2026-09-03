@@ -711,7 +711,12 @@ for (const f of shipped) {
       /* The website stats screen reports ON the site; it is not part of it,
          and every one of its sections is the club reading its own figures. */
       'Website stats', 'What gets read', 'Where in the world', 'How they arrive',
-      'What they read it on', 'Day by day',
+      'What they read it on', 'Day by day', 'When people read it',
+      'How much of a page they read', 'This page on its own',
+      /* The one section on the screen whose whole content is the list of
+         things this feature deliberately does not record. It is the opposite
+         of a publishing claim. */
+      'What is not here, and why',
       /* The club's own prospect list. Nothing in it is published, by design.
          "Who else might back the club" is the pointer to it from the Sponsors
          screen; it now carries the pipeline's own figures rather than being a
@@ -1771,8 +1776,15 @@ const BUDGET = {
      alone - so this is a cost the club pays once, not one every visitor to
      the fixtures page pays. That is the whole reason the sheet was split out
      of sa.css, and it is why the ceiling here can move for a real feature
-     when sa.css's cannot. */
-  'control.css': 6,
+     when sa.css's cannot.
+
+     6 -> 7 for the four components the website stats screen needed and the
+     panel did not already have: the dot map, the daily trend, the day-against-
+     hour heatmap and the up-or-down mark. 383 bytes gzipped, measured by
+     building without 60-stats.css (5,518) and with it (5,901). Everything else on that screen
+     is a `cpt` tile, a `pipebar` share or a `data` table, deliberately: a
+     stats page is where somebody is most tempted to invent a component set. */
+  'control.css': 7,
   /* 11 -> 12 for draft recovery, deliberately and once. The shell was at
      10.78KB of 11, and what pushed it over is cross-cutting safety code that
      CANNOT be lazy: a listener that loads on demand cannot catch typing that
@@ -1851,10 +1863,20 @@ const BUDGET = {
      Edit. */
   /* The forward-looking screen: a checklist and a squad picker, no images
      and no tables of history, so it has no business being large. */
-  /* The website stats screen: a hundred-odd time zone names is most of it,
-     and they are DATA read by one screen, which is exactly why they are here
-     and not in sa.js where every visitor would pay for them. */
-  'control-stats.js': 5,
+  /* The website stats screen. 5 -> 11, once and deliberately, and most of the
+     raise is DATA read by one screen, which is exactly why it is here and not
+     in sa.js where every visitor to every page would pay for it: a hundred-odd
+     time zone names, a centroid for each country the bubbles are drawn at,
+     and MAP_GRID - 1,600 characters of base64 holding a 150x64 bitmap of
+     where land is, rasterised once from Natural Earth's 110m outline.
+     Measured, so the raise is not a shrug: strip the grid and the two lookup
+     tables out of the shipped file and it gzips to 7.7KB, so the data is
+     2.4KB of the 10.2 and the drawing code is the rest.
+
+     The alternative was a charting library, which would have cost more than
+     all of it and shipped a dependency to draw four things. Everything on
+     that screen is inline SVG or one of the panel's own tables. */
+  'control-stats.js': 11,
   'control-matchday.js': 4,
   /* 16 -> 6. The five-tab editor left for control-matchedit.js, so this is now
      the two LISTS: 15.9KB of a 16KB ceiling became 4.9KB. The ceiling comes

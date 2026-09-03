@@ -76,6 +76,14 @@
     return 'desktop';
   }
 
+  /* The hour the reader is actually in, 0 to 23. A browser that will not say
+     is not guessed at: -1 tells the database to write the day and skip the
+     hour, which is the same thing an older beacon does by sending nothing. */
+  function hour() {
+    var h = new Date().getHours();
+    return (h >= 0 && h <= 23) ? h : -1;
+  }
+
   /* ---- How far, and how long ------------------------------------------- */
 
   var started = Date.now();
@@ -116,6 +124,12 @@
            average is what this feeds. */
         p_seconds: Math.min(Math.round((Date.now() - started) / 1000), 3600),
         p_depth: depth,
+        /* The READER'S hour, not the server's. "People read this at eight in
+           the evening" is a fact about a habit; converted to a server clock it
+           would be a fact about nothing. It is recorded in its own table,
+           carrying no zone, source or device, so it cannot narrow a bucket
+           down to one person - see migrations/008_page_stats_detail.sql. */
+        p_hour: hour(),
       }, true).catch(function () {});
     } catch (e) { /* never a console error in exchange for a counter */ }
   }

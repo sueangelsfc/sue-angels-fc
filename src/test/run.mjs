@@ -708,6 +708,10 @@ for (const f of shipped) {
       /* Settings, help and the audit trail. */
       'Your access', 'How a change reaches the website', 'Who changed what',
       'Backup', 'Club details',
+      /* The website stats screen reports ON the site; it is not part of it,
+         and every one of its sections is the club reading its own figures. */
+      'Website stats', 'What gets read', 'Where in the world', 'How they arrive',
+      'What they read it on', 'Day by day',
       /* The club's own prospect list. Nothing in it is published, by design.
          "Who else might back the club" is the pointer to it from the Sponsors
          screen; it now carries the pipeline's own figures rather than being a
@@ -1744,8 +1748,18 @@ const BUDGET = {
      This is the trade the ceiling exists to force somebody to write down. If
      the next raise cannot name its 400 bytes this plainly, it is drift, and
      the right answer then is to split sa.js per page the way the stylesheets
-     already are: this feature ships to 101 pages to run on one. */
-  'sa.js': 16,
+     already are: this feature ships to 101 pages to run on one.
+
+     16 -> 17, and the 444 bytes are 30-stats.js: the page view beacon, which
+     is the whole of the website stats feature on the public side. Measured by
+     building without it (16,229 gz) and with it (16,673 gz).
+
+     It answers the objection the paragraph above raises, rather than dodging
+     it. The countdown was 400 bytes shipped to 101 pages to run on ONE; this
+     runs on every page it ships to, because every page is a page somebody can
+     read and the whole point is knowing which ones they do. There is no
+     per-page split that would make it smaller. */
+  'sa.js': 17,
   /* 5 -> 6, once, for the match form telling you what is in the record: the
      count on a tab you have not opened, the strip saying what does not add
      up, the tally beside each picker's label, and the eleven collapsed from a
@@ -1837,6 +1851,10 @@ const BUDGET = {
      Edit. */
   /* The forward-looking screen: a checklist and a squad picker, no images
      and no tables of history, so it has no business being large. */
+  /* The website stats screen: a hundred-odd time zone names is most of it,
+     and they are DATA read by one screen, which is exactly why they are here
+     and not in sa.js where every visitor would pay for them. */
+  'control-stats.js': 5,
   'control-matchday.js': 4,
   /* 16 -> 6. The five-tab editor left for control-matchedit.js, so this is now
      the two LISTS: 15.9KB of a 16KB ceiling became 4.9KB. The ceiling comes
@@ -2886,6 +2904,38 @@ for (const [f, kb] of Object.entries({
     check('a profile reports starts and appearances separately',
       cp.starts !== cp.apps && cp.starts === clark.starts && cp.apps === clark.apps,
       `starts ${cp.starts}, apps ${cp.apps}, row ${clark.starts}/${clark.apps}`);
+    /* THE BENCH COLUMN SAT BESIDE APPS AND COUNTED THE SAME AFTERNOON TWICE.
+       `subApps` is every bench NAMING, which is what "was he involved this
+       season" needs, and three call sites read it for exactly that. The squad
+       card published it under the heading Bench, next to Apps, where the
+       appearances it shares are already counted: William Clark's card read
+       Apps 11 and Bench 15 when only 6 of those 15 were outings he did not
+       play. `benchUnused` is the published figure, and the identity below is
+       what makes it checkable - a card can no longer claim a match twice. */
+    for (const season of Object.keys(dP.playersBySeason)) {
+      const rows = dP.playersBySeason[season];
+      const wrong = rows.filter((r) => (r.apps || 0)
+        !== (r.starts || 0) + ((r.subApps || 0) - (r.benchUnused || 0)));
+      check(`${season}: a bench outing is never also counted as an appearance`,
+        rows.length > 0 && wrong.length === 0,
+        wrong.slice(0, 3).map((r) => `#${r.num} apps ${r.apps} = starts ${r.starts}`
+          + ` + used bench ${(r.subApps || 0) - (r.benchUnused || 0)}`).join('   |   '));
+    }
+    /* And the figure has to REACH the card, not merely exist: the bug was a
+       correct number sitting unused beside a wrong one on the page. */
+    {
+      const sq = fs.readFileSync(path.join(ROOT, 'squad.html'), 'utf8');
+      const wc = dP.playersBySeason['25/26'].find((r) => r.num === 7);
+      /* The nearest stat row ABOVE the name, not the first on the page: the
+         cards are one long list and `exec` would answer about somebody else. */
+      const rows = [...sq.slice(0, sq.indexOf('Clark')).matchAll(/data-st-all="([^"]+)"/g)];
+      const row = rows.length ? rows[rows.length - 1][1].split(',') : null;
+      check('the squad card publishes unused bench outings, not every naming',
+        !!wc && !!row && row[3] === String(wc.benchUnused)
+          && wc.benchUnused !== wc.subApps,
+        row ? `card shows ${row[3]}, unused is ${wc && wc.benchUnused},`
+          + ` namings ${wc && wc.subApps}` : 'no stat row found on the card');
+    }
     /* Ten players have more appearances than starts, so any page still
        calling the appearance figure a start is now saying something false. */
     for (const f of ['players/william-clark.html', 'squad.html', 'stats.html']) {

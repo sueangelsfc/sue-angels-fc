@@ -405,7 +405,7 @@ export function playerStats(matches, squad, trialists = {}, signedOn = () => nul
   const ensure = (num) => {
     if (!table.has(num)) {
       table.set(num, {
-        num, apps: 0, starts: 0, subApps: 0, goals: 0, assists: 0,
+        num, apps: 0, starts: 0, subApps: 0, benchUnused: 0, goals: 0, assists: 0,
         yellow: 0, red: 0, motm: 0, cleanSheets: 0, captained: 0,
         /* How the goals were scored and how the chances were made. Every one
            of these counts only goals where somebody actually recorded that
@@ -543,6 +543,11 @@ export function playerStats(matches, squad, trialists = {}, signedOn = () => nul
            from a substitute appearance from an unused bench listing. */
         p.matches.push({ id: m.id, role: 'sub' });
       } else {
+        /* He was named and the record cannot show he came on. This is the
+           figure the squad card publishes beside Apps: an outing already
+           counted as an appearance must not be counted a second time as a
+           bench outing, or one card claims the same afternoon twice. */
+        p.benchUnused++;
         p.matches.push({ id: m.id, role: 'bench' });
       }
     }
@@ -596,7 +601,7 @@ export function playerStats(matches, squad, trialists = {}, signedOn = () => nul
   const rows = [];
   for (const p of squad) {
     const s = table.get(p.num) || {
-      num: p.num, apps: 0, starts: 0, subApps: 0, goals: 0, assists: 0,
+      num: p.num, apps: 0, starts: 0, subApps: 0, benchUnused: 0, goals: 0, assists: 0,
       yellow: 0, red: 0, motm: 0, cleanSheets: 0, captained: 0, penalties: 0, matches: [],
       byFoot: { right: 0, left: 0, head: 0, other: 0 },
       byZone: { six: 0, box: 0, outside: 0 },

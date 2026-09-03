@@ -53,6 +53,7 @@ export const MODULES = [
   { key: 'pipeline', label: 'Sponsorship pipeline', icon: 'chart', group: 'Getting backing' },
   { key: 'donations', label: 'Donations', icon: 'heart', group: 'Getting backing' },
 
+  { key: 'stats', label: 'Website stats', icon: 'chart', group: 'Admin' },
   { key: 'inbox', label: 'Inbox', icon: 'mail', group: 'Admin' },
   { key: 'settings', label: 'Settings', icon: 'shield', group: 'Admin' },
 ];

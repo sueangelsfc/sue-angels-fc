@@ -579,6 +579,67 @@ It does not fall back to something sensible: the whole declaration is invalid at
 
 **`render()` replaces the panel body element, it does not empty it.** Modules attach listeners to that element and rely on bubbling. `innerHTML = ''` left the listeners behind, so each refresh stacked another copy: two renders in, one click saved twice, and since saving refreshes it compounded.
 
+### What the website is actually read for
+
+The club publishes 108 pages and had no way of knowing which of them anybody
+opens. **Control panel → Website stats** answers it: what gets read, where in
+the world the reader is, what sent them, what they read it on, how long they
+stayed and how far down they got. `migrations/007_page_stats.sql`,
+`src/scripts/30-stats.js`, `src/admin/lazy/85-stats.js`.
+
+- **A row is a COUNT, not a visit, and that is the whole design.** The beacon
+  calls `record_page_view`, which adds one to a bucket keyed by (day, page,
+  zone, source, device). Two readers of the same page from the same zone on
+  the same day are one row with `views: 2`. An individual visit cannot be
+  reconstructed afterwards **by somebody with the database open**, which is a
+  stronger property than promising not to look. It matters here because this
+  records more than `band_views` does: one row per view carrying day, page,
+  zone, source, dwell and depth is rich enough to pick a single person out of
+  a quiet day.
+- **So it sits outside the consent gate**, on exactly the reasoning 004 wrote
+  down: no identifier of any kind, no cookie, no address, no user agent, no
+  time finer than the day. If anything identifying is ever added it belongs
+  behind the gate that GA and the Meta pixel sit behind.
+- **Where in the world is the device's time zone, not its address.** The
+  browser sends what it already knew (`Europe/London`) and **the panel** maps
+  it to a country, because the map is a hundred-odd entries read by one screen
+  and mapping on the way in would put it in `sa.js`, which every visitor to
+  every page downloads. Same rule that moved `homeBands` out of
+  `control-seed.js`. It is wrong for a VPN and a travelling phone and the
+  screen says so. An unmapped zone reports its REGION rather than vanishing.
+- **Anon cannot touch the table, only the function.** Tighter than
+  `band_views`, where anon may insert whatever it likes. `record_page_view` is
+  `SECURITY DEFINER` and clamps every argument - a path is shape-checked, a
+  device must be one of three, seconds and depth are bounded - so junk and
+  inflation stop at the door rather than in the panel.
+- **It counts views, not visitors, and the screen says so.** With no
+  identifier two views cannot be told apart, so unique visitors is a number
+  this cannot honestly produce. It also counts only readers running
+  JavaScript, which leaves out most crawlers and flatters the figures.
+- **The beacon fires on `visibilitychange`, never `beforeunload`.**
+  Registering the latter disables the back/forward cache in some browsers,
+  which is a real cost to the reader in exchange for a counter. `pagehide`
+  covers the desktop close; one `sent` latch means a tab hidden and re-shown
+  records one view rather than one per glance.
+- **A page shorter than the window is 100% scrolled, not 0%.** Without that
+  every short page reports as nobody scrolling rather than as nothing to
+  scroll.
+- **`sa.js` 16 → 17KB, and the 444 bytes are named** in `run.mjs` beside the
+  ceiling, measured by building without the beacon and with it. The ceiling's
+  own comment demands that; this is the first raise to answer it.
+- **Inert until the migration is run**, like 002 and 004. Until then every
+  call is a 404, the failure is swallowed, and the screen names the file that
+  turns it on rather than showing an empty page that reads as broken.
+- **`CP.rest` in the test harness answered `[]` unconditionally**, so any
+  screen built on it could only ever be rendered empty and its arithmetic was
+  untestable. It takes crafted rows now, and the suite hands the shipped
+  screen four and reads what came out. Three probes: a broken zone map, a
+  broken sum, and a blank referrer label. Two of the three checks were **weak
+  when first written** and the probes are what said so - the headline total is
+  summed off the rows rather than through `roll()`, so a broken aggregation
+  left it correct; and "Direct or unknown" matched the paragraph explaining
+  the phrase rather than the table cell.
+
 ## Forms — how a lead actually reaches the club
 `form[data-enquiry]` writes to the `enquiries` table **and** posts `/api/notify-enquiry`. It succeeds if **either** lands.
 

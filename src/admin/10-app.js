@@ -896,6 +896,7 @@
      so once it has loaded nothing downstream can tell the difference. */
   var CHUNKS = window.CP_CHUNKS || {};
   var CHUNK_OF = {
+    stats: 'stats',
     matchday: 'matchday',
     fixtures: 'match', results: 'match',
     phototag: 'photos',

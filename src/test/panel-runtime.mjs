@@ -45,7 +45,13 @@ function fixtureStore(rows, { empty = false } = {}) {
     refresh: () => Promise.resolve(null),
     loadRole: () => Promise.resolve(true),
     startRefreshTimer: () => {},
-    rest: () => Promise.resolve([]),
+    /* `rest` is the raw REST door, used by the screens that read a table the
+       seven-table helpers do not cover - band_views, page_stats. It answered
+       [] unconditionally, which meant a screen built on it could only ever be
+       rendered empty and its arithmetic was untestable. A caller may now hand
+       in a function and be asked the actual query. */
+    rest: (method, q) => Promise.resolve(
+      empty || typeof rows.rest !== 'function' ? [] : (rows.rest(method, q) || [])),
     readAll: (t) => Promise.resolve(give(t)),
     upsert: (t, k, d) => { writes.push({ op: 'upsert', t, k, d }); return Promise.resolve([{ key: k, data: d }]); },
     remove: (t, k) => { writes.push({ op: 'remove', t, k }); return Promise.resolve([{ key: k }]); },

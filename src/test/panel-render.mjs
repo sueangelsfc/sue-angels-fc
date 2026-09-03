@@ -98,7 +98,10 @@ export async function panelChecks() {
   const html = fs.readFileSync(path.join(ROOT, 'control.html'), 'utf8');
   const keys = PR.panelKeys(html);
 
-  check('the panel ships the twenty-one screens the nav offers', keys.length === 21,
+  /* Twenty-two since Website stats. The count is asserted rather than derived
+     so that a screen vanishing from the nav is a failure and not a quietly
+     smaller loop. */
+  check('the panel ships the twenty-two screens the nav offers', keys.length === 22,
     `control.html declares ${keys.length}`);
 
   /* ---------------------------------------------------------------------
@@ -525,6 +528,91 @@ export async function panelChecks() {
   check('re-opening a screen does not stack another copy of its listeners',
     stacked <= 2, `${stacked} listeners on the body after three renders`);
 
+  /* ==========================================================================
+     WEBSITE STATS
+
+     Every check here hands the shipped screen crafted rows and reads what came
+     out, rather than grepping the file for the rule. The panel's own history
+     is the argument: a correct filter attached to one dropdown of nine, and
+     field hints wired to nothing, both passed checks that asked only whether
+     the mechanism existed. */
+  {
+    const statRows = [
+      /* Same page, two different zones: the page total has to be the sum, and
+         the two zones have to stay apart. */
+      { day: '2026-09-01', path: '/index.html', zone: 'Europe/London', source: '', device: 'mobile', views: 10, seconds_total: 300, depth_total: 500 },
+      { day: '2026-09-01', path: '/index.html', zone: 'America/New_York', source: 'google.com', device: 'desktop', views: 4, seconds_total: 200, depth_total: 200 },
+      { day: '2026-09-02', path: '/squad.html', zone: 'Europe/London', source: 'facebook.com', device: 'mobile', views: 6, seconds_total: 120, depth_total: 300 },
+      /* A zone the map has never heard of. It must become its region, not
+         vanish and not be guessed at. */
+      { day: '2026-09-02', path: '/squad.html', zone: 'Antarctica/Troll', source: '', device: '', views: 1, seconds_total: 10, depth_total: 50 },
+    ];
+    const serve = () => statRows;
+    const ctx = await PR.boot({ rows: { rest: serve } });
+    const host = await PR.openPanel(ctx, 'stats');
+    const text = host.body.textContent.replace(/\s+/g, ' ');
+
+    check('website stats totals every view it was given',
+      /21 page views/.test(text), text.slice(0, 200));
+
+    /* THE FIGURE, not merely the row. The headline total is summed straight
+       off the rows, so a broken roll() leaves it correct and only the per-page
+       column goes wrong - which is exactly what a probe caught this check
+       failing to notice. index.html is 10 + 4 across two zones, squad.html is
+       6 + 1 across two days. */
+    const cellFor = (p) => {
+      const row = (host.html.match(new RegExp('<tr>(?:(?!</tr>).)*' + p + '(?:(?!</tr>).)*</tr>')) || [])[0] || '';
+      return (row.match(/<b>(\d+)<\/b>/) || [])[1];
+    };
+    check('website stats sums one page across zones and days',
+      cellFor('/index\\.html') === '14' && cellFor('/squad\\.html') === '7',
+      `index.html ${cellFor('/index\\.html')} (want 14), squad.html ${cellFor('/squad\\.html')} (want 7)`);
+
+    /* The map is the whole reason the zone is stored raw, so it is the thing
+       most worth asking about. */
+    check('a time zone is reported as a country',
+      /United Kingdom/.test(text) && /United States/.test(text),
+      text.slice(0, 300));
+
+    check('an unmapped time zone falls back to its region rather than vanishing',
+      /elsewhere/.test(text),
+      'Antarctica/Troll should not be dropped');
+
+    /* It cannot count unique people and must not imply that it can. */
+    check('website stats says it counts views and not visitors',
+      /views, not visitors/i.test(text),
+      'the screen must not imply unique visitors');
+
+    /* IN THE TABLE, not in the paragraph underneath it. The note explaining
+       what "Direct or unknown" means contains the same words, so a loose
+       match passed while the cell itself was blank - which a probe caught. */
+    check('a missing referrer reads as direct rather than blank',
+      /<td>Direct or unknown<\/td>/.test(host.html),
+      'the sources table needs a labelled row, not an empty cell');
+
+    /* PROBE: break the zone map and the country check must go red. Without
+       this, "a time zone is reported as a country" passes on a screen that
+       prints the raw zone string, which is what it is there to catch. */
+    const rawCtx = await PR.boot({
+      rows: { rest: serve },
+      transform: (src, file) => (file === 'control-stats.js'
+        ? bust(src, /"Europe\/London":"United Kingdom"/, '"Europe/Nowhere":"United Kingdom"')
+        : src),
+    });
+    const rawText = (await PR.openPanel(rawCtx, 'stats')).body.textContent;
+    check('probe: with the zone map broken the country check notices',
+      !/United Kingdom/.test(rawText),
+      'the check would pass without a working map');
+
+    /* The screen must survive the table not existing, because it will not
+       exist until somebody runs the migration - and it must name the file
+       rather than showing an empty page that reads as broken. */
+    const offCtx = await PR.boot({ rows: { rest: () => Promise.reject(new Error('404')) } });
+    const offText = (await PR.openPanel(offCtx, 'stats')).body.textContent.replace(/\s+/g, ' ');
+    check('with no page_stats table the screen names the migration that turns it on',
+      /007_page_stats\.sql/.test(offText), offText.slice(0, 200));
+  }
+
   return out;
 }
 
@@ -656,7 +744,10 @@ export async function panelProbes() {
     };
     const good = await readTitle(undefined);
     const bad = await readTitle((src, file) => (file === 'control.js'
-      ? bust(src, '\'[data-module="\'+e+\'"] .cp-nav__label\'', '\'[data-module="\'+e+\'"]\'')
+      /* The minified binding name is not part of what this probe is testing,
+         and pinning it made an unrelated nav entry re-aim the probe. Match
+         whatever the minifier called it and put it back unchanged. */
+      ? bust(src, /\[data-module="'\+(\w+)\+'"\] \.cp-nav__label/, '[data-module="\'+$1+\'"]')
       : src));
     results.push({
       name: 'probe: titling a screen from the whole nav button brings the hidden count back',

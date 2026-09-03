@@ -951,3 +951,31 @@ body:has(.cp) .atmos__blob { animation: none; }
   .spell .select, .bench__min { font-size: 16px; min-height: 44px; }
   .spell__x { width: 100%; height: 44px; }
 }
+
+/* ==========================================================================
+   VIEWS PER DAY
+
+   The only component the website stats screen needed that the panel did not
+   already have. Everything else on that screen is a `cpt` tile, a `pipebar`
+   share or a `data` table, deliberately: a stats page is where somebody is
+   most tempted to invent a chart library, and a run of bars answers "which
+   day was busiest" without one.
+
+   Heights are set inline as a percentage because they come from the data. The
+   bars carry a `title` and the figures are printed underneath, so nothing
+   here is the only place a number appears. */
+.cp-spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 90px;
+  padding: var(--space-2) 0;
+}
+.cp-spark__bar {
+  flex: 1 1 0;
+  min-width: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--brand);
+  opacity: 0.85;
+}
+.cp-spark__bar:hover { opacity: 1; }

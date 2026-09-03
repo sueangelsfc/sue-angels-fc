@@ -31,6 +31,32 @@
     });
   }
 
+  /* A stored procedure rather than a table write. `page_stats` gives anon no
+     table privilege at all - the function is the validation boundary - so the
+     counter cannot reach it through sbInsert and needs its own door.
+
+     `keepalive` is the whole reason this is separate from sbInsert. The page
+     view beacon fires as the tab is being hidden or closed, and an ordinary
+     fetch is cancelled when the document goes away; keepalive is what lets
+     the browser finish it afterwards. */
+  function sbRpc(fn, args, keepalive) {
+    if (!SB.url || !SB.anonKey) return Promise.reject(new Error('no-config'));
+    return fetch(SB.url + '/rest/v1/rpc/' + fn, {
+      method: 'POST',
+      keepalive: !!keepalive,
+      headers: {
+        apikey: SB.anonKey,
+        Authorization: 'Bearer ' + SB.anonKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(args || {}),
+    }).then(function (r) {
+      if (!r.ok) throw new Error('supabase-' + r.status);
+      return true;
+    });
+  }
+  window.saRpc = sbRpc;
+
   /* ---- Toasts --------------------------------------------------------- */
   function toast(msg, kind) {
     var host = $('[data-toasts]');

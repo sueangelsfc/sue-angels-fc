@@ -171,9 +171,9 @@ export function squad(d) {
     const s = statsIn(view, p.num);
     return p.gk
       ? [s.apps || 0, s.cleanSheets || 0, s.motm || 0,
-        s.subApps || 0, s.cleanSheets || 0, s.motm || 0]
+        s.benchUnused || 0, s.cleanSheets || 0, s.motm || 0]
       : [s.apps || 0, s.goals || 0, s.assists || 0,
-        s.subApps || 0, (s.goals || 0) + (s.assists || 0), s.motm || 0];
+        s.benchUnused || 0, (s.goals || 0) + (s.assists || 0), s.motm || 0];
   };
 
   const card = (p, i) => {

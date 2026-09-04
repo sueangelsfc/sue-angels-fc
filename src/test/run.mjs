@@ -717,6 +717,10 @@ for (const f of shipped) {
          things this feature deliberately does not record. It is the opposite
          of a publishing claim. */
       'What is not here, and why',
+      /* The second pass. Every one of these is the club reading its own
+         figures: what rose and fell, how its own reports and articles are
+         doing, and which pages nobody has opened. */
+      'What moved', 'How the club’s own pages are doing', 'Pages nobody opened',
       /* The club's own prospect list. Nothing in it is published, by design.
          "Who else might back the club" is the pointer to it from the Sponsors
          screen; it now carries the pipeline's own figures rather than being a
@@ -1875,8 +1879,18 @@ const BUDGET = {
 
      The alternative was a charting library, which would have cost more than
      all of it and shipped a dependency to draw four things. Everything on
-     that screen is inline SVG or one of the panel's own tables. */
-  'control-stats.js': 11,
+     that screen is inline SVG or one of the panel's own tables.
+
+     11 -> 15 for the second pass: filters that narrow every figure at once,
+     risers and fallers against the period before, the club's own reports and
+     articles lined up with their publication dates, the pages nobody opened,
+     a sparkline per row, grouped traffic sources, and the previous period
+     laid over the trend. The site's page list is NOT in here - the build
+     writes stats-pages.json and this screen fetches it, so 10KB of titles and
+     dates costs the chunk nothing and costs every other panel nothing.
+
+     control.css took the same pass at 6.2KB of its 7, so it is not raised. */
+  'control-stats.js': 15,
   'control-matchday.js': 4,
   /* 16 -> 6. The five-tab editor left for control-matchedit.js, so this is now
      the two LISTS: 15.9KB of a 16KB ceiling became 4.9KB. The ceiling comes

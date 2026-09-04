@@ -181,3 +181,95 @@
    fill: the row is already in a table that reads top to bottom by date, and a
    coloured band would compete with the bars beside it. */
 .data tr.is-top td { font-weight: var(--weight-bold); }
+
+/* ==========================================================================
+   NARROWING THE WHOLE SCREEN
+
+   One row of controls, and they narrow every figure below rather than one
+   table. A filter per section is how a total comes to disagree with the rows
+   underneath it, so there is exactly one place these live and exactly one
+   place they are applied.
+   ========================================================================== */
+.cpf {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: flex-end;
+  padding: var(--space-3);
+  margin-block-end: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-inset);
+}
+.cpf__one { display: flex; flex-direction: column; gap: 4px; flex: 1 1 160px; min-width: 0; }
+.cpf__l { font-size: var(--step--2); color: var(--text-muted); }
+.cpf__one .select { width: 100%; min-width: 0; }
+.cpf__clear { flex: 0 0 auto; }
+
+/* ---- A page's own shape, twelve pixels tall ----
+   Drawn on one axis for every row, so two of these in the same column can be
+   compared with each other rather than each being scaled to its own peak. */
+.cpk { display: block; width: 60px; height: 14px; overflow: visible; }
+.cpk__l {
+  fill: none;
+  stroke: var(--brand);
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* An address under the name it belongs to. Quiet, because the name is the
+   thing being read and the address is how to find it. */
+.cpp { font-size: var(--step--2); color: var(--text-subtle); }
+a.cpp { text-decoration: underline; }
+
+/* The pages nobody opened. A list, not a table: there is one fact per row and
+   a table of one column is a list with extra furniture. */
+.cpu {
+  margin: 0 0 var(--space-4);
+  padding-left: var(--space-5);
+  columns: 2;
+  column-gap: var(--space-5);
+  font-size: var(--step--1);
+}
+.cpu li { margin-block-end: 4px; break-inside: avoid; }
+@media (max-width: 640px) { .cpu { columns: 1; } }
+
+/* ---- What the chart is telling you ----
+   The marks and the ghost line both need naming, and naming them in words
+   beside a swatch is what keeps the chart readable without colour. */
+.cpg__row { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+.cpg { display: inline-flex; align-items: center; gap: 6px; }
+.cpg__mark {
+  display: inline-block;
+  width: 2px;
+  height: 12px;
+  background: var(--text-muted);
+}
+.cpg__ghost {
+  display: inline-block;
+  width: 14px;
+  height: 0;
+  border-top: 2px dashed var(--text-subtle);
+}
+
+/* The period before, laid over this one. Dashed and unfilled, because it is
+   context rather than the subject: a second filled area would read as two
+   equal claims. */
+.cpc__ghost {
+  fill: none;
+  stroke: var(--text-subtle);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+  opacity: 0.7;
+}
+/* A day the club did something. Grey, not orange: the orange on this chart is
+   the traffic, and a mark in the same hue would read as part of the data
+   rather than as the reason for it. */
+.cpc__mark { stroke: var(--text-muted); stroke-width: 1; opacity: 0.5; }
+.cpc__markdot { fill: var(--text-muted); }
+
+/* Published inside the period being looked at, so its figure covers its whole
+   life rather than a slice of it. Weight, not a fill. */
+.data tr.is-new td { border-left: 2px solid var(--brand); }
+.data tr.is-new td:first-child { padding-left: calc(var(--space-3) - 2px); }

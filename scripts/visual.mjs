@@ -229,9 +229,14 @@ async function main() {
       if (/page_stats\\?/.test(q || '')) {
         const zones = ['Europe/London', 'America/New_York', 'Australia/Sydney',
           'Africa/Lagos', 'Asia/Tokyo', 'Antarctica/Troll'];
+        /* REAL routes, so the page catalogue the screen fetches actually
+           names them. Made-up paths render as bare addresses and would have
+           left the naming, the publication dates and the trend marks
+           untested in a browser. */
         const paths = ['/index.html', '/squad.html', '/results.html',
           '/players/charlie-dunkley.html', '/matches/r20260816-brentford.html',
-          '/news/promoted-to-league-eight.html', '/gallery/first-season.html'];
+          '/news/sues-angels-fc-confirm-pre-season-fixtures.html',
+          '/gallery/sues-angels-7-0-barnes-stormers-dylan-rigobert-trophy-8-february-2026.html'];
         const srcs = ['', 'google.com', 'facebook.com', 'instagram.com'];
         const devs = ['mobile', 'desktop', 'tablet'];
         const out = [];
@@ -283,6 +288,25 @@ async function main() {
       if (!drewIt.bubbles) fail('panel:stats', 'no country markers on the map');
       if (drewIt.heat !== 168) fail('panel:stats', `the heatmap drew ${drewIt.heat} cells, not 7 x 24`);
       if (drewIt.trend < 2) fail('panel:stats', `the daily trend drew ${drewIt.trend} points`);
+
+      /* The second pass, asked of the rendered screen rather than of the
+         source. The catalogue is fetched over the network here, so this is
+         also the only place that proves the build writes a file the panel can
+         actually read. */
+      const more = await ask(`(() => ({
+        filters: document.querySelectorAll('select[data-filt]').length,
+        sparks: document.querySelectorAll('.cpk').length,
+        named: /Charlie Dunkley/.test(document.body.textContent),
+        unopened: /Pages nobody opened/.test(document.body.textContent),
+        movers: /What moved/.test(document.body.textContent),
+        publishes: /How the club/.test(document.body.textContent),
+      }))()`);
+      if (more.filters !== 4) fail('panel:stats', `${more.filters} filter controls, want 4`);
+      if (more.sparks < 3) fail('panel:stats', `${more.sparks} row sparklines`);
+      if (!more.named) fail('panel:stats', 'the page catalogue was not read, so pages are unnamed');
+      if (!more.unopened) fail('panel:stats', 'the pages-nobody-opened section did not draw');
+      if (!more.movers) fail('panel:stats', 'the risers and fallers section did not draw');
+      if (!more.publishes) fail('panel:stats', 'the club-content section did not draw');
     }
     measured += a.measured; unverifiable += a.unverifiable;
     for (const [b, n] of Object.entries(a.clipped || {})) clippedBy.set(b, Math.max(clippedBy.get(b) || 0, n));

@@ -48,6 +48,60 @@ import * as esbuild from 'esbuild';
 const ROOT = process.cwd();
 const CHECK = process.argv.includes('--check');
 const written = [];
+
+/* ---- WHAT THE SITE PUBLISHES, AS A LIST ---------------------------------
+   The website stats screen knows what has been READ and had no idea what
+   exists, which makes two questions unanswerable: what is a page called
+   (a reader is not looking at "/players/charlie-dunkley.html"), and which
+   of the club's 108 pages has nobody opened at all. The second is the more
+   useful of the two and it cannot be derived from traffic by definition -
+   a page with no views leaves no row.
+
+   Built here rather than seeded into the panel bundle, and shipped as its
+   own JSON fetched by that one screen, the way home-previews.json is: it is
+   6KB of data read by a screen most people never open, and control-seed.js
+   is on the critical path for every screen that is. Same rule that moved
+   homeBands out of the shared seed.
+
+   A DATE where the page has one. A match report and a news article are the
+   two things the club publishes ON a day, which is what lets the traffic
+   chart mark the days something happened and what lets the screen ask how a
+   report did in the week after the match. */
+const catalogue = [];
+function cat(route, title, kind, date) {
+  catalogue.push({
+    p: route,
+    /* The club's name is on every title and in the panel's own header. It is
+       the one word that cannot tell two of these pages apart. */
+    t: String(title || '').replace(/\s*·\s*Sue's Angels FC\s*$/, '')
+      .replace(/\s*-\s*League Ten Champions\s*$/, '').trim(),
+    k: kind,
+    ...(isoDay(date) ? { d: isoDay(date) } : {}),
+  });
+}
+
+/* A DATE HAS TO BE ONE. The article rows carry both an ISO timestamp and a
+   human "20 Jul 2026", and which of the two reaches here depends on what the
+   dataset kept: slicing ten characters off the second produced "20 Jul 202",
+   a string that sorts wrongly, parses to nothing and would have marked the
+   traffic chart on a day that does not exist. Anything that will not parse is
+   dropped, because a page with no date is a page with no date and a wrong one
+   is worse. */
+function isoDay(v) {
+  if (!v) return '';
+  const s = String(v);
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  const t = new Date(s);
+  if (Number.isNaN(t.getTime())) return '';
+  /* LOCAL COMPONENTS, NOT toISOString(). An article stamped 2026-07-19T23:06Z
+     is published on the 20th in London and the site prints "20 Jul 2026", so
+     a UTC slice marks the traffic chart on the day before the thing happened.
+     Reading the parts back out is also what makes a date-only string like
+     "20 Jul 2026" survive being built in any time zone, which matters because
+     the deploy builds in UTC and a laptop does not. */
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${t.getFullYear()}-${pad(t.getMonth() + 1)}-${pad(t.getDate())}`;
+}
 let bytes = 0;
 
 function write(rel, content) {
@@ -1064,6 +1118,10 @@ for (const r of routes) {
     assetV: out.css === 'home.css' ? homeV : assetV,
     jsV: assetV,
   }));
+  /* The home page's title is the club's name, which is the one thing every
+     page here has in common and so the one thing that names none of them. */
+  cat(`/${r.file}`, r.file === 'index.html' ? 'Home page' : r.title,
+    r.file === 'index.html' ? 'home' : 'main');
 }
 
 /* ---- The home page with EVERY band switched on --------------------------
@@ -1128,6 +1186,7 @@ if (!CHECK && process.env.SA_ALL_BANDS) {
     assetV,
     bare: true,
   }));
+  cat('/control.html', 'Control panel', 'panel');
 }
 
 /* ---- Player profiles ---- */
@@ -1189,6 +1248,7 @@ for (const p of profilePlayers) {
       breadcrumb([{ label: 'Home', href: '/' }, { label: 'Squad', href: '/squad.html' }, { label: p.name, href: `/players/${p.slug}.html` }]),
     ],
   }));
+  cat(`/players/${p.slug}.html`, p.name, 'player');
 }
 
 /* ---- Match centre ----
@@ -1229,6 +1289,7 @@ for (const m of (groupLive('matches') ? d.played : [])) {
       breadcrumb([{ label: 'Home', href: '/' }, { label: 'Results', href: '/results.html' }, { label: m.title, href: `/matches/${m.slug}.html` }]),
     ],
   }));
+  cat(`/matches/${m.slug}.html`, m.title, 'match', m.iso);
 }
 
 /* ---- Articles ---- */
@@ -1257,6 +1318,7 @@ for (const a of (groupLive('news') ? d.articles : [])) {
       breadcrumb([{ label: 'Home', href: '/' }, { label: 'News', href: '/news.html' }, { label: a.title, href: `/news/${slug}.html` }]),
     ],
   }));
+  cat(`/news/${slug}.html`, a.title, 'news', a.date || a.sortISO);
 }
 
 /* ---- Gallery albums ---- */
@@ -1289,6 +1351,7 @@ for (const g of (groupLive('gallery') ? d.galleries : [])) {
       breadcrumb([{ label: 'Home', href: '/' }, { label: 'Gallery', href: '/gallery.html' }, { label: g.title, href: `/gallery/${g.slug}.html` }]),
     ],
   }));
+  cat(`/gallery/${g.slug}.html`, g.title, 'gallery', g.date);
 }
 
 /* ---- Sitemap, robots, manifest ---- */
@@ -1330,6 +1393,11 @@ const lastmodFor = (u) => {
   }
   return siteDate;
 };
+/* One file, fetched by the Website stats screen the first time it draws and
+   by nobody else. Not in the sitemap and not linked from any page, because it
+   is not a page: it is the panel's copy of what the site publishes. */
+write('stats-pages.json', JSON.stringify(catalogue));
+
 write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${CLUB.site}${u}</loc><lastmod>${lastmodFor(u)}</lastmod><changefreq>${u === '/' ? 'daily' : 'weekly'}</changefreq><priority>${u === '/' ? '1.0' : u.includes('/players/') || u.includes('/matches/') ? '0.6' : '0.8'}</priority></url>`).join('\n')}

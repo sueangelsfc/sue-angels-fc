@@ -677,6 +677,55 @@ stayed and how far down they got. `migrations/007_page_stats.sql`,
 - **Inert until the migration is run**, like 002 and 004. Until then every
   call is a 404, the failure is swallowed, and the screen names the file that
   turns it on rather than showing an empty page that reads as broken.
+- **The screen knows what the site PUBLISHES, not only what was read.**
+  `stats-pages.json` is written by the build - every route, its real title,
+  what kind of page it is, and the day a match was played or an article went
+  up - and this screen fetches it. Two of the most useful questions need it:
+  what a page is *called* (a reader did not come for
+  `/players/charlie-dunkley.html`), and **which pages nobody opened**, which
+  traffic cannot answer on its own because a page with no views writes no row.
+  99 of the site's 106 published pages had no views in the sample period, and
+  that number is only obtainable by comparing the two.
+  - **Fetched, not seeded.** 10KB of titles and dates read by one screen most
+    people never open. In `control-seed.js` every panel would pay for it; in
+    the chunk it would double the chunk. Same rule as `homeBands`, third time.
+  - **Every use of it is optional.** With the fetch failing, a page is its
+    address, the sections that need dates say so and name the file, and every
+    other figure is unchanged. The suite renders both states.
+- **A date has to be one.** Article rows carry both an ISO timestamp and a
+  human `20 Jul 2026`, and slicing ten characters off the second produced
+  `20 Jul 202` - a string that sorts wrongly, parses to nothing and would have
+  marked the chart on a day that does not exist. `isoDay()` parses and reads
+  back **local** components, because `2026-07-19T23:06Z` is the 20th in London
+  and `toISOString()` would mark the day before the thing happened.
+- **One filter, applied once.** Part of the site, country, source and device
+  narrow *every* figure on the screen, in `view()`. A filter each section
+  applied for itself is how a total comes to disagree with the rows under it.
+  The dropdowns are built from the **unfiltered** period on purpose, so
+  choosing a country cannot empty the source list and strand somebody - which
+  is also why the check for "narrowing takes every other figure with it" reads
+  the table cells and not the whole screen, having first failed on the control
+  that makes the filter usable.
+- **What moved, ranked by size and not by percentage.** One view becoming
+  three is a 200% rise and is not news on a club website. Pages that vanished
+  are movers too, so the list is built from the union of both periods rather
+  than from what is here now.
+- **The trend says what the club DID.** Vertical marks on the days a match was
+  played or an article went up, from the catalogue's real dates, and the
+  previous period laid over as a dashed line where the two are the same
+  length. A traffic chart with no idea what happened is a line moving for no
+  stated reason.
+- **`control-stats.js` 11 → 15KB.** The page list is not in it.
+
+### A descendant space is not every space
+
+`src/test/dom.mjs` split a selector on `/\s+/`, so
+`[data-val="United Kingdom"]` was torn in half and reported as an unsupported
+selector. That is the worst of both answers: the syntax **is** supported, and
+a real check could not be written with it. `splitCombinators()` tracks bracket
+depth the way `splitTop` already did, so a space inside an attribute value or
+a `:not()` stays where it is. Found by writing the check the DOM said it
+could not parse, which is exactly what that error message asks for.
 - **`CP.rest` in the test harness answered `[]` unconditionally**, so any
   screen built on it could only ever be rendered empty and its arithmetic was
   untestable. It takes crafted rows now, and the suite hands the shipped

@@ -71,9 +71,13 @@ function fixtureStore(rows, { empty = false } = {}) {
    is intercepted and the file is executed for real - so CHUNK_OF, the chunk
    filenames the build stamps into CP_CHUNKS, and each chunk's registration
    are all exercised exactly as they are in a browser. */
-export function boot({ rows = {}, empty = false, localStorage: ls, onScript, transform, canvas = false } = {}) {
+/* `fetch` is opt-in and defaults to REJECTING, which is not laziness: a chunk
+   that fetches a file the build writes has two behaviours worth checking, and
+   the degraded one is the easier to get wrong. The stats screen fetches the
+   site's page catalogue and must still draw every figure without it. */
+export function boot({ rows = {}, empty = false, localStorage: ls, onScript, transform, canvas = false, fetch: fetchImpl } = {}) {
   const html = fs.readFileSync(path.join(ROOT, 'control.html'), 'utf8');
-  const win = makeWindow({ localStorage: ls, canvas });
+  const win = makeWindow({ localStorage: ls, canvas, fetch: fetchImpl });
   const doc = win.document;
 
   const bodyHtml = (/<body[^>]*>([\s\S]*)<\/body>/i.exec(html) || [, ''])[1]

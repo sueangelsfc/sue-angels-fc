@@ -507,7 +507,7 @@ function compile(sel) {
   const key = String(sel);
   if (selCache.has(key)) return selCache.get(key);
   const groups = splitTop(key, ',').map((g) => {
-    const parts = g.trim().split(/\s*(>)\s*|\s+/).filter((x) => x !== undefined && x !== '');
+    const parts = splitCombinators(g.trim());
     const chain = [];
     let comb = null;
     parts.forEach((p) => {
@@ -520,6 +520,28 @@ function compile(sel) {
   });
   selCache.set(key, groups);
   return groups;
+}
+
+/* A DESCENDANT SPACE IS NOT EVERY SPACE. Splitting on /\s+/ tore
+   `[data-val="United Kingdom"]` in half and reported the selector as
+   unsupported, which is the worst of both answers: the syntax is supported
+   and a real check could not be written with it. Depth is tracked the way
+   splitTop tracks it, so a space inside brackets or parentheses - an
+   attribute value, or a :not() - stays where it is. */
+function splitCombinators(sel) {
+  const out = [];
+  let depth = 0;
+  let cur = '';
+  const push = () => { if (cur) out.push(cur); cur = ''; };
+  for (const c of sel) {
+    if (c === '[' || c === '(') depth += 1;
+    if (c === ']' || c === ')') depth -= 1;
+    if (depth === 0 && (c === ' ' || c === '\t' || c === '\n')) { push(); continue; }
+    if (depth === 0 && c === '>') { push(); out.push('>'); continue; }
+    cur += c;
+  }
+  push();
+  return out;
 }
 
 function splitTop(s, ch) {

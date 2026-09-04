@@ -38,6 +38,14 @@
    which has neither layout nor a cascade and throws rather than inventing
    them.
 
+   IT KNOWS WHAT THE SITE PUBLISHES, NOT ONLY WHAT WAS READ
+   `/stats-pages.json` is written by the build: every route, its real title,
+   what kind of page it is, and the day a match was played or an article went
+   up. Traffic alone cannot answer two of the most useful questions - what a
+   page is CALLED, and which pages nobody opened, because a page with no views
+   leaves no row to count. It is fetched by this screen and by nothing else,
+   and the screen draws every figure without it if the fetch fails.
+
    NOTHING HERE IS PUBLISHED. It is the club looking at its own website, which
    is why this section makes no `where:` claim and is named in the suite's
    PUBLISHES_NOTHING list.
@@ -241,8 +249,17 @@
   var rows = null;      /* null means migration 007 has not been run */
   var prev = null;      /* the period before this one, for the comparison */
   var hours = null;     /* null means migration 008 has not been run */
+  var CAT = null;       /* the site's own page list, or null if unreachable */
   var FOCUS = '';       /* a page being looked at on its own */
   var SORT = 'views';
+  /* Every figure on the screen answers the same four questions, so the filter
+     is held here and applied ONCE, in view(). A filter each section applied
+     for itself is how a total comes to disagree with the rows under it. */
+  var FILT = { area: '', country: '', source: '', device: '' };
+
+  function anyFilter() {
+    return !!(FILT.area || FILT.country || FILT.source || FILT.device);
+  }
 
   function iso(d) { return d.toISOString().slice(0, 10); }
   function daysAgo(n) {
@@ -264,6 +281,23 @@
     } catch (e) { return Promise.resolve(null); }
   }
 
+  /* The build writes this and this screen is the only thing that reads it.
+     Fetched once and kept, because it changes only when the site is rebuilt,
+     and every use of it is optional: a page with no catalogue entry is shown
+     by its address, which is what the whole screen did before. */
+  function catalogue() {
+    if (CAT) return Promise.resolve(CAT);
+    try {
+      return fetch('/stats-pages.json')
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (list) {
+          CAT = Array.isArray(list) ? list : null;
+          return CAT;
+        })
+        .catch(function () { return null; });
+    } catch (e) { return Promise.resolve(null); }
+  }
+
   function load() {
     if (!CP.state.isAdmin || !CP.rest) return Promise.resolve();
     var since = DAYS ? '&day=gte.' + daysAgo(DAYS - 1) : '';
@@ -277,12 +311,78 @@
       DAYS ? get('page_stats?select=' + COLS + before + '&limit=20000')
         : Promise.resolve([]),
       get('page_stats_hourly?select=day,hour,path,views' + since + '&limit=20000'),
+      catalogue(),
     ]).then(function (r) {
       rows = r[0];
       prev = r[1] || [];
       hours = r[2];
     });
   }
+
+  /* ---- What the site publishes ------------------------------------------
+     All of this degrades to nothing rather than to a guess: with no catalogue
+     a page is its address, which is exactly what this screen showed before
+     the catalogue existed. */
+  var BY_PATH = null;
+  function metaOf(p) {
+    if (!CAT) return null;
+    if (!BY_PATH) {
+      BY_PATH = {};
+      CAT.forEach(function (e) { BY_PATH[e.p] = e; });
+    }
+    return BY_PATH[p] || null;
+  }
+  function nameOf(p) {
+    var m = metaOf(p);
+    return m && m.t ? m.t : '';
+  }
+
+  var KIND_LABEL = {
+    home: 'Home page', main: 'Main pages', player: 'Player profiles',
+    match: 'Match reports', news: 'News articles', gallery: 'Photo albums',
+    panel: 'Control panel',
+  };
+
+  /* The catalogue's answer where there is one, and the address where there is
+     not. The fallback is not decoration: a page generated since the last
+     build has traffic and no catalogue entry, and it belongs in a section
+     rather than in a hole. */
+  function areaOf(p) {
+    var m = metaOf(p);
+    if (m && KIND_LABEL[m.k]) return KIND_LABEL[m.k];
+    if (/^\/players\//.test(p)) return 'Player profiles';
+    if (/^\/matches\//.test(p)) return 'Match reports';
+    if (/^\/news\//.test(p)) return 'News articles';
+    if (/^\/gallery\//.test(p)) return 'Photo albums';
+    if (/^\/control\.html$/.test(p)) return 'Control panel';
+    if (/^\/(index\.html)?$/.test(p)) return 'Home page';
+    return 'Main pages';
+  }
+
+  /* ---- Where a reader came from, grouped --------------------------------
+     A list of hosts answers "which site", and the club's actual question is
+     "is this search, is this social, or is it people who already know us".
+     The hosts are still listed underneath; this is the shape above them. */
+  function sourceGroup(host) {
+    if (!host) return 'Direct or unknown';
+    var h = String(host).toLowerCase();
+    if (/(^|\.)(google|bing|duckduckgo|yahoo|ecosia|brave|yandex|baidu)\./.test('.' + h)
+      || /(^|\.)search\./.test('.' + h)) return 'Search engines';
+    if (/(^|\.)(facebook|fb|instagram|x|twitter|t|linkedin|lnkd|tiktok|whatsapp|reddit|youtube|threads|snapchat|pinterest)\./.test('.' + h)
+      || h === 'l.facebook.com' || h === 'lm.facebook.com') return 'Social media';
+    return 'Other websites';
+  }
+
+  /* ---- The rows this screen is looking at -------------------------------- */
+  function keep(r) {
+    if (FILT.area && areaOf(r.path) !== FILT.area) return false;
+    if (FILT.country && countryOf(r.zone) !== FILT.country) return false;
+    if (FILT.source && (r.source || 'Direct or unknown') !== FILT.source) return false;
+    if (FILT.device && (r.device || 'Not known') !== FILT.device) return false;
+    return true;
+  }
+  function view() { return anyFilter() ? (rows || []).filter(keep) : (rows || []); }
+  function viewPrev() { return anyFilter() ? (prev || []).filter(keep) : (prev || []); }
 
   /* ---- Aggregation ------------------------------------------------------
      One pass, several buckets. Everything downstream reads these rather than
@@ -329,17 +429,10 @@
     var t = new Date(d + 'T12:00:00');
     return isNaN(t.getTime()) ? d : t.getDate() + ' ' + mon[t.getMonth()];
   }
-
-  /* Which part of the site a page belongs to. The club thinks in sections -
-     "are people reading the match reports?" - and 108 rows of paths does not
-     answer that however carefully it is sorted. */
-  function areaOf(p) {
-    if (/^\/players\//.test(p)) return 'Player profiles';
-    if (/^\/matches\//.test(p)) return 'Match reports';
-    if (/^\/news\//.test(p)) return 'News articles';
-    if (/^\/gallery\//.test(p)) return 'Photo albums';
-    if (/^\/(index\.html)?$/.test(p)) return 'Home page';
-    return 'Main pages';
+  function daysBetween(a, b) {
+    var x = new Date(a + 'T12:00:00'), y = new Date(b + 'T12:00:00');
+    if (isNaN(x.getTime()) || isNaN(y.getTime())) return null;
+    return Math.round((y - x) / 864e5);
   }
 
   /* ---- Small drawing helpers -------------------------------------------
@@ -376,30 +469,60 @@
         + '% on the ' + DAYS + ' days before') + '</span>';
   }
 
-  function rankTable(head, list, all, label, note) {
+  function rankTable(head, list, all, label, opts) {
     if (!list.length) {
       return '<p class="cp-note">Nothing recorded yet for ' + esc(label) + '.</p>';
     }
-    return table([head, 'Views', 'Share', 'Average time', 'Average scroll', ''],
-      list.slice(0, 40).map(function (r) {
-        return '<tr><td>' + esc(r.key) + '</td>'
-          + '<td><b>' + esc(String(r.views)) + '</b></td>'
-          + '<td>' + esc(String(pct(r.views, all))) + '%</td>'
-          + '<td>' + esc(dur(r.seconds / r.views)) + '</td>'
-          + '<td>' + esc(String(Math.round(r.depth / r.views))) + '%</td>'
-          + '<td style="width:28%">' + bar(r.views, all) + '</td></tr>';
-      }).join('')) + (note || '');
+    var f = (opts && opts.filter) || '';
+    return table([head, 'Views', 'Share', 'Average time', 'Average scroll', '',
+      f ? 'Narrow to' : ''],
+    list.slice(0, 40).map(function (r) {
+      return '<tr><td>' + esc(r.key) + '</td>'
+        + '<td><b>' + esc(String(r.views)) + '</b></td>'
+        + '<td>' + esc(String(pct(r.views, all))) + '%</td>'
+        + '<td>' + esc(dur(r.seconds / r.views)) + '</td>'
+        + '<td>' + esc(String(Math.round(r.depth / r.views))) + '%</td>'
+        + '<td style="width:24%">' + bar(r.views, all) + '</td>'
+        + (f
+          ? '<td><button class="btn btn--sm btn--ghost" data-filt="' + esc(f)
+            + '" data-val="' + esc(r.key) + '">Only this</button></td>'
+          : '<td></td>')
+        + '</tr>';
+    }).join(''));
+  }
+
+  /* ---- A page's own shape, twelve pixels tall ---------------------------
+     A table of totals cannot tell a page that is read every day from one that
+     had a single good afternoon, and those are different pages. */
+  function sparkline(series, max) {
+    if (!series || series.length < 2) return '';
+    var W = 60, H = 14;
+    var step = W / (series.length - 1);
+    var pts = series.map(function (v, i) {
+      return (i * step).toFixed(1) + ' ' + (H - 1 - (v / (max || 1)) * (H - 2)).toFixed(1);
+    });
+    return '<svg class="cpk" viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true" '
+      + 'focusable="false"><polyline class="cpk__l" points="' + pts.join(' ') + '"/></svg>';
   }
 
   /* ---- The daily trend --------------------------------------------------
      An area, a line and a dot per day, in viewBox units so nothing here ever
      needs to measure the page. Every dot carries a <title>, so the figures
      are reachable by hovering and by a screen reader without a tooltip
-     engine, and the table underneath carries all of them anyway. */
-  function trend(days) {
+     engine, and the table underneath carries all of them anyway.
+
+     THE MARKS ARE THE POINT. A traffic chart with no idea what the club did
+     is a line going up and down for no stated reason; a tick on the day a
+     match was played or a report went up turns it into a question somebody
+     can answer. They come from the catalogue, so they are the club's real
+     dates rather than anything inferred from the traffic itself. */
+  function trend(days, opts) {
     if (days.length < 2) return '';
-    var W = 640, H = 170, L = 34, R = 8, T = 10, B = 26;
-    var max = Math.max.apply(null, days.map(function (d) { return d.views; })) || 1;
+    opts = opts || {};
+    var W = 640, H = 190, L = 34, R = 8, T = 10, B = 46;
+    var ghost = opts.ghost && opts.ghost.length === days.length ? opts.ghost : null;
+    var max = Math.max.apply(null, days.map(function (d) { return d.views; })
+      .concat(ghost ? ghost.map(function (d) { return d.views; }) : [])) || 1;
     var step = (W - L - R) / Math.max(1, days.length - 1);
     var x = function (i) { return L + i * step; };
     var y = function (v) { return T + (1 - (v / max)) * (H - T - B); };
@@ -408,6 +531,12 @@
     var line = 'M' + pts.join('L');
     var area = line + 'L' + x(days.length - 1).toFixed(1) + ' ' + (H - B)
       + 'L' + x(0).toFixed(1) + ' ' + (H - B) + 'Z';
+
+    var ghostPath = ghost
+      ? '<path class="cpc__ghost" d="M' + ghost.map(function (d, i) {
+        return x(i).toFixed(1) + ' ' + y(d.views).toFixed(1);
+      }).join('L') + '"/>'
+      : '';
 
     var grid = [0, 0.5, 1].map(function (f) {
       var v = Math.round(max * f);
@@ -422,7 +551,7 @@
     var every = Math.ceil(days.length / 8);
     var axis = days.map(function (d, i) {
       if (i % every && i !== days.length - 1) return '';
-      return '<text class="cpc__ax" x="' + x(i).toFixed(1) + '" y="' + (H - 8)
+      return '<text class="cpc__ax" x="' + x(i).toFixed(1) + '" y="' + (H - 26)
         + '" text-anchor="middle">' + esc(shortDate(d.key)) + '</text>';
     }).join('');
 
@@ -433,18 +562,43 @@
           + (d.views === 1 ? '' : 's')) + '</title></circle>';
     }).join('');
 
+    var marks = '';
+    if (opts.marks) {
+      marks = days.map(function (d, i) {
+        var m = opts.marks[d.key];
+        if (!m || !m.length) return '';
+        return '<line class="cpc__mark" x1="' + x(i).toFixed(1) + '" x2="' + x(i).toFixed(1)
+          + '" y1="' + T + '" y2="' + (H - B) + '"/>'
+          + '<circle class="cpc__markdot" cx="' + x(i).toFixed(1) + '" cy="' + (H - B + 8)
+          + '" r="3"><title>' + esc(shortDate(d.key) + ': ' + m.join(' · ')) + '</title></circle>';
+      }).join('');
+    }
+
     return '<div class="cpc"><svg class="cpc__svg" viewBox="0 0 ' + W + ' ' + H + '" '
       + 'role="img" aria-label="' + esc('Views per day from ' + shortDate(days[0].key)
         + ' to ' + shortDate(days[days.length - 1].key) + ', highest ' + max) + '">'
-      + grid + '<path class="cpc__area" d="' + area + '"/>'
+      + grid + marks + ghostPath + '<path class="cpc__area" d="' + area + '"/>'
       + '<path class="cpc__line" d="' + line + '"/>' + dots + axis + '</svg></div>';
   }
 
-  /* ---- When people read -------------------------------------------------
-     Seven rows and twenty-four columns. This is the whole reason for
-     migration 008, and it is the one question a club can act on: if the
-     match report is read at nine on a Sunday evening, that is when to post
-     the link. */
+  /* Which days the club did something. Only days INSIDE the period, so the
+     legend never promises a mark that is off the left of the chart. */
+  function marksFor(days) {
+    if (!CAT) return null;
+    var within = {};
+    days.forEach(function (d) { within[d.key] = 1; });
+    var out = {}, any = false;
+    CAT.forEach(function (e) {
+      if (!e.d || !within[e.d]) return;
+      if (e.k !== 'match' && e.k !== 'news') return;
+      if (!out[e.d]) out[e.d] = [];
+      out[e.d].push((e.k === 'match' ? 'Match: ' : 'Article: ') + e.t);
+      any = true;
+    });
+    return any ? out : null;
+  }
+
+  /* ---- When people read it ---------------------------------------------- */
   function heatmap(list) {
     var cell = {}, max = 0;
     list.forEach(function (r) {
@@ -545,6 +699,56 @@
     }).join(''));
   }
 
+  /* ---- What moved --------------------------------------------------------
+     A ranked list says what is big and never says what CHANGED, and the change
+     is the thing worth acting on: a page that has quietly doubled is news, a
+     page that has halved is a question. Only against a real previous period,
+     so All time - which has nothing before it - does not draw this at all. */
+  function movers(nowList, wasList, allNow) {
+    var was = {};
+    wasList.forEach(function (r) { was[r.key] = r.views; });
+    var seen = {};
+    var out = nowList.map(function (r) {
+      seen[r.key] = 1;
+      return { key: r.key, now: r.views, was: was[r.key] || 0 };
+    });
+    /* Something that vanished is a mover too, and it is invisible if the list
+       is built from what is here now. */
+    Object.keys(was).forEach(function (k) {
+      if (!seen[k]) out.push({ key: k, now: 0, was: was[k] });
+    });
+    out.forEach(function (r) { r.by = r.now - r.was; });
+    /* Ranked on the SIZE of the change, not the percentage: one view becoming
+       three is a 200% rise and is not news on a club website. */
+    var up = out.filter(function (r) { return r.by > 0; })
+      .sort(function (a, b) { return b.by - a.by; }).slice(0, 8);
+    var down = out.filter(function (r) { return r.by < 0; })
+      .sort(function (a, b) { return a.by - b.by; }).slice(0, 8);
+    if (!up.length && !down.length) return '';
+
+    var rowsFor = function (list) {
+      return table(['Page', 'Now', 'Before', 'Change'], list.map(function (r) {
+        var name = nameOf(r.key);
+        return '<tr><td>' + (name ? '<b>' + esc(name) + '</b><br><span class="cpp">'
+          + esc(r.key) + '</span>' : esc(r.key)) + '</td>'
+          + '<td>' + esc(String(r.now)) + '</td>'
+          + '<td>' + esc(String(r.was)) + '</td>'
+          + '<td class="cpd--' + (r.by > 0 ? 'up' : 'down') + '"><b>'
+          + esc((r.by > 0 ? '+' : '') + r.by) + '</b></td></tr>';
+      }).join(''));
+    };
+    return '<div class="cp2">'
+      + '<div><h4 class="cp-sub">Read more than before</h4>'
+      + (up.length ? rowsFor(up) : '<p class="cp-note">Nothing rose.</p>') + '</div>'
+      + '<div><h4 class="cp-sub">Read less than before</h4>'
+      + (down.length ? rowsFor(down) : '<p class="cp-note">Nothing fell.</p>') + '</div>'
+      + '</div>'
+      + '<p class="cp-note">Against the ' + esc(String(DAYS)) + ' days before this period, '
+      + 'ranked by the size of the change rather than the percentage: one view becoming '
+      + 'three is a 200% rise and is not news. ' + esc(String(allNow))
+      + ' views in this period.</p>';
+  }
+
   /* ---- The screen ------------------------------------------------------- */
 
   function notRunYet() {
@@ -594,42 +798,89 @@
       + '</div>' + inner;
   }
 
+  /* One control per question, and it narrows EVERY figure below it rather
+     than one table. The alternative - a filter per section - is how a total
+     comes to disagree with the rows underneath it. */
+  function picker(name, label, list) {
+    return '<label class="cpf__one"><span class="cpf__l">' + esc(label) + '</span>'
+      + '<select class="select input--sm" data-filt="' + esc(name) + '">'
+      + '<option value="">Everything</option>'
+      + list.map(function (o) {
+        return '<option value="' + esc(o) + '"' + (FILT[name] === o ? ' selected' : '')
+          + '>' + esc(o) + '</option>';
+      }).join('') + '</select></label>';
+  }
+
+  function filterBar() {
+    /* The options come from the UNFILTERED period, so choosing a country does
+       not empty the source list and strand somebody with no way back. */
+    var all = rows || [];
+    var uniq = function (f) {
+      var seen = {};
+      all.forEach(function (r) { seen[f(r)] = 1; });
+      return Object.keys(seen).sort();
+    };
+    return '<div class="cpf">'
+      + picker('area', 'Part of the site', uniq(function (r) { return areaOf(r.path); }))
+      + picker('country', 'Country', uniq(function (r) { return countryOf(r.zone); }))
+      + picker('source', 'Came from', uniq(function (r) { return r.source || 'Direct or unknown'; }))
+      + picker('device', 'Device', uniq(function (r) { return r.device || 'Not known'; }))
+      + (anyFilter()
+        ? '<button class="btn btn--sm btn--ghost cpf__clear" data-clear="1">Show everything</button>'
+        : '')
+      + '</div>';
+  }
+
   function draw(host) {
     if (rows === null) { host.innerHTML = notRunYet(); return; }
 
-    var all = total(rows);
-    if (!all) { host.innerHTML = periodWrap(empty()); wire(host); return; }
+    var everything = total(rows);
+    if (!everything) { host.innerHTML = periodWrap(empty()); wire(host); return; }
 
-    var pages = roll(rows, function (r) { return r.path; });
-    var places = roll(rows, function (r) { return countryOf(r.zone); });
-    var sources = roll(rows, function (r) { return r.source || 'Direct or unknown'; });
-    var devices = roll(rows, function (r) { return r.device || 'Not known'; });
-    var areas = roll(rows, function (r) { return areaOf(r.path); });
-    var days = roll(rows, function (r) { return r.day; })
+    var v = view();
+    var all = total(v);
+    var pv = viewPrev();
+
+    var pages = roll(v, function (r) { return r.path; });
+    var places = roll(v, function (r) { return countryOf(r.zone); });
+    var sources = roll(v, function (r) { return r.source || 'Direct or unknown'; });
+    var groups = roll(v, function (r) { return sourceGroup(r.source); });
+    var devices = roll(v, function (r) { return r.device || 'Not known'; });
+    var areas = roll(v, function (r) { return areaOf(r.path); });
+    var days = roll(v, function (r) { return r.day; })
       .sort(function (a, b) { return a.key < b.key ? -1 : 1; });
 
-    var secs = sum(rows, function (r) { return r.seconds_total; });
-    var deep = sum(rows, function (r) { return r.depth_total; });
+    var secs = sum(v, function (r) { return r.seconds_total; });
+    var deep = sum(v, function (r) { return r.depth_total; });
     var busiest = days.slice().sort(function (a, b) { return b.views - a.views; })[0];
 
-    var wasAll = total(prev || []);
-    var wasSecs = sum(prev || [], function (r) { return r.seconds_total; });
-    var wasPlaces = (prev || []).length
-      ? roll(prev, function (r) { return countryOf(r.zone); }).length : 0;
+    var wasAll = total(pv);
+    var wasSecs = sum(pv, function (r) { return r.seconds_total; });
+    var wasPlaces = pv.length
+      ? roll(pv, function (r) { return countryOf(r.zone); }).length : 0;
 
-    host.innerHTML = headline(all, pages, places, days, secs, deep, busiest, wasAll,
-        wasSecs, wasPlaces)
+    host.innerHTML = headline(all, everything, pages, places, days, secs, deep, busiest,
+        wasAll, wasSecs, wasPlaces)
       + (FOCUS ? focusPanel(FOCUS, all) : '')
       + sec({
         title: 'Day by day',
         sub: 'Every day in the period, and what came in on it.',
-        body: trend(days) + dayTable(days, busiest),
+        body: trend(days, { marks: marksFor(days), ghost: ghostFor(days, pv) })
+          + trendKey(days, pv)
+          + dayTable(days, busiest, v),
       })
+      + (DAYS && pv.length
+        ? sec({
+          title: 'What moved',
+          sub: 'The pages that rose and fell most against the period before.',
+          body: movers(pages, roll(pv, function (r) { return r.path; }), all),
+        })
+        : '')
       + sec({
         title: 'Where in the world',
         sub: 'Worked out from the reader’s device time zone.',
         body: worldMap(places, all)
-          + rankTable('Country', places, all, 'anywhere')
+          + rankTable('Country', places, all, 'anywhere', { filter: 'country' })
           + '<p class="cp-note">This is the time zone the device is set to, not its address: '
           + 'no location lookup happens and no address is ever read. It is wrong for anybody '
           + 'using a VPN or reading while abroad, so treat it as the shape of the audience '
@@ -642,12 +893,17 @@
         sub: 'Every page anybody opened, with how long they stayed and how far down they '
           + 'got. Pick a page to see it on its own.',
         actions: sortBar(),
-        body: areaTable(areas, all) + pageTable(pages, all),
+        body: areaTable(areas, all) + pageTable(pages, all, v),
       })
+      + publishSection(pages, all)
+      + unopenedSection()
       + sec({
         title: 'How they arrive',
-        sub: 'The site that sent them.',
-        body: rankTable('Source', sources, all, 'any source')
+        sub: 'The kind of place first, then the sites themselves.',
+        body: '<h4 class="cp-sub">By kind</h4>'
+          + rankTable('Kind', groups, all, 'any source')
+          + '<h4 class="cp-sub">Site by site</h4>'
+          + rankTable('Source', sources, all, 'any source', { filter: 'source' })
           + '<p class="cp-note">Only the sending site is recorded, never the full address it '
           + 'came from, because a full referring link can carry somebody’s search terms. '
           + '<b>Direct or unknown</b> is somebody typing the address, a bookmark, a link from '
@@ -656,7 +912,7 @@
       })
       + sec({
         title: 'What they read it on',
-        body: rankTable('Device', devices, all, 'any device')
+        body: rankTable('Device', devices, all, 'any device', { filter: 'device' })
           + '<p class="cp-note">From the width of the screen, which is what the layout responds '
           + 'to, rather than from the browser’s identifying user agent string. A phone held '
           + 'sideways can count as a tablet, which is the honest limit of measuring it this '
@@ -666,11 +922,11 @@
         title: 'How much of a page they read',
         sub: 'The spread, not the average.',
         body: '<div class="cp2">'
-          + '<div>' + spread(rows, function (r) { return r.depth_total; },
+          + '<div>' + spread(v, function (r) { return r.depth_total; },
             [['Left near the top, under 25%', 25], ['A quarter to halfway', 50],
               ['Halfway to three quarters', 75], ['Read to the bottom, over 75%', 100]],
             'How far down') + '</div>'
-          + '<div>' + spread(rows, function (r) { return r.seconds_total; },
+          + '<div>' + spread(v, function (r) { return r.seconds_total; },
             [['A glance, under 10 seconds', 10], ['10 to 30 seconds', 30],
               ['Half a minute to two minutes', 120], ['Over two minutes', 1e9]],
             'How long') + '</div></div>'
@@ -698,8 +954,31 @@
     wire(host);
   }
 
-  function headline(all, pages, places, days, secs, deep, busiest, wasAll, wasSecs,
-    wasPlaces) {
+  /* The previous period laid over this one, day for day. Only when the two are
+     the same length, which is the only case where the comparison is honest. */
+  function ghostFor(days, pv) {
+    if (!DAYS || !pv.length || days.length < 2) return null;
+    var byDay = roll(pv, function (r) { return r.day; })
+      .sort(function (a, b) { return a.key < b.key ? -1 : 1; });
+    if (byDay.length !== days.length) return null;
+    return byDay;
+  }
+
+  function trendKey(days, pv) {
+    var bits = [];
+    if (marksFor(days)) {
+      bits.push('<span class="cpg"><i class="cpg__mark" aria-hidden="true"></i> a match was '
+        + 'played or an article went up</span>');
+    }
+    if (ghostFor(days, pv)) {
+      bits.push('<span class="cpg"><i class="cpg__ghost" aria-hidden="true"></i> the same '
+        + 'number of days before this period</span>');
+    }
+    return bits.length ? '<p class="cp-note cpg__row">' + bits.join(' ') + '</p>' : '';
+  }
+
+  function headline(all, everything, pages, places, days, secs, deep, busiest, wasAll,
+    wasSecs, wasPlaces) {
     var span = DAYS
       ? 'in the last ' + DAYS + ' days'
       : (days.length ? 'between ' + shortDate(days[0].key) + ' and '
@@ -709,9 +988,14 @@
       sub: '<b>' + esc(String(all)) + '</b> page view' + (all === 1 ? '' : 's')
         + ' across <b>' + esc(String(pages.length)) + '</b> page'
         + (pages.length === 1 ? '' : 's') + ' from <b>' + esc(String(places.length))
-        + '</b> place' + (places.length === 1 ? '' : 's') + ' ' + esc(span) + '.',
+        + '</b> place' + (places.length === 1 ? '' : 's') + ' ' + esc(span) + '.'
+        + (anyFilter()
+          ? ' <b>Narrowed</b> from ' + esc(String(everything)) + ' views ('
+            + esc(String(pct(all, everything))) + '%).'
+          : ''),
       actions: periodBar(),
-      body: '<div class="cpt-grid">'
+      body: filterBar()
+        + '<div class="cpt-grid">'
         + tile(String(all), 'Page views', pages.length + ' pages opened',
           delta(all, wasAll))
         + tile(dur(secs / all), 'Average on a page', 'across every view',
@@ -733,19 +1017,21 @@
     });
   }
 
-  function dayTable(days, busiest) {
+  function dayTable(days, busiest, v) {
     var byDay = {};
-    rows.forEach(function (r) {
-      if (!byDay[r.day]) byDay[r.day] = { pages: {}, places: {}, top: {}, };
+    v.forEach(function (r) {
+      if (!byDay[r.day]) byDay[r.day] = { pages: {}, places: {}, top: {} };
       byDay[r.day].pages[r.path] = 1;
       byDay[r.day].places[countryOf(r.zone)] = 1;
       byDay[r.day].top[r.path] = (byDay[r.day].top[r.path] || 0) + Number(r.views || 0);
     });
+    var marks = marksFor(days) || {};
     return table(['Date', 'Day', 'Views', 'Pages', 'Places', 'Average time',
-      'Average scroll', 'Most read'],
+      'Average scroll', 'Most read', 'What happened'],
     days.slice().reverse().map(function (d) {
       var m = byDay[d.key] || { pages: {}, places: {}, top: {} };
       var top = Object.keys(m.top).sort(function (a, b) { return m.top[b] - m.top[a]; })[0];
+      var did = marks[d.key] || [];
       return '<tr' + (busiest && d.key === busiest.key ? ' class="is-top"' : '') + '>'
         + '<td>' + esc(shortDate(d.key)) + '</td>'
         + '<td>' + esc(dayName(d.key)) + '</td>'
@@ -754,7 +1040,8 @@
         + '<td>' + esc(String(Object.keys(m.places).length)) + '</td>'
         + '<td>' + esc(dur(d.seconds / d.views)) + '</td>'
         + '<td>' + esc(String(Math.round(d.depth / d.views))) + '%</td>'
-        + '<td class="cell-club">' + esc(top || '') + '</td></tr>';
+        + '<td class="cell-club">' + esc(top ? (nameOf(top) || top) : '') + '</td>'
+        + '<td class="cell-club">' + esc(did.join(' · ')) + '</td></tr>';
     }).join(''));
   }
 
@@ -784,10 +1071,23 @@
           + 'so this fills in from the next visitor onwards.</p>',
       });
     }
+    /* The hourly table carries no zone, source or device by design, so three
+       of the four filters cannot reach it. Saying so is better than quietly
+       showing the whole site's hours under a country filter. */
+    var mine = FILT.area
+      ? hours.filter(function (r) { return areaOf(r.path) === FILT.area; })
+      : hours;
+    var narrowed = (FILT.country || FILT.source || FILT.device);
     return sec({
       title: 'When people read it',
       sub: 'Day of the week against hour of the day, and the whole period by hour.',
-      body: heatmap(hours) + hourProfile(hours),
+      body: heatmap(mine) + hourProfile(mine)
+        + (narrowed
+          ? '<p class="cp-note">The filters for country, source and device do not apply here. '
+            + 'The hour is stored in its own table carrying none of those, which is what stops '
+            + 'knowing when a page was read from narrowing down who read it. A filter by part '
+            + 'of the site does apply, because the page is recorded.</p>'
+          : ''),
     });
   }
 
@@ -801,33 +1101,193 @@
 
   function areaTable(areas, all) {
     return '<h4 class="cp-sub">By part of the site</h4>'
-      + table(['Section', 'Views', 'Share', 'Average time', ''], areas.map(function (a) {
-        return '<tr><td>' + esc(a.key) + '</td><td><b>' + esc(String(a.views)) + '</b></td>'
-          + '<td>' + esc(String(pct(a.views, all))) + '%</td>'
-          + '<td>' + esc(dur(a.seconds / a.views)) + '</td>'
-          + '<td style="width:30%">' + bar(a.views, all) + '</td></tr>';
-      }).join(''))
+      + table(['Section', 'Views', 'Share', 'Average time', '', 'Narrow to'],
+        areas.map(function (a) {
+          return '<tr><td>' + esc(a.key) + '</td><td><b>' + esc(String(a.views)) + '</b></td>'
+            + '<td>' + esc(String(pct(a.views, all))) + '%</td>'
+            + '<td>' + esc(dur(a.seconds / a.views)) + '</td>'
+            + '<td style="width:26%">' + bar(a.views, all) + '</td>'
+            + '<td><button class="btn btn--sm btn--ghost" data-filt="area" data-val="'
+            + esc(a.key) + '">Only this</button></td></tr>';
+        }).join(''))
       + '<h4 class="cp-sub">Page by page</h4>';
   }
 
-  function pageTable(pages, all) {
+  /* One row per page, carrying the page's real NAME where the catalogue knows
+     it. "/players/charlie-dunkley.html" is an address; "Charlie Dunkley" is
+     what somebody came to read. */
+  function pageTable(pages, all, v) {
+    var series = seriesByPath(v);
+    var peak = 1;
+    Object.keys(series).forEach(function (k) {
+      series[k].forEach(function (n) { if (n > peak) peak = n; });
+    });
     var sorted = pages.slice().sort(function (a, b) {
       if (SORT === 'seconds') return (b.seconds / b.views) - (a.seconds / a.views);
       if (SORT === 'depth') return (b.depth / b.views) - (a.depth / a.views);
       return b.views - a.views;
     });
-    return table(['Page', 'Section', 'Views', 'Average time', 'Average scroll', '', ''],
-      sorted.map(function (r) {
-        return '<tr><td><a href="' + esc(r.key) + '" target="_blank" rel="noopener">'
-          + esc(r.key) + '</a></td>'
-          + '<td>' + esc(areaOf(r.key)) + '</td>'
-          + '<td><b>' + esc(String(r.views)) + '</b></td>'
-          + '<td>' + esc(dur(r.seconds / r.views)) + '</td>'
-          + '<td>' + esc(String(Math.round(r.depth / r.views))) + '%</td>'
-          + '<td style="width:20%">' + bar(r.views, all) + '</td>'
-          + '<td><button class="btn btn--sm btn--ghost" data-page="' + esc(r.key)
-          + '">Look at this page</button></td></tr>';
-      }).join(''));
+    return table(['Page', 'Section', 'Views', 'Shape', 'Average time', 'Average scroll',
+      '', ''],
+    sorted.map(function (r) {
+      var name = nameOf(r.key);
+      return '<tr><td>'
+        + (name ? '<b>' + esc(name) + '</b><br>' : '')
+        + '<a class="cpp" href="' + esc(r.key) + '" target="_blank" rel="noopener">'
+        + esc(r.key) + '</a></td>'
+        + '<td>' + esc(areaOf(r.key)) + '</td>'
+        + '<td><b>' + esc(String(r.views)) + '</b></td>'
+        + '<td>' + sparkline(series[r.key], peak) + '</td>'
+        + '<td>' + esc(dur(r.seconds / r.views)) + '</td>'
+        + '<td>' + esc(String(Math.round(r.depth / r.views))) + '%</td>'
+        + '<td style="width:16%">' + bar(r.views, all) + '</td>'
+        + '<td><button class="btn btn--sm btn--ghost" data-page="' + esc(r.key)
+        + '">Look at this page</button></td></tr>';
+    }).join(''));
+  }
+
+  /* Views per day per page, on the same axis for every page, so two
+     sparklines in the same column can be compared with each other. */
+  function seriesByPath(v) {
+    var days = {}, order = [];
+    v.forEach(function (r) { if (!days[r.day]) { days[r.day] = 1; order.push(r.day); } });
+    order.sort();
+    var at = {};
+    order.forEach(function (d, i) { at[d] = i; });
+    var out = {};
+    v.forEach(function (r) {
+      if (!out[r.path]) {
+        out[r.path] = [];
+        for (var i = 0; i < order.length; i++) out[r.path].push(0);
+      }
+      out[r.path][at[r.day]] += Number(r.views || 0);
+    });
+    return out;
+  }
+
+  /* ---- What the club publishes -------------------------------------------
+     A match report and a news article are the two things the club MAKES, and
+     the only honest way to ask whether the work is landing is to line them up
+     against their own publication dates. Needs the catalogue: without it
+     there is no date and this section does not draw. */
+  function publishSection(pages, all) {
+    if (!CAT) {
+      return sec({
+        title: 'How the club’s own pages are doing',
+        sub: 'Needs the site’s page list, which could not be read.',
+        body: '<p class="cp-note">This section lines match reports and news articles up '
+          + 'against the day they were published, which needs <b>/stats-pages.json</b> - a '
+          + 'file the build writes. It could not be fetched, so every other figure on this '
+          + 'screen is unaffected and this one is not shown. Publishing the site again '
+          + 'usually fixes it.</p>',
+      });
+    }
+    var got = {};
+    pages.forEach(function (p) { got[p.key] = p; });
+    var since = DAYS ? daysAgo(DAYS - 1) : '';
+    var today = iso(new Date());
+
+    var build = function (kind) {
+      return CAT.filter(function (e) { return e.k === kind && e.d; })
+        .map(function (e) {
+          var p = got[e.p];
+          var age = daysBetween(e.d, today);
+          return {
+            e: e, views: p ? p.views : 0, secs: p ? p.seconds : 0,
+            age: age, fresh: !since || e.d >= since,
+          };
+        })
+        .sort(function (a, b) { return b.views - a.views || (a.e.d < b.e.d ? 1 : -1); });
+    };
+
+    var draw1 = function (list, label) {
+      if (!list.length) return '<p class="cp-note">Nothing published in this category yet.</p>';
+      return table([label, 'Published', 'Days old', 'Views', 'Average time', 'Share', ''],
+        list.slice(0, 25).map(function (r) {
+          return '<tr' + (r.fresh ? ' class="is-new"' : '') + '><td>'
+            + '<b>' + esc(r.e.t) + '</b><br><a class="cpp" href="' + esc(r.e.p)
+            + '" target="_blank" rel="noopener">' + esc(r.e.p) + '</a></td>'
+            + '<td>' + esc(shortDate(r.e.d)) + '</td>'
+            + '<td>' + esc(r.age === null ? '' : String(r.age)) + '</td>'
+            + '<td><b>' + esc(String(r.views)) + '</b></td>'
+            + '<td>' + esc(r.views ? dur(r.secs / r.views) : '') + '</td>'
+            + '<td>' + esc(String(pct(r.views, all))) + '%</td>'
+            + '<td style="width:24%">' + bar(r.views, all) + '</td></tr>';
+        }).join(''));
+    };
+
+    var reports = build('match');
+    var articles = build('news');
+    var unread = reports.concat(articles).filter(function (r) { return !r.views; }).length;
+
+    return sec({
+      title: 'How the club’s own pages are doing',
+      sub: 'Match reports and news articles against the day each one was published.',
+      body: '<h4 class="cp-sub">Match reports</h4>' + draw1(reports, 'Report')
+        + '<h4 class="cp-sub">News articles</h4>' + draw1(articles, 'Article')
+        + '<p class="cp-note">A row marked as new was published inside this period, so its '
+        + 'figure covers its whole life so far; an older one shows only what it drew in these '
+        + 'days, which is why an old report can read as quiet without having been ignored. '
+        + (unread
+          ? '<b>' + esc(String(unread)) + '</b> of them had no views at all in this period.'
+          : 'Every one of them was opened at least once in this period.')
+        + '</p>',
+    });
+  }
+
+  /* ---- The pages nobody opened -------------------------------------------
+     THE ONE QUESTION TRAFFIC CANNOT ANSWER ON ITS OWN. A page with no views
+     writes no row, so it is invisible to everything above: the only way to
+     find it is to compare what was read against what EXISTS, which is what
+     the catalogue is for. */
+  function unopenedSection() {
+    if (!CAT) return '';
+    var seen = {};
+    (rows || []).forEach(function (r) { seen[r.path] = 1; });
+    var missing = CAT.filter(function (e) {
+      return e.k !== 'panel' && e.p !== '/404.html' && !seen[e.p];
+    });
+    var byKind = {};
+    missing.forEach(function (e) {
+      var k = KIND_LABEL[e.k] || 'Main pages';
+      (byKind[k] = byKind[k] || []).push(e);
+    });
+    var kinds = Object.keys(byKind).sort(function (a, b) {
+      return byKind[b].length - byKind[a].length;
+    });
+    var pub = CAT.filter(function (e) { return e.k !== 'panel' && e.p !== '/404.html'; }).length;
+
+    if (!missing.length) {
+      return sec({
+        title: 'Pages nobody opened',
+        sub: 'None. Every page the site publishes was opened at least once.',
+        body: '<p class="cp-note">All ' + esc(String(pub)) + ' published pages had at least '
+          + 'one view in this period.</p>',
+      });
+    }
+    return sec({
+      title: 'Pages nobody opened',
+      sub: '<b>' + esc(String(missing.length)) + '</b> of the site’s '
+        + esc(String(pub)) + ' published pages had no views at all in this period.',
+      body: kinds.map(function (k) {
+        return '<h4 class="cp-sub">' + esc(k) + ' <span class="cpp">'
+          + esc(String(byKind[k].length)) + '</span></h4>'
+          + '<ul class="cpu">' + byKind[k].slice(0, 40).map(function (e) {
+            return '<li><a href="' + esc(e.p) + '" target="_blank" rel="noopener">'
+              + esc(e.t || e.p) + '</a>' + (e.d ? ' <span class="cpp">'
+              + esc(shortDate(e.d)) + '</span>' : '') + '</li>';
+          }).join('') + '</ul>'
+          + (byKind[k].length > 40
+            ? '<p class="cp-note">and ' + esc(String(byKind[k].length - 40)) + ' more.</p>'
+            : '');
+      }).join('')
+        + '<p class="cp-note">This is the one question the figures above cannot answer on '
+        + 'their own: a page nobody opened records nothing, so it can only be found by '
+        + 'comparing what was read against what the site publishes. Counted against the '
+        + '<b>whole period</b> and not narrowed by the filters, because a page absent from '
+        + 'one country’s traffic has not gone unread. The control panel and the not-found '
+        + 'page are left out.</p>',
+    });
   }
 
   /* ---- One page on its own ----------------------------------------------
@@ -835,8 +1295,9 @@
      always "and who was reading THAT one". Same rows, filtered, so nothing
      here can disagree with the totals above it. */
   function focusPanel(path, all) {
-    var mine = rows.filter(function (r) { return r.path === path; });
+    var mine = view().filter(function (r) { return r.path === path; });
     var n = total(mine);
+    var name = nameOf(path);
     if (!n) {
       return sec({
         title: 'This page on its own',
@@ -850,11 +1311,15 @@
     var mySecs = sum(mine, function (r) { return r.seconds_total; });
     var myDeep = sum(mine, function (r) { return r.depth_total; });
     var myHours = (hours || []).filter(function (r) { return r.path === path; });
+    var m = metaOf(path);
 
     return sec({
       title: 'This page on its own',
-      sub: '<a href="' + esc(path) + '" target="_blank" rel="noopener">' + esc(path)
-        + '</a> · ' + esc(areaOf(path)) + ' · <b>' + esc(String(n))
+      sub: (name ? '<b>' + esc(name) + '</b> · ' : '')
+        + '<a href="' + esc(path) + '" target="_blank" rel="noopener">' + esc(path)
+        + '</a> · ' + esc(areaOf(path))
+        + (m && m.d ? ' · published ' + esc(shortDate(m.d)) : '')
+        + ' · <b>' + esc(String(n))
         + '</b> of the period’s ' + esc(String(all)) + ' views ('
         + esc(String(pct(n, all))) + '%).',
       actions: '<button class="btn btn--sm btn--ghost" data-page="">Close</button>',
@@ -864,7 +1329,7 @@
         + tile(Math.round(myDeep / n) + '%', 'Average scrolled', 'how far down')
         + tile(String(days.length), 'Days it was opened', 'in this period')
         + '</div>'
-        + trend(days)
+        + trend(days, { marks: marksFor(days) })
         + '<div class="cp2"><div><h4 class="cp-sub">Where from</h4>'
         + rankTable('Country', roll(mine, function (r) { return countryOf(r.zone); }), n,
           'this page')
@@ -885,15 +1350,16 @@
   /* ---- Taking it away ---------------------------------------------------
      The club owns these figures and a screen is a bad place to keep them. One
      row per stored bucket, not per aggregate drawn above, so the file is the
-     record rather than a picture of it. */
+     record rather than a picture of it. The page's NAME rides along, because
+     a spreadsheet of addresses is the same problem this screen just fixed. */
   function csv() {
-    var head = 'day,weekday,path,section,country,zone,source,device,views,'
-      + 'seconds_total,depth_total\n';
+    var head = 'day,weekday,path,page,section,country,zone,source,source_kind,device,'
+      + 'views,seconds_total,depth_total\n';
     var q = function (s) { return '"' + String(s == null ? '' : s).replace(/"/g, '""') + '"'; };
-    var body = (rows || []).map(function (r) {
-      return [r.day, dayName(r.day), r.path, areaOf(r.path), countryOf(r.zone), r.zone,
-        r.source || 'Direct or unknown', r.device || 'Not known', r.views,
-        r.seconds_total, r.depth_total].map(q).join(',');
+    var body = view().map(function (r) {
+      return [r.day, dayName(r.day), r.path, nameOf(r.path), areaOf(r.path),
+        countryOf(r.zone), r.zone, r.source || 'Direct or unknown', sourceGroup(r.source),
+        r.device || 'Not known', r.views, r.seconds_total, r.depth_total].map(q).join(',');
     }).join('\n');
     try {
       var url = URL.createObjectURL(new Blob([head + body], { type: 'text/csv' }));
@@ -920,27 +1386,52 @@
         toast('Could not read the figures', 'error');
       });
     }
-    Array.prototype.slice.call(host.querySelectorAll('[data-days]')).forEach(function (b) {
+    var each = function (sel, fn) {
+      Array.prototype.slice.call(host.querySelectorAll(sel)).forEach(fn);
+    };
+    each('[data-days]', function (b) {
       b.addEventListener('click', function () {
         DAYS = Number(b.getAttribute('data-days'));
         FOCUS = '';
         refresh();
       });
     });
-    Array.prototype.slice.call(host.querySelectorAll('[data-sort]')).forEach(function (b) {
+    each('[data-sort]', function (b) {
       b.addEventListener('click', function () {
         SORT = b.getAttribute('data-sort');
         draw(host);
       });
     });
-    Array.prototype.slice.call(host.querySelectorAll('[data-page]')).forEach(function (b) {
+    each('[data-page]', function (b) {
       b.addEventListener('click', function () {
         FOCUS = b.getAttribute('data-page') || '';
         draw(host);
       });
     });
-    Array.prototype.slice.call(host.querySelectorAll('[data-csv]')).forEach(function (b) {
-      b.addEventListener('click', csv);
+    /* The same attribute on a select and on a button: the select carries its
+       own value, the "Only this" button carries one. Both narrow the whole
+       screen, which is why neither of them redraws only its own table. */
+    each('select[data-filt]', function (s) {
+      s.addEventListener('change', function () {
+        FILT[s.getAttribute('data-filt')] = s.value || '';
+        FOCUS = '';
+        draw(host);
+      });
     });
+    each('button[data-filt]', function (b) {
+      b.addEventListener('click', function () {
+        FILT[b.getAttribute('data-filt')] = b.getAttribute('data-val') || '';
+        FOCUS = '';
+        draw(host);
+      });
+    });
+    each('[data-clear]', function (b) {
+      b.addEventListener('click', function () {
+        FILT = { area: '', country: '', source: '', device: '' };
+        FOCUS = '';
+        draw(host);
+      });
+    });
+    each('[data-csv]', function (b) { b.addEventListener('click', csv); });
   }
 }());

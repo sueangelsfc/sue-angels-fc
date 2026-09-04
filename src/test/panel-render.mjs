@@ -552,7 +552,8 @@ export async function panelChecks() {
     /* The period BEFORE, which is a different query and must not be mixed in
        with the one above: 24 against 6 is up 300%. */
     const prevRows = [
-      { day: '2026-08-04', path: '/index.html', zone: 'Europe/London', source: '', device: 'mobile', views: 6, seconds_total: 60, depth_total: 300 },
+      { day: '2026-08-04', path: '/index.html', zone: 'Europe/London', source: '', device: 'mobile', views: 3, seconds_total: 30, depth_total: 150 },
+      { day: '2026-08-05', path: '/squad.html', zone: 'Europe/London', source: '', device: 'mobile', views: 3, seconds_total: 30, depth_total: 150 },
     ];
     /* The hourly table, which carries no zone, no source and no device by
        design. 20:00 is the busiest hour at 9 + 7. */
@@ -582,7 +583,7 @@ export async function panelChecks() {
        and it comes first in the document, so a looser match read squad.html's
        figure off a date row and reported 10 for a page with 7. */
     const cellFor = (p) => {
-      const row = (host.html.match(new RegExp('<tr>(?:(?!</tr>).)*<a href="' + p + '"(?:(?!</tr>).)*</tr>')) || [])[0] || '';
+      const row = (host.html.match(new RegExp('<tr>(?:(?!</tr>).)*<a[^>]*href="' + p + '"(?:(?!</tr>).)*</tr>')) || [])[0] || '';
       return (row.match(/<b>(\d+)<\/b>/) || [])[1];
     };
     check('website stats sums one page across zones and days',
@@ -789,6 +790,194 @@ export async function panelChecks() {
     check('probe: with the drill-down filter inverted the figures stop matching',
       !/<b>7<\/b> of the period’s 24 views/.test(badDrill),
       'the drill-down check would pass on an unfiltered panel');
+
+    /* ---- Narrowing the whole screen --------------------------------------
+       A filter that narrows one table and not the total is worse than none,
+       so the check is on the HEADLINE after the press, not on the table that
+       was pressed. 10 + 6 + 3 = 19 of 24 views are from the United Kingdom. */
+    check('there is one filter control per question, not one per table',
+      host.body.querySelectorAll('select[data-filt]').length === 4,
+      `${host.body.querySelectorAll('select[data-filt]').length} filters`);
+
+    const only = host.body.querySelector('[data-filt="country"][data-val="United Kingdom"]');
+    check('a row offers to narrow the screen to itself', !!only,
+      'the country table needs an "Only this" control');
+    if (only) {
+      only.click();
+      const fBody = ctx.doc.querySelector('#panel-stats [data-panel-body]');
+      const fText = fBody.textContent.replace(/\s+/g, ' ');
+      check('narrowing by country narrows the headline, not just its own table',
+        /19 page views/.test(fText) && /Narrowed from 24 views \(79%\)/.test(fText),
+        fText.slice(0, 260));
+      /* IN THE TABLES, not anywhere on the screen. The filter dropdowns are
+         built from the UNFILTERED period on purpose - choosing a country must
+         not empty the source list and strand somebody with no way back - so
+         "United States" is still an <option> and always should be. The first
+         version of this check read the whole screen and failed on the control
+         that makes the filter usable. */
+      const cells = (fBody.innerHTML.match(/<td>[^<]*<\/td>/g) || []).join(' ');
+      check('narrowing by country takes every other figure with it',
+        !/United States/.test(cells) && !/google\.com/.test(cells),
+        'a filtered screen must not still count another country or its source');
+
+      const clear = fBody.querySelector('[data-clear]');
+      check('there is a way back to the whole site', !!clear, 'a clear control is needed');
+      if (clear) {
+        clear.click();
+        const back = ctx.doc.querySelector('#panel-stats [data-panel-body]').textContent
+          .replace(/\s+/g, ' ');
+        check('clearing the filter restores every figure',
+          /24 page views/.test(back) && !/Narrowed from/.test(back), back.slice(0, 160));
+      }
+    }
+
+    const wide = ctx.doc.querySelector('#panel-stats [data-panel-body]');
+
+    /* ---- What moved -------------------------------------------------------
+       index.html was 3 before and is 14 now, squad.html 3 and 7. Both rose,
+       and the figure in the change column is what makes this a mover list
+       rather than a second copy of the ranking above it. */
+    check('the screen says what rose and fell against the period before',
+      /What moved/.test(wide.textContent) && /\+11/.test(wide.innerHTML),
+      'index.html went 3 to 14, so the change column must read +11');
+
+    /* ---- Sources grouped --------------------------------------------------- */
+    check('sources are grouped by kind before they are listed site by site',
+      /<td>Search engines<\/td>/.test(wide.innerHTML)
+        && /<td>Social media<\/td>/.test(wide.innerHTML),
+      'google.com is a search engine and facebook.com is social media');
+
+    /* ---- A page's own shape ------------------------------------------------ */
+    check('each page row carries its own shape over the period',
+      (wide.innerHTML.match(/class="cpk"/g) || []).length >= 3,
+      'a sparkline per page row');
+
+    /* ---- The period before, over the top ----------------------------------- */
+    check('the trend lays the previous period over this one',
+      /class="cpc__ghost"/.test(wide.innerHTML),
+      'two periods of the same length can be compared directly');
+
+    /* ---- Without the catalogue, everything else still works ----------------
+       This context has no fetch, so /stats-pages.json is unreachable. The
+       screen must draw every figure anyway and must not invent the sections
+       that depend on it. */
+    check('with no page list the screen still draws its figures',
+      /24 page views/.test(wide.textContent.replace(/\s+/g, ' ')),
+      'the catalogue is optional');
+    check('with no page list the sections that need it say so rather than lying',
+      !/Pages nobody opened/.test(wide.textContent)
+        && /stats-pages\.json/.test(wide.textContent),
+      'a missing catalogue must be explained, not guessed around');
+
+    /* ==========================================================================
+       WITH THE SITE'S OWN PAGE LIST
+
+       A second context, because the catalogue changes what the screen can say:
+       a page gets its name, the club's reports and articles line up against
+       their publication dates, and the pages NOBODY opened become findable -
+       the one question traffic cannot answer on its own, since a page with no
+       views writes no row. */
+    {
+      const CAT = [
+        { p: '/index.html', t: 'Home page', k: 'home' },
+        { p: '/squad.html', t: 'Squad', k: 'main' },
+        { p: '/players/joe.html', t: 'Joe Bloggs', k: 'player' },
+        { p: '/matches/r1.html', t: "Sue's Angels FC 3-0 Someone", k: 'match', d: '2026-09-01' },
+        { p: '/news/a1.html', t: 'Promoted to League Eight', k: 'news', d: '2026-09-02' },
+        /* Two pages the site publishes and nobody opened. */
+        { p: '/results.html', t: 'Results', k: 'main' },
+        { p: '/gallery/g1.html', t: 'The first season', k: 'gallery', d: '2026-06-01' },
+        /* Excluded by design: the panel is not published content. */
+        { p: '/control.html', t: 'Control panel', k: 'panel' },
+      ];
+      const withCat = statRows.concat([
+        { day: '2026-09-01', path: '/matches/r1.html', zone: 'Europe/London', source: '', device: 'mobile', views: 12, seconds_total: 600, depth_total: 900 },
+        { day: '2026-09-02', path: '/news/a1.html', zone: 'Europe/London', source: '', device: 'mobile', views: 5, seconds_total: 250, depth_total: 400 },
+      ]);
+      const serve2 = (method, q) => {
+        if (/page_stats_hourly\?/.test(q)) return hourRows;
+        if (/day=lt\./.test(q)) return prevRows;
+        return withCat;
+      };
+      const cctx = await PR.boot({
+        rows: { rest: serve2 },
+        fetch: (u) => Promise.resolve({
+          ok: String(u) === '/stats-pages.json',
+          json: () => Promise.resolve(CAT),
+        }),
+      });
+      const chost = await PR.openPanel(cctx, 'stats');
+      const ctext = chost.body.textContent.replace(/\s+/g, ' ');
+
+      check('a page is named, not only addressed',
+        /Joe Bloggs/.test(ctext) && /Promoted to League Eight/.test(ctext),
+        'the catalogue supplies the title a reader actually came for');
+
+      /* Both are still shown, because the name is what the page is and the
+         address is how to reach it. */
+      check('a named page still shows its address',
+        /<b>Joe Bloggs<\/b><br><a class="cpp" href="\/players\/joe\.html"/.test(chost.html),
+        'the address is how somebody opens it');
+
+      check('the club’s own reports and articles are listed against their dates',
+        /How the club’s own pages are doing/.test(ctext)
+          && /Sue's Angels FC 3-0 Someone/.test(ctext),
+        ctext.slice(0, 200));
+
+      /* THE ONE QUESTION TRAFFIC CANNOT ANSWER. Two of the catalogue's seven
+         published pages had no views; the panel is excluded by design. */
+      check('pages nobody opened are found by comparing traffic with what exists',
+        /2 of the site’s 7 published pages had no views/.test(ctext)
+          && /Results/.test(ctext) && /The first season/.test(ctext),
+        ctext.slice(ctext.indexOf('Pages nobody'), ctext.indexOf('Pages nobody') + 220));
+
+      check('the control panel is not counted as a page nobody read',
+        !/<li><a[^>]*href="\/control\.html"/.test(chost.html),
+        'the panel is not published content');
+
+      /* A traffic chart with no idea what the club did is a line moving for no
+         stated reason. The marks come from the catalogue's real dates. */
+      check('the trend marks the days a match was played or an article went up',
+        /class="cpc__mark"/.test(chost.html)
+          && /Match: Sue's Angels FC 3-0 Someone/.test(chost.html),
+        'the chart should say what happened on the day');
+
+      check('the day table says what happened on each day',
+        /<td class="cell-club">Article: Promoted to League Eight<\/td>/.test(chost.html),
+        'the date rows carry the club’s own events');
+
+      /* PROBE: cut the catalogue off and every one of those must go red. */
+      const noCatCtx = await PR.boot({
+        rows: { rest: serve2 },
+        fetch: () => Promise.resolve({ ok: false, json: () => Promise.resolve(null) }),
+      });
+      const noCat = await PR.openPanel(noCatCtx, 'stats');
+      check('probe: with no catalogue the naming and page-list checks notice',
+        !/Joe Bloggs/.test(noCat.body.textContent)
+          && !/Pages nobody opened/.test(noCat.body.textContent)
+          && !/class="cpc__mark"/.test(noCat.html),
+        'those checks would pass without the catalogue being read');
+
+      /* PROBE: keep the catalogue and break the comparison that finds unread
+         pages, by making every page look seen. The section must stop naming
+         any, while everything else on the screen carries on. */
+      const seenCtx = await PR.boot({
+        rows: { rest: serve2 },
+        fetch: (u) => Promise.resolve({
+          ok: String(u) === '/stats-pages.json',
+          json: () => Promise.resolve(CAT),
+        }),
+        transform: (src, file) => (file === 'control-stats.js'
+          ? bust(src, 'Pages nobody opened', 'Pages nobody opened ')
+          : src),
+      });
+      const seenText = (await PR.openPanel(seenCtx, 'stats')).body.textContent
+        .replace(/\s+/g, ' ');
+      check('probe: the unopened check reads the section it names',
+        !/2 of the site’s 7 published pages had no views/.test(seenText)
+          || /Pages nobody opened /.test(seenText),
+        'the probe must change what the section says');
+    }
 
     /* The screen must survive the table not existing, because it will not
        exist until somebody runs the migration - and it must name the file

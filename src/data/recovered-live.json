@@ -6034,6 +6034,44 @@
         "penaltiesConceded": 0
       },
       "updated_at": "2026-08-24T12:26:37.283+00:00"
+    },
+    {
+      "key": "r20260830-bpr",
+      "data": {
+        "as": 1,
+        "hs": 4,
+        "iso": "2026-08-30",
+        "away": "BPR FC",
+        "date": "30 Aug 2026",
+        "home": "Sue's Angels FC",
+        "kick": "11:00",
+        "kind": "score",
+        "motm": null,
+        "subs": [],
+        "bench": [],
+        "cover": "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/cover-match-1788466002992.jpg",
+        "goals": [],
+        "saves": null,
+        "shape": "",
+        "venue": "The Reeves, Snakey Ln, Feltham TW13 7NB",
+        "keeper": null,
+        "assists": [],
+        "captain": null,
+        "savedAt": "2026-09-03T20:06:42.216Z",
+        "redCards": [],
+        "starters": [],
+        "formation": null,
+        "commentary": "",
+        "cleanSheets": [],
+        "competition": "Pre-season friendly",
+        "yellowCards": [],
+        "opponentGoals": [],
+        "penaltiesSaved": [],
+        "penaltiesMissed": [],
+        "opponentRedCards": [],
+        "penaltiesConceded": 0
+      },
+      "updated_at": "2026-09-03T20:06:43.413+00:00"
     }
   ],
   "articles": [
@@ -8863,17 +8901,72 @@
           "records",
           "milestones",
           "cta",
+          "headtohead",
+          "everymatch",
+          "firsts",
+          "reports",
+          "albums",
+          "fixtures",
+          "lastout",
+          "leadnews",
+          "onthisday",
+          "potm",
+          "back",
+          "give",
           "faq",
           "results",
+          "streak",
           "table",
+          "competitions",
+          "homeaway",
+          "aroundleague",
+          "formations",
+          "walkovers",
+          "margins",
+          "scorers",
+          "contributions",
+          "leaguescorers",
+          "bigwins",
+          "penalties",
+          "discipline",
+          "scorelines",
+          "months",
+          "goalsource",
+          "defeats",
+          "rate",
+          "creators",
+          "appearances",
+          "motm",
+          "goalkinds",
+          "cleansheets",
           "campaign",
           "report",
+          "preview",
+          "awaiting",
           "photos",
           "spotlight",
           "sponsors",
           "staff",
           "squad",
-          "ground"
+          "captains",
+          "newfaces",
+          "leadership",
+          "positions",
+          "scoringruns",
+          "potmhistory",
+          "photographers",
+          "recordholders",
+          "honours",
+          "follow",
+          "ground",
+          "joinpaths",
+          "joinfaqs",
+          "contact",
+          "clubswall",
+          "whatsinhere",
+          "venues",
+          "newsletter",
+          "seasons"
         ],
         "hidden": [
           "report",
@@ -8886,10 +8979,64 @@
           "sponsors",
           "squad",
           "ground",
-          "faq"
+          "faq",
+          "fixtures",
+          "lastout",
+          "preview",
+          "awaiting",
+          "leadnews",
+          "onthisday",
+          "potm",
+          "streak",
+          "competitions",
+          "homeaway",
+          "aroundleague",
+          "formations",
+          "walkovers",
+          "margins",
+          "scorers",
+          "contributions",
+          "leaguescorers",
+          "bigwins",
+          "penalties",
+          "discipline",
+          "scorelines",
+          "months",
+          "goalsource",
+          "defeats",
+          "rate",
+          "creators",
+          "appearances",
+          "motm",
+          "goalkinds",
+          "cleansheets",
+          "back",
+          "give",
+          "captains",
+          "newfaces",
+          "leadership",
+          "positions",
+          "scoringruns",
+          "potmhistory",
+          "photographers",
+          "recordholders",
+          "honours",
+          "follow",
+          "joinpaths",
+          "joinfaqs",
+          "contact",
+          "newsletter",
+          "firsts",
+          "reports",
+          "albums",
+          "everymatch",
+          "headtohead",
+          "clubswall",
+          "whatsinhere",
+          "venues"
         ]
       },
-      "updated_at": "2026-08-10T10:32:55.548+00:00"
+      "updated_at": "2026-08-25T14:16:42.509+00:00"
     },
     {
       "key": "roster:coaches",
@@ -8992,6 +9139,9 @@
               "from": "2026-05-31"
             }
           },
+          "18": {
+            "26/27": "departed"
+          },
           "19": {
             "25/26": {
               "to": "N/A",
@@ -9010,6 +9160,9 @@
           "28": "retained",
           "29": "retained",
           "30": "retained",
+          "32": {
+            "26/27": "departed"
+          },
           "33": {
             "25/26": {
               "to": "N/A",
@@ -9028,7 +9181,7 @@
           }
         }
       },
-      "updated_at": "2026-08-24T18:14:56.432+00:00"
+      "updated_at": "2026-09-03T23:26:40.964+00:00"
     },
     {
       "key": "roster:trialists",
@@ -9039,11 +9192,6 @@
             "from": "2026-08-01",
             "name": "Daniel Thorz",
             "added": "2026-08-03"
-          },
-          {
-            "num": 904,
-            "from": "2026-08-01",
-            "name": "Liam"
           },
           {
             "num": 903,
@@ -9066,12 +9214,11 @@
           {
             "num": 905,
             "from": "2026-08-01",
-            "name": "Liam Alford",
-            "until": "2026-08-31"
+            "name": "Liam Alford"
           }
         ]
       },
-      "updated_at": "2026-08-03T11:40:45.648+00:00"
+      "updated_at": "2026-09-03T23:28:02.822+00:00"
     },
     {
       "key": "sponsor:matchreport",
@@ -9081,18 +9228,31 @@
   ],
   "fixtures": [
     {
-      "key": "f20260830-bpr",
+      "key": "f20260906-tlb",
       "data": {
-        "iso": "2026-08-30",
-        "away": "BPR FC",
-        "date": "30 Aug 2026",
+        "away": "Three Little Birds FC",
+        "date": "06 Sep 2026",
         "home": "Sue's Angels FC",
         "kick": "11:00",
         "kind": "fixture",
-        "venue": "The Reeves, Snakey Ln, Feltham TW13 7NB",
-        "competition": "Pre-season friendly"
+        "venue": "The Reeves Sports Club",
+        "competition": "League Eight"
       },
-      "updated_at": "2026-08-02T01:40:07.365+00:00"
+      "updated_at": "2026-09-03T23:37:48.938+00:00"
+    },
+    {
+      "key": "f20260913-haydons",
+      "data": {
+        "iso": "2026-09-13",
+        "away": "Haydons Park",
+        "date": "13 Sep 2026",
+        "home": "Sue's Angels FC",
+        "kick": "11:00",
+        "kind": "fixture",
+        "venue": "The Reeves Sports Club",
+        "competition": "League Eight"
+      },
+      "updated_at": "2026-09-03T23:38:23.231+00:00"
     }
   ],
   "team_badges": []

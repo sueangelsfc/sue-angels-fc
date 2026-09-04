@@ -2654,14 +2654,24 @@ for (const [f, kb] of Object.entries({
         check('the archive names eighteen matches crediting an unused substitute',
           askedOf(/unused substitute/).length === 18, `${askedOf(/unused substitute/).length}`);
 
-        /* Two league matches from 25/26 and five friendlies. Not a mistake in
-           the same way - nobody wrote a team sheet down - but the effect on
-           the website is the same: nobody is credited with playing. */
-        check('the archive names seven matches with no team sheet at all',
-          askedOf(/No team sheet/).length === 7, `${askedOf(/No team sheet/).length}`);
+        /* Two league matches from 25/26, five friendlies, and the BPR friendly
+           of 30 August. Not a mistake in the same way - nobody wrote a team
+           sheet down - but the effect on the website is the same: nobody is
+           credited with playing.
 
-        check('the archive names one match whose scoreline and goals disagree',
-          askedOf(/scoreline says/).join() === 'r20260816-brentford',
+           EIGHT SINCE THE CLUB SAVED BPR AS A SCORE AND NOTHING ELSE, which is
+           the state this project deliberately allows: a result typed at the
+           side of a pitch is worth having before the detail is known. The
+           dashboard counts it, the match form says so on every tab, and this
+           line moves back to seven when somebody fills it in. */
+        check('the archive names eight matches with no team sheet at all',
+          askedOf(/No team sheet/).length === 8, `${askedOf(/No team sheet/).length}`);
+
+        /* Brentford's scoreline disagrees with the goals listed under it. BPR
+           has a 4-1 and no goals at all, which is the same question asked of a
+           record that is simply not finished yet. */
+        check('the archive names two matches whose scoreline and goals disagree',
+          askedOf(/scoreline says/).join() === ['r20260816-brentford', 'r20260830-bpr'].join(),
           askedOf(/scoreline says/).join(', ') || 'none');
       }
     }

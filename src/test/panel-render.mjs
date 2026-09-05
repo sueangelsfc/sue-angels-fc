@@ -540,26 +540,37 @@ export async function panelChecks() {
       fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8')
         .replace(/^window\.SA_SEED=/, '').trim().replace(/;$/, '')
     );
-    const lastOf = {};
-    (seed.squad || []).forEach((pl) => { lastOf[pl.name] = pl.last || pl.name; });
-
     const sctx = PR.boot({ rows });
     const sq = await PR.openPanel(sctx, 'squad');
     const allRows = sq.body.querySelectorAll('tr[data-num]');
     const nameOfRow = (t) => t.querySelector('b').textContent;
     const openOn = allRows.filter((t) => !t.hidden).map(nameOfRow);
 
-    /* SURNAME, NOT FULL NAME. The screen sorted on the full name, which is
-       the FIRST name, so the site's own surname-ordered list arrived and was
-       shuffled into a different alphabetical order. Sorted either way it
-       looks sorted, which is why nothing caught it: the check has to name
-       WHICH order. Surnames come from the seed, not from the last word of the
-       name, because "Jim El Bayati" files under E. */
-    const surnames = openOn.map((n) => lastOf[n] || n);
-    const inOrder = surnames.slice().sort((a, b) => a.localeCompare(b));
-    check('the squad list is in surname order, the way a team sheet is written',
-      surnames.join('|') === inOrder.join('|'),
-      `${surnames.slice(0, 6).join(', ')} - expected ${inOrder.slice(0, 6).join(', ')}`);
+    /* TWO HALVES, AND THE FIRST FIX ONLY DID ONE OF THEM.
+
+       Sorting by surname was right and invisible: the column printed "Andrew
+       Allen, Michael Brabrook, Kafele Brown", so reading down the first
+       letters gave A, M, K, E, L, C and the table was reported as unsorted.
+       A correct order nobody can see is not an order.
+
+       So the column must READ in order, and it must be the SURNAME order -
+       neither alone is enough. A first-name sort displayed first-name-first
+       reads in order too, and would pass the first check on its own. */
+    check('the squad column reads in alphabetical order as displayed',
+      openOn.join('|') === openOn.slice().sort((a, b) => a.localeCompare(b)).join('|'),
+      openOn.slice(0, 6).join(' / '));
+
+    /* Surnames come from the seed, not from the last word of the name,
+       because "Jim El Bayati" files under E. */
+    const shownAs = {};
+    (seed.squad || []).forEach((pl) => {
+      shownAs[pl.name] = (pl.last && pl.first) ? pl.last + ', ' + pl.first : pl.name;
+    });
+    const wrong = openOn.filter((n) => !Object.values(shownAs).includes(n));
+    check('the squad list shows the surname first, so the order is visible',
+      wrong.length === 0 && openOn.every((n) => n.indexOf(', ') > 0),
+      wrong.length ? `not a "Surname, First" form: ${wrong.slice(0, 3).join(', ')}`
+        : openOn.slice(0, 3).join(' / '));
 
     /* IT OPENS ON WHO IS HERE. 37 players, of whom 21 are at the club: the
        list somebody came to work on was outnumbered by the one they had not. */
@@ -604,7 +615,7 @@ export async function panelChecks() {
     });
     const fn = await PR.openPanel(firstNameCtx, 'squad');
     const fnNames = fn.body.querySelectorAll('tr[data-num]').filter((t) => !t.hidden)
-      .map(nameOfRow).map((n) => lastOf[n] || n);
+      .map(nameOfRow);
     check('probe: sorting on the full name again breaks the surname check',
       fnNames.length > 0
         && fnNames.join('|') !== fnNames.slice().sort((a, b) => a.localeCompare(b)).join('|'),

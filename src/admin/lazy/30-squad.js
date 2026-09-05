@@ -90,6 +90,23 @@
      never heard of is treated as gone rather than as present. */
   function atClub(p) { return PLAYING[p.status] === true; }
 
+  /* SURNAME FIRST, BECAUSE THE ORDER IS BY SURNAME.
+
+     Sorting this list by surname was half the fix and the invisible half. The
+     column printed "Andrew Allen, Michael Brabrook, Kafele Brown", so reading
+     down the first letters gave A, M, K, E, L, C and the table looked
+     unsorted - which is exactly what it was reported as. A correct order
+     nobody can see is not an order.
+
+     `last` and `first` are on every seeded player and on everyone added here.
+     Anything without both keeps its plain name rather than being split on a
+     space, because a surname is not always the last word. The full name is
+     still what every label, dialog and dropdown says: this is how the sorted
+     COLUMN is written, not a new name for the player. */
+  function listName(p) {
+    return (p.last && p.first) ? p.last + ', ' + p.first : p.name;
+  }
+
   /* The season being edited. Everything on this screen is about this one
      season: the dropdown sets what somebody was IN IT, and the counts and
      the worked-out labels describe IT. It starts on the current season
@@ -676,7 +693,7 @@
               var shown = (' ' + tags + ' ').indexOf(' ' + showOnly + ' ') > -1;
               return '<tr data-num="' + p.num + '" data-tags="' + esc(tags) + '"' +
                 (shown ? '' : ' hidden') + '>' +
-                '<td><b>' + esc(p.name) + '</b>' +
+                '<td><b>' + esc(listName(p)) + '</b>' +
                   '<small class="cp-hint">' + esc(p.pos || 'Position worked out from where they have played') +
                     (p.photo ? '' : ' · no photograph') + '</small></td>' +
                 /* NOT AT THE CLUB IS NOT A CHOICE, SO IT IS NOT A DROPDOWN.
@@ -800,7 +817,19 @@
             + 'A player moved into coaching appears here on his own.',
           actions: '<button class="btn btn--primary" data-add-staff>Add someone</button>',
           body: (allCoaches.length
-            ? table(['Name', 'Role', ''], allCoaches.map(function (c) {
+            /* Sorted, because a table of names with no order is a table you
+               have to read all of. Coaches carry a single `name` field and no
+               `last`, so this orders on the final word rather than inventing a
+               split: enough to make the list scannable, and it does not
+               rewrite anybody's name to claim more certainty than that. */
+            ? table(['Name', 'Role', ''], allCoaches.slice().sort(function (a, b) {
+              var surname = function (x) {
+                var bits = String(x.name || '').trim().split(/\s+/);
+                return bits[bits.length - 1] || '';
+              };
+              return surname(a).localeCompare(surname(b))
+                || String(a.name || '').localeCompare(String(b.name || ''));
+            }).map(function (c) {
               return '<tr' + (c.base ? '' : ' data-staff="' + c.i + '"') +
                 (c.base ? ' data-base="' + esc(c.rec.id || slug(c.rec.name)) + '"' : '') + '>' +
                 '<td><b>' + esc(c.rec.name) + '</b>' +

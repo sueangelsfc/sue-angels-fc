@@ -581,7 +581,15 @@ It does not fall back to something sensible: the whole declaration is invalid at
   which is why nothing caught it, and the check has to name *which* order. And
   it opened on all 37 players when 21 are at the club and 16 have retired,
   left or moved into coaching: the list somebody came to work on was
-  outnumbered by the one they had not. **At the club** is the opening filter,
+  outnumbered by the one they had not. **Sorting it was only half the fix**:
+  the column printed "Andrew Allen, Michael Brabrook, Kafele Brown", so
+  reading down the first letters gave A, M, K, E, L, C and the table was
+  reported as unsorted. A correct order nobody can see is not an order, so the
+  column is written **surname first** - "Allen, Andrew" - from the record's own
+  `last` and `first` rather than by splitting on a space, and the full name is
+  still what every label, dialog and dropdown says. The suite asks both halves,
+  because a first-name sort displayed first-name-first reads in order too.
+  **At the club** is the opening filter,
   **Everyone** is the next button along, and nobody is hidden from the record -
   hiding somebody from the screen that edits them would be a worse bug than
   the one being fixed. `absent` is named in the panel's `PLAYING` map for the

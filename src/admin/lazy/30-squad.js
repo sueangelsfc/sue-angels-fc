@@ -78,6 +78,17 @@
   var PLAYING = {};
   STATUSES.forEach(function (x) { LABEL[x.key] = x.label; PLAYING[x.key] = x.playing; });
   DERIVED.forEach(function (x) { LABEL[x.key] = x.label; PLAYING[x.key] = true; });
+  /* Never set by anybody: it is what the record says when there is no entry
+     for a season and no evidence the player was there. PLAYING is built from
+     the two lists above, so without this line `absent` is simply missing from
+     it and every test has to remember to ask the question the safe way round.
+     Named here to match src/lib/squad-status.mjs, which does the same. */
+  PLAYING.absent = false;
+  /* At the club in the season being edited: in the squad, on trial, injured
+     or unavailable. Not retired, not left, not moved into coaching, and not
+     absent. `=== true` rather than `!== false` so a status this screen has
+     never heard of is treated as gone rather than as present. */
+  function atClub(p) { return PLAYING[p.status] === true; }
 
   /* The season being edited. Everything on this screen is about this one
      season: the dropdown sets what somebody was IN IT, and the counts and
@@ -88,7 +99,13 @@
      Setting a signing date refreshes the screen, and without this the list
      jumped back to everyone at the exact moment somebody was working through
      the three players the filter had just found for them. */
-  var showOnly = 'all';
+  /* THE SCREEN OPENS ON WHO IS ACTUALLY HERE. It opened on everyone, which
+     for this club is 37 players of whom 21 have retired, left or moved into
+     coaching: the list somebody arrives to work on was outnumbered by the one
+     they were not. Everybody is still one press away, and nobody is hidden
+     from the record - "Everyone" is the next button along and the season tabs
+     are above it. */
+  var showOnly = 'squad';
 
   /* Three shapes have been written to roster:status and all three are read.
      A flat string is what the player was in the CURRENT season, which is
@@ -529,7 +546,19 @@
           photo: !!photoKeys[String(p.num)],
           added: added.some(function (a) { return a.num === p.num; }),
         };
-      }).sort(function (a, b) { return a.name.localeCompare(b.name); });
+      /* SURNAME, THEN FIRST NAME. A squad list is read the way a team sheet is
+         written - Adio, Allen, Brabrook - and this sorted on the full name,
+         which is the FIRST name, so the site's own list arrived here in one
+         order and was shuffled into another. Both orders are alphabetical,
+         which is why it never looked broken; it just was not the order a club
+         reads a squad in. `last` is on every seeded player and on everyone
+         added here, and the full name is the fallback for a record that has
+         neither. */
+      }).sort(function (a, b) {
+        return String(a.last || a.name).localeCompare(String(b.last || b.name))
+          || String(a.first || '').localeCompare(String(b.first || ''))
+          || String(a.name).localeCompare(String(b.name));
+      });
 
       var trialists = trialistList(rows);
       var counts = {};
@@ -556,11 +585,17 @@
       var groups = [];
       var tally = {};
       players.forEach(function (p) {
+        if (atClub(p)) tally.squad = (tally.squad || 0) + 1;
         tally[p.tenure || '-'] = (tally[p.tenure || '-'] || 0) + 1;
         tally['s:' + p.status] = (tally['s:' + p.status] || 0) + 1;
         if (p.why && p.why.conflict) tally.flag = (tally.flag || 0) + 1;
         if (!p.photo) tally.nophoto = (tally.nophoto || 0) + 1;
       });
+      /* First, because it is what the screen opens on and what the club is
+         nearly always here for. */
+      if (tally.squad) {
+        groups.push({ id: 'squad', label: 'At the club', n: tally.squad });
+      }
       groups.push({ id: 'all', label: 'Everyone', n: players.length });
       ['new', 'retained', 'returned'].forEach(function (k) {
         if (tally[k]) groups.push({ id: k, label: LABEL[k], n: tally[k] });
@@ -580,7 +615,9 @@
       /* A filter that no longer matches anybody - the last new signing was
          given a date, so the group is gone - falls back to everyone rather
          than showing an empty table with no pressed button to explain it. */
-      if (!groups.some(function (g) { return g.id === showOnly; })) showOnly = 'all';
+      if (!groups.some(function (g) { return g.id === showOnly; })) {
+        showOnly = tally.squad ? 'squad' : 'all';
+      }
 
       var filterBar = '<div class="cp-filters" role="group" aria-label="Show only">' +
         groups.map(function (g) {
@@ -609,7 +646,11 @@
         sec({
           title: 'The squad',
           sub: seasonBar
-            + '<p>' + esc(players.length) + ' players. What somebody is is recorded <b>per season</b>, '
+            + '<p><b>' + esc(tally.squad || 0) + '</b> at the club in ' + esc(editSeason)
+            + ', of ' + esc(players.length) + ' players the club has ever had. '
+            + 'This list opens on the ' + esc(tally.squad || 0) + '; <b>Everyone</b> is one press '
+            + 'away and nothing is hidden from the record. '
+            + 'What somebody is is recorded <b>per season</b>, '
             + 'so this screen is about <b>' + esc(editSeason) + '</b> and nothing you change here '
             + 'touches another year. '
             + 'Anyone not in the squad keeps their profile and their whole record; they move to '
@@ -629,7 +670,7 @@
              site works out) get the room. */
           body: table(['Player', 'In ' + editSeason, 'Worked out', ''],
             players.map(function (p) {
-              var tags = ['all', p.tenure || '', 's:' + p.status,
+              var tags = ['all', atClub(p) ? 'squad' : '', p.tenure || '', 's:' + p.status,
                 (p.why && p.why.conflict) ? 'flag' : '',
                 p.photo ? '' : 'nophoto'].filter(Boolean).join(' ');
               var shown = (' ' + tags + ' ').indexOf(' ' + showOnly + ' ') > -1;

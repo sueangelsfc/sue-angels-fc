@@ -2140,8 +2140,19 @@ for (const [f, kb] of Object.entries({
      club's arrangement is the club's, and a panel that reordered the page by
      its own numbers would be breaking that rule while claiming to help. */
   'src/admin/lazy/95-home.js': 11,
-  /* Source, so the bios riding with the chunk cannot hide code growth. */
-  'src/admin/lazy/30-squad.js': 19,
+  /* Source, so the bios riding with the chunk cannot hide code growth.
+
+     19 -> 20 for two fixes and, honestly, mostly for their reasoning: 799
+     bytes gzipped, of which the code is a comparator, a lookup entry, a
+     predicate and a tally. The screen sorted on the full name, which is the
+     FIRST name, so the site's own surname-ordered list arrived here and was
+     shuffled - both orders alphabetical, which is why it never looked broken.
+     And it opened on all 37 players when 21 of them have retired, left or
+     moved into coaching, so the list somebody came to work on was outnumbered
+     by the one they had not.
+
+     The emitted chunk is 9.9KB of its own ceiling, so nobody downloads this. */
+  'src/admin/lazy/30-squad.js': 20,
   'src/admin/lazy/10-match.js': 34,
 })) {
   const raw = fs.readFileSync(path.join(ROOT, f));

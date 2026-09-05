@@ -529,6 +529,101 @@ export async function panelChecks() {
     stacked <= 2, `${stacked} listeners on the body after three renders`);
 
   /* ==========================================================================
+     SQUAD AND STAFF
+
+     Two things a club expects of a squad list and this screen did neither.
+     Both are asked of the RENDERED rows, because both were the kind of fault
+     that looks fine in the source: one order of alphabetical instead of
+     another, and a filter default. */
+  {
+    const seed = JSON.parse(
+      fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8')
+        .replace(/^window\.SA_SEED=/, '').trim().replace(/;$/, '')
+    );
+    const lastOf = {};
+    (seed.squad || []).forEach((pl) => { lastOf[pl.name] = pl.last || pl.name; });
+
+    const sctx = PR.boot({ rows });
+    const sq = await PR.openPanel(sctx, 'squad');
+    const allRows = sq.body.querySelectorAll('tr[data-num]');
+    const nameOfRow = (t) => t.querySelector('b').textContent;
+    const openOn = allRows.filter((t) => !t.hidden).map(nameOfRow);
+
+    /* SURNAME, NOT FULL NAME. The screen sorted on the full name, which is
+       the FIRST name, so the site's own surname-ordered list arrived and was
+       shuffled into a different alphabetical order. Sorted either way it
+       looks sorted, which is why nothing caught it: the check has to name
+       WHICH order. Surnames come from the seed, not from the last word of the
+       name, because "Jim El Bayati" files under E. */
+    const surnames = openOn.map((n) => lastOf[n] || n);
+    const inOrder = surnames.slice().sort((a, b) => a.localeCompare(b));
+    check('the squad list is in surname order, the way a team sheet is written',
+      surnames.join('|') === inOrder.join('|'),
+      `${surnames.slice(0, 6).join(', ')} - expected ${inOrder.slice(0, 6).join(', ')}`);
+
+    /* IT OPENS ON WHO IS HERE. 37 players, of whom 21 are at the club: the
+       list somebody came to work on was outnumbered by the one they had not. */
+    check('the squad screen opens on the players who are actually at the club',
+      openOn.length < allRows.length && openOn.length > 0,
+      `${openOn.length} shown of ${allRows.length} rows`);
+
+    const chip = (label) => sq.body.querySelectorAll('[data-filter]')
+      .filter((c) => c.textContent.replace(/\s+/g, ' ').trim().indexOf(label) === 0)[0];
+    const atClub = chip('At the club');
+    check('the button that is pressed says what is being shown',
+      !!atClub && atClub.getAttribute('aria-pressed') === 'true'
+        && atClub.textContent.replace(/\D+/g, '') === String(openOn.length),
+      atClub ? atClub.textContent.replace(/\s+/g, ' ') : 'no "At the club" filter');
+
+    /* Anybody retired, departed or moved into coaching is OUT of the opening
+       view and still in the record. Hiding somebody from the screen that
+       edits them would be a worse bug than the one being fixed. */
+    const gone = allRows.filter((t) => t.hidden).map(nameOfRow);
+    check('players who have left are out of the opening view, not out of the record',
+      gone.length > 0 && gone.every((n) => !openOn.includes(n)),
+      `${gone.length} hidden`);
+
+    const everyone = chip('Everyone');
+    check('everyone is one press away', !!everyone, 'an "Everyone" filter must exist');
+    if (everyone) {
+      everyone.click();
+      const after = sctx.doc.querySelectorAll('#panel-squad tr[data-num]')
+        .filter((t) => !t.hidden);
+      check('pressing Everyone brings back every player the club has had',
+        after.length === allRows.length,
+        `${after.length} shown of ${allRows.length}`);
+    }
+
+    /* PROBE: sort on the full name again - the exact bug - and the order
+       check must go red while every other check here still passes. */
+    const firstNameCtx = PR.boot({
+      rows,
+      transform: (src, file) => (file === 'control-squad.js'
+        ? bust(src, /\.last\|\|(\w+)\.name\)/, '.name||$1.name)')
+        : src),
+    });
+    const fn = await PR.openPanel(firstNameCtx, 'squad');
+    const fnNames = fn.body.querySelectorAll('tr[data-num]').filter((t) => !t.hidden)
+      .map(nameOfRow).map((n) => lastOf[n] || n);
+    check('probe: sorting on the full name again breaks the surname check',
+      fnNames.join('|') !== fnNames.slice().sort((a, b) => a.localeCompare(b)).join('|'),
+      'the order check would pass on a first-name sort');
+
+    /* PROBE: open on everyone again and the opening-view check must go red. */
+    const allCtx = PR.boot({
+      rows,
+      transform: (src, file) => (file === 'control-squad.js'
+        ? bust(src, /showOnly="squad"/, 'showOnly="all"')
+        : src),
+    });
+    const ao = await PR.openPanel(allCtx, 'squad');
+    const aoRows = ao.body.querySelectorAll('tr[data-num]');
+    check('probe: opening on everyone again breaks the opening-view check',
+      aoRows.filter((t) => !t.hidden).length === aoRows.length,
+      'the opening-view check would pass on a screen showing all 37');
+  }
+
+  /* ==========================================================================
      WEBSITE STATS
 
      Every check here hands the shipped screen crafted rows and reads what came

@@ -572,6 +572,19 @@ It does not fall back to something sensible: the whole declaration is invalid at
 - Four video slots per match: footage, before, after, anything else. Direct upload is capped at 60MB with the reason on the button, because a full match is a gigabyte.
 - **Recognition follows its type.** A season award, a trophy, a club record, a Player of the Month and the captaincy are five different shapes, and the awards page reads different fields from each. The form asks for the right ones and clears the ones belonging to a type an entry has been changed away from, while still preserving anything it has never heard of.
 - **The sponsorship pipeline** is the club's own prospect list: who has been contacted, who has committed, and how much of the season's target that is. Nothing in it is published. The retired one lived in browser storage on one laptop. Its header was four tiles carrying two facts, two of them both labelled *Committed* (one counting pounds, one counting people) and one reading `0 of 0` wrapped across two lines. Two money figures, the bar that already draws the percentage, and a count per stage, which is the thing that says what to do today. **With nobody on the list there are no figures at all**: four tiles of zero above an empty table reads as broken rather than as new.
+- **The squad screen is in surname order and opens on who is here.** Two
+  faults, both invisible in the source. It sorted on `name`, which is the
+  FIRST name, so the site's own surname-ordered list arrived and was shuffled
+  into a different alphabetical order - sorted either way it looks sorted,
+  which is why nothing caught it, and the check has to name *which* order. And
+  it opened on all 37 players when 21 are at the club and 16 have retired,
+  left or moved into coaching: the list somebody came to work on was
+  outnumbered by the one they had not. **At the club** is the opening filter,
+  **Everyone** is the next button along, and nobody is hidden from the record -
+  hiding somebody from the screen that edits them would be a worse bug than
+  the one being fixed. `absent` is named in the panel's `PLAYING` map for the
+  same reason it is named in the library: it is never set by anybody, so
+  without the entry the safe question has to be asked backwards.
 - **Squad status is a fact about a player IN A SEASON**, `src/lib/squad-status.mjs`. It was one value per player with no date, so "Retained for 26/27" was a literal string in two files (wrong from July 2027, fixable only by a developer), "New signing" never expired, and a trial never ended. `roster:status` is `{num: {season: key}}` now; the old flat shape still reads, taken as the latest season. The club sets seven things (in the squad, on trial, injured, unavailable this season, retired, left, moved into coaching) and the site **works out three**: new signing, retained, back at the club. They are derived from **who was named in a match that season**, so nobody keeps them true and they stay true as seasons pass. Moving somebody into coaching still writes both `roster:status` and `roster:coaches`, because in real life it is one decision.
 - **Images are resized in the browser before they leave it.** A phone produces four or five megabytes and nothing on the site is drawn wider than about 1200px. Player photographs are cut square to 520px and stored inline on the `player_photos` row, which is where the existing nineteen live. Badges and article covers go to the storage bucket and the record keeps the address, because a page showing five inline would carry them all as base64. A badge is kept as a PNG so a transparent crest stays transparent.
 - Every destructive action goes through a confirm dialog. Writes are attributed to `audit_log` via `log_admin_action()`.

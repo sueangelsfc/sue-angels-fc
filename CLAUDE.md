@@ -499,6 +499,8 @@ What it can now prove, none of which was checkable before:
 - **Three renders leave one set of listeners**, which is what `cloneNode(false)` is for.
 - **Every control has a name, every aria reference lands**, table headers are scoped, nothing jumps the tab order.
 
+**A probe that stops firing must fail the run, and for a while it did the opposite.** `bust()` throws when its pattern is not in the shipped file, and that throw landed inside the shell's own script-loading path, which turns any failure into *"This section could not be downloaded"* and carries on. So a probe aimed at `showOnly="squad"` - a name the minifier renames - found nothing, threw, produced an **empty panel**, and the check written as *"did the list change"* compared nought visible rows with nought rows and passed. The probe had silently stopped testing anything and the suite reported all 3,712 checks passing. Two fixes: `boot` records every chunk that would not run and **`openPanel` refuses to return while one is outstanding**, so the failure is loud wherever it happens; and a probe is aimed at the minified SHAPE (`/,(\w+)="squad",/`) rather than at a name the minifier owns. Every probe check also asserts it had rows to look at, because `0 === 0` is the shape all of these pass on.
+
 **Every check has a mutation probe**, and `bust()` refuses to be a no-op: a probe that silently changes nothing reports the check as weak when the check is fine. Writing them found a check of mine measuring the wrong thing - counting database writes after three renders passes whether the listeners stacked or not, because the button validates before it saves. It counts listeners now.
 
 ### How the editors work

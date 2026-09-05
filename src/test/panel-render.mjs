@@ -606,21 +606,30 @@ export async function panelChecks() {
     const fnNames = fn.body.querySelectorAll('tr[data-num]').filter((t) => !t.hidden)
       .map(nameOfRow).map((n) => lastOf[n] || n);
     check('probe: sorting on the full name again breaks the surname check',
-      fnNames.join('|') !== fnNames.slice().sort((a, b) => a.localeCompare(b)).join('|'),
-      'the order check would pass on a first-name sort');
+      fnNames.length > 0
+        && fnNames.join('|') !== fnNames.slice().sort((a, b) => a.localeCompare(b)).join('|'),
+      `${fnNames.length} names, ${fnNames.slice(0, 4).join(', ')}`);
 
-    /* PROBE: open on everyone again and the opening-view check must go red. */
+    /* PROBE: open on everyone again and the opening-view check must go red.
+
+       AIMED AT THE MINIFIED FORM. `showOnly` is renamed by the minifier, so a
+       probe written against the source name found nothing, bust threw, the
+       shell turned that into "could not be downloaded", and the check below
+       compared nought visible rows with nought rows and passed. Two things
+       came out of that: the initialiser is matched by shape rather than by a
+       name the minifier owns, and openPanel now refuses to return at all
+       while a chunk has failed. */
     const allCtx = PR.boot({
       rows,
       transform: (src, file) => (file === 'control-squad.js'
-        ? bust(src, /showOnly="squad"/, 'showOnly="all"')
+        ? bust(src, /,(\w+)="squad",/, ',$1="all",')
         : src),
     });
     const ao = await PR.openPanel(allCtx, 'squad');
     const aoRows = ao.body.querySelectorAll('tr[data-num]');
     check('probe: opening on everyone again breaks the opening-view check',
-      aoRows.filter((t) => !t.hidden).length === aoRows.length,
-      'the opening-view check would pass on a screen showing all 37');
+      aoRows.length > 0 && aoRows.filter((t) => !t.hidden).length === aoRows.length,
+      `${aoRows.filter((t) => !t.hidden).length} visible of ${aoRows.length} rows`);
   }
 
   /* ==========================================================================

@@ -85,6 +85,8 @@ export function boot({ rows = {}, empty = false, localStorage: ls, onScript, tra
   doc.body.innerHTML = bodyHtml;
 
   const loaded = [];
+  /* Every chunk that would not parse or run. See the note beside the push. */
+  const chunkErrors = [];
   const run = (file) => {
     const p = path.join(ROOT, file);
     if (!fs.existsSync(p)) throw new Error('chunk not on disk: ' + file);
@@ -128,7 +130,16 @@ export function boot({ rows = {}, empty = false, localStorage: ls, onScript, tra
          shell reported a connection problem, the rejection went unhandled and
          Node printed the whole 30KB minified bundle as context. Re-thrown with
          the real cause so the next one takes seconds rather than an hour. */
+      /* RECORDED AS WELL AS THROWN, and the recording is the part that
+         works. Throwing here lands inside the shell's own script-loading
+         path, which turns any failure into "This section could not be
+         downloaded" and carries on - so a mutation probe whose target had
+         moved produced an EMPTY panel, and a probe check written as "did the
+         list change" passed on nought rows against nought rows. A probe that
+         silently stops firing is worse than no probe, so the fault is kept on
+         the context and openPanel refuses to return while one is outstanding. */
       try { run(file); } catch (e) {
+        chunkErrors.push(file + ': ' + e.message);
         throw new Error('the panel harness could not run ' + file + ': ' + e.message);
       }
       if (node.onload) node.onload();
@@ -150,7 +161,7 @@ export function boot({ rows = {}, empty = false, localStorage: ls, onScript, tra
   const store = fixtureStore(rows, { empty });
   Object.keys(store).forEach((k) => { win.CP[k] = store[k]; });
 
-  return { win, doc, store, loaded, chunkMap, html, run };
+  return { win, doc, store, loaded, chunkMap, html, run, chunkErrors };
 }
 
 /* Renders one panel and waits for the shell to finish. `render()` is three
@@ -171,6 +182,13 @@ export async function openPanel(ctx, key) {
   if (!btn) throw new Error('no nav button for ' + key);
   click(btn);
   await settle(ctx);
+  /* A chunk that would not run is never a result worth asserting against: the
+     panel draws its "could not be downloaded" state and every count on it is
+     nought, which is the shape a weak check passes on. */
+  if (ctx.chunkErrors && ctx.chunkErrors.length) {
+    throw new Error('a chunk failed while opening ' + key + ' - '
+      + ctx.chunkErrors.join('; '));
+  }
   const panel = ctx.doc.querySelector('#panel-' + key);
   const body = panel.querySelector('[data-panel-body]');
   return { panel, body, html: body ? body.innerHTML : '' };

@@ -846,6 +846,17 @@ Four rules, each of them written after the failure it prevents. `harden-site` au
 - **Say where it shows, in the hint, and make it a `where:` link.** A label that promises an outcome is a testable claim, and "What the website publishes" was false for six match reports.
 - **Absent must mean the safe default.** `draft: true` hides an article; missing means published, so nothing already saved needs migrating.
 - **The panel never offers what the site derives.** New signing, retained and returned are worked out from evidence. Offering them as choices creates a second source for one fact, and the two will disagree - the panel called a first-ever signing "Retained" for exactly this reason.
+- **No squad numbers, and not as a bare numeral either.** The club plays with
+  none: the number is a storage key, and a Sunday-league team sheet is a list
+  of keys. The existing check catches the words - "No.", "Squad number" - and
+  would sail past the likelier leak, which is the key printed on its own beside
+  the person it belongs to ("38 Rob Heath" in a team sheet). Every generated
+  page is now asked, for every player, against **their own** number. One
+  coincidence is allowed **by name**: `awards.html` prints rank, name and count,
+  so "5 Andrew Allen 2" is fifth place with two awards and his key happens to
+  be 2. Named rather than exempting the page, so a real leak on awards.html
+  still fails, and as a subset test, because a coincidence that stops appearing
+  is not a weakened check.
 - Club email is **suesangelsfc@gmail.com**. `hello@suesangelsfc.co.uk` does not exist.
 - No emoji. No colours outside the token set.
 - **Use literal characters (`·`, `’`, `–`), not HTML entities**, in template strings. Named entities passed through `esc()` render literally as `&MIDDOT;` — this happened in 61 places. Literals are correct in both escaped and raw contexts.

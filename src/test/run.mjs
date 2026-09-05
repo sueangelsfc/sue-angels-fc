@@ -1378,6 +1378,45 @@ for (const f of shipped) {
     const strings = (src.replace(/\/\*[\s\S]*?\*\//g, '').match(/'(?:[^'\\]|\\.)*'/g) || []);
     const bad = strings.filter((x) => NUMBERISH.test(x));
     check(`${name}: shows no squad number`, bad.length === 0);
+
+  /* ---- AND NOT AS A BARE NUMERAL BESIDE A NAME ----
+     The check above catches the words - "No.", "Squad number" - and would sail
+     past the more likely leak, which is the key printed on its own next to the
+     person it belongs to: "38 Rob Heath" in a team sheet, or "Rob Heath 38" in
+     a table. Asked of every generated page, for every player, against their
+     own number rather than against numbers in general.
+
+     ONE KNOWN COINCIDENCE, NAMED. The awards leaderboard prints rank, name and
+     count - "5 Andrew Allen 2" is fifth place, two awards - and Allen's key
+     happens to be 2, so the pattern matches something entirely correct. It is
+     allowed BY NAME rather than by exempting the page, so a real leak on
+     awards.html still fails. The list is a subset test on purpose: a hit that
+     stops appearing (Allen wins a third award and the coincidence breaks) is
+     not a weakened check, it is the coincidence ending. */
+  {
+    const ALLOWED = new Set([
+      /* awards.html: rank 5, Andrew Allen, 2 awards. Not his number. */
+      'awards.html :: Andrew Allen 2',
+    ]);
+    const rx = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const { buildDataset: bdN } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+    const dN = bdN();
+    const found = [];
+    for (const f of htmlFiles) {
+      const txt = fs.readFileSync(path.join(ROOT, f), 'utf8')
+        .replace(/<script[\s\S]*?<\/script>/g, ' ')
+        .replace(/<[^>]+>/g, ' ').replace(/&#39;|&rsquo;/g, "'").replace(/\s+/g, ' ');
+      for (const p of (dN.squad || [])) {
+        if (!p.num || !p.name) continue;
+        const n = String(p.num);
+        const m = txt.match(new RegExp(`\\b${n} ${rx(p.name)}\\b|\\b${rx(p.name)} ${n}\\b`));
+        if (m) found.push(`${f} :: ${m[0]}`);
+      }
+    }
+    const leaks = found.filter((x) => !ALLOWED.has(x));
+    check('no page prints a player\'s squad number beside their name',
+      leaks.length === 0, leaks.slice(0, 5).join(' | '));
+  }
   }
 }
 

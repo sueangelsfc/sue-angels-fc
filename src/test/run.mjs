@@ -2647,6 +2647,51 @@ for (const [f, kb] of Object.entries({
           said({ starters: xi.slice(0, 10), goals: [], us: 0 }, /names 10, not eleven/));
         check('no team sheet at all is named',
           said({ starters: [], goals: [], us: 0 }, /No team sheet/));
+
+        /* ---- A FRIENDLY IS NOT ASKED FOR A TEAM SHEET ----
+           Not a relaxation, a correction. Appearances, goals and every career
+           figure the site publishes are counted from COMPETITIVE matches only,
+           so a friendly's eleven is credited to nobody however carefully it is
+           entered: adding the eleven to the BPR friendly moved the stats page
+           not at all, left career appearances on 351 and changed the pre-season
+           band by not a single name. Asking for it was asking for work that
+           changes nothing on the website.
+
+           EVERYTHING ELSE ABOUT A FRIENDLY STILL COUNTS, because the rest of it
+           IS published: the goals show on the match page and in the pre-season
+           band. That is the half most easily lost when a rule like this is
+           written, so it is asserted directly. */
+        check('a friendly with no team sheet is not asked for one',
+          !said({ starters: [], goals: [], us: 0, competition: 'Pre-season friendly' },
+            /No team sheet/));
+        check('a competitive match with no team sheet still is',
+          said({ starters: [], goals: [], us: 0, competition: 'League Eight' },
+            /No team sheet/));
+        check('a friendly is still asked about everything that does publish',
+          said({ starters: [], goals: [], us: 4, competition: 'Pre-season friendly' },
+            /says 4 but no goals are listed/));
+        check('a friendly team sheet that is not eleven is still named',
+          said({ starters: xi.slice(0, 9), goals: [], us: 0, competition: 'Friendly' },
+            /names 9, not eleven/));
+
+        /* PROBE: drop the friendly guard and the first of those must go red,
+           which is what proves it is the guard doing the work and not the
+           absence of a competition on the crafted record. */
+        {
+          const winP = {};
+          const busted = recSrc.replace('&& !friendly', '');
+          check('probe: the friendly guard is where the check thinks it is',
+            busted !== recSrc, 'the guard was not found, so this probe tests nothing');
+          if (busted !== recSrc) {
+            new Function('window', busted)(winP);
+            const asked = winP.CPREC.matchProblems(
+              { starters: [], goals: [], us: 0, competition: 'Pre-season friendly' },
+              (n) => 'P' + n,
+            ).some((m) => /No team sheet/.test(m));
+            check('probe: without the guard a friendly is asked for a team sheet again',
+              asked, 'the friendly check would pass without the guard');
+          }
+        }
         check('the scoreline is compared against the goals listed',
           said({ starters: xi, goals: [{ num: 1 }], us: 3 }, /says 3 but 1 goal is listed/));
         check('somebody named in the match but not on the sheet is found',
@@ -2704,18 +2749,24 @@ for (const [f, kb] of Object.entries({
         check('the archive names eighteen matches crediting an unused substitute',
           askedOf(/unused substitute/).length === 18, `${askedOf(/unused substitute/).length}`);
 
-        /* Two league matches from 25/26, five friendlies, and the BPR friendly
-           of 30 August. Not a mistake in the same way - nobody wrote a team
-           sheet down - but the effect on the website is the same: nobody is
-           credited with playing.
+        /* THREE, AND ALL THREE ARE COMPETITIVE. It was eight until friendlies
+           stopped being asked for a team sheet, which was not a relaxation of
+           the check but a correction to it: appearances, goals and every
+           career figure the site publishes are counted from competitive
+           matches only, so a friendly's eleven is credited to nobody however
+           carefully it is entered. Proved before the rule was written - adding
+           the eleven to the BPR friendly moved the stats page not at all, left
+           career appearances on 351 and did not change the pre-season band by
+           a single name.
 
-           EIGHT SINCE THE CLUB SAVED BPR AS A SCORE AND NOTHING ELSE, which is
-           the state this project deliberately allows: a result typed at the
-           side of a pitch is worth having before the detail is known. The
-           dashboard counts it, the match form says so on every tab, and this
-           line moves back to seven when somebody fills it in. */
-        check('the archive names eight matches with no team sheet at all',
-          askedOf(/No team sheet/).length === 8, `${askedOf(/No team sheet/).length}`);
+           These three are real: three League Ten matches where nobody is
+           credited with playing. Named, so fixing one in the panel fails this
+           and is settled by striking a line out. */
+        const noSheet = askedOf(/No team sheet/);
+        check('the archive names three competitive matches with no team sheet',
+          noSheet.join() === [
+            'r20251102-shepherds-h', 'r20251123-catania', 'r20260301-freemens',
+          ].join(), noSheet.join(', ') || 'none');
 
         /* Brentford's scoreline disagrees with the goals listed under it. BPR
            has a 4-1 and no goals at all, which is the same question asked of a

@@ -429,6 +429,21 @@ Neither is a save to refuse. A result typed at the side of a pitch is worth havi
 
 **Each tab carries what it holds** (`11 + 3`, `5`, `written`). The only way to find out whether the cards had been entered was to go and look at all five, and the commonest way to record a match badly is to stop before the end.
 
+**A friendly is not asked for a team sheet.** Not a relaxation of the rule, a
+correction to it: appearances, goals and every career figure the site
+publishes are counted from **competitive** matches only, so a friendly's
+eleven is credited to nobody however carefully it is entered. Proved before it
+was written - adding the eleven to the BPR friendly of 30 August moved the
+stats page not at all, left career appearances on 351 and did not change the
+pre-season band by a single name. The archive's count of matches with no team
+sheet goes from eight to **three, all competitive**, and the other five stop
+being a job nobody needed to do. **Everything else about a friendly still
+counts**, because the rest of it is published: the goals show on the match page
+and in the pre-season band, so a scoreline disagreeing with them is a real gap
+there as much as anywhere. The editor had to start passing `competition`
+alongside the record, or the same match would have been clean on the dashboard
+and flagged on the form.
+
 **A man who did not come on cannot have scored.** A second question, and a different fault from the one above: he *is* on the sheet, and the sheet says he watched. The bench's `on` field came after the archive, so every historical substitute reads as unused, and **thirteen credits across eleven of the thirty-five played matches** go to one. It shows on the website: William Clark has seven goals from two appearances, because appearances count starts and he came off the bench for five of them.
 
 **Asking the same question about the armband and the Player of the Match found a third bad record.** Old Freemen's, 19 Oct 25: a captain who is not on his own team sheet. Two of the three were found by the check rather than by reading the data.

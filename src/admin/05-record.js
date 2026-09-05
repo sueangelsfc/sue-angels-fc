@@ -47,10 +47,25 @@
     var bench = d.bench || [];
     var goals = d.goals || [];
 
+    /* A FRIENDLY NEEDS NO TEAM SHEET, and asking for one is asking for work
+       that changes nothing. Appearances, goals, assists and every career
+       figure the site publishes are counted from COMPETITIVE matches only, so
+       a friendly's eleven is credited to nobody however carefully it is
+       entered. Proved before it was written: adding the eleven to the BPR
+       friendly of 30 August moved the stats page not at all, left career
+       appearances on 351, and did not change the pre-season band by a single
+       name.
+
+       Everything else about a friendly still counts, because the rest of it
+       IS published: the goals appear on the match page and in the pre-season
+       band, so a scoreline that disagrees with them is a real gap here as
+       much as anywhere. This drops one question, not the record. */
+    var friendly = /friendly/i.test(String(d.competition || ''));
+
     if (starters.length && starters.length !== 11) {
       out.push('The team sheet names ' + starters.length + ', not eleven.');
     }
-    if (!starters.length) {
+    if (!starters.length && !friendly) {
       out.push('No team sheet, so nobody is credited with playing in this match.');
     }
 

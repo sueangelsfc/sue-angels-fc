@@ -1403,6 +1403,11 @@
       var usField = $('#m-us', back).value;
       return window.CPREC.matchProblems({
         kind: $('#m-kind', back).value,
+        /* WITHOUT THIS THE FORM AND THE DASHBOARD DISAGREE. A friendly is not
+           asked for a team sheet, and the rule reads the competition off the
+           record - which the dashboard passes and this did not, so the same
+           match would have been clean on one screen and flagged on the other. */
+        competition: $('#m-comp', back).value.trim(),
         starters: counts.starters.map(function (n) { return { num: n }; }),
         bench: benched,
         goals: goals,

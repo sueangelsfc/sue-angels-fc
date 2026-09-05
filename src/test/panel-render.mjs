@@ -1218,7 +1218,14 @@ export async function panelProbes() {
     };
     const good = await measure(undefined);
     const bad = await measure((src, file) => (file === 'control.js'
-      ? bust(src, 'var r=a.cloneNode(!1);a.parentNode.replaceChild(r,a)', 'var r=a;r.innerHTML=""')
+      /* AIMED AT THE SHAPE, not at names the minifier owns. This was pinned to
+         `var r=a.cloneNode(!1);a.parentNode.replaceChild(r,a)` and an edit to
+         an unrelated part of 10-app.js renamed both bindings, so bust() threw.
+         That is the probe working - it refuses to be a no-op - but a pattern
+         that survives a rename is better than one re-aimed every time
+         something moves. */
+      ? bust(src, /var (\w+)=(\w+)\.cloneNode\(!1\);\2\.parentNode\.replaceChild\(\1,\2\)/,
+        'var $1=$2;$1.innerHTML=""')
       : src));
     results.push({
       name: 'probe: emptying the panel body instead of replacing it stacks its listeners',

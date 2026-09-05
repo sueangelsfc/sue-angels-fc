@@ -429,6 +429,21 @@ Neither is a save to refuse. A result typed at the side of a pitch is worth havi
 
 **Each tab carries what it holds** (`11 + 3`, `5`, `written`). The only way to find out whether the cards had been entered was to go and look at all five, and the commonest way to record a match badly is to stop before the end.
 
+**The record checker was being handed half a record.** The dashboard asked it
+about `m.data`, the stored row, and a stored row carries neither the kind of
+result nor the score: both live on the seeded match, which is the site's own
+merged view. Two consequences, and the first is the one the club noticed.
+**Three walkovers were reported as matches with no team sheet** - Shepherd's
+Tuesday, Catania and Old Freemen's, the three that make the 54 points - because
+`matchProblems` returns early on a walkover and never saw one. The club was
+being asked to write team sheets for three matches nobody played. And the
+scoreline question could not run at all on any match whose score was never
+typed into the panel, which is most of the archive. Seeded facts first, stored
+second, so a record the club has since edited still wins on the fields it owns.
+Not a second copy of the walkover rule: the rule was always there and was being
+given a record with the answer missing. **Eight flagged matches became none**,
+and the harder question found nothing new.
+
 **A friendly is not asked for a team sheet.** Not a relaxation of the rule, a
 correction to it: appearances, goals and every career figure the site
 publishes are counted from **competitive** matches only, so a friendly's

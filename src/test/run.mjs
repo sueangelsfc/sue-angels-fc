@@ -1853,6 +1853,10 @@ const BUDGET = {
 
      A budget should be set ABOVE what a file weighs, not at it, or the number
      is a description rather than a limit. 12.0KB of 13. */
+    /* AT EXACTLY 13312 OF 13312 as of the dashboard reading the whole match
+     record, so the next edit to the shell fails this. That is the budget
+     doing its job and not a reason to raise it on the way past: whoever needs
+     the room should say what bought it, the way every other raise here does. */
     'control.js': 13,
   /* The heaviest, and fairly: the pitch, the position names, five tabs, the
      goal detail (what it was struck with, where from, what the ball was doing,
@@ -2733,8 +2737,23 @@ for (const [f, kb] of Object.entries({
            what a weakened check looks like. The club fixing one in the panel
            is expected to fail this and to be settled by striking a line out. */
         const live = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'recovered-live.json'), 'utf8'));
+        /* THE WHOLE RECORD, the way the dashboard asks. A stored row carries
+           neither the kind of result nor the score - those live on the seeded
+           match, which is the site's merged view - so asking about `m.data`
+           alone reported three walkovers as matches with no team sheet and
+           could not run the scoreline question on any match whose score was
+           never typed into the panel. */
+        const seedJson = JSON.parse(fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8')
+          .replace(/^window\.SA_SEED=/, '').trim().replace(/;$/, ''));
+        const seededById = {};
+        for (const x of (seedJson.matches || [])) if (x && x.id) seededById[x.id] = x;
+        const whole = (m) => {
+          const out = { ...(seededById[m.key] || {}) };
+          for (const [k, v] of Object.entries(m.data || {})) if (v != null) out[k] = v;
+          return out;
+        };
         const askedOf = (re) => (live.matches || [])
-          .filter((m) => P(m.data).some((x) => re.test(x))).map((m) => m.key).sort();
+          .filter((m) => P(whole(m)).some((x) => re.test(x))).map((m) => m.key).sort();
 
         check('the archive names five men in a match who are on no team sheet for it',
           askedOf(/not on the team sheet/).join() === [
@@ -2749,24 +2768,29 @@ for (const [f, kb] of Object.entries({
         check('the archive names eighteen matches crediting an unused substitute',
           askedOf(/unused substitute/).length === 18, `${askedOf(/unused substitute/).length}`);
 
-        /* THREE, AND ALL THREE ARE COMPETITIVE. It was eight until friendlies
-           stopped being asked for a team sheet, which was not a relaxation of
-           the check but a correction to it: appearances, goals and every
-           career figure the site publishes are counted from competitive
-           matches only, so a friendly's eleven is credited to nobody however
-           carefully it is entered. Proved before the rule was written - adding
-           the eleven to the BPR friendly moved the stats page not at all, left
-           career appearances on 351 and did not change the pre-season band by
-           a single name.
+        /* NONE, AND THE JOURNEY FROM EIGHT TO NONE IS THE INTERESTING PART.
 
-           These three are real: three League Ten matches where nobody is
-           credited with playing. Named, so fixing one in the panel fails this
-           and is settled by striking a line out. */
+           Five were pre-season friendlies, which are never asked for a team
+           sheet: appearances and every career figure the site publishes are
+           counted from competitive matches only, so a friendly's eleven is
+           credited to nobody however carefully it is entered.
+
+           THE OTHER THREE WERE WALKOVERS - Shepherd's Tuesday, Catania and Old
+           Freemen's, the three that make the 54 points - and the checker has
+           always returned early on a walkover. It never saw one, because it
+           was being handed `m.data`, the stored row, which carries neither the
+           kind of result nor the score: both live on the seeded match. So the
+           club was being asked to write team sheets for three matches nobody
+           played. Told by the club, not found by reading the data.
+
+           An empty list is the right answer here and a `length === 0` is only
+           honest because the question got HARDER at the same time: merging the
+           seeded record also let the scoreline question run on every match
+           whose score was never typed into the panel, which is most of the
+           archive, and it found nothing new. */
         const noSheet = askedOf(/No team sheet/);
-        check('the archive names three competitive matches with no team sheet',
-          noSheet.join() === [
-            'r20251102-shepherds-h', 'r20251123-catania', 'r20260301-freemens',
-          ].join(), noSheet.join(', ') || 'none');
+        check('no match in the archive is missing a team sheet it needs',
+          noSheet.length === 0, noSheet.join(', '));
 
         /* Brentford's scoreline disagrees with the goals listed under it. BPR
            has a 4-1 and no goals at all, which is the same question asked of a

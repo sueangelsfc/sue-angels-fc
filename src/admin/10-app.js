@@ -553,8 +553,30 @@
       var byNum = {};
       (SEED.squad || []).forEach(function (p) { byNum[String(p.num)] = p.name; });
       var nameOfNum = function (n) { return byNum[String(n)] || 'Somebody'; };
+      /* THE RECORD, NOT HALF OF IT. This asked the checker about `m.data`, the
+         stored row, and a stored row does not carry what kind of result it was
+         or what the score was: those live on the seeded match, which is the
+         site's own merged view. So three walkovers were reported as matches
+         with no team sheet - the checker returns early on a walkover and never
+         saw one - and the scoreline question could not run at all on any match
+         whose score was never typed into the panel.
+
+         Seeded facts first, stored second, so a record the club has since
+         edited still wins on the fields it owns. Not a second copy of the
+         walkover rule: the rule was always there and was being handed a
+         record with the answer missing. */
+      var seededById = {};
+      (SEED.matches || []).forEach(function (x) { if (x && x.id) seededById[x.id] = x; });
+      var wholeRecord = function (m) {
+        var out = {};
+        var base = seededById[m.key] || {};
+        var got = m.data || {};
+        Object.keys(base).forEach(function (k) { out[k] = base[k]; });
+        Object.keys(got).forEach(function (k) { if (got[k] != null) out[k] = got[k]; });
+        return out;
+      };
       var contradictory = matches.filter(function (m) {
-        return window.CPREC.matchProblems(m.data, nameOfNum).length > 0;
+        return window.CPREC.matchProblems(wholeRecord(m), nameOfNum).length > 0;
       });
       if (contradictory.length) {
         var d1 = contradictory.length === 1;

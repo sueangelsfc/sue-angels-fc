@@ -87,6 +87,13 @@ const badgeFor = (name) => {
 const jobs = [];
 for (const m of d.matches || []) {
   if (!m.played) continue;
+  /* A REAL PHOTOGRAPH BEATS A DRAWN CARD, and drawing one anyway is not
+     harmless. The page correctly ships the stored photograph, so the card is
+     never used - but the build seeds the panel from "does a card exist on
+     disk", which then disagreed with the pages: 39 records seeded as drawn
+     against 38 pages actually shipping one. The panel's own ensure() already
+     skips these; this script did not. */
+  if (m.detail && m.detail.cover) continue;
   jobs.push({ id: m.id, html: matchCover(m, badgeFor), what: `${m.opponent} ${m.ourScoreline}` });
 }
 for (const a of d.articles || []) {

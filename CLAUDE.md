@@ -759,6 +759,34 @@ could not parse, which is exactly what that error message asks for.
   left it correct; and "Direct or unknown" matched the paragraph explaining
   the phrase rather than the table cell.
 
+### An article the club has written but has not yet entered
+
+`src/data/articles-extra.json` exists because the `articles` table **cannot be
+written from a developer machine**: an anonymous INSERT is refused with
+`42501 new row violates row-level security policy`, which is the posture
+working exactly as designed. Only an admin session in Control panel → News can
+create one, and a finished piece should not wait on somebody being at a laptop.
+
+Same device as `fixtures-2627.json`, and the rule that makes it safe is the
+same one: **it loses to the database, on the slug.** The moment the article is
+entered in the panel the stored row wins outright and the file's copy vanishes
+from the build, so it can never produce a duplicate and forgetting to delete it
+costs nothing. A second source for editorial content is the fault this
+repository keeps having; the dedup is what stops it being one.
+
+- **Not into an empty database.** Gated on the STORED matches, not on
+  `d.matches`, which already carries the transcribed pre-season fixtures - so a
+  bare database still has eight of them and the obvious gate let the article
+  straight through into the "what does a brand-new club's site look like"
+  render.
+- **A real photograph beats a drawn card, and drawing one anyway is not
+  harmless.** `make-covers.mjs` drew a card for a match that already carried an
+  uploaded photograph. The page correctly shipped the photograph, so the card
+  was never used, but the build seeds the panel from *does a card exist on
+  disk* - and that then disagreed with the pages: 39 records seeded as drawn
+  against 38 actually shipping one. The panel's own `ensure()` already skipped
+  these; the script did not.
+
 ## Forms — how a lead actually reaches the club
 `form[data-enquiry]` writes to the `enquiries` table **and** posts `/api/notify-enquiry`. It succeeds if **either** lands.
 

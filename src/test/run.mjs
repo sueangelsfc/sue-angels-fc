@@ -4923,6 +4923,73 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     noteOf(today) === 'Not started', noteOf(today));
 }
 
+/* ==========================================================================
+   AN ARTICLE THE CLUB HAS WRITTEN BUT HAS NOT YET ENTERED
+
+   `articles-extra.json` exists because the articles table cannot be written
+   from a developer machine: anonymous INSERT is refused by row-level security,
+   which is the posture working as designed. Same device as fixtures-2627.json.
+
+   THE RULE THAT MATTERS IS THAT IT LOSES. A second source for editorial
+   content is the fault this repository keeps having, and the only thing that
+   makes it safe is that the database wins on the slug: the moment the club
+   enters the article in the panel, the file's copy vanishes from the build.
+   Both halves are asserted, and the losing half has a probe. */
+{
+  const { buildDataset: bdA } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const extra = JSON.parse(fs.readFileSync(
+    path.join(ROOT, 'src', 'data', 'articles-extra.json'), 'utf8'));
+  const live = JSON.parse(fs.readFileSync(
+    path.join(ROOT, 'src', 'data', 'recovered-live.json'), 'utf8'));
+
+  const base = bdA();
+  for (const row of (extra.articles || [])) {
+    const title = row.data.title;
+    const mine = base.articles.filter((a) => a.title === title);
+    check(`an unentered article reaches the site: ${title.slice(0, 40)}`,
+      mine.length === 1 && mine[0].fromFile === true,
+      `${mine.length} matches`);
+    check(`and it is a real page, not just a feed row: ${title.slice(0, 30)}`,
+      fs.existsSync(path.join(ROOT, 'news', `${mine[0] ? mine[0].slug : 'x'}.html`)),
+      mine[0] ? mine[0].slug : 'no slug');
+  }
+
+  /* THE DATABASE WINS. The same article entered in the panel must replace the
+     file's copy outright, not sit beside it. */
+  const first = (extra.articles || [])[0];
+  if (first) {
+    const withStored = JSON.parse(JSON.stringify(live));
+    withStored.articles.push({
+      key: 'sim-entered', updated_at: '2026-09-05T12:00:00Z',
+      data: { ...first.data, id: 'sim-entered', lede: 'Entered in the panel.' },
+    });
+    const dW = bdA({ live: withStored });
+    const both = dW.articles.filter((a) => a.title === first.data.title);
+    check('an article entered in the panel replaces the file copy, never duplicates it',
+      both.length === 1 && !both[0].fromFile && both[0].lede === 'Entered in the panel.',
+      `${both.length} copies, fromFile=${both[0] && both[0].fromFile}`);
+
+    /* PROBE: drop the slug guard and the same article must appear twice, so
+       the check above is shown to be doing the work. */
+    const srcDs = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'dataset.mjs'), 'utf8');
+    const busted = srcDs.replace('.filter((a) => !storedSlugs.has(a.slug));', ';');
+    if (busted === srcDs) {
+      check('probe: the slug guard is where the check thinks it is', false,
+        'the dedup filter was not found, so this probe tests nothing');
+    } else {
+      const tmp = path.join(ROOT, 'src', 'lib', '.dataset-probe.mjs');
+      fs.writeFileSync(tmp, busted);
+      try {
+        const { buildDataset: bdP } = await import(tmp);
+        const dP = bdP({ live: withStored });
+        const dupes = dP.articles.filter((a) => a.title === first.data.title);
+        check('probe: without the slug guard the article does duplicate',
+          dupes.length === 2, `${dupes.length} copies`);
+      } finally { fs.rmSync(tmp, { force: true }); }
+    }
+  }
+}
+
 /* ---- A HISTORICAL CLAIM IS NOT MADE OUT OF A CURRENT FACT ----------------
 
    Eight page descriptions and the home page's own title said what division the

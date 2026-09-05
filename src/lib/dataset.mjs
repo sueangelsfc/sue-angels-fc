@@ -903,6 +903,54 @@ export function buildDataset(overrides = {}) {
     .sort((a, b) => String(b.iso || '').localeCompare(String(a.iso || ''))
       || String(a.title).localeCompare(String(b.title)));
 
+  /* ---- An article the club has written but has not yet entered -----------
+     THE SAME DEVICE AS fixtures-2627.json, and for the same reason: the
+     `articles` table cannot be written from a developer machine. Anonymous
+     INSERT is refused by row-level security, which is the posture working as
+     designed, so a piece that is finished and wanted today would otherwise
+     wait on somebody being at a laptop with a login.
+
+     IT LOSES TO THE DATABASE, on the slug. The moment the same article is
+     entered in the panel the stored row wins and this copy vanishes from the
+     build, so the file can never produce a duplicate and forgetting to delete
+     it costs nothing. Exactly the rule the transcribed fixtures follow. */
+  const storedSlugs = new Set(articles.map((a) => a.slug));
+  /* AND NOT INTO AN EMPTY DATABASE. This file is a copy of one club's own
+     article; a generator handed nothing is being asked what a brand-new club's
+     site looks like, and a hard-coded piece about Sue's Angels has no business
+     turning up in that answer. The suite renders exactly that case.
+
+     Gated on the STORED matches, not on `matches`: that list already carries
+     the transcribed pre-season fixtures, so an empty database still has eight
+     of them and the obvious gate let the article straight through. */
+  const extraArticles = ((live.matches || []).length
+    ? (read('articles-extra.json').articles || []) : [])
+    .filter((row) => !(row.data && row.data.draft))
+    .map((row) => {
+      const x = row.data || {};
+      return {
+        key: row.key,
+        id: x.id || row.key,
+        title: x.title || 'Untitled',
+        slug: slugify(x.title || row.key),
+        category: x.cat || 'News',
+        date: x.date || '',
+        iso: x.iso || toISO(x.date || '') || null,
+        lede: x.lede || '',
+        body: x.body || x.text || '',
+        cover: x.cover || '',
+        author: x.author || "Sue's Angels FC",
+        updatedAt: x.sortISO || null,
+        fromFile: true,
+      };
+    })
+    .filter((a) => !storedSlugs.has(a.slug));
+  if (extraArticles.length) {
+    articles.push(...extraArticles);
+    articles.sort((a, b) => String(b.iso || '').localeCompare(String(a.iso || ''))
+      || String(a.title).localeCompare(String(b.title)));
+  }
+
   /* ---- Recognition ---- */
   const recognition = [
     ...(live.recognition || []).map((row) => ({ key: row.key, ...(row.data || {}), source: 'cloud' })),

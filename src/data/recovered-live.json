@@ -9072,10 +9072,16 @@
             "last": "Pyke",
             "first": "Harry",
             "position": "Midfielder"
+          },
+          {
+            "num": 38,
+            "last": "Heath",
+            "first": "Rob",
+            "position": "Defender"
           }
         ]
       },
-      "updated_at": "2026-08-03T10:54:55.801+00:00"
+      "updated_at": "2026-09-05T19:26:42.605+00:00"
     },
     {
       "key": "roster:status",
@@ -9178,10 +9184,16 @@
               "key": "active",
               "from": "2026-08-01"
             }
+          },
+          "38": {
+            "26/27": {
+              "key": "active",
+              "from": "2026-08-17"
+            }
           }
         }
       },
-      "updated_at": "2026-09-03T23:26:40.964+00:00"
+      "updated_at": "2026-09-05T19:26:42.978+00:00"
     },
     {
       "key": "roster:trialists",

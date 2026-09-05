@@ -113,10 +113,17 @@ export function stats(d) {
   /* THE VIEWS. Every season the club has had, newest last, plus its whole
      history. "All seasons" is not a season and never says "not started": it
      is every match ever played, which is the right home for a club record. */
+  /* ONE MATCH IS NOT "1 MATCHES", and this reads wrong on exactly the day it
+     matters most: the first competitive fixture of a season turns the chip
+     from "Not started" straight into "1 matches", on the club's own stats page,
+     on the morning everybody is looking at it. Every count on this page goes
+     through here. */
+  const count = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
   const VIEWS = [
     ...seasons.map((sn) => ({
       key: sn.name, id: sn.name.replace(/\D/g, ''), label: sn.name,
-      note: sn.matches.length ? `${sn.matches.length} matches` : 'Not started',
+      note: sn.matches.length ? count(sn.matches.length, 'match', 'matches') : 'Not started',
       /* The matches themselves, not only the derived rows: the competition
          chips count fixtures, not players. */
       matches: sn.matches,
@@ -124,7 +131,7 @@ export function stats(d) {
     })),
     {
       key: 'all', id: 'all', label: 'All seasons',
-      note: `${played.length} matches`,
+      note: count(played.length, 'match', 'matches'),
       matches: played,
       rows: rowsFrom(allSet), heading: 'The club’s',
     },
@@ -295,7 +302,7 @@ export function stats(d) {
   const leadersBand = VIEWS.some((v) => v.rows.length)
     ? `<section class="sec st-leaders" aria-labelledby="st-lead-h" data-leader-views>
       <div class="wrap">
-        ${rail(1, 'Who led the way', `${VIEWS[defaultView].rows.length} players used`)}
+        ${rail(1, 'Who led the way', count(VIEWS[defaultView].rows.length, 'player used', 'players used'))}
         <h2 class="h2 rv" id="st-lead-h"><span data-leader-heading>${esc(VIEWS[defaultView].heading)}</span>
           <span class="volt">leaders.</span></h2>
         ${VIEWS.map((v, i) => `<div class="st-lead__view rv" data-leader-view="${attr(v.id)}"

@@ -4802,6 +4802,88 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   }
 }
 
+/* ==========================================================================
+   WHAT THE PLAYER STATS PAGE OPENS ON
+
+   The page carries a chip per season plus All seasons, and it is supposed to
+   move itself onto the new season the moment one starts. Nothing checked
+   that, and the club is relying on it: the first League Eight fixture is
+   6 September and nobody wants to press a tab to see it.
+
+   Rendered from a REBUILT dataset rather than a hand-patched one, because the
+   per-season player sets this page reads are derived inside buildDataset and
+   a match spliced into `d.matches` afterwards would not reach them - the
+   check would pass on a page that had never seen the match.
+
+   THE SWITCH IS DRIVEN BY THE TEAM SHEET, NOT THE SCORELINE, and that is
+   deliberate: a season tab with nobody on it is a table of noughts and reads
+   as broken. It is also the thing most likely to catch the club out, because
+   a result can be saved on its own - the BPR friendly of 30 August is exactly
+   that - so both halves are asserted rather than just the happy one. */
+{
+  const { buildDataset: bdS } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const { stats: statsTpl } = await import(path.join(ROOT, 'src', 'templates', 'stats.mjs'));
+  const liveRaw = JSON.parse(fs.readFileSync(
+    path.join(ROOT, 'src', 'data', 'recovered-live.json'), 'utf8'));
+
+  /* A real eleven, so the sheet is the shape the engine expects. */
+  const anEleven = (liveRaw.matches || []).map((m) => m.data)
+    .filter((m) => (m.starters || []).length === 11).pop();
+
+  const withFixture = (extra) => {
+    const live = JSON.parse(JSON.stringify(liveRaw));
+    live.matches.push({
+      key: 'sim20260906-tlb', updated_at: '2026-09-06T12:00:00Z',
+      data: {
+        iso: '2026-09-06', date: '06 Sep 2026', kind: 'score',
+        competition: 'League Eight', home: "Sue's Angels FC",
+        away: 'Three Little Birds FC', hs: 3, as: 1, kick: '11:00',
+        venue: 'The Reeves Sports Club', ...extra,
+      },
+    });
+    return bdS({ live });
+  };
+  const openTabOf = (d) => {
+    const html = statsTpl(d).body;
+    const m = html.match(/<a class="st-season is-on"[\s\S]{0,140}?data-season="([^"]+)"/);
+    return m ? m[1] : '(none)';
+  };
+  const chipsOf = (d) => [...new Set(
+    [...statsTpl(d).body.matchAll(/data-season="([^"]+)"/g)].map((x) => x[1]))];
+
+  const today = bdS();
+  const chips = chipsOf(today);
+  check('the player stats page offers every season and all of them together',
+    chips.includes('all') && chips.filter((c) => c !== 'all').length >= 2,
+    chips.join(', '));
+
+  check('today the player stats page opens on the season with the figures',
+    openTabOf(today) === '25/26', openTabOf(today));
+
+  const sheeted = withFixture({ starters: anEleven ? anEleven.starters : [], bench: [], goals: [] });
+  check('a League Eight match with a team sheet moves the page onto the new season',
+    openTabOf(sheeted) === '26/27', openTabOf(sheeted));
+
+  /* The scoreline alone does NOT move it, and that is the design rather than
+     an oversight: the tab would open on a table of noughts. Asserted so the
+     day somebody changes it, they have to change this sentence too. */
+  const scoreOnly = withFixture({ starters: [], bench: [], goals: [] });
+  check('a result saved with no team sheet leaves the page on the season that has figures',
+    openTabOf(scoreOnly) === '25/26', openTabOf(scoreOnly));
+
+  /* ONE MATCH IS NOT "1 MATCHES". This reads wrong on precisely the day it
+     matters most: the chip goes from "Not started" to its first count on the
+     morning of the first fixture. */
+  const noteOf = (d) => {
+    const m = statsTpl(d).body.match(/data-season="26\/27"[\s\S]{0,160}?<i>([^<]*)<\/i>/);
+    return m ? m[1] : '';
+  };
+  check('the season chip counts one match in the singular',
+    noteOf(sheeted) === '1 match', noteOf(sheeted));
+  check('a season with no matches says so rather than showing a nought',
+    noteOf(today) === 'Not started', noteOf(today));
+}
+
 /* ---- A HISTORICAL CLAIM IS NOT MADE OUT OF A CURRENT FACT ----------------
 
    Eight page descriptions and the home page's own title said what division the

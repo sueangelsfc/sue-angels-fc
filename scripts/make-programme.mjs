@@ -157,6 +157,18 @@ const PRINT_TOKENS = `
   .pg-h3--crest { display: flex; align-items: center; gap: 3mm; }
   .pg-crest { display: inline-block; width: 9mm; flex: 0 0 auto; }
   .pg-crest img, .pg-crest svg { width: 100%; height: auto; display: block; }
+  /* A CLUB WITH NO BADGE ON FILE gets the lettered disc clubCrest falls back
+     to, and this sheet did not style it - so five of the nine clubs in the
+     division printed a bare capital floating beside the name: "J Junction
+     Elite FC Sunday 3rd Team". A disc reads as a placeholder; a loose letter
+     reads as a fault. */
+  .pg-crest.crest--letter {
+    width: 9mm; height: 9mm; border-radius: 50%;
+    background: #1a1a1a; border: 0.4mm solid #FF7034; color: #FF7034;
+    font-family: Archivo, Helvetica, Arial, sans-serif; font-weight: 700;
+    font-size: 4.6mm; line-height: 8.2mm; text-align: center;
+    print-color-adjust: exact; -webkit-print-color-adjust: exact;
+  }
   .h2 .pg-crest { width: 11mm; vertical-align: middle; margin-inline-end: 3mm; }
   .h2 { display: flex; align-items: center; gap: 0; flex-wrap: wrap; }
 

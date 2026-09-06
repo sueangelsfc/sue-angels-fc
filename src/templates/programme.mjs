@@ -42,8 +42,9 @@ import {
    05, 07, 08, 09 - two collisions and four gaps - because the bands were
    numbered where they were written rather than where they ended up, and the
    long read carries no rail at all. The three that survive in the document
-   pass null: a strip reading "Half-time quiz - 7 questions" is complete,
-   while "07" in a document with no 01 to 06 is a missing-page notice. */
+   pass a placeholder, and `programmeDoc` renumbers the whole document in one
+   pass so the figure describes where a band actually sits. The page keeps
+   its own two, because it is a different document. */
 const rail = (n, label, ref) => `
   <div class="xrail" aria-hidden="true">
     <span class="xrail__l">${n == null ? '' : `<span class="xrail__n">${String(n).padStart(2, '0')}</span>`}
@@ -300,7 +301,7 @@ export function programme(d) {
   const partners = (d.partners || []).filter((p) => p.onPage !== false);
   const partnerBand = partners.length ? `<section class="sec pr-band" aria-labelledby="pr-sp-h">
       <div class="wrap">
-        ${rail(null, 'Who backs the club', `${partners.length} partners`)}
+        ${rail(0, 'Who backs the club', `${partners.length} partners`)}
         <h2 class="h2 rv" id="pr-sp-h">The people who make this possible<span class="volt">.</span></h2>
         <p class="pr-lede rv">A Sunday-league club runs on pitch fees, kit, footballs and
           referees. These businesses pay for them. If you need what they do, they are worth
@@ -329,7 +330,7 @@ export function programme(d) {
   const questions = quiz(d);
   const quizBand = questions.length ? `<section class="sec pr-band" aria-labelledby="pr-quiz-h">
       <div class="wrap">
-        ${rail(null, 'Half-time quiz', `${questions.length} questions`)}
+        ${rail(0, 'Half-time quiz', `${questions.length} questions`)}
         <h2 class="h2 rv" id="pr-quiz-h">How closely were you watching<span class="volt">?</span></h2>
         <p class="pr-lede rv">Every answer is somewhere on this website. No prizes, no cheating,
           and the person beside you almost certainly knows.</p>
@@ -349,7 +350,7 @@ export function programme(d) {
   const ws = wordSearch(puzzleNames.slice(0, 10), (m && m.id) || 'programme');
   const wordBand = ws.placed.length >= 4 ? `<section class="sec pr-band" aria-labelledby="pr-ws-h">
       <div class="wrap">
-        ${rail(null, 'Word search', `${ws.placed.length} names`)}
+        ${rail(0, 'Word search', `${ws.placed.length} names`)}
         <h2 class="h2 rv" id="pr-ws-h">Find the squad<span class="volt">.</span></h2>
         <p class="pr-lede rv">${esc(ws.placed.length)} surnames from this season's squad, hidden
           across, down, diagonally and backwards.</p>
@@ -592,9 +593,22 @@ export function programmeDoc(d) {
     + backBand(d, m)
     + answersBand(out.quizQuestions || [], out.wordSearch || null);
 
+  /* THE SECTIONS ARE NUMBERED WHERE THEY LAND, not where they were written.
+     Every band carried the number it was given the day it was added, and the
+     document's running order has changed repeatedly since: it read 01, 02,
+     03, 04, 05, 15, 14, 10, 06, 13, 07, 11, 17, 08, 12, 09, 16, 19. A reader
+     seeing 05 followed by 15 concludes ten pages are missing.
+
+     Renumbered here, in one pass over the assembled document, because this is
+     the only place the order is known - a band cannot see where it sits and
+     should not have to. Move a band and the numbers follow it. */
+  let n = 0;
+  const numbered = long.replace(/<span class="xrail__n">\d+<\/span>/g,
+    () => `<span class="xrail__n">${String(++n).padStart(2, '0')}</span>`);
+
   return {
     cover: printCover(d, m),
-    body: long.replace(/<details class="pr-quiz__a">/g, '<details class="pr-quiz__a" open>'),
+    body: numbered.replace(/<details class="pr-quiz__a">/g, '<details class="pr-quiz__a" open>'),
     title: out.docTitle,
   };
 }

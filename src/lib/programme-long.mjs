@@ -54,6 +54,13 @@ const record = (w, dr, l) => {
   if (parts.length === 1) return parts[0];
   return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
 };
+/* A PARAGRAPH STARTS WITH A CAPITAL, and several of these begin on a
+   spelled-out number: "nine clubs make up the division", "five of the 8 have
+   never been played", "one fixture is already on the calendar", "eight
+   matches on the record have no team sheet". Every band builds an array of
+   sentences and renders it the same way, so the rule lives with the
+   rendering rather than at forty push sites. */
+const paras = (list) => list.map((x) => `<p>${cap(x)}</p>`).join('');
 const plural = (n, one, many) => `${num(n)} ${n === 1 ? one : many}`;
 
 /* ---- A BAR CHART, DRAWN IN SVG ------------------------------------------
@@ -149,8 +156,15 @@ function playerPiece(p, stat, d, ctx = {}) {
   ][apps % 3]();
   bits.push(apps % 3 === 0 ? `${name}: ${open}` : open);
 
-  if (s.starts && s.subApps) {
-    bits.push(`${num(s.starts)} starts, ${num(s.subApps)} off the bench.`);
+  /* HOW MANY OF THE APPEARANCES WERE OFF THE BENCH, which is `apps - starts`
+     and is NOT `subApps`. `subApps` is every bench NAMING, used or not, which
+     the suite says in as many words - so reading it here produced arithmetic
+     nobody could believe: Samakab Nur "one appearance, one start, 20 off the
+     bench", Jon Lloyd "19 appearances, 19 starts, three off the bench", and
+     Stephen Potter's 16 and three against a total of 17. */
+  const offBench = Math.max(0, apps - (s.starts || 0));
+  if (s.starts && offBench) {
+    bits.push(`${num(s.starts)} of them starts, ${num(offBench)} off the bench.`);
   }
 
   if (s.goals && s.assists) {
@@ -171,8 +185,19 @@ function playerPiece(p, stat, d, ctx = {}) {
 
   if (s.goals && apps >= 5) {
     const per = s.goals / apps;
+    /* "Roughly one every 1.0 outings" is what a formula says and not what a
+       person says, and it read that way for the club's two best finishers.
+       A rate at or about one a game gets said in words. */
+    const every = 1 / per;
     if (per >= 1) bits.push(`${per.toFixed(2)} a game, which is a centre forward's number.`);
-    else if (per >= 0.4) bits.push(`Roughly one every ${(1 / per).toFixed(1)} outings.`);
+    else if (every < 1.15) bits.push('Very nearly a goal a game.');
+    else if (per >= 0.4) {
+      /* A whole number of matches is written as one, not as "2.0". */
+      const near = Math.round(every);
+      bits.push(Math.abs(every - near) < 0.06
+        ? `Roughly one every ${num(near)} matches.`
+        : `Roughly one every ${every.toFixed(1)} matches.`);
+    }
   }
   if (s.goals && ctx.clubGoals) {
     const share = Math.round((s.goals / ctx.clubGoals) * 100);
@@ -184,7 +209,11 @@ function playerPiece(p, stat, d, ctx = {}) {
   if (ctx.scoredIn && ctx.scoredIn.length) {
     const top = ctx.scoredIn.slice(0, 3)
       .map((g) => `${g.n > 1 ? `${num(g.n)} in the ` : 'the '}${g.scoreline} against ${g.opponent}`);
-    bits.push(`Among them ${top.join(', ')}.`);
+    /* "Among them" over a single goal is a plural promise the sentence does
+       not keep, and eight players in the squad have scored once. */
+    bits.push(s.goals > top.length
+      ? `Among them ${top.join(', ')}.`
+      : `${top.length > 1 ? 'They came in ' : 'It came in '}${top.join(', ')}.`);
   }
 
   const extras = [];
@@ -358,7 +387,7 @@ export function welcomeBand(d, m) {
   return sec('pg-welcome', 1, opener ? 'Opening day' : 'Welcome',
     opener ? 'Opening day<span class="volt">.</span>'
       : 'Welcome to The Reeves<span class="volt">.</span>',
-    p.map((x) => `<p>${x}</p>`).join(''));
+    paras(p));
 }
 
 /* ---- THE OPPONENT, AT LENGTH --------------------------------------------- */
@@ -393,7 +422,7 @@ export function opponentBandLong(d, m, h2h, crest) {
     ? `<ul class="pg-runs">${h2h.met.slice().reverse().map((x) => `<li>${matchPiece(x, nameOf)}</li>`).join('')}</ul>`
     : '';
   return sec('pg-opp', 2, 'Today’s opponent', `${esc(m.opponent)}<span class="volt">.</span>`,
-    p.map((x) => `<p>${x}</p>`).join('') + list);
+    paras(p) + list);
 }
 
 /* ---- THE SQUAD, MAN BY MAN ----------------------------------------------- */
@@ -502,14 +531,14 @@ export function seasonBandLong(d) {
   const runs = Object.entries(byComp).map(([name, list]) => {
     const won = list.filter((x) => x.outcome === 'W').length;
     return `<h3 class="pg-h3">${esc(name)}</h3>
-      <p>${plural(list.length, 'match', 'matches')}, ${num(won)} won. `
+      <p>${cap(plural(list.length, 'match', 'matches'))}, ${num(won)} won. `
       + `${list.length === won ? 'Every one of them.' : ''}</p>
       <ul class="pg-runs">${list.map((x, i) => `<li>${matchPiece(x, nameOf, { index: i, total: list.length })}</li>`).join('')}</ul>`;
   }).join('');
 
   return sec('pg-season', 4, `${season} in full`,
     `The season that got the club here<span class="volt">.</span>`,
-    p.map((x) => `<p>${x}</p>`).join('')
+    paras(p)
     + formRibbon(comp, `Every competitive match of ${season}, in order`)
     + chart + runs);
 }
@@ -557,7 +586,7 @@ export function numbersBand(d) {
     + 'in competitive football, across every match on the record.');
 
   return sec('pg-numbers', 5, 'The numbers', 'What the record actually holds<span class="volt">.</span>',
-    p.map((x) => `<p>${x}</p>`).join('')
+    paras(p)
     + barChart(scorers.slice(0, 10).map((x) => ({ k: x.name, v: x.goals })),
       { label: 'Leading scorers, all competitive football' })
     + barChart(makers.slice(0, 8).map((x) => ({ k: x.name, v: x.assists })),
@@ -601,7 +630,7 @@ export function divisionBandLong(d, headToHead, crest) {
       ${lines.map((l) => (l.startsWith('<') ? l : `<p>${l}</p>`)).join('')}</div>`;
   }).join('');
   return sec('pg-div', 6, 'The division', 'Who else is in it<span class="volt">.</span>',
-    p.map((x) => `<p>${x}</p>`).join('') + body);
+    paras(p) + body);
 }
 
 /* ---- THE CLUB'S OWN HONOURS AND RECORDS ---------------------------------- */
@@ -613,13 +642,45 @@ export function honoursBand(d) {
   const p = [];
   p.push('The club keeps its own record of who it has picked out, month by month and season '
     + 'by season. It is a short list because the club is young, and it will be a long one.');
+  /* WHO WON IT IS THE POINT, and the first version printed a season and
+     nothing else. It read `r.title`, `r.player` and `r.who`, and the records
+     carry none of the three for a Player of the Month: they carry `month`,
+     `season` and a `playerId`, with `playerName` present and empty. So four
+     of the entries printed as the bare text "25/26", and a leadership record
+     - which has no title either, only the three captains by id - printed as
+     a fifth. Resolved against the squad the same way everything else here
+     resolves a number. */
+  const nameOfNum = (id) => {
+    const hit = (d.players || []).find((x) => Number(x.num) === Number(id));
+    return hit ? hit.name : '';
+  };
+  /* `value` is a fallback for a record with no player, and on a trophy it
+     restates the title - "League Ten Champions - Champions - 25/26". */
+  const who = (r) => {
+    const n = r.playerName || nameOfNum(r.playerId);
+    if (n) return n;
+    const v = String(r.value || '');
+    return v && !String(r.title || '').toLowerCase().includes(v.toLowerCase()) ? v : '';
+  };
   const line = (r) => {
-    const bits = [r.title || r.name || r.award, r.player || r.who, r.season, r.date]
+    if (r.type === 'leadership') {
+      const caps = [
+        ['Club captain', r.clubCaptainName || nameOfNum(r.clubCaptainPlayerId)],
+        ['Vice-captain', r.viceCaptainName || nameOfNum(r.viceCaptainPlayerId)],
+        ['Third choice', r.thirdChoiceCaptainName || nameOfNum(r.thirdChoiceCaptainPlayerId)],
+      ].filter(([, n]) => n).map(([lab, n]) => `${lab} ${n}`);
+      return caps.length
+        ? `<li>${esc(`The captaincy${r.season ? `, ${r.season}` : ''}`)} &middot; ${esc(caps.join(', '))}</li>`
+        : '';
+    }
+    const label = r.title || r.name || r.award
+      || (r.month ? `${r.month}${r.season ? ` ${r.season}` : ''}` : '');
+    const bits = [label, who(r), r.month ? '' : r.season]
       .filter(Boolean).map((x) => esc(String(x)));
     return bits.length ? `<li>${bits.join(' &middot; ')}</li>` : '';
   };
   return sec('pg-honours', 7, 'Recognition', 'What the club has marked<span class="volt">.</span>',
-    p.map((x) => `<p>${x}</p>`).join('')
+    paras(p)
     + (potm.length ? `<h3 class="pg-h3">Player of the Month</h3>
         <ul class="pg-runs">${potm.map(line).join('')}</ul>` : '')
     + (other.length ? `<h3 class="pg-h3">Records and honours</h3>
@@ -644,7 +705,7 @@ export function groundBand(d) {
     + 'this one being a file rather than a booklet. Stand where you like, and if you are new, '
     + 'somebody will tell you which way we are kicking.');
   return sec('pg-ground', 8, 'The ground', 'Where we play<span class="volt">.</span>',
-    p.map((x) => `<p>${x}</p>`).join(''));
+    paras(p));
 }
 
 /* ---- THE CAUSE ----------------------------------------------------------- */
@@ -663,7 +724,7 @@ export function causeBandLong() {
     + 'trying to win a league. But the badge carries a name, and every match played in it is '
     + 'a small argument that she is not forgotten.');
   return sec('pg-cause', 9, 'Why we play', 'In her name<span class="volt">.</span>',
-    p.map((x) => `<p>${x}</p>`).join(''));
+    paras(p));
 }
 
 /* ---- PRE-SEASON, AT LENGTH ----------------------------------------------- */
@@ -691,7 +752,7 @@ export function preSeasonBandLong(d, season) {
     + 'matches only, so a friendly eleven is credited to nobody however carefully it is '
     + 'written down. The results below are real; they simply do not enter anybody’s record.');
   return sec('pg-pre', 10, 'Pre-season', 'How the summer went<span class="volt">.</span>',
-    p.map((x) => `<p>${x}</p>`).join('')
+    paras(p)
     + formRibbon(list, 'Pre-season, in order')
     + `<ul class="pg-runs">${list.map((x) => `<li>${matchPiece(x, nameOf)}</li>`).join('')}</ul>`);
 }
@@ -741,7 +802,7 @@ export function storyBand(d) {
     + 'the stage where every match is still a first of something, and in ten years this page '
     + 'will be the only place some of it survives.');
   return sec('pg-story', 11, 'The club', 'Where this club came from<span class="volt">.</span>',
-    p.map((x) => `<p>${x}</p>`).join(''));
+    paras(p));
 }
 
 /* ---- HOW THIS PROGRAMME COUNTS ------------------------------------------- */
@@ -775,7 +836,7 @@ export function methodBand(d) {
   p.push('None of this is an apology. A Sunday-league club keeping records this carefully is '
     + 'unusual, and the gaps are the price of writing down only what somebody actually saw.');
   return sec('pg-method', 12, 'How this is counted', 'A note on the figures<span class="volt">.</span>',
-    p.map((x) => `<p>${x}</p>`).join(''));
+    paras(p));
 }
 
 /* ---- WHAT COMES NEXT ----------------------------------------------------- */
@@ -832,7 +893,7 @@ export function aheadBand(d, m) {
       + `${esc(String(x.homeAway || '').toLowerCase())}. ${esc(x.competition)}.</li>`).join('')}</ul>`
     : '';
   return sec('pg-ahead', 13, 'What comes next', 'The season ahead<span class="volt">.</span>',
-    p.map((x) => `<p>${x}</p>`).join('') + list);
+    paras(p) + list);
 }
 
 /* ---- WHAT TO WATCH FOR TODAY --------------------------------------------
@@ -910,7 +971,7 @@ export function watchBand(d, here) {
   }
 
   return sec('pg-watch', 14, 'Worth watching', 'What is close today<span class="volt">.</span>',
-    p.map((x) => `<p>${x}</p>`).join('') + list);
+    paras(p) + list);
 }
 
 /* ---- THE COMPETITIONS ---------------------------------------------------- */
@@ -938,7 +999,7 @@ export function competitionsBand(d) {
       ${c.l ? `The ${plural(c.l, 'defeat', 'defeats')} in this competition ${c.l === 1 ? 'is' : 'are'} part of the record and printed with the rest of it.` : ''}</p></div>`;
   }).join('');
   return sec('pg-comps', 15, 'The competitions', 'League and cup<span class="volt">.</span>',
-    p.map((x) => `<p>${x}</p>`).join('') + body);
+    paras(p) + body);
 }
 
 /* ---- THE BACK PAGE ------------------------------------------------------- */
@@ -975,7 +1036,7 @@ export function backBand(d, m) {
     + `${esc(CLUB.venue.district)} &middot; ${esc(CLUB.email || 'suesangelsfc@gmail.com')}`);
   p.push('Founded 2025, in memory of Susan Anne Martin. Playing for sepsis awareness.');
   return sec('pg-back', 16, 'Back page', 'Before you go<span class="volt">.</span>',
-    p.map((x) => `<p>${x}</p>`).join(''));
+    paras(p));
 }
 
 /* ---- THE BADGE ----------------------------------------------------------- */
@@ -990,15 +1051,15 @@ export function badgeBand(d) {
   p.push(`The colours are orange and black, and they are on everything: the shirt, this `
     + 'programme, the website, the graphics that go out after full time. A small club is '
     + 'recognised or it is not, and being recognisable costs nothing but consistency.');
-  p.push(`${CLUB.nickname ? `The club is known as the ${CLUB.nickname}. ` : ''}`
+  p.push(`${CLUB.nickname ? `The club is known as ${/^the /i.test(CLUB.nickname) ? '' : 'the '}${CLUB.nickname}. ` : ''}`
     + `It plays in ${CLUB.league}, out of ${CLUB.venue.district} in ${CLUB.town}, and it is a `
-    + `${CLUB.type.toLowerCase()}.`);
+    + `${CLUB.type.charAt(0).toLowerCase()}${CLUB.type.slice(1)}.`);
   p.push('That is the whole identity, and it has not changed since the first Sunday. It is '
     + 'worth putting in the programme because clubs drift: a badge gets modernised, a colour '
     + 'gets softened, a motto gets dropped for being awkward. This one is written down here '
     + 'so that if it ever changes, somebody has to decide to change it.');
   return sec('pg-badge', 17, 'The badge', 'What is on the shirt<span class="volt">.</span>',
-    p.map((x) => `<p>${x}</p>`).join(''));
+    paras(p));
 }
 
 /* ---- THE SEASON, TOLD RATHER THAN LISTED --------------------------------
@@ -1075,7 +1136,7 @@ export function narrativeBand(d) {
     + 'higher, which is the only thing anybody here actually wanted.');
 
   return sec('pg-story2', 18, `${season}`, 'The season, and what it took<span class="volt">.</span>',
-    p.map((x) => `<p>${x}</p>`).join(''));
+    paras(p));
 }
 
 /* ---- THE ANSWERS, AT THE BACK -------------------------------------------
@@ -1099,7 +1160,7 @@ export function answersBand(questions, ws) {
         : '')
     : '';
   return sec('pg-answers', 19, 'Answers', 'The answers<span class="volt">.</span>',
-    p.map((x) => `<p>${x}</p>`).join('') + q + w);
+    paras(p) + q + w);
 }
 
 /* ---- THE CLUB'S OWN MATCH REPORTS ---------------------------------------
@@ -1128,7 +1189,7 @@ export function reportsBand(d, hasReport, reportText, articleBody) {
     </article>`;
   }).join('');
   return sec('pg-reports', 20, 'Match reports', 'In their own words<span class="volt">.</span>',
-    p.map((x) => `<p>${x}</p>`).join('') + body);
+    paras(p) + body);
 }
 
 /* ---- A CREST BESIDE A CLUB NAME ------------------------------------------

@@ -434,6 +434,10 @@ export function programme(d) {
       </div>
     </section>` : '';
 
+  /* ---- THE DOCUMENT, which is what the PDF is made of ------------------- */
+  const documentBody = opponentBand + squadBand + lastBand + nextBand
+    + quizBand + wordBand + causeBand + partnerBand;
+
   /* ---- 11 TAKING IT AWAY --------------------------------------------------
      No button and no JavaScript. Every phone and every browser already has
      Print and Save as PDF, and a button that only calls window.print() adds a
@@ -453,15 +457,52 @@ export function programme(d) {
       </div>
     </section>`;
 
+  /* ---- THE PAGE IS A PREVIEW AND A DOWNLOAD ------------------------------
+     The club's decision: the programme is a thing you take away, so the page
+     is the cover, a short preview of what is in it, and the button. Reading
+     it means downloading it, the way a programme works at a ground.
+
+     THE BUTTON ONLY APPEARS IF THE FILE IS THERE. `d.programmePdf` is set by
+     the build from what is on disk, so a programme nobody has run the script
+     for offers no download rather than a dead link, and the page says which
+     command makes one. Same contract as the drawn share cards. */
+  const pdf = d.programmePdf || '';
+  const contents = [
+    m ? `What the archive knows about ${m.opponent}` : null,
+    here.length ? `The ${here.length} players registered for ${season}` : null,
+    us ? `${d.titleDivision} ${d.titleSeason}, won unbeaten` : null,
+    questions.length ? `A ${questions.length}-question half-time quiz` : null,
+    ws.placed.length >= 4 ? 'A squad word search' : null,
+    partners.length ? `The ${partners.length} businesses backing the club` : null,
+  ].filter(Boolean);
+
+  const downloadBand = `<section class="sec pr-band pr-get" aria-labelledby="pr-get-h">
+      <div class="wrap">
+        <h2 class="h2 rv" id="pr-get-h">The matchday programme<span class="volt">.</span></h2>
+        <p class="pr-lede rv">The full programme is a document to take with you, read at the
+          ground and keep. Everything below is in it.</p>
+        <ul class="pr-contents rv">${contents.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
+        ${pdf
+    ? `<p class="rv"><a class="pr-download" href="${attr(pdf)}" download>
+          ${icon('download', '')} <span>Download the programme</span>
+          <small>PDF${d.programmePdfKb ? ` · ${esc(d.programmePdfKb)}KB` : ''}</small></a></p>`
+    : `<p class="pr-note rv">The programme for this fixture has not been made yet.
+          It is drawn by <b>npm run programme</b>, which needs a browser on the machine
+          that runs it, and the download appears here as soon as it has been.</p>`}
+      </div>
+    </section>`;
+
   return {
-    body: siteHeader('/programme.html') + cover + opponentBand + squadBand + lastBand
-      + previewBand + nextBand + quizBand + wordBand + causeBand + partnerBand + saveBand
+    body: siteHeader('/programme.html') + cover + downloadBand + previewBand
       + sourceNote(['fulltime']),
     bodyClass: 'is-home is-sub is-programme',
     css: 'home.css',
     shell: 'home',
     preMain: sitePreMain(),
     footerHtml: siteFooter(),
+    cover,
+    documentBody,
+    docTitle: m ? `${m.home} v ${m.away}` : `${CLUB.name} programme`,
     schema: m ? [{
       '@context': 'https://schema.org',
       '@type': 'SportsEvent',
@@ -473,4 +514,20 @@ export function programme(d) {
       awayTeam: { '@type': 'SportsTeam', name: m.away },
     }] : [],
   };
+}
+
+/* ==========================================================================
+   THE PRINTABLE DOCUMENT
+
+   The same bands, rendered as a standalone page with no site furniture, which
+   is what Chrome is pointed at to make the PDF. It is NOT a route: nothing
+   links it, it is not in the sitemap and the guard never sees it, because it
+   is an input to a script rather than a page anybody visits.
+
+   THE COVER IS THE FIXTURE, always: both badges either side of a v, the way
+   the share cards are drawn and the way a programme has always looked.
+   ========================================================================== */
+export function programmeDoc(d) {
+  const out = programme(d);
+  return { cover: out.cover, body: out.documentBody, title: out.docTitle };
 }

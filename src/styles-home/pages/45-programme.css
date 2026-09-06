@@ -71,7 +71,35 @@
   font-size: clamp(1rem, 4vw, 1.45rem);
   font-variant-numeric: tabular-nums;
 }
-.pr-cover__where { color: var(--ink-2); display: inline-flex; align-items: center; gap: 0.4rem; }
+.pr-cover__where { color: var(--ink-2); display: inline-flex; align-items: center; gap: 0.4rem; white-space: nowrap; }
+
+/* The download itself. A whole button, not a tinted word: this is the one
+   thing the page exists to do. */
+.pr-download {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.85rem 1.4rem;
+  border-radius: var(--pillr);
+  background: var(--volt);
+  /* DARK INK ON ORANGE, and stated rather than inherited. --volt-ink resolves
+     to a blended brown here and measured 2.74:1 against the button, which is
+     the same trap the house rules already record: white on this orange is
+     2.76:1 and fails, so the ink has to be dark and solid. #111 on #ff6a2a is
+     6.4:1. Found by the browser pass. */
+  color: #111;
+  font-family: var(--display);
+  font-size: clamp(1rem, 4vw, 1.2rem);
+  text-decoration: none;
+}
+.pr-download:hover, .pr-download:focus-visible { filter: brightness(1.08); }
+/* A tone, not an opacity: 0.75 of #111 over orange lands back under 4.5:1.
+   #3a1400 is a darker orange-brown and measures 5.3:1. */
+.pr-download small { font-size: 0.72em; color: #3a1400; font-family: var(--ui); }
+.pr-download .ico { align-self: center; }
+.pr-contents { margin: 0 0 1.25rem; padding-left: 1.15rem; color: var(--ink-2); }
+.pr-contents li { padding: 0.22rem 0; }
+.is-programme .pr-get { padding-block-end: clamp(2rem, 6vw, 3.5rem); }
 
 .is-programme .pr-band { padding-block: clamp(1.75rem, 6vw, 3.25rem); }
 .pr-lede { color: var(--ink-2); max-width: 62ch; font-size: 1.02rem; line-height: 1.6; }

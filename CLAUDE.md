@@ -791,46 +791,57 @@ could not parse, which is exactly what that error message asks for.
 
 ### The digital match programme
 
-`/programme.html`, under **Media**. What somebody reads on a phone beside the
-pitch twenty minutes before kick-off: the fixture, the ground, what the
-archive knows about the opponent, who is at the club, last season's record,
-the club's own preview, what is coming up, why the club exists and who backs
-it. `src/templates/programme.mjs`, band `45-programme.css`.
+`/programme.html`, under **Media**, and `assets/programme/<fixture-id>.pdf`.
+`src/templates/programme.mjs`, band `45-programme.css`,
+`scripts/make-programme.mjs`.
 
-- **One stable URL, always the NEXT fixture.** The nav has to point somewhere
-  that still exists next week, and a programme is a matchday artefact rather
-  than an archive. It reads `d.nextFixture`, which is derived once in
-  `dataset.mjs` against the day the site was generated, so this page and the
-  home page's next-match card cannot disagree about what is coming up.
-- **Every figure is derived.** The head-to-head is counted from the archive
-  through `clubIdentity()`, so a 1st Team and a 2.0 stay apart; the squad is
-  the roster for the season being played; the honours come from the league
-  table the build reconciles; the partners come from the one partner list.
-  **The competition comes off the fixture**, never `CLUB.division` - a
-  constant is exactly what starts lying the week after a promotion, and the
-  suite fails the file if it names one.
-- **It survives May.** With no fixture to come the page says so and shows the
-  season instead, because the club hits that state every close season and a
-  blank programme reads as a broken site.
-- **A coach is not a squad member, and the check had to learn the difference.**
-  "Nobody who has left is listed" read the whole page and flagged Jim El
-  Bayati, who retired from playing and moved onto the touchline: the staff
-  line names him and should. It asks about the squad LINKS now.
+**THE PAGE IS A PREVIEW AND A DOWNLOAD, and the PDF is the programme.** The
+club's decision: a programme is a thing you take away, so reading it means
+downloading it, the way it works at a ground. The page is the cover, a
+contents list and the button; the document carries the opponent, the squad,
+last season, the quiz, the word search, the cause and the partners.
 
-### Where the club says somebody plays
-
-A stated position used to win **only where there was nothing to infer**, which
-made the position field on the panel's player form do nothing for anybody who
-had played: twenty-two of the twenty-four in this squad. A field that is
-offered, saved and then silently overridden is the "field with no consumer"
-fault wearing a disguise, and harder to spot because it looks like it worked.
-
-A stated position wins outright now. Inference still answers for everybody the
-club has said nothing about, which is the half most easily lost when a
-precedence rule is changed, and the suite asserts both.
-`src/data/positions-extra.json` is the club saying so where the panel has not
-been used yet, and it **loses to the panel** like every other `*-extra.json`
-here.
+- **The cover is always the fixture**: both badges either side of a v, like
+  the drawn share cards.
+- **The button only appears if the file is on disk.** `d.programmePdf` is set
+  by the build from what it finds, so a fixture nobody has made one for offers
+  no download rather than a dead link, and the page names the command. Same
+  contract as the share cards, and for the same reason: **the deploy has no
+  browser**, so `npm run programme` runs on a laptop or not at all.
+- **Chrome's CLI, not the DevTools protocol**, for the reasons make-covers.mjs
+  already paid for: `--headless=new` hangs on this machine, a launch with no
+  `--user-data-dir` hands the URL to the Chrome the person already has open,
+  and Chrome does not exit afterwards. Start it, wait for the file, kill it.
+- **The PDF gets its own stylesheet, not the site's.** The first version
+  loaded `home.css` and produced a **22MB** file: that sheet is built for a
+  dark animated page and drags in every font weight and every atmospheric
+  layer, all of which Chrome embeds. 670KB with a purpose-built print block.
+  An undefined custom property deletes its declaration, so that block has to
+  state every token the band reads or the cards lose their borders.
+- **The quiz is counted, never typed**, so it is still true next season, and
+  the answers print WITH the questions: a disclosure widget nobody can click
+  is just a missing answer.
+- **The word search is built at build time from the squad that is playing**,
+  seeded from the fixture id so it is the same puzzle all afternoon and a
+  different one next week rather than churning on every deploy. A word that
+  will not fit is dropped and the answer list is what was actually placed.
+- **The partners are talked about, not just shown.** A logo strip is a wall of
+  pictures that says nothing; the records already hold the trade, the role,
+  the placements and the links.
+- **One stable URL, always the NEXT fixture**, so the nav can point at it. It
+  reads `d.nextFixture` and takes the season from the FIXTURE, not
+  `d.currentSeason` - that describes the club's published figures and is still
+  last season until a competitive result is recorded, which is right for the
+  stats page and wrong for a programme printed for a 26/27 match.
+- **It survives May**: with no fixture the page says so rather than drawing a
+  blank.
+- **A leftover rule outranked its replacement.** The logo strip's
+  `.pr-partners li` survived the strip and, being a class plus a type
+  selector, beat the `.pr-partner` card: every partner card painted white and
+  its text failed contrast at 2.26:1. Every token was correctly declared, so
+  only the browser pass could find it. The download button failed the same way
+  at 2.74:1, because `--volt-ink` resolves to a blend: dark ink on this orange
+  has to be solid and stated.
 
 ### An article the club has written but has not yet entered
 

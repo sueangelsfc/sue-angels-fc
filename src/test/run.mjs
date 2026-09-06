@@ -5073,17 +5073,38 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const flatten = (h) => String(h).replace(/<[^>]+>/g, ' ').replace(/&#39;|&rsquo;/g, "'")
     .replace(/\s+/g, ' ');
 
+  const { programmeDoc: progDoc } = await import(path.join(ROOT, 'src', 'templates', 'programme.mjs'));
   const dP = bdP();
   const outP = prog(dP);
   const textP = flatten(outP.body);
+  /* THE PAGE IS A PREVIEW AND THE DOCUMENT IS THE PROGRAMME, so the two are
+     asked different questions. The club's decision: reading it means
+     downloading it, the way a programme works at a ground. */
+  const docP = progDoc(dP);
+  const docText = flatten(docP.cover + docP.body);
 
   check('the programme names the fixture it is for',
     dP.nextFixture ? textP.includes(dP.nextFixture.opponent) : true,
     (dP.nextFixture || {}).opponent || 'no fixture');
 
-  check('the programme lists the squad as links to the players',
-    (outP.body.match(/\/players\/[a-z-]+\.html/g) || []).length >= 10,
-    `${(outP.body.match(/\/players\/[a-z-]+\.html/g) || []).length} player links`);
+  check('the page offers the programme as a download',
+    /class="pr-download"/.test(outP.body) || /has not been made yet/.test(textP),
+    textP.slice(0, 160));
+
+  check('the page says what is inside rather than showing all of it',
+    /pr-contents/.test(outP.body)
+      && (outP.body.match(/\/players\/[a-z-]+\.html/g) || []).length === 0,
+    'the squad belongs in the document, not on the page');
+
+  check('the document lists the squad as links to the players',
+    (docP.body.match(/\/players\/[a-z-]+\.html/g) || []).length >= 10,
+    `${(docP.body.match(/\/players\/[a-z-]+\.html/g) || []).length} player links`);
+
+  /* THE COVER IS THE FIXTURE, always: both badges either side of a v. */
+  check('the document opens on the fixture, both badges',
+    /pr-team__badge/.test(docP.cover)
+      && (docP.cover.match(/pr-team__badge/g) || []).length >= 2,
+    `${(docP.cover.match(/pr-team__badge/g) || []).length} badges`);
 
   /* NOBODY WHO HAS LEFT IS LISTED AS AVAILABLE. Asked of the squad LINKS, not
      of the page text, and the difference is a real one: Jim El Bayati retired
@@ -5093,7 +5114,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const goneSlugs = (dP.squad || [])
     .filter((p) => ['retired', 'departed', 'staff'].includes(p.status))
     .map((p) => `/players/${p.slug}.html`);
-  const linked = new Set(outP.body.match(/\/players\/[a-z-]+\.html/g) || []);
+  const linked = new Set(docP.body.match(/\/players\/[a-z-]+\.html/g) || []);
   const listed = goneSlugs.filter((u) => linked.has(u));
   check('the programme lists nobody who has left as part of the squad',
     listed.length === 0, listed.slice(0, 4).join(', '));
@@ -5109,7 +5130,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     const met = (dP.matches || []).filter((x) => x.played
       && x.opponent === dP.nextFixture.opponent).length;
     check('a first meeting is stated in words, not shown as an empty record',
-      met ? /Played/.test(textP) : /first meeting/i.test(textP),
+      met ? /Played/.test(docText) : /first meeting/i.test(docText),
       met ? `${met} previous meetings` : 'never met');
   }
 
@@ -5125,7 +5146,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
      the club hits this state every close season and a blank programme reads
      as a broken site. */
   const noneP = prog({ ...dP, nextFixture: null, upcoming: [] });
-  const noneText = flatten(noneP.body);
+  const noneText = flatten(noneP.body + progDoc({ ...dP, nextFixture: null, upcoming: [] }).body);
   check('with no fixture to come the programme says so rather than drawing a blank',
     /No match to come/i.test(noneText) && noneP.body.length > 2000,
     `${noneP.body.length} bytes`);

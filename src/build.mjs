@@ -293,6 +293,20 @@ const bandFor = (file) => {
 /* ---- Data ---- */
 const d = buildDataset();
 
+/* THE PROGRAMME PDF, IF ONE HAS BEEN MADE. Checked on disk rather than
+   assumed, exactly like the drawn share cards and for the same reason: the
+   deploy has no browser, so `npm run programme` runs on a laptop or not at
+   all, and a fixture nobody has made one for must offer no download instead
+   of a dead link. */
+{
+  const id = d.nextFixture && d.nextFixture.id;
+  const rel = id ? path.join('assets', 'programme', `${id}.pdf`) : '';
+  if (rel && fs.existsSync(path.join(ROOT, rel))) {
+    d.programmePdf = `/${rel}`;
+    d.programmePdfKb = Math.round(fs.statSync(path.join(ROOT, rel)).size / 1024);
+  }
+}
+
 /* THE COVER DRAWN FOR THIS MATCH OR ARTICLE, if one has been. Written by
    scripts/make-covers.mjs and committed; missing simply means nobody has run
    it since that record was added, and the generic card takes over the way it

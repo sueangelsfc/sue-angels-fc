@@ -804,6 +804,23 @@ from the build, so it can never produce a duplicate and forgetting to delete it
 costs nothing. A second source for editorial content is the fault this
 repository keeps having; the dedup is what stops it being one.
 
+- **The panel can adopt one.** An article shipped from the file is on the
+  website and editable by nobody, which is the same bind the transcribed
+  fixtures were in. The club IS signed in on Control panel → News, so their
+  session writes what the anonymous key cannot: the screen offers an import,
+  matched on the title, and the offer disappears the moment a stored row
+  exists. The articles are fetched from `baseline-articles.json` rather than
+  seeded, because one long piece is 25KB and `control-content.js` loads for
+  anybody opening News, Gallery or Sponsors. Same rule as `home-previews.json`
+  and `stats-pages.json`, fourth time.
+- **An article's text is escaped BEFORE its markers are read.** `## ` is a
+  sub-heading and `**bold**` is bold, applied after `esc()`, so a tag pasted
+  into the club's copy stays text even when emphasis is applied in the same
+  block. A sub-heading is an **h2**: the page's only h1 is the headline, so h3
+  skipped a level, and nothing caught it until an article actually used one.
+  A first version also promoted any all-bold line to a heading, which turned
+  *"Played 18. Won 18."* into a section title: one marker, one meaning, and no
+  guessing which emphasised lines were really headings.
 - **Not into an empty database.** Gated on the STORED matches, not on
   `d.matches`, which already carries the transcribed pre-season fixtures - so a
   bare database still has eight of them and the obvious gate let the article

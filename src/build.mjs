@@ -1393,6 +1393,21 @@ const lastmodFor = (u) => {
   }
   return siteDate;
 };
+/* THE ARTICLES THE SITE PUBLISHES FROM CODE, so the panel can adopt them.
+   An article in articles-extra.json is on the website and cannot be edited by
+   anybody without a deploy, which is the same bind the transcribed fixtures
+   were in. The News screen offers to import them: the club is signed in, so
+   the club's own session can write what an anonymous key cannot, and once the
+   row exists the file's copy loses to it and the piece becomes ordinary
+   content they own.
+
+   Fetched by that one screen rather than seeded, because a long article is
+   tens of kilobytes and control-seed.js is on the critical path for every
+   panel. Same rule as home-previews.json and stats-pages.json. */
+write('baseline-articles.json', JSON.stringify(
+  (JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'articles-extra.json'), 'utf8')).articles || [])
+));
+
 /* One file, fetched by the Website stats screen the first time it draws and
    by nobody else. Not in the sitemap and not linked from any page, because it
    is not a page: it is the panel's copy of what the site publishes. */

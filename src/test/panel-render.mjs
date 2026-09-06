@@ -529,6 +529,67 @@ export async function panelChecks() {
     stacked <= 2, `${stacked} listeners on the body after three renders`);
 
   /* ==========================================================================
+     ADOPTING AN ARTICLE THE SITE PUBLISHES FROM CODE
+
+     An article in articles-extra.json is on the website and editable by
+     nobody: an anonymous INSERT into `articles` is refused by row-level
+     security. The club is signed in on this screen, so their session can write
+     what the key cannot, and the offer is what turns a committed piece into
+     ordinary content they own. Both halves are asserted, because an import
+     banner that will not go away once the row exists is worse than none. */
+  {
+    const FILE_ARTICLE = [{
+      key: 'art-file-1',
+      data: { id: 'art-file-1', title: 'A committed piece', cat: 'News',
+        date: '05 Sep 2026', lede: 'One two three four five.', sortISO: '2026-09-05T10:00:00Z' },
+    }];
+    const serveFile = () => Promise.resolve({
+      ok: true, json: () => Promise.resolve(FILE_ARTICLE),
+    });
+
+    const offerCtx = PR.boot({ rows: { ...rows, articles: [] }, fetch: serveFile });
+    const offered = await PR.openPanel(offerCtx, 'news');
+    const oText = offered.body.textContent.replace(/\s+/g, ' ');
+    check('an article the site publishes from code is offered for import',
+      /not in the database yet/.test(oText) && /A committed piece/.test(oText)
+        && !!offered.body.querySelector('[data-import-articles]'),
+      oText.slice(0, 200));
+
+    /* AND THE OFFER GOES AWAY once the club owns it. Matched on the title,
+       which is what the site slugs on and what the club would recognise. */
+    const ownedCtx = PR.boot({
+      rows: { ...rows, articles: [{ key: 'stored-1', data: { ...FILE_ARTICLE[0].data, id: 'stored-1' } }] },
+      fetch: serveFile,
+    });
+    const owned = await PR.openPanel(ownedCtx, 'news');
+    check('once the club owns it the import offer disappears',
+      !/not in the database yet/.test(owned.body.textContent)
+        && !owned.body.querySelector('[data-import-articles]'),
+      owned.body.textContent.replace(/\s+/g, ' ').slice(0, 160));
+
+    /* Pressing it writes the article through the club's own session. */
+    const btn = offered.body.querySelector('[data-import-articles]');
+    if (btn) {
+      const before = offerCtx.store.writes.length;
+      btn.click();
+      for (let i = 0; i < 80; i += 1) await Promise.resolve();
+      const wrote = offerCtx.store.writes.slice(before);
+      check('importing writes the article to the articles table',
+        wrote.length === 1 && wrote[0].t === 'articles'
+          && wrote[0].d && wrote[0].d.title === 'A committed piece',
+        JSON.stringify(wrote.map((w) => w.t + ':' + ((w.d || {}).title || ''))));
+    }
+
+    /* The screen must survive the file being unreachable, which is what a
+       site that has never used articles-extra.json looks like. */
+    const noFileCtx = PR.boot({ rows, fetch: () => Promise.reject(new Error('404')) });
+    const noFile = await PR.openPanel(noFileCtx, 'news');
+    check('with no baseline file the news screen draws normally',
+      !/not in the database yet/.test(noFile.body.textContent) && noFile.html.length > 200,
+      `${noFile.html.length} bytes`);
+  }
+
+  /* ==========================================================================
      SQUAD AND STAFF
 
      Two things a club expects of a squad list and this screen did neither.

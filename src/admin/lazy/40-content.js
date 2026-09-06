@@ -224,13 +224,62 @@
      ========================================================================== */
   var CATS = ['News', 'Club', 'Match report', 'Cause', 'Sponsorship', 'Awards'];
 
+  /* ARTICLES THE SITE PUBLISHES FROM CODE, WHICH NOBODY HERE CAN EDIT.
+     A finished piece can be committed to src/data/articles-extra.json when
+     there is no admin session to write it with - an anonymous INSERT into
+     `articles` is refused by row-level security, which is the posture working
+     as designed. The website shows it, and until it is a real row it cannot be
+     touched without a deploy.
+
+     The club IS signed in on this screen, so their session can write what the
+     key cannot. Importing makes it an ordinary article they own, and the file
+     copy loses to the stored row on the slug from that moment.
+
+     Fetched rather than seeded: a long article is tens of kilobytes and
+     control-seed.js loads before every screen. Failure is silent and the
+     banner simply does not appear, because this is an offer and not a
+     feature anything depends on. */
+  function baselineArticles() {
+    try {
+      return fetch('/baseline-articles.json')
+        .then(function (r) { return r.ok ? r.json() : []; })
+        .then(function (a) { return Array.isArray(a) ? a : []; })
+        .catch(function () { return []; });
+    } catch (e) { return Promise.resolve([]); }
+  }
+
   M.news = function (host) {
-    return CP.readAll('articles').then(function (rows) {
+    return Promise.all([CP.readAll('articles'), baselineArticles()]).then(function (both) {
+      var rows = both[0];
+      /* Matched on the TITLE, because that is what the site slugs on and what
+         the club would recognise. A row whose title matches is the same piece
+         however it was keyed. */
+      var titles = {};
+      rows.forEach(function (r) { titles[String((r.data || {}).title || '').trim()] = 1; });
+      var unowned = both[1].filter(function (a) {
+        return !titles[String(((a.data || {}).title) || '').trim()];
+      });
       var list = rows.slice().sort(function (a, b) {
         return String((b.data || {}).sortISO || '').localeCompare(String((a.data || {}).sortISO || ''));
       });
       var drafts = list.filter(function (r) { return (r.data || {}).draft; }).length;
-      host.innerHTML = sec({
+      host.innerHTML = (unowned.length
+        ? sec({
+          warn: true,
+          title: unowned.length + ' article' + (unowned.length === 1 ? ' is' : 's are')
+            + ' not in the database yet',
+          sub: 'The website is showing this from the site’s code, so it cannot be edited '
+            + 'here and a change needs a developer. Import it once and it becomes an '
+            + 'ordinary article you control. Nothing on the website changes when you do.',
+          actions: '<button class="btn btn--primary" data-import-articles>Import '
+            + esc(unowned.length) + (unowned.length === 1 ? ' article' : ' articles') + '</button>',
+          body: '<ul class="cp-list">' + unowned.map(function (a) {
+            var x = a.data || {};
+            return '<li><b>' + esc(x.title || 'Untitled') + '</b> · ' + esc(x.date || '')
+              + ' · ' + esc(String(x.lede || '').split(/\s+/).length) + ' words</li>';
+          }).join('') + '</ul>',
+        })
+        : '') + sec({
         title: 'Club news',
         sub: esc(list.length) + ' articles'
           + (drafts ? ', ' + esc(drafts) + ' of them ' + (drafts === 1 ? 'a draft' : 'drafts')
@@ -319,6 +368,26 @@
 
       host.addEventListener('click', function (e) {
         if (e.target.matches('[data-new]')) { if (guard()) form(null); return; }
+        if (e.target.matches('[data-import-articles]')) {
+          if (!guard()) return;
+          e.target.disabled = true;
+          /* ONE AT A TIME, IN ORDER, and the screen only refreshes once every
+             write has landed. A partial import that reported success would
+             leave the club looking at a banner that no longer matches what is
+             stored. */
+          unowned.reduce(function (chain, a) {
+            return chain.then(function () {
+              return CP.upsert('articles', a.key, a.data);
+            });
+          }, Promise.resolve()).then(function () {
+            U.toast('Imported. You can edit it here now.');
+            U.refresh('news');
+          }).catch(function () {
+            e.target.disabled = false;
+            U.toast('Could not import. Nothing was changed on the website.', 'error');
+          });
+          return;
+        }
         var tr = e.target.closest('tr[data-key]');
         if (!tr) return;
         var rec = list.filter(function (x) { return x.key === tr.getAttribute('data-key'); })[0];

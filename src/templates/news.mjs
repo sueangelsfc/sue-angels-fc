@@ -53,20 +53,42 @@ const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
     </div>`;
 
 /* Articles are stored as plain text with blank lines between paragraphs, and
-   occasionally a markdown heading or a bulleted list. Rendered as paragraphs
+   occasionally a markdown heading or a bulleted list. A sub-heading is an
+   `h2`: the page's only `h1` is the headline, so `h3` skipped a level, which
+   is a real defect the suite fails a build over and which nothing caught
+   until an article actually used one. Rendered as paragraphs
    so the text keeps its shape rather than collapsing into one block. */
+/* EMPHASIS, AND IT IS APPLIED AFTER ESCAPING, NEVER BEFORE. The club writes
+   these in a textarea, so the text is untrusted: esc() runs first and turns
+   any markup into entities, and only then are the surviving asterisks read as
+   emphasis. Doing it the other way round would let a pasted <script> through
+   the moment somebody wrote a bold word next to it.
+
+   `**bold**` first, then what is left of `*italic*`, so the two-star form is
+   never mistaken for a pair of one-star ones. Nothing else is a marker: a
+   stray asterisk in the middle of a sentence stays a stray asterisk. */
+const inline = (t) => esc(t)
+  .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+  .replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+
 export function articleBody(text) {
   const blocks = String(text || '').split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
   return blocks.map((b) => {
     if (/^#{1,6}\s/.test(b)) {
-      return `<h3 class="nw-art__h">${esc(b.replace(/^#{1,6}\s*/, ''))}</h3>`;
+      return `<h2 class="nw-art__h">${inline(b.replace(/^#{1,6}\s*/, ''))}</h2>`;
     }
     const lines = b.split('\n').map((l) => l.trim()).filter(Boolean);
     if (lines.length > 1 && lines.every((l) => /^[-*·•]\s+/.test(l))) {
       return `<ul class="nw-art__list">${lines
-        .map((l) => `<li>${esc(l.replace(/^[-*·•]\s+/, ''))}</li>`).join('')}</ul>`;
+        .map((l) => `<li>${inline(l.replace(/^[-*·•]\s+/, ''))}</li>`).join('')}</ul>`;
     }
-    return `<p>${lines.map((l) => esc(l)).join('<br />')}</p>`;
+    /* ONE MARKER, ONE MEANING. A first version also promoted a line that was
+       entirely bold to a heading, which read well for "FIXTURE" and turned
+       "Played 18. Won 18. Fifty-four points from a possible 54." into a
+       section title. A rule that guesses which emphasised lines are really
+       headings will guess wrong on somebody's copy, so `##` is the heading and
+       `**` is bold, everywhere, with no cleverness in between. */
+    return `<p>${lines.map((l) => inline(l)).join('<br />')}</p>`;
   }).join('\n        ');
 }
 

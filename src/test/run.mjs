@@ -2055,7 +2055,18 @@ const BUDGET = {
 
      This chunk is fetched by whoever opens News, Gallery, Recognition, Badges
      or Sponsors, and by nobody else. */
-  'control-content.js': 14,
+  /* 14 -> 15, and the 414 bytes are named: the News screen can now adopt an
+     article the site publishes from code. src/data/articles-extra.json exists
+     because an anonymous INSERT into `articles` is refused by row-level
+     security, so a finished piece can be committed and shown while nobody is
+     able to edit it. The club IS signed in here, so their session writes what
+     the key cannot, and importing turns it into ordinary content they own.
+
+     The articles themselves are NOT in this chunk. The build writes
+     baseline-articles.json and the screen fetches it, because one long
+     article is 25KB and this chunk loads for anybody opening News, Gallery or
+     Sponsors. Same rule as home-previews.json and stats-pages.json. */
+  'control-content.js': 15,
   /* Squad status is a fact about a player IN A SEASON, which is what stops
      "Retained for 26/27" being a string somebody has to remember to change
      and stops a trial lasting the rest of a career. The screen carries a
@@ -4996,6 +5007,52 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     noteOf(sheeted) === '1 match', noteOf(sheeted));
   check('a season with no matches says so rather than showing a nought',
     noteOf(today) === 'Not started', noteOf(today));
+}
+
+/* ==========================================================================
+   HOW AN ARTICLE'S TEXT BECOMES MARKUP
+
+   The club writes these in a textarea, so the text is UNTRUSTED and the order
+   of operations is the whole check: escape first, read markers second. The
+   other way round lets a pasted tag through the moment somebody bolds a word
+   near it. */
+{
+  const { articleBody: ab } = await import(path.join(ROOT, 'src', 'templates', 'news.mjs'));
+
+  check('a hash line becomes a sub-heading',
+    /<h2 class="nw-art__h">A heading<\/h2>/.test(ab('## A heading')), ab('## A heading'));
+
+  /* h2, NOT h3. The page's only h1 is the headline, so a sub-heading at h3
+     skips a level - a defect the suite fails a build over, and one that went
+     unnoticed until an article actually used a heading. */
+  check('a sub-heading does not skip a heading level',
+    !/<h3/.test(ab('## A heading')), ab('## A heading'));
+
+  check('double asterisks are bold and single ones are emphasis',
+    /<strong>bold<\/strong>/.test(ab('a **bold** word'))
+      && /<em>soft<\/em>/.test(ab('a *soft* word')),
+    ab('a **bold** word') + ' / ' + ab('a *soft* word'));
+
+  /* THE SECURITY ONE. Escaping runs before the markers are read, so a tag in
+     the club's copy is text and stays text even when emphasis is applied in
+     the same block. */
+  const nasty = ab('<script>alert(1)</script> beside **bold**');
+  check('markup in the club\'s copy is escaped, not rendered',
+    !/<script/.test(nasty) && /&lt;script&gt;/.test(nasty) && /<strong>bold<\/strong>/.test(nasty),
+    nasty);
+
+  check('a heading is escaped too',
+    !/<img/.test(ab('## <img src=x onerror=1>')), ab('## <img src=x onerror=1>'));
+
+  /* A rule that guessed which emphasised lines were "really" headings turned
+     "Played 18. Won 18." into a section title. One marker, one meaning. */
+  check('a bold line is bold, not silently promoted to a heading',
+    !/<h2/.test(ab('**Played 18. Won 18.**')) && /<strong>/.test(ab('**Played 18. Won 18.**')),
+    ab('**Played 18. Won 18.**'));
+
+  check('paragraphs and bullet lists still work',
+    /<p>one<\/p>/.test(ab('one\n\ntwo')) && /<li>a<\/li><li>b<\/li>/.test(ab('- a\n- b')),
+    ab('- a\n- b'));
 }
 
 /* ==========================================================================

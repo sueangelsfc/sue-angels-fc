@@ -435,9 +435,62 @@ export function programme(d) {
       </div>
     </section>` : '';
 
+  /* ---- HOW THE SUMMER WENT ------------------------------------------------
+     Six friendlies, counted rather than characterised. A programme that only
+     printed last season's championship would be telling half the story on the
+     morning the new one starts. */
+  const friendlies = (d.matches || [])
+    .filter((x) => x.played && x.friendly && x.season === season)
+    .sort((a, b) => String(a.iso).localeCompare(String(b.iso)));
+  const preBand = friendlies.length ? `<section class="sec pr-band" aria-labelledby="pr-pre-h">
+      <div class="wrap">
+        ${rail(4, 'Pre-season', `${friendlies.length} played`)}
+        <h2 class="h2 rv" id="pr-pre-h">How the summer went<span class="volt">.</span></h2>
+        <ul class="pr-list rv">${friendlies.map((x) => `<li>
+          <span>${esc(fmtDate(x.date))}</span>
+          <span>${esc(x.homeAway)}</span>
+          <b class="pr-clip">${esc(x.opponent)}</b>
+          <span>${esc(x.ourScoreline || '')} ${esc(x.outcome || '')}</span>
+        </li>`).join('')}</ul>
+        <p class="pr-note">${(() => {
+    let w = 0; let dr = 0; let l = 0; let gf = 0; let ga = 0;
+    friendlies.forEach((x) => {
+      gf += x.ourGoals || 0; ga += x.theirGoals || 0;
+      if (x.outcome === 'W') w += 1; else if (x.outcome === 'D') dr += 1; else l += 1;
+    });
+    return esc(`Won ${w}, drawn ${dr}, lost ${l}. Scored ${gf}, conceded ${ga}. `
+      + 'None of it counts towards the table, and all of it was the point.');
+  })()}</p>
+      </div>
+    </section>` : '';
+
+  /* ---- WHO ELSE IS IN THE DIVISION ----------------------------------------
+     The nine clubs, and what the archive holds on each: played before, played
+     a related side, or never met. The third is most of them, which is the
+     honest headline for a club that has just come up two divisions. */
+  const division = ((d.nextDivisionTable && d.nextDivisionTable.clubs) || [])
+    .filter((c) => !isUs(c))
+    .map((c) => ({ club: c, h: headToHead(d, c) }));
+  const divBand = division.length ? `<section class="sec pr-band" aria-labelledby="pr-div-h">
+      <div class="wrap">
+        ${rail(5, 'The division', `${division.length + 1} clubs`)}
+        <h2 class="h2 rv" id="pr-div-h">Who else is in it<span class="volt">.</span></h2>
+        <ul class="pr-list rv">${division.map((x) => `<li>
+          <span class="pr-clip">${esc(x.club)}</span>
+          <span></span>
+          <b>${x.h.tally.p ? esc(`P${x.h.tally.p} W${x.h.tally.w} D${x.h.tally.d} L${x.h.tally.l}`) : ''}</b>
+          <span>${esc(x.h.tally.p ? 'Played before'
+    : (x.h.related.length ? 'Related side only' : 'Never met'))}</span>
+        </li>`).join('')}</ul>
+        <p class="pr-note">${esc(`${division.filter((x) => !x.h.tally.p && !x.h.related.length).length} of the ${division.length} have never been played. `)}
+          A record against a club's other side is not a record against this one, so it is not
+          counted as one.</p>
+      </div>
+    </section>` : '';
+
   /* ---- THE DOCUMENT, which is what the PDF is made of ------------------- */
-  const documentBody = opponentBand + squadBand + lastBand + nextBand
-    + quizBand + wordBand + causeBand + partnerBand;
+  const documentBody = opponentBand + squadBand + lastBand + preBand + divBand
+    + nextBand + quizBand + wordBand + causeBand + partnerBand;
 
   /* ---- 11 TAKING IT AWAY --------------------------------------------------
      No button and no JavaScript. Every phone and every browser already has
@@ -606,21 +659,19 @@ export function programmeDoc(d) {
      is the printed one" is already known, rather than by teaching the band
      about print. */
   const m = d.nextFixture;
-  /* THE CLUB'S OWN WORDS, AND MOST OF THE TEXT IN HERE. A programme is
-     mostly reading, and the club has already written the piece: putting the
-     preview in the document is what turns a page of tables into something
-     worth taking away. Linked on the website, printed here, one source
-     either way. */
-  const piece = (d.articles || [])[0];
-  const notes = piece ? `<section class="sec pr-band pr-notes">
-      <h2 class="h2">${esc(piece.title)}</h2>
-      <p class="pr-byline">${esc(piece.date || '')} &middot; ${esc(CLUB.name)}</p>
-      ${articleBody(piece.lede || '')}
-    </section>` : '';
+  /* THE PREVIEW ARTICLE IS NOT IN HERE, at the club's instruction. It was, and
+     it carried four thousand of the document's five thousand words, so taking
+     it out is not a small edit: what replaces it is more of what the archive
+     can answer on its own, because the alternative is inventing a column and
+     attributing it to somebody.
+
+     Nothing in the document ever claimed a manager wrote it - the word does
+     not appear - so this is the club deciding the programme is its own thing
+     and the preview stays on the website, where it is linked from the page. */
 
   return {
     cover: printCover(d, m),
-    body: (out.cover + notes + out.documentBody)
+    body: (out.cover + out.documentBody)
       .replace(/<details class="pr-quiz__a">/g, '<details class="pr-quiz__a" open>'),
     title: out.docTitle,
   };

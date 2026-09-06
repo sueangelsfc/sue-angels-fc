@@ -5104,13 +5104,19 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
      content above the stylesheet, so the first PDF carried seven questions
      and no answers and the print rule that was meant to reveal them did
      nothing at all. */
-  const qs = (docP.body.match(/<details class="pr-quiz__a"/g) || []).length;
-  const open = (docP.body.match(/<details class="pr-quiz__a" open>/g) || []).length;
-  check('the printed programme opens the quiz answers',
-    qs > 0 && open === qs, `${open} open of ${qs}`);
-  check('the page keeps them closed, because there it is a thing you press',
-    !/pr-quiz__a" open/.test(outP.body + prog(dP).documentBody.slice(0, 0)),
-    'the widget is the point on screen');
+  /* THE ANSWERS ARE AT THE BACK, which is the one thing a quiz page must get
+     right and the first draft got wrong: it printed each answer directly under
+     its own question. */
+  const quizAt = docP.body.indexOf('pr-quiz__q');
+  const ansAt = docP.body.indexOf('pg-answers');
+  check('the quiz answers are at the back, not beside the questions',
+    quizAt > -1 && ansAt > quizAt, `quiz at ${quizAt}, answers at ${ansAt}`);
+  check('no answer is printed next to its question',
+    !/<details class="pr-quiz__a"/.test(docP.body),
+    'the answers must not sit inside the quiz');
+  check('the word search solution is at the back too',
+    /pg-answers/.test(docP.body) && /running /.test(docP.body),
+    'the back page should say where each name is hidden');
 
   /* THE COVER IS THE FIXTURE, always: both badges either side of a v. */
   /* TEN THOUSAND WORDS, WHICH IS THE CLUB'S OWN FLOOR. Asserted because the

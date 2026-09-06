@@ -30,15 +30,23 @@ import { clubIdentity } from '../lib/club-name.mjs';
 import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
 import { articleBody } from './news.mjs';
+import { hasReport, reportText } from '../lib/prose.mjs';
 import {
   welcomeBand, opponentBandLong, squadBandLong, seasonBandLong, numbersBand,
   divisionBandLong, honoursBand, groundBand, causeBandLong,
-  preSeasonBandLong, storyBand, methodBand, aheadBand, watchBand, competitionsBand, backBand, badgeBand,
+  preSeasonBandLong, storyBand, methodBand, aheadBand, watchBand, competitionsBand, backBand, badgeBand, narrativeBand, answersBand, reportsBand, crestFor,
 } from '../lib/programme-long.mjs';
 
+/* THE NUMBER IS OPTIONAL, because a numbered section is a promise that the
+   others are numbered too. The document's numbering ran 02, 03, 04, 04, 05,
+   05, 07, 08, 09 - two collisions and four gaps - because the bands were
+   numbered where they were written rather than where they ended up, and the
+   long read carries no rail at all. The three that survive in the document
+   pass null: a strip reading "Half-time quiz - 7 questions" is complete,
+   while "07" in a document with no 01 to 06 is a missing-page notice. */
 const rail = (n, label, ref) => `
   <div class="xrail" aria-hidden="true">
-    <span class="xrail__l"><span class="xrail__n">${String(n).padStart(2, '0')}</span>
+    <span class="xrail__l">${n == null ? '' : `<span class="xrail__n">${String(n).padStart(2, '0')}</span>`}
       <span class="xrail__t">${esc(label)}</span></span>
     <span class="xrail__r">${esc(ref)}</span>
   </div>`;
@@ -100,7 +108,15 @@ function wordSearch(names, seed, size = 12) {
   const rand = rng(seed);
   const grid = Array.from({ length: size }, () => Array(size).fill(''));
   const DIRS = [[0, 1], [1, 0], [1, 1], [1, -1], [0, -1], [-1, 0]];
+  /* WHERE each word ended up, so the answers at the back can say. A word
+     search whose solution is only "these words are in there somewhere" is
+     half an answer. */
+  const DIR_NAME = {
+    '0,1': 'across', '1,0': 'down', '1,1': 'diagonally down and right',
+    '1,-1': 'diagonally down and left', '0,-1': 'backwards', '-1,0': 'upwards',
+  };
   const placed = [];
+  const where = [];
 
   const fits = (word, r, c, dr, dc) => {
     for (let i = 0; i < word.length; i += 1) {
@@ -124,6 +140,7 @@ function wordSearch(names, seed, size = 12) {
       if (!fits(word, r, c, dr, dc)) continue;
       for (let i = 0; i < word.length; i += 1) grid[r + dr * i][c + dc * i] = word[i];
       placed.push(raw);
+      where.push({ word: raw, r, c, dir: DIR_NAME[`${dr},${dc}`] || 'across' });
       done = true;
     }
   }
@@ -133,7 +150,7 @@ function wordSearch(names, seed, size = 12) {
       if (!grid[r][c]) grid[r][c] = A[Math.floor(rand() * 26)];
     }
   }
-  return { grid, placed };
+  return { grid, placed, where };
 }
 
 /* ---- THE QUIZ -----------------------------------------------------------
@@ -143,12 +160,12 @@ function wordSearch(names, seed, size = 12) {
 function quiz(d) {
   const out = [];
   const ask = (q, a) => { if (a !== null && a !== undefined && a !== '') out.push({ q, a }); };
-  const us = (d.table || []).find((r) => r.us);
   const last = d.titleSeason;
   const players = d.players || [];
   const byGoals = players.slice().sort((a, b) => (b.goals || 0) - (a.goals || 0))[0];
   const byAssists = players.slice().sort((a, b) => (b.assists || 0) - (a.assists || 0))[0];
   const played = (d.matches || []).filter((x) => x.played && x.countsGoals);
+  const us = (d.table || []).find((r) => r.us);
   const biggest = played.slice()
     .sort((a, b) => ((b.ourGoals || 0) - (b.theirGoals || 0)) - ((a.ourGoals || 0) - (a.theirGoals || 0)))[0];
 
@@ -233,34 +250,6 @@ export function programme(d) {
       </div>
     </section>`;
 
-  /* ---- 02 TODAY'S OPPONENT --------------------------------------------- */
-  const h2h = m ? headToHead(d, m.opponent) : null;
-  const opponentBand = m ? `<section class="sec pr-band" aria-labelledby="pr-opp-h">
-      <div class="wrap">
-        ${rail(1, 'Today’s opponent', h2h.tally.p ? `Played ${h2h.tally.p}` : 'First meeting')}
-        <h2 class="h2 rv" id="pr-opp-h">${esc(m.opponent)}<span class="volt">.</span></h2>
-        ${h2h.tally.p
-    ? `<dl class="pr-h2h">
-          <div><dt>Played</dt><dd>${esc(h2h.tally.p)}</dd></div>
-          <div><dt>Won</dt><dd>${esc(h2h.tally.w)}</dd></div>
-          <div><dt>Drawn</dt><dd>${esc(h2h.tally.d)}</dd></div>
-          <div><dt>Lost</dt><dd>${esc(h2h.tally.l)}</dd></div>
-          <div><dt>Scored</dt><dd>${esc(h2h.tally.gf)}</dd></div>
-          <div><dt>Conceded</dt><dd>${esc(h2h.tally.ga)}</dd></div>
-        </dl>
-        <ul class="pr-list">${h2h.met.slice(-5).reverse().map((x) => `<li>
-          <span>${esc(fmtDate(x.date))}</span>
-          <span>${esc(x.homeAway)}</span>
-          <b>${esc(x.ourScoreline || '')}</b>
-          <span class="pr-clip">${esc(x.competition)}</span>
-        </li>`).join('')}</ul>`
-    : `<p class="pr-lede rv">A first meeting. There is no result, no team sheet and no
-        previous scoreline against ${esc(m.opponent)} anywhere in the club’s records, so
-        neither side has a form guide on the other.${h2h.related.length
-    ? ` The club has played their ${esc([...new Set(h2h.related.map((x) => x.opponent))].join(' and '))},
-        which is a different side and carries no record into this one.` : ''}</p>`}
-      </div>
-    </section>` : '';
 
   /* ---- 03 THE SQUAD ------------------------------------------------------
      Who is at the club for the season being played, in the order the site
@@ -279,42 +268,9 @@ export function programme(d) {
         <ul class="pr-names">${men.map((p) => `<li><a href="/players/${attr(p.slug)}.html">${esc(p.name)}</a></li>`).join('')}</ul>
       </div>` : '';
   }).join('');
-  const ungrouped = here.filter((p) => !GROUPS.some(([k]) => (p.positionGroup || '') === k));
-
-  const squadBand = here.length ? `<section class="sec pr-band" aria-labelledby="pr-sq-h">
-      <div class="wrap">
-        ${rail(2, 'The squad', `${here.length} at the club`)}
-        <h2 class="h2 rv" id="pr-sq-h">Who is here<span class="volt">.</span></h2>
-        <div class="pr-groups rv">${grouped}${ungrouped.length
-    ? `<div class="pr-group"><h3 class="pr-group__h">Also in the squad</h3>
-        <ul class="pr-names">${ungrouped.map((p) => `<li><a href="/players/${attr(p.slug)}.html">${esc(p.name)}</a></li>`).join('')}</ul></div>` : ''}</div>
-        <p class="pr-note">Everyone registered for ${esc(season)}. Who actually starts is decided
-          on the morning and is not something this page knows.</p>
-        ${(d.coaches || []).length ? `<p class="pr-note"><b>The staff.</b>
-          ${esc((d.coaches || []).map((c) => c.name).join(' · '))}</p>` : ''}
-      </div>
-    </section>` : '';
 
   /* ---- 04 LAST SEASON ---------------------------------------------------- */
   const us = (d.table || []).find((r) => r.us);
-  const lastBand = us ? `<section class="sec pr-band" aria-labelledby="pr-last-h">
-      <div class="wrap">
-        ${rail(3, 'How we got here', `${esc(d.titleDivision)} ${esc(d.titleSeason)}`)}
-        <h2 class="h2 rv" id="pr-last-h">Champions, unbeaten<span class="volt">.</span></h2>
-        <dl class="pr-h2h rv">
-          <div><dt>Played</dt><dd>${esc(us.played)}</dd></div>
-          <div><dt>Won</dt><dd>${esc(us.won)}</dd></div>
-          <div><dt>Drawn</dt><dd>${esc(us.drawn)}</dd></div>
-          <div><dt>Lost</dt><dd>${esc(us.lost)}</dd></div>
-          <div><dt>Scored</dt><dd>${esc(us.goalsFor)}</dd></div>
-          <div><dt>Conceded</dt><dd>${esc(us.goalsAgainst)}</dd></div>
-          <div><dt>Points</dt><dd>${esc(us.points)}</dd></div>
-        </dl>
-        <p class="pr-note">${esc(d.titleDivision)} ${esc(d.titleSeason)}, won with a perfect
-          record and promotion into ${esc(m ? m.competition : d.divisionOf(d.currentSeason))}.
-          <a href="/champions.html">The season in full</a>.</p>
-      </div>
-    </section>` : '';
 
   /* ---- 05 THE PREVIEW ----------------------------------------------------
      The club's own words, linked rather than reproduced: the article is a
@@ -323,7 +279,7 @@ export function programme(d) {
   const preview = (d.articles || [])[0];
   const previewBand = preview ? `<section class="sec pr-band" aria-labelledby="pr-prev-h">
       <div class="wrap">
-        ${rail(4, 'From the club', esc(preview.date || ''))}
+        ${rail(2, 'From the club', esc(preview.date || ''))}
         <h2 class="h2 rv" id="pr-prev-h">The preview<span class="volt">.</span></h2>
         <a class="pr-read rv" href="/news/${attr(preview.slug)}.html">
           <span class="pr-read__k">${esc(preview.category || 'News')}</span>
@@ -333,38 +289,7 @@ export function programme(d) {
       </div>
     </section>` : '';
 
-  /* ---- 06 STILL TO COME -------------------------------------------------- */
-  const rest = (d.upcoming || []).filter((x) => !m || x.id !== m.id);
-  const nextBand = rest.length ? `<section class="sec pr-band" aria-labelledby="pr-next-h">
-      <div class="wrap">
-        ${rail(5, 'Coming up', `${rest.length} more`)}
-        <h2 class="h2 rv" id="pr-next-h">After today<span class="volt">.</span></h2>
-        <ul class="pr-list rv">${rest.map((x) => `<li>
-          <span>${esc(fmtDate(x.date, { weekday: true }))}</span>
-          <span>${esc(x.kick || '')}</span>
-          <b class="pr-clip">${esc(x.opponent)}</b>
-          <span>${esc(x.homeAway)}</span>
-        </li>`).join('')}</ul>
-        <p class="pr-note"><a href="/fixtures.html">Every fixture</a>.</p>
-      </div>
-    </section>` : '';
 
-  /* ---- 07 THE CAUSE ------------------------------------------------------
-     A programme is one of the few places this belongs: somebody is holding
-     it, they have a minute, and it is the reason the club exists. Plain and
-     short, and it points at the people who can actually give medical advice
-     rather than offering any. */
-  const causeBand = `<section class="sec pr-band pr-cause" aria-labelledby="pr-cause-h">
-      <div class="wrap">
-        ${rail(6, 'Why we play', esc(CLUB.memorial.name))}
-        <h2 class="h2 rv" id="pr-cause-h">In her name<span class="volt">.</span></h2>
-        <p class="pr-lede rv">${esc(CLUB.name)} was founded in memory of
-          ${esc(CLUB.memorial.name)}, who died of sepsis. The club plays for sepsis
-          awareness, and every match is a chance for somebody else to learn the signs.</p>
-        <p class="pr-note"><a href="/sepsis.html">Our cause</a> ·
-          <a href="https://sepsistrust.org" target="_blank" rel="noopener">The UK Sepsis Trust</a></p>
-      </div>
-    </section>`;
 
   /* ---- 08 WHO BACKS THE CLUB ---------------------------------------------
      A logo strip is a wall of pictures that says nothing. These are small
@@ -375,7 +300,7 @@ export function programme(d) {
   const partners = (d.partners || []).filter((p) => p.onPage !== false);
   const partnerBand = partners.length ? `<section class="sec pr-band" aria-labelledby="pr-sp-h">
       <div class="wrap">
-        ${rail(9, 'Who backs the club', `${partners.length} partners`)}
+        ${rail(null, 'Who backs the club', `${partners.length} partners`)}
         <h2 class="h2 rv" id="pr-sp-h">The people who make this possible<span class="volt">.</span></h2>
         <p class="pr-lede rv">A Sunday-league club runs on pitch fees, kit, footballs and
           referees. These businesses pay for them. If you need what they do, they are worth
@@ -404,14 +329,13 @@ export function programme(d) {
   const questions = quiz(d);
   const quizBand = questions.length ? `<section class="sec pr-band" aria-labelledby="pr-quiz-h">
       <div class="wrap">
-        ${rail(7, 'Half-time quiz', `${questions.length} questions`)}
+        ${rail(null, 'Half-time quiz', `${questions.length} questions`)}
         <h2 class="h2 rv" id="pr-quiz-h">How closely were you watching<span class="volt">?</span></h2>
         <p class="pr-lede rv">Every answer is somewhere on this website. No prizes, no cheating,
           and the person beside you almost certainly knows.</p>
         <ol class="pr-quiz rv">${questions.map((x) => `<li>
           <p class="pr-quiz__q">${esc(x.q)}</p>
-          <details class="pr-quiz__a"><summary>Show the answer</summary>
-            <p>${esc(x.a)}</p></details>
+          <p class="pr-quiz__where">Answer at the back.</p>
         </li>`).join('')}</ol>
       </div>
     </section>` : '';
@@ -425,7 +349,7 @@ export function programme(d) {
   const ws = wordSearch(puzzleNames.slice(0, 10), (m && m.id) || 'programme');
   const wordBand = ws.placed.length >= 4 ? `<section class="sec pr-band" aria-labelledby="pr-ws-h">
       <div class="wrap">
-        ${rail(8, 'Word search', `${ws.placed.length} names`)}
+        ${rail(null, 'Word search', `${ws.placed.length} names`)}
         <h2 class="h2 rv" id="pr-ws-h">Find the squad<span class="volt">.</span></h2>
         <p class="pr-lede rv">${esc(ws.placed.length)} surnames from this season's squad, hidden
           across, down, diagonally and backwards.</p>
@@ -440,62 +364,17 @@ export function programme(d) {
       </div>
     </section>` : '';
 
-  /* ---- HOW THE SUMMER WENT ------------------------------------------------
-     Six friendlies, counted rather than characterised. A programme that only
-     printed last season's championship would be telling half the story on the
-     morning the new one starts. */
-  const friendlies = (d.matches || [])
-    .filter((x) => x.played && x.friendly && x.season === season)
-    .sort((a, b) => String(a.iso).localeCompare(String(b.iso)));
-  const preBand = friendlies.length ? `<section class="sec pr-band" aria-labelledby="pr-pre-h">
-      <div class="wrap">
-        ${rail(4, 'Pre-season', `${friendlies.length} played`)}
-        <h2 class="h2 rv" id="pr-pre-h">How the summer went<span class="volt">.</span></h2>
-        <ul class="pr-list rv">${friendlies.map((x) => `<li>
-          <span>${esc(fmtDate(x.date))}</span>
-          <span>${esc(x.homeAway)}</span>
-          <b class="pr-clip">${esc(x.opponent)}</b>
-          <span>${esc(x.ourScoreline || '')} ${esc(x.outcome || '')}</span>
-        </li>`).join('')}</ul>
-        <p class="pr-note">${(() => {
-    let w = 0; let dr = 0; let l = 0; let gf = 0; let ga = 0;
-    friendlies.forEach((x) => {
-      gf += x.ourGoals || 0; ga += x.theirGoals || 0;
-      if (x.outcome === 'W') w += 1; else if (x.outcome === 'D') dr += 1; else l += 1;
-    });
-    return esc(`Won ${w}, drawn ${dr}, lost ${l}. Scored ${gf}, conceded ${ga}. `
-      + 'None of it counts towards the table, and all of it was the point.');
-  })()}</p>
-      </div>
-    </section>` : '';
 
-  /* ---- WHO ELSE IS IN THE DIVISION ----------------------------------------
-     The nine clubs, and what the archive holds on each: played before, played
-     a related side, or never met. The third is most of them, which is the
-     honest headline for a club that has just come up two divisions. */
-  const division = ((d.nextDivisionTable && d.nextDivisionTable.clubs) || [])
-    .filter((c) => !isUs(c))
-    .map((c) => ({ club: c, h: headToHead(d, c) }));
-  const divBand = division.length ? `<section class="sec pr-band" aria-labelledby="pr-div-h">
-      <div class="wrap">
-        ${rail(5, 'The division', `${division.length + 1} clubs`)}
-        <h2 class="h2 rv" id="pr-div-h">Who else is in it<span class="volt">.</span></h2>
-        <ul class="pr-list rv">${division.map((x) => `<li>
-          <span class="pr-clip">${esc(x.club)}</span>
-          <span></span>
-          <b>${x.h.tally.p ? esc(`P${x.h.tally.p} W${x.h.tally.w} D${x.h.tally.d} L${x.h.tally.l}`) : ''}</b>
-          <span>${esc(x.h.tally.p ? 'Played before'
-    : (x.h.related.length ? 'Related side only' : 'Never met'))}</span>
-        </li>`).join('')}</ul>
-        <p class="pr-note">${esc(`${division.filter((x) => !x.h.tally.p && !x.h.related.length).length} of the ${division.length} have never been played. `)}
-          A record against a club's other side is not a record against this one, so it is not
-          counted as one.</p>
-      </div>
-    </section>` : '';
 
   /* ---- THE DOCUMENT, which is what the PDF is made of ------------------- */
-  const documentBody = opponentBand + squadBand + lastBand + preBand + divBand
-    + nextBand + quizBand + wordBand + causeBand + partnerBand;
+  /* WHAT THE DOCUMENT ADDS TO THE LONG READ, and nothing it already says.
+     These bands were the whole programme before the long read existed, and
+     when the long read was added they were appended rather than replaced: the
+     opponent, the squad, last season, pre-season, the division, what is
+     coming up and the cause were each printed twice, in prose and then again
+     as a table, with two sections numbered 04 and two numbered 05. Only the
+     three the long read does not cover survive. */
+  const documentBody = quizBand + wordBand + partnerBand;
 
   /* ---- 11 TAKING IT AWAY --------------------------------------------------
      No button and no JavaScript. Every phone and every browser already has
@@ -569,7 +448,7 @@ export function programme(d) {
   const past = (d.programmes || []).filter((x) => !m || x.id !== m.id);
   const archiveBand = `<section class="sec pr-band" aria-labelledby="pr-arch-h">
       <div class="wrap">
-        ${rail(2, 'Every programme', `${(d.programmes || []).length} so far`)}
+        ${rail(1, 'Every programme', `${(d.programmes || []).length} so far`)}
         <h2 class="h2 rv" id="pr-arch-h">The collection<span class="volt">.</span></h2>
         ${past.length
     ? `<p class="pr-lede rv">One for every match. They stay here, so a season's worth builds
@@ -597,6 +476,8 @@ export function programme(d) {
     footerHtml: siteFooter(),
     cover,
     documentBody,
+    quizQuestions: questions,
+    wordSearch: ws,
     docTitle: m ? `${m.home} v ${m.away}` : `${CLUB.name} programme`,
     schema: m ? [{
       '@context': 'https://schema.org',
@@ -682,17 +563,24 @@ export function programmeDoc(d) {
   const here2 = (d.squad || []).filter((p) => p.status && p.status !== 'retired'
     && p.status !== 'departed' && p.status !== 'staff' && p.status !== 'absent');
   const h2h = m ? headToHead(d, m.opponent) : { met: [], related: [], tally: { p: 0 } };
+  /* The opponents' crests, resolved the same way every other page resolves
+     them: an uploaded badge, then the extra registry, then the recovered one,
+     then a needle. A club with no badge on file gets nothing rather than a
+     broken image. */
+  const crest2 = (nm) => crestFor(nm, d.badges, clubCrest, 'pg-crest');
 
   const long = welcomeBand(d, m)
     + out.cover
-    + opponentBandLong(d, m, h2h)
+    + opponentBandLong(d, m, h2h, crest2)
     + squadBandLong(d, here2)
     + seasonBandLong(d)
+    + narrativeBand(d)
+    + reportsBand(d, hasReport, reportText, articleBody)
     + numbersBand(d)
     + competitionsBand(d)
     + watchBand(d, here2)
     + preSeasonBandLong(d, (m && m.season) || d.nextSeason || d.currentSeason)
-    + divisionBandLong(d, headToHead)
+    + divisionBandLong(d, headToHead, crest2)
     + aheadBand(d, m)
     + honoursBand(d)
     + storyBand(d)
@@ -701,7 +589,8 @@ export function programmeDoc(d) {
     + methodBand(d)
     + causeBandLong()
     + out.documentBody
-    + backBand(d, m);
+    + backBand(d, m)
+    + answersBand(out.quizQuestions || [], out.wordSearch || null);
 
   return {
     cover: printCover(d, m),

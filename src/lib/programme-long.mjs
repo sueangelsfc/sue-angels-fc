@@ -36,7 +36,25 @@ const num = (n) => {
     'eight', 'nine', 'ten', 'eleven', 'twelve'];
   return n >= 0 && n <= 12 ? words[n] : String(n);
 };
-const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+/* Words to twelve, numerals above, the same rule `num` uses - so one
+   paragraph cannot say "12 appearances" and "twelve starts" in consecutive
+   sentences, which is what it did. */
+const art = (w) => `${/^[aeiou]/i.test(String(w)) ? 'an' : 'a'} ${w}`;
+const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+/* A RECORD WITH NO NIL TERMS. "won three, drawn no, lost no" is how a
+   template writes it and not how anybody says it; three of these appeared in
+   the division section alone, where most opponents have been beaten and
+   nothing else. */
+const record = (w, dr, l) => {
+  const parts = [];
+  if (w) parts.push(`won ${num(w)}`);
+  if (dr) parts.push(`drawn ${num(dr)}`);
+  if (l) parts.push(`lost ${num(l)}`);
+  if (!parts.length) return 'no result either way';
+  if (parts.length === 1) return parts[0];
+  return `${parts.slice(0, -1).join(', ')} and ${parts[parts.length - 1]}`;
+};
+const plural = (n, one, many) => `${num(n)} ${n === 1 ? one : many}`;
 
 /* ---- A BAR CHART, DRAWN IN SVG ------------------------------------------
    No library and no canvas: a viewBox, a rect per value and a label. It
@@ -99,113 +117,95 @@ function playerPiece(p, stat, d, ctx = {}) {
   const apps = s.apps || 0;
   const bits = [];
   const name = p.name;
+  const first = String(p.first || name.split(' ')[0]);
   const role = p.position && p.position !== 'Squad player' ? p.position.toLowerCase() : '';
-  const nameOf = ctx.nameOf || ((n) => String(n));
+  const signed = d.signedOn ? d.signedOn(p.num) : null;
 
+  /* NOTHING IS ANNOUNCED AS MISSING. The first draft explained the club's
+     counting rules inside every player's paragraph: the same two sentences
+     about clean sheets and Man of the Match, twenty-three times. They are
+     said once now, in the section about how the figures are counted, and a
+     man with no goals simply is not described as having none. */
   if (!apps) {
-    bits.push(`${name} has not yet played a competitive match for ${CLUB.name}.`);
-    if (role) bits.push(`He is registered as a ${role}.`);
-    const signed = d.signedOn ? d.signedOn(p.num) : null;
-    if (signed) {
-      bits.push(`The club records him as joining on ${fmtDate(signed, { long: true })}, `
-        + 'which makes this season his first.');
-    }
-    bits.push('Everything he does for the club is still ahead of him. The first line of his '
-      + 'record here has not been written yet, and there is no honest way to write it in '
-      + 'advance: this programme prints what the archive holds, and on him it holds a name, '
-      + 'a position and a date.');
-    return bits.join(' ');
+    bits.push(`${name} has not played a competitive match for the club yet.`);
+    if (role) bits.push(`He signs on as ${art(role)}.`);
+    if (signed) bits.push(`He joined on ${fmtDate(signed, { long: true })}.`);
+    bits.push('Everything he does here is still in front of him, and this season is where it '
+      + 'starts.');
+    /* Every sentence is pushed as its own fragment, and several of them now
+     open on a spelled-out number ("twelve starts"), which is a sentence
+     starting in lower case. Capitalising at the join keeps that in one place
+     rather than at each of the thirty-odd push sites. */
+  return bits.map(cap).join(' ');
   }
 
-  bits.push(`${name} has made ${plural(apps, 'appearance', 'appearances')} for the club`
-    + (role ? ` as a ${role}` : '') + '.');
+  /* An opening that varies with the man rather than a template repeated
+     twenty-three times. */
+  const open = [
+    () => `${plural(apps, 'appearance', 'appearances')}${role ? `, ${role} by trade` : ''}.`,
+    () => `${name} has ${plural(apps, 'appearance', 'appearances')} behind him${role ? ` as ${art(role)}` : ''}.`,
+    () => `${cap(art(role || 'squad player'))} with `
+      + `${plural(apps, 'appearance', 'appearances')} to his name.`,
+  ][apps % 3]();
+  bits.push(apps % 3 === 0 ? `${name}: ${open}` : open);
 
   if (s.starts && s.subApps) {
-    bits.push(`${num(s.starts)} of those were starts and ${num(s.subApps)} came from the `
-      + 'bench. An appearance here means a start or a substitute the record can prove came '
-      + 'on, which is a stricter test than most clubs apply and means these figures are the '
-      + 'floor rather than the ceiling.');
-  } else if (s.starts) {
-    bits.push('Every one of them was a start.');
+    bits.push(`${num(s.starts)} starts, ${num(s.subApps)} off the bench.`);
   }
 
   if (s.goals && s.assists) {
-    bits.push(`He has scored ${plural(s.goals, 'goal', 'goals')} and made `
-      + `${plural(s.assists, 'assist', 'assists')}, a hand in `
-      + `${plural(s.goals + s.assists, 'goal', 'goals')} in all.`);
+    bits.push(`${plural(s.goals, 'goal', 'goals')} and ${plural(s.assists, 'assist', 'assists')}: `
+      + `a hand in ${plural(s.goals + s.assists, 'goal', 'goals')}.`);
   } else if (s.goals) {
-    bits.push(`He has scored ${plural(s.goals, 'goal', 'goals')}.`);
+    bits.push(`${plural(s.goals, 'goal', 'goals')}.`);
   } else if (s.assists) {
-    bits.push(`He has made ${plural(s.assists, 'assist', 'assists')} without scoring himself.`);
-  } else {
-    bits.push('His contribution is not in the goals column, which is true of most of a '
-      + 'football team on most afternoons and says nothing about how much of the match he '
-      + 'decided.');
+    /* Three players had the identical sentence in the first draft, which is
+       the sort of thing that makes a document read like a template. It varies
+       on the figure, which is stable across builds. */
+    bits.push([
+      `${plural(s.assists, 'assist', 'assists')}, none of the glory.`,
+      `Sets them up rather than finishes them: ${plural(s.assists, 'assist', 'assists')}.`,
+      `${plural(s.assists, 'assist', 'assists')} and still waiting on a first goal.`,
+    ][s.assists % 3]);
   }
 
-  if (s.goals && apps >= 3) {
+  if (s.goals && apps >= 5) {
     const per = s.goals / apps;
-    if (per >= 1) {
-      bits.push(`That is ${per.toFixed(2)} a game, which is a striker's return in any division.`);
-    } else if (per >= 0.4) {
-      bits.push(`That is a goal roughly every ${(1 / per).toFixed(1)} appearances.`);
-    }
+    if (per >= 1) bits.push(`${per.toFixed(2)} a game, which is a centre forward's number.`);
+    else if (per >= 0.4) bits.push(`Roughly one every ${(1 / per).toFixed(1)} outings.`);
   }
   if (s.goals && ctx.clubGoals) {
     const share = Math.round((s.goals / ctx.clubGoals) * 100);
-    if (share >= 5) {
-      bits.push(`That is ${share}% of every competitive goal the club has scored.`);
-    }
+    if (share >= 8) bits.push(`${share}% of everything the club has scored.`);
   }
-  if (ctx.scorerRank) {
-    bits.push(`It makes him the club's ${ctx.scorerRank} highest scorer.`);
-  }
-  if (ctx.appsRank) {
-    bits.push(`He is ${ctx.appsRank} on the club's list of appearances.`);
-  }
+  if (ctx.scorerRank) bits.push(`The club's ${ctx.scorerRank} scorer.`);
+  else if (ctx.appsRank) bits.push(`${ctx.appsRank[0].toUpperCase()}${ctx.appsRank.slice(1)} on the appearance list.`);
 
-  /* THE MATCHES HE ACTUALLY SCORED IN. A total is a summary; the games are
-     the thing somebody standing on the touchline remembers. */
   if (ctx.scoredIn && ctx.scoredIn.length) {
-    const top = ctx.scoredIn.slice(0, 4)
-      .map((g) => `${g.n > 1 ? `${num(g.n)} against ` : ''}${g.opponent} (${g.scoreline})`);
-    bits.push(`Among them: ${top.join(', ')}`
-      + (ctx.scoredIn.length > 4 ? `, and ${plural(ctx.scoredIn.length - 4, 'other match', 'other matches')}.` : '.'));
+    const top = ctx.scoredIn.slice(0, 3)
+      .map((g) => `${g.n > 1 ? `${num(g.n)} in the ` : 'the '}${g.scoreline} against ${g.opponent}`);
+    bits.push(`Among them ${top.join(', ')}.`);
   }
 
-  if (s.motm) {
-    bits.push(`He has been the club's Man of the Match ${plural(s.motm, 'time', 'times')}, `
-      + 'which is the players\u2019 and the staff\u2019s own verdict rather than a figure '
-      + 'derived from anything.');
-  }
-  if (s.captained) {
-    bits.push(`He has worn the armband ${plural(s.captained, 'time', 'times')}.`);
-  }
-  if (s.cleanSheets) {
-    bits.push(`He is credited with ${plural(s.cleanSheets, 'clean sheet', 'clean sheets')}. `
-      + 'The club records who kept one rather than inferring it from where somebody lined '
-      + 'up, so this is the club\u2019s own answer and not a guess from a formation.');
-  }
-  if (s.keeperApps && s.saves) {
-    bits.push(`In goal he has made ${plural(s.saves, 'save', 'saves')} across `
-      + `${plural(s.keeperApps, 'match', 'matches')}`
-      + (s.savesPerGame ? `, ${Number(s.savesPerGame).toFixed(1)} a game` : '') + '.');
-  }
-  if (s.yellow || s.red) {
-    const dd = [];
-    if (s.yellow) dd.push(plural(s.yellow, 'yellow card', 'yellow cards'));
-    if (s.red) dd.push(plural(s.red, 'red card', 'red cards'));
-    bits.push(`His disciplinary record reads ${dd.join(' and ')}.`);
-  } else if (apps >= 8) {
-    bits.push(`He has played ${plural(apps, 'match', 'matches')} for the club without being `
-      + 'booked.');
-  }
+  const extras = [];
+  if (s.motm) extras.push(`${plural(s.motm, 'Man of the Match award', 'Man of the Match awards')}`);
+  if (s.captained) extras.push(`${plural(s.captained, 'match', 'matches')} as captain`);
+  if (s.cleanSheets) extras.push(`${plural(s.cleanSheets, 'clean sheet', 'clean sheets')}`);
+  if (s.keeperApps && s.saves) extras.push(`${plural(s.saves, 'save', 'saves')} in goal`);
+  if (extras.length) bits.push(`${extras.join(', ')}.`);
 
-  const signed = d.signedOn ? d.signedOn(p.num) : null;
-  if (signed) bits.push(`The club records him as joining on ${fmtDate(signed, { long: true })}.`);
-  if (p.bio) bits.push(String(p.bio).replace(/<[^>]+>/g, ''));
+  if (s.red) bits.push(`Sent off ${plural(s.red, 'time', 'times')}.`);
+  else if (s.yellow >= 3) bits.push(`${plural(s.yellow, 'booking', 'bookings')}.`);
+  else if (!s.yellow && apps >= 15) bits.push(`${apps} matches, never booked.`);
 
-  return bits.join(' ');
+  if (signed && apps < 6) bits.push(`Joined ${fmtDate(signed, { long: true })}.`);
+  if (p.bio) bits.push(String(p.bio).replace(/<[^>]+>/g, '').trim());
+
+  /* Every sentence is pushed as its own fragment, and several of them now
+     open on a spelled-out number ("twelve starts"), which is a sentence
+     starting in lower case. Capitalising at the join keeps that in one place
+     rather than at each of the thirty-odd push sites. */
+  return bits.map(cap).join(' ');
 }
 
 /* ---- ONE MATCH, AT LENGTH -----------------------------------------------
@@ -216,77 +216,81 @@ function playerPiece(p, stat, d, ctx = {}) {
    scored" are different facts and only one of them is true. */
 function matchPiece(m, nameOf, ctx = {}) {
   const name = nameOf || ((n) => `Number ${n}`);
-  const at = m.homeAway === 'Home' ? 'at The Reeves' : 'away from home';
-  const bits = [];
+  const at = m.homeAway === 'Home' ? 'at The Reeves' : 'away';
   const when = fmtDate(m.date, { long: true });
+  const clean = (x) => (x && !/cannot name/i.test(x) ? x : '');
+  const bits = [];
 
   if (m.isWalkover) {
-    bits.push(`<b>${esc(m.opponent)}, ${esc(when)}, ${at}.</b>`);
-    bits.push('Awarded as a walkover. The opposition could not field a side, the points were '
-      + 'given and no football was played.');
-    bits.push('The published table adds three points and no goals for a walkover, and this '
-      + 'club counts it the same way. That is why the season’s ninety goals were scored in '
-      + 'fifteen matches rather than eighteen, and why the goal figures and the points '
-      + 'figures describe slightly different seasons.');
-    return bits.join(' ');
+    return `<b>${esc(m.opponent)}, ${esc(when)}, ${at}.</b> Awarded. The opposition could not `
+      + 'raise a side, the points came anyway and nobody kicked a ball.';
   }
 
-  const verb = m.outcome === 'W' ? 'Won' : m.outcome === 'D' ? 'Drew' : 'Lost';
-  bits.push(`<b>${esc(m.opponent)}, ${esc(when)}, ${at}.</b>`);
-  bits.push(`${verb} ${esc(m.ourScoreline || '')} in the ${esc(m.competition)}.`);
+  /* A SENTENCE THAT VARIES WITH THE MATCH. Thirty-three identical openings
+     read like a machine wrote them, which is exactly what the club said about
+     the first draft. The variation is chosen by the scoreline rather than at
+     random, so the document is still the same on every build.
+
+     AND ANYTHING THE RECORD DOES NOT HOLD IS LEFT OUT. The first draft
+     announced every gap - no team sheet, no scorer, an assist it could not
+     name - five times over in six paragraphs. A programme is not a data
+     quality report: where there is nothing to say, it says nothing, and the
+     state of the archive is discussed once, in its own section, by somebody
+     who came looking for it. */
+  const margin = (m.ourGoals || 0) - (m.theirGoals || 0);
+  const head = `<b>${esc(m.opponent)}, ${esc(when)}, ${at}.</b>`;
+  if (m.outcome === 'W') {
+    if (margin >= 6) bits.push(`${head} ${esc(m.ourScoreline)}, and it was over early.`);
+    else if (margin >= 3) bits.push(`${head} A comfortable ${esc(m.ourScoreline)}.`);
+    else if (margin === 1) bits.push(`${head} ${esc(m.ourScoreline)}, and it stayed close to the end.`);
+    else bits.push(`${head} Won ${esc(m.ourScoreline)}.`);
+  } else if (m.outcome === 'D') {
+    bits.push(`${head} ${esc(m.ourScoreline)}, honours even.`);
+  } else if (m.outcome === 'L') {
+    if (margin <= -4) bits.push(`${head} ${esc(m.ourScoreline)}. A chastening afternoon.`);
+    else if (margin === -1) bits.push(`${head} ${esc(m.ourScoreline)}, and it turned on very little.`);
+    else bits.push(`${head} Lost ${esc(m.ourScoreline)}.`);
+  } else {
+    bits.push(`${head} ${esc(m.ourScoreline || '')}`);
+  }
 
   const detail = m.detail || {};
   const goals = (detail.goals || []).filter((g) => g && g.num != null);
   if (goals.length) {
     const tally = {};
     goals.forEach((g) => { tally[g.num] = (tally[g.num] || 0) + 1; });
-    const said = Object.entries(tally)
-      .sort((a, b) => b[1] - a[1])
+    const said = Object.entries(tally).sort((a, b) => b[1] - a[1])
       .map(([n, c]) => `${name(n)}${c > 1 ? ` (${c})` : ''}`);
-    bits.push(`${said.length === 1 ? 'The goal came from' : 'The goals came from'} `
-      + `${said.join(', ')}.`);
-    const withAssist = goals.filter((g) => g.assist != null);
-    if (withAssist.length) {
-      const a = [...new Set(withAssist.map((g) => name(g.assist)))];
-      bits.push(`${a.length === 1 ? 'The assist is credited to' : 'Assists are credited to'} `
-        + `${a.join(', ')}.`);
+    const hat = Object.values(tally).some((c) => c >= 3);
+    bits.push(hat
+      ? `${said[0]} with a hat-trick${said.length > 1 ? `, and ${said.slice(1).join(', ')}` : ''}.`
+      : `${said.length === 1 ? 'Scored by' : 'Scorers'}: ${said.join(', ')}.`);
+    const named = [...new Set((detail.goals || [])
+      .filter((g) => g && g.assist != null).map((g) => clean(name(g.assist))))].filter(Boolean);
+    if (named.length) {
+      bits.push(`${named.length === 1 ? 'Assist' : 'Assists'}: ${named.join(', ')}.`);
     }
-  } else if (m.ourGoals) {
-    bits.push(`The ${plural(m.ourGoals, 'goal', 'goals')} in this one are not attributed on `
-      + 'the record, so this programme does not guess at who scored them.');
-  } else {
-    bits.push('The club did not score.');
   }
 
-  if (m.theirGoals === 0 && m.ourGoals > 0) {
-    const keeper = detail.keeper != null ? name(detail.keeper) : '';
-    bits.push(`A clean sheet${keeper ? `, with ${keeper} in goal` : ''}.`);
+  if (m.theirGoals === 0 && (m.ourGoals || 0) > 0) {
+    const k = clean(detail.keeper != null ? name(detail.keeper) : '');
+    bits.push(k ? `A clean sheet, ${k} in goal.` : 'A clean sheet.');
   }
 
-  const cards = (detail.yellowCards || []).length;
+  const motm = clean(detail.motm != null ? name(detail.motm) : '');
+  if (motm) bits.push(`${motm} took the Man of the Match.`);
+  const capt = clean(detail.captain != null ? name(detail.captain) : '');
+  if (capt) bits.push(`${capt} wore the armband.`);
+
   const reds = (detail.redCards || []).length;
-  if (cards || reds) {
-    bits.push(`${cards ? plural(cards, 'booking', 'bookings') : 'No bookings'}`
-      + `${reds ? ` and ${plural(reds, 'red card', 'red cards')}` : ''}.`);
-  }
-
-  if (detail.motm != null) bits.push(`${name(detail.motm)} was Man of the Match.`);
-  if (detail.captain != null) bits.push(`${name(detail.captain)} captained the side.`);
-
-  const sheet = (detail.starters || []).length;
-  if (!sheet) {
-    bits.push('No team sheet was written for this one, so nobody is credited with playing '
-      + 'in it. It is one of a handful in the archive like that.');
-  }
-
-  if (ctx.index != null && ctx.total) {
-    bits.push(`Match ${ctx.index + 1} of ${ctx.total} that season.`);
-  }
-  if (m.venue) bits.push(`Played at ${esc(m.venue)}.`);
-  return bits.join(' ');
+  if (reds) bits.push(`${plural(reds, 'red card', 'red cards')}.`);
+  if (m.venue && m.homeAway !== 'Home') bits.push(`Played at ${esc(m.venue)}.`);
+  /* Every sentence is pushed as its own fragment, and several of them now
+     open on a spelled-out number ("twelve starts"), which is a sentence
+     starting in lower case. Capitalising at the join keeps that in one place
+     rather than at each of the thirty-odd push sites. */
+  return bits.map(cap).join(' ');
 }
-
-export { playerPiece, matchPiece, num, plural, MONTHS };
 
 /* ==========================================================================
    THE SECTIONS
@@ -358,15 +362,15 @@ export function welcomeBand(d, m) {
 }
 
 /* ---- THE OPPONENT, AT LENGTH --------------------------------------------- */
-export function opponentBandLong(d, m, h2h) {
+export function opponentBandLong(d, m, h2h, crest) {
   const nameOf = nameResolver(d);
   if (!m) return '';
   const p = [];
   p.push(`Today the club plays ${esc(m.opponent)}.`);
   if (h2h.tally.p) {
     p.push(`The two have met ${plural(h2h.tally.p, 'time', 'times')}. `
-      + `${CLUB.name} has won ${num(h2h.tally.w)}, drawn ${num(h2h.tally.d)} and lost `
-      + `${num(h2h.tally.l)}, scoring ${h2h.tally.gf} and conceding ${h2h.tally.ga}.`);
+      + `${CLUB.name} has ${record(h2h.tally.w, h2h.tally.d, h2h.tally.l)}, `
+      + `scoring ${h2h.tally.gf} and conceding ${h2h.tally.ga}.`);
     p.push('Every one of those meetings is listed below, taken from the club’s own records '
       + 'rather than from memory.');
   } else {
@@ -438,7 +442,8 @@ export function squadBandLong(d, here) {
         const si = scorers.findIndex((y) => y.num === x.num);
         const ai = appsList.findIndex((y) => y.num === x.num);
         return `<div class="pg-player">
-        <h4 class="pg-player__name">${esc(x.name)}</h4>
+        <h4 class="pg-player__name">${x.slug
+    ? `<a href="/players/${attr(x.slug)}.html">${esc(x.name)}</a>` : esc(x.name)}</h4>
         <p>${playerPiece(x, st, d, {
     nameOf,
     clubGoals,
@@ -562,7 +567,7 @@ export function numbersBand(d) {
 }
 
 /* ---- THE DIVISION, CLUB BY CLUB ------------------------------------------ */
-export function divisionBandLong(d, headToHead) {
+export function divisionBandLong(d, headToHead, crest) {
   const nameOf = nameResolver(d);
   const clubs = ((d.nextDivisionTable && d.nextDivisionTable.clubs) || [])
     .filter((c) => !/Sue.s Angels/i.test(c));
@@ -579,8 +584,8 @@ export function divisionBandLong(d, headToHead) {
     const t = x.h.tally;
     const lines = [];
     if (t.p) {
-      lines.push(`Played ${plural(t.p, 'time', 'times')}: won ${num(t.w)}, drawn ${num(t.d)}, `
-        + `lost ${num(t.l)}, scoring ${t.gf} and conceding ${t.ga}.`);
+      lines.push(`Played ${plural(t.p, 'time', 'times')}: ${record(t.w, t.d, t.l)}, `
+        + `scoring ${t.gf} and conceding ${t.ga}.`);
       lines.push(`<ul class="pg-runs">${x.h.met.slice().reverse()
         .map((mm) => `<li>${matchPiece(mm, nameOf)}</li>`).join('')}</ul>`);
     } else if (x.h.related.length) {
@@ -590,7 +595,10 @@ export function divisionBandLong(d, headToHead) {
     } else {
       lines.push('Never played. Nothing in the archive, in any competition, in any season.');
     }
-    return `<div class="pg-club"><h3 class="pg-h3">${esc(x.club)}</h3>${lines.map((l) => (l.startsWith('<') ? l : `<p>${l}</p>`)).join('')}</div>`;
+    const mark = crest ? crest(x.club) : '';
+    return `<div class="pg-club">
+      <h3 class="pg-h3 pg-h3--crest">${mark}<span>${esc(x.club)}</span></h3>
+      ${lines.map((l) => (l.startsWith('<') ? l : `<p>${l}</p>`)).join('')}</div>`;
   }).join('');
   return sec('pg-div', 6, 'The division', 'Who else is in it<span class="volt">.</span>',
     p.map((x) => `<p>${x}</p>`).join('') + body);
@@ -672,8 +680,8 @@ export function preSeasonBandLong(d, season) {
   });
   const p = [];
   p.push(`The club played ${plural(list.length, 'friendly', 'friendlies')} before this season `
-    + `started. Won ${num(w)}, drawn ${num(dr)}, lost ${num(l)}, scoring ${gf} and conceding `
-    + `${ga}. ${num(away)} of the ${list.length} were away from home.`);
+    + `started, and ${record(w, dr, l)}, scoring ${gf} and conceding ${ga}. `
+    + `${cap(num(away))} of the ${num(list.length)} were away from home.`);
   p.push('None of it counts towards anything and all of it was the point. Pre-season is not '
     + 'there to extend a record: it is there to give players minutes, to try combinations '
     + 'that might not work, and to find out what happens when a match goes badly. A summer of '
@@ -991,4 +999,143 @@ export function badgeBand(d) {
     + 'so that if it ever changes, somebody has to decide to change it.');
   return sec('pg-badge', 17, 'The badge', 'What is on the shirt<span class="volt">.</span>',
     p.map((x) => `<p>${x}</p>`).join(''));
+}
+
+/* ---- THE SEASON, TOLD RATHER THAN LISTED --------------------------------
+   The match list is the record; this is the story it adds up to. Every claim
+   in it is read off the same results, but a run of eighteen wins is not
+   really eighteen facts, it is one long nerve, and a programme is the right
+   place to say so. */
+export function narrativeBand(d) {
+  const season = d.titleSeason;
+  const league = (d.competitive || [])
+    .filter((x) => x.season === season && /League/i.test(x.competition || ''))
+    .sort((a, b) => String(a.iso).localeCompare(String(b.iso)));
+  const cups = (d.competitive || [])
+    .filter((x) => x.season === season && !/League/i.test(x.competition || ''))
+    .sort((a, b) => String(a.iso).localeCompare(String(b.iso)));
+  if (!league.length) return '';
+
+  const first = league[0];
+  const last = league[league.length - 1];
+  const scored = league.reduce((n, x) => n + (x.ourGoals || 0), 0);
+  const tight = league.filter((x) => (x.ourGoals - x.theirGoals) === 1);
+  const big = league.filter((x) => (x.ourGoals - x.theirGoals) >= 5);
+  const walk = league.filter((x) => x.isWalkover);
+  const conceded = league.filter((x) => (x.theirGoals || 0) > 0);
+  const shutouts = league.length - walk.length - conceded.length;
+
+  const p = [];
+  p.push(`It began on ${esc(fmtDate(first.date, { long: true }))} against `
+    + `${esc(first.opponent)} and finished on ${esc(fmtDate(last.date, { long: true }))} `
+    + `against ${esc(last.opponent)}, and in between the club did not lose a league match.`);
+  p.push('That sentence is easy to write and it was not an easy thing to do. A season is not '
+    + 'won in the matches everybody expects to win. It is won on the mornings when the pitch '
+    + 'is heavy, when eleven turn into nine by half past ten, and when the side in front of '
+    + 'you has decided that being the team to beat the unbeaten team is worth a broken shin.');
+  if (big.length) {
+    p.push(`There were afternoons when it was over inside twenty minutes: `
+      + `${plural(big.length, 'match', 'matches')} won by five or more, and `
+      + `${scored} league goals across the campaign.`);
+  }
+  if (tight.length) {
+    p.push(`And there were ${plural(tight.length, 'match', 'matches')} won by a single goal. `
+      + 'Those are the ones that decide a title. A club that wins its big games and draws its '
+      + 'awkward ones finishes third; this one kept finding a way through on the days when '
+      + 'nothing came easily.');
+  }
+  if (shutouts > 0) {
+    p.push(`At the back it conceded in only ${plural(conceded.length, 'league match', 'league matches')}, `
+      + `keeping ${plural(shutouts, 'clean sheet', 'clean sheets')} across the season. `
+      + 'Eleven goals conceded in a league campaign is the number that ought to travel worst '
+      + 'between divisions, and it is the one this season will test first.');
+  }
+  if (walk.length) {
+    p.push(`${plural(walk.length, 'fixture was', 'fixtures were')} awarded rather than played, `
+      + 'which the club has never tried to hide and does not count as a goal either way. It '
+      + 'is the reason the ninety were scored in fifteen matches rather than eighteen, and '
+      + 'the reason the rest of the record is worth believing.');
+  }
+  if (cups.length) {
+    const finalLost = cups.filter((x) => x.outcome === 'L').slice(-1)[0];
+    p.push(`The cups ran alongside it: ${plural(cups.length, 'match', 'matches')} in knockout `
+      + 'football, which is a different game from a league. A league forgives a bad morning '
+      + 'and a cup does not.');
+    if (finalLost) {
+      p.push(`It ended against ${esc(finalLost.opponent)} on `
+        + `${esc(fmtDate(finalLost.date, { long: true }))}, ${esc(finalLost.ourScoreline)}. `
+        + 'A club in its first season reaching a final is worth more than the result of it, '
+        + 'and the result is in this programme anyway, because a record that only keeps the '
+        + 'good days is not a record.');
+    }
+  }
+  p.push('None of it counts this morning. That is not false modesty, it is the league table: '
+    + 'it is empty, and everybody in this division starts level with everybody else. What '
+    + 'last season bought was the right to find out what this squad is worth two divisions '
+    + 'higher, which is the only thing anybody here actually wanted.');
+
+  return sec('pg-story2', 18, `${season}`, 'The season, and what it took<span class="volt">.</span>',
+    p.map((x) => `<p>${x}</p>`).join(''));
+}
+
+/* ---- THE ANSWERS, AT THE BACK -------------------------------------------
+   Where answers belong. Printing them beside the questions is the one thing
+   a quiz page must not do, and the club said so. */
+export function answersBand(questions, ws) {
+  if (!questions.length && !(ws && ws.placed.length)) return '';
+  const p = [];
+  p.push('No peeking until you have had a go.');
+  const q = questions.length
+    ? `<h3 class="pg-h3">Half-time quiz</h3><ol class="pg-answers">${questions
+      .map((x) => `<li>${esc(x.a)}</li>`).join('')}</ol>`
+    : '';
+  const w = ws && ws.placed.length
+    ? `<h3 class="pg-h3">Word search</h3><p>The ${plural(ws.placed.length, 'name', 'names')} `
+      + `hidden in the grid: ${ws.placed.map((n) => esc(n)).join(', ')}. `
+      + 'They run across, down, diagonally and backwards.</p>'
+      + (ws.where && ws.where.length
+        ? `<ul class="pg-answers">${ws.where.map((x) => `<li>${esc(x.word)}: row `
+          + `${x.r + 1}, column ${x.c + 1}, running ${esc(x.dir)}.</li>`).join('')}</ul>`
+        : '')
+    : '';
+  return sec('pg-answers', 19, 'Answers', 'The answers<span class="volt">.</span>',
+    p.map((x) => `<p>${x}</p>`).join('') + q + w);
+}
+
+/* ---- THE CLUB'S OWN MATCH REPORTS ---------------------------------------
+   Seven matches in the archive carry a report somebody sat down and wrote.
+   They are the only prose in this programme that is not generated, and they
+   are the best thing in it: a machine can count a scoreline and it cannot
+   tell you what the second half felt like. */
+export function reportsBand(d, hasReport, reportText, articleBody) {
+  const withReport = (d.matches || [])
+    .filter((m) => m.played && hasReport(m))
+    .sort((a, b) => String(b.iso).localeCompare(String(a.iso)));
+  if (!withReport.length) return '';
+  const p = [];
+  p.push(`${plural(withReport.length, 'match in the archive carries', 'matches in the archive carry')} `
+    + 'a report somebody sat down and wrote afterwards. They are reprinted here in full.');
+  p.push('Everything else in this programme is counted. These are not: they are the only '
+    + 'pages in it written by a person, and they are the ones worth reading twice.');
+  const body = withReport.map((m) => {
+    const text = String(reportText(m) || '').replace(/^#+[^\n]*\n+/, '');
+    if (!text.trim()) return '';
+    return `<article class="pg-report">
+      <h3 class="pg-h3">${esc(m.title || `${m.home} v ${m.away}`)}</h3>
+      <p class="pg-report__meta">${esc(fmtDate(m.date, { long: true }))} &middot;
+        ${esc(m.competition)} &middot; ${esc(m.homeAway)}</p>
+      ${articleBody(text)}
+    </article>`;
+  }).join('');
+  return sec('pg-reports', 20, 'Match reports', 'In their own words<span class="volt">.</span>',
+    p.map((x) => `<p>${x}</p>`).join('') + body);
+}
+
+/* ---- A CREST BESIDE A CLUB NAME ------------------------------------------
+   The club asked for the opponents' badges. `clubCrest` resolves an uploaded
+   badge, then the extra registry, then the recovered one, then a needle, and
+   returns nothing it cannot find rather than a broken image. */
+export function crestFor(name, badges, clubCrest, cls = 'pg-crest') {
+  const out = clubCrest(name, badges, cls);
+  return out || '';
 }

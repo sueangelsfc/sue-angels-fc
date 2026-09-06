@@ -151,6 +151,31 @@ const PRINT_TOKENS = `
   .pg-rib--d { fill: #6a6b72; }
   .pg-rib--l { fill: #33343a; }
   .pg-rib--n { fill: #1d1e23; }
+
+  /* A crest beside a club name, and the heading has to become a flex row to
+     hold it without the badge pushing the text off its baseline. */
+  .pg-h3--crest { display: flex; align-items: center; gap: 3mm; }
+  .pg-crest { display: inline-block; width: 9mm; flex: 0 0 auto; }
+  .pg-crest img, .pg-crest svg { width: 100%; height: auto; display: block; }
+  .h2 .pg-crest { width: 11mm; vertical-align: middle; margin-inline-end: 3mm; }
+  .h2 { display: flex; align-items: center; gap: 0; flex-wrap: wrap; }
+
+  /* The club's own match reports: the only prose in here a person wrote. */
+  .pg-report { margin-block-end: 1.1rem; }
+  .pg-report__meta {
+    font-size: 8pt; letter-spacing: 0.12em; text-transform: uppercase;
+    color: ${BRAND.orange}; margin-block-end: 0.5rem;
+  }
+  .pg-report .nw-art__h {
+    font-family: var(--display); font-size: 11pt; color: #fff;
+    margin: 0.7rem 0 0.3rem; border: 0; padding: 0;
+  }
+  .pg-answers { color: #e9e5e1; margin: 0 0 0.9rem; padding-left: 1.2rem; }
+  .pg-answers li { padding: 0.22rem 0; }
+  .pr-quiz__where {
+    font-size: 8.5pt; letter-spacing: 0.1em; text-transform: uppercase;
+    color: ${BRAND.orange}; margin: 0.2rem 0 0;
+  }
 `;
 
 const COVER_CSS = `

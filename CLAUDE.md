@@ -817,6 +817,21 @@ it. `src/templates/programme.mjs`, band `45-programme.css`.
   Bayati, who retired from playing and moved onto the touchline: the staff
   line names him and should. It asks about the squad LINKS now.
 
+### Where the club says somebody plays
+
+A stated position used to win **only where there was nothing to infer**, which
+made the position field on the panel's player form do nothing for anybody who
+had played: twenty-two of the twenty-four in this squad. A field that is
+offered, saved and then silently overridden is the "field with no consumer"
+fault wearing a disguise, and harder to spot because it looks like it worked.
+
+A stated position wins outright now. Inference still answers for everybody the
+club has said nothing about, which is the half most easily lost when a
+precedence rule is changed, and the suite asserts both.
+`src/data/positions-extra.json` is the club saying so where the panel has not
+been used yet, and it **loses to the panel** like every other `*-extra.json`
+here.
+
 ### An article the club has written but has not yet entered
 
 `src/data/articles-extra.json` exists because the `articles` table **cannot be

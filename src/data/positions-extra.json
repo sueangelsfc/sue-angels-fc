@@ -1,0 +1,12 @@
+{
+  "_source": "The club, 6 September 2026, by shirt number.",
+  "_note": "WHERE THE CLUB SAYS SOMEBODY PLAYS, when that differs from where the archive shows they lined up. Inference reads team sheets, which is the right answer for a player with a season behind him and the wrong one when a man has been moved: Jon Lloyd spent 25/26 at left wing back and is a forward this season, and no amount of reading last year's sheets will say so.\n\nIT LOSES TO THE PANEL. A position stated on the player's own record wins over this file, so the club correcting somebody in Control panel -> Squad and staff overrides it and this entry can then be deleted. Same rule as every other *-extra.json here: the file is the stopgap and the database is the record.",
+  "_replaceWhen": "Delete an entry once the same position is set on that player in the control panel.",
+  "positions": {
+    "2": "Centre back",
+    "21": "Forward",
+    "23": "Central midfielder",
+    "30": "Forward",
+    "35": "Central midfielder"
+  }
+}

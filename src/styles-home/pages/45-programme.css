@@ -129,27 +129,136 @@
 .pr-read__t { font-family: var(--display); font-size: clamp(1.1rem, 4vw, 1.6rem); line-height: 1.15; }
 .pr-read__go { color: var(--volt); font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.35rem; }
 
-.pr-partners {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.9rem;
-  margin: 0 0 1rem;
-  padding: 0;
-}
-.pr-partners li {
-  background: #fff;
-  border-radius: var(--r-sm);
-  padding: 0.6rem 0.9rem;
-  display: flex;
-  align-items: center;
-  min-height: 60px;
-}
-.pr-partners img { display: block; width: auto; height: 40px; }
-.pr-partners span { color: #111; font-weight: 600; font-size: 0.9rem; }
+/* The logo strip this band used to be is gone. Its `.pr-partners li` rule
+   outlived it and, being a class plus a type selector, outranked the
+   `.pr-partner` card that replaced it: every partner card painted white and
+   the body text on it failed contrast at 2.26:1. Found by the browser pass,
+   which is the only thing that could have found it - the tokens were all
+   correctly declared, so nothing static had a question to ask. */
 
 /* A long club name on a narrow phone. `truncate` is defined in another page's
    band and borrowing it would make this page depend on a stylesheet it does
    not load, which is the defect the suite calls a class from another page's
    sheet. */
 .pr-clip { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+
+/* ==========================================================================
+   THE HALF-TIME QUIZ
+
+   `<details>` is the browser's own disclosure widget: no JavaScript, works
+   with the script blocked, and prints with the answers closed so the page is
+   still a quiz on paper.
+   ========================================================================== */
+.pr-quiz { margin: 0 0 1rem; padding-left: 1.25rem; }
+.pr-quiz li { margin-block-end: 1rem; padding-block-end: 1rem; border-block-end: 1px solid var(--line-d); }
+.pr-quiz li:last-child { border-block-end: 0; }
+.pr-quiz__q { margin: 0 0 0.5rem; font-size: 1.02rem; }
+.pr-quiz__a summary {
+  cursor: pointer;
+  display: inline-block;
+  font-size: 0.85rem;
+  color: var(--volt);
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--line-d);
+  border-radius: var(--pillr);
+}
+.pr-quiz__a summary:hover, .pr-quiz__a summary:focus-visible { border-color: var(--volt); }
+.pr-quiz__a[open] summary { color: var(--ink-3); }
+.pr-quiz__a p { margin: 0.6rem 0 0; color: var(--ink-2); }
+
+/* ==========================================================================
+   THE WORD SEARCH
+
+   A real table, because it is a grid of data and a screen reader should be
+   able to walk it. The caption says what it is; the letters are meaningless
+   read aloud, which is why the names are listed underneath in text.
+   ========================================================================== */
+.pr-ws { display: grid; gap: clamp(1rem, 3vw, 2rem); grid-template-columns: minmax(0, auto) minmax(0, 1fr); align-items: start; }
+@media (max-width: 640px) { .pr-ws { grid-template-columns: 1fr; } }
+.pr-ws__grid { border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.pr-ws__grid td {
+  width: clamp(1.35rem, 6.2vw, 2rem);
+  height: clamp(1.35rem, 6.2vw, 2rem);
+  text-align: center;
+  vertical-align: middle;
+  font-family: var(--ui);
+  font-size: clamp(0.7rem, 3vw, 0.95rem);
+  letter-spacing: 0.02em;
+  border: 1px solid var(--line-d);
+  color: var(--ink-1);
+}
+.pr-ws__words {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  columns: 2;
+  column-gap: 1.5rem;
+  font-size: 0.95rem;
+}
+.pr-ws__words li { padding: 0.22rem 0; break-inside: avoid; }
+
+/* ==========================================================================
+   THE PARTNERS, PROPERLY
+
+   A logo strip is a wall of pictures that says nothing. These are small
+   businesses paying for pitches and kit, so each one gets its mark, what it
+   does, what it sponsors and a way to reach it.
+   ========================================================================== */
+.pr-partners { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; gap: 1rem; }
+.pr-partner {
+  display: grid;
+  grid-template-columns: minmax(0, 150px) minmax(0, 1fr);
+  gap: clamp(0.9rem, 3vw, 1.5rem);
+  align-items: start;
+  padding: 1.1rem;
+  border: 1px solid var(--line-d);
+  border-radius: var(--r);
+  background: var(--slab);
+}
+@media (max-width: 560px) { .pr-partner { grid-template-columns: 1fr; } }
+.pr-partner__mark {
+  background: #fff;
+  border-radius: var(--r-sm);
+  padding: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 74px;
+}
+.pr-partner__mark img { display: block; width: 100%; height: auto; max-height: 56px; object-fit: contain; }
+.pr-partner__mark span { color: #111; font-weight: 700; font-size: 0.95rem; text-align: center; }
+.pr-partner__name { font-family: var(--display); font-size: clamp(1.05rem, 4vw, 1.4rem); margin: 0 0 0.2rem; }
+.pr-partner__role { margin: 0 0 0.3rem; font-size: 0.78rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--volt); }
+.pr-partner__trade { margin: 0 0 0.5rem; color: var(--ink-2); font-size: 0.95rem; }
+.pr-partner__say { margin: 0 0 0.6rem; color: var(--ink-2); font-size: 0.95rem; line-height: 1.55; }
+.pr-partner__links a { color: var(--volt); }
+
+/* ==========================================================================
+   SAVING IT
+
+   The club asked for a programme somebody can take away. Every phone and
+   every browser already has "Print" and "Save as PDF", so the useful work is
+   not a button: it is making the printed page worth saving. Navigation,
+   footer and the site furniture come off; the grid, the quiz and the squad
+   stay; nothing is left mid-page across a break.
+   ========================================================================== */
+.pr-save { border: 1px solid var(--line-d); border-radius: var(--r); padding: 1rem 1.25rem; max-width: 46rem; }
+.pr-save p { margin: 0 0 0.35rem; }
+.pr-save__how { color: var(--ink-3); font-size: 0.9rem; margin: 0; }
+
+@media print {
+  .site-header, .site-footer, .pa, .xrail, .pr-save, .site-nav, nav { display: none !important; }
+  html, body { background: #fff !important; color: #111 !important; }
+  .is-programme .sec { padding-block: 0.6rem !important; page-break-inside: avoid; }
+  .is-programme .wrap { max-width: none !important; padding-inline: 0 !important; }
+  .pr-cover__title, .h2 { color: #111 !important; }
+  .pr-facts, .pr-h2h, .pr-partner, .pr-read { border-color: #bbb !important; background: #fff !important; }
+  .pr-facts > div, .pr-h2h > div { background: #fff !important; }
+  .pr-ws__grid td { border-color: #666 !important; color: #111 !important; }
+  .pr-quiz__a summary { display: none !important; }
+  /* Answers print WITH the quiz: a printed programme is read later, and a
+     disclosure widget nobody can click is just a missing answer. */
+  .pr-quiz__a p { display: block !important; }
+  .pr-quiz li, .pr-partner, .pr-group { page-break-inside: avoid; }
+  a { text-decoration: none !important; color: #111 !important; }
+}

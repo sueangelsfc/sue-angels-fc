@@ -264,6 +264,9 @@ export function buildDataset(overrides = {}) {
   const posByNum = inferPositions(matches);
   const bios = ps.PLAYER_BIOS || {};
   const photoKeys = new Set((live.player_photos || []).map((p) => String(p.key)));
+  /* Where the club says somebody plays, by shirt number. Loses to a position
+     stated on the player's own record. See src/data/positions-extra.json. */
+  const positionsExtra = read('positions-extra.json').positions || {};
 
   /* Squad status. The recovered PageShell marks every player active, which is
      wrong: two ended their playing careers during 25/26 and nine have moved
@@ -394,12 +397,24 @@ export function buildDataset(overrides = {}) {
     const name = `${p.first} ${p.last}`.trim();
     const pos = posByNum.get(p.num);
     const isGk = p.gk || pos?.code === 'GK';
-    /* A stated position wins over the inferred one. Inference reads where
-       somebody actually lined up, which is the right answer for anyone with a
-       season behind them and no answer at all for a player who has not played
-       yet: without this a new signing is a "Squad player" forever. */
-    const said = p.position || '';
-    if (said && !pos) {
+    /* A STATED POSITION WINS OVER THE INFERRED ONE, FULL STOP.
+
+       It used to win only where there was nothing to infer, which made the
+       position field on the panel's player form do nothing for anybody who
+       had played: twenty-two of the twenty-four in this squad. A field that
+       is offered, saved, and then silently overridden is the same fault as a
+       field with no consumer at all, and harder to notice.
+
+       Inference reads team sheets, which is the right answer for a player
+       nobody has said anything about and the wrong one the moment a man is
+       moved: a left wing back playing as a forward this season cannot be
+       discovered by reading last year's sheets.
+
+       positions-extra.json is the club saying so where the panel has not been
+       used yet, and it LOSES to the panel: a position on the player's own
+       record wins over the file. */
+    const said = p.position || positionsExtra[String(p.num)] || '';
+    if (said) {
       const group = /goal/i.test(said) ? 'gk' : /def|back/i.test(said) ? 'def'
         : /forward|strik/i.test(said) ? 'fwd' : 'mid';
       return {

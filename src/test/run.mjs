@@ -5010,6 +5010,52 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 }
 
 /* ==========================================================================
+   WHERE THE CLUB SAYS SOMEBODY PLAYS
+
+   A stated position used to win only where there was nothing to infer, which
+   made the position field on the panel's player form do nothing for anybody
+   who had played: twenty-two of the twenty-four in this squad. A field that is
+   offered, saved and then silently overridden is worse than one that is
+   missing, because nobody can tell. */
+{
+  const { buildDataset: bdX } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const extra = JSON.parse(fs.readFileSync(
+    path.join(ROOT, 'src', 'data', 'positions-extra.json'), 'utf8')).positions || {};
+  const dX = bdX();
+  const byNum = Object.fromEntries((dX.squad || []).map((p) => [String(p.num), p]));
+
+  const wrong = Object.entries(extra)
+    .filter(([num, said]) => byNum[num] && byNum[num].position !== said)
+    .map(([num, said]) => `${(byNum[num] || {}).name}: ${(byNum[num] || {}).position} not ${said}`);
+  check('a position the club has stated beats the one inferred from team sheets',
+    wrong.length === 0, wrong.join(' | '));
+
+  /* AND IT REACHES THE GROUPING, not only the label. The squad page and the
+     programme group by positionGroup, so a stated "Forward" that still sits
+     in midfield has changed a caption and nothing else. */
+  const GROUP_OF = { 'Centre back': 'def', Forward: 'fwd', 'Central midfielder': 'mid' };
+  const mis = Object.entries(extra)
+    .filter(([num, said]) => GROUP_OF[said] && byNum[num] && byNum[num].positionGroup !== GROUP_OF[said])
+    .map(([num, said]) => `${(byNum[num] || {}).name}: ${(byNum[num] || {}).positionGroup} not ${GROUP_OF[said]}`);
+  check('a stated position changes the group the player is listed under',
+    mis.length === 0, mis.join(' | '));
+
+  /* INFERENCE STILL WORKS for everybody the club has said nothing about,
+     which is the half most easily lost when a precedence rule is changed. */
+  const inferred = (dX.squad || []).filter((p) => !extra[String(p.num)]
+    && (p.positionsPlayed || []).length && p.position && p.position !== 'Squad player');
+  check('players the club has not spoken about still get a position from the archive',
+    inferred.length >= 8, `${inferred.length} inferred`);
+
+  /* The file is a stopgap and says so, the way every other one here does. */
+  const raw = JSON.parse(fs.readFileSync(
+    path.join(ROOT, 'src', 'data', 'positions-extra.json'), 'utf8'));
+  check('the position file says when to delete an entry',
+    /_replaceWhen/.test(JSON.stringify(raw)) && /control panel/i.test(raw._note || ''),
+    'a stopgap has to name what replaces it');
+}
+
+/* ==========================================================================
    THE MATCH PROGRAMME
 
    One stable URL that is always the NEXT fixture, so the nav can point at it

@@ -60,10 +60,128 @@ function headToHead(d, opponent) {
   return { met, related, tally };
 }
 
+
+/* ---- A DETERMINISTIC SHUFFLE -------------------------------------------
+   The word search has to be the same grid on every build. A random one would
+   churn the page in git on every deploy and mean the puzzle somebody solved
+   at half time is not the puzzle on the page at full time. Seeded from the
+   fixture, so a new match gets a new grid and the same match never does. */
+function rng(seed) {
+  let h = 2166136261;
+  for (let i = 0; i < String(seed).length; i += 1) {
+    h ^= String(seed).charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return () => {
+    h += 0x6D2B79F5;
+    let t = h;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ---- THE WORD SEARCH ----------------------------------------------------
+   Surnames from the squad that is actually playing this season, hidden in a
+   grid. Built here rather than drawn by hand because the squad changes: two
+   players signed this week and the puzzle picked them up without anybody
+   editing it.
+
+   A word that will not fit is DROPPED, not forced, and the answer list is
+   what was actually placed. A puzzle listing a word that is not in the grid
+   is worse than a smaller puzzle. */
+function wordSearch(names, seed, size = 12) {
+  const rand = rng(seed);
+  const grid = Array.from({ length: size }, () => Array(size).fill(''));
+  const DIRS = [[0, 1], [1, 0], [1, 1], [1, -1], [0, -1], [-1, 0]];
+  const placed = [];
+
+  const fits = (word, r, c, dr, dc) => {
+    for (let i = 0; i < word.length; i += 1) {
+      const rr = r + dr * i;
+      const cc = c + dc * i;
+      if (rr < 0 || cc < 0 || rr >= size || cc >= size) return false;
+      const at = grid[rr][cc];
+      if (at && at !== word[i]) return false;
+    }
+    return true;
+  };
+
+  for (const raw of names) {
+    const word = String(raw).toUpperCase().replace(/[^A-Z]/g, '');
+    if (word.length < 4 || word.length > size) continue;
+    let done = false;
+    for (let tries = 0; tries < 220 && !done; tries += 1) {
+      const [dr, dc] = DIRS[Math.floor(rand() * DIRS.length)];
+      const r = Math.floor(rand() * size);
+      const c = Math.floor(rand() * size);
+      if (!fits(word, r, c, dr, dc)) continue;
+      for (let i = 0; i < word.length; i += 1) grid[r + dr * i][c + dc * i] = word[i];
+      placed.push(raw);
+      done = true;
+    }
+  }
+  const A = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  for (let r = 0; r < size; r += 1) {
+    for (let c = 0; c < size; c += 1) {
+      if (!grid[r][c]) grid[r][c] = A[Math.floor(rand() * 26)];
+    }
+  }
+  return { grid, placed };
+}
+
+/* ---- THE QUIZ -----------------------------------------------------------
+   Every question is COUNTED, never typed, so it is still true next season
+   and cannot contradict the pages that publish the same figures. A question
+   whose answer cannot be derived is not asked. */
+function quiz(d) {
+  const out = [];
+  const ask = (q, a) => { if (a !== null && a !== undefined && a !== '') out.push({ q, a }); };
+  const us = (d.table || []).find((r) => r.us);
+  const last = d.titleSeason;
+  const players = d.players || [];
+  const byGoals = players.slice().sort((a, b) => (b.goals || 0) - (a.goals || 0))[0];
+  const byAssists = players.slice().sort((a, b) => (b.assists || 0) - (a.assists || 0))[0];
+  const played = (d.matches || []).filter((x) => x.played && x.countsGoals);
+  const biggest = played.slice()
+    .sort((a, b) => ((b.ourGoals || 0) - (b.theirGoals || 0)) - ((a.ourGoals || 0) - (a.theirGoals || 0)))[0];
+
+  if (us) {
+    ask(`How many league matches did the club win in ${last}?`,
+      `${us.won}, out of ${us.played}. Every one of them.`);
+    ask(`How many goals did the club concede in the ${last} league season?`,
+      `${us.goalsAgainst}, in ${us.played} matches.`);
+    ask(`How many points did the club finish on?`,
+      `${us.points}. The maximum available.`);
+  }
+  if (byGoals && byGoals.goals) {
+    ask('Who was the club’s leading scorer in its first season?',
+      `${byGoals.name}, with ${byGoals.goals} in all competitions.`);
+  }
+  if (byAssists && byAssists.assists) {
+    ask('And who made the most assists?', `${byAssists.name}, with ${byAssists.assists}.`);
+  }
+  if (biggest) {
+    ask('What was the club’s biggest win?',
+      `${biggest.ourScoreline} ${biggest.homeAway.toLowerCase()} to ${biggest.opponent}, ${fmtDate(biggest.date)}.`);
+  }
+  const walkovers = played.length ? (d.matches || []).filter((x) => x.isWalkover).length : 0;
+  if (walkovers) {
+    ask('Three of last season’s eighteen league matches were not played at all. Why?',
+      `They were awarded as walkovers. ${walkovers} of them, and they carry no score.`);
+  }
+  return out;
+}
+
 export function programme(d) {
   const m = d.nextFixture;
   const badges = d.badges;
-  const season = d.currentSeason;
+  /* THE FIXTURE'S SEASON, NOT THE FIGURES' SEASON. `d.currentSeason` is the
+     season the club's published figures describe and it reads `competitive`,
+     so in September it is still last season until somebody records a result.
+     That is right for the stats page and wrong for a programme: this page is
+     for a 26/27 fixture and says so on the day, not after it. */
+  const season = (m && m.season) || d.nextSeason || d.currentSeason;
 
   /* ---- 01 THE COVER ---------------------------------------------------- */
   const cover = m
@@ -242,23 +360,102 @@ export function programme(d) {
       </div>
     </section>`;
 
-  /* ---- 08 WHO BACKS THE CLUB --------------------------------------------- */
+  /* ---- 08 WHO BACKS THE CLUB ---------------------------------------------
+     A logo strip is a wall of pictures that says nothing. These are small
+     businesses paying for a Sunday-league club's kit and pitches, and the
+     record already holds what each one does, what they sponsor and where to
+     find them: printing it is the difference between a credit and a thank
+     you somebody might act on. */
   const partners = (d.partners || []).filter((p) => p.onPage !== false);
   const partnerBand = partners.length ? `<section class="sec pr-band" aria-labelledby="pr-sp-h">
       <div class="wrap">
-        ${rail(7, 'Who backs the club', `${partners.length} partners`)}
-        <h2 class="h2 rv" id="pr-sp-h">Our partners<span class="volt">.</span></h2>
-        <ul class="pr-partners rv">${partners.map((p) => `<li>${p.logo
-    ? `<img src="${attr(p.logo)}" alt="${attr(p.name)}" width="120" height="60" loading="lazy" decoding="async" />`
-    : `<span>${esc(p.short || p.name)}</span>`}</li>`).join('')}</ul>
-        <p class="pr-note">Every one of them keeps this club on the pitch.
-          <a href="/sponsors.html">Back the Angels</a>.</p>
+        ${rail(9, 'Who backs the club', `${partners.length} partners`)}
+        <h2 class="h2 rv" id="pr-sp-h">The people who make this possible<span class="volt">.</span></h2>
+        <p class="pr-lede rv">A Sunday-league club runs on pitch fees, kit, footballs and
+          referees. These businesses pay for them. If you need what they do, they are worth
+          your call before anybody else's.</p>
+        <ul class="pr-partners rv">${partners.map((p) => `<li class="pr-partner">
+          <div class="pr-partner__mark">${p.logo
+    ? `<img src="${attr(p.logo)}" alt="${attr(p.name)}" width="150" height="70" loading="lazy" decoding="async" />`
+    : `<span>${esc(p.short || p.name)}</span>`}</div>
+          <div class="pr-partner__body">
+            <h3 class="pr-partner__name">${esc(p.name)}</h3>
+            ${p.role ? `<p class="pr-partner__role">${esc(p.role)}${p.since ? ` · since ${esc(p.since)}` : ''}</p>` : ''}
+            ${p.trade ? `<p class="pr-partner__trade">${esc(p.trade)}</p>` : ''}
+            ${p.detail || p.body ? `<p class="pr-partner__say">${esc(p.detail || p.body)}</p>` : ''}
+            ${(p.links || []).length ? `<p class="pr-partner__links">${(p.links || []).map((l) => `<a href="${attr(l.href)}" target="_blank" rel="noopener">${esc(l.label || 'Website')}</a>`).join(' · ')}</p>` : ''}
+          </div>
+        </li>`).join('')}</ul>
+        <p class="pr-note">Want your name on the shirt or in this programme?
+          <a href="/sponsors.html">How sponsorship works</a>.</p>
       </div>
     </section>` : '';
 
+  /* ---- 09 THE QUIZ --------------------------------------------------------
+     Counted from the archive, so it is still true next season. The answers
+     are `<details>`, which is a disclosure widget the browser already has: no
+     JavaScript, works with the script blocked, and readable when printed. */
+  const questions = quiz(d);
+  const quizBand = questions.length ? `<section class="sec pr-band" aria-labelledby="pr-quiz-h">
+      <div class="wrap">
+        ${rail(7, 'Half-time quiz', `${questions.length} questions`)}
+        <h2 class="h2 rv" id="pr-quiz-h">How closely were you watching<span class="volt">?</span></h2>
+        <p class="pr-lede rv">Every answer is somewhere on this website. No prizes, no cheating,
+          and the person beside you almost certainly knows.</p>
+        <ol class="pr-quiz rv">${questions.map((x) => `<li>
+          <p class="pr-quiz__q">${esc(x.q)}</p>
+          <details class="pr-quiz__a"><summary>Show the answer</summary>
+            <p>${esc(x.a)}</p></details>
+        </li>`).join('')}</ol>
+      </div>
+    </section>` : '';
+
+  /* ---- 10 THE WORD SEARCH -------------------------------------------------
+     The squad that is playing this season, hidden in a grid built at build
+     time. It picked up two players signed this week without anybody editing
+     it, which is the whole reason it is generated rather than drawn. */
+  const puzzleNames = here.map((p) => p.last || String(p.name).split(' ').pop())
+    .filter((x) => /^[A-Za-z]{4,10}$/.test(x));
+  const ws = wordSearch(puzzleNames.slice(0, 10), (m && m.id) || 'programme');
+  const wordBand = ws.placed.length >= 4 ? `<section class="sec pr-band" aria-labelledby="pr-ws-h">
+      <div class="wrap">
+        ${rail(8, 'Word search', `${ws.placed.length} names`)}
+        <h2 class="h2 rv" id="pr-ws-h">Find the squad<span class="volt">.</span></h2>
+        <p class="pr-lede rv">${esc(ws.placed.length)} surnames from this season's squad, hidden
+          across, down, diagonally and backwards.</p>
+        <div class="pr-ws rv">
+          <table class="pr-ws__grid">
+            <caption class="sr-only">A word search grid of ${esc(ws.grid.length)} rows by
+              ${esc(ws.grid.length)} columns. The names to find are listed after the grid.</caption>
+            <tbody>${ws.grid.map((row) => `<tr>${row.map((ch) => `<td>${esc(ch)}</td>`).join('')}</tr>`).join('')}</tbody>
+          </table>
+          <ul class="pr-ws__words">${ws.placed.map((n) => `<li>${esc(n)}</li>`).join('')}</ul>
+        </div>
+      </div>
+    </section>` : '';
+
+  /* ---- 11 TAKING IT AWAY --------------------------------------------------
+     No button and no JavaScript. Every phone and every browser already has
+     Print and Save as PDF, and a button that only calls window.print() adds a
+     script to a page that otherwise needs none in order to duplicate a
+     control the reader already has. The work worth doing is the print
+     stylesheet, which is in 45-programme.css: the furniture comes off, the
+     quiz answers come ON, and nothing breaks across a page. */
+  const saveBand = `<section class="sec pr-band" aria-labelledby="pr-save-h">
+      <div class="wrap">
+        <h2 class="h2 rv" id="pr-save-h">Take it with you<span class="volt">.</span></h2>
+        <div class="pr-save rv">
+          <p><b>Save this programme.</b> Use your browser's <b>Print</b> or
+            <b>Share &rarr; Print</b> and choose <b>Save as PDF</b>.</p>
+          <p class="pr-save__how">It is laid out for paper as well as a screen, and the quiz
+            answers print with the questions so it still reads at home.</p>
+        </div>
+      </div>
+    </section>`;
+
   return {
     body: siteHeader('/programme.html') + cover + opponentBand + squadBand + lastBand
-      + previewBand + nextBand + causeBand + partnerBand
+      + previewBand + nextBand + quizBand + wordBand + causeBand + partnerBand + saveBand
       + sourceNote(['fulltime']),
     bodyClass: 'is-home is-sub is-programme',
     css: 'home.css',

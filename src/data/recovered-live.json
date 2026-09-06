@@ -9078,10 +9078,22 @@
             "last": "Heath",
             "first": "Rob",
             "position": "Defender"
+          },
+          {
+            "num": 39,
+            "last": "Bridge",
+            "first": "Jack",
+            "position": "Midfielder"
+          },
+          {
+            "num": 40,
+            "last": "Marie",
+            "first": "Adam",
+            "position": "Defender"
           }
         ]
       },
-      "updated_at": "2026-09-05T19:26:42.605+00:00"
+      "updated_at": "2026-09-06T05:51:52.491+00:00"
     },
     {
       "key": "roster:status",
@@ -9190,10 +9202,22 @@
               "key": "active",
               "from": "2026-08-17"
             }
+          },
+          "39": {
+            "26/27": {
+              "key": "active",
+              "from": "2026-08-01"
+            }
+          },
+          "40": {
+            "26/27": {
+              "key": "active",
+              "from": "2026-08-01"
+            }
           }
         }
       },
-      "updated_at": "2026-09-05T19:26:42.978+00:00"
+      "updated_at": "2026-09-06T05:51:52.552+00:00"
     },
     {
       "key": "roster:trialists",

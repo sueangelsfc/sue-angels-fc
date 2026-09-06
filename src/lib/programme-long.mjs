@@ -524,7 +524,14 @@ export function seasonBandLong(d) {
     const mo = Number(String(x.iso || '').slice(5, 7)) - 1;
     if (mo >= 0) monthCounts[mo] = (monthCounts[mo] || 0) + (x.ourGoals || 0);
   });
-  const chart = barChart(Object.keys(monthCounts).sort((a, b) => a - b)
+  /* IN SEASON ORDER, not calendar order. A football season runs August to
+     May, so sorting the month numbers put January first and September sixth:
+     a chart of a season that opened in September and was won in May, read
+     left to right, began four months after it finished. July is the first
+     month of a season here because that is when pre-season starts. */
+  const seasonOrder = (mo) => (Number(mo) + 12 - 6) % 12;
+  const chart = barChart(Object.keys(monthCounts)
+    .sort((a, b) => seasonOrder(a) - seasonOrder(b))
     .map((k) => ({ k: MONTHS[k], v: monthCounts[k] })),
   { label: `Goals scored by month, ${season}` });
 
@@ -639,6 +646,14 @@ export function honoursBand(d) {
   if (!rec.length) return '';
   const potm = rec.filter((r) => /potm/i.test(r.key || '') || /month/i.test(r.type || ''));
   const other = rec.filter((r) => !potm.includes(r));
+  /* IN SEASON ORDER, the same as the goals chart: these arrived September,
+     February, March, January, which is the order somebody entered them. */
+  const monthOrder = (r) => {
+    const i = MONTHS.indexOf(String(r.month || ''));
+    return i < 0 ? 99 : (i + 12 - 6) % 12;
+  };
+  potm.sort((a, b) => String(a.season || '').localeCompare(String(b.season || ''))
+    || monthOrder(a) - monthOrder(b));
   const p = [];
   p.push('The club keeps its own record of who it has picked out, month by month and season '
     + 'by season. It is a short list because the club is young, and it will be a long one.');

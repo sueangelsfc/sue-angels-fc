@@ -5113,6 +5113,21 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     'the widget is the point on screen');
 
   /* THE COVER IS THE FIXTURE, always: both badges either side of a v. */
+  /* TEN THOUSAND WORDS, WHICH IS THE CLUB'S OWN FLOOR. Asserted because the
+     document is generated: a section that silently stops producing output
+     takes a thousand words with it and nothing else would notice. The count
+     is of TEXT, with the markup stripped, so it cannot be met with tags. */
+  {
+    const words = flatten(docP.cover + docP.body).split(' ').filter(Boolean).length;
+    check('the programme runs to at least ten thousand words',
+      words >= 10000, `${words} words`);
+    /* And every one of them derived. A programme that started quoting things
+       nobody said would be a different kind of document. */
+    check('the programme carries charts rather than only prose',
+      (docP.body.match(/pg-chart/g) || []).length >= 4,
+      `${(docP.body.match(/pg-chart/g) || []).length} chart elements`);
+  }
+
   /* THE FRONT COVER IS A COVER: a photograph, the club's name up the spine,
      both badges and the fixture at the foot. Asked of the printed cover, which
      is its own thing and not the website's band. */

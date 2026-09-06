@@ -82,9 +82,10 @@ const BRAND = {
    text on it, which is worse than plain. */
 const PRINT_TOKENS = `
   :root {
-    --fg: ${BRAND.ink}; --ink-1: ${BRAND.ink}; --ink-2: ${BRAND.mute}; --ink-3: #6b6b70;
-    --line-d: ${BRAND.rule}; --line-l: #ece5de; --slab: ${BRAND.warm}; --slab-top: #fff;
-    --volt: ${BRAND.deep}; --volt-rgb: 122,45,0; --lift: 0,0,0;
+    --paper: ${BRAND.ink};
+    --fg: #f4f1ee; --ink-1: #f4f1ee; --ink-2: #c3bdb7; --ink-3: #918b86;
+    --line-d: #33343a; --line-l: #26272c; --slab: #17181c; --slab-top: #1d1e23;
+    --volt: ${BRAND.orange}; --volt-rgb: 255,112,52; --lift: 255,255,255;
     --r: 10px; --r-sm: 7px; --pillr: 999px; --wrap: 100%;
     --display: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
     --ui: "Geist", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -95,21 +96,61 @@ const PRINT_TOKENS = `
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
-  body { margin: 0; font-family: var(--body); color: ${BRAND.ink}; background: #fff;
-    font-size: 10.5pt; line-height: 1.5; }
+  html { background: ${BRAND.ink}; }
+  body {
+    margin: 0; font-family: var(--body); color: #f4f1ee; background: ${BRAND.ink};
+    font-size: 10.2pt; line-height: 1.55;
+  }
   .wrap { max-width: none; padding: 0; }
-  .sec { padding-block: 0.45rem; }
-  h1, h2, h3 { font-family: var(--display); color: ${BRAND.ink}; margin: 0 0 0.4rem; }
-  .h2 { font-size: 15.5pt; margin-block-start: 0.3rem; padding-block-end: 0.25rem;
-    border-block-end: 2px solid ${BRAND.orange}; }
+  .sec { padding-block: 0.35rem 0.9rem; }
+  h1, h2, h3, h4 { font-family: var(--display); color: #fff; margin: 0 0 0.4rem; }
+  .h2 {
+    font-size: 16pt; margin-block-start: 0.2rem; padding-block-end: 0.3rem;
+    border-block-end: 2.5px solid ${BRAND.orange}; color: #fff;
+  }
   .volt { color: ${BRAND.orange}; }
   .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  .xrail { display: flex; justify-content: space-between; font-size: 7.5pt;
-    letter-spacing: 0.1em; text-transform: uppercase; color: ${BRAND.deep};
-    font-weight: 600; margin-block-end: 4px; }
-  a { color: ${BRAND.ink}; text-decoration: none; }
+  .xrail {
+    display: flex; justify-content: space-between; font-size: 7.5pt;
+    letter-spacing: 0.16em; text-transform: uppercase; color: ${BRAND.orange};
+    font-weight: 700; margin-block-end: 5px;
+  }
+  .xrail__n { margin-inline-end: 7px; opacity: 0.65; }
+  a { color: ${BRAND.orange}; text-decoration: none; }
   img { max-width: 100%; }
-  p { margin: 0 0 0.55rem; }
+  p { margin: 0 0 0.5rem; }
+  b, strong { color: #fff; }
+
+  /* ---- The long read ---- */
+  .pg-h3 {
+    font-size: 11.5pt; color: ${BRAND.orange}; margin: 0.9rem 0 0.45rem;
+    padding-block-start: 0.35rem; border-block-start: 1px solid var(--line-d);
+    letter-spacing: 0.02em; text-transform: uppercase;
+  }
+  .pg-player { margin-block-end: 0.7rem; page-break-inside: avoid; }
+  .pg-player__name { font-size: 12pt; color: #fff; margin: 0 0 0.15rem; }
+  .pg-club { margin-block-end: 0.7rem; page-break-inside: avoid; }
+  .pg-runs { list-style: none; margin: 0 0 0.8rem; padding: 0; }
+  .pg-runs li {
+    padding: 0.42rem 0; border-block-start: 1px solid var(--line-d);
+    color: var(--ink-2); page-break-inside: avoid;
+  }
+  .pg-runs li b { color: #fff; }
+
+  /* ---- Charts ---- */
+  .pg-chart { margin: 0.6rem 0 1rem; page-break-inside: avoid; }
+  .pg-chart svg { width: 100%; height: auto; display: block; }
+  .pg-chart figcaption {
+    font-size: 8pt; letter-spacing: 0.1em; text-transform: uppercase;
+    color: ${BRAND.orange}; margin-block-start: 0.3rem;
+  }
+  .pg-chart__k { fill: #d8d3ce; font-family: var(--ui); font-size: 11px; }
+  .pg-chart__v { fill: ${BRAND.orange}; font-family: var(--ui); font-size: 11px; font-weight: 700; }
+  .pg-chart__bar { fill: ${BRAND.orange}; }
+  .pg-rib--w { fill: ${BRAND.orange}; }
+  .pg-rib--d { fill: #6a6b72; }
+  .pg-rib--l { fill: #33343a; }
+  .pg-rib--n { fill: #1d1e23; }
 `;
 
 const COVER_CSS = `
@@ -189,40 +230,53 @@ const COVER_CSS = `
 
 
 const PRINT_RULES = `
-  @page { size: A4; margin: 13mm 12mm; }
+  @page { size: A4; margin: 13mm 12mm; background: ${BRAND.ink}; }
   @page :first { margin: 0; }
-  /* The website's own cover band is replaced by the front page above it, so
-     only its fact table is kept. */
+  /* The whole document is on the club's black, so the page box has to be
+     painted too: a body background alone leaves white gutters in the margins
+     of every page after the first. */
+  html, body { background: ${BRAND.ink} !important; }
   .pr-cover { text-align: left; padding-block: 0 0.5rem; }
-  /* Page one carries no @page margin, so the first section after the cover
-     supplies its own top space rather than starting hard against the trim. */
-  .pc + .sec { padding-block-start: 4mm; }
   .pr-cover__title, .pr-cover__teams, .pr-cover .eyebrow, .pr-cover__where { display: none; }
-  .pr-facts, .pr-h2h { border-color: ${BRAND.rule}; background: ${BRAND.warm}; }
-  .pr-facts > div, .pr-h2h > div { background: ${BRAND.warm}; }
-  .pr-facts dd, .pr-h2h dd { color: ${BRAND.ink}; font-size: 13pt; }
-  .pr-facts dt, .pr-h2h dt { color: ${BRAND.deep}; }
-  .pr-byline { color: ${BRAND.deep}; font-size: 8.5pt; letter-spacing: 0.1em;
-    text-transform: uppercase; margin-block-end: 0.8rem; }
-  .nw-art__h { font-family: var(--display); font-size: 12.5pt; color: ${BRAND.ink};
-    margin: 0.9rem 0 0.35rem; padding-block-start: 0.35rem;
-    border-block-start: 1px solid ${BRAND.rule}; }
-  /* The article is four thousand words and MUST be allowed to flow across
-     pages. Without this it is one unbreakable block: it cannot fit on what is
-     left of page two, so it is pushed whole to page three and page two is a
-     fact table with two thirds of it empty. */
-  .pr-notes, .pr-band { page-break-inside: auto; }
-  .pr-cover { page-break-after: avoid; }
-  .pr-notes p { text-align: justify; hyphens: auto; }
-  .pr-notes strong { color: ${BRAND.deep}; }
-  .pr-group__h, .pr-partner__role { color: ${BRAND.deep}; }
+  .pr-facts, .pr-h2h { border-color: var(--line-d); background: var(--slab); }
+  .pr-facts > div, .pr-h2h > div { background: var(--slab); }
+  .pr-facts dd, .pr-h2h dd { color: #fff; font-size: 13pt; }
+  .pr-facts dt, .pr-h2h dt { color: ${BRAND.orange}; }
+  .pr-lede, .pr-note { color: var(--ink-2); }
+  .pr-group__h, .pr-partner__role { color: ${BRAND.orange}; }
+  .pr-names a { color: #f4f1ee; }
+  .pr-quiz li { border-block-end-color: var(--line-d); }
+  .pr-quiz__q { color: #fff; }
   .pr-quiz__a summary { display: none; }
-  .pr-quiz__a p { display: block; color: ${BRAND.deep}; font-weight: 600; }
-  .pr-partner { background: ${BRAND.warm}; border-color: ${BRAND.rule}; }
-  .pr-partner__mark { background: #fff; border: 1px solid ${BRAND.rule}; }
-  .pr-ws__grid td { border-color: #8a8a8e; color: ${BRAND.ink}; }
-  .pr-read, .pr-save, .pr-get { display: none; }
+  .pr-quiz__a p { display: block; color: ${BRAND.orange}; font-weight: 700; }
+  .pr-partner { background: var(--slab); border-color: var(--line-d); }
+  .pr-partner__name { color: #fff; }
+  .pr-partner__trade, .pr-partner__say { color: var(--ink-2); }
+  .pr-partner__mark { background: #fff; border: 1px solid var(--line-d); }
+  .pr-ws__grid td { border-color: #43444b; color: #f4f1ee; }
+  .pr-list li { border-block-start-color: var(--line-d); color: var(--ink-2); }
+  .pr-list li b { color: #fff; }
+  .pr-read, .pr-save, .pr-get, .pr-arch { display: none; }
   .pr-quiz li, .pr-partner, .pr-group, .pr-ws, .pr-facts, .pr-h2h { page-break-inside: avoid; }
+
+  /* EVERY PIECE OF TEXT, STATED. Inheriting from body was not enough: the
+     band stylesheet is written for a page that loads home.css, and several of
+     its rules resolve against tokens that mean something else here. Rather
+     than chase which one wins, the document says what colour its text is and
+     stops relying on cascade it cannot see. Unreadable body copy on a black
+     page is the failure that matters most in a document nobody can adjust. */
+  .sec p, .sec li, .sec dd, .sec td, .sec figcaption,
+  .pg-runs li, .pr-list li, .pg-player p, .pg-club p {
+    color: #e9e5e1;
+  }
+  .sec dt { color: ${BRAND.orange}; }
+  .sec h1, .sec h2, .sec h3, .sec h4 { color: #ffffff; }
+  .pg-h3 { color: ${BRAND.orange}; }
+  .sec b, .sec strong { color: #ffffff; }
+  .sec a { color: ${BRAND.orange}; }
+  .pr-lede { color: #ded9d4; }
+  .pr-note, .pg-chart figcaption { color: #a9a39d; }
+  .pg-chart figcaption { color: ${BRAND.orange}; }
 `;
 
 const html = `<!doctype html><html lang="en"><head><meta charset="utf-8">

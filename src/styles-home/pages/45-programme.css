@@ -274,22 +274,17 @@
 .pr-save p { margin: 0 0 0.35rem; }
 .pr-save__how { color: var(--ink-3); font-size: 0.9rem; margin: 0; }
 
-@media print {
-  .site-header, .site-footer, .pa, .xrail, .pr-save, .site-nav, nav { display: none !important; }
-  html, body { background: #fff !important; color: #111 !important; }
-  .is-programme .sec { padding-block: 0.6rem !important; page-break-inside: avoid; }
-  .is-programme .wrap { max-width: none !important; padding-inline: 0 !important; }
-  .pr-cover__title, .h2 { color: #111 !important; }
-  .pr-facts, .pr-h2h, .pr-partner, .pr-read { border-color: #bbb !important; background: #fff !important; }
-  .pr-facts > div, .pr-h2h > div { background: #fff !important; }
-  .pr-ws__grid td { border-color: #666 !important; color: #111 !important; }
-  .pr-quiz__a summary { display: none !important; }
-  /* Answers print WITH the quiz: a printed programme is read later, and a
-     disclosure widget nobody can click is just a missing answer. */
-  .pr-quiz__a p { display: block !important; }
-  .pr-quiz li, .pr-partner, .pr-group { page-break-inside: avoid; }
-  a { text-decoration: none !important; color: #111 !important; }
-}
+/* THE PRINT BLOCK THAT USED TO BE HERE IS GONE, and its absence is the fix.
+
+   It was written when this PAGE was the whole programme and somebody would
+   print it from the browser. The page is a preview and a download now, and the
+   PDF is generated with a stylesheet of its own - but a generated PDF is also
+   a print context, so `.h2 { color: #111 !important }` from this block was
+   winning inside the document and painting every section heading near-black on
+   the club's black. Two stylesheets answering the same question, which is the
+   fault this repository keeps finding; the page no longer needs an answer, so
+   it stops giving one. */
+
 
 /* ---- THE COLLECTION ----
    A programme a week, kept. Each row is a whole link, not a tinted word:

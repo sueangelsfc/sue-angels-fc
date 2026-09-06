@@ -30,6 +30,11 @@ import { clubIdentity } from '../lib/club-name.mjs';
 import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
 import { articleBody } from './news.mjs';
+import {
+  welcomeBand, opponentBandLong, squadBandLong, seasonBandLong, numbersBand,
+  divisionBandLong, honoursBand, groundBand, causeBandLong,
+  preSeasonBandLong, storyBand, methodBand, aheadBand, watchBand, competitionsBand, backBand, badgeBand,
+} from '../lib/programme-long.mjs';
 
 const rail = (n, label, ref) => `
   <div class="xrail" aria-hidden="true">
@@ -669,10 +674,38 @@ export function programmeDoc(d) {
      not appear - so this is the club deciding the programme is its own thing
      and the preview stays on the website, where it is linked from the page. */
 
+  /* THE DOCUMENT IS THE LONG READ. The club asked for ten thousand words and
+     the only honest way there is to write about what the archive holds, at
+     length: every player, every match of last season, every club in the
+     division, the numbers and what they do not cover. Nothing here is
+     invented and nothing is attributed to anybody who did not say it. */
+  const here2 = (d.squad || []).filter((p) => p.status && p.status !== 'retired'
+    && p.status !== 'departed' && p.status !== 'staff' && p.status !== 'absent');
+  const h2h = m ? headToHead(d, m.opponent) : { met: [], related: [], tally: { p: 0 } };
+
+  const long = welcomeBand(d, m)
+    + out.cover
+    + opponentBandLong(d, m, h2h)
+    + squadBandLong(d, here2)
+    + seasonBandLong(d)
+    + numbersBand(d)
+    + competitionsBand(d)
+    + watchBand(d, here2)
+    + preSeasonBandLong(d, (m && m.season) || d.nextSeason || d.currentSeason)
+    + divisionBandLong(d, headToHead)
+    + aheadBand(d, m)
+    + honoursBand(d)
+    + storyBand(d)
+    + badgeBand(d)
+    + groundBand(d)
+    + methodBand(d)
+    + causeBandLong()
+    + out.documentBody
+    + backBand(d, m);
+
   return {
     cover: printCover(d, m),
-    body: (out.cover + out.documentBody)
-      .replace(/<details class="pr-quiz__a">/g, '<details class="pr-quiz__a" open>'),
+    body: long.replace(/<details class="pr-quiz__a">/g, '<details class="pr-quiz__a" open>'),
     title: out.docTitle,
   };
 }

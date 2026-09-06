@@ -789,6 +789,34 @@ could not parse, which is exactly what that error message asks for.
   left it correct; and "Direct or unknown" matched the paragraph explaining
   the phrase rather than the table cell.
 
+### The digital match programme
+
+`/programme.html`, under **Media**. What somebody reads on a phone beside the
+pitch twenty minutes before kick-off: the fixture, the ground, what the
+archive knows about the opponent, who is at the club, last season's record,
+the club's own preview, what is coming up, why the club exists and who backs
+it. `src/templates/programme.mjs`, band `45-programme.css`.
+
+- **One stable URL, always the NEXT fixture.** The nav has to point somewhere
+  that still exists next week, and a programme is a matchday artefact rather
+  than an archive. It reads `d.nextFixture`, which is derived once in
+  `dataset.mjs` against the day the site was generated, so this page and the
+  home page's next-match card cannot disagree about what is coming up.
+- **Every figure is derived.** The head-to-head is counted from the archive
+  through `clubIdentity()`, so a 1st Team and a 2.0 stay apart; the squad is
+  the roster for the season being played; the honours come from the league
+  table the build reconciles; the partners come from the one partner list.
+  **The competition comes off the fixture**, never `CLUB.division` - a
+  constant is exactly what starts lying the week after a promotion, and the
+  suite fails the file if it names one.
+- **It survives May.** With no fixture to come the page says so and shows the
+  season instead, because the club hits that state every close season and a
+  blank programme reads as a broken site.
+- **A coach is not a squad member, and the check had to learn the difference.**
+  "Nobody who has left is listed" read the whole page and flagged Jim El
+  Bayati, who retired from playing and moved onto the touchline: the staff
+  line names him and should. It asks about the squad LINKS now.
+
 ### An article the club has written but has not yet entered
 
 `src/data/articles-extra.json` exists because the `articles` table **cannot be

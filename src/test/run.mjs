@@ -5010,6 +5010,84 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 }
 
 /* ==========================================================================
+   THE MATCH PROGRAMME
+
+   One stable URL that is always the NEXT fixture, so the nav can point at it
+   and it is right every week. Everything on it is derived, which is the only
+   way a programme is still correct in October: the head-to-head is counted
+   from the archive, the squad is the roster for the season being played, and
+   the division comes off the fixture rather than a constant.
+
+   The states worth checking are the two the club will actually hit: a first
+   meeting, which is most of this division, and no fixture at all, which is
+   every May. */
+{
+  const { buildDataset: bdP } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const { programme: prog } = await import(path.join(ROOT, 'src', 'templates', 'programme.mjs'));
+  const flatten = (h) => String(h).replace(/<[^>]+>/g, ' ').replace(/&#39;|&rsquo;/g, "'")
+    .replace(/\s+/g, ' ');
+
+  const dP = bdP();
+  const outP = prog(dP);
+  const textP = flatten(outP.body);
+
+  check('the programme names the fixture it is for',
+    dP.nextFixture ? textP.includes(dP.nextFixture.opponent) : true,
+    (dP.nextFixture || {}).opponent || 'no fixture');
+
+  check('the programme lists the squad as links to the players',
+    (outP.body.match(/\/players\/[a-z-]+\.html/g) || []).length >= 10,
+    `${(outP.body.match(/\/players\/[a-z-]+\.html/g) || []).length} player links`);
+
+  /* NOBODY WHO HAS LEFT IS LISTED AS AVAILABLE. Asked of the squad LINKS, not
+     of the page text, and the difference is a real one: Jim El Bayati retired
+     from playing and moved onto the touchline, so the staff line names him
+     and should. The first version of this check read the whole page and
+     flagged a coach for being a coach. */
+  const goneSlugs = (dP.squad || [])
+    .filter((p) => ['retired', 'departed', 'staff'].includes(p.status))
+    .map((p) => `/players/${p.slug}.html`);
+  const linked = new Set(outP.body.match(/\/players\/[a-z-]+\.html/g) || []);
+  const listed = goneSlugs.filter((u) => linked.has(u));
+  check('the programme lists nobody who has left as part of the squad',
+    listed.length === 0, listed.slice(0, 4).join(', '));
+
+  /* And the men who have gone are still 22 fewer than the archive: the squad
+     shown is the season's roster, not everybody the club has ever had. */
+  check('the programme shows the season’s squad, not the whole archive',
+    linked.size > 0 && linked.size < (dP.squad || []).length,
+    `${linked.size} of ${(dP.squad || []).length}`);
+
+  /* A FIRST MEETING SAYS SO, rather than printing a row of noughts. */
+  if (dP.nextFixture) {
+    const met = (dP.matches || []).filter((x) => x.played
+      && x.opponent === dP.nextFixture.opponent).length;
+    check('a first meeting is stated in words, not shown as an empty record',
+      met ? /Played/.test(textP) : /first meeting/i.test(textP),
+      met ? `${met} previous meetings` : 'never met');
+  }
+
+  /* NO DIVISION FROM A CONSTANT. CLUB.division is the division the club was
+     in when somebody typed it, and promotion is exactly when a programme
+     would start lying about which league it is for. */
+  const progSrc = fs.readFileSync(path.join(ROOT, 'src', 'templates', 'programme.mjs'), 'utf8');
+  check('the programme takes the competition from the fixture, not a constant',
+    !/CLUB\.division|CLUB\.nextDivision/.test(progSrc),
+    'a division named from a constant cannot follow a promotion');
+
+  /* AND IT SURVIVES MAY. With nothing to come the page must still be a page:
+     the club hits this state every close season and a blank programme reads
+     as a broken site. */
+  const noneP = prog({ ...dP, nextFixture: null, upcoming: [] });
+  const noneText = flatten(noneP.body);
+  check('with no fixture to come the programme says so rather than drawing a blank',
+    /No match to come/i.test(noneText) && noneP.body.length > 2000,
+    `${noneP.body.length} bytes`);
+  check('with no fixture the programme claims no head-to-head',
+    !/Today.s opponent/i.test(noneText), noneText.slice(0, 120));
+}
+
+/* ==========================================================================
    HOW AN ARTICLE'S TEXT BECOMES MARKUP
 
    The club writes these in a textarea, so the text is UNTRUSTED and the order

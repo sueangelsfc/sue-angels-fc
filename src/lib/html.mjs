@@ -121,6 +121,7 @@ export const NAV = [
     { label: 'Records', href: '/records.html' },
   ] },
   { label: 'Media', children: [
+    { label: 'Match programme', href: '/programme.html' },
     { label: 'Live', href: '/live.html' },
     { label: 'News', href: '/news.html' },
     { label: 'Gallery', href: '/gallery.html' },
@@ -225,7 +226,8 @@ export function footer() {
       ['League', '/league.html'], ['Records', '/records.html'],
     ] },
     { h: 'Media', links: [
-      ['Live', '/live.html'], ['News', '/news.html'], ['Gallery', '/gallery.html'], ['Videos', '/videos.html'],
+      ['Match programme', '/programme.html'], ['Live', '/live.html'],
+      ['News', '/news.html'], ['Gallery', '/gallery.html'], ['Videos', '/videos.html'],
     ] },
     { h: 'Get Involved', links: [
       ['Join the Club', '/join.html'], ['Contact', '/contact.html'],

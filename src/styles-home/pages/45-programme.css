@@ -1,0 +1,155 @@
+/* ==========================================================================
+   THE DIGITAL MATCH PROGRAMME
+
+   Read on a phone, at the side of a pitch, in whatever the weather is doing.
+   So: big type at the top, facts in a list rather than a paragraph, and every
+   band the same shape so a thumb knows where it is. Nothing here needs
+   JavaScript and nothing moves.
+   ========================================================================== */
+
+.is-programme .pr-cover {
+  padding-block: clamp(2rem, 8vw, 4.5rem) clamp(1.5rem, 5vw, 3rem);
+  text-align: center;
+}
+.pr-cover__title {
+  font-family: var(--display);
+  font-size: clamp(2rem, 9vw, 4rem);
+  line-height: 0.95;
+  margin: 0.4em 0 0.6em;
+}
+.pr-cover__none { color: var(--ink-2); max-width: 46ch; margin: 0 auto; }
+
+/* The two clubs, and the fixture reads left to right the way the scoreline is
+   written: home first, always, whichever of them we are. */
+.pr-cover__teams {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  gap: clamp(0.5rem, 3vw, 2rem);
+  margin-block-end: clamp(1.5rem, 5vw, 2.5rem);
+}
+.pr-team { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; min-width: 0; }
+.pr-team__badge { display: block; width: clamp(56px, 18vw, 104px); height: auto; }
+.pr-team__badge img, .pr-team__badge svg { width: 100%; height: auto; display: block; }
+.pr-team__name {
+  font-family: var(--display);
+  font-size: clamp(0.95rem, 3.4vw, 1.4rem);
+  line-height: 1.1;
+}
+.pr-team__tag { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.pr-cover__v {
+  font-family: var(--display);
+  font-size: clamp(1.2rem, 5vw, 2rem);
+  color: var(--ink-3);
+  align-self: center;
+}
+
+/* Facts as a definition list, because that is what they are, and because a
+   list survives a narrow screen where a table does not. */
+.pr-facts, .pr-h2h {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+  gap: 1px;
+  margin: 0 0 1.25rem;
+  background: var(--line-d);
+  border: 1px solid var(--line-d);
+  border-radius: var(--r);
+  overflow: hidden;
+  text-align: left;
+}
+.pr-facts > div, .pr-h2h > div { background: var(--slab); padding: 0.75rem 0.9rem; }
+.pr-facts dt, .pr-h2h dt {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-block-end: 0.2rem;
+}
+.pr-facts dd, .pr-h2h dd {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(1rem, 4vw, 1.45rem);
+  font-variant-numeric: tabular-nums;
+}
+.pr-cover__where { color: var(--ink-2); display: inline-flex; align-items: center; gap: 0.4rem; }
+
+.is-programme .pr-band { padding-block: clamp(1.75rem, 6vw, 3.25rem); }
+.pr-lede { color: var(--ink-2); max-width: 62ch; font-size: 1.02rem; line-height: 1.6; }
+.pr-note { color: var(--ink-3); font-size: 0.9rem; max-width: 62ch; }
+
+/* A row of results, or a row of fixtures. One shape for both, because they
+   are the same thing at different times. */
+.pr-list { list-style: none; margin: 0 0 1rem; padding: 0; }
+.pr-list li {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.6rem 0;
+  border-block-start: 1px solid var(--line-d);
+  font-size: 0.95rem;
+}
+.pr-list li b { font-family: var(--display); font-variant-numeric: tabular-nums; }
+
+.pr-groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: clamp(1rem, 3vw, 2rem);
+  margin-block-end: 1.25rem;
+}
+.pr-group__h {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 0.5rem;
+  padding-block-end: 0.4rem;
+  border-block-end: 1px solid var(--line-d);
+}
+.pr-names { list-style: none; margin: 0; padding: 0; }
+.pr-names li { padding: 0.28rem 0; }
+.pr-names a { color: inherit; text-decoration: none; }
+.pr-names a:hover, .pr-names a:focus-visible { text-decoration: underline; }
+
+/* The link out to the club's own preview. A whole card, so it is obvious
+   without relying on the hue: a link that is only a colour is the defect an
+   audit already found on this site once. */
+.pr-read {
+  display: grid;
+  gap: 0.4rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--line-d);
+  border-radius: var(--r);
+  text-decoration: none;
+  color: inherit;
+  max-width: 46rem;
+}
+.pr-read:hover, .pr-read:focus-visible { border-color: var(--volt); }
+.pr-read__k { font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.pr-read__t { font-family: var(--display); font-size: clamp(1.1rem, 4vw, 1.6rem); line-height: 1.15; }
+.pr-read__go { color: var(--volt); font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.35rem; }
+
+.pr-partners {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+.pr-partners li {
+  background: #fff;
+  border-radius: var(--r-sm);
+  padding: 0.6rem 0.9rem;
+  display: flex;
+  align-items: center;
+  min-height: 60px;
+}
+.pr-partners img { display: block; width: auto; height: 40px; }
+.pr-partners span { color: #111; font-weight: 600; font-size: 0.9rem; }
+
+/* A long club name on a narrow phone. `truncate` is defined in another page's
+   band and borrowing it would make this page depend on a stylesheet it does
+   not load, which is the defect the suite calls a class from another page's
+   sheet. */
+.pr-clip { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }

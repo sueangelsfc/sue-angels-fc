@@ -24,6 +24,7 @@ import { awards } from './templates/awards.mjs';
 import { sponsors } from './templates/sponsors.mjs';
 import { squad } from './templates/squad.mjs';
 import { stats } from './templates/stats.mjs';
+import { programme } from './templates/programme.mjs';
 import { coaches } from './templates/coaches.mjs';
 import { results, fixtures } from './templates/results.mjs';
 import { league } from './templates/league.mjs';
@@ -278,6 +279,7 @@ const PAGE_CSS = {
   'players/': 'player',
   'join.html': 'join',
   'contact.html': 'contact',
+  'programme.html': 'programme',
   '404.html': 'notfound',
 };
 const bandFor = (file) => {
@@ -1065,6 +1067,9 @@ const routes = [
 
   { file: 'records.html', tpl: () => records(d), ...meta('records', `Club records · ${CLUB.name}`,
       `Every ${CLUB.name} club record: honours, most goals, appearances, clean sheets, the longest runs and the club firsts.`) },
+
+  { file: 'programme.html', tpl: () => programme(d), ...meta('programme', `Match programme · ${CLUB.name}`,
+      `The digital matchday programme for ${CLUB.name}: today's fixture, the squad, what the archive knows about the opponent, and how the season stands.`) },
 
   { file: 'live.html', tpl: () => live(d), ...meta('live', `Live and replays · ${CLUB.name}`,
       `Watch ${CLUB.name} matches live and on replay, streamed from our YouTube channel.`) },

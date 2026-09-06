@@ -305,6 +305,35 @@ const d = buildDataset();
     d.programmePdf = `/${rel}`;
     d.programmePdfKb = Math.round(fs.statSync(path.join(ROOT, rel)).size / 1024);
   }
+
+  /* EVERY PROGRAMME EVER MADE, so the page is a collection rather than one
+     download. The club will publish one a week and people keep these: an
+     archive is the difference between a file and a set worth completing.
+
+     Read off the DIRECTORY, not from a list somebody maintains. A programme
+     exists because its PDF is on disk, which is the same thing the download
+     button already asks, so the two can never disagree about what is there. */
+  const dir = path.join(ROOT, 'assets', 'programme');
+  d.programmes = (fs.existsSync(dir) ? fs.readdirSync(dir) : [])
+    .filter((f) => f.endsWith('.pdf'))
+    .map((f) => {
+      const key = f.replace(/\.pdf$/, '');
+      const match = [...(d.matches || [])].find((x) => x.id === key);
+      const day = /^[fr](\d{4})(\d{2})(\d{2})/.exec(key);
+      return {
+        id: key,
+        href: `/assets/programme/${f}`,
+        kb: Math.round(fs.statSync(path.join(dir, f)).size / 1024),
+        iso: match ? match.iso : (day ? `${day[1]}-${day[2]}-${day[3]}` : ''),
+        date: match ? match.date : '',
+        opponent: match ? match.opponent : '',
+        competition: match ? match.competition : '',
+        homeAway: match ? match.homeAway : '',
+        played: !!(match && match.played),
+        result: match && match.played ? match.ourScoreline : '',
+      };
+    })
+    .sort((a, b) => String(b.iso).localeCompare(String(a.iso)));
 }
 
 /* THE COVER DRAWN FOR THIS MATCH OR ARTICLE, if one has been. Written by

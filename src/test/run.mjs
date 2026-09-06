@@ -5100,11 +5100,34 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     (docP.body.match(/\/players\/[a-z-]+\.html/g) || []).length >= 10,
     `${(docP.body.match(/\/players\/[a-z-]+\.html/g) || []).length} player links`);
 
+  /* THE ANSWERS PRINT WITH THE QUESTIONS. A closed <details> hides its
+     content above the stylesheet, so the first PDF carried seven questions
+     and no answers and the print rule that was meant to reveal them did
+     nothing at all. */
+  const qs = (docP.body.match(/<details class="pr-quiz__a"/g) || []).length;
+  const open = (docP.body.match(/<details class="pr-quiz__a" open>/g) || []).length;
+  check('the printed programme opens the quiz answers',
+    qs > 0 && open === qs, `${open} open of ${qs}`);
+  check('the page keeps them closed, because there it is a thing you press',
+    !/pr-quiz__a" open/.test(outP.body + prog(dP).documentBody.slice(0, 0)),
+    'the widget is the point on screen');
+
   /* THE COVER IS THE FIXTURE, always: both badges either side of a v. */
-  check('the document opens on the fixture, both badges',
-    /pr-team__badge/.test(docP.cover)
-      && (docP.cover.match(/pr-team__badge/g) || []).length >= 2,
-    `${(docP.cover.match(/pr-team__badge/g) || []).length} badges`);
+  /* THE FRONT COVER IS A COVER: a photograph, the club's name up the spine,
+     both badges and the fixture at the foot. Asked of the printed cover, which
+     is its own thing and not the website's band. */
+  check('the document opens on a proper front cover',
+    /pc__shot/.test(docP.cover) && /pc__spine/.test(docP.cover)
+      && (docP.cover.match(/pc__badge/g) || []).length >= 2,
+    `${(docP.cover.match(/pc__badge/g) || []).length} badges, photo=${/pc__shot/.test(docP.cover)}`);
+
+  /* The cover photograph has to be a file that exists, or the cover prints as
+     a black page and nobody finds out until somebody opens the PDF. */
+  {
+    const src = (docP.cover.match(/class="pc__shot" src="([^"]+)"/) || [])[1] || '';
+    check('the cover photograph is a file the build can find',
+      src && fs.existsSync(path.join(ROOT, src.replace(/^\//, ''))), src || 'no photo');
+  }
 
   /* NOBODY WHO HAS LEFT IS LISTED AS AVAILABLE. Asked of the squad LINKS, not
      of the page text, and the difference is a real one: Jim El Bayati retired

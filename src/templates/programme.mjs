@@ -29,6 +29,7 @@ import { fmtDate, isUs } from '../lib/stats.mjs';
 import { clubIdentity } from '../lib/club-name.mjs';
 import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
+import { articleBody } from './news.mjs';
 
 const rail = (n, label, ref) => `
   <div class="xrail" aria-hidden="true">
@@ -467,6 +468,7 @@ export function programme(d) {
      for offers no download rather than a dead link, and the page says which
      command makes one. Same contract as the drawn share cards. */
   const pdf = d.programmePdf || '';
+  const pages = d.programmePdfPages || 0;
   const contents = [
     m ? `What the archive knows about ${m.opponent}` : null,
     here.length ? `The ${here.length} players registered for ${season}` : null,
@@ -478,22 +480,57 @@ export function programme(d) {
 
   const downloadBand = `<section class="sec pr-band pr-get" aria-labelledby="pr-get-h">
       <div class="wrap">
-        <h2 class="h2 rv" id="pr-get-h">The matchday programme<span class="volt">.</span></h2>
-        <p class="pr-lede rv">The full programme is a document to take with you, read at the
-          ground and keep. Everything below is in it.</p>
-        <ul class="pr-contents rv">${contents.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
+        <h2 class="h2 rv" id="pr-get-h">${m ? esc(m.competition) : 'The programme'}
+          <span class="volt">.</span></h2>
+        <p class="pr-lede rv">${m
+    ? `${esc(m.weAreHome ? m.opponent : m.home)} at ${esc(m.venue || CLUB.venue.shortName)},
+       ${esc(fmtDate(m.date, { weekday: true }))}, ${esc(m.kick || '')}. The programme for this
+       one is written, laid out and ready to take with you.`
+    : 'The programme for the next fixture appears here as soon as the match is announced.'}</p>
+        <p class="pr-lede rv">It is the club's own preview in full, the squad, what the
+          archive knows about the opposition, last season set out properly, a half-time quiz,
+          a word search and the businesses that pay for the pitches. ${pages
+    ? `${esc(pages)} pages.` : ''} One file, yours to keep.</p>
         ${pdf
     ? `<p class="rv"><a class="pr-download" href="${attr(pdf)}" download>
-          ${icon('download', '')} <span>Download the programme</span>
+          ${icon('download', '')} <span>Download this week's programme</span>
           <small>PDF${d.programmePdfKb ? ` · ${esc(d.programmePdfKb)}KB` : ''}</small></a></p>`
-    : `<p class="pr-note rv">The programme for this fixture has not been made yet.
-          It is drawn by <b>npm run programme</b>, which needs a browser on the machine
-          that runs it, and the download appears here as soon as it has been.</p>`}
+    : `<p class="pr-note rv">This week's programme has not been made yet. It is drawn by
+          <b>npm run programme</b>, which needs a browser on the machine that runs it, and the
+          download appears here the moment it has been.</p>`}
+        <ul class="pr-contents rv">${contents.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
+      </div>
+    </section>`;
+
+  /* ---- THE COLLECTION -----------------------------------------------------
+     A programme a week, and people keep these. The archive is read off the
+     directory the build already checks for the download, so the two cannot
+     disagree about what exists, and it fills itself in as the season goes.
+     One programme is not a collection, so it says so rather than showing a
+     list of one and calling it an archive. */
+  const past = (d.programmes || []).filter((x) => !m || x.id !== m.id);
+  const archiveBand = `<section class="sec pr-band" aria-labelledby="pr-arch-h">
+      <div class="wrap">
+        ${rail(2, 'Every programme', `${(d.programmes || []).length} so far`)}
+        <h2 class="h2 rv" id="pr-arch-h">The collection<span class="volt">.</span></h2>
+        ${past.length
+    ? `<p class="pr-lede rv">One for every match. They stay here, so a season's worth builds
+        up as it goes.</p>
+      <ul class="pr-arch rv">${past.map((x) => `<li>
+        <a href="${attr(x.href)}" download>
+          <span class="pr-arch__date">${esc(x.date || x.iso || '')}</span>
+          <span class="pr-arch__opp">${esc(x.opponent || x.id)}</span>
+          <span class="pr-arch__meta">${esc([x.competition, x.homeAway].filter(Boolean).join(' · '))}${x.result ? ` · ${esc(x.result)}` : ''}</span>
+          <span class="pr-arch__get">PDF · ${esc(x.kb)}KB</span>
+        </a></li>`).join('')}</ul>`
+    : `<p class="pr-lede rv">This is the first. The club publishes one for every match, and
+        they stay here afterwards, so by the end of the season this is a set: every
+        opponent, every matchday, in order.</p>`}
       </div>
     </section>`;
 
   return {
-    body: siteHeader('/programme.html') + cover + downloadBand + previewBand
+    body: siteHeader('/programme.html') + cover + downloadBand + archiveBand + previewBand
       + sourceNote(['fulltime']),
     bodyClass: 'is-home is-sub is-programme',
     css: 'home.css',
@@ -527,7 +564,64 @@ export function programme(d) {
    THE COVER IS THE FIXTURE, always: both badges either side of a v, the way
    the share cards are drawn and the way a programme has always looked.
    ========================================================================== */
+/* ==========================================================================
+   THE FRONT COVER
+
+   A cover, not a heading: one page, the club's black and orange, the crest
+   big, and the fixture set out the way it is on a poster. It is the first
+   thing anybody sees when the PDF opens and the thing they screenshot.
+   ========================================================================== */
+function printCover(d, m) {
+  const badges = d.badges;
+  const shot = d.programmeShot || '/assets/hero/banner-01.jpg';
+  return `<section class="pc">
+    <img class="pc__shot" src="${attr(shot)}" alt="" />
+    <div class="pc__wash"></div>
+    <p class="pc__spine">${esc(CLUB.name.replace(/ FC$/, ''))}</p>
+    <div class="pc__head">
+      <p class="pc__official">The official matchday programme</p>
+      <p class="pc__season">${esc((m && m.season) || d.nextSeason || '')}</p>
+    </div>
+    ${m ? `<div class="pc__foot">
+      <div class="pc__badges">
+        ${m.weAreHome ? `<span class="pc__badge">${crest()}</span>` : clubCrest(m.home, badges, 'pc__badge')}
+        ${m.weAreHome ? clubCrest(m.away, badges, 'pc__badge') : `<span class="pc__badge">${crest()}</span>`}
+      </div>
+      <p class="pc__opp">${esc(m.weAreHome ? m.away : m.home)}</p>
+      <p class="pc__when">${esc(fmtDate(m.date, { weekday: true, long: true }))}
+        &middot; ${esc(m.kick || '')} &middot; ${esc(m.competition)}</p>
+      <p class="pc__where">${esc(m.venue || CLUB.venue.name)}</p>
+    </div>` : ''}
+  </section>`;
+}
+
 export function programmeDoc(d) {
   const out = programme(d);
-  return { cover: out.cover, body: out.documentBody, title: out.docTitle };
+  /* THE ANSWERS ARE OPEN IN THE PRINTED VERSION. A closed `<details>` hides
+     its content whatever the stylesheet says: the browser does it above CSS,
+     so `display: block` on the paragraph achieved nothing and the first PDF
+     printed seven questions and no answers. On screen the widget is the point
+     - you press it when you have had a guess - and on paper there is nothing
+     to press, so the document opens them. Done here, at the seam where "this
+     is the printed one" is already known, rather than by teaching the band
+     about print. */
+  const m = d.nextFixture;
+  /* THE CLUB'S OWN WORDS, AND MOST OF THE TEXT IN HERE. A programme is
+     mostly reading, and the club has already written the piece: putting the
+     preview in the document is what turns a page of tables into something
+     worth taking away. Linked on the website, printed here, one source
+     either way. */
+  const piece = (d.articles || [])[0];
+  const notes = piece ? `<section class="sec pr-band pr-notes">
+      <h2 class="h2">${esc(piece.title)}</h2>
+      <p class="pr-byline">${esc(piece.date || '')} &middot; ${esc(CLUB.name)}</p>
+      ${articleBody(piece.lede || '')}
+    </section>` : '';
+
+  return {
+    cover: printCover(d, m),
+    body: (out.cover + notes + out.documentBody)
+      .replace(/<details class="pr-quiz__a">/g, '<details class="pr-quiz__a" open>'),
+    title: out.docTitle,
+  };
 }

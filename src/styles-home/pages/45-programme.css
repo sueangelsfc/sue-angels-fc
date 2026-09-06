@@ -290,3 +290,29 @@
   .pr-quiz li, .pr-partner, .pr-group { page-break-inside: avoid; }
   a { text-decoration: none !important; color: #111 !important; }
 }
+
+/* ---- THE COLLECTION ----
+   A programme a week, kept. Each row is a whole link, not a tinted word:
+   this is a list somebody scans for a date and a name. */
+.pr-arch { list-style: none; margin: 0; padding: 0; }
+.pr-arch li { border-block-start: 1px solid var(--line-d); }
+.pr-arch li:last-child { border-block-end: 1px solid var(--line-d); }
+.pr-arch a {
+  display: grid;
+  grid-template-columns: 8rem minmax(0, 1fr) auto;
+  gap: 0.4rem 1rem;
+  align-items: baseline;
+  padding: 0.85rem 0.25rem;
+  color: inherit;
+  text-decoration: none;
+}
+.pr-arch a:hover, .pr-arch a:focus-visible { background: var(--slab); }
+.pr-arch__date { color: var(--ink-3); font-size: 0.88rem; }
+.pr-arch__opp { font-family: var(--display); font-size: 1.05rem; }
+.pr-arch__meta { color: var(--ink-3); font-size: 0.85rem; grid-column: 2; }
+.pr-arch__get { color: var(--volt); font-size: 0.85rem; white-space: nowrap; }
+@media (max-width: 560px) {
+  .pr-arch a { grid-template-columns: 1fr auto; }
+  .pr-arch__date { grid-column: 1 / -1; }
+  .pr-arch__meta { grid-column: 1; }
+}

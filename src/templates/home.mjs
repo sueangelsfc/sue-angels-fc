@@ -814,8 +814,19 @@ export function home(d) {
       <div class="wrap"><div class="rlprog"><span id="rlFill"></span></div></div>
     </section>`;
 
-  /* ================= 06 THE TABLE ================= */
-  const tableBand = d.table.length ? `<section class="sec sec--table" id="table" aria-labelledby="tbl-h">
+  /* ================= 06 THE TABLE =================
+     THE DIVISION THE CLUB IS PLAYING IN, once it has a table with a match in
+     it. This read League Ten's final standings however far into League Eight
+     the club was, captioned "final standings", which is true and is not what
+     anybody switching this band on is asking. */
+  const l8 = d.nextDivisionTable || {};
+  const l8Rows = l8.rows || [];
+  const l8Live = l8Rows.some((r) => (r.played || 0) > 0);
+  const tblRows = l8Live ? l8Rows : d.table;
+  const tblCaption = l8Live
+    ? `${l8.division || d.divisionOf(d.nextSeason)} standings, ${l8.season || d.nextSeason}`
+    : `${d.divisionOf(d.tableSeason)} final standings, ${d.tableSeason}`;
+  const tableBand = tblRows.length ? `<section class="sec sec--table" id="table" aria-labelledby="tbl-h">
       <div class="wrap tbl__head rv">
         ${rail('table', 'The table')}
         <div>
@@ -829,7 +840,7 @@ export function home(d) {
             <span class="tbl__pos">#</span><span class="tbl__club">Club</span>
             <span>P</span><span>W</span><span>GD</span><span class="tbl__pts">Pts</span>
           </div>
-          ${d.table.slice(0, 6).map((r) => `<a class="tbl__row${r.us ? ' tbl__row--us' : r.pos === 2 ? ' tbl__row--runner' : ''}" href="/league.html" aria-hidden="true" tabindex="-1">
+          ${tblRows.slice(0, 6).map((r) => `<a class="tbl__row${r.us ? ' tbl__row--us' : r.pos === 2 ? ' tbl__row--runner' : ''}" href="/league.html" aria-hidden="true" tabindex="-1">
             <span class="tbl__pos">${esc(r.pos)}</span>
             <span class="tbl__club">${r.us
               ? `<img src="${STAR}" alt="Sue’s Angels FC star" width="26" height="32" loading="lazy" decoding="async" />`
@@ -838,10 +849,10 @@ export function home(d) {
           </a>`).join('\n          ')}
         </div>
         <table class="sr-only">
-          <caption>${esc(d.divisionOf(d.tableSeason))} final standings, ${esc(d.tableSeason)}</caption>
+          <caption>${esc(tblCaption)}</caption>
           <thead><tr><th scope="col">Position</th><th scope="col">Club</th><th scope="col">Played</th>
             <th scope="col">Won</th><th scope="col">Goal difference</th><th scope="col">Points</th></tr></thead>
-          <tbody>${d.table.map((r) => `<tr><td>${esc(r.pos)}</td><th scope="row">${esc(r.club)}</th>
+          <tbody>${tblRows.map((r) => `<tr><td>${esc(r.pos)}</td><th scope="row">${esc(r.club)}</th>
             <td>${esc(r.played)}</td><td>${esc(r.won)}</td>
             <td>${r.goalDifference > 0 ? '+' : ''}${esc(r.goalDifference)}</td><td>${esc(r.points)}</td></tr>`).join('')}</tbody>
         </table>
@@ -1192,6 +1203,26 @@ export function home(d) {
   const nxMet = nx ? d.played.filter((m) => sameClub(m.opponent, nx.opponent)) : [];
   const nxRel = nx && !nxMet.length ? d.played.filter((m) => relatedClub(m.opponent, nx.opponent)) : [];
   const nxRec = recordOf(nxMet);
+  /* WHAT HAPPENED LAST, AND WHERE IT LEFT THE CLUB. The next match is the band
+     the club always shows, and it said nothing about the match before it or
+     the table: the week after the first League Eight win, the front page's
+     most recent fact was a fixture. Counted from competitive matches, so a
+     friendly never becomes "last time out", and the position only once the
+     division's table has a match in it. */
+  const lastComp = (d.competitive || []).filter((m) => m.played)
+    .sort((a, b) => String(b.iso || '').localeCompare(String(a.iso || '')))[0];
+  const ordinal = (n) => {
+    const v = n % 100;
+    return `${n}${['th', 'st', 'nd', 'rd'][(v - 20) % 10] || ['th', 'st', 'nd', 'rd'][v] || 'th'}`;
+  };
+  const usL8 = l8Live ? l8Rows.find((r) => r.us) : null;
+  const lastLine = [
+    lastComp ? (lastComp.isWalkover || lastComp.kind === 'walkover'
+      ? `Last time out: ${lastComp.outcome === 'W' ? 'were awarded the walkover' : 'conceded a walkover'} against ${shortClub(lastComp.opponent)}.`
+      : `Last time out: ${lastComp.outcome === 'W' ? 'won' : lastComp.outcome === 'L' ? 'lost' : 'drew'} ${lastComp.ourScoreline || lastComp.scoreline || ''} ${lastComp.weAreHome ? 'at home to' : 'away to'} ${shortClub(lastComp.opponent)}.`)
+      : '',
+    usL8 ? `${ordinal(usL8.pos)} in ${l8.division} on ${usL8.points} point${usL8.points === 1 ? '' : 's'}.` : '',
+  ].filter(Boolean).join(' ');
   const nextUpBand = nx ? `<section class="sec sec--nextup" id="nextup" aria-labelledby="nxt-h">
       <div class="wrap">
         ${rail('nextup', 'The next match')}
@@ -1211,6 +1242,7 @@ export function home(d) {
               : nxRel.length
                 ? esc(`A first meeting. The club has played their ${shortClub(nxRel[0].opponent)}, not this side.`)
                 : 'A first meeting.'}</p>
+            ${lastLine ? `<p class="nxt__w">${esc(lastLine)}</p>` : ''}
           </div>
         </div>
       </div>

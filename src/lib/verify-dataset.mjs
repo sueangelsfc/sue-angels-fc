@@ -4,7 +4,7 @@
    no page should publish a number. */
 import { buildDataset } from './dataset.mjs';
 import { teamSummary, leaderboard, clubRecords, formGuide, homeAwaySplit, byCompetition,
-  deriveTable, compareTable } from './stats.mjs';
+  deriveTable, compareTable, compareDivision } from './stats.mjs';
 
 const d = buildDataset();
 let fails = 0;
@@ -52,6 +52,25 @@ console.log(`matches with detail records: ${d.matches.filter((m) => m.detail).le
     gaps.forEach((g) => console.log(`FAIL  ${g}`));
   } else {
     console.log('PASS  every club agrees with the results, and the order makes sense of its figures');
+  }
+}
+
+/* THE NEW DIVISION, THE SAME QUESTION. League Eight's table and its results
+   are both transcribed from FA Full-Time as the season goes, so each is a
+   check on the other. Nothing to ask until both exist. */
+{
+  const l8 = d.nextDivisionTable || {};
+  const rows = l8.rows || [];
+  const res = l8.results || [];
+  if (rows.length && res.length) {
+    const gaps = compareDivision(rows, res);
+    console.log(`\n=== ${l8.division || 'NEW DIVISION'} TABLE vs ${res.length} RESULTS (as of ${l8.tableAsOf || 'undated'}) ===`);
+    if (gaps.length) {
+      fails += gaps.length;
+      gaps.forEach((g) => console.log(`FAIL  ${g}`));
+    } else {
+      console.log(`PASS  all ${rows.length} clubs agree with the results`);
+    }
   }
 }
 

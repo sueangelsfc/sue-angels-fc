@@ -867,11 +867,19 @@ export function buildDataset(overrides = {}) {
        club is not involved in. */
     const rows = normaliseTable(t.table || []);
     const anyPlayed = rows.some((r) => (r.played || 0) > 0);
+    /* The division's fixtures still to be played, against the day the site
+       is generated, which is the same day d.upcoming is measured against. */
+    const now = new Date();
+    const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const fixturesAhead = (t.fixtures || [])
+      .filter((f) => String(f.iso || '') >= todayIso)
+      .sort((a, b) => `${a.iso} ${a.kick || ''}`.localeCompare(`${b.iso} ${b.kick || ''}`));
     return {
       ...t,
       division: t.division || divisionOf(forSeason),
       started: t.started || played || anyPlayed,
       rows,
+      fixturesAhead,
     };
   })();
   /* The league's own pages for this division, built from the ids recorded

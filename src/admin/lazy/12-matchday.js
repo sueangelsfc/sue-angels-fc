@@ -53,6 +53,38 @@
      the place to argue about it. */
   var SLOTS = 16;
 
+  /* THE ELEVEN AND THE BENCH, SAID OUT LOUD. Enter result reads this list in
+     order: the first eleven become the starting eleven on the team sheet and
+     the rest the bench. The screen said "Player 1" to "Player 16" and never
+     said so, so a keeper picked in slot 14 went onto the sheet as a
+     substitute, and a blank in slot 10 pulled the first substitute up into the
+     eleven. The count of starters is saved beside the list now, and the match
+     form reads it. */
+  var STARTERS = 11;
+
+  /* The fixture being worked on, kept here rather than on the panel element:
+     switching match redraws the panel fresh instead of re-running this screen
+     on the same element, which stacked a click handler per switch and let one
+     Save write to two fixtures. */
+  var CHOSEN = '';
+
+  /* Where somebody plays, read from the words on his record. Four groups is
+     all a squad picker needs, and a position nobody recognises still lists. */
+  var GROUPS = [
+    ['gk', 'Goalkeepers', /goal ?keeper|^gk$/i],
+    ['def', 'Defenders', /back|defend|sweeper/i],
+    ['mid', 'Midfielders', /midfield/i],
+    ['fwd', 'Forwards', /forward|striker|winger|attack/i],
+    ['other', 'Squad', null],
+  ];
+  function groupOf(p) {
+    var pos = String((p && p.pos) || '');
+    for (var g = 0; g < GROUPS.length - 1; g++) if (GROUPS[g][2].test(pos)) return GROUPS[g][0];
+    return 'other';
+  }
+  function surname(p) { return String(p.last || String(p.name || '').split(' ').pop()); }
+  function byNum(num) { return SQUAD.filter(function (x) { return String(x.num) === String(num); })[0]; }
+
   function nameOf(num) {
     var p = SQUAD.filter(function (x) { return String(x.num) === String(num); })[0];
     return p ? p.name : '';
@@ -99,16 +131,20 @@
         : longDate(iso) + (f.kick ? ', ' + f.kick : '') + ' at ' + f.venue,
       missing.length ? ['Fixtures', 'fixtures'] : null]);
 
+    var k = typeof f.squadStarters === 'number' ? f.squadStarters : Math.min(STARTERS, squad.length);
     rows.push(['The matchday squad',
       squad.length ? 'ready' : (isPast ? 'not recorded' : 'waiting'),
       squad.length
-        ? squad.length + ' player' + (squad.length === 1 ? '' : 's') + ' named: '
-          + squad.map(nameOf).filter(Boolean).join(', ')
+        ? summary({ starters: squad.slice(0, k), bench: squad.slice(k) })
         : (isPast
           ? 'The match has been played and no squad was picked. Nothing is lost: '
             + 'the team sheet on the result is the record that counts.'
           : 'Pick it below. It fills in the team sheet when the result goes in.'),
       null]);
+
+    /* Before kick-off there is nothing to say about a result or a man of the
+       match, and two rows reading "after the match" said it anyway. */
+    if (!isPast && !result) return rows;
 
     rows.push(['The result',
       result ? 'ready' : (isPast ? 'waiting' : 'after the match'),
@@ -170,27 +206,92 @@
      already drifted once. Anybody already picked stays in his own dropdown
      however long ago he left: dropping a stored name out of the control that
      holds it would blank him on the next save. */
-  function slot(i, value, iso) {
-    var opts = ['<option value="">Not selected</option>'].concat(
-      SQUAD.filter(function (p) {
-        if (String(p.num) === String(value)) return true;
-        return !(p.goneFrom && iso && iso >= p.goneFrom);
-      }).map(function (p) {
-        return '<option value="' + esc(p.num) + '"' +
-          (String(p.num) === String(value) ? ' selected' : '') + '>' + esc(p.name) + '</option>';
-      })).join('');
-    return '<label class="field"><span class="field__label">Player ' + (i + 1) + '</span>' +
-      '<select class="input" data-slot="' + i + '">' + opts + '</select></label>';
+  function slot(i, value, iso, taken) {
+    var pool = SQUAD.filter(function (p) {
+      if (String(p.num) === String(value)) return true;
+      return !(p.goneFrom && iso && iso >= p.goneFrom);
+    });
+    /* Grouped by position and in surname order, the way a team sheet is read.
+       The group names are disabled options rather than optgroups, so they are
+       plain markup every browser draws the same. Somebody already named in
+       another slot is shown but cannot be picked twice. */
+    var opts = ['<option value="">Nobody</option>'];
+    GROUPS.forEach(function (g) {
+      var men = pool.filter(function (p) { return groupOf(p) === g[0]; })
+        .sort(function (a, b) { return surname(a).localeCompare(surname(b)); });
+      if (!men.length) return;
+      opts.push('<option disabled>' + esc(g[1]) + '</option>');
+      men.forEach(function (p) {
+        var mine = String(p.num) === String(value);
+        opts.push('<option value="' + esc(p.num) + '"' + (mine ? ' selected' : '') +
+          (!mine && taken[p.num] ? ' disabled' : '') + '>' + esc(p.name) + '</option>');
+      });
+    });
+    var label = i < STARTERS ? 'Starter ' + (i + 1) : 'Substitute ' + (i - STARTERS + 1);
+    return '<label class="field"><span class="field__label">' + label + '</span>' +
+      '<select class="input" data-slot="' + i + '">' + opts.join('') + '</select></label>';
   }
 
+  /* The starters and the bench as picked, each in slot order, blanks dropped
+     within its own half so a gap in the eleven never promotes a substitute. */
   function readSquad(host) {
     var seen = {};
-    return $$('[data-slot]', host).map(function (el) { return el.value; })
-      .filter(function (v) {
-        if (!v || seen[v]) return false;   /* one player cannot be named twice */
-        seen[v] = 1;
-        return true;
-      }).map(Number);
+    var sels = $$('[data-slot]', host);
+    var pick = function (from, to) {
+      return sels.slice(from, to).map(function (el) { return el.value; })
+        .filter(function (v) {
+          if (!v || seen[v]) return false;   /* one player cannot be named twice */
+          seen[v] = 1;
+          return true;
+        }).map(Number);
+    };
+    var starters = pick(0, STARTERS);
+    var bench = pick(STARTERS, SLOTS);
+    return { starters: starters, bench: bench, all: starters.concat(bench) };
+  }
+
+  function summary(picked) {
+    var s = picked.starters.length;
+    var b = picked.bench.length;
+    if (!s && !b) return 'Nobody picked yet.';
+    var keeper = picked.starters.some(function (n) { var p = byNum(n); return p && groupOf(p) === 'gk'; });
+    return s + ' starting' + (s < STARTERS ? ' (' + (STARTERS - s) + ' short of eleven)' : '') +
+      ', ' + b + ' on the bench.' + (s && !keeper ? ' No goalkeeper in the starting eleven.' : '');
+  }
+
+  function squadBody(squad, iso, k) {
+    var starters = squad.slice(0, k);
+    var bench = squad.slice(k);
+    var taken = {};
+    squad.forEach(function (n) { taken[n] = 1; });
+    return '<p class="cp-note"><b>Starting eleven</b></p><div class="grid grid--3">' +
+        Array.from({ length: STARTERS }, function (_, i) { return slot(i, starters[i], iso, taken); }).join('') +
+      '</div>' +
+      '<p class="cp-note"><b>Substitutes</b></p><div class="grid grid--3">' +
+        Array.from({ length: SLOTS - STARTERS }, function (_, i) {
+          return slot(STARTERS + i, bench[i], iso, taken);
+        }).join('') +
+      '</div>' +
+      '<p class="cp-note" data-md-count aria-live="polite">' +
+        esc(summary({ starters: starters, bench: bench })) + '</p>';
+  }
+
+  /* Whoever is named in one slot is greyed out in the others, as the picking
+     happens, and the count underneath follows. */
+  function syncTaken(host) {
+    var sels = $$('[data-slot]', host);
+    var used = {};
+    sels.forEach(function (el) { if (el.value) used[el.value] = (used[el.value] || 0) + 1; });
+    sels.forEach(function (el) {
+      $$('option', el).forEach(function (o) {
+        var v = o.getAttribute('value');
+        if (!v) return;
+        if (used[v] && v !== el.value) o.setAttribute('disabled', '');
+        else o.removeAttribute('disabled');
+      });
+    });
+    var count = $('[data-md-count]', host);
+    if (count) count.textContent = summary(readSquad(host));
   }
 
   M.matchday = function (host) {
@@ -247,11 +348,12 @@
          club is actually working towards. Anything already played and still
          without a score sorts above it, because that is more urgent than
          Sunday. */
-      var chosenKey = host.getAttribute('data-chosen') || '';
+      var chosenKey = CHOSEN;
       var chosen = live.filter(function (f) { return f.__key === chosenKey; })[0] || live[0];
       var f = chosen;
       var iso = fixtureIso({ data: f, key: f.__key });
       var squad = (f.squad || []).slice();
+      var k = typeof f.squadStarters === 'number' ? f.squadStarters : Math.min(STARTERS, squad.length);
       var result = byDay[dayOf(f.__key)] || null;
 
       var picker = live.length > 1
@@ -274,15 +376,19 @@
         }) +
         sec({
           title: 'The matchday squad',
-          sub: 'Who is down to play. Saving this fills in the team sheet when the result '
-            + 'goes in, so it is the same typing done earlier rather than extra typing.',
-          body: '<div class="grid grid--3">' +
-            Array.from({ length: SLOTS }, function (_, i) { return slot(i, squad[i], iso); }).join('') +
-            '</div>' +
+          sub: 'Who is down to play. When the result goes in, the starting eleven here becomes '
+            + 'the starting eleven on the team sheet and the substitutes the bench.',
+          body: squadBody(squad, iso, k) +
             '<div class="cp-head__actions">' +
             '<button class="btn btn--primary" type="button" data-save-squad>Save squad</button> ' +
+            '<button class="btn btn--ghost" type="button" data-copy-squad>Copy for WhatsApp</button> ' +
             '<button class="btn btn--ghost" type="button" data-clear-squad>Clear</button>' +
             '</div>' +
+            /* Filled on every copy; shown only when the browser will not let the
+               panel write to the clipboard, so the text is still one select-all
+               away. */
+            '<textarea class="textarea" data-copy-out rows="10" readonly hidden ' +
+              'aria-label="The squad as text, ready to copy"></textarea>' +
             where([['Fixtures', '/fixtures.html']],
               'The squad itself is not published until the match is, and then it is the team '
               + 'sheet on the match page that shows it.'),
@@ -299,14 +405,52 @@
       var whichEl = $('#md-which', host);
       if (whichEl) {
         whichEl.addEventListener('change', function () {
-          host.setAttribute('data-chosen', whichEl.value);
-          M.matchday(host);
+          CHOSEN = whichEl.value;
+          refresh('matchday');
         });
       }
+
+      host.addEventListener('change', function (e) {
+        if (e.target.matches('[data-slot]')) syncTaken(host);
+      });
 
       host.addEventListener('click', function (e) {
         if (e.target.matches('[data-clear-squad]')) {
           $$('[data-slot]', host).forEach(function (el) { el.value = ''; });
+          syncTaken(host);
+          return;
+        }
+
+        /* THE SQUAD AS A MESSAGE. Picking it is half the job; the other half is
+           telling the players, which happens in a group chat. Names only, the
+           fixture first, the eleven and then the substitutes. */
+        if (e.target.matches('[data-copy-squad]')) {
+          var p2 = readSquad(host);
+          if (!p2.all.length) { toast('Pick the squad first.'); return; }
+          var lines = [(f.home || US) + ' v ' + (f.away || ''),
+            longDate(iso) + (f.kick ? ', ' + f.kick : ''), f.venue || ''].filter(Boolean);
+          lines.push('', 'Starting eleven');
+          p2.starters.forEach(function (n) { lines.push(nameOf(n)); });
+          if (p2.bench.length) {
+            lines.push('', 'Substitutes');
+            p2.bench.forEach(function (n) { lines.push(nameOf(n)); });
+          }
+          var text = lines.join('\n');
+          var out = $('[data-copy-out]', host);
+          out.value = text;
+          var show = function () {
+            out.removeAttribute('hidden');
+            if (out.select) out.select();
+            toast('Copy it from the box below the buttons.');
+          };
+          var nav = window.navigator;
+          if (nav && nav.clipboard && nav.clipboard.writeText) {
+            nav.clipboard.writeText(text).then(function () {
+              toast('Copied. Paste it into the group chat.');
+            }, show);
+          } else {
+            show();
+          }
           return;
         }
 
@@ -318,14 +462,19 @@
              survive being saved by it. */
           var next = Object.assign({}, f);
           delete next.__key;
-          if (picked.length) next.squad = picked;
-          else delete next.squad;
+          if (picked.all.length) {
+            next.squad = picked.all;
+            next.squadStarters = picked.starters.length;
+          } else {
+            delete next.squad;
+            delete next.squadStarters;
+          }
           CP.upsert('fixtures', f.__key, next).then(function () {
-            toast(picked.length
-              ? picked.length + ' named for ' + oppOf(f) + '.'
+            toast(picked.all.length
+              ? picked.starters.length + ' starting and ' + picked.bench.length + ' on the bench against ' + oppOf(f) + '.'
               : 'Squad cleared.');
             refresh('fixtures');
-            M.matchday(host);
+            refresh('matchday');
           }).catch(function (err) {
             toast('Could not save the squad: ' + (err && err.message ? err.message : 'unknown'), true);
           });

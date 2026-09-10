@@ -51,10 +51,19 @@
     {
       "id": "f20260913-haydons",
       "date": "13 Sep 2026",
-      "kick": "10:30",
+      "kick": "11:00",
       "home": "Sue's Angels FC",
       "away": "Haydons Park",
       "venue": "The Reeves Sports Club",
+      "competition": "League Eight"
+    },
+    {
+      "id": "f20260920-junction",
+      "date": "20 Sep 2026",
+      "kick": "10:30",
+      "home": "Junction Elite FC Sunday 3rd Team",
+      "away": "Sue's Angels FC",
+      "venue": "Richardson Evans Memorial Playing Fields",
       "competition": "League Eight"
     }
   ]

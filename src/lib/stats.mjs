@@ -841,6 +841,23 @@ export function compareTable(published, derived) {
   return out;
 }
 
+/* A DIVISION'S TRANSCRIBED TABLE AGAINST ITS TRANSCRIBED RESULTS, early in a
+   season. `compareTable` wants every published club in the results, which is
+   right for League Ten's finished ninety and wrong on the first weekend of
+   League Eight, when five of nine clubs have not kicked a ball. A club the
+   results do not mention is compared as a row of noughts: a published zero
+   row then passes, and a published row claiming a match nobody transcribed
+   fails, which is the typo this exists to catch. One function, called by
+   `npm run verify` and by the suite, so the two cannot drift apart. */
+export function compareDivision(rows, results) {
+  const derived = deriveTable(results || []);
+  const known = new Set(derived.map((r) => r.club));
+  const full = derived.concat((rows || []).filter((r) => !known.has(r.club)).map((r) => ({
+    club: r.club, played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0,
+  })));
+  return compareTable(rows || [], full);
+}
+
 /* ---- Season grouping ------------------------------------------------- */
 export function groupBySeason(matches) {
   const map = new Map();

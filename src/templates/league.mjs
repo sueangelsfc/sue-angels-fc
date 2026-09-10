@@ -131,17 +131,24 @@ export function league(d) {
   /* The new division's own standing, when the league has published one.
      Empty until then, and the panel falls back to the club list. */
   const nextRows = next.rows || [];
+  /* LEAGUE EIGHT LEADS ONCE ITS TABLE HAS A MATCH IN IT. The tabs opened on
+     League Ten's final standings whatever had happened since, so after the
+     first League Eight weekend the page a supporter lands on still led with
+     last season. A table of nine noughts does not lead: that is a club list. */
+  const leadEight = nextRows.some((r) => (r.played || 0) > 0);
 
   const tableBand = `<section class="sec lg-table" id="table" aria-labelledby="lg-tbl-h">
       <div class="wrap">
-        ${rail(1, 'The standings', `${d.divisionOf(d.tableSeason)} ${d.tableSeason}`)}
-        <h2 class="h2 rv" id="lg-tbl-h">How the division <span class="volt">finished.</span></h2>
+        ${rail(1, 'The standings', leadEight
+    ? `${next.division || d.divisionOf(d.nextSeason)} ${next.season || d.nextSeason}`
+    : `${d.divisionOf(d.tableSeason)} ${d.tableSeason}`)}
+        <h2 class="h2 rv" id="lg-tbl-h">How the division <span class="volt">${leadEight ? 'stands.' : 'finished.'}</span></h2>
 
         <div class="lg-tabs rv" data-league-tabs>
-          <a class="lg-tab is-on" href="#table" data-league="ten">
+          <a class="lg-tab${leadEight ? '' : ' is-on'}" href="#table" data-league="ten">
             <b>${esc(d.divisionOf(d.tableSeason))}</b><i>${esc(d.tableSeason)} · final</i>
           </a>
-          <a class="lg-tab" href="#table" data-league="eight">
+          <a class="lg-tab${leadEight ? ' is-on' : ''}" href="#table" data-league="eight">
             <b>${esc(next.division || d.divisionOf(d.nextSeason))}</b><i>${esc(next.season || d.nextSeason)} · ${next.started ? 'in play' : 'not started'}</i>
           </a>
         </div>
@@ -160,7 +167,7 @@ export function league(d) {
     const most = nextRows.reduce((n, r) => Math.max(n, r.played || 0), 0);
     return most === 0 ? 'Named alphabetically until a match is played.'
       : `After ${most} matchday${most === 1 ? '' : 's'}.`;
-  })()} The league's own table.`)}</p>`
+  })()} The league's own table.`)}</p>__L8_EXTRA__`
     : `<div class="lg-fresh">
             <p class="lg-fresh__k">${esc(next.division || d.divisionOf(d.nextSeason))} · ${esc(next.season || d.nextSeason)}</p>
             <p class="lg-fresh__t">${next.started ? 'The table is on its way.' : 'Not a table yet.'}</p>
@@ -464,8 +471,32 @@ export function league(d) {
       </div>
     </section>`;
 
+  /* THE NEW DIVISION'S RESULTS AND ITS NEXT ROUND, under its own table. Not
+     added to "Around the league", which is League Ten's ninety and is exactly
+     what `npm run verify` derives League Ten's table from: one list per
+     division. Filled in here rather than inside the table band because the
+     row markup is defined further down the file. */
+  const eightResults = next.results || [];
+  const eightAhead = next.fixturesAhead || [];
+  const aheadRows = eightAhead.map((f) => `<li class="lg-res${isUs(f.home) || isUs(f.away) ? ' is-us' : ''}">
+              <span class="lg-res__date">${esc(fmtDate(f.date))}</span>
+              <span class="lg-res__side${isUs(f.home) ? ' is-us' : ''}">${esc(shortClub(f.home))}${badge(f.home)}</span>
+              <span class="lg-res__score">${esc(f.kick || 'v')}</span>
+              <span class="lg-res__side is-away${isUs(f.away) ? ' is-us' : ''}">${badge(f.away)}${esc(shortClub(f.away))}</span>
+            </li>`).join('\n            ');
+  const eightExtra = (eightResults.length
+    ? `<h3 class="lg-sub">Results so far</h3>
+          <ol class="lg-results">
+            ${resultRows(eightResults)}
+          </ol>` : '')
+    + (eightAhead.length
+      ? `<h3 class="lg-sub">Coming up</h3>
+          <ol class="lg-results">
+            ${aheadRows}
+          </ol>` : '');
+
   return {
-    body: siteHeader('/league.html') + hero + tableBand + scorersBand + aroundBand + sourceNote(['fulltime', 'surreyfa'])
+    body: siteHeader('/league.html') + hero + tableBand.replace('__L8_EXTRA__', eightExtra) + scorersBand + aroundBand + sourceNote(['fulltime', 'surreyfa'])
       + compsBand + sourceBand + ctaBand,
     bodyClass: 'is-home is-sub is-league',
     css: 'home.css',

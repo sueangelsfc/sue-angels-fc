@@ -7,7 +7,7 @@
     "division": "879497042",
     "fixtureGroup": "1_383208413"
   },
-  "_note": "The division Sue's Angels were promoted into. No matches have been played, so every figure is zero and FA Full-Time lists the clubs alphabetically rather than by position. The page says so rather than presenting an alphabetical list as a standing.\n\nNINE CLUBS, NOT TEN. Tyne & Thames FC were listed here and are not in the division: they are absent from Full-Time's League Eight table, from its club and team filters, and from every fixture published. They are not in League Six, Seven or Nine either, so they have left the league rather than been placed elsewhere in it. The site was naming them as a confirmed 26/27 opponent on the league page.\n\nNINE CLUBS IS NOT EIGHTEEN MATCHES. A ten-club double round robin is 18 games, which is what the club played to win League Ten; nine clubs is 16. Nothing here derives a total - the list is club names only, and every figure the site publishes about a season is counted from match records - but the difference is the sort of thing a reader assumes, so it is written down.",
+  "_note": "The division Sue's Angels were promoted into. The table, the results and the League Eight fixtures are transcribed from FA Full-Time as the season goes, and tableAsOf is the day the table was last copied. npm run verify derives the table from the results and fails the build if the two disagree, so a mistyped figure cannot publish quietly. Only League Eight fixtures are kept here: the other clubs' cup ties are not this club's matches.\n\nNINE CLUBS, NOT TEN. Tyne & Thames FC were listed here and are not in the division: they are absent from Full-Time's League Eight table, from its club and team filters, and from every fixture published. They are not in League Six, Seven or Nine either, so they have left the league rather than been placed elsewhere in it. The site was naming them as a confirmed 26/27 opponent on the league page.\n\nNINE CLUBS IS NOT EIGHTEEN MATCHES. A ten-club double round robin is 18 games, which is what the club played to win League Ten; nine clubs is 16. Nothing here derives a total - the list is club names only, and every figure the site publishes about a season is counted from match records - but the difference is the sort of thing a reader assumes, so it is written down.",
   "season": "26/27",
   "division": "League Eight",
   "started": false,
@@ -21,5 +21,184 @@
     "Sue's Angels FC",
     "TSM Rovers",
     "Three Little Birds FC"
+  ],
+  "tableAsOf": "2026-09-06",
+  "table": [
+    {
+      "p": 1,
+      "c": "TSM Rovers",
+      "pl": 1,
+      "w": 1,
+      "d": 0,
+      "l": 0,
+      "gf": 4,
+      "ga": 1,
+      "gd": 3,
+      "pts": 3
+    },
+    {
+      "p": 2,
+      "c": "Sue's Angels FC",
+      "pl": 1,
+      "w": 1,
+      "d": 0,
+      "l": 0,
+      "gf": 2,
+      "ga": 1,
+      "gd": 1,
+      "pts": 3
+    },
+    {
+      "p": 3,
+      "c": "Barnes Stormers FC",
+      "pl": 0,
+      "w": 0,
+      "d": 0,
+      "l": 0,
+      "gf": 0,
+      "ga": 0,
+      "gd": 0,
+      "pts": 0
+    },
+    {
+      "p": 4,
+      "c": "Bristol City (London) Supporters",
+      "pl": 0,
+      "w": 0,
+      "d": 0,
+      "l": 0,
+      "gf": 0,
+      "ga": 0,
+      "gd": 0,
+      "pts": 0
+    },
+    {
+      "p": 5,
+      "c": "Brockwell Violets FC",
+      "pl": 0,
+      "w": 0,
+      "d": 0,
+      "l": 0,
+      "gf": 0,
+      "ga": 0,
+      "gd": 0,
+      "pts": 0
+    },
+    {
+      "p": 6,
+      "c": "Haydons Park",
+      "pl": 0,
+      "w": 0,
+      "d": 0,
+      "l": 0,
+      "gf": 0,
+      "ga": 0,
+      "gd": 0,
+      "pts": 0
+    },
+    {
+      "p": 7,
+      "c": "Pure Football FC 1st Team",
+      "pl": 0,
+      "w": 0,
+      "d": 0,
+      "l": 0,
+      "gf": 0,
+      "ga": 0,
+      "gd": 0,
+      "pts": 0
+    },
+    {
+      "p": 8,
+      "c": "Three Little Birds FC",
+      "pl": 1,
+      "w": 0,
+      "d": 0,
+      "l": 1,
+      "gf": 1,
+      "ga": 2,
+      "gd": -1,
+      "pts": 0
+    },
+    {
+      "p": 9,
+      "c": "Junction Elite FC Sunday 3rd Team",
+      "pl": 1,
+      "w": 0,
+      "d": 0,
+      "l": 1,
+      "gf": 1,
+      "ga": 4,
+      "gd": -3,
+      "pts": 0
+    }
+  ],
+  "results": [
+    {
+      "date": "06 Sep 26",
+      "kick": "11:00",
+      "home": "Sue's Angels FC",
+      "hs": 2,
+      "as": 1,
+      "away": "Three Little Birds FC"
+    },
+    {
+      "date": "06 Sep 26",
+      "kick": "10:30",
+      "home": "Junction Elite FC Sunday 3rd Team",
+      "hs": 1,
+      "as": 4,
+      "away": "TSM Rovers"
+    }
+  ],
+  "fixtures": [
+    {
+      "iso": "2026-09-13",
+      "date": "13 Sep 26",
+      "kick": "10:30",
+      "home": "Bristol City (London) Supporters",
+      "away": "Barnes Stormers FC",
+      "venue": "Clapham Common, Pitch 3"
+    },
+    {
+      "iso": "2026-09-13",
+      "date": "13 Sep 26",
+      "kick": "10:30",
+      "home": "Brockwell Violets FC",
+      "away": "Pure Football FC 1st Team",
+      "venue": "Clapham Common, Pitch 8"
+    },
+    {
+      "iso": "2026-09-13",
+      "date": "13 Sep 26",
+      "kick": "10:30",
+      "home": "TSM Rovers",
+      "away": "Three Little Birds FC",
+      "venue": "Tooting Common, Lido Pitch 1"
+    },
+    {
+      "iso": "2026-09-13",
+      "date": "13 Sep 26",
+      "kick": "11:00",
+      "home": "Sue's Angels FC",
+      "away": "Haydons Park",
+      "venue": "The Reeves Sports Club"
+    },
+    {
+      "iso": "2026-09-20",
+      "date": "20 Sep 26",
+      "kick": "10:30",
+      "home": "Junction Elite FC Sunday 3rd Team",
+      "away": "Sue's Angels FC",
+      "venue": "Richardson Evans Memorial Playing Fields"
+    },
+    {
+      "iso": "2026-09-20",
+      "date": "20 Sep 26",
+      "kick": "12:30",
+      "home": "Pure Football FC 1st Team",
+      "away": "Bristol City (London) Supporters",
+      "venue": "Barn Elms Sports Centre"
+    }
   ]
 }

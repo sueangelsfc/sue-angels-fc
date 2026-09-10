@@ -755,6 +755,59 @@ export async function panelChecks() {
     check('and named in a matchday squad', slots.length > 0 && offersName(md.body),
       `${slots.length} slots`);
 
+    /* THE ELEVEN AND THE BENCH. Enter result puts the first eleven in the
+       starting eleven and the rest on the bench, and the screen used to call
+       all sixteen "Player N". */
+    const labelsOf = (root) => root.querySelectorAll('[data-slot]')
+      .map((s) => ((s.parentNode.querySelector('.field__label') || {}).textContent || '').trim());
+    const mdLabels = labelsOf(md.body);
+    check('the matchday squad says which picks start and which are substitutes',
+      mdLabels.filter((t) => /^Starter \d+$/.test(t)).length === 11
+        && mdLabels.filter((t) => /^Substitute \d+$/.test(t)).length === 5,
+      mdLabels.slice(9, 13).join(' / '));
+
+    const firstVals = (slots[0] ? slots[0].querySelectorAll('option') : [])
+      .filter((o) => o.getAttribute('value')).map((o) => o.getAttribute('value'));
+    const textOfVal = (v) => ((slots[0].querySelectorAll('option')
+      .filter((o) => o.getAttribute('value') === v)[0] || {}).textContent || '').trim();
+    const squadFx = (signedRows.fixtures || []).map((r) => ({
+      ...r,
+      data: { ...(r.data || {}), squad: firstVals.slice(0, 3).map(Number), squadStarters: 2 },
+    }));
+    const mc2 = PR.boot({ rows: { ...signedRows, fixtures: squadFx } });
+    const md2 = await PR.openPanel(mc2, 'matchday');
+    const s2 = md2.body.querySelectorAll('[data-slot]');
+    const dupOpt = s2.length > 1
+      ? s2[1].querySelectorAll('option').filter((o) => o.getAttribute('value') === firstVals[0])[0] : null;
+    check('a player picked in one slot is not offered again in another',
+      firstVals.length > 2 && !!dupOpt && dupOpt.hasAttribute('disabled') && s2[0].value === firstVals[0],
+      dupOpt ? 'still offered' : 'no option to test');
+    check('a saved bench stays on the bench rather than moving up into the eleven',
+      s2.length === 16 && s2[1].value === firstVals[1] && s2[2].value === '' && s2[11].value === firstVals[2],
+      `starter 3 "${s2[2] && s2[2].value}", substitute 1 "${s2[11] && s2[11].value}"`);
+
+    const copyBtn = md2.body.querySelectorAll('[data-copy-squad]')[0];
+    if (copyBtn) { PR.click(copyBtn); await PR.settle(mc2); }
+    const outEl = md2.body.querySelectorAll('[data-copy-out]')[0];
+    const outText = outEl ? String(outEl.value || '') : '';
+    check('Copy for WhatsApp lists the eleven and then the substitutes, by name',
+      !!copyBtn && /Starting eleven/.test(outText) && /Substitutes/.test(outText)
+        && outText.indexOf(textOfVal(firstVals[0])) > -1
+        && outText.indexOf(textOfVal(firstVals[2])) > outText.indexOf('Substitutes'),
+      outText.slice(0, 140) || 'nothing produced');
+
+    /* PROBE: call the bench "Player" again and the labelling check must fail.
+       Aimed at the words, which the minifier leaves alone. */
+    const benchProbe = PR.boot({
+      rows: signedRows,
+      transform: (src, file) => (file === 'control-matchday.js' ? bust(src, /Substitute /, 'Player ') : src),
+    });
+    const bp = await PR.openPanel(benchProbe, 'matchday');
+    const bpLabels = labelsOf(bp.body);
+    check('probe: calling the bench "Player" again breaks the starters-and-substitutes check',
+      bpLabels.length === 16 && bpLabels.filter((t) => /^Substitute \d+$/.test(t)).length === 0,
+      bpLabels.slice(10, 13).join(' / '));
+
     /* PROBE: ignore the Squad screen's record and the team sheet must lose him.
        Aimed at the record's key, which the minifier cannot rename. */
     const blind = PR.boot({

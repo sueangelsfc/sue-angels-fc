@@ -143,6 +143,18 @@ export function stats(d) {
   let defaultView = 0;
   VIEWS.forEach((v, i) => { if (v.key !== 'all' && v.rows.length) defaultView = i; });
 
+  /* A NEWER SEASON THAT HAS STARTED BUT HAS NO TEAM SHEET YET. The page stays
+     on the season with figures, which is right, and used to do it in silence:
+     the week after the first League Eight win it opened on 25/26 with nothing
+     to say that 26/27 had begun or why its figures were not showing. The one
+     thing that switches it over is a team sheet, so that is what it names. */
+  const waitingOn = VIEWS.filter((v, i) => v.key !== 'all' && i > defaultView && !v.rows.length
+    && (v.matches || []).some((m) => m.played && !m.friendly)).pop();
+  const waitingNote = waitingOn
+    ? `${waitingOn.label} has started, with ${count((waitingOn.matches || []).filter((m) => m.played && !m.friendly).length, 'competitive match', 'competitive matches')} played. `
+      + `Its team sheet has not been entered yet, so these figures stay on ${VIEWS[defaultView].label} until it is.`
+    : '';
+
   /* ================= HERO =================
      The eyebrow and the three tallies follow the season tab. They used to be
      the club's career totals under a fixed "By the numbers · 25/26", which
@@ -162,6 +174,7 @@ export function stats(d) {
           <h1 class="st-hero__title" id="st-h">Player stats<span class="volt">.</span></h1>
           <p class="st-hero__lede">Every player's season, counted from the team sheets. Sort any
             column, filter by competition, and open anyone for their full profile.</p>
+          ${waitingNote ? `<p class="st-hero__lede" data-season-waiting>${esc(waitingNote)}</p>` : ''}
         </div>
         <dl class="st-tally glassbox" data-hero-tally${heroTallyData()}>
           <div><dt>Goals scored</dt><dd>${esc(tally(VIEWS[defaultView].rows)[0])}</dd></div>

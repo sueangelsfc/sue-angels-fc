@@ -2172,7 +2172,15 @@ const BUDGET = {
      thing control.html loads and it is not deferred, so it is on the critical
      path for every screen - which is exactly the position that had gone
      unguarded while the chunks around it were all budgeted. 7.0KB now. */
-  'control-seed.js': 8,
+  /* 8 -> 9, and what bought it is ONE FIXTURE. The seed was 8,180 bytes
+     against 8,192, twelve bytes of room, and entering the club's next League
+     Eight match (Junction Elite away, 20 September) added its row to
+     `baselineFixtures`, its ground to `venues` and its club to
+     `clubsWithBadge`: 8,220. That is data the club asked for, not code, and a
+     seed that fails on the next fixture typed in is the ceiling describing the
+     file. `baselineFixtures` shrinks again the moment the club imports that
+     fixture in the panel. */
+  'control-seed.js': 9,
 };
 for (const [f, kb] of Object.entries(BUDGET)) {
   const raw = fs.readFileSync(path.join(ROOT, f));
@@ -3860,8 +3868,17 @@ for (const [f, kb] of Object.entries({
   const matchSrc = ['10-match.js', '11-matchedit.js']
     .map((f) => fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', f), 'utf8')).join('\n');
   check('the matchday squad is read by the team sheet',
-    /Array\.isArray\(d\.squad\)/.test(matchSrc) && /pre\.slice\(0, 11\)/.test(matchSrc),
+    /Array\.isArray\(d\.squad\)/.test(matchSrc) && /pre\.slice\(0, preK\)/.test(matchSrc)
+      && /pre\.slice\(preK\)/.test(matchSrc),
     'the fixture squad picker would write a field nothing consumes');
+  /* HOW MANY OF THEM START is a second field, and it has a writer and a reader
+     or it is not a field: the matchday screen saves `squadStarters` beside the
+     squad so a blank in the eleven never promotes a substitute, and the match
+     form reads it before falling back to the first eleven. */
+  const mdWriter = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '12-matchday.js'), 'utf8');
+  check('the count of starters is written by the matchday screen and read by the team sheet',
+    /next\.squadStarters\s*=/.test(mdWriter) && /d\.squadStarters/.test(matchSrc),
+    'squadStarters would be a field with no writer or no reader');
   check('a saved team sheet is never overwritten by the squad',
     /!d\.starters && !d\.bench/.test(matchSrc),
     're-opening a match would rewrite its eleven from a list picked days earlier');
@@ -5131,6 +5148,85 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     started.slice(0, 200));
   check('before any match, the new division\'s panel still says it is not a table yet',
     /Not a table yet/.test(fresh) && /No match has been played/.test(fresh), fresh.slice(0, 200));
+
+  /* ONCE LEAGUE EIGHT HAS A TABLE WITH A MATCH IN IT, IT LEADS the page, and
+     until then League Ten's final standings do. Asked of crafted rows both
+     ways, so the check holds whatever the transcription says today. */
+  const liveRow = { pos: 1, club: 'TSM Rovers', played: 1, won: 1, drawn: 0, lost: 0,
+    goalsFor: 4, goalsAgainst: 1, goalDifference: 3, points: 3 };
+  const tabOn = (h) => (/<a class="lg-tab is-on" href="#table" data-league="([a-z]+)"/
+    .exec(String(h && h.body ? h.body : h)) || [])[1] || '';
+  const leading = tabOn(lgFn({ ...dL, nextDivisionTable: { ...(dL.nextDivisionTable || {}), started: true, rows: [liveRow] } }));
+  const waiting = tabOn(lgFn({ ...dL, nextDivisionTable: { ...(dL.nextDivisionTable || {}), started: false, rows: [] } }));
+  check('the league page opens on League Eight once its table has a match in it', leading === 'eight', leading);
+  check('and on League Ten until then', waiting === 'ten', waiting);
+
+  /* THE TRANSCRIPTION ITSELF: results and next round under the table, and
+     the table agreeing with its own results by the rule verify runs. */
+  const l8 = dL.nextDivisionTable || {};
+  const bodyL8 = String((lgFn(dL) || {}).body || '');
+  const at8 = bodyL8.indexOf('data-league-panel="eight"');
+  const panel8 = at8 > -1 ? bodyL8.slice(at8, bodyL8.indexOf('</section>', at8)) : '';
+  const rows8 = (panel8.match(/<li class="lg-res/g) || []).length;
+  check('League Eight\'s results and its next round are listed under its table',
+    (l8.results || []).length > 0 && rows8 === (l8.results || []).length + (l8.fixturesAhead || []).length,
+    `${rows8} rows for ${(l8.results || []).length} results and ${(l8.fixturesAhead || []).length} fixtures ahead`);
+  const { compareDivision: cmpDiv } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+  const gaps8 = cmpDiv(l8.rows || [], l8.results || []);
+  check('League Eight\'s transcribed table agrees with its transcribed results',
+    (l8.rows || []).length === 9 && gaps8.length === 0, gaps8.join(' | '));
+  check('probe: one mistyped figure in the League Eight table is caught',
+    cmpDiv((l8.rows || []).map((r) => (r.us ? { ...r, goalsFor: r.goalsFor + 1 } : r)), l8.results || []).length > 0);
+  check('probe: a result for a club the table says has not played is caught',
+    cmpDiv(l8.rows || [], [...(l8.results || []),
+      { date: '06 Sep 26', home: 'Haydons Park', hs: 1, as: 0, away: 'Barnes Stormers FC' }]).length > 0);
+
+  /* THE HOME PAGE'S NEXT-MATCH BAND says how the last match went and where it
+     left the club, because it is the band the club always shows. */
+  const { home: homeTpl } = await import(path.join(ROOT, 'src', 'templates', 'home.mjs'));
+  const homeText = flatL(homeTpl(dL));
+  const nextAt = homeText.indexOf('The next match');
+  const us8 = (l8.rows || []).find((r) => r.us);
+  check('the home page\'s next-match band says how the last match went',
+    nextAt > -1 && /Last time out: (won|lost|drew|were awarded|conceded)/.test(homeText.slice(nextAt, nextAt + 700)),
+    homeText.slice(nextAt, nextAt + 300));
+  check('and where it left the club in League Eight',
+    nextAt > -1 && !!us8 && us8.played > 0
+      && new RegExp(`\\d+(st|nd|rd|th) in League Eight on ${us8.points} points?`).test(homeText.slice(nextAt, nextAt + 700)),
+    homeText.slice(nextAt, nextAt + 300));
+}
+
+/* ==========================================================================
+   THE PLAYER STATS PAGE SAYS WHY A NEW SEASON IS NOT SHOWING
+
+   It opens on the newest season with figures, and a season's figures come from
+   its team sheets. A result saved without one - the first League Eight match,
+   on 9 September 2026 - left the page on last season with nothing saying so.
+   Asked of a rebuilt dataset with a crafted result, so the check does not
+   depend on the day the snapshot was taken.
+   ========================================================================== */
+{
+  const { buildDataset: bdW } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const { stats: statsW } = await import(path.join(ROOT, 'src', 'templates', 'stats.mjs'));
+  const rawW = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'recovered-live.json'), 'utf8'));
+  const liveW = JSON.parse(JSON.stringify(rawW));
+  liveW.matches = (liveW.matches || []).filter((m) => !/^r2026090[6-9]|^r202609[1-3]/.test(m.key || ''));
+  const bare = String((statsW(bdW({ live: JSON.parse(JSON.stringify(liveW)) })) || {}).body || '');
+  liveW.matches.push({
+    key: 'simw20260906-tlb', updated_at: '2026-09-06T12:00:00Z',
+    data: {
+      iso: '2026-09-06', date: '06 Sep 2026', kind: 'score', competition: 'League Eight',
+      home: "Sue's Angels FC", away: 'Three Little Birds FC', hs: 2, as: 1, kick: '11:00',
+      venue: 'The Reeves Sports Club',
+    },
+  });
+  const noSheet = String((statsW(bdW({ live: liveW })) || {}).body || '');
+  check('the player stats page says a new season has started and why its figures are not showing',
+    /data-season-waiting/.test(noSheet) && /has started, with 1 competitive match played/.test(noSheet)
+      && /team sheet has not been entered yet/.test(noSheet),
+    (/data-season-waiting>([^<]*)/.exec(noSheet) || [, 'no note'])[1]);
+  check('and says nothing of the kind before a competitive match is played',
+    !/data-season-waiting/.test(bare));
 }
 
 /* ==========================================================================

@@ -250,6 +250,9 @@
 .lg-cp__sum i{font-style: normal; font-family: var(--ui); font-size: 9px; font-weight: 700;
   letter-spacing: 0.13em; text-transform: uppercase; color: var(--ink-3);}
 .lg-cp__run{margin-top: 14px;}
+/* The new division's results and next round, under its table. */
+.lg-sub{margin: 22px 0 10px; font-family: var(--display); font-weight: 500;
+  font-size: clamp(16px, 1.6vw, 19px); color: var(--fg);}
 .lg-comps .lg-panel:focus-visible{outline: 2px solid var(--volt); outline-offset: 6px;
   border-radius: 18px;}
 /* The round a cup tie was. Without it a knockout run reads as a list of

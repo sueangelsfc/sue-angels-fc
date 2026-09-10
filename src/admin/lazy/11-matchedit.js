@@ -825,9 +825,12 @@
        Only when there is no team sheet yet: re-opening a saved match must
        never have its eleven rewritten by a list picked days earlier. */
     var pre = (!d.starters && !d.bench && Array.isArray(d.squad)) ? d.squad : [];
+    /* How many of them the matchday screen picked to START. A squad saved
+       before the count existed is read the old way, first eleven in. */
+    var preK = typeof d.squadStarters === 'number' ? d.squadStarters : 11;
     var counts = {
-      starters: (d.starters || []).map(function (x) { return x.num; }).concat(pre.slice(0, 11)),
-      bench: (d.bench || []).map(function (x) { return x.num; }).concat(pre.slice(11)),
+      starters: (d.starters || []).map(function (x) { return x.num; }).concat(pre.slice(0, preK)),
+      bench: (d.bench || []).map(function (x) { return x.num; }).concat(pre.slice(preK)),
       yellowCards: (d.yellowCards || []).map(numOf),
       redCards: (d.redCards || []).map(numOf),
       cleanSheets: (d.cleanSheets || []).map(numOf),

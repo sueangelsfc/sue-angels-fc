@@ -18,23 +18,15 @@
     "it knows it. Only the doubling in 'Tattenham Rovers Tattenham Rovers' is",
     "corrected, because a name pasted in twice is a slip rather than a claim."
   ],
-
   "canonical": {
     "Meadhurst Sports Clun": "Meadhurst Sports Club",
-
     "The Reeves, Snakey Ln, Feltham TW13 7NB": "The Reeves Sports Club",
-
     "Barns Elms Sports Centre": "Barn Elms Sports Centre",
     "Barn Elms Sports centre": "Barn Elms Sports Centre",
-
     "Prince Georges Playing Fields": "Prince George’s Playing Fields",
-
     "Tattenham Rovers Tattenham Rovers": "Tattenham Rovers",
-
-    "The Matthew Arnold School, Staines-upon-Thames, Staines TW18 1PF":
-      "The Matthew Arnold School"
+    "The Matthew Arnold School, Staines-upon-Thames, Staines TW18 1PF": "The Matthew Arnold School"
   },
-
   "known": [
     "Barn Elms Sports Centre",
     "Clapham Common",
@@ -47,6 +39,7 @@
     "The Matthew Arnold School",
     "The Reeves Sports Club",
     "Wandsworth Common",
-    "Woking Veterans Sundays"
+    "Woking Veterans Sundays",
+    "Richardson Evans Memorial Playing Fields"
   ]
 }

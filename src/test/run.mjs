@@ -5105,6 +5105,35 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 }
 
 /* ==========================================================================
+   THE NEW DIVISION'S PANEL, BETWEEN THE FIRST RESULT AND THE FIRST TABLE
+
+   The tab reads "in play" off the evidence as soon as a League Eight result is
+   saved; the table is transcribed from the league afterwards. For that gap the
+   panel said "No match has been played" under a tab saying the opposite. Both
+   states asked of crafted data, so the check does not depend on the day the
+   snapshot was taken.
+   ========================================================================== */
+{
+  const { buildDataset: bdL } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const lgMod = await import(path.join(ROOT, 'src', 'templates', 'league.mjs'));
+  const lgFn = lgMod.league || lgMod.leaguePage || lgMod.default;
+  const dL = bdL();
+  const flatL = (h) => String(h && h.body ? h.body : h).replace(/<[^>]+>/g, ' ').replace(/&#39;/g, "'").replace(/\s+/g, ' ');
+  const panelOf = (ndt) => {
+    const t = flatL(lgFn({ ...dL, nextDivisionTable: { ...(dL.nextDivisionTable || {}), ...ndt } }));
+    const i = t.indexOf('League Eight · 26/27');
+    return i > -1 ? t.slice(i, i + 400) : t;
+  };
+  const started = panelOf({ started: true, rows: [] });
+  const fresh = panelOf({ started: false, rows: [] });
+  check('once the new division has started, its panel never says no match has been played',
+    typeof lgFn === 'function' && !/No match has been played/.test(started) && /table is on its way/.test(started),
+    started.slice(0, 200));
+  check('before any match, the new division\'s panel still says it is not a table yet',
+    /Not a table yet/.test(fresh) && /No match has been played/.test(fresh), fresh.slice(0, 200));
+}
+
+/* ==========================================================================
    THE MATCH PROGRAMME
 
    One stable URL that is always the NEXT fixture, so the nav can point at it

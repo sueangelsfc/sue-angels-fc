@@ -163,10 +163,20 @@ export function league(d) {
   })()} The league's own table.`)}</p>`
     : `<div class="lg-fresh">
             <p class="lg-fresh__k">${esc(next.division || d.divisionOf(d.nextSeason))} · ${esc(next.season || d.nextSeason)}</p>
-            <p class="lg-fresh__t">Not a table yet.</p>
-            <p class="lg-fresh__b">No match has been played, so every club sits on nothing and the
+            <p class="lg-fresh__t">${next.started ? 'The table is on its way.' : 'Not a table yet.'}</p>
+            <p class="lg-fresh__b">${next.started
+    /* STARTED, BUT NOT TRANSCRIBED. The tab above says "in play" off the
+       evidence the moment a League Eight result is saved, while the table
+       itself is typed in from the league's page afterwards. For that gap the
+       panel went on saying "No match has been played, so every club sits on
+       nothing" under a tab reading "in play" and a 2-1 win on the results
+       page. It says what is true in each state instead. */
+    ? `The season has started. The league's own table goes here once it has been added, and
+              until then these are the ${esc((next.clubs || []).length)} sides ${esc(CLUB.short)} come up
+              against, in alphabetical order rather than any standing.`
+    : `No match has been played, so every club sits on nothing and the
               league lists them alphabetically. These are the ${esc((next.clubs || []).length)} sides
-              ${esc(CLUB.short)} come up against, in that order rather than any standing.</p>
+              ${esc(CLUB.short)} come up against, in that order rather than any standing.`}</p>
           </div>
           <ol class="lg-clubs">
             ${(next.clubs || []).map((c) => `<li${isUs(c) ? ' class="is-us"' : ''}>

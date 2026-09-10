@@ -1291,6 +1291,7 @@
                 'placeholder="Write the bullets above and press Build the report, or type it here yourself.">' +
               esc(d.polishedReport || '') + '</textarea>' +
               '<p class="field__hint" data-pwords>' + words(d.polishedReport) + '</p>' +
+              (window.CPWRITE ? window.CPWRITE.photoField('m-polished') : '') +
             '</div>' +
             '<div class="cp-head__actions" style="margin-top:var(--space-3)">' +
               '<button type="button" class="btn btn--ghost btn--sm" data-clear-report>Clear it</button>' +
@@ -1310,6 +1311,7 @@
         '</div>' +
       '</div>';
     document.body.appendChild(back);
+    if (window.CPWRITE) window.CPWRITE.wirePhotos(back);
 
     /* ---- Painting ---- */
     function paintXI() {
@@ -1720,7 +1722,14 @@
         }).then(function (r) {
           done();
           var out = $('#m-polished', back);
-          out.value = r.text;
+          /* PHOTOGRAPHS SURVIVE BUILDING THE REPORT AGAIN. Building replaces
+             the text, and a photo placed in the old version is a line of that
+             text, so pressing the button a second time would silently throw
+             away every picture the club had uploaded. They are kept, at the
+             foot, where they can be moved to wherever they belong. */
+          var keptPhotos = (out.value.match(/^[ \t]*!\[[^\]\n]*\]\(\S+\)[ \t]*$/gm) || [])
+            .map(function (l) { return l.trim(); });
+          out.value = r.text + (keptPhotos.length ? '\n\n' + keptPhotos.join('\n\n') : '');
           $('[data-pwords]', back).textContent = words(r.text);
           /* WHICH ONE WROTE IT, always. A report that quietly changed
              character depending on a server setting would be worse than

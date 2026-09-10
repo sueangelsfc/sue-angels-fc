@@ -613,9 +613,17 @@ for (const f of shipped) {
     check('the lists load on their own', !!listOnly.CPM.fixtures && !!listOnly.CPM.results);
     check('and do not bring the editor with them', listOnly.CPME === undefined,
       'the editor is back in the chunk everybody opening a list downloads');
-    check('the lists publish what the editor will borrow',
-      Object.keys(listOnly.CPMH || {}).length === 8,
-      `${Object.keys(listOnly.CPMH || {}).length} helpers published`);
+    /* NAMED, NOT COUNTED. A count passes on a helper swapped for another.
+       The ninth, `squadNow`, is borrowed by the matchday screen rather than
+       the editor: it merges the players added on the Squad screen since the
+       last publish, and it lives with the lists because control.js has no
+       room for it. */
+    const CPMH_NAMES = ['matchIso', 'pickable', 'words', 'isoFromPretty', 'optionList',
+      'longDate', 'seasonOfIso', 'prettyDate', 'squadNow'];
+    check('the lists publish what the editor and the matchday screen will borrow',
+      CPMH_NAMES.every((k) => typeof (listOnly.CPMH || {})[k] === 'function')
+        && Object.keys(listOnly.CPMH || {}).length === CPMH_NAMES.length,
+      `published: ${Object.keys(listOnly.CPMH || {}).join(', ')}`);
     check('the shared state is built by the lists',
       (listOnly.CPMSTATE.SQUAD || []).length > 0
       && Object.keys(listOnly.CPMSTATE.nameOfNum || {}).length > 0);
@@ -1857,7 +1865,20 @@ const BUDGET = {
      record, so the next edit to the shell fails this. That is the budget
      doing its job and not a reason to raise it on the way past: whoever needs
      the room should say what bought it, the way every other raise here does. */
-    'control.js': 13,
+    /* 13 -> 14, and what bought it is ONE ENTRY IN THE CHUNK MAP.
+
+     The photo tools for articles and match reports are a lazy chunk of their
+     own, control-writing.js at 1.1KB, precisely so that nobody opening any
+     other screen pays for them. They spent an hour in the shell first and took
+     this file to 13.96KB, which is the failure the split exists to prevent.
+     The helper that merges the Squad screen's new players went to the match
+     chunk rather than here, for the same reason.
+
+     What cannot leave the shell is the chunk's hashed address in CP_CHUNKS,
+     which is how every lazy file is cache-busted: 13,344 bytes against 13,312.
+     Any new lazy chunk at all would have failed here, whatever it held, so the
+     ceiling was describing this file rather than limiting it. */
+    'control.js': 14,
   /* The heaviest, and fairly: the pitch, the position names, five tabs, the
      goal detail (what it was struck with, where from, what the ball was doing,
      who made it and how), and the composer that turns a coach's bullets into a
@@ -2098,6 +2119,11 @@ const BUDGET = {
   'control-photos-donations.js': 4,
   'control-pipeline.js': 4,
   'control-covers.js': 4,
+  /* The photo tools for long writing: the caption field, the upload and the
+     line it inserts. Fetched by the article editor and the match editor before
+     they open, and by nobody else - it started in the shell, which took
+     control.js from 12.94 to 13.96KB for a button two screens use. */
+  'control-writing.js': 2,
   'control-video.js': 3,
   'control-hero.js': 3,
   /* The running order of the home page. A list, two arrows and a switch, and
@@ -5206,6 +5232,37 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
    other way round lets a pasted tag through the moment somebody bolds a word
    near it. */
 {
+  /* A PHOTOGRAPH PLACED IN AN ARTICLE OR A MATCH REPORT, from the panel, as a
+     line of its own: `![caption](address#WIDTHxHEIGHT)`. The text is typed
+     into a textarea, so every one of these is a question about untrusted
+     input as much as about layout. */
+  {
+    const { articleBody: body } = await import(path.join(ROOT, 'src', 'templates', 'news.mjs'));
+    const { plainText: plain, hasReport: hasRep, house: hs } = await import(path.join(ROOT, 'src', 'lib', 'prose.mjs'));
+    const store = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'runtime.json'), 'utf8')).supabase.url
+      + '/storage/v1/object/public/gallery/photo-1.jpg';
+    const ours = body(`Before.\n\n![Luwawa <script>x</script> on the ball](${store}#1600x900)\n\nAfter.`);
+    check('a photo line from the club\'s storage becomes a figure carrying its own size',
+      /<figure class="nw-art__fig"><img src="[^"]+photo-1\.jpg" alt="" width="1600" height="900"/.test(ours),
+      ours.slice(0, 180));
+    check('a photo caption is escaped, never markup',
+      ours.includes('<figcaption>Luwawa &lt;script&gt;') && !ours.includes('<script>'), ours.slice(0, 260));
+    const foreign = body('![x](https://example.com/p.jpg#10x10)');
+    check('a photo line pointing anywhere but the club\'s storage is left as text, not fetched',
+      !/<img/.test(foreign) && foreign.includes('example.com'), foreign);
+    check('a quote cannot break out of a photo address',
+      !/<img/.test(body(`![x](${store}"onerror="x)`)));
+    check('a photo from the site\'s own assets is allowed',
+      /<img src="\/assets\/hero\/team\.webp"/.test(body('![Team](/assets/hero/team.webp)')));
+    const withPic = `A short note.\n\n![c](${store}#1600x900)`;
+    check('a photo line never reaches a shortened version of the text',
+      plain(withPic) === 'A short note.', JSON.stringify(plain(withPic)));
+    check('photos do not turn a short note into a report',
+      !hasRep({ detail: { polishedReport: [withPic, `![d](${store}#1600x900)`, `![e](${store}#1600x900)`].join('\n\n') } }));
+    const line = `![Allen at the back post, it’s 2-0](${store}#1600x900)`;
+    check('the house style pass leaves a photo line working', /<img/.test(body(hs(line))), hs(line));
+  }
+
   const { articleBody: ab } = await import(path.join(ROOT, 'src', 'templates', 'news.mjs'));
 
   check('a hash line becomes a sub-heading',

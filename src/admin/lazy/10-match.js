@@ -120,6 +120,7 @@
      eight stayed because the fixtures and results lists use them too, and one
      copy of a date parser is better than two that can disagree. */
   window.CPMH = {
+    squadNow: squadNow,
     matchIso: matchIso,
     pickable: pickable,
     words: words,
@@ -331,7 +332,15 @@
           /* THE EDITOR ARRIVES WHEN IT IS ASKED FOR. Entering a result is the
              one thing on this screen that needs the five-tab form; reading the
              list is not, and most visits are reading. */
-          U.chunk('matchedit').then(function () {
+          /* The roster is read on the way in, as the results list does: the
+             most likely match to be entered from here is this Sunday's, and
+             the most likely player missing from a stale list is this week's
+             signing. A failed read still opens the form on the seed. */
+          Promise.all([
+            U.chunk('matchedit'),
+            U.chunk('writing').catch(function () {}),
+            CP.readAll('player_photos').then(function (b) { loadRoster(b || []); }, function () {}),
+          ]).then(function () {
             window.CPME.openMatch({
               seed: Object.assign({}, frec.data, { kind: 'score' }),
               fromFixture: fkey,
@@ -438,12 +447,65 @@
      panel, so they can never collide with a squad number. */
   S.TRIALISTS = (SEED.trialists || []).slice()
     .sort(function (a, b) { return a.name.localeCompare(b.name); });
-  S.SQUAD = (SEED.squad || []).slice().sort(function (a, b) { return a.num - b.num; })
-    .concat(S.TRIALISTS.map(function (t) {
-      return { num: t.num, name: t.name, pos: '', trial: true, from: t.from, until: t.until };
-    }));
+  S.SQUAD = squadList([]);
   S.nameOfNum = {};
   S.SQUAD.forEach(function (p) { S.nameOfNum[p.num] = p.name; });
+
+  /* THE SQUAD AS THE DATABASE HOLDS IT NOW, NOT AS IT WAS AT THE LAST PUBLISH.
+     `SEED.squad` is written by the build, so a player added on the Squad
+     screen could not be picked for a team sheet until somebody pressed
+     Publish to site - and the reason you add a signing on a Saturday is to
+     name him on Sunday. Trialists and statuses were already read live here;
+     the one list that was not is the one the club adds to most. `squadNow`
+     merges `roster:s2627` over the seed by number, the same rule dataset.mjs
+     publishes with, so the dropdown and the website name a player the same. */
+  /* NOTHING FROM THE SHELL AT LOAD. A chunk declares, registers and waits -
+     the harness loads every one against plain stubs to prove it - so the
+     opening list is the seed itself, and the merge only runs once a screen has
+     read the database and has something to merge. */
+  function squadList(blobs) {
+    var base = blobs && blobs.length ? squadNow(SEED.squad, blobs) : (SEED.squad || []).slice();
+    return base.sort(function (a, b) { return a.num - b.num; })
+      .concat(S.TRIALISTS.map(function (t) {
+        return { num: t.num, name: t.name, pos: '', trial: true, from: t.from, until: t.until };
+      }));
+  }
+
+  /* THE MERGE ITSELF, published on CPMH for the matchday screen. Not in the
+     shell: control.js was 46 bytes inside its ceiling, and everybody opening
+     any screen downloads the shell. Field by field and by number, as
+     dataset.mjs publishes, so a corrected spelling shows here as well as a
+     signing. */
+  function squadNow(seed, blobs) {
+    var out = (seed || []).map(function (p) { return Object.assign({}, p); });
+    var row = (blobs || []).filter(function (r) { return r && r.key === 'roster:s2627'; })[0];
+    var signed = (row && row.data && row.data.players) || [];
+    signed.forEach(function (p) {
+      if (!p || !p.num) return;
+      var at = -1;
+      out.forEach(function (q, i) { if (String(q.num) === String(p.num)) at = i; });
+      var rec = at > -1 ? out[at] : { num: Number(p.num), pos: '', goneFrom: '' };
+      var name = ((p.first || '') + ' ' + (p.last || '')).trim();
+      if (name) { rec.name = name; rec.first = p.first || ''; rec.last = p.last || ''; }
+      if (p.position) rec.pos = p.position;
+      if (at < 0 && rec.name) out.push(rec);
+    });
+    return out;
+  }
+
+  /* Everything the form needs to know about who is at the club, from one read
+     of `player_photos`. The results list and the fixtures list both open the
+     editor, and only one of them used to ask. */
+  function loadRoster(blobs) {
+    var st = blobs.filter(function (r) { return r.key === 'roster:status'; })[0];
+    S.STATUS = (st && st.data && (st.data.status || st.data)) || {};
+    var tr = blobs.filter(function (r) { return r.key === 'roster:trialists'; })[0];
+    var list = (tr && tr.data && tr.data.players) || [];
+    S.TRIALISTS = list.slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
+    S.SQUAD = squadList(blobs);
+    S.nameOfNum = {};
+    S.SQUAD.forEach(function (p) { S.nameOfNum[p.num] = p.name; });
+  }
 
   /* ==========================================================================
      WHO WAS AT THE CLUB THAT DAY
@@ -600,19 +662,9 @@
        know, without waiting for a rebuild. */
     return Promise.all([CP.readAll('matches'), CP.readAll('player_photos')])
       .then(function (both) {
-        var blobs = both[1] || [];
-        var st = blobs.filter(function (r) { return r.key === 'roster:status'; })[0];
-        S.STATUS = (st && st.data && (st.data.status || st.data)) || {};
-        var tr = blobs.filter(function (r) { return r.key === 'roster:trialists'; })[0];
-        var list = (tr && tr.data && tr.data.players) || [];
-        S.TRIALISTS = list.slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
-        /* Rebuilt so a trialist added since the page loaded is pickable. */
-        S.SQUAD = (SEED.squad || []).slice().sort(function (a, b) { return a.num - b.num; })
-          .concat(S.TRIALISTS.map(function (t) {
-            return { num: t.num, name: t.name, pos: '', trial: true, from: t.from, until: t.until };
-          }));
-        S.nameOfNum = {};
-        S.SQUAD.forEach(function (p) { S.nameOfNum[p.num] = p.name; });
+        /* Rebuilt so a player or trialist added since the page loaded is
+           pickable. */
+        loadRoster(both[1] || []);
         return both[0];
       })
       .then(function (rows) {
@@ -690,13 +742,16 @@
         if (e.target.matches('[data-new-match]')) {
           /* THE EDITOR ARRIVES WHEN IT IS ASKED FOR, not with the list.
              Most visits to this screen read it and leave. */
-          if (guard()) U.chunk('matchedit').then(function () { window.CPME.openMatch({}); });
+          if (guard()) {
+            Promise.all([U.chunk('matchedit'), U.chunk('writing').catch(function () {})])
+              .then(function () { window.CPME.openMatch({}); });
+          }
           return;
         }
         if (!e.target.matches('[data-edit]')) return;
         if (!guard()) return;
         var key = e.target.closest('tr[data-key]').getAttribute('data-key');
-        U.chunk('matchedit').then(function () {
+        Promise.all([U.chunk('matchedit'), U.chunk('writing').catch(function () {})]).then(function () {
           window.CPME.openMatch({ rec: list.filter(function (x) { return x.key === key; })[0] });
         });
       });

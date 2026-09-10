@@ -194,9 +194,21 @@
   }
 
   M.matchday = function (host) {
-    return Promise.all([CP.readAll('fixtures'), CP.readAll('matches')]).then(function (r) {
+    return Promise.all([
+      CP.readAll('fixtures'),
+      CP.readAll('matches'),
+      CP.readAll('player_photos').catch(function () { return []; }),
+      /* The merge lives with the match lists, and anybody entering results has
+         that chunk already. A failure leaves the screen on the build's squad. */
+      U.chunk('match').catch(function () {}),
+    ]).then(function (r) {
       var fixtures = r[0] || [];
       var matches = r[1] || [];
+      /* WHO CAN BE NAMED IS WHO IS AT THE CLUB TODAY, not at the last publish.
+         This screen took the build's squad and nothing else, so a player added
+         on the Squad screen on Saturday could not be put in Sunday's matchday
+         squad until somebody published. Same merge as the match form. */
+      if (window.CPMH && window.CPMH.squadNow) SQUAD = window.CPMH.squadNow(SEED.squad, r[2] || []);
 
       /* A result exists for a day when a match row keyed r<date> does. Same
          question the dashboard asks, same helper, so the two screens cannot

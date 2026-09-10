@@ -39,6 +39,7 @@ import { contact } from './templates/contact.mjs';
 import { notFound } from './templates/notfound.mjs';
 import { PENDING_ROUTES, isLive, groupLive } from './lib/routes.mjs';
 import { matchPage, articlePage } from './templates/detail.mjs';
+import { plainText } from './lib/prose.mjs';
 import { playerPage } from './templates/player.mjs';
 import { control } from './templates/control.mjs';
 import { VOCAB } from './lib/football.mjs';
@@ -1346,7 +1347,7 @@ for (const a of (groupLive('news') ? d.articles : [])) {
   const out = newsArticle(a, d);
   write(`news/${slug}.html`, page({
     title: `${a.title} · ${CLUB.name}`,
-    description: fitDesc(String(a.lede || a.title), `${CLUB.name}, ${CLUB.venue.district}.`),
+    description: fitDesc(plainText(a.lede) || String(a.title), `${CLUB.name}, ${CLUB.venue.district}.`),
     /* The article's own cover, drawn or photographed, in preference to the
        generic news card. */
     ogImage: a.cover || drawnCover(`a-${slug}`) || ogCard('og-news'),

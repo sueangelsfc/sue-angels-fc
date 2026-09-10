@@ -705,6 +705,76 @@ export async function panelChecks() {
   }
 
   /* ==========================================================================
+     A PLAYER ADDED ON THE SQUAD SCREEN CAN BE NAMED STRAIGHT AWAY
+
+     Adding a player writes `roster:s2627`, and the match form and the matchday
+     squad both built their lists from the build's seed alone - so a signing
+     made on Saturday could not be put on Sunday's team sheet until somebody
+     published in between. Asked of the rendered screens with a crafted record,
+     through every route that leads to a team sheet. */
+  {
+    const NEW_NAME = 'Testy Newsigning';
+    const photos = (rows.player_photos || []).slice();
+    const at = photos.findIndex((r) => r.key === 'roster:s2627');
+    const prior = at > -1 ? ((photos[at].data || {}).players || []) : [];
+    const signedRow = {
+      key: 'roster:s2627',
+      data: { ...(at > -1 ? photos[at].data : {}), players: [...prior, { num: 199, first: 'Testy', last: 'Newsigning', position: 'Midfielder' }] },
+    };
+    if (at > -1) photos[at] = signedRow; else photos.push(signedRow);
+    const signedRows = { ...rows, player_photos: photos };
+    const offersName = (root) => root.querySelectorAll('option')
+      .filter((o) => o.textContent.trim() === NEW_NAME).length > 0;
+    const afterClick = async (c, el) => {
+      PR.click(el); await PR.settle(c); PR.flushMutations(c.doc.body); await PR.settle(c);
+      return c.doc.querySelector('.modal-backdrop');
+    };
+    const editorFromResults = async (c) => {
+      const r = await PR.openPanel(c, 'results');
+      const btn = r.body.querySelectorAll('tr[data-key] [data-edit]')[0];
+      return btn ? afterClick(c, btn) : null;
+    };
+
+    const rc = PR.boot({ rows: signedRows });
+    const ed = await editorFromResults(rc);
+    check('a player added on the Squad screen can be picked for a team sheet before anybody publishes',
+      !!ed && offersName(ed), ed ? `${ed.querySelectorAll('option').length} options, not him` : 'no editor opened');
+    check('the match editor offers a photo for the written report',
+      !!ed && !!ed.querySelector('[data-photo-for="m-polished"]'));
+
+    const fc = PR.boot({ rows: signedRows });
+    const fx = await PR.openPanel(fc, 'fixtures');
+    const fxBtn = fx.body.querySelectorAll('[data-fx-result]')[0];
+    const fxModal = fxBtn ? await afterClick(fc, fxBtn) : null;
+    check('so can one whose result is entered from a fixture',
+      !!fxBtn && !!fxModal && offersName(fxModal), fxBtn ? 'Enter result opened without him' : 'no fixture to enter');
+
+    const mc = PR.boot({ rows: signedRows });
+    const md = await PR.openPanel(mc, 'matchday');
+    const slots = md.body.querySelectorAll('[data-slot]');
+    check('and named in a matchday squad', slots.length > 0 && offersName(md.body),
+      `${slots.length} slots`);
+
+    /* PROBE: ignore the Squad screen's record and the team sheet must lose him.
+       Aimed at the record's key, which the minifier cannot rename. */
+    const blind = PR.boot({
+      rows: signedRows,
+      transform: (src, file) => (file === 'control-match.js' ? bust(src, /"roster:s2627"/, '"roster:ignored"') : src),
+    });
+    const bed = await editorFromResults(blind);
+    check('probe: ignoring the Squad screen\'s record takes the new player back off the team sheet',
+      !!bed && !offersName(bed) && bed.querySelectorAll('option').length > 11,
+      bed ? `${bed.querySelectorAll('option').length} options` : 'no editor opened');
+
+    const nc = PR.boot({ rows });
+    const news = await PR.openPanel(nc, 'news');
+    const nb = news.body.querySelectorAll('[data-new]')[0];
+    const nm = nb ? await afterClick(nc, nb) : null;
+    check('the article editor offers a photo in the body of the article',
+      !!nm && !!nm.querySelector('[data-photo-for="a-body"]'), nb ? 'no photo field' : 'no Write an article button');
+  }
+
+  /* ==========================================================================
      WEBSITE STATS
 
      Every check here hands the shipped screen crafted rows and reads what came

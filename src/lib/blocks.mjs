@@ -6,6 +6,7 @@
 import { esc, attr, icon, clubCrest, crest, emptyState } from './html.mjs';
 import { fmtDate } from './stats.mjs';
 import { SOURCES } from './club.mjs';
+import { plainText } from './prose.mjs';
 
 /* ---- Fixture / result card -------------------------------------------- */
 export function fixtureCard(m, badges, { glass = false, href = true } = {}) {
@@ -203,7 +204,7 @@ export function articleCard(a, { glass = false } = {}) {
     ${cover}
     <span class="badge badge--brand" style="align-self:flex-start">${esc(a.category)}</span>
     <h3 class="card__title">${esc(a.title)}</h3>
-    ${a.lede ? `<p style="font-size:var(--step--1);color:var(--text-muted)">${esc(String(a.lede).split('\n')[0].slice(0, 150))}</p>` : ''}
+    ${a.lede ? `<p style="font-size:var(--step--1);color:var(--text-muted)">${esc(plainText(a.lede).split('\n')[0].slice(0, 150))}</p>` : ''}
     <span class="card__meta">${esc(a.date)}</span>
   </a>`;
 }

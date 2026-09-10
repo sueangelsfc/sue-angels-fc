@@ -333,12 +333,15 @@
             area('a-body', d.lede || d.body || '', 16,
               'Leave a blank line between paragraphs.'),
             'This is the whole article. It appears on the news page and gets its own page.') +
-          '<p class="field__hint" data-count></p>');
+          '<p class="field__hint" data-count></p>' +
+          (window.CPWRITE ? window.CPWRITE.photoField('a-body') : ''));
 
         wireUploads(back);
+        if (window.CPWRITE) window.CPWRITE.wirePhotos(back);
         var body = $('#a-body', back);
         function count() {
-          var n = body.value.trim().split(/\s+/).filter(Boolean).length;
+          var n = window.CPWRITE ? window.CPWRITE.proseWords(body.value)
+            : body.value.trim().split(/\s+/).filter(Boolean).length;
           var mins = Math.max(1, Math.round(n / 200));
           $('[data-count]', back).textContent = n
             ? n + ' words, about ' + mins + ' minute' + (mins === 1 ? '' : 's') + ' to read'
@@ -367,7 +370,11 @@
       }
 
       host.addEventListener('click', function (e) {
-        if (e.target.matches('[data-new]')) { if (guard()) form(null); return; }
+        /* The photo tools arrive with the form; a failure opens it without them. */
+        if (e.target.matches('[data-new]')) {
+          if (guard()) U.chunk('writing').catch(function () {}).then(function () { form(null); });
+          return;
+        }
         if (e.target.matches('[data-import-articles]')) {
           if (!guard()) return;
           e.target.disabled = true;
@@ -391,7 +398,10 @@
         var tr = e.target.closest('tr[data-key]');
         if (!tr) return;
         var rec = list.filter(function (x) { return x.key === tr.getAttribute('data-key'); })[0];
-        if (e.target.matches('[data-edit]')) { if (guard()) form(rec); return; }
+        if (e.target.matches('[data-edit]')) {
+          if (guard()) U.chunk('writing').catch(function () {}).then(function () { form(rec); });
+          return;
+        }
         if (e.target.matches('[data-raw]')) { if (guard()) rawEditor('articles', rec.key, rec.data, 'news'); return; }
         if (e.target.matches('[data-del]')) {
           if (guard()) removeRow('articles', rec.key, '“' + ((rec.data || {}).title || 'this article') + '”', 'news');

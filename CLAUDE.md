@@ -632,6 +632,11 @@ It does not fall back to something sensible: the whole declaration is invalid at
 
 **`render()` replaces the panel body element, it does not empty it.** Modules attach listeners to that element and rely on bubbling. `innerHTML = ''` left the listeners behind, so each refresh stacked another copy: two renders in, one click saved twice, and since saving refreshes it compounded.
 
+### A signing can be picked the day he is added, and writing can carry photographs
+
+- **The team sheet reads the Squad screen's record live.** Adding a player writes `roster:s2627`, and the match form and the matchday squad both built their lists from `SEED.squad`, which is the squad **at the last publish** - so a Saturday signing could not be named on Sunday without a publish in between. `squadNow()` in `control-match.js` merges the record over the seed by number, field by field, the same rule `dataset.mjs` publishes with, and is published on `window.CPMH` for the matchday screen. Both routes into the match editor read it: Results, and Fixtures → Enter result, which is the one a Sunday actually takes. Not in the shell, because `control.js` had no room and because a chunk never calls a shell helper while it loads - the harness loads every chunk against stubs, and that rule is what it proves.
+- **A photograph in an article or a match report is a line of text**, `![caption](address#WIDTHxHEIGHT)`, put in at the cursor by **Add a photo** under the article body and under the written report. `articleBody()` turns it into a figure **only** for the club's storage bucket or `/assets/`; any other address stays on the page as the text it is, so the writer can see it did not work. `plainText()` in `prose.mjs` removes the line anywhere the writing is shortened - the news cards, the meta description, the home teaser, the length test in `hasReport` - or it would be printed as a web address. Building a report again keeps the photos already placed in it, at the foot. The tools are `control-writing.js`, fetched by those two editors and nobody else; if it fails to load, the editor opens without the button.
+
 ### What the website is actually read for
 
 The club publishes 108 pages and had no way of knowing which of them anybody

@@ -39,7 +39,7 @@ import {
   potmAll, photographersIn,
 } from '../lib/home-layout.mjs';
 import { preseasonFor, seasonAhead, sameClub, relatedClub, recordOf } from '../lib/preseason.mjs';
-import { reportText, house, FRIENDLY_NOTE_SHORT, FRIENDLY_NOTE_SET } from '../lib/prose.mjs';
+import { reportText, house, plainText, FRIENDLY_NOTE_SHORT, FRIENDLY_NOTE_SET } from '../lib/prose.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
 
 /* THE OPENING OF A REPORT, for the front page to quote.
@@ -49,7 +49,7 @@ import { sourceNote } from '../lib/blocks.mjs';
    line-up and a list of figures: pulled onto the home page as a teaser it
    would read as a wall of names under a headline. */
 function reportOpening(m, take = 2) {
-  return house(reportText(m))
+  return house(plainText(reportText(m)))
     .split(/\n\s*\n/)
     .map((p) => p.replace(/\s*\n\s*/g, ' ').trim())
     .filter((p) => p && !/^#/.test(p) && !/^MATCH DETAILS\b/.test(p))

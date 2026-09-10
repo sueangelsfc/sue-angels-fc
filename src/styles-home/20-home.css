@@ -1792,6 +1792,12 @@ html.js .lg-panel[hidden]{display: none;}
   font-family: var(--display); font-weight: 500; font-size: clamp(20px, 2.3vw, 25px);
   letter-spacing: -0.024em; color: var(--fg);}
 .nw-art__list{margin: 0; padding-left: 1.2em; display: grid; gap: 8px; color: var(--ink-2);}
+/* A photograph placed in an article or a match report from the panel. Full
+   column width, its own proportions (the width and height it carries come from
+   the upload), and a caption in the body's secondary ink. */
+.nw-art__fig{margin: 6px 0; display: grid; gap: 10px;}
+.nw-art__fig img{display: block; width: 100%; height: auto; border-radius: var(--r-sm);}
+.nw-art__fig figcaption{font-size: 14px; line-height: 1.5; color: var(--ink-2);}
 
 /* ---- Cookie consent ------------------------------------------------------
    Built by src/scripts/20-consent.js, never shipped in the markup, so no page

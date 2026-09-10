@@ -19,7 +19,8 @@ import { esc, attr, CLUB_ID } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { fmtDate, slugify, isUs } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
-import { reportText, hasReport } from '../lib/prose.mjs';
+import { reportText, hasReport, plainText } from '../lib/prose.mjs';
+import { readFileSync } from 'node:fs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 
@@ -71,9 +72,42 @@ const inline = (t) => esc(t)
   .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
   .replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
 
+/* A PHOTOGRAPH, PLACED FROM THE PANEL AS A LINE OF ITS OWN:
+   `![caption](address#WIDTHxHEIGHT)`.
+
+   ONLY FROM THE CLUB'S OWN STORAGE, or from the site's own /assets/. The text
+   is typed into a textarea, so an address could be anything, and a picture
+   hot-linked from somewhere else is a request to a third party on every page
+   view - and the security policy would block it anyway, leaving a broken
+   image. A line naming any other address is left as the text it is, so the
+   writer sees it did not work rather than a gap. The caption goes through
+   `inline`, which escapes before anything else. The size comes from the upload;
+   a hand-typed line without one gets a 3:2 guess, which only affects the space
+   held while it loads. */
+const STORAGE = `${JSON.parse(readFileSync(new URL('../data/runtime.json', import.meta.url), 'utf8'))
+  .supabase.url}/storage/v1/object/public/`;
+function photo(b) {
+  const m = /^!\[([^\]\n]*)\]\((\S+)\)$/.exec(b);
+  if (!m) return '';
+  const size = /#(\d{2,5})x(\d{2,5})$/.exec(m[2]);
+  const src = m[2].replace(/#.*$/, '');
+  const ours = src.startsWith(STORAGE)
+    ? /^[\w\-./%]+$/.test(src.slice(STORAGE.length))
+    : /^\/assets\/[\w\-./]+\.(?:jpe?g|png|webp)$/i.test(src);
+  if (!ours) return '';
+  const cap = m[1].trim();
+  /* alt="" beside a caption: the figcaption already names the picture, and
+     saying it twice is what a screen reader would otherwise do. */
+  return `<figure class="nw-art__fig"><img src="${attr(src)}" alt="" width="${size ? size[1] : 1600}" `
+    + `height="${size ? size[2] : 1067}" loading="lazy" decoding="async" />`
+    + `${cap ? `<figcaption>${inline(cap)}</figcaption>` : ''}</figure>`;
+}
+
 export function articleBody(text) {
   const blocks = String(text || '').split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
   return blocks.map((b) => {
+    const fig = photo(b);
+    if (fig) return fig;
     if (/^#{1,6}\s/.test(b)) {
       return `<h2 class="nw-art__h">${inline(b.replace(/^#{1,6}\s*/, ''))}</h2>`;
     }
@@ -186,7 +220,7 @@ export function news(d) {
               </span>
               <span class="nw-card__body">
                 <b class="nw-card__title">${esc(a.title)}</b>
-                <span class="nw-card__lede">${esc(String(a.lede || '').replace(/\s+/g, ' ').slice(0, 150))}…</span>
+                <span class="nw-card__lede">${esc(plainText(a.lede).replace(/\s+/g, ' ').slice(0, 150))}…</span>
                 <span class="nw-card__meta">${esc(fmtDate(a.date))} · ${esc(words)} min read</span>
               </span>
             </a>

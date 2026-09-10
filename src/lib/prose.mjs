@@ -90,7 +90,17 @@ export const reportText = (m) => String(
 /* Long enough to be a report rather than a caption. Three matches carry a
    140-to-170 character note, which is a scoreline in a sentence: worth
    keeping in the record, not worth a heading promising the full report. */
-export const hasReport = (m) => reportText(m).length > 200;
+export const hasReport = (m) => plainText(reportText(m)).length > 200;
+
+/* THE WRITING WITHOUT ITS PHOTOGRAPHS. A photograph placed from the panel is a
+   line of text, `![caption](address)`, which the article page turns into a
+   figure. Anywhere the text is SHORTENED instead - a card's opening line, a
+   meta description, the home page teaser, the length test above - that line
+   would be printed as a web address, so it comes out first. */
+export const plainText = (text) => String(text || '')
+  .replace(/^[ \t]*!\[[^\]\n]*\]\(\S+\)[ \t]*$/gm, '')
+  .replace(/\n{3,}/g, '\n\n')
+  .trim();
 
 /* The fields the club writes into. Named rather than inferred: a walk that
    normalised every string it met would reach the base64 photographs, the

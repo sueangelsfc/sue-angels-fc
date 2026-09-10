@@ -4943,6 +4943,29 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     'League Eight · 26/27 final', 'League Eight 26/27 leading scorers',
     'League Eight finish', 'League Eight 26/27 final standings',
   ];
+  /* THE SQUAD PAGE'S SEASON TABS AFTER THE FIRST RESULT. This is the moment
+     the page broke for real, on 9 September 2026: saving the Three Little
+     Birds result moved the figures to 26/27, and a rule that put current
+     players into "every season but the current one" filed the whole squad
+     under 25/26. Two questions, each needing a real population so neither
+     can pass on an empty list. */
+  {
+    const { squad: squadK } = await import(path.join(ROOT, 'src', 'templates', 'squad.mjs'));
+    const sqK = squadK(withK);
+    const htmlK = String(sqK && sqK.body ? sqK.body : sqK);
+    const tagsK = new Map([...htmlK.matchAll(/data-seasons="([^"]*)"[^>]*>\s*<a class="pc__link" href="\/players\/([a-z0-9-]+)\.html"/g)]
+      .map((mm) => [mm[2], mm[1].split(' ').filter(Boolean)]));
+    const hereK = (withK.squad || []).filter((p) => !['retired', 'departed', 'staff'].includes(p.status));
+    const offTab = hereK.filter((p) => tagsK.has(p.slug) && !tagsK.get(p.slug).includes('26/27')).map((p) => p.name);
+    check('after the first League Eight result, everybody still at the club is on the 26/27 squad tab',
+      hereK.length > 10 && tagsK.size > 10 && offTab.length === 0,
+      offTab.slice(0, 6).join(', ') || `${hereK.length} players checked`);
+    const lateK = hereK.filter((p) => { const on = withK.signedOn && withK.signedOn(p.num); return on && on >= '2026-07-01'; });
+    const pastK = lateK.filter((p) => (tagsK.get(p.slug) || []).includes('25/26')).map((p) => p.name);
+    check('and nobody who signed in the summer of 2026 is on the 25/26 squad tab',
+      lateK.length > 0 && pastK.length === 0, pastK.join(', ') || `${lateK.length} signings checked`);
+  }
+
   for (const [name, fn] of Object.entries(tpl)) {
     let text = '';
     try { const r = fn(withK); text = flat(r && r.body ? r.body : r); }

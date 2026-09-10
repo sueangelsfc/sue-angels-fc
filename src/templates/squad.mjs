@@ -68,7 +68,16 @@ export function squad(d) {
   const seasonOfMatch = new Map((d.matches || []).map((m) => [m.id, m.season]));
   const season = d.currentSeason;
   const seasons = (d.seasons || []).map((x) => x.name);
-  const upcoming = seasons.filter((n) => n !== season);
+  /* THE SEASON A CURRENT PLAYER BELONGS TO IS THE CLUB'S LATEST, not "every
+     season but the one the figures describe". It read
+     `seasons.filter((n) => n !== season)`, which happened to be right in
+     August: the figures still described 25/26 and the only other season was
+     26/27. The moment the first League Eight result was saved the figures
+     moved to 26/27, "every other season" became 25/26, and everybody at the
+     club was filed under last season - Rob Heath and Liam Alford, who signed
+     in August 2026, sat on the 25/26 tab, and the 26/27 tab held the two men
+     named as scorers in a result with no team sheet. */
+  const clubSeason = d.latestSeason || seasons[seasons.length - 1] || season;
   const PAST_STATUS = new Set(['retired', 'departed', 'staff']);
 
   const all = (d.squad || []).map((p) => {
@@ -81,7 +90,7 @@ export function squad(d) {
        "if he has played nowhere, put him in the current season" was adding
        two players who never turned out to 25/26, so the tab said 32 played
        and the page showed 34 cards. */
-    if (!PAST_STATUS.has(p.status)) upcoming.forEach((n) => played.add(n));
+    if (!PAST_STATUS.has(p.status) && clubSeason) played.add(clubSeason);
     return { ...p, s: st, seasons: [...played] };
   });
 

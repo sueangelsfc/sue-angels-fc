@@ -3230,8 +3230,86 @@ for (const [f, kb] of Object.entries({
       check('a man is never recorded as assisting his own goal',
         !carry([{ num: 9, minute: 30 }], [{ num: 9, minute: 30, type: 'pass' }], sit)
           .goals[0].assist);
-      check('an assist that pairs with no goal is kept rather than dropped',
-        carry([], [{ num: 4, minute: 12, type: 'pass' }], sit).orphans.length === 1);
+      /* KEPT, BUT NOT BEYOND THE GOALS. This check once asserted that an
+         assist with no goal at all is kept, which cannot happen in a match and
+         is exactly the shape of the copies a re-save used to append. */
+      check('an assist that pairs with no goal is kept while a goal it could belong to has none',
+        carry([{ num: 5, minute: '' }], [{ num: 4, minute: 12, type: 'pass' }], sit).orphans.length === 1);
+      check('but an assist with no goal left to belong to is not kept',
+        carry([], [{ num: 4, minute: 12, type: 'pass' }], sit).orphans.length === 0);
+
+      /* THE SAVE THAT MULTIPLIED. The Three Little Birds match of 6 September
+         2026: two goals, each carrying its assist, blank minutes. Every save
+         kept the previous save's derived list as orphans and wrote a fresh one
+         beside it, and the record reached eight assists in one evening. */
+      const tlbGoals = [{ num: 21, minute: null, assist: { num: 9, type: 'pass' } },
+        { num: 9, minute: null, assist: { num: 21, type: 'pass' } }];
+      const derivedOf = (r) => r.goals.filter((g) => g.assist)
+        .map((g) => ({ num: g.assist.num, minute: g.minute, type: g.assist.type, forGoalBy: g.num }))
+        .concat(r.orphans);
+      let flatNow = [{ num: 9, minute: null, type: 'pass', forGoalBy: 21 }, { num: 21, minute: null, type: 'pass', forGoalBy: 9 }];
+      for (let i = 0; i < 3; i += 1) flatNow = derivedOf(carry(tlbGoals, flatNow, sit));
+      check('saving a match again and again never adds assists', flatNow.length === 2, `${flatNow.length} after three saves`);
+      const copies = [9, 21, 9, 21, 9, 21, 9, 21].map((n, i) => (i < 2
+        ? { num: n, minute: null, type: 'pass', forGoalBy: n === 9 ? 21 : 9 }
+        : { num: n, minute: null, type: 'pass' }));
+      check('a record already carrying copies is repaired on its next save',
+        derivedOf(carry(tlbGoals, copies, sit)).length === 2);
+
+      /* THE SITE'S COPY OF THE RULE, held to agreeing with this one on every
+         stored match, and never publishing more assists than goals. */
+      const { reconcileAssists: recA, } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+      const liveA = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'recovered-live.json'), 'utf8'));
+      const tallyA = (list) => JSON.stringify(Object.entries(list.reduce((m, a) => {
+        m[a.num] = (m[a.num] || 0) + 1; return m;
+      }, {})).sort());
+      const disagree = [];
+      let asked = 0;
+      for (const row of liveA.matches || []) {
+        const dd = row.data || {};
+        if (!(dd.assists || []).length) continue;
+        asked += 1;
+        const site = recA(dd.goals, dd.assists);
+        const panel = derivedOf(carry(dd.goals || [], (dd.assists || []).map((a) => ({
+          num: a.num, minute: a.minute != null ? a.minute : null, type: a.type || 'pass',
+          forGoalBy: a.forGoalBy != null ? a.forGoalBy : null,
+        })), sit));
+        if (tallyA(site) !== tallyA(panel)) disagree.push(row.key);
+        if (site.length > (dd.goals || []).length) disagree.push(`${row.key} publishes more assists than goals`);
+      }
+      check('the site and the match form agree on every stored match\'s assists',
+        asked > 20 && disagree.length === 0, disagree.join(', ') || `${asked} matches`);
+      check('the site publishes one assist per goal for the record that had copies',
+        recA(tlbGoals, copies).length === 2
+          && recA(tlbGoals, copies).filter((a) => a.num === 9).length === 1,
+        `${recA(tlbGoals, copies).length} published`);
+      check('probe: the stored list counted as it is would have published four for one man',
+        copies.filter((a) => a.num === 9).length === 4);
+
+      /* AND ON A PLAYER'S CAREER, through the real dataset: a crafted match
+         shaped like that record adds one assist to each man, not four. */
+      const { buildDataset: bdA } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+      const baseA = bdA({ live: JSON.parse(JSON.stringify(liveA)) });
+      const numOfA = (name) => ((baseA.squad || []).find((p) => p.name === name) || {}).num;
+      const dun = numOfA('Charlie Dunkley');
+      const llo = numOfA('Jon Lloyd');
+      const liveB = JSON.parse(JSON.stringify(liveA));
+      liveB.matches.push({
+        key: 'sima20260927-copies', updated_at: '2026-09-27T12:00:00Z',
+        data: {
+          iso: '2026-09-27', date: '27 Sep 2026', kind: 'score', competition: 'League Eight',
+          home: "Sue's Angels FC", away: 'Haydons Park', hs: 2, as: 0, venue: 'The Reeves Sports Club',
+          goals: [{ num: llo, minute: null, assist: { num: dun, type: 'pass' } },
+            { num: dun, minute: null, assist: { num: llo, type: 'pass' } }],
+          assists: [dun, llo, dun, llo, dun, llo, dun, llo].map((n) => ({ num: n, minute: null, type: 'pass' })),
+        },
+      });
+      const withB = bdA({ live: liveB });
+      const careerA = (d, n) => ((d.players || []).find((p) => p.num === n) || {}).assists || 0;
+      check('a match saved with copies adds one assist to each man\'s career, not four',
+        dun != null && llo != null && careerA(withB, dun) - careerA(baseA, dun) === 1
+          && careerA(withB, llo) - careerA(baseA, llo) === 1,
+        `Dunkley +${careerA(withB, dun) - careerA(baseA, dun)}, Lloyd +${careerA(withB, llo) - careerA(baseA, llo)}`);
     }
   }
 

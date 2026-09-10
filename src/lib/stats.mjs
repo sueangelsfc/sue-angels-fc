@@ -858,6 +858,34 @@ export function compareDivision(rows, results) {
   return compareTable(rows || [], full);
 }
 
+/* THE ASSISTS A STORED MATCH ACTUALLY HOLDS. The match form derives its flat
+   `assists` list from the goals on every save, and until 10 September 2026 it
+   also kept the previous save's copy as "orphans", so a record re-saved four
+   times carried each assist four times and the site counted every one. The
+   same rule as `carryAssists()` in the match form, which the suite holds the
+   two to agreeing on over the whole archive: a goal's own assist is counted
+   once, and anything left over is kept but never more of it than there are
+   goals without an assist. Every older record, whose goals carry no assist
+   and whose list is no longer than its goals, comes out exactly as it went in. */
+export function reconcileAssists(goals, flat) {
+  const gs = goals || [];
+  const pool = (flat || []).slice();
+  const carried = [];
+  for (const g of gs) {
+    const a = g && g.assist;
+    const num = a && (typeof a === 'object' ? a.num : a);
+    if (num == null || num === '') continue;
+    let idx = pool.findIndex((x) => x && String(x.num) === String(num)
+      && x.forGoalBy != null && String(x.forGoalBy) === String(g.num));
+    if (idx < 0) idx = pool.findIndex((x) => x && String(x.num) === String(num));
+    const kept = idx >= 0 ? pool.splice(idx, 1)[0] : null;
+    carried.push(kept || {
+      num, minute: g.minute ?? null, type: (typeof a === 'object' && a.type) || 'pass', forGoalBy: g.num,
+    });
+  }
+  return carried.concat(pool.slice(0, Math.max(0, gs.length - carried.length)));
+}
+
 /* ---- Season grouping ------------------------------------------------- */
 export function groupBySeason(matches) {
   const map = new Map();

@@ -93,6 +93,30 @@
 
   function carryAssists(rawGoals, oldAssists, situationOf) {
     var pool = oldAssists.slice();
+    /* A GOAL THAT ALREADY CARRIES ITS ASSIST TAKES ITS OWN ENTRY OUT FIRST.
+       The flat list is derived from the goals on every save, so a record saved
+       once holds each goal's assist twice over: on the goal, and in the flat
+       list. Nothing removed the second copy, it paired with nothing because
+       the minutes were blank, and it was kept as an orphan and written back
+       beside a freshly derived one. Every save added the goals' assists again:
+       the Three Little Birds match of 6 September 2026 reached eight assists
+       for two goals in one evening, and the site published four each for two
+       men. Matched on the goal it was derived for where the entry says, and
+       on the man otherwise. */
+    rawGoals.forEach(function (g) {
+      if (!(g.assist && g.assist.num)) return;
+      var idx = -1;
+      pool.forEach(function (a, i) {
+        if (idx < 0 && String(a.num) === String(g.assist.num)
+          && a.forGoalBy != null && String(a.forGoalBy) === String(g.num)) idx = i;
+      });
+      if (idx < 0) {
+        pool.forEach(function (a, i) {
+          if (idx < 0 && String(a.num) === String(g.assist.num)) idx = i;
+        });
+      }
+      if (idx >= 0) pool.splice(idx, 1);
+    });
     var goals = rawGoals.map(function (g) {
       var assist = g.assist && g.assist.num
         ? { num: g.assist.num, type: g.assist.type || 'pass' } : null;
@@ -116,7 +140,13 @@
         assist: assist,
       };
     });
-    return { goals: goals, orphans: pool };
+    /* AN ASSIST HAS TO BELONG TO A GOAL. Whatever is left over is kept, as it
+       always was, but never more of it than there are goals still without an
+       assist: every stored match in the archive already satisfies that, and a
+       record that does not can only be carrying copies, which this repairs on
+       its next save. */
+    var spare = goals.filter(function (g) { return !g.assist; }).length;
+    return { goals: goals, orphans: pool.slice(0, spare) };
   }
 
   /* ==========================================================================
@@ -875,7 +905,8 @@
       return LEGACY_SIT[g.type] || '';
     }
     var oldAssists = (d.assists || []).map(function (a) {
-      return { num: a.num, minute: a.minute != null ? a.minute : null, type: a.type || 'pass' };
+      return { num: a.num, minute: a.minute != null ? a.minute : null, type: a.type || 'pass',
+        forGoalBy: a.forGoalBy != null ? a.forGoalBy : null };
     });
 
     var carried = carryAssists(d.goals || [], oldAssists, legacySituation);

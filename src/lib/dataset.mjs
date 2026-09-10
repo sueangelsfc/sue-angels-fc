@@ -4,6 +4,7 @@
    rows) into one canonical in-memory dataset that both the generator and the
    control panel read. Single source of truth for every published figure.
    ========================================================================== */
+import { reconcileAssists } from './stats.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { POSITION_GROUPS, positionName } from './positions.mjs';
@@ -83,7 +84,13 @@ export function buildDataset(overrides = {}) {
 
   /* ---- Match detail records, keyed by match id ---- */
   const detailById = new Map();
-  for (const row of live.matches || []) detailById.set(row.key, row.data);
+  /* The assists a record actually holds, not the copies a re-save used to add.
+     See reconcileAssists() in stats.mjs. */
+  for (const row of live.matches || []) {
+    const data = row.data;
+    detailById.set(row.key, data && Array.isArray(data.assists)
+      ? { ...data, assists: reconcileAssists(data.goals, data.assists) } : data);
+  }
 
   /* ---- Matches ----------------------------------------------------------
      A match used to be assembled from two places that only one of them could

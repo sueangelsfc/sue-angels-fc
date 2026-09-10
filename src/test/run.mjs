@@ -5113,14 +5113,37 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     dP.nextFixture ? textP.includes(dP.nextFixture.opponent) : true,
     (dP.nextFixture || {}).opponent || 'no fixture');
 
-  check('the page offers the programme as a download',
-    /class="pr-download"/.test(outP.body) || /has not been made yet/.test(textP),
-    textP.slice(0, 160));
-
-  check('the page says what is inside rather than showing all of it',
-    /pr-contents/.test(outP.body)
-      && (outP.body.match(/\/players\/[a-z-]+\.html/g) || []).length === 0,
-    'the squad belongs in the document, not on the page');
+  /* TWO STATES, AND THE ONE WITHOUT A FILE MUST PROMISE NOTHING. The dataset
+     never carries `programmePdf` - the build adds it from what is on disk - so
+     the page as built here is the no-programme page, and the with-programme
+     page is asked of a crafted copy. The no-file page once said the programme
+     was "written, laid out and ready", listed its contents, and told the
+     public it "is drawn by npm run programme". */
+  const withPdf = prog({ ...dP, programmePdf: '/assets/programme/test.pdf', programmePdfKb: 900 });
+  const textPdf = flatten(withPdf.body);
+  check('with a programme made, the page offers it as a download and says what is inside',
+    /class="pr-download"/.test(withPdf.body) && /pr-contents/.test(withPdf.body), textPdf.slice(0, 160));
+  check('without one, the page promises nothing: no download, no contents, no "ready"',
+    !/class="pr-download"/.test(outP.body) && !/pr-contents/.test(outP.body)
+      && !/ready to take with you|written, laid out/.test(textP),
+    textP.slice(0, 200));
+  check('without one, the page says the programme is on its way',
+    !dP.nextFixture || /on its way/.test(textP), textP.slice(0, 200));
+  check('no build instruction is ever printed on the public programme page',
+    !/npm run|needs a browser/.test(textP + textPdf));
+  check('the page never shows all of the squad, which belongs in the document',
+    (outP.body.match(/\/players\/[a-z-]+\.html/g) || []).length === 0
+      && (withPdf.body.match(/\/players\/[a-z-]+\.html/g) || []).length === 0);
+  check('an empty collection is not shown',
+    /pr-arch-h/.test(prog({ ...dP, programmes: [] }).body) === false);
+  /* The preview is about THIS match. It took the newest article, so the week
+     after the opener the next fixture's page linked the opener's preview. */
+  const prevMatch = /pr-read__t">([^<]*)/.exec(outP.body);
+  check('the programme page only links a preview that is about this fixture',
+    !prevMatch || !dP.nextFixture
+      || (dP.articles || []).some((a) => a.title === prevMatch[1].replace(/&#39;/g, "'")
+        && String(a.title).toLowerCase().includes(String(dP.nextFixture.opponent).replace(/\s+(A?FC)$/i, '').toLowerCase())),
+    prevMatch ? prevMatch[1] : 'no preview linked');
 
   check('the document lists the squad as links to the players',
     (docP.body.match(/\/players\/[a-z-]+\.html/g) || []).length >= 10,

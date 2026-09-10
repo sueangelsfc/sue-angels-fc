@@ -277,7 +277,22 @@ export function programme(d) {
      The club's own words, linked rather than reproduced: the article is a
      page in its own right with its own share card, and a programme that
      pasted it in would give the same text two URLs. */
-  const preview = (d.articles || [])[0];
+  /* ABOUT THIS MATCH, OR NOT AT ALL. It took the newest article whatever it
+     was, so the week after the opener the Haydons Park page offered "Today,
+     the next chapter begins: League Eight starts at home" as its preview. A
+     preview names the opponent IN ITS HEADLINE and comes out in the fortnight
+     before the match. Not anywhere in the text: that opener runs to nearly four
+     thousand words and mentions every club in the division, Haydons Park
+     included, so a body search called it a Haydons Park preview. */
+  const opp = m ? String(m.opponent || '').replace(/\s+(A?FC|Football Club)$/i, '').trim().toLowerCase() : '';
+  const matchIso = m ? String(m.iso || '').slice(0, 10) : '';
+  const preview = (d.articles || []).find((a) => {
+    const iso = String(a.sortISO || a.iso || '').slice(0, 10);
+    const said = String(a.title || '').toLowerCase();
+    if (!opp || !matchIso || !iso || iso > matchIso) return false;
+    const days = (Date.parse(matchIso) - Date.parse(iso)) / 864e5;
+    return days <= 14 && said.includes(opp);
+  });
   const previewBand = preview ? `<section class="sec pr-band" aria-labelledby="pr-prev-h">
       <div class="wrap">
         ${rail(2, 'From the club', esc(preview.date || ''))}
@@ -402,9 +417,16 @@ export function programme(d) {
      it means downloading it, the way a programme works at a ground.
 
      THE BUTTON ONLY APPEARS IF THE FILE IS THERE. `d.programmePdf` is set by
-     the build from what is on disk, so a programme nobody has run the script
-     for offers no download rather than a dead link, and the page says which
-     command makes one. Same contract as the drawn share cards. */
+     the build from what is on disk, so a programme nobody has made yet offers
+     no download rather than a dead link. Same contract as the drawn share
+     cards.
+
+     AND WITHOUT THE FILE THE PAGE PROMISES NOTHING. It used to say the
+     programme "is written, laid out and ready to take with you", list what was
+     in it, and then tell the public it "is drawn by npm run programme, which
+     needs a browser" - a note for whoever runs the build, printed on the club's
+     website under a fixture with no programme. It says the programme is on its
+     way, and the contents appear with the download. */
   const pdf = d.programmePdf || '';
   const pages = d.programmePdfPages || 0;
   const contents = [
@@ -422,21 +444,18 @@ export function programme(d) {
           <span class="volt">.</span></h2>
         <p class="pr-lede rv">${m
     ? `${esc(m.weAreHome ? m.opponent : m.home)} at ${esc(m.venue || CLUB.venue.shortName)},
-       ${esc(fmtDate(m.date, { weekday: true }))}, ${esc(m.kick || '')}. The programme for this
-       one is written, laid out and ready to take with you.`
+       ${esc(fmtDate(m.date, { weekday: true }))}, ${esc(m.kick || '')}.${pdf ? ' The programme for this one is ready to take with you.' : ''}`
     : 'The programme for the next fixture appears here as soon as the match is announced.'}</p>
-        <p class="pr-lede rv">It is the club's own preview in full, the squad, what the
-          archive knows about the opposition, last season set out properly, a half-time quiz,
-          a word search and the businesses that pay for the pitches. ${pages
-    ? `${esc(pages)} pages.` : ''} One file, yours to keep.</p>
         ${pdf
-    ? `<p class="rv"><a class="pr-download" href="${attr(pdf)}" download>
+    ? `<p class="pr-lede rv">Today's match, the season ahead, the opposition, the squad, a half-time
+          quiz, a word search and the businesses that pay for the pitches. ${pages
+      ? `${esc(pages)} pages.` : ''} One file, yours to keep.</p>
+        <p class="rv"><a class="pr-download" href="${attr(pdf)}" download>
           ${icon('download', '')} <span>Download this week's programme</span>
-          <small>PDF${d.programmePdfKb ? ` · ${esc(d.programmePdfKb)}KB` : ''}</small></a></p>`
-    : `<p class="pr-note rv">This week's programme has not been made yet. It is drawn by
-          <b>npm run programme</b>, which needs a browser on the machine that runs it, and the
-          download appears here the moment it has been.</p>`}
-        <ul class="pr-contents rv">${contents.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
+          <small>PDF${d.programmePdfKb ? ` · ${esc(d.programmePdfKb)}KB` : ''}</small></a></p>
+        <ul class="pr-contents rv">${contents.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>`
+    : (m ? `<p class="pr-note rv">The programme for this match is on its way, and it will be here
+          to download before kick-off.</p>` : '')}
       </div>
     </section>`;
 
@@ -447,7 +466,9 @@ export function programme(d) {
      One programme is not a collection, so it says so rather than showing a
      list of one and calling it an archive. */
   const past = (d.programmes || []).filter((x) => !m || x.id !== m.id);
-  const archiveBand = `<section class="sec pr-band" aria-labelledby="pr-arch-h">
+  /* Only once there is something in it. "This is the first" printed over an
+     empty list the moment the one programme there was had been taken down. */
+  const archiveBand = !past.length ? '' : `<section class="sec pr-band" aria-labelledby="pr-arch-h">
       <div class="wrap">
         ${rail(1, 'Every programme', `${(d.programmes || []).length} so far`)}
         <h2 class="h2 rv" id="pr-arch-h">The collection<span class="volt">.</span></h2>

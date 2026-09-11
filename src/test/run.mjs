@@ -3195,6 +3195,35 @@ for (const [f, kb] of Object.entries({
     check('and the structured data says the same thing',
       (wcHtml.match(/11 appearances/g) || []).length >= 2,
       'the JSON-LD description disagrees with the meta description');
+
+    /* A PLAYER'S SEASON IS THAT SEASON. The tab counted friendlies into the
+       club's total ("1 of 7 played" with one competitive match), the opening
+       sentence dated career totals to the current season, and there was no
+       tab for every season together. */
+    {
+      const { buildDataset: bdPS } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+      const dPS = bdPS();
+      const cur = dPS.currentSeason;
+      const compCur = dPS.played.filter((m) => m.played && !m.friendly && m.season === cur).length;
+      const cdHtml = fs.readFileSync(path.join(ROOT, 'players', 'charlie-dunkley.html'), 'utf8');
+      const cd = (dPS.players || []).find((x) => x.slug === 'charlie-dunkley') || {};
+      const tabIdx = (dPS.seasons || []).findIndex((s) => s.name === cur);
+      const curPanel = (cdHtml.split(`data-season-panel="${tabIdx}"`)[1] || '').split('data-season-panel=')[0];
+      const playedOf = (curPanel.match(/of (\d+) played/) || [])[1];
+      check('a player\'s season tab counts only that season\'s competitive matches',
+        tabIdx > -1 && Number(playedOf) === compCur, `${cur}: of ${playedOf} played, ${compCur} competitive`);
+      const lede = ((cdHtml.match(/<p class="pf-hero__lede">([\s\S]*?)<\/p>/) || [])[1] || '').replace(/\s+/g, ' ');
+      check('the opening sentence does not date career figures to the current season',
+        !new RegExp(`${cd.apps} appearances[^.]*in ${cur.replace('/', '\\/')}`).test(lede)
+          && /across every season/.test(lede), lede.slice(0, 160));
+      check('the player page has an All seasons tab, and its panel',
+        /data-season-all/.test(cdHtml) && cdHtml.includes(`data-season-panel="${(dPS.seasons || []).length}"`));
+      check('and the page does not open on it',
+        !/class="pf-tab[^"]*is-on[^"]*"[^>]*data-season-all/.test(cdHtml)
+          && /hasAttribute\('data-season-all'\)/.test(fs.readFileSync(path.join(ROOT, 'src', 'scripts', '10-home.js'), 'utf8')));
+      check('sections counted over every season say so',
+        (cdHtml.match(/All seasons ·/g) || []).length >= 2 && !/started a match in \d\d\/\d\d/.test(cdHtml));
+    }
     /* The win rate is one figure computed once and printed in three places -
        a tile, a bar and a rank row - and two of them still said "when they
        started" after the tile was changed. One number, one sentence. */
@@ -4439,7 +4468,10 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const PF = /<li class="pf-bar">\s*<span class="pf-bar__k">([^<]*)<\/span>\s*<span class="pf-bar__v">\s*<span data-count="([^"]*)">[^<]*<\/span>\s*(?:<i>([^<]*)<\/i>)?\s*<\/span>\s*<span class="pf-bar__track"[^>]*>\s*<i style="--w:([\d.]+)%">/g;
   let pfSeen = 0;
   const pfBad = [];
-  for (const [f, h] of pages) {
+  /* PER PANEL. A count bar is a share of the counts in ITS OWN panel; summed
+     across the page, a season and the All seasons panel beside it doubled the
+     total and a player's one goal of one involvement read as 50%. */
+  for (const [f, page] of pages) for (const h of page.split('data-season-panel="')) {
     const rows = [...h.matchAll(PF)].map((m) => ({
       raw: m[2], sub: m[3] || '', pct: Number(m[4]),
     }));

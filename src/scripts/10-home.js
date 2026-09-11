@@ -922,7 +922,10 @@
     /* Open on the most recent season that actually has matches, not simply
        the last tab: landing a player on an empty season would be a page that
        looks like it has nothing on it. */
-    var withPlay = tabs.map(function (t) { return !/not started/i.test(t.textContent); });
+    /* Never the All seasons tab, which sits last. */
+    var withPlay = tabs.map(function (t) {
+      return !t.hasAttribute('data-season-all') && !/not started/i.test(t.textContent);
+    });
     var start = withPlay.lastIndexOf(true);
     select(start > -1 ? start : 0);
   })();

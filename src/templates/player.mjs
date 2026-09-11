@@ -176,14 +176,20 @@ export function playerPage(p, d) {
      comparison. The seasons come from the club's own list, so a season with
      no matches still gets a tab and can say so. */
   const seasonNames = (d.seasons || []).map((s) => s.name);
+  /* COMPETITIVE MATCHES ONLY, for the "of N played" beside the appearances.
+     The profile already counts from a player's competitive record, so a
+     friendly never added to his figures, but the club's total was every match
+     the season held: 26/27 read "1 of 7 played" when one League Eight match
+     had been played and six pre-season friendlies. */
+  const counted = (d.played || []).filter((m) => m.played && !m.friendly);
   const seasons = seasonNames.map((name) => {
-    const ms = (d.played || []).filter((m) => m.season === name);
+    const ms = counted.filter((m) => m.season === name);
     const profile = playerProfile(p, ms, d.players);
     profile.teamGames = ms.length;
     return { name, profile, matches: ms };
   });
-  const all = playerProfile(p, d.played, d.players);
-  all.teamGames = (d.played || []).filter((m) => m.played).length;
+  const all = playerProfile(p, counted, d.players);
+  all.teamGames = counted.length;
   const pr = all;
   const teamGames = all.teamGames;
 
@@ -257,11 +263,22 @@ export function playerPage(p, d) {
             <i>${esc(p.first)}</i>
           </h1>
           ${seasonSponsor}
-          <p class="pf-hero__lede">${esc(pr.apps)} ${pr.apps === 1 ? 'appearance' : 'appearances'} for
-            ${esc(CLUB.name)} in ${esc(d.currentSeason)}${pr.starts < pr.apps ? `, ${esc(pr.starts)} from the start` : ''}${pr.bench ? `, plus ${esc(pr.bench)} unused` : ''}.
-            ${gk
-    ? `${esc(pr.cleanSheets)} clean ${pr.cleanSheets === 1 ? 'sheet' : 'sheets'} and ${esc(pr.conceded)} conceded.`
-    : `${esc(pr.goals)} ${pr.goals === 1 ? 'goal' : 'goals'} and ${esc(pr.assists)} ${pr.assists === 1 ? 'assist' : 'assists'}.`}</p>
+          ${/* THIS SEASON, THEN EVERY SEASON, and each said as what it is. This
+                sentence printed the career totals and dated them to the current
+                season, so on the first League Eight weekend every page read
+                "25 appearances in 26/27" for a man who had played once in it. */''}
+          <p class="pf-hero__lede">${(() => {
+    const now = (seasons.find((s) => s.name === d.currentSeason) || {}).profile;
+    const made = (x) => (gk
+      ? `${esc(x.cleanSheets)} clean ${x.cleanSheets === 1 ? 'sheet' : 'sheets'} and ${esc(x.conceded)} conceded`
+      : `${esc(x.goals)} ${x.goals === 1 ? 'goal' : 'goals'} and ${esc(x.assists)} ${x.assists === 1 ? 'assist' : 'assists'}`);
+    const apps = (x) => `${esc(x.apps)} ${x.apps === 1 ? 'appearance' : 'appearances'}`;
+    const starts = (x) => (x.starts < x.apps ? (x.starts ? `, ${esc(x.starts)} from the start` : ', off the bench') : '');
+    const thisSeason = now && now.apps && now.apps !== pr.apps
+      ? `${apps(now)} in ${esc(d.currentSeason)}${starts(now)}, ${made(now)}. `
+      : '';
+    return `${thisSeason}${apps(pr)} for ${esc(CLUB.name)} across every season${starts(pr)}${pr.bench ? `, plus ${esc(pr.bench)} unused` : ''}, ${made(pr)}.`;
+  })()}</p>
           <div class="pf-hero__btns">
             <a class="btn btn--ghost btn--sm" href="/squad.html">${ARROW} Back to the squad</a>
             <button class="btn btn--ghost btn--sm" type="button" data-share>Share ${ARROW}</button>
@@ -420,7 +437,7 @@ export function playerPage(p, d) {
     }
     return `<div class="pf-panel" id="pf-s-${idx}" data-season-panel="${idx}">
           <section class="pf-sub" aria-labelledby="pf-n-${idx}">
-            ${rail(1, 'The season', `${sn} · ${x.apps} ${x.apps === 1 ? 'appearance' : 'appearances'}`)}
+            ${rail(1, sn === 'All seasons' ? 'Every season' : 'The season', `${sn} · ${x.apps} ${x.apps === 1 ? 'appearance' : 'appearances'}`)}
             <h3 class="h2 rv" id="pf-n-${idx}">${esc(sn)} in <span class="volt">numbers.</span></h3>
             <ul class="pf-tiles rv">
               ${tilesFor(x).map(statTile).join('\n              ')}
@@ -507,14 +524,23 @@ export function playerPage(p, d) {
   const seasonBand = `<section class="sec pf-seasons" id="seasons" aria-labelledby="pf-seasons-h">
       <div class="wrap">
         <h2 class="sr-only" id="pf-seasons-h">Season by season</h2>
+        ${/* EVERY SEASON TOGETHER IS A TAB TOO, last and never the one the page
+              opens on: a season is what most people came for, and the career
+              figures had nowhere of their own, so they leaked into the season
+              sentences instead. */''}
         <div class="pf-tabs" data-season-tabs>
           ${seasons.map((s, i) => `<a class="pf-tab" href="#pf-s-${i}" data-season-tab="${i}">
             <b>${esc(s.name)}</b>
             <i>${s.profile.apps ? `${s.profile.apps} ${s.profile.apps === 1 ? 'appearance' : 'appearances'}` : 'Not played'}</i>
           </a>`).join('\n          ')}
+          ${seasons.length > 1 ? `<a class="pf-tab" href="#pf-s-${seasons.length}" data-season-tab="${seasons.length}" data-season-all>
+            <b>All seasons</b>
+            <i>${all.apps ? `${all.apps} ${all.apps === 1 ? 'appearance' : 'appearances'}` : 'Not played'}</i>
+          </a>` : ''}
         </div>
         <div class="pf-panels">
           ${seasons.map((s, i) => seasonPanel(s.name, s.profile, i)).join('\n          ')}
+          ${seasons.length > 1 ? seasonPanel('All seasons', all, seasons.length) : ''}
         </div>
       </div>
     </section>`;
@@ -586,11 +612,11 @@ export function playerPage(p, d) {
 
   const versusBand = pool.length > 2 && inPool ? `<section class="sec pf-versus" aria-labelledby="pf-vs-h">
       <div class="wrap">
-        ${rail(RAIL.next(), 'Against the squad', `${pool.length} who started a match`)}
+        ${rail(RAIL.next(), 'Against the squad', `All seasons · ${pool.length} who started a match`)}
         <h2 class="h2 rv" id="pf-vs-h">How that <span class="volt">compares.</span></h2>
         <p class="pf-lede rv">${esc(p.first)} against the ${esc(pool.length)}
-          ${gk ? 'goalkeepers' : 'outfield players'} who started a match in ${esc(d.currentSeason)},
-          across every competition.</p>
+          ${gk ? 'goalkeepers' : 'outfield players'} who have started a match for the club,
+          across every season and every competition.</p>
 
         <ul class="pf-vs rv">
           ${compare.map((c, i) => `<li class="pf-vs__row" style="--i:${i}">
@@ -610,7 +636,7 @@ export function playerPage(p, d) {
         ${rail(RAIL.next(), 'Against the squad', `${pool.length} who started a match`)}
         <h2 class="h2 rv" id="pf-vs-h">Not yet in the <span class="volt">comparison.</span></h2>
         <p class="pf-lede rv">This page sets a player against the ${esc(pool.length)}
-          ${gk ? 'goalkeepers' : 'outfield players'} who started a match in ${esc(d.currentSeason)}.
+          ${gk ? 'goalkeepers' : 'outfield players'} who have started a match for the club, across every season.
           ${esc(p.first)} is not one of them yet, so there is no place in that order to
           give him. Everything above is the record as it stands.</p>
       </div>
@@ -662,7 +688,7 @@ export function playerPage(p, d) {
 
   const pitchBand = heat.length ? `<section class="sec pf-pitch" aria-labelledby="pf-pitch-h">
       <div class="wrap">
-        ${rail(RAIL.next(), 'Where they play', `${heat.length} ${heat.length === 1 ? 'position' : 'positions'}`)}
+        ${rail(RAIL.next(), 'Where they play', `All seasons · ${heat.length} ${heat.length === 1 ? 'position' : 'positions'}`)}
         <h2 class="h2 rv" id="pf-pitch-h">On the <span class="volt">pitch.</span></h2>
         <div class="pf-pitch__grid rv">
           <figure class="pf-pitch__fig">
@@ -767,7 +793,7 @@ export function playerPage(p, d) {
           <div class="pf-pitch__body">
             <p>Read off the team sheets, not from a label. ${esc(p.first)} was named in
               ${esc(heat.length)} ${heat.length === 1 ? 'position' : 'different positions'}
-              across ${esc(d.currentSeason)}${heat.length > 1 ? `, most often at ${esc(positionName(heat[0].code).toLowerCase())}` : ''}.</p>
+              across every season${heat.length > 1 ? `, most often at ${esc(positionName(heat[0].code).toLowerCase())}` : ''}.</p>
             <ol class="pf-heatlist">
               ${heat.map((h) => {
     const ms = posMatches.get(h.code) || [];
@@ -807,7 +833,7 @@ export function playerPage(p, d) {
               </li>`;
   }).join('\n              ')}
             </ol>
-            <p class="pf-heatlist__note">Team-sheet slots across ${esc(d.currentSeason)}, not matches:
+            <p class="pf-heatlist__note">Team-sheet slots across every season, not matches:
               a sheet can name the same player under two codes for one game. A place on the bench
               counts as a half, because being named there is not the same as playing there.${unmapped.length
     ? ` ${unmapped.map((w) => esc(w.code)).join(', ')} ${unmapped.length === 1 ? 'has' : 'have'} no fixed
@@ -822,7 +848,9 @@ export function playerPage(p, d) {
     ...seasonAwards.map((a) => ({ k: a.title, v: a.season || d.titleSeason })),
     ...potm.map((a) => ({ k: 'Player of the Month', v: `${a.month} ${a.season || d.currentSeason}` })),
     captainOf ? { k: captainOf, v: d.currentSeason } : null,
-    ...accolades.map((a) => ({ k: a, v: `${d.currentSeason} squad` })),
+    /* The ranks behind these are counted over every season, so they are not
+       dated to the current one. */
+    ...accolades.map((a) => ({ k: a, v: 'All seasons' })),
   ].filter(Boolean);
 
   const honoursBand = honours.length ? `<section class="sec pf-honours" aria-labelledby="pf-hon-h">
@@ -957,7 +985,7 @@ export function playerPage(p, d) {
 
   const howBand = (howSections.length || pr.keeperApps) ? `<section class="sec pf-how" aria-labelledby="pf-how-h">
       <div class="wrap">
-        ${rail(RAIL.next(), 'The detail', detailed ? `${detailed} of ${pr.goals} goals recorded in full` : 'from the match records')}
+        ${rail(RAIL.next(), 'The detail', detailed ? `All seasons · ${detailed} of ${pr.goals} goals recorded in full` : 'All seasons · from the match records')}
         <h2 class="h2 rv" id="pf-how-h">How he <span class="volt">does it.</span></h2>
         <div class="pf-how__grid rv">
           ${howSections.join('\n          ')}

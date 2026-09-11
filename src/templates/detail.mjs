@@ -77,7 +77,7 @@ export function playerPage(p, d) {
     <div class="wrap wrap--wide">
       ${sectionHead({ eyebrow: 'The squad', title: 'Other players' })}
       <div class="chip-row">
-        ${d.players.filter((x) => x.slug !== p.slug && !x.unknown).slice(0, 18)
+        ${(d.playersCompetitive || d.players).filter((x) => x.slug !== p.slug && !x.unknown).slice(0, 18)
           .map((x) => `<a class="chip" href="/players/${attr(x.slug)}.html">${esc(x.num)} ${esc(x.last)}</a>`).join('')}
       </div>
     </div>
@@ -89,7 +89,7 @@ export function matchPage(m, d) {
   const events = matchTimeline(m, d.nameFor);
   const dtl = m.detail || {};
   const motm = dtl.motm != null ? d.nameFor(dtl.motm) : null;
-  const motmPlayer = dtl.motm != null ? d.players.find((p) => p.num === dtl.motm) : null;
+  const motmPlayer = dtl.motm != null ? (d.playersCompetitive || d.players).find((p) => p.num === dtl.motm) : null;
   const report = dtl.polishedReport || dtl.commentary || '';
   const album = d.galleries.find((g) => {
     const t = String(g.title || '').toLowerCase();
@@ -176,7 +176,7 @@ export function matchPage(m, d) {
             <h3 style="font-size:var(--step-1);margin-bottom:var(--space-4)">Scorers</h3>
             <div class="stack stack--sm">
               ${Object.entries(scorers).map(([num, n]) => {
-                const pl = d.players.find((p) => p.num === Number(num));
+                const pl = (d.playersCompetitive || d.players).find((p) => p.num === Number(num));
                 return `<div class="row row--between" style="font-size:var(--step--1)">
                   <span class="truncate">${pl ? `<a href="/players/${attr(pl.slug)}.html" style="text-decoration:none">${esc(pl.name)}</a>` : esc(d.nameFor(Number(num)))}</span>
                   <strong class="tnum">${n > 1 ? `×${n}` : '1'}</strong>

@@ -3193,7 +3193,7 @@ for (const [f, kb] of Object.entries({
     /* The figure is read off the page's own opening sentence, which counts the
        league across every season, rather than typed here: it was 11 when every
        competitive match counted and is the league's number now. */
-    const wcApps = ((wcHtml.match(/(\d+) league appearances? for [^.]* across every season/) || [])[1]) || '';
+    const wcApps = ((wcHtml.match(/(\d+) appearances? for [^.]*? across every season/) || [])[1]) || '';
     check('a player description counts appearances, not starts',
       !!wcApps && new RegExp(`\\b${wcApps} (league )?appearances\\b`).test(desc) && !/\bstarts\b/.test(desc),
       `${wcApps} on the page, description: ${desc.slice(0, 90)}`);
@@ -3209,31 +3209,32 @@ for (const [f, kb] of Object.entries({
       const { buildDataset: bdPS } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
       const dPS = bdPS();
       const cur = dPS.currentSeason;
-      const { isLeague: isLg } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
-      const compCur = dPS.played.filter((m) => m.played && !m.friendly && isLg(m) && m.season === cur).length;
+      const compCur = dPS.played.filter((m) => m.played && !m.friendly && m.season === cur).length;
       const cdHtml = fs.readFileSync(path.join(ROOT, 'players', 'charlie-dunkley.html'), 'utf8');
       const cd = (dPS.players || []).find((x) => x.slug === 'charlie-dunkley') || {};
       const tabIdx = (dPS.seasons || []).findIndex((s) => s.name === cur);
       const curPanel = (cdHtml.split(`data-season-panel="${tabIdx}"`)[1] || '').split('data-season-panel=')[0];
       const playedOf = (curPanel.match(/of (\d+) played/) || [])[1];
-      /* League only, at the club's request; the cups have a tab of their own. */
-      const cdCups = dPS.played.some((m) => m.played && !m.friendly && !isLg(m)
-        && ((m.detail && [...(m.detail.starters || []), ...(m.detail.bench || [])]) || []).some((x) => x.num === cd.num));
-      check('a player who played a cup tie has a Cup ties tab, and the league tabs leave the cups out',
-        !cdCups || (/data-season-cups/.test(cdHtml) && !/Across every <span class="volt">competition/.test(cdHtml)));
-      check('a player\'s season tab counts only that season\'s league matches',
+      /* League and cup together: the club does not want cup ties split out. */
+      check('there is no separate Cup ties tab on a player page', !/Cup ties/.test(cdHtml));
+      check('a player\'s season tab counts only that season\'s competitive matches',
         tabIdx > -1 && Number(playedOf) === compCur, `${cur}: of ${playedOf} played, ${compCur} competitive`);
-      const lede = ((cdHtml.match(/<p class="pf-hero__lede">([\s\S]*?)<\/p>/) || [])[1] || '').replace(/\s+/g, ' ');
-      check('the opening sentence does not date career figures to the current season',
-        !new RegExp(`${cd.apps} appearances[^.]*in ${cur.replace('/', '\\/')}`).test(lede)
-          && /across every season/.test(lede), lede.slice(0, 160));
+      /* A season tab reads that season alone. */
+      const ledeEl = (cdHtml.match(/<p class="pf-hero__lede"[^>]*>([\s\S]*?)<\/p>/) || []);
+      const lede = (ledeEl[1] || '').replace(/\s+/g, ' ');
+      check('the opening sentence reads the season the page opens on, and no other',
+        /\bin \d\d\/\d\d\b/.test(lede) && !/across every season/.test(lede), lede.slice(0, 160));
+      check('and each tab carries its own sentence, every season on the All seasons one',
+        (ledeEl[0] || '').includes(`data-lede-${(dPS.seasons || []).length}="`)
+          && /data-lede-\d+="[^"]*across every season/.test(ledeEl[0] || ''));
       check('the player page has an All seasons tab, and its panel',
         /data-season-all/.test(cdHtml) && cdHtml.includes(`data-season-panel="${(dPS.seasons || []).length}"`));
       check('and the page does not open on it',
         !/class="pf-tab[^"]*is-on[^"]*"[^>]*data-season-all/.test(cdHtml)
           && /hasAttribute\('data-season-all'\)/.test(fs.readFileSync(path.join(ROOT, 'src', 'scripts', '10-home.js'), 'utf8')));
-      check('sections counted over every season say so',
-        (cdHtml.match(/All seasons ·/g) || []).length >= 2 && !/started a match in \d\d\/\d\d/.test(cdHtml));
+      check('sections counted over every season show under the All seasons tab alone',
+        ['pf-versus', 'pf-pitch'].every((c) => new RegExp(`class="sec ${c}" data-season-scope="all"`).test(cdHtml))
+          && /\[data-season-scope="all"\]/.test(fs.readFileSync(path.join(ROOT, 'src', 'scripts', '10-home.js'), 'utf8')));
     }
     /* The win rate is one figure computed once and printed in three places -
        a tile, a bar and a rank row - and two of them still said "when they
@@ -5215,9 +5216,8 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     const m = statsTpl(d).body.match(/data-season="26\/27"[\s\S]{0,160}?<i>([^<]*)<\/i>/);
     return m ? m[1] : '';
   };
-  /* The chip counts league matches now, and says so. */
   check('the season chip counts one match in the singular',
-    noteOf(sheeted) === '1 league match', noteOf(sheeted));
+    noteOf(sheeted) === '1 match', noteOf(sheeted));
   check('a season with no matches says so rather than showing a nought',
     noteOf(today) === 'Not started', noteOf(today));
 }
@@ -5332,8 +5332,8 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     compsAt === -1 || (!/Pre-season/i.test(compsSec) && /data-league-panel="(ten|eight)"/.test(lgBandTag('lg-comps'))),
     lgBandTag('lg-comps'));
   const stHtml = fs.readFileSync(path.join(ROOT, 'stats.html'), 'utf8');
-  check('the player stats page leads with the league, and gives each cup its own filter',
-    /data-comp="all"[^>]*>League</.test(stHtml) && !/>All competitions</.test(stHtml) && !/Pre-season/.test((stHtml.match(/data-comp-chips[\s\S]*?<\/div>/) || [''])[0]));
+  check('the player stats page leaves pre-season out of its competitions',
+    /data-comp-chips/.test(stHtml) && !/Pre-season/.test((stHtml.match(/data-comp-chips[\s\S]*?<\/div>/) || [''])[0]));
   const { compareDivision: cmpDiv } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
   const gaps8 = cmpDiv(l8.rows || [], l8.results || []);
   check('League Eight\'s transcribed table agrees with its transcribed results',

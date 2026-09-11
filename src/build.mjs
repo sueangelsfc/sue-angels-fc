@@ -1261,7 +1261,9 @@ if (!CHECK && process.env.SA_ALL_BANDS) {
 }
 
 /* ---- Player profiles ---- */
-const profilePlayers = groupLive('players') ? d.players.filter((p) => !p.unknown) : [];
+/* Everybody with a competitive record gets a page, league or cup: the figures
+   on it are the league's, but a man who has only played cup ties still played. */
+const profilePlayers = groupLive('players') ? (d.playersCompetitive || d.players).filter((p) => !p.unknown) : [];
 for (const p of profilePlayers) {
   const out = playerPage(p, d);
   const pr = out.profile;
@@ -1284,7 +1286,7 @@ for (const p of profilePlayers) {
        historical fact on all thirty-seven of these pages. `d.lastTitle` is
        derived from the archive, which knows both the season and its league. */
     description: fitDesc(
-      `${p.name}, ${p.position} for ${CLUB.name}. ${plural(pr.apps, 'league appearance')}, `
+      `${p.name}, ${p.position} for ${CLUB.name}. ${plural(pr.apps, 'appearance')}, `
       + `${plural(pr.goals, 'goal')} and ${plural(pr.assists, 'assist')} for the club.`,
       d.lastTitle ? `Part of the squad that won ${d.lastTitle.division} unbeaten in ${d.lastTitle.season}.` : '',
       `${CLUB.name}, ${CLUB.venue.district}.`,

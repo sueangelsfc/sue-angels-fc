@@ -29,6 +29,7 @@ import {
   byCompetition, homeAwaySplit, teamSummary, winMargins, commonScorelines,
   byMonth, penaltyRecord, disciplineRecord, formationUse, venueRecords,
   squadShape, scoringRuns, clubFirsts, goalsByGroup, heaviestDefeats, scoringRate,
+  isLeague,
 } from './stats.mjs';
 import {
   SPONSOR_TIERS, CLUB, SOCIALS, JOIN_PATHS, JOIN_FAQS,

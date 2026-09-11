@@ -79,7 +79,7 @@ export function preseasonFor(d, season) {
       goals.set(num, (goals.get(num) || 0) + 1);
     }
   }
-  const byNum = new Map((d.players || []).map((p) => [String(p.num), p]));
+  const byNum = new Map((d.playersCompetitive || d.players || []).map((p) => [String(p.num), p]));
   const scorers = [...goals.entries()]
     .map(([num, n]) => ({ num, n, player: byNum.get(num) }))
     .filter((x) => x.player)

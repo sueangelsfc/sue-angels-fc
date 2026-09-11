@@ -555,7 +555,13 @@ export function buildDataset(overrides = {}) {
      player's goals, not his assists, not his appearances. See isFriendly() in
      stats.mjs for why. Friendlies are counted separately, below, so they can
      be shown on their own rather than disappearing. */
+  /* LEAGUE AND CUP TOGETHER, at the club's decision (September 2026): a
+     league-only count with the cups on a tab of their own was tried for an
+     afternoon and the club did not want the two split. `playersCompetitive`
+     is the same list under a second name, kept because the player pages and
+     match pages ask for it by that name. */
   const players = playerStats(matches.filter(isCompetitive), squad, trialists, signedOnNum);
+  const playersCompetitive = players;
   const statsByNum = new Map(players.map((p) => [p.num, p]));
 
   /* NAMING SOMEBODY IS NOT A STATISTIC, and separating the two is the whole
@@ -1301,7 +1307,7 @@ export function buildDataset(overrides = {}) {
        control panel needs it to pre-fill a match whose scoreline still comes
        from the code baseline rather than from a row it can edit. */
     rawMatches: rawResults,
-    squad, players, playersBySeason, statsByNum, nameFor, friendlyFor,
+    squad, players, playersCompetitive, playersBySeason, statsByNum, nameFor, friendlyFor,
     /* WHERE THE CLUB PLAYS, derived. `division` is this season's, which rolls
        on its own when the club goes up or down; `divisionOf(season)` answers
        for any year, so "League Ten champions 25/26" stays right forever. */

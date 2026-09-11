@@ -892,6 +892,13 @@
         t.tabIndex = on ? 0 : -1;
       });
       panels.forEach(function (pnl, n) { pnl.hidden = n !== i; });
+      /* A season tab shows that season alone: the bands counted over every
+         season appear under All seasons and nowhere else, and the opening
+         sentence is swapped for the tab's own. */
+      var isAll = tabs[i].hasAttribute('data-season-all');
+      $$('[data-season-scope="all"]').forEach(function (el) { el.hidden = !isAll; });
+      var lede = $('[data-season-lede]');
+      if (lede && lede.hasAttribute('data-lede-' + i)) lede.textContent = lede.getAttribute('data-lede-' + i);
       if (focus) tabs[i].focus();
       /* A panel revealed after first paint never met the observer, so its
          bars would sit at zero. Reveal whatever is now on screen. */
@@ -922,12 +929,13 @@
     /* Open on the most recent season that actually has matches, not simply
        the last tab: landing a player on an empty season would be a page that
        looks like it has nothing on it. */
-    /* Never the All seasons tab, which sits last. */
+    /* The latest season he played in, never the All seasons tab unless he has
+       played in no season at all. */
     var withPlay = tabs.map(function (t) {
-      return !t.hasAttribute('data-season-all') && !/not started/i.test(t.textContent);
+      return !t.hasAttribute('data-season-all') && !/not (started|played)/i.test(t.textContent);
     });
     var start = withPlay.lastIndexOf(true);
-    select(start > -1 ? start : 0);
+    select(start > -1 ? start : tabs.length - 1);
   })();
 
   /* ---- Scrubable plot -------------------------------------------------

@@ -282,11 +282,12 @@ export function squad(d) {
   /* Competitive, because the figures the tab is promising are. Counting a
      pre-season friendly here labelled 26/27 "1 match" above a set of noughts,
      which reads as a bug rather than as a season that has not started. */
-  const playedIn = (n) => (d.competitive || []).filter((m) => m.season === n).length;
+  const leagueMatches = d.competitive || [];
+  const playedIn = (n) => leagueMatches.filter((m) => m.season === n).length;
   const seasonTabs = VIEWS.length > 1 ? `<div class="sq-seasons" data-season-filter role="group"
         aria-label="Season">
         ${VIEWS.map((v, i) => {
-    const games = v === 'all' ? (d.competitive || []).length : playedIn(v);
+    const games = v === 'all' ? leagueMatches.length : playedIn(v);
     /* WHAT THE TAB PRODUCES, which is the only thing a tab can honestly
        promise: the number of players it will put on the page. It is the same
        figure the "All" chip carries and the same as the position chips sum

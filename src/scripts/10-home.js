@@ -1983,6 +1983,17 @@
   function apply(season, view) {
     heroFor(view);
     chipsFor(view);
+    /* The charts follow the tab: show this view's panel, reveal what it
+       draws, and name the season in the rail. */
+    Array.prototype.forEach.call(document.querySelectorAll('[data-sq-chart-view]'), function (p) {
+      var on = p.getAttribute('data-sq-chart-view') === view;
+      p.hidden = !on;
+      if (on) {
+        p.classList.add('is-in');
+        var label = document.querySelector('[data-pics-label]');
+        if (label) label.textContent = p.getAttribute('data-label') || '';
+      }
+    });
     cards.forEach(function (card) {
       /* "All seasons" is every player the club has had, not a season to
          match against. */

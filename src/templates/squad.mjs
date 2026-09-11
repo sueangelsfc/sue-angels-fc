@@ -429,7 +429,115 @@ export function squad(d) {
       </div>
     </section>`;
 
-  /* ================= 02 PAST PLAYERS ================= */
+  /* ================= 02 IN PICTURES =================
+     The squad as charts, one panel per season tab like the cards: who was
+     used by position, how the appearances came (from the start or off the
+     bench), the six most used, and for a season, who was new, retained or
+     back. The position ring is drawn from the same pool the hero counts as
+     "Players used", so the two cannot disagree. Figures sit beside every
+     chart; groups are told apart by shade of the one accent. */
+  const pct = (n, of) => (of ? Math.round((n / of) * 100) : 0);
+  const sqDonut = (segs, aria, centre, data) => {
+    const total = segs.reduce((n, s) => n + s.n, 0);
+    const r = 44;
+    const c = 2 * Math.PI * r;
+    let at = 0;
+    const arcs = segs.map((s, i) => {
+      const len = total ? (s.n / total) * c : 0;
+      const out = s.n ? `<circle class="sq-donut__seg" data-shade="${i}" cx="60" cy="60" r="${r}" fill="none" stroke-width="14" stroke-dasharray="${len.toFixed(1)} ${(c - len).toFixed(1)}" stroke-dashoffset="${(-at).toFixed(1)}" transform="rotate(-90 60 60)" style="--len:${len.toFixed(1)};--c:${c.toFixed(1)}"/>` : '';
+      at += len;
+      return out;
+    }).join('');
+    return `<div class="sq-donut">
+                <svg viewBox="0 0 120 120" role="img" aria-label="${attr(aria)}">
+                  <circle cx="60" cy="60" r="${r}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="14"/>${arcs}
+                </svg>
+                <span class="sq-donut__c" aria-hidden="true">${centre}</span>
+              </div>
+              <ul class="sq-chart__legend"${data ? ` ${data}` : ''}>${segs.map((s, i) => (s.n ? `<li data-shade="${i}"><i></i><b>${esc(s.n)}</b> ${esc(s.label)}</li>` : '')).join('')}</ul>`;
+  };
+  const GROUP_NAMES = [['gk', 'in goal'], ['def', 'defenders'], ['mid', 'midfielders'], ['fwd', 'forwards']];
+  const picsFor = (v) => {
+    const played = (d.competitive || []).filter((m) => m.played && (v === 'all' || m.season === v));
+    const usePlayed = played.length > 0;
+    /* The hero's pool, exactly: who played it, or who is in the squad for a
+       season not yet started. */
+    const pool = usePlayed
+      ? all.filter((p) => { const st = statsIn(v, p.num); return (st.starts || 0) + (st.subApps || 0) > 0; })
+      : first.filter((p) => (p.seasons || []).includes(v));
+    if (!pool.length) {
+      return `<p class="sq-lede">Nobody to chart for ${esc(viewLabel(v))} yet. This fills in as the squad is named and results come in.</p>`;
+    }
+    const groupCounts = GROUP_NAMES.map(([k, label]) => ({ k, label, n: pool.filter((p) => (p.positionGroup || 'mid') === k).length }));
+    const shape = `<figure class="sq-chart">
+              <figcaption class="sq-chart__k">${usePlayed ? 'Players used, by position' : 'The squad, by position'}</figcaption>
+              ${sqDonut(groupCounts, groupCounts.map((g) => `${g.n} ${g.label}`).join(', '),
+    `<b>${esc(pool.length)}</b><i>players</i>`, `data-pool="${pool.length}"`)}
+            </figure>`;
+    if (!usePlayed) return `<div class="sq-charts">${shape}</div>`;
+
+    const starts = pool.reduce((n, p) => n + (statsIn(v, p.num).starts || 0), 0);
+    const apps = pool.reduce((n, p) => n + (statsIn(v, p.num).apps || 0), 0);
+    const offBench = Math.max(0, apps - starts);
+    const how = apps ? `<figure class="sq-chart">
+              <figcaption class="sq-chart__k">How the appearances came</figcaption>
+              ${sqDonut([{ n: starts, label: 'from the start' }, { n: offBench, label: 'off the bench' }],
+    `${starts} starts and ${offBench} appearances off the bench`,
+    `<b>${esc(pct(starts, apps))}%</b><i>started</i>`, `data-apps="${apps}"`)}
+            </figure>` : '';
+
+    const most = pool.map((p) => ({ p, a: statsIn(v, p.num).apps || 0, s: statsIn(v, p.num).starts || 0 }))
+      .filter((x) => x.a > 0).sort((x, y) => y.a - x.a || y.s - x.s).slice(0, 6);
+    const top = Math.max(1, ...most.map((x) => x.a));
+    const mostUsed = most.length ? `<figure class="sq-chart">
+              <figcaption class="sq-chart__k">Most appearances</figcaption>
+              <ol class="sq-top">
+                ${most.map((x) => `<li>
+                  ${/* Figures before the name in the markup and after it on screen:
+                        a count straight after a name reads as a squad number. */''}
+                  <span class="sq-top__track" aria-hidden="true"><i class="is-s" style="--w:${pct(x.s, top)}%"></i><i class="is-b" style="--w:${pct(x.a - x.s, top)}%"></i></span>
+                  <span class="sq-top__v"><b>${esc(x.a)}</b> ${x.a === 1 ? 'appearance' : 'appearances'}</span>
+                  ${/* Text, not a link: every player already has one card linking to
+                        his profile, and a second link here is the same player twice. */''}
+                  <span class="sq-top__k">${esc(x.p.name)}</span>
+                </li>`).join('\n                ')}
+              </ol>
+            </figure>` : '';
+
+    /* Who was new, retained or back: the three the site works out itself,
+       read per season, so it is never a claim about today. */
+    let arrivals = '';
+    if (v !== 'all') {
+      const byLabel = new Map();
+      for (const p of pool) {
+        const st = statusOf(p.num, v);
+        const label = (st && st.derived && st.label) || 'In the squad';
+        byLabel.set(label, (byLabel.get(label) || 0) + 1);
+      }
+      /* The labels as the site writes them: "Signed July 2026" keeps its month. */
+      const segs = [...byLabel].sort((a, b) => b[1] - a[1]).map(([label, n]) => ({ n, label }));
+      if (segs.length > 1 || (segs[0] && segs[0].label !== 'In the squad')) {
+        arrivals = `<figure class="sq-chart">
+              <figcaption class="sq-chart__k">New and returning</figcaption>
+              ${sqDonut(segs, segs.map((s) => `${s.n} ${s.label}`).join(', '), `<b>${esc(pool.length)}</b><i>used</i>`)}
+            </figure>`;
+      }
+    }
+    return `<div class="sq-charts">${shape}${how}${arrivals}${mostUsed}</div>`;
+  };
+
+  const picsBand = `<section class="sec sq-pics" id="squad-pictures" aria-labelledby="sq-pics-h">
+      <div class="wrap">
+        ${rail(2, 'In pictures', viewLabel(VIEWS[DEF]))
+    .replace('<span class="xrail__r">', '<span class="xrail__r" data-pics-label>')}
+        <h2 class="h2 rv" id="sq-pics-h">The squad in <span class="volt">pictures.</span></h2>
+        ${VIEWS.map((v, i) => `<div class="sq-pics__view rv" data-sq-chart-view="${attr(viewKey(v))}" data-label="${attr(viewLabel(v))}"${i === DEF ? '' : ' hidden'}>
+          ${picsFor(v)}
+        </div>`).join('\n        ')}
+      </div>
+    </section>`;
+
+  /* ================= 03 PAST PLAYERS ================= */
   /* Cards go inside position groups here too, exactly as the first team's do.
      They used to sit in one flat list, so the position chips - which now
      COUNT across both bands - could only FILTER one of them: asking for
@@ -451,7 +559,7 @@ export function squad(d) {
         ${/* The count follows the tab, and a season none of them played in
               shows no past players at all rather than the headings over
               nobody. The script recounts; this is every one of them. */''}
-        ${rail(2, 'Past players', `${retired.length + departed.length + nowCoaching.length} in all`)
+        ${rail(3, 'Past players', `${retired.length + departed.length + nowCoaching.length} in all`)
     .replace('<span class="xrail__r">', '<span class="xrail__r" data-past-count>')}
         <h2 class="h2 rv" id="sq-past-h">Those who <span class="volt">came before.</span></h2>
         <p class="sq-lede rv">Nobody who pulled on the shirt disappears off this page. These are the
@@ -485,7 +593,7 @@ export function squad(d) {
     </section>`;
 
   return {
-    body: siteHeader('/squad.html') + hero + firstBand + pastBand + ctaBand
+    body: siteHeader('/squad.html') + hero + firstBand + picsBand + pastBand + ctaBand
       + sourceNote(['fulltime', 'surreyfa']),
     bodyClass: 'is-home is-sub is-squad',
     css: 'home.css',

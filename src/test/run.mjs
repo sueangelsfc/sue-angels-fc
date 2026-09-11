@@ -3242,6 +3242,22 @@ for (const [f, kb] of Object.entries({
       check('the squad page opens on the latest season played',
         !!latestPlayed && onTab === latestPlayed, `opens on ${onTab}, latest played ${latestPlayed}`);
       const homeJs = fs.readFileSync(path.join(ROOT, 'src', 'scripts', '10-home.js'), 'utf8');
+      /* The squad's charts: a panel per tab, and the position ring counting
+         the same players the hero calls "Players used". */
+      const sqViews = [...sqS.matchAll(/data-sq-chart-view="([^"]+)"[^>]*>([\s\S]*?)(?=data-sq-chart-view="|<\/section>)/g)];
+      const sqBad = [];
+      for (const [, key, body] of sqViews) {
+        const pool = (body.match(/data-pool="(\d+)"/) || [])[1];
+        const heroRaw = (sqS.match(new RegExp(`data-hero-${key}="([^"]+)"`)) || [])[1];
+        const hero = heroRaw ? JSON.parse(heroRaw.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&')) : null;
+        if (pool && hero && Number(pool) !== Number(hero.tally[0])) sqBad.push(`${key}: ring ${pool}, hero ${hero.tally[0]}`);
+        const legend = (body.match(/data-pool="\d+">([\s\S]*?)<\/ul>/) || [])[1] || '';
+        const summed = [...legend.matchAll(/<b>(\d+)<\/b>/g)].reduce((n, m) => n + Number(m[1]), 0);
+        if (pool && summed !== Number(pool)) sqBad.push(`${key}: legend adds to ${summed}, ring ${pool}`);
+      }
+      check('the squad page draws a chart panel for every season tab',
+        sqViews.length === (sqS.match(/class="sq-season[ "]/g) || []).length && sqViews.length >= 2, `${sqViews.length} panels`);
+      check('and its position ring counts the players the hero counts', sqBad.length === 0, sqBad.join(' | '));
       check('and its past players are counted and hidden per season',
         /data-past-count/.test(sqS) && /\[data-season\]\.is-on/.test(homeJs)
           && /querySelector\('#past-players'\)/.test(homeJs));

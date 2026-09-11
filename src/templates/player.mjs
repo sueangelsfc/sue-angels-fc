@@ -37,7 +37,7 @@ import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { BODY_PARTS, ZONES, SITUATIONS, ASSIST_TYPES } from '../lib/football.mjs';
 import { POSITION_LABEL, POSITION_XY, positionName } from '../lib/positions.mjs';
-import { playerProfile, fmtDate } from '../lib/stats.mjs';
+import { playerProfile, playerStats, fmtDate, isLeague } from '../lib/stats.mjs';
 import { FRIENDLY_NOTE_SHORT } from '../lib/prose.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
 import { photoCredit } from './gallery.mjs';
@@ -181,7 +181,12 @@ export function playerPage(p, d) {
      friendly never added to his figures, but the club's total was every match
      the season held: 26/27 read "1 of 7 played" when one League Eight match
      had been played and six pre-season friendlies. */
-  const counted = (d.played || []).filter((m) => m.played && !m.friendly);
+  /* AND THE LEAGUE ONLY, at the club's request: a season on this page is its
+     league season. Pre-season belongs to the results, and the cup ties have a
+     tab of their own below rather than being folded into the league figures. */
+  const competitive = (d.played || []).filter((m) => m.played && !m.friendly);
+  const counted = competitive.filter(isLeague);
+  const cupMatches = competitive.filter((m) => !isLeague(m));
   const seasons = seasonNames.map((name) => {
     const ms = counted.filter((m) => m.season === name);
     const profile = playerProfile(p, ms, d.players);
@@ -190,6 +195,9 @@ export function playerPage(p, d) {
   });
   const all = playerProfile(p, counted, d.players);
   all.teamGames = counted.length;
+  const cups = playerProfile(p, cupMatches, d.players);
+  cups.teamGames = cupMatches.length;
+  const hasCups = cups.apps > 0 || cups.bench > 0;
   const pr = all;
   const teamGames = all.teamGames;
 
@@ -272,7 +280,7 @@ export function playerPage(p, d) {
     const made = (x) => (gk
       ? `${esc(x.cleanSheets)} clean ${x.cleanSheets === 1 ? 'sheet' : 'sheets'} and ${esc(x.conceded)} conceded`
       : `${esc(x.goals)} ${x.goals === 1 ? 'goal' : 'goals'} and ${esc(x.assists)} ${x.assists === 1 ? 'assist' : 'assists'}`);
-    const apps = (x) => `${esc(x.apps)} ${x.apps === 1 ? 'appearance' : 'appearances'}`;
+    const apps = (x) => `${esc(x.apps)} league ${x.apps === 1 ? 'appearance' : 'appearances'}`;
     const starts = (x) => (x.starts < x.apps ? (x.starts ? `, ${esc(x.starts)} from the start` : ', off the bench') : '');
     const thisSeason = now && now.apps && now.apps !== pr.apps
       ? `${apps(now)} in ${esc(d.currentSeason)}${starts(now)}, ${made(now)}. `
@@ -437,7 +445,7 @@ export function playerPage(p, d) {
     }
     return `<div class="pf-panel" id="pf-s-${idx}" data-season-panel="${idx}">
           <section class="pf-sub" aria-labelledby="pf-n-${idx}">
-            ${rail(1, sn === 'All seasons' ? 'Every season' : 'The season', `${sn} · ${x.apps} ${x.apps === 1 ? 'appearance' : 'appearances'}`)}
+            ${rail(1, sn === 'Cup ties' ? 'Every cup' : sn === 'All seasons' ? 'Every league season' : 'The league season', `${sn} · ${x.apps} ${x.apps === 1 ? 'appearance' : 'appearances'}`)}
             <h3 class="h2 rv" id="pf-n-${idx}">${esc(sn)} in <span class="volt">numbers.</span></h3>
             <ul class="pf-tiles rv">
               ${tilesFor(x).map(statTile).join('\n              ')}
@@ -468,9 +476,9 @@ export function playerPage(p, d) {
             ${chartFor(x, `pf-plot-${idx}`)}
           </section>` : ''}
 
-          ${x.byCompetition.length ? `<section class="pf-sub" aria-labelledby="pf-k-${idx}">
+          ${sn === 'Cup ties' && x.byCompetition.length ? `<section class="pf-sub" aria-labelledby="pf-k-${idx}">
             ${rail(4, 'By competition', `${x.byCompetition.length} entered`)}
-            <h3 class="h2 rv" id="pf-k-${idx}">Across every <span class="volt">competition.</span></h3>
+            <h3 class="h2 rv" id="pf-k-${idx}">Cup by <span class="volt">cup.</span></h3>
             <div class="pf-tablewrap rv">
               <table class="pf-tbl">
                 <caption class="sr-only">${esc(p.name)} by competition, ${esc(sn)}</caption>
@@ -537,10 +545,15 @@ export function playerPage(p, d) {
             <b>All seasons</b>
             <i>${all.apps ? `${all.apps} ${all.apps === 1 ? 'appearance' : 'appearances'}` : 'Not played'}</i>
           </a>` : ''}
+          ${hasCups ? `<a class="pf-tab" href="#pf-s-${seasons.length + 1}" data-season-tab="${seasons.length + 1}" data-season-all data-season-cups>
+            <b>Cup ties</b>
+            <i>${cups.apps ? `${cups.apps} ${cups.apps === 1 ? 'appearance' : 'appearances'}` : 'Not played'}</i>
+          </a>` : ''}
         </div>
         <div class="pf-panels">
           ${seasons.map((s, i) => seasonPanel(s.name, s.profile, i)).join('\n          ')}
           ${seasons.length > 1 ? seasonPanel('All seasons', all, seasons.length) : ''}
+          ${hasCups ? seasonPanel('Cup ties', cups, seasons.length + 1) : ''}
         </div>
       </div>
     </section>`;
@@ -574,7 +587,11 @@ export function playerPage(p, d) {
     const rec = (d.squad || []).find((q) => q.num === x.num);
     return rec && !!rec.gk === gk;
   };
-  const pool = (d.players || []).filter((x) => sameRole(x) && (x.starts || 0) > 0);
+  /* League figures on both sides of the comparison. The pool was every
+     competitive match while this player's own figures became the league's,
+     so a man with cup starts ranked "31st of 30" against a group he out-numbered
+     himself in. */
+  const pool = playerStats(counted, d.squad || []).filter((x) => sameRole(x) && (x.starts || 0) > 0);
   const median = (key) => {
     const v = pool.map((x) => x[key] || 0).sort((a, b) => a - b);
     if (!v.length) return 0;
@@ -612,7 +629,7 @@ export function playerPage(p, d) {
 
   const versusBand = pool.length > 2 && inPool ? `<section class="sec pf-versus" aria-labelledby="pf-vs-h">
       <div class="wrap">
-        ${rail(RAIL.next(), 'Against the squad', `All seasons · ${pool.length} who started a match`)}
+        ${rail(RAIL.next(), 'Against the squad', `All seasons · ${pool.length} who started a league match`)}
         <h2 class="h2 rv" id="pf-vs-h">How that <span class="volt">compares.</span></h2>
         <p class="pf-lede rv">${esc(p.first)} against the ${esc(pool.length)}
           ${gk ? 'goalkeepers' : 'outfield players'} who have started a match for the club,

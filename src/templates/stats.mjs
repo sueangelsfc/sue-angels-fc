@@ -24,7 +24,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
-import { playerStats } from '../lib/stats.mjs';
+import { playerStats, isLeague } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
 
@@ -62,27 +62,32 @@ export function stats(d) {
      them, so the same man's totals disagreed with themselves across two
      pages. `d.competitive` is the list every figure is counted from. */
   const played = (d.competitive || []).filter((m) => m.played);
+  /* THE LEAGUE LEADS, at the club's request. The leaders, the table, the
+     tallies and who scored them count league matches; each cup keeps a chip
+     of its own, and pre-season is on the results page and nowhere here. */
+  const league = played.filter(isLeague);
 
-  /* One stats table per competition, plus the combined one. Computed here so
-     the browser never has to, and so the figures come from the same engine as
+  /* One stats table per CUP, plus the league one. Computed here so the
+     browser never has to, and so the figures come from the same engine as
      every other page. */
-  const comps = [...new Set(played.map((m) => m.competition))]
+  const comps = [...new Set(played.filter((m) => !isLeague(m)).map((m) => m.competition))]
     .map((name) => ({ key: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), name, short: shortComp(name) }));
 
   const setFor = (matches) => new Map(playerStats(matches, squad).map((r) => [r.num, r]));
-  const allSet = setFor(played);
+  const allSet = setFor(league);
   const compSets = comps.map((c) => ({ ...c, set: setFor(played.filter((m) => m.competition === c.name)) }));
 
   /* Season by season, and within each season by competition, so the tabs and
-     the chips compose rather than fighting each other. 26/27 has no matches
-     yet and correctly comes out as zeroes, which the tab says out loud. */
+     the chips compose rather than fighting each other. */
   const seasons = (d.seasons || []).map((sn) => {
-    const ms = played.filter((m) => m.season === sn.name);
+    const cms = played.filter((m) => m.season === sn.name);
+    const ms = cms.filter(isLeague);
     return {
       name: sn.name,
       matches: ms,
+      competitive: cms,
       all: setFor(ms),
-      byComp: comps.map((c) => ({ ...c, set: setFor(ms.filter((m) => m.competition === c.name)) })),
+      byComp: comps.map((c) => ({ ...c, set: setFor(cms.filter((m) => m.competition === c.name)) })),
     };
   });
 
@@ -123,16 +128,18 @@ export function stats(d) {
   const VIEWS = [
     ...seasons.map((sn) => ({
       key: sn.name, id: sn.name.replace(/\D/g, ''), label: sn.name,
-      note: sn.matches.length ? count(sn.matches.length, 'match', 'matches') : 'Not started',
+      note: sn.matches.length ? count(sn.matches.length, 'league match', 'league matches') : 'Not started',
       /* The matches themselves, not only the derived rows: the competition
          chips count fixtures, not players. */
       matches: sn.matches,
+      competitive: sn.competitive,
       rows: rowsFrom(sn.all), heading: 'The season’s',
     })),
     {
       key: 'all', id: 'all', label: 'All seasons',
-      note: count(played.length, 'match', 'matches'),
-      matches: played,
+      note: count(league.length, 'league match', 'league matches'),
+      matches: league,
+      competitive: played,
       rows: rowsFrom(allSet), heading: 'The club’s',
     },
   ];
@@ -172,8 +179,8 @@ export function stats(d) {
           <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> By the numbers ·
             <span data-hero-season>${esc(VIEWS[defaultView].label)}</span></p>
           <h1 class="st-hero__title" id="st-h">Player stats<span class="volt">.</span></h1>
-          <p class="st-hero__lede">Every player's season, counted from the team sheets. Sort any
-            column, filter by competition, and open anyone for their full profile.</p>
+          <p class="st-hero__lede">Every player's league season, counted from the team sheets. Each
+            cup has its own filter. Sort any column and open anyone for their full profile.</p>
           ${waitingNote ? `<p class="st-hero__lede" data-season-waiting>${esc(waitingNote)}</p>` : ''}
         </div>
         <dl class="st-tally glassbox" data-hero-tally${heroTallyData()}>
@@ -353,12 +360,12 @@ export function stats(d) {
      A competition the club did not play that season is hidden rather than
      shown as a nought, and every view's counts ride on the chip so switching
      season is a rewrite rather than a fetch. */
-  const compCount = (v, name) => v.matches.filter((m) => m.competition === name).length;
+  const compCount = (v, name) => (v.competitive || v.matches).filter((m) => m.competition === name).length;
   const compData = (name) => VIEWS
     .map((v) => ` data-n-${v.id}="${attr(name === null ? v.matches.length : compCount(v, name))}"`).join('');
   const v0 = VIEWS[defaultView];
   const chips = `<div class="st-chips" data-comp-chips>
-          <a class="st-chip is-on" href="#table" data-comp="all"${compData(null)}>All competitions<span>${esc(v0.matches.length)}</span></a>
+          <a class="st-chip is-on" href="#table" data-comp="all"${compData(null)}>League<span>${esc(v0.matches.length)}</span></a>
           ${compSets.map((c) => `<a class="st-chip" href="#table" data-comp="${attr(c.key)}"${compData(c.name)}${compCount(v0, c.name) ? '' : ' hidden'}>${esc(c.short)}<span>${esc(compCount(v0, c.name))}</span></a>`).join('\n          ')}
         </div>`;
 

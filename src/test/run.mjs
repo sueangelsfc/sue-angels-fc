@@ -3190,10 +3190,15 @@ for (const [f, kb] of Object.entries({
        "2 starts, 7 goals and 8 assists" in the meta tag and the JSON-LD. */
     const wcHtml = fs.readFileSync(path.join(ROOT, 'players', 'william-clark.html'), 'utf8');
     const desc = (wcHtml.match(/name="description" content="([^"]*)"/) || [])[1] || '';
+    /* The figure is read off the page's own opening sentence, which counts the
+       league across every season, rather than typed here: it was 11 when every
+       competitive match counted and is the league's number now. */
+    const wcApps = ((wcHtml.match(/(\d+) league appearances? for [^.]* across every season/) || [])[1]) || '';
     check('a player description counts appearances, not starts',
-      /\b11 appearances\b/.test(desc), desc.slice(0, 90));
+      !!wcApps && new RegExp(`\\b${wcApps} (league )?appearances\\b`).test(desc) && !/\bstarts\b/.test(desc),
+      `${wcApps} on the page, description: ${desc.slice(0, 90)}`);
     check('and the structured data says the same thing',
-      (wcHtml.match(/11 appearances/g) || []).length >= 2,
+      !!wcApps && (wcHtml.match(new RegExp(`\\b${wcApps} (league )?appearances\\b`, 'g')) || []).length >= 3,
       'the JSON-LD description disagrees with the meta description');
 
     /* A PLAYER'S SEASON IS THAT SEASON. The tab counted friendlies into the
@@ -3204,13 +3209,19 @@ for (const [f, kb] of Object.entries({
       const { buildDataset: bdPS } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
       const dPS = bdPS();
       const cur = dPS.currentSeason;
-      const compCur = dPS.played.filter((m) => m.played && !m.friendly && m.season === cur).length;
+      const { isLeague: isLg } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+      const compCur = dPS.played.filter((m) => m.played && !m.friendly && isLg(m) && m.season === cur).length;
       const cdHtml = fs.readFileSync(path.join(ROOT, 'players', 'charlie-dunkley.html'), 'utf8');
       const cd = (dPS.players || []).find((x) => x.slug === 'charlie-dunkley') || {};
       const tabIdx = (dPS.seasons || []).findIndex((s) => s.name === cur);
       const curPanel = (cdHtml.split(`data-season-panel="${tabIdx}"`)[1] || '').split('data-season-panel=')[0];
       const playedOf = (curPanel.match(/of (\d+) played/) || [])[1];
-      check('a player\'s season tab counts only that season\'s competitive matches',
+      /* League only, at the club's request; the cups have a tab of their own. */
+      const cdCups = dPS.played.some((m) => m.played && !m.friendly && !isLg(m)
+        && ((m.detail && [...(m.detail.starters || []), ...(m.detail.bench || [])]) || []).some((x) => x.num === cd.num));
+      check('a player who played a cup tie has a Cup ties tab, and the league tabs leave the cups out',
+        !cdCups || (/data-season-cups/.test(cdHtml) && !/Across every <span class="volt">competition/.test(cdHtml)));
+      check('a player\'s season tab counts only that season\'s league matches',
         tabIdx > -1 && Number(playedOf) === compCur, `${cur}: of ${playedOf} played, ${compCur} competitive`);
       const lede = ((cdHtml.match(/<p class="pf-hero__lede">([\s\S]*?)<\/p>/) || [])[1] || '').replace(/\s+/g, ' ');
       check('the opening sentence does not date career figures to the current season',
@@ -5204,8 +5215,9 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     const m = statsTpl(d).body.match(/data-season="26\/27"[\s\S]{0,160}?<i>([^<]*)<\/i>/);
     return m ? m[1] : '';
   };
+  /* The chip counts league matches now, and says so. */
   check('the season chip counts one match in the singular',
-    noteOf(sheeted) === '1 match', noteOf(sheeted));
+    noteOf(sheeted) === '1 league match', noteOf(sheeted));
   check('a season with no matches says so rather than showing a nought',
     noteOf(today) === 'Not started', noteOf(today));
 }
@@ -5313,6 +5325,15 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     /data-league-panel="ten"/.test(lgBandTag('lg-scorers')), lgBandTag('lg-scorers'));
   check('and so does "Around the league"',
     /data-league-panel="ten"/.test(lgBandTag('lg-around')), lgBandTag('lg-around'));
+  /* Pre-season is on the results page, not listed as a competition. */
+  const compsAt = bodyL8.indexOf('class="sec lg-comps"');
+  const compsSec = compsAt > -1 ? bodyL8.slice(compsAt, bodyL8.indexOf('</section>', compsAt)) : '';
+  check('the league page\'s competitions leave out pre-season, and belong to a division tab',
+    compsAt === -1 || (!/Pre-season/i.test(compsSec) && /data-league-panel="(ten|eight)"/.test(lgBandTag('lg-comps'))),
+    lgBandTag('lg-comps'));
+  const stHtml = fs.readFileSync(path.join(ROOT, 'stats.html'), 'utf8');
+  check('the player stats page leads with the league, and gives each cup its own filter',
+    /data-comp="all"[^>]*>League</.test(stHtml) && !/>All competitions</.test(stHtml) && !/Pre-season/.test((stHtml.match(/data-comp-chips[\s\S]*?<\/div>/) || [''])[0]));
   const { compareDivision: cmpDiv } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
   const gaps8 = cmpDiv(l8.rows || [], l8.results || []);
   check('League Eight\'s transcribed table agrees with its transcribed results',

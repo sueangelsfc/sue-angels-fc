@@ -24,7 +24,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
-import { fmtDate, isUs, byCompetition, slugify } from '../lib/stats.mjs';
+import { fmtDate, isUs, byCompetition, slugify, isLeague } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
 
@@ -368,18 +368,27 @@ export function league(d) {
 
      Built from the match record, so a cup entered next season appears here
      the moment its first result is saved. Nothing to add by hand. */
-  const comps = byCompetition((d.played || []).filter((m) => m.season === d.currentSeason));
+  /* NO FRIENDLIES, AND THE SEASON THAT HAD A CUP. Pre-season was listed here
+     as a competition, and on the first League Eight weekend this band was all
+     pre-season. It covers the most recent season with a cup in it, and it is
+     part of that season's division tab, so it hides with that table. */
+  const inCompetition = (m) => m.played && !m.friendly;
+  const compSeason = [...new Set((d.played || [])
+    .filter((m) => inCompetition(m) && !isLeague(m)).map((m) => m.season))].sort().pop();
+  const inCompSeason = (m) => inCompetition(m) && m.season === compSeason;
+  const comps = compSeason ? byCompetition((d.played || []).filter(inCompSeason)) : [];
   const compRun = (name) => (d.played || [])
-    .filter((m) => m.competition === name && m.season === d.currentSeason)
+    .filter((m) => inCompSeason(m) && m.competition === name)
     .slice()
     .sort((a, b) => (a.iso || '').localeCompare(b.iso || ''));
+  const compPanel = compSeason === (next.season || d.nextSeason) ? 'eight' : 'ten';
 
-  const compsBand = comps.length ? `<section class="sec lg-comps" id="comps" aria-labelledby="lg-cp-h">
+  const compsBand = comps.length ? `<section class="sec lg-comps" id="comps" data-league-panel="${compPanel}" aria-labelledby="lg-cp-h">
       <div class="wrap">
         ${rail(4, 'Every competition', `${comps.length} entered`)}
         <h2 class="h2 rv" id="lg-cp-h">Not just the <span class="volt">league.</span></h2>
         <p class="lg-around__lede rv">${esc(CLUB.short)} played in ${esc(comps.length)} competitions
-          in ${esc(d.currentSeason)}. This is the club's own record of each.</p>
+          in ${esc(compSeason)}. This is the club's own record of each.</p>
 
         <div class="lg-chiprow rv" role="tablist" aria-label="Competition" data-comp-tabs>
           ${comps.map((c, i) => `<a class="lg-chip${i === 0 ? ' is-on' : ''}" role="tab"

@@ -28,6 +28,7 @@ import { execFileSync, spawn } from 'node:child_process';
 import { buildDataset } from '../src/lib/dataset.mjs';
 import { matchCover, articleCover, COVER_W, COVER_H } from '../src/lib/cover-art.mjs';
 import { articleSlug } from '../src/templates/news.mjs';
+import { oppBadgeSrc } from '../src/templates/home.mjs';
 
 const ROOT = process.cwd();
 const OUT = path.join(ROOT, 'assets', 'covers');
@@ -36,6 +37,8 @@ const TMP = path.join(ROOT, '.covers-tmp');
    60MB browser profile sitting in the project. */
 const PROFILE = path.join(os.tmpdir(), 'sa-covers-profile');
 const ALL = process.argv.includes('--all');
+/* --only=id,id redraws just those, over whatever is on disk. */
+const ONLY = (process.argv.find((a) => a.startsWith('--only=')) || '').slice(7).split(',').filter(Boolean);
 
 const CHROME = [
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
@@ -78,11 +81,11 @@ const d = buildDataset();
    row, then the extra registry, then the recovered one, then a needle. Only
    Mala Vida has none, and a card with a missing image is worse than one that
    never asked for it, so it falls back to the club's own mark. */
-const badgeFor = (name) => {
-  const b = d.badges && d.badges[name];
-  const src = b && (b.src || b);
-  return typeof src === 'string' && src ? `/${src.replace(/^\//, '')}` : '/assets/badge/sue-angels-badge-star.webp';
-};
+/* It said it resolved the way the site does and read `d.badges[name]` alone,
+   so any opponent stored under a spelling the registry does not key on - "BPR
+   Men's", "Woking Veterans Sundays" - was drawn wearing the club's own crest.
+   Eight cards shipped like that. It asks the site's resolver now. */
+const badgeFor = (name) => oppBadgeSrc(name, d.badges) || '/assets/badge/sue-angels-badge-star.webp';
 
 const jobs = [];
 for (const m of d.matches || []) {
@@ -104,7 +107,8 @@ let drew = 0;
 let kept = 0;
 for (const job of jobs) {
   const jpg = path.join(OUT, `${job.id}.jpg`);
-  if (!ALL && fs.existsSync(jpg)) { kept += 1; continue; }
+  if (ONLY.length && !ONLY.includes(job.id)) continue;
+  if (!ALL && !ONLY.length && fs.existsSync(jpg)) { kept += 1; continue; }
 
   const htmlPath = path.join(TMP, `${job.id}.html`);
   fs.writeFileSync(htmlPath, job.html);

@@ -247,7 +247,26 @@ export function home(d) {
   RAIL_N = {};
   shown.forEach((k, i) => { RAIL_N[k] = i + 1; });
   const all = teamSummary(d.competitive);
-  const league = teamSummary(d.played.filter(isLeague));
+  /* THE TITLE SEASON'S LEAGUE RECORD, not every league match ever played.
+     Every place this is printed calls it the champions' record, and from the
+     first League Eight result it counted that match too: the hero read "19
+     wins from 19 · League Ten Champions 25/26" for a season won 18 from 18. */
+  const inTitle = (m) => isLeague(m) && (!d.titleSeason || m.season === d.titleSeason);
+  const league = teamSummary(d.played.filter(inTitle));
+  /* THE DIVISION BEING PLAYED NOW, once its table has a match in it. Read
+     here rather than at the table band because the hero and the ticker, the
+     two things every visitor sees, lead with it. */
+  const l8 = d.nextDivisionTable || {};
+  const l8Rows = l8.rows || [];
+  const l8Live = l8Rows.some((r) => (r.played || 0) > 0);
+  const usL8 = l8Live ? l8Rows.find((r) => r.us) : null;
+  const ordinal = (n) => {
+    const v = n % 100;
+    return `${n}${['th', 'st', 'nd', 'rd'][(v - 20) % 10] || ['th', 'st', 'nd', 'rd'][v] || 'th'}`;
+  };
+  const standing = usL8
+    ? `${ordinal(usL8.pos)} in ${l8.division} on ${usL8.points} point${usL8.points === 1 ? '' : 's'}`
+    : '';
   /* The form strip reads left to right in the order the games were played. */
   const form = formGuide(d.competitive, 6).slice().reverse();
   /* Per-match rates are quoted over every match played, not only the ones
@@ -362,8 +381,11 @@ export function home(d) {
 
             <p class="hx__record drop" style="--dd:.46s">
               ${SVG.heroStar}
-              <b>${esc(league.won)} wins from ${esc(league.played)}</b>
-              <span>${esc(d.titleDivision)} Champions ${esc(d.titleSeason)}</span>
+              ${usL8
+                ? `<b>${esc(standing)}</b>
+              <span>Played ${esc(usL8.played)}, won ${esc(usL8.won)} · ${esc(d.titleDivision)} Champions ${esc(d.titleSeason)}</span>`
+                : `<b>${esc(league.won)} wins from ${esc(league.played)}</b>
+              <span>${esc(d.titleDivision)} Champions ${esc(d.titleSeason)}</span>`}
             </p>
 
             <div class="hx__sponsors drop" style="--dd:.54s" aria-label="Club partners">
@@ -424,11 +446,14 @@ export function home(d) {
 
   /* ================= TICKER ================= */
   const tickerSet = [
-    `Played ${league.played}`,
-    `Won ${league.won}`,
-    'Unbeaten',
+    ...(usL8 ? [
+      `${l8.division} ${l8.season || d.currentSeason}`,
+      standing.replace(` in ${l8.division}`, ''),
+      `Played ${usL8.played} · Won ${usL8.won}`,
+    ] : []),
     `${d.titleDivision} Champions ${d.titleSeason}`,
-    `Promoted to ${d.divisionOf(d.nextSeason)}`,
+    `Played ${league.played} · Won ${league.won} · Unbeaten`,
+    ...(usL8 ? [] : [`Promoted to ${d.divisionOf(d.nextSeason)}`]),
     { motto: CLUB.memorial.motto.replace(/\.$/, '') },
   ].map((t) => (typeof t === 'object'
     ? `<span class="ticker__motto">${esc(t.motto)}</span><i></i>`
@@ -480,7 +505,7 @@ export function home(d) {
     </section>` : '';
 
   /* ================= 02 MORE THAN A RESULT ================= */
-  const leagueMatches = scored.filter(isLeague);
+  const leagueMatches = scored.filter(inTitle);
   const firstMatch = leagueMatches[0];
   const clincher = leagueMatches.slice().sort((a, b) =>
     ((b.ourGoals - b.theirGoals) - (a.ourGoals - a.theirGoals)) || (b.ourGoals - a.ourGoals))[0];
@@ -819,9 +844,6 @@ export function home(d) {
      it. This read League Ten's final standings however far into League Eight
      the club was, captioned "final standings", which is true and is not what
      anybody switching this band on is asking. */
-  const l8 = d.nextDivisionTable || {};
-  const l8Rows = l8.rows || [];
-  const l8Live = l8Rows.some((r) => (r.played || 0) > 0);
   const tblRows = l8Live ? l8Rows : d.table;
   const tblCaption = l8Live
     ? `${l8.division || d.divisionOf(d.nextSeason)} standings, ${l8.season || d.nextSeason}`
@@ -1211,17 +1233,12 @@ export function home(d) {
      division's table has a match in it. */
   const lastComp = (d.competitive || []).filter((m) => m.played)
     .sort((a, b) => String(b.iso || '').localeCompare(String(a.iso || '')))[0];
-  const ordinal = (n) => {
-    const v = n % 100;
-    return `${n}${['th', 'st', 'nd', 'rd'][(v - 20) % 10] || ['th', 'st', 'nd', 'rd'][v] || 'th'}`;
-  };
-  const usL8 = l8Live ? l8Rows.find((r) => r.us) : null;
   const lastLine = [
     lastComp ? (lastComp.isWalkover || lastComp.kind === 'walkover'
       ? `Last time out: ${lastComp.outcome === 'W' ? 'were awarded the walkover' : 'conceded a walkover'} against ${shortClub(lastComp.opponent)}.`
       : `Last time out: ${lastComp.outcome === 'W' ? 'won' : lastComp.outcome === 'L' ? 'lost' : 'drew'} ${lastComp.ourScoreline || lastComp.scoreline || ''} ${lastComp.weAreHome ? 'at home to' : 'away to'} ${shortClub(lastComp.opponent)}.`)
       : '',
-    usL8 ? `${ordinal(usL8.pos)} in ${l8.division} on ${usL8.points} point${usL8.points === 1 ? '' : 's'}.` : '',
+    standing ? `${standing}.` : '',
   ].filter(Boolean).join(' ');
   const nextUpBand = nx ? `<section class="sec sec--nextup" id="nextup" aria-labelledby="nxt-h">
       <div class="wrap">

@@ -14,7 +14,7 @@ import { buildDataset } from './lib/dataset.mjs';
 import { page, esc, CLUB_ID } from './lib/html.mjs';
 import { CLUB, SEPSIS } from './lib/club.mjs';
 import { teamSummary, fmtDate, isUs, isLeague} from './lib/stats.mjs';
-import { home, oppBadge } from './templates/home.mjs';
+import { home, oppBadge, oppBadgeSrc } from './templates/home.mjs';
 import { COACH_ROLES } from './lib/coach-roles.mjs';
 import { HOME_BANDS, HOME_AREAS, homeBandFilled, reportsIn, albumsIn, playersIn } from './lib/home-layout.mjs';
 import { about } from './templates/about.mjs';
@@ -759,10 +759,17 @@ const adminSeed = {
      words it offers and the words the website prints cannot drift apart. */
   vocab: VOCAB,
   /* Club crests, so the panel can DRAW a match-report cover: two badges, the
-     score and the date. Names are matched exactly as the fixture list writes
-     them, which is why a misspelt opponent silently loses its badge. */
-  badges: Object.fromEntries(Object.entries(d.badges || {})
-    .map(([name, b]) => [name, '/' + String(b.src || '').replace(/^\//, '')])),
+     score and the date. The panel matches names exactly, so every opponent
+     the club has played or will play is also keyed under the name as STORED,
+     resolved by the site's own chain: "BPR Men's" is not a registry key, and
+     without this the panel drew that match wearing the club's crest twice. */
+  badges: Object.fromEntries([
+    ...Object.entries(d.badges || {})
+      .map(([name, b]) => [name, '/' + String(b.src || '').replace(/^\//, '')]),
+    ...[...new Set([...(d.matches || []), ...(d.upcoming || [])].map((m) => m.opponent).filter(Boolean))]
+      .filter((name) => !(d.badges || {})[name] && oppBadgeSrc(name, d.badges))
+      .map((name) => [name, oppBadgeSrc(name, d.badges)]),
+  ]),
   crest: '/assets/badge/sue-angels-badge-star.webp',
   /* Every position the site can name and draw, with its place on the pitch.
      The panel's dropdown and its team-sheet pitch both come from here, so the

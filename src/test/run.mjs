@@ -608,6 +608,31 @@ for (const f of shipped) {
     const seedRawH = fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8');
     const seedH = JSON.parse(/window\.SA_SEED\s*=\s*(\{[\s\S]*?\});/.exec(seedRawH)[1]);
 
+    /* A COVER WEARS THE OPPONENT'S BADGE. The panel and make-covers.mjs both
+       looked a badge up by the exact stored name, so "BPR Men's" and seven
+       others were drawn wearing the club's own crest twice. Every opponent the
+       site finds a badge for must reach the panel under the name as stored. */
+    {
+      const { buildDataset: bdB } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+      const { oppBadgeSrc: obs } = await import(path.join(ROOT, 'src', 'templates', 'home.mjs'));
+      const dB = bdB();
+      const opps = [...new Set(dB.matches.map((m) => m.opponent).filter(Boolean))];
+      const wrong = opps.filter((n) => obs(n, dB.badges) && seedH.badges[n] !== obs(n, dB.badges));
+      check('the panel is handed every opponent badge the site resolves, under the stored name',
+        opps.length > 20 && !wrong.length, `missing or different: ${wrong.join(', ')}`);
+      check('including the two BPR matches', seedH.badges["BPR Men's"] === '/assets/badge/bpr-fc.webp');
+      const coverSrc = fs.readFileSync(path.join(ROOT, 'scripts', 'make-covers.mjs'), 'utf8');
+      check('and the committed covers are drawn through the site resolver', /oppBadgeSrc\(name, d\.badges\)/.test(coverSrc));
+
+      /* THE CHAMPIONS' RECORD IS THE TITLE SEASON'S. From the first League
+         Eight result the hero counted it too and read "19 wins from 19". */
+      const us10 = (dB.table || []).find((r) => r.us);
+      const homeH = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+      check('the home ticker quotes the title season record, not every league match',
+        !!us10 && homeH.includes(`Played ${us10.played} · Won ${us10.won} · Unbeaten`),
+        us10 ? `expected Played ${us10.played} · Won ${us10.won}` : 'no table row');
+    }
+
     /* Reading the results list must not drag the editor in. */
     const listOnly = loadChunks(['control-match.js'], { seed: seedH, root: ROOT });
     check('the lists load on their own', !!listOnly.CPM.fixtures && !!listOnly.CPM.results);

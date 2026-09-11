@@ -5122,9 +5122,15 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     '404.html', 'googlef4b3315c2212b0ef.html',
     'news.html', 'videos.html', 'live.html', 'gallery.html',
   ]);
+  /* THE HOME PAGE IS WHAT THE CLUB PUTS ON IT, so it is held to the sources
+     behind the bands it actually publishes rather than to a count. It carried
+     its only citations in "Who we are"; the club switched that band off in
+     September and the page went to none, while the League Eight bands leading
+     it rest on Full-Time. A second link added to reach two would be the
+     decorative citation this block exists to refuse. */
   const thin = [...pages.entries()]
     .filter(([f]) => !f.includes('/') && f.endsWith('.html') && f !== 'control.html')
-    .filter(([f]) => !NO_SOURCE.has(f))
+    .filter(([f]) => !NO_SOURCE.has(f) && f !== 'index.html')
     .filter(([, h]) => outbound(h).length < 2)
     .map(([f]) => f);
   check('every content page cites at least two external sources',
@@ -5133,11 +5139,24 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   /* And each cited host is one the club record actually names, so a citation
      cannot drift into whatever a page happened to link. */
   const allowed = new Set(Object.values(SOURCES).map((x) => new URL(x.href).host));
-  const known = [...pages.entries()].filter(([f]) => f === 'league.html' || f === 'index.html');
-  for (const [f, h] of known) {
-    const hosts = outbound(h).map((u) => { try { return new URL(u).host; } catch { return ''; } });
-    const cited = hosts.filter((x) => allowed.has(x));
-    check(`${f} cites a source the club record names`, cited.length >= 2, hosts.join(', '));
+  const hostsOf = (h) => outbound(h).map((u) => { try { return new URL(u).host; } catch { return ''; } });
+  {
+    const lh = pages.get('league.html') || '';
+    const cited = hostsOf(lh).filter((x) => allowed.has(x));
+    check('league.html cites a source the club record names', cited.length >= 2, hostsOf(lh).join(', '));
+  }
+  {
+    const ih = pages.get('index.html') || '';
+    const hosts = new Set(hostsOf(ih));
+    const bands = [...ih.matchAll(/<section class="sec sec--([a-z0-9]+)/g)].map((m) => m[1]);
+    const hostOf = (k) => new URL(SOURCES[k].href).host;
+    const need = [
+      ...(bands.some((b) => ['l8', 'table', 'aroundleague', 'leaguescorers'].includes(b)) ? [hostOf('fulltime')] : []),
+      ...(bands.includes('who') ? [hostOf('sepsisTrust'), hostOf('nhs')] : []),
+    ];
+    check('index.html cites the source behind every band it publishes, and nothing else',
+      need.length > 0 && need.every((x) => hosts.has(x)) && [...hosts].every((x) => allowed.has(x)),
+      `bands ${bands.join(',')}; cites ${[...hosts].join(', ') || 'nothing'}; needs ${need.join(', ')}`);
   }
 
   /* THE SOURCE LINE IS STYLED. Same trap as .gl-by: a class defined nowhere

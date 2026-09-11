@@ -938,6 +938,11 @@ export function home(d) {
             </ol>
           </div>` : ''}
         </div>
+        ${/* THE HOME PAGE NAMES ITS SOURCE. Everything in this band, and the
+              table and results beside it, is transcribed from Full-Time, and
+              the only citations the front page carried sat in a band the club
+              has since switched off. */''}
+        ${sourceNote(['fulltime'], { lead: 'Table, results and scorers transcribed from' })}
       </div>
     </section>` : '';
 

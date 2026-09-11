@@ -28,8 +28,8 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preload" href="/assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
 
-<link rel="stylesheet" href="/home.css?v=dc0051de">
-<link rel="stylesheet" href="/p-player.css?v=e21fed0b">
+<link rel="stylesheet" href="/home.css?v=d3f6800b">
+<link rel="stylesheet" href="/p-player.css?v=c19346b0">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":["SportsTeam","SportsOrganization"],"@id":"https://www.suesangelsfc.co.uk/#club","name":"Sue's Angels FC","alternateName":"The Angels","url":"https://www.suesangelsfc.co.uk/","sport":"Association football","foundingDate":"2025","logo":"https://www.suesangelsfc.co.uk/assets/brand/badge.png","email":"suesangelsfc@gmail.com","inLanguage":"en-GB","memberOf":{"@type":"SportsOrganization","name":"Southern Sunday Football League"},"location":{"@type":"Place","name":"The Reeves Sports Club","address":{"@type":"PostalAddress","streetAddress":"Snakey Lane","addressLocality":"Hanworth","addressRegion":"London","addressCountry":"GB"}},"areaServed":[{"@type":"Place","name":"Kingston upon Thames"},{"@type":"Place","name":"Hanworth"},{"@type":"Place","name":"Sunbury-on-Thames"},{"@type":"Place","name":"Twickenham"},{"@type":"Place","name":"Staines-upon-Thames"}],"sameAs":["https://www.instagram.com/suesangelsfc/","https://www.tiktok.com/@suesangelsfc","https://www.facebook.com/people/Sues-Angels-FC/61576808678302/"]},{"@type":"WebSite","@id":"https://www.suesangelsfc.co.uk/#website","url":"https://www.suesangelsfc.co.uk/","name":"Sue's Angels FC","inLanguage":"en-GB","publisher":{"@id":"https://www.suesangelsfc.co.uk/#club"}},{"@type":"ProfilePage","@id":"https://www.suesangelsfc.co.uk/players/leo-lloyd.html#webpage","url":"https://www.suesangelsfc.co.uk/players/leo-lloyd.html","name":"Leo Lloyd · Sue's Angels FC","description":"Leo Lloyd, Right wing back for Sue's Angels FC. 0 appearances, 0 goals and 0 assists for the club. Part of the squad that won League Ten unbeaten in 25/26.","inLanguage":"en-GB","isPartOf":{"@id":"https://www.suesangelsfc.co.uk/#website"},"about":{"@id":"https://www.suesangelsfc.co.uk/#club"},"primaryImageOfPage":{"@type":"ImageObject","url":"https://www.suesangelsfc.co.uk/assets/social/og-player.jpg"},"mainEntity":{"@id":"https://www.suesangelsfc.co.uk/players/leo-lloyd.html#person"}},{"@type":"Person","@id":"https://www.suesangelsfc.co.uk/players/leo-lloyd.html#person","name":"Leo Lloyd","jobTitle":"Right wing back","memberOf":{"@id":"https://www.suesangelsfc.co.uk/#club"},"url":"https://www.suesangelsfc.co.uk/players/leo-lloyd.html"},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.suesangelsfc.co.uk/"},{"@type":"ListItem","position":2,"name":"Squad","item":"https://www.suesangelsfc.co.uk/squad.html"},{"@type":"ListItem","position":3,"name":"Leo Lloyd","item":"https://www.suesangelsfc.co.uk/players/leo-lloyd.html"}]}]}</script>
 </head>
 <body class="is-home is-sub is-player">
@@ -452,20 +452,30 @@
                 <clipPath id="pf-clip-leo-lloyd">
                   <rect x="1" y="1" width="98" height="138" rx="3" />
                 </clipPath>
+                <linearGradient id="pf-scan-leo-lloyd" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#FF7034" stop-opacity="0" />
+                  <stop offset="0.8" stop-color="#FF7034" stop-opacity="0.16" />
+                  <stop offset="1" stop-color="#FFB38A" stop-opacity="0.5" />
+                </linearGradient>
               </defs>
 
-              <rect x="1" y="1" width="98" height="138" rx="3" fill="rgba(255,255,255,0.028)" stroke="var(--line-d)" />
-              <line x1="1" y1="70" x2="99" y2="70" stroke="var(--line-d)" />
-              <circle cx="50" cy="70" r="12" fill="none" stroke="var(--line-d)" />
-              <circle cx="50" cy="70" r="1" fill="var(--line-d)" />
-              <rect x="26" y="1" width="48" height="18" fill="none" stroke="var(--line-d)" />
-              <rect x="38" y="1" width="24" height="7" fill="none" stroke="var(--line-d)" />
-              <rect x="26" y="121" width="48" height="18" fill="none" stroke="var(--line-d)" />
-              <rect x="38" y="132" width="24" height="7" fill="none" stroke="var(--line-d)" />
+              <!-- A real pitch: mown bands, both boxes with their spots and
+                   arcs, the centre circle. -->
+              <rect x="1" y="1" width="98" height="138" rx="3" fill="rgba(255,255,255,0.028)" />
+              <g class="pf-turf" aria-hidden="true"><rect x="1" y="14.8" width="98" height="13.8"/><rect x="1" y="42.4" width="98" height="13.8"/><rect x="1" y="70.0" width="98" height="13.8"/><rect x="1" y="97.6" width="98" height="13.8"/><rect x="1" y="125.2" width="98" height="13.8"/></g>
+              <g class="pf-lines" aria-hidden="true">
+                <rect x="1" y="1" width="98" height="138" rx="3"/>
+                <line x1="1" y1="70" x2="99" y2="70"/>
+                <circle cx="50" cy="70" r="12"/>
+                <rect x="26" y="1" width="48" height="18"/><rect x="38" y="1" width="24" height="7"/>
+                <rect x="26" y="121" width="48" height="18"/><rect x="38" y="132" width="24" height="7"/>
+                <path d="M42 19A10 10 0 0 0 58 19M42 121A10 10 0 0 1 58 121"/>
+                <circle class="pf-lines__dot" cx="50" cy="70" r="1"/><circle class="pf-lines__dot" cx="50" cy="13" r="0.8"/><circle class="pf-lines__dot" cx="50" cy="127" r="0.8"/>
+              </g>
 
               
               <g data-season-scope="0 all">
-              <g class="pf-heat" clip-path="url(#pf-clip-leo-lloyd)" filter="url(#pf-heat-leo-lloyd)"><circle class="pf-heat__b" cx="87.0" cy="89.6" r="7.3" opacity="0.50" style="--r:7.3;--o:0.50;--d:0.00s"/><circle class="pf-heat__b" cx="86.4" cy="86.0" r="6.8" opacity="0.29" style="--r:6.8;--o:0.29;--d:0.72s"/><circle class="pf-heat__b" cx="87.3" cy="94.3" r="3.4" opacity="0.26" style="--r:3.4;--o:0.26;--d:1.44s"/><circle class="pf-heat__b" cx="91.2" cy="94.2" r="6.1" opacity="0.15" style="--r:6.1;--o:0.15;--d:2.16s"/><circle class="pf-heat__b" cx="90.2" cy="90.0" r="3.3" opacity="0.22" style="--r:3.3;--o:0.22;--d:2.88s"/><circle class="pf-heat__b" cx="82.6" cy="89.1" r="3.0" opacity="0.24" style="--r:3.0;--o:0.24;--d:3.60s"/><circle class="pf-heat__b" cx="86.9" cy="86.4" r="6.3" opacity="0.26" style="--r:6.3;--o:0.26;--d:4.32s"/><circle class="pf-heat__b" cx="88.1" cy="94.0" r="3.6" opacity="0.14" style="--r:3.6;--o:0.14;--d:5.04s"/><circle class="pf-heat__b" cx="87.5" cy="89.1" r="3.3" opacity="0.23" style="--r:3.3;--o:0.23;--d:5.76s"/><circle class="pf-heat__b" cx="88.1" cy="88.0" r="3.4" opacity="0.27" style="--r:3.4;--o:0.27;--d:0.00s"/><circle class="pf-heat__b" cx="84.1" cy="93.1" r="5.8" opacity="0.13" style="--r:5.8;--o:0.13;--d:0.72s"/><circle class="pf-heat__b" cx="86.1" cy="84.8" r="6.6" opacity="0.21" style="--r:6.6;--o:0.21;--d:1.44s"/><circle class="pf-heat__b" cx="90.8" cy="90.3" r="2.9" opacity="0.16" style="--r:2.9;--o:0.16;--d:2.16s"/><circle class="pf-heat__b" cx="90.1" cy="91.3" r="6.6" opacity="0.13" style="--r:6.6;--o:0.13;--d:2.88s"/><circle class="pf-heat__b" cx="89.5" cy="91.8" r="6.7" opacity="0.19" style="--r:6.7;--o:0.19;--d:3.60s"/><circle class="pf-heat__b" cx="90.8" cy="92.9" r="3.4" opacity="0.16" style="--r:3.4;--o:0.16;--d:4.32s"/><circle class="pf-heat__b" cx="15.0" cy="68.6" r="7.3" opacity="0.50" style="--r:7.3;--o:0.50;--d:5.04s"/><circle class="pf-heat__b" cx="15.5" cy="68.2" r="5.0" opacity="0.25" style="--r:5.0;--o:0.25;--d:5.76s"/><circle class="pf-heat__b" cx="17.1" cy="66.7" r="7.3" opacity="0.19" style="--r:7.3;--o:0.19;--d:0.00s"/><circle class="pf-heat__b" cx="17.4" cy="66.0" r="7.5" opacity="0.13" style="--r:7.5;--o:0.13;--d:0.72s"/><circle class="pf-heat__b" cx="11.5" cy="70.9" r="6.3" opacity="0.15" style="--r:6.3;--o:0.15;--d:1.44s"/><circle class="pf-heat__b" cx="13.2" cy="71.7" r="6.9" opacity="0.28" style="--r:6.9;--o:0.28;--d:2.16s"/><circle class="pf-heat__b" cx="16.6" cy="75.4" r="4.1" opacity="0.25" style="--r:4.1;--o:0.25;--d:2.88s"/><circle class="pf-heat__b" cx="12.8" cy="72.4" r="7.7" opacity="0.26" style="--r:7.7;--o:0.26;--d:3.60s"/><circle class="pf-heat__b" cx="14.6" cy="73.8" r="3.4" opacity="0.18" style="--r:3.4;--o:0.18;--d:4.32s"/><circle class="pf-heat__b" cx="12.8" cy="69.6" r="7.2" opacity="0.16" style="--r:7.2;--o:0.16;--d:5.04s"/><circle class="pf-heat__b" cx="16.3" cy="65.6" r="6.9" opacity="0.14" style="--r:6.9;--o:0.14;--d:5.76s"/><circle class="pf-heat__b" cx="16.6" cy="64.1" r="5.6" opacity="0.16" style="--r:5.6;--o:0.16;--d:0.00s"/><circle class="pf-heat__b" cx="13.2" cy="73.7" r="4.0" opacity="0.17" style="--r:4.0;--o:0.17;--d:0.72s"/><circle class="pf-heat__b" cx="11.5" cy="69.3" r="6.7" opacity="0.20" style="--r:6.7;--o:0.20;--d:1.44s"/><circle class="pf-heat__b" cx="13.2" cy="63.6" r="7.2" opacity="0.16" style="--r:7.2;--o:0.16;--d:2.16s"/><circle class="pf-heat__b" cx="14.6" cy="69.8" r="5.1" opacity="0.23" style="--r:5.1;--o:0.23;--d:2.88s"/></g>
+              <g class="pf-heat" clip-path="url(#pf-clip-leo-lloyd)" filter="url(#pf-heat-leo-lloyd)"><circle cx="87.0" cy="89.6" r="7.3" style="--o:0.50;--d:0.0s"/><circle cx="86.5" cy="83.3" r="6.8" style="--o:0.29;--d:0.7s"/><circle cx="87.2" cy="97.8" r="3.4" style="--o:0.26;--d:1.4s"/><circle cx="90.0" cy="97.7" r="6.1" style="--o:0.15;--d:2.2s"/><circle cx="89.3" cy="90.4" r="3.3" style="--o:0.22;--d:2.9s"/><circle cx="83.9" cy="88.7" r="3.0" style="--o:0.24;--d:3.6s"/><circle cx="86.9" cy="84.0" r="6.3" style="--o:0.26;--d:4.3s"/><circle cx="87.8" cy="97.2" r="3.6" style="--o:0.14;--d:5.0s"/><circle cx="87.4" cy="88.8" r="3.3" style="--o:0.23;--d:5.8s"/><circle cx="87.8" cy="86.8" r="3.4" style="--o:0.27;--d:0.0s"/><circle cx="84.9" cy="95.7" r="5.8" style="--o:0.13;--d:0.7s"/><circle cx="86.4" cy="81.3" r="6.6" style="--o:0.21;--d:1.4s"/><circle cx="89.7" cy="90.9" r="2.9" style="--o:0.16;--d:2.2s"/><circle cx="89.3" cy="92.5" r="6.6" style="--o:0.13;--d:2.9s"/><circle cx="88.8" cy="93.4" r="6.7" style="--o:0.19;--d:3.6s"/><circle cx="89.7" cy="95.3" r="3.4" style="--o:0.16;--d:4.3s"/><circle cx="15.0" cy="68.6" r="7.3" style="--o:0.50;--d:5.0s"/><circle cx="15.4" cy="67.9" r="5.0" style="--o:0.25;--d:5.8s"/><circle cx="16.5" cy="65.3" r="7.3" style="--o:0.19;--d:0.0s"/><circle cx="16.7" cy="64.1" r="7.5" style="--o:0.13;--d:0.7s"/><circle cx="12.5" cy="72.6" r="6.3" style="--o:0.15;--d:1.4s"/><circle cx="13.7" cy="74.1" r="6.9" style="--o:0.28;--d:2.2s"/><circle cx="16.1" cy="80.4" r="4.1" style="--o:0.25;--d:2.9s"/><circle cx="13.4" cy="75.2" r="7.7" style="--o:0.26;--d:3.6s"/><circle cx="14.7" cy="77.7" r="3.4" style="--o:0.18;--d:4.3s"/><circle cx="13.4" cy="70.3" r="7.2" style="--o:0.16;--d:5.0s"/><circle cx="16.0" cy="63.3" r="6.9" style="--o:0.14;--d:5.8s"/><circle cx="16.2" cy="60.8" r="5.6" style="--o:0.16;--d:0.0s"/><circle cx="13.7" cy="77.4" r="4.0" style="--o:0.17;--d:0.7s"/><circle cx="12.5" cy="69.8" r="6.7" style="--o:0.20;--d:1.4s"/><circle cx="13.7" cy="59.9" r="7.2" style="--o:0.16;--d:2.2s"/><circle cx="14.7" cy="70.6" r="5.1" style="--o:0.23;--d:2.9s"/></g>
               <g class="pf-radiate" aria-hidden="true"><circle class="pf-radiate__r" cx="87.0" cy="89.6" r="5.0" style="--d:0.00s"/><circle class="pf-radiate__r" cx="15.0" cy="68.6" r="5.0" style="--d:0.90s"/></g>
               <g class="pf-spot" data-pos="RWB" style="--n:0">
                 <circle class="pf-spot__dot" cx="87.0" cy="89.6"
@@ -483,6 +493,7 @@
                   fill="var(--text-on-brand)"><title>Left midfielder</title>LM</text>
               </g>
               </g>
+              <g clip-path="url(#pf-clip-leo-lloyd)" aria-hidden="true"><rect class="pf-scan" x="1" y="0" width="98" height="18" fill="url(#pf-scan-leo-lloyd)"/></g>
             </svg>
             <figcaption>Attacking upward. The brighter the field, the more often Leo played there.</figcaption>
           </figure>
@@ -505,14 +516,8 @@
                   <div class="pf-pos__panel">
                     <p class="pf-pos__t">Right wing back</p>
                     <ol class="pf-pos__list">
-                      <li data-season-scope="0 all">
-                        <span class="pf-pos__res" data-res="W">W</span>
-                        <span class="pf-pos__badge"><img src="/assets/badge/tattenham-rovers.webp" alt="Tattenham Rovers 1st club crest" width="22" height="22" loading="lazy" decoding="async" /></span>
-                        <span class="pf-pos__club">Tattenham Rovers 1st</span>
-                        <span class="pf-pos__score">3-0</span>
-                        <span class="pf-pos__comp">Surrey FA Cup</span>
-                        <span class="pf-pos__date">25 Jan 2026 · bench</span>
-                      </li>
+                      
+                      <li data-season-scope="0 all"><span class="pf-pos__res" data-res="W">W</span><span class="pf-pos__badge"><img src="/assets/badge/tattenham-rovers.webp" alt="Tattenham Rovers 1st club crest" width="22" height="22" loading="lazy" decoding="async" /></span><span class="pf-pos__club">Tattenham Rovers 1st</span><span class="pf-pos__score">3-0</span><span class="pf-pos__comp">Surrey FA Cup</span><span class="pf-pos__date">25 Jan 2026 · bench</span></li>
                     </ol>
                   </div>
                 </details>
@@ -530,14 +535,8 @@
                   <div class="pf-pos__panel">
                     <p class="pf-pos__t">Left midfielder</p>
                     <ol class="pf-pos__list">
-                      <li data-season-scope="0 all">
-                        <span class="pf-pos__res" data-res="L">L</span>
-                        <span class="pf-pos__badge"><img src="/assets/badge/argentina-fc-london.webp" alt="Argentina FC 1st Team club crest" width="22" height="22" loading="lazy" decoding="async" /></span>
-                        <span class="pf-pos__club">Argentina FC 1st Team</span>
-                        <span class="pf-pos__score">0-2</span>
-                        <span class="pf-pos__comp">Marcus Lipton Cup</span>
-                        <span class="pf-pos__date">30 Nov 2025 · bench</span>
-                      </li>
+                      
+                      <li data-season-scope="0 all"><span class="pf-pos__res" data-res="L">L</span><span class="pf-pos__badge"><img src="/assets/badge/argentina-fc-london.webp" alt="Argentina FC 1st Team club crest" width="22" height="22" loading="lazy" decoding="async" /></span><span class="pf-pos__club">Argentina FC 1st Team</span><span class="pf-pos__score">0-2</span><span class="pf-pos__comp">Marcus Lipton Cup</span><span class="pf-pos__date">30 Nov 2025 · bench</span></li>
                     </ol>
                   </div>
                 </details>
@@ -655,6 +654,6 @@
   </footer>
 <div class="toasts" data-toasts role="region" aria-label="Notifications" aria-live="polite"></div>
 
-<script src="/sa.js?v=8867d7f2" defer></script>
+<script src="/sa.js?v=ce1f5a73" defer></script>
 </body>
 </html>

@@ -175,18 +175,22 @@ const resultsDonut = (x) => {
   const r = 44;
   const c = 2 * Math.PI * r;
   let at = 0;
-  const segs = [['W', x.won, 'won'], ['D', x.drawn, 'drawn'], ['L', x.lost, 'lost']].map(([k, n, label]) => {
+  const segs = [['W', x.won, 'won'], ['D', x.drawn, 'drawn'], ['L', x.lost, 'lost']].map(([k, n, label], i) => {
     const len = (n / total) * c;
-    const seg = n ? `<circle class="pf-donut__seg" data-res="${k}" cx="60" cy="60" r="${r}" fill="none" stroke-width="14" stroke-dasharray="${len.toFixed(1)} ${(c - len).toFixed(1)}" stroke-dashoffset="${(-at).toFixed(1)}" transform="rotate(-90 60 60)" style="--len:${len.toFixed(1)};--c:${c.toFixed(1)}"/>` : '';
+    const seg = n ? `<circle class="pf-donut__seg" data-res="${k}" cx="60" cy="60" r="${r}" stroke-dasharray="${len.toFixed(1)} ${(c - len).toFixed(1)}" stroke-dashoffset="${(-at).toFixed(1)}" transform="rotate(-90 60 60)" style="--len:${len.toFixed(1)};--c:${c.toFixed(1)};--i:${i}"/>` : '';
     at += len;
     return { seg, k, n, label };
   });
+  /* A tick ring that turns slowly round the outside and a lit core inside,
+     so the ring is an instrument rather than a flat pie. */
   return `<figure class="pf-chart pf-chart--donut">
               <figcaption class="pf-chart__k">Results when playing</figcaption>
               <div class="pf-donut">
                 <svg viewBox="0 0 120 120" role="img" aria-label="${attr(`Won ${x.won}, drew ${x.drawn} and lost ${x.lost} of ${total}`)}">
-                  <circle cx="60" cy="60" r="${r}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="14"/>
+                  <circle class="pf-donut__orbit" cx="60" cy="60" r="57"/>
+                  <circle class="pf-donut__track" cx="60" cy="60" r="${r}"/>
                   ${segs.map((s) => s.seg).join('')}
+                  <circle class="pf-donut__inner" cx="60" cy="60" r="33"/>
                 </svg>
                 <span class="pf-donut__c" aria-hidden="true"><b data-count="${attr(`${pctOf(x.won, total)}%`)}">${esc(pctOf(x.won, total))}%</b><i>won</i></span>
               </div>
@@ -210,12 +214,18 @@ const shareGauge = (x, gk) => {
     label = 'Share of the goals';
     sub = `Scored or made ${x.goals + x.assists} of the ${team} the club scored with him playing`;
   }
+  /* A dial: 240 degrees of arc with a tick ring inside it and a needle that
+     sweeps to the value. A round cap on a short arc drew a blob wider than the
+     value it marked, so the cap only rounds once there is length to round. */
+  const arc = (rr) => `M${(70 - rr * 0.866).toFixed(2)} ${(64 + rr / 2).toFixed(2)}A${rr} ${rr} 0 1 1 ${(70 + rr * 0.866).toFixed(2)} ${(64 + rr / 2).toFixed(2)}`;
   return `<figure class="pf-chart pf-chart--gauge">
               <figcaption class="pf-chart__k">${esc(label)}</figcaption>
               <div class="pf-gauge">
-                <svg viewBox="0 0 120 68" role="img" aria-label="${attr(`${label}: ${v}%`)}">
-                  <path d="M10 60A50 50 0 0 1 110 60" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="12" stroke-linecap="round"/>
-                  <path class="pf-gauge__arc" d="M10 60A50 50 0 0 1 110 60" pathLength="100" fill="none" stroke="var(--volt)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${v} 100" style="--v:${v}"/>
+                <svg viewBox="0 0 140 128" role="img" aria-label="${attr(`${label}: ${v}%`)}">
+                  <path class="pf-gauge__track" d="${arc(52)}"/>
+                  <path class="pf-gauge__ticks" d="${arc(40)}" pathLength="100"/>
+                  <path class="pf-gauge__arc${v >= 6 ? ' is-round' : ''}" d="${arc(52)}" pathLength="100" stroke-dasharray="${v} 100" style="--v:${v}"/>
+                  <g class="pf-gauge__needle" style="--a:${(-120 + 2.4 * v).toFixed(1)}deg"><line x1="70" y1="64" x2="70" y2="27"/><circle cx="70" cy="64" r="5"/></g>
                 </svg>
                 <span class="pf-gauge__v" aria-hidden="true"><b data-count="${attr(`${v}%`)}">${esc(v)}%</b></span>
               </div>
@@ -236,17 +246,22 @@ const homeAway = (x, gk) => {
   const h = side(true);
   const a = side(false);
   if (!h.apps && !a.apps) return '';
-  const max = Math.max(h.apps, a.apps, 1);
-  const row = (label, s) => `<li>
-                  <span class="pf-split__k">${esc(label)}</span>
-                  <span class="pf-split__v"><b data-count="${attr(s.apps)}">${esc(s.apps)}</b> ${s.apps === 1 ? 'appearance' : 'appearances'} · ${esc(gk ? `${s.cs} clean ${s.cs === 1 ? 'sheet' : 'sheets'}` : `${s.ga} goals and assists`)} · ${esc(s.won)} won</span>
-                  <span class="pf-split__track" aria-hidden="true"><i style="--w:${pctOf(s.apps, max)}%"></i></span>
-                </li>`;
+  /* Home grows left from the middle and away grows right, three measures
+     deep, so the two sides are read against each other rather than as two
+     separate lists. Every figure is printed at the end of its bar. */
+  const rows = [
+    ['Appearances', h.apps, a.apps],
+    [gk ? 'Clean sheets' : 'Goals and assists', gk ? h.cs : h.ga, gk ? a.cs : a.ga],
+    ['Won', h.won, a.won],
+  ];
   return `<figure class="pf-chart pf-chart--split">
               <figcaption class="pf-chart__k">Home and away</figcaption>
+              <p class="pf-split__head" aria-hidden="true"><span>Home</span><span>Away</span></p>
               <ul class="pf-split" data-home-away="${attr(`${h.apps},${a.apps}`)}">
-                ${row('At home', h)}
-                ${row('Away', a)}
+                ${rows.map(([k, hv, av], i) => {
+    const m = Math.max(hv, av, 1);
+    return `<li style="--i:${i}"><b class="pf-split__h" data-count="${attr(hv)}">${esc(hv)}</b><span class="pf-split__bars" aria-hidden="true"><i style="--w:${pctOf(hv, m)}%"></i><i style="--w:${pctOf(av, m)}%"></i></span><b class="pf-split__a" data-count="${attr(av)}">${esc(av)}</b><span class="pf-split__k">${esc(k)}<span class="sr-only">: ${esc(hv)} at home, ${esc(av)} away</span></span></li>`;
+  }).join('\n                ')}
               </ul>
             </figure>`;
 };
@@ -254,39 +269,125 @@ const homeAway = (x, gk) => {
 const matchColumns = (x, gk) => {
   const t = x.timeline;
   if (t.length < 2) return '';
-  const W = 320;
-  const H = 96;
-  const base = H - 16;
+  const W = 640;
+  const H = 156;
+  const base = 118;
   const step = W / t.length;
-  const bw = Math.max(1.5, step * 0.62);
+  const bw = Math.max(3, Math.min(24, step * 0.56));
   const up = (v) => (gk ? (v.conceded || 0) : v.goals + v.assists);
   const top = Math.max(1, ...t.map(up));
-  const unit = (base - 6) / top;
-  let lower = '';
-  let upper = '';
-  const dots = { W: '', D: '', L: '' };
-  t.forEach((v, i) => {
-    const x0 = (i * step + (step - bw) / 2).toFixed(1);
+  const unit = (base - 16) / top;
+  const rx = Math.min(4, bw / 2).toFixed(1);
+  const w = bw.toFixed(1);
+  /* ONE GROUP A MATCH, so each column grows in its own turn, lights up on its
+     own hover and names its own match. Goals sit on the baseline and assists
+     stack above them with a surface gap; a match with neither keeps a stub so
+     every match on the record is visible. The result sits under its column. */
+  const cols = t.map((v, i) => {
+    const cx = i * step + step / 2;
+    const x0 = (cx - bw / 2).toFixed(1);
     const a = gk ? (v.conceded || 0) : v.goals;
     const b = gk ? 0 : v.assists;
-    if (a) lower += `M${x0} ${base}v${(-a * unit).toFixed(1)}h${bw.toFixed(1)}v${(a * unit).toFixed(1)}z`;
-    if (b) upper += `M${x0} ${(base - a * unit).toFixed(1)}v${(-b * unit).toFixed(1)}h${bw.toFixed(1)}v${(b * unit).toFixed(1)}z`;
-    if (dots[v.outcome] !== undefined) dots[v.outcome] += `M${(i * step + step / 2).toFixed(1)} ${H - 6}h0`;
-  });
+    const ha = a * unit;
+    const hb = b * unit;
+    const tip = `${String(v.opponent || '').replace(/\s+A?FC\b/g, '')} ${v.scoreline || ''}, ${gk ? `${a} conceded` : `${a}G ${b}A`}`;
+    return `<g class="pf-col${a + b ? ' has-v' : ''}" style="--i:${i}"><title>${esc(tip)}</title><rect class="pf-col__hit" x="${(i * step).toFixed(1)}" width="${step.toFixed(1)}" height="${H}"/>${
+      a + b ? '' : `<rect class="pf-col__z" x="${x0}" y="${base - 3}" width="${w}" height="3" rx="1.5"/>`}${
+      a ? `<rect class="pf-col__a" x="${x0}" y="${(base - ha).toFixed(1)}" width="${w}" height="${ha.toFixed(1)}" rx="${rx}"/>` : ''}${
+      b ? `<rect class="pf-col__b" x="${x0}" y="${(base - ha - hb).toFixed(1)}" width="${w}" height="${Math.max(1, hb - (a ? 2 : 0)).toFixed(1)}" rx="${rx}"/>` : ''}<circle class="pf-col__r" data-res="${esc(v.outcome || '')}" cx="${cx.toFixed(1)}" cy="${H - 14}" r="${Math.max(2, Math.min(6, step * 0.26)).toFixed(1)}"/></g>`;
+  }).join('');
   const total = t.reduce((n, v) => n + up(v), 0);
   const most = Math.max(...t.map(up));
+  const topY = (base - top * unit).toFixed(1);
   return `<figure class="pf-chart pf-chart--cols">
               <figcaption class="pf-chart__k">Match by match
                 <span class="pf-chart__key"><i class="is-a"></i>${gk ? 'Conceded' : 'Goals'}${gk ? '' : '<i class="is-b"></i>Assists'}<i class="is-w"></i>Won</span></figcaption>
               <svg class="pf-cols" viewBox="0 0 ${W} ${H}" role="img" aria-label="${attr(gk
     ? `${total} conceded across ${t.length} matches, never more than ${most} in one`
     : `${total} goals and assists across ${t.length} matches, most in one match ${most}`)}" data-cols="${t.length}">
-                <line x1="0" y1="${base}" x2="${W}" y2="${base}" stroke="var(--line-d)" stroke-width="1"/>
-                <rect class="pf-cols__sheen" x="-48" y="0" width="48" height="${base}"/>
-                ${lower ? `<path class="pf-cols__bar pf-cols__bar--a" d="${lower}"/>` : ''}
-                ${upper ? `<path class="pf-cols__bar pf-cols__bar--b" d="${upper}"/>` : ''}
-                ${['W', 'D', 'L'].map((k) => (dots[k] ? `<path class="pf-cols__res" data-res="${k}" d="${dots[k]}"/>` : '')).join('')}
+                <line class="pf-cols__top" x1="0" y1="${topY}" x2="${W}" y2="${topY}"/>
+                <line class="pf-cols__base" x1="0" y1="${base}" x2="${W}" y2="${base}"/>
+                ${cols}
               </svg>
+              <p class="pf-chart__sub">${esc(total)} ${gk ? 'conceded' : 'goals and assists'} across ${esc(t.length)} matches. The dashed line is the most in one match: ${esc(most)}. Point at a column for the match.</p>
+            </figure>`;
+};
+
+/* ================= AGAINST THE SQUAD =================
+   A percentile wheel: one wedge per measure, as long as the share of the
+   squad he is ahead of that season, with his photograph at the hub. Counted
+   by the same engine as every other figure, over the same season's players,
+   so a wedge can be checked against the list beside it. A player with none of
+   something scores nought on it rather than sharing a tie with the others who
+   have none. */
+const profileWheel = (me, pool, gk, where, face) => {
+  const used = (pool || []).filter((q) => q.apps > 0);
+  if (!me || !me.apps || used.length < 3) return '';
+  const rate = (a, b) => (b ? a / b : 0);
+  const two = (v) => v.toFixed(2);
+  /* "From the start", never "Starts": that word is held back site-wide
+     because it was once the label on appearances, and the suite fails any
+     page that prints it. */
+  const metrics = gk ? [
+    ['Appearances', (q) => q.apps],
+    ['From the start', (q) => q.starts],
+    ['Clean sheets', (q) => q.cleanSheets],
+    ['Clean sheets a game', (q) => rate(q.cleanSheets, q.apps), two],
+    ['Captained', (q) => q.captained],
+  ] : [
+    ['Appearances', (q) => q.apps],
+    ['From the start', (q) => q.starts],
+    ['Goals', (q) => q.goals],
+    ['Assists', (q) => q.assists],
+    ['Goals and assists a game', (q) => rate(q.goals + q.assists, q.apps), two],
+    ['Clean sheets', (q) => q.cleanSheets],
+  ];
+  const others = used.filter((q) => q.num !== me.num);
+  const rows = metrics.map(([k, f, show = String]) => {
+    const v = f(me) || 0;
+    const vals = others.map((q) => f(q) || 0);
+    const below = vals.filter((o) => o < v).length;
+    const level = vals.filter((o) => o === v).length;
+    const pct = v ? Math.round((100 * (below + level / 2)) / Math.max(1, vals.length)) : 0;
+    return { k, v: show(v), pct, rank: 1 + vals.filter((o) => o > v).length };
+  });
+  const C = 160;
+  const R0 = 42;
+  const R1 = 146;
+  const span = 360 / rows.length;
+  const gap = 2.2;
+  const pt = (r, deg) => {
+    const a = ((deg - 90) * Math.PI) / 180;
+    return [(C + r * Math.cos(a)).toFixed(1), (C + r * Math.sin(a)).toFixed(1)];
+  };
+  const sector = (r, a0, a1) => `M${pt(R0, a0).join(' ')}L${pt(r, a0).join(' ')}A${r.toFixed(1)} ${r.toFixed(1)} 0 0 1 ${pt(r, a1).join(' ')}L${pt(R0, a1).join(' ')}A${R0} ${R0} 0 0 0 ${pt(R0, a0).join(' ')}Z`;
+  const edge = (i) => [i * span + gap / 2, (i + 1) * span - gap / 2];
+  const top = Math.max(...rows.map((r) => r.pct));
+  const bg = rows.map((_, i) => sector(R1, ...edge(i))).join('');
+  const wedges = rows.map((r, i) => `<path class="pf-wheel__v${top && r.pct === top ? ' is-top' : ''}" style="--i:${i};--p:${(r.pct / 100).toFixed(2)}" d="${sector(R0 + ((R1 - R0) * Math.max(r.pct, 3)) / 100, ...edge(i))}"><title>${esc(`${r.k}: ${r.pct}`)}</title></path>`).join('');
+  const labels = rows.map((r, i) => {
+    const [lx, ly] = pt(R0 + (R1 - R0) * 0.64, (i + 0.5) * span);
+    return `<text class="pf-wheel__t" x="${lx}" y="${ly}" style="--i:${i}" data-count="${r.pct}">${r.pct}</text>`;
+  }).join('');
+  /* A photograph stored inline would be repeated in every season's panel, so
+     only a file is used at the hub; anything else gets the club star. */
+  const faceImg = face && !/^data:/.test(face)
+    ? `<img src="${attr(face)}" alt="" width="96" height="96" loading="lazy" decoding="async" />`
+    : `<img class="is-star" src="${STAR}" alt="" width="76" height="94" loading="lazy" decoding="async" />`;
+  return `<figure class="pf-chart pf-chart--wheel">
+              <figcaption class="pf-chart__k">Against the squad<span class="pf-chart__key">Percentile among the ${esc(used.length)} players used ${esc(where)}</span></figcaption>
+              <div class="pf-wheel">
+                <div class="pf-wheel__art">
+                  <svg viewBox="0 0 320 320" role="img" aria-label="${attr(`Percentiles ${where}: ${rows.map((r) => `${r.k} ${r.pct}`).join(', ')}`)}">
+                    <path class="pf-wheel__bg" d="${bg}"/>
+                    <g class="pf-wheel__rings">${[0.25, 0.5, 0.75, 1].map((f) => `<circle cx="${C}" cy="${C}" r="${(R0 + (R1 - R0) * f).toFixed(1)}"/>`).join('')}</g>
+                    ${wedges}${labels}
+                  </svg>
+                  <span class="pf-wheel__face" aria-hidden="true">${faceImg}</span>
+                </div>
+                <ol class="pf-wheel__list">${rows.map((r, i) => `<li style="--i:${i}"><span>${esc(r.k)}</span><b data-count="${r.pct}">${r.pct}</b><i>${esc(r.v)} · ${ordinal(r.rank)} of ${esc(used.length)}</i></li>`).join('')}</ol>
+              </div>
+              <p class="pf-chart__sub">100 is the most in the squad ${esc(where)} and nought means none at all. With only a few matches played, one game moves these a long way.</p>
             </figure>`;
 };
 
@@ -464,19 +565,27 @@ export function playerPage(p, d) {
     const area = `${L},${H - PAD} ${pts.join(' ')} ${(W - PAD).toFixed(1)},${H - PAD}`;
     const unit = gk ? 'clean sheets' : 'involvements';
 
+    /* A dot where the total rose, each popping as the wipe reaches it. Drawn
+       as zero-length round-capped strokes that do not scale, because this
+       chart is stretched to its box and a circle would come out an ellipse. */
+    const rises = xy.map(([px, py], i) => (i && series[i] > series[i - 1]
+      ? `<line class="pf-plot__ev" x1="${px.toFixed(1)}" y1="${py.toFixed(1)}" x2="${px.toFixed(1)}" y2="${py.toFixed(1)}" style="--t:${(i / (series.length - 1)).toFixed(2)}"/>`
+      : '')).join('');
+    const [ex, ey] = xy[xy.length - 1].map((v) => v.toFixed(1));
+
     return `<figure class="pf-plot rv" data-plot>
               <svg viewBox="0 0 ${W} ${H}" role="img" aria-labelledby="${attr(key)}-t" preserveAspectRatio="none">
                 <title id="${attr(key)}-t">Running total of ${esc(unit)}, reaching ${esc(top)} across ${esc(series.length)} matches</title>
                 <defs>
                   <linearGradient id="${attr(key)}-g" x1="0" y1="0" x2="0" y2="1">
-                    <!-- The gradient runs over the shape's own box, so a
-                         steep final climb put its darkest band right across
-                         the top and read as a solid block rather than a wash.
-                         Softer, with an early falloff. -->
-                    <stop offset="0%" stop-color="var(--volt)" stop-opacity="0.17" />
-                    <stop offset="45%" stop-color="var(--volt)" stop-opacity="0.06" />
+                    <stop offset="0%" stop-color="var(--volt)" stop-opacity="0.3" />
+                    <stop offset="55%" stop-color="var(--volt)" stop-opacity="0.07" />
                     <stop offset="100%" stop-color="var(--volt)" stop-opacity="0" />
                   </linearGradient>
+                  <!-- THE REVEAL IS A WIPE. The line used to draw along a dash
+                       measured in the chart's own units, and the chart is
+                       stretched to its box, so it stopped two thirds of the way. -->
+                  <clipPath id="${attr(key)}-w"><rect class="pf-plot__wipe" x="0" y="0" width="${W}" height="${H}" /></clipPath>
                 </defs>
                 <g class="pf-plot__grid" aria-hidden="true">
                   ${[0, 0.5, 1].map((f) => {
@@ -489,21 +598,23 @@ export function playerPage(p, d) {
     const v = Math.round(f * top);
     return `<text class="pf-plot__ax" x="${L - 8}" y="${(y + 3).toFixed(1)}" text-anchor="end">${v}</text>`;
   }).join('\n                ')}
-                <polygon class="pf-plot__area" points="${area}" fill="url(#${attr(key)}-g)" />
+                <g clip-path="url(#${attr(key)}-w)">
+                  <polygon class="pf-plot__area" points="${area}" fill="url(#${attr(key)}-g)" />
+                  <polyline class="pf-plot__glow" points="${pts.join(' ')}" />
+                  <polyline class="pf-plot__line" points="${pts.join(' ')}" fill="none" stroke="var(--volt)"
+                    stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" />
+                  ${rises}
+                </g>
                 <line class="pf-plot__cross" x1="0" y1="${PAD}" x2="0" y2="${H - PAD}" stroke="var(--volt)"
                   stroke-width="1" stroke-dasharray="3 3" opacity="0" vector-effect="non-scaling-stroke" />
-                <polyline class="pf-plot__line" points="${pts.join(' ')}" fill="none" stroke="var(--volt)"
-                  stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke" />
                 ${xy.map(([px, py], i) => {
     const t = x.timeline[i];
     const made = gk ? (t.conceded === 0 ? 'Clean sheet' : `${t.conceded} conceded`)
       : [t.goals ? `${t.goals}G` : '', t.assists ? `${t.assists}A` : ''].filter(Boolean).join(' ') || 'No return';
-    return `<circle class="pf-plot__pt" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="10"
-                  data-x="${px.toFixed(1)}" data-y="${py.toFixed(1)}" data-total="${attr(series[i])}"
-                  data-club="${attr(shortClub(t.opponent))}" data-score="${attr(t.scoreline)}"
-                  data-date="${attr(fmtDate(t.date))}" data-made="${attr(made)}" />`;
-  }).join('\n                ')}
-                <circle class="pf-plot__end" cx="${xy[xy.length - 1][0].toFixed(1)}" cy="${xy[xy.length - 1][1].toFixed(1)}" r="4" fill="var(--volt)" />
+    return `<circle class="pf-plot__pt" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="10" data-x="${px.toFixed(1)}" data-total="${attr(series[i])}" data-club="${attr(shortClub(t.opponent))}" data-score="${attr(t.scoreline)}" data-date="${attr(fmtDate(t.date))}" data-made="${attr(made)}"/>`;
+  }).join('')}
+                <line class="pf-plot__pulse" x1="${ex}" y1="${ey}" x2="${ex}" y2="${ey}" />
+                <line class="pf-plot__end" x1="${ex}" y1="${ey}" x2="${ex}" y2="${ey}" />
               </svg>
               <figcaption class="pf-plot__cap" data-readout>
                 <span class="pf-plot__lo">First match</span>
@@ -629,12 +740,15 @@ export function playerPage(p, d) {
        All seasons they would be the longest season's again. */
     const charts = [resultsDonut(x), shareGauge(x, gk), homeAway(x, gk)].filter(Boolean);
     const cols = sn === 'All seasons' ? '' : matchColumns(x, gk);
-    const n = charts.length + (cols ? 1 : 0);
+    const wheelPool = sn === 'All seasons' ? (d.players || []) : ((d.playersBySeason || {})[sn] || []);
+    const wheel = profileWheel(wheelPool.find((q) => q.num === p.num), wheelPool, gk,
+      sn === 'All seasons' ? 'across every season' : `in ${sn}`, shot);
+    const n = charts.length + (cols ? 1 : 0) + (wheel ? 1 : 0);
     return n ? `<section class="pf-sub" aria-labelledby="pf-g-${idx}">
             ${rail(3, 'In pictures', `${n} ${n === 1 ? 'chart' : 'charts'}`)}
             <h3 class="h2 rv" id="pf-g-${idx}">${esc(sn === 'All seasons' ? 'Every season' : sn)} in <span class="volt">pictures.</span></h3>
             <div class="pf-charts rv">
-            ${cols}${charts.join('')}
+            ${wheel}${cols}${charts.join('')}
             </div>
           </section>` : '';
   })()}
@@ -921,20 +1035,26 @@ export function playerPage(p, d) {
          a season layer when the page also carries the career one. */
       const n = v.lite === 'mid' ? 5 + Math.round(h.k * 12)
         : v.lite ? 4 + Math.round(h.k * 9) : 7 + Math.round(h.k * 16);
+      /* A wide player runs the line, so his field is drawn long down the
+         flank and narrow across it; a central one spreads more evenly. */
+      const wide = h.x < 30 || h.x > 70;
       blobs.push({ x: h.x, y: cy, r: 4.6 + 5.4 * h.k, o: 0.32 + 0.36 * h.k, i: blobs.length });
       for (let j = 0; j < n; j++) {
         const ang = rnd() * Math.PI * 2;
         const spread = ((rnd() + rnd()) / 2) * (3.6 + 5.4 * h.k);
         blobs.push({
-          x: h.x + Math.cos(ang) * spread,
-          y: cy + Math.sin(ang) * spread * 1.2,
+          x: h.x + Math.cos(ang) * spread * (wide ? 0.72 : 1),
+          y: cy + Math.sin(ang) * spread * (wide ? 2.1 : 1.3),
           r: 2.8 + rnd() * (3.4 + 3.6 * h.k),
           o: (0.16 + rnd() * 0.2) * (0.5 + h.k * 0.6),
           i: blobs.length,
         });
       }
     }
-    return blobs.map((b) => `<circle class="pf-heat__b" cx="${b.x.toFixed(1)}" cy="${b.y.toFixed(1)}" r="${b.r.toFixed(1)}" opacity="${b.o.toFixed(2)}" style="--r:${b.r.toFixed(1)};--o:${b.o.toFixed(2)};--d:${((b.i % 9) * 0.72).toFixed(2)}s"/>`).join('');
+    /* Half the markup it was: the opacity lives in the custom property alone
+       and the breathing scales the circle rather than animating its radius,
+       which is what paid for the wheel on the heaviest profiles. */
+    return blobs.map((b) => `<circle cx="${b.x.toFixed(1)}" cy="${b.y.toFixed(1)}" r="${b.r.toFixed(1)}" style="--o:${b.o.toFixed(2)};--d:${((b.i % 9) * 0.72).toFixed(1)}s"/>`).join('');
   };
 
   const pitchBand = heat.length ? `<section class="sec pf-pitch" aria-labelledby="pf-pitch-h">
@@ -979,16 +1099,26 @@ export function playerPage(p, d) {
                 <clipPath id="pf-clip-${attr(p.slug)}">
                   <rect x="1" y="1" width="98" height="138" rx="3" />
                 </clipPath>
+                <linearGradient id="pf-scan-${attr(p.slug)}" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#FF7034" stop-opacity="0" />
+                  <stop offset="0.8" stop-color="#FF7034" stop-opacity="0.16" />
+                  <stop offset="1" stop-color="#FFB38A" stop-opacity="0.5" />
+                </linearGradient>
               </defs>
 
-              <rect x="1" y="1" width="98" height="138" rx="3" fill="rgba(255,255,255,0.028)" stroke="var(--line-d)" />
-              <line x1="1" y1="70" x2="99" y2="70" stroke="var(--line-d)" />
-              <circle cx="50" cy="70" r="12" fill="none" stroke="var(--line-d)" />
-              <circle cx="50" cy="70" r="1" fill="var(--line-d)" />
-              <rect x="26" y="1" width="48" height="18" fill="none" stroke="var(--line-d)" />
-              <rect x="38" y="1" width="24" height="7" fill="none" stroke="var(--line-d)" />
-              <rect x="26" y="121" width="48" height="18" fill="none" stroke="var(--line-d)" />
-              <rect x="38" y="132" width="24" height="7" fill="none" stroke="var(--line-d)" />
+              <!-- A real pitch: mown bands, both boxes with their spots and
+                   arcs, the centre circle. -->
+              <rect x="1" y="1" width="98" height="138" rx="3" fill="rgba(255,255,255,0.028)" />
+              <g class="pf-turf" aria-hidden="true">${[1, 3, 5, 7, 9].map((i) => `<rect x="1" y="${(1 + i * 13.8).toFixed(1)}" width="98" height="13.8"/>`).join('')}</g>
+              <g class="pf-lines" aria-hidden="true">
+                <rect x="1" y="1" width="98" height="138" rx="3"/>
+                <line x1="1" y1="70" x2="99" y2="70"/>
+                <circle cx="50" cy="70" r="12"/>
+                <rect x="26" y="1" width="48" height="18"/><rect x="38" y="1" width="24" height="7"/>
+                <rect x="26" y="121" width="48" height="18"/><rect x="38" y="132" width="24" height="7"/>
+                <path d="M42 19A10 10 0 0 0 58 19M42 121A10 10 0 0 1 58 121"/>
+                <circle class="pf-lines__dot" cx="50" cy="70" r="1"/><circle class="pf-lines__dot" cx="50" cy="13" r="0.8"/><circle class="pf-lines__dot" cx="50" cy="127" r="0.8"/>
+              </g>
 
               ${/* One layer per tab: its heat, its rings and its marked positions.
                     The tab script hides every layer but the tab's own. */''}
@@ -1004,6 +1134,7 @@ export function playerPage(p, d) {
                   fill="var(--text-on-brand)"><title>${esc(positionName(h.code))}</title>${esc(h.code)}</text>
               </g>`).join('')}
               </g>`).join('\n              ')}
+              <g clip-path="url(#pf-clip-${attr(p.slug)})" aria-hidden="true"><rect class="pf-scan" x="1" y="0" width="98" height="18" fill="url(#pf-scan-${attr(p.slug)})"/></g>
             </svg>
             <figcaption>Attacking upward. The brighter the field, the more often ${esc(p.first)} played there.</figcaption>
           </figure>
@@ -1045,14 +1176,11 @@ export function playerPage(p, d) {
                   <div class="pf-pos__panel">
                     <p class="pf-pos__t">${esc(positionName(h.code))}</p>
                     <ol class="pf-pos__list">
-                      ${ms.map((x) => `<li data-season-scope="${x.si} all">
-                        <span class="pf-pos__res" data-res="${attr(x.outcome || '')}">${esc(x.outcome || '-')}</span>
-                        <span class="pf-pos__badge">${oppBadge(x.opponent, d.badges, 22, 22)}</span>
-                        <span class="pf-pos__club">${esc(shortClub(x.opponent))}</span>
-                        <span class="pf-pos__score">${esc(x.score)}</span>
-                        <span class="pf-pos__comp">${esc(shortComp(x.competition))}</span>
-                        <span class="pf-pos__date">${esc(x.date)}${x.bench ? ' · bench' : ''}</span>
-                      </li>`).join('\n                      ')}
+                      ${/* One line a match, no indentation inside: these rows repeat
+                            for every position a player ever held, and on the
+                            longest careers the whitespace alone was 8KB of a
+                            page sitting at its 160KB ceiling. */''}
+                      ${ms.map((x) => `<li data-season-scope="${x.si} all"><span class="pf-pos__res" data-res="${attr(x.outcome || '')}">${esc(x.outcome || '-')}</span><span class="pf-pos__badge">${oppBadge(x.opponent, d.badges, 22, 22)}</span><span class="pf-pos__club">${esc(shortClub(x.opponent))}</span><span class="pf-pos__score">${esc(x.score)}</span><span class="pf-pos__comp">${esc(shortComp(x.competition))}</span><span class="pf-pos__date">${esc(x.date)}${x.bench ? ' · bench' : ''}</span></li>`).join('')}
                     </ol>
                   </div>
                 </details>

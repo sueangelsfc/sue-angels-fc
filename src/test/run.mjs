@@ -3363,6 +3363,13 @@ for (const [f, kb] of Object.entries({
           && cdSeasonsPlayed.every(([, i]) => new RegExp(`<g data-season-scope="${i}( all)?"`).test(cdHtml))
           && /<g data-season-scope="(\d+ )?all"/.test(cdHtml),
         cdSeasonsPlayed.map(([n]) => n).join(','));
+      /* An SVG layer has no `hidden` property, so assigning one hid nothing and
+         every season's positions showed under every tab. Hidden by attribute. */
+      check('the season tabs hide the heat map\'s SVG layers by attribute, not by property',
+        /\$\$\('\[data-season-scope\]'\)[\s\S]{0,700}?setAttribute\('hidden', ''\)/.test(js10)
+          && !/el\.hidden = !\(\(isAll/.test(js10));
+      check('the player page draws the squad percentile wheel in its season panels',
+        withCharts.some((pn) => /<div class="pf-charts rv">\s*<figure class="pf-chart pf-chart--wheel">/.test(pn)));
       check('sections counted over every season show under the All seasons tab alone',
         ['pf-versus'].every((c) => new RegExp(`class="sec ${c}" data-season-scope="all"`).test(cdHtml))
           && /\[data-season-scope\]/.test(fs.readFileSync(path.join(ROOT, 'src', 'scripts', '10-home.js'), 'utf8')));

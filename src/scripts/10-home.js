@@ -818,14 +818,9 @@
       $$('.pf-stat', list).forEach(function (el, i) { el.style.setProperty('--i', i); });
     });
 
-    if (plot) {
-      var line = $('.pf-plot__line', plot);
-      if (line && line.getTotalLength) {
-        var len = Math.ceil(line.getTotalLength());
-        line.style.setProperty('--len', len);
-        line.setAttribute('data-len', len);
-      }
-    }
+    /* The plot is revealed by a clip wiping across it, not by a dash measured
+       here: the chart is stretched to its box, so a length measured in its own
+       units stopped the drawn line two thirds of the way along. */
 
     /* Only the numeric part is animated, so "86%" and "1st" keep their suffix
        and "0.86" keeps its decimals. Anything with no digits is left alone. */
@@ -868,7 +863,7 @@
         io.unobserve(en.target);
       });
     }, { threshold: 0.3 });
-    $$('.pf-tiles, .pf-ranks, .pf-bars, .pf-vs').forEach(function (el) { io.observe(el); });
+    $$('.pf-tiles, .pf-ranks, .pf-bars, .pf-vs, .pf-charts').forEach(function (el) { io.observe(el); });
   })();
 
   /* ---- Season tabs (player profile) -----------------------------------
@@ -898,9 +893,15 @@
       var isAll = tabs[i].hasAttribute('data-season-all');
       /* A band scoped "all" shows under All seasons; one scoped to a tab's
          index (the heat map, one per season) shows under that tab alone. */
+      /* BY ATTRIBUTE, NOT PROPERTY. The heat map's layers are SVG groups, and
+         an SVG element has no `hidden` property: assigning one set a plain
+         JavaScript field, nothing hid, and every season's positions showed
+         under every tab (Dean Knight's 26/27 pitch carried 25/26's wing-back
+         and the career right-back beside his one right-back start). */
       $$('[data-season-scope]').forEach(function (el) {
         var s = ' ' + el.getAttribute('data-season-scope') + ' ';
-        el.hidden = !((isAll && s.indexOf(' all ') > -1) || s.indexOf(' ' + i + ' ') > -1);
+        if ((isAll && s.indexOf(' all ') > -1) || s.indexOf(' ' + i + ' ') > -1) el.removeAttribute('hidden');
+        else el.setAttribute('hidden', '');
       });
       /* The heat map's list: every tab's count rides on each row. */
       var heatKey = isAll ? 'all' : String(i);
@@ -935,6 +936,14 @@
           void el.offsetWidth;
           el.classList.add('is-in');
         });
+        /* The pitch sits outside the panels: its field blooms again and its
+           markers drop back in for the season just chosen. */
+        var pitch = $('.pf-pitch__grid');
+        if (pitch && pitch.classList.contains('is-in')) {
+          pitch.classList.remove('is-in');
+          void pitch.offsetWidth;
+          pitch.classList.add('is-in');
+        }
       }
       var pc = $('[data-pitch-counts]');
       if (pc) {

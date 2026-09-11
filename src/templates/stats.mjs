@@ -500,6 +500,128 @@ export function stats(d) {
       </div>
     </section>` : '';
 
+  /* ================= 04 IN PICTURES =================
+     The season as charts, one panel per view like the leaders and the share
+     above: every match as goals for and against, the results as a ring, the
+     goals by position, and the six biggest contributors. Drawn at build time
+     from the same rows and matches as every figure on the page, each printing
+     its numbers beside it, results told apart by shade of the one accent. */
+  const pctOf = (n, of) => (of ? Math.round((n / of) * 100) : 0);
+  const donut = (segs, aria, centre) => {
+    const total = segs.reduce((n, s) => n + s.n, 0);
+    const r = 44;
+    const c = 2 * Math.PI * r;
+    let at = 0;
+    const arcs = segs.map((s) => {
+      const len = total ? (s.n / total) * c : 0;
+      const out = s.n ? `<circle class="st-donut__seg" data-k="${attr(s.k)}" cx="60" cy="60" r="${r}" fill="none" stroke-width="14" stroke-dasharray="${len.toFixed(1)} ${(c - len).toFixed(1)}" stroke-dashoffset="${(-at).toFixed(1)}" transform="rotate(-90 60 60)" style="--len:${len.toFixed(1)};--c:${c.toFixed(1)}"/>` : '';
+      at += len;
+      return out;
+    }).join('');
+    return `<div class="st-donut">
+                <svg viewBox="0 0 120 120" role="img" aria-label="${attr(aria)}">
+                  <circle cx="60" cy="60" r="${r}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="14"/>${arcs}
+                </svg>
+                <span class="st-donut__c" aria-hidden="true">${centre}</span>
+              </div>
+              <ul class="st-chart__legend">${segs.filter((s) => s.n).map((s) => `<li data-k="${attr(s.k)}"><i></i><b>${esc(s.n)}</b> ${esc(s.label)}</li>`).join('')}</ul>`;
+  };
+
+  const matchCols = (ms) => {
+    const W = 320;
+    const H = 120;
+    const mid = 64;
+    const step = W / ms.length;
+    const bw = Math.max(1.5, step * 0.62);
+    const top = Math.max(1, ...ms.map((m) => (m.countsGoals ? Math.max(m.ourGoals, m.theirGoals) : 0)));
+    const up = (mid - 6) / top;
+    const down = (H - mid - 6) / top;
+    let forPath = '';
+    let agPath = '';
+    let gf = 0;
+    let ga = 0;
+    ms.forEach((m, i) => {
+      if (!m.countsGoals) return;
+      const x0 = (i * step + (step - bw) / 2).toFixed(1);
+      gf += m.ourGoals;
+      ga += m.theirGoals;
+      if (m.ourGoals) forPath += `M${x0} ${mid}v${(-m.ourGoals * up).toFixed(1)}h${bw.toFixed(1)}v${(m.ourGoals * up).toFixed(1)}z`;
+      if (m.theirGoals) agPath += `M${x0} ${mid}v${(m.theirGoals * down).toFixed(1)}h${bw.toFixed(1)}v${(-m.theirGoals * down).toFixed(1)}z`;
+    });
+    return `<figure class="st-chart st-chart--cols">
+              <figcaption class="st-chart__k">Match by match
+                <span class="st-chart__key"><i class="is-for"></i>Scored<i class="is-ag"></i>Conceded</span></figcaption>
+              <svg class="st-cols" viewBox="0 0 ${W} ${H}" role="img" data-for="${gf}" data-against="${ga}" data-matches="${ms.length}"
+                aria-label="${attr(`${gf} scored and ${ga} conceded across ${ms.length} matches`)}">
+                <line x1="0" y1="${mid}" x2="${W}" y2="${mid}" stroke="var(--line-d)" stroke-width="1"/>
+                ${forPath ? `<path class="st-cols__bar st-cols__bar--for" d="${forPath}"/>` : ''}
+                ${agPath ? `<path class="st-cols__bar st-cols__bar--ag" d="${agPath}"/>` : ''}
+              </svg>
+              <p class="st-chart__sub">${esc(gf)} scored, ${esc(ga)} conceded${ms.some((m) => !m.countsGoals)
+    ? `. ${esc(ms.filter((m) => !m.countsGoals).length)} awarded as a walkover and carry no score` : ''}.</p>
+            </figure>`;
+  };
+
+  const GROUPS = [['fwd', 'forwards'], ['mid', 'midfielders'], ['def', 'defenders'], ['gk', 'goalkeepers']];
+  const chartsFor = (v) => {
+    const ms = (v.matches || []).filter((m) => m.played).slice()
+      .sort((a, b) => (a.iso || '').localeCompare(b.iso || ''));
+    if (!ms.length) {
+      return `<p class="st-lede">No matches in ${esc(v.label)} yet. The charts fill in as results come in.</p>`;
+    }
+    const res = { W: 0, D: 0, L: 0 };
+    ms.forEach((m) => { if (res[m.outcome] !== undefined) res[m.outcome] += 1; });
+    const decided = res.W + res.D + res.L;
+    const results = decided ? `<figure class="st-chart">
+              <figcaption class="st-chart__k">Results</figcaption>
+              ${donut([{ k: 'W', n: res.W, label: 'won' }, { k: 'D', n: res.D, label: 'drawn' }, { k: 'L', n: res.L, label: 'lost' }],
+    `Won ${res.W}, drew ${res.D} and lost ${res.L} of ${decided}`,
+    `<b>${esc(pctOf(res.W, decided))}%</b><i>won</i>`).replace('<ul class="st-chart__legend">', `<ul class="st-chart__legend" data-results="${res.W},${res.D},${res.L}">`)}
+            </figure>` : '';
+    const byGroup = { fwd: 0, mid: 0, def: 0, gk: 0 };
+    for (const { p, r } of v.rows) {
+      const g = (byNum.get(p.num) || {}).positionGroup;
+      byGroup[byGroup[g] === undefined ? 'mid' : g] += r.goals || 0;
+    }
+    const goals = Object.values(byGroup).reduce((n, x) => n + x, 0);
+    const groups = goals ? `<figure class="st-chart">
+              <figcaption class="st-chart__k">Goals by position</figcaption>
+              ${donut(GROUPS.map(([k, label]) => ({ k, n: byGroup[k], label })),
+    GROUPS.map(([k, label]) => `${byGroup[k]} from ${label}`).join(', '),
+    `<b>${esc(pctOf(byGroup.fwd, goals))}%</b><i>forwards</i>`).replace('<ul class="st-chart__legend">', `<ul class="st-chart__legend" data-goals="${goals}">`)}
+            </figure>` : '';
+    const top = v.rows.map((x) => ({ ...x, ga: (x.r.goals || 0) + (x.r.assists || 0) }))
+      .filter((x) => x.ga > 0).sort((a, b) => b.ga - a.ga || (b.r.goals || 0) - (a.r.goals || 0)).slice(0, 6);
+    const most = Math.max(1, ...top.map((x) => x.ga));
+    const contributors = top.length ? `<figure class="st-chart">
+              <figcaption class="st-chart__k">Most goals and assists</figcaption>
+              <ol class="st-top">
+                ${top.map((x) => `<li>
+                  ${/* Figures before the name in the markup, placed after it by the
+                        grid: a count printed straight after a name reads as that
+                        player's squad number to the leak check, and to a reader. */''}
+                  <span class="st-top__track" aria-hidden="true"><i class="is-g" style="--w:${pctOf(x.r.goals || 0, most)}%"></i><i class="is-a" style="--w:${pctOf(x.r.assists || 0, most)}%"></i></span>
+                  <span class="st-top__v"><b>${esc(x.r.goals || 0)}</b> ${(x.r.goals || 0) === 1 ? 'goal' : 'goals'} · <b>${esc(x.r.assists || 0)}</b> ${(x.r.assists || 0) === 1 ? 'assist' : 'assists'}</span>
+                  <a class="st-top__k" href="/players/${attr(x.p.slug)}.html">${esc(x.p.name)}</a>
+                </li>`).join('\n                ')}
+              </ol>
+            </figure>` : '';
+    return `<div class="st-charts">
+            ${ms.length > 1 ? matchCols(ms) : ''}${results}${groups}${contributors}
+          </div>`;
+  };
+
+  const picsBand = VIEWS.some((v) => (v.matches || []).some((m) => m.played))
+    ? `<section class="sec st-pics" aria-labelledby="st-pics-h" data-chart-views>
+      <div class="wrap">
+        ${rail(4, 'In pictures', count((VIEWS[defaultView].matches || []).length, 'match', 'matches'))}
+        <h2 class="h2 rv" id="st-pics-h">In <span class="volt">pictures.</span></h2>
+        ${VIEWS.map((v, i) => `<div class="st-pics__view rv" data-chart-view="${attr(v.id)}" data-matches="${attr(count((v.matches || []).length, 'match', 'matches'))}"${i === defaultView ? '' : ' hidden'}>
+          ${chartsFor(v)}
+        </div>`).join('\n        ')}
+      </div>
+    </section>` : '';
+
   /* ================= CTA ================= */
   const ctaBand = `<section class="sec sec--cta st-cta" aria-labelledby="st-cta-h">
       <div class="wrap">
@@ -521,7 +643,7 @@ export function stats(d) {
     </section>`;
 
   return {
-    body: siteHeader('/stats.html') + hero + leadersBand + tableBand + shareBand + ctaBand + sourceNote(['fulltime', 'surreyfa']),
+    body: siteHeader('/stats.html') + hero + leadersBand + tableBand + shareBand + picsBand + ctaBand + sourceNote(['fulltime', 'surreyfa']),
     bodyClass: 'is-home is-sub is-stats',
     css: 'home.css',
     shell: 'home',

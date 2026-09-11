@@ -5375,6 +5375,25 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     compsAt === -1 || (!/Pre-season/i.test(compsSec) && /data-league-panel="(ten|eight)"/.test(lgBandTag('lg-comps'))),
     lgBandTag('lg-comps'));
   const stHtml = fs.readFileSync(path.join(ROOT, 'stats.html'), 'utf8');
+  /* THE STATS PAGE'S CHARTS agree with its own figures: one panel per view,
+     the results ring against the view's matches, the goals by position
+     against the goals tallied in the hero for that view. */
+  {
+    const chartViews = [...stHtml.matchAll(/data-chart-view="([^"]+)"[^>]*>([\s\S]*?)(?=data-chart-view="|<\/section>)/g)];
+    const tallyOf = (id) => (stHtml.match(new RegExp(`data-tally-${id}="(\\d+),`)) || [])[1];
+    const stBad = [];
+    for (const [, id, body] of chartViews) {
+      const g = (body.match(/data-goals="(\d+)"/) || [])[1];
+      if (g && tallyOf(id) !== undefined && g !== tallyOf(id)) stBad.push(`${id}: ${g} goals by position, tally ${tallyOf(id)}`);
+      const cols = body.match(/data-for="(\d+)" data-against="(\d+)" data-matches="(\d+)"/);
+      const res = (body.match(/data-results="(\d+),(\d+),(\d+)"/) || []).slice(1).map(Number);
+      if (cols && res.length && res[0] + res[1] + res[2] !== Number(cols[3])) stBad.push(`${id}: ring ${res.join('/')} over ${cols[3]} matches`);
+    }
+    check('the player stats page draws a chart panel for every season view',
+      chartViews.length >= 2 && chartViews.length === (stHtml.match(/data-leader-view="/g) || []).length,
+      `${chartViews.length} chart panels`);
+    check('and its charts agree with the figures on the page', stBad.length === 0, stBad.join(' | '));
+  }
   check('the player stats page leaves pre-season out of its competitions',
     /data-comp-chips/.test(stHtml) && !/Pre-season/.test((stHtml.match(/data-comp-chips[\s\S]*?<\/div>/) || [''])[0]));
   const { compareDivision: cmpDiv } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));

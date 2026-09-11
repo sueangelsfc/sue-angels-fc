@@ -1324,6 +1324,8 @@
 
     var leaderBand = $('[data-leader-views]');
     var shareBand = $('[data-share-views]');
+    /* The charts follow the tab the same way. */
+    var chartBand = $('[data-chart-views]');
     var heroSeason = $('[data-hero-season]');
     var heroTally = $('[data-hero-tally]');
 
@@ -1390,6 +1392,14 @@
       if (ref) ref.textContent = n + ' scorer' + (n === '1' ? '' : 's');
     };
 
+    /* The charts' panel, and the rail's match count with it. */
+    var showCharts = function (view) {
+      var live = showPanel(chartBand, 'data-chart-view', view);
+      if (!live) return;
+      var ref = $('.xrail__r', chartBand);
+      if (ref) ref.textContent = live.getAttribute('data-matches') || '';
+    };
+
     /* The hero said "By the numbers · 25/26" over the club's career totals,
        which is two claims about different things sitting side by side. */
     var showHero = function (view, label) {
@@ -1415,6 +1425,7 @@
         var view = tab.getAttribute('data-view');
         showLeaders(view);
         showShare(view);
+        showCharts(view);
         showComps(view);
         showHero(view, ($('b', tab) || {}).textContent);
         refresh();
@@ -1424,6 +1435,7 @@
       var v0 = onDefault.getAttribute('data-view');
       showLeaders(v0);
       showShare(v0);
+      showCharts(v0);
       showComps(v0);
       showHero(v0, ($('b', onDefault) || {}).textContent);
     }

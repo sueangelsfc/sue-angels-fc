@@ -1775,7 +1775,9 @@ body::before{animation: none;}
 .lg-chip:focus-visible{outline: 2px solid var(--volt); outline-offset: 3px;}
 /* Only the script hides a panel; every panel ships visible. */
 html.js .lg-panel[hidden],
-html.js [data-league-panel][hidden]{display: none;}
+html.js [data-league-panel][hidden],
+html.js #past-players[hidden],
+html.js [data-past][hidden]{display: none;}
 
 @media (prefers-reduced-motion: reduce){
   .lg-chip{transition: none;}

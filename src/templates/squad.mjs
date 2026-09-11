@@ -113,6 +113,13 @@ export function squad(d) {
     return ((bySeasonStats[view] || []).find((x) => x.num === num)) || {};
   };
   const VIEWS = [...seasons, 'all'];
+  /* THE TAB THE PAGE OPENS ON: the latest season with a competitive match
+     played, not simply the first tab. It opened on 25/26 a week into League
+     Eight, so the season a supporter came for was a click away and the page
+     led with last year's numbers. Everything drawn before the script runs -
+     the figures, the badges, the hero, the counts - is this tab's. */
+  const DEF = Math.max(0, VIEWS.reduce((n, v, i) => (v !== 'all'
+    && (d.competitive || []).some((m) => m.played && m.season === v) ? i : n), -1));
   const viewKey = (v) => (v === 'all' ? 'all' : v.replace(/\D/g, ''));
   const viewLabel = (v) => (v === 'all' ? 'All seasons' : v);
 
@@ -163,7 +170,7 @@ export function squad(d) {
     return m;
   };
   const badgesByView = new Map(VIEWS.map((v) => [v, badgesFor(v)]));
-  const badges = badgesByView.get(VIEWS[0]) || new Map();
+  const badges = badgesByView.get(VIEWS[DEF]) || new Map();
 
   /* "Apps" AGAIN, and this time it is true. This used to say "Starts, not
      Apps", because the engine counted an appearance only when a player was
@@ -192,7 +199,7 @@ export function squad(d) {
     const keys = p.gk
       ? ['Apps', 'Clean', 'MOTM', 'Bench', 'Clean sheets', 'MOTM']
       : ['Apps', 'Goals', 'Assists', 'Bench', 'Involved', 'MOTM'];
-    const six = sixOf(p, VIEWS[0]);
+    const six = sixOf(p, VIEWS[DEF]);
     const heads = keys.slice(0, 3).map((k, n) => ({ v: six[n], k }));
     const extra = keys.slice(3).map((k, n) => ({ v: six[n + 3], k }));
 
@@ -211,7 +218,7 @@ export function squad(d) {
         + (b ? ` data-bg-${viewKey(v)}="${attr(b)}"` : '')
         + (st && st.label ? ` data-sl-${viewKey(v)}="${attr(st.label)}"` : '');
     }).join('');
-    const nowStatus = VIEWS[0] === 'all' ? null : statusOf(p.num, VIEWS[0]);
+    const nowStatus = VIEWS[DEF] === 'all' ? null : statusOf(p.num, VIEWS[DEF]);
 
     return `<li class="pc" style="--i:${i}" data-seasons="${attr(inSeasons)}"${payload}>
             <a class="pc__link" href="/players/${attr(p.slug)}.html" data-tilt>
@@ -301,9 +308,9 @@ export function squad(d) {
       ? all.length
       : all.filter((p) => (p.seasons || []).includes(v)).length;
     const note = `${count} player${count === 1 ? '' : 's'} · ${games ? `${games} match${games === 1 ? '' : 'es'}` : 'no matches yet'}`;
-    return `<button class="sq-season${i === 0 ? ' is-on' : ''}" type="button"
+    return `<button class="sq-season${i === DEF ? ' is-on' : ''}" type="button"
           data-season="${attr(v)}" data-view="${attr(viewKey(v))}"
-          aria-pressed="${i === 0 ? 'true' : 'false'}">
+          aria-pressed="${i === DEF ? 'true' : 'false'}">
           <b>${esc(viewLabel(v))}</b><span>${esc(note)}</span>
         </button>`;
   }).join('\n        ')}
@@ -332,7 +339,7 @@ export function squad(d) {
     const counts = (pick) => VIEWS
       .map((v) => ` data-n-${viewKey(v)}="${attr(all.filter((p) => inView(p, v) && pick(p)).length)}"`)
       .join('');
-    const v0 = VIEWS[0];
+    const v0 = VIEWS[DEF];
     const n0 = (pick) => all.filter((p) => inView(p, v0) && pick(p)).length;
     return `<div class="sq-chips" data-filter-scope="${attr(scope)}">
           <a class="sq-chip is-on" href="#${attr(scope)}" data-group-all${counts(() => true)}>All<span>${esc(n0(() => true))}</span></a>
@@ -386,7 +393,7 @@ export function squad(d) {
     };
   };
   const heroData = VIEWS.map((v) => ` data-hero-${viewKey(v)}="${attr(JSON.stringify(heroFor(v)))}"`).join('');
-  const h0 = heroFor(VIEWS[0]);
+  const h0 = heroFor(VIEWS[DEF]);
   const hero = `<section class="sq-hero" aria-labelledby="sq-h">
       <div class="wrap sq-hero__grid" data-sq-hero${heroData}>
         <div>
@@ -408,7 +415,7 @@ export function squad(d) {
       <div class="wrap">
         <!-- The count follows the season tab: the band is filtered, so a
              fixed figure beside it is a caption for a different page. -->
-        ${rail(1, 'First team', `${first.filter((p) => (p.seasons || []).includes(VIEWS[0])).length} players`)
+        ${rail(1, 'First team', `${first.filter((p) => (p.seasons || []).includes(VIEWS[DEF])).length} players`)
     .replace('<span class="xrail__r">', '<span class="xrail__r" data-band-count>')}
         <h2 class="h2 rv" id="sq-first-h">The first <span class="volt">team.</span></h2>
         ${seasonTabs}
@@ -441,7 +448,11 @@ export function squad(d) {
 
   const pastBand = (retired.length || departed.length || nowCoaching.length) ? `<section class="sec sq-pastband" id="past-players" aria-labelledby="sq-past-h">
       <div class="wrap">
-        ${rail(2, 'Past players', `${retired.length + departed.length + nowCoaching.length} in all`)}
+        ${/* The count follows the tab, and a season none of them played in
+              shows no past players at all rather than the headings over
+              nobody. The script recounts; this is every one of them. */''}
+        ${rail(2, 'Past players', `${retired.length + departed.length + nowCoaching.length} in all`)
+    .replace('<span class="xrail__r">', '<span class="xrail__r" data-past-count>')}
         <h2 class="h2 rv" id="sq-past-h">Those who <span class="volt">came before.</span></h2>
         <p class="sq-lede rv">Nobody who pulled on the shirt disappears off this page. These are the
           players who hung up the boots or moved on, with the record they left behind.</p>

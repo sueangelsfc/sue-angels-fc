@@ -3232,9 +3232,31 @@ for (const [f, kb] of Object.entries({
       check('and the page does not open on it',
         !/class="pf-tab[^"]*is-on[^"]*"[^>]*data-season-all/.test(cdHtml)
           && /hasAttribute\('data-season-all'\)/.test(fs.readFileSync(path.join(ROOT, 'src', 'scripts', '10-home.js'), 'utf8')));
+      /* THE SQUAD PAGE, THE SAME SEPARATION. It opens on the latest season
+         played, and its past players follow the tab rather than reading
+         "17 in all" over nobody. */
+      const sqS = fs.readFileSync(path.join(ROOT, 'squad.html'), 'utf8');
+      const latestPlayed = (dPS.seasons || []).map((s) => s.name)
+        .filter((n) => (dPS.competitive || []).some((m) => m.played && m.season === n)).pop();
+      const onTab = (sqS.match(/class="sq-season is-on"[^>]*data-season="([^"]+)"/) || [])[1];
+      check('the squad page opens on the latest season played',
+        !!latestPlayed && onTab === latestPlayed, `opens on ${onTab}, latest played ${latestPlayed}`);
+      const homeJs = fs.readFileSync(path.join(ROOT, 'src', 'scripts', '10-home.js'), 'utf8');
+      check('and its past players are counted and hidden per season',
+        /data-past-count/.test(sqS) && /\[data-season\]\.is-on/.test(homeJs)
+          && /querySelector\('#past-players'\)/.test(homeJs));
+      /* Where he played, per tab: every season he appeared in has its own map. */
+      const cdSeasonsPlayed = (dPS.seasons || []).map((s, i) => [s.name, i])
+        .filter(([n]) => (dPS.competitive || []).some((m) => m.played && m.season === n
+          && [...((m.detail || {}).starters || [])].some((x) => x.num === cd.num && (x.positions || []).length)));
+      check('each season a player started in has its own heat map, and All seasons the whole career',
+        cdSeasonsPlayed.length > 0
+          && cdSeasonsPlayed.every(([, i]) => new RegExp(`class="sec pf-pitch" data-season-scope="${i}( all)?"`).test(cdHtml))
+          && /class="sec pf-pitch" data-season-scope="(\d+ )?all"/.test(cdHtml),
+        cdSeasonsPlayed.map(([n]) => n).join(','));
       check('sections counted over every season show under the All seasons tab alone',
-        ['pf-versus', 'pf-pitch'].every((c) => new RegExp(`class="sec ${c}" data-season-scope="all"`).test(cdHtml))
-          && /\[data-season-scope="all"\]/.test(fs.readFileSync(path.join(ROOT, 'src', 'scripts', '10-home.js'), 'utf8')));
+        ['pf-versus'].every((c) => new RegExp(`class="sec ${c}" data-season-scope="all"`).test(cdHtml))
+          && /\[data-season-scope\]/.test(fs.readFileSync(path.join(ROOT, 'src', 'scripts', '10-home.js'), 'utf8')));
     }
     /* The win rate is one figure computed once and printed in three places -
        a tile, a bar and a rank row - and two of them still said "when they

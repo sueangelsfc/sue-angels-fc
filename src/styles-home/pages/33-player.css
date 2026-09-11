@@ -238,6 +238,7 @@ html.js .pf-plot.is-in .pf-plot__end{opacity: 1;}
    Only under html.js, and only where motion is welcome: the resting values
    are already on the element, so a blocked script leaves the field correct
    and still. */
+.pf-heat__b{fill: #FFFFFF;}
 html.js .pf-heat__b{
   animation: pf-heat-breathe 6.2s ease-in-out infinite;
   animation-delay: var(--d, 0s);}

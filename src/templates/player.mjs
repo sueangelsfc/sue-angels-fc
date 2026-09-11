@@ -669,8 +669,14 @@ export function playerPage(p, d) {
      player under more than one code for the same match, so a match legitimately
      appears under each of them; the counts above are counts of slots, not of
      matches, and the panels say so. */
+  /* ONE HEAT MAP PER TAB. It was the career map, shown only under All seasons
+     once a season tab stopped carrying career figures, so a season tab lost
+     where he played altogether. Built from the tab's own team sheets: a start
+     counts once in each position the sheet names, a place on the bench half. */
+  const pitchFor = (list, scope, label, lite = false) => {
   const posMatches = new Map();
-  for (const m of (d.played || []).slice().sort((a, b) => (b.iso || '').localeCompare(a.iso || ''))) {
+  const tally = new Map();
+  for (const m of list.slice().sort((a, b) => (b.iso || '').localeCompare(a.iso || ''))) {
     const det = m.detail;
     if (!det) continue;
     const started = (det.starters || []).find((x) => x.num === p.num);
@@ -678,6 +684,7 @@ export function playerPage(p, d) {
     const rec = started || benched;
     if (!rec) continue;
     for (const c of rec.positions || []) {
+      tally.set(c, (tally.get(c) || 0) + (started ? 1 : 0.5));
       if (!posMatches.has(c)) posMatches.set(c, []);
       posMatches.get(c).push({
         opponent: m.opponent,
@@ -690,8 +697,9 @@ export function playerPage(p, d) {
     }
   }
 
-  const weights = (squadRec.positionWeights || []).filter((w) => PITCH[w.code]);
-  const unmapped = (squadRec.positionWeights || []).filter((w) => !PITCH[w.code]);
+  const counts = [...tally].map(([code, n]) => ({ code, n })).sort((a, b) => b.n - a.n);
+  const weights = counts.filter((w) => PITCH[w.code]);
+  const unmapped = counts.filter((w) => !PITCH[w.code]);
   const heatMax = Math.max(1, ...weights.map((w) => w.n));
   const heat = placeSpots(weights.map((w) => w.code)).map((sp, i) => ({
     ...sp, n: weights[i].n, k: weights[i].n / heatMax,
@@ -700,14 +708,17 @@ export function playerPage(p, d) {
   const slots = weights.reduce((n, w) => n + w.n, 0);
   const fmtN = (n) => (n % 1 ? n.toFixed(1) : String(n));
 
-  const pitchBand = heat.length ? `<section class="sec pf-pitch" data-season-scope="all" aria-labelledby="pf-pitch-h">
+  const where = scope === 'all' ? 'across every season' : `in ${label}`;
+  /* The scope can be "0 all", and an id cannot hold a space. */
+  const sid = String(scope).replace(/\s+/g, '-');
+  return heat.length ? `<section class="sec pf-pitch" data-season-scope="${scope}" aria-labelledby="pf-pitch-h-${sid}">
       <div class="wrap">
-        ${rail(RAIL.next(), 'Where they play', `All seasons · ${heat.length} ${heat.length === 1 ? 'position' : 'positions'}`)}
-        <h2 class="h2 rv" id="pf-pitch-h">On the <span class="volt">pitch.</span></h2>
+        ${rail(RAIL.next(), 'Where they play', `${label} · ${heat.length} ${heat.length === 1 ? 'position' : 'positions'}`)}
+        <h2 class="h2 rv" id="pf-pitch-h-${sid}">On the <span class="volt">pitch.</span></h2>
         <div class="pf-pitch__grid rv">
           <figure class="pf-pitch__fig">
-            <svg viewBox="0 0 100 140" role="img" aria-labelledby="pf-pitch-t" preserveAspectRatio="xMidYMid meet">
-              <title id="pf-pitch-t">Heat map of where ${esc(p.name)} lined up. Most often
+            <svg viewBox="0 0 100 140" role="img" aria-labelledby="pf-pitch-t-${sid}" preserveAspectRatio="xMidYMid meet">
+              <title id="pf-pitch-t-${sid}">Heat map of where ${esc(p.name)} lined up. Most often
                 ${esc(heat[0].code)}, ${esc(fmtN(heat[0].n))} of ${esc(fmtN(slots))} team-sheet slots.</title>
               <defs>
                 <!-- The classic heat-map pipeline, which is what makes one
@@ -716,7 +727,7 @@ export function playerPage(p, d) {
                      channel, then remap that ramp to colour. Banded through a
                      table so the field builds from a dim ember at the edge to
                      a near-white core, all inside the brand's orange. -->
-                <filter id="pf-heat-${attr(p.slug)}" x="-25%" y="-25%" width="150%" height="150%"
+                <filter id="pf-heat-${attr(p.slug)}-${sid}" x="-25%" y="-25%" width="150%" height="150%"
                         color-interpolation-filters="sRGB">
                   <feGaussianBlur stdDeviation="3.4" result="b" />
                   <!-- All four channels take the blurred ALPHA. The alpha row
@@ -738,7 +749,7 @@ export function playerPage(p, d) {
                 <!-- Heat stops at the touchline. The blur legitimately
                      spreads past the pitch and a field bleeding into the
                      panel margin reads as a leak rather than as play. -->
-                <clipPath id="pf-clip-${attr(p.slug)}">
+                <clipPath id="pf-clip-${attr(p.slug)}-${sid}">
                   <rect x="1" y="1" width="98" height="138" rx="3" />
                 </clipPath>
               </defs>
@@ -752,7 +763,7 @@ export function playerPage(p, d) {
               <rect x="26" y="121" width="48" height="18" fill="none" stroke="var(--line-d)" />
               <rect x="38" y="132" width="24" height="7" fill="none" stroke="var(--line-d)" />
 
-              <g class="pf-heat" clip-path="url(#pf-clip-${attr(p.slug)})" filter="url(#pf-heat-${attr(p.slug)})">
+              <g class="pf-heat" clip-path="url(#pf-clip-${attr(p.slug)}-${sid})" filter="url(#pf-heat-${attr(p.slug)}-${sid})">
                 ${(() => {
     const rnd = lcg(p.num || 1);
     const blobs = [];
@@ -763,7 +774,9 @@ export function playerPage(p, d) {
          overlapped the alpha clipped and the middle burned out to a flat
          white mass with no structure left in it. Density has to accumulate
          gradually for the ramp to have anything to show. */
-      const n = 7 + Math.round(h.k * 16);
+      /* Lighter on a season tab when the page also carries the career map:
+         three full maps put four profiles over the page-weight ceiling. */
+      const n = lite ? 4 + Math.round(h.k * 9) : 7 + Math.round(h.k * 16);
       blobs.push({ x: h.x, y: cy, r: 4.6 + 5.4 * h.k, o: 0.32 + 0.36 * h.k, i: blobs.length });
       for (let j = 0; j < n; j++) {
         const ang = rnd() * Math.PI * 2;
@@ -780,9 +793,9 @@ export function playerPage(p, d) {
         });
       }
     }
-    return blobs.map((b) => `<circle class="pf-heat__b" cx="${b.x.toFixed(1)}" cy="${b.y.toFixed(1)}"
-                  r="${b.r.toFixed(1)}" fill="#FFFFFF" opacity="${b.o.toFixed(2)}"
-                  style="--r:${b.r.toFixed(1)};--o:${b.o.toFixed(2)};--d:${(b.i % 9) * 0.72}s" />`).join('\n                ');
+    /* The fill is in the stylesheet; r and opacity stay on the element as the
+       fallback the breathing animation starts from. */
+    return blobs.map((b) => `<circle class="pf-heat__b" cx="${b.x.toFixed(1)}" cy="${b.y.toFixed(1)}" r="${b.r.toFixed(1)}" opacity="${b.o.toFixed(2)}" style="--r:${b.r.toFixed(1)};--o:${b.o.toFixed(2)};--d:${((b.i % 9) * 0.72).toFixed(2)}s"/>`).join('');
   })()}
               </g>
 
@@ -807,7 +820,7 @@ export function playerPage(p, d) {
           <div class="pf-pitch__body">
             <p>Read off the team sheets, not from a label. ${esc(p.first)} was named in
               ${esc(heat.length)} ${heat.length === 1 ? 'position' : 'different positions'}
-              across every season${heat.length > 1 ? `, most often at ${esc(positionName(heat[0].code).toLowerCase())}` : ''}.</p>
+              ${where}${heat.length > 1 ? `, most often at ${esc(positionName(heat[0].code).toLowerCase())}` : ''}.</p>
             <ol class="pf-heatlist">
               ${heat.map((h) => {
     const ms = posMatches.get(h.code) || [];
@@ -847,7 +860,7 @@ export function playerPage(p, d) {
               </li>`;
   }).join('\n              ')}
             </ol>
-            <p class="pf-heatlist__note">Team-sheet slots across every season, not matches:
+            <p class="pf-heatlist__note">Team-sheet slots ${where}, not matches:
               a sheet can name the same player under two codes for one game. A place on the bench
               counts as a half, because being named there is not the same as playing there.${unmapped.length
     ? ` ${unmapped.map((w) => esc(w.code)).join(', ')} ${unmapped.length === 1 ? 'has' : 'have'} no fixed
@@ -856,6 +869,19 @@ export function playerPage(p, d) {
         </div>
       </div>
     </section>` : '';
+  };
+  /* A season tab shows its own map, All seasons the career one. A player who
+     has played in only one season has one map, shown under both tabs, because
+     the two would be the same picture drawn twice. */
+  const playedSeasons = seasons.map((s, i) => [s, i]).filter(([s]) => s.profile.apps || s.profile.bench);
+  const pitchBand = playedSeasons.length <= 1
+    ? (playedSeasons.length
+      ? pitchFor(playedSeasons[0][0].matches, `${playedSeasons[0][1]} all`, playedSeasons[0][0].name)
+      : '')
+    : [
+      ...playedSeasons.map(([s, i]) => pitchFor(s.matches, String(i), s.name, true)),
+      pitchFor(counted, 'all', 'All seasons'),
+    ].join('');
 
   /* ================= 07 HONOURS ================= */
   const honours = [

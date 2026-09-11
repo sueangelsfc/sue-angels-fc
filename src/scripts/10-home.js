@@ -896,7 +896,12 @@
          season appear under All seasons and nowhere else, and the opening
          sentence is swapped for the tab's own. */
       var isAll = tabs[i].hasAttribute('data-season-all');
-      $$('[data-season-scope="all"]').forEach(function (el) { el.hidden = !isAll; });
+      /* A band scoped "all" shows under All seasons; one scoped to a tab's
+         index (the heat map, one per season) shows under that tab alone. */
+      $$('[data-season-scope]').forEach(function (el) {
+        var s = ' ' + el.getAttribute('data-season-scope') + ' ';
+        el.hidden = !((isAll && s.indexOf(' all ') > -1) || s.indexOf(' ' + i + ' ') > -1);
+      });
       var lede = $('[data-season-lede]');
       if (lede && lede.hasAttribute('data-lede-' + i)) lede.textContent = lede.getAttribute('data-lede-' + i);
       if (focus) tabs[i].focus();
@@ -1966,6 +1971,19 @@
       var n = document.querySelectorAll('#first-team .pc:not([hidden])').length;
       band.textContent = n + ' player' + (n === 1 ? '' : 's');
     }
+    /* THE PAST PLAYERS FOLLOW THE TAB TOO. Under 26/27 the band still read
+       "17 in all" over Retired and Departed headings with nobody beneath them,
+       because none of them played that season. Counted and hidden per tab. */
+    var past = document.querySelector('#past-players');
+    if (past) {
+      var pn = past.querySelectorAll('.pc:not([hidden])').length;
+      var pc = past.querySelector('[data-past-count]');
+      if (pc) pc.textContent = pn + ' in all';
+      past.hidden = !pn;
+      Array.prototype.forEach.call(past.querySelectorAll('[data-past]'), function (s) {
+        s.hidden = !s.querySelectorAll('.pc:not([hidden])').length;
+      });
+    }
     paintGroups();
   }
 
@@ -1997,7 +2015,8 @@
     apply(b.getAttribute('data-season'), b.getAttribute('data-view'));
   });
 
-  var first = bar.querySelector('[data-season]');
+  /* The tab the generator marked, which is the latest season played. */
+  var first = bar.querySelector('[data-season].is-on') || bar.querySelector('[data-season]');
   if (first) apply(first.getAttribute('data-season'), first.getAttribute('data-view'));
 })();
 

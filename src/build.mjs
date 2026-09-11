@@ -1084,9 +1084,21 @@ const meta = (slug, fallbackTitle, desc) => ({
 const TITLE_DIV = (d.lastTitle && d.lastTitle.division) || CLUB.division;
 const TITLE_SEASON = (d.lastTitle && d.lastTitle.season) || d.currentSeason;
 
+/* THE HOME PAGE'S TAB LEADS WITH THE DIVISION BEING PLAYED. It read "Sue's
+   Angels FC - League Ten Champions" from the recovered page list, a title
+   from the summer that nothing moved on when League Eight started. Once the
+   division's table has a match in it the tab names it and its season; before
+   that the recovered title stands. No claim of a title sits beside the new
+   division, which the suite's wrong-division check would rightly fail. */
+const homeMeta = meta('home', `${CLUB.name} - ${TITLE_DIV} Champions`,
+  `London Sunday-league football club, founded in memory of ${CLUB.memorial.name}. ${TITLE_DIV} champions, unbeaten in our inaugural season.`);
+const l8Now = d.nextDivisionTable || {};
+if ((l8Now.rows || []).some((r) => (r.played || 0) > 0)) {
+  homeMeta.title = `${l8Now.division} ${l8Now.season || d.currentSeason} · ${CLUB.name}`;
+}
+
 const routes = [
-  { file: 'index.html', tpl: () => home(d), ...meta('home', `${CLUB.name} - ${TITLE_DIV} Champions`,
-      `London Sunday-league football club, founded in memory of ${CLUB.memorial.name}. ${TITLE_DIV} champions, unbeaten in our inaugural season.`),
+  { file: 'index.html', tpl: () => home(d), ...homeMeta,
     clubExtra },
 
   { file: 'about.html', tpl: () => about(d), ...meta('about', `Our story · ${CLUB.name}`,

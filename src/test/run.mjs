@@ -5343,6 +5343,9 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const { compareScorers: cmpSc } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
   check('League Eight\'s scorers add up to no more than each club scored',
     cmpSc(l8.scorers || [], l8.results || []).length === 0, cmpSc(l8.scorers || [], l8.results || []).join(' | '));
+  const homeTitle = ((fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8').match(/<title>([^<]*)</) || [])[1] || '');
+  check('the home page tab leads with League Eight once it has started',
+    !(l8.rows || []).some((r) => r.played > 0) || homeTitle.startsWith(`${l8.division} `), homeTitle);
   check('probe: a scorer filed under the wrong club is caught',
     cmpSc([...(l8.scorers || []), { name: 'X', club: 'Haydons Park', goals: 1 }], l8.results || []).length > 0);
 }

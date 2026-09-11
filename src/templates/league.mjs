@@ -484,7 +484,28 @@ export function league(d) {
               <span class="lg-res__score">${esc(f.kick || 'v')}</span>
               <span class="lg-res__side is-away${isUs(f.away) ? ' is-us' : ''}">${badge(f.away)}${esc(shortClub(f.away))}</span>
             </li>`).join('\n            ');
-  const eightExtra = (eightResults.length
+  const eightScorers = next.scorers || [];
+  const eightExtra = (eightScorers.length
+    ? `<h3 class="lg-sub">Scorers</h3>
+          <div class="lg-tablewrap">
+            <table class="lg-tbl lg-sc" data-l8-scorers>
+              <caption class="sr-only">${esc(next.division || 'League Eight')} scorers${next.scorersAsOf ? `, as of ${esc(fmtDate(next.scorersAsOf))}` : ''}</caption>
+              <thead>
+                <tr>
+                  <th scope="col" class="lg-sc__pos">#</th>
+                  <th scope="col" class="lg-sc__who">Player</th>
+                  <th scope="col" class="lg-sc__club">Club</th>
+                  <th scope="col"><abbr title="Goals">G</abbr></th>
+                  <th scope="col"><abbr title="Assists">A</abbr></th>
+                  <th scope="col"><abbr title="Appearances">Apps</abbr></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${chartRows(eightScorers.map((s) => ({ ...s, assists: null })))}
+              </tbody>
+            </table>
+          </div>` : '')
+    + (eightResults.length
     ? `<h3 class="lg-sub">Results so far</h3>
           <ol class="lg-results">
             ${resultRows(eightResults)}

@@ -151,6 +151,16 @@
       "away": "TSM Rovers"
     }
   ],
+  "_scorersNote": "The division's scorers, from Full-Time's stat leaders page (Player stats, Summary, League Eight 26/27), which excludes county cup football. Every player with a goal is kept, spelt as Full-Time prints them; the page lists appearances for everybody else and those are not kept. npm run verify fails if a club's scorers add up to more goals than its results say it scored.",
+  "scorersAsOf": "2026-09-06",
+  "scorers": [
+    { "name": "Makheyi Chilumbi", "club": "TSM Rovers", "goals": 3, "apps": 1 },
+    { "name": "Shaam Aravindhan", "club": "Three Little Birds FC", "goals": 1, "apps": 1 },
+    { "name": "Charlie Dunkley", "club": "Sue's Angels FC", "goals": 1, "apps": 1 },
+    { "name": "Jon Lloyd", "club": "Sue's Angels FC", "goals": 1, "apps": 1 },
+    { "name": "Vincent Narayna", "club": "TSM Rovers", "goals": 1, "apps": 1 },
+    { "name": "Liam O'mara leonard", "club": "Junction Elite FC Sunday 3rd Team", "goals": 1, "apps": 1 }
+  ],
   "fixtures": [
     {
       "iso": "2026-09-13",

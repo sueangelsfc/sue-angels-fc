@@ -1381,6 +1381,43 @@ a.tbl__row:hover{background: rgba(255, 255, 255, 0.045);}
 .tbl__row--us:hover{background: linear-gradient(90deg, rgba(var(--volt-rgb), 0.22), rgba(var(--volt-rgb), 0.05));}
 .tbl__row--runner{background: linear-gradient(90deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03));
   box-shadow: inset 4px 0 0 var(--fg);}
+
+/* League Eight, as it stands: pinned under the hero. The table reuses .tbl;
+   minmax(0, ...) so a long club name cannot force a track open on a phone. */
+.sec--l8{background: var(--navy-deep); border-bottom: 1px solid var(--line-d); color: var(--fg); padding: 72px 0;}
+.l8__lede{margin-top: 10px; font-family: var(--ui); font-size: 15px; color: var(--ink-2);}
+.l8__grid{display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 22px; align-items: start;}
+.l8__tbl .tbl__row{padding: 11px 18px;}
+.l8__cards{display: grid; gap: 16px; min-width: 0;}
+.l8__card{border: 1px solid var(--line-d); border-radius: 18px; padding: 16px 18px; background: rgba(255, 255, 255, 0.02);}
+.l8__h3{display: flex; justify-content: space-between; gap: 10px; margin: 0 0 10px;
+  font-family: var(--ui); font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.l8__h3 span{color: var(--ink-2);}
+.l8__games, .l8__scorers{list-style: none; margin: 0; padding: 0; display: grid; gap: 8px;}
+.l8__game{display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 10px;
+  font-family: var(--ui); font-size: 13.5px; color: var(--ink-2);}
+/* Wraps rather than truncates: a right-aligned ellipsis cuts a name from its
+   start, and "Junction Elite FC Sunday 3rd Team" is not the same club without
+   its qualifier. */
+.l8__side{display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; text-align: right;
+  line-height: 1.25; overflow-wrap: anywhere;}
+.l8__side--away{justify-content: flex-start; text-align: left;}
+.l8__side img, .l8__who img{width: 22px; height: 22px; object-fit: contain; flex: 0 0 auto;}
+.l8__mid{min-width: 54px; text-align: center; font-family: var(--display); font-weight: 700; font-size: 15px; color: var(--fg); font-variant-numeric: tabular-nums;}
+.l8__game.is-us .l8__side, .l8__scorers .is-us .l8__who{color: var(--volt);}
+.l8__scorers li{display: flex; justify-content: space-between; align-items: center; gap: 10px; font-family: var(--ui); font-size: 13.5px; color: var(--ink-2);}
+.l8__who{display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.l8__scorers b{font-family: var(--display); font-weight: 700; font-size: 15px; color: var(--fg); font-variant-numeric: tabular-nums;}
+@media (max-width: 900px){
+  .l8__grid{grid-template-columns: minmax(0, 1fr);}
+}
+/* Nine clubs, several with long names, in a 1fr column on a phone: wrapped
+   in smaller type rather than cut to "BARNES STOR". */
+@media (max-width: 620px){
+  .l8__tbl .tbl__row{padding: 10px 14px;}
+  .l8__tbl .tbl__club{white-space: normal; line-height: 1.2; gap: 9px; font-size: 12.5px !important; overflow-wrap: anywhere;}
+  .l8__tbl .tbl__club img{width: 26px; height: 26px; padding: 3px;}
+}
 .tbl__row--runner .tbl__club img{border-color: rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.12);}
 .tbl__row--runner .tbl__pos,
 .tbl__row--runner .tbl__pts{color: var(--fg) !important;}

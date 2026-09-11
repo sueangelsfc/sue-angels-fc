@@ -887,6 +887,13 @@ export function buildDataset(overrides = {}) {
       started: t.started || played || anyPlayed,
       rows,
       fixturesAhead,
+      /* The division's scorers, most goals first and then by name, ranked
+         the way the league ranks them: level players share a position. */
+      scorers: (t.scorers || [])
+        .map((s) => ({ ...s, goals: Number(s.goals) || 0, us: /Sue.s Angels/i.test(String(s.club || '')) }))
+        .filter((s) => s.goals > 0)
+        .sort((a, b) => (b.goals - a.goals) || String(a.name).localeCompare(String(b.name)))
+        .map((s, i, all) => ({ ...s, pos: all.findIndex((x) => x.goals === s.goals) + 1 })),
     };
   })();
   /* The league's own pages for this division, built from the ids recorded

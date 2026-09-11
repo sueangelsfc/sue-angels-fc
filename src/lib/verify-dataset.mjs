@@ -4,7 +4,7 @@
    no page should publish a number. */
 import { buildDataset } from './dataset.mjs';
 import { teamSummary, leaderboard, clubRecords, formGuide, homeAwaySplit, byCompetition,
-  deriveTable, compareTable, compareDivision } from './stats.mjs';
+  deriveTable, compareTable, compareDivision, compareScorers } from './stats.mjs';
 
 const d = buildDataset();
 let fails = 0;
@@ -70,6 +70,17 @@ console.log(`matches with detail records: ${d.matches.filter((m) => m.detail).le
       gaps.forEach((g) => console.log(`FAIL  ${g}`));
     } else {
       console.log(`PASS  all ${rows.length} clubs agree with the results`);
+    }
+  }
+  const sc = l8.scorers || [];
+  if (sc.length && res.length) {
+    const over = compareScorers(sc, res);
+    console.log(`\n=== ${l8.division || 'NEW DIVISION'} SCORERS vs RESULTS (as of ${l8.scorersAsOf || 'undated'}) ===`);
+    if (over.length) {
+      fails += over.length;
+      over.forEach((g) => console.log(`FAIL  ${g}`));
+    } else {
+      console.log(`PASS  ${sc.length} scorers, no club credited with more goals than it scored`);
     }
   }
 }

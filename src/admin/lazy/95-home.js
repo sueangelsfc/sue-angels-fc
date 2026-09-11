@@ -242,6 +242,13 @@
               + 'has been played.</span></span>' +
             '<span class="hband__b"></span>' +
           '</li>' +
+          '<li class="hband is-pinned">' +
+            '<span class="hband__n">Top</span>' +
+            '<span class="hband__t"><b>League Eight, as it stands</b>' +
+              '<span>The table, the latest results, the next round and the scorers. '
+              + 'Pinned under the heading once the division has a match played.</span></span>' +
+            '<span class="hband__b"></span>' +
+          '</li>' +
           rows.map(function (k, i) {
             /* i is the position in the WHOLE order, not in the filtered view,
                so the first and last arrows stay disabled on the right rows. */

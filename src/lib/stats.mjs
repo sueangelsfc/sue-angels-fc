@@ -858,6 +858,23 @@ export function compareDivision(rows, results) {
   return compareTable(rows || [], full);
 }
 
+/* A DIVISION'S SCORERS AGAINST ITS RESULTS. Both are transcribed from
+   Full-Time, so a club's scorers can come to fewer goals than its results (an
+   own goal is nobody's) but never to more: that is a mistyped figure or a
+   player filed under the wrong club. Returns one line per club that is over. */
+export function compareScorers(scorers, results) {
+  const scored = {};
+  for (const r of results || []) {
+    scored[r.home] = (scored[r.home] || 0) + (Number(r.hs) || 0);
+    scored[r.away] = (scored[r.away] || 0) + (Number(r.as) || 0);
+  }
+  const byClub = {};
+  for (const s of scorers || []) byClub[s.club] = (byClub[s.club] || 0) + (Number(s.goals) || 0);
+  return Object.entries(byClub)
+    .filter(([club, goals]) => goals > (scored[club] || 0))
+    .map(([club, goals]) => `${club}: scorers total ${goals}, results say ${scored[club] || 0}`);
+}
+
 /* THE ASSISTS A STORED MATCH ACTUALLY HOLDS. The match form derives its flat
    `assists` list from the goals on every save, and until 10 September 2026 it
    also kept the previous save's copy as "orphans", so a record re-saved four

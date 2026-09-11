@@ -881,6 +881,81 @@ export function home(d) {
       </div>
     </section>` : '';
 
+  /* ================= LEAGUE EIGHT, AS IT STANDS =================
+     PINNED UNDER THE HERO while the division has a match in it. The club's
+     saved running order has the table, the results and the fixtures switched
+     off, and that record can only be changed from the panel, so the division
+     the club is actually playing in appeared nowhere on its own front page
+     below the fold. This is the one band that does not wait for the layout:
+     the standing, the round just played, the round coming and the scorers, all
+     transcribed from Full-Time and all checked by `npm run verify`. It empties
+     itself before a ball is kicked and needs no switch. */
+  const l8Results = l8.results || [];
+  const l8LastDay = l8Results.length ? l8Results[l8Results.length - 1].date : '';
+  const l8Round = l8Results.filter((r) => r.date === l8LastDay);
+  const l8Ahead = l8.fixturesAhead || [];
+  const l8NextRound = l8Ahead.filter((f) => f.iso === (l8Ahead[0] || {}).iso);
+  const l8Scorers = (l8.scorers || []).slice(0, 6);
+  const dayOf = (s) => String(s || '').replace(/\s+\d{2}$/, '');
+  const isUsName = (n) => /Sue.s Angels/i.test(String(n || ''));
+  const crestOf = (n, size = 22) => (isUsName(n)
+    ? `<img src="${STAR}" alt="" width="${size - 4}" height="${size}" loading="lazy" decoding="async" />`
+    : oppBadge(n, d.badges, size, size).replace(/alt="[^"]*"/, 'alt=""'));
+  const l8Line = (home, mid, away) => `<li class="l8__game${isUsName(home) || isUsName(away) ? ' is-us' : ''}">
+                <span class="l8__side">${esc(shortClub(home))}${crestOf(home)}</span>
+                <b class="l8__mid">${esc(mid)}</b>
+                <span class="l8__side l8__side--away">${crestOf(away)}${esc(shortClub(away))}</span>
+              </li>`;
+  const leagueNowBand = l8Live ? `<section class="sec sec--l8" id="league-eight" aria-labelledby="l8-h">
+      <div class="wrap tbl__head">
+        <div>
+          <p class="eyebrow">${esc(l8.division)} · ${esc(l8.season || d.currentSeason)} · as it stands</p>
+          <h2 class="h2" id="l8-h">${esc(l8.division)}<span class="volt">.</span></h2>
+          ${usL8 ? `<p class="l8__lede">${esc(standing.replace(` in ${l8.division}`, '').replace(/^./, (c) => c.toUpperCase()))} after ${esc(usL8.played)} match${usL8.played === 1 ? '' : 'es'}${l8.tableAsOf ? `. Table as of ${esc(fmtDate(l8.tableAsOf))}` : ''}.</p>` : ''}
+        </div>
+        <a class="btn btn--ghost btn--sm" href="/league.html">Full table ${ARROW}</a>
+      </div>
+      <div class="wrap l8__grid">
+        <div class="tbl l8__tbl">
+          <div class="tbl__row tbl__head-row" aria-hidden="true">
+            <span class="tbl__pos">#</span><span class="tbl__club">Club</span>
+            <span>P</span><span>W</span><span>GD</span><span class="tbl__pts">Pts</span>
+          </div>
+          ${l8Rows.map((r) => `<a class="tbl__row${r.us ? ' tbl__row--us' : ''}" href="/league.html" aria-hidden="true" tabindex="-1">
+            <span class="tbl__pos">${esc(r.pos)}</span>
+            <span class="tbl__club">${crestOf(r.club, 26)}${esc(shortClub(r.club))}</span>
+            <span>${esc(r.played)}</span><span>${esc(r.won)}</span><span>${r.goalDifference > 0 ? '+' : ''}${esc(r.goalDifference)}</span><b class="tbl__pts">${esc(r.points)}</b>
+          </a>`).join('\n          ')}
+          <table class="sr-only">
+            <caption>${esc(l8.division)} standings, ${esc(l8.season || d.currentSeason)}</caption>
+            <thead><tr><th scope="col">Position</th><th scope="col">Club</th><th scope="col">Played</th>
+              <th scope="col">Won</th><th scope="col">Goal difference</th><th scope="col">Points</th></tr></thead>
+            <tbody>${l8Rows.map((r) => `<tr><td>${esc(r.pos)}</td><th scope="row">${esc(r.club)}</th><td>${esc(r.played)}</td><td>${esc(r.won)}</td><td>${r.goalDifference > 0 ? '+' : ''}${esc(r.goalDifference)}</td><td>${esc(r.points)}</td></tr>`).join('')}</tbody>
+          </table>
+        </div>
+        <div class="l8__cards">
+          ${l8Round.length ? `<div class="l8__card">
+            <h3 class="l8__h3">Latest results <span>${esc(dayOf(l8LastDay))}</span></h3>
+            <ol class="l8__games">
+              ${l8Round.map((r) => l8Line(r.home, `${r.hs}-${r.as}`, r.away)).join('\n              ')}
+            </ol>
+          </div>` : ''}
+          ${l8NextRound.length ? `<div class="l8__card">
+            <h3 class="l8__h3">Next round <span>${esc(dayOf(l8NextRound[0].date))}</span></h3>
+            <ol class="l8__games">
+              ${l8NextRound.map((f) => l8Line(f.home, f.kick || 'v', f.away)).join('\n              ')}
+            </ol>
+          </div>` : ''}
+          ${l8Scorers.length ? `<div class="l8__card">
+            <h3 class="l8__h3">Top scorers</h3>
+            <ol class="l8__scorers">
+              ${l8Scorers.map((s) => `<li${s.us ? ' class="is-us"' : ''}><span class="l8__who">${crestOf(s.club, 20)}${esc(s.name)}</span><b>${esc(s.goals)}</b></li>`).join('\n              ')}
+            </ol>
+          </div>` : ''}
+        </div>
+      </div>
+    </section>` : '';
+
   /* ================= 07 ASK THE ANGELS ================= */
   const faqBand = `<section class="sec sec--faq" id="faq" aria-labelledby="faq-h">
       <div class="wrap rv">
@@ -2401,7 +2476,7 @@ export function home(d) {
        The wordstrip travels with the CTA rather than sitting at a fixed point
        in the page, because that is what it is: the lead-in flourish to Pull on
        the shirt, not a divider at a particular height. */
-    body: hero + ticker + shown.map((k) => ({
+    body: hero + ticker + leagueNowBand + shown.map((k) => ({
       news: newsBand,
       who: whoBand,
       awards: awardsBand,

@@ -5297,6 +5297,39 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     nextAt > -1 && !!us8 && us8.played > 0
       && new RegExp(`\\d+(st|nd|rd|th) in League Eight on ${us8.points} points?`).test(homeText.slice(nextAt, nextAt + 700)),
     homeText.slice(nextAt, nextAt + 300));
+
+  /* LEAGUE EIGHT, PINNED UNDER THE HERO. The club's layout has the table,
+     results and fixtures off, so this band is the division on the front page.
+     It must come before every band the layout places, carry all nine clubs,
+     and name the scorers; and it must be absent before a ball is kicked. */
+  const homeBodyL = String((homeTpl(dL) || {}).body || '');
+  const l8At = homeBodyL.indexOf('id="league-eight"');
+  const firstLayoutBand = Math.min(...['id="nextup"', 'id="news"', 'id="who"']
+    .map((s) => homeBodyL.indexOf(s)).filter((i) => i > -1));
+  const l8Sec = l8At > -1 ? homeBodyL.slice(l8At, homeBodyL.indexOf('</section>', l8At)) : '';
+  check('League Eight is pinned under the hero, above the club\'s own running order',
+    l8At > -1 && l8At < firstLayoutBand, `at ${l8At}, first layout band at ${firstLayoutBand}`);
+  check('and it carries every club in the division',
+    (l8.rows || []).length === 9 && (l8Sec.match(/<a class="tbl__row/g) || []).length === 9);
+  check('and the division\'s scorers',
+    (l8.scorers || []).length > 0 && (l8.scorers || []).slice(0, 6).every((s) => l8Sec.includes(String(s.name).replace(/&/g, '&amp;').replace(/'/g, '&#39;'))));
+  check('and the round just played and the round to come',
+    /Latest results/.test(l8Sec) && ((l8.fixturesAhead || []).length === 0 || /Next round/.test(l8Sec)));
+  const dL0 = { ...dL, nextDivisionTable: { ...l8, rows: (l8.rows || []).map((r) => ({ ...r, played: 0 })) } };
+  check('probe: before a ball is kicked there is no League Eight band',
+    !String((homeTpl(dL0) || {}).body || '').includes('id="league-eight"'));
+  const homeBodyAgain = String((homeTpl(dL) || {}).body || '');
+  check('and the home page is restored afterwards', homeBodyAgain.includes('id="league-eight"'));
+
+  /* THE SCORERS, under the League Eight table and against the results. */
+  check('the league page lists League Eight\'s scorers under its table',
+    (l8.scorers || []).length > 0 && /data-l8-scorers/.test(panel8)
+      && (panel8.match(/<tr( class="is-us")?>\s*<td class="lg-sc__pos">/g) || []).length === l8.scorers.length);
+  const { compareScorers: cmpSc } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+  check('League Eight\'s scorers add up to no more than each club scored',
+    cmpSc(l8.scorers || [], l8.results || []).length === 0, cmpSc(l8.scorers || [], l8.results || []).join(' | '));
+  check('probe: a scorer filed under the wrong club is caught',
+    cmpSc([...(l8.scorers || []), { name: 'X', club: 'Haydons Park', goals: 1 }], l8.results || []).length > 0);
 }
 
 /* ==========================================================================
@@ -6848,7 +6881,9 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     const want = publishedBands(ON, dP);
     const drawnOnIndex = ((pages.get('index.html') || '')
       .match(/<section class="sec sec--/g) || []).length;
-    const drawn = [...full.matchAll(/<section class="sec sec--([a-z0-9]+)"/g)].map((m) => m[1]);
+    /* `l8` is pinned under the hero like the hero itself, not a layout band. */
+    const drawn = [...full.matchAll(/<section class="sec sec--([a-z0-9]+)"/g)].map((m) => m[1])
+      .filter((k) => k !== 'l8');
 
     check('every band the layout publishes is actually drawn',
       want.every((k) => drawn.includes(k)) && drawn.length === want.length,

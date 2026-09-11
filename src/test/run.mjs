@@ -5274,6 +5274,13 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   check('League Eight\'s results and its next round are listed under its table',
     (l8.results || []).length > 0 && rows8 === (l8.results || []).length + (l8.fixturesAhead || []).length,
     `${rows8} rows for ${(l8.results || []).length} results and ${(l8.fixturesAhead || []).length} fixtures ahead`);
+  /* League Ten's scorers and its ninety results belong to the League Ten tab,
+     so choosing League Eight 26/27 hides them with last season's table. */
+  const lgBandTag = (cls) => ((bodyL8.match(new RegExp(`<section class="sec ${cls}"[^>]*>`)) || [''])[0]);
+  check('League Ten\'s scorers chart only shows on the League Ten tab',
+    /data-league-panel="ten"/.test(lgBandTag('lg-scorers')), lgBandTag('lg-scorers'));
+  check('and so does "Around the league"',
+    /data-league-panel="ten"/.test(lgBandTag('lg-around')), lgBandTag('lg-around'));
   const { compareDivision: cmpDiv } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
   const gaps8 = cmpDiv(l8.rows || [], l8.results || []);
   check('League Eight\'s transcribed table agrees with its transcribed results',
@@ -5343,6 +5350,17 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const { compareScorers: cmpSc } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
   check('League Eight\'s scorers add up to no more than each club scored',
     cmpSc(l8.scorers || [], l8.results || []).length === 0, cmpSc(l8.scorers || [], l8.results || []).join(' | '));
+  /* The panel's Home page screen is handed the same three the site leads with,
+     and draws them as pinned rows, so what it shows is what the page does. */
+  const homeChunkL8 = fs.readFileSync(path.join(ROOT, 'control-home.js'), 'utf8');
+  const seededFirst = (/"?leagueFirst"?:(\[[^\]]*\])/.exec(homeChunkL8) || [])[1];
+  const siteFirst = pbL({ order: [], hidden: ['table', 'results', 'fixtures'] }, dL)
+    .filter((k) => ['table', 'results', 'fixtures'].includes(k));
+  check('the Home page panel is told which bands League Eight puts first',
+    !!seededFirst && JSON.stringify(JSON.parse(seededFirst)) === JSON.stringify((l8.rows || []).some((r) => r.played > 0) ? siteFirst : []),
+    `panel ${seededFirst} site ${siteFirst}`);
+  check('and draws them as pinned rows that say why',
+    /Leads the page while League Eight is played/.test(homeChunkL8));
   const homeTitle = ((fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8').match(/<title>([^<]*)</) || [])[1] || '');
   check('the home page tab leads with League Eight once it has started',
     !(l8.rows || []).some((r) => r.played > 0) || homeTitle.startsWith(`${l8.division} `), homeTitle);

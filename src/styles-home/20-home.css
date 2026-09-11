@@ -1385,7 +1385,9 @@ a.tbl__row:hover{background: rgba(255, 255, 255, 0.045);}
 
 /* League Eight, as it stands: pinned under the hero. The table reuses .tbl;
    minmax(0, ...) so a long club name cannot force a track open on a phone. */
-.sec--l8{background: var(--navy-deep); border-bottom: 1px solid var(--line-d); color: var(--fg); padding: 72px 0;}
+/* No fill of its own: every band around it lets the page's atmosphere show
+   through, and a solid #090B0D slab read as a hole in the page. */
+.sec--l8{background: transparent; border-bottom: 1px solid var(--line-d); color: var(--fg); padding: 72px 0;}
 .l8__lede{margin-top: 10px; font-family: var(--ui); font-size: 15px; color: var(--ink-2);}
 .l8__cards{display: grid; gap: 16px; min-width: 0; align-items: start;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));}
@@ -1772,7 +1774,8 @@ body::before{animation: none;}
 .lg-chip.is-on{background: var(--volt); border-color: var(--volt); color: var(--text-on-brand);}
 .lg-chip:focus-visible{outline: 2px solid var(--volt); outline-offset: 3px;}
 /* Only the script hides a panel; every panel ships visible. */
-html.js .lg-panel[hidden]{display: none;}
+html.js .lg-panel[hidden],
+html.js [data-league-panel][hidden]{display: none;}
 
 @media (prefers-reduced-motion: reduce){
   .lg-chip{transition: none;}

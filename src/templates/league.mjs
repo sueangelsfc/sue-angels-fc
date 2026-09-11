@@ -223,7 +223,12 @@ export function league(d) {
                 </tr>`).join('\n                ');
 
   const ours = (charts.league || []).filter((r) => r.us).length;
-  const scorersBand = (charts.all || []).length ? `<section class="sec lg-scorers" aria-labelledby="lg-sc-h">
+  /* LEAGUE TEN'S SCORERS AND ITS NINETY RESULTS BELONG TO ITS TAB. They sat
+     under both tabs, so a supporter reading League Eight 26/27 scrolled into
+     last season's chart and last season's results with nothing saying so.
+     Tagged as part of the League Ten panel, the division tabs show and hide
+     them with its table; with the script blocked every panel still shows. */
+  const scorersBand = (charts.all || []).length ? `<section class="sec lg-scorers" data-league-panel="ten" aria-labelledby="lg-sc-h">
       <div class="wrap">
         ${rail(2, 'Topping the charts', `${ours} of the top ${esc((charts.league || []).length)} are ours`)}
         <h2 class="h2 rv" id="lg-sc-h">The division's leading <span class="volt">scorers.</span></h2>
@@ -328,7 +333,7 @@ export function league(d) {
             </li>`;
   }).join('\n            ');
 
-  const aroundBand = results.length ? `<section class="sec lg-around" aria-labelledby="lg-ar-h">
+  const aroundBand = results.length ? `<section class="sec lg-around" data-league-panel="ten" aria-labelledby="lg-ar-h">
       <div class="wrap">
         ${rail(3, 'Around the league', `${results.length} results`)}
         <h2 class="h2 rv" id="lg-ar-h">Every result in the <span class="volt">division.</span></h2>

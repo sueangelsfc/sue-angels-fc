@@ -59,7 +59,6 @@
      At module scope rather than inside the render, so the suite can run this
      exact arithmetic instead of a second copy of it. */
   var PAGE = SEED.homePage || {};
-  /* Led by these while League Eight is played, whatever the saved order. */
   var FIRST = SEED.leagueFirst || [];
   var BYTES = PAGE.bytes || {};
   function weightOf(k) { return BYTES[k] || 0; }
@@ -233,6 +232,26 @@
         '</li>';
       }
 
+      /* Led by the site whatever the order says, so no switch. */
+      function leadRowHtml(key) {
+        var b = bandOf(key);
+        var n = live().indexOf(key);
+        return '<li class="hband is-pinned" data-band="' + esc(key) + '">' +
+          '<span class="hband__n">' + (n < 9 ? '0' : '') + (n + 1) + '</span>' +
+          '<span class="hband__t">' +
+            '<b>' + esc(b.name) + '</b>' +
+            '<span>' + esc(b.what) + '</span>' +
+            '<span class="hband__flag">Leads the page while League Eight is played'
+              + (key === 'table' ? ', with the division\'s latest round, next round and scorers under it' : '')
+              + '. It cannot be moved or hidden until the season is over.</span>' +
+            '<span class="hband__kb">' + esc(kb(weightOf(key))) + ' of the page</span>' +
+          '</span>' +
+          '<span class="hband__b">' +
+            '<button class="btn btn--quiet btn--sm" type="button" data-preview>Preview</button>' +
+          '</span>' +
+        '</li>';
+      }
+
       function listHtml() {
         var rows = state.order;
         return '<ol class="hbands">' +
@@ -244,16 +263,11 @@
               + 'has been played.</span></span>' +
             '<span class="hband__b"></span>' +
           '</li>' +
-          '<li class="hband is-pinned">' +
-            '<span class="hband__n">Top</span>' +
-            '<span class="hband__t"><b>League Eight: the table, results and fixtures</b>' +
-              '<span>While League Eight is played these lead the page, in that order, whether '
-              + 'or not they are switched on below, with the division\'s round and scorers under the table.</span></span>' +
-            '<span class="hband__b"></span>' +
-          '</li>' +
+          FIRST.map(leadRowHtml).join('') +
           rows.map(function (k, i) {
             /* i is the position in the WHOLE order, not in the filtered view,
                so the first and last arrows stay disabled on the right rows. */
+            if (FIRST.indexOf(k) >= 0) return '';
             return (!area || bandOf(k).area === area) ? rowHtml(k, i) : '';
           }).join('') +
         '</ol>';

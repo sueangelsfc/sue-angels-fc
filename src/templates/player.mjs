@@ -381,7 +381,9 @@ export function playerPage(p, d) {
         <div>
           <p class="pf-chips">
             <span class="pf-chip pf-chip--pos">${esc(squadRec.position || p.position)}</span>
-            ${accolades.map((a) => `<span class="pf-chip">${esc(a)}</span>`).join('\n            ')}
+            ${/* Career ranks, so they say so: under a season tab an undated "Top
+                  goalscorer" reads as that season's. */''}
+            ${accolades.map((a) => `<span class="pf-chip">${esc(a)}<i>All seasons</i></span>`).join('\n            ')}
             ${captainOf ? `<span class="pf-chip">${esc(captainOf)}</span>` : ''}
             ${statusLabel ? `<span class="pf-chip pf-chip--mut">${esc(statusLabel)}<i>${esc(d.currentSeason)}</i></span>` : ''}
             ${/* WHAT THE CLUB SAID BESIDE THE STATUS. "On trial" is a window
@@ -915,13 +917,14 @@ export function playerPage(p, d) {
 
   const pitchBand = heat.length ? `<section class="sec pf-pitch" aria-labelledby="pf-pitch-h">
       <div class="wrap">
-        ${rail(RAIL.next(), 'Where they play', `${heat.length} ${heat.length === 1 ? 'position' : 'positions'}`)}
+        ${/* The count follows the tab: each layer's own number of positions. */''}
+        ${rail(RAIL.next(), 'Where they play', `${heat.length} ${heat.length === 1 ? 'position' : 'positions'}`)
+    .replace('class="xrail__r"', `class="xrail__r" data-pitch-counts="${attr(JSON.stringify(Object.fromEntries(views.flatMap((v) => v.keys.map((k) => [k, `${v.heat.length} ${v.heat.length === 1 ? 'position' : 'positions'}`])))))}"`)}
         <h2 class="h2 rv" id="pf-pitch-h">On the <span class="volt">pitch.</span></h2>
         <div class="pf-pitch__grid rv">
           <figure class="pf-pitch__fig">
             <svg viewBox="0 0 100 140" role="img" aria-labelledby="pf-pitch-t" preserveAspectRatio="xMidYMid meet">
-              <title id="pf-pitch-t">Heat map of where ${esc(p.name)} lined up. Most often
-                ${esc(heat[0].code)}, ${esc(fmtN(heat[0].n))} of ${esc(fmtN(career.slots))} team-sheet slots.</title>
+              <title id="pf-pitch-t">Heat map of where ${esc(p.name)} lined up, for the season chosen above. The list beside it gives the figures.</title>
               <defs>
                 <!-- The classic heat-map pipeline, which is what makes one
                      look like a heat map rather than a blurred smudge: blur

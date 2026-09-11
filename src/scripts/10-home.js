@@ -922,7 +922,28 @@
       if (focus) tabs[i].focus();
       /* A panel revealed after first paint never met the observer, so its
          bars would sit at zero. Reveal whatever is now on screen. */
-      $$('.rv', panels[i]).forEach(function (el) { el.classList.add('is-in'); });
+      /* The charts wait for the scroll on first load, so they move when they
+         are seen rather than off screen; every switch after that replays
+         them, so each season draws itself in. */
+      $$('.rv', panels[i]).forEach(function (el) {
+        if (!ready && el.classList.contains('pf-charts')) return;
+        el.classList.add('is-in');
+      });
+      if (ready) {
+        $$('.pf-charts, .pf-tiles, .pf-record__grid, .pf-plot', panels[i]).forEach(function (el) {
+          el.classList.remove('is-in');
+          void el.offsetWidth;
+          el.classList.add('is-in');
+        });
+      }
+      var pc = $('[data-pitch-counts]');
+      if (pc) {
+        try {
+          var counts = JSON.parse(pc.getAttribute('data-pitch-counts'));
+          var key = tabs[i].hasAttribute('data-season-all') ? 'all' : String(i);
+          if (counts[key]) pc.textContent = counts[key];
+        } catch (e) { /* the count stays as drawn */ }
+      }
       $$('[data-count]', panels[i]).forEach(function (el) {
         if (window.saTick) window.saTick(el);
       });
@@ -951,11 +972,13 @@
        looks like it has nothing on it. */
     /* The latest season he played in, never the All seasons tab unless he has
        played in no season at all. */
+    var ready = false;
     var withPlay = tabs.map(function (t) {
       return !t.hasAttribute('data-season-all') && !/not (started|played)/i.test(t.textContent);
     });
     var start = withPlay.lastIndexOf(true);
     select(start > -1 ? start : tabs.length - 1);
+    ready = true;
   })();
 
   /* ---- Scrubable plot -------------------------------------------------
@@ -1393,9 +1416,30 @@
     };
 
     /* The charts' panel, and the rail's match count with it. */
-    var showCharts = function (view) {
-      var live = showPanel(chartBand, 'data-chart-view', view);
+    var showCharts = function (view, replay) {
+      /* The table's player count follows the tab with the charts. */
+      var tc = $('[data-table-counts]');
+      if (tc) {
+        try {
+          var n = JSON.parse(tc.getAttribute('data-table-counts'))[view];
+          if (n !== undefined) tc.textContent = n + ' player' + (n === 1 ? '' : 's');
+        } catch (e) { /* stays as drawn */ }
+      }
+      if (!chartBand || !view) return;
+      /* Shown without the reveal on first load, so the scroll draws it in;
+         replayed on every tab press after. */
+      var live = null;
+      $$('[data-chart-view]', chartBand).forEach(function (p) {
+        var on = p.getAttribute('data-chart-view') === view;
+        p.hidden = !on;
+        if (on) live = p;
+      });
       if (!live) return;
+      if (replay) {
+        live.classList.remove('is-in');
+        void live.offsetWidth;
+        reveal(live);
+      }
       var ref = $('.xrail__r', chartBand);
       if (ref) ref.textContent = live.getAttribute('data-matches') || '';
     };
@@ -1425,7 +1469,7 @@
         var view = tab.getAttribute('data-view');
         showLeaders(view);
         showShare(view);
-        showCharts(view);
+        showCharts(view, true);
         showComps(view);
         showHero(view, ($('b', tab) || {}).textContent);
         refresh();
@@ -1980,7 +2024,7 @@
     });
   }
 
-  function apply(season, view) {
+  function apply(season, view, replay) {
     heroFor(view);
     chipsFor(view);
     /* The charts follow the tab: show this view's panel, reveal what it
@@ -1989,7 +2033,12 @@
       var on = p.getAttribute('data-sq-chart-view') === view;
       p.hidden = !on;
       if (on) {
-        p.classList.add('is-in');
+        /* On first load the scroll reveals it; a tab press replays it. */
+        if (replay) {
+          p.classList.remove('is-in');
+          void p.offsetWidth;
+          p.classList.add('is-in');
+        }
         var label = document.querySelector('[data-pics-label]');
         if (label) label.textContent = p.getAttribute('data-label') || '';
       }
@@ -2050,7 +2099,7 @@
       x.classList.toggle('is-on', on);
       x.setAttribute('aria-pressed', String(on));
     });
-    apply(b.getAttribute('data-season'), b.getAttribute('data-view'));
+    apply(b.getAttribute('data-season'), b.getAttribute('data-view'), true);
   });
 
   /* The tab the generator marked, which is the latest season played. */

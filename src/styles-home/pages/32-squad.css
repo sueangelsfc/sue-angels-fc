@@ -406,7 +406,10 @@ html.js .sq-cards .pc__link:focus-visible{--lift: -5px;}
 
 /* Drawn on reveal, under html.js only, so a blocked script leaves them
    finished. */
-html.js .sq-donut__seg{stroke-dasharray: 0 var(--c, 0); transition: stroke-dasharray 1.2s var(--ease-out-expo);}
+.sq-donut__seg{transition: stroke-width 0.3s var(--ease-out-expo);}
+.sq-donut__seg:hover{stroke-width: 18;}
+.sq-top li:hover .sq-top__track i{filter: brightness(1.25);}
+html.js .sq-donut__seg{stroke-dasharray: 0 var(--c, 0); transition: stroke-dasharray 1.2s var(--ease-out-expo), stroke-width 0.3s var(--ease-out-expo);}
 html.js .sq-pics__view.is-in .sq-donut__seg{stroke-dasharray: var(--len, 0) var(--c, 0);}
 html.js .sq-top__track i{width: 0; transition: width 1s var(--ease-out-expo) 0.2s;}
 html.js .sq-pics__view.is-in .sq-top__track i{width: var(--w);}

@@ -371,7 +371,9 @@ export function stats(d) {
 
   const tableBand = `<section class="sec st-table" id="table" aria-labelledby="st-tbl-h">
       <div class="wrap">
-        ${rail(2, 'Everyone', `${rows.length} players`)}
+        ${/* The count follows the season tab: each view's own number of players. */''}
+        ${rail(2, 'Everyone', count(VIEWS[defaultView].rows.length, 'player', 'players'))
+    .replace('class="xrail__r"', `class="xrail__r" data-table-counts="${attr(JSON.stringify(Object.fromEntries(VIEWS.map((v) => [v.id, v.rows.length]))))}"`)}
         <h2 class="h2 rv" id="st-tbl-h">Every player, every <span class="volt">number.</span></h2>
         ${seasonTabs}
         ${chips}

@@ -358,7 +358,11 @@ html.js .st-mode{display: inline-flex;}
 
 /* The charts draw themselves when their panel is revealed, under html.js
    only, so a blocked script leaves them finished. */
-html.js .st-donut__seg{stroke-dasharray: 0 var(--c, 0); transition: stroke-dasharray 1.2s var(--ease-out-expo);}
+.st-donut__seg{transition: stroke-width 0.3s var(--ease-out-expo);}
+.st-donut__seg:hover{stroke-width: 18;}
+.st-top li:hover .st-top__track i{filter: brightness(1.25);}
+.st-chart--cols:hover .st-cols__bar--for{filter: brightness(1.15);}
+html.js .st-donut__seg{stroke-dasharray: 0 var(--c, 0); transition: stroke-dasharray 1.2s var(--ease-out-expo), stroke-width 0.3s var(--ease-out-expo);}
 html.js .st-pics__view.is-in .st-donut__seg{stroke-dasharray: var(--len, 0) var(--c, 0);}
 html.js .st-top__track i{width: 0; transition: width 1s var(--ease-out-expo) 0.2s;}
 html.js .st-pics__view.is-in .st-top__track i{width: var(--w);}

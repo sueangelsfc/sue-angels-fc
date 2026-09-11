@@ -119,7 +119,11 @@
 
 /* The charts draw themselves on reveal, under html.js only, so a blocked
    script leaves them finished. */
-html.js .pf-donut__seg{stroke-dasharray: 0 var(--c, 0); transition: stroke-dasharray 1.2s var(--ease-out-expo);}
+/* Hover moves too: a result segment thickens, the columns lift. */
+.pf-donut__seg{transition: stroke-width 0.3s var(--ease-out-expo);}
+.pf-donut__seg:hover{stroke-width: 18;}
+.pf-chart--cols:hover .pf-cols__bar--a{filter: brightness(1.15);}
+html.js .pf-donut__seg{stroke-dasharray: 0 var(--c, 0); transition: stroke-dasharray 1.2s var(--ease-out-expo), stroke-width 0.3s var(--ease-out-expo);}
 html.js .pf-charts.is-in .pf-donut__seg{stroke-dasharray: var(--len) var(--c, 0);}
 html.js .pf-gauge__arc{stroke-dasharray: 0 100; transition: stroke-dasharray 1.2s var(--ease-out-expo) 0.15s;}
 html.js .pf-charts.is-in .pf-gauge__arc{stroke-dasharray: var(--v, 0) 100;}

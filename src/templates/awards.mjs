@@ -133,8 +133,7 @@ export function awards(d) {
           <!-- The season follows the tab. It was written in twice as a fixed
                claim, sitting above a filter that can show any of them. -->
           <p class="aw-hero__lede">A title is won by a squad, but it is decided in moments by individuals.
-            These are the players the club picked out across
-            <span data-aw-season>${esc(VIEWS[DEFAULT].label)}</span>, month by month,
+            These are the players the club picked out, month by month,
             match by match, and on the night it was all counted up.</p>
           <div class="aw-hero__btns">
             <a class="btn btn--volt" href="#season">The season awards ${ARROW}</a>

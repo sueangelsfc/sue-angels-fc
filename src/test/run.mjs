@@ -3255,6 +3255,19 @@ for (const [f, kb] of Object.entries({
         const summed = [...legend.matchAll(/<b>(\d+)<\/b>/g)].reduce((n, m) => n + Number(m[1]), 0);
         if (pool && summed !== Number(pool)) sqBad.push(`${key}: legend adds to ${summed}, ring ${pool}`);
       }
+      /* EVERY CHART MOVES WHEN ITS SEASON IS CHOSEN. The three switchers
+         replay the reveal (take is-in off, reflow, put it back) on a tab
+         press, and leave the first draw to the scroll. */
+      const js10 = fs.readFileSync(path.join(ROOT, 'src', 'scripts', '10-home.js'), 'utf8');
+      check('the player, stats and squad charts replay when a season is chosen',
+        /\.pf-charts, \.pf-tiles, \.pf-record__grid, \.pf-plot'/.test(js10)
+          && /showCharts\(view, true\)/.test(js10)
+          && /apply\(b\.getAttribute\('data-season'\), b\.getAttribute\('data-view'\), true\)/.test(js10)
+          && (js10.match(/classList\.remove\('is-in'\);\s*void \w+\.offsetWidth;/g) || []).length >= 3);
+      /* Counts beside a season's content follow the season. */
+      check('the counts above the heat map and the stats table follow the tab',
+        /data-pitch-counts=/.test(fs.readFileSync(path.join(ROOT, 'players', 'charlie-dunkley.html'), 'utf8'))
+          && /data-table-counts=/.test(fs.readFileSync(path.join(ROOT, 'stats.html'), 'utf8')));
       check('the squad page draws a chart panel for every season tab',
         sqViews.length === (sqS.match(/class="sq-season[ "]/g) || []).length && sqViews.length >= 2, `${sqViews.length} panels`);
       check('and its position ring counts the players the hero counts', sqBad.length === 0, sqBad.join(' | '));
@@ -7896,7 +7909,19 @@ let orphanClasses = new Map();
      can see and leaves a free variable exactly as it found it. A bare `$$` in
      sa.js IS the bug, with no analysis required. */
   const saBundle = fs.readFileSync(path.join(ROOT, 'sa.js'), 'utf8');
-  const free = HELPERS.filter((h) => new RegExp('(^|[^\\w$.])' + h.replace(/\$/g, '\\$') + '\\s*\\(').test(saBundle));
+  /* A NAME THE MINIFIER CHOSE IS NOT A FREE VARIABLE. esbuild hands its
+     short names to locals by frequency, and `$` is one of them: adding a
+     chart switcher made it rename `showCharts` to `$`, declared as
+     `,$=function` in the bundle, and this reported that as a helper that
+     survived. A helper is free only if the bundle calls it AND never declares
+     it; the source-scope check above is what catches a real one. */
+  const free = HELPERS.filter((h) => {
+    const e = h.replace(/\$/g, '\\$');
+    const called = new RegExp('(^|[^\\w$.])' + e + '\\s*\\(').test(saBundle);
+    const declared = new RegExp('(?:\\b(?:var|let|const|function)\\s+|[,;{(]\\s*)' + e + '\\s*(?:=|\\()').test(saBundle)
+      && new RegExp('(?:\\b(?:var|let|const)\\s+|,\\s*)' + e + '\\s*=|\\bfunction\\s+' + e + '\\s*\\(').test(saBundle);
+    return called && !declared;
+  });
   check('the shipped bundle names no helper the minifier could not resolve',
     free.length === 0, free.join(', ') + ' survived minification, which means it was a free variable');
 }

@@ -207,15 +207,20 @@ export function news(d) {
     const stored = a.cover && a.cover !== 'None' ? a.cover : '';
     const drawn = stored ? '' : drawnFor(d, a);
     const src = stored || drawn;
+    /* A card the PANEL drew is stored like a photograph and composed like the
+       build's: `ensure()` uploads it as cover-match-* or cover-news-* with the
+       competition, the score and the date already on it. Asking only whether
+       the build drew it printed the Three Little Birds report's date twice. */
+    const composed = !!drawn || /\/cover-(?:match|news)-\d+\.jpg$/.test(stored);
     const body = src
       ? `<img class="nw-card__img" src="${attr(src)}" alt="" width="1200" height="630" loading="lazy" decoding="async" />`
       : a.isReport
         ? `<span class="nw-card__score"><b>${esc(a.match.scoreline || 'v')}</b><i>${esc(a.match.competition)}${a.match.round ? ` · ${esc(a.match.round)}` : ''}</i></span>`
         : coverPlate(a, false);
     return `<span class="nw-card__top${src ? ' has-img' : ''}">
-                ${drawn ? '' : `<span class="nw-card__cat">${esc(catLabel(a.category))}</span>`}
+                ${composed ? '' : `<span class="nw-card__cat">${esc(catLabel(a.category))}</span>`}
                 ${body}
-                ${drawn ? '' : `<span class="nw-card__date">${esc(fmtDate(a.date))}</span>`}`;
+                ${composed ? '' : `<span class="nw-card__date">${esc(fmtDate(a.date))}</span>`}`;
   })()}
               </span>
               <span class="nw-card__body">

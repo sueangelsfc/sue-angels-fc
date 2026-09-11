@@ -723,8 +723,16 @@ export async function panelChecks() {
     };
     if (at > -1) photos[at] = signedRow; else photos.push(signedRow);
     const signedRows = { ...rows, player_photos: photos };
+    /* A picker that BUILDS the sheet prints the position beside the name
+       ("Testy Newsigning (Midfielder)"). This asked for the bare name, which
+       only the after-the-sheet pickers print, and those fall back to the whole
+       club only while a match has no team sheet - so it passed while the
+       newest result had none and failed from the first one that did. */
     const offersName = (root) => root.querySelectorAll('option')
-      .filter((o) => o.textContent.trim() === NEW_NAME).length > 0;
+      .filter((o) => {
+        const t = o.textContent.trim();
+        return t === NEW_NAME || t.startsWith(`${NEW_NAME} (`);
+      }).length > 0;
     const afterClick = async (c, el) => {
       PR.click(el); await PR.settle(c); PR.flushMutations(c.doc.body); await PR.settle(c);
       return c.doc.querySelector('.modal-backdrop');

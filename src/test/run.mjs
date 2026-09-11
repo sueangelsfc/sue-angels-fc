@@ -1077,10 +1077,15 @@ for (const f of shipped) {
   {
     const newsHtml = fs.readFileSync(path.join(ROOT, 'news.html'), 'utf8');
     const shown = [...newsHtml.matchAll(/<img class="nw-card__img" src="([^"]+)"/g)].map((m) => m[1]);
+    /* A cover the club STORED wins over the build's, and the panel stores one
+       on every save (`ensure()` in 70-covers.js), so a card may also be the
+       club's own bucket. Anything else, or a build card not on disk, fails. */
+    const stored = (u) => /^https:\/\/hvbquuvxcswylyguplfb\.supabase\.co\/storage\/v1\/object\/public\//.test(u);
+    const badCard = (u) => !(stored(u)
+      || (u.startsWith('/assets/covers/') && fs.existsSync(path.join(ROOT, u.slice(1)))));
     check('the news cards show the covers the build drew',
-      shown.length > 0 && shown.every((u) => u.startsWith('/assets/covers/')
-        && fs.existsSync(path.join(ROOT, u.slice(1)))),
-      `${shown.length} card images, ${shown.filter((u) => !fs.existsSync(path.join(ROOT, u.slice(1)))).length} missing`);
+      shown.length > 0 && !shown.some(badCard),
+      `${shown.length} card images, ${shown.filter(badCard).length} neither drawn on disk nor stored`);
 
     /* The box follows the picture. 16/10 is the plate's shape; a 1200x630 card
        in it loses 16% of its width to object-fit: cover, and that is where the
@@ -1093,9 +1098,16 @@ for (const f of shipped) {
     /* The drawn card is composed WITH its category and date in the same two
        corners the card overlays its own, so laying them on top printed each
        twice a few pixels apart. */
+    /* COMPOSED is the build's card or one the panel drew (cover-match-*,
+       cover-news-*). A real photograph carries neither and keeps both, so the
+       question is asked per card of what its picture is. */
+    const tops = [...newsHtml.matchAll(/nw-card__top has-img">([\s\S]*?)<span class="nw-card__body"/g)]
+      .map((m) => ({ seg: m[1], src: ((m[1].match(/class="nw-card__img" src="([^"]+)"/) || [])[1] || '') }))
+      .filter((t) => t.src.startsWith('/assets/covers/') || /\/cover-(?:match|news)-\d+\.jpg$/.test(t.src));
+    const overprinted = tops.filter((t) => /nw-card__(?:cat|date)/.test(t.seg));
     check('a composed cover is not overprinted with a second date and chip',
-      !/nw-card__top has-img[\s\S]{0,400}?nw-card__(?:cat|date)/.test(newsHtml),
-      'the card draws its own chip or date over one the picture already carries');
+      tops.length > 0 && overprinted.length === 0,
+      `${overprinted.length} of ${tops.length} composed cards draw their own chip or date over one the picture already carries`);
 
     /* And the article page, which showed a crest plate while its own card
        existed. */
@@ -5186,10 +5198,24 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     check('a pre-season friendly does not move the season',
       figS([...onlyFriendlies, friendly].filter((m) => !/friendly/i.test(m.competition || '')),
         baseK.currentSeason) === '25/26');
+    /* THE SUMMER IS CONSTRUCTED, NOT READ OFF TODAY. This read the shipped
+       record as August - 26/27 friendlies and no 26/27 league match - and from
+       6 September the record has both, so it asserted a date rather than the
+       rule. The summer is the record with this season's competitive matches
+       taken out; the shipped record is held to its latest COMPETITIVE season. */
+    const rawK = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'recovered-live.json'), 'utf8'));
+    /* A panel-saved match can carry only `date` ("06 Sep 2026") and no iso. */
+    const summerK = bdK({ live: { ...rawK, matches: (rawK.matches || []).filter((m) => {
+      const x = m.data || {};
+      const t = x.iso ? Date.parse(`${x.iso}T12:00`) : Date.parse(x.date || '');
+      return !(t >= Date.parse('2026-07-01T00:00') && !/friendly|pre.?season/i.test(x.competition || ''));
+    }) } });
+    const latestComp = baseK.competitive.filter((m) => m.played).map((m) => m.season).sort().pop();
     check('the shipped dataset is not counting friendlies as the season',
-      baseK.currentSeason === '25/26'
-      && baseK.played.some((m) => m.season === '26/27' && m.played),
-      `${baseK.currentSeason}, with ${baseK.played.filter((m) => m.season === '26/27').length} 26/27 matches played`);
+      summerK.currentSeason === '25/26'
+      && summerK.played.some((m) => m.season === '26/27' && m.played)
+      && baseK.currentSeason === latestComp,
+      `summer reads ${summerK.currentSeason} with ${summerK.played.filter((m) => m.season === '26/27').length} 26/27 friendlies; shipped reads ${baseK.currentSeason}, latest competitive ${latestComp}`);
   }
   check('it does NOT move the season the table describes',
     withK.tableSeason === '25/26', withK.tableSeason);
@@ -5282,13 +5308,24 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const { stats: statsTpl } = await import(path.join(ROOT, 'src', 'templates', 'stats.mjs'));
   const liveRaw = JSON.parse(fs.readFileSync(
     path.join(ROOT, 'src', 'data', 'recovered-live.json'), 'utf8'));
+  /* THE MORNING BEFORE, CONSTRUCTED. These were written in August and read
+     the shipped record as "before the first League Eight match"; from 6
+     September it holds one and they went red having caught nothing. The
+     record with this season's competitive matches taken out is 5 September
+     whatever today is. */
+  /* A panel-saved match can carry only `date` ("06 Sep 2026") and no iso. */
+  const summerRaw = { ...liveRaw, matches: (liveRaw.matches || []).filter((m) => {
+    const x = m.data || {};
+    const t = x.iso ? Date.parse(`${x.iso}T12:00`) : Date.parse(x.date || '');
+    return !(t >= Date.parse('2026-07-01T00:00') && !/friendly|pre.?season/i.test(x.competition || ''));
+  }) };
 
   /* A real eleven, so the sheet is the shape the engine expects. */
   const anEleven = (liveRaw.matches || []).map((m) => m.data)
     .filter((m) => (m.starters || []).length === 11).pop();
 
   const withFixture = (extra) => {
-    const live = JSON.parse(JSON.stringify(liveRaw));
+    const live = JSON.parse(JSON.stringify(summerRaw));
     live.matches.push({
       key: 'sim20260906-tlb', updated_at: '2026-09-06T12:00:00Z',
       data: {
@@ -5308,7 +5345,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const chipsOf = (d) => [...new Set(
     [...statsTpl(d).body.matchAll(/data-season="([^"]+)"/g)].map((x) => x[1]))];
 
-  const today = bdS();
+  const today = bdS({ live: summerRaw });
   const chips = chipsOf(today);
   check('the player stats page offers every season and all of them together',
     chips.includes('all') && chips.filter((c) => c !== 'all').length >= 2,
@@ -5685,8 +5722,10 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
      is of TEXT, with the markup stripped, so it cannot be met with tags. */
   {
     const words = flatten(docP.cover + docP.body).split(' ').filter(Boolean).length;
-    check('the programme runs to at least ten thousand words',
-      words >= 10000, `${words} words`);
+    /* The club set ten thousand, then lowered it to 6,500 when it asked for a
+       programme about today with only a brief look back at last season. */
+    check('the programme runs to at least 6,500 words',
+      words >= 6500, `${words} words`);
     /* And every one of them derived. A programme that started quoting things
        nobody said would be a different kind of document. */
     check('the programme carries charts rather than only prose',
@@ -6282,8 +6321,14 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   check('every played competition classifies as exactly one kind',
     [...kinds.league, ...kinds.cup, ...kinds.friendly].length
       === new Set([...(DD.played || []).map((m) => m.competition)]).size);
-  check('the league is the league', kinds.league.size === 1 && [...kinds.league][0] === 'League Ten',
-    [...kinds.league].join(', '));
+  /* Every league match is the division the club was in THAT season. This
+     named League Ten as the only league, which was true until 6 September. */
+  const offDivision = (DD.played || []).filter((m) => !st.isFriendly(m) && !st.isCup(m)
+    && DD.divisionOf && m.competition !== DD.divisionOf(m.season));
+  check('the league is the league',
+    kinds.league.size >= 1 && [...kinds.league].every((c) => /^League [A-Z][a-z]+$/.test(c))
+    && offDivision.length === 0,
+    `${[...kinds.league].join(', ')}; ${offDivision.map((m) => `${m.season} ${m.competition}`).join(', ') || 'every league match in its season\'s division'}`);
   check('every cup is a cup', [...kinds.cup].every((c) => /cup|trophy/i.test(c)),
     [...kinds.cup].join(', '));
 
@@ -6975,6 +7020,14 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 
   const ps = preseasonFor(dP);
   const ah = seasonAhead(dP);
+  /* THE SUMMER, CONSTRUCTED: this season's competitive matches taken out.
+     The pre-season band is about the weeks before a division starts, and from
+     6 September the record is past them, so reading dP asserted a date. */
+  const summer = {
+    ...dP,
+    played: (dP.played || []).filter((m) => m.season !== ps.season || m.friendly),
+    competitive: (dP.competitive || []).filter((m) => m.season !== ps.season),
+  };
 
   /* Every figure recomputed from the match list rather than trusted. */
   {
@@ -7054,9 +7107,9 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
      football "pre-season" in October is the failure this prevents, and a date
      would not prevent it. */
   {
-    check('pre-season shows while the club is in it', filled('preseason', dP),
-      'one friendly played and five to come is exactly when this band is true');
-    const after = { ...dP, played: [...dP.played, {
+    check('pre-season shows while the club is in it', filled('preseason', summer),
+      'friendlies played and no competitive match yet is exactly when this band is true');
+    const after = { ...summer, played: [...summer.played, {
       season: ps.season, iso: '2026-09-06', friendly: false, outcome: 'W',
       countsGoals: true, ourGoals: 1, theirGoals: 0, opponent: 'Haydons Park', detail: {},
     }] };
@@ -7085,7 +7138,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   {
     const { home } = await import(path.join(ROOT, 'src', 'templates', 'home.mjs'));
     const beforeKickoff = {
-      ...dP,
+      ...summer,
       nextDivisionTable: { ...dP.nextDivisionTable, started: false },
     };
     const out = home({ ...beforeKickoff, homeLayout: { order: ['preseason', 'ahead'], hidden: [] } });
@@ -7361,17 +7414,22 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
          season" is the campaign band with the detail removed. So assert it is
          off now and comes on by itself the moment 26/27 has a competitive
          match, which is the whole claim the band makes. */
+      /* Both states constructed: one season of competitive football, then a
+         match in a second. Reading dP for the first stopped working the day
+         26/27 had its first league match. */
+      const oneSeason = { ...dP, competitive: dP.competitive.filter((m) => m.season === dP.titleSeason) };
+      const otherSeason = (dP.seasons || []).map((s) => s.name).find((s) => s !== dP.titleSeason);
       const nextSeasonPlayed = {
-        ...dP,
-        competitive: [...dP.competitive, {
-          id: 'test-2627', slug: 'test-2627', season: dP.nextSeason, played: true,
+        ...oneSeason,
+        competitive: [...oneSeason.competitive, {
+          id: 'test-2627', slug: 'test-2627', season: otherSeason, played: true,
           countsGoals: true, ourGoals: 1, theirGoals: 0, outcome: 'W', weAreHome: true,
           competition: 'League Eight', opponent: 'A Club', iso: '2026-09-06', detail: {},
         }],
       };
       check('every season stays off until there is a second one to compare',
-        !filled('seasons', dP) && filled('seasons', nextSeasonPlayed)
-        && !home({ ...dP, homeLayout: ON }).body.includes('sec sec--seasons"')
+        !filled('seasons', oneSeason) && filled('seasons', nextSeasonPlayed)
+        && !home({ ...oneSeason, homeLayout: ON }).body.includes('sec sec--seasons"')
         && home({ ...nextSeasonPlayed, homeLayout: ON }).body.includes('sec sec--seasons"'));
 
       /* THE OTHER DIRECTION FOR THE OTHER EMPTY ONES. Four bands are empty on

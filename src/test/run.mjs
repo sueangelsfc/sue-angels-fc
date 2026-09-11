@@ -3245,14 +3245,35 @@ for (const [f, kb] of Object.entries({
       check('and its past players are counted and hidden per season',
         /data-past-count/.test(sqS) && /\[data-season\]\.is-on/.test(homeJs)
           && /querySelector\('#past-players'\)/.test(homeJs));
+      /* IN PICTURES. The charts are drawn from the same profile as the figures
+         beside them, so they are held to agreeing with those figures. */
+      const cdPanels = cdHtml.split('data-season-panel="').slice(1).map((s) => s.split('data-season-panel=')[0]);
+      const withCharts = cdPanels.filter((pn) => /class="pf-charts/.test(pn));
+      check('player pages draw charts in their season panels', withCharts.length > 0);
+      const chartBad = [];
+      for (const pn of withCharts) {
+        const res = (pn.match(/data-results="(\d+),(\d+),(\d+)"/) || []).slice(1).map(Number);
+        const wonOf = pn.match(/(\d+) of (\d+)<\/i>/);
+        if (res.length && wonOf && (res[0] !== Number(wonOf[1]) || res[0] + res[1] + res[2] !== Number(wonOf[2]))) {
+          chartBad.push(`results ring ${res.join('/')} against ${wonOf[0]}`);
+        }
+        const ha = (pn.match(/data-home-away="(\d+),(\d+)"/) || []).slice(1).map(Number);
+        const apps = (pn.match(/<b data-count="(\d+)">\d+<\/b>\s*<span>Appearances<\/span>/) || [])[1];
+        if (ha.length && apps && ha[0] + ha[1] !== Number(apps)) chartBad.push(`home ${ha[0]} + away ${ha[1]} against ${apps} appearances`);
+      }
+      check('and each chart agrees with the figures printed beside it', chartBad.length === 0, chartBad.slice(0, 3).join(' | '));
+      const allPanel = cdPanels[(dPS.seasons || []).length] || '';
+      check('the match-by-match columns belong to a season, not to All seasons',
+        cdPanels.slice(0, (dPS.seasons || []).length).some((pn) => /class="pf-cols"/.test(pn)) && !/class="pf-cols"/.test(allPanel));
       /* Where he played, per tab: every season he appeared in has its own map. */
       const cdSeasonsPlayed = (dPS.seasons || []).map((s, i) => [s.name, i])
         .filter(([n]) => (dPS.competitive || []).some((m) => m.played && m.season === n
           && [...((m.detail || {}).starters || [])].some((x) => x.num === cd.num && (x.positions || []).length)));
       check('each season a player started in has its own heat map, and All seasons the whole career',
         cdSeasonsPlayed.length > 0
-          && cdSeasonsPlayed.every(([, i]) => new RegExp(`class="sec pf-pitch" data-season-scope="${i}( all)?"`).test(cdHtml))
-          && /class="sec pf-pitch" data-season-scope="(\d+ )?all"/.test(cdHtml),
+          && (cdHtml.match(/class="sec pf-pitch"/g) || []).length === 1
+          && cdSeasonsPlayed.every(([, i]) => new RegExp(`<g data-season-scope="${i}( all)?"`).test(cdHtml))
+          && /<g data-season-scope="(\d+ )?all"/.test(cdHtml),
         cdSeasonsPlayed.map(([n]) => n).join(','));
       check('sections counted over every season show under the All seasons tab alone',
         ['pf-versus'].every((c) => new RegExp(`class="sec ${c}" data-season-scope="all"`).test(cdHtml))

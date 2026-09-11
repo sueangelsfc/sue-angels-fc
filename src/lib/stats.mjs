@@ -1027,6 +1027,10 @@ export function playerProfile(player, matches, squad) {
       scoreline: m.countsGoals ? `${m.ourGoals}-${m.theirGoals}` : 'W/O',
       goals: g, assists: a, motm: m.detail?.motm === player.num,
       conceded: m.countsGoals ? m.theirGoals : null,
+      /* For the player page's charts: where it was played, and what the club
+         scored while he was in it. A walkover scored nothing. */
+      home: !!m.weAreHome,
+      ourGoals: m.countsGoals ? m.ourGoals : null,
       runGoals, runAssists, runClean,
     });
   }

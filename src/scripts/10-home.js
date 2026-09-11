@@ -902,6 +902,21 @@
         var s = ' ' + el.getAttribute('data-season-scope') + ' ';
         el.hidden = !((isAll && s.indexOf(' all ') > -1) || s.indexOf(' ' + i + ' ') > -1);
       });
+      /* The heat map's list: every tab's count rides on each row. */
+      var heatKey = isAll ? 'all' : String(i);
+      $$('[data-heat]').forEach(function (row) {
+        var all;
+        try { all = JSON.parse(row.getAttribute('data-heat')); } catch (e) { return; }
+        var h = all[heatKey];
+        if (!h) return;
+        var n = row.querySelector('.pf-heatlist__n');
+        if (n) n.textContent = h[0];
+        /* The same number to a screen reader as to the eye. */
+        var sr = row.querySelector('summary .sr-only');
+        if (sr) sr.textContent = h[0] + ' team-sheet slot' + (h[0] === '1' ? '' : 's') + '. Show the matches.';
+        var bar = row.querySelector('.pf-heatlist__bar i');
+        if (bar) bar.style.setProperty('--w', h[1] + '%');
+      });
       var lede = $('[data-season-lede]');
       if (lede && lede.hasAttribute('data-lede-' + i)) lede.textContent = lede.getAttribute('data-lede-' + i);
       if (focus) tabs[i].focus();

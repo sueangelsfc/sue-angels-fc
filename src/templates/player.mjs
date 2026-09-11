@@ -161,6 +161,134 @@ const bar = (label, value, pct, note) => `<li class="pf-bar">
         <span class="pf-bar__track" aria-hidden="true"><i style="--w:${Math.max(0, Math.min(100, pct))}%"></i></span>
       </li>`;
 
+/* ================= CHARTS =================
+   Four small charts per season panel, drawn at build time as inline SVG and
+   plain markup, so the resting state is the finished chart and a blocked
+   script loses only the animation. Each prints its figures beside it: the
+   picture reinforces a number and never replaces one. Results differ by
+   shade and weight of the one accent, never by a second colour. */
+const pctOf = (n, of) => (of ? Math.round((n / of) * 100) : 0);
+
+const resultsDonut = (x) => {
+  const total = x.won + x.drawn + x.lost;
+  if (!total) return '';
+  const r = 44;
+  const c = 2 * Math.PI * r;
+  let at = 0;
+  const segs = [['W', x.won, 'won'], ['D', x.drawn, 'drawn'], ['L', x.lost, 'lost']].map(([k, n, label]) => {
+    const len = (n / total) * c;
+    const seg = n ? `<circle class="pf-donut__seg" data-res="${k}" cx="60" cy="60" r="${r}" fill="none" stroke-width="14" stroke-dasharray="${len.toFixed(1)} ${(c - len).toFixed(1)}" stroke-dashoffset="${(-at).toFixed(1)}" transform="rotate(-90 60 60)" style="--len:${len.toFixed(1)};--c:${c.toFixed(1)}"/>` : '';
+    at += len;
+    return { seg, k, n, label };
+  });
+  return `<figure class="pf-chart pf-chart--donut">
+              <figcaption class="pf-chart__k">Results when playing</figcaption>
+              <div class="pf-donut">
+                <svg viewBox="0 0 120 120" role="img" aria-label="${attr(`Won ${x.won}, drew ${x.drawn} and lost ${x.lost} of ${total}`)}">
+                  <circle cx="60" cy="60" r="${r}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="14"/>
+                  ${segs.map((s) => s.seg).join('')}
+                </svg>
+                <span class="pf-donut__c" aria-hidden="true"><b>${esc(pctOf(x.won, total))}%</b><i>won</i></span>
+              </div>
+              <ul class="pf-chart__legend" data-results="${attr(`${x.won},${x.drawn},${x.lost}`)}">${segs.map((s) => `<li data-res="${s.k}"><b>${esc(s.n)}</b> ${esc(s.label)}</li>`).join('')}</ul>
+            </figure>`;
+};
+
+const shareGauge = (x, gk) => {
+  let v;
+  let label;
+  let sub;
+  if (gk) {
+    if (!x.onRecord) return '';
+    v = x.cleanSheetPct;
+    label = 'Clean sheet rate';
+    sub = `${x.cleanSheets} of the ${x.onRecord} with a goal record`;
+  } else {
+    const team = x.timeline.reduce((n, t) => n + (t.ourGoals || 0), 0);
+    if (!team) return '';
+    v = pctOf(x.goals + x.assists, team);
+    label = 'Share of the goals';
+    sub = `Scored or made ${x.goals + x.assists} of the ${team} the club scored with him playing`;
+  }
+  return `<figure class="pf-chart pf-chart--gauge">
+              <figcaption class="pf-chart__k">${esc(label)}</figcaption>
+              <div class="pf-gauge">
+                <svg viewBox="0 0 120 68" role="img" aria-label="${attr(`${label}: ${v}%`)}">
+                  <path d="M10 60A50 50 0 0 1 110 60" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="12" stroke-linecap="round"/>
+                  <path class="pf-gauge__arc" d="M10 60A50 50 0 0 1 110 60" pathLength="100" fill="none" stroke="var(--volt)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${v} 100" style="--v:${v}"/>
+                </svg>
+                <span class="pf-gauge__v" aria-hidden="true"><b>${esc(v)}%</b></span>
+              </div>
+              <p class="pf-chart__sub">${esc(sub)}.</p>
+            </figure>`;
+};
+
+const homeAway = (x, gk) => {
+  const side = (home) => {
+    const ts = x.timeline.filter((t) => t.home === home);
+    return {
+      apps: ts.length,
+      ga: ts.reduce((n, t) => n + t.goals + t.assists, 0),
+      cs: ts.filter((t) => t.conceded === 0).length,
+      won: ts.filter((t) => t.outcome === 'W').length,
+    };
+  };
+  const h = side(true);
+  const a = side(false);
+  if (!h.apps && !a.apps) return '';
+  const max = Math.max(h.apps, a.apps, 1);
+  const row = (label, s) => `<li>
+                  <span class="pf-split__k">${esc(label)}</span>
+                  <span class="pf-split__v"><b>${esc(s.apps)}</b> ${s.apps === 1 ? 'appearance' : 'appearances'} · ${esc(gk ? `${s.cs} clean ${s.cs === 1 ? 'sheet' : 'sheets'}` : `${s.ga} goals and assists`)} · ${esc(s.won)} won</span>
+                  <span class="pf-split__track" aria-hidden="true"><i style="--w:${pctOf(s.apps, max)}%"></i></span>
+                </li>`;
+  return `<figure class="pf-chart pf-chart--split">
+              <figcaption class="pf-chart__k">Home and away</figcaption>
+              <ul class="pf-split" data-home-away="${attr(`${h.apps},${a.apps}`)}">
+                ${row('At home', h)}
+                ${row('Away', a)}
+              </ul>
+            </figure>`;
+};
+
+const matchColumns = (x, gk) => {
+  const t = x.timeline;
+  if (t.length < 2) return '';
+  const W = 320;
+  const H = 96;
+  const base = H - 16;
+  const step = W / t.length;
+  const bw = Math.max(1.5, step * 0.62);
+  const up = (v) => (gk ? (v.conceded || 0) : v.goals + v.assists);
+  const top = Math.max(1, ...t.map(up));
+  const unit = (base - 6) / top;
+  let lower = '';
+  let upper = '';
+  const dots = { W: '', D: '', L: '' };
+  t.forEach((v, i) => {
+    const x0 = (i * step + (step - bw) / 2).toFixed(1);
+    const a = gk ? (v.conceded || 0) : v.goals;
+    const b = gk ? 0 : v.assists;
+    if (a) lower += `M${x0} ${base}v${(-a * unit).toFixed(1)}h${bw.toFixed(1)}v${(a * unit).toFixed(1)}z`;
+    if (b) upper += `M${x0} ${(base - a * unit).toFixed(1)}v${(-b * unit).toFixed(1)}h${bw.toFixed(1)}v${(b * unit).toFixed(1)}z`;
+    if (dots[v.outcome] !== undefined) dots[v.outcome] += `M${(i * step + step / 2).toFixed(1)} ${H - 6}h0`;
+  });
+  const total = t.reduce((n, v) => n + up(v), 0);
+  const most = Math.max(...t.map(up));
+  return `<figure class="pf-chart pf-chart--cols">
+              <figcaption class="pf-chart__k">Match by match
+                <span class="pf-chart__key"><i class="is-a"></i>${gk ? 'Conceded' : 'Goals'}${gk ? '' : '<i class="is-b"></i>Assists'}<i class="is-w"></i>Won</span></figcaption>
+              <svg class="pf-cols" viewBox="0 0 ${W} ${H}" role="img" aria-label="${attr(gk
+    ? `${total} conceded across ${t.length} matches, never more than ${most} in one`
+    : `${total} goals and assists across ${t.length} matches, most in one match ${most}`)}" data-cols="${t.length}">
+                <line x1="0" y1="${base}" x2="${W}" y2="${base}" stroke="var(--line-d)" stroke-width="1"/>
+                ${lower ? `<path class="pf-cols__bar pf-cols__bar--a" d="${lower}"/>` : ''}
+                ${upper ? `<path class="pf-cols__bar pf-cols__bar--b" d="${upper}"/>` : ''}
+                ${['W', 'D', 'L'].map((k) => (dots[k] ? `<path class="pf-cols__res" data-res="${k}" d="${dots[k]}"/>` : '')).join('')}
+              </svg>
+            </figure>`;
+};
+
 const ordinal = (n) => {
   const s = ['th', 'st', 'nd', 'rd'];
   const v = n % 100;
@@ -471,15 +599,34 @@ export function playerPage(p, d) {
             </div>
           </section>
 
-          ${x.timeline.length > 1 ? `<section class="pf-sub" aria-labelledby="pf-c-${idx}">
-            ${rail(3, 'Through the season', `${x.timeline.length} ${x.timeline.length === 1 ? 'match' : 'matches'}`)}
+          ${(() => {
+    /* IN PICTURES: the season's results, his share of the goals, home and
+       away, and every match as a column. The columns are a season's; under
+       All seasons they would be the longest season's again. */
+    const charts = [resultsDonut(x), shareGauge(x, gk), homeAway(x, gk)].filter(Boolean);
+    const cols = sn === 'All seasons' ? '' : matchColumns(x, gk);
+    const n = charts.length + (cols ? 1 : 0);
+    return n ? `<section class="pf-sub" aria-labelledby="pf-g-${idx}">
+            ${rail(3, 'In pictures', `${n} ${n === 1 ? 'chart' : 'charts'}`)}
+            <h3 class="h2 rv" id="pf-g-${idx}">${esc(sn === 'All seasons' ? 'Every season' : sn)} in <span class="volt">pictures.</span></h3>
+            <div class="pf-charts rv">
+            ${cols}${charts.join('')}
+            </div>
+          </section>` : '';
+  })()}
+
+          ${/* The career line only when it is more than one season's line again:
+                with a single season of any length it is that season's plot twice. */''}
+          ${x.timeline.length > 1 && (sn !== 'All seasons'
+    || seasons.filter((s) => s.profile.timeline.length > 1).length > 1) ? `<section class="pf-sub" aria-labelledby="pf-c-${idx}">
+            ${rail(4, 'Through the season', `${x.timeline.length} ${x.timeline.length === 1 ? 'match' : 'matches'}`)}
             <h3 class="h2 rv" id="pf-c-${idx}">${gk ? 'Clean sheets' : 'Goals and assists'} as they
               <span class="volt">came.</span></h3>
             ${chartFor(x, `pf-plot-${idx}`)}
           </section>` : ''}
 
           ${x.byCompetition.length ? `<section class="pf-sub" aria-labelledby="pf-k-${idx}">
-            ${rail(4, 'By competition', `${x.byCompetition.length} entered`)}
+            ${rail(5, 'By competition', `${x.byCompetition.length} entered`)}
             <h3 class="h2 rv" id="pf-k-${idx}">Across every <span class="volt">competition.</span></h3>
             <div class="pf-tablewrap rv">
               <table class="pf-tbl">
@@ -507,8 +654,10 @@ export function playerPage(p, d) {
             </div>
           </section>` : ''}
 
-          ${x.last.length ? `<section class="pf-sub" aria-labelledby="pf-l-${idx}">
-            ${rail(5, 'Most recent', `${x.last.length} ${x.last.length === 1 ? 'match' : 'matches'}`)}
+          ${/* Recency belongs to a season; under All seasons it is the latest
+                season's list again. */''}
+          ${x.last.length && sn !== 'All seasons' ? `<section class="pf-sub" aria-labelledby="pf-l-${idx}">
+            ${rail(6, 'Most recent', `${x.last.length} ${x.last.length === 1 ? 'match' : 'matches'}`)}
             <h3 class="h2 rv" id="pf-l-${idx}">The last time <span class="volt">out.</span></h3>
             <ol class="pf-form rv">
               ${x.last.map((t) => `<li class="pf-form__item">
@@ -673,53 +822,106 @@ export function playerPage(p, d) {
      once a season tab stopped carrying career figures, so a season tab lost
      where he played altogether. Built from the tab's own team sheets: a start
      counts once in each position the sheet names, a place on the bench half. */
-  const pitchFor = (list, scope, label, lite = false) => {
-  const posMatches = new Map();
-  const tally = new Map();
-  for (const m of list.slice().sort((a, b) => (b.iso || '').localeCompare(a.iso || ''))) {
+  /* ONE BAND, EVERY TAB. Three bands - one per season and the career - put a
+     profile at 207KB, most of it the same match rows written out twice, and
+     the interaction script only ever wired the first band. Now one pitch
+     carries a layer of heat per tab, one list carries every tab's count on
+     each row, and each match row is written once and tagged with its season.
+     The tab script shows the right layer and rewrites the counts. */
+  const fmtN = (n) => (n % 1 ? n.toFixed(1) : String(n));
+  const sideOf = (m) => {
     const det = m.detail;
-    if (!det) continue;
+    if (!det) return null;
     const started = (det.starters || []).find((x) => x.num === p.num);
     const benched = (det.bench || []).find((x) => x.num === p.num);
     const rec = started || benched;
-    if (!rec) continue;
-    for (const c of rec.positions || []) {
-      tally.set(c, (tally.get(c) || 0) + (started ? 1 : 0.5));
-      if (!posMatches.has(c)) posMatches.set(c, []);
-      posMatches.get(c).push({
+    return rec ? { rec, started: !!started } : null;
+  };
+  const heatOf = (list) => {
+    const tally = new Map();
+    for (const m of list) {
+      const s = sideOf(m);
+      if (!s) continue;
+      for (const c of s.rec.positions || []) tally.set(c, (tally.get(c) || 0) + (s.started ? 1 : 0.5));
+    }
+    const counts = [...tally].map(([code, n]) => ({ code, n })).sort((a, b) => b.n - a.n);
+    const weights = counts.filter((w) => PITCH[w.code]);
+    const heatMax = Math.max(1, ...weights.map((w) => w.n));
+    const heat = placeSpots(weights.map((w) => w.code)).map((sp, i) => ({
+      ...sp, n: weights[i].n, k: weights[i].n / heatMax,
+    }));
+    return {
+      heat,
+      counts,
+      unmapped: counts.filter((w) => !PITCH[w.code]),
+      primary: heat.filter((h) => h.k >= 0.34),
+      slots: weights.reduce((n, w) => n + w.n, 0),
+    };
+  };
+  const playedSeasons = seasons.map((s, i) => [s, i]).filter(([s]) => s.profile.apps || s.profile.bench);
+  /* A player with one season has one layer, shown under both tabs. */
+  const views = (playedSeasons.length <= 1
+    ? playedSeasons.map(([s, i]) => ({ key: `${i} all`, keys: [String(i), 'all'], list: s.matches, where: `in ${s.name}`, lite: false }))
+    : [
+      ...playedSeasons.map(([s, i]) => ({ key: String(i), keys: [String(i)], list: s.matches, where: `in ${s.name}`, lite: true })),
+      { key: 'all', keys: ['all'], list: counted, where: 'across every season', lite: 'mid' },
+    ]).map((v) => ({ ...v, ...heatOf(v.list) }));
+  const career = views[views.length - 1] || { heat: [], counts: [], unmapped: [], primary: [], slots: 0 };
+  const heat = career.heat;
+  const seasonIdx = new Map(seasons.map((s, i) => [s.name, i]));
+  const posRows = new Map();
+  for (const m of counted.slice().sort((a, b) => (b.iso || '').localeCompare(a.iso || ''))) {
+    const s = sideOf(m);
+    if (!s) continue;
+    for (const c of s.rec.positions || []) {
+      if (!posRows.has(c)) posRows.set(c, []);
+      posRows.get(c).push({
         opponent: m.opponent,
         competition: m.competition,
         score: m.countsGoals ? `${m.ourGoals}-${m.theirGoals}` : 'W/O',
         date: fmtDate(m.date),
         outcome: m.outcome,
-        bench: !started,
+        bench: !s.started,
+        si: seasonIdx.get(m.season),
       });
     }
   }
 
-  const counts = [...tally].map(([code, n]) => ({ code, n })).sort((a, b) => b.n - a.n);
-  const weights = counts.filter((w) => PITCH[w.code]);
-  const unmapped = counts.filter((w) => !PITCH[w.code]);
-  const heatMax = Math.max(1, ...weights.map((w) => w.n));
-  const heat = placeSpots(weights.map((w) => w.code)).map((sp, i) => ({
-    ...sp, n: weights[i].n, k: weights[i].n / heatMax,
-  }));
-  const primary = heat.filter((h) => h.k >= 0.34);
-  const slots = weights.reduce((n, w) => n + w.n, 0);
-  const fmtN = (n) => (n % 1 ? n.toFixed(1) : String(n));
+  const blobsFor = (v) => {
+    const rnd = lcg(p.num || 1);
+    const blobs = [];
+    for (const h of v.heat) {
+      const cy = h.y * 1.4;
+      /* Many small, faint samples rather than a few big bright ones, so the
+         density accumulates gradually for the colour ramp to show. Lighter on
+         a season layer when the page also carries the career one. */
+      const n = v.lite === 'mid' ? 5 + Math.round(h.k * 12)
+        : v.lite ? 4 + Math.round(h.k * 9) : 7 + Math.round(h.k * 16);
+      blobs.push({ x: h.x, y: cy, r: 4.6 + 5.4 * h.k, o: 0.32 + 0.36 * h.k, i: blobs.length });
+      for (let j = 0; j < n; j++) {
+        const ang = rnd() * Math.PI * 2;
+        const spread = ((rnd() + rnd()) / 2) * (3.6 + 5.4 * h.k);
+        blobs.push({
+          x: h.x + Math.cos(ang) * spread,
+          y: cy + Math.sin(ang) * spread * 1.2,
+          r: 2.8 + rnd() * (3.4 + 3.6 * h.k),
+          o: (0.16 + rnd() * 0.2) * (0.5 + h.k * 0.6),
+          i: blobs.length,
+        });
+      }
+    }
+    return blobs.map((b) => `<circle class="pf-heat__b" cx="${b.x.toFixed(1)}" cy="${b.y.toFixed(1)}" r="${b.r.toFixed(1)}" opacity="${b.o.toFixed(2)}" style="--r:${b.r.toFixed(1)};--o:${b.o.toFixed(2)};--d:${((b.i % 9) * 0.72).toFixed(2)}s"/>`).join('');
+  };
 
-  const where = scope === 'all' ? 'across every season' : `in ${label}`;
-  /* The scope can be "0 all", and an id cannot hold a space. */
-  const sid = String(scope).replace(/\s+/g, '-');
-  return heat.length ? `<section class="sec pf-pitch" data-season-scope="${scope}" aria-labelledby="pf-pitch-h-${sid}">
+  const pitchBand = heat.length ? `<section class="sec pf-pitch" aria-labelledby="pf-pitch-h">
       <div class="wrap">
-        ${rail(RAIL.next(), 'Where they play', `${label} · ${heat.length} ${heat.length === 1 ? 'position' : 'positions'}`)}
-        <h2 class="h2 rv" id="pf-pitch-h-${sid}">On the <span class="volt">pitch.</span></h2>
+        ${rail(RAIL.next(), 'Where they play', `${heat.length} ${heat.length === 1 ? 'position' : 'positions'}`)}
+        <h2 class="h2 rv" id="pf-pitch-h">On the <span class="volt">pitch.</span></h2>
         <div class="pf-pitch__grid rv">
           <figure class="pf-pitch__fig">
-            <svg viewBox="0 0 100 140" role="img" aria-labelledby="pf-pitch-t-${sid}" preserveAspectRatio="xMidYMid meet">
-              <title id="pf-pitch-t-${sid}">Heat map of where ${esc(p.name)} lined up. Most often
-                ${esc(heat[0].code)}, ${esc(fmtN(heat[0].n))} of ${esc(fmtN(slots))} team-sheet slots.</title>
+            <svg viewBox="0 0 100 140" role="img" aria-labelledby="pf-pitch-t" preserveAspectRatio="xMidYMid meet">
+              <title id="pf-pitch-t">Heat map of where ${esc(p.name)} lined up. Most often
+                ${esc(heat[0].code)}, ${esc(fmtN(heat[0].n))} of ${esc(fmtN(career.slots))} team-sheet slots.</title>
               <defs>
                 <!-- The classic heat-map pipeline, which is what makes one
                      look like a heat map rather than a blurred smudge: blur
@@ -727,7 +929,7 @@ export function playerPage(p, d) {
                      channel, then remap that ramp to colour. Banded through a
                      table so the field builds from a dim ember at the edge to
                      a near-white core, all inside the brand's orange. -->
-                <filter id="pf-heat-${attr(p.slug)}-${sid}" x="-25%" y="-25%" width="150%" height="150%"
+                <filter id="pf-heat-${attr(p.slug)}" x="-25%" y="-25%" width="150%" height="150%"
                         color-interpolation-filters="sRGB">
                   <feGaussianBlur stdDeviation="3.4" result="b" />
                   <!-- All four channels take the blurred ALPHA. The alpha row
@@ -749,7 +951,7 @@ export function playerPage(p, d) {
                 <!-- Heat stops at the touchline. The blur legitimately
                      spreads past the pitch and a field bleeding into the
                      panel margin reads as a leak rather than as play. -->
-                <clipPath id="pf-clip-${attr(p.slug)}-${sid}">
+                <clipPath id="pf-clip-${attr(p.slug)}">
                   <rect x="1" y="1" width="98" height="138" rx="3" />
                 </clipPath>
               </defs>
@@ -763,68 +965,42 @@ export function playerPage(p, d) {
               <rect x="26" y="121" width="48" height="18" fill="none" stroke="var(--line-d)" />
               <rect x="38" y="132" width="24" height="7" fill="none" stroke="var(--line-d)" />
 
-              <g class="pf-heat" clip-path="url(#pf-clip-${attr(p.slug)}-${sid})" filter="url(#pf-heat-${attr(p.slug)}-${sid})">
-                ${(() => {
-    const rnd = lcg(p.num || 1);
-    const blobs = [];
-    for (const h of heat) {
-      const cy = h.y * 1.4;
-      /* Many small, faint samples rather than a few big bright ones. The
-         earlier field used large discs at high opacity, so wherever two
-         overlapped the alpha clipped and the middle burned out to a flat
-         white mass with no structure left in it. Density has to accumulate
-         gradually for the ramp to have anything to show. */
-      /* Lighter on a season tab when the page also carries the career map:
-         three full maps put four profiles over the page-weight ceiling. */
-      const n = lite ? 4 + Math.round(h.k * 9) : 7 + Math.round(h.k * 16);
-      blobs.push({ x: h.x, y: cy, r: 4.6 + 5.4 * h.k, o: 0.32 + 0.36 * h.k, i: blobs.length });
-      for (let j = 0; j < n; j++) {
-        const ang = rnd() * Math.PI * 2;
-        /* Gaussian-ish: two uniforms averaged cluster toward the middle, so
-           a position reads as a dense core that frays at the edge rather
-           than a ring of satellites at a fixed radius. */
-        const spread = ((rnd() + rnd()) / 2) * (3.6 + 5.4 * h.k);
-        blobs.push({
-          x: h.x + Math.cos(ang) * spread,
-          y: cy + Math.sin(ang) * spread * 1.2,
-          r: 2.8 + rnd() * (3.4 + 3.6 * h.k),
-          o: (0.16 + rnd() * 0.2) * (0.5 + h.k * 0.6),
-          i: blobs.length,
-        });
-      }
-    }
-    /* The fill is in the stylesheet; r and opacity stay on the element as the
-       fallback the breathing animation starts from. */
-    return blobs.map((b) => `<circle class="pf-heat__b" cx="${b.x.toFixed(1)}" cy="${b.y.toFixed(1)}" r="${b.r.toFixed(1)}" opacity="${b.o.toFixed(2)}" style="--r:${b.r.toFixed(1)};--o:${b.o.toFixed(2)};--d:${((b.i % 9) * 0.72).toFixed(2)}s"/>`).join('');
-  })()}
-              </g>
-
-              <g class="pf-radiate" aria-hidden="true">
-                ${primary.map((h, n) => `<circle class="pf-radiate__r" cx="${h.x.toFixed(1)}"
-                  cy="${(h.y * 1.4).toFixed(1)}" r="${(4.2 + 1.7 * h.k).toFixed(1)}"
-                  style="--d:${(n * 0.9).toFixed(2)}s" />`).join('\n                ')}
-              </g>
-
-              ${primary.map((h, n) => `<g class="pf-spot" data-pos="${attr(h.code)}" style="--n:${n}">
+              ${/* One layer per tab: its heat, its rings and its marked positions.
+                    The tab script hides every layer but the tab's own. */''}
+              ${views.map((v) => `<g data-season-scope="${v.key}">
+              <g class="pf-heat" clip-path="url(#pf-clip-${attr(p.slug)})" filter="url(#pf-heat-${attr(p.slug)})">${blobsFor(v)}</g>
+              <g class="pf-radiate" aria-hidden="true">${v.primary.map((h, n) => `<circle class="pf-radiate__r" cx="${h.x.toFixed(1)}" cy="${(h.y * 1.4).toFixed(1)}" r="${(4.2 + 1.7 * h.k).toFixed(1)}" style="--d:${(n * 0.9).toFixed(2)}s"/>`).join('')}</g>
+              ${v.primary.map((h, n) => `<g class="pf-spot" data-pos="${attr(h.code)}" style="--n:${n}">
                 <circle class="pf-spot__dot" cx="${h.x.toFixed(1)}" cy="${(h.y * 1.4).toFixed(1)}"
                   r="${(4.2 + 1.7 * h.k).toFixed(1)}" fill="var(--volt)"
                   stroke="#0D0F12" stroke-width="0.9" />
                 <text x="${h.x.toFixed(1)}" y="${(h.y * 1.4 + 1.4).toFixed(1)}" text-anchor="middle"
                   font-family="Geist, sans-serif" font-size="3.5" font-weight="600"
                   fill="var(--text-on-brand)"><title>${esc(positionName(h.code))}</title>${esc(h.code)}</text>
+              </g>`).join('')}
               </g>`).join('\n              ')}
             </svg>
             <figcaption>Attacking upward. The brighter the field, the more often ${esc(p.first)} played there.</figcaption>
           </figure>
 
           <div class="pf-pitch__body">
-            <p>Read off the team sheets, not from a label. ${esc(p.first)} was named in
-              ${esc(heat.length)} ${heat.length === 1 ? 'position' : 'different positions'}
-              ${where}${heat.length > 1 ? `, most often at ${esc(positionName(heat[0].code).toLowerCase())}` : ''}.</p>
+            ${views.map((v) => `<p data-season-scope="${v.key}">Read off the team sheets, not from a label. ${esc(p.first)} was named in
+              ${esc(v.heat.length)} ${v.heat.length === 1 ? 'position' : 'different positions'}
+              ${esc(v.where)}${v.heat.length > 1 ? `, most often at ${esc(positionName(v.heat[0].code).toLowerCase())}` : ''}.</p>`).join('\n            ')}
             <ol class="pf-heatlist">
               ${heat.map((h) => {
-    const ms = posMatches.get(h.code) || [];
-    return `<li${h.k >= 0.34 ? ' class="is-key"' : ''}>
+    const ms = posRows.get(h.code) || [];
+    /* Every tab's count and bar width for this position, and the tabs it
+       appears in at all. */
+    const per = {};
+    const inTabs = [];
+    for (const v of views) {
+      const hv = v.heat.find((x) => x.code === h.code);
+      if (!hv) continue;
+      for (const k of v.keys) per[k] = [fmtN(hv.n), Math.round(hv.k * 100)];
+      inTabs.push(v.key);
+    }
+    return `<li${h.k >= 0.34 ? ' class="is-key"' : ''} data-season-scope="${attr(inTabs.join(' '))}" data-heat="${attr(JSON.stringify(per))}">
                 <details class="pf-pos" data-pos="${attr(h.code)}">
                   <summary>
                     <span class="pf-heatlist__k">${esc(positionName(h.code))}</span>
@@ -839,14 +1015,12 @@ export function playerPage(p, d) {
                           counts a half, and the note under the list says so.
                           Both are stated here because the second explains the
                           first. */''}
-                    <span class="sr-only">${esc(positionName(h.code))},
-                      ${esc(fmtN(h.n))} team-sheet ${h.n === 1 ? 'slot' : 'slots'}
-                      from ${esc(ms.length)} ${ms.length === 1 ? 'match' : 'matches'}. Show them.</span>
+                    <span class="sr-only">${esc(fmtN(h.n))} team-sheet ${h.n === 1 ? 'slot' : 'slots'}. Show the matches.</span>
                   </summary>
                   <div class="pf-pos__panel">
                     <p class="pf-pos__t">${esc(positionName(h.code))}</p>
                     <ol class="pf-pos__list">
-                      ${ms.map((x) => `<li>
+                      ${ms.map((x) => `<li data-season-scope="${x.si} all">
                         <span class="pf-pos__res" data-res="${attr(x.outcome || '')}">${esc(x.outcome || '-')}</span>
                         <span class="pf-pos__badge">${oppBadge(x.opponent, d.badges, 22, 22)}</span>
                         <span class="pf-pos__club">${esc(shortClub(x.opponent))}</span>
@@ -860,28 +1034,15 @@ export function playerPage(p, d) {
               </li>`;
   }).join('\n              ')}
             </ol>
-            <p class="pf-heatlist__note">Team-sheet slots ${where}, not matches:
+            <p class="pf-heatlist__note">Team-sheet slots, not matches:
               a sheet can name the same player under two codes for one game. A place on the bench
-              counts as a half, because being named there is not the same as playing there.${unmapped.length
-    ? ` ${unmapped.map((w) => esc(w.code)).join(', ')} ${unmapped.length === 1 ? 'has' : 'have'} no fixed
-              spot on the diagram and ${unmapped.length === 1 ? 'is' : 'are'} not drawn.` : ''}</p>
+              counts as a half, because being named there is not the same as playing there.${career.unmapped.length
+    ? ` ${career.unmapped.map((w) => esc(w.code)).join(', ')} ${career.unmapped.length === 1 ? 'has' : 'have'} no fixed
+              spot on the diagram and ${career.unmapped.length === 1 ? 'is' : 'are'} not drawn.` : ''}</p>
           </div>
         </div>
       </div>
     </section>` : '';
-  };
-  /* A season tab shows its own map, All seasons the career one. A player who
-     has played in only one season has one map, shown under both tabs, because
-     the two would be the same picture drawn twice. */
-  const playedSeasons = seasons.map((s, i) => [s, i]).filter(([s]) => s.profile.apps || s.profile.bench);
-  const pitchBand = playedSeasons.length <= 1
-    ? (playedSeasons.length
-      ? pitchFor(playedSeasons[0][0].matches, `${playedSeasons[0][1]} all`, playedSeasons[0][0].name)
-      : '')
-    : [
-      ...playedSeasons.map(([s, i]) => pitchFor(s.matches, String(i), s.name, true)),
-      pitchFor(counted, 'all', 'All seasons'),
-    ].join('');
 
   /* ================= 07 HONOURS ================= */
   const honours = [

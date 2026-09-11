@@ -1777,7 +1777,8 @@ body::before{animation: none;}
 html.js .lg-panel[hidden],
 html.js [data-league-panel][hidden],
 html.js #past-players[hidden],
-html.js [data-past][hidden]{display: none;}
+html.js [data-past][hidden],
+html.js [data-season-scope][hidden]{display: none;}
 
 @media (prefers-reduced-motion: reduce){
   .lg-chip{transition: none;}

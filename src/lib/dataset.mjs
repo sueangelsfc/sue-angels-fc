@@ -1308,6 +1308,24 @@ export function buildDataset(overrides = {}) {
        from the code baseline rather than from a row it can edit. */
     rawMatches: rawResults,
     squad, players, playersCompetitive, playersBySeason, statsByNum, nameFor, friendlyFor,
+    /* GOAL CLIPS THE CLUB SENDS, filed in match-clips.json against a match and
+       the goal's place in its record. Resolved here once, so the match page and
+       the videos page name the same scorer and the same assist: both are read
+       off the record, never typed beside the file. A clip whose match or goal
+       is not on the record resolves to nothing rather than to a guess. */
+    goalFilmFor: (() => {
+      let filed = {};
+      try { filed = read('match-clips.json').clips || {}; } catch { filed = {}; }
+      return (m) => ((m && filed[m.id]) || []).map((c) => {
+        const g = ((m.detail && m.detail.goals) || [])[Number(c.goal) - 1];
+        if (!g || !c.src) return null;
+        const an = g.assist && typeof g.assist === 'object' ? g.assist.num : g.assist;
+        return {
+          n: Number(c.goal), src: c.src, scorer: nameFor(g.num),
+          assist: an != null && an !== '' ? nameFor(Number(an)) : '',
+        };
+      }).filter(Boolean);
+    })(),
     /* WHERE THE CLUB PLAYS, derived. `division` is this season's, which rolls
        on its own when the club goes up or down; `divisionOf(season)` answers
        for any year, so "League Ten champions 25/26" stays right forever. */

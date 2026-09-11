@@ -48,6 +48,17 @@ export function videos(d) {
     .map((m) => ({ m, id: m.detail.videoId }))
     .sort((a, b) => (b.m.iso || '').localeCompare(a.m.iso || ''));
 
+  /* Goal clips hosted on the site, each named from its match record and shown
+     over the result's cover, linking to the goal on the match's own page. */
+  const goals = (d.played || []).flatMap((m) => (d.goalFilmFor ? d.goalFilmFor(m) : [])
+    .map((f) => ({
+      m, f,
+      poster: m.detail && m.detail.cover && m.detail.cover !== 'None'
+        ? m.detail.cover : (d.drawnCoverSrc ? d.drawnCoverSrc(m.id) : ''),
+    })))
+    .sort((a, b) => (b.m.iso || '').localeCompare(a.m.iso || '') || a.f.n - b.f.n);
+  const total = clips.length + goals.length;
+
   /* Albums stand in for match galleries, which is a real thing the club has a
      lot of, rather than an empty category. */
   const albums = (d.galleries || []).length;
@@ -56,8 +67,7 @@ export function videos(d) {
       <div class="wrap">
         <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Watch</p>
         <h1 class="lv-hero__title" id="vd-h">Club videos<span class="volt">.</span></h1>
-        <p class="lv-hero__lede">Goals, highlights and clips from the season. Everything the club
-          films goes to YouTube first.</p>
+        <p class="lv-hero__lede">Goals, highlights and clips from the season.</p>
         <p class="lv-hero__btns">
           ${ytBtn('Open the channel', '/gallery.html', 'Matchday photographs')}
           <a class="btn btn--ghost" href="/live.html">Live matches</a>
@@ -67,9 +77,23 @@ export function videos(d) {
 
   const clipsBand = `<section class="sec vd-clips" aria-labelledby="vd-c-h">
       <div class="wrap">
-        ${rail(1, 'Highlights', clips.length ? `${clips.length} clips` : 'On the channel')}
+        ${rail(1, 'Highlights', total ? `${total} ${total === 1 ? 'clip' : 'clips'}` : 'On the channel')}
         <h2 class="h2 rv" id="vd-c-h">Match <span class="volt">highlights.</span></h2>
-        ${clips.length ? `<ul class="lv-grid rv">
+        ${total ? `<ul class="lv-grid rv">
+          ${goals.map(({ m, f, poster }) => `<li class="lv-card">
+            <a class="lv-card__link" href="/matches/${attr(m.slug)}.html#goal-${attr(f.n)}">
+              <span class="lv-card__thumb">
+                ${poster
+    ? `<img class="lv-card__shot" src="${attr(poster)}" alt="" width="1200" height="630" loading="lazy" decoding="async" />`
+    : `<img class="lv-card__crest" src="${STAR}" alt="Sue’s Angels FC star" width="76" height="94" loading="lazy" decoding="async" />`}
+                <span class="lv-card__play" aria-hidden="true"></span>
+              </span>
+              <span class="lv-card__body">
+                <b>Goal ${esc(f.n)} · ${esc(f.scorer)}</b>
+                <span>${f.assist ? `Assisted by ${esc(f.assist)} · ` : ''}${esc(shortClub(m.home))} ${esc(m.scoreline)} ${esc(shortClub(m.away))} · ${esc(fmtDate(m.date))}</span>
+              </span>
+            </a>
+          </li>`).join('\n          ')}
           ${clips.map(({ m, id }) => `<li class="lv-card">
             <a class="lv-card__link" href="https://www.youtube.com/watch?v=${attr(id)}" rel="noopener" target="_blank">
               <span class="lv-card__thumb">

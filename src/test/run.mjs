@@ -3225,6 +3225,39 @@ for (const [f, kb] of Object.entries({
       check('every wedge of the player wheel is his figure over the club\'s own total',
         wheelSeen > 0 && wheelBad.length === 0, `${wheelSeen} wedges, ${wheelBad.slice(0, 3).join(' | ')}`);
     }
+    /* GOAL CLIPS. Each clip filed in match-clips.json is on its match page,
+       names the scorer and the assist the record holds for that goal, wears the
+       result's cover, and points at a file that exists; and the videos page
+       links to every one. A clip whose match is not in this dataset (the
+       committed snapshot can predate it) has no page to be on and is skipped. */
+    {
+      const filed = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'match-clips.json'), 'utf8')).clips || {};
+      const clipBad = [];
+      let clipSeen = 0;
+      for (const [id, list] of Object.entries(filed)) {
+        const mm = (dP.played || []).find((x) => x.id === id);
+        if (!mm) continue;
+        const page = path.join(ROOT, 'matches', `${mm.slug}.html`);
+        const h = fs.existsSync(page) ? fs.readFileSync(page, 'utf8') : '';
+        for (const c of list) {
+          clipSeen += 1;
+          const g = ((mm.detail || {}).goals || [])[Number(c.goal) - 1];
+          if (!g) { clipBad.push(`${id} goal ${c.goal}: the record holds no such goal`); continue; }
+          if (!fs.existsSync(path.join(ROOT, String(c.src).replace(/^\//, '')))) clipBad.push(`${c.src} is not on disk`);
+          const fig = (h.match(new RegExp(`<figure class="mr-clip rv" id="goal-${Number(c.goal)}">[\\s\\S]*?</figure>`)) || [''])[0];
+          const an = g.assist && typeof g.assist === 'object' ? g.assist.num : g.assist;
+          if (!fig.includes(`src="${c.src}"`)) clipBad.push(`${id} goal ${c.goal}: clip not on the match page`);
+          if (!fig.includes(dP.nameFor(g.num))) clipBad.push(`${id} goal ${c.goal}: scorer not named`);
+          if (an != null && an !== '' && !fig.includes(`assisted by ${dP.nameFor(Number(an))}`)) clipBad.push(`${id} goal ${c.goal}: assist not named`);
+          if (!/poster="[^"]+"/.test(fig)) clipBad.push(`${id} goal ${c.goal}: no cover over the clip`);
+        }
+      }
+      const vids = fs.readFileSync(path.join(ROOT, 'videos.html'), 'utf8');
+      const linked = (vids.match(/href="\/matches\/[^"]+\.html#goal-\d+"/g) || []).length;
+      check('every filed goal clip is on its match page, naming scorer and assist, over the result\'s cover',
+        clipBad.length === 0, clipBad.join(' | '));
+      check('and the videos page links to each of them', linked === clipSeen, `${linked} linked, ${clipSeen} filed with a match`);
+    }
     /* THE DESCRIPTION IS WHAT A SEARCH ENGINE READS, and it is derived from
        the same profile, so it had the same fault where nobody would look:
        "2 starts, 7 goals and 8 assists" in the meta tag and the JSON-LD. */

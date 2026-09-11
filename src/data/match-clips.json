@@ -1,0 +1,9 @@
+{
+  "_note": "Goal clips the club has sent, filed against a match id and the goal's place in that match's own goal list (1 is the first goal the record holds). Nothing about the goal is typed here: the scorer and the assist are read from the match record when the page is built, and the poster is the result's cover. The files live in /assets/video and are encoded for the web (1080p H.264, faststart) from the originals.",
+  "clips": {
+    "r20260906-three": [
+      { "goal": 1, "src": "/assets/video/r20260906-three-goal-1.mp4", "from": "0911(1).mov" },
+      { "goal": 2, "src": "/assets/video/r20260906-three-goal-2.mp4", "from": "0911.mov" }
+    ]
+  }
+}

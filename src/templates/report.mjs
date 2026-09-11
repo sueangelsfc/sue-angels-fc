@@ -210,12 +210,26 @@ export function matchReport(m, d) {
     { id: 'extraId', file: 'extraFile', label: 'More from the day' },
   ];
   const clips = det ? CLIPS.filter((c) => det[c.id] || det[c.file]) : [];
-  const videoBand = clips.length ? `<section class="sec mr-video" aria-labelledby="mr-v-h">
+  /* THE GOALS, ON FILM. Each clip names who scored and who made it, read off
+     this match's own goal list, and wears the result's cover until it is
+     played: the club's own card, or the one the build drew. `preload="none"`
+     so a phone downloads nothing until somebody presses play. */
+  const goalFilm = d.goalFilmFor ? d.goalFilmFor(m) : [];
+  const poster = det.cover && det.cover !== 'None' ? det.cover : (d.drawnCoverSrc ? d.drawnCoverSrc(m.id) : '');
+  const filmCount = clips.length + goalFilm.length;
+  const videoBand = filmCount ? `<section class="sec mr-video" id="watch" aria-labelledby="mr-v-h">
       <div class="wrap wrap--narrow">
-        ${rail(3, 'Watch it', clips.length === 1 ? 'Match video' : `${clips.length} clips`)}
+        ${rail(3, 'Watch it', filmCount === 1 ? (goalFilm.length ? 'The goal' : 'Match video') : `${filmCount} clips`)}
         <h2 class="h2 rv" id="mr-v-h">See it for <span class="volt">yourself.</span></h2>
+        ${goalFilm.map((f) => `<figure class="mr-clip rv" id="goal-${f.n}">
+          <figcaption class="mr-clip__cap">Goal ${esc(f.n)} · ${esc(f.scorer)}${f.assist ? `, assisted by ${esc(f.assist)}` : ''}</figcaption>
+          <div class="mr-embed">
+            <video src="${attr(f.src)}" controls preload="none" playsinline${poster ? ` poster="${attr(poster)}"` : ''}
+              title="${attr(`${m.title}, goal ${f.n}: ${f.scorer}${f.assist ? `, assisted by ${f.assist}` : ''}`)}"></video>
+          </div>
+        </figure>`).join('\n        ')}
         ${clips.map((c) => `<figure class="mr-clip rv">
-          ${clips.length > 1 ? `<figcaption class="mr-clip__cap">${esc(c.label)}</figcaption>` : ''}
+          ${filmCount > 1 ? `<figcaption class="mr-clip__cap">${esc(c.label)}</figcaption>` : ''}
           <div class="mr-embed">
             ${det[c.id]
     ? `<iframe src="https://www.youtube-nocookie.com/embed/${attr(det[c.id])}"

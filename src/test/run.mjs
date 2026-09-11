@@ -5309,8 +5309,23 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const l8Sec = l8At > -1 ? homeBodyL.slice(l8At, homeBodyL.indexOf('</section>', l8At)) : '';
   check('League Eight is pinned under the hero, above the club\'s own running order',
     l8At > -1 && l8At < firstLayoutBand, `at ${l8At}, first layout band at ${firstLayoutBand}`);
-  check('and it carries every club in the division',
-    (l8.rows || []).length === 9 && (l8Sec.match(/<a class="tbl__row/g) || []).length === 9);
+  const tblAt = homeBodyL.indexOf('id="table"');
+  const tblSec = tblAt > -1 ? homeBodyL.slice(tblAt, homeBodyL.indexOf('</section>', tblAt)) : '';
+  check('the table leads the page, carries every club in the division, and the League Eight band sits under it',
+    (l8.rows || []).length === 9 && (tblSec.match(/<a class="tbl__row/g) || []).length === 9
+      && tblAt > -1 && tblAt < l8At);
+  const { publishedBands: pbL, resolveHomeLayout: rhL } = await import(path.join(ROOT, 'src', 'lib', 'home-layout.mjs'));
+  const offRec = { order: ['news', 'who', 'table', 'results', 'fixtures'], hidden: ['table', 'results', 'fixtures'] };
+  const leadL = pbL(offRec, dL);
+  check('while League Eight is played the table, results and fixtures lead, even switched off',
+    leadL.slice(0, 3).join(',') === ['table', 'results', 'fixtures'].filter((k) => leadL.includes(k)).join(',')
+      && leadL[0] === 'table' && leadL.includes('results'), leadL.join(','));
+  const dLq = { ...dL, nextDivisionTable: { ...l8, rows: (l8.rows || []).map((r) => ({ ...r, played: 0 })) } };
+  const quietL = pbL(offRec, dLq);
+  check('probe: before a ball is kicked the club\'s record decides alone',
+    !quietL.includes('table') && !quietL.includes('results'), quietL.join(','));
+  check('and the club\'s own order is kept beneath them',
+    leadL.indexOf('news') < leadL.indexOf('who') && typeof rhL === 'function');
   check('and the division\'s scorers',
     (l8.scorers || []).length > 0 && (l8.scorers || []).slice(0, 6).every((s) => l8Sec.includes(String(s.name).replace(/&/g, '&amp;').replace(/'/g, '&#39;'))));
   check('and the round just played and the round to come',
@@ -6329,7 +6344,11 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
      malformed or legacy record all produce THE SAME PAGE AS NO RECORD. So the
      reference is that page, computed once, and there is nothing left to keep
      in step. */
-  const SHIPPED = publishedBands(null, dL).join(',');
+  /* Asked of a dataset where League Eight has not started, because while it is
+     played the table, results and fixtures lead whatever the record says, and
+     these checks are about what the record says. That rule has its own. */
+  const dPre = { ...dL, nextDivisionTable: { ...(dL.nextDivisionTable || {}), rows: [] } };
+  const SHIPPED = publishedBands(null, dPre).join(',');
   for (const [label, rec] of [
     ['no record', null],
     ['an empty record', {}],
@@ -6339,8 +6358,8 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
       { order: SHIPPED.split(','), hidden: [] }],
   ]) {
     check(`home layout: ${label} publishes the page as it shipped`,
-      publishedBands(rec, dL).join(',') === SHIPPED,
-      publishedBands(rec, dL).join(','));
+      publishedBands(rec, dPre).join(',') === SHIPPED,
+      publishedBands(rec, dPre).join(','));
     const r = resolveHomeLayout(rec);
     check(`home layout: ${label} keeps every band in the standard order`,
       r.order.join(',') === DEFAULT, r.order.join(','));
@@ -6354,7 +6373,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     const off = HOME_BANDS.filter((b) => b.off).map((b) => b.key);
     if (off.length) {
       check('home layout: bands added later start off',
-        off.every((k) => !publishedBands({ order: SHIPPED.split(','), hidden: [] }, dL).includes(k)));
+        off.every((k) => !publishedBands({ order: SHIPPED.split(','), hidden: [] }, dPre).includes(k)));
       /* THE BAND HAS TO HAVE SOMETHING IN IT, and taking off[0] blindly does
          not guarantee that. publishedBands drops an EMPTY band whether it was
          opted in or not, which is the behaviour a switch that lies depends on:
@@ -6364,15 +6383,15 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
          this read "opting a band in does not publish it" and was reporting a
          correct refusal as a fault. Pick the first default-off band that
          actually has content, and say so when none has. */
-      const optable = off.filter((k) => homeBandFilled(k, dL));
+      const optable = off.filter((k) => homeBandFilled(k, dPre));
       if (!optable.length) {
         warn('home layout: no default-off band currently has content to opt in');
       } else {
         const pick = optable[0];
         const optedIn = { order: [pick, ...SHIPPED.split(',')], hidden: off.filter((k) => k !== pick) };
         check('home layout: opting a band in publishes it',
-          publishedBands(optedIn, dL)[0] === pick,
-          `${pick} -> ${publishedBands(optedIn, dL).slice(0, 6).join(',')}`);
+          publishedBands(optedIn, dPre)[0] === pick,
+          `${pick} -> ${publishedBands(optedIn, dPre).slice(0, 6).join(',')}`);
       }
     } else {
       /* EVERY BAND IS ON BY DEFAULT, so the off rule has no live instance to
@@ -6458,8 +6477,11 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
      it back where it was rather than at the end. */
   {
     const rec = { order: ['table', 'news', 'who', 'awards', 'campaign', 'results', 'faq', 'cta'], hidden: ['news'] };
-    const off = publishedBands(rec, dL);
-    const on = publishedBands({ ...rec, hidden: [] }, dL);
+    /* Before League Eight starts, so the club's record decides alone: while it
+       is played the table, results and fixtures lead whatever the record says. */
+    const dQ = { ...dL, nextDivisionTable: { ...(dL.nextDivisionTable || {}), rows: [] } };
+    const off = publishedBands(rec, dQ);
+    const on = publishedBands({ ...rec, hidden: [] }, dQ);
     /* Position asserted RELATIVE to its neighbour, not as a fixed index. The
        first version said index 1, which stopped being true the moment a band
        was added ahead of it in the default order - a test that breaks when

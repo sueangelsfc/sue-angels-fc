@@ -795,9 +795,11 @@ export function home(d) {
     </section>`;
 
   /* ================= 05 RECENT RESULTS ================= */
-  const teamRow = (name, isUs, score, winner) => `<div class="rcard2__team">${isUs
+  /* Spans, not divs: the whole card is one link, and a link holding block
+     elements is invalid phrasing content. Every part carries its own display. */
+  const teamRow = (name, isUs, score, winner) => `<span class="rcard2__team">${isUs
     ? `<img class="rcard2__crest" src="${STAR}" alt="Sue’s Angels FC star" width="26" height="32" loading="lazy" decoding="async" />`
-    : oppBadge(name, d.badges, 26, 32, 'rcard2__crest')}<b>${esc(shortClub(name))}</b><span class="rcard2__score${isUs && winner ? ' rcard2__score--volt' : !isUs && winner ? ' rcard2__score--win' : ''}">${esc(score)}</span></div>`;
+    : oppBadge(name, d.badges, 26, 32, 'rcard2__crest')}<b>${esc(shortClub(name))}</b><span class="rcard2__score${isUs && winner ? ' rcard2__score--volt' : !isUs && winner ? ' rcard2__score--win' : ''}">${esc(score)}</span></span>`;
 
   const resultsBand = `<section class="sec sec--results" id="results" aria-labelledby="res-h">
       <div class="wrap rl__head rv">
@@ -826,12 +828,12 @@ export function home(d) {
                itself. The outcome letter carries its word for screen readers
                and is hidden visually, so "W" is not read as a letter. -->
           <a class="rcard2__link" href="/matches/${attr(m.slug)}.html">
-            <div class="rcard2__top"><span class="rchip rchip--${attr((m.outcome || 'w').toLowerCase())}"><span class="sr-only">${esc({ W: 'Won', D: 'Drew', L: 'Lost' }[m.outcome] || 'Result')}</span><span aria-hidden="true">${esc(m.outcome || '-')}</span></span><span class="rcard2__date">${esc(dayMonthYear(m.iso || m.date))}</span></div>
-            <div class="rcard2__teams">
+            <span class="rcard2__top"><span class="rchip rchip--${attr((m.outcome || 'w').toLowerCase())}"><span class="sr-only">${esc({ W: 'Won', D: 'Drew', L: 'Lost' }[m.outcome] || 'Result')}</span><span aria-hidden="true">${esc(m.outcome || '-')}</span></span><span class="rcard2__date">${esc(dayMonthYear(m.iso || m.date))}</span></span>
+            <span class="rcard2__teams">
               ${teamRow(m.home, m.weAreHome, hs, homeWon)}
               ${teamRow(m.away, !m.weAreHome, as, awayWon)}
-            </div>
-            <p class="rcard2__meta">${esc(m.competition)} · ${esc(m.weAreHome ? 'Home' : 'Away')}</p>
+            </span>
+            <span class="rcard2__meta">${esc(m.competition)} · ${esc(m.weAreHome ? 'Home' : 'Away')}</span>
           </a>
         </li>`;
         }).join('\n        ')}
@@ -862,7 +864,7 @@ export function home(d) {
             <span class="tbl__pos">#</span><span class="tbl__club">Club</span>
             <span>P</span><span>W</span><span>GD</span><span class="tbl__pts">Pts</span>
           </div>
-          ${tblRows.slice(0, 6).map((r) => `<a class="tbl__row${r.us ? ' tbl__row--us' : r.pos === 2 ? ' tbl__row--runner' : ''}" href="/league.html" aria-hidden="true" tabindex="-1">
+          ${(l8Live ? tblRows : tblRows.slice(0, 6)).map((r) => `<a class="tbl__row${r.us ? ' tbl__row--us' : r.pos === 2 ? ' tbl__row--runner' : ''}" href="/league.html" aria-hidden="true" tabindex="-1">
             <span class="tbl__pos">${esc(r.pos)}</span>
             <span class="tbl__club">${r.us
               ? `<img src="${STAR}" alt="Sue’s Angels FC star" width="26" height="32" loading="lazy" decoding="async" />`
@@ -910,29 +912,12 @@ export function home(d) {
       <div class="wrap tbl__head">
         <div>
           <p class="eyebrow">${esc(l8.division)} · ${esc(l8.season || d.currentSeason)} · as it stands</p>
-          <h2 class="h2" id="l8-h">${esc(l8.division)}<span class="volt">.</span></h2>
+          <h2 class="h2" id="l8-h">Around ${esc(l8.division)}<span class="volt">.</span></h2>
           ${usL8 ? `<p class="l8__lede">${esc(standing.replace(` in ${l8.division}`, '').replace(/^./, (c) => c.toUpperCase()))} after ${esc(usL8.played)} match${usL8.played === 1 ? '' : 'es'}${l8.tableAsOf ? `. Table as of ${esc(fmtDate(l8.tableAsOf))}` : ''}.</p>` : ''}
         </div>
         <a class="btn btn--ghost btn--sm" href="/league.html">Full table ${ARROW}</a>
       </div>
-      <div class="wrap l8__grid">
-        <div class="tbl l8__tbl">
-          <div class="tbl__row tbl__head-row" aria-hidden="true">
-            <span class="tbl__pos">#</span><span class="tbl__club">Club</span>
-            <span>P</span><span>W</span><span>GD</span><span class="tbl__pts">Pts</span>
-          </div>
-          ${l8Rows.map((r) => `<a class="tbl__row${r.us ? ' tbl__row--us' : ''}" href="/league.html" aria-hidden="true" tabindex="-1">
-            <span class="tbl__pos">${esc(r.pos)}</span>
-            <span class="tbl__club">${crestOf(r.club, 26)}${esc(shortClub(r.club))}</span>
-            <span>${esc(r.played)}</span><span>${esc(r.won)}</span><span>${r.goalDifference > 0 ? '+' : ''}${esc(r.goalDifference)}</span><b class="tbl__pts">${esc(r.points)}</b>
-          </a>`).join('\n          ')}
-          <table class="sr-only">
-            <caption>${esc(l8.division)} standings, ${esc(l8.season || d.currentSeason)}</caption>
-            <thead><tr><th scope="col">Position</th><th scope="col">Club</th><th scope="col">Played</th>
-              <th scope="col">Won</th><th scope="col">Goal difference</th><th scope="col">Points</th></tr></thead>
-            <tbody>${l8Rows.map((r) => `<tr><td>${esc(r.pos)}</td><th scope="row">${esc(r.club)}</th><td>${esc(r.played)}</td><td>${esc(r.won)}</td><td>${r.goalDifference > 0 ? '+' : ''}${esc(r.goalDifference)}</td><td>${esc(r.points)}</td></tr>`).join('')}</tbody>
-          </table>
-        </div>
+      <div class="wrap">
         <div class="l8__cards">
           ${l8Round.length ? `<div class="l8__card">
             <h3 class="l8__h3">Latest results <span>${esc(dayOf(l8LastDay))}</span></h3>
@@ -2476,13 +2461,15 @@ export function home(d) {
        The wordstrip travels with the CTA rather than sitting at a fixed point
        in the page, because that is what it is: the lead-in flourish to Pull on
        the shirt, not a divider at a particular height. */
-    body: hero + ticker + leagueNowBand + shown.map((k) => ({
+    body: hero + ticker + shown.map((k) => ({
       news: newsBand,
       who: whoBand,
       awards: awardsBand,
       campaign: campaignBand,
       results: resultsBand,
-      table: tableBand,
+      /* The division's round, its next round and its scorers sit directly
+         under its table, which leads the page while League Eight is played. */
+      table: tableBand + leagueNowBand,
       faq: faqBand,
       cta: wordstrip + ctaBand,
       report: reportBand,

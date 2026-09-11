@@ -1106,8 +1106,25 @@ export function resolveHomeLayout(rec) {
    hidden, and not empty. This is the list the page draws AND the list the
    reference strip numbers 01, 02, 03 from, so a hidden band cannot leave a
    gap in the numbering. */
+/* THE TABLE, THE RESULTS AND THE FIXTURES LEAD WHILE LEAGUE EIGHT IS PLAYED.
+   The club asked for all three at the top of the front page once the
+   division started, and its saved record has them switched off - a record only
+   an admin login can change. So while the division's table has a match in it
+   they come first, in this order, whatever the record says, and everything
+   else keeps the club's own order beneath them. Before a ball is kicked the
+   record decides alone, exactly as it did. */
+export const LEAGUE_FIRST = ['table', 'results', 'fixtures'];
+export function leagueUnderway(d) {
+  const rows = (d && d.nextDivisionTable && d.nextDivisionTable.rows) || [];
+  return rows.some((r) => (r.played || 0) > 0);
+}
+
 export function publishedBands(rec, d) {
   const { order, hidden } = resolveHomeLayout(rec);
+  if (leagueUnderway(d)) {
+    return LEAGUE_FIRST.filter((k) => homeBandFilled(k, d))
+      .concat(order.filter((k) => !LEAGUE_FIRST.includes(k) && !hidden.has(k) && homeBandFilled(k, d)));
+  }
   return order.filter((k) => !hidden.has(k) && homeBandFilled(k, d));
 }
 

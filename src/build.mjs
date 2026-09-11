@@ -16,7 +16,7 @@ import { CLUB, SEPSIS } from './lib/club.mjs';
 import { teamSummary, fmtDate, isUs, isLeague} from './lib/stats.mjs';
 import { home, oppBadge, oppBadgeSrc } from './templates/home.mjs';
 import { COACH_ROLES } from './lib/coach-roles.mjs';
-import { HOME_BANDS, HOME_AREAS, homeBandFilled, reportsIn, albumsIn, playersIn } from './lib/home-layout.mjs';
+import { HOME_BANDS, HOME_AREAS, homeBandFilled, reportsIn, albumsIn, playersIn, LEAGUE_FIRST, leagueUnderway } from './lib/home-layout.mjs';
 import { about } from './templates/about.mjs';
 import { cause } from './templates/cause.mjs';
 import { champions } from './templates/champions.mjs';
@@ -616,6 +616,9 @@ const adminSeed = {
      measured rather than modelled, and it is a button on this same screen, so
      "you are 40KB above the standard order" names both the problem and the
      way back from it. */
+  /* The bands that lead the page whatever the saved order says, while League
+     Eight is played, so the panel's preview publishes what the site does. */
+  leagueFirst: leagueUnderway(d) ? LEAGUE_FIRST.filter((k) => homeBandFilled(k, d)) : [],
   homePage: (() => {
     const body = home({ ...d, homeLayout: { order: HOME_BANDS.map((b) => b.key), hidden: [] } }).body;
     const bytes = {};
@@ -834,7 +837,7 @@ const adminSeed = {
    module reads `window.SA_SEED` at its own top, and this assignment runs
    above it in the same file, so it is merged before anything looks. */
 const CHUNK_SEED_KEYS = {
-  home: ['homeBands', 'homeAreas', 'homePage'],
+  home: ['homeBands', 'homeAreas', 'homePage', 'leagueFirst'],
   /* Player bios: prose, read only by the screen that edits it. */
   squad: ['squadBios'],
   /* The partners carry a paragraph each, their placements and their links -

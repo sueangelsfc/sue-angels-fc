@@ -1322,6 +1322,7 @@ html.js .rv.is-in{opacity: 1; transform: translateY(0);}
 .rcard2__date{font-family: var(--ui); font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
 .rcard2__teams{margin-top: 20px; display: flex; flex-direction: column; gap: 13px; position: relative; z-index: 1;}
 .rcard2__team{display: flex; align-items: center; gap: 12px;}
+.rcard2__meta{display: block;}
 .rcard2__crest{width: 26px; height: 26px; object-fit: contain; flex: 0 0 auto;}
 .rcard2__team b{flex: 1; min-width: 0;
   font-family: var(--display); font-weight: 600; font-size: 14.5px; letter-spacing: -0.01em;
@@ -1386,9 +1387,8 @@ a.tbl__row:hover{background: rgba(255, 255, 255, 0.045);}
    minmax(0, ...) so a long club name cannot force a track open on a phone. */
 .sec--l8{background: var(--navy-deep); border-bottom: 1px solid var(--line-d); color: var(--fg); padding: 72px 0;}
 .l8__lede{margin-top: 10px; font-family: var(--ui); font-size: 15px; color: var(--ink-2);}
-.l8__grid{display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 22px; align-items: start;}
-.l8__tbl .tbl__row{padding: 11px 18px;}
-.l8__cards{display: grid; gap: 16px; min-width: 0;}
+.l8__cards{display: grid; gap: 16px; min-width: 0; align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));}
 .l8__card{border: 1px solid var(--line-d); border-radius: 18px; padding: 16px 18px; background: rgba(255, 255, 255, 0.02);}
 .l8__h3{display: flex; justify-content: space-between; gap: 10px; margin: 0 0 10px;
   font-family: var(--ui); font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
@@ -1408,15 +1408,11 @@ a.tbl__row:hover{background: rgba(255, 255, 255, 0.045);}
 .l8__scorers li{display: flex; justify-content: space-between; align-items: center; gap: 10px; font-family: var(--ui); font-size: 13.5px; color: var(--ink-2);}
 .l8__who{display: flex; align-items: center; gap: 8px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
 .l8__scorers b{font-family: var(--display); font-weight: 700; font-size: 15px; color: var(--fg); font-variant-numeric: tabular-nums;}
-@media (max-width: 900px){
-  .l8__grid{grid-template-columns: minmax(0, 1fr);}
-}
 /* Nine clubs, several with long names, in a 1fr column on a phone: wrapped
    in smaller type rather than cut to "BARNES STOR". */
 @media (max-width: 620px){
-  .l8__tbl .tbl__row{padding: 10px 14px;}
-  .l8__tbl .tbl__club{white-space: normal; line-height: 1.2; gap: 9px; font-size: 12.5px !important; overflow-wrap: anywhere;}
-  .l8__tbl .tbl__club img{width: 26px; height: 26px; padding: 3px;}
+  .sec--table .tbl__club{white-space: normal; line-height: 1.2; gap: 9px; font-size: 12.5px !important; overflow-wrap: anywhere;}
+  .sec--table .tbl__club img{width: 26px; height: 26px; padding: 3px;}
 }
 .tbl__row--runner .tbl__club img{border-color: rgba(255, 255, 255, 0.5); background: rgba(255, 255, 255, 0.12);}
 .tbl__row--runner .tbl__pos,

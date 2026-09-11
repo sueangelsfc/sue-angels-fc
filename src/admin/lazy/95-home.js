@@ -59,6 +59,8 @@
      At module scope rather than inside the render, so the suite can run this
      exact arithmetic instead of a second copy of it. */
   var PAGE = SEED.homePage || {};
+  /* Led by these while League Eight is played, whatever the saved order. */
+  var FIRST = SEED.leagueFirst || [];
   var BYTES = PAGE.bytes || {};
   function weightOf(k) { return BYTES[k] || 0; }
   function kb(n) { return (n / 1024).toFixed(n < 10240 ? 1 : 0) + 'KB'; }
@@ -160,9 +162,9 @@
          empty. This is also what the numbers down the left of the home page
          count, so an empty or hidden band cannot leave 04 followed by 06. */
       function live() {
-        return state.order.filter(function (k) {
-          return !isHidden(k) && !bandOf(k).empty;
-        });
+        return FIRST.concat(state.order.filter(function (k) {
+          return FIRST.indexOf(k) < 0 && !isHidden(k) && !bandOf(k).empty;
+        }));
       }
 
       /* WHAT THIS BAND WILL PUBLISH, in the panel's own words.
@@ -244,9 +246,9 @@
           '</li>' +
           '<li class="hband is-pinned">' +
             '<span class="hband__n">Top</span>' +
-            '<span class="hband__t"><b>League Eight, as it stands</b>' +
-              '<span>The table, the latest results, the next round and the scorers. '
-              + 'Pinned under the heading once the division has a match played.</span></span>' +
+            '<span class="hband__t"><b>League Eight: the table, results and fixtures</b>' +
+              '<span>While League Eight is played these lead the page, in that order, whether '
+              + 'or not they are switched on below, with the division\'s round and scorers under the table.</span></span>' +
             '<span class="hband__b"></span>' +
           '</li>' +
           rows.map(function (k, i) {

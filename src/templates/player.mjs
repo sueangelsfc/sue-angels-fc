@@ -320,37 +320,34 @@ const matchColumns = (x, gk) => {
    so a wedge can be checked against the list beside it. A player with none of
    something scores nought on it rather than sharing a tie with the others who
    have none. */
-const profileWheel = (me, pool, gk, where, face) => {
-  const used = (pool || []).filter((q) => q.apps > 0);
-  if (!me || !me.apps || used.length < 3) return '';
-  const rate = (a, b) => (b ? a / b : 0);
-  const two = (v) => v.toFixed(2);
-  /* "From the start", never "Starts": that word is held back site-wide
-     because it was once the label on appearances, and the suite fails any
-     page that prints it. */
+const profileWheel = (me, won, team, gk, where, face) => {
+  if (!me || !(me.starts || me.apps) || !team.matches) return '';
+  /* HIS SHARE OF THE CLUB'S RECORD, not a rank against team-mates. Each
+     wedge is his figure over the club's own total across the same matches:
+     starts out of matches played, goals out of goals scored, and so on.
+     Starts, not appearances: an appearance also counts coming off the bench,
+     and the club reads a start as the figure that says who plays. */
   const metrics = gk ? [
-    ['Appearances', (q) => q.apps],
-    ['From the start', (q) => q.starts],
-    ['Clean sheets', (q) => q.cleanSheets],
-    ['Clean sheets a game', (q) => rate(q.cleanSheets, q.apps), two],
-    ['Captained', (q) => q.captained],
+    ['Starts', me.starts, team.matches, 'matches'],
+    ['Clean sheets', me.cleanSheets, team.cleanSheets, 'clean sheets'],
+    ['Wins', won, team.wins, 'wins'],
+    ['Captained', me.captained, team.matches, 'matches'],
   ] : [
-    ['Appearances', (q) => q.apps],
-    ['From the start', (q) => q.starts],
-    ['Goals', (q) => q.goals],
-    ['Assists', (q) => q.assists],
-    ['Goals and assists a game', (q) => rate(q.goals + q.assists, q.apps), two],
-    ['Clean sheets', (q) => q.cleanSheets],
+    ['Starts', me.starts, team.matches, 'matches'],
+    ['Goals', me.goals, team.goals, 'goals'],
+    ['Assists', me.assists, team.assists, 'assists'],
+    ['Goals and assists', (me.goals || 0) + (me.assists || 0), team.goals, 'goals'],
+    ['Wins', won, team.wins, 'wins'],
+    ['Clean sheets', me.cleanSheets, team.cleanSheets, 'clean sheets'],
   ];
-  const others = used.filter((q) => q.num !== me.num);
-  const rows = metrics.map(([k, f, show = String]) => {
-    const v = f(me) || 0;
-    const vals = others.map((q) => f(q) || 0);
-    const below = vals.filter((o) => o < v).length;
-    const level = vals.filter((o) => o === v).length;
-    const pct = v ? Math.round((100 * (below + level / 2)) / Math.max(1, vals.length)) : 0;
-    return { k, v: show(v), pct, rank: 1 + vals.filter((o) => o > v).length };
-  });
+  /* A measure the club has no total for yet (no clean sheet kept, no assist
+     recorded) has nothing to be a share of, so it is left off rather than
+     drawn as "0 of 0". */
+  const rows = metrics.filter(([, , of]) => of > 0).map(([k, v, of, noun]) => ({
+    k, v: v || 0, of, noun,
+    pct: Math.min(100, Math.round((100 * (v || 0)) / of)),
+  }));
+  if (rows.length < 3) return '';
   const C = 160;
   const R0 = 42;
   const R1 = 146;
@@ -364,10 +361,10 @@ const profileWheel = (me, pool, gk, where, face) => {
   const edge = (i) => [i * span + gap / 2, (i + 1) * span - gap / 2];
   const top = Math.max(...rows.map((r) => r.pct));
   const bg = rows.map((_, i) => sector(R1, ...edge(i))).join('');
-  const wedges = rows.map((r, i) => `<path class="pf-wheel__v${top && r.pct === top ? ' is-top' : ''}" style="--i:${i};--p:${(r.pct / 100).toFixed(2)}" d="${sector(R0 + ((R1 - R0) * Math.max(r.pct, 3)) / 100, ...edge(i))}"><title>${esc(`${r.k}: ${r.pct}`)}</title></path>`).join('');
+  const wedges = rows.map((r, i) => `<path class="pf-wheel__v${top && r.pct === top ? ' is-top' : ''}" style="--i:${i};--p:${(r.pct / 100).toFixed(2)}" d="${sector(R0 + ((R1 - R0) * Math.max(r.pct, 3)) / 100, ...edge(i))}"><title>${esc(`${r.k}: ${r.v} of ${r.of} ${r.noun}, ${r.pct}%`)}</title></path>`).join('');
   const labels = rows.map((r, i) => {
     const [lx, ly] = pt(R0 + (R1 - R0) * 0.64, (i + 0.5) * span);
-    return `<text class="pf-wheel__t" x="${lx}" y="${ly}" style="--i:${i}" data-count="${r.pct}">${r.pct}</text>`;
+    return `<text class="pf-wheel__t" x="${lx}" y="${ly}" style="--i:${i}" data-count="${r.pct}%">${r.pct}%</text>`;
   }).join('');
   /* A photograph stored inline would be repeated in every season's panel, so
      only a file is used at the hub; anything else gets the club star. */
@@ -375,19 +372,19 @@ const profileWheel = (me, pool, gk, where, face) => {
     ? `<img src="${attr(face)}" alt="" width="96" height="96" loading="lazy" decoding="async" />`
     : `<img class="is-star" src="${STAR}" alt="" width="76" height="94" loading="lazy" decoding="async" />`;
   return `<figure class="pf-chart pf-chart--wheel">
-              <figcaption class="pf-chart__k">Against the squad<span class="pf-chart__key">Percentile among the ${esc(used.length)} players used ${esc(where)}</span></figcaption>
+              <figcaption class="pf-chart__k">Share of the club’s record<span class="pf-chart__key">Out of the club’s own totals ${esc(where)}</span></figcaption>
               <div class="pf-wheel">
                 <div class="pf-wheel__art">
-                  <svg viewBox="0 0 320 320" role="img" aria-label="${attr(`Percentiles ${where}: ${rows.map((r) => `${r.k} ${r.pct}`).join(', ')}`)}">
+                  <svg viewBox="0 0 320 320" role="img" aria-label="${attr(`Share of the club’s record ${where}: ${rows.map((r) => `${r.k} ${r.v} of ${r.of}, ${r.pct}%`).join('; ')}`)}">
                     <path class="pf-wheel__bg" d="${bg}"/>
                     <g class="pf-wheel__rings">${[0.25, 0.5, 0.75, 1].map((f) => `<circle cx="${C}" cy="${C}" r="${(R0 + (R1 - R0) * f).toFixed(1)}"/>`).join('')}</g>
                     ${wedges}${labels}
                   </svg>
                   <span class="pf-wheel__face" aria-hidden="true">${faceImg}</span>
                 </div>
-                <ol class="pf-wheel__list">${rows.map((r, i) => `<li style="--i:${i}"><span>${esc(r.k)}</span><b data-count="${r.pct}">${r.pct}</b><i>${esc(r.v)} · ${ordinal(r.rank)} of ${esc(used.length)}</i></li>`).join('')}</ol>
+                <ol class="pf-wheel__list">${rows.map((r, i) => `<li style="--i:${i}"><span>${esc(r.k)}</span><b data-count="${r.pct}%">${r.pct}%</b><i>${esc(r.v)} of ${esc(r.of)} ${esc(r.noun)}</i></li>`).join('')}</ol>
               </div>
-              <p class="pf-chart__sub">100 is the most in the squad ${esc(where)} and nought means none at all. With only a few matches played, one game moves these a long way.</p>
+              <p class="pf-chart__sub">Each wedge is his part of the club’s own total ${esc(where)}: his starts out of the matches played, his goals out of the goals the club scored, his assists out of every assist, his wins out of the club’s wins and his clean sheets out of the club’s clean sheets.</p>
             </figure>`;
 };
 
@@ -740,8 +737,18 @@ export function playerPage(p, d) {
        All seasons they would be the longest season's again. */
     const charts = [resultsDonut(x), shareGauge(x, gk), homeAway(x, gk)].filter(Boolean);
     const cols = sn === 'All seasons' ? '' : matchColumns(x, gk);
+    /* The club's own record over exactly the matches this panel counts. */
     const wheelPool = sn === 'All seasons' ? (d.players || []) : ((d.playersBySeason || {})[sn] || []);
-    const wheel = profileWheel(wheelPool.find((q) => q.num === p.num), wheelPool, gk,
+    const teamList = sn === 'All seasons' ? counted : ((seasons.find((s) => s.name === sn) || {}).matches || []);
+    const scored = teamList.filter((m) => m.countsGoals);
+    const team = {
+      matches: teamList.length,
+      goals: scored.reduce((t, m) => t + (m.ourGoals || 0), 0),
+      assists: wheelPool.reduce((t, q) => t + (q.assists || 0), 0),
+      cleanSheets: scored.filter((m) => m.theirGoals === 0).length,
+      wins: teamList.filter((m) => m.outcome === 'W').length,
+    };
+    const wheel = profileWheel(wheelPool.find((q) => q.num === p.num), x.won, team, gk,
       sn === 'All seasons' ? 'across every season' : `in ${sn}`, shot);
     const n = charts.length + (cols ? 1 : 0) + (wheel ? 1 : 0);
     return n ? `<section class="pf-sub" aria-labelledby="pf-g-${idx}">

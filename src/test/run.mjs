@@ -3189,13 +3189,34 @@ for (const [f, kb] of Object.entries({
         row ? `card shows ${row[3]}, unused is ${wc && wc.benchUnused},`
           + ` namings ${wc && wc.subApps}` : 'no stat row found on the card');
     }
-    /* Ten players have more appearances than starts, so any page still
-       calling the appearance figure a start is now saying something false. */
-    for (const f of ['players/william-clark.html', 'squad.html', 'stats.html']) {
-      const html = fs.readFileSync(path.join(ROOT, f), 'utf8');
-      check(`${f} does not call an appearance a start`,
-        !/\bStarts\b/.test(html),
-        'the page prints starts+substitute appearances under the word Starts');
+    /* Ten players have more appearances than starts, so a page calling the
+       appearance figure a start is saying something false. The squad page
+       prints appearances and must not use the word. The stats table and the
+       player wheel print STARTS, at the club's request, so there the word has
+       to sit over the starts figure itself. */
+    check('squad.html does not call an appearance a start',
+      !/\bStarts\b/.test(fs.readFileSync(path.join(ROOT, 'squad.html'), 'utf8')),
+      'the page prints starts+substitute appearances under the word Starts');
+    {
+      const st = fs.readFileSync(path.join(ROOT, 'stats.html'), 'utf8');
+      const cell = (st.match(/<b>Clark<\/b>[\s\S]*?<td>(\d+)<\/td>/) || [])[1];
+      check('the stats table heads its first figure Starts and prints starts under it',
+        /<abbr title="Starts">St<\/abbr>/.test(st) && Number(cell) === clark.starts && clark.starts !== clark.apps,
+        `William Clark's cell ${cell}, starts ${clark.starts}, appearances ${clark.apps}`);
+      const wheelBad = [];
+      let wheelSeen = 0;
+      for (const f of fs.readdirSync(path.join(ROOT, 'players')).filter((x) => x.endsWith('.html'))) {
+        const h = fs.readFileSync(path.join(ROOT, 'players', f), 'utf8');
+        for (const m of h.matchAll(/<li style="--i:\d+"><span>([^<]+)<\/span><b data-count="(\d+)%">\d+%<\/b><i>(\d+) of (\d+) [a-z ]+<\/i><\/li>/g)) {
+          wheelSeen += 1;
+          const [, k, pct, v, of] = m;
+          if (!Number(of)) { wheelBad.push(`${f} ${k} drawn as a share of nothing (${v} of ${of})`); continue; }
+          if (Number(v) > Number(of) && k !== 'Assists') wheelBad.push(`${f} ${k} ${v} of ${of}`);
+          if (Number(pct) !== Math.min(100, Math.round((100 * Number(v)) / Number(of)))) wheelBad.push(`${f} ${k} ${v} of ${of} printed ${pct}%`);
+        }
+      }
+      check('every wedge of the player wheel is his figure over the club\'s own total',
+        wheelSeen > 0 && wheelBad.length === 0, `${wheelSeen} wedges, ${wheelBad.slice(0, 3).join(' | ')}`);
     }
     /* THE DESCRIPTION IS WHAT A SEARCH ENGINE READS, and it is derived from
        the same profile, so it had the same fault where nobody would look:

@@ -91,7 +91,11 @@ export function stats(d) {
     };
   });
 
-  const figures = (r) => [r.apps || 0, r.subApps || 0, r.goals || 0, r.assists || 0,
+  /* STARTS, NOT APPEARANCES, in the first column. An appearance also counts
+     coming off the bench, which the bench column beside it already holds, and
+     the club reads a start as the figure that says who plays. It is also what
+     the per-start view divides by, so the rates now say what they claim. */
+  const figures = (r) => [r.starts || 0, r.subApps || 0, r.goals || 0, r.assists || 0,
     (r.goals || 0) + (r.assists || 0), r.cleanSheets || 0, r.motm || 0];
 
   /* Anyone who was on a team sheet at all. A player with no involvement of
@@ -299,7 +303,7 @@ export function stats(d) {
 
   /* ================= 02 THE TABLE ================= */
   const COLS = [
-    { k: 'apps', label: 'Ap', full: 'Appearances', i: 0 },
+    { k: 'starts', label: 'St', full: 'Starts', i: 0 },
     { k: 'bench', label: 'Bn', full: 'On the bench', i: 1 },
     { k: 'goals', label: 'G', full: 'Goals', i: 2 },
     { k: 'assists', label: 'A', full: 'Assists', i: 3 },
@@ -414,7 +418,7 @@ export function stats(d) {
                     <b>${esc(p.last)}</b>
                   </a>
                 </th>
-                <td>${esc(r.apps || 0)}</td>
+                <td>${esc(r.starts || 0)}</td>
                 <td>${esc(r.subApps || 0)}</td>
                 <td>${esc(r.goals || 0)}</td>
                 <td>${esc(r.assists || 0)}</td>
@@ -430,9 +434,8 @@ export function stats(d) {
           </table>
           <p class="st-empty" data-stats-empty hidden><b data-empty-msg>No player matches that filter.</b></p>
         </div>
-        <p class="st-note">An appearance is a start, or a substitute the match record shows was on
-          the pitch. Sunday-league returns do not always record who came on, so a name on the bench
-          with nothing beside it is counted in the bench column and not as an appearance.</p>
+        <p class="st-note">Starts count the matches a player began in the eleven. The bench column
+          counts every time he was named as a substitute, whether or not he came on.</p>
       </div>
     </section>`;
 

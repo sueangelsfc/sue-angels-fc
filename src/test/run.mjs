@@ -2477,14 +2477,18 @@ for (const [f, kb] of Object.entries({
       rows.includes('Still Here') && rows.includes('Long Term Injured')
       && rows.includes('Out This Season'));
 
-    /* The step reads `apps`, and the label has always said appearances. They
-       were the same number until a substitute the record can prove was on the
-       pitch started counting, and then the band told the front page that a
-       man on 25 appearances was one away from 25. */
-    const reached = ms([mk('Already There', 'active', { apps: 25, starts: 24 })]);
-    check('somebody who has reached a milestone is not still approaching it',
-      !reached.some((r) => r.label === 'appearances'),
-      'the appearances milestone is counting starts under an appearances label');
+    /* The step counts STARTS, at the club's request, and its key and label
+       have to name the same figure: the band once told the front page that a
+       man on 25 appearances was one away from 25, because it counted one
+       thing under the other's name. A man on 25 starts has reached it; a man
+       on 24 starts and 26 appearances is one away from it. */
+    const reached = ms([mk('Already There', 'active', { apps: 27, starts: 25 })]);
+    const nearly = ms([mk('Nearly There', 'active', { apps: 26, starts: 24 })]);
+    check('the starts milestone counts starts, under a starts label',
+      !reached.some((r) => r.label === 'starts')
+      && nearly.some((r) => r.label === 'starts' && r.away === 1 && r.next === 25)
+      && !nearly.some((r) => r.label === 'appearances'),
+      `reached ${JSON.stringify(reached.map((r) => r.label))}, nearly ${JSON.stringify(nearly.map((r) => [r.label, r.away, r.next]))}`);
 
     /* And on the real page. */
     const homeHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');

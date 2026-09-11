@@ -682,7 +682,7 @@ export function clubRecords(matches, players) {
   const worst = heaviestDefeat(matches);
   const topScorer = leaderboard(players, 'goals', 1)[0];
   const topAssist = leaderboard(players, 'assists', 1)[0];
-  const topApps = leaderboard(players, 'apps', 1)[0];
+  const topApps = leaderboard(players, 'starts', 1)[0];
   const topMotm = leaderboard(players, 'motm', 1)[0];
   const first = played.slice().sort((a, b) => (a.iso || '').localeCompare(b.iso || ''))[0];
 
@@ -693,7 +693,7 @@ export function clubRecords(matches, players) {
     { value: longestRun(matches, (m) => m.theirGoals === 0, { goalRecordOnly: true }), label: 'Consecutive clean sheets', who: 'matches without conceding' },
     topScorer && { value: topScorer.goals, label: 'Most goals', who: topScorer.name, href: `/players/${topScorer.slug}.html` },
     topAssist && { value: topAssist.assists, label: 'Most assists', who: topAssist.name, href: `/players/${topAssist.slug}.html` },
-    topApps && { value: topApps.apps, label: 'Most appearances', who: topApps.name, href: `/players/${topApps.slug}.html` },
+    topApps && { value: topApps.starts, label: 'Most starts', who: topApps.name, href: `/players/${topApps.slug}.html` },
     topMotm && { value: topMotm.motm, label: 'Most Player of the Match awards', who: topMotm.name, href: `/players/${topMotm.slug}.html` },
     first && { value: first.ourScoreline, label: 'First competitive result', who: `v ${first.opponent}, ${fmtDate(first.date)}`, href: `/matches/${first.slug}.html` },
     worst && { value: worst.ourScoreline, label: 'Heaviest defeat', who: `v ${worst.opponent}, ${fmtDate(worst.date)}` },
@@ -1096,12 +1096,12 @@ export function playerProfile(player, matches, squad) {
    letting a reader assume the more flattering reading.
    ========================================================================== */
 const MILESTONE_STEPS = [
-  /* `apps`, not `starts`. The label has always read "appearances" and the
-     figure was starts, which were the same number until an appearance started
-     counting a substitute the record can prove was on the pitch. They differ
-     for ten players now, and the band was telling the front page that Charlie
-     Dunkley was one appearance from 25 when he had already played 25. */
-  { key: 'apps', label: 'appearances', step: 25 },
+  /* STARTS, at the club's request, and the label says so. It read `apps`
+     under "appearances" after the figure and its label were once found to
+     disagree (Charlie Dunkley "one appearance from 25" when he had played 25);
+     the rule that fixed that still holds - the key and the label name the
+     same figure - and the figure the club counts towards is now the start. */
+  { key: 'starts', label: 'starts', step: 25 },
   { key: 'goals', label: 'goals', step: 25 },
   { key: 'assists', label: 'assists', step: 10 },
   { key: 'cleanSheets', label: 'clean sheets', step: 10 },

@@ -197,7 +197,7 @@ export function records(d) {
       .sort((a, b) => (a.m.iso || '').localeCompare(b.m.iso || ''));
     let run = 0;
     for (const r of order) {
-      run += key === 'apps' ? (r.role === 'start' ? 1 : 0) : (r[key] || 0);
+      run += key === 'starts' ? (r.role === 'start' ? 1 : 0) : (r[key] || 0);
       if (run >= target) return r.m;
     }
     return null;
@@ -218,7 +218,7 @@ export function records(d) {
   };
 
   const cards = [
-    playerCard('apps', '', 'Most appearances'),
+    playerCard('starts', '', 'Most starts'),
     playerCard('goals', '', 'Most goals'),
     playerCard('assists', '', 'Most assists'),
     playerCard('cleanSheets', '', 'Most clean sheets'),
@@ -253,7 +253,7 @@ export function records(d) {
 
   const milestones = [
     milestone('goals', 25, 'First to 25 goals'),
-    milestone('apps', 25, 'First to 25 appearances'),
+    milestone('starts', 25, 'First to 25 starts'),
     milestone('goals', 10, 'First to 10 goals'),
     milestone('assists', 10, 'First to 10 assists'),
   ].filter(Boolean);

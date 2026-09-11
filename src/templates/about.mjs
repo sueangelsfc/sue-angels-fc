@@ -85,7 +85,7 @@ export function about(d) {
 
   const topScorer = leaderboard(d.players, 'goals', 1)[0];
   const topAssist = leaderboard(d.players, 'assists', 1)[0];
-  const topApps = leaderboard(d.players, 'apps', 1)[0];
+  const topApps = leaderboard(d.players, 'starts', 1)[0];
   const topKeeper = leaderboard(d.players.filter((p) => /goal/i.test(p.position)), 'cleanSheets', 1)[0];
   /* The recognition table files promotion under `trophy` as well. Going up is
      the consequence of winning the league, not a second piece of silverware,
@@ -151,7 +151,7 @@ export function about(d) {
      and the band read as a spreadsheet. */
   const smalls = [
     topAssist && { v: topAssist.assists, k: 'Most assists', w: topAssist.name, p: topAssist },
-    topApps && { v: topApps.apps, k: 'Most appearances', w: topApps.name, p: topApps },
+    topApps && { v: topApps.starts, k: 'Most starts', w: topApps.name, p: topApps },
     topKeeper && topKeeper.cleanSheets ? { v: topKeeper.cleanSheets, k: 'Clean sheets', w: topKeeper.name, p: topKeeper } : null,
     trophies.length ? { v: trophies.length, k: trophies.length === 1 ? 'Trophy' : 'Trophies', w: trophies.map((t) => `${t.title} ${t.season || ''}`.trim()).join(' · ') } : null,
   ].filter(Boolean);

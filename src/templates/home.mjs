@@ -1562,13 +1562,17 @@ export function home(d) {
       </div>
     </section>` : '';
 
-  const topApps = leaderboard(d.players, 'apps', 8);
+  /* STARTS, at the club's request, and now the figure matches its unit: this
+     listed appearances under the word "starts" beside a note saying starts
+     only. The band keeps the key `appearances`, because that is the name the
+     club's saved running order uses for it. */
+  const topApps = leaderboard(d.players, 'starts', 8);
   const appearancesBand = topApps.length ? `<section class="sec sec--appearances" id="appearances" aria-labelledby="ap-h">
       <div class="wrap">
-        ${bandHead('appearances', 'Who turns up', 'Appearances', '/squad.html', 'The squad', 'ap-h')}
-        ${leaderList(topApps, 'apps', 'starts')}
-        <p class="psn__note rv">Starts only. Sunday-league returns do not record substitutes
-          or minutes, so neither is claimed.</p>
+        ${bandHead('appearances', 'Who turns up', 'Starts', '/squad.html', 'The squad', 'ap-h')}
+        ${leaderList(topApps, 'starts', 'starts')}
+        <p class="psn__note rv">Matches begun in the eleven, in competitive football. A bench
+          outing is not a start.</p>
       </div>
     </section>` : '';
 

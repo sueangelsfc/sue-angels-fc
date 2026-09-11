@@ -7395,7 +7395,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
        band is reading it rather than reading something that happens to
        correlate with it. */
     {
-      const zeroed = dP.players.map((p) => ({ ...p, goals: 0, assists: 0, apps: 0, motm: 0, captained: 0 }));
+      const zeroed = dP.players.map((p) => ({ ...p, goals: 0, assists: 0, apps: 0, starts: 0, motm: 0, captained: 0 }));
       const cases = [
         ['fixtures', { ...dP, upcoming: dP.upcoming.slice(0, 1) },
           { ...dP, upcoming: [...dP.upcoming, { ...(dP.upcoming[0] || {}), id: 'test-later', slug: 'test-later', iso: '2026-09-13', date: '13 Sep 2026' }] }],

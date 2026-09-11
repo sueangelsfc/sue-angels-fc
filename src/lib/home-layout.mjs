@@ -320,8 +320,7 @@ export const HOME_BANDS = [
     area: 'numbers',
     off: true,
     name: 'Who turns up',
-    what: 'Most appearances for the club. Starts only, because Sunday-league returns '
-      + 'do not record substitutes or minutes.',
+    what: 'Most starts for the club: the matches a player began in the eleven.',
   },
   {
     key: 'motm',
@@ -750,7 +749,7 @@ export function homeBandFilled(key, d) {
   if (key === 'headtohead') return opponentRecords(comp).length > 0;
   if (key === 'scorers') return some('goals');
   if (key === 'creators') return some('assists');
-  if (key === 'appearances') return some('apps');
+  if (key === 'appearances') return some('starts');
   if (key === 'motm') return some('motm');
   if (key === 'goalkinds') return goalKinds(comp).rows.length > 0;
   if (key === 'cleansheets') return teamSummary(comp.filter((m) => m.played)).cleanSheets > 0;

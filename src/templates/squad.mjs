@@ -172,24 +172,19 @@ export function squad(d) {
   const badgesByView = new Map(VIEWS.map((v) => [v, badgesFor(v)]));
   const badges = badgesByView.get(VIEWS[DEF]) || new Map();
 
-  /* "Apps" AGAIN, and this time it is true. This used to say "Starts, not
-     Apps", because the engine counted an appearance only when a player was
-     named in the eleven and calling that figure apps produced cards reading
-     2 apps and 7 goals - William Clark, who started twice and came off the
-     bench for nine more.
-
-     That is the fault, not the label. An appearance is a start or a
-     substitute the record can PROVE was on the pitch, so Clark's card reads
-     11 and 7 and the card is right. Unused bench outings keep their own
-     column rather than being folded in, which is the part the old note had
-     correct. */
+  /* STARTS AND THE BENCH, at the club's request. An appearance is a start or
+     a substitute the record proves came on, and the club reads a card's first
+     figure as who plays: so the card leads with starts, and Bench counts
+     every time he was named as a substitute, the same two columns the stats
+     table prints. Starts and Bench are separate namings, so no afternoon is
+     counted twice. */
   const sixOf = (p, view) => {
     const s = statsIn(view, p.num);
     return p.gk
-      ? [s.apps || 0, s.cleanSheets || 0, s.motm || 0,
-        s.benchUnused || 0, s.cleanSheets || 0, s.motm || 0]
-      : [s.apps || 0, s.goals || 0, s.assists || 0,
-        s.benchUnused || 0, (s.goals || 0) + (s.assists || 0), s.motm || 0];
+      ? [s.starts || 0, s.cleanSheets || 0, s.motm || 0,
+        s.subApps || 0, s.cleanSheets || 0, s.motm || 0]
+      : [s.starts || 0, s.goals || 0, s.assists || 0,
+        s.subApps || 0, (s.goals || 0) + (s.assists || 0), s.motm || 0];
   };
 
   const card = (p, i) => {
@@ -197,8 +192,8 @@ export function squad(d) {
     const shot = shotFor(p.num, d, season);
     const inSeasons = (p.seasons || [season]).join(' ');
     const keys = p.gk
-      ? ['Apps', 'Clean', 'MOTM', 'Bench', 'Clean sheets', 'MOTM']
-      : ['Apps', 'Goals', 'Assists', 'Bench', 'Involved', 'MOTM'];
+      ? ['Starts','Clean', 'MOTM', 'Bench', 'Clean sheets', 'MOTM']
+      : ['Starts','Goals', 'Assists', 'Bench', 'Involved', 'MOTM'];
     const six = sixOf(p, VIEWS[DEF]);
     const heads = keys.slice(0, 3).map((k, n) => ({ v: six[n], k }));
     const extra = keys.slice(3).map((k, n) => ({ v: six[n + 3], k }));
@@ -423,9 +418,8 @@ export function squad(d) {
         <div class="sq-groups rv">
         ${grid(first)}
         </div>
-        <p class="sq-note">An appearance is a start, or a substitute the match record shows was
-          on the pitch. A name on the bench with nothing beside it is not an appearance and is
-          counted separately, because Sunday-league returns do not always record who came on.</p>
+        <p class="sq-note">Starts count the matches a player began in the eleven. Bench counts
+          every time he was named as a substitute, whether or not he came on.</p>
       </div>
     </section>`;
 
@@ -480,23 +474,23 @@ export function squad(d) {
     const apps = pool.reduce((n, p) => n + (statsIn(v, p.num).apps || 0), 0);
     const offBench = Math.max(0, apps - starts);
     const how = apps ? `<figure class="sq-chart">
-              <figcaption class="sq-chart__k">How the appearances came</figcaption>
+              <figcaption class="sq-chart__k">From the start or off the bench</figcaption>
               ${sqDonut([{ n: starts, label: 'from the start' }, { n: offBench, label: 'off the bench' }],
     `${starts} starts and ${offBench} appearances off the bench`,
     `<b data-count="${attr(`${pct(starts, apps)}%`)}">${esc(pct(starts, apps))}%</b><i>started</i>`, `data-apps="${apps}"`)}
             </figure>` : '';
 
     const most = pool.map((p) => ({ p, a: statsIn(v, p.num).apps || 0, s: statsIn(v, p.num).starts || 0 }))
-      .filter((x) => x.a > 0).sort((x, y) => y.a - x.a || y.s - x.s).slice(0, 6);
-    const top = Math.max(1, ...most.map((x) => x.a));
+      .filter((x) => x.s > 0).sort((x, y) => y.s - x.s || y.a - x.a).slice(0, 6);
+    const top = Math.max(1, ...most.map((x) => x.s));
     const mostUsed = most.length ? `<figure class="sq-chart">
-              <figcaption class="sq-chart__k">Most appearances</figcaption>
+              <figcaption class="sq-chart__k">Most starts</figcaption>
               <ol class="sq-top">
                 ${most.map((x, n) => `<li style="--i:${n}">
                   ${/* Figures before the name in the markup and after it on screen:
                         a count straight after a name reads as a squad number. */''}
-                  <span class="sq-top__track" aria-hidden="true"><i class="is-s" style="--w:${pct(x.s, top)}%"></i><i class="is-b" style="--w:${pct(x.a - x.s, top)}%"></i></span>
-                  <span class="sq-top__v"><b data-count="${attr(x.a)}">${esc(x.a)}</b> ${x.a === 1 ? 'appearance' : 'appearances'}</span>
+                  <span class="sq-top__track" aria-hidden="true"><i class="is-s" style="--w:${pct(x.s, top)}%"></i></span>
+                  <span class="sq-top__v"><b data-count="${attr(x.s)}">${esc(x.s)}</b> ${x.s === 1 ? 'start' : 'starts'}</span>
                   ${/* Text, not a link: every player already has one card linking to
                         his profile, and a second link here is the same player twice. */''}
                   <span class="sq-top__k">${esc(x.p.name)}</span>

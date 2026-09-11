@@ -1000,12 +1000,16 @@ export function playerProfile(player, matches, squad) {
   }
   const timeline = [];
   let runGoals = 0, runAssists = 0, runClean = 0;
+  /* Which of these he began, so a page leading with starts can count them per
+     competition and home and away from the same set. */
+  const startIds = new Set(mine.filter((r) => r.role === 'start').map((r) => r.id));
 
   for (const m of played) {
     const c = m.competition || 'Other';
-    if (!comps.has(c)) comps.set(c, { comp: c, apps: 0, goals: 0, assists: 0, cleanSheets: 0, conceded: 0, motm: 0 });
+    if (!comps.has(c)) comps.set(c, { comp: c, apps: 0, starts: 0, goals: 0, assists: 0, cleanSheets: 0, conceded: 0, motm: 0 });
     const row = comps.get(c);
     row.apps++;
+    if (startIds.has(m.id)) row.starts++;
 
     const g = (m.detail?.goals || []).filter((x) => x.num === player.num).length;
     const a = (m.detail?.assists || []).filter((x) => x.num === player.num).length;
@@ -1030,6 +1034,7 @@ export function playerProfile(player, matches, squad) {
       /* For the player page's charts: where it was played, and what the club
          scored while he was in it. A walkover scored nothing. */
       home: !!m.weAreHome,
+      started: startIds.has(m.id),
       ourGoals: m.countsGoals ? m.ourGoals : null,
       runGoals, runAssists, runClean,
     });

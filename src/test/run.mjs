@@ -3183,10 +3183,13 @@ for (const [f, kb] of Object.entries({
          cards are one long list and `exec` would answer about somebody else. */
       const rows = [...sq.slice(0, sq.indexOf('Clark')).matchAll(/data-st-all="([^"]+)"/g)];
       const row = rows.length ? rows[rows.length - 1][1].split(',') : null;
-      check('the squad card publishes unused bench outings, not every naming',
-        !!wc && !!row && row[3] === String(wc.benchUnused)
-          && wc.benchUnused !== wc.subApps,
-        row ? `card shows ${row[3]}, unused is ${wc && wc.benchUnused},`
+      /* The card leads with STARTS and its Bench is every naming, the same two
+         columns as the stats table: separate namings, so nothing is counted
+         twice, and the first figure is not appearances. */
+      check('the squad card leads with starts and counts every bench naming',
+        !!wc && !!row && row[0] === String(wc.starts) && row[3] === String(wc.subApps)
+          && wc.starts !== wc.apps,
+        row ? `card shows ${row[0]} and ${row[3]}; starts ${wc && wc.starts}, apps ${wc && wc.apps},`
           + ` namings ${wc && wc.subApps}` : 'no stat row found on the card');
     }
     /* Ten players have more appearances than starts, so a page calling the
@@ -3194,9 +3197,9 @@ for (const [f, kb] of Object.entries({
        prints appearances and must not use the word. The stats table and the
        player wheel print STARTS, at the club's request, so there the word has
        to sit over the starts figure itself. */
-    check('squad.html does not call an appearance a start',
-      !/\bStarts\b/.test(fs.readFileSync(path.join(ROOT, 'squad.html'), 'utf8')),
-      'the page prints starts+substitute appearances under the word Starts');
+    check('squad.html no longer heads a card figure Apps',
+      !/>Apps</.test(fs.readFileSync(path.join(ROOT, 'squad.html'), 'utf8')),
+      'a squad card still prints Apps where the club asked for starts');
     {
       const st = fs.readFileSync(path.join(ROOT, 'stats.html'), 'utf8');
       const cell = (st.match(/<b>Clark<\/b>[\s\S]*?<td>(\d+)<\/td>/) || [])[1];
@@ -3226,12 +3229,15 @@ for (const [f, kb] of Object.entries({
     /* The figure is read off the page's own opening sentence, which counts the
        league across every season, rather than typed here: it was 11 when every
        competitive match counted and is the league's number now. */
-    const wcApps = ((wcHtml.match(/(\d+) appearances? for [^.]*? across every season/) || [])[1]) || '';
-    check('a player description counts appearances, not starts',
-      !!wcApps && new RegExp(`\\b${wcApps} (league )?appearances\\b`).test(desc) && !/\bstarts\b/.test(desc),
+    /* STARTS, at the club's request, and the same figure the page opens on:
+       William Clark's starts and appearances are different numbers, so a
+       description that picked up the other one shows it. */
+    const wcApps = ((wcHtml.match(/(\d+) starts? for [^.]*? across every season/) || [])[1]) || '';
+    check('a player description counts starts, the figure the page opens on',
+      !!wcApps && Number(wcApps) === clark.starts && new RegExp(`\\b${wcApps} starts?\\b`).test(desc) && !/\bappearances?\b/.test(desc),
       `${wcApps} on the page, description: ${desc.slice(0, 90)}`);
     check('and the structured data says the same thing',
-      !!wcApps && (wcHtml.match(new RegExp(`\\b${wcApps} (league )?appearances\\b`, 'g')) || []).length >= 3,
+      !!wcApps && (wcHtml.match(new RegExp(`\\b${wcApps} starts?\\b`, 'g')) || []).length >= 3,
       'the JSON-LD description disagrees with the meta description');
 
     /* A PLAYER'S SEASON IS THAT SEASON. The tab counted friendlies into the
@@ -3367,8 +3373,8 @@ for (const [f, kb] of Object.entries({
           chartBad.push(`results ring ${res.join('/')} against ${wonOf[0]}`);
         }
         const ha = (pn.match(/data-home-away="(\d+),(\d+)"/) || []).slice(1).map(Number);
-        const apps = (pn.match(/<b data-count="(\d+)">\d+<\/b>\s*<span>Appearances<\/span>/) || [])[1];
-        if (ha.length && apps && ha[0] + ha[1] !== Number(apps)) chartBad.push(`home ${ha[0]} + away ${ha[1]} against ${apps} appearances`);
+        const apps = (pn.match(/<b data-count="(\d+)">\d+<\/b>\s*<span>Starts<\/span>/) || [])[1];
+        if (ha.length && apps && ha[0] + ha[1] !== Number(apps)) chartBad.push(`home ${ha[0]} + away ${ha[1]} against ${apps} starts`);
       }
       check('and each chart agrees with the figures printed beside it', chartBad.length === 0, chartBad.slice(0, 3).join(' | '));
       const allPanel = cdPanels[(dPS.seasons || []).length] || '';

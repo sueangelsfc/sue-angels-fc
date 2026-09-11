@@ -238,6 +238,7 @@ const homeAway = (x, gk) => {
     const ts = x.timeline.filter((t) => t.home === home);
     return {
       apps: ts.length,
+      starts: ts.filter((t) => t.started).length,
       ga: ts.reduce((n, t) => n + t.goals + t.assists, 0),
       cs: ts.filter((t) => t.conceded === 0).length,
       won: ts.filter((t) => t.outcome === 'W').length,
@@ -250,14 +251,14 @@ const homeAway = (x, gk) => {
      deep, so the two sides are read against each other rather than as two
      separate lists. Every figure is printed at the end of its bar. */
   const rows = [
-    ['Appearances', h.apps, a.apps],
+    ['Starts', h.starts, a.starts],
     [gk ? 'Clean sheets' : 'Goals and assists', gk ? h.cs : h.ga, gk ? a.cs : a.ga],
     ['Won', h.won, a.won],
   ];
   return `<figure class="pf-chart pf-chart--split">
               <figcaption class="pf-chart__k">Home and away</figcaption>
               <p class="pf-split__head" aria-hidden="true"><span>Home</span><span>Away</span></p>
-              <ul class="pf-split" data-home-away="${attr(`${h.apps},${a.apps}`)}">
+              <ul class="pf-split" data-home-away="${attr(`${h.starts},${a.starts}`)}">
                 ${rows.map(([k, hv, av], i) => {
     const m = Math.max(hv, av, 1);
     return `<li style="--i:${i}"><b class="pf-split__h" data-count="${attr(hv)}">${esc(hv)}</b><span class="pf-split__bars" aria-hidden="true"><i style="--w:${pctOf(hv, m)}%"></i><i style="--w:${pctOf(av, m)}%"></i></span><b class="pf-split__a" data-count="${attr(av)}">${esc(av)}</b><span class="pf-split__k">${esc(k)}<span class="sr-only">: ${esc(hv)} at home, ${esc(av)} away</span></span></li>`;
@@ -524,14 +525,17 @@ export function playerPage(p, d) {
     const made = (x) => (gk
       ? `${x.cleanSheets} clean ${x.cleanSheets === 1 ? 'sheet' : 'sheets'} and ${x.conceded} conceded`
       : `${x.goals} ${x.goals === 1 ? 'goal' : 'goals'} and ${x.assists} ${x.assists === 1 ? 'assist' : 'assists'}`);
-    const apps = (x) => `${x.apps} ${x.apps === 1 ? 'appearance' : 'appearances'}`;
-    const starts = (x) => (x.starts < x.apps ? (x.starts ? `, ${x.starts} from the start` : ', off the bench') : '');
+    /* STARTS LEAD, at the club's request: an appearance also counts coming
+       off the bench, so the sentence opens on the starts and names the bench
+       outings after them. */
+    const startsOf = (x) => `${x.starts} ${x.starts === 1 ? 'start' : 'starts'}`;
+    const offBench = (x) => (x.apps > x.starts ? `, ${x.apps - x.starts} off the bench` : '');
     const unused = (x) => (x.bench ? `, plus ${x.bench} unused` : '');
     const ledeFor = (x, name) => (name === 'All seasons'
-      ? `${apps(x)} for ${CLUB.name} across every season${starts(x)}${unused(x)}, ${made(x)}.`
+      ? `${startsOf(x)} for ${CLUB.name} across every season${offBench(x)}${unused(x)}, ${made(x)}.`
       : (x.apps || x.bench)
-        ? `${apps(x)} in ${name}${starts(x)}${unused(x)}, ${made(x)}.`
-        : `No appearances in ${name}.`);
+        ? `${startsOf(x)} in ${name}${offBench(x)}${unused(x)}, ${made(x)}.`
+        : `No starts in ${name}.`);
     const ledes = [...seasons.map((s) => ledeFor(s.profile, s.name)), ledeFor(all, 'All seasons')];
     return `<p class="pf-hero__lede" data-season-lede${ledes.map((t, i) => ` data-lede-${i}="${attr(t)}"`).join('')}>${esc(ledes[openIdx] || ledes[ledes.length - 1])}</p>`;
   })()}
@@ -631,7 +635,7 @@ export function playerPage(p, d) {
      code renders every season's panel. */
 
   const tilesFor = (x) => (gk ? [
-    { v: x.apps, k: 'Appearances', sub: `of ${x.teamGames} played${x.starts < x.apps ? `, ${x.starts} from the start` : ''}`, pct: x.teamGames ? Math.round((x.apps / x.teamGames) * 100) : 0 },
+    { v: x.starts, k: 'Starts', sub: `of ${x.teamGames} played${x.apps > x.starts ? `, ${x.apps - x.starts} off the bench` : ''}`, pct: x.teamGames ? Math.round((x.starts / x.teamGames) * 100) : 0 },
     { v: x.cleanSheets, k: 'Clean sheets', sub: `of ${x.onRecord} on record`, pct: x.cleanSheetPct },
     { v: x.conceded, k: 'Conceded' },
     { v: x.concededPerGame, k: 'Conceded a game' },
@@ -642,7 +646,7 @@ export function playerPage(p, d) {
       { v: (x.keeperSaves / x.keeperGames).toFixed(1), k: 'Saves a game' },
     ] : []),
   ] : [
-    { v: x.apps, k: 'Appearances', sub: `of ${x.teamGames} played${x.starts < x.apps ? `, ${x.starts} from the start` : ''}`, pct: x.teamGames ? Math.round((x.apps / x.teamGames) * 100) : 0 },
+    { v: x.starts, k: 'Starts', sub: `of ${x.teamGames} played${x.apps > x.starts ? `, ${x.apps - x.starts} off the bench` : ''}`, pct: x.teamGames ? Math.round((x.starts / x.teamGames) * 100) : 0 },
     { v: x.bench, k: 'Unused sub' },
     { v: x.goals, k: 'Goals' },
     { v: x.assists, k: 'Assists' },
@@ -707,7 +711,7 @@ export function playerPage(p, d) {
     }
     return `<div class="pf-panel" id="pf-s-${idx}" data-season-panel="${idx}">
           <section class="pf-sub" aria-labelledby="pf-n-${idx}">
-            ${rail(1, sn === 'All seasons' ? 'Every season' : 'The season', `${sn} · ${x.apps} ${x.apps === 1 ? 'appearance' : 'appearances'}`)}
+            ${rail(1, sn === 'All seasons' ? 'Every season' : 'The season', `${sn} · ${x.starts} ${x.starts === 1 ? 'start' : 'starts'}`)}
             <h3 class="h2 rv" id="pf-n-${idx}">${esc(sn)} in <span class="volt">numbers.</span></h3>
             <ul class="pf-tiles${tilesFor(x).length > 6 ? ' pf-tiles--8' : ''} rv">
               ${tilesFor(x).map(statTile).join('\n              ')}
@@ -715,7 +719,7 @@ export function playerPage(p, d) {
           </section>
 
           <section class="pf-sub" aria-labelledby="pf-r-${idx}">
-            ${rail(2, gk ? 'Defensive record' : 'Attacking record', `${x.apps} ${x.apps === 1 ? 'appearance' : 'appearances'}`)}
+            ${rail(2, gk ? 'Defensive record' : 'Attacking record', `${x.starts} ${x.starts === 1 ? 'start' : 'starts'}`)}
             <h3 class="h2 rv" id="pf-r-${idx}">The <span class="volt">record.</span></h3>
             <div class="pf-record__grid rv">
               <ul class="pf-bars">
@@ -779,7 +783,7 @@ export function playerPage(p, d) {
                 <thead>
                   <tr>
                     <th scope="col">Competition</th>
-                    <th scope="col"><abbr title="Appearances">Ap</abbr></th>
+                    <th scope="col"><abbr title="Starts">St</abbr></th>
                     ${gk
     ? '<th scope="col"><abbr title="Clean sheets">CS</abbr></th><th scope="col"><abbr title="Conceded">GA</abbr></th>'
     : '<th scope="col"><abbr title="Goals">G</abbr></th><th scope="col"><abbr title="Assists">A</abbr></th>'}
@@ -789,7 +793,7 @@ export function playerPage(p, d) {
                 <tbody>
                   ${x.byCompetition.map((c) => `<tr>
                     <th scope="row">${esc(shortComp(c.comp))}</th>
-                    <td>${esc(c.apps)}</td>
+                    <td>${esc(c.starts || 0)}</td>
                     ${gk ? `<td>${esc(c.cleanSheets)}</td><td>${esc(c.conceded)}</td>`
     : `<td>${esc(c.goals)}</td><td>${esc(c.assists)}</td>`}
                     <td>${esc(c.motm)}</td>
@@ -835,11 +839,11 @@ export function playerPage(p, d) {
         <div class="pf-tabs" data-season-tabs>
           ${seasons.map((s, i) => `<a class="pf-tab" href="#pf-s-${i}" data-season-tab="${i}">
             <b>${esc(s.name)}</b>
-            <i>${s.profile.apps ? `${s.profile.apps} ${s.profile.apps === 1 ? 'appearance' : 'appearances'}` : 'Not played'}</i>
+            <i>${s.profile.apps ? `${s.profile.starts} ${s.profile.starts === 1 ? 'start' : 'starts'}` : 'Not played'}</i>
           </a>`).join('\n          ')}
           ${seasons.length > 1 ? `<a class="pf-tab" href="#pf-s-${seasons.length}" data-season-tab="${seasons.length}" data-season-all>
             <b>All seasons</b>
-            <i>${all.apps ? `${all.apps} ${all.apps === 1 ? 'appearance' : 'appearances'}` : 'Not played'}</i>
+            <i>${all.apps ? `${all.starts} ${all.starts === 1 ? 'start' : 'starts'}` : 'Not played'}</i>
           </a>` : ''}
         </div>
         <div class="pf-panels">
@@ -892,8 +896,8 @@ export function playerPage(p, d) {
   const best = (key) => Math.max(0, ...pool.map((x) => x[key] || 0));
 
   const compare = (gk
-    ? [{ key: 'cleanSheets', label: 'Clean sheets' }, { key: 'apps', label: 'Appearances' }, { key: 'motm', label: 'Man of the Match' }]
-    : [{ key: 'goals', label: 'Goals' }, { key: 'assists', label: 'Assists' }, { key: 'apps', label: 'Appearances' }, { key: 'motm', label: 'Man of the Match' }]
+    ? [{ key: 'cleanSheets', label: 'Clean sheets' }, { key: 'starts', label: 'Starts' }, { key: 'motm', label: 'Man of the Match' }]
+    : [{ key: 'goals', label: 'Goals' }, { key: 'assists', label: 'Assists' }, { key: 'starts', label: 'Starts' }, { key: 'motm', label: 'Man of the Match' }]
   ).map((m) => {
     const mineV = m.key === 'starts' ? all.starts : all[m.key] || 0;
     const b = Math.max(best(m.key), mineV, 1);

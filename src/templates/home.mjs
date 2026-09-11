@@ -1282,8 +1282,12 @@ export function home(d) {
      an opponent actually wants. `sameClub` keeps a first team apart from a
      2.0 exactly as the season-ahead band does. */
   const nx = d.nextFixture;
-  const nxMet = nx ? d.played.filter((m) => sameClub(m.opponent, nx.opponent)) : [];
-  const nxRel = nx && !nxMet.length ? d.played.filter((m) => relatedClub(m.opponent, nx.opponent)) : [];
+  /* COMPETITIVE MEETINGS ONLY. A pre-season friendly counts towards no
+     record, and a head-to-head is one: the BPR friendly would have made a
+     competitive fixture read "played 3, won 3" on the front page. */
+  const nxPool = (d.played || []).filter((m) => m.played && !m.friendly);
+  const nxMet = nx ? nxPool.filter((m) => sameClub(m.opponent, nx.opponent)) : [];
+  const nxRel = nx && !nxMet.length ? nxPool.filter((m) => relatedClub(m.opponent, nx.opponent)) : [];
   const nxRec = recordOf(nxMet);
   /* WHAT HAPPENED LAST, AND WHERE IT LEFT THE CLUB. The next match is the band
      the club always shows, and it said nothing about the match before it or

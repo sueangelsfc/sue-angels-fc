@@ -212,7 +212,11 @@ function matchesPage(d, mode) {
        above says "competitive"; this says what was left out, in the same
        breath as the walkover line below and for the same reason. */
     const fr = (v.friendlies || []).length;
-    const big = v.matches.filter((m) => m.countsGoals)
+    /* From the competitive matches, like every figure beside it. It read the
+       season's whole list, so 26/27's record of one League Eight win named
+       the 4-1 pre-season friendly against BPR as its biggest win. A friendly
+       counts towards no record. */
+    const big = v.competitive.filter((m) => m.countsGoals)
       .slice().sort((a, b) => (b.ourGoals - b.theirGoals) - (a.ourGoals - a.theirGoals))[0];
     /* .rv earns its place: `.mt-rec.is-in .mt-rec__bar li` is what gives the
        won/drawn/lost segments their width. Without it the bar is empty. */

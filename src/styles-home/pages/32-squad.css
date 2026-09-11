@@ -413,7 +413,23 @@ html.js .sq-donut__seg{stroke-dasharray: 0 var(--c, 0); transition: stroke-dasha
 html.js .sq-pics__view.is-in .sq-donut__seg{stroke-dasharray: var(--len, 0) var(--c, 0);}
 html.js .sq-top__track i{width: 0; transition: width 1s var(--ease-out-expo) 0.2s;}
 html.js .sq-pics__view.is-in .sq-top__track i{width: var(--w);}
+
+/* Movement that stays: the bars grow one after another, the leading segment
+   of every ring glows slowly once drawn, and a sheen crosses the bars. */
+html.js .sq-top li .sq-top__track i{transition-delay: calc(var(--i, 0) * 90ms + 0.2s);}
+html.js .sq-pics__view.is-in .sq-donut__seg[data-shade="0"]{animation: sq-glow 3.6s ease-in-out 1.3s infinite;}
+@keyframes sq-glow{
+  0%, 100%{filter: drop-shadow(0 0 0 rgba(var(--volt-rgb), 0));}
+  50%{filter: drop-shadow(0 0 7px rgba(var(--volt-rgb), 0.7));}
+}
+.sq-top__track{position: relative;}
+html.js .sq-pics__view.is-in .sq-top__track::after{content: ''; position: absolute; top: 0; bottom: 0; left: -30%; width: 30%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.24), transparent);
+  animation: sq-bar-sheen 4s ease-in-out calc(var(--i, 0) * 140ms + 1.5s) infinite;}
+@keyframes sq-bar-sheen{0%{left: -30%;} 60%, 100%{left: 100%;}}
 @media (prefers-reduced-motion: reduce){
   html.js .sq-donut__seg{transition: none; stroke-dasharray: var(--len, 0) var(--c, 0);}
   html.js .sq-top__track i{transition: none; width: var(--w);}
+  html.js .sq-pics__view.is-in .sq-donut__seg[data-shade="0"],
+  html.js .sq-pics__view.is-in .sq-top__track::after{animation: none;}
 }

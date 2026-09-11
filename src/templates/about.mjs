@@ -78,7 +78,8 @@ export function about(d) {
 
   const ordered = d.played.slice().sort((a, b) => (a.iso || '').localeCompare(b.iso || ''));
   const first = ordered[0];
-  const big = biggestWin(d.played);
+  /* Competitive only: a pre-season friendly counts towards no record. */
+  const big = biggestWin(d.competitive || []);
   const leagueGames = ordered.filter(isLeague);
   const lastLeague = leagueGames[leagueGames.length - 1];
 

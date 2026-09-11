@@ -2038,6 +2038,7 @@
           p.classList.remove('is-in');
           void p.offsetWidth;
           p.classList.add('is-in');
+          if (window.saTick) Array.prototype.forEach.call(p.querySelectorAll('[data-count]'), window.saTick);
         }
         var label = document.querySelector('[data-pics-label]');
         if (label) label.textContent = p.getAttribute('data-label') || '';

@@ -188,7 +188,7 @@ const resultsDonut = (x) => {
                   <circle cx="60" cy="60" r="${r}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="14"/>
                   ${segs.map((s) => s.seg).join('')}
                 </svg>
-                <span class="pf-donut__c" aria-hidden="true"><b>${esc(pctOf(x.won, total))}%</b><i>won</i></span>
+                <span class="pf-donut__c" aria-hidden="true"><b data-count="${attr(`${pctOf(x.won, total)}%`)}">${esc(pctOf(x.won, total))}%</b><i>won</i></span>
               </div>
               <ul class="pf-chart__legend" data-results="${attr(`${x.won},${x.drawn},${x.lost}`)}">${segs.map((s) => `<li data-res="${s.k}"><b>${esc(s.n)}</b> ${esc(s.label)}</li>`).join('')}</ul>
             </figure>`;
@@ -217,7 +217,7 @@ const shareGauge = (x, gk) => {
                   <path d="M10 60A50 50 0 0 1 110 60" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="12" stroke-linecap="round"/>
                   <path class="pf-gauge__arc" d="M10 60A50 50 0 0 1 110 60" pathLength="100" fill="none" stroke="var(--volt)" stroke-width="12" stroke-linecap="round" stroke-dasharray="${v} 100" style="--v:${v}"/>
                 </svg>
-                <span class="pf-gauge__v" aria-hidden="true"><b>${esc(v)}%</b></span>
+                <span class="pf-gauge__v" aria-hidden="true"><b data-count="${attr(`${v}%`)}">${esc(v)}%</b></span>
               </div>
               <p class="pf-chart__sub">${esc(sub)}.</p>
             </figure>`;
@@ -239,7 +239,7 @@ const homeAway = (x, gk) => {
   const max = Math.max(h.apps, a.apps, 1);
   const row = (label, s) => `<li>
                   <span class="pf-split__k">${esc(label)}</span>
-                  <span class="pf-split__v"><b>${esc(s.apps)}</b> ${s.apps === 1 ? 'appearance' : 'appearances'} · ${esc(gk ? `${s.cs} clean ${s.cs === 1 ? 'sheet' : 'sheets'}` : `${s.ga} goals and assists`)} · ${esc(s.won)} won</span>
+                  <span class="pf-split__v"><b data-count="${attr(s.apps)}">${esc(s.apps)}</b> ${s.apps === 1 ? 'appearance' : 'appearances'} · ${esc(gk ? `${s.cs} clean ${s.cs === 1 ? 'sheet' : 'sheets'}` : `${s.ga} goals and assists`)} · ${esc(s.won)} won</span>
                   <span class="pf-split__track" aria-hidden="true"><i style="--w:${pctOf(s.apps, max)}%"></i></span>
                 </li>`;
   return `<figure class="pf-chart pf-chart--split">
@@ -282,6 +282,7 @@ const matchColumns = (x, gk) => {
     ? `${total} conceded across ${t.length} matches, never more than ${most} in one`
     : `${total} goals and assists across ${t.length} matches, most in one match ${most}`)}" data-cols="${t.length}">
                 <line x1="0" y1="${base}" x2="${W}" y2="${base}" stroke="var(--line-d)" stroke-width="1"/>
+                <rect class="pf-cols__sheen" x="-48" y="0" width="48" height="${base}"/>
                 ${lower ? `<path class="pf-cols__bar pf-cols__bar--a" d="${lower}"/>` : ''}
                 ${upper ? `<path class="pf-cols__bar pf-cols__bar--b" d="${upper}"/>` : ''}
                 ${['W', 'D', 'L'].map((k) => (dots[k] ? `<path class="pf-cols__res" data-res="${k}" d="${dots[k]}"/>` : '')).join('')}
@@ -311,13 +312,30 @@ export function playerPage(p, d) {
      had been played and six pre-season friendlies. */
   /* League and cup together, never split, and never pre-season. */
   const counted = (d.played || []).filter((m) => m.played && !m.friendly);
+  /* SAVES, PER VIEW. The engine credits a game in goal to whoever the record
+     names as `keeper` and adds that match's `saves` where one is recorded;
+     the same rule over one season's matches gives that season's figure. Only
+     games that actually carry a saves number count towards the rate, so a
+     season with no saves on record never reads as nought a game. */
+  const keeping = (list) => {
+    let games = 0;
+    let saves = 0;
+    for (const m of list) {
+      const det = m.detail || {};
+      if (det.keeper == null || Number(det.keeper) !== Number(p.num)) continue;
+      if (!Number.isFinite(Number(det.saves)) || det.saves === '' || det.saves === null) continue;
+      games += 1;
+      saves += Number(det.saves);
+    }
+    return { keeperGames: games, keeperSaves: saves };
+  };
   const seasons = seasonNames.map((name) => {
     const ms = counted.filter((m) => m.season === name);
-    const profile = playerProfile(p, ms, d.players);
+    const profile = Object.assign(playerProfile(p, ms, d.players), keeping(ms));
     profile.teamGames = ms.length;
     return { name, profile, matches: ms };
   });
-  const all = playerProfile(p, counted, d.players);
+  const all = Object.assign(playerProfile(p, counted, d.players), keeping(counted));
   all.teamGames = counted.length;
   /* The tab the page opens on: the latest season he actually played in, or
      every season when he has played in none of them. */
@@ -511,6 +529,10 @@ export function playerPage(p, d) {
     { v: x.concededPerGame, k: 'Conceded a game' },
     { v: x.motm, k: 'Man of the Match' },
     { v: `${x.winPct}%`, k: 'Won when playing', pct: x.winPct },
+    ...(x.keeperGames ? [
+      { v: x.keeperSaves, k: 'Saves', sub: `in ${x.keeperGames} ${x.keeperGames === 1 ? 'game' : 'games'} in goal with saves recorded` },
+      { v: (x.keeperSaves / x.keeperGames).toFixed(1), k: 'Saves a game' },
+    ] : []),
   ] : [
     { v: x.apps, k: 'Appearances', sub: `of ${x.teamGames} played${x.starts < x.apps ? `, ${x.starts} from the start` : ''}`, pct: x.teamGames ? Math.round((x.apps / x.teamGames) * 100) : 0 },
     { v: x.bench, k: 'Unused sub' },
@@ -579,7 +601,7 @@ export function playerPage(p, d) {
           <section class="pf-sub" aria-labelledby="pf-n-${idx}">
             ${rail(1, sn === 'All seasons' ? 'Every season' : 'The season', `${sn} · ${x.apps} ${x.apps === 1 ? 'appearance' : 'appearances'}`)}
             <h3 class="h2 rv" id="pf-n-${idx}">${esc(sn)} in <span class="volt">numbers.</span></h3>
-            <ul class="pf-tiles rv">
+            <ul class="pf-tiles${tilesFor(x).length > 6 ? ' pf-tiles--8' : ''} rv">
               ${tilesFor(x).map(statTile).join('\n              ')}
             </ul>
           </section>

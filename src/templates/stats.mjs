@@ -556,6 +556,7 @@ export function stats(d) {
               <svg class="st-cols" viewBox="0 0 ${W} ${H}" role="img" data-for="${gf}" data-against="${ga}" data-matches="${ms.length}"
                 aria-label="${attr(`${gf} scored and ${ga} conceded across ${ms.length} matches`)}">
                 <line x1="0" y1="${mid}" x2="${W}" y2="${mid}" stroke="var(--line-d)" stroke-width="1"/>
+                <rect class="st-cols__sheen" x="-48" y="0" width="48" height="${H}"/>
                 ${forPath ? `<path class="st-cols__bar st-cols__bar--for" d="${forPath}"/>` : ''}
                 ${agPath ? `<path class="st-cols__bar st-cols__bar--ag" d="${agPath}"/>` : ''}
               </svg>
@@ -578,7 +579,7 @@ export function stats(d) {
               <figcaption class="st-chart__k">Results</figcaption>
               ${donut([{ k: 'W', n: res.W, label: 'won' }, { k: 'D', n: res.D, label: 'drawn' }, { k: 'L', n: res.L, label: 'lost' }],
     `Won ${res.W}, drew ${res.D} and lost ${res.L} of ${decided}`,
-    `<b>${esc(pctOf(res.W, decided))}%</b><i>won</i>`).replace('<ul class="st-chart__legend">', `<ul class="st-chart__legend" data-results="${res.W},${res.D},${res.L}">`)}
+    `<b data-count="${attr(`${pctOf(res.W, decided)}%`)}">${esc(pctOf(res.W, decided))}%</b><i>won</i>`).replace('<ul class="st-chart__legend">', `<ul class="st-chart__legend" data-results="${res.W},${res.D},${res.L}">`)}
             </figure>` : '';
     const byGroup = { fwd: 0, mid: 0, def: 0, gk: 0 };
     for (const { p, r } of v.rows) {
@@ -590,7 +591,7 @@ export function stats(d) {
               <figcaption class="st-chart__k">Goals by position</figcaption>
               ${donut(GROUPS.map(([k, label]) => ({ k, n: byGroup[k], label })),
     GROUPS.map(([k, label]) => `${byGroup[k]} from ${label}`).join(', '),
-    `<b>${esc(pctOf(byGroup.fwd, goals))}%</b><i>forwards</i>`).replace('<ul class="st-chart__legend">', `<ul class="st-chart__legend" data-goals="${goals}">`)}
+    `<b data-count="${attr(`${pctOf(byGroup.fwd, goals)}%`)}">${esc(pctOf(byGroup.fwd, goals))}%</b><i>forwards</i>`).replace('<ul class="st-chart__legend">', `<ul class="st-chart__legend" data-goals="${goals}">`)}
             </figure>` : '';
     const top = v.rows.map((x) => ({ ...x, ga: (x.r.goals || 0) + (x.r.assists || 0) }))
       .filter((x) => x.ga > 0).sort((a, b) => b.ga - a.ga || (b.r.goals || 0) - (a.r.goals || 0)).slice(0, 6);
@@ -598,12 +599,12 @@ export function stats(d) {
     const contributors = top.length ? `<figure class="st-chart">
               <figcaption class="st-chart__k">Most goals and assists</figcaption>
               <ol class="st-top">
-                ${top.map((x) => `<li>
+                ${top.map((x, n) => `<li style="--i:${n}">
                   ${/* Figures before the name in the markup, placed after it by the
                         grid: a count printed straight after a name reads as that
                         player's squad number to the leak check, and to a reader. */''}
                   <span class="st-top__track" aria-hidden="true"><i class="is-g" style="--w:${pctOf(x.r.goals || 0, most)}%"></i><i class="is-a" style="--w:${pctOf(x.r.assists || 0, most)}%"></i></span>
-                  <span class="st-top__v"><b>${esc(x.r.goals || 0)}</b> ${(x.r.goals || 0) === 1 ? 'goal' : 'goals'} · <b>${esc(x.r.assists || 0)}</b> ${(x.r.assists || 0) === 1 ? 'assist' : 'assists'}</span>
+                  <span class="st-top__v"><b data-count="${attr(x.r.goals || 0)}">${esc(x.r.goals || 0)}</b> ${(x.r.goals || 0) === 1 ? 'goal' : 'goals'} · <b data-count="${attr(x.r.assists || 0)}">${esc(x.r.assists || 0)}</b> ${(x.r.assists || 0) === 1 ? 'assist' : 'assists'}</span>
                   <a class="st-top__k" href="/players/${attr(x.p.slug)}.html">${esc(x.p.name)}</a>
                 </li>`).join('\n                ')}
               </ol>

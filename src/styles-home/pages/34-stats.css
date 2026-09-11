@@ -370,8 +370,34 @@ html.js .st-cols__bar{transform: scaleY(0); transform-box: fill-box; transition:
 html.js .st-cols__bar--for{transform-origin: 50% 100%;}
 html.js .st-cols__bar--ag{transform-origin: 50% 0%; transition-delay: 0.2s;}
 html.js .st-pics__view.is-in .st-cols__bar{transform: scaleY(1);}
+
+/* Movement that stays: the bars grow one after another, the leading segments
+   glow slowly once drawn, and a sheen crosses the columns and the bars. */
+html.js .st-top li .st-top__track i{transition-delay: calc(var(--i, 0) * 90ms + 0.2s);}
+.st-cols__sheen{fill: rgba(255, 255, 255, 0.08); opacity: 0;}
+html.js .st-pics__view.is-in .st-cols__sheen{animation: st-sheen 5s ease-in-out 1.3s infinite;}
+@keyframes st-sheen{
+  0%{transform: translateX(0); opacity: 0;}
+  8%, 52%{opacity: 1;}
+  60%, 100%{transform: translateX(380px); opacity: 0;}
+}
+html.js .st-pics__view.is-in .st-donut__seg[data-k="W"],
+html.js .st-pics__view.is-in .st-donut__seg[data-k="fwd"]{animation: st-glow 3.6s ease-in-out 1.3s infinite;}
+@keyframes st-glow{
+  0%, 100%{filter: drop-shadow(0 0 0 rgba(var(--volt-rgb), 0));}
+  50%{filter: drop-shadow(0 0 7px rgba(var(--volt-rgb), 0.7));}
+}
+.st-top__track{position: relative;}
+html.js .st-pics__view.is-in .st-top__track::after{content: ''; position: absolute; top: 0; bottom: 0; left: -30%; width: 30%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.24), transparent);
+  animation: st-bar-sheen 4s ease-in-out calc(var(--i, 0) * 140ms + 1.5s) infinite;}
+@keyframes st-bar-sheen{0%{left: -30%;} 60%, 100%{left: 100%;}}
 @media (prefers-reduced-motion: reduce){
   html.js .st-donut__seg{transition: none; stroke-dasharray: var(--len, 0) var(--c, 0);}
   html.js .st-top__track i{transition: none; width: var(--w);}
   html.js .st-cols__bar{transition: none; transform: none;}
+  html.js .st-pics__view.is-in .st-cols__sheen,
+  html.js .st-pics__view.is-in .st-donut__seg[data-k="W"],
+  html.js .st-pics__view.is-in .st-donut__seg[data-k="fwd"],
+  html.js .st-pics__view.is-in .st-top__track::after{animation: none;}
 }

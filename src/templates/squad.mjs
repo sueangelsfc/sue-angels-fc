@@ -472,7 +472,7 @@ export function squad(d) {
     const shape = `<figure class="sq-chart">
               <figcaption class="sq-chart__k">${usePlayed ? 'Players used, by position' : 'The squad, by position'}</figcaption>
               ${sqDonut(groupCounts, groupCounts.map((g) => `${g.n} ${g.label}`).join(', '),
-    `<b>${esc(pool.length)}</b><i>players</i>`, `data-pool="${pool.length}"`)}
+    `<b data-count="${attr(pool.length)}">${esc(pool.length)}</b><i>players</i>`, `data-pool="${pool.length}"`)}
             </figure>`;
     if (!usePlayed) return `<div class="sq-charts">${shape}</div>`;
 
@@ -483,7 +483,7 @@ export function squad(d) {
               <figcaption class="sq-chart__k">How the appearances came</figcaption>
               ${sqDonut([{ n: starts, label: 'from the start' }, { n: offBench, label: 'off the bench' }],
     `${starts} starts and ${offBench} appearances off the bench`,
-    `<b>${esc(pct(starts, apps))}%</b><i>started</i>`, `data-apps="${apps}"`)}
+    `<b data-count="${attr(`${pct(starts, apps)}%`)}">${esc(pct(starts, apps))}%</b><i>started</i>`, `data-apps="${apps}"`)}
             </figure>` : '';
 
     const most = pool.map((p) => ({ p, a: statsIn(v, p.num).apps || 0, s: statsIn(v, p.num).starts || 0 }))
@@ -492,11 +492,11 @@ export function squad(d) {
     const mostUsed = most.length ? `<figure class="sq-chart">
               <figcaption class="sq-chart__k">Most appearances</figcaption>
               <ol class="sq-top">
-                ${most.map((x) => `<li>
+                ${most.map((x, n) => `<li style="--i:${n}">
                   ${/* Figures before the name in the markup and after it on screen:
                         a count straight after a name reads as a squad number. */''}
                   <span class="sq-top__track" aria-hidden="true"><i class="is-s" style="--w:${pct(x.s, top)}%"></i><i class="is-b" style="--w:${pct(x.a - x.s, top)}%"></i></span>
-                  <span class="sq-top__v"><b>${esc(x.a)}</b> ${x.a === 1 ? 'appearance' : 'appearances'}</span>
+                  <span class="sq-top__v"><b data-count="${attr(x.a)}">${esc(x.a)}</b> ${x.a === 1 ? 'appearance' : 'appearances'}</span>
                   ${/* Text, not a link: every player already has one card linking to
                         his profile, and a second link here is the same player twice. */''}
                   <span class="sq-top__k">${esc(x.p.name)}</span>

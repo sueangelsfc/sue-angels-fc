@@ -3264,6 +3264,53 @@ for (const [f, kb] of Object.entries({
           && /showCharts\(view, true\)/.test(js10)
           && /apply\(b\.getAttribute\('data-season'\), b\.getAttribute\('data-view'\), true\)/.test(js10)
           && (js10.match(/classList\.remove\('is-in'\);\s*void \w+\.offsetWidth;/g) || []).length >= 3);
+      /* A FRIENDLY IS NOBODY'S BIGGEST WIN. The results page's record for a
+         season is competitive, and its biggest-win line read the whole list:
+         26/27 named the BPR friendly. No season panel may name a friendly. */
+      {
+        const rsHtml = fs.readFileSync(path.join(ROOT, 'results.html'), 'utf8');
+        const longDate = (iso) => new Date(`${String(iso).slice(0, 10)}T12:00:00`)
+          .toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        const friendlyDates = dPS.played.filter((m) => m.played && m.friendly).map((m) => longDate(m.iso || m.date));
+        const lines = [...rsHtml.matchAll(/Biggest win: ([\s\S]*?)<\/p>/g)].map((m) => m[1].replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim());
+        const namesFriendly = lines.filter((l) => friendlyDates.some((dt) => l.includes(dt)));
+        check('no season record on the results page names a pre-season friendly as its biggest win',
+          lines.length > 0 && namesFriendly.length === 0, namesFriendly.join(' | '));
+      }
+      /* AND KEEPS MOVING. The figures in the charts count up, and the glow
+         and sheen that run after the draw are switched off for anybody who
+         asked for less motion. */
+      const chartCounts = [
+        [fs.readFileSync(path.join(ROOT, 'players', 'charlie-dunkley.html'), 'utf8'), /class="pf-donut__c"[^>]*><b data-count=/],
+        [fs.readFileSync(path.join(ROOT, 'stats.html'), 'utf8'), /class="st-donut__c"[^>]*><b data-count=/],
+        [fs.readFileSync(path.join(ROOT, 'squad.html'), 'utf8'), /class="sq-donut__c"[^>]*><b data-count=/],
+      ].every(([h, re]) => re.test(h));
+      check('the figures in the player, stats and squad charts count up', chartCounts);
+      /* SAVES A GAME, from the record. Luke Munns kept goal against Three
+         Little Birds on 6 September 2026 and the record carries his saves, so
+         his 26/27 tab gives the rate; a season with nothing on record gives no
+         tile rather than a nought. */
+      {
+        const gkRec = (dPS.squad || []).find((x) => x.gk && /Munns/.test(x.name || `${x.first} ${x.last}`));
+        const gkPage = gkRec ? path.join(ROOT, 'players', `${gkRec.slug}.html`) : '';
+        if (gkRec && fs.existsSync(gkPage)) {
+          const gh = fs.readFileSync(gkPage, 'utf8');
+          const gPanels = gh.split('data-season-panel="').slice(1).map((s) => s.split('data-season-panel=')[0]);
+          (dPS.seasons || []).forEach((sn, i) => {
+            const kept = dPS.played.filter((m) => m.played && !m.friendly && m.season === sn.name
+              && m.detail && Number(m.detail.keeper) === Number(gkRec.num) && Number.isFinite(Number(m.detail.saves)) && m.detail.saves !== '' && m.detail.saves !== null);
+            const saves = kept.reduce((n, m) => n + Number(m.detail.saves), 0);
+            const tile = (gPanels[i] || '').match(/<b data-count="([\d.]+)">[\d.]+<\/b>\s*<span>Saves a game<\/span>/);
+            check(`${gkRec.name}'s ${sn.name} tab gives saves a game only from the record`,
+              kept.length ? (!!tile && tile[1] === (saves / kept.length).toFixed(1)) : !tile,
+              `${kept.length} games with saves on record, tile ${tile ? tile[1] : 'none'}`);
+          });
+        }
+      }
+      const motionCss = ['33-player', '34-stats', '32-squad']
+        .map((f) => fs.readFileSync(path.join(ROOT, 'src', 'styles-home', 'pages', `${f}.css`), 'utf8'));
+      check('the charts keep moving after they draw, and stop for reduced motion',
+        motionCss.every((c) => /infinite/.test(c) && /prefers-reduced-motion[\s\S]*animation: none/.test(c)));
       /* Counts beside a season's content follow the season. */
       check('the counts above the heat map and the stats table follow the tab',
         /data-pitch-counts=/.test(fs.readFileSync(path.join(ROOT, 'players', 'charlie-dunkley.html'), 'utf8'))

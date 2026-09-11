@@ -46,6 +46,9 @@
 /* ---- 01 Stat tiles ------------------------------------------------------ */
 .pf-tiles{list-style: none; margin: clamp(20px, 3vw, 30px) 0 0; padding: 0;
   display: grid; gap: 12px; grid-template-columns: repeat(6, minmax(0, 1fr));}
+/* A goalkeeper with saves on record has eight tiles: two rows of four rather
+   than six and a stray two. The narrower breakpoints below still apply. */
+.pf-tiles--8{grid-template-columns: repeat(4, minmax(0, 1fr));}
 .pf-stat{position: relative; padding: 20px 18px;
   border-radius: 18px; border: 1px solid var(--line-d);
   background: rgba(var(--lift), 0.026);}
@@ -133,6 +136,29 @@ html.js .pf-cols__bar{transform: scaleY(0); transform-box: fill-box; transform-o
   transition: transform 1s var(--ease-out-expo);}
 html.js .pf-cols__bar--b{transition-delay: 0.25s;}
 html.js .pf-charts.is-in .pf-cols__bar{transform: scaleY(1);}
+
+/* MOVEMENT THAT STAYS. Once drawn, the won segment and the gauge glow slowly,
+   and a sheen crosses the columns and the home and away bars, so the charts
+   keep living after the draw rather than sitting still. */
+.pf-cols__sheen{fill: rgba(255, 255, 255, 0.08); opacity: 0;}
+html.js .pf-charts.is-in .pf-cols__sheen{animation: pf-sheen 5s ease-in-out 1.3s infinite;}
+@keyframes pf-sheen{
+  0%{transform: translateX(0); opacity: 0;}
+  8%, 52%{opacity: 1;}
+  60%, 100%{transform: translateX(380px); opacity: 0;}
+}
+html.js .pf-charts.is-in .pf-donut__seg[data-res="W"],
+html.js .pf-charts.is-in .pf-gauge__arc{animation: pf-glow 3.6s ease-in-out 1.3s infinite;}
+@keyframes pf-glow{
+  0%, 100%{filter: drop-shadow(0 0 0 rgba(var(--volt-rgb), 0));}
+  50%{filter: drop-shadow(0 0 7px rgba(var(--volt-rgb), 0.7));}
+}
+.pf-split__track{position: relative;}
+html.js .pf-charts.is-in .pf-split__track::after{content: ''; position: absolute; top: 0; bottom: 0; left: -30%; width: 30%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.24), transparent);
+  animation: pf-bar-sheen 4s ease-in-out 1.5s infinite;}
+@keyframes pf-bar-sheen{0%{left: -30%;} 60%, 100%{left: 100%;}}
+html.js .pf-split li:nth-child(2) .pf-split__track i{transition-delay: 0.4s;}
 
 /* ---- 02 Record and standing --------------------------------------------- */
 .pf-record__grid{display: grid; gap: clamp(20px, 3vw, 40px);
@@ -407,6 +433,10 @@ html[data-theme="light"] .pf-ring circle:first-child{stroke: rgba(17, 19, 21, 0.
   html.js .pf-gauge__arc{transition: none; stroke-dasharray: var(--v, 0) 100;}
   html.js .pf-split__track i{transition: none; width: var(--w);}
   html.js .pf-cols__bar{transition: none; transform: none;}
+  html.js .pf-charts.is-in .pf-cols__sheen,
+  html.js .pf-charts.is-in .pf-donut__seg[data-res="W"],
+  html.js .pf-charts.is-in .pf-gauge__arc,
+  html.js .pf-charts.is-in .pf-split__track::after{animation: none;}
 }
 
 /* ==========================================================================

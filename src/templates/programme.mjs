@@ -201,7 +201,7 @@ function quiz(d) {
    them, and kept in their own module so the printable document below never
    inherits the page's layout. */
 import {
-  heroBand, tickerStrip, tapeBand, lastBand, photoBreak, tableBand, roundBand, nextBand, backersBand,
+  heroBand, tapeBand, lastBand, tableBand, roundBand, nextBand, backersBand,
 } from './programme-page.mjs';
 
 /* ONE PASS OF NUMBERS OVER THE FINISHED PAGE, for the same reason the
@@ -526,11 +526,10 @@ export function programme(d) {
   return {
     /* The poster replaces the cover band on the page only; `cover` below is
        still the plain band, because the printable document reuses it. */
-    body: siteHeader('/programme.html') + renumber((m ? heroBand(d, m, season) + tickerStrip(d, m) : cover)
+    body: siteHeader('/programme.html') + renumber((m ? heroBand(d, m, season) : cover)
       + downloadBand
       + (m ? tapeBand(d, m, headToHead(d, m.opponent)) : '')
       + lastBand(d)
-      + photoBreak()
       + tableBand(d, m)
       + (m ? roundBand(d, m) : '')
       + nextBand(d, m)

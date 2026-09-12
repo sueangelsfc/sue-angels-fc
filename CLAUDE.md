@@ -783,6 +783,23 @@ stayed and how far down they got. `migrations/007_page_stats.sql`,
 - **Inert until the migration is run**, like 002 and 004. Until then every
   call is a 404, the failure is swallowed, and the screen names the file that
   turns it on rather than showing an empty page that reads as broken.
+- **A swallowed failure hid a total outage for eight days.** 008 was never run
+  on the database, and from 4 September 2026 the beacon sent `p_hour` to
+  `record_page_view`. PostgREST resolves a function by argument NAMES, found
+  none taking `p_hour`, and refused every call (`PGRST202`), so nothing at all
+  was recorded from 4 to 12 September. The page view call now sends exactly
+  007's six arguments and the suite holds it to that; the hour and the route
+  go to `record_page_route` in a second call, so a missing migration loses only
+  what it adds. **An anonymous GET of a table tells you which migrations are
+  live**: `200 []` is RLS on a table that exists, `PGRST205` is no table.
+- **The route is counted a step at a time** (`migrations/009_page_routes.sql`,
+  which also creates 008's hourly table, so 008 need never be run). One count
+  per (day, `came_from`, path), where `came_from` is the previous page on this
+  site, the sending host, or empty. The screen shows where people landed from
+  outside and how they moved page to page, and a focused page shows what came
+  into it and where readers went next. It is never a journey: no identifier,
+  so two steps sharing a page cannot be joined into one reader. No zone and no
+  device, for 008's reason.
 - **The screen knows what the site PUBLISHES, not only what was read.**
   `stats-pages.json` is written by the build - every route, its real title,
   what kind of page it is, and the day a match was played or an article went

@@ -107,6 +107,15 @@
 
   /* ---- Sent once, as the page goes away -------------------------------- */
 
+  /* Where THIS view came from, for the route: the page before it on this
+     site, the sending site's host, or nothing. Never a full address. */
+  function from() {
+    try {
+      var u = new URL(document.referrer);
+      return u.host === location.host ? u.pathname.slice(0, 120) : source();
+    } catch (e) { return ''; }
+  }
+
   var sent = false;
 
   function send() {
@@ -124,11 +133,16 @@
            average is what this feeds. */
         p_seconds: Math.min(Math.round((Date.now() - started) / 1000), 3600),
         p_depth: depth,
-        /* The READER'S hour, not the server's. "People read this at eight in
-           the evening" is a fact about a habit; converted to a server clock it
-           would be a fact about nothing. It is recorded in its own table,
-           carrying no zone, source or device, so it cannot narrow a bucket
-           down to one person - see migrations/008_page_stats_detail.sql. */
+      }, true).catch(function () {});
+      /* The hour and the route go in a SEPARATE call. The hour used to ride
+         on the one above, and on a database where 008 had not been run
+         PostgREST found no function taking p_hour and refused the whole call:
+         from 4 to 12 September 2026 not one view was recorded. Now a database
+         without migrations/009_page_routes.sql loses these two and keeps
+         counting everything else. The hour is the READER'S, not the server's. */
+      window.saRpc('record_page_route', {
+        p_path: path,
+        p_from: from(),
         p_hour: hour(),
       }, true).catch(function () {});
     } catch (e) { /* never a console error in exchange for a counter */ }

@@ -217,6 +217,13 @@ async function main() {
        page_stats with figures wide enough to draw the lot. */
     window.CP.rest = (method, q) => {
       const day = (n) => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10);
+      if (/page_routes\\?/.test(q || '')) {
+        return Promise.resolve([
+          { day: day(0), came_from: 'instagram.com', path: '/programme.html', views: 9 },
+          { day: day(1), came_from: '', path: '/index.html', views: 6 },
+          { day: day(1), came_from: '/index.html', path: '/squad.html', views: 4 },
+        ]);
+      }
       if (/page_stats_hourly\\?/.test(q || '')) {
         const out = [];
         for (let d = 0; d < 20; d += 1) {

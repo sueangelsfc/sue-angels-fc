@@ -4412,6 +4412,28 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     .filter((f) => f.endsWith('.js')).sort()
     .map((f) => fs.readFileSync(path.join(ROOT, 'src', 'scripts', f), 'utf8')).join('\n');
 
+  /* THE PAGE VIEW MUST NEVER CARRY AN ARGUMENT 007 LACKS. The hour once rode
+     on record_page_view, the database had never been given 008, PostgREST
+     found no function taking p_hour and refused every page view from 4 to 12
+     September 2026 - silently, because the beacon swallows its failures. The
+     hour and the route go to record_page_route, whose arguments are asked of
+     the migration that defines it. */
+  {
+    const argsOf = (fn) => ((saSrc.match(new RegExp(`saRpc\\('${fn}', \\{([\\s\\S]*?)\\}, true\\)`))
+      || [])[1] || '').match(/\bp_[a-z]+(?=:)/g) || [];
+    const viewArgs = argsOf('record_page_view');
+    const base = ['p_path', 'p_zone', 'p_source', 'p_device', 'p_seconds', 'p_depth'];
+    check('the page view beacon sends only the six arguments migration 007 accepts',
+      viewArgs.length === base.length && viewArgs.every((a) => base.includes(a)),
+      viewArgs.join(', '));
+    const mig009 = fs.readFileSync(path.join(ROOT, 'migrations', '009_page_routes.sql'), 'utf8');
+    const routeArgs = argsOf('record_page_route');
+    check('the route beacon sends exactly the arguments migration 009 defines',
+      routeArgs.length === 3
+        && routeArgs.every((a) => new RegExp(`\\b${a}\\s+(text|int)\\b`).test(mig009)),
+      routeArgs.join(', '));
+  }
+
   /* $ IS querySelector AND $$ IS querySelectorAll, and treating the singular
      one as a list is how the whole site went dark in August. `$('.camp')`
      returns null on every page with no campaign band, `.length` on null

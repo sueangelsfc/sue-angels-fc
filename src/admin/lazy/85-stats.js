@@ -248,7 +248,8 @@
   var DAYS = 30;
   var rows = null;      /* null means migration 007 has not been run */
   var prev = null;      /* the period before this one, for the comparison */
-  var hours = null;     /* null means migration 008 has not been run */
+  var hours = null;     /* null means the hourly table does not exist yet */
+  var routes = null;    /* null means migration 009 has not been run */
   var CAT = null;       /* the site's own page list, or null if unreachable */
   var FOCUS = '';       /* a page being looked at on its own */
   var SORT = 'views';
@@ -312,10 +313,12 @@
         : Promise.resolve([]),
       get('page_stats_hourly?select=day,hour,path,views' + since + '&limit=20000'),
       catalogue(),
+      get('page_routes?select=day,came_from,path,views' + since + '&limit=20000'),
     ]).then(function (r) {
       rows = r[0];
       prev = r[1] || [];
       hours = r[2];
+      routes = r[4];
     });
   }
 
@@ -757,8 +760,8 @@
       sub: 'Nothing is being recorded yet.',
       body: '<p class="cp-note">The website starts counting page views once '
         + '<b>migrations/007_page_stats.sql</b> has been run on the database, and records '
-        + 'the hour of the day as well once <b>migrations/008_page_stats_detail.sql</b> '
-        + 'has been. Until then this screen has nothing to show and the site behaves '
+        + 'the hour of the day and the route through the site as well once '
+        + '<b>migrations/009_page_routes.sql</b> has been. Until then this screen has nothing to show and the site behaves '
         + 'exactly as it does now.</p>'
         + '<p class="cp-note">Nothing identifying is stored when it is switched on: no cookie, '
         + 'no address and no visitor identifier of any kind. A row is a running count for one '
@@ -910,6 +913,7 @@
           + 'an app or an email, or a browser set not to say. Moving between pages of this '
           + 'site is not counted as a source.</p>',
       })
+      + routeSection()
       + sec({
         title: 'What they read it on',
         body: rankTable('Device', devices, all, 'any device', { filter: 'device' })
@@ -940,10 +944,10 @@
         body: '<p class="cp-note"><b>Visitors.</b> There is no identifier of any kind, so two '
           + 'views cannot be told apart and a count of people is a number this cannot '
           + 'honestly produce. Every figure above is <b>views, not visitors</b>.</p>'
-          + '<p class="cp-note"><b>What somebody did next.</b> A row is a running count for a '
-          + 'day, a page, a zone, a source and a device, not an event, so there is no '
-          + 'sequence to follow and no journey to reconstruct - by anybody, including '
-          + 'somebody with the database open.</p>'
+          + '<p class="cp-note"><b>A journey.</b> Moves between pages are counted one step at '
+          + 'a time, so this can say how many views of the squad came from the programme but '
+          + 'can never follow one reader from page to page - by anybody, including somebody '
+          + 'with the database open.</p>'
           + '<p class="cp-note"><b>Readers without JavaScript</b>, which is most search engine '
           + 'crawlers. The real number of page requests is higher than the figures here.</p>'
           + '<p class="cp-note"><b>Anything finer than the hour</b>, and the hour is kept in '
@@ -1046,7 +1050,7 @@
   }
 
   function whenSection() {
-    /* 008 not run is not the same as 008 run and quiet, and the screen has to
+    /* No hourly table is not the same as a quiet one, and the screen has to
        tell those apart: one is a file somebody has to execute, the other is a
        Tuesday nobody read the site. */
     if (hours === null) {
@@ -1054,7 +1058,7 @@
         title: 'When people read it',
         sub: 'Not switched on yet.',
         body: '<p class="cp-note">The hour of the day is recorded once '
-          + '<b>migrations/008_page_stats_detail.sql</b> has been run on the database. '
+          + '<b>migrations/009_page_routes.sql</b> has been run on the database. '
           + 'Everything else on this screen works without it, and running it changes nothing '
           + 'that is already being counted.</p>'
           + '<p class="cp-note">The hour is kept in a table of its own carrying no time zone, '
@@ -1088,6 +1092,84 @@
             + 'knowing when a page was read from narrowing down who read it. A filter by part '
             + 'of the site does apply, because the page is recorded.</p>'
           : ''),
+    });
+  }
+
+  /* ---- The route through the site ----------------------------------------
+     page_routes counts one step: where a view came from and the page it
+     landed on. Where it came from is a page of this site ('/squad.html'), a
+     sending site ('instagram.com') or nothing. A step is not a journey: with
+     no identifier, two steps that share a page cannot be joined into one
+     reader, and the section says so rather than drawing a path it cannot
+     know. Country and device cannot reach it; part of the site can, and a
+     source filter keeps the arrivals from that source. */
+  function isPage(f) { return String(f || '').charAt(0) === '/'; }
+  function pageLabel(p) { return nameOf(p) || p; }
+
+  function steps(list) {
+    var by = {};
+    list.forEach(function (r) {
+      var k = (r.came_from || '') + '\u0001' + r.path;
+      by[k] = (by[k] || 0) + (Number(r.views) || 0);
+    });
+    return Object.keys(by).map(function (k) {
+      var p = k.split('\u0001');
+      return { from: p[0], to: p[1], views: by[k] };
+    }).sort(function (a, b) { return b.views - a.views; });
+  }
+
+  function stepTable(heads, list, none) {
+    var of = total(list);
+    if (!of) return '<p class="cp-note">' + esc(none) + '</p>';
+    return table(heads.concat(['Views', 'Share', '']), list.slice(0, 30).map(function (r) {
+      return '<tr><td>' + esc(!r.from ? 'Direct or unknown'
+          : (isPage(r.from) ? pageLabel(r.from) : r.from)) + '</td>'
+        + '<td>' + esc(pageLabel(r.to)) + '</td>'
+        + '<td><b>' + esc(String(r.views)) + '</b></td>'
+        + '<td>' + esc(String(pct(r.views, of))) + '%</td>'
+        + '<td style="width:22%">' + bar(r.views, of) + '</td></tr>';
+    }).join(''));
+  }
+
+  function routeSection() {
+    var title = 'The route through the site';
+    if (routes === null) {
+      return sec({
+        title: title,
+        sub: 'Not switched on yet.',
+        body: '<p class="cp-note">Where each view came from and the page it landed on is '
+          + 'recorded once <b>migrations/009_page_routes.sql</b> has been run on the '
+          + 'database. It switches on <b>When people read it</b> at the same time.</p>',
+      });
+    }
+    var list = steps((routes || []).filter(function (r) {
+      if (FILT.area && areaOf(r.path) !== FILT.area) return false;
+      return !FILT.source
+        || (!isPage(r.came_from) && (r.came_from || 'Direct or unknown') === FILT.source);
+    }));
+    if (!total(list)) {
+      return sec({
+        title: title,
+        sub: 'Switched on, and nothing has come in yet.',
+        body: '<p class="cp-note">Routes fill in from the next visitor onwards.</p>',
+      });
+    }
+    return sec({
+      title: title,
+      sub: 'Where people arrived from and the page they landed on, then how they moved '
+        + 'from page to page.',
+      body: '<h4 class="cp-sub">Arrived from, and landed on</h4>'
+        + stepTable(['Came from', 'Landed on'],
+          list.filter(function (r) { return !isPage(r.from); }),
+          'Nobody arrived from outside the site in this period.')
+        + '<h4 class="cp-sub">Page to page</h4>'
+        + stepTable(['From', 'To'], list.filter(function (r) { return isPage(r.from); }),
+          FILT.source ? 'A move between pages has no source, so a source filter leaves none.'
+            : 'Nobody moved from one page to another in this period.')
+        + '<p class="cp-note">Each row counts one step, never a person. Somebody who landed '
+        + 'on the programme from Instagram and then opened the squad is two rows that share '
+        + 'a page, and nothing can join them into one visit. Country and device filters do '
+        + 'not apply: the route is kept in its own table without either.</p>',
     });
   }
 
@@ -1343,6 +1425,17 @@
           n, 'this page')
         + (myHours.length
           ? '<h4 class="cp-sub">When this page is read</h4>' + heatmap(myHours)
+          : '')
+        + (routes && routes.length
+          ? '<div class="cp2"><div><h4 class="cp-sub">Came here from</h4>'
+            + stepTable(['Came from', 'Landed on'], steps(routes.filter(function (r) {
+              return r.path === path;
+            })), 'No route recorded into this page.')
+            + '</div><div><h4 class="cp-sub">Went on to</h4>'
+            + stepTable(['From', 'To'], steps(routes.filter(function (r) {
+              return r.came_from === path;
+            })), 'Nobody went on to another page from here.')
+            + '</div></div>'
           : ''),
     });
   }

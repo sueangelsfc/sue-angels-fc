@@ -869,14 +869,46 @@ export async function panelChecks() {
       { day: '2026-09-01', hour: 9, path: '/index.html', views: 5 },
       { day: '2026-09-02', hour: 20, path: '/squad.html', views: 7 },
     ];
+    /* The route table: an arrival from Instagram, a direct arrival and one
+       move from one page to another. */
+    const routeRows = [
+      { day: '2026-09-01', came_from: 'instagram.com', path: '/programme.html', views: 6 },
+      { day: '2026-09-02', came_from: '', path: '/index.html', views: 4 },
+      { day: '2026-09-02', came_from: '/programme.html', path: '/squad.html', views: 3 },
+    ];
     const serve = (method, q) => {
       if (/page_stats_hourly\?/.test(q)) return hourRows;
+      if (/page_routes\?/.test(q)) return routeRows;
       if (/day=lt\./.test(q)) return prevRows;
       return statRows;
     };
     const ctx = await PR.boot({ rows: { rest: serve } });
     const host = await PR.openPanel(ctx, 'stats');
     const text = host.body.textContent.replace(/\s+/g, ' ');
+
+    /* Where a view came from and where it landed, cell by cell, so a table
+       that printed the right words in the wrong columns fails. */
+    check('the route section pairs the sending site with the page it landed on',
+      /<td>instagram\.com<\/td><td>\/programme\.html<\/td><td><b>6<\/b><\/td>/.test(host.html)
+        && /<td>Direct or unknown<\/td><td>\/index\.html<\/td><td><b>4<\/b><\/td>/.test(host.html),
+      host.html.slice(host.html.indexOf('route through'), host.html.indexOf('route through') + 400));
+    check('the route section lists a move from one page to the next',
+      /<td>\/programme\.html<\/td><td>\/squad\.html<\/td><td><b>3<\/b><\/td>/.test(host.html),
+      'no programme to squad row');
+
+    /* PROBE: point the query at a table that does not exist and both route
+       checks must stop finding their rows. */
+    const noRouteCtx = await PR.boot({
+      rows: { rest: serve },
+      transform: (src, file) => (file === 'control-stats.js'
+        ? bust(src, 'page_routes?select=', 'page_routesX?select=')
+        : src),
+    });
+    const noRoute = (await PR.openPanel(noRouteCtx, 'stats')).html;
+    check('probe: with no route rows the route checks notice',
+      !/<td>instagram\.com<\/td><td>\/programme\.html<\/td>/.test(noRoute)
+        && !/<td>\/programme\.html<\/td><td>\/squad\.html<\/td>/.test(noRoute),
+      'the route checks would pass without the route table');
 
     check('website stats totals every view it was given',
       /24 page views/.test(text), text.slice(0, 200));
@@ -1203,6 +1235,7 @@ export async function panelChecks() {
       ]);
       const serve2 = (method, q) => {
         if (/page_stats_hourly\?/.test(q)) return hourRows;
+        if (/page_routes\?/.test(q)) return routeRows;
         if (/day=lt\./.test(q)) return prevRows;
         return withCat;
       };
@@ -1298,12 +1331,13 @@ export async function panelChecks() {
        on the screen works, and the hour is the only thing missing. Saying
        "nothing yet" there would send somebody looking for traffic when what is
        missing is a file nobody has executed. */
-    const onlyDaily = (method, q) => (/page_stats_hourly\?/.test(q)
+    const onlyDaily = (method, q) => (/page_stats_hourly\?|page_routes\?/.test(q)
       ? Promise.reject(new Error('404')) : statRows);
     const halfCtx = await PR.boot({ rows: { rest: onlyDaily } });
     const half = (await PR.openPanel(halfCtx, 'stats')).body.textContent.replace(/\s+/g, ' ');
-    check('with 007 run and 008 not the screen names the second migration',
-      /008_page_stats_detail\.sql/.test(half) && /24 page views/.test(half),
+    check('with 007 run and 009 not the screen names the migration that adds the hour and route',
+      /009_page_routes\.sql/.test(half) && /24 page views/.test(half)
+        && /The route through the site\s*Not switched on yet/.test(half),
       half.slice(0, 200));
   }
 

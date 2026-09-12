@@ -848,6 +848,13 @@ last season, the quiz, the word search, the cause and the partners.
   `londonKick()`, because `isoDateTime` stores a kick-off as UTC and runs an
   hour late in summer. `programme().cover` stays the plain band because the
   document reuses it.
+- **A sub-page that opens on a `.sec` band must lift its header.** `.pghead` is
+  `position: static`, and `.hx__mainnav` is a stacking context (backdrop-filter),
+  so the shared menu panel's z-index stays inside it. A positioned first band
+  (`.sec` is `position: relative`) painted over the open menu and took its
+  clicks: on /programme.html none of the 20 links under the nav could be
+  reached. Other sub-pages open on a non-positioned `*-hero`. The programme
+  band sets `.is-programme .pghead { position: relative; z-index: 20 }`.
 - **The cover is always the fixture**: both badges either side of a v, like
   the drawn share cards.
 - **The button only appears if the file is on disk.** `d.programmePdf` is set

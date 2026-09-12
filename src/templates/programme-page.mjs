@@ -383,6 +383,10 @@ export function nextBand(d, m) {
   if (!after) return '';
   const [, mm, dd] = String(after.iso || '').split('-');
   const month = mm ? new Date(Date.UTC(2000, Number(mm) - 1, 1)).toLocaleString('en-GB', { month: 'short', timeZone: 'UTC' }) : '';
+  /* Each club's badge beside its name. The whole card is one link whose text
+     already names both clubs, so the badges carry an empty alt rather than
+     reading each name a second time. */
+  const team = (name) => `<span class="pr-next__team"><span class="pr-next__crest" aria-hidden="true">${badgeOf(name, d.badges, 44).replace(/alt="[^"]*"/, 'alt=""')}</span><span>${esc(name)}</span></span>`;
   return `<section class="sec pr-band pr-band--tight" aria-labelledby="pr-next-h">
       <div class="wrap">
         ${rail('After this one', after.competition || 'Fixture')}
@@ -390,7 +394,7 @@ export function nextBand(d, m) {
         <a class="pr-next rv" href="/fixtures.html">
           <span class="pr-next__date" aria-hidden="true"><b>${esc(dd ? Number(dd) : '')}</b><span>${esc(month)}</span></span>
           <span>
-            <span class="pr-next__t">${esc(after.home)} v ${esc(after.away)}</span>
+            <span class="pr-next__t">${team(after.home)}<span class="pr-next__vs">v</span>${team(after.away)}</span>
             <span class="pr-next__m">${esc([fmtDate(after.date, { weekday: true }), after.kick, after.venue].filter(Boolean).join(' · '))}</span>
           </span>
           <span class="pr-next__go">Every fixture ${ARROW}</span>

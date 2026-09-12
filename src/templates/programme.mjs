@@ -449,9 +449,11 @@ export function programme(d) {
     m ? `What the archive knows about ${m.opponent}` : null,
     here.length ? `The ${here.length} players registered for ${season}` : null,
     us ? `${d.titleDivision} ${d.titleSeason}, won unbeaten` : null,
-    questions.length ? `A ${questions.length}-question half-time quiz` : null,
+    /* No count: the programme the club uploads is its own document, and its quiz
+       is not this page's quiz(), so a number here would be a guess about a file. */
+    questions.length ? 'A half-time quiz' : null,
     ws.placed.length >= 4 ? 'A squad word search' : null,
-    partners.length ? `The ${partners.length} businesses backing the club` : null,
+    partners.length ? `The ${partners.length} partners backing the club` : null,
   ].filter(Boolean);
 
   /* The booklet is a drawing, not a picture of a real programme: it carries
@@ -481,7 +483,7 @@ export function programme(d) {
     : 'The programme for the next fixture appears here as soon as the match is announced.'}</p>
         ${pdf
     ? `<p class="pr-lede rv">Today's match, the season ahead, the opposition, the squad, a half-time
-          quiz, a word search and the businesses that pay for the pitches. ${pages
+          quiz, a word search and the partners who pay for the pitches. ${pages
       ? `${esc(pages)} pages.` : ''} One file, yours to keep.</p>
         <p class="rv"><a class="pr-download" href="${attr(pdf)}" download>
           ${icon('download', '')} <span>Download this week's programme</span>

@@ -666,3 +666,141 @@ html.js .rv.is-in .pr-tape__fill { transform: scaleX(1); transition: transform 1
   html.js .rv .pr-tape__fill { transform: none; transition: none; }
   .pr-book__cover, .pr-fx, .pr-next, .pr-backers__list a { transition: none; }
 }
+
+/* ==========================================================================
+   THE SECOND PASS: A PHOTOGRAPH, A CLOCK, A STRIP, THE GOALS AND A BREATH
+
+   THE POSTER SITS ON A PHOTOGRAPH, and a photograph is dark in both themes,
+   so the hero pins the dark-theme tokens AND re-declares its colour:
+   descendants inherit body's computed colour, so redefining the tokens alone
+   would change nothing (see "Hero interior" in CLAUDE.md).
+   ========================================================================== */
+.is-programme .pr-hero {
+  --fg: #F7F5F2; --ink-1: #F7F5F2; --ink-2: #A7ADB4; --ink-3: #8A9198;
+  --line-d: rgba(255, 255, 255, 0.12); --lift: 255, 255, 255;
+  color: var(--fg);
+  min-height: min(94vh, 1000px);
+  display: flex; align-items: center;
+  padding: clamp(64px, 10vw, 136px) 0 clamp(64px, 8vw, 110px);
+}
+.is-programme .pr-hero > .wrap { position: relative; z-index: 1; width: 100%; }
+.pr-hero__photo {
+  position: absolute; inset: 0; z-index: -3; width: 100%; height: 100%;
+  object-fit: cover; object-position: 50% 30%; opacity: 0.62;
+}
+.is-programme .pr-hero::after {
+  content: ""; position: absolute; inset: 0; z-index: -2; pointer-events: none;
+  background:
+    radial-gradient(60% 55% at 50% 34%, rgba(var(--volt-rgb), 0.30), transparent 72%),
+    linear-gradient(180deg, rgba(9, 11, 13, 0.78) 0%, rgba(9, 11, 13, 0.42) 38%, rgba(9, 11, 13, 0.86) 82%, var(--navy-deep) 100%);
+}
+.is-programme .pr-hero .pr-hero__glow { z-index: -1; mix-blend-mode: screen; }
+.is-programme .pr-hero .pr-hero__mark { z-index: 0; -webkit-text-stroke: 1px rgba(var(--volt-rgb), 0.28); }
+.is-programme .pr-hero .pr-side__name { text-shadow: 0 8px 40px rgba(0, 0, 0, 0.55); }
+.is-programme .pr-hero .pr-side__badge {
+  background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.16), rgba(9, 11, 13, 0.55) 72%);
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.is-programme .pr-hero .pr-ticket {
+  background: rgba(13, 15, 18, 0.62);
+  -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+/* The clock: four tiles, each figure dropping in as it changes. Shown only
+   under html.js, where the script that fills it exists; otherwise the date
+   and time printed above them stand. */
+.pr-count__tiles { display: none; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 2px 0 2px; }
+html.js .pr-count__tiles { display: grid; }
+html.js .pr-count__static { display: none; }
+.pr-count__static { margin: 0; font-family: var(--display); font-size: clamp(18px, 2vw, 24px); color: var(--volt); }
+.pr-ticket .pr-count__u {
+  display: grid; justify-items: center; gap: 3px; padding: 8px 2px 7px; overflow: hidden;
+  border-radius: 10px; background: rgba(var(--volt-rgb), 0.12); border: 1px solid rgba(var(--volt-rgb), 0.3);
+}
+.pr-ticket .pr-count__u b {
+  display: block; font-family: var(--display); font-weight: 600; line-height: 1;
+  font-size: clamp(19px, 2.1vw, 27px); color: var(--volt); font-variant-numeric: tabular-nums;
+}
+.pr-ticket .pr-count__u small { font-size: 8.5px; letter-spacing: 0.14em; }
+.pr-ticket .pr-count__u b.is-tick { animation: pr-tick 0.45s var(--ease-out-expo); }
+@keyframes pr-tick { from { transform: translateY(-40%); opacity: 0.15; } to { transform: none; opacity: 1; } }
+@keyframes pr-kb { from { transform: scale(1.14); } to { transform: scale(1.02); } }
+
+/* ---- The match strip ----
+   Tilted, so its box is wider than the page; the wrapper clips it, so the
+   document never gains a horizontal scroll. */
+.pr-stripwrap { position: relative; z-index: 3; overflow: hidden; margin: -34px 0 -10px; padding: 30px 0; }
+.pr-strip {
+  transform: rotate(-1.6deg); margin: 0 -4%; padding: 15px 0;
+  background: var(--volt); color: var(--text-on-brand);
+  box-shadow: 0 24px 60px -24px rgba(var(--volt-rgb), 0.6);
+}
+.pr-strip__track {
+  display: flex; align-items: center; gap: 26px; width: max-content; white-space: nowrap;
+  font-family: var(--display); font-weight: 600; text-transform: uppercase;
+  font-size: clamp(15px, 1.9vw, 23px); letter-spacing: -0.005em;
+}
+.pr-strip__track i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--text-on-brand); opacity: 0.5; }
+@keyframes pr-marquee { to { transform: translateX(-50%); } }
+
+/* ---- The goals on film ---- */
+.pr-films { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 14px; margin-top: 14px; }
+.pr-film { margin: 0; overflow: hidden; border: 1px solid var(--line-d); border-radius: 22px; background: var(--slab); }
+.pr-film__frame { position: relative; aspect-ratio: 16 / 9; background: var(--navy-deep); }
+.pr-film video { display: block; width: 100%; height: 100%; object-fit: cover; }
+.pr-film figcaption { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; padding: 14px 18px 16px; }
+.pr-film__n {
+  font-family: var(--ui); font-size: 10px; font-weight: 750; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--volt);
+}
+.pr-film b { font-family: var(--display); font-weight: 500; font-size: 18px; color: var(--fg); }
+.pr-film figcaption span:last-child { font-size: 13.5px; color: var(--ink-2); }
+
+/* ---- The breath ----
+   A photograph is dark in both themes, so the words on it are stated
+   rather than taken from the theme. */
+.pr-breakwrap { padding-block: clamp(12px, 3vw, 36px); }
+.pr-break {
+  position: relative; isolation: isolate; overflow: hidden; display: grid; align-items: end;
+  min-height: clamp(300px, 44vw, 540px); border-radius: 28px;
+  border: 1px solid rgba(var(--volt-rgb), 0.22);
+}
+.pr-break img {
+  position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%;
+  object-fit: cover; object-position: 50% 35%;
+  transform: scale(1.1); transition: transform 1.8s var(--ease-out-expo);
+}
+.pr-break.is-in img { transform: scale(1); }
+.pr-break::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(70% 90% at 0% 100%, rgba(var(--volt-rgb), 0.42), transparent 64%),
+    linear-gradient(90deg, rgba(9, 11, 13, 0.92) 0%, rgba(9, 11, 13, 0.5) 55%, rgba(9, 11, 13, 0.2) 100%);
+}
+/* The measure is set on the line itself, in its own ch: on the blockquote
+   it was counted in the small body type and broke the motto a word a line. */
+.pr-break__q { margin: 0; padding: clamp(24px, 4.4vw, 60px); }
+.pr-break__q p {
+  max-width: 15ch;
+  margin: 0; font-family: var(--display); font-weight: 500; line-height: 1.02; letter-spacing: -0.03em;
+  font-size: clamp(28px, 4.6vw, 62px); color: var(--white); text-wrap: balance;
+}
+.pr-break__q p span { color: var(--volt); }
+.pr-break__q footer {
+  margin-top: 18px; font-family: var(--ui); font-size: 10.5px; font-weight: 750;
+  letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255, 255, 255, 0.72);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html.js .pr-hero__photo { animation: pr-kb 16s var(--ease-out-expo) both; }
+  html.js .pr-strip__track { animation: pr-marquee 42s linear infinite; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pr-ticket .pr-count__u b.is-tick { animation: none; }
+  .pr-break img { transform: none; transition: none; }
+}
+@media (max-width: 480px) {
+  .pr-ticket .pr-count__u small { font-size: 7.5px; letter-spacing: 0.08em; }
+  .pr-stripwrap { margin-top: -26px; }
+}

@@ -29,7 +29,7 @@
 <link rel="preload" href="/assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
 
 <link rel="stylesheet" href="/home.css?v=d3f6800b">
-<link rel="stylesheet" href="/p-programme.css?v=4a71dc83">
+<link rel="stylesheet" href="/p-programme.css?v=d587c68a">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":["SportsTeam","SportsOrganization"],"@id":"https://www.suesangelsfc.co.uk/#club","name":"Sue's Angels FC","alternateName":"The Angels","url":"https://www.suesangelsfc.co.uk/","sport":"Association football","foundingDate":"2025","logo":"https://www.suesangelsfc.co.uk/assets/brand/badge.png","email":"suesangelsfc@gmail.com","inLanguage":"en-GB","memberOf":{"@type":"SportsOrganization","name":"Southern Sunday Football League"},"location":{"@type":"Place","name":"The Reeves Sports Club","address":{"@type":"PostalAddress","streetAddress":"Snakey Lane","addressLocality":"Hanworth","addressRegion":"London","addressCountry":"GB"}},"areaServed":[{"@type":"Place","name":"Kingston upon Thames"},{"@type":"Place","name":"Hanworth"},{"@type":"Place","name":"Sunbury-on-Thames"},{"@type":"Place","name":"Twickenham"},{"@type":"Place","name":"Staines-upon-Thames"}],"sameAs":["https://www.instagram.com/suesangelsfc/","https://www.tiktok.com/@suesangelsfc","https://www.facebook.com/people/Sues-Angels-FC/61576808678302/"]},{"@type":"WebSite","@id":"https://www.suesangelsfc.co.uk/#website","url":"https://www.suesangelsfc.co.uk/","name":"Sue's Angels FC","inLanguage":"en-GB","publisher":{"@id":"https://www.suesangelsfc.co.uk/#club"}},{"@type":"WebPage","@id":"https://www.suesangelsfc.co.uk/programme.html#webpage","url":"https://www.suesangelsfc.co.uk/programme.html","name":"Match programme · Sue's Angels FC","description":"The digital matchday programme for Sue's Angels FC: today's fixture, the squad, what the archive knows about the opponent, and how the season stands.","inLanguage":"en-GB","isPartOf":{"@id":"https://www.suesangelsfc.co.uk/#website"},"about":{"@id":"https://www.suesangelsfc.co.uk/#club"},"primaryImageOfPage":{"@type":"ImageObject","url":"https://www.suesangelsfc.co.uk/assets/social/og-default.jpg"}},{"@type":"SportsEvent","name":"Sue's Angels FC v Haydons Park","startDate":"2026-09-13T11:00:00.000Z","eventStatus":"https://schema.org/EventScheduled","location":{"@type":"Place","name":"The Reeves Sports Club"},"homeTeam":{"@type":"SportsTeam","name":"Sue's Angels FC"},"awayTeam":{"@type":"SportsTeam","name":"Haydons Park"}}]}</script>
 </head>
 <body class="is-home is-sub is-programme">
@@ -140,6 +140,9 @@
             </button>
           </div>
         </header><section class="sec pr-hero" aria-labelledby="pr-h">
+      <img class="pr-hero__photo" src="/assets/hero/pr-huddle-1200.webp"
+           srcset="/assets/hero/pr-huddle-800.webp 800w, /assets/hero/pr-huddle-1200.webp 1200w, /assets/hero/pr-huddle-1600.webp 1600w"
+           sizes="100vw" alt="" width="1600" height="1067" decoding="async" fetchpriority="high" />
       <span class="pr-hero__glow" aria-hidden="true"></span>
       <span class="pr-hero__mark" aria-hidden="true">GW2</span>
       <div class="wrap">
@@ -161,7 +164,7 @@
           </h1>
         </div>
 
-        <div class="pr-ticket" role="group" aria-label="Match details" data-next-match data-upcoming="[]">
+        <div class="pr-ticket" role="group" aria-label="Match details">
           <div class="pr-ticket__cell">
             <small>Kick-off</small>
             <b class="pr-ticket__big">11:00</b>
@@ -174,7 +177,13 @@
           </div>
           <div class="pr-ticket__cell pr-clock">
             <small>Countdown</small>
-            <p class="hx__cd" data-kick="2026-09-13T10:00:00.000Z">Sun 13 Sept, 11:00</p>
+            <p class="pr-count__static">Sun 13 Sept, 11:00</p>
+            <div class="pr-count__tiles" data-pr-count="2026-09-13T10:00:00.000Z" aria-hidden="true">
+              <span class="pr-count__u"><b data-u>0</b><small>Days</small></span>
+              <span class="pr-count__u"><b data-u>00</b><small>Hrs</small></span>
+              <span class="pr-count__u"><b data-u>00</b><small>Min</small></span>
+              <span class="pr-count__u"><b data-u>00</b><small>Sec</small></span>
+            </div>
             <span>To kick-off, UK time</span>
           </div>
           <div class="pr-ticket__cell">
@@ -189,7 +198,10 @@
           <a class="btn btn--ghost" href="/fixtures.html">All fixtures</a>
         </p>
       </div>
-    </section><section class="sec pr-band pr-get" aria-labelledby="pr-get-h">
+      <script>(function(){var el=document.querySelector('[data-pr-count]');if(!el)return;var at=Date.parse(el.getAttribute('data-pr-count'));if(!at)return;var u=el.querySelectorAll('[data-u]');function p(n){return(n<10?'0':'')+n}function t(){var s=Math.max(0,Math.floor((at-Date.now())/1000));var v=[String(Math.floor(s/86400)),p(Math.floor(s/3600)%24),p(Math.floor(s/60)%60),p(s%60)];for(var i=0;i<4;i++){if(u[i].textContent!==v[i]){u[i].textContent=v[i];u[i].classList.remove('is-tick');void u[i].offsetWidth;u[i].classList.add('is-tick')}}if(s>0){setTimeout(t,1000)}else{el.classList.add('is-live')}}t()})();</script>
+    </section><div class="pr-stripwrap" aria-hidden="true">
+      <div class="pr-strip"><div class="pr-strip__track"><span>Sue&#39;s Angels v Haydons Park</span><i></i><span>Sun 13 September</span><i></i><span>Kick-off 11:00</span><i></i><span>The Reeves Sports Club</span><i></i><span>League Eight · Game week 2</span><i></i><span>Sue&#39;s Angels v Haydons Park</span><i></i><span>Sun 13 September</span><i></i><span>Kick-off 11:00</span><i></i><span>The Reeves Sports Club</span><i></i><span>League Eight · Game week 2</span><i></i><span>Sue&#39;s Angels v Haydons Park</span><i></i><span>Sun 13 September</span><i></i><span>Kick-off 11:00</span><i></i><span>The Reeves Sports Club</span><i></i><span>League Eight · Game week 2</span><i></i><span>Sue&#39;s Angels v Haydons Park</span><i></i><span>Sun 13 September</span><i></i><span>Kick-off 11:00</span><i></i><span>The Reeves Sports Club</span><i></i><span>League Eight · Game week 2</span><i></i><span>Sue&#39;s Angels v Haydons Park</span><i></i><span>Sun 13 September</span><i></i><span>Kick-off 11:00</span><i></i><span>The Reeves Sports Club</span><i></i><span>League Eight · Game week 2</span><i></i><span>Sue&#39;s Angels v Haydons Park</span><i></i><span>Sun 13 September</span><i></i><span>Kick-off 11:00</span><i></i><span>The Reeves Sports Club</span><i></i><span>League Eight · Game week 2</span><i></i></div></div>
+    </div><section class="sec pr-band pr-get" aria-labelledby="pr-get-h">
       <div class="wrap">
         
   <div class="xrail" aria-hidden="true">
@@ -351,8 +363,22 @@
             <a class="btn btn--ghost btn--sm pr-last__link" href="/matches/f20260531-hillside.html">The match report <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
           </div>
         </article>
+        
       </div>
-    </section><section class="sec pr-band" aria-labelledby="pr-tbl-h">
+    </section><div class="pr-breakwrap">
+      <div class="wrap">
+        <div class="pr-break rv">
+          <img src="/assets/hero/pr-strike-1067.webp"
+               srcset="/assets/hero/pr-strike-640.webp 640w, /assets/hero/pr-strike-1067.webp 1067w"
+               sizes="(max-width: 1200px) 100vw, 1152px"
+               alt="A Sue's Angels player driving onto the ball" width="1067" height="600" loading="lazy" decoding="async" />
+          <blockquote class="pr-break__q">
+            <p>“What we do in life <span>echoes in eternity.</span>”</p>
+            <footer>Sue&#39;s Angels FC · Est. 2025</footer>
+          </blockquote>
+        </div>
+      </div>
+    </div><section class="sec pr-band" aria-labelledby="pr-tbl-h">
       <div class="wrap">
         <div class="xrail" aria-hidden="true">
       <span class="xrail__l"><span class="xrail__n">04</span><span class="xrail__t">League Eight 26/27</span></span>

@@ -85,6 +85,58 @@ export function gameWeek(d, m) {
   return [...days].sort().indexOf(m.iso) + 1;
 }
 
+/* THE CLOCK. A few lines inline rather than in sa.js, which every page on the
+   site downloads for a countdown only this page draws. With the script
+   blocked the date and time stay printed and the tiles stay hidden (they are
+   shown under html.js only). Not a live region: a value changing every
+   second would flood a screen reader, and the time is printed beside it. */
+const COUNTDOWN_JS = `<script>(function(){var el=document.querySelector('[data-pr-count]');if(!el)return;var at=Date.parse(el.getAttribute('data-pr-count'));if(!at)return;var u=el.querySelectorAll('[data-u]');function p(n){return(n<10?'0':'')+n}function t(){var s=Math.max(0,Math.floor((at-Date.now())/1000));var v=[String(Math.floor(s/86400)),p(Math.floor(s/3600)%24),p(Math.floor(s/60)%60),p(s%60)];for(var i=0;i<4;i++){if(u[i].textContent!==v[i]){u[i].textContent=v[i];u[i].classList.remove('is-tick');void u[i].offsetWidth;u[i].classList.add('is-tick')}}if(s>0){setTimeout(t,1000)}else{el.classList.add('is-live')}}t()})();</script>`;
+
+/* ================= THE MATCH STRIP =================
+   The fixture's facts on a moving orange band under the poster. It repeats
+   what the ticket already says, so it is hidden from assistive technology
+   rather than read out twice. */
+export function tickerStrip(d, m) {
+  const gw = gameWeek(d, m);
+  const bits = [
+    `${short(m.home)} v ${short(m.away)}`,
+    fmtDate(m.date, { weekday: true, long: true, year: false }),
+    m.kick ? `Kick-off ${m.kick}` : '',
+    m.venue || CLUB.venue.name,
+    `${m.competition}${gw ? ` · Game week ${gw}` : ''}`,
+  ].filter(Boolean);
+  const run = bits.map((b) => `<span>${esc(b)}</span><i></i>`).join('');
+  return `<div class="pr-stripwrap" aria-hidden="true">
+      <div class="pr-strip"><div class="pr-strip__track">${run.repeat(3)}${run.repeat(3)}</div></div>
+    </div>`;
+}
+
+/* ================= A BREATH =================
+   One photograph between the figures, carrying the line that closes every
+   matchday graphic the club makes. */
+export function photoBreak() {
+  const motto = String(CLUB.memorial.motto || '').trim();
+  if (!motto) return '';
+  const cut = motto.search(/\s+echoes\b/i);
+  const line = cut > 0
+    ? `${esc(motto.slice(0, cut))} <span>${esc(motto.slice(cut).trim())}</span>`
+    : esc(motto);
+  return `<div class="pr-breakwrap">
+      <div class="wrap">
+        <div class="pr-break rv">
+          <img src="/assets/hero/pr-strike-1067.webp"
+               srcset="/assets/hero/pr-strike-640.webp 640w, /assets/hero/pr-strike-1067.webp 1067w"
+               sizes="(max-width: 1200px) 100vw, 1152px"
+               alt="A Sue's Angels player driving onto the ball" width="1067" height="600" loading="lazy" decoding="async" />
+          <blockquote class="pr-break__q">
+            <p>“${line}”</p>
+            <footer>${esc(CLUB.name)} · Est. ${esc(CLUB.founded)}</footer>
+          </blockquote>
+        </div>
+      </div>
+    </div>`;
+}
+
 /* ================= THE POSTER ================= */
 export function heroBand(d, m, season) {
   const gw = gameWeek(d, m);
@@ -97,7 +149,15 @@ export function heroBand(d, m, season) {
           </span>`;
   const maps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(m.venue || CLUB.venue.mapQuery)}`;
 
+  /* The club's own photograph behind the poster, in black and white so the
+     page keeps to its black and orange: last season's kit would otherwise
+     put a second, retired colour at the top of it. Decorative, because the
+     fixture is what the band says; eager, because it is the first thing on
+     screen. */
   return `<section class="sec pr-hero" aria-labelledby="pr-h">
+      <img class="pr-hero__photo" src="/assets/hero/pr-huddle-1200.webp"
+           srcset="/assets/hero/pr-huddle-800.webp 800w, /assets/hero/pr-huddle-1200.webp 1200w, /assets/hero/pr-huddle-1600.webp 1600w"
+           sizes="100vw" alt="" width="1600" height="1067" decoding="async" fetchpriority="high" />
       <span class="pr-hero__glow" aria-hidden="true"></span>
       <span class="pr-hero__mark" aria-hidden="true">${esc(gw ? `GW${gw}` : `${dd}.${mm}`)}</span>
       <div class="wrap">
@@ -111,7 +171,7 @@ export function heroBand(d, m, season) {
           </h1>
         </div>
 
-        <div class="pr-ticket" role="group" aria-label="Match details" data-next-match data-upcoming="[]">
+        <div class="pr-ticket" role="group" aria-label="Match details">
           <div class="pr-ticket__cell">
             <small>Kick-off</small>
             <b class="pr-ticket__big">${esc(m.kick || 'TBC')}</b>
@@ -124,7 +184,13 @@ export function heroBand(d, m, season) {
           </div>
           <div class="pr-ticket__cell pr-clock">
             <small>Countdown</small>
-            <p class="hx__cd" data-kick="${attr(kickAt)}">${esc(m.kick ? `${fmtDate(m.date, { weekday: true, year: false })}, ${m.kick}` : 'To be confirmed')}</p>
+            <p class="pr-count__static">${esc(m.kick ? `${fmtDate(m.date, { weekday: true, year: false })}, ${m.kick}` : 'To be confirmed')}</p>
+            ${kickAt ? `<div class="pr-count__tiles" data-pr-count="${attr(kickAt)}" aria-hidden="true">
+              <span class="pr-count__u"><b data-u>0</b><small>Days</small></span>
+              <span class="pr-count__u"><b data-u>00</b><small>Hrs</small></span>
+              <span class="pr-count__u"><b data-u>00</b><small>Min</small></span>
+              <span class="pr-count__u"><b data-u>00</b><small>Sec</small></span>
+            </div>` : ''}
             <span>To kick-off, UK time</span>
           </div>
           <div class="pr-ticket__cell">
@@ -139,6 +205,7 @@ export function heroBand(d, m, season) {
           <a class="btn btn--ghost" href="/fixtures.html">All fixtures</a>
         </p>
       </div>
+      ${kickAt ? COUNTDOWN_JS : ''}
     </section>`;
 }
 
@@ -243,6 +310,20 @@ export function lastBand(d) {
     .map((g) => ({ by: nameOf(g), assist: g && g.assist ? nameOf(g.assist) : '', minute: g && g.minute }))
     .filter((g) => g.by);
   const verdict = { W: 'Won', D: 'Drew', L: 'Lost' }[past.outcome] || 'Played';
+  /* THE GOALS ON FILM, where the club has sent them. The scorer and the assist
+     come off the match record through the same resolver the match page uses,
+     the poster is the result's cover, and nothing downloads until play. */
+  const films = d.goalFilmFor ? d.goalFilmFor(past) : [];
+  const cover = past.detail && /^https:\/\//.test(String(past.detail.cover || '')) ? past.detail.cover : '';
+  const filmBlock = films.length ? `<div class="pr-films rv">
+          ${films.map((f) => `<figure class="pr-film">
+            <div class="pr-film__frame">
+              <video src="${attr(f.src)}" controls preload="none" playsinline${cover ? ` poster="${attr(cover)}"` : ''}
+                title="${attr(`Goal ${f.n}: ${f.scorer}${f.assist ? `, assisted by ${f.assist}` : ''}`)}"></video>
+            </div>
+            <figcaption><span class="pr-film__n">Goal ${esc(f.n)}</span><b>${esc(f.scorer)}</b><span>${f.assist ? `assisted by ${esc(f.assist)}` : ''}</span></figcaption>
+          </figure>`).join('\n          ')}
+        </div>` : '';
   const side = (name) => `<div class="pr-last__side">
               <span class="pr-last__crest" aria-hidden="true">${badgeOf(name, d.badges, 72)}</span>
               <span>${esc(short(name))}</span>
@@ -271,6 +352,7 @@ export function lastBand(d) {
             <a class="btn btn--ghost btn--sm pr-last__link" href="/matches/${attr(past.slug)}.html">The match report ${ARROW}</a>
           </div>
         </article>
+        ${filmBlock}
       </div>
     </section>`;
 }

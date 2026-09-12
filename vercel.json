@@ -165,6 +165,36 @@
       "source": "/league-admin.html",
       "destination": "/control.html",
       "permanent": true
+    },
+    {
+      "source": "/players/jack-bridge.html",
+      "destination": "/players/jack-bridges.html",
+      "permanent": true
+    },
+    {
+      "source": "/players/jack-bridge",
+      "destination": "/players/jack-bridges.html",
+      "permanent": true
+    },
+    {
+      "source": "/players/rob-heath.html",
+      "destination": "/players/robert-heath.html",
+      "permanent": true
+    },
+    {
+      "source": "/players/rob-heath",
+      "destination": "/players/robert-heath.html",
+      "permanent": true
+    },
+    {
+      "source": "/players/ade-owolona.html",
+      "destination": "/players/ade-owolana.html",
+      "permanent": true
+    },
+    {
+      "source": "/players/ade-owolona",
+      "destination": "/players/ade-owolana.html",
+      "permanent": true
     }
   ],
   "headers": [

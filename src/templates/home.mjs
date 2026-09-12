@@ -943,6 +943,15 @@ export function home(d) {
               the only citations the front page carried sat in a band the club
               has since switched off. */''}
         ${sourceNote(['fulltime'], { lead: 'Table, results and scorers transcribed from' })}
+        ${/* AND THE DIVISION'S OWN PAGES, so a reader can check the figures
+              rather than take the club's word for them. The source line above
+              names Full-Time's front door, which is a search box; these are
+              the pages the table, the results and the scorers came from,
+              built from the division's ids and absent when there are none. */''}
+        ${d.fulltime ? `<p class="srcnote">${esc((d.nextDivisionTable || {}).division || 'The division')} on FA Full-Time:
+          <a href="${attr(d.fulltime.table)}" rel="noopener" target="_blank">the table</a>,
+          <a href="${attr(d.fulltime.results)}" rel="noopener" target="_blank">every result</a> and
+          <a href="${attr(d.fulltime.scorers)}" rel="noopener" target="_blank">the scorers</a>.</p>` : ''}
       </div>
     </section>` : '';
 

@@ -1096,7 +1096,10 @@ const homeMeta = meta('home', `${CLUB.name} - ${TITLE_DIV} Champions`,
   `London Sunday-league football club, founded in memory of ${CLUB.memorial.name}. ${TITLE_DIV} champions, unbeaten in our inaugural season.`);
 const l8Now = d.nextDivisionTable || {};
 if ((l8Now.rows || []).some((r) => (r.played || 0) > 0)) {
-  homeMeta.title = `${l8Now.division} ${l8Now.season || d.currentSeason} · ${CLUB.name}`;
+  /* "Sunday league football" says what the club is to somebody who has never
+     heard the name, which is who a search result is for, and brings the tab
+     to 60 characters: 36 read as too short to name the page. */
+  homeMeta.title = `${l8Now.division} ${l8Now.season || d.currentSeason} · ${CLUB.name}, Sunday league football`;
 }
 
 const routes = [

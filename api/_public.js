@@ -25,12 +25,15 @@ const WINDOW_MS = 60 * 1000;
 const MAX_IN_WINDOW = 5;
 const hits = new Map();
 
-export function tooMany(req) {
+/* `max` and `bucket` let the page view counter brake more loosely than the
+   forms without sharing their count: a reader clicking through ten pages is
+   not a flood, and ten page views must not use up a form's five. */
+export function tooMany(req, max = MAX_IN_WINDOW, bucket = '') {
   /* Vercel sets x-forwarded-for; the first entry is the client. Everything
      unidentifiable shares one bucket, which is the safe way round: it
      throttles a caller hiding its address rather than exempting it. */
   const fwd = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
-  const who = fwd || req.headers['x-real-ip'] || 'unknown';
+  const who = bucket + ':' + (fwd || req.headers['x-real-ip'] || 'unknown');
   const now = Date.now();
   const seen = (hits.get(who) || []).filter((t) => now - t < WINDOW_MS);
   seen.push(now);
@@ -40,7 +43,7 @@ export function tooMany(req) {
   if (hits.size > 2000) {
     for (const [k, v] of hits) if (!v.length || now - v[v.length - 1] > WINDOW_MS) hits.delete(k);
   }
-  return seen.length > MAX_IN_WINDOW;
+  return seen.length > max;
 }
 
 /* For text that reaches an HTML email. Ampersand first, or the escapes

@@ -884,7 +884,27 @@ export async function panelChecks() {
       { day: '2026-09-01', path: '/programme.html', kind: 'download', target: '/assets/programme/f.pdf', count: 8 },
       { day: '2026-09-02', path: '/index.html', kind: 'donate', target: 'buy.stripe.com', count: 2 },
     ];
+    /* Towns (011): Kingston nine, Glasgow three, New York one. Journeys: ten
+       reached the home page directly, four of those went on to the squad,
+       one of those to a player, and six came from Instagram to the programme
+       and stopped. So the home page alone ended six, home then squad ended
+       three, and there were sixteen journeys. */
+    const placeRows = [
+      { day: '2026-09-01', country: 'GB', region: 'ENG', city: 'Kingston upon Thames', lat: '51.4', lon: '-0.3', views: 9 },
+      { day: '2026-09-02', country: 'GB', region: 'SCT', city: 'Glasgow', lat: '55.9', lon: '-4.3', views: 3 },
+      { day: '2026-09-02', country: 'US', region: 'NY', city: 'New York', lat: '40.7', lon: '-74.0', views: 1 },
+    ];
+    const trailRows = [
+      { day: '2026-09-01', trail: '>/index.html', views: 10 },
+      { day: '2026-09-01', trail: '>/index.html>/squad.html', views: 4 },
+      { day: '2026-09-02', trail: '>/index.html>/squad.html>/players/a.html', views: 1 },
+      { day: '2026-09-02', trail: 'instagram.com>/programme.html', views: 6 },
+    ];
+    const seenQueries = [];
     const serve = (method, q) => {
+      seenQueries.push(q);
+      if (/page_places\?/.test(q)) return placeRows;
+      if (/page_trails\?/.test(q)) return trailRows;
       if (/page_stats_hourly\?/.test(q)) return hourRows;
       if (/page_routes\?/.test(q)) return routeRows;
       if (/page_tags\?/.test(q)) return tagRows;
@@ -957,10 +977,77 @@ export async function panelChecks() {
       !/<td>insta-story<\/td><td>\/programme/.test(noClick) && !/<td>Downloads<\/td><td><b>8/.test(noClick),
       'the tag and click checks would pass without their tables');
 
+    /* Towns, regions and countries, cell by cell. */
+    check('towns are listed with their views and share',
+      /<td>Kingston upon Thames<\/td><td><b>9<\/b><\/td><td>69%<\/td>/.test(host.html), 'no town row');
+    check('a country code is named and a UK region is named in words',
+      /<td>United Kingdom<\/td><td><b>12<\/b><\/td>/.test(host.html)
+        && /<td>Scotland<\/td><td><b>3<\/b><\/td>/.test(host.html), 'no country or region row');
+    check('the UK close-up marks the towns inside it and the world marks every town',
+      (host.html.match(/class="cpuk__hit"/g) || []).length === 5
+        && /data-tip="Glasgow: 3 views, 23%"/.test(host.html), 'map markers');
+    const tripText = host.body.textContent.replace(/\s+/g, ' ');
+    check('a journey that ended is counted once, less the journeys that went further',
+      /Direct or unknown ?→ ?\/index\.html ?6 journeys/.test(tripText)
+        && /Direct or unknown ?→ ?\/index\.html ?→ ?\/squad\.html ?3 journeys/.test(tripText)
+        && /instagram\.com ?→ ?\/programme\.html ?6 journeys/.test(tripText)
+        && /<b>16<\/b> journeys/.test(host.html), tripText.slice(tripText.indexOf('Journeys through'), tripText.indexOf('Journeys through') + 300));
+    check('the flow draws ribbons between the steps of a journey',
+      (host.html.match(/class="cpfl__link/g) || []).length >= 4, 'no flow');
+    check('the explorer says what came just before and just after a page, leaving included',
+      /<td>Direct or unknown<\/td><td><b>10<\/b><\/td>/.test(host.html)
+        && /<td>Left the site<\/td><td><b>6<\/b><\/td>/.test(host.html)
+        && /<td>\/squad\.html<\/td><td><b>4<\/b><\/td>/.test(host.html), 'no before and after');
+
+    /* PROBE: take towns and journeys away and those checks must fail. */
+    const noTripCtx = await PR.boot({
+      rows: { rest: serve },
+      transform: (src, file) => (file === 'control-stats.js'
+        ? bust(bust(src, 'page_trails?select=', 'page_trailsX?select='), 'page_places?select=', 'page_placesX?select=')
+        : src),
+    });
+    const noTrip = (await PR.openPanel(noTripCtx, 'stats')).html;
+    check('probe: with no towns or journeys those checks notice',
+      !/<td>Kingston upon Thames<\/td>/.test(noTrip) && !/<b>16<\/b> journeys/.test(noTrip),
+      'the town and journey checks would pass without their tables');
+
+    /* The period: yesterday asks the database for yesterday and nothing else,
+       and two chosen dates ask for exactly those. */
+    const ymdOf = (t) => `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
+    const yest = new Date(new Date().toISOString().slice(0, 10) + 'T12:00:00');
+    yest.setDate(yest.getDate() - 1);
+    const yIso = ymdOf(yest);
+    const flush = () => new Promise((r) => setTimeout(r, 5));
+    const yBtn = host.body.querySelector('[data-preset="yesterday"]');
+    check('there is a way to choose yesterday', !!yBtn, 'no yesterday button');
+    if (yBtn) {
+      seenQueries.length = 0;
+      yBtn.click();
+      for (let i = 0; i < 6; i += 1) await flush();
+      check('yesterday asks the database for that one day',
+        seenQueries.some((q) => q.includes(`page_stats?select=`) && q.includes(`day=gte.${yIso}&day=lte.${yIso}`)),
+        seenQueries.slice(0, 2).join(' | '));
+    }
+    const fromIn = host.body.querySelector('[data-from]');
+    const toIn = host.body.querySelector('[data-to]');
+    const apply = host.body.querySelector('[data-apply]');
+    check('any two dates can be chosen', !!(fromIn && toIn && apply), 'no date fields');
+    if (fromIn && toIn && apply) {
+      fromIn.value = '2026-08-15';
+      toIn.value = '2026-08-01';
+      seenQueries.length = 0;
+      apply.click();
+      for (let i = 0; i < 6; i += 1) await flush();
+      check('two chosen dates ask for exactly that period, in order, and the period before it',
+        seenQueries.some((q) => q.includes('day=gte.2026-08-01&day=lte.2026-08-15'))
+          && seenQueries.some((q) => q.includes('day=gte.2026-07-17&day=lt.2026-08-01')),
+        seenQueries.slice(0, 3).join(' | '));
+    }
+
     /* Today, from a row dated today and nothing else. */
     const todayIso = new Date().toISOString().slice(0, 10);
     const withToday = (method, q) => {
-      if (/page_stats_hourly\?|page_routes\?|page_tags\?|page_events\?/.test(q)) return serve(method, q);
+      if (/page_stats_hourly\?|page_routes\?|page_tags\?|page_events\?|page_places\?|page_trails\?/.test(q)) return serve(method, q);
       if (/day=lt\./.test(q)) return prevRows;
       return statRows.concat([{ day: todayIso, path: '/programme.html', zone: 'Europe/London', source: 'instagram.com', device: 'mobile', views: 5, seconds_total: 100, depth_total: 300 }]);
     };
@@ -1137,8 +1224,11 @@ export async function panelChecks() {
     /* PROBE: break the zone map and the country check must go red. Without
        this, "a time zone is reported as a country" passes on a screen that
        prints the raw zone string, which is what it is there to catch. */
+    /* Towns switched off here: the town table names countries through the
+       browser's own list, so "United Kingdom" would appear without the zone
+       map, and this probe is about the zone map alone. */
     const rawCtx = await PR.boot({
-      rows: { rest: serve },
+      rows: { rest: (method, q) => (/page_places\?/.test(q) ? Promise.reject(new Error('404')) : serve(method, q)) },
       transform: (src, file) => (file === 'control-stats.js'
         ? bust(src, /"Europe\/London":"United Kingdom"/, '"Europe/Nowhere":"United Kingdom"')
         : src),
@@ -1314,6 +1404,8 @@ export async function panelChecks() {
         if (/page_routes\?/.test(q)) return routeRows;
         if (/page_tags\?/.test(q)) return tagRows;
         if (/page_events\?/.test(q)) return eventRows;
+        if (/page_places\?/.test(q)) return placeRows;
+        if (/page_trails\?/.test(q)) return trailRows;
         if (/day=lt\./.test(q)) return prevRows;
         return withCat;
       };
@@ -1409,14 +1501,15 @@ export async function panelChecks() {
        on the screen works, and the hour is the only thing missing. Saying
        "nothing yet" there would send somebody looking for traffic when what is
        missing is a file nobody has executed. */
-    const onlyDaily = (method, q) => (/page_stats_hourly\?|page_routes\?|page_tags\?|page_events\?/.test(q)
+    const onlyDaily = (method, q) => (/page_stats_hourly\?|page_routes\?|page_tags\?|page_events\?|page_places\?|page_trails\?/.test(q)
       ? Promise.reject(new Error('404')) : statRows);
     const halfCtx = await PR.boot({ rows: { rest: onlyDaily } });
     const half = (await PR.openPanel(halfCtx, 'stats')).body.textContent.replace(/\s+/g, ' ');
     check('with 007 run and 009 not the screen names the migration that adds the hour and route',
       /009_page_routes\.sql/.test(half) && /24 page views/.test(half)
         && /The route through the site\s*Not switched on yet/.test(half)
-        && /010_page_events\.sql/.test(half),
+        && /010_page_events\.sql/.test(half)
+        && /011_page_places_trails\.sql/.test(half),
       half.slice(0, 200));
   }
 

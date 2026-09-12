@@ -253,6 +253,11 @@
   var tags = null;      /* null means migration 010 has not been run */
   var events = null;    /* the clicks, also 010 */
   var SITE = 'https://www.suesangelsfc.co.uk';
+  var towns = null;     /* null means migration 011 has not been run */
+  var trails = null;    /* whole journeys, also 011 */
+  var FROM = '';        /* a chosen period, both ends included, or '' */
+  var TO = '';
+  var EXPLORE = '';     /* the page the journey explorer is looking at */
   var CAT = null;       /* the site's own page list, or null if unreachable */
   var FOCUS = '';       /* a page being looked at on its own */
   var SORT = 'views';
@@ -304,21 +309,24 @@
 
   function load() {
     if (!CP.state.isAdmin || !CP.rest) return Promise.resolve();
-    var since = DAYS ? '&day=gte.' + daysAgo(DAYS - 1) : '';
+    var R = range();
+    var since = R.n ? '&day=gte.' + R.from + '&day=lte.' + R.to : '';
     /* The period BEFORE this one, so every headline figure can say whether it
        is going up. All time has nothing before it, so it asks for nothing. */
-    var before = DAYS
-      ? '&day=gte.' + daysAgo((DAYS * 2) - 1) + '&day=lt.' + daysAgo(DAYS - 1)
+    var before = R.n
+      ? '&day=gte.' + shiftDay(R.from, -R.n) + '&day=lt.' + R.from
       : '';
     return Promise.all([
       get('page_stats?select=' + COLS + since + '&order=day.desc&limit=20000'),
-      DAYS ? get('page_stats?select=' + COLS + before + '&limit=20000')
+      R.n ? get('page_stats?select=' + COLS + before + '&limit=20000')
         : Promise.resolve([]),
       get('page_stats_hourly?select=day,hour,path,views' + since + '&limit=20000'),
       catalogue(),
       get('page_routes?select=day,came_from,path,views' + since + '&limit=20000'),
       get('page_tags?select=day,tag,path,views' + since + '&limit=20000'),
       get('page_events?select=day,path,kind,target,count' + since + '&limit=20000'),
+      get('page_places?select=day,country,region,city,lat,lon,views' + since + '&limit=20000'),
+      get('page_trails?select=day,trail,views' + since + '&limit=20000'),
     ]).then(function (r) {
       rows = r[0];
       prev = r[1] || [];
@@ -326,6 +334,8 @@
       routes = r[4];
       tags = r[5];
       events = r[6];
+      towns = r[7];
+      trails = r[8];
     });
   }
 
@@ -455,7 +465,10 @@
   }
 
   function tile(big, label, sub, delta) {
-    return '<div class="cpt"><span class="cpt__v">' + esc(big) + '</span>'
+    /* A word, not a number - a town, a page - is set smaller, or "Kingston
+       upon Thames" takes three lines of a figure-sized face. */
+    return '<div class="cpt' + (String(big).length > 9 ? ' cpt--word' : '') + '"><span class="cpt__v">'
+      + esc(big) + '</span>'
       + '<span class="cpt__l">' + esc(label) + '</span>'
       + (delta || '')
       + '<span class="cpt__s">' + esc(sub) + '</span></div>';
@@ -466,9 +479,9 @@
      accent hue. "No figures before this" is said out loud rather than shown
      as 0%, which would read as a collapse rather than as a start. */
   function delta(now, was) {
-    if (!prev || !prev.length || !DAYS) return '';
+    if (!prev || !prev.length || !range().n) return '';
     if (!was) {
-      return '<span class="cpd">Nothing in the ' + esc(String(DAYS))
+      return '<span class="cpd">Nothing in the ' + esc(String(range().n))
         + ' days before</span>';
     }
     var d = Math.round(((now - was) / was) * 100);
@@ -476,7 +489,7 @@
     var mark = d > 0 ? '▲' : (d < 0 ? '▼' : '–');
     return '<span class="cpd cpd--' + (d > 0 ? 'up' : (d < 0 ? 'down' : 'flat')) + '">'
       + '<i aria-hidden="true">' + mark + '</i> ' + esc(word + ' ' + Math.abs(d)
-        + '% on the ' + DAYS + ' days before') + '</span>';
+        + '% on the ' + range().n + ' days before') + '</span>';
   }
 
   function rankTable(head, list, all, label, opts) {
@@ -604,7 +617,7 @@
       + 'role="img" aria-label="' + esc('Views per day from ' + shortDate(days[0].key)
         + ' to ' + shortDate(days[days.length - 1].key) + ', highest ' + max) + '">'
       + grid + marks + ghostPath + '<path class="cpc__area" d="' + area + '"/>'
-      + '<path class="cpc__line" d="' + line + '"/>' + avg + dots + axis + '</svg></div>';
+      + '<path class="cpc__line" pathLength="1" d="' + line + '"/>' + avg + dots + axis + '</svg></div>';
   }
 
   /* Which days the club did something. Only days INSIDE the period, so the
@@ -769,7 +782,7 @@
       + '<div><h4 class="cp-sub">Read less than before</h4>'
       + (down.length ? rowsFor(down) : '<p class="cp-note">Nothing fell.</p>') + '</div>'
       + '</div>'
-      + '<p class="cp-note">Against the ' + esc(String(DAYS)) + ' days before this period, '
+      + '<p class="cp-note">Against the ' + esc(String(range().n)) + ' days before this period, '
       + 'ranked by the size of the change rather than the percentage: one view becoming '
       + 'three is a 200% rise and is not news. ' + esc(String(allNow))
       + ' views in this period.</p>';
@@ -798,8 +811,8 @@
     return sec({
       title: 'Website stats',
       sub: 'Switched on, and nothing has come in yet.',
-      body: '<p class="cp-note">Counting is live and no page views have been recorded in the '
-        + 'last ' + esc(String(DAYS)) + ' days. Views are written when a reader leaves a page, '
+      body: '<p class="cp-note">Counting is live and no page views have been recorded '
+        + esc(periodText()) + '. Views are written when a reader leaves a page, '
         + 'so the first figures appear shortly after the next visitor. If the site has had '
         + 'traffic and this stays empty, the most likely cause is that the last publish '
         + 'predates this feature.</p>',
@@ -810,13 +823,62 @@
     return load().then(function () { draw(host); });
   };
 
+  /* ---- The period ---------------------------------------------------------
+     A rolling window (today, 7, 30, 90 days), a named one (yesterday, this
+     month, last month) or any two dates. Everything on the screen, the period
+     before it included, is asked of range() and nothing else. */
+  function shiftDay(d, n) {
+    var t = new Date(d + 'T12:00:00');
+    t.setDate(t.getDate() + n);
+    return ymd(t);
+  }
+  function range() {
+    if (FROM && TO) return { from: FROM, to: TO, n: Math.max(1, (daysBetween(FROM, TO) || 0) + 1) };
+    if (DAYS) return { from: daysAgo(DAYS - 1), to: iso(new Date()), n: DAYS };
+    return { from: '', to: '', n: 0 };
+  }
+  function periodText() {
+    var R = range();
+    if (!R.n) return 'all time';
+    if (!FROM) return DAYS === 1 ? 'today' : 'in the last ' + R.n + ' days';
+    if (R.from === R.to) return 'on ' + dayName(R.from) + ' ' + shortDate(R.from);
+    return 'between ' + shortDate(R.from) + ' and ' + shortDate(R.to) + ' ' + R.to.slice(0, 4);
+  }
+  function presetOf(key) {
+    var today = iso(new Date());
+    if (key === 'yesterday') return { from: shiftDay(today, -1), to: shiftDay(today, -1) };
+    if (key === 'month') return { from: today.slice(0, 8) + '01', to: today };
+    var end = shiftDay(today.slice(0, 8) + '01', -1);
+    return { from: end.slice(0, 8) + '01', to: end };
+  }
+
   function periodBar() {
-    return [[7, '7 days'], [30, '30 days'], [90, '90 days'], [0, 'All time']]
-      .map(function (p) {
-        return '<button class="btn btn--sm ' + (DAYS === p[0] ? 'btn--primary' : 'btn--ghost')
-          + '" data-days="' + p[0] + '">' + esc(p[1]) + '</button>';
-      }).join(' ')
-      + ' <button class="btn btn--sm btn--ghost" data-csv="1">Download as CSV</button>';
+    var R = range();
+    var today = iso(new Date());
+    var cls = function (on) { return 'btn btn--sm ' + (on ? 'btn--primary' : 'btn--ghost'); };
+    var roll1 = function (n, label) {
+      return '<button type="button" class="' + cls(!FROM && DAYS === n) + '" data-days="' + n + '">'
+        + esc(label) + '</button>';
+    };
+    var named = function (key, label) {
+      var p = presetOf(key);
+      return '<button type="button" class="' + cls(FROM === p.from && TO === p.to) + '" data-preset="'
+        + key + '">' + esc(label) + '</button>';
+    };
+    return '<div class="cpst__period">'
+      + roll1(1, 'Today') + named('yesterday', 'Yesterday') + roll1(7, '7 days') + roll1(30, '30 days')
+      + roll1(90, '90 days') + named('month', 'This month') + named('lastmonth', 'Last month')
+      + roll1(0, 'All time')
+      + '<span class="cpst__custom"><label class="cpst__date"><span>From</span>'
+      + '<input type="date" class="input input--sm" data-from max="' + today + '" value="'
+      + esc(R.from) + '"></label><label class="cpst__date"><span>To</span>'
+      + '<input type="date" class="input input--sm" data-to max="' + today + '" value="'
+      + esc(R.to) + '"></label><button type="button" class="' + cls(!!FROM && !(
+        [presetOf('yesterday'), presetOf('month'), presetOf('lastmonth')].some(function (p) {
+          return p.from === FROM && p.to === TO;
+        }))) + '" data-apply>Show these dates</button></span>'
+      + '<button type="button" class="btn btn--sm btn--ghost" data-csv="1">Download as CSV</button>'
+      + '</div>';
   }
 
   function periodWrap(inner) {
@@ -903,14 +965,14 @@
           + dayTable(days, busiest, v),
       })
         + trendsSection(v, days)
-        + (DAYS && pv.length
+        + (range().n && pv.length
           ? sec({
             title: 'What moved',
             sub: 'The pages that rose and fell most against the period before.',
             body: movers(pages, roll(pv, function (r) { return r.path; }), all),
           })
           : ''))
-      + chapter(2, sec({
+      + chapter(2, placesSection() + sec({
         title: 'Where in the world',
         sub: 'Worked out from the reader’s device time zone.',
         body: worldMap(places, all)
@@ -946,6 +1008,7 @@
           + 'site is not counted as a source.</p>',
       })
         + routeSection()
+        + journeySection()
         + tagSection())
       + chapter(4, sec({
         title: 'What gets read',
@@ -984,7 +1047,7 @@
   /* The previous period laid over this one, day for day. Only when the two are
      the same length, which is the only case where the comparison is honest. */
   function ghostFor(days, pv) {
-    if (!DAYS || !pv.length || days.length < 2) return null;
+    if (!range().n || !pv.length || days.length < 2) return null;
     var byDay = roll(pv, function (r) { return r.day; })
       .sort(function (a, b) { return a.key < b.key ? -1 : 1; });
     if (byDay.length !== days.length) return null;
@@ -1010,8 +1073,8 @@
 
   function headline(all, everything, pages, places, days, secs, deep, busiest, wasAll,
     wasSecs, wasPlaces) {
-    var span = DAYS
-      ? 'in the last ' + DAYS + ' days'
+    var span = range().n
+      ? periodText()
       : (days.length ? 'between ' + shortDate(days[0].key) + ' and '
         + shortDate(days[days.length - 1].key) : 'all time');
     return sec({
@@ -1028,11 +1091,13 @@
       body: filterBar()
         + '<div class="cpt-grid">'
         + tile(String(all), 'Page views', pages.length + ' pages opened',
-          delta(all, wasAll))
+          delta(all, wasAll) + bigSpark(days.map(function (d) { return d.views; })))
         + tile(dur(secs / all), 'Average on a page', 'across every view',
-          delta(secs / all, wasAll ? wasSecs / wasAll : 0))
+          delta(secs / all, wasAll ? wasSecs / wasAll : 0)
+            + bigSpark(days.map(function (d) { return d.seconds / (d.views || 1); })))
         + tile(Math.round(deep / all) + '%', 'Average scrolled',
-          'how far down people got')
+          'how far down people got',
+          bigSpark(days.map(function (d) { return d.depth / (d.views || 1); })))
         + tile(String(places.length), 'Places', 'countries and regions',
           delta(places.length, wasPlaces))
         + tile(busiest ? String(busiest.views) : '0', 'Busiest day',
@@ -1315,7 +1380,8 @@
     var placesToday = roll(mine, function (r) { return countryOf(r.zone); }).length;
     return sec({
       title: 'Today at a glance',
-      sub: '<b>' + esc(String(n)) + '</b> page view' + (n === 1 ? '' : 's') + ' so far today, from '
+      sub: '<i class="cpst__live" aria-hidden="true"></i><b>' + esc(String(n)) + '</b> page view'
+        + (n === 1 ? '' : 's') + ' so far today, from '
         + '<b>' + esc(String(placesToday)) + '</b> place' + (placesToday === 1 ? '' : 's') + '.',
       body: '<div class="cpt-grid cpst__today">'
         + tile(String(n), 'Views today', pagesToday.length + ' pages opened')
@@ -1343,8 +1409,9 @@
      average Sunday is the Sundays' views over the number of Sundays, and a
      quiet Sunday that wrote no rows is still a Sunday. */
   function calendar(days) {
-    var from = DAYS ? daysAgo(DAYS - 1) : (days[0] && days[0].key);
-    var to = DAYS ? iso(new Date()) : (days.length && days[days.length - 1].key);
+    var R = range();
+    var from = R.n ? R.from : (days[0] && days[0].key);
+    var to = R.n ? R.to : (days.length && days[days.length - 1].key);
     var out = [];
     if (!from || !to) return out;
     var t = new Date(from + 'T12:00:00');
@@ -1376,7 +1443,8 @@
         var h = (c.views / max) * (H - T - B);
         var x = L + i * bw + bw * 0.14;
         var mid = (x + bw * 0.36).toFixed(1);
-        return '<rect class="cpcol__b' + (c.views === max ? ' is-top' : '') + '" x="' + x.toFixed(1)
+        return '<rect class="cpcol__b' + (c.views === max ? ' is-top' : '') + '" style="--i:' + i
+          + '" data-tip="' + esc(c.title || (c.label + ': ' + c.views)) + '" x="' + x.toFixed(1)
           + '" y="' + (H - B - Math.max(1, h)).toFixed(1) + '" width="' + (bw * 0.72).toFixed(1)
           + '" height="' + Math.max(1, h).toFixed(1) + '" rx="3"><title>'
           + esc(c.title || (c.label + ': ' + c.views)) + '</title></rect>'
@@ -1673,6 +1741,11 @@
     (hours || []).forEach(function (r) { byHour[r.hour] = (byHour[r.hour] || 0) + Number(r.views || 0); });
     var peak = Object.keys(byHour).sort(function (a, b) { return byHour[b] - byHour[a]; })[0];
     var narrowed = Object.keys(FILT).map(function (k) { return FILT[k]; }).filter(Boolean);
+    var townRows = (towns || []).filter(function (r) { return r.country; });
+    var townsN = total(townRows);
+    var trips = trails ? journeyData().filter(function (t) { return t.views > 0; })
+      .sort(function (a, b) { return b.views - a.views; }) : [];
+    var tripN = total(trips);
     return '<div class="cprep" role="dialog" aria-modal="true" aria-labelledby="cprep-h">'
       + '<div class="cprep__bar"><button type="button" class="btn btn--sm btn--primary" '
       + 'data-report-print>Print or save as PDF</button><button type="button" '
@@ -1701,6 +1774,16 @@
       + '<div class="cprep__two"><div><h3 class="cprep__h">Top countries and regions</h3>'
       + rlist(places.slice(0, 6), all) + '</div><div><h3 class="cprep__h">Most read</h3>'
       + rlist(pagesRead.slice(0, 6), all) + '</div></div>'
+      + (townsN ? '<div class="cprep__two"><div><h3 class="cprep__h">Across the UK and Ireland</h3>'
+        + ukMap(townRows.filter(isUK), townsN) + '</div><div><h3 class="cprep__h">Top towns and cities</h3>'
+        + rlist(roll(townRows, townName).slice(0, 10), townsN) + '</div></div>' : '')
+      + (tripN ? '<h3 class="cprep__h">How readers move through the site</h3><div class="cprep__kpis">'
+        + kpi(tripN, 'journeys through the site')
+        + kpi(Math.round((trips.reduce(function (n, t) { return n + t.views * t.pages.length; }, 0) / tripN) * 10) / 10,
+          'pages read in a journey')
+        + kpi(pct(total(trips.filter(function (t) { return t.pages.length > 1; })), tripN) + '%',
+          'went on to a second page')
+        + '</div>' + journeyList(trips.slice(0, 5), tripN) : '')
       + (clicks.length ? '<h3 class="cprep__h">What readers did</h3><div class="cprep__kpis">'
         + clicks.slice(0, 6).map(function (c) { return kpi(c.views, c.key.toLowerCase()); }).join('')
         + '</div>' : '')
@@ -1730,6 +1813,437 @@
     el.querySelector('[data-report-print]').addEventListener('click', function () { window.print(); });
     el.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
     if (shut.focus) shut.focus();
+  }
+
+  /* ---- A figure's own shape, under the figure ---------------------------- */
+  function bigSpark(series) {
+    if (!series || series.length < 3) return '';
+    var W = 120, H = 30;
+    var max = Math.max.apply(null, series) || 1;
+    var step = W / (series.length - 1);
+    var pts = series.map(function (v, i) {
+      return (i * step).toFixed(1) + ' ' + (H - 2 - ((v || 0) / max) * (H - 5)).toFixed(1);
+    });
+    return '<svg class="cpt__spark" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" '
+      + 'aria-hidden="true" focusable="false"><path class="cpt__sparka" d="M0 ' + H + 'L'
+      + pts.join('L') + 'L' + W + ' ' + H + 'Z"/><path class="cpt__sparkl" d="M' + pts.join('L')
+      + '"/></svg>';
+  }
+
+  /* ==========================================================================
+     WHERE THEY ARE, TO THE TOWN (migrations/011)
+
+     Vercel works out an approximate place from the connection and /api/view
+     passes it to the database; nothing that could identify the reader is
+     kept. A town's position is rounded to a tenth of a degree, which is the
+     scale of a town, and the UK close-up is its own dot grid: 100 by 149
+     cells rasterised from Natural Earth's 1:50m land outline, because the
+     world grid gives Great Britain about six dots.
+     ========================================================================== */
+  var UK = {"cols":100,"rows":149,"W0":-11,"N0":61,"dLon":0.132414,"dLat":0.075,"grid":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAKAAAAAAAAAAAAAAABgAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAGAAAAAAAAAAAAAAAB4AAAAAAAAAAAAAAADgAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAABQAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAAAAAAAAAAAABg/wAAAAAAAAAAAAAH//AAAAAAAAAAAAMAf/8AAAAAAAAAAABwB//gAAAAAAAAAAAPAH/8AAAAAAAAAAAD4B//gAAAAAAAAAAAPAP/4AAAAAAAAAAAA+A//AAAAAAAAAAAADwB/4AAAAAAAAAAAAEAH/gAAAAAAAAAAAAgD//AAAAAAAAAAAAAAP/4AAAAAAAAAAAAgQ//D/8AAAAAAAAAGDD/9//4AAAAAAAAAAeP////wAAAAAAAAAD5////+AAAAAAAAAEHj////4AAAAAAAAAQGH////AAAAAAAAABAff///8AAAAAAAAAEAJ////gAAAAAAAAAAAH///+AAAAAAAAACAQ////4AAAAAAAAAAAH////AAAAAAAAAAAAP///8AAAAAAAAAAAH////gAAAAAAAAAAAP///8AAAAAAAAAAAT9///wAAAAAAAAAAAMH//+AAAAAAAAAAAAc///gAAAAAAAAAAADj//7AAAAAAAAAAAAcf//+AAAAAAAAAAAAB///4AAAAAAAAAAAAHf/8AAAAAAAAAAAABbf/gAAAAAAAAAAAAJd/wcAAAAAAAAAAAAlH//8AAAAAAAAAAAcQ///4AAAAAAAAAADhD///wAAAAAAAAAACFP///gAAAAAAAAAAI8f///AAAAAAAAAAADY///+AAAAAAAAAAAJj///4AAAAAAAAAAAgf///gAAAAAAAACACB///+AAAAAAAAA8AAP///8AAAAAAAA/z4A////wAAAAAAAP2/wH////AAAAAAAA///Af///8AAAAAAAD//8D/+P/4AAAAAAAP//4P/j//gAAAAAAB///wXcf/+AAAAAAAf///BAB//8AAAAAAB///+AAP//wAAAAAAAf//4AA///wAAAAAAB///QAD///wAAAAAAf//8AAP///gAAAAAD///4BAf//+AAAAB4P///gMB///8AAAAf////4AwD///4AAAA/////gGAE///wAAAB////0AAAH///AAAA3///+AAAAf//8AAAB////4AAAD///wAAAAf///wAAAP///AAAAH////AAAA///+AAAA////8AAAB///oAAAB////wAAAP///AAAAf////gAAA///+AAAB////+AAAD///8AAAB////4AGAX///4AAAB////gAcPv///gAAAEf//+AB3////+AAAAB///4AD/////8AAAAf///gAP/////gAAAD///+AA/////8AAAAP///8AH/////x8AAA////gAj/////P8AAH///+AAP//////4AA+///wAAf//////wAH3///AAD///////AAH///8AAP//////8AA////wAAf//////wAP///+AAD///////AAf///wAAP//////8AN////gAB///////gB////AAAP//////+AA///gAAD///////4AH//8AAA////////AA///AAAP///////wAH//YAAB////////gAd/8AAAD///////8AAP/wAAAPP/////+AABn8AAAAYP/v///8AAA/gAAAABv9////wAAGgAAAAAAfP///4AAAAAAAAAAA4////wAAAAAAAAAAAH////3AAAAAAAAAAA/////8AAAAAAAAAHn/////wAAAAAAAAB//////+AAAAAAAAAH//////gAAAAAAAAB//////+BwAAAAAAAH//////gPAAAAAAAAf///n/4B8AAAAAAAD///9AAAHwAAAAAAAf/h8eAAAfAAAAAAAB/4CQQAAB8AAAAAAAP/gAAAAAHwAAAAAAB/+AAAAAAfAAAAAAAP7wAAAAAB8AAAAAAA8HAAAAAAHwAAAAAAPAIAAAAAAfAAAAAAB4AAAAAAAD8AAAAAAJgAAAAAAAPwAAAAAAAAAAAAAAB/AAAAAAAAAAAAAAAf8AAAAAAAAAAAAAAP/w"};
+  var UKR = { ENG: 'England', SCT: 'Scotland', WLS: 'Wales', NIR: 'Northern Ireland' };
+  var DN = null;
+  function countryName(code) {
+    try {
+      DN = DN || new Intl.DisplayNames(['en-GB'], { type: 'region' });
+      return DN.of(String(code)) || String(code);
+    } catch (e) { return String(code); }
+  }
+  function regionName(r) {
+    if (r.country === 'GB' && UKR[r.region]) return UKR[r.region];
+    return (r.region ? r.region + ', ' : '') + countryName(r.country);
+  }
+  function townName(r) {
+    return (r.city || 'Somewhere') + (r.country === 'GB' ? '' : ', ' + countryName(r.country));
+  }
+  function isUK(r) { return /^(GB|IE|IM|JE|GG)$/.test(r.country); }
+
+  function townPoints(list) {
+    var by = {};
+    list.forEach(function (r) {
+      if (r.lat == null || r.lon == null || r.lat === '' || r.lon === '') return;
+      var k = townName(r);
+      var t = by[k] || (by[k] = { key: k, lat: Number(r.lat), lon: Number(r.lon), views: 0 });
+      t.views += Number(r.views || 0);
+    });
+    return Object.keys(by).map(function (k) { return by[k]; })
+      .filter(function (t) { return isFinite(t.lat) && isFinite(t.lon); })
+      .sort(function (a, b) { return b.views - a.views; });
+  }
+
+  var ukPath = null;
+  function ukLand() {
+    if (ukPath !== null) return ukPath;
+    ukPath = '';
+    if (typeof atob !== 'function') return ukPath;
+    try {
+      var raw = atob(UK.grid);
+      var d = [];
+      for (var i = 0; i < UK.cols * UK.rows; i++) {
+        if (!(raw.charCodeAt(i >> 3) & (128 >> (i & 7)))) continue;
+        d.push('M' + ((i % UK.cols) + 0.5) + ' ' + (Math.floor(i / UK.cols) + 0.5) + 'h.01');
+      }
+      ukPath = d.join('');
+    } catch (e) { ukPath = ''; }
+    return ukPath;
+  }
+
+  function bubbles(pts, all, at, size, labels) {
+    var big = pts.length ? pts[0].views : 1;
+    /* Labels go to the biggest towns first and are skipped where they would
+       land on one already placed: the towns around London are a few map
+       cells apart, and five names on top of each other is no names at all.
+       On the eastern side a label sits to the left of its marker so it stays
+       on the map. */
+    var placed = [];
+    var label = function (p, xy, r) {
+      var name = p.key.split(',')[0];
+      var w = name.length * 1.95, h = 4.4;
+      var left = xy[0] > UK.cols * 0.62;
+      var x = left ? xy[0] - r - 1.2 - w : xy[0] + r + 1.2;
+      var y = xy[1] - h / 2;
+      if (placed.some(function (b) {
+        return x < b[0] + b[2] && x + w > b[0] && y < b[1] + b[3] && y + h > b[1];
+      })) return '';
+      placed.push([x, y, w, h]);
+      return '<text class="cpuk__lb" x="' + (left ? xy[0] - r - 1.2 : xy[0] + r + 1.2).toFixed(1)
+        + '" y="' + (xy[1] + 1.3).toFixed(1) + '" text-anchor="' + (left ? 'end' : 'start') + '">'
+        + esc(name) + '</text>';
+    };
+    return pts.map(function (p, i) {
+      var xy = at(p);
+      var r = size[0] + Math.sqrt(p.views / big) * size[1];
+      var tip = p.key + ': ' + p.views + ' view' + (p.views === 1 ? '' : 's') + ', ' + pct(p.views, all) + '%';
+      return (i < 3 ? '<circle class="cpuk__pulse" cx="' + xy[0].toFixed(1) + '" cy="' + xy[1].toFixed(1)
+        + '" r="' + r.toFixed(2) + '"/>' : '')
+        + '<circle class="cpuk__hit" style="--i:' + i + '" cx="' + xy[0].toFixed(1) + '" cy="'
+        + xy[1].toFixed(1) + '" r="' + r.toFixed(2) + '" data-tip="' + esc(tip) + '"/>'
+        + (i < labels ? label(p, xy, r) : '');
+    }).join('');
+  }
+
+  function ukMap(list, all) {
+    var dots = ukLand();
+    if (!dots) return '';
+    var pts = townPoints(list).filter(function (p) {
+      var x = (p.lon - UK.W0) / UK.dLon, y = (UK.N0 - p.lat) / UK.dLat;
+      return x >= 0 && x <= UK.cols && y >= 0 && y <= UK.rows;
+    }).slice(0, 40);
+    return '<figure class="cpuk"><figcaption class="cpuk__t">The UK and Ireland</figcaption>'
+      + '<svg class="cpuk__svg" viewBox="0 0 ' + UK.cols + ' ' + UK.rows + '" role="img" aria-label="'
+      + esc('Map of the UK and Ireland with a marker on each town readers came from. '
+        + pts.slice(0, 8).map(function (p) { return p.key + ', ' + p.views; }).join('. '))
+      + '"><path class="cpuk__land" d="' + dots + '"/>'
+      + bubbles(pts, all, function (p) {
+        return [(p.lon - UK.W0) / UK.dLon, (UK.N0 - p.lat) / UK.dLat];
+      }, [1.4, 5.6], 6) + '</svg></figure>';
+  }
+
+  function townWorld(list, all) {
+    var dots = land();
+    if (!dots) return '';
+    var pts = townPoints(list).slice(0, 60);
+    return '<figure class="cpuk cpuk--world"><figcaption class="cpuk__t">Everywhere</figcaption>'
+      + '<svg class="cpuk__svg" viewBox="0 0 ' + MAP_W + ' ' + MAP_H + '" role="img" aria-label="'
+      + esc('World map with a marker on each town readers came from. '
+        + pts.slice(0, 8).map(function (p) { return p.key + ', ' + p.views; }).join('. '))
+      + '"><path class="cpm__land" d="' + dots + '"/>'
+      + bubbles(pts, all, function (p) { return project(p.lon, p.lat); }, [0.7, 3.4], 0)
+      + '</svg></figure>';
+  }
+
+  function placesSection() {
+    var title = 'Where they are';
+    if (towns === null) {
+      return sec({
+        title: title,
+        sub: 'Not switched on yet.',
+        body: '<p class="cp-note">Towns and cities are recorded once '
+          + '<b>migrations/011_page_places_trails.sql</b> has been run on the database. Until then '
+          + '<b>Where in the world</b> below works it out from the device’s time zone.</p>',
+      });
+    }
+    var mine = towns.filter(function (r) {
+      return r.country && (!FILT.country || countryName(r.country) === FILT.country);
+    });
+    var n = total(mine);
+    if (!n) {
+      return sec({
+        title: title,
+        sub: 'Switched on, and nothing has come in yet.',
+        body: '<p class="cp-note">Places fill in from the next visitor onwards.</p>',
+      });
+    }
+    var byTown = roll(mine, townName);
+    var byRegion = roll(mine, regionName);
+    var byCountry = roll(mine, function (r) { return countryName(r.country); });
+    var home = total(mine.filter(isUK));
+    return sec({
+      title: title,
+      sub: '<b>' + esc(String(n)) + '</b> views from <b>' + esc(String(byTown.length))
+        + '</b> town' + (byTown.length === 1 ? '' : 's') + ' and cities in <b>'
+        + esc(String(byCountry.length)) + '</b> countr' + (byCountry.length === 1 ? 'y' : 'ies') + '.',
+      body: '<div class="cpt-grid">'
+        + tile(byTown[0].key, 'Top town or city', pct(byTown[0].views, n) + '% of views')
+        + tile(String(byTown.length), 'Towns and cities', 'readers came from')
+        + tile(pct(home, n) + '%', 'From the UK and Ireland', home + ' views')
+        + tile(String(byCountry.length), 'Countries', byCountry[0].key + ' first')
+        + '</div><div class="cpst__maps">' + ukMap(mine.filter(isUK), n) + townWorld(mine, n) + '</div>'
+        + '<div class="cp3"><div><h4 class="cp-sub">Towns and cities</h4>'
+        + countTable('Town or city', byTown, '') + '</div><div><h4 class="cp-sub">Regions</h4>'
+        + countTable('Region', byRegion, '') + '</div><div><h4 class="cp-sub">Countries</h4>'
+        + countTable('Country', byCountry, '') + '</div></div>'
+        + '<p class="cp-note">Worked out by the website’s host from the connection, the way every '
+        + 'website can, and passed on as a town. The connection’s address is never stored or even '
+        + 'seen by the database. A phone on mobile data is often placed in the nearest big city, '
+        + 'and a VPN places somebody wherever it is, so read a small town as roughly there.</p>',
+    });
+  }
+
+  /* ==========================================================================
+     JOURNEYS (migrations/011)
+
+     Every view sends the journey so far, so a stored row is "this many views
+     were reached by exactly this route". A journey ENDED on a route when it
+     did not go a step further: its count less the counts of the routes one
+     page longer. A route of eight pages is where the beacon stops, so it
+     reads as eight or more.
+     ========================================================================== */
+  var LEFT = 'Left the site';
+  function sourceLabel(f) { return !f ? 'Direct or unknown' : (f === 'new-tab' ? 'A new tab' : f); }
+
+  function journeyData() {
+    var count = {};
+    (trails || []).forEach(function (r) {
+      if (r.trail) count[r.trail] = (count[r.trail] || 0) + Number(r.views || 0);
+    });
+    var kids = {};
+    Object.keys(count).forEach(function (k) {
+      var parent = k.slice(0, k.lastIndexOf('>'));
+      if (parent.indexOf('>') !== -1) kids[parent] = (kids[parent] || 0) + count[k];
+    });
+    return Object.keys(count).map(function (k) {
+      var seg = k.split('>');
+      return { key: k, from: seg[0], pages: seg.slice(1), reached: count[k],
+        views: Math.max(0, count[k] - (kids[k] || 0)) };
+    });
+  }
+
+  function chips(t) {
+    return '<span class="cpj__path"><span class="cpj__chip cpj__chip--from">' + esc(sourceLabel(t.from))
+      + '</span>' + t.pages.map(function (p) {
+        return '<i class="cpj__arrow" aria-hidden="true">→</i><span class="cpj__chip">'
+          + esc(pageLabel(p)) + '</span>';
+      }).join('') + '</span>';
+  }
+
+  function journeyList(list, of) {
+    var top = list.length ? list[0].views : 1;
+    return '<ol class="cpj">' + list.map(function (t) {
+      return '<li class="cpj__row">' + chips(t) + '<span class="cpj__n"><b>' + esc(String(t.views))
+        + '</b> journey' + (t.views === 1 ? '' : 's') + ' · ' + esc(String(pct(t.views, of))) + '%</span>'
+        + '<span class="cpj__bar">' + bar(t.views, top) + '</span></li>';
+    }).join('') + '</ol>';
+  }
+
+  /* How people move: where they came from, their first, second and third
+     page, and at every step the ones who left. A flow diagram in its own
+     coordinates, ribbons as filled curves; the six biggest in each column are
+     named and the rest are one ribbon, because forty thin ones read as grass. */
+  function flow(items) {
+    var W = 980, H = 460, NW = 12, GAP = 10, TOP = 30;
+    var raw = [];
+    items.forEach(function (t) {
+      var n = t.pages.length;
+      if (n === 1) {
+        raw.push([0, sourceLabel(t.from), pageLabel(t.pages[0]), t.reached]);
+        if (t.views) raw.push([1, pageLabel(t.pages[0]), LEFT, t.views]);
+      } else if (n === 2) {
+        raw.push([1, pageLabel(t.pages[0]), pageLabel(t.pages[1]), t.reached]);
+        if (t.views) raw.push([2, pageLabel(t.pages[1]), LEFT, t.views]);
+      } else if (n === 3) {
+        raw.push([2, pageLabel(t.pages[1]), pageLabel(t.pages[2]), t.reached]);
+      }
+    });
+    if (!raw.length) return '';
+    var size = [{}, {}, {}, {}];
+    raw.forEach(function (l) {
+      size[l[0]][l[1]] = (size[l[0]][l[1]] || 0) + l[3];
+      size[l[0] + 1][l[2]] = (size[l[0] + 1][l[2]] || 0) + l[3];
+    });
+    var keep = size.map(function (col) {
+      var set = {};
+      Object.keys(col).filter(function (k) { return k !== LEFT; })
+        .sort(function (a, b) { return col[b] - col[a]; }).slice(0, 6)
+        .forEach(function (k) { set[k] = 1; });
+      set[LEFT] = 1;
+      return set;
+    });
+    var named = function (c, k) { return keep[c][k] ? k : (c ? 'Other pages' : 'Other places'); };
+    var agg = {};
+    raw.forEach(function (l) {
+      var k = JSON.stringify([l[0], named(l[0], l[1]), named(l[0] + 1, l[2])]);
+      agg[k] = (agg[k] || 0) + l[3];
+    });
+    var links = Object.keys(agg).map(function (k) {
+      var p = JSON.parse(k);
+      return { c: p[0], a: p[1], b: p[2], v: agg[k] };
+    });
+    var cols = [[], [], [], []], at = [{}, {}, {}, {}];
+    var node = function (c, name) {
+      if (!at[c][name]) { at[c][name] = { name: name, i: 0, o: 0 }; cols[c].push(at[c][name]); }
+      return at[c][name];
+    };
+    links.forEach(function (l) { node(l.c, l.a).o += l.v; node(l.c + 1, l.b).i += l.v; });
+    var scale = Infinity;
+    cols.forEach(function (col) {
+      col.forEach(function (nd) { nd.v = Math.max(nd.i, nd.o); });
+      col.sort(function (a, b) { return ((a.name === LEFT) - (b.name === LEFT)) || (b.v - a.v); });
+      var sumV = col.reduce(function (n, nd) { return n + nd.v; }, 0);
+      if (sumV) scale = Math.min(scale, (H - TOP - GAP * (col.length - 1)) / sumV);
+    });
+    var X = [0, (W - NW) / 3, ((W - NW) * 2) / 3, W - NW];
+    cols.forEach(function (col, c) {
+      var y = TOP;
+      col.forEach(function (nd) { nd.y = y; nd.h = Math.max(1.5, nd.v * scale); nd.oy = y; nd.iy = y; y += nd.h + GAP; nd.x = X[c]; });
+    });
+    links.sort(function (p, q) {
+      return p.c - q.c || at[p.c][p.a].y - at[q.c][q.a].y || at[p.c + 1][p.b].y - at[q.c + 1][q.b].y;
+    });
+    var ribbons = links.map(function (l, i) {
+      var s0 = at[l.c][l.a], t0 = at[l.c + 1][l.b];
+      var h = l.v * scale;
+      var x1 = s0.x + NW, x2 = t0.x, y1 = s0.oy, y2 = t0.iy, mx = (x1 + x2) / 2;
+      s0.oy += h;
+      t0.iy += h;
+      var f = function (n) { return n.toFixed(1); };
+      return '<path class="cpfl__link' + (l.b === LEFT ? ' is-left' : '') + '" style="--i:' + i + '" d="M'
+        + f(x1) + ' ' + f(y1) + 'C' + f(mx) + ' ' + f(y1) + ' ' + f(mx) + ' ' + f(y2) + ' ' + f(x2) + ' ' + f(y2)
+        + 'L' + f(x2) + ' ' + f(y2 + h) + 'C' + f(mx) + ' ' + f(y2 + h) + ' ' + f(mx) + ' ' + f(y1 + h) + ' '
+        + f(x1) + ' ' + f(y1 + h) + 'Z" data-tip="' + esc(l.a + ' → ' + l.b + ': ' + l.v + ' view'
+          + (l.v === 1 ? '' : 's')) + '"/>';
+    }).join('');
+    var heads = ['Arrived from', 'First page', 'Second page', 'Third page'];
+    var boxes = cols.map(function (col, c) {
+      return '<text class="cpfl__h" x="' + (c === 3 ? W : X[c]) + '" y="14" text-anchor="'
+        + (c === 3 ? 'end' : 'start') + '">' + esc(heads[c]) + '</text>'
+        + col.map(function (nd) {
+          return '<rect class="cpfl__node' + (nd.name === LEFT ? ' is-left' : '') + '" x="' + nd.x.toFixed(1)
+            + '" y="' + nd.y.toFixed(1) + '" width="' + NW + '" height="' + nd.h.toFixed(1) + '" rx="2" data-tip="'
+            + esc(nd.name + ': ' + nd.v) + '"/>'
+            + (nd.h >= 13 ? '<text class="cpfl__lb" x="' + (c === 3 ? nd.x - 6 : nd.x + NW + 6).toFixed(1)
+              + '" y="' + (nd.y + nd.h / 2 + 4).toFixed(1) + '" text-anchor="' + (c === 3 ? 'end' : 'start') + '">'
+              + esc(nd.name + ' · ' + nd.v) + '</text>' : '');
+        }).join('');
+    }).join('');
+    return '<div class="cpfl"><svg class="cpfl__svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" '
+      + 'aria-label="' + esc('How readers move through the site: '
+        + links.slice(0, 8).map(function (l) { return l.a + ' to ' + l.b + ', ' + l.v; }).join('. '))
+      + '">' + ribbons + boxes + '</svg></div>';
+  }
+
+  function explorer(items) {
+    var reach = {};
+    items.forEach(function (t) {
+      var last = t.pages[t.pages.length - 1];
+      reach[last] = (reach[last] || 0) + t.reached;
+    });
+    var opts = Object.keys(reach).sort(function (a, b) { return reach[b] - reach[a]; });
+    if (!opts.length) return '';
+    var page = reach[EXPLORE] ? EXPLORE : opts[0];
+    var before = {}, after = {}, left = 0;
+    items.forEach(function (t) {
+      var n = t.pages.length;
+      if (t.pages[n - 1] === page) {
+        var came = n > 1 ? pageLabel(t.pages[n - 2]) : sourceLabel(t.from);
+        before[came] = (before[came] || 0) + t.reached;
+        left += t.views;
+      }
+      if (n > 1 && t.pages[n - 2] === page) {
+        var next = pageLabel(t.pages[n - 1]);
+        after[next] = (after[next] || 0) + t.reached;
+      }
+    });
+    if (left) after[LEFT] = left;
+    var listOf = function (o) {
+      return Object.keys(o).map(function (k) { return { key: k, views: o[k] }; })
+        .sort(function (a, b) { return b.views - a.views; });
+    };
+    var through = items.filter(function (t) { return t.views && t.pages.indexOf(page) !== -1; })
+      .sort(function (a, b) { return b.views - a.views; });
+    return '<label class="cpf__one cpst__explore"><span class="cpf__l">Pick any page</span>'
+      + '<select class="select input--sm" data-explore>' + opts.slice(0, 250).map(function (p) {
+        return '<option value="' + esc(p) + '"' + (p === page ? ' selected' : '') + '>'
+          + esc(pageLabel(p) + ' (' + reach[p] + ')') + '</option>';
+      }).join('') + '</select></label>'
+      + '<div class="cp2"><div><h4 class="cp-sub">Just before ' + esc(pageLabel(page)) + '</h4>'
+      + countTable('Came from', listOf(before), 'Nothing recorded.') + '</div>'
+      + '<div><h4 class="cp-sub">Just after</h4>'
+      + countTable('Went to', listOf(after), 'Nothing recorded.') + '</div></div>'
+      + (through.length ? '<h4 class="cp-sub">Complete journeys through ' + esc(pageLabel(page)) + '</h4>'
+        + journeyList(through.slice(0, 10), total(through)) : '');
+  }
+
+  function journeySection() {
+    var title = 'Journeys through the site';
+    if (trails === null) {
+      return sec({
+        title: title,
+        sub: 'Not switched on yet.',
+        body: '<p class="cp-note">Whole journeys, page after page, are recorded once '
+          + '<b>migrations/011_page_places_trails.sql</b> has been run on the database.</p>',
+      });
+    }
+    var items = journeyData().filter(function (t) {
+      if (FILT.source && sourceLabel(t.from) !== FILT.source) return false;
+      return !FILT.area || t.pages.some(function (p) { return areaOf(p) === FILT.area; });
+    });
+    var ended = items.filter(function (t) { return t.views > 0; })
+      .sort(function (a, b) { return b.views - a.views; });
+    var journeys = total(ended);
+    if (!journeys) {
+      return sec({
+        title: title,
+        sub: 'Switched on, and nothing has come in yet.',
+        body: '<p class="cp-note">Journeys fill in from the next visitor onwards.</p>',
+      });
+    }
+    var pagesRead = ended.reduce(function (n, t) { return n + t.views * t.pages.length; }, 0);
+    var bounced = total(ended.filter(function (t) { return t.pages.length === 1; }));
+    var longest = ended.reduce(function (n, t) { return Math.max(n, t.pages.length); }, 0);
+    var firsts = roll(ended.map(function (t) { return { k: pageLabel(t.pages[0]), views: t.views }; }),
+      function (r) { return r.k; });
+    var lengths = [1, 2, 3, 4, 5, 6, 7, 8].map(function (k) {
+      var v = total(ended.filter(function (t) { return k === 8 ? t.pages.length >= 8 : t.pages.length === k; }));
+      return { label: k === 8 ? '8+' : String(k), views: v,
+        title: (k === 8 ? '8 or more pages' : k + ' page' + (k === 1 ? '' : 's')) + ': ' + v + ' journeys' };
+    });
+    return sec({
+      title: title,
+      sub: '<b>' + esc(String(journeys)) + '</b> journeys, reading <b>'
+        + esc(String(Math.round((pagesRead / journeys) * 10) / 10)) + '</b> pages each on average.',
+      body: '<div class="cpt-grid">'
+        + tile(String(journeys), 'Journeys', 'visits, page after page')
+        + tile(String(Math.round((pagesRead / journeys) * 10) / 10), 'Pages a journey', 'on average')
+        + tile(pct(bounced, journeys) + '%', 'Read one page and left', bounced + ' journeys')
+        + tile(firsts[0].key, 'The commonest first page', pct(firsts[0].views, journeys) + '% start here')
+        + '</div><h4 class="cp-sub">How people move through the site</h4>' + flow(items)
+        + '<p class="cp-note">Each ribbon is views moving from one step to the next, as wide as the '
+        + 'number of them; the grey ribbons are readers leaving. Hover over any of it for the figure.</p>'
+        + '<h4 class="cp-sub">The commonest complete journeys</h4>'
+        + journeyList(ended.slice(0, 25), journeys)
+        + '<div class="cp2"><div><h4 class="cp-sub">Pages in a journey</h4>'
+        + columns(lengths, 'Journeys by the number of pages read') + '<p class="cp-note">The longest '
+        + 'was ' + esc(longest >= 8 ? 'eight pages or more' : longest + ' page' + (longest === 1 ? '' : 's'))
+        + '.</p></div><div><h4 class="cp-sub">Where journeys end</h4>'
+        + countTable('Last page', roll(ended.map(function (t) {
+          return { k: pageLabel(t.pages[t.pages.length - 1]), views: t.views };
+        }), function (r) { return r.k; }), '') + '</div></div>'
+        + '<h4 class="cp-sub">Any page, before and after</h4>' + explorer(items)
+        + '<p class="cp-note">A journey is the pages read in one browser tab, in order, until the '
+        + 'reader leaves or is idle for half an hour. It is counted as a pattern and never against a '
+        + 'person: two people who read the same three pages are one row with a count of two.</p>',
+    });
   }
 
   function sortBar() {
@@ -1825,7 +2339,7 @@
     }
     var got = {};
     pages.forEach(function (p) { got[p.key] = p; });
-    var since = DAYS ? daysAgo(DAYS - 1) : '';
+    var since = range().from;
     var today = iso(new Date());
 
     var build = function (kind) {
@@ -2050,6 +2564,8 @@
     each('[data-days]', function (b) {
       b.addEventListener('click', function () {
         DAYS = Number(b.getAttribute('data-days'));
+        FROM = '';
+        TO = '';
         FOCUS = '';
         refresh();
       });
@@ -2091,6 +2607,56 @@
       });
     });
     each('[data-csv]', function (b) { b.addEventListener('click', csv); });
+    each('[data-preset]', function (b) {
+      b.addEventListener('click', function () {
+        var chosen = presetOf(b.getAttribute('data-preset'));
+        FROM = chosen.from;
+        TO = chosen.to;
+        FOCUS = '';
+        refresh();
+      });
+    });
+    each('[data-apply]', function (b) {
+      b.addEventListener('click', function () {
+        var startIn = host.querySelector('[data-from]');
+        var endIn = host.querySelector('[data-to]');
+        var startDay = startIn ? String(startIn.value || '') : '';
+        var endDay = endIn ? String(endIn.value || '') : '';
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(startDay) || !/^\d{4}-\d{2}-\d{2}$/.test(endDay)) {
+          toast('Pick a first and a last day');
+          return;
+        }
+        FROM = startDay < endDay ? startDay : endDay;
+        TO = startDay < endDay ? endDay : startDay;
+        FOCUS = '';
+        refresh();
+      });
+    });
+    each('[data-explore]', function (sel) {
+      sel.addEventListener('change', function () {
+        EXPLORE = sel.value || '';
+        draw(host);
+      });
+    });
+    var desk = host.querySelector('.cpst');
+    if (desk) {
+      var tipEl = document.querySelector('.cptip');
+      if (!tipEl) {
+        tipEl = document.createElement('div');
+        tipEl.className = 'cptip';
+        tipEl.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(tipEl);
+      }
+      desk.addEventListener('mousemove', function (e) {
+        var over = e.target && e.target.closest ? e.target.closest('[data-tip]') : null;
+        if (!over) { tipEl.className = 'cptip'; return; }
+        tipEl.textContent = over.getAttribute('data-tip');
+        tipEl.style.left = (e.clientX + 16) + 'px';
+        tipEl.style.top = (e.clientY + 16) + 'px';
+        tipEl.className = 'cptip is-on';
+      });
+      desk.addEventListener('mouseleave', function () { tipEl.className = 'cptip'; });
+    }
     each('[data-jump]', function (b) {
       b.addEventListener('click', function () {
         var goTo = host.querySelector('#' + b.getAttribute('data-jump'));

@@ -1880,7 +1880,8 @@ const BUDGET = {
      is a `cpt` tile, a `pipebar` share or a `data` table, deliberately: a
      stats page is where somebody is most tempted to invent a component set. */
   /* 7 -> 8, 1.6KB, for the data desk and the printable sponsor report. */
-  'control.css': 8,
+  /* 8 -> 9, 1.1KB, for the maps, the flow, journey chips and the motion. */
+  'control.css': 9,
   /* 11 -> 12 for draft recovery, deliberately and once. The shell was at
      10.78KB of 11, and what pushed it over is cross-cutting safety code that
      CANNOT be lazy: a listener that loads on demand cannot catch typing that
@@ -2008,7 +2009,12 @@ const BUDGET = {
      one screen that uses it and by nobody else, which is the whole reason it
      is a chunk; the club asked for everything, and for a page it can hand a
      sponsor. */
-  'control-stats.js': 22,
+  /* 22 -> 28 for towns and journeys (migrations/011): the UK and Ireland
+     close-up is a 100x149 land grid (2.5KB of base64, 1.9KB gzipped), plus
+     the flow diagram, the journey list and explorer, the chosen period, the
+     label that follows the pointer and sparks under the headline figures.
+     20,575 gz before and 26,640 after. Still fetched by this one screen only. */
+  'control-stats.js': 28,
   'control-matchday.js': 4,
   /* 16 -> 6. The five-tab editor left for control-matchedit.js, so this is now
      the two LISTS: 15.9KB of a 16KB ceiling became 4.9KB. The ceiling comes
@@ -4466,6 +4472,22 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     check('every click kind the beacon sends is one migration 010 accepts',
       sentKinds.length >= 6 && sentKinds.every((k) => allowed.includes(`'${k}'`)),
       sentKinds.join(', '));
+    const mig011 = fs.readFileSync(path.join(ROOT, 'migrations', '011_page_places_trails.sql'), 'utf8');
+    const trailArgs = argsOf('record_page_trail');
+    check('the journey beacon sends exactly the argument migration 011 defines',
+      trailArgs.length === 1 && /\bp_trail\s+text\b/.test(mig011), trailArgs.join(', '));
+    /* The start of a journey the beacon writes has to pass the database's own
+       pattern, or every journey is thrown away with nothing to say so. */
+    const trailRe = new RegExp((mig011.match(/p_trail !~ '([^']+)'/) || [])[1] || 'x^');
+    check('a journey the beacon would send passes the database pattern',
+      ['>/index.html', 'instagram.com>/programme.html>/squad.html', 'new-tab>/players/jon-lloyd.html']
+        .every((t) => trailRe.test(t)) && !trailRe.test('https://x.com/?q=1>/index.html'), String(trailRe));
+    check('the page view beacon asks our own function where the reader is',
+      /fetch\('\/api\/view'/.test(beaconSrc), 'no call to /api/view');
+    const viewSrc = fs.readFileSync(path.join(ROOT, 'api', 'view.js'), 'utf8');
+    check('/api/view stores no address and reads no body',
+      !/x-forwarded-for|x-real-ip|req\.body/.test(viewSrc) && /rpc\/record_page_place/.test(viewSrc),
+      'it must only forward the location headers');
   }
 
   /* $ IS querySelector AND $$ IS querySelectorAll, and treating the singular
@@ -8262,7 +8284,7 @@ let orphanClasses = new Map();
    ========================================================================== */
 {
   const api = (f) => fs.readFileSync(path.join(ROOT, 'api', f), 'utf8');
-  const PUBLIC = ['notify-enquiry.js', 'subscribe.js'];
+  const PUBLIC = ['notify-enquiry.js', 'subscribe.js', 'view.js'];
   const GATED = ['publish.js', 'claude.js'];
 
   for (const f of GATED) {
@@ -8273,7 +8295,7 @@ let orphanClasses = new Map();
   for (const f of PUBLIC) {
     const src = api(f);
     check(`/api/${f.replace('.js', '')} throttles a caller`,
-      /tooMany\(req\)/.test(src) && /429/.test(src));
+      /tooMany\(req[,)]/.test(src) && /429/.test(src));
     /* Every value that came from the caller and reaches an HTML string has
        to go through esc(). Asked of the template literals themselves: an
        interpolation of a bare identifier inside a string carrying a tag. */

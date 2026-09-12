@@ -217,6 +217,24 @@ async function main() {
        page_stats with figures wide enough to draw the lot. */
     window.CP.rest = (method, q) => {
       const day = (n) => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10);
+      if (/page_places\\?/.test(q || '')) {
+        return Promise.resolve([
+          { day: day(0), country: 'GB', region: 'ENG', city: 'Kingston upon Thames', lat: 51.4, lon: -0.3, views: 40 },
+          { day: day(1), country: 'GB', region: 'ENG', city: 'London', lat: 51.5, lon: -0.1, views: 22 },
+          { day: day(1), country: 'GB', region: 'SCT', city: 'Glasgow', lat: 55.9, lon: -4.3, views: 5 },
+          { day: day(2), country: 'IE', region: 'D', city: 'Dublin', lat: 53.3, lon: -6.3, views: 3 },
+          { day: day(2), country: 'US', region: 'NY', city: 'New York', lat: 40.7, lon: -74, views: 2 },
+        ]);
+      }
+      if (/page_trails\\?/.test(q || '')) {
+        return Promise.resolve([
+          { day: day(0), trail: '>/index.html', views: 30 },
+          { day: day(0), trail: '>/index.html>/squad.html', views: 12 },
+          { day: day(0), trail: '>/index.html>/squad.html>/players/charlie-dunkley.html', views: 5 },
+          { day: day(1), trail: 'instagram.com>/programme.html', views: 18 },
+          { day: day(1), trail: 'instagram.com>/programme.html>/results.html', views: 6 },
+        ]);
+      }
       if (/page_tags\\?/.test(q || '')) {
         return Promise.resolve([
           { day: day(0), tag: 'insta-story', path: '/programme.html', views: 7 },

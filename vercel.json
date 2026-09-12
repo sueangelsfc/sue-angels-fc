@@ -11,6 +11,9 @@
     "api/subscribe.js": {
       "maxDuration": 10
     },
+    "api/view.js": {
+      "maxDuration": 5
+    },
     "api/claude.js": {
       "maxDuration": 30
     }

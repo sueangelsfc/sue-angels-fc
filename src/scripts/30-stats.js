@@ -173,6 +173,27 @@
     if (f && f.getAttribute) ev('form', f.getAttribute('data-enquiry') || f.id || 'form');
   }, true);
 
+  /* ---- The journey, kept in this tab only (migrations/011) -------------
+     The pages read in this tab, in order, start first. It lives in
+     sessionStorage, which dies with the tab and is never sent anywhere with
+     an identifier: every view sends the journey SO FAR as a pattern, and the
+     panel works out where journeys ended by taking away the ones that went a
+     step further. A new arrival from outside, or half an hour idle, starts a
+     new journey; a reload of the same page is not a step. */
+  var trail = '';
+  try {
+    var ss = window.sessionStorage;
+    var was = JSON.parse(ss.getItem('sa-trail') || 'null');
+    var fresh = was && was.s && Date.now() - was.t < 1800000;
+    var came = from();
+    var reload = fresh && was.s[was.s.length - 1] === path;
+    var route = reload ? was.s
+      : (fresh && came.charAt(0) === '/' ? was.s.concat([path])
+        : [came.charAt(0) === '/' ? 'new-tab' : came, path]);
+    ss.setItem('sa-trail', JSON.stringify({ t: Date.now(), s: route.slice(0, 12) }));
+    if (!reload && route.length <= 9) trail = route.join('>');
+  } catch (e) { trail = ''; }
+
   var sent = false;
 
   function send() {
@@ -202,6 +223,11 @@
         p_from: from(),
         p_hour: hour(),
       }, true).catch(function () {});
+      if (trail) window.saRpc('record_page_trail', { p_trail: trail }, true).catch(function () {});
+      /* Where the reader is, worked out by Vercel from the connection: the
+         browser does not know, so this goes through our own function. */
+      fetch('/api/view', { method: 'POST', keepalive: true, body: '{}',
+        headers: { 'Content-Type': 'application/json' } }).catch(function () {});
       if (tag) {
         window.saRpc('record_page_tag', {
           p_path: path,

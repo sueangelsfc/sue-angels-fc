@@ -822,6 +822,32 @@ stayed and how far down they got. `migrations/007_page_stats.sql`,
 - **The share bar had never drawn on this screen.** `bar()` writes a `span`
   and `.pipebar` set no display, so every bar was an inline element with no
   height. Found in the first screenshot of the redesign.
+- **Towns and whole journeys** (`migrations/011_page_places_trails.sql`).
+  - **Towns come from Vercel, through our own function.** Vercel's edge sends
+    `x-vercel-ip-country`, `-country-region`, `-city`, `-latitude` and
+    `-longitude` to `api/view.js`, which the beacon calls once per view and
+    which calls `record_page_place` with the anon key. It reads no body and no
+    address, and the suite holds it to that. One count per (day, country,
+    region, town), position rounded to 0.1 degrees, no page, for 008's reason.
+    `tooMany(req, max, bucket)` gives it 90 a minute in its own bucket, because
+    a reader clicking through pages is not a flood.
+  - **The UK close-up has its own land grid**, 100x149 cells rasterised from
+    Natural Earth's 1:50m land outline (`UK` in `85-stats.js`); the world grid
+    gives Great Britain about six dots. Map labels go biggest town first and
+    skip any that would land on one already placed.
+  - **A journey is the pages read in one tab, kept in `sessionStorage`**, sent
+    with every view as the route SO FAR (`instagram.com>/programme.html>/squad.html`;
+    `''` is direct, `new-tab` a page opened in a tab of its own). A reload is
+    not a step, half an hour idle starts a new journey, eight pages is the cap.
+    A journey ENDED on a route when it went no further: the route's count less
+    the counts of routes one page longer (`journeyData()`). The screen draws a
+    flow (source, first, second, third page, with leavers in grey), the
+    commonest complete journeys as chips, journey lengths, where journeys end,
+    and an explorer showing what came just before and after any page.
+- **The period is any two days** (`range()`, `periodText()`, `presetOf()`):
+  today, yesterday, 7, 30, 90 days, this month, last month, all time, or two
+  dates. The period before is the same number of days immediately before, and
+  the suite clicks the controls and reads the query they send.
 - **The screen knows what the site PUBLISHES, not only what was read.**
   `stats-pages.json` is written by the build - every route, its real title,
   what kind of page it is, and the day a match was played or an article went

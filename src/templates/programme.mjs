@@ -201,7 +201,7 @@ function quiz(d) {
    them, and kept in their own module so the printable document below never
    inherits the page's layout. */
 import {
-  heroBand, tapeBand, lastBand, tableBand, roundBand, nextBand,
+  heroBand, tapeBand, lastBand, tableBand, roundBand, nextBand, backersBand,
 } from './programme-page.mjs';
 
 /* ONE PASS OF NUMBERS OVER THE FINISHED PAGE, for the same reason the
@@ -533,7 +533,8 @@ export function programme(d) {
       + tableBand(d, m)
       + (m ? roundBand(d, m) : '')
       + nextBand(d, m)
-      + previewBand + archiveBand)
+      + previewBand + archiveBand
+      + backersBand(d))
       + sourceNote(['fulltime']),
     bodyClass: 'is-home is-sub is-programme',
     css: 'home.css',

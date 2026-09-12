@@ -12,11 +12,7 @@
    - the tale of the tape: the two clubs' League Eight rows, side by side
    - last time out: the club's most recent competitive result and its goals
    - the division as it stands, with both of today's clubs marked
-   - the rest of the round and the match after this one
-
-   ONE PALETTE: the club's black and orange. The partner logo strip that
-   closed the page came off at the club's request, because partners' marks
-   keep their own colours and cannot be recoloured to match.
+   - the rest of the round, the match after this one, and who pays for it
 
    WHAT STAYS OFF THE PAGE, by the club's decision and the suite's check: the
    squad. It belongs in the downloadable programme, so no band here links a
@@ -370,6 +366,28 @@ export function nextBand(d, m) {
           </span>
           <span class="pr-next__go">Every fixture ${ARROW}</span>
         </a>
+      </div>
+    </section>`;
+}
+
+/* ================= WHO PAYS FOR IT =================
+   The partners' own marks on white tiles, never recoloured, each one a way
+   to the page that says who they are. */
+export function backersBand(d) {
+  /* HLO is left off this strip at the club's request; it stays on the home
+     page strip and the sponsors page. */
+  const ps = (d.partners || []).filter((p) => p.onStrip && p.logo
+    && !/^hlo$/i.test(String(p.short || p.name || '').trim()));
+  if (!ps.length) return '';
+  return `<section class="sec pr-band pr-band--tight" aria-labelledby="pr-back-h">
+      <div class="wrap">
+        <div class="pr-backers rv">
+          <h2 class="pr-backers__k" id="pr-back-h">The club's football is backed by</h2>
+          <ul class="pr-backers__list">
+            ${ps.map((p) => `<li><a href="/sponsors.html"><img src="${attr(p.logo)}" alt="${attr(p.name)}" width="150" height="70" loading="lazy" decoding="async" /></a></li>`).join('\n            ')}
+          </ul>
+          <a class="pr-backers__cta" href="/sponsors.html">Put your name here ${ARROW}</a>
+        </div>
       </div>
     </section>`;
 }

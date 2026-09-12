@@ -841,8 +841,8 @@ last season, the quiz, the word search, the cause and the partners.
   styled at the foot of `45-programme.css`): the fixture as a poster with a
   countdown, the programme, the tale of the tape from the two clubs' League
   Eight rows, last time out, the table with both clubs marked, the rest of the
-  round and the match after, in the site's black and orange only (the partner
-  logo strip came off at the club's request). Still no player links on the page;
+  round, the match after and the partners (every partner on the strip except
+  HLO, at the club's request). Still no player links on the page;
   the squad stays in the document. Rail numbers are set in one pass after the
   page is assembled, so an empty band takes none. The countdown counts to
   `londonKick()`, because `isoDateTime` stores a kick-off as UTC and runs an

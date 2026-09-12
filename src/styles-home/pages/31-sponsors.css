@@ -295,3 +295,29 @@ html[data-theme="light"] .sp-prow__mark{box-shadow: 0 0 0 1px rgba(17, 19, 21, 0
   .sp-ruled li::after,
   .sp-det__cue i{transition: none;}
 }
+
+/* ---- 04 Sponsor a player ------------------------------------------------
+   One tile per player, carrying the same "Sponsored by" line the matchday
+   programme prints. A sale swaps Available for the sponsor's name and lights
+   the tile's edge; nothing else about the tile changes. */
+.sp-season__grid{list-style: none; margin: clamp(22px, 3vw, 32px) 0 0; padding: 0;
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));}
+.sp-seat{display: grid; align-content: start; gap: 6px; min-width: 0;
+  padding: 16px 18px 15px; border-radius: 16px;
+  border: 1px solid var(--line-d); border-left: 3px solid rgba(var(--volt-rgb), 0.5);
+  background: rgba(255, 255, 255, 0.026);
+  transition: border-color 0.3s, background 0.3s;}
+.sp-seat:hover{border-color: rgba(var(--volt-rgb), 0.3);
+  background: rgba(var(--volt-rgb), 0.05);}
+.sp-seat.is-taken{border-left-color: var(--volt);
+  background: rgba(var(--volt-rgb), 0.07);}
+.sp-seat__name{font-family: var(--display); font-weight: 500;
+  font-size: 18px; line-height: 1.15; color: var(--fg); text-decoration: none;
+  overflow-wrap: anywhere;}
+.sp-seat__name:hover{color: var(--volt);}
+.sp-seat__name:focus-visible{outline: 2px solid var(--volt); outline-offset: 3px; border-radius: 4px;}
+.sp-seat__pos{font-family: var(--ui); font-size: 10.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2);}
+.sp-seat__by{font-size: 13px; line-height: 1.5; color: var(--ink-2);}
+.sp-seat__by b{font-weight: 600; color: var(--fg);}

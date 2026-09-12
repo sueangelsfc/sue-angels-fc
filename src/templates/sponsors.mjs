@@ -239,12 +239,44 @@ export function sponsors(d) {
       </div>
     </section>`;
 
-  /* ================= 04 HOW IT WORKS =================
+  /* ================= 04 SPONSOR A PLAYER =================
+     Every player at the club, each one's season for sale: the same shelf the
+     matchday programme prints. Read from the squad and from the sponsorship
+     records the panel writes, so a signing appears the day he is added, a
+     player who leaves drops off, and a sale shows its sponsor in place of
+     "Available" (the player page already prints the same credit). */
+  const PAST_STATUS = new Set(['retired', 'departed', 'staff']);
+  const surname = (p) => String(p.last || p.name.split(' ').slice(-1)[0] || '').toLowerCase();
+  const seasonPlayers = (d.squad || []).filter((p) => !PAST_STATUS.has(p.status))
+    .sort((a, b) => surname(a).localeCompare(surname(b)) || a.name.localeCompare(b.name));
+  const playersBand = seasonPlayers.length ? `<section class="sec sp-season" id="player-sponsorship" aria-labelledby="sp-season-h">
+      <div class="wrap">
+        ${rail(4, 'Sponsor a player', `${seasonPlayers.length} players`)}
+        <h2 class="h2 rv" id="sp-season-h">Sponsor a player’s <span class="volt">season.</span></h2>
+        <p class="sp-lede rv">Put your name, your family’s or your business’s beside a player for the
+          whole ${esc(d.currentSeason || '')} season. It appears on his page here and in every matchday
+          programme. Price on request.</p>
+        <ul class="sp-season__grid rv">
+          ${seasonPlayers.map((p, i) => {
+            const sp = (d.sponsorships || {})['player-' + p.num];
+            return `<li class="sp-seat${sp ? ' is-taken' : ''}" style="--i:${Math.min(i, 12)}">
+            <a class="sp-seat__name" href="/players/${attr(p.slug)}.html">${esc(p.name)}</a>
+            ${p.position ? `<span class="sp-seat__pos">${esc(p.position)}</span>` : ''}
+            <span class="sp-seat__by">Sponsored by: <b>${sp ? esc(sp.name) : 'Available'}</b></span>
+          </li>`;
+          }).join('\n          ')}
+        </ul>
+        <p class="sp-kit__note">To sponsor a player’s season, email
+          <a href="mailto:${attr(CLUB.email)}?subject=${attr(`Player sponsorship - ${CLUB.name}`)}">${esc(CLUB.email)}</a>.</p>
+      </div>
+    </section>` : '';
+
+  /* ================= 05 HOW IT WORKS =================
      Three steps on one continuous line, because it is a sequence and a grid
      of three boxes does not say so. */
   const howBand = `<section class="sec sp-how" aria-labelledby="sp-how-h">
       <div class="wrap">
-        ${rail(4, 'Getting involved', 'Three steps')}
+        ${rail(5, 'Getting involved', 'Three steps')}
         <h2 class="h2 rv" id="sp-how-h">How it <span class="volt">works.</span></h2>
         <div class="sp-steps__wrap rv">
           <span class="sp-steps__line" aria-hidden="true"></span>
@@ -284,7 +316,7 @@ export function sponsors(d) {
      the cause page; repeating them here would bury the sponsorship ask. */
   const backBand = `<section class="sec sp-back" aria-labelledby="sp-back-h">
       <div class="wrap">
-        ${rail(5, 'Support the club', 'Two ways')}
+        ${rail(6, 'Support the club', 'Two ways')}
         <h2 class="h2 rv" id="sp-back-h">Back the <span class="volt">badge.</span></h2>
         <ul class="sp-back__grid rv">
           <li class="sp-give glassbox">
@@ -306,7 +338,7 @@ export function sponsors(d) {
 
   return {
     body: siteHeader('/sponsors.html') + hero + partnersBand + whyBand + placesBand
-      + howBand + ctaBand + backBand,
+      + playersBand + howBand + ctaBand + backBand,
     bodyClass: 'is-home is-sub is-sponsors',
     css: 'home.css',
     shell: 'home',

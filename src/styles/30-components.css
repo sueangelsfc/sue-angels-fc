@@ -960,6 +960,7 @@ table.data .cell-club { max-width: 210px; overflow: hidden; text-overflow: ellip
   font-size: var(--step--1);
 }
 .consent__actions { display: flex; gap: var(--space-2); margin-block-start: var(--space-4); flex-wrap: wrap; }
+.consent [hidden] { display: none !important; }
 .consent__h { margin: 0 0 var(--space-1); font-weight: var(--weight-bold); }
 .consent__t { margin: 0; }
 .consent__opts { display: grid; gap: var(--space-2); margin: var(--space-3) 0 0; padding: 0; border: 0; }

@@ -1868,6 +1868,9 @@ html.js [data-season-scope][hidden]{display: none;}
    it does and who receives what. Tall enough to scroll inside itself on a
    phone rather than pushing its buttons off the screen. */
 .consent{max-height: calc(100dvh - 24px); overflow: auto;}
+/* The `hidden` attribute loses to any author display rule, so the choices
+   layer and its buttons were on screen from the start. Said once, here. */
+.consent [hidden]{display: none !important;}
 .consent__main{flex: 1 1 320px; min-width: 0;}
 .consent__h{margin: 0 0 4px; font-family: var(--display); font-size: 15px; font-weight: 700; color: var(--fg);}
 .consent__opts{flex: 1 1 100%; display: grid; gap: 8px; margin: 0; padding: 0; border: 0; min-width: 0;}

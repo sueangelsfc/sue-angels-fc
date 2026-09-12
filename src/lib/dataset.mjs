@@ -422,8 +422,13 @@ export function buildDataset(overrides = {}) {
        record wins over the file. */
     const said = p.position || positionsExtra[String(p.num)] || '';
     if (said) {
-      const group = /goal/i.test(said) ? 'gk' : /def|back/i.test(said) ? 'def'
-        : /forward|strik/i.test(said) ? 'fwd' : 'mid';
+      /* Grouped by the FIRST position named, and midfield before defence:
+         "Defensive midfielder" contains "def", so the old order filed a
+         holding midfielder with the defenders, and "Left back or left
+         midfielder" is a full back who can step up, not a midfielder. */
+      const lead = said.split(/\s+or\s+|\//i)[0];
+      const group = /goal/i.test(lead) ? 'gk' : /midfield/i.test(lead) ? 'mid'
+        : /def|back/i.test(lead) ? 'def' : /forward|strik/i.test(lead) ? 'fwd' : 'mid';
       return {
         num: p.num, first: p.first, last: p.last, name, slug: slugify(name),
         gk: group === 'gk',

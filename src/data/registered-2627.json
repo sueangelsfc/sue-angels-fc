@@ -2,38 +2,138 @@
   "season": "26/27",
   "source": "The club's FA registration list for 26/27, sent by the club on 12 September 2026. Names are as registered. num links a name to its squad record where one exists; sponsorship false keeps a registered name off the sponsor-a-player shelf.",
   "players": [
-    { "name": "Andrew Allen", "num": 2 },
-    { "name": "Louis Allen", "num": null, "position": "Defender" },
-    { "name": "Michael Brabrook", "num": 4 },
-    { "name": "Jack Bridges", "num": 39 },
-    { "name": "Kafele Brown", "num": 5 },
-    { "name": "Elis Brumpton", "num": 6 },
-    { "name": "Leon Burnett", "num": 3 },
-    { "name": "Danny Cain", "num": null, "position": "Centre back" },
-    { "name": "George Churchill", "num": null, "position": "Midfielder" },
-    { "name": "Charlie Dunkley", "num": 9 },
-    { "name": "Jim El Bayati", "num": 10 },
-    { "name": "Richard Epathite", "num": 11 },
-    { "name": "Stephen Epathite", "num": null, "sponsorship": false },
-    { "name": "Robert Heath", "num": 38 },
-    { "name": "Alfie James Inman", "num": 17 },
-    { "name": "Danny Jackson", "num": 18 },
-    { "name": "David Jones", "num": 19 },
-    { "name": "Liam Kirby", "num": 41 },
-    { "name": "Dean Knight", "num": 20 },
-    { "name": "Jon Lloyd", "num": 21 },
-    { "name": "Stewart Luwawa", "num": 23 },
-    { "name": "Adam Marie", "num": 40 },
-    { "name": "Daniel McLane", "num": 25 },
-    { "name": "Malachi Mullings", "num": 27 },
-    { "name": "Luke Munns", "num": 28 },
-    { "name": "Samuel Nichols", "num": null, "position": "Defender" },
-    { "name": "Samakab Nur", "num": 29 },
-    { "name": "Frazier-Isaías Osunkoya", "num": 30 },
-    { "name": "Ade Owolana", "num": 12 },
-    { "name": "Stephen Potter", "num": 31 },
-    { "name": "Daniel Rand", "num": 32 },
-    { "name": "Sean Sheehan", "num": 34 },
-    { "name": "Jeev Thilaganathan", "num": 35 }
+    {
+      "name": "Andrew Allen",
+      "num": 2
+    },
+    {
+      "name": "Louis Allen",
+      "num": 42
+    },
+    {
+      "name": "Michael Brabrook",
+      "num": 4
+    },
+    {
+      "name": "Jack Bridges",
+      "num": 39
+    },
+    {
+      "name": "Kafele Brown",
+      "num": 5
+    },
+    {
+      "name": "Elis Brumpton",
+      "num": 6
+    },
+    {
+      "name": "Leon Burnett",
+      "num": 3
+    },
+    {
+      "name": "Danny Cain",
+      "num": 43
+    },
+    {
+      "name": "George Churchill",
+      "num": 44
+    },
+    {
+      "name": "Charlie Dunkley",
+      "num": 9
+    },
+    {
+      "name": "Jim El Bayati",
+      "num": 10
+    },
+    {
+      "name": "Richard Epathite",
+      "num": 11
+    },
+    {
+      "name": "Stephen Epathite",
+      "num": null,
+      "sponsorship": false
+    },
+    {
+      "name": "Robert Heath",
+      "num": 38
+    },
+    {
+      "name": "Alfie James Inman",
+      "num": 17
+    },
+    {
+      "name": "Danny Jackson",
+      "num": 18
+    },
+    {
+      "name": "David Jones",
+      "num": 19
+    },
+    {
+      "name": "Liam Kirby",
+      "num": 41
+    },
+    {
+      "name": "Dean Knight",
+      "num": 20
+    },
+    {
+      "name": "Jon Lloyd",
+      "num": 21
+    },
+    {
+      "name": "Stewart Luwawa",
+      "num": 23
+    },
+    {
+      "name": "Adam Marie",
+      "num": 40
+    },
+    {
+      "name": "Daniel McLane",
+      "num": 25
+    },
+    {
+      "name": "Malachi Mullings",
+      "num": 27
+    },
+    {
+      "name": "Luke Munns",
+      "num": 28
+    },
+    {
+      "name": "Samuel Nichols",
+      "num": 45
+    },
+    {
+      "name": "Samakab Nur",
+      "num": 29
+    },
+    {
+      "name": "Frazier-Isaías Osunkoya",
+      "num": 30
+    },
+    {
+      "name": "Ade Owolana",
+      "num": 12
+    },
+    {
+      "name": "Stephen Potter",
+      "num": 31
+    },
+    {
+      "name": "Daniel Rand",
+      "num": 32
+    },
+    {
+      "name": "Sean Sheehan",
+      "num": 34
+    },
+    {
+      "name": "Jeev Thilaganathan",
+      "num": 35
+    }
   ]
 }

@@ -800,6 +800,28 @@ stayed and how far down they got. `migrations/007_page_stats.sql`,
   into it and where readers went next. It is never a journey: no identifier,
   so two steps sharing a page cannot be joined into one reader. No zone and no
   device, for 008's reason.
+- **Tagged links and clicks** (`migrations/010_page_events.sql`, each its own
+  call for the lesson of 008). `?from=insta-story` (or `utm_campaign` /
+  `utm_source`) on a link the club shares is counted per (day, tag, page) and
+  taken out of the address bar. Clicks are counted per (day, page, kind,
+  target), where kind is one of download, donate, social, outbound, contact,
+  video or form and the target is a path or a bare host, never anything typed.
+  The suite holds every kind the beacon sends to the list the function accepts.
+- **The screen is a data desk now, and it prints.** Seven numbered chapters
+  under a sticky rail (headline and today, trends, audience, arrivals and
+  routes, content, engagement, about the figures). Today at a glance; the
+  shape of the period (a match day against any other day, from the
+  catalogue's match dates, the average day of the week over every calendar
+  day including the empty ones, week by week, month by month); a seven-day
+  average over the daily trend; rings for every share, one accent at falling
+  strengths; where people left (a page's views less the views that came from
+  it, an estimate and labelled one); a tagged link builder; clicks. **Sponsor
+  report** renders the same view as a warm-paper page appended to `body`, and
+  print CSS hides every other child of `body`. Every figure in it is views and
+  its footnote says so.
+- **The share bar had never drawn on this screen.** `bar()` writes a `span`
+  and `.pipebar` set no display, so every bar was an inline element with no
+  height. Found in the first screenshot of the redesign.
 - **The screen knows what the site PUBLISHES, not only what was read.**
   `stats-pages.json` is written by the build - every route, its real title,
   what kind of page it is, and the day a match was played or an article went

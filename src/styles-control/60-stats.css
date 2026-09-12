@@ -273,3 +273,398 @@ a.cpp { text-decoration: underline; }
    life rather than a slice of it. Weight, not a fill. */
 .data tr.is-new td { border-left: 2px solid var(--brand); }
 .data tr.is-new td:first-child { padding-left: calc(var(--space-3) - 2px); }
+
+/* ==========================================================================
+   THE DATA DESK
+
+   September 2026: the screen became something the club can put in front of a
+   sponsor. Seven numbered chapters under a rail that follows the page, big
+   tabular figures, one accent at falling strengths for every share, and a
+   report that prints on warm paper. Still no library and still nothing that
+   measures the page: every chart is sized in its own viewBox.
+   ========================================================================== */
+/* minmax(0, 1fr), never a bare grid: a bare track is minmax(auto, 1fr), and a
+   wide table inside it forced the whole screen past the edge of a phone. */
+.cpst {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-7);
+  font-variant-numeric: tabular-nums;
+}
+.cpst__ch {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  scroll-margin-top: 88px;
+  min-width: 0;
+}
+/* The share bar is a span, and a span with no display is inline and has no
+   height, so every bar on this screen drew as nothing. */
+.cpst .pipebar { display: block; min-width: 48px; }
+
+/* ---- The rail ---- */
+.cpst__nav {
+  position: sticky;
+  top: var(--space-2);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-block-end: calc(var(--space-7) * -0.5);
+  padding: 5px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.28);
+}
+.cpst__nav::-webkit-scrollbar { display: none; }
+.cpst__jump {
+  flex: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 7px 13px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: var(--step--1);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+.cpst__jump span { font-size: var(--step--2); font-weight: var(--weight-bold); color: var(--brand); }
+.cpst__jump:hover, .cpst__jump:focus-visible { background: var(--surface-inset); color: var(--text); }
+.cpst__jump:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+.cpst__present { flex: none; margin-inline-start: auto; }
+
+/* ---- A chapter's number, set like a programme's contents ---- */
+.cpst__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  font-size: var(--step--2);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.cpst__eyebrow span {
+  font-size: var(--step-3);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--brand);
+}
+.cpst__eyebrow::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--border-strong), transparent);
+}
+
+/* ---- The figures ---- */
+.cpst .cpt-grid { gap: var(--space-3); }
+.cpst .cpt {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(130% 110% at 100% 0%, rgb(var(--brand-rgb) / 0.1), transparent 55%),
+    var(--surface-inset);
+  transition: border-color 0.2s, transform 0.2s;
+}
+.cpst .cpt:hover { border-color: var(--border-brand); transform: translateY(-2px); }
+.cpst .cpt:first-child::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--brand);
+}
+.cpst .cpt__v {
+  font-size: var(--step-4);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.cpst__today .cpt__v { color: var(--brand); }
+.cpst .data td b { font-weight: var(--weight-semi); color: var(--text); }
+.cpst .pipebar { height: 8px; border-radius: var(--radius-pill); }
+.cpst .pipebar__fill {
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--brand-800), var(--brand));
+}
+.cpst .cpc {
+  padding: var(--space-3);
+  background: linear-gradient(180deg, rgb(var(--brand-rgb) / 0.06), transparent 70%), var(--surface-inset);
+}
+.cpst .cpc__area { fill-opacity: 0.22; }
+
+/* The seven-day average: the one line on the chart that is not the day. */
+.cpc__avg {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 1.6;
+  stroke-opacity: 0.6;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.cpg__avg { display: inline-block; width: 14px; height: 0; border-top: 2px solid var(--text-muted); }
+
+/* ---- Columns ---- */
+.cpcol__b { fill: var(--brand); fill-opacity: 0.4; transition: fill-opacity 0.15s; }
+.cpcol__b.is-top, .cpcol__b:hover { fill-opacity: 1; }
+.cpcol__n { fill: var(--text-muted); font-family: var(--font-body); font-size: 11px; font-weight: 600; }
+.cpcol__x { fill: var(--text-subtle); font-family: var(--font-body); font-size: 11px; }
+
+/* ---- A match day against any other ---- */
+.cpst__vs {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: var(--space-4);
+  margin-block-end: var(--space-2);
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  border: 1px solid var(--border-brand);
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(90% 150% at 0% 0%, rgb(var(--brand-rgb) / 0.16), transparent 60%),
+    var(--surface-inset);
+}
+.cpst__vsi { display: grid; gap: 4px; min-width: 0; }
+.cpst__vsi b {
+  font-size: var(--step-6);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+  color: var(--text);
+}
+.cpst__vsi:first-child b { color: var(--brand); }
+.cpst__vsi span { font-size: var(--step--1); color: var(--text); }
+.cpst__vsi small { font-size: var(--step--2); color: var(--text-muted); }
+.cpst__vsx {
+  padding-block-end: var(--space-5);
+  font-size: var(--step-1);
+  font-weight: var(--weight-semi);
+  color: var(--text-subtle);
+}
+
+/* ---- Shares as a ring ---- */
+.cpdn {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-inset);
+}
+.cpdn__svg { flex: none; width: 156px; height: 156px; }
+.cpdn__well { fill: none; stroke: var(--border); stroke-width: 15; }
+.cpdn__seg { fill: none; stroke: var(--brand); stroke-width: 15; }
+.cpdn__n {
+  fill: var(--text);
+  font-family: var(--font-display);
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  text-anchor: middle;
+}
+.cpdn__l { fill: var(--text-muted); font-family: var(--font-body); font-size: 8.5px; text-anchor: middle; }
+.cpdn__key {
+  display: grid;
+  flex: 1 1 160px;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--step--1);
+}
+.cpdn__key li { display: grid; grid-template-columns: 10px 1fr auto; align-items: center; gap: 10px; }
+.cpdn__key b { font-weight: var(--weight-semi); }
+.cpdn__sw { width: 10px; height: 10px; border-radius: 3px; background: var(--brand); }
+
+/* ---- Building a tagged link ---- */
+.cpst__tagger {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+  margin-block-end: var(--space-3);
+  padding: var(--space-4);
+  border: 1px dashed var(--border-brand);
+  border-radius: var(--radius-lg);
+  background: var(--surface-inset);
+}
+.cpst__tagger .input, .cpst__tagger .select { width: 100%; min-width: 0; }
+.cpst__tagout { flex: 2 1 300px; }
+
+/* ==========================================================================
+   THE SPONSOR REPORT
+
+   Warm paper and dark ink whatever theme the panel is in, because it is going
+   to be printed or put on somebody else's screen. The components inside it
+   are the screen's own, re-pointed by redefining the tokens they read.
+   ========================================================================== */
+.cprep {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  overflow: auto;
+  padding: var(--space-5) var(--space-4) var(--space-8);
+  background: rgb(10 6 4 / 0.8);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  animation: cprep-in 0.24s ease-out both;
+}
+@keyframes cprep-in { from { opacity: 0; } }
+.cprep__bar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  max-width: 920px;
+  margin: 0 auto var(--space-3);
+}
+.cprep__doc {
+  --text: #1A0A02;
+  --text-muted: rgb(26 10 2 / 0.72);
+  --text-subtle: rgb(26 10 2 / 0.6);
+  --border: rgb(26 10 2 / 0.1);
+  --border-strong: rgb(26 10 2 / 0.2);
+  --border-brand: rgb(var(--brand-rgb) / 0.45);
+  --surface-inset: #FFFFFF;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: clamp(24px, 5vw, 60px);
+  border-top: 10px solid var(--brand);
+  border-radius: var(--radius-md);
+  background: #FFF8F3;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 40px 90px rgb(0 0 0 / 0.5);
+  animation: cprep-up 0.36s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes cprep-up { from { opacity: 0; transform: translateY(18px); } }
+.cprep__head {
+  display: grid;
+  gap: 6px;
+  margin-block-end: var(--space-5);
+  padding-block-end: var(--space-5);
+  border-bottom: 1px solid var(--border-strong);
+}
+.cprep__kicker {
+  margin: 0;
+  font-size: var(--step--2);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--brand-800);
+}
+.cprep__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--step-7);
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  line-height: 0.88;
+  color: var(--text);
+}
+.cprep__period { margin: 0; font-size: var(--step-0); color: var(--text-muted); }
+.cprep__kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
+  margin-block-end: var(--space-5);
+  border-top: 1px solid var(--border-strong);
+  border-left: 1px solid var(--border);
+}
+.cprep__kpi {
+  display: grid;
+  gap: 6px;
+  padding: var(--space-4);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.cprep__kpi b {
+  white-space: nowrap;
+  font-size: var(--step-4);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 0.95;
+  color: var(--text);
+}
+.cprep__kpi:first-child b { color: var(--brand-800); }
+.cprep__kpi span { font-size: var(--step--1); color: var(--text-muted); }
+.cprep__h {
+  margin: var(--space-6) 0 var(--space-3);
+  font-size: var(--step--2);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.cprep__two {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 330px), 1fr));
+  gap: 0 var(--space-5);
+}
+.cprep__list { display: grid; margin: 0; padding: 0; list-style: none; counter-reset: rank; }
+.cprep__list li {
+  display: grid;
+  grid-template-columns: 2.2ch 1fr auto;
+  gap: var(--space-3);
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--step--1);
+  counter-increment: rank;
+}
+.cprep__list li::before { content: counter(rank); font-weight: var(--weight-bold); color: var(--brand-800); }
+.cprep__list b { font-weight: var(--weight-bold); }
+.cprep__foot {
+  margin-block-start: var(--space-6);
+  padding-block-start: var(--space-4);
+  border-top: 1px solid var(--border-strong);
+  font-size: var(--step--2);
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+.cprep .cpst__vsi:first-child b { color: var(--brand-800); }
+.cprep .cpm__land { opacity: 0.6; }
+
+@media (max-width: 560px) {
+  .cpst__vs { grid-template-columns: 1fr; }
+  .cpst__vsx { padding: 0; }
+}
+
+@media print {
+  @page { size: A4; margin: 12mm; }
+  body > :not(.cprep) { display: none !important; }
+  .cprep { position: static; overflow: visible; padding: 0; background: none; backdrop-filter: none; }
+  .cprep__bar { display: none; }
+  .cprep__doc {
+    max-width: none;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    animation: none;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cprep__two, .cprep__kpis, .cprep .cpc, .cprep .cpm, .cprep .cpdn, .cprep .cpst__vs { break-inside: avoid; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cprep, .cprep__doc { animation: none; }
+  .cpst .cpt { transition: none; }
+}

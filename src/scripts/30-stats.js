@@ -116,6 +116,63 @@
     } catch (e) { return ''; }
   }
 
+  /* ---- A tagged link, and what gets clicked (migrations/010) -------------
+     `?from=insta-story` on a link the club shares names the post that sent
+     somebody, which the referrer almost never does from an app. It is taken
+     out of the address bar so a reader who copies the link on does not carry
+     the club's tag with them. Clicks are counted by kind and target, never
+     with anything typed. Each is its own call, so a database without 010
+     loses these and nothing else - the lesson of 008. */
+  var tag = '';
+  try {
+    var qs = new URLSearchParams(location.search);
+    tag = String(qs.get('from') || qs.get('utm_campaign') || qs.get('utm_source') || '')
+      .toLowerCase().replace(/[^a-z0-9-]+/g, '-').slice(0, 40);
+    if (tag && history.replaceState) {
+      ['from', 'utm_source', 'utm_medium', 'utm_campaign'].forEach(function (k) { qs.delete(k); });
+      var rest = qs.toString();
+      history.replaceState(history.state, '', path + (rest ? '?' + rest : '') + location.hash);
+    }
+  } catch (e) { tag = ''; }
+
+  function ev(kind, target) {
+    try {
+      window.saRpc('record_page_event', {
+        p_path: path,
+        p_kind: kind,
+        p_target: String(target || '').slice(0, 120),
+      }, true).catch(function () {});
+    } catch (e) { /* a click is never worth an error */ }
+  }
+
+  var home = location.hostname.replace(/^www\./, '');
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest && e.target.closest('a[href]');
+    if (!a) return;
+    try {
+      var u = new URL(a.href, location.href);
+      var h = u.hostname.replace(/^www\./, '');
+      if (u.protocol === 'mailto:' || u.protocol === 'tel:') return ev('contact', u.protocol.slice(0, -1));
+      if (a.hasAttribute('download') || /\.pdf$/i.test(u.pathname)) return ev('download', u.pathname);
+      if (h === home) return;
+      ev(/(^|\.)stripe\.com$/.test(h) ? 'donate'
+        : /(^|\.)(instagram|facebook|tiktok|x|twitter|youtube|whatsapp|linkedin|threads)\.(com|net)$/.test(h)
+          ? 'social' : 'outbound', h);
+    } catch (x) { /* an address the browser cannot parse is not a click to count */ }
+  }, true);
+  /* `play` does not bubble, so it is caught on the way down. Once per video
+     per page, so pausing and carrying on is not a second play. */
+  document.addEventListener('play', function (e) {
+    var v = e.target;
+    if (!v || v.tagName !== 'VIDEO' || v.saPlayed) return;
+    v.saPlayed = 1;
+    try { ev('video', new URL(v.currentSrc || v.src, location.href).pathname); } catch (x) { ev('video', ''); }
+  }, true);
+  document.addEventListener('submit', function (e) {
+    var f = e.target;
+    if (f && f.getAttribute) ev('form', f.getAttribute('data-enquiry') || f.id || 'form');
+  }, true);
+
   var sent = false;
 
   function send() {
@@ -145,6 +202,12 @@
         p_from: from(),
         p_hour: hour(),
       }, true).catch(function () {});
+      if (tag) {
+        window.saRpc('record_page_tag', {
+          p_path: path,
+          p_tag: tag,
+        }, true).catch(function () {});
+      }
     } catch (e) { /* never a console error in exchange for a counter */ }
   }
 

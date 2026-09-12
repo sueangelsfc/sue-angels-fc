@@ -876,9 +876,19 @@ export async function panelChecks() {
       { day: '2026-09-02', came_from: '', path: '/index.html', views: 4 },
       { day: '2026-09-02', came_from: '/programme.html', path: '/squad.html', views: 3 },
     ];
+    /* Tagged links and clicks (010): one tag, a download and a donation. */
+    const tagRows = [
+      { day: '2026-09-01', tag: 'insta-story', path: '/programme.html', views: 5 },
+    ];
+    const eventRows = [
+      { day: '2026-09-01', path: '/programme.html', kind: 'download', target: '/assets/programme/f.pdf', count: 8 },
+      { day: '2026-09-02', path: '/index.html', kind: 'donate', target: 'buy.stripe.com', count: 2 },
+    ];
     const serve = (method, q) => {
       if (/page_stats_hourly\?/.test(q)) return hourRows;
       if (/page_routes\?/.test(q)) return routeRows;
+      if (/page_tags\?/.test(q)) return tagRows;
+      if (/page_events\?/.test(q)) return eventRows;
       if (/day=lt\./.test(q)) return prevRows;
       return statRows;
     };
@@ -909,6 +919,72 @@ export async function panelChecks() {
       !/<td>instagram\.com<\/td><td>\/programme\.html<\/td>/.test(noRoute)
         && !/<td>\/programme\.html<\/td><td>\/squad\.html<\/td>/.test(noRoute),
       'the route checks would pass without the route table');
+
+    /* Where people left: a page's views less the views that came from it.
+       The programme had 6 in and 3 went on to the squad; the home page had 4
+       in and nobody went on. Cell by cell, so a table that printed the right
+       numbers in the wrong columns fails. */
+    check('where people left counts the views no later view came from',
+      /<td>\/programme\.html<\/td><td><b>6<\/b><\/td><td>3<\/td><td><b>3<\/b><\/td><td>50%<\/td>/.test(host.html)
+        && /<td>\/index\.html<\/td><td><b>4<\/b><\/td><td>0<\/td><td><b>4<\/b><\/td><td>100%<\/td>/.test(host.html),
+      'no exit rows');
+    check('arrivals are split by kind day by day, with moves between pages beside them',
+      /<td>Wednesday 2 Sep<\/td><td>0<\/td><td>0<\/td><td>0<\/td><td>4<\/td><td>3<\/td><td><b>7<\/b><\/td>/.test(host.html)
+        && /<td>Tuesday 1 Sep<\/td><td>0<\/td><td>6<\/td><td>0<\/td><td>0<\/td><td>0<\/td><td><b>6<\/b><\/td>/.test(host.html),
+      'no day-by-kind rows');
+    check('a tagged link is reported with the page it opened',
+      /<td>insta-story<\/td><td>\/programme\.html<\/td><td><b>5<\/b><\/td>/.test(host.html), 'no tag row');
+    check('the screen builds a tagged link to copy',
+      /data-tag-out/.test(host.html) && /\?from=insta-story/.test(host.html), 'no link builder');
+    check('clicks are counted by kind',
+      /<td>Downloads<\/td><td><b>8<\/b><\/td>/.test(host.html)
+        && /<td>Donate button<\/td><td><b>2<\/b><\/td>/.test(host.html), 'no click kinds');
+    check('the screen is seven chapters with a rail that jumps to each',
+      (host.html.match(/data-jump="st-/g) || []).length === 7
+        && (host.html.match(/class="cpst__ch" id="st-/g) || []).length === 7, 'chapters');
+    check('with no views today the glance says so rather than showing the period',
+      /Nothing recorded yet today/.test(host.html), 'the glance claimed figures for today');
+
+    /* PROBE: take the tag and click tables away and those checks must fail. */
+    const noClickCtx = await PR.boot({
+      rows: { rest: serve },
+      transform: (src, file) => (file === 'control-stats.js'
+        ? bust(bust(src, 'page_events?select=', 'page_eventsX?select='), 'page_tags?select=', 'page_tagsX?select=')
+        : src),
+    });
+    const noClick = (await PR.openPanel(noClickCtx, 'stats')).html;
+    check('probe: with no tag or click rows those checks notice',
+      !/<td>insta-story<\/td><td>\/programme/.test(noClick) && !/<td>Downloads<\/td><td><b>8/.test(noClick),
+      'the tag and click checks would pass without their tables');
+
+    /* Today, from a row dated today and nothing else. */
+    const todayIso = new Date().toISOString().slice(0, 10);
+    const withToday = (method, q) => {
+      if (/page_stats_hourly\?|page_routes\?|page_tags\?|page_events\?/.test(q)) return serve(method, q);
+      if (/day=lt\./.test(q)) return prevRows;
+      return statRows.concat([{ day: todayIso, path: '/programme.html', zone: 'Europe/London', source: 'instagram.com', device: 'mobile', views: 5, seconds_total: 100, depth_total: 300 }]);
+    };
+    const todayHost = await PR.openPanel(await PR.boot({ rows: { rest: withToday } }), 'stats');
+    check('today at a glance counts only today’s views',
+      /<b>5<\/b> page views so far today/.test(todayHost.html),
+      todayHost.html.slice(todayHost.html.indexOf('Today at a glance'), todayHost.html.indexOf('Today at a glance') + 240));
+
+    /* The sponsor report: pressed, it must carry the period's figures and the
+       footnote saying they are views and not people, and closing must remove it. */
+    const repBtn = host.body.querySelector('[data-report]');
+    check('there is a sponsor report on the stats screen', !!repBtn, 'no report button');
+    if (repBtn) {
+      repBtn.click();
+      const doc = repBtn.ownerDocument;
+      const rep = doc && doc.querySelector('.cprep');
+      const repText = rep ? rep.textContent.replace(/\s+/g, ' ') : '';
+      check('the sponsor report carries the period’s views and says they are not people',
+        /Website audience report/.test(repText) && /24page views/.test(repText)
+          && /not a count of people/.test(repText), repText.slice(0, 240));
+      const shut = rep && rep.querySelector('[data-report-close]');
+      if (shut) shut.click();
+      check('closing the sponsor report removes it', !doc.querySelector('.cprep'), 'still open');
+    }
 
     check('website stats totals every view it was given',
       /24 page views/.test(text), text.slice(0, 200));
@@ -1236,6 +1312,8 @@ export async function panelChecks() {
       const serve2 = (method, q) => {
         if (/page_stats_hourly\?/.test(q)) return hourRows;
         if (/page_routes\?/.test(q)) return routeRows;
+        if (/page_tags\?/.test(q)) return tagRows;
+        if (/page_events\?/.test(q)) return eventRows;
         if (/day=lt\./.test(q)) return prevRows;
         return withCat;
       };
@@ -1331,13 +1409,14 @@ export async function panelChecks() {
        on the screen works, and the hour is the only thing missing. Saying
        "nothing yet" there would send somebody looking for traffic when what is
        missing is a file nobody has executed. */
-    const onlyDaily = (method, q) => (/page_stats_hourly\?|page_routes\?/.test(q)
+    const onlyDaily = (method, q) => (/page_stats_hourly\?|page_routes\?|page_tags\?|page_events\?/.test(q)
       ? Promise.reject(new Error('404')) : statRows);
     const halfCtx = await PR.boot({ rows: { rest: onlyDaily } });
     const half = (await PR.openPanel(halfCtx, 'stats')).body.textContent.replace(/\s+/g, ' ');
     check('with 007 run and 009 not the screen names the migration that adds the hour and route',
       /009_page_routes\.sql/.test(half) && /24 page views/.test(half)
-        && /The route through the site\s*Not switched on yet/.test(half),
+        && /The route through the site\s*Not switched on yet/.test(half)
+        && /010_page_events\.sql/.test(half),
       half.slice(0, 200));
   }
 

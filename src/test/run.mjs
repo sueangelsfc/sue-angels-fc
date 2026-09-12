@@ -744,6 +744,7 @@ for (const f of shipped) {
       /* The website stats screen reports ON the site; it is not part of it,
          and every one of its sections is the club reading its own figures. */
       'Website stats', 'What gets read', 'Where in the world', 'How they arrive',
+      'Today at a glance', 'The shape of it',
       'What they read it on', 'Day by day', 'When people read it',
       'How much of a page they read', 'This page on its own',
       /* The one section on the screen whose whole content is the list of
@@ -1852,7 +1853,13 @@ const BUDGET = {
      runs on every page it ships to, because every page is a page somebody can
      read and the whole point is knowing which ones they do. There is no
      per-page split that would make it smaller. */
-  'sa.js': 17,
+  /* 17 -> 18, and the 526 bytes are 30-stats.js again: tagged links and the
+     click counter (migrations/010). Measured at 17,312 gz before and 17,838
+     after. Same argument as the beacon itself: it runs on every page it ships
+     to, because a download, a donation click or a link to a sponsor can
+     happen on any of them, and there is no per-page split that makes a
+     delegated click listener smaller. */
+  'sa.js': 18,
   /* 5 -> 6, once, for the match form telling you what is in the record: the
      count on a tab you have not opened, the strip saying what does not add
      up, the tally beside each picker's label, and the eleven collapsed from a
@@ -1872,7 +1879,8 @@ const BUDGET = {
      building without 60-stats.css (5,518) and with it (5,901). Everything else on that screen
      is a `cpt` tile, a `pipebar` share or a `data` table, deliberately: a
      stats page is where somebody is most tempted to invent a component set. */
-  'control.css': 7,
+  /* 7 -> 8, 1.6KB, for the data desk and the printable sponsor report. */
+  'control.css': 8,
   /* 11 -> 12 for draft recovery, deliberately and once. The shell was at
      10.78KB of 11, and what pushed it over is cross-cutting safety code that
      CANNOT be lazy: a listener that loads on demand cannot catch typing that
@@ -1991,7 +1999,16 @@ const BUDGET = {
      dates costs the chunk nothing and costs every other panel nothing.
 
      control.css took the same pass at 6.2KB of its 7, so it is not raised. */
-  'control-stats.js': 15,
+  /* 15 -> 22 for the data desk (September 2026): seven chapters under a rail,
+     today at a glance, the shape of the period (match day against any other
+     day, the average day of the week, week by week, month by month), rings
+     for every share, the route with where people left and arrivals by kind
+     day by day, tagged links with a link builder, clicks, and the sponsor
+     report. 14,735 gz before and 20,551 after. The chunk is fetched by the
+     one screen that uses it and by nobody else, which is the whole reason it
+     is a chunk; the club asked for everything, and for a page it can hand a
+     sponsor. */
+  'control-stats.js': 22,
   'control-matchday.js': 4,
   /* 16 -> 6. The five-tab editor left for control-matchedit.js, so this is now
      the two LISTS: 15.9KB of a 16KB ceiling became 4.9KB. The ceiling comes
@@ -4432,6 +4449,23 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
       routeArgs.length === 3
         && routeArgs.every((a) => new RegExp(`\\b${a}\\s+(text|int)\\b`).test(mig009)),
       routeArgs.join(', '));
+    const mig010 = fs.readFileSync(path.join(ROOT, 'migrations', '010_page_events.sql'), 'utf8');
+    for (const [fn, want] of [['record_page_tag', 2], ['record_page_event', 3]]) {
+      const got = argsOf(fn);
+      check(`the ${fn} beacon sends exactly the arguments migration 010 defines`,
+        got.length === want
+          && got.every((a) => new RegExp(`\\b${a}\\s+(text|int)\\b`).test(mig010)),
+        got.join(', '));
+    }
+    /* Every kind the beacon can send must be one the database accepts, or the
+       click is thrown away with nothing to say so. */
+    const beaconSrc = fs.readFileSync(path.join(ROOT, 'src', 'scripts', '30-stats.js'), 'utf8');
+    const sentKinds = [...new Set((beaconSrc.match(/\bev\('([a-z]+)'|\? '([a-z]+)'|: '([a-z]+)', h\)/g) || [])
+      .map((m) => m.match(/'([a-z]+)'/)[1]))];
+    const allowed = ((mig010.match(/p_kind not in \(([^)]*)\)/) || [])[1] || '');
+    check('every click kind the beacon sends is one migration 010 accepts',
+      sentKinds.length >= 6 && sentKinds.every((k) => allowed.includes(`'${k}'`)),
+      sentKinds.join(', '));
   }
 
   /* $ IS querySelector AND $$ IS querySelectorAll, and treating the singular

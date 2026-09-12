@@ -250,6 +250,9 @@
   var prev = null;      /* the period before this one, for the comparison */
   var hours = null;     /* null means the hourly table does not exist yet */
   var routes = null;    /* null means migration 009 has not been run */
+  var tags = null;      /* null means migration 010 has not been run */
+  var events = null;    /* the clicks, also 010 */
+  var SITE = 'https://www.suesangelsfc.co.uk';
   var CAT = null;       /* the site's own page list, or null if unreachable */
   var FOCUS = '';       /* a page being looked at on its own */
   var SORT = 'views';
@@ -314,11 +317,15 @@
       get('page_stats_hourly?select=day,hour,path,views' + since + '&limit=20000'),
       catalogue(),
       get('page_routes?select=day,came_from,path,views' + since + '&limit=20000'),
+      get('page_tags?select=day,tag,path,views' + since + '&limit=20000'),
+      get('page_events?select=day,path,kind,target,count' + since + '&limit=20000'),
     ]).then(function (r) {
       rows = r[0];
       prev = r[1] || [];
       hours = r[2];
       routes = r[4];
+      tags = r[5];
+      events = r[6];
     });
   }
 
@@ -553,9 +560,13 @@
        ninety-day axis with ninety labels is a grey smear. */
     var every = Math.ceil(days.length / 8);
     var axis = days.map(function (d, i) {
-      if (i % every && i !== days.length - 1) return '';
+      var lastI = days.length - 1;
+      if (i !== lastI && (i % every || lastI - i < every)) return '';
+      /* The last date sits flush with the right edge rather than centred on
+         it, or it is cut off by the edge of the chart. */
       return '<text class="cpc__ax" x="' + x(i).toFixed(1) + '" y="' + (H - 26)
-        + '" text-anchor="middle">' + esc(shortDate(d.key)) + '</text>';
+        + '" text-anchor="' + (i === lastI ? 'end' : 'middle') + '">' + esc(shortDate(d.key))
+        + '</text>';
     }).join('');
 
     var dots = days.map(function (d, i) {
@@ -577,11 +588,23 @@
       }).join('');
     }
 
+    /* The seven-day average, trailing. A Sunday league site is weekly by
+       nature, and a raw daily line is mostly the week's own rhythm; the
+       average is what shows whether the whole thing is growing. */
+    var avg = '';
+    if (days.length >= 7) {
+      avg = '<path class="cpc__avg" d="M' + days.map(function (d, i) {
+        var s7 = 0, n7 = 0;
+        for (var j = Math.max(0, i - 6); j <= i; j++) { s7 += days[j].views; n7++; }
+        return x(i).toFixed(1) + ' ' + y(s7 / n7).toFixed(1);
+      }).join('L') + '"/>';
+    }
+
     return '<div class="cpc"><svg class="cpc__svg" viewBox="0 0 ' + W + ' ' + H + '" '
       + 'role="img" aria-label="' + esc('Views per day from ' + shortDate(days[0].key)
         + ' to ' + shortDate(days[days.length - 1].key) + ', highest ' + max) + '">'
       + grid + marks + ghostPath + '<path class="cpc__area" d="' + area + '"/>'
-      + '<path class="cpc__line" d="' + line + '"/>' + dots + axis + '</svg></div>';
+      + '<path class="cpc__line" d="' + line + '"/>' + avg + dots + axis + '</svg></div>';
   }
 
   /* Which days the club did something. Only days INSIDE the period, so the
@@ -862,24 +885,32 @@
     var wasPlaces = pv.length
       ? roll(pv, function (r) { return countryOf(r.zone); }).length : 0;
 
-    host.innerHTML = headline(all, everything, pages, places, days, secs, deep, busiest,
+    /* Seven chapters, in the order a report is read: the headline and today,
+       the trend, who the readers are, how they arrive and move, what they
+       read, what they do, and what the figures cannot say. The rail at the
+       top jumps between them, and the report button turns the same figures
+       into a page a sponsor can be handed. */
+    host.innerHTML = '<div class="cpst">' + chapterNav()
+      + chapter(0, headline(all, everything, pages, places, days, secs, deep, busiest,
         wasAll, wasSecs, wasPlaces)
-      + (FOCUS ? focusPanel(FOCUS, all) : '')
-      + sec({
+        + (FOCUS ? focusPanel(FOCUS, all) : '')
+        + todaySection())
+      + chapter(1, sec({
         title: 'Day by day',
         sub: 'Every day in the period, and what came in on it.',
         body: trend(days, { marks: marksFor(days), ghost: ghostFor(days, pv) })
           + trendKey(days, pv)
           + dayTable(days, busiest, v),
       })
-      + (DAYS && pv.length
-        ? sec({
-          title: 'What moved',
-          sub: 'The pages that rose and fell most against the period before.',
-          body: movers(pages, roll(pv, function (r) { return r.path; }), all),
-        })
-        : '')
-      + sec({
+        + trendsSection(v, days)
+        + (DAYS && pv.length
+          ? sec({
+            title: 'What moved',
+            sub: 'The pages that rose and fell most against the period before.',
+            body: movers(pages, roll(pv, function (r) { return r.path; }), all),
+          })
+          : ''))
+      + chapter(2, sec({
         title: 'Where in the world',
         sub: 'Worked out from the reader’s device time zone.',
         body: worldMap(places, all)
@@ -890,21 +921,22 @@
           + 'rather than a count of countries. A zone the panel does not recognise is '
           + 'reported as its region rather than guessed at or dropped.</p>',
       })
-      + whenSection()
-      + sec({
-        title: 'What gets read',
-        sub: 'Every page anybody opened, with how long they stayed and how far down they '
-          + 'got. Pick a page to see it on its own.',
-        actions: sortBar(),
-        body: areaTable(areas, all) + pageTable(pages, all, v),
-      })
-      + publishSection(pages, all)
-      + unopenedSection()
-      + sec({
+        + sec({
+          title: 'What they read it on',
+          body: '<div class="cp2"><div>' + donut(devices, all, 'Devices') + '</div><div>'
+            + rankTable('Device', devices, all, 'any device', { filter: 'device' })
+            + '</div></div>'
+            + '<p class="cp-note">From the width of the screen, which is what the layout responds '
+            + 'to, rather than from the browser’s identifying user agent string. A phone held '
+            + 'sideways can count as a tablet, which is the honest limit of measuring it this '
+            + 'way.</p>',
+        }))
+      + chapter(3, sec({
         title: 'How they arrive',
         sub: 'The kind of place first, then the sites themselves.',
-        body: '<h4 class="cp-sub">By kind</h4>'
-          + rankTable('Kind', groups, all, 'any source')
+        body: '<div class="cp2"><div>' + donut(groups, all, 'How views arrived')
+          + '</div><div><h4 class="cp-sub">By kind</h4>'
+          + rankTable('Kind', groups, all, 'any source') + '</div></div>'
           + '<h4 class="cp-sub">Site by site</h4>'
           + rankTable('Source', sources, all, 'any source', { filter: 'source' })
           + '<p class="cp-note">Only the sending site is recorded, never the full address it '
@@ -913,47 +945,38 @@
           + 'an app or an email, or a browser set not to say. Moving between pages of this '
           + 'site is not counted as a source.</p>',
       })
-      + routeSection()
-      + sec({
-        title: 'What they read it on',
-        body: rankTable('Device', devices, all, 'any device', { filter: 'device' })
-          + '<p class="cp-note">From the width of the screen, which is what the layout responds '
-          + 'to, rather than from the browser’s identifying user agent string. A phone held '
-          + 'sideways can count as a tablet, which is the honest limit of measuring it this '
-          + 'way.</p>',
+        + routeSection()
+        + tagSection())
+      + chapter(4, sec({
+        title: 'What gets read',
+        sub: 'Every page anybody opened, with how long they stayed and how far down they '
+          + 'got. Pick a page to see it on its own.',
+        actions: sortBar(),
+        body: areaTable(areas, all) + pageTable(pages, all, v),
       })
-      + sec({
-        title: 'How much of a page they read',
-        sub: 'The spread, not the average.',
-        body: '<div class="cp2">'
-          + '<div>' + spread(v, function (r) { return r.depth_total; },
-            [['Left near the top, under 25%', 25], ['A quarter to halfway', 50],
-              ['Halfway to three quarters', 75], ['Read to the bottom, over 75%', 100]],
-            'How far down') + '</div>'
-          + '<div>' + spread(v, function (r) { return r.seconds_total; },
-            [['A glance, under 10 seconds', 10], ['10 to 30 seconds', 30],
-              ['Half a minute to two minutes', 120], ['Over two minutes', 1e9]],
-            'How long') + '</div></div>'
-          + '<p class="cp-note">An average scroll of half the page can be everybody stopping '
-          + 'in the middle or half the readers leaving at the top while the rest read it all, '
-          + 'and those are opposite facts. A page that is shorter than the window counts as '
-          + 'read to the bottom, because there was nothing to scroll.</p>',
-      })
-      + sec({
-        title: 'What is not here, and why',
-        body: '<p class="cp-note"><b>Visitors.</b> There is no identifier of any kind, so two '
-          + 'views cannot be told apart and a count of people is a number this cannot '
-          + 'honestly produce. Every figure above is <b>views, not visitors</b>.</p>'
-          + '<p class="cp-note"><b>A journey.</b> Moves between pages are counted one step at '
-          + 'a time, so this can say how many views of the squad came from the programme but '
-          + 'can never follow one reader from page to page - by anybody, including somebody '
-          + 'with the database open.</p>'
-          + '<p class="cp-note"><b>Readers without JavaScript</b>, which is most search engine '
-          + 'crawlers. The real number of page requests is higher than the figures here.</p>'
-          + '<p class="cp-note"><b>Anything finer than the hour</b>, and the hour is kept in '
-          + 'its own table carrying no zone, source or device, so knowing when a page was '
-          + 'read never narrows down who read it.</p>',
-      });
+        + publishSection(pages, all)
+        + unopenedSection())
+      + chapter(5, whenSection()
+        + sec({
+          title: 'How much of a page they read',
+          sub: 'The spread, not the average.',
+          body: '<div class="cp2">'
+            + '<div>' + spread(v, function (r) { return r.depth_total; },
+              [['Left near the top, under 25%', 25], ['A quarter to halfway', 50],
+                ['Halfway to three quarters', 75], ['Read to the bottom, over 75%', 100]],
+              'How far down') + '</div>'
+            + '<div>' + spread(v, function (r) { return r.seconds_total; },
+              [['A glance, under 10 seconds', 10], ['10 to 30 seconds', 30],
+                ['Half a minute to two minutes', 120], ['Over two minutes', 1e9]],
+              'How long') + '</div></div>'
+            + '<p class="cp-note">An average scroll of half the page can be everybody stopping '
+            + 'in the middle or half the readers leaving at the top while the rest read it all, '
+            + 'and those are opposite facts. A page that is shorter than the window counts as '
+            + 'read to the bottom, because there was nothing to scroll.</p>',
+        })
+        + clickSection())
+      + chapter(6, notHere())
+      + '</div>';
 
     wire(host);
   }
@@ -973,6 +996,10 @@
     if (marksFor(days)) {
       bits.push('<span class="cpg"><i class="cpg__mark" aria-hidden="true"></i> a match was '
         + 'played or an article went up</span>');
+    }
+    if (days.length >= 7) {
+      bits.push('<span class="cpg"><i class="cpg__avg" aria-hidden="true"></i> the seven-day '
+        + 'average</span>');
     }
     if (ghostFor(days, pv)) {
       bits.push('<span class="cpg"><i class="cpg__ghost" aria-hidden="true"></i> the same '
@@ -1142,11 +1169,16 @@
           + 'database. It switches on <b>When people read it</b> at the same time.</p>',
       });
     }
-    var list = steps((routes || []).filter(function (r) {
-      if (FILT.area && areaOf(r.path) !== FILT.area) return false;
+    /* Part of the site narrows everything here. A source filter keeps the
+       arrivals from that source and cannot reach a move between pages, which
+       has no source; where people left is counted without it, because a
+       page's exits are not a property of how its readers arrived. */
+    var base = routes.filter(function (r) { return !FILT.area || areaOf(r.path) === FILT.area; });
+    var mine = base.filter(function (r) {
       return !FILT.source
         || (!isPage(r.came_from) && (r.came_from || 'Direct or unknown') === FILT.source);
-    }));
+    });
+    var list = steps(mine);
     if (!total(list)) {
       return sec({
         title: title,
@@ -1154,23 +1186,550 @@
         body: '<p class="cp-note">Routes fill in from the next visitor onwards.</p>',
       });
     }
+    var landed = mine.filter(function (r) { return !isPage(r.came_from); });
     return sec({
       title: title,
-      sub: 'Where people arrived from and the page they landed on, then how they moved '
-        + 'from page to page.',
-      body: '<h4 class="cp-sub">Arrived from, and landed on</h4>'
+      sub: 'Where people arrived from and the page they landed on, how they moved from page '
+        + 'to page, and where they left.',
+      body: '<div class="cp2"><div><h4 class="cp-sub">Arrived from, and landed on</h4>'
         + stepTable(['Came from', 'Landed on'],
           list.filter(function (r) { return !isPage(r.from); }),
           'Nobody arrived from outside the site in this period.')
+        + '</div><div><h4 class="cp-sub">Where people first landed</h4>'
+        + countTable('Landing page', roll(landed, function (r) { return pageLabel(r.path); }),
+          'Nobody arrived from outside the site in this period.')
+        + '</div></div>'
+        + '<h4 class="cp-sub">Day by day, by kind of arrival</h4>' + dayKind(mine)
         + '<h4 class="cp-sub">Page to page</h4>'
         + stepTable(['From', 'To'], list.filter(function (r) { return isPage(r.from); }),
           FILT.source ? 'A move between pages has no source, so a source filter leaves none.'
             : 'Nobody moved from one page to another in this period.')
+        + '<h4 class="cp-sub">Where people left</h4>' + exitTable(base)
+        + '<p class="cp-note"><b>Left here</b> is the views of a page that no later view came '
+        + 'from, so it is the last page somebody read. Treat it as a good estimate: a link '
+        + 'opened in a new tab counts as going on, and going back to a page already read can '
+        + 'count as a second view of it.</p>'
         + '<p class="cp-note">Each row counts one step, never a person. Somebody who landed '
         + 'on the programme from Instagram and then opened the squad is two rows that share '
         + 'a page, and nothing can join them into one visit. Country and device filters do '
         + 'not apply: the route is kept in its own table without either.</p>',
     });
+  }
+
+  function countTable(head, list, none, unit) {
+    var of = total(list);
+    if (!of) return none ? '<p class="cp-note">' + esc(none) + '</p>' : '';
+    return table([head, unit || 'Views', 'Share', ''], list.slice(0, 30).map(function (r) {
+      return '<tr><td>' + esc(r.key) + '</td><td><b>' + esc(String(r.views)) + '</b></td>'
+        + '<td>' + esc(String(pct(r.views, of))) + '%</td>'
+        + '<td style="width:26%">' + bar(r.views, of) + '</td></tr>';
+    }).join(''));
+  }
+
+  /* Arrivals by kind for each day, with the moves between pages beside them,
+     so a spike can be read as what caused it: a Sunday of social media is a
+     post, a Monday of search is a result somebody went looking for. */
+  var KINDS = ['Search engines', 'Social media', 'Other websites', 'Direct or unknown'];
+  function dayKind(list) {
+    var by = {};
+    list.forEach(function (r) {
+      var d = by[r.day] || (by[r.day] = [0, 0, 0, 0, 0]);
+      d[isPage(r.came_from) ? 4 : KINDS.indexOf(sourceGroup(r.came_from))] += Number(r.views || 0);
+    });
+    var keys = Object.keys(by).sort().reverse();
+    if (!keys.length) return '';
+    var tot = function (d) { return d.reduce(function (n, x) { return n + x; }, 0); };
+    var max = Math.max.apply(null, keys.map(function (k) { return tot(by[k]); })) || 1;
+    return table(['Day'].concat(KINDS, ['Page to page', 'Total', '']), keys.map(function (k) {
+      return '<tr><td>' + esc(dayName(k) + ' ' + shortDate(k)) + '</td>'
+        + by[k].map(function (n) { return '<td>' + esc(String(n)) + '</td>'; }).join('')
+        + '<td><b>' + esc(String(tot(by[k]))) + '</b></td>'
+        + '<td style="width:14%">' + bar(tot(by[k]), max) + '</td></tr>';
+    }).join(''));
+  }
+
+  function exitTable(list) {
+    var into = {}, on = {};
+    list.forEach(function (r) {
+      var n = Number(r.views || 0);
+      into[r.path] = (into[r.path] || 0) + n;
+      if (isPage(r.came_from) && r.came_from !== r.path) on[r.came_from] = (on[r.came_from] || 0) + n;
+    });
+    var out = Object.keys(into).map(function (p) {
+      var went = Math.min(on[p] || 0, into[p]);
+      return { p: p, views: into[p], went: went, left: into[p] - went };
+    }).sort(function (a, b) { return b.left - a.left; });
+    var of = out.reduce(function (n, r) { return n + r.left; }, 0);
+    if (!out.length) return '';
+    return table(['Page', 'Views', 'Went on', 'Left here', 'Left', ''],
+      out.slice(0, 25).map(function (r) {
+        return '<tr><td>' + esc(pageLabel(r.p)) + '</td><td><b>' + esc(String(r.views))
+          + '</b></td><td>' + esc(String(r.went)) + '</td><td><b>' + esc(String(r.left))
+          + '</b></td><td>' + esc(String(pct(r.left, r.views))) + '%</td>'
+          + '<td style="width:18%">' + bar(r.left, of) + '</td></tr>';
+      }).join(''));
+  }
+
+  /* ---- Chapters ----------------------------------------------------------- */
+  var CHAPTERS = [['now', 'Headline and today'], ['trend', 'Trends'], ['who', 'Audience'],
+    ['route', 'Arrivals and routes'], ['read', 'Content'], ['act', 'Engagement'],
+    ['about', 'About the figures']];
+
+  function chapter(i, body) {
+    return '<div class="cpst__ch" id="st-' + CHAPTERS[i][0] + '">'
+      + '<p class="cpst__eyebrow"><span>0' + (i + 1) + '</span>' + esc(CHAPTERS[i][1]) + '</p>'
+      + body + '</div>';
+  }
+
+  function chapterNav() {
+    return '<nav class="cpst__nav" aria-label="Sections of Website stats">'
+      + CHAPTERS.map(function (c, i) {
+        return '<button type="button" class="cpst__jump" data-jump="st-' + c[0] + '"><span>0'
+          + (i + 1) + '</span>' + esc(c[1]) + '</button>';
+      }).join('')
+      + '<button type="button" class="btn btn--sm btn--primary cpst__present" data-report>'
+      + 'Sponsor report</button></nav>';
+  }
+
+  /* ---- Today ---------------------------------------------------------------
+     The period tables answer "how is it going"; this answers "is anybody on it
+     now". The day is the database's, midnight to midnight UTC. */
+  function todaySection() {
+    var T = iso(new Date());
+    var isToday = function (r) { return r.day === T; };
+    var mine = view().filter(isToday);
+    var n = total(mine);
+    if (!n) {
+      return sec({
+        title: 'Today at a glance',
+        sub: 'Nothing recorded yet today.',
+        body: '<p class="cp-note">The day runs midnight to midnight UTC, which is 1am to 1am in '
+          + 'summer, and a view is written when the reader leaves the page, so the first '
+          + 'figures appear a few minutes after somebody visits.</p>',
+      });
+    }
+    var rt = (routes || []).filter(isToday);
+    var tg = (tags || []).filter(isToday);
+    var clicks = sum((events || []).filter(isToday), function (r) { return r.count; });
+    var pagesToday = roll(mine, function (r) { return pageLabel(r.path); });
+    var placesToday = roll(mine, function (r) { return countryOf(r.zone); }).length;
+    return sec({
+      title: 'Today at a glance',
+      sub: '<b>' + esc(String(n)) + '</b> page view' + (n === 1 ? '' : 's') + ' so far today, from '
+        + '<b>' + esc(String(placesToday)) + '</b> place' + (placesToday === 1 ? '' : 's') + '.',
+      body: '<div class="cpt-grid cpst__today">'
+        + tile(String(n), 'Views today', pagesToday.length + ' pages opened')
+        + tile(String(total(rt.filter(function (r) { return !isPage(r.came_from); }))),
+          'Arrivals', 'from outside the site')
+        + tile(String(total(tg)), 'Tagged links opened', 'from links you shared')
+        + tile(String(clicks), 'Clicks', 'downloads, donations, links')
+        + '</div><div class="cp2"><div><h4 class="cp-sub">Most read today</h4>'
+        + countTable('Page', pagesToday, 'Nothing yet.')
+        + '</div><div><h4 class="cp-sub">Where today’s views came from</h4>'
+        + countTable('Source', roll(mine, function (r) { return r.source || 'Direct or unknown'; }),
+          'Nothing yet.')
+        + '</div></div>'
+        + (rt.length ? '<h4 class="cp-sub">Today’s routes</h4>'
+          + stepTable(['From', 'To'], steps(rt), 'No routes yet today.') : ''),
+    });
+  }
+
+  /* ---- The shape of it ------------------------------------------------------ */
+  function ymd(t) {
+    var m = t.getMonth() + 1, d = t.getDate();
+    return t.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (d < 10 ? '0' : '') + d;
+  }
+  /* Every calendar day in the period, including the ones nobody visited: an
+     average Sunday is the Sundays' views over the number of Sundays, and a
+     quiet Sunday that wrote no rows is still a Sunday. */
+  function calendar(days) {
+    var from = DAYS ? daysAgo(DAYS - 1) : (days[0] && days[0].key);
+    var to = DAYS ? iso(new Date()) : (days.length && days[days.length - 1].key);
+    var out = [];
+    if (!from || !to) return out;
+    var t = new Date(from + 'T12:00:00');
+    while (out.length < 800) {
+      var k = ymd(t);
+      if (!(k <= to)) break;
+      out.push(k);
+      t.setDate(t.getDate() + 1);
+    }
+    return out;
+  }
+  function weekOf(day) {
+    var t = new Date(day + 'T12:00:00');
+    t.setDate(t.getDate() - ((t.getDay() + 6) % 7));
+    return ymd(t);
+  }
+
+  function columns(list, label) {
+    if (!list.length) return '';
+    var W = 640, H = 180, T = 20, B = 26, L = 4;
+    var max = Math.max.apply(null, list.map(function (c) { return c.views; })) || 1;
+    var bw = (W - L * 2) / list.length;
+    var every = Math.ceil(list.length / 12);
+    return '<div class="cpc cpcol"><svg class="cpc__svg" viewBox="0 0 ' + W + ' ' + H
+      + '" role="img" aria-label="' + esc(label + ': ' + list.map(function (c) {
+        return c.label + ' ' + c.views;
+      }).join(', ')) + '">'
+      + list.map(function (c, i) {
+        var h = (c.views / max) * (H - T - B);
+        var x = L + i * bw + bw * 0.14;
+        var mid = (x + bw * 0.36).toFixed(1);
+        return '<rect class="cpcol__b' + (c.views === max ? ' is-top' : '') + '" x="' + x.toFixed(1)
+          + '" y="' + (H - B - Math.max(1, h)).toFixed(1) + '" width="' + (bw * 0.72).toFixed(1)
+          + '" height="' + Math.max(1, h).toFixed(1) + '" rx="3"><title>'
+          + esc(c.title || (c.label + ': ' + c.views)) + '</title></rect>'
+          + (list.length <= 16 ? '<text class="cpcol__n" x="' + mid + '" y="'
+            + (H - B - h - 6).toFixed(1) + '" text-anchor="middle">' + esc(String(c.views)) + '</text>' : '')
+          + (i % every ? '' : '<text class="cpcol__x" x="' + mid + '" y="' + (H - 8)
+            + '" text-anchor="middle">' + esc(c.label) + '</text>');
+      }).join('') + '</svg></div>';
+  }
+
+  /* What a match day is worth, which is the figure a sponsor asks about. The
+     club's own match dates, from the catalogue, against every other day. */
+  function matchdayEffect(span, byDay) {
+    if (!CAT) return '';
+    var match = {};
+    CAT.forEach(function (e) { if (e.k === 'match' && e.d) match[e.d] = 1; });
+    var md = { n: 0, v: 0 }, od = { n: 0, v: 0 };
+    span.forEach(function (k) {
+      var t = match[k] ? md : od;
+      t.n += 1;
+      t.v += byDay[k] || 0;
+    });
+    if (!md.n || !od.n) return '';
+    var a = Math.round((md.v / md.n) * 10) / 10;
+    var b = Math.round((od.v / od.n) * 10) / 10;
+    var said = !b ? 'Match days bring views on days that otherwise have none.'
+      : (a >= b ? 'A match day brings ' + Math.round((a / b) * 10) / 10
+        + ' times the views of any other day.'
+        : 'A match day brought fewer views than an ordinary day in this period.');
+    return '<div class="cpst__vs"><div class="cpst__vsi"><b>' + esc(String(a)) + '</b>'
+      + '<span>views on an average match day</span><small>' + esc(md.n + ' match day'
+        + (md.n === 1 ? '' : 's')) + '</small></div>'
+      + '<div class="cpst__vsx" aria-hidden="true">v</div>'
+      + '<div class="cpst__vsi"><b>' + esc(String(b)) + '</b><span>on any other day</span>'
+      + '<small>' + esc(od.n + ' other day' + (od.n === 1 ? '' : 's')) + '</small></div></div>'
+      + '<p class="cp-note">' + esc(said) + ' A match day is the date of the club’s own match '
+      + 'report.</p>';
+  }
+
+  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August',
+    'September', 'October', 'November', 'December'];
+  function monthTable(v) {
+    var ms = roll(v, function (r) { return String(r.day).slice(0, 7); })
+      .sort(function (a, b) { return a.key < b.key ? 1 : -1; });
+    if (!ms.length) return '';
+    var opened = {};
+    v.forEach(function (r) {
+      var k = String(r.day).slice(0, 7);
+      (opened[k] || (opened[k] = {}))[r.path] = 1;
+    });
+    var max = Math.max.apply(null, ms.map(function (m) { return m.views; })) || 1;
+    return table(['Month', 'Views', 'Pages opened', 'Average time', 'Against the month before', ''],
+      ms.map(function (m, i) {
+        var was = ms[i + 1];
+        var ch = was && was.views ? Math.round(((m.views - was.views) / was.views) * 100) : null;
+        return '<tr><td>' + esc(MONTHS[Number(m.key.slice(5, 7)) - 1] + ' ' + m.key.slice(0, 4))
+          + '</td><td><b>' + esc(String(m.views)) + '</b></td><td>'
+          + esc(String(Object.keys(opened[m.key]).length)) + '</td><td>'
+          + esc(dur(m.seconds / m.views)) + '</td>'
+          + (ch === null ? '<td>The first month here</td>'
+            : '<td class="cpd--' + (ch > 0 ? 'up' : (ch < 0 ? 'down' : 'flat')) + '">'
+              + esc((ch > 0 ? '+' : '') + ch + '%') + '</td>')
+          + '<td style="width:18%">' + bar(m.views, max) + '</td></tr>';
+      }).join(''));
+  }
+
+  function trendsSection(v, days) {
+    var span = calendar(days);
+    if (span.length < 2 || !days.length) return '';
+    var byDay = {};
+    days.forEach(function (d) { byDay[d.key] = d.views; });
+    var names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    var sumW = [0, 0, 0, 0, 0, 0, 0], nW = [0, 0, 0, 0, 0, 0, 0];
+    span.forEach(function (k) {
+      var i = (new Date(k + 'T12:00:00').getDay() + 6) % 7;
+      sumW[i] += byDay[k] || 0;
+      nW[i] += 1;
+    });
+    var week = names.map(function (n, i) {
+      var avg = nW[i] ? Math.round((sumW[i] / nW[i]) * 10) / 10 : 0;
+      return { label: n.slice(0, 3), views: avg,
+        title: 'An average ' + n + ': ' + avg + ' views, over ' + nW[i] + ' ' + n + 's' };
+    });
+    var weeks = roll(v, function (r) { return weekOf(r.day); })
+      .sort(function (a, b) { return a.key < b.key ? -1 : 1; })
+      .map(function (w) {
+        return { label: shortDate(w.key), views: w.views,
+          title: 'The week starting ' + dayName(w.key) + ' ' + shortDate(w.key) + ': '
+            + w.views + ' views' };
+      });
+    return sec({
+      title: 'The shape of it',
+      sub: 'What a match day is worth, the average day of the week, and the same views week '
+        + 'by week and month by month.',
+      body: matchdayEffect(span, byDay)
+        + '<div class="cp2"><div><h4 class="cp-sub">An average day of the week</h4>'
+        + columns(week, 'Average views by day of the week')
+        + '</div><div><h4 class="cp-sub">Week by week</h4>'
+        + (weeks.length > 1 ? columns(weeks, 'Views a week, by the Monday it starts')
+          : '<p class="cp-note">One week so far.</p>')
+        + '</div></div><h4 class="cp-sub">Month by month</h4>' + monthTable(v),
+    });
+  }
+
+  /* A ring, one accent at falling strengths, because orange is the only hue
+     this panel has and a second one would be a category pretending to be a
+     scale. The legend says every share in words. */
+  function donut(list, all, label) {
+    if (!all || !list.length) return '';
+    var C = 2 * Math.PI * 42, off = 0;
+    var shade = [1, 0.62, 0.38, 0.22, 0.12];
+    var top = list.slice(0, 5);
+    return '<div class="cpdn"><svg class="cpdn__svg" viewBox="0 0 120 120" role="img" aria-label="'
+      + esc(label + ': ' + top.map(function (r) { return r.key + ' ' + pct(r.views, all) + '%'; })
+        .join(', ')) + '"><g transform="rotate(-90 60 60)"><circle class="cpdn__well" cx="60" '
+      + 'cy="60" r="42"/>'
+      + top.map(function (r, i) {
+        var len = (C * r.views) / all;
+        var seg = '<circle class="cpdn__seg" cx="60" cy="60" r="42" style="stroke-opacity:'
+          + shade[i] + '" stroke-dasharray="' + len.toFixed(2) + ' ' + (C - len).toFixed(2)
+          + '" stroke-dashoffset="' + (-off).toFixed(2) + '"><title>'
+          + esc(r.key + ': ' + r.views + ' (' + pct(r.views, all) + '%)') + '</title></circle>';
+        off += len;
+        return seg;
+      }).join('')
+      + '</g><text class="cpdn__n" x="60" y="62">' + esc(pct(top[0].views, all) + '%') + '</text>'
+      + '<text class="cpdn__l" x="60" y="77">' + esc(String(top[0].key).length > 14 ? String(top[0].key).split(' ')[0] : String(top[0].key)) + '</text></svg>'
+      + '<ul class="cpdn__key">' + top.map(function (r, i) {
+        return '<li><i class="cpdn__sw" style="opacity:' + shade[i] + '"></i><span>' + esc(r.key)
+          + '</span><b>' + esc(pct(r.views, all) + '%') + '</b></li>';
+      }).join('') + '</ul></div>';
+  }
+
+  /* ---- Links the club shares ------------------------------------------------ */
+  function tagBuilder() {
+    var pagesList = (CAT || []).filter(function (e) { return e.k !== 'panel'; })
+      .map(function (e) { return e.p; });
+    if (!pagesList.length) {
+      pagesList = ['/index.html', '/programme.html', '/squad.html', '/sponsors.html', '/donate.html'];
+    }
+    return '<div class="cpst__tagger">'
+      + '<label class="cpf__one"><span class="cpf__l">Page to link to</span>'
+      + '<select class="select input--sm" data-tag-page>' + pagesList.slice(0, 250).map(function (p) {
+        return '<option value="' + esc(p) + '">' + esc(pageLabel(p)) + '</option>';
+      }).join('') + '</select></label>'
+      + '<label class="cpf__one"><span class="cpf__l">Tag, for example insta-story</span>'
+      + '<input class="input input--sm" data-tag-name value="insta-story" maxlength="40"></label>'
+      + '<label class="cpf__one cpst__tagout"><span class="cpf__l">Link to post</span>'
+      + '<input class="input input--sm" data-tag-out readonly value="'
+      + esc(SITE + pagesList[0] + '?from=insta-story') + '"></label>'
+      + '<button type="button" class="btn btn--sm btn--primary" data-tag-copy>Copy link</button></div>';
+  }
+
+  function tagSection() {
+    var title = 'Links you shared';
+    var how = '<p class="cp-note">Apps like Instagram and WhatsApp do not say where a click came '
+      + 'from, so those visits read as <b>Direct or unknown</b>. Build a link here, post it, and '
+      + 'every visit through it is counted under its tag. The tag is taken out of the address '
+      + 'bar when the page opens, so it is not passed on when somebody shares the page again.</p>';
+    if (tags === null) {
+      return sec({
+        title: title,
+        sub: 'Not switched on yet.',
+        body: '<p class="cp-note">Tagged links are counted once '
+          + '<b>migrations/010_page_events.sql</b> has been run on the database. It switches on '
+          + '<b>What people clicked</b> at the same time.</p>' + tagBuilder() + how,
+      });
+    }
+    var mine = tags.filter(function (r) {
+      return r.tag && (!FILT.area || areaOf(r.path) === FILT.area);
+    });
+    return sec({
+      title: title,
+      sub: 'Which of the links the club posted sent people, and to which page.',
+      body: tagBuilder() + how
+        + (total(mine)
+          ? '<div class="cp2"><div><h4 class="cp-sub">By tag</h4>'
+            + countTable('Tag', roll(mine, function (r) { return r.tag; }), '')
+            + '</div><div><h4 class="cp-sub">Tag and the page it opened</h4>'
+            + stepTable(['Tag', 'Landed on'], steps(mine.map(function (r) {
+              return { came_from: r.tag, path: r.path, views: r.views };
+            })), '') + '</div></div>'
+          : '<p class="cp-note">No tagged links have been opened in this period.</p>'),
+    });
+  }
+
+  /* ---- What people clicked --------------------------------------------------- */
+  var EVK = { download: 'Downloads', donate: 'Donate button', social: 'Social media links',
+    outbound: 'Links to other websites', contact: 'Email and phone links',
+    video: 'Videos played', form: 'Forms sent' };
+
+  function clickSection() {
+    var title = 'What people clicked';
+    if (events === null) {
+      return sec({
+        title: title,
+        sub: 'Not switched on yet.',
+        body: '<p class="cp-note">Downloads, donation clicks, links to sponsors and social media, '
+          + 'videos played and forms sent are counted once <b>migrations/010_page_events.sql</b> '
+          + 'has been run on the database.</p>',
+      });
+    }
+    var mine = events.filter(function (r) {
+      return r.kind && (!FILT.area || areaOf(r.path) === FILT.area);
+    });
+    var n = sum(mine, function (r) { return r.count; });
+    if (!n) {
+      return sec({
+        title: title,
+        sub: 'Switched on, and nothing clicked yet in this period.',
+        body: '<p class="cp-note">Clicks fill in from the next visitor onwards.</p>',
+      });
+    }
+    var kinds = roll(mine.map(function (r) { return { k: EVK[r.kind] || r.kind, views: r.count }; }),
+      function (r) { return r.k; });
+    var by = {};
+    mine.forEach(function (r) {
+      var k = JSON.stringify([r.kind, r.target || '', r.path]);
+      by[k] = (by[k] || 0) + Number(r.count || 0);
+    });
+    var each = Object.keys(by).map(function (k) {
+      var p = JSON.parse(k);
+      return { kind: p[0], target: p[1], path: p[2], n: by[k] };
+    }).sort(function (a, b) { return b.n - a.n; });
+    return sec({
+      title: title,
+      sub: '<b>' + esc(String(n)) + '</b> click' + (n === 1 ? '' : 's')
+        + ' on the things that matter: downloads, donations, links out, videos and forms.',
+      body: '<div class="cp2"><div>' + donut(kinds, n, 'Clicks by kind') + '</div><div>'
+        + countTable('What', kinds, '', 'Clicks') + '</div></div>'
+        + '<h4 class="cp-sub">Click by click</h4>'
+        + table(['What', 'Where to', 'On page', 'Clicks'], each.slice(0, 40).map(function (r) {
+          return '<tr><td>' + esc(EVK[r.kind] || r.kind) + '</td><td>'
+            + esc(isPage(r.target) ? pageLabel(r.target) : (r.target || 'Not known')) + '</td><td>'
+            + esc(pageLabel(r.path)) + '</td><td><b>' + esc(String(r.n)) + '</b></td></tr>';
+        }).join(''))
+        + '<p class="cp-note">Counted the moment somebody clicks, by page, kind and target for the '
+        + 'day. A link to a sponsor shows as its website under <b>Links to other websites</b>, '
+        + 'which is the figure to quote to them.</p>',
+    });
+  }
+
+  function notHere() {
+    return sec({
+      title: 'What is not here, and why',
+      body: '<p class="cp-note"><b>Visitors.</b> There is no identifier of any kind, so two '
+        + 'views cannot be told apart and a count of people is a number this cannot '
+        + 'honestly produce. Every figure above is <b>views, not visitors</b>.</p>'
+        + '<p class="cp-note"><b>A journey.</b> Moves between pages are counted one step at '
+        + 'a time, so this can say how many views of the squad came from the programme but '
+        + 'can never follow one reader from page to page - by anybody, including somebody '
+        + 'with the database open.</p>'
+        + '<p class="cp-note"><b>Who clicked.</b> A click is counted by page, kind and target '
+        + 'for the day, never against a view or a person, and nothing typed into a form is '
+        + 'ever read.</p>'
+        + '<p class="cp-note"><b>Readers without JavaScript</b>, which is most search engine '
+        + 'crawlers. The real number of page requests is higher than the figures here.</p>'
+        + '<p class="cp-note"><b>Anything finer than the hour</b>, and the hour is kept in '
+        + 'its own table carrying no zone, source or device, so knowing when a page was '
+        + 'read never narrows down who read it.</p>',
+    });
+  }
+
+  /* ---- The sponsor report ------------------------------------------------------
+     The same figures, as a page somebody can be handed: warm paper, the big
+     numbers first, the charts a sponsor asks about, and the honest footnote.
+     It is drawn from whatever the screen is showing, filters and period
+     included, and printed with the rest of the panel hidden. */
+  function kpi(v, l) {
+    return '<div class="cprep__kpi"><b>' + esc(String(v)) + '</b><span>' + esc(l) + '</span></div>';
+  }
+  function rlist(list, of) {
+    return '<ol class="cprep__list">' + list.map(function (r) {
+      return '<li><span>' + esc(r.key) + '</span><b>' + esc(pct(r.views, of) + '%') + '</b></li>';
+    }).join('') + '</ol>';
+  }
+
+  function report() {
+    var v = view();
+    var all = total(v);
+    if (!all) return '';
+    var days = roll(v, function (r) { return r.day; })
+      .sort(function (a, b) { return a.key < b.key ? -1 : 1; });
+    var places = roll(v, function (r) { return countryOf(r.zone); });
+    var pagesRead = roll(v, function (r) { return pageLabel(r.path); });
+    var span = calendar(days);
+    var byDay = {};
+    days.forEach(function (d) { byDay[d.key] = d.views; });
+    var first = days[0].key, last = days[days.length - 1].key;
+    var clicks = events ? roll(events.filter(function (r) { return r.kind; }).map(function (r) {
+      return { k: EVK[r.kind] || r.kind, views: r.count };
+    }), function (r) { return r.k; }) : [];
+    var byHour = {};
+    (hours || []).forEach(function (r) { byHour[r.hour] = (byHour[r.hour] || 0) + Number(r.views || 0); });
+    var peak = Object.keys(byHour).sort(function (a, b) { return byHour[b] - byHour[a]; })[0];
+    var narrowed = Object.keys(FILT).map(function (k) { return FILT[k]; }).filter(Boolean);
+    return '<div class="cprep" role="dialog" aria-modal="true" aria-labelledby="cprep-h">'
+      + '<div class="cprep__bar"><button type="button" class="btn btn--sm btn--primary" '
+      + 'data-report-print>Print or save as PDF</button><button type="button" '
+      + 'class="btn btn--sm btn--ghost" data-report-close>Close</button></div>'
+      + '<article class="cprep__doc"><header class="cprep__head">'
+      + '<p class="cprep__kicker">Website audience report</p>'
+      + '<h2 id="cprep-h" class="cprep__title">Sue’s Angels FC</h2>'
+      + '<p class="cprep__period">' + esc(shortDate(first) + ' to ' + shortDate(last) + ' '
+        + last.slice(0, 4) + ' · suesangelsfc.co.uk'
+        + (narrowed.length ? ' · narrowed to ' + narrowed.join(', ') : '')) + '</p></header>'
+      + '<div class="cprep__kpis">'
+      + kpi(all, 'page views')
+      + kpi(Math.round((all / Math.max(1, span.length || days.length)) * 10) / 10, 'views a day')
+      + kpi(places.length, 'countries and regions')
+      + kpi(dur(sum(v, function (r) { return r.seconds_total; }) / all), 'average time on a page')
+      + kpi(Math.round(sum(v, function (r) { return r.depth_total; }) / all) + '%',
+        'of each page read on average')
+      + kpi(pagesRead.length, 'different pages read')
+      + '</div><h3 class="cprep__h">Views, day by day</h3>'
+      + trend(days, { marks: marksFor(days) }) + matchdayEffect(span, byDay)
+      + '<div class="cprep__two"><div><h3 class="cprep__h">How people find the site</h3>'
+      + donut(roll(v, function (r) { return sourceGroup(r.source); }), all, 'How views arrived')
+      + '</div><div><h3 class="cprep__h">What they read it on</h3>'
+      + donut(roll(v, function (r) { return r.device || 'Not known'; }), all, 'Devices')
+      + '</div></div><h3 class="cprep__h">Where in the world</h3>' + worldMap(places, all)
+      + '<div class="cprep__two"><div><h3 class="cprep__h">Top countries and regions</h3>'
+      + rlist(places.slice(0, 6), all) + '</div><div><h3 class="cprep__h">Most read</h3>'
+      + rlist(pagesRead.slice(0, 6), all) + '</div></div>'
+      + (clicks.length ? '<h3 class="cprep__h">What readers did</h3><div class="cprep__kpis">'
+        + clicks.slice(0, 6).map(function (c) { return kpi(c.views, c.key.toLowerCase()); }).join('')
+        + '</div>' : '')
+      + '<footer class="cprep__foot">' + esc((peak !== undefined
+        ? 'The busiest hour of the day is ' + (peak < 10 ? '0' : '') + peak + ':00. ' : '')
+        + 'Every figure is a page view counted on the club’s own website, not a count of people: '
+        + 'nothing identifying is recorded, so one person reading three pages is three views, and '
+        + 'readers whose browsers block scripts are not counted. Where in the world comes from '
+        + 'the time zone the reader’s device is set to. Prepared ' + shortDate(iso(new Date()))
+        + ' ' + iso(new Date()).slice(0, 4) + '.') + '</footer></article></div>';
+  }
+
+  function openReport(from) {
+    var old = document.querySelector('.cprep');
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+    var wrap = document.createElement('div');
+    wrap.innerHTML = report();
+    var el = wrap.firstChild;
+    if (!el) return;
+    document.body.appendChild(el);
+    var close = function () {
+      if (el.parentNode) el.parentNode.removeChild(el);
+      if (from && from.focus) from.focus();
+    };
+    var shut = el.querySelector('[data-report-close]');
+    shut.addEventListener('click', close);
+    el.querySelector('[data-report-print]').addEventListener('click', function () { window.print(); });
+    el.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+    if (shut.focus) shut.focus();
   }
 
   function sortBar() {
@@ -1436,6 +1995,12 @@
               return r.came_from === path;
             })), 'Nobody went on to another page from here.')
             + '</div></div>'
+          : '')
+        + (events && events.length
+          ? '<h4 class="cp-sub">Clicked on this page</h4>'
+            + countTable('What', roll(events.filter(function (r) { return r.path === path; })
+              .map(function (r) { return { k: EVK[r.kind] || r.kind, views: r.count }; }),
+            function (r) { return r.k; }), 'Nothing was clicked on this page.', 'Clicks')
           : ''),
     });
   }
@@ -1526,5 +2091,40 @@
       });
     });
     each('[data-csv]', function (b) { b.addEventListener('click', csv); });
+    each('[data-jump]', function (b) {
+      b.addEventListener('click', function () {
+        var goTo = host.querySelector('#' + b.getAttribute('data-jump'));
+        if (goTo && goTo.scrollIntoView) goTo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+    each('[data-report]', function (b) {
+      b.addEventListener('click', function () { openReport(b); });
+    });
+    var tp = host.querySelector('[data-tag-page]');
+    var tn = host.querySelector('[data-tag-name]');
+    var to = host.querySelector('[data-tag-out]');
+    if (tp && tn && to) {
+      var relink = function () {
+        var clean = String(tn.value || '').toLowerCase().replace(/[^a-z0-9-]+/g, '-')
+          .replace(/^-+|-+$/g, '').slice(0, 40);
+        to.value = SITE + tp.value + (clean ? '?from=' + clean : '');
+      };
+      tp.addEventListener('change', relink);
+      tn.addEventListener('input', relink);
+    }
+    each('[data-tag-copy]', function (b) {
+      b.addEventListener('click', function () {
+        if (!to) return;
+        var manual = function () {
+          if (to.select) to.select();
+          toast('Select the link and copy it');
+        };
+        try {
+          navigator.clipboard.writeText(to.value).then(function () {
+            toast('Link copied. Paste it wherever you post.');
+          }, manual);
+        } catch (e) { manual(); }
+      });
+    });
   }
 }());

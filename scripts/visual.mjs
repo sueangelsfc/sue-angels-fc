@@ -217,6 +217,19 @@ async function main() {
        page_stats with figures wide enough to draw the lot. */
     window.CP.rest = (method, q) => {
       const day = (n) => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10);
+      if (/page_tags\\?/.test(q || '')) {
+        return Promise.resolve([
+          { day: day(0), tag: 'insta-story', path: '/programme.html', views: 7 },
+          { day: day(2), tag: 'whatsapp-group', path: '/index.html', views: 3 },
+        ]);
+      }
+      if (/page_events\\?/.test(q || '')) {
+        return Promise.resolve([
+          { day: day(0), path: '/programme.html', kind: 'download', target: '/assets/programme/f20260913-haydons.pdf', count: 5 },
+          { day: day(1), path: '/sepsis.html', kind: 'donate', target: 'buy.stripe.com', count: 2 },
+          { day: day(1), path: '/index.html', kind: 'social', target: 'instagram.com', count: 4 },
+        ]);
+      }
       if (/page_routes\\?/.test(q || '')) {
         return Promise.resolve([
           { day: day(0), came_from: 'instagram.com', path: '/programme.html', views: 9 },

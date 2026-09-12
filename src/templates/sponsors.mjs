@@ -63,14 +63,30 @@ export function sponsors(d) {
   /* One list for the strip and this page, read from the record the panel
      writes. See src/lib/partners.mjs. */
   const PARTNERS = d.partners.filter((p) => p.onPage);
-  const league = teamSummary((d.played || []).filter(isLeague));
+  const leagueGames = (d.played || []).filter(isLeague);
+  const league = teamSummary(leagueGames);
+  /* THE RECORD SPANS DIVISIONS, AND SAYS SO. "19 from 19" is every league
+     match the club has played, which is League Ten's eighteen and League
+     Eight's first. Printed bare it read as one season, and "played 19,
+     promoted" claimed a promotion that eighteen of them earned. The seasons
+     are read off the matches, so the line stays true as the season goes on. */
+  const spans = [...new Set(leagueGames.map((m) => m.season))].sort()
+    .map((s) => {
+      const games = leagueGames.filter((m) => m.season === s);
+      return `${teamSummary(games).won} in ${games[0].competition} ${s}`;
+    });
+  const WORDS = ['one', 'two', 'three', 'four', 'five', 'six'];
+  const spanText = spans.length > 1
+    ? `, across ${WORDS[spans.length - 1] || spans.length} seasons: ${spans.slice(0, -1).join(', ')} and ${spans[spans.length - 1]}`
+    : (spans.length ? `: ${spans[0]}` : '');
+  const title = teamSummary(leagueGames.filter((m) => m.season === d.titleSeason));
 
   /* Every claim in this band is checkable, so each one carries the thing that
      backs it rather than an adjective. */
   const REASONS = [
     {
       k: 'Champions, with momentum',
-      v: `Played ${league.played}, won ${league.won}, promoted to ${d.divisionOf(d.nextSeason)}. Your brand backs a `
+      v: `Played ${title.played}, won ${title.won} in ${d.titleDivision} ${d.titleSeason}, and promoted to ${d.division}. Your brand backs a `
         + 'winning, rising club, not a hopeful start-up.',
     },
     {
@@ -181,7 +197,7 @@ export function sponsors(d) {
               matters, with a growing audience that puts local businesses in front of the right people.</p>
             <p class="sp-why__stat">
               <b>${esc(league.won)}</b><i>from ${esc(league.played)}</i>
-              <span>The league record your brand goes on.</span>
+              <span>The league record your brand goes on${esc(spanText)}.</span>
             </p>
           </div>
           <ol class="sp-ruled">

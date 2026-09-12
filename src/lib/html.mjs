@@ -133,6 +133,7 @@ export const NAV = [
   ] },
   { label: 'Get Involved', children: [
     { label: 'Join the Club', href: '/join.html' },
+    { label: 'Donate', href: '/donate.html' },
     { label: 'Contact', href: '/contact.html' },
   ] },
 ];

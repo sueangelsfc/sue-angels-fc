@@ -393,7 +393,7 @@
                 + 'Open the link and check it</a>'
               : '<span class="cp-note">No link set, so the donate button is not shown.</span>') +
           '</div>',
-        where: [['Our cause', '/sepsis.html']],
+        where: [['Donate', '/donate.html'], ['Our cause', '/sepsis.html']],
       });
 
       $('[data-save-donate]', host).addEventListener('click', function () {

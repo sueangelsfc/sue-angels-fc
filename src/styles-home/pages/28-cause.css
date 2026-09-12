@@ -184,6 +184,23 @@
 
 .cz-cta .cta2__glass{text-align: center;}
 
+/* ---- The donate page (/donate.html) ------------------------------------
+   Same components as the cause page. Four costs sit in four columns, then
+   two, then one; the numbered steps carry their number in the accent. The
+   selectors carry the grid class too so they outrank the breakpoints below. */
+.cz-help__grid.dn-uses{grid-template-columns: repeat(4, minmax(0, 1fr));}
+.dn-steps__n{display: grid; place-items: center; margin-bottom: 16px;
+  width: 34px; height: 34px; border-radius: 50%;
+  font-family: var(--display); font-weight: 500; font-size: 15px;
+  color: var(--volt); border: 1px solid rgba(var(--volt-rgb), 0.4);
+  background: rgba(var(--volt-rgb), 0.1);}
+@media (max-width: 980px){
+  .cz-help__grid.dn-uses{grid-template-columns: repeat(2, minmax(0, 1fr));}
+}
+@media (max-width: 620px){
+  .cz-help__grid.dn-uses{grid-template-columns: 1fr;}
+}
+
 @media (max-width: 980px){
   .cz-hero__grid,
   .cz-story__grid,

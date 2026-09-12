@@ -4752,6 +4752,9 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     const causePage = pages.get('sepsis.html') || '';
     check('the cause page carries the stored donate link',
       causePage.includes(stored), 'falls back to the template default');
+    const donatePage = pages.get('donate.html') || '';
+    check('the donate page carries the stored donate link',
+      donatePage.includes(stored), donatePage ? 'falls back to the template default' : 'donate.html was not generated');
   }
 
   /* NAMING SOMEBODY IS NOT A STATISTIC. Player stats are competitive-only,

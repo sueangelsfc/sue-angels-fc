@@ -92,6 +92,11 @@
       "permanent": true
     },
     {
+      "source": "/donate",
+      "destination": "/donate.html",
+      "permanent": true
+    },
+    {
       "source": "/champions",
       "destination": "/champions.html",
       "permanent": true

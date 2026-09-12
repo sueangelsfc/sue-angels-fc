@@ -19,6 +19,7 @@ import { COACH_ROLES } from './lib/coach-roles.mjs';
 import { HOME_BANDS, HOME_AREAS, homeBandFilled, reportsIn, albumsIn, playersIn, LEAGUE_FIRST, leagueUnderway } from './lib/home-layout.mjs';
 import { about } from './templates/about.mjs';
 import { cause } from './templates/cause.mjs';
+import { donate } from './templates/donate.mjs';
 import { champions } from './templates/champions.mjs';
 import { awards } from './templates/awards.mjs';
 import { sponsors } from './templates/sponsors.mjs';
@@ -260,6 +261,7 @@ const PAGE_CSS = {
   'index.html': 'campaign',
   'about.html': 'about',
   'sepsis.html': 'cause',
+  'donate.html': 'cause',
   'champions.html': 'champions',
   'awards.html': 'awards',
   'sponsors.html': 'sponsors',
@@ -1106,6 +1108,9 @@ const routes = [
 
   { file: 'sepsis.html', tpl: () => cause(d), ...meta('sepsis', `Our cause: sepsis awareness · ${CLUB.name}`,
       `${CLUB.name} was founded in memory of ${CLUB.memorial.name}, who we lost to sepsis. Why we play, the signs of sepsis to know, and how to support the cause.`) },
+
+  { file: 'donate.html', tpl: () => donate(d), ...meta('donate', `Donate · ${CLUB.name}`,
+      `Donate to ${CLUB.name} for pitch hire, match fees, referees and kit, paid securely by Stripe, or give to the UK Sepsis Trust in Sue's memory.`) },
 
   { file: 'champions.html', tpl: () => champions(d), ...meta('champions', `Champions · ${CLUB.name}`,
       `${TITLE_DIV} champions ${TITLE_SEASON}: the season in numbers, unbeaten and promoted.`) },

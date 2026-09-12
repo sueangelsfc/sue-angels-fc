@@ -20,6 +20,7 @@ export const LIVE_ROUTES = new Set([
   'index.html',
   'about.html',
   'sepsis.html',
+  'donate.html',
   'champions.html',
   'awards.html',
   'sponsors.html',

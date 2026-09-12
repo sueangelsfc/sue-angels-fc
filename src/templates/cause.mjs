@@ -35,7 +35,7 @@ const ARROW = '<span aria-hidden="true">→</span>';
    this file. The constant below is the fallback, and stays as the link that
    is live today. */
 const STRIPE_FALLBACK = 'https://buy.stripe.com/aFacN69GRd3b9dG1DKak000';
-const donateLink = (d) => {
+export const donateLink = (d) => {
   const cfg = (d.donate) || {};
   const link = String(cfg.stripeLink || cfg.link || '').trim();
   return /^https:\/\//.test(link) ? link : STRIPE_FALLBACK;

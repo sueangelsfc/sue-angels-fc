@@ -197,6 +197,22 @@ function quiz(d) {
   return out;
 }
 
+/* The page's matchday bands. Imported here, beside the function that uses
+   them, and kept in their own module so the printable document below never
+   inherits the page's layout. */
+import {
+  heroBand, tapeBand, lastBand, tableBand, roundBand, nextBand, backersBand,
+} from './programme-page.mjs';
+
+/* ONE PASS OF NUMBERS OVER THE FINISHED PAGE, for the same reason the
+   document renumbers itself: a band with nothing to say takes no number, so
+   the figures are only right once the page is assembled. */
+const renumber = (html) => {
+  let n = 0;
+  return html.replace(/<span class="xrail__n">\d+<\/span>/g,
+    () => `<span class="xrail__n">${String(++n).padStart(2, '0')}</span>`);
+};
+
 export function programme(d) {
   const m = d.nextFixture;
   const badges = d.badges;
@@ -438,10 +454,27 @@ export function programme(d) {
     partners.length ? `The ${partners.length} businesses backing the club` : null,
   ].filter(Boolean);
 
+  /* The booklet is a drawing, not a picture of a real programme: it carries
+     only the fixture the page already names, so it can never show a cover
+     for a programme that does not exist. */
+  const booklet = `<div class="pr-book" aria-hidden="true">
+            <span class="pr-book__page pr-book__page--3"></span>
+            <span class="pr-book__page pr-book__page--2"></span>
+            <span class="pr-book__cover">
+              <span class="pr-book__k">Matchday programme</span>
+              ${crest('pr-book__crest')}
+              <span class="pr-book__fx">${m ? `${esc(String(m.home).replace(/\s+(A?FC)$/i, ''))} <i>v</i> ${esc(String(m.away).replace(/\s+(A?FC)$/i, ''))}` : esc(CLUB.short)}</span>
+              <span class="pr-book__d">${m ? esc(`${m.competition} · ${fmtDate(m.date)}`) : esc(season)}</span>
+            </span>
+          </div>`;
+
   const downloadBand = `<section class="sec pr-band pr-get" aria-labelledby="pr-get-h">
       <div class="wrap">
-        <h2 class="h2 rv" id="pr-get-h">${m ? esc(m.competition) : 'The programme'}
-          <span class="volt">.</span></h2>
+        ${rail(1, 'The programme', pdf ? `PDF${d.programmePdfKb ? ` · ${d.programmePdfKb}KB` : ''}` : 'Before kick-off')}
+        <div class="pr-get__grid">
+        ${booklet}
+        <div class="pr-get__body">
+        <h2 class="h2 rv" id="pr-get-h">${m ? 'This week’s' : 'The'} <span class="volt">programme.</span></h2>
         <p class="pr-lede rv">${m
     ? `${esc(m.weAreHome ? m.opponent : m.home)} at ${esc(m.venue || CLUB.venue.shortName)},
        ${esc(fmtDate(m.date, { weekday: true }))}, ${esc(m.kick || '')}.${pdf ? ' The programme for this one is ready to take with you.' : ''}`
@@ -454,8 +487,10 @@ export function programme(d) {
           ${icon('download', '')} <span>Download this week's programme</span>
           <small>PDF${d.programmePdfKb ? ` · ${esc(d.programmePdfKb)}KB` : ''}</small></a></p>
         <ul class="pr-contents rv">${contents.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>`
-    : (m ? `<p class="pr-note rv">The programme for this match is on its way, and it will be here
+    : (m ? `<p class="pr-note pr-note--soon rv">The programme for this match is on its way, and it will be here
           to download before kick-off.</p>` : '')}
+        </div>
+        </div>
       </div>
     </section>`;
 
@@ -489,7 +524,17 @@ export function programme(d) {
     </section>`;
 
   return {
-    body: siteHeader('/programme.html') + cover + downloadBand + archiveBand + previewBand
+    /* The poster replaces the cover band on the page only; `cover` below is
+       still the plain band, because the printable document reuses it. */
+    body: siteHeader('/programme.html') + renumber((m ? heroBand(d, m, season) : cover)
+      + downloadBand
+      + (m ? tapeBand(d, m, headToHead(d, m.opponent)) : '')
+      + lastBand(d)
+      + tableBand(d, m)
+      + (m ? roundBand(d, m) : '')
+      + nextBand(d, m)
+      + previewBand + archiveBand
+      + backersBand(d))
       + sourceNote(['fulltime']),
     bodyClass: 'is-home is-sub is-programme',
     css: 'home.css',

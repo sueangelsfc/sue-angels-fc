@@ -837,6 +837,16 @@ downloading it, the way it works at a ground. The page is the cover, a
 contents list and the button; the document carries the opponent, the squad,
 last season, the quiz, the word search, the cause and the partners.
 
+- **The page is the matchday around the download** (`src/templates/programme-page.mjs`,
+  styled at the foot of `45-programme.css`): the fixture as a poster with a
+  countdown, the programme, the tale of the tape from the two clubs' League
+  Eight rows, last time out, the table with both clubs marked, the rest of the
+  round, the match after and the partners. Still no player links on the page;
+  the squad stays in the document. Rail numbers are set in one pass after the
+  page is assembled, so an empty band takes none. The countdown counts to
+  `londonKick()`, because `isoDateTime` stores a kick-off as UTC and runs an
+  hour late in summer. `programme().cover` stays the plain band because the
+  document reuses it.
 - **The cover is always the fixture**: both badges either side of a v, like
   the drawn share cards.
 - **The button only appears if the file is on disk.** `d.programmePdf` is set

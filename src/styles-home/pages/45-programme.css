@@ -96,6 +96,9 @@
 /* A tone, not an opacity: 0.75 of #111 over orange lands back under 4.5:1.
    #3a1400 is a darker orange-brown and measures 5.3:1. */
 .pr-download small { font-size: 0.72em; color: #3a1400; font-family: var(--ui); }
+/* The file size is one label. On a phone the button is narrow and "PDF ·
+   5751KB" broke across two lines; the words beside it wrap instead. */
+.pr-download small { white-space: nowrap; flex: none; }
 .pr-download .ico { align-self: center; }
 .pr-contents { margin: 0 0 1.25rem; padding-left: 1.15rem; color: var(--ink-2); }
 .pr-contents li { padding: 0.22rem 0; }

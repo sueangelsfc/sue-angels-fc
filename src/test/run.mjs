@@ -5917,6 +5917,43 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 }
 
 /* ==========================================================================
+   SEARCH ENGINES ARE TOLD WHAT CHANGED, AND FIND EVERY NAME
+   ========================================================================== */
+{
+  const ix = await import(path.join(ROOT, 'src', 'lib', 'indexnow.mjs'));
+  const keyPath = path.join(ROOT, ix.INDEXNOW_FILE);
+  check('the IndexNow key is served at the root and says the key',
+    fs.existsSync(keyPath) && fs.readFileSync(keyPath, 'utf8').trim() === ix.INDEXNOW_KEY, ix.INDEXNOW_FILE);
+  check('the IndexNow key is a key the protocol accepts',
+    /^[A-Za-z0-9-]{8,128}$/.test(ix.INDEXNOW_KEY));
+
+  const sm = (rows) => `<urlset>${rows.map(([l, m]) => `<url><loc>${l}</loc><lastmod>${m}</lastmod></url>`).join('')}</urlset>`;
+  const H = 'https://www.suesangelsfc.co.uk';
+  const prevSm = sm([[`${H}/`, '2026-09-06'], [`${H}/squad.html`, '2026-09-06'], [`${H}/gone.html`, '2026-09-01']]);
+  const nextSm = sm([[`${H}/`, '2026-09-13'], [`${H}/squad.html`, '2026-09-06'], [`${H}/new.html`, '2026-09-13'], ['https://elsewhere.example/x.html', '2026-09-13']]);
+  const sent = ix.changedUrls(prevSm, nextSm, 'www.suesangelsfc.co.uk');
+  check('IndexNow sends what is new or moved, and nothing unchanged or off the host',
+    JSON.stringify(sent) === JSON.stringify([`${H}/`, `${H}/new.html`]), JSON.stringify(sent));
+  check('with no live sitemap to compare, IndexNow sends every URL on the host',
+    ix.changedUrls('', nextSm, 'www.suesangelsfc.co.uk').length === 3);
+
+  const vj = JSON.parse(fs.readFileSync(path.join(ROOT, 'vercel.json'), 'utf8'));
+  check('the deploy tells IndexNow only after the guard has passed the build',
+    /npm run guard && npm run indexnow$/.test(vj.buildCommand || ''), vj.buildCommand);
+  const ixSrc = fs.readFileSync(path.join(ROOT, 'scripts', 'indexnow.mjs'), 'utf8');
+  check('the IndexNow step can never fail a deploy',
+    /process\.exit\(0\)/.test(ixSrc) && !/process\.exit\((?!0\))/.test(ixSrc));
+
+  const homeLd = [...(pages.get('index.html') || '').matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
+    .map((m) => { try { return JSON.parse(m[1]); } catch { return null; } }).filter(Boolean);
+  const nodes = homeLd.flatMap((j) => j['@graph'] || [j]);
+  const club = nodes.find((n) => [].concat(n['@type'] || []).includes('SportsTeam') && n.name === CLUB.name);
+  const alts = [].concat((club && club.alternateName) || []);
+  check('the club is findable by the names people search for',
+    ["Sue's Angels", 'Sues Angels', 'Sues Angels FC'].every((n) => alts.includes(n)), JSON.stringify(alts));
+}
+
+/* ==========================================================================
    HOW AN ARTICLE'S TEXT BECOMES MARKUP
 
    The club writes these in a textarea, so the text is UNTRUSTED and the order

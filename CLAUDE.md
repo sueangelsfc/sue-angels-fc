@@ -42,7 +42,7 @@ src/
 ### Why a generator
 1. **Shell drift is impossible.** Header, nav and footer are defined once in `html.mjs`. The old site copy-pasted them into 20 files and they drifted (three different brand `aria-label`s, two different mobile CTA labels).
 2. **Real URLs.** Every player (`/players/<slug>.html`), match (`/matches/<id>.html`), article and album gets its own crawlable file with content in the HTML.
-3. **The deploy runs the generator.** `buildCommand` is `npm run sync && npm run build && npm run verify && npm run guard`, set by `45492af` when the Publish button landed and given its guard later. It was `null`, and this note said no build could fail on deploy; that has not been true since. A deploy now pulls the database, regenerates and checks the derived figures, so **a bad record can fail a deploy** and anything the panel reads must resolve to something sane rather than throwing.
+3. **The deploy runs the generator.** `buildCommand` is `npm run sync && npm run build && npm run verify && npm run guard && npm run indexnow`, set by `45492af` when the Publish button landed and given its guard later. It was `null`, and this note said no build could fail on deploy; that has not been true since. A deploy now pulls the database, regenerates and checks the derived figures, so **a bad record can fail a deploy** and anything the panel reads must resolve to something sane rather than throwing.
 4. **Works with JavaScript disabled.** Every page ships complete markup.
 
 ### The security policy is data, and it is wrong in both directions or neither
@@ -269,6 +269,23 @@ other write does, because its whole job is to go and ask.
 
 ### Cache busting is automatic
 `sa.css` and `sa.js` are versioned by a **content hash** computed at build time and stamped identically on every page. Never hand-edit a `?v=`. Mixed versions used to be a recurring production bug; the test suite now asserts a single version across all pages.
+
+### Search engines are told what changed
+
+The deploy ends with `npm run indexnow` (`scripts/indexnow.mjs`, rules in
+`src/lib/indexnow.mjs`). It compares the sitemap the build wrote with the one
+the live site is serving and posts every new or changed URL to IndexNow, which
+Bing (and so DuckDuckGo and ChatGPT search), Yandex, Seznam and Naver share.
+Google does not take part and reads the sitemap as before.
+
+- **It never fails a deploy.** It runs after `guard`, and every failure is
+  logged and exits 0.
+- **Production only** (`VERCEL_ENV=production`); `--force` sends from anywhere.
+- **The key is public by design.** The build writes `<key>.txt` at the root to
+  prove the site owns the host; it grants nothing.
+- The club's structured data carries `alternateName` from `CLUB.alternateNames`
+  (Sue's Angels, Sues Angels, Sues Angels FC, Sue's Angels Football Club, The
+  Angels), because people search without the apostrophe and without the FC.
 
 ## The statistics engine — the one rule that matters
 **Every published figure is derived in `src/lib/stats.mjs` from match records. No page hard-codes a number.** Two pages can therefore never disagree.

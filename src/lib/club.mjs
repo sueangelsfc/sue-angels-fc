@@ -9,6 +9,9 @@ export const CLUB = {
   name: "Sue's Angels FC",
   short: 'Sue’s Angels',
   nickname: 'The Angels',
+  /* The names the club is searched for, beside the registered one. Read by
+     the structured data on every page (alternateName) and by llms.txt. */
+  alternateNames: ["Sue's Angels", 'Sues Angels', 'Sues Angels FC', "Sue's Angels Football Club", 'The Angels'],
   founded: 2025,
   type: "Men's Sunday league football club",
   town: 'London',

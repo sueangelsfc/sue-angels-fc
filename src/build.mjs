@@ -20,6 +20,7 @@ import { HOME_BANDS, HOME_AREAS, homeBandFilled, reportsIn, albumsIn, playersIn,
 import { about } from './templates/about.mjs';
 import { cause } from './templates/cause.mjs';
 import { donate } from './templates/donate.mjs';
+import { INDEXNOW_FILE, INDEXNOW_KEY } from './lib/indexnow.mjs';
 import { champions } from './templates/champions.mjs';
 import { awards } from './templates/awards.mjs';
 import { sponsors } from './templates/sponsors.mjs';
@@ -1499,6 +1500,10 @@ write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>
 ${urls.map((u) => `  <url><loc>${CLUB.site}${u}</loc><lastmod>${lastmodFor(u)}</lastmod><changefreq>${u === '/' ? 'daily' : 'weekly'}</changefreq><priority>${u === '/' ? '1.0' : u.includes('/players/') || u.includes('/matches/') ? '0.6' : '0.8'}</priority></url>`).join('\n')}
 </urlset>
 `);
+
+/* The IndexNow key, served at the root so search engines can confirm the site
+   owns the host. Public by design: see src/lib/indexnow.mjs. */
+write(INDEXNOW_FILE, INDEXNOW_KEY);
 
 write('robots.txt', `User-agent: *
 Allow: /

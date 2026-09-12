@@ -16,7 +16,8 @@
     "publish": "npm run sync && npm run build && npm run verify && npm run guard && npm test",
     "covers": "node scripts/make-covers.mjs",
     "visual": "node scripts/visual.mjs",
-    "programme": "node scripts/make-programme.mjs"
+    "programme": "node scripts/make-programme.mjs",
+    "indexnow": "node scripts/indexnow.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.24.0"

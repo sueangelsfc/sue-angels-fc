@@ -317,7 +317,10 @@ export function clubNode() {
     '@type': ['SportsTeam', 'SportsOrganization'],
     '@id': CLUB_ID,
     name: CLUB.name,
-    alternateName: CLUB.nickname,
+    /* EVERY NAME SOMEBODY SEARCHES FOR. People type the club without the
+       apostrophe, without the FC and in full, and a search engine matching the
+       registered name exactly would miss all three. */
+    alternateName: CLUB.alternateNames,
     url: `${CLUB.site}/`,
     sport: 'Association football',
     foundingDate: String(CLUB.founded),

@@ -845,8 +845,7 @@ last season, the quiz, the word search, the cause and the partners.
   HLO, at the club's request). Still no player links on the page;
   the squad stays in the document. Rail numbers are set in one pass after the
   page is assembled, so an empty band takes none. The countdown counts to
-  `londonKick()`, because `isoDateTime` stores a kick-off as UTC and runs an
-  hour late in summer. `programme().cover` stays the plain band because the
+  `londonKick()`, which reads `isoDateTime`: a kick-off is stored as UK time (it was stored as UTC, an hour late in summer, until September 2026). `programme().cover` stays the plain band because the
   document reuses it.
 - **A sub-page that opens on a `.sec` band must lift its header.** `.pghead` is
   `position: static`, and `.hx__mainnav` is a stacking context (backdrop-filter),

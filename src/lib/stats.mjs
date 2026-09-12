@@ -61,12 +61,39 @@ export const toISO = (str) => {
   return d ? d.toISOString().slice(0, 10) : null;
 };
 
+/* HOW FAR LONDON IS AHEAD OF UTC AT AN INSTANT, in minutes: 60 in summer, 0
+   in winter. Asked of Intl rather than worked out from the calendar, so the
+   last Sunday of March and October need no rule of our own. A runtime with no
+   time-zone data answers 0, which is the old behaviour rather than a throw. */
+function londonOffset(ms) {
+  try {
+    const parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+    }).formatToParts(new Date(ms));
+    const at = new Date(ms);
+    let diff = (Number(parts.find((p) => p.type === 'hour').value) * 60
+      + Number(parts.find((p) => p.type === 'minute').value))
+      - (at.getUTCHours() * 60 + at.getUTCMinutes());
+    if (diff > 720) diff -= 1440;
+    if (diff < -720) diff += 1440;
+    return diff;
+  } catch {
+    return 0;
+  }
+}
+
+/* THE KICK-OFF AS AN INSTANT, and a kick-off is UK time. This used to set the
+   hours in UTC, so from April to October every one was an hour late: the
+   11:00 against Haydons Park was stored as noon, the home page's countdown
+   ran an hour long and the fixture's structured data told search engines the
+   wrong time. The date and the time are read as the clock at the ground. */
 export function isoDateTime(dateStr, kick) {
   const d = parseDate(dateStr);
   if (!d) return null;
   const [h, min] = String(kick || '11:00').split(':').map(Number);
-  d.setUTCHours(Number.isFinite(h) ? h : 11, Number.isFinite(min) ? min : 0, 0, 0);
-  return d.toISOString();
+  const wall = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(),
+    Number.isFinite(h) ? h : 11, Number.isFinite(min) ? min : 0, 0, 0);
+  return new Date(wall - londonOffset(wall) * 60000).toISOString();
 }
 
 export function fmtDate(str, opts = {}) {

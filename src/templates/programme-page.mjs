@@ -23,7 +23,7 @@
    ========================================================================== */
 import { esc, attr, icon, crest } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
-import { fmtDate, isUs, toISO } from '../lib/stats.mjs';
+import { fmtDate, isUs, toISO, isoDateTime } from '../lib/stats.mjs';
 import { clubIdentity } from '../lib/club-name.mjs';
 import { oppBadge } from './home.mjs';
 
@@ -47,24 +47,13 @@ export const rail = (label, ref) => `<div class="xrail" aria-hidden="true">
       <span class="xrail__r">${esc(ref)}</span>
     </div>`;
 
-/* THE KICK-OFF IN LONDON, as an instant. `isoDateTime` in stats.mjs writes the
-   kick-off as UTC, so between April and October a countdown built on it runs
-   an hour long: "11:00" arrives at noon. The page counts to the time on the
-   fixture as it is read at the ground. */
+/* THE KICK-OFF, as an instant. `isoDateTime` in stats.mjs reads the time as
+   UK time, the clock at the ground, so this page and the home page's
+   countdown count to the same moment. A fixture with no kick-off gives no
+   instant rather than a guessed one. */
 export function londonKick(iso, kick) {
-  const [h, mi] = String(kick || '').split(':').map(Number);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(iso || '')) || !Number.isFinite(h)) return '';
-  const min = Number.isFinite(mi) ? mi : 0;
-  const guess = new Date(`${iso}T${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}:00Z`);
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
-  }).formatToParts(guess);
-  const lh = Number(parts.find((p) => p.type === 'hour').value);
-  const lm = Number(parts.find((p) => p.type === 'minute').value);
-  let diff = (lh * 60 + lm) - (h * 60 + min);
-  if (diff > 720) diff -= 1440;
-  if (diff < -720) diff += 1440;
-  return new Date(guess.getTime() - diff * 60000).toISOString();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(iso || '')) || !/^\d{1,2}:\d{2}$/.test(String(kick || ''))) return '';
+  return isoDateTime(iso, kick) || '';
 }
 
 /* WHICH ROUND OF THE DIVISION THIS IS, counted from the days the division has

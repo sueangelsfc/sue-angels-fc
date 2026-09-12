@@ -5891,6 +5891,32 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 }
 
 /* ==========================================================================
+   A KICK-OFF IS UK TIME
+   `isoDateTime` set the hours in UTC, so every summer kick-off was stored an
+   hour late and the home page's countdown ran an hour long. Asked of the rule
+   on both sides of the clocks changing, and of the countdown the home page
+   actually ships: read back in London, it has to say the fixture's own time.
+   ========================================================================== */
+{
+  const { isoDateTime: kickAt } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+  check('a summer kick-off is stored as UK time',
+    kickAt('13 Sep 2026', '11:00') === '2026-09-13T10:00:00.000Z', kickAt('13 Sep 2026', '11:00'));
+  check('a winter kick-off is stored as UK time',
+    kickAt('10 Jan 2027', '11:00') === '2027-01-10T11:00:00.000Z', kickAt('10 Jan 2027', '11:00'));
+  const home = pages.get('index.html') || '';
+  const cd = /class="hx__cd" data-kick="([^"]+)"/.exec(home);
+  const { buildDataset: bdK } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const nextK = bdK().nextFixture;
+  if (cd && cd[1] && nextK && /^\d{1,2}:\d{2}$/.test(String(nextK.kick || ''))) {
+    const shown = new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit', hourCycle: 'h23',
+    }).format(new Date(cd[1]));
+    check('the home page countdown counts to the kick-off as it reads at the ground',
+      shown === String(nextK.kick).padStart(5, '0'), `counts to ${shown} for a ${nextK.kick} kick-off`);
+  }
+}
+
+/* ==========================================================================
    HOW AN ARTICLE'S TEXT BECOMES MARKUP
 
    The club writes these in a textarea, so the text is UNTRUSTED and the order

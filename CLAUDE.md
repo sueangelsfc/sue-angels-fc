@@ -888,6 +888,42 @@ stayed and how far down they got. `migrations/007_page_stats.sql`,
   stated reason.
 - **`control-stats.js` 11 → 15KB.** The page list is not in it.
 
+### The law the website stats run under
+
+**Checked in September 2026 against PECR regulation 6 as amended by the Data
+(Use and Access) Act 2025 (in force 5 February 2026) and the ICO's final
+storage and access guidance (29 April 2026). The club asked to be nowhere near
+the line, so this reads the rules conservatively.**
+
+- **Anonymous statistics need no consent, but they have three conditions,
+  and each is code.**
+  - The only purpose is improving this website.
+  - The visitor is told clearly: the banner and `/privacy.html`.
+  - The visitor can object simply and free, and counting stops when they do.
+
+  `window.saPrivacy.allows('stats')` (in `src/scripts/20-consent.js`) is false
+  until the banner has been on screen or a choice saved, and false after an
+  objection. `30-stats.js` asks it at every entry point, and so does the home
+  page band counter. The tab's journey storage is read and written only as a
+  view is sent, never on arrival. The suite checks each of these.
+- **Showing those figures to sponsors is a different purpose**, so it is
+  outside the exception and needs opt-in consent. The stats screen's report
+  is labelled **Internal report** and says so. Sponsor figures must come from
+  visitors who consented to that purpose, never from the exempt counts.
+- **Consent purposes are off by default and need a SAVED choice**; a default
+  is never consent. Google Analytics and the Meta pixel only appear as
+  choices when configured. "Reject all" has exactly the class of "Accept all"
+  (asserted). Withdrawing consent to a third party that is already running
+  reloads the page without it.
+- **Global Privacy Control and Do Not Track count as an objection.** The law
+  does not require this; the club asked for margin.
+- **Never built, with or without consent:** session replay, fingerprinting,
+  reading form input before it is sent, IP-to-company lookup.
+- **`/privacy.html` makes claims about code** (`src/templates/privacy.mjs`).
+  It names every device key the stats keep (asserted) and cites the ICO and
+  legislation.gov.uk (`SOURCES.ico`, `SOURCES.pecr`). Every page links to it
+  (asserted). Change what is counted and that page changes with it.
+
 ### A descendant space is not every space
 
 `src/test/dom.mjs` split a selector on `/\s+/`, so

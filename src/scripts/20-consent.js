@@ -1,46 +1,76 @@
 /* ==========================================================================
-   COOKIE CONSENT AND ANALYTICS
+   PRIVACY: WHAT THE VISITOR IS TOLD, AND WHAT THEY CHOOSE
 
-   Restored. The retired site had consent.js and analytics.js; the platform
-   rebuild dropped both, so the live site has had no consent banner and no
-   analytics since. The banner is the one that matters: a UK club site that
-   loads Google Analytics without asking is a compliance problem, not a
-   missing feature.
+   The law this is built to (checked September 2026): PECR regulation 6 as
+   amended by the Data (Use and Access) Act 2025, in force 5 February 2026,
+   and the ICO's final guidance on storage and access technologies, April 2026.
 
-   The contract is deliberately the same as the old pair, so anything already
-   wired to it keeps working:
+   TWO KINDS OF THING, TREATED DIFFERENTLY
+   - ANONYMOUS STATISTICS (src/scripts/30-stats.js, and the home page's band
+     counter) fall under the statistics exception: no consent is needed, but
+     ONLY for aggregate figures used to improve this website, ONLY once the
+     visitor has clear information, and ONLY while they have not objected. So
+     it is ON by default and switchable OFF, and `saPrivacy.allows('stats')` is
+     false until this banner has been on screen or a choice has been saved.
+   - EVERYTHING ELSE NEEDS CONSENT: Google Analytics and the Meta pixel (when
+     configured), and any future purpose that is not statistics for improving
+     the site - figures shown to sponsors included, because sharing for a
+     commercial purpose is outside the exception. OFF by default. A default is
+     never consent: `allows()` for these needs a SAVED choice.
 
-     localStorage 'sa-consent'  = 'granted' | 'denied'
-     window.SA_GA_ID            set it and GA4 loads, on consent
-     window.SA_META_PIXEL_ID    set it and the Meta pixel loads, on consent
-     window.saTrack(name, params)   the single tracking entry point
+   HONOURED ANYWAY: a browser's Global Privacy Control or Do Not Track signal
+   is treated as an objection to statistics too. The law does not require it.
 
-   Two things are better than the version it replaces.
+   "Reject all" is exactly as prominent as "Accept all", every purpose can be
+   changed later from "Privacy settings" in the footer, and turning something
+   off clears what it had stored on the device. Nothing third-party is ever
+   fetched before a choice to allow it.
 
-   NOTHING third-party is fetched before consent. The old file loaded on
-   every page and decided afterwards; this one never creates a script tag
-   until the visitor has said yes, so declining means those requests never
-   happen rather than happening and being ignored.
-
-   And saTrack always works. With no analytics configured it still fires a
-   `sa-track` DOM event and queues to dataLayer, so the club can wire up a
-   tool later without touching a line of this, and so tracking calls
-   elsewhere in the code are never a source of errors.
-
-   The banner is BUILT by this script rather than shipped hidden in the
-   markup: nothing on the page is concealed by CSS waiting for JavaScript to
-   reveal it, which is the failure mode CLAUDE.md warns about.
+   Stored on the device: localStorage 'sa-privacy', the choice itself, which
+   is recording a selection the visitor made (strictly necessary).
    ========================================================================== */
 (function () {
   'use strict';
 
-  var KEY = 'sa-consent';
-  var read = function () { try { return localStorage.getItem(KEY); } catch (e) { return null; } };
-  var write = function (v) { try { localStorage.setItem(KEY, v); } catch (e) {} };
+  var KEY = 'sa-privacy';
+  var VERSION = 1;
+
+  var signalled = (function () {
+    try {
+      return navigator.globalPrivacyControl === true || navigator.doNotTrack === '1'
+        || window.doNotTrack === '1';
+    } catch (e) { return false; }
+  }());
+
+  function stored() {
+    try {
+      var v = JSON.parse(localStorage.getItem(KEY) || 'null');
+      return v && v.v === VERSION ? v : null;
+    } catch (e) { return null; }
+  }
+  var choice = stored();
+  var informed = !!choice;
+
+  function prefs() {
+    return choice || { v: VERSION, stats: !signalled, google: false, meta: false };
+  }
+  function read() {
+    var p = prefs();
+    return choice && (p.google || p.meta) ? 'granted' : 'denied';
+  }
+
+  window.saPrivacy = {
+    allows: function (purpose) {
+      var p = prefs();
+      if (purpose === 'stats') return informed && !!p.stats;
+      return !!choice && !!p[purpose];
+    },
+    open: function () { show(true); },
+  };
 
   /* ---- Tracking ------------------------------------------------------
-     Safe to call at any time, from anywhere, consented or not. It queues
-     and emits regardless; only the forwarding to a third party is gated. */
+     Safe to call at any time. It queues a DOM event for the club's own code;
+     only forwarding to a third party is gated, and only on consent. */
   window.saTrack = function (name, params) {
     var detail = params || {};
     try {
@@ -53,14 +83,14 @@
     }
   };
 
-  /* ---- Third-party loaders, only ever called after consent ---------- */
-  var started = false;
+  /* ---- Third parties, only ever after consent to that one ------------- */
+  var startedGA = false;
   function startAnalytics() {
-    if (started || read() !== 'granted') return;
-    started = true;
-
+    if (read() !== 'granted') return;
+    var p = prefs();
     var ga = window.SA_GA_ID;
-    if (ga) {
+    if (p.google && ga && !startedGA) {
+      startedGA = true;
       var s = document.createElement('script');
       s.async = true;
       s.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(ga);
@@ -68,12 +98,10 @@
       window.dataLayer = window.dataLayer || [];
       window.gtag = function () { window.dataLayer.push(arguments); };
       window.gtag('js', new Date());
-      /* anonymize_ip is not optional for a UK club site. */
       window.gtag('config', ga, { anonymize_ip: true });
     }
-
     var px = window.SA_META_PIXEL_ID;
-    if (px && !window.fbq) {
+    if (p.meta && px && !window.fbq) {
       /* eslint-disable */
       !function (f, b, e, v, n, t, s) {
         if (f.fbq) return; n = f.fbq = function () {
@@ -90,51 +118,121 @@
   }
   window.saInitAnalytics = startAnalytics;
 
-  /* ---- The banner ----------------------------------------------------
-     Only built when there is a question to ask. Somebody who has already
-     answered never sees it again, and a page with no analytics configured
-     never asks, because there is nothing to consent to. */
-  function decide(v) {
-    write(v);
+  /* ---- The choices -------------------------------------------------- */
+  function purposes() {
+    var list = [['stats', 'Anonymous statistics',
+      'Counts which pages are read, roughly which town visits come from, what sent people '
+      + 'and how they move around the site, so the club can make it better. Nothing that '
+      + 'identifies you is kept, and nothing is shared for any other purpose. On unless you '
+      + 'turn it off.']];
+    if (window.SA_GA_ID) {
+      list.push(['google', 'Google Analytics',
+        'Google measures your visit for the club. Google receives information about it. Off unless you turn it on.']);
+    }
+    if (window.SA_META_PIXEL_ID) {
+      list.push(['meta', 'Meta pixel',
+        'Meta measures visits from Facebook and Instagram and may use them for adverts. Meta receives information about your visit. Off unless you turn it on.']);
+    }
+    return list;
+  }
+
+  function decide(next) {
+    var had = prefs();
+    choice = { v: VERSION, stats: !!next.stats, google: !!next.google, meta: !!next.meta,
+      at: new Date().toISOString().slice(0, 10) };
+    informed = true;
+    try {
+      localStorage.setItem(KEY, JSON.stringify(choice));
+      localStorage.removeItem('sa-consent');
+    } catch (e) {}
+    /* Objecting stops it AND clears what it had stored. */
+    if (!choice.stats) {
+      try { sessionStorage.removeItem('sa-trail'); } catch (e) {}
+      try { localStorage.removeItem('sa-bandviews-off'); } catch (e) {}
+    }
+    if (window.SA_GA_ID && had.google && !choice.google) window['ga-disable-' + window.SA_GA_ID] = true;
+    hide();
+    startAnalytics();
+    try { document.dispatchEvent(new CustomEvent('sa-privacy', { detail: choice })); } catch (e) {}
+    /* A third-party script cannot be unloaded, so withdrawing consent to one
+       that is already running reloads the page without it. */
+    if ((had.google && !choice.google && startedGA) || (had.meta && !choice.meta && window.fbq)) {
+      location.reload();
+    }
+  }
+
+  function hide() {
     var el = document.getElementById('sa-consent');
     if (el) el.remove();
-    if (v === 'granted') startAnalytics();
-    window.saTrack('consent_' + v);
   }
 
-  function banner() {
-    if (document.getElementById('sa-consent')) return;
-    var el = document.createElement('div');
-    el.id = 'sa-consent';
-    el.className = 'consent';
-    el.setAttribute('role', 'dialog');
-    el.setAttribute('aria-label', 'Cookies');
-    el.innerHTML =
-      '<p class="consent__t">We use cookies to understand how the site is used. '
-      + 'Nothing is loaded until you choose, and you can decline without losing anything. '
-      + '<a href="/sepsis.html">More about the club</a></p>'
-      + '<div class="consent__btns">'
-      + '<button class="btn btn--ghost btn--sm" type="button" data-consent="denied">Decline</button>'
-      + '<button class="btn btn--volt btn--sm" type="button" data-consent="granted">Accept</button>'
-      + '</div>';
-    document.body.appendChild(el);
-    el.addEventListener('click', function (e) {
-      var b = e.target.closest('[data-consent]');
-      if (b) decide(b.getAttribute('data-consent'));
-    });
+  function show(choosing) {
+    var el = document.getElementById('sa-consent');
+    if (!el) {
+      var p = prefs();
+      var list = purposes();
+      el = document.createElement('div');
+      el.id = 'sa-consent';
+      el.className = 'consent';
+      el.setAttribute('role', 'dialog');
+      el.setAttribute('aria-labelledby', 'sa-consent-h');
+      el.innerHTML =
+        '<div class="consent__main">'
+        + '<p class="consent__h" id="sa-consent-h">Your privacy on this site</p>'
+        + '<p class="consent__t">We count visits anonymously to make the site better: which pages are '
+        + 'read, roughly where from, and how people move around. Nothing identifies you, and you can '
+        + 'turn it off now or at any time.' + (list.length > 1 ? ' Anything else is off unless you '
+        + 'say yes.' : '') + ' <a href="/privacy.html">What we count, and the law</a></p></div>'
+        + '<fieldset class="consent__opts" hidden><legend class="sr-only">Choose what to allow</legend>'
+        + list.map(function (x) {
+          return '<label class="consent__opt"><input type="checkbox" data-purpose="' + x[0] + '"'
+            + (p[x[0]] ? ' checked' : '') + '><span><b>' + x[1] + '</b><small>' + x[2]
+            + '</small></span></label>';
+        }).join('')
+        + '</fieldset>'
+        + '<div class="consent__btns">'
+        + '<button class="btn btn--volt btn--sm" type="button" data-choice="none">Reject all</button>'
+        + '<button class="btn btn--ghost btn--sm" type="button" data-choice="choose">Choose</button>'
+        + '<button class="btn btn--ghost btn--sm" type="button" data-choice="save" hidden>Save my choices</button>'
+        + '<button class="btn btn--volt btn--sm" type="button" data-choice="all">Accept all</button>'
+        + '</div>';
+      document.body.appendChild(el);
+      el.addEventListener('click', function (e) {
+        var b = e.target.closest ? e.target.closest('[data-choice]') : null;
+        if (!b) return;
+        var what = b.getAttribute('data-choice');
+        var next = {};
+        if (what === 'choose') { show(true); return; }
+        purposes().forEach(function (x) {
+          var box = el.querySelector('[data-purpose="' + x[0] + '"]');
+          next[x[0]] = what === 'all' ? true : (what === 'none' ? false : !!(box && box.checked));
+        });
+        decide(next);
+      });
+    }
+    /* On screen is the moment the visitor has been told. */
+    informed = true;
+    if (choosing) {
+      el.querySelector('.consent__opts').hidden = false;
+      el.querySelector('[data-choice="choose"]').hidden = true;
+      el.querySelector('[data-choice="save"]').hidden = false;
+      var first = el.querySelector('input[data-purpose]');
+      if (first) first.focus();
+    }
   }
 
-  var choice = read();
-  if (choice === 'granted') startAnalytics();
-  /* Nothing to ask about if the club has configured no analytics at all. */
-  else if (!choice && (window.SA_GA_ID || window.SA_META_PIXEL_ID)) {
-    /* After the boot screen, so it never lands on top of the arrival. The
-       number tracks the boot screen's own hold, which is three seconds now
-       rather than nine and a half; a stale eleven here would have left the
-       banner sitting eight seconds after the site had finished arriving. */
-    if (document.getElementById('sa-boot')) setTimeout(banner, 4200);
-    else banner();
-  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest ? e.target.closest('[data-privacy-open]') : null;
+    if (!b) return;
+    e.preventDefault();
+    show(true);
+  });
+
+  if (choice) startAnalytics();
+  /* After the boot screen, so it never lands on top of the arrival, and
+     until then nothing is counted: the visitor has not been told yet. */
+  else if (document.getElementById('sa-boot')) setTimeout(function () { show(false); }, 4200);
+  else show(false);
 })();
 
 /* ==========================================================================

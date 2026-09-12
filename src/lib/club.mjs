@@ -191,6 +191,18 @@ export const SOURCES = {
     href: 'https://www.nhs.uk/conditions/sepsis/',
     what: 'the NHS guidance on sepsis',
   },
+  /* The privacy page rests on these two and says so: the regulator's guidance
+     on cookies and similar technologies, and the law itself. */
+  ico: {
+    name: 'The Information Commissioner’s Office',
+    href: 'https://ico.org.uk/for-organisations/direct-marketing-and-privacy-and-electronic-communications/guidance-on-the-use-of-storage-and-access-technologies/',
+    what: 'the regulator’s guidance on cookies and similar technologies',
+  },
+  pecr: {
+    name: 'legislation.gov.uk',
+    href: 'https://www.legislation.gov.uk/ukpga/2025/18/schedule/12',
+    what: 'the law on when a website may count visits without asking first',
+  },
 };
 
 /* ==========================================================================

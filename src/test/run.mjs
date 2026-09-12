@@ -1859,7 +1859,14 @@ const BUDGET = {
      to, because a download, a donation click or a link to a sponsor can
      happen on any of them, and there is no per-page split that makes a
      delegated click listener smaller. */
-  'sa.js': 18,
+  /* 18 -> 20, and the 1,330 bytes are the law: the privacy banner became a
+     preferences centre (a notice, Reject all as prominent as Accept all, a
+     second layer with one choice per purpose, honouring Global Privacy
+     Control) and every statistics entry point now asks whether the visitor
+     has been told and has not objected. 17,851 gz before, 19,181 after. The
+     statistics exception in PECR requires exactly this, so there is no
+     version of the counter that is lawful and smaller. */
+  'sa.js': 20,
   /* 5 -> 6, once, for the match form telling you what is in the record: the
      count on a tab you have not opened, the strip saying what does not add
      up, the tally beside each picker's label, and the eleven collapsed from a
@@ -4557,6 +4564,52 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
      JavaScript failure cannot leave a hidden dialog on the page. */
   check('no page ships the consent banner in markup',
     ![...pages.values()].some((h) => /id="sa-consent"/.test(h)));
+
+  /* THE LAW THE STATISTICS RUN UNDER. PECR regulation 6, as amended by the
+     Data (Use and Access) Act 2025, lets the site count visits without
+     consent only for statistics used to improve itself, only once the visitor
+     has been told, and only while they have not objected. Each of those is a
+     line of code, so each is a check: a regression here is a breach, not a
+     bug. See src/scripts/20-consent.js. */
+  const statsSrc = fs.readFileSync(path.join(ROOT, 'src', 'scripts', '30-stats.js'), 'utf8');
+  const bandSrc = fs.readFileSync(path.join(ROOT, 'src', 'scripts', '10-home.js'), 'utf8');
+  const consentSrc = fs.readFileSync(path.join(ROOT, 'src', 'scripts', '20-consent.js'), 'utf8');
+  check('the page view beacon sends nothing unless the visitor has been told and has not objected',
+    /function send\(\) \{\s*if \(sent \|\| !allowed\(\)\) return;/.test(statsSrc)
+      && /function ev\(kind, target\) \{\s*if \(!allowed\(\)\) return;/.test(statsSrc)
+      && /saPrivacy\.allows\('stats'\)/.test(statsSrc), 'an entry point that does not ask');
+  check('nothing is read from or written to the tab on arrival, only as a view is sent',
+    /function trailNow\(\)/.test(statsSrc) && /var trail = trailNow\(\);/.test(statsSrc)
+      && !/^ {2}var ss = window\.sessionStorage/m.test(statsSrc), 'storage touched at load');
+  check('the home page band counter asks the same question before it counts',
+    /saPrivacy\.allows\('stats'\)/.test(bandSrc), 'band counter ungated');
+  check('statistics are allowed only once the visitor has been told',
+    /if \(purpose === 'stats'\) return informed && !!p\.stats;/.test(consentSrc), 'informed gate');
+  check('anything that needs consent needs a saved choice, never a default',
+    /return !!choice && !!p\[purpose\];/.test(consentSrc), 'consent gate');
+  const btnClass = (what) => (consentSrc.match(new RegExp(`class="(btn[^"]*)" type="button" data-choice="${what}"`)) || [])[1];
+  check('reject all is exactly as prominent as accept all',
+    !!btnClass('none') && btnClass('none') === btnClass('all'), `${btnClass('none')} / ${btnClass('all')}`);
+  check('a browser privacy signal is honoured as an objection',
+    /globalPrivacyControl === true/.test(consentSrc), 'no GPC');
+  const privacyHtml = pages.get('privacy.html') || '';
+  check('the privacy page cites the regulator and the law and offers the settings',
+    /ico\.org\.uk/.test(privacyHtml) && /legislation\.gov\.uk/.test(privacyHtml)
+      && /data-privacy-open/.test(privacyHtml), 'privacy.html');
+  const noPrivacyLink = [...pages.entries()]
+    .filter(([f]) => f.endsWith('.html') && !/control\.html|googlef|__all-bands/.test(f))
+    .filter(([, h]) => !/href="\/privacy\.html"/.test(h)).map(([f]) => f);
+  check('every page links to the privacy page', noPrivacyLink.length === 0, noPrivacyLink.slice(0, 6).join(', '));
+  /* Every device key the code uses is named on the privacy page. */
+  /* Read from the public scripts rather than typed, so a key added to the
+     code and not to the page fails here. */
+  const keysUsed = [...new Set([...fs.readdirSync(path.join(ROOT, 'src', 'scripts'))
+    .filter((f) => f.endsWith('.js'))
+    .map((f) => fs.readFileSync(path.join(ROOT, 'src', 'scripts', f), 'utf8')).join('\n')
+    .matchAll(/(?:local|session)Storage\.(?:getItem|setItem)\(\s*['"]([a-z][\w-]*)['"]/g)]
+    .map((m) => m[1]).concat(['sa-privacy', 'sa-trail', 'sa-bandviews-off']))];
+  check('the privacy page names every key the public site keeps on the device',
+    keysUsed.every((k) => privacyHtml.includes(k)), keysUsed.filter((k) => !privacyHtml.includes(k)).join(', '));
 }
 
 /* ==========================================================================

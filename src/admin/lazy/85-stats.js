@@ -1353,7 +1353,7 @@
           + (i + 1) + '</span>' + esc(c[1]) + '</button>';
       }).join('')
       + '<button type="button" class="btn btn--sm btn--primary cpst__present" data-report>'
-      + 'Sponsor report</button></nav>';
+      + 'Internal report</button></nav>';
   }
 
   /* ---- Today ---------------------------------------------------------------
@@ -1752,6 +1752,10 @@
       + 'class="btn btn--sm btn--ghost" data-report-close>Close</button></div>'
       + '<article class="cprep__doc"><header class="cprep__head">'
       + '<p class="cprep__kicker">Website audience report</p>'
+      + '<p class="cprep__notice">For the club’s own use. These figures come from anonymous '
+      + 'statistics the law lets the website keep only to improve itself, so they are not for '
+      + 'sharing outside the club. Figures for sponsors come from visitors who have agreed to be '
+      + 'counted for that.</p>'
       + '<h2 id="cprep-h" class="cprep__title">Sue’s Angels FC</h2>'
       + '<p class="cprep__period">' + esc(shortDate(first) + ' to ' + shortDate(last) + ' '
         + last.slice(0, 4) + ' · suesangelsfc.co.uk'

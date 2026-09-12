@@ -268,6 +268,7 @@ export function footer() {
           <div class="ftr__legal">
             <a href="mailto:${attr(CLUB.email)}">${esc(CLUB.email)}</a>
             <a href="/sepsis.html">Sepsis awareness</a>
+            <a href="/privacy.html">Privacy and your choices</a>
             <a href="/control.html">Control panel</a>
           </div>
         </div>

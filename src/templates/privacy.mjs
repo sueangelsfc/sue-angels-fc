@@ -1,0 +1,166 @@
+/* ==========================================================================
+   PRIVACY AND YOUR CHOICES  (/privacy.html, linked from every footer)
+
+   The "clear and comprehensive information" the law requires before the
+   website counts anything, and the place a visitor changes their mind.
+
+   WRITTEN TO THE LAW AS IT STOOD IN SEPTEMBER 2026: PECR regulation 6 as
+   amended by the Data (Use and Access) Act 2025 (in force 5 February 2026),
+   the ICO's final guidance on storage and access technologies (29 April
+   2026), and the UK GDPR for the one thing here that touches personal data,
+   the connection a town is worked out from.
+
+   EVERY CLAIM ON THIS PAGE IS A CLAIM ABOUT CODE, and each names the file
+   that makes it true: src/scripts/20-consent.js (the choices),
+   src/scripts/30-stats.js (what is counted), api/view.js (the town), and
+   migrations/007-011 (what the database can hold). Change one of those and
+   this page has to change with it.
+
+   Plain words, no legal boilerplate: the point of the requirement is that a
+   supporter understands what happens, and a wall of clauses defeats it.
+   ========================================================================== */
+import { esc, attr } from '../lib/html.mjs';
+import { CLUB } from '../lib/club.mjs';
+import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
+import { sourceNote } from '../lib/blocks.mjs';
+
+const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
+      <span class="xrail__l"><span class="xrail__n">${esc(String(n).padStart(2, '0'))}</span><span class="xrail__t">${esc(label)}</span></span>
+      <span class="xrail__r">${esc(ref)}</span>
+    </div>`;
+
+const cards = (list) => `<ul class="cz-help__grid rv">
+          ${list.map((c, i) => `<li class="cz-helpcard glassbox" style="--i:${i}">
+            <h3>${esc(c[0])}</h3>
+            <p>${esc(c[1])}</p>
+          </li>`).join('\n          ')}
+        </ul>`;
+
+const UPDATED = '12 September 2026';
+
+/* What the anonymous statistics count. Each line is something
+   src/scripts/30-stats.js or api/view.js actually sends. */
+const COUNTED = [
+  ['Which pages are read', 'The page, how long it stayed open (capped at an hour) and how far down it was scrolled.'],
+  ['Roughly where from', 'The town, region and country, worked out by our website host from the connection. The connection’s internet address is never stored by the club, and the town is kept only as a count.'],
+  ['What sent the visit', 'The name of the website a link was followed from, such as google.com, never the full address. Or the short tag on a link the club posted, such as insta-story.'],
+  ['How people move around', 'The page before this one, and the order of pages read in one browser tab, counted as a pattern shared by everyone who took that route.'],
+  ['What gets used', 'That a programme was downloaded, the donate button was pressed, a link to another website or a video was played, or a form was sent. Never what was typed into a form.'],
+  ['The device, coarsely', 'Phone, tablet or computer, from the width of the screen; the time zone the device is set to; and the hour of the day on the reader’s own clock.'],
+];
+
+const NEVER = [
+  ['Nothing that identifies you', 'No name, no email, no account, no internet address and no identifier of any kind is kept. Every figure is a running count for a day, so one visit cannot be picked out of it, by the club or by anybody with the database open.'],
+  ['No profile of you', 'Nothing follows you from one visit to the next, from one site to another, or across devices.'],
+  ['No advertising', 'No advertising cookies, no pixels and no selling or sharing of anything for adverts. If the club ever adds a tool like that, it stays off unless you turn it on.'],
+  ['No recordings', 'No recording of what you do on a page, no fingerprinting of your device, and no reading of anything you type before you send it.'],
+];
+
+/* What is stored on the visitor's device, each with the reason the law
+   allows it. Keys match the code exactly. */
+const STORED = [
+  ['Your privacy choices', 'Kept in your browser as sa-privacy until you change them, so the question is not asked on every page. This records a choice you made, which the law treats as strictly necessary.'],
+  ['The pages read in this tab', 'Kept as sa-trail in the tab’s own storage, which the browser deletes when the tab closes. Only while anonymous statistics are on; turning them off deletes it.'],
+  ['A switched-off counter', 'A single yes or no, sa-bandviews-off, that stops the home page counter asking the database again once it is switched off. Only while anonymous statistics are on.'],
+  ['The control panel word', 'If you type the word that opens the club’s control panel, sa-cp-word is kept in the tab’s own storage so the panel opens. It is deleted when the tab closes and does nothing else.'],
+  ['Pages for offline use', 'The browser keeps copies of pages you have opened so the site loads quickly and works on a poor signal. It holds nothing about you.'],
+];
+
+export function privacy() {
+  const email = CLUB.email;
+
+  /* ================= 01 THE SHORT VERSION ================= */
+  const intro = `<section class="sec cz-help" aria-labelledby="pv-h">
+      <div class="wrap">
+        ${rail(1, 'Privacy and your choices', `Updated ${UPDATED}`)}
+        <h1 class="h2 rv" id="pv-h">What this website counts, and <span class="volt">your choices.</span></h1>
+        <div class="cz-helpcard glassbox rv">
+          <p>${esc(CLUB.name)} counts visits to this website anonymously, to understand what supporters read and to make the site better. Nothing identifies you, nothing is used for advertising, and you can turn it off at any time.</p>
+          <p>Anything that would need your permission, such as an analytics or advertising tool from another company, stays off unless you say yes.</p>
+          <p><button class="btn btn--volt" type="button" data-privacy-open>Change my privacy settings</button></p>
+          <noscript><p>Your browser is not running scripts, so this website is not counting your visit at all and there is nothing to switch off.</p></noscript>
+        </div>
+      </div>
+    </section>`;
+
+  /* ================= 02 WHAT IS COUNTED ================= */
+  const counted = `<section class="sec cz-help" aria-labelledby="pv-count-h">
+      <div class="wrap">
+        ${rail(2, 'Anonymous statistics', 'On unless you turn it off')}
+        <h2 class="h2 rv" id="pv-count-h">What is counted, <span class="volt">anonymously.</span></h2>
+        <p class="rv">Only once the privacy notice has been shown to you, and never after you have turned statistics off.</p>
+        ${cards(COUNTED)}
+      </div>
+    </section>`;
+
+  /* ================= 03 THE LAW ================= */
+  const law = `<section class="sec cz-help" aria-labelledby="pv-law-h">
+      <div class="wrap">
+        ${rail(3, 'Why no permission is asked for this', 'The law')}
+        <h2 class="h2 rv" id="pv-law-h">The law this <span class="volt">works under.</span></h2>
+        ${cards([
+          ['Counting visits', 'UK law lets a website store or read information on your device without asking first when the only purpose is to produce statistics about how the website is used, in order to improve it. That is the Privacy and Electronic Communications Regulations as amended by the Data (Use and Access) Act 2025. The conditions are that you are told clearly, which this page and the notice do, and that you can object simply and for free, which the settings do. When you object, counting stops.'],
+          ['Only to improve the site', 'These figures are used by the club to decide what to write, what to fix and how to arrange the website. They are not shared with sponsors or anybody else for any other purpose. If the club wants to show sponsors audience figures, it will ask for your permission first.'],
+          ['Your town', 'Working out a town from a connection briefly involves your internet address, which is personal data under the UK GDPR. Our website host does this as part of delivering the page, and the club receives only the town and a count. The club’s lawful basis is its legitimate interest in understanding, in general terms, where its supporters are, so that the website serves them well. The address itself is not stored by the club.'],
+        ])}
+      </div>
+    </section>`;
+
+  /* ================= 04 WHAT IS NEVER DONE ================= */
+  const never = `<section class="sec cz-help" aria-labelledby="pv-never-h">
+      <div class="wrap">
+        ${rail(4, 'What is never done', 'Not with or without permission')}
+        <h2 class="h2 rv" id="pv-never-h">What this site <span class="volt">never does.</span></h2>
+        ${cards(NEVER)}
+      </div>
+    </section>`;
+
+  /* ================= 05 WHAT IS ON YOUR DEVICE ================= */
+  const stored = `<section class="sec cz-help" aria-labelledby="pv-stored-h">
+      <div class="wrap">
+        ${rail(5, 'On your device', 'No cookies')}
+        <h2 class="h2 rv" id="pv-stored-h">What is kept <span class="volt">on your device.</span></h2>
+        <p class="rv">This website sets no cookies. It uses your browser’s own storage for these, and nothing else:</p>
+        ${cards(STORED)}
+      </div>
+    </section>`;
+
+  /* ================= 06 WHO HELPS, HOW LONG, YOUR RIGHTS ================= */
+  const rights = `<section class="sec cz-help" aria-labelledby="pv-rights-h">
+      <div class="wrap">
+        ${rail(6, 'Who helps, how long, your rights', 'Questions')}
+        <h2 class="h2 rv" id="pv-rights-h">Who helps, and <span class="volt">your rights.</span></h2>
+        ${cards([
+          ['Who helps the club', 'Vercel hosts the website and works out the town from the connection. Supabase holds the counts. Both act only on the club’s instructions. They may process information outside the UK, and where they do it is under the safeguards UK law requires.'],
+          ['How long counts are kept', 'The counts are daily totals with nothing identifying in them. The club keeps them for up to three years so one season can be compared with the next, and then deletes them.'],
+          ['Your rights', 'You can object to the counting at any time with the settings on this page or in the footer, and your browser’s Global Privacy Control or Do Not Track setting is treated as an objection too. Because nothing is kept that links a count to you, the club cannot find, send or delete figures about you in particular, because there are none.'],
+          ['Questions and complaints', `Email the club at ${email} with any question about this page. If you are unhappy with how the club handles information, you can complain to the Information Commissioner’s Office at ico.org.uk.`],
+        ])}
+        <p class="rv"><a class="btn btn--ghost" href="mailto:${attr(email)}">Email the club</a></p>
+      </div>
+    </section>`;
+
+  return {
+    body: siteHeader('/privacy.html') + intro + counted + law + never + stored + rights
+      + sourceNote(['ico', 'pecr'], { lead: 'For the rules this page follows, read' }),
+    bodyClass: 'is-home is-sub is-cause is-privacy',
+    css: 'home.css',
+    shell: 'home',
+    preMain: sitePreMain(),
+    footerHtml: siteFooter(),
+    schema: [{
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      name: `Privacy and your choices · ${CLUB.name}`,
+      dateModified: '2026-09-12',
+      breadcrumb: {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: `${CLUB.site}/` },
+          { '@type': 'ListItem', position: 2, name: 'Privacy and your choices', item: `${CLUB.site}/privacy.html` },
+        ],
+      },
+    }],
+  };
+}

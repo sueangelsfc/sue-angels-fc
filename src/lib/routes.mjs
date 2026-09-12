@@ -38,6 +38,7 @@ export const LIVE_ROUTES = new Set([
   'programme.html',
   'join.html',
   'contact.html',
+  'privacy.html',
   '404.html',
 ]);
 

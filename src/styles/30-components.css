@@ -960,6 +960,12 @@ table.data .cell-club { max-width: 210px; overflow: hidden; text-overflow: ellip
   font-size: var(--step--1);
 }
 .consent__actions { display: flex; gap: var(--space-2); margin-block-start: var(--space-4); flex-wrap: wrap; }
+.consent__h { margin: 0 0 var(--space-1); font-weight: var(--weight-bold); }
+.consent__t { margin: 0; }
+.consent__opts { display: grid; gap: var(--space-2); margin: var(--space-3) 0 0; padding: 0; border: 0; }
+.consent__opt { display: flex; gap: var(--space-2); align-items: flex-start; }
+.consent__opt small { display: block; color: var(--text-muted); }
+.consent__btns { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-block-start: var(--space-3); }
 
 /* ---- Chart (CSS bars, no library) ------------------------------------ */
 .chart { display: flex; align-items: flex-end; gap: var(--space-2); height: 160px; }

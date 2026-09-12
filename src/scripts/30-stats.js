@@ -38,6 +38,19 @@
 
   if (!window.saRpc) return;
 
+  /* THE LAW THIS RUNS UNDER. Counting visits reads and stores information on
+     the visitor's device, which UK law (PECR regulation 6, as amended by the
+     Data (Use and Access) Act 2025) allows without consent ONLY for aggregate
+     statistics used to improve this website, and only where the visitor has
+     been given clear information and a simple way to object. So nothing here
+     reads or stores anything, and nothing is sent, until the privacy banner
+     has told the visitor, and never once they have objected: every entry
+     point asks allowed() at the moment it would act. A choice changed half
+     way through a visit takes effect from the next action. */
+  function allowed() {
+    try { return !!(window.saPrivacy && window.saPrivacy.allows('stats')); } catch (e) { return false; }
+  }
+
   /* A path and nothing else. The database re-checks this - it has to, being
      callable by anyone - but sending something it will silently discard would
      mean the counter looked like it worked and recorded nothing. */
@@ -136,6 +149,7 @@
   } catch (e) { tag = ''; }
 
   function ev(kind, target) {
+    if (!allowed()) return;
     try {
       window.saRpc('record_page_event', {
         p_path: path,
@@ -180,26 +194,31 @@
      panel works out where journeys ended by taking away the ones that went a
      step further. A new arrival from outside, or half an hour idle, starts a
      new journey; a reload of the same page is not a step. */
-  var trail = '';
-  try {
-    var ss = window.sessionStorage;
-    var was = JSON.parse(ss.getItem('sa-trail') || 'null');
-    var fresh = was && was.s && Date.now() - was.t < 1800000;
-    var came = from();
-    var reload = fresh && was.s[was.s.length - 1] === path;
-    var route = reload ? was.s
-      : (fresh && came.charAt(0) === '/' ? was.s.concat([path])
-        : [came.charAt(0) === '/' ? 'new-tab' : came, path]);
-    ss.setItem('sa-trail', JSON.stringify({ t: Date.now(), s: route.slice(0, 12) }));
-    if (!reload && route.length <= 9) trail = route.join('>');
-  } catch (e) { trail = ''; }
+  /* Read and written as the view is sent, never on arrival, so a visitor
+     who objects - or who leaves before the banner has said what is counted -
+     has nothing stored in their tab at all. */
+  function trailNow() {
+    try {
+      var ss = window.sessionStorage;
+      var was = JSON.parse(ss.getItem('sa-trail') || 'null');
+      var fresh = was && was.s && Date.now() - was.t < 1800000;
+      var came = from();
+      var reload = fresh && was.s[was.s.length - 1] === path;
+      var route = reload ? was.s
+        : (fresh && came.charAt(0) === '/' ? was.s.concat([path])
+          : [came.charAt(0) === '/' ? 'new-tab' : came, path]);
+      ss.setItem('sa-trail', JSON.stringify({ t: Date.now(), s: route.slice(0, 12) }));
+      return !reload && route.length <= 9 ? route.join('>') : '';
+    } catch (e) { return ''; }
+  }
 
   var sent = false;
 
   function send() {
-    if (sent) return;
+    if (sent || !allowed()) return;
     sent = true;
     measureDepth();
+    var trail = trailNow();
     try {
       window.saRpc('record_page_view', {
         p_path: path,

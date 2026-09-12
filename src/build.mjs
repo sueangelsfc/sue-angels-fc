@@ -20,6 +20,7 @@ import { HOME_BANDS, HOME_AREAS, homeBandFilled, reportsIn, albumsIn, playersIn,
 import { about } from './templates/about.mjs';
 import { cause } from './templates/cause.mjs';
 import { donate } from './templates/donate.mjs';
+import { privacy } from './templates/privacy.mjs';
 import { INDEXNOW_FILE, INDEXNOW_KEY } from './lib/indexnow.mjs';
 import { champions } from './templates/champions.mjs';
 import { awards } from './templates/awards.mjs';
@@ -263,6 +264,7 @@ const PAGE_CSS = {
   'about.html': 'about',
   'sepsis.html': 'cause',
   'donate.html': 'cause',
+  'privacy.html': 'cause',
   'champions.html': 'champions',
   'awards.html': 'awards',
   'sponsors.html': 'sponsors',
@@ -1115,6 +1117,9 @@ const routes = [
 
   { file: 'donate.html', tpl: () => donate(d), ...meta('donate', `Donate · ${CLUB.name}`,
       `Donate to ${CLUB.name} for pitch hire, match fees, referees and kit, paid securely by Stripe, or give to the UK Sepsis Trust in Sue's memory.`) },
+
+  { file: 'privacy.html', tpl: () => privacy(d), ...meta('privacy', `Privacy and your choices · ${CLUB.name}`,
+      `What the ${CLUB.name} website counts, what it never collects, the law it works under, and how to switch any of it off.`) },
 
   { file: 'champions.html', tpl: () => champions(d), ...meta('champions', `Champions · ${CLUB.name}`,
       `${TITLE_DIV} champions ${TITLE_SEASON}: the season in numbers, unbeaten and promoted.`) },

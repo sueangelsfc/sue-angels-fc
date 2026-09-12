@@ -2650,6 +2650,7 @@ export function siteFooter() {
       <div class="ft2__bar">
         <p class="ft2__legal">© ${esc(new Date().getUTCFullYear())} ${esc(CLUB.name)} · In memory of ${esc(CLUB.memorial.name)}</p>
         <p class="ft2__locale">The Reeves, Hanworth · south-west London</p>
+        <p class="ft2__privacy"><a href="/privacy.html">Privacy and your choices</a><button type="button" data-privacy-open>Privacy settings</button></p>
         <a class="ft2__totop" href="#top" aria-label="Back to top">
           Back to top
           ${SVG.up}

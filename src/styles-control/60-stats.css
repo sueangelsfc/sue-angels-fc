@@ -583,6 +583,15 @@ a.cpp { text-decoration: underline; }
   color: var(--text);
 }
 .cprep__period { margin: 0; font-size: var(--step-0); color: var(--text-muted); }
+.cprep__notice {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--brand);
+  border-radius: var(--radius-xs);
+  background: rgb(var(--brand-rgb) / 0.08);
+  font-size: var(--step--1);
+  color: var(--text);
+}
 .cprep__kpis {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));

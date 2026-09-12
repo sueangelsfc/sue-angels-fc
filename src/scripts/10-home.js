@@ -2298,6 +2298,10 @@
        a flag that only exists to avoid a wasted request. */
     function send() {
       if (sent) return;
+      /* Anonymous statistics, so it runs only once the visitor has been told
+         and has not objected - the conditions of the statistics exception.
+         See src/scripts/20-consent.js. */
+      if (!window.saPrivacy || !window.saPrivacy.allows('stats')) return;
       try { if (localStorage.getItem(OFF)) return; } catch (e) { return; }
       var list = Object.keys(seen);
       if (!list.length) return;

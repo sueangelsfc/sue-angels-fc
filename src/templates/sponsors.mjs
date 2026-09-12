@@ -23,6 +23,7 @@
    Partner marks are the partners' own: white tile, never recoloured, never
    restyled, sized rather than cropped.
    ========================================================================== */
+import { readFileSync } from 'node:fs';
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB, SPONSOR_PACK } from '../lib/club.mjs';
 import { teamSummary, isLeague} from '../lib/stats.mjs';
@@ -240,27 +241,38 @@ export function sponsors(d) {
     </section>`;
 
   /* ================= 04 SPONSOR A PLAYER =================
-     Every player at the club, each one's season for sale: the same shelf the
-     matchday programme prints. Read from the squad and from the sponsorship
-     records the panel writes, so a signing appears the day he is added, a
-     player who leaves drops off, and a sale shows its sponsor in place of
-     "Available" (the player page already prints the same credit). */
-  const PAST_STATUS = new Set(['retired', 'departed', 'staff']);
-  const surname = (p) => String(p.last || p.name.split(' ').slice(-1)[0] || '').toLowerCase();
-  const seasonPlayers = (d.squad || []).filter((p) => !PAST_STATUS.has(p.status))
-    .sort((a, b) => surname(a).localeCompare(surname(b)) || a.name.localeCompare(b.name));
+     Every registered player's season for sale: the same shelf the matchday
+     programme prints. THE SHELF IS THE REGISTRATION LIST, not the squad
+     record. The club's FA registration is its statement of who is in the
+     squad this season, and on the day it was sent the squad record disagreed
+     with it on nine names (four with no record yet, five still marked as
+     having left). Transcribed in src/data/registered-2627.json, the same
+     device as the League Eight table. A registered name with a squad record
+     links to the profile and shows a sold season's sponsor in place of
+     "Available", the same credit the player page prints; one without a
+     record still gets its tile, unlinked. The manager is registered and is
+     not for sale. */
+  const registered = JSON.parse(readFileSync(new URL('../data/registered-2627.json', import.meta.url), 'utf8'));
+  const squadByNum = new Map((d.squad || []).map((p) => [String(p.num), p]));
+  const seasonPlayers = (registered.players || []).filter((r) => r && r.name && r.sponsorship !== false)
+    .map((r) => {
+      const p = r.num != null ? squadByNum.get(String(r.num)) : null;
+      return { name: r.name, num: p ? p.num : null, slug: p ? p.slug : null, position: r.position || (p && p.position) || '' };
+    });
   const playersBand = seasonPlayers.length ? `<section class="sec sp-season" id="player-sponsorship" aria-labelledby="sp-season-h">
       <div class="wrap">
         ${rail(4, 'Sponsor a player', `${seasonPlayers.length} players`)}
         <h2 class="h2 rv" id="sp-season-h">Sponsor a player’s <span class="volt">season.</span></h2>
         <p class="sp-lede rv">Put your name, your family’s or your business’s beside a player for the
-          whole ${esc(d.currentSeason || '')} season. It appears on his page here and in every matchday
+          whole ${esc(registered.season || d.currentSeason || '')} season. It appears on his page here and in every matchday
           programme. Price on request.</p>
         <ul class="sp-season__grid rv">
           ${seasonPlayers.map((p, i) => {
-            const sp = (d.sponsorships || {})['player-' + p.num];
+            const sp = p.num != null ? (d.sponsorships || {})['player-' + p.num] : null;
             return `<li class="sp-seat${sp ? ' is-taken' : ''}" style="--i:${Math.min(i, 12)}">
-            <a class="sp-seat__name" href="/players/${attr(p.slug)}.html">${esc(p.name)}</a>
+            ${p.slug
+              ? `<a class="sp-seat__name" href="/players/${attr(p.slug)}.html">${esc(p.name)}</a>`
+              : `<span class="sp-seat__name">${esc(p.name)}</span>`}
             ${p.position ? `<span class="sp-seat__pos">${esc(p.position)}</span>` : ''}
             <span class="sp-seat__by">Sponsored by: <b>${sp ? esc(sp.name) : 'Available'}</b></span>
           </li>`;

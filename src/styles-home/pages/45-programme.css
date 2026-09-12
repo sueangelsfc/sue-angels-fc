@@ -410,9 +410,15 @@
 .pr-get__body .h2 { margin-top: 0; }
 .pr-book { position: relative; width: min(100%, 250px); aspect-ratio: 148 / 210; margin-left: 12px; }
 .pr-book__page, .pr-book__cover { position: absolute; inset: 0; border-radius: 5px 14px 14px 5px; }
-.pr-book__page { background: var(--paper); box-shadow: 0 20px 40px -24px rgba(0, 0, 0, 0.7); }
-.pr-book__page--2 { transform: translate(12px, 8px) rotate(4deg); opacity: 0.4; }
-.pr-book__page--3 { transform: translate(24px, 16px) rotate(8deg); opacity: 0.18; }
+/* The pages behind the cover are the club's black edged in its orange, not
+   paper-white: the page keeps to the site's two colours throughout. */
+.pr-book__page {
+  background: linear-gradient(165deg, var(--navy-2), var(--navy-deep));
+  border: 1px solid rgba(var(--volt-rgb), 0.35);
+  box-shadow: 0 20px 40px -24px rgba(0, 0, 0, 0.7);
+}
+.pr-book__page--2 { transform: translate(12px, 8px) rotate(4deg); opacity: 0.85; }
+.pr-book__page--3 { transform: translate(24px, 16px) rotate(8deg); opacity: 0.5; }
 /* The cover is dark in both themes, like a photograph: it is a picture of a
    printed thing, so its ink is stated rather than taken from the theme. */
 .pr-book__cover {
@@ -632,19 +638,6 @@ html.js .rv.is-in .pr-tape__fill { transform: scaleX(1); transition: transform 1
   .pr-next { grid-template-columns: auto minmax(0, 1fr); }
   .pr-next__go { grid-column: 1 / -1; }
 }
-
-/* ---- Who pays for it ---- */
-.pr-backers { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 22px; padding-top: 22px; border-top: 1px solid var(--line-d); }
-.pr-backers__k { margin: 0; font-family: var(--ui); font-size: 10.5px; font-weight: 750; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-3); }
-.pr-backers__list { list-style: none; display: flex; flex-wrap: wrap; gap: 10px; margin: 0; padding: 0; }
-.pr-backers__list a {
-  display: grid; place-items: center; width: 128px; height: 62px; padding: 10px 14px;
-  border-radius: 14px; background: var(--white); transition: transform 0.35s var(--ease-out-expo);
-}
-.pr-backers__list a:hover, .pr-backers__list a:focus-visible { transform: translateY(-3px); }
-.pr-backers__list img { width: auto; height: auto; max-width: 100%; max-height: 42px; object-fit: contain; }
-.pr-backers__cta { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--volt); text-decoration: none; }
-.pr-backers__cta:hover, .pr-backers__cta:focus-visible { text-decoration: underline; }
 
 /* ---- Motion ---- */
 @keyframes pr-from-l { from { opacity: 0; transform: translateX(-36px); } to { opacity: 1; transform: none; } }

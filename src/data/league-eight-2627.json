@@ -22,118 +22,23 @@
     "TSM Rovers",
     "Three Little Birds FC"
   ],
-  "tableAsOf": "2026-09-06",
+  "tableAsOf": "2026-09-13",
   "table": [
-    {
-      "p": 1,
-      "c": "TSM Rovers",
-      "pl": 1,
-      "w": 1,
-      "d": 0,
-      "l": 0,
-      "gf": 4,
-      "ga": 1,
-      "gd": 3,
-      "pts": 3
-    },
-    {
-      "p": 2,
-      "c": "Sue's Angels FC",
-      "pl": 1,
-      "w": 1,
-      "d": 0,
-      "l": 0,
-      "gf": 2,
-      "ga": 1,
-      "gd": 1,
-      "pts": 3
-    },
-    {
-      "p": 3,
-      "c": "Barnes Stormers FC",
-      "pl": 0,
-      "w": 0,
-      "d": 0,
-      "l": 0,
-      "gf": 0,
-      "ga": 0,
-      "gd": 0,
-      "pts": 0
-    },
-    {
-      "p": 4,
-      "c": "Bristol City (London) Supporters",
-      "pl": 0,
-      "w": 0,
-      "d": 0,
-      "l": 0,
-      "gf": 0,
-      "ga": 0,
-      "gd": 0,
-      "pts": 0
-    },
-    {
-      "p": 5,
-      "c": "Brockwell Violets FC",
-      "pl": 0,
-      "w": 0,
-      "d": 0,
-      "l": 0,
-      "gf": 0,
-      "ga": 0,
-      "gd": 0,
-      "pts": 0
-    },
-    {
-      "p": 6,
-      "c": "Haydons Park",
-      "pl": 0,
-      "w": 0,
-      "d": 0,
-      "l": 0,
-      "gf": 0,
-      "ga": 0,
-      "gd": 0,
-      "pts": 0
-    },
-    {
-      "p": 7,
-      "c": "Pure Football FC 1st Team",
-      "pl": 0,
-      "w": 0,
-      "d": 0,
-      "l": 0,
-      "gf": 0,
-      "ga": 0,
-      "gd": 0,
-      "pts": 0
-    },
-    {
-      "p": 8,
-      "c": "Three Little Birds FC",
-      "pl": 1,
-      "w": 0,
-      "d": 0,
-      "l": 1,
-      "gf": 1,
-      "ga": 2,
-      "gd": -1,
-      "pts": 0
-    },
-    {
-      "p": 9,
-      "c": "Junction Elite FC Sunday 3rd Team",
-      "pl": 1,
-      "w": 0,
-      "d": 0,
-      "l": 1,
-      "gf": 1,
-      "ga": 4,
-      "gd": -3,
-      "pts": 0
-    }
+    { "p": 1, "c": "Sue's Angels FC", "pl": 2, "w": 2, "d": 0, "l": 0, "gf": 10, "ga": 2, "gd": 8, "pts": 6 },
+    { "p": 2, "c": "TSM Rovers", "pl": 2, "w": 1, "d": 0, "l": 1, "gf": 7, "ga": 5, "gd": 2, "pts": 3 },
+    { "p": 3, "c": "Brockwell Violets FC", "pl": 1, "w": 1, "d": 0, "l": 0, "gf": 2, "ga": 0, "gd": 2, "pts": 3 },
+    { "p": 4, "c": "Bristol City (London) Supporters", "pl": 1, "w": 1, "d": 0, "l": 0, "gf": 2, "ga": 1, "gd": 1, "pts": 3 },
+    { "p": 5, "c": "Three Little Birds FC", "pl": 2, "w": 1, "d": 0, "l": 1, "gf": 5, "ga": 5, "gd": 0, "pts": 3 },
+    { "p": 6, "c": "Barnes Stormers FC", "pl": 1, "w": 0, "d": 0, "l": 1, "gf": 1, "ga": 2, "gd": -1, "pts": 0 },
+    { "p": 7, "c": "Pure Football FC 1st Team", "pl": 1, "w": 0, "d": 0, "l": 1, "gf": 0, "ga": 2, "gd": -2, "pts": 0 },
+    { "p": 8, "c": "Junction Elite FC Sunday 3rd Team", "pl": 1, "w": 0, "d": 0, "l": 1, "gf": 1, "ga": 4, "gd": -3, "pts": 0 },
+    { "p": 9, "c": "Haydons Park", "pl": 1, "w": 0, "d": 0, "l": 1, "gf": 1, "ga": 8, "gd": -7, "pts": 0 }
   ],
   "results": [
+    { "date": "13 Sep 26", "kick": "11:00", "home": "Sue's Angels FC", "hs": 8, "as": 1, "away": "Haydons Park" },
+    { "date": "13 Sep 26", "kick": "10:30", "home": "Bristol City (London) Supporters", "hs": 2, "as": 1, "away": "Barnes Stormers FC" },
+    { "date": "13 Sep 26", "kick": "10:30", "home": "Brockwell Violets FC", "hs": 2, "as": 0, "away": "Pure Football FC 1st Team" },
+    { "date": "13 Sep 26", "kick": "10:30", "home": "TSM Rovers", "hs": 3, "as": 4, "away": "Three Little Birds FC" },
     {
       "date": "06 Sep 26",
       "kick": "11:00",
@@ -163,36 +68,12 @@
   ],
   "fixtures": [
     {
-      "iso": "2026-09-13",
-      "date": "13 Sep 26",
-      "kick": "10:30",
-      "home": "Bristol City (London) Supporters",
-      "away": "Barnes Stormers FC",
-      "venue": "Clapham Common, Pitch 3"
-    },
-    {
-      "iso": "2026-09-13",
-      "date": "13 Sep 26",
+      "iso": "2026-09-20",
+      "date": "20 Sep 26",
       "kick": "10:30",
       "home": "Brockwell Violets FC",
-      "away": "Pure Football FC 1st Team",
-      "venue": "Clapham Common, Pitch 8"
-    },
-    {
-      "iso": "2026-09-13",
-      "date": "13 Sep 26",
-      "kick": "10:30",
-      "home": "TSM Rovers",
-      "away": "Three Little Birds FC",
-      "venue": "Tooting Common, Lido Pitch 1"
-    },
-    {
-      "iso": "2026-09-13",
-      "date": "13 Sep 26",
-      "kick": "11:00",
-      "home": "Sue's Angels FC",
       "away": "Haydons Park",
-      "venue": "The Reeves Sports Club"
+      "venue": "Clapham Common, Pitch 7"
     },
     {
       "iso": "2026-09-20",

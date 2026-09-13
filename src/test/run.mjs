@@ -5927,8 +5927,12 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const homeTitle = ((fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8').match(/<title>([^<]*)</) || [])[1] || '');
   check('the home page tab leads with League Eight once it has started',
     !(l8.rows || []).some((r) => r.played > 0) || homeTitle.startsWith(`${l8.division} `), homeTitle);
+  /* More goals than any club can have scored, not one: the probe added a
+     single goal to Haydons Park, which only tripped while Haydons had scored
+     none, and went quiet the day they scored in an 8-1. A probe has to break
+     the rule whatever the season has done. */
   check('probe: a scorer filed under the wrong club is caught',
-    cmpSc([...(l8.scorers || []), { name: 'X', club: 'Haydons Park', goals: 1 }], l8.results || []).length > 0);
+    cmpSc([...(l8.scorers || []), { name: 'X', club: 'Haydons Park', goals: 999 }], l8.results || []).length > 0);
 }
 
 /* ==========================================================================

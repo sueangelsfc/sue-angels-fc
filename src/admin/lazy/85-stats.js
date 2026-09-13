@@ -2442,7 +2442,7 @@
       sub: 'For every page, how many views got halfway and to the end; for the page picked in '
         + '<b>Where people click</b>, how far down views got and how long each part stayed on screen.',
       body: (list.length ? table(['Page', 'Views', 'Got halfway', 'Got to the end', ''], list.slice(0, 30).map(function (p) {
-        return '<tr><td>' + esc(p.key) + '</td><td><b>' + p.views + '</b></td><td>' + pct(p.half, p.views)
+        return '<tr><td>' + esc(pageLabel(p.key)) + '</td><td><b>' + p.views + '</b></td><td>' + pct(p.half, p.views)
           + '%</td><td>' + pct(p.end, p.views) + '%</td><td style="width:20%">' + bar(p.end, p.views) + '</td></tr>';
       }).join('')) : '')
         + (by[page] ? '<h4 class="cp-sub">How far down ' + esc(pageLabel(page)) + ' views got</h4>'
@@ -2500,7 +2500,7 @@
       title: title,
       sub: 'How many visits reached each step, counted once per visit and only in order, so each list '
         + 'reads from the top down.',
-      body: '<div class="cp2">' + FUNNELS.map(function (fn) {
+      body: '<div class="cpst__funnels">' + FUNNELS.map(function (fn) {
         var steps = fn[2].map(function (label, i) {
           var v = 0;
           f.forEach(function (r) { if (r.funnel === fn[0] && num(r.step) === i + 1) v += num(r.views); });

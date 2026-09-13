@@ -687,7 +687,13 @@ a.cpp { text-decoration: underline; }
 .cp3 {
   display: grid;
   gap: var(--space-4);
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+}
+/* A funnel table has four columns of figures, so two to a row at most. */
+.cpst__funnels {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
 }
 
 /* ---- Figures with their own shape under them ---- */

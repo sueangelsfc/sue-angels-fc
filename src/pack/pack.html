@@ -19,6 +19,12 @@
        - The away kit is not designed yet. The drawing is a black prototype and
          says so, rather than implying a kit that does not exist.
        - Bloomin' Marvellous added as main kit sponsor.
+       - 13 September 2026: the three away shirt positions doubled at the
+         club's request (front 450 -> 900, sleeve 125 -> 250, back 200 -> 400).
+       - Page nine lists every registered player whose season is for sale,
+         built by make-pack.mjs from src/data/registered-2627.json and the
+         squad record, the same shelf the sponsors page shows. Never typed
+         here: a player added to the registration appears on the next run.
 
      A4 at 96dpi is 794x1123. Every page is exactly that, with margin:0 on
      @page, so nothing is scaled or clipped on the way out.
@@ -234,7 +240,31 @@ h1 em,h2 em{font-style: normal; color: var(--orange);}
 .post{position: absolute; top: 40px; bottom: 40px; width: 5px; border-radius: 3px;
   background: linear-gradient(180deg, #9AA3AB, #5C646C);}
 
-/* ---- Page 9: contact --------------------------------------------------- */
+/* ---- Page 9: the players ------------------------------------------------
+   Up to 36 names on one A4 page: four columns, a tile a name. A sold season
+   shows its sponsor in place of Available, dimmed, so what is left to sell
+   is what stands out. */
+.shelf{display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-top: 18px;}
+.seat{border: 1px solid var(--line); border-radius: 12px; background: var(--panel);
+  padding: 8px 11px 9px; min-width: 0;}
+.seat b{display: block; font-size: 11.5px; font-weight: 700; letter-spacing: -0.01em;
+  line-height: 1.2; color: var(--fg);}
+/* Wraps rather than clips: "Central or attacking m..." is a position cut in
+   half, and the position is what a sponsor picks a player by. */
+.seat i{display: block; margin-top: 3px; font-style: normal; font-size: 7.5px; font-weight: 600;
+  letter-spacing: 0.12em; line-height: 1.35; text-transform: uppercase; color: var(--dim);}
+.seat span{display: block; margin-top: 5px; font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--orange);}
+.seat--taken{border-style: dashed;}
+.seat--taken span{color: var(--mut); letter-spacing: 0.04em; text-transform: none;}
+.shelf__price{display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  margin-top: 18px; padding: 14px 18px; border-radius: 14px;
+  border: 1px solid rgba(255,106,42,0.42);
+  background: linear-gradient(140deg, rgba(255,106,42,0.14), rgba(255,255,255,0.03) 70%);}
+.shelf__price b{font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em;}
+.shelf__price em{font-style: normal; font-size: 20px; font-weight: 700; color: var(--orange);}
+
+/* ---- Page 10: contact -------------------------------------------------- */
 .cards{display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 40px;}
 .card{border: 1px solid var(--line); border-radius: 16px; background: var(--panel);
   padding: 20px;}
@@ -493,17 +523,17 @@ h1 em,h2 em{font-style: normal; color: var(--orange);}
       <div class="rate__row">
         <span class="rate__n">1</span>
         <span class="rate__t"><b>Front of away shirt</b><span>Central chest, the main sponsor spot</span></span>
-        <span class="rate__p">£450</span>
+        <span class="rate__p">£900</span>
       </div>
       <div class="rate__row">
         <span class="rate__n">2</span>
         <span class="rate__t"><b>Sleeve</b><span>One available on each arm, sold separately</span></span>
-        <span class="rate__p">£125</span>
+        <span class="rate__p">£250</span>
       </div>
       <div class="rate__row">
         <span class="rate__n">3</span>
         <span class="rate__t"><b>Back of away shirt</b><span>Across the top of the back</span></span>
-        <span class="rate__p">£200</span>
+        <span class="rate__p">£400</span>
       </div>
       <div class="rate__row">
         <span class="rate__n rate__n--x">+</span>
@@ -548,7 +578,7 @@ h1 em,h2 em{font-style: normal; color: var(--orange);}
       <div class="menu__card">
         <b>Back a player</b>
         <i>For the full season</i>
-        <div class="line"><span><b>Sponsor a player</b><span>Your company name on a player's profile</span></span><em>£120</em></div>
+        <div class="line"><span><b>Sponsor a player</b><span>Your name on his profile. Every player available is on the next page</span></span><em>£120</em></div>
         <div class="line"><span><b>Man of the Match</b><span>Named on every MOTM award</span></span><em>£150</em></div>
         <div class="line"><span><b>Player of the Month</b><span>Named on the monthly award</span></span><em>£120</em></div>
         <div class="line"><span><b>Goal of the Month</b><span>Named on the monthly award</span></span><em>£120</em></div>
@@ -574,7 +604,35 @@ h1 em,h2 em{font-style: normal; color: var(--orange);}
   <div class="ft"><span>Sponsorship menu</span><span>suesangelsfc.co.uk/sponsors</span></div>
 </section>
 
-<!-- ============================ 9 · LET'S TALK ============================ -->
+<!-- ============================ 9 · SPONSOR A PLAYER ============================ -->
+<section class="page">
+  <div class="hd">
+    <span class="hd__brand">
+      <img src="/assets/badge/sue-angels-badge-star.webp" alt="" />
+      <b>Sue's Angels FC</b>
+    </span>
+    <span class="hd__tag">Sponsor a player</span>
+  </div>
+  <div class="body" style="padding-top: 30px;">
+    <p class="eyebrow">{{playersAvailable}} players available</p>
+    <h2>Sponsor a player's<br /><em>season.</em></h2>
+    <p class="sub" style="max-width: 66ch; margin-top: 12px;">Put your name, your family's or your business's beside
+      a player for the whole {{playerSeason}} season. It appears on his page on the website and
+      in every matchday programme. These are the club's registered players for {{playerSeason}}.</p>
+
+    <div class="shelf">
+      {{playerShelf}}
+    </div>
+
+    <div class="shelf__price">
+      <span><b>One player, one season</b><span class="note" style="display:block;margin-top:4px;">Email suesangelsfc@gmail.com with the player's name. First come, first served.</span></span>
+      <em>£120</em>
+    </div>
+  </div>
+  <div class="ft"><span>Sponsor a player</span><span>suesangelsfc.co.uk/sponsors</span></div>
+</section>
+
+<!-- ============================ 10 · LET'S TALK ============================ -->
 <section class="page">
   <div class="hd">
     <span class="hd__brand">

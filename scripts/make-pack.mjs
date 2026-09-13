@@ -49,7 +49,28 @@ const big = biggestWin(leagueGames.filter((m) => !m.weAreHome)) || biggestWin(le
 const bigH = biggestWin(leagueGames.filter((m) => m.weAreHome));
 const shortClub = (n) => String(n || '').replace(/\s+FC( 2\.0)?$/, '');
 
+/* ---- The players for sale ----------------------------------------------
+   The same shelf as the sponsors page (src/templates/sponsors.mjs): the
+   club's FA registration list, less anybody marked `sponsorship: false`,
+   with the position from the squad record and a sold season's sponsor from
+   the sponsorships the site already prints. Built here rather than typed in
+   pack.html so a new registration reaches the pack on the next run. */
+const escHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const registered = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'registered-2627.json'), 'utf8'));
+const squadByNum = new Map((d.squad || []).map((p) => [String(p.num), p]));
+const shelf = (registered.players || []).filter((r) => r && r.name && r.sponsorship !== false).map((r) => {
+  const p = r.num != null ? squadByNum.get(String(r.num)) : null;
+  const sp = r.num != null ? (d.sponsorships || {})['player-' + r.num] : null;
+  return { name: r.name, position: r.position || (p && p.position) || '', by: sp && sp.name ? sp.name : '' };
+});
+if (shelf.length > 36) console.warn(`  warning: ${shelf.length} players will not fit one page of the pack (36 do).`);
+
 const FIGURES = {
+  playerSeason: registered.season || d.currentSeason || '',
+  playersAvailable: shelf.filter((s) => !s.by).length,
+  playerShelf: shelf.map((s) => `<div class="seat${s.by ? ' seat--taken' : ''}"><b>${escHtml(s.name)}</b>`
+    + `<i>${escHtml(s.position || 'Squad player')}</i>`
+    + `<span>${s.by ? `Sponsored by ${escHtml(s.by)}` : 'Available'}</span></div>`).join('\n      '),
   played: league.played,
   won: league.won,
   winPct: league.winPct,
@@ -131,4 +152,5 @@ const kb = fs.statSync(OUT).size / 1024;
 console.log(`PACK complete -> assets/sue-angels-sponsorship-pack.pdf (${kb.toFixed(0)} KB)`);
 console.log(`derived: P${FIGURES.played} W${FIGURES.won} ${FIGURES.winPct}% · `
   + `${FIGURES.conceded} conceded (${FIGURES.gaGap} fewer than next best) · ${FIGURES.cleanSheets} clean sheets`);
+console.log(`players: ${shelf.length} on the shelf, ${FIGURES.playersAvailable} available`);
 if (kb > 6000) console.warn(`  warning: ${kb.toFixed(0)}KB is large for an emailed pack.`);

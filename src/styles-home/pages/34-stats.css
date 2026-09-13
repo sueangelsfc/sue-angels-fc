@@ -199,6 +199,40 @@ html.js .st-tbl thead th[data-sort] button:focus-visible{outline: 2px solid var(
   background: var(--volt); opacity: var(--o, 1);}
 .st-share__sw.is-rest{background: rgba(var(--lift), 0.2);}
 
+/* The scorers, ranked under the bar: rank, name, a bar against the top
+   scorer, goals, share. On a phone the bar drops to its own line. */
+.st-share__list{list-style: none; margin: clamp(18px, 2.6vw, 26px) 0 0; padding: 0;}
+.st-share__list li{display: grid; align-items: center; gap: 8px 16px; padding: 11px 0;
+  grid-template-columns: minmax(130px, 240px) minmax(0, 1fr) 40px 48px;
+  grid-template-areas: "who track n pct";
+  border-top: 1px solid var(--line-d);}
+.st-share__list li:first-child{border-top: 0;}
+.st-share__list li:first-child .st-share__who{color: var(--volt-text);}
+/* One hue, fading down the list: the order is the ranking. */
+.st-share__list li:nth-child(n+2) .st-share__track i{opacity: 0.78;}
+.st-share__list li:nth-child(n+4) .st-share__track i{opacity: 0.56;}
+.st-share__who{grid-area: who; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 15px; color: var(--fg); text-decoration: none;}
+a.st-share__who:hover{color: var(--volt-text);}
+.st-share__track{grid-area: track; display: block; height: 10px; border-radius: 5px;
+  background: rgba(var(--lift), 0.06); overflow: hidden;}
+.st-share__track i{display: block; height: 100%; width: var(--w); border-radius: 5px;
+  background: var(--volt); opacity: var(--o, 1);}
+.st-share__n{grid-area: n; text-align: right; font-family: var(--display); font-weight: 400;
+  font-size: 20px; letter-spacing: -0.02em; color: var(--fg); font-variant-numeric: tabular-nums;}
+.st-share__pct{grid-area: pct; text-align: right; font-family: var(--ui); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.06em; color: var(--ink-3); font-variant-numeric: tabular-nums;}
+.st-share__list li.is-rest .st-share__who{color: var(--ink-2);}
+html.js .st-share__track i{width: 0; transition: width 0.9s var(--ease-out-expo) calc(var(--i, 0) * 60ms);}
+html.js .st-share__list.is-in .st-share__track i{width: var(--w);}
+@media (max-width: 620px){
+  .st-share__list li{grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-areas: "who n pct" "track track track";}
+}
+@media (prefers-reduced-motion: reduce){
+  html.js .st-share__track i{transition: none; width: var(--w);}
+}
+
 /* ---- Responsive --------------------------------------------------------- */
 @media (max-width: 1040px){
   .st-lead__grid{grid-template-columns: repeat(2, minmax(0, 1fr));}
@@ -316,9 +350,35 @@ html.js .st-mode{display: inline-flex;}
 .st-chart__key i.is-for{background: var(--volt);}
 .st-chart__key i.is-ag{background: rgba(255, 255, 255, 0.3);}
 .st-chart__sub{margin: 10px 0 0; font-family: var(--ui); font-size: 12.5px; line-height: 1.5; color: var(--ink-2);}
-.st-cols{display: block; width: 100%; height: auto; margin-top: 14px;}
-.st-cols__bar--for{fill: var(--volt);}
-.st-cols__bar--ag{fill: rgba(255, 255, 255, 0.3);}
+/* Match by match: one column per match, never wider than 76px, at a fixed
+   height rather than one that grows with the card. The row heights are set
+   per chart in goals (see matchCols), so a goal is the same height above the
+   line as below it. */
+.st-cols{display: block; margin-top: 18px;}
+.st-cols__row{list-style: none; margin: 0; padding: 0; display: flex; justify-content: center;
+  gap: clamp(6px, 1.4vw, 18px); height: clamp(190px, 24vw, 270px);}
+.st-cols__m{flex: 1 1 0; min-width: 0; max-width: 76px; display: grid; grid-template-rows: var(--rows);}
+.st-cols__up, .st-cols__down{position: relative; display: flex; flex-direction: column; align-items: center; min-height: 0;}
+.st-cols__up{justify-content: flex-end; border-bottom: 1px solid var(--line-d);}
+.st-cols__down{justify-content: flex-start;}
+.st-cols__bar{display: block; width: 100%; flex: none;}
+.st-cols__bar--for{height: calc(var(--f) * 100%); border-radius: 5px 5px 0 0; background: var(--volt);}
+.st-cols__bar--ag{height: calc(var(--a) * 100%); border-radius: 0 0 5px 5px; background: rgba(255, 255, 255, 0.3);}
+.st-cols__m.is-D .st-cols__bar--for{background: rgba(var(--volt-rgb), 0.6);}
+.st-cols__m.is-L .st-cols__bar--for{background: rgba(var(--volt-rgb), 0.38);}
+.st-cols__n{font-family: var(--display); font-weight: 400; font-size: 15px; line-height: 1; padding: 5px 0;
+  color: var(--fg); font-variant-numeric: tabular-nums;}
+.st-cols__down .st-cols__n{color: var(--ink-2);}
+.st-cols__lbl{margin-top: 8px; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  text-align: center; font-family: var(--ui); font-size: 10px; font-weight: 600; letter-spacing: 0.02em; color: var(--ink-2);}
+/* Crowded rows turn their names on end rather than cutting them to a letter. */
+.st-cols.is-dense .st-cols__lbl{writing-mode: vertical-rl; transform: rotate(180deg); max-height: 90px; margin: 8px auto 0; text-align: left;}
+.st-cols.is-dense .st-cols__n{font-size: 11px;}
+.st-cols__m:hover .st-cols__bar--for{filter: brightness(1.15);}
+@media (max-width: 560px){
+  .st-cols__lbl{writing-mode: vertical-rl; transform: rotate(180deg); max-height: 84px; margin: 8px auto 0; text-align: left;}
+  .st-cols__n{font-size: 12px;}
+}
 .st-donut{position: relative; margin: 14px auto 0; max-width: 150px;}
 .st-donut svg{display: block; width: 100%; height: auto;}
 .st-donut__seg[data-k="W"], .st-donut__seg[data-k="fwd"]{stroke: var(--volt);}

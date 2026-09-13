@@ -1291,6 +1291,26 @@
       applySort(sortCol, desc);
     };
 
+    /* STATS ORDER UNLESS A COLUMN WAS CHOSEN. The rows ship ranked on
+       all-time figures and the page opens on the latest season, whose figures
+       were painted into rows still in the all-time order, so the season's
+       table read as shuffled: two players with nothing above a hat-trick.
+       Ranked on the view on screen, every time it changes: goals and assists,
+       goals, assists, starts, bench, Man of the Match, clean sheets, name. */
+    var ORDER = [4, 2, 3, 0, 1, 6, 5];
+    var rank = function (instant) {
+      var sorted = rows.slice().sort(function (a, b) {
+        var fa = figs(a), fb = figs(b);
+        for (var k = 0; k < ORDER.length; k++) {
+          var d = (fb[ORDER[k]] || 0) - (fa[ORDER[k]] || 0);
+          if (d) return d;
+        }
+        return (a.getAttribute('data-name') || '').localeCompare(b.getAttribute('data-name') || '');
+      });
+      if (instant) { sorted.forEach(function (r) { tbody.appendChild(r); }); rows = sorted; } else reorder(sorted);
+      paint();
+    };
+
     /* The control goes INSIDE the header cell, injected here so no dead
        button ships to a reader without this script. role="button" on the
        <th> itself would have overwritten its columnheader role, which is the
@@ -1317,7 +1337,7 @@
            direction the reader chose, or the order would still reflect the
            competition it just left. */
         if (sortCol !== null) applySort(sortCol, desc);
-        else paint();
+        else rank();
       });
       /* A link cannot be pressed. Once these filter a table in place rather
          than navigating, they are buttons, and aria-pressed is only valid
@@ -1327,7 +1347,7 @@
     });
 
     var refresh = function () {
-      if (sortCol !== null) applySort(sortCol, desc); else paint();
+      if (sortCol !== null) applySort(sortCol, desc); else rank();
     };
 
     /* THE LEADERS FOLLOW THE TAB.
@@ -1515,7 +1535,7 @@
       });
     }
 
-    paint();
+    rank(true);
   })();
 
   /* ---- Match filters ---------------------------------------------------

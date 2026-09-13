@@ -324,7 +324,13 @@ const d = buildDataset();
     .filter((f) => f.endsWith('.pdf'))
     .map((f) => {
       const key = f.replace(/\.pdf$/, '');
-      const match = [...(d.matches || [])].find((x) => x.id === key);
+      /* A programme is drawn for the FIXTURE (f20260913-haydons) and the
+         result is saved as r20260913-haydons, the same match with one letter
+         changed. Matching the id exactly found nothing once the result was in,
+         so the collection printed the file's code and a bare ISO date where
+         the opponent, the day and the score belong. */
+      const match = [...(d.matches || [])].find((x) => x.id === key)
+        || [...(d.matches || [])].find((x) => /^[fr]/.test(key) && String(x.id || '').slice(1) === key.slice(1));
       const day = /^[fr](\d{4})(\d{2})(\d{2})/.exec(key);
       return {
         id: key,

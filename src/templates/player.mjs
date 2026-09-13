@@ -452,6 +452,28 @@ export function playerPage(p, d) {
   if (pr.cleanSheetRank === 1 && gk) accolades.push('Most clean sheets');
   if (pr.motmRank === 1) accolades.push('Most Man of the Match');
 
+  /* LEADING A SEASON, SAID FOR THAT SEASON. The chips were career ranks only,
+     so a player leading the current season showed nothing for it: Charlie
+     Dunkley, top of 26/27 for goals and for assists, carried "Most assists ·
+     All seasons" and neither of the two things that were true this season.
+     Worked out from the same per-season figures the stats page's leaders read
+     (d.playersBySeason, competitive matches), newest season first. A shared
+     lead is said as joint rather than awarded to whoever sorts first. */
+  const LEAD_CATS = [['goals', 'Top goalscorer', 'Joint top goalscorer'],
+    ['assists', 'Most assists', 'Joint most assists'],
+    ['cleanSheets', 'Most clean sheets', 'Joint most clean sheets'],
+    ['motm', 'Most Man of the Match', 'Joint most Man of the Match']];
+  const seasonAccolades = Object.keys(d.playersBySeason || {}).slice().reverse().flatMap((sn) => {
+    const pool = d.playersBySeason[sn] || [];
+    const me = pool.find((x) => String(x.num) === String(p.num));
+    if (!me) return [];
+    return LEAD_CATS.filter(([k]) => k !== 'cleanSheets' || gk).flatMap(([k, label, joint]) => {
+      const best = Math.max(0, ...pool.map((x) => x[k] || 0));
+      if (!best || (me[k] || 0) !== best) return [];
+      return [{ label: pool.filter((x) => (x[k] || 0) === best).length > 1 ? joint : label, season: sn }];
+    });
+  });
+
   const recog = d.recognition || [];
   const seasonAwards = recog.filter((r) => r.type === 'season_award' && r.playerId === p.num);
   const potm = recog.filter((r) => r.type === 'potm' && r.playerId === p.num);
@@ -500,6 +522,7 @@ export function playerPage(p, d) {
             <span class="pf-chip pf-chip--pos">${esc(squadRec.position || p.position)}</span>
             ${/* Career ranks, so they say so: under a season tab an undated "Top
                   goalscorer" reads as that season's. */''}
+            ${seasonAccolades.map((a) => `<span class="pf-chip">${esc(a.label)}<i>${esc(a.season)}</i></span>`).join('\n            ')}
             ${accolades.map((a) => `<span class="pf-chip">${esc(a)}<i>All seasons</i></span>`).join('\n            ')}
             ${captainOf ? `<span class="pf-chip">${esc(captainOf)}</span>` : ''}
             ${statusLabel ? `<span class="pf-chip pf-chip--mut">${esc(statusLabel)}<i>${esc(d.currentSeason)}</i></span>` : ''}
@@ -1213,8 +1236,9 @@ export function playerPage(p, d) {
     ...seasonAwards.map((a) => ({ k: a.title, v: a.season || d.titleSeason })),
     ...potm.map((a) => ({ k: 'Player of the Month', v: `${a.month} ${a.season || d.currentSeason}` })),
     captainOf ? { k: captainOf, v: d.currentSeason } : null,
-    /* The ranks behind these are counted over every season, so they are not
-       dated to the current one. */
+    /* A season he led is dated to that season; the career ranks below are
+       counted over every season, so they are not dated to the current one. */
+    ...seasonAccolades.map((a) => ({ k: a.label, v: a.season })),
     ...accolades.map((a) => ({ k: a, v: 'All seasons' })),
   ].filter(Boolean);
 

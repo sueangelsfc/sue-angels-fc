@@ -444,13 +444,32 @@ export const ENQUIRY_TYPES = [
   { key: 'general', label: 'Something else' },
 ];
 
+/* WHETHER THE CLUB IS TAKING TRIALS. One switch, read by every page that
+   invites somebody to one: the squad, player stats and coaches pages, the
+   home page's last band and the Join page's first route. Closed for 26/27 on
+   13 September 2026, at the club's request, once the squad was registered. */
+export const TRIALS_OPEN = false;
+
+/* "26/27" -> "27/28", for copy about the season after the one being played.
+   d.nextSeason cannot say it: it stays on the current season until the
+   club's own figures move on, which is why the trials band read "open for
+   26/27" in the middle of 26/27. */
+export const seasonAfter = (s) => {
+  const m = /^(\d{2})\/(\d{2})$/.exec(String(s || ''));
+  return m ? `${m[2]}/${String((Number(m[2]) + 1) % 100).padStart(2, '0')}` : '';
+};
+
 /* Recruitment routes for the Join page. */
 export const JOIN_PATHS = [
   {
     n: '01',
     title: 'Play for the Angels',
-    body: 'We look at players across every position ahead of each season. Tell us your position, your age and where you have played, and we will come back to you about a trial.',
-    cta: { label: 'Apply for a trial', href: '/join.html#trial' },
+    body: TRIALS_OPEN
+      ? 'We look at players across every position ahead of each season. Tell us your position, your age and where you have played, and we will come back to you about a trial.'
+      : 'Trials for this season have closed and the squad is set. Tell us your position, your age and where you have played, and you will be the first to hear when trials open for next season.',
+    cta: TRIALS_OPEN
+      ? { label: 'Apply for a trial', href: '/join.html#trial' }
+      : { label: 'Register for next season', href: '/join.html#trial' },
     type: 'trial',
   },
   {

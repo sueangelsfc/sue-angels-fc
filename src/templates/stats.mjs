@@ -23,7 +23,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { esc, attr } from '../lib/html.mjs';
-import { CLUB } from '../lib/club.mjs';
+import { CLUB, TRIALS_OPEN, seasonAfter } from '../lib/club.mjs';
 import { playerStats, isLeague } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
@@ -212,11 +212,14 @@ export function stats(d) {
      silently, because picking one of two players on thirteen clean sheets is
      an editorial decision the data does not support. */
   const CATS = [
-    { key: 'goals', label: 'Top goalscorer', unit: 'goals' },
-    { key: 'assists', label: 'Most assists', unit: 'assists' },
-    { key: 'motm', label: 'Most Man of the Match', unit: 'awards' },
-    { key: 'cleanSheets', label: 'Most clean sheets', unit: 'clean sheets' },
+    { key: 'goals', label: 'Top goalscorer', unit: 'goals', one: 'goal' },
+    { key: 'assists', label: 'Most assists', unit: 'assists', one: 'assist' },
+    { key: 'motm', label: 'Most Man of the Match', unit: 'awards', one: 'award' },
+    { key: 'cleanSheets', label: 'Most clean sheets', unit: 'clean sheets', one: 'clean sheet' },
   ];
+  /* "Both on 1 awards" was on the page two weeks into a season, which is
+     exactly when a leader's figure is most often one. */
+  const unitOf = (c, n) => (Number(n) === 1 ? c.one : c.unit);
 
   /* WORKED OUT PER VIEW, not once for the club.
 
@@ -245,7 +248,7 @@ export function stats(d) {
       label: t.label,
       names: t.holders.map((h) => h.p.name),
       holders: t.holders,
-      sub: `${t.holders.length === 2 ? 'Both on' : `${t.holders.length} players on`} ${t.best} ${t.unit}`,
+      sub: `${t.holders.length === 2 ? 'Both on' : `${t.holders.length} players on`} ${t.best} ${unitOf(t, t.best)}`,
       extra: [],
     }));
 
@@ -256,8 +259,8 @@ export function stats(d) {
         v: lead.v,
         label: w.cats.map((c) => c.label).join(' · '),
         sub: w.cats.length > 1
-          ? w.cats.map((c) => `${c.v} ${c.unit}`).join(' and ')
-          : `${lead.v} ${lead.unit} in ${w.r.apps} appearance${w.r.apps === 1 ? '' : 's'}`,
+          ? w.cats.map((c) => `${c.v} ${unitOf(c, c.v)}`).join(' and ')
+          : `${lead.v} ${unitOf(lead, lead.v)} in ${w.r.apps} appearance${w.r.apps === 1 ? '' : 's'}`,
         extra: w.cats.slice(1),
       };
     }).sort((a, b) => b.cats.length - a.cats.length).concat(tieCards);
@@ -480,15 +483,17 @@ export function stats(d) {
             <span class="sr-only">${esc(x.p.name)}, ${esc(x.r.goals)} goals</span>
           </li>`).join('\n          ')}
         </ol>
-        <ol class="st-share__key">
-          ${share.slice(0, 6).map((x, n) => `<li>
-            <span class="st-share__sw" aria-hidden="true" style="--o:${(1 - n * 0.13).toFixed(2)}"></span>
-            <b>${esc(x.p.last)}</b>
-            <i>${esc(x.r.goals)}</i>
-          </li>`).join('\n          ')}
-          ${share.length > 6 ? `<li><span class="st-share__sw is-rest" aria-hidden="true"></span>
-            <b>${esc(share.length - 6)} others</b>
-            <i>${esc(share.slice(6).reduce((n, x) => n + x.r.goals, 0))}</i></li>` : ''}
+        ${/* THE SCORERS, IN ORDER. The bar above says how the goals split; it
+             could not say who, beyond six surnames in a key. Each row links to
+             the player, with a bar against the top scorer, his goals and his
+             share. No rank, and the name is initial and surname like the
+             table: a numeral beside a full name reads as the storage key
+             ("William Clark 7" is seven goals, and his key is 7), which the
+             suite refuses. A JS comment, not an HTML one, because HTML
+             comments ship. Eight rows, then the rest in one. */''}
+        <ol class="st-share__list rv">
+          ${share.slice(0, 8).map((x, n) => `<li style="--i:${n}"><a class="st-share__who" href="/players/${attr(x.p.slug)}.html" title="${attr(x.p.name)}"><i>${esc(initial(x.p.first))}</i> ${esc(x.p.last)}</a><span class="st-share__track" aria-hidden="true"><i style="--w:${((x.r.goals / share[0].r.goals) * 100).toFixed(0)}%"></i></span><b class="st-share__n">${esc(x.r.goals)}</b><span class="st-share__pct">${esc(Math.round(x.pct))}%</span></li>`).join('')}
+          ${share.length > 8 ? `<li class="is-rest"><span class="st-share__who">${esc(share.length - 8)} others</span><span class="st-share__track" aria-hidden="true"></span><b class="st-share__n">${esc(share.slice(8).reduce((n, x) => n + x.r.goals, 0))}</b><span class="st-share__pct">${esc(Math.round(share.slice(8).reduce((n, x) => n + x.pct, 0)))}%</span></li>` : ''}
         </ol>`;
   };
 
@@ -532,37 +537,43 @@ export function stats(d) {
               <ul class="st-chart__legend">${segs.filter((s) => s.n).map((s) => `<li data-k="${attr(s.k)}"><i></i><b>${esc(s.n)}</b> ${esc(s.label)}</li>`).join('')}</ul>`;
   };
 
+  /* MATCH BY MATCH, as columns that keep their shape. This was one SVG scaled
+     to the card's full width, so its height grew with the screen and two
+     matches drew two blocks a third of a metre wide, with no score and no
+     opponent on either. Each match is now a column no wider than it needs,
+     carrying its score and who it was against, and every bar is a share of
+     the biggest score in the view so a goal is the same height above the line
+     as below it. Results are told apart by shade of the one accent. Past
+     twenty matches there is no room for words, so the labels drop and the
+     title on each column still says it. */
+  const shortOpp = (n) => String(n || '').replace(/\s+(FC|AFC)\b.*$/i, '').trim() || String(n || '');
   const matchCols = (ms) => {
-    const W = 320;
-    const H = 120;
-    const mid = 64;
-    const step = W / ms.length;
-    const bw = Math.max(1.5, step * 0.62);
-    const top = Math.max(1, ...ms.map((m) => (m.countsGoals ? Math.max(m.ourGoals, m.theirGoals) : 0)));
-    const up = (mid - 6) / top;
-    const down = (H - mid - 6) / top;
-    let forPath = '';
-    let agPath = '';
+    const topFor = Math.max(0, ...ms.map((m) => (m.countsGoals ? m.ourGoals : 0)));
+    const topAg = Math.max(0, ...ms.map((m) => (m.countsGoals ? m.theirGoals : 0)));
+    const unit = Math.max(1, topFor, topAg);
+    /* Row heights in goals, plus room for the figure printed on the bar. */
+    const rows = `${(topFor + unit * 0.22).toFixed(2)}fr ${(topAg + unit * 0.22).toFixed(2)}fr auto`;
+    const labelled = ms.length <= 20;
     let gf = 0;
     let ga = 0;
-    ms.forEach((m, i) => {
-      if (!m.countsGoals) return;
-      const x0 = (i * step + (step - bw) / 2).toFixed(1);
-      gf += m.ourGoals;
-      ga += m.theirGoals;
-      if (m.ourGoals) forPath += `M${x0} ${mid}v${(-m.ourGoals * up).toFixed(1)}h${bw.toFixed(1)}v${(m.ourGoals * up).toFixed(1)}z`;
-      if (m.theirGoals) agPath += `M${x0} ${mid}v${(m.theirGoals * down).toFixed(1)}h${bw.toFixed(1)}v${(-m.theirGoals * down).toFixed(1)}z`;
-    });
+    /* Compact on purpose: one column per match in every season view adds up,
+       and the page has a 160KB ceiling. The row sizes are set once on the
+       list, the tooltip is short, and nothing is indented. */
+    const cols = ms.map((m) => {
+      const f = m.countsGoals ? m.ourGoals : 0;
+      const a = m.countsGoals ? m.theirGoals : 0;
+      gf += f;
+      ga += a;
+      const title = `${shortOpp(m.opponent)} ${m.countsGoals ? `${f}-${a}` : 'W/O'}`;
+      return `<li class="st-cols__m${m.outcome ? ` is-${m.outcome}` : ''}" style="--f:${(f / (topFor + unit * 0.22)).toFixed(2)};--a:${(a / (topAg + unit * 0.22)).toFixed(2)}" title="${attr(title)}"><span class="st-cols__up">${labelled && f ? `<b class="st-cols__n">${esc(f)}</b>` : ''}<i class="st-cols__bar st-cols__bar--for"></i></span><span class="st-cols__down"><i class="st-cols__bar st-cols__bar--ag"></i>${labelled && a ? `<b class="st-cols__n">${esc(a)}</b>` : ''}</span>${labelled ? `<span class="st-cols__lbl">${esc(shortOpp(m.opponent))}</span>` : ''}</li>`;
+    }).join('');
     return `<figure class="st-chart st-chart--cols">
               <figcaption class="st-chart__k">Match by match
                 <span class="st-chart__key"><i class="is-for"></i>Scored<i class="is-ag"></i>Conceded</span></figcaption>
-              <svg class="st-cols" viewBox="0 0 ${W} ${H}" role="img" data-for="${gf}" data-against="${ga}" data-matches="${ms.length}"
+              <div class="st-cols${ms.length > 8 ? ' is-dense' : ''}" role="img" data-for="${gf}" data-against="${ga}" data-matches="${ms.length}"
                 aria-label="${attr(`${gf} scored and ${ga} conceded across ${ms.length} matches`)}">
-                <line x1="0" y1="${mid}" x2="${W}" y2="${mid}" stroke="var(--line-d)" stroke-width="1"/>
-                <rect class="st-cols__sheen" x="-48" y="0" width="48" height="${H}"/>
-                ${forPath ? `<path class="st-cols__bar st-cols__bar--for" d="${forPath}"/>` : ''}
-                ${agPath ? `<path class="st-cols__bar st-cols__bar--ag" d="${agPath}"/>` : ''}
-              </svg>
+                <ol class="st-cols__row" aria-hidden="true" style="--rows:${rows}">${cols}</ol>
+              </div>
               <p class="st-chart__sub">${esc(gf)} scored, ${esc(ga)} conceded${ms.some((m) => !m.countsGoals)
     ? `. ${esc(ms.filter((m) => !m.countsGoals).length)} awarded as a walkover and carry no score` : ''}.</p>
             </figure>`;
@@ -636,11 +647,14 @@ export function stats(d) {
           <img class="cta2__badge" src="${STAR}" alt="Sue’s Angels FC star" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
             <p class="eyebrow cta2__eyebrow">Want to play here?</p>
-            <h2 class="h2" id="st-cta-h">Trials are open for <span class="volt">${esc(d.nextSeason)}.</span></h2>
-            <p class="cta2__sub">Think you can wear the shirt? Register your interest and we will be
-              in touch with dates.</p>
+            <h2 class="h2" id="st-cta-h">${TRIALS_OPEN
+    ? `Trials are open for <span class="volt">${esc(d.nextSeason)}.</span>`
+    : `Trials for ${esc(d.currentSeason)} have <span class="volt">closed.</span>`}</h2>
+            <p class="cta2__sub">${TRIALS_OPEN
+    ? 'Think you can wear the shirt? Register your interest and we will be in touch with dates.'
+    : `The squad is set for this season. Register your interest now and you will be the first to hear when trials open for ${esc(seasonAfter(d.currentSeason))}.`}</p>
             <div class="cta2__btns">
-              <a class="btn btn--volt" href="/join.html">Apply for a trial ${ARROW}</a>
+              <a class="btn btn--volt" href="/join.html">${TRIALS_OPEN ? 'Apply for a trial' : 'Register your interest'} ${ARROW}</a>
               <a class="btn btn--ghost" href="/squad.html">Meet the squad</a>
             </div>
           </div>

@@ -24,7 +24,7 @@ import { photoCredit } from './gallery.mjs';
 import { sizeAttrs } from '../lib/imagesize.mjs';
 import {
   CLUB, SPONSOR_TIERS, FAQS, NEXT_FIXTURE, SEASON_AWARDS, SOCIALS,
-  JOIN_PATHS, JOIN_FAQS,
+  JOIN_PATHS, JOIN_FAQS, TRIALS_OPEN,
 } from '../lib/club.mjs';
 import {
   teamSummary, formGuide, isLeague, clubRecords, milestones, leaderboard,
@@ -893,7 +893,17 @@ export function home(d) {
      transcribed from Full-Time and all checked by `npm run verify`. It empties
      itself before a ball is kicked and needs no switch. */
   const l8Results = l8.results || [];
-  const l8LastDay = l8Results.length ? l8Results[l8Results.length - 1].date : '';
+  /* THE LATEST ROUND BY DATE, NOT BY WHERE IT SITS IN THE FILE. This took the
+     last row, and the 13 September round was transcribed above the 6th, so the
+     band printed the 6th as the latest results under a table dated the 13th.
+     Transcribed dates are "13 Sep 26". */
+  const l8Iso = (s) => {
+    const m = /^(\d{1,2}) ([A-Za-z]{3}) (\d{2})$/.exec(String(s || '').trim());
+    const mo = m ? 'JanFebMarAprMayJunJulAugSepOctNovDec'.indexOf(m[2]) / 3 + 1 : 0;
+    return m && mo ? `20${m[3]}-${String(mo).padStart(2, '0')}-${m[1].padStart(2, '0')}` : '';
+  };
+  const l8LastDay = l8Results.reduce((best, r) => (l8Iso(r.date) > l8Iso(best) ? r.date : best),
+    l8Results.length ? l8Results[0].date : '');
   const l8Round = l8Results.filter((r) => r.date === l8LastDay);
   const l8Ahead = l8.fixturesAhead || [];
   const l8NextRound = l8Ahead.filter((f) => f.iso === (l8Ahead[0] || {}).iso);
@@ -985,7 +995,9 @@ export function home(d) {
           <div class="cta2__glass glassbox">
             <p class="eyebrow cta2__eyebrow">${esc(d.nextSeason)} · The next chapter</p>
             <h2 class="h1b" id="cta-h">Pull on the shirt<span class="volt">.</span></h2>
-            <p class="cta2__sub">Trials, volunteering, media and sponsorship. All open for the new season.</p>
+            <p class="cta2__sub">${TRIALS_OPEN
+    ? 'Trials, volunteering, media and sponsorship. All open for the new season.'
+    : 'Volunteering, media and sponsorship are all open. Trials for this season have closed.'}</p>
             <div class="cta2__btns">
               <a class="btn btn--volt" href="/join.html">Join the club ${ARROW}</a>
               <a class="btn btn--ghost" href="/contact.html">Get in touch</a>

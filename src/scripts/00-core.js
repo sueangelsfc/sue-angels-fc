@@ -363,6 +363,26 @@
     });
   });
 
+  /* ---- YouTube, only when asked ---------------------------------------- */
+  /* A match report ships a still with a link, never a player: an iframe
+     contacts Google as soon as it scrolls into view. The player replaces the
+     link on the press, and only for the one address shape the build writes. */
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('a[data-yt]') : null;
+    if (!a || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var src = a.getAttribute('data-yt') || '';
+    if (!/^https:\/\/www\.youtube-nocookie\.com\/embed\/[\w-]+\?autoplay=1$/.test(src)) return;
+    e.preventDefault();
+    var f = document.createElement('iframe');
+    f.src = src;
+    f.title = a.getAttribute('data-yt-title') || 'Video';
+    f.setAttribute('allowfullscreen', '');
+    f.setAttribute('allow', 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture');
+    f.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+    a.parentNode.replaceChild(f, a);
+    f.focus();
+  });
+
   /* ---- Lightbox ------------------------------------------------------- */
   var lb = null;
   function openLightbox(items, index) {

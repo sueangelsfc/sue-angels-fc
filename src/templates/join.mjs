@@ -113,6 +113,8 @@ function joinForm() {
         </p>
       </div>
 
+      <p class="form-privacy">The club uses what you send only to reply to you. <a href="/privacy.html#forms">What happens to it</a></p>
+
       <div class="jn-form__foot">
         <button class="btn btn--volt" type="submit">Send it ${ARROW}</button>
         <p class="jn-status" data-enquiry-status role="status" aria-live="polite"></p>

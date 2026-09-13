@@ -957,6 +957,25 @@ the line, so this reads the rules conservatively.**
   It names every device key the stats keep (asserted) and cites the ICO and
   legislation.gov.uk (`SOURCES.ico`, `SOURCES.pecr`). Every page links to it
   (asserted). Change what is counted and that page changes with it.
+- **A form is personal data, and its notice sits beside it.** The contact,
+  join and newsletter forms send names, emails, phone numbers and messages to
+  Supabase, Resend (a notice to the club's Gmail) and MailerLite, and for
+  months the privacy page covered only the stats. `#forms` on `/privacy.html`
+  is the UK GDPR notice: what is sent, where, the lawful basis (legitimate
+  interest for an enquiry, consent for the newsletter), retention and rights.
+  **Every `form[data-enquiry]` and `form[data-subscribe]` links to it within
+  a few hundred characters**, asserted per form rather than per page, because
+  the footer's link would otherwise vouch for a form further up. The
+  retention it promises (an enquiry deleted within two years of the last
+  contact; a newsletter address until the person leaves) is kept by the club
+  deleting from the Inbox and MailerLite, not by code.
+- **A YouTube video is a still until somebody presses play.** An iframe, even
+  `youtube-nocookie` and `loading="lazy"`, contacts Google when it scrolls
+  into view, which is a third party reaching the device before anybody asked.
+  `report.mjs` ships `a.mr-yt[data-yt]` wearing the match's cover and a line
+  saying where it plays from; `00-core.js` swaps in the iframe on the press,
+  for the one embed address shape the build writes. Without scripts the link
+  opens YouTube. The suite fails any shipped page with a YouTube iframe.
 
 ### A descendant space is not every space
 

@@ -1243,6 +1243,11 @@ html.js .rv.is-in{opacity: 1; transform: translateY(0);}
 .ft2__col a:hover{color: var(--fg);}
 .ft2__news h3{font-family: var(--display); font-weight: 650; font-size: 17px; letter-spacing: -0.01em;}
 .ft2__news p{color: var(--ink-3); font-size: 12.5px; line-height: 1.55; margin-top: 8px; max-width: 32ch;}
+/* What happens to what a form sends, beside the form. Underlined, because a
+   link mid-sentence cannot be told apart by colour alone. */
+.ft2__news p.ft2__formnote{margin-top: 10px;}
+.form-privacy{margin-top: 14px; font-size: 13px; line-height: 1.55; color: var(--ink-2);}
+.form-privacy a, .ft2__news p a, .psn__note a, .giv p a{color: inherit; text-decoration: underline; text-underline-offset: 2px;}
 .ft2__form{display: flex; align-items: center; gap: 6px; margin-top: 15px;
   background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 12px; padding: 5px 5px 5px 15px;

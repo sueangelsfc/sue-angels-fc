@@ -195,8 +195,13 @@ export function matchReport(m, d) {
      BECAUSE they want this match, so sending them to YouTube to see the goals
      is sending them away from the report they were reading.
 
-     `youtube-nocookie` and lazy loading so the frame costs nothing until it
-     is scrolled to, and nothing is set on the visitor unless they press play.
+     A STILL UNTIL SOMEBODY PRESSES PLAY. An iframe, even `youtube-nocookie`
+     and lazy, contacts Google the moment it scrolls into view and can store
+     things on the device, which is a third party storing information before
+     anybody asked for it. So the page ships a link wearing the match's own
+     cover, and `00-core.js` swaps in the player only on the press, with a
+     line saying where it plays from. Without scripts the link opens YouTube.
+     The embed address stays here because csp.mjs proves `frame-src` by it.
      Renders nothing at all when no video is filed, which is every match until
      one is saved in the control panel. */
   /* Four things can be filed against a match now: the footage, somebody before
@@ -232,11 +237,14 @@ export function matchReport(m, d) {
           ${filmCount > 1 ? `<figcaption class="mr-clip__cap">${esc(c.label)}</figcaption>` : ''}
           <div class="mr-embed">
             ${det[c.id]
-    ? `<iframe src="https://www.youtube-nocookie.com/embed/${attr(det[c.id])}"
-              title="${attr(`${m.title}, ${c.label.toLowerCase()}`)}"
-              loading="lazy" allowfullscreen
-              allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
-              referrerpolicy="strict-origin-when-cross-origin"></iframe>`
+    ? `<a class="mr-yt" href="https://www.youtube.com/watch?v=${attr(encodeURIComponent(det[c.id]))}" rel="noopener" target="_blank"
+              data-yt="https://www.youtube-nocookie.com/embed/${attr(encodeURIComponent(det[c.id]))}?autoplay=1"
+              data-yt-title="${attr(`${m.title}, ${c.label.toLowerCase()}`)}">
+              ${poster ? `<img class="mr-yt__img" src="${attr(poster)}" alt="" width="1200" height="630" loading="lazy" decoding="async" />` : ''}
+              <span class="mr-yt__play" aria-hidden="true"><svg viewBox="0 0 24 24" width="28" height="28"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></svg></span>
+              <span class="mr-yt__t">Play ${esc(c.label.toLowerCase())}
+                <span class="mr-yt__n">Plays from YouTube, which may store information on your device once you press play.</span></span>
+            </a>`
     : `<video src="${attr(det[c.file])}" controls preload="none"
               title="${attr(`${m.title}, ${c.label.toLowerCase()}`)}"></video>`}
           </div>

@@ -254,7 +254,7 @@ export function footer() {
           ${cols}
           <div class="ftr__col ftr__sub">
             <h2>Newsletter</h2>
-            <p style="font-size:var(--step--2);color:var(--text-muted)">Team news, results and the cause. Once a month, no noise.</p>
+            <p style="font-size:var(--step--2);color:var(--text-muted)">Team news, results and the cause. Once a month, no noise. <a href="/privacy.html#forms">How your address is kept</a></p>
             <form class="ftr__subform" data-subscribe novalidate>
               <label class="sr-only" for="ftr-email">Email address</label>
               <input class="input" id="ftr-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" required>

@@ -2155,7 +2155,8 @@ export function home(d) {
           </p>
         </form>
         <p class="psn__note rv">It goes to ${esc(CLUB.email)} and into the club’s own inbox,
-          so nothing is lost if the email does not land.</p>
+          so nothing is lost if the email does not land. It is used only to reply to you.
+          <a href="/privacy.html#forms">What happens to it</a></p>
       </div>
     </section>`;
 
@@ -2165,7 +2166,8 @@ export function home(d) {
         ${bandHead('newsletter', 'The monthly email', 'Once a month', '', '', 'nws-h')}
         <div class="giv rv">
           <p>Results, the next fixtures and what the club is up to. Once a month, and
-            nothing else. Leaving is one click from the bottom of any of them.</p>
+            nothing else. Leaving is one click from the bottom of any of them.
+            <a href="/privacy.html#forms">How your address is kept</a></p>
           <form class="cform cform--inline" data-subscribe novalidate>
             <label class="sr-only" for="hn-email">Email address</label>
             <input id="hn-email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" required />
@@ -2643,6 +2645,7 @@ export function siteFooter() {
             <button type="submit" aria-label="Subscribe">${SVG.send}</button>
             <p class="sr-only" data-sub-msg role="status" aria-live="polite"></p>
           </form>
+          <p class="ft2__formnote">Used only to send the email. <a href="/privacy.html#forms">How it is kept</a></p>
           <a class="ft2__joincta" href="/join.html">Or pull on the shirt ${ARROW}</a>
         </div>
       </div>

@@ -13,8 +13,11 @@
    EVERY CLAIM ON THIS PAGE IS A CLAIM ABOUT CODE, and each names the file
    that makes it true: src/scripts/20-consent.js (the choices),
    src/scripts/30-stats.js (what is counted), api/view.js (the town), and
-   migrations/007-011 (what the database can hold). Change one of those and
-   this page has to change with it.
+   migrations/007-012 (what the database can hold). Change one of those and
+   this page has to change with it. The forms section is the UK GDPR notice
+   for what a visitor SENDS: src/scripts/00-core.js (what each form posts),
+   api/notify-enquiry.js (Resend) and api/subscribe.js (MailerLite). Every form
+   links to #forms beside it, and the suite holds each one to that.
 
    Plain words, no legal boilerplate: the point of the requirement is that a
    supporter understands what happens, and a wall of clauses defeats it.
@@ -36,7 +39,19 @@ const cards = (list) => `<ul class="cz-help__grid rv">
           </li>`).join('\n          ')}
         </ul>`;
 
-const UPDATED = '12 September 2026';
+const UPDATED = '13 September 2026';
+
+/* What happens to what a visitor sends. Each line is something
+   src/scripts/00-core.js posts, and where it goes. */
+const FORMS = [
+  ['Enquiries and joining', 'The contact and join forms send the club your name, your email, what it is about, your message and, if you give one, a phone number, with the page you sent it from. It is kept in the club’s own inbox, held by Supabase, and a short email saying an enquiry has arrived, with your email address, is sent to the club’s email account through Resend. It is used only to reply to you.'],
+  ['The monthly email', 'The newsletter forms send your email address and the page you signed up on. It is kept on the club’s supporter list, held by Supabase, and passed to MailerLite, which sends the newsletter. It is used only to send you the club’s newsletter.'],
+  ['Why the club may use it', 'For an enquiry, the club’s legitimate interest in answering a question you chose to ask it, and the tick box confirms you are happy to be contacted about it. For the newsletter, your consent, given by signing up and yours to take back at any time.'],
+  ['How long it is kept', 'An enquiry is deleted within two years of the club last hearing from you, or sooner if you ask. A newsletter address is kept until you leave the list: use the link at the foot of any email, or email the club, and it is taken off MailerLite and the club’s own list.'],
+  ['What never happens to it', 'It is never sold, never passed to sponsors, never added to the newsletter unless you sign up to that, and never used for advertising.'],
+  ['Videos from YouTube', 'A video on a match report shows a still picture until you press play, and nothing is loaded from YouTube before then. Pressing play loads it from YouTube’s privacy-enhanced service, and YouTube, part of Google, then receives your internet address and may store information on your device under Google’s own privacy policy.'],
+  ['Donations', 'The donate button takes you to Stripe, which takes the payment. The club never sees your card details.'],
+];
 
 /* What the anonymous statistics count. Each line is something
    src/scripts/30-stats.js or api/view.js actually sends. */
@@ -94,6 +109,7 @@ export function privacy() {
         <div class="cz-helpcard glassbox rv">
           <p>${esc(CLUB.name)} counts visits to this website anonymously, to understand what supporters read and to make the site better. Nothing identifies you, nothing is used for advertising, and you can turn it off at any time.</p>
           <p>Anything that would need your permission, such as an analytics or advertising tool from another company, stays off unless you say yes.</p>
+          <p>When you send the club a message or sign up for the newsletter, what you send is used only for that. <a href="#forms">What happens to it</a></p>
           <p><button class="btn btn--volt" type="button" data-privacy-open>Change my privacy settings</button></p>
           <noscript><p>Your browser is not running scripts, so this website is not counting your visit at all and there is nothing to switch off.</p></noscript>
         </div>
@@ -152,15 +168,26 @@ export function privacy() {
       </div>
     </section>`;
 
-  /* ================= 07 WHO HELPS, HOW LONG, YOUR RIGHTS ================= */
+  /* ================= 07 WHAT YOU SEND THE CLUB ================= */
+  const forms = `<section class="sec cz-help" id="forms" aria-labelledby="pv-forms-h">
+      <div class="wrap">
+        ${rail(7, 'What you send the club', 'Forms, videos, donations')}
+        <h2 class="h2 rv" id="pv-forms-h">What you send, and <span class="volt">what happens to it.</span></h2>
+        <p class="rv">Unlike the counts above, a form sends the club information about you, so this is the part covered by the UK GDPR. ${esc(CLUB.name)} is responsible for it and can be reached at ${esc(email)}.</p>
+        ${cards(FORMS)}
+      </div>
+    </section>`;
+
+  /* ================= 08 WHO HELPS, HOW LONG, YOUR RIGHTS ================= */
   const rights = `<section class="sec cz-help" aria-labelledby="pv-rights-h">
       <div class="wrap">
-        ${rail(7, 'Who helps, how long, your rights', 'Questions')}
+        ${rail(8, 'Who helps, how long, your rights', 'Questions')}
         <h2 class="h2 rv" id="pv-rights-h">Who helps, and <span class="volt">your rights.</span></h2>
         ${cards([
-          ['Who helps the club', 'Vercel hosts the website and works out the town from the connection. Supabase holds the counts. Both act only on the club’s instructions. They may process information outside the UK, and where they do it is under the safeguards UK law requires.'],
+          ['Who helps the club', 'Vercel hosts the website and works out the town from the connection. Supabase holds the counts, the inbox and the supporter list. Resend sends the club a notice of each enquiry, Google hosts the club’s email account, and MailerLite sends the newsletter. Some of them process information outside the UK, and where they do it is under the safeguards UK law requires.'],
           ['How long counts are kept', 'The counts are daily totals with nothing identifying in them. The club keeps them for up to three years so one season can be compared with the next, and then deletes them.'],
-          ['Your rights', 'You can object to the counting at any time with the settings on this page or in the footer, and your browser’s Global Privacy Control or Do Not Track setting is treated as an objection too. Because nothing is kept that links a count to you, the club cannot find, send or delete figures about you in particular, because there are none.'],
+          ['Your rights over the counts', 'You can object to the counting at any time with the settings on this page or in the footer, and your browser’s Global Privacy Control or Do Not Track setting is treated as an objection too. Because nothing is kept that links a count to you, the club cannot find, send or delete figures about you in particular, because there are none.'],
+          ['Your rights over what you send', 'For anything you have sent through a form you can ask the club for a copy, ask for it to be corrected or deleted, or object to how it is used. Email the club and it will answer within a month.'],
           ['Questions and complaints', `Email the club at ${email} with any question about this page. If you are unhappy with how the club handles information, you can complain to the Information Commissioner’s Office at ico.org.uk.`],
         ])}
         <p class="rv"><a class="btn btn--ghost" href="mailto:${attr(email)}">Email the club</a></p>
@@ -168,7 +195,7 @@ export function privacy() {
     </section>`;
 
   return {
-    body: siteHeader('/privacy.html') + intro + counted + law + permission + never + stored + rights
+    body: siteHeader('/privacy.html') + intro + counted + law + permission + never + stored + forms + rights
       + sourceNote(['ico', 'pecr'], { lead: 'For the rules this page follows, read' }),
     bodyClass: 'is-home is-sub is-cause is-privacy',
     css: 'home.css',
@@ -179,7 +206,7 @@ export function privacy() {
       '@context': 'https://schema.org',
       '@type': 'WebPage',
       name: `Privacy and your choices · ${CLUB.name}`,
-      dateModified: '2026-09-12',
+      dateModified: '2026-09-13',
       breadcrumb: {
         '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',

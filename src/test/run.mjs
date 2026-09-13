@@ -4668,6 +4668,37 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     .map((m) => m[1]).concat(['sa-privacy', 'sa-trail', 'sa-bandviews-off']))];
   check('the privacy page names every key the public site keeps on the device',
     keysUsed.every((k) => privacyHtml.includes(k)), keysUsed.filter((k) => !privacyHtml.includes(k)).join(', '));
+  /* A FORM IS PERSONAL DATA, so the UK GDPR notice has to be at the point of
+     collection: every form that posts a name or an email is held to a link to
+     the privacy page's forms section beside it (the paragraph just above it
+     counts, which is where the newsletter band puts it). Checked per form,
+     not per page, because the footer's link would otherwise vouch for a form
+     further up the page. */
+  const formsNoNotice = [];
+  let formsSeen = 0;
+  for (const [f, h] of pages.entries()) {
+    if (!f.endsWith('.html') || /control\.html|__all-bands/.test(f)) continue;
+    for (const m of h.matchAll(/<form\b[^>]*\bdata-(?:enquiry|subscribe)\b[^>]*>/g)) {
+      formsSeen++;
+      const end = h.indexOf('</form>', m.index);
+      const near = h.slice(Math.max(0, m.index - 700), (end < 0 ? m.index : end) + 400);
+      if (!/href="\/privacy\.html#forms"/.test(near)) formsNoNotice.push(`${f} @${m.index}`);
+    }
+  }
+  check('every form that collects a name or an email links to what happens to it',
+    formsSeen > 0 && formsNoNotice.length === 0, formsSeen ? formsNoNotice.slice(0, 6).join(', ') : 'no forms found');
+  check('the privacy page explains the forms and names everybody who handles what is sent',
+    /id="forms"/.test(privacyHtml)
+      && ['Supabase', 'Resend', 'MailerLite', 'YouTube', 'Stripe'].every((w) => privacyHtml.includes(w)),
+    'privacy.html#forms');
+  /* A YouTube iframe contacts Google as soon as it scrolls into view, before
+     anybody pressed play. The report ships a still and a link instead. */
+  const ytFrames = [...pages.entries()].filter(([, h]) => /<iframe\b[^>]*youtube/i.test(h)).map(([f]) => f);
+  const coreSrc = fs.readFileSync(path.join(ROOT, 'src', 'scripts', '00-core.js'), 'utf8');
+  const reportSrc = fs.readFileSync(path.join(ROOT, 'src', 'templates', 'report.mjs'), 'utf8');
+  check('no page loads YouTube before somebody presses play',
+    ytFrames.length === 0 && !/<iframe/.test(reportSrc) && /data-yt=/.test(reportSrc) && /a\[data-yt\]/.test(coreSrc),
+    ytFrames.slice(0, 4).join(', ') || 'report.mjs or 00-core.js');
 }
 
 /* ==========================================================================

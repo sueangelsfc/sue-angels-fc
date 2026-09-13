@@ -8482,12 +8482,66 @@ let orphanClasses = new Map();
   /* No endpoint may name a key. They read process.env, and a literal that
      looks like one is either a leak or a placeholder nobody removed. */
   const keyish = [];
-  for (const f of [...PUBLIC, ...GATED, '_public.js']) {
+  for (const f of [...PUBLIC, ...GATED, '_public.js', 'newsletter-left.js']) {
     for (const m of api(f).matchAll(/["'`](re_[A-Za-z0-9_]{10,}|sk-[A-Za-z0-9_-]{10,}|eyJ[A-Za-z0-9_.-]{30,})["'`]/g)) {
       keyish.push(`${f}: ${m[1].slice(0, 12)}…`);
     }
   }
   check('no API endpoint carries a key of its own', keyish.length === 0, keyish.join(', '));
+
+  /* A WEBHOOK IS PUBLIC AND SIGNED. MailerLite calls /api/newsletter-left when
+     somebody leaves the newsletter, and anybody can post to it, so it believes
+     nothing it has not checked against the signature, and the delete it asks
+     for needs a key only it holds. Asserted on the source AND run: a check
+     that the word timingSafeEqual appears passes on code that never calls it. */
+  const hook = api('newsletter-left.js');
+  const m015 = (() => {
+    try { return fs.readFileSync(path.join(ROOT, 'migrations', '015_newsletter_leavers.sql'), 'utf8'); } catch (e) { return ''; }
+  })();
+  check('/api/newsletter-left throttles a caller', /tooMany\(req[,)]/.test(hook) && /429/.test(hook));
+  check('leaving the newsletter removes a supporter only with the key only the endpoint holds',
+    /rpc\/forget_supporter/.test(hook) && /process\.env\.SUPPORTERS_FORGET_KEY/.test(hook)
+      && /raise exception 'not allowed'/.test(m015) && /digest\(p_key, 'sha256'\)/.test(m015)
+      && /revoke all on function public\.issue_newsletter_leavers_key\(boolean\) from public, anon, authenticated/.test(m015)
+      && !/sb_secret_|service_role/.test(hook), 'api/newsletter-left.js or migrations/015');
+  {
+    const { default: leave } = await import(path.join(ROOT, 'api', 'newsletter-left.js'));
+    const crypto = await import('node:crypto');
+    const saved = { s: process.env.MAILERLITE_WEBHOOK_SECRET, k: process.env.SUPPORTERS_FORGET_KEY, f: globalThis.fetch };
+    process.env.MAILERLITE_WEBHOOK_SECRET = 'test-secret';
+    process.env.SUPPORTERS_FORGET_KEY = 'k'.repeat(64);
+    const calls = [];
+    globalThis.fetch = async (url, opts) => { calls.push({ url, body: JSON.parse(opts.body) }); return { ok: true, json: async () => 1 }; };
+    const sign = (raw) => crypto.createHmac('sha256', 'test-secret').update(raw).digest('hex');
+    const send = async (raw, sig) => {
+      let status = 0;
+      const res = { status(c) { status = c; return this; }, json() { return this; }, end() { return this; } };
+      await leave({ method: 'POST', headers: { signature: sig, 'x-forwarded-for': 'suite-' + Math.random() },
+        async *[Symbol.asyncIterator]() { yield Buffer.from(raw); } }, res);
+      return status;
+    };
+    try {
+      const raw = JSON.stringify({ email: ' Someone@Example.com ', event: 'subscriber.unsubscribed' });
+      const forged = await send(raw, 'f'.repeat(64));
+      const forgedCalls = calls.length;
+      const real = await send(raw, sign(raw));
+      const joined = JSON.stringify({ email: 'new@example.com', event: 'subscriber.created' });
+      const notLeaving = await send(joined, sign(joined));
+      const batch = JSON.stringify({ events: [{ type: 'subscriber.deleted', subscriber: { email: 'gone@example.com' } }] });
+      const batched = await send(batch, sign(batch));
+      check('a forged newsletter unsubscribe is refused and removes nobody',
+        forged === 401 && forgedCalls === 0, `status ${forged}, ${forgedCalls} database calls`);
+      check('a signed unsubscribe removes that address, and nothing but a leaving event removes anybody',
+        real === 200 && notLeaving === 200 && batched === 200 && calls.length === 2
+          && calls[0].body.p_email === 'someone@example.com' && calls[1].body.p_email === 'gone@example.com'
+          && calls.every((c) => /\/rpc\/forget_supporter$/.test(c.url)),
+        JSON.stringify({ real, notLeaving, batched, calls: calls.map((c) => c.body.p_email) }));
+    } finally {
+      globalThis.fetch = saved.f;
+      if (saved.s === undefined) delete process.env.MAILERLITE_WEBHOOK_SECRET; else process.env.MAILERLITE_WEBHOOK_SECRET = saved.s;
+      if (saved.k === undefined) delete process.env.SUPPORTERS_FORGET_KEY; else process.env.SUPPORTERS_FORGET_KEY = saved.k;
+    }
+  }
 }
 
 /* ==========================================================================

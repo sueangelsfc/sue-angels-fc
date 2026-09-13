@@ -970,9 +970,19 @@ the line, so this reads the rules conservatively.**
   `purge_old_enquiries()` removes a row once nothing from the same address has
   arrived in two years (a conversation, not a row, is what ages out), and
   pg_cron runs it nightly at 03:17 UTC. Execute is revoked from anon and
-  authenticated, so it cannot be called over the API. A newsletter address is
-  still removed by hand, from MailerLite and the supporter list, when somebody
-  leaves.
+  authenticated, so it cannot be called over the API.
+- **Leaving the newsletter leaves the supporter list too**
+  (`api/newsletter-left.js`, `migrations/015_newsletter_leavers.sql`). The
+  unsubscribe link is MailerLite's, so MailerLite calls this as a webhook on
+  `subscriber.unsubscribed`, `subscriber.spam_reported` and (batched)
+  `subscriber.deleted`. **Nothing is believed unsigned**: the `Signature`
+  header is an HMAC-SHA256 of the RAW body, checked in constant time before
+  parsing, which is why the body is read from the stream and never through
+  `req.body`. The delete is `forget_supporter(email, key)`, callable by anon
+  but refused without `SUPPORTERS_FORGET_KEY`, whose SHA-256 sits in the
+  `private` schema the API cannot see: no all-powerful Supabase key on
+  Vercel. The suite runs the handler: a forged request removes nobody, a
+  signed one removes exactly that address. Inert until MailerLite is.
 - **Website stats delete themselves too** (`migrations/014_page_stats_retention.sql`).
   012's `purge_page_stats()` checks `is_club_admin()`, and a pg_cron job has no
   signed-in user, so scheduling it would have raised `not allowed` every night.
@@ -1174,6 +1184,8 @@ Push to `main` → `sue-angels-fc-b469` auto-deploys to www.suesangelsfc.co.uk. 
 | `DEPLOY_HOOK_URL` | `api/publish.js` | set, Preview + Production |
 | `ANTHROPIC_API_KEY` | `api/claude.js` | set 3 Aug 2026, Production, sensitive |
 | `RESEND_API_KEY` | `api/notify-enquiry.js` | not set; the endpoint no-ops gracefully and the `enquiries` table write is what actually records the lead |
+| `MAILERLITE_WEBHOOK_SECRET` | `api/newsletter-left.js` | not set; the secret MailerLite shows for the unsubscribe webhook |
+| `SUPPORTERS_FORGET_KEY` | `api/newsletter-left.js` | not set; printed once by `migrations/015_newsletter_leavers.sql` |
 
 Adding one takes effect only on the NEXT deployment: `vercel redeploy <latest-prod-url>`, or press **Publish to site** in the control panel.
 

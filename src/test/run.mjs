@@ -1866,7 +1866,15 @@ const BUDGET = {
      has been told and has not objected. 17,851 gz before, 19,181 after. The
      statistics exception in PECR requires exactly this, so there is no
      version of the counter that is lawful and smaller. */
-  'sa.js': 20,
+  /* 20 -> 23, and the 3,501 bytes are the detail the club asked for, every
+     one of them inside the statistics exception: where clicks land, scroll
+     depth, time on each part of a page, video watch-through, page speed and
+     errors, browser settings counted one at a time, funnels and form fields
+     by name; plus the two consent-only counts, figures for sponsors and
+     returning visits, which send nothing without a saved yes. 19,181 gz
+     before, 22,682 after. It runs on every page because a click, a scroll or
+     a slow load can happen on any of them. */
+  'sa.js': 23,
   /* 5 -> 6, once, for the match form telling you what is in the record: the
      count on a tab you have not opened, the strip saying what does not add
      up, the tally beside each picker's label, and the eleven collapsed from a
@@ -2021,7 +2029,12 @@ const BUDGET = {
      the flow diagram, the journey list and explorer, the chosen period, the
      label that follows the pointer and sparks under the headline figures.
      20,575 gz before and 26,640 after. Still fetched by this one screen only. */
-  'control-stats.js': 28,
+  /* 28 -> 33 for the detail sections (heatmap, scroll and time on each part,
+     videos and photos, six funnels, form fields, browser settings, returning
+     visits, speed graded against Google's thresholds, errors, privacy choices
+     and deletion) and the sponsor report built only from consented figures.
+     26,809 gz before, 32,468 after. Fetched by this one screen only. */
+  'control-stats.js': 33,
   'control-matchday.js': 4,
   /* 16 -> 6. The five-tab editor left for control-matchedit.js, so this is now
      the two LISTS: 15.9KB of a 16KB ceiling became 4.9KB. The ceiling comes
@@ -4473,7 +4486,10 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     /* Every kind the beacon can send must be one the database accepts, or the
        click is thrown away with nothing to say so. */
     const beaconSrc = fs.readFileSync(path.join(ROOT, 'src', 'scripts', '30-stats.js'), 'utf8');
-    const sentKinds = [...new Set((beaconSrc.match(/\bev\('([a-z]+)'|\? '([a-z]+)'|: '([a-z]+)', h\)/g) || [])
+    /* Only the click classifier, which ends where the detail begins: the
+       detail's own ternaries ('rage', 'dark', 'newsletter') are not kinds. */
+    const classifier = beaconSrc.slice(0, beaconSrc.indexOf('THE DETAIL (migrations/012)'));
+    const sentKinds = [...new Set((classifier.match(/\bev\('([a-z]+)'|\? '([a-z]+)'|: '([a-z]+)', h\)/g) || [])
       .map((m) => m.match(/'([a-z]+)'/)[1]))];
     const allowed = ((mig010.match(/p_kind not in \(([^)]*)\)/) || [])[1] || '');
     check('every click kind the beacon sends is one migration 010 accepts',
@@ -4492,6 +4508,48 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     check('the page view beacon asks our own function where the reader is',
       /fetch\('\/api\/view'/.test(beaconSrc), 'no call to /api/view');
     const viewSrc = fs.readFileSync(path.join(ROOT, 'api', 'view.js'), 'utf8');
+    /* THE DETAIL (migrations/012). Every call the beacon makes names only
+       arguments the function in the migration takes, because a mismatch is
+       a PGRST202 and a silent loss - the lesson of 008. */
+    const mig012 = fs.readFileSync(path.join(ROOT, 'migrations', '012_page_detail_and_consented.sql'), 'utf8');
+    const sigOf = (fn) => {
+      const m = mig012.match(new RegExp(`function public\\.${fn}\\(([\\s\\S]*?)\\)\\s*returns`));
+      return m ? [...m[1].matchAll(/\b(p_[a-z_]+)\s+[a-z]/g)].map((x) => x[1]) : null;
+    };
+    const callsOf = (fn) => [...beaconSrc.matchAll(new RegExp(`rpc\\('${fn}', \\{([\\s\\S]*?)\\}\\)`, 'g'))]
+      .map((m) => m[1].match(/\bp_[a-z_]+(?=:)/g) || []);
+    const detailBad = [];
+    for (const fn of ['record_page_heat', 'record_page_scroll', 'record_page_sections', 'record_page_media',
+      'record_page_perf', 'record_page_error', 'record_page_context', 'record_page_funnel', 'record_page_field',
+      'record_audience_view', 'record_audience_event', 'record_returning']) {
+      const sig = sigOf(fn);
+      const uses = callsOf(fn);
+      if (!sig) { detailBad.push(`${fn} is not in 012`); continue; }
+      if (!uses.length) { detailBad.push(`${fn} is never called`); continue; }
+      for (const u of uses) {
+        const extra = u.filter((a) => !sig.includes(a));
+        if (extra.length) detailBad.push(`${fn} sends ${extra.join(', ')}`);
+      }
+    }
+    check('every detail the beacon sends matches a function migration 012 defines',
+      detailBad.length === 0, detailBad.join(' | '));
+    check('figures for sponsors and returning visits are sent only after a saved yes',
+      /if \(consents\('sponsor'\)\) \{\s*rpc\('record_audience_view'/.test(beaconSrc)
+        && /if \(consents\('sponsor'\)\) \{\s*rpc\('record_audience_event'/.test(beaconSrc)
+        && /function returning\(\) \{\s*if \(!consents\('returning'\)\) return;/.test(beaconSrc)
+        && /fetch\('\/api\/view' \+ \(consents\('sponsor'\) \? '\?audience=1' : ''\)/.test(beaconSrc),
+      'a consent-only count without its gate');
+    check('the observers that measure over time start only once statistics are allowed',
+      /function startWatching\(\) \{\s*if \(watching \|\| !allowed\(\)\) return;/.test(beaconSrc), 'startWatching');
+    const detailSrc = beaconSrc.slice(beaconSrc.indexOf('THE DETAIL (migrations/012)'));
+    check('nothing typed into a form is ever read',
+      (detailSrc.match(/\w+\.value\b/g) || []).every((m) => m === 'en.value'),
+      (detailSrc.match(/\w+\.value\b/g) || []).join(', '));
+    const consentNow = fs.readFileSync(path.join(ROOT, 'src', 'scripts', '20-consent.js'), 'utf8');
+    check('withdrawing a yes to returning visits deletes what it kept',
+      /if \(!choice\.returning\) \{\s*try \{ localStorage\.removeItem\('sa-visits'\)/.test(consentNow), 'sa-visits kept');
+    check('012 has no column named with a reserved word',
+      !/^\s+returning\s+boolean/m.test(mig012), 'returning is reserved in Postgres');
     check('/api/view stores no address and reads no body',
       !/x-forwarded-for|x-real-ip|req\.body/.test(viewSrc) && /rpc\/record_page_place/.test(viewSrc),
       'it must only forward the location headers');

@@ -48,17 +48,26 @@ export default async function handler(req, res) {
   };
   if (!/^[A-Z]{2}$/.test(place.p_country)) { res.status(204).end(); return; }
 
+  const post = (url) => fetch(url, {
+    method: 'POST',
+    headers: {
+      apikey: runtime.supabase.anonKey,
+      Authorization: 'Bearer ' + runtime.supabase.anonKey,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+    body: JSON.stringify(place),
+  });
+  /* The town goes into the figures for sponsors only when the beacon asks,
+     and the beacon asks only after the visitor has saved a yes to that
+     purpose (window.saPrivacy.allows('sponsor')). Sharing with sponsors is
+     outside the statistics exception, so it is consent or nothing. */
+  const audience = String((req.query && req.query.audience) || '') === '1';
   try {
-    await fetch(`${runtime.supabase.url}/rest/v1/rpc/record_page_place`, {
-      method: 'POST',
-      headers: {
-        apikey: runtime.supabase.anonKey,
-        Authorization: 'Bearer ' + runtime.supabase.anonKey,
-        'Content-Type': 'application/json',
-        Prefer: 'return=minimal',
-      },
-      body: JSON.stringify(place),
-    });
+    await Promise.all([
+      post(`${runtime.supabase.url}/rest/v1/rpc/record_page_place`),
+      ...(audience ? [post(`${runtime.supabase.url}/rest/v1/rpc/record_audience_place`)] : []),
+    ]);
   } catch (e) { /* never an error in exchange for a counter */ }
   res.status(204).end();
 }

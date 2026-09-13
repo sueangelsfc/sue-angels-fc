@@ -834,6 +834,52 @@ a.cpp { text-decoration: underline; }
 }
 .cpst__explore { max-width: 420px; margin-block-end: var(--space-3); }
 
+/* ---- Where people click: a page drawn as a tall column of cells ---- */
+.cphm {
+  display: grid;
+  grid-template-columns: minmax(160px, 260px) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+.cphm__map {
+  padding: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-inset);
+}
+.cphm__svg { display: block; width: 100%; height: 520px; }
+.cphm__page { fill: var(--surface); stroke: var(--border-strong); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.cphm__rule { stroke: var(--border); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.cphm__cell { fill: var(--brand); }
+.cphm__dead { fill: none; stroke: var(--text); stroke-width: 1.5px; vector-effect: non-scaling-stroke; }
+.cphm__rage { fill: var(--text); fill-opacity: 0.8; }
+.cphm__key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin: var(--space-2) 0 0;
+  font-size: var(--step--2);
+  color: var(--text-muted);
+}
+.cphm__key span { display: inline-flex; align-items: center; gap: 6px; }
+.cphm__sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: var(--brand); }
+.cphm__sw--dead { background: none; border: 1.5px solid var(--text); }
+.cphm__sw--rage { background: var(--text); }
+.cphm__side { min-width: 0; }
+@media (max-width: 760px) { .cphm { grid-template-columns: minmax(0, 1fr); } .cphm__svg { height: 380px; } }
+
+/* ---- Speed: good, needs work and poor as one bar, in one hue at two strengths ---- */
+.cpsp {
+  display: flex;
+  height: 8px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--surface-inset);
+  border: 1px solid var(--border);
+}
+.cpsp i { display: block; height: 100%; background: var(--brand); }
+.cpsp i.is-mid { background: rgb(var(--brand-rgb) / 0.4); }
+
 /* ---- The label that follows the pointer ---- */
 .cptip {
   position: fixed;

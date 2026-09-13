@@ -47,6 +47,21 @@ const COUNTED = [
   ['How people move around', 'The page before this one, and the order of pages read in one browser tab, counted as a pattern shared by everyone who took that route.'],
   ['What gets used', 'That a programme was downloaded, the donate button was pressed, a link to another website or a video was played, or a form was sent. Never what was typed into a form.'],
   ['The device, coarsely', 'Phone, tablet or computer, from the width of the screen; the time zone the device is set to; and the hour of the day on the reader’s own clock.'],
+  ['Where on a page people click', 'The position of a click as a share of the page’s width and height and which part of the page it was in, including clicks on something that does nothing and quick repeated clicks. That is how the club finds a button nobody can find.'],
+  ['How far down, and for how long', 'How far down each page views reach, and how long each part of a page was on the screen.'],
+  ['Videos and photos', 'That a video was started and how far through it was watched, and that a photo was opened.'],
+  ['Speed, and what breaks', 'How long pages take to load, in bands, and errors on the page with every number and address taken out of the message.'],
+  ['Browser and settings', 'The browser, operating system, language, screen width, light or dark mode, reduced motion, whether the page opened inside an app such as Instagram, and the connection speed. Each is counted on its own and never joined to the others, so together they cannot single out a device.'],
+  ['Steps towards joining or getting involved', 'How many visits reach each step of joining, sponsoring, donating, contacting the club and subscribing, and which form field people stop at: the field’s name, never what was typed.'],
+];
+
+/* What needs a yes first. Each of these is a purpose outside the statistics
+   exception, so it is off until a visitor saves a choice to turn it on. */
+const PERMISSION = [
+  ['Figures for sponsors', 'If you say yes, your visit is also counted in the audience figures the club may show its sponsors: pages read, roughly which town, what kind of device, how you arrived and links followed. Still anonymous. The club only ever shows sponsors figures from visitors who said yes.'],
+  ['Returning visits', 'If you say yes, this device keeps a note of how many days you have visited and when you last did, as sa-visits, so the club can count repeat visits. Only a band such as “2 to 3 visits” is sent. Turning it off deletes the note.'],
+  ['Google Analytics and the Meta pixel', 'Not switched on. If the club ever adds them they stay off unless you turn them on, and the settings will say exactly what each one receives.'],
+  ['Changing your mind', 'Withdrawing a yes is as quick as giving it: open Privacy settings, switch it off and save. Anything that purpose kept on your device is deleted at the same moment. The club counts how many people choose each option each day, without recording who.'],
 ];
 
 const NEVER = [
@@ -62,6 +77,8 @@ const STORED = [
   ['Your privacy choices', 'Kept in your browser as sa-privacy until you change them, so the question is not asked on every page. This records a choice you made, which the law treats as strictly necessary.'],
   ['The pages read in this tab', 'Kept as sa-trail in the tab’s own storage, which the browser deletes when the tab closes. Only while anonymous statistics are on; turning them off deletes it.'],
   ['A switched-off counter', 'A single yes or no, sa-bandviews-off, that stops the home page counter asking the database again once it is switched off. Only while anonymous statistics are on.'],
+  ['Steps counted in this tab', 'Kept as sa-funnel in the tab’s own storage, so a step towards joining or donating is counted once per visit rather than on every page. Deleted when the tab closes, or when you turn statistics off.'],
+  ['Your visit count, only with your yes', 'Kept as sa-visits: how many days you have visited and the last one. Only if you say yes to returning visits; turning that off deletes it.'],
   ['The control panel word', 'If you type the word that opens the club’s control panel, sa-cp-word is kept in the tab’s own storage so the panel opens. It is deleted when the tab closes and does nothing else.'],
   ['Pages for offline use', 'The browser keeps copies of pages you have opened so the site loads quickly and works on a poor signal. It holds nothing about you.'],
 ];
@@ -100,35 +117,45 @@ export function privacy() {
         <h2 class="h2 rv" id="pv-law-h">The law this <span class="volt">works under.</span></h2>
         ${cards([
           ['Counting visits', 'UK law lets a website store or read information on your device without asking first when the only purpose is to produce statistics about how the website is used, in order to improve it. That is the Privacy and Electronic Communications Regulations as amended by the Data (Use and Access) Act 2025. The conditions are that you are told clearly, which this page and the notice do, and that you can object simply and for free, which the settings do. When you object, counting stops.'],
-          ['Only to improve the site', 'These figures are used by the club to decide what to write, what to fix and how to arrange the website. They are not shared with sponsors or anybody else for any other purpose. If the club wants to show sponsors audience figures, it will ask for your permission first.'],
+          ['Only to improve the site', 'These figures are used by the club to decide what to write, what to fix and how to arrange the website. They are not shared with sponsors or anybody else for any other purpose. Figures shown to sponsors come only from visitors who say yes to that, below.'],
           ['Your town', 'Working out a town from a connection briefly involves your internet address, which is personal data under the UK GDPR. Our website host does this as part of delivering the page, and the club receives only the town and a count. The club’s lawful basis is its legitimate interest in understanding, in general terms, where its supporters are, so that the website serves them well. The address itself is not stored by the club.'],
         ])}
       </div>
     </section>`;
 
-  /* ================= 04 WHAT IS NEVER DONE ================= */
+  /* ================= 04 WHAT NEEDS YOUR PERMISSION ================= */
+  const permission = `<section class="sec cz-help" aria-labelledby="pv-perm-h">
+      <div class="wrap">
+        ${rail(4, 'Only with your yes', 'Off unless you turn it on')}
+        <h2 class="h2 rv" id="pv-perm-h">What needs <span class="volt">your permission.</span></h2>
+        ${cards(PERMISSION)}
+        <p class="rv"><button class="btn btn--ghost" type="button" data-privacy-open>Choose what to allow</button></p>
+      </div>
+    </section>`;
+
+  /* ================= 05 WHAT IS NEVER DONE ================= */
   const never = `<section class="sec cz-help" aria-labelledby="pv-never-h">
       <div class="wrap">
-        ${rail(4, 'What is never done', 'Not with or without permission')}
+        ${rail(5, 'What is never done', 'Not with or without permission')}
         <h2 class="h2 rv" id="pv-never-h">What this site <span class="volt">never does.</span></h2>
         ${cards(NEVER)}
       </div>
     </section>`;
 
-  /* ================= 05 WHAT IS ON YOUR DEVICE ================= */
+  /* ================= 06 WHAT IS ON YOUR DEVICE ================= */
   const stored = `<section class="sec cz-help" aria-labelledby="pv-stored-h">
       <div class="wrap">
-        ${rail(5, 'On your device', 'No cookies')}
+        ${rail(6, 'On your device', 'No cookies')}
         <h2 class="h2 rv" id="pv-stored-h">What is kept <span class="volt">on your device.</span></h2>
         <p class="rv">This website sets no cookies. It uses your browser’s own storage for these, and nothing else:</p>
         ${cards(STORED)}
       </div>
     </section>`;
 
-  /* ================= 06 WHO HELPS, HOW LONG, YOUR RIGHTS ================= */
+  /* ================= 07 WHO HELPS, HOW LONG, YOUR RIGHTS ================= */
   const rights = `<section class="sec cz-help" aria-labelledby="pv-rights-h">
       <div class="wrap">
-        ${rail(6, 'Who helps, how long, your rights', 'Questions')}
+        ${rail(7, 'Who helps, how long, your rights', 'Questions')}
         <h2 class="h2 rv" id="pv-rights-h">Who helps, and <span class="volt">your rights.</span></h2>
         ${cards([
           ['Who helps the club', 'Vercel hosts the website and works out the town from the connection. Supabase holds the counts. Both act only on the club’s instructions. They may process information outside the UK, and where they do it is under the safeguards UK law requires.'],
@@ -141,7 +168,7 @@ export function privacy() {
     </section>`;
 
   return {
-    body: siteHeader('/privacy.html') + intro + counted + law + never + stored + rights
+    body: siteHeader('/privacy.html') + intro + counted + law + permission + never + stored + rights
       + sourceNote(['ico', 'pecr'], { lead: 'For the rules this page follows, read' }),
     bodyClass: 'is-home is-sub is-cause is-privacy',
     css: 'home.css',

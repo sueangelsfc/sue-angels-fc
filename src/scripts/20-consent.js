@@ -33,7 +33,10 @@
   'use strict';
 
   var KEY = 'sa-privacy';
-  var VERSION = 1;
+  /* Raised whenever the list of purposes changes: a new purpose means asking
+     again, which the ICO's guidance requires. 2 added figures for sponsors
+     and returning visits. */
+  var VERSION = 2;
 
   var signalled = (function () {
     try {
@@ -43,16 +46,20 @@
   }());
 
   function stored() {
-    try {
-      var v = JSON.parse(localStorage.getItem(KEY) || 'null');
-      return v && v.v === VERSION ? v : null;
-    } catch (e) { return null; }
+    try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { return null; }
   }
-  var choice = stored();
-  var informed = !!choice;
+  var saved = stored();
+  /* A choice saved under an earlier list of purposes still says what the
+     visitor wanted for statistics, and they have already been told about
+     them, so that part carries forward. It is consent to nothing added since:
+     the banner comes back and asks. */
+  var choice = saved && saved.v === VERSION ? saved : null;
+  var earlier = saved && !choice && typeof saved.stats === 'boolean' ? saved : null;
+  var informed = !!(choice || earlier);
 
   function prefs() {
-    return choice || { v: VERSION, stats: !signalled, google: false, meta: false };
+    return choice || { v: VERSION, stats: earlier ? earlier.stats : !signalled,
+      sponsor: false, returning: false, google: false, meta: false };
   }
   function read() {
     var p = prefs();
@@ -124,7 +131,15 @@
       'Counts which pages are read, roughly which town visits come from, what sent people '
       + 'and how they move around the site, so the club can make it better. Nothing that '
       + 'identifies you is kept, and nothing is shared for any other purpose. On unless you '
-      + 'turn it off.']];
+      + 'turn it off.'],
+      ['sponsor', 'Figures for sponsors',
+        'Includes your visit in the audience figures the club shows its sponsors: which pages were read, '
+        + 'roughly which town and what kind of device, and whether a link was followed. Still anonymous. '
+        + 'Off unless you turn it on.'],
+      ['returning', 'Returning visits',
+        'Remembers on this device which days you have visited, so the club can count how many visits are '
+        + 'repeat visits. Only a count is ever sent, never anything that identifies you. Off unless you turn '
+        + 'it on.']];
     if (window.SA_GA_ID) {
       list.push(['google', 'Google Analytics',
         'Google measures your visit for the club. Google receives information about it. Off unless you turn it on.']);
@@ -138,8 +153,8 @@
 
   function decide(next) {
     var had = prefs();
-    choice = { v: VERSION, stats: !!next.stats, google: !!next.google, meta: !!next.meta,
-      at: new Date().toISOString().slice(0, 10) };
+    choice = { v: VERSION, stats: !!next.stats, sponsor: !!next.sponsor, returning: !!next.returning,
+      google: !!next.google, meta: !!next.meta, at: new Date().toISOString().slice(0, 10) };
     informed = true;
     try {
       localStorage.setItem(KEY, JSON.stringify(choice));
@@ -147,9 +162,20 @@
     } catch (e) {}
     /* Objecting stops it AND clears what it had stored. */
     if (!choice.stats) {
-      try { sessionStorage.removeItem('sa-trail'); } catch (e) {}
+      try { sessionStorage.removeItem('sa-trail'); sessionStorage.removeItem('sa-funnel'); } catch (e) {}
       try { localStorage.removeItem('sa-bandviews-off'); } catch (e) {}
     }
+    if (!choice.returning) {
+      try { localStorage.removeItem('sa-visits'); } catch (e) {}
+    }
+    /* How many visitors chose what, per day, with nothing that says who: the
+       club's record that the mechanism works and what people pick. */
+    try {
+      if (window.saRpc) {
+        window.saRpc('record_privacy_choice', { p_stats: choice.stats, p_sponsor: choice.sponsor,
+          p_returning: choice.returning }, true).catch(function () {});
+      }
+    } catch (e) {}
     if (window.SA_GA_ID && had.google && !choice.google) window['ga-disable-' + window.SA_GA_ID] = true;
     hide();
     startAnalytics();
@@ -181,8 +207,9 @@
         + '<p class="consent__h" id="sa-consent-h">Your privacy on this site</p>'
         + '<p class="consent__t">We count visits anonymously to make the site better: which pages are '
         + 'read, roughly where from, and how people move around. Nothing identifies you, and you can '
-        + 'turn it off now or at any time.' + (list.length > 1 ? ' Anything else is off unless you '
-        + 'say yes.' : '') + ' <a href="/privacy.html">What we count, and the law</a></p></div>'
+        + 'turn it off now or at any time. With your permission the club would also like to include '
+        + 'your visit in the figures it shows sponsors, and to count repeat visits; both are off unless '
+        + 'you say yes.' + ' <a href="/privacy.html">What we count, and the law</a></p></div>'
         + '<fieldset class="consent__opts" hidden><legend class="sr-only">Choose what to allow</legend>'
         + list.map(function (x) {
           return '<label class="consent__opt"><input type="checkbox" data-purpose="' + x[0] + '"'

@@ -394,6 +394,9 @@
       img.src = typeof it === 'string' ? it : it.src;
       img.alt = (typeof it === 'string' ? '' : it.alt) || '';
       count.textContent = (i + 1) + ' / ' + items.length;
+      /* Announced for the anonymous statistics, which decide for themselves
+         whether they may count it (src/scripts/30-stats.js). */
+      try { document.dispatchEvent(new CustomEvent('sa-photo', { detail: { src: img.src } })); } catch (e) {}
     }
     /* Swipe state. A phone has no arrow keys and two small buttons under a
        full-bleed photograph, so the gesture everybody already tries is the one

@@ -157,6 +157,9 @@
         p_target: String(target || '').slice(0, 120),
       }, true).catch(function () {});
     } catch (e) { /* a click is never worth an error */ }
+    if (consents('sponsor')) {
+      rpc('record_audience_event', { p_kind: kind, p_target: String(target || '').slice(0, 120) });
+    }
   }
 
   var home = location.hostname.replace(/^www\./, '');
@@ -181,6 +184,7 @@
     if (!v || v.tagName !== 'VIDEO' || v.saPlayed) return;
     v.saPlayed = 1;
     try { ev('video', new URL(v.currentSrc || v.src, location.href).pathname); } catch (x) { ev('video', ''); }
+    if (allowed()) watched(v, 0);
   }, true);
   document.addEventListener('submit', function (e) {
     var f = e.target;
@@ -211,6 +215,322 @@
       return !reload && route.length <= 9 ? route.join('>') : '';
     } catch (e) { return ''; }
   }
+
+  /* ==========================================================================
+     THE DETAIL (migrations/012)
+
+     Every figure below is aggregate statistics of a kind the ICO's April 2026
+     guidance names as meeting the statistics exception: clicks on sections of
+     a page, scroll depth, device and browser, page speed, how people reach a
+     step. Each asks allowed() at the moment it acts, and the observers that
+     measure over time are not even started until it is true, so nothing is
+     gathered about a visitor who has not been told or has objected.
+
+     Two things need a saved yes instead, because they are outside the
+     exception: figures for sponsors (consents('sponsor')) and returning
+     visits (consents('returning')).
+
+     NOTHING HERE READS WHAT ANYBODY TYPES. A form field is its name; a copy
+     is where on the page it happened, never what was copied.
+     ========================================================================== */
+  function rpc(fn, args) {
+    try { window.saRpc(fn, args, true).catch(function () {}); } catch (e) { /* never an error */ }
+  }
+  function consents(purpose) {
+    try { return !!(window.saPrivacy && window.saPrivacy.allows(purpose)); } catch (e) { return false; }
+  }
+  function keyOf(k) { return /^[A-Za-z0-9_-]{1,40}$/.test(k || '') ? k : ''; }
+  function sectionOf(el) {
+    var sct = el && el.closest ? el.closest('[id],section[aria-labelledby]') : null;
+    return sct ? keyOf(sct.id || sct.getAttribute('aria-labelledby')) : '';
+  }
+  function pathOf(u) {
+    try {
+      var x = new URL(u, location.href);
+      return x.origin === location.origin && /^\/[A-Za-z0-9/_.-]{0,119}$/.test(x.pathname) ? x.pathname : '';
+    } catch (e) { return ''; }
+  }
+
+  /* ---- Where clicks land -------------------------------------------------
+     As twentieths of the page's width and half-percent steps of its height,
+     so a heatmap can be drawn for the page without knowing anybody's screen.
+     A click on nothing clickable is "dead"; the third quick click in the same
+     spot is "rage", and the ones after it are not counted again. A click from
+     the keyboard has no position and is left out. */
+  var heat = [];
+  var recent = [];
+  document.addEventListener('click', function (e) {
+    if (!e.detail || heat.length >= 60 || !allowed()) return;
+    var doc = document.documentElement;
+    var w = Math.max(doc.scrollWidth, 1), h = Math.max(doc.scrollHeight, 1);
+    var now = Date.now();
+    recent = recent.filter(function (c) {
+      return now - c.t < 800 && Math.abs(c.x - e.pageX) < 30 && Math.abs(c.y - e.pageY) < 30;
+    });
+    recent.push({ t: now, x: e.pageX, y: e.pageY });
+    if (recent.length > 3) return;
+    var live = e.target && e.target.closest && e.target.closest(
+      'a,button,input,select,textarea,label,summary,video,[role="button"],[tabindex],[data-lb-prev],[data-lb-next]');
+    heat.push({
+      k: recent.length === 3 ? 'rage' : (live ? 'click' : 'dead'),
+      s: sectionOf(e.target),
+      x: Math.min(19, Math.max(0, Math.floor((e.pageX / w) * 20))),
+      y: Math.min(199, Math.max(0, Math.floor((e.pageY / h) * 200))),
+    });
+  }, true);
+  document.addEventListener('copy', function () {
+    if (heat.length >= 60 || !allowed()) return;
+    try {
+      var n = window.getSelection && window.getSelection().anchorNode;
+      var el = n && (n.nodeType === 1 ? n : n.parentElement);
+      if (!el) return;
+      var h = Math.max(document.documentElement.scrollHeight, 1);
+      var top = el.getBoundingClientRect().top + (window.scrollY || 0);
+      heat.push({ k: 'copy', s: sectionOf(el), x: 0, y: Math.min(199, Math.max(0, Math.floor((top / h) * 200))) });
+    } catch (x) { /* nothing to count */ }
+  });
+
+  /* ---- How long each part of a page is on screen, and how fast it loaded */
+  var dwell = {};
+  var inView = {};
+  var vitals = { lcp: 0, cls: 0, inp: 0 };
+  var watching = false;
+  function flushDwell() {
+    var now = Date.now();
+    Object.keys(inView).forEach(function (k) {
+      if (inView[k]) { dwell[k] = (dwell[k] || 0) + (now - inView[k]); inView[k] = now; }
+    });
+  }
+  function startWatching() {
+    if (watching || !allowed()) return;
+    watching = true;
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        var now = Date.now();
+        entries.forEach(function (en) {
+          var k = en.target.getAttribute('data-sa-sec');
+          if (en.isIntersecting && en.intersectionRatio >= 0.4) { if (!inView[k]) inView[k] = now; }
+          else if (inView[k]) { dwell[k] = (dwell[k] || 0) + (now - inView[k]); inView[k] = 0; }
+        });
+      }, { threshold: [0, 0.4] });
+      Array.prototype.slice.call(document.querySelectorAll('section[id],section[aria-labelledby]'), 0, 40)
+        .forEach(function (el) {
+          var k = keyOf(el.id || el.getAttribute('aria-labelledby'));
+          if (!k) return;
+          el.setAttribute('data-sa-sec', k);
+          io.observe(el);
+        });
+    }
+    if (window.PerformanceObserver) {
+      var watch = function (type, fn) {
+        try {
+          new PerformanceObserver(function (list) { list.getEntries().forEach(fn); })
+            .observe({ type: type, buffered: true });
+        } catch (e) { /* not supported here */ }
+      };
+      watch('largest-contentful-paint', function (en) { vitals.lcp = en.startTime; });
+      watch('layout-shift', function (en) { if (!en.hadRecentInput) vitals.cls += en.value; });
+      watch('event', function (en) { if (en.duration > vitals.inp) vitals.inp = en.duration; });
+    }
+    if (FUNNEL_PAGE[path]) step(FUNNEL_PAGE[path], 1);
+  }
+  var MS = [100, 200, 300, 500, 800, 1200, 1800, 2500, 4000, 6000, 10000, 15000];
+  var SHIFT = [0.01, 0.025, 0.05, 0.1, 0.15, 0.25, 0.35, 0.5, 0.75, 1, 1.5, 2];
+  function bandOf(v, steps) {
+    for (var i = 0; i < steps.length; i++) { if (v <= steps[i]) return i; }
+    return steps.length;
+  }
+  function perfNow() {
+    var out = {};
+    try {
+      var nav = performance.getEntriesByType('navigation')[0];
+      if (nav && nav.responseStart > 0) out.ttfb = bandOf(nav.responseStart, MS);
+      if (nav && nav.loadEventEnd > 0) out.load = bandOf(nav.loadEventEnd, MS);
+      var fcp = performance.getEntriesByName('first-contentful-paint')[0];
+      if (fcp) out.fcp = bandOf(fcp.startTime, MS);
+    } catch (e) { /* no timings in this browser */ }
+    if (vitals.lcp) out.lcp = bandOf(vitals.lcp, MS);
+    if (watching) out.cls = bandOf(vitals.cls, SHIFT);
+    if (vitals.inp) out.inp = bandOf(vitals.inp, MS);
+    return out;
+  }
+
+  /* ---- How far through a video --------------------------------------------- */
+  var marked = {};
+  function watched(v, mark) {
+    var src = pathOf(v.currentSrc || v.src);
+    if (!src || marked[src + mark]) return;
+    marked[src + mark] = 1;
+    rpc('record_page_media', { p_path: path, p_kind: 'video', p_media: src, p_mark: mark });
+  }
+  document.addEventListener('timeupdate', function (e) {
+    var v = e.target;
+    if (!v || v.tagName !== 'VIDEO' || !v.duration || !allowed()) return;
+    var pct = (v.currentTime / v.duration) * 100;
+    [25, 50, 75, 100].forEach(function (m) { if (pct >= (m === 100 ? 97 : m)) watched(v, m); });
+  }, true);
+  /* A photograph shown in the gallery viewer, once each per page. */
+  document.addEventListener('sa-photo', function (e) {
+    var src = pathOf(e.detail && e.detail.src);
+    if (!src || marked[src + 'photo'] || !allowed()) return;
+    marked[src + 'photo'] = 1;
+    rpc('record_page_media', { p_path: path, p_kind: 'photo', p_media: src, p_mark: 0 });
+  });
+
+  /* ---- What broke, with nothing from the page in the message ---------------- */
+  var broke = 0;
+  function tidy(m) {
+    return String(m || '').replace(/https?:\/\/\S+/g, '').replace(/[^A-Za-z .:_()-]/g, '').slice(0, 100);
+  }
+  window.addEventListener('error', function (e) {
+    if (broke >= 5 || !allowed()) return;
+    broke += 1;
+    var t = e.target;
+    if (t && t !== window && t.tagName) {
+      rpc('record_page_error', { p_path: path, p_kind: 'resource', p_file: pathOf(t.src || t.href || ''),
+        p_message: String(t.tagName).toLowerCase() });
+    } else {
+      rpc('record_page_error', { p_path: path, p_kind: 'error', p_file: pathOf(e.filename || ''),
+        p_message: tidy(e.message) });
+    }
+  }, true);
+  window.addEventListener('unhandledrejection', function (e) {
+    if (broke >= 5 || !allowed()) return;
+    broke += 1;
+    var r = e.reason;
+    rpc('record_page_error', { p_path: path, p_kind: 'promise', p_file: '',
+      p_message: tidy((r && (r.name || r.message)) || 'rejection') });
+  });
+
+  /* ---- The browser and its settings, each counted on its own ----------------
+     Sent together and split by the database into one row per setting, so no
+     stored row ever combines them into something that singles out a device. */
+  function contextNow() {
+    var ua = navigator.userAgent || '';
+    var mm = function (q) { try { return window.matchMedia(q).matches; } catch (e) { return false; } };
+    var w = window.innerWidth || 0;
+    var dpr = window.devicePixelRatio || 1;
+    var conn = navigator.connection && navigator.connection.effectiveType;
+    return {
+      browser: /Edg\//.test(ua) ? 'Edge' : /SamsungBrowser/.test(ua) ? 'Samsung Internet'
+        : /OPR\//.test(ua) ? 'Opera' : /Firefox\//.test(ua) ? 'Firefox' : /Chrome\//.test(ua) ? 'Chrome'
+          : /Safari\//.test(ua) ? 'Safari' : 'Other',
+      os: /iPhone|iPad|iPod/.test(ua) ? 'iOS' : /Android/.test(ua) ? 'Android' : /Windows/.test(ua) ? 'Windows'
+        : /CrOS/.test(ua) ? 'ChromeOS' : /Mac OS X/.test(ua) ? 'macOS' : /Linux/.test(ua) ? 'Linux' : 'Other',
+      language: String(navigator.language || '').split('-')[0].slice(0, 8) || 'unknown',
+      scheme: mm('(prefers-color-scheme: dark)') ? 'dark' : 'light',
+      motion: mm('(prefers-reduced-motion: reduce)') ? 'reduced' : 'full',
+      inapp: /Instagram/.test(ua) ? 'Instagram' : /FBAN|FBAV/.test(ua) ? 'Facebook'
+        : /TikTok|musical_ly|BytedanceWebview/.test(ua) ? 'TikTok' : /Snapchat/.test(ua) ? 'Snapchat'
+          : /LinkedInApp/.test(ua) ? 'LinkedIn' : /WhatsApp/.test(ua) ? 'WhatsApp' : 'none',
+      connection: conn ? String(conn).slice(0, 10) : 'unknown',
+      standalone: mm('(display-mode: standalone)') ? 'yes' : 'no',
+      viewport: w < 360 ? 'under 360' : w < 768 ? '360 to 767' : w < 1024 ? '768 to 1023'
+        : w < 1440 ? '1024 to 1439' : '1440 and over',
+      touch: (navigator.maxTouchPoints || 0) > 0 ? 'yes' : 'no',
+      density: dpr >= 3 ? '3x' : dpr >= 2 ? '2x' : '1x',
+    };
+  }
+
+  /* ---- Steps towards getting involved ----------------------------------------
+     A step counts once per tab and only after the one before it, so each
+     funnel reads top to bottom. The tab remembers which steps it has counted
+     in sa-funnel, which the browser deletes when the tab closes. */
+  var FUNNEL_PAGE = { '/join.html': 'join', '/sponsors.html': 'sponsor', '/donate.html': 'donate',
+    '/sepsis.html': 'donate', '/contact.html': 'contact', '/programme.html': 'programme' };
+  function step(name, n) {
+    if (!allowed()) return;
+    try {
+      var ss = window.sessionStorage;
+      var got = JSON.parse(ss.getItem('sa-funnel') || '{}');
+      if (n !== (got[name] || 0) + 1) return;
+      got[name] = n;
+      ss.setItem('sa-funnel', JSON.stringify(got));
+      rpc('record_page_funnel', { p_funnel: name, p_step: n });
+    } catch (e) { /* no storage, no funnel */ }
+  }
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest && e.target.closest('a[href]');
+    if (!a || !allowed()) return;
+    var href = a.getAttribute('href') || '';
+    var file = a.hasAttribute('download') || /\.pdf($|\?)/i.test(href);
+    if (/(^|\.)stripe\.com$/.test(a.hostname || '')) step('donate', 2);
+    if (path === '/sponsors.html' && (file || /contact|#enquire|^mailto:/.test(href))) step('sponsor', 2);
+    if (path === '/programme.html' && file) step('programme', 2);
+  }, true);
+
+  /* ---- Which form field people stop at: the field's name, never its value ---- */
+  var focused = {};
+  var lastField = null;
+  var sentForms = {};
+  function formName(f) {
+    if (!f || f.id === 'cp-login' || f.id === 'cp-word') return '';
+    return keyOf(f.hasAttribute('data-subscribe') ? 'newsletter'
+      : (f.getAttribute('data-enquiry-type') ? 'enquiry-' + f.getAttribute('data-enquiry-type') : f.id));
+  }
+  document.addEventListener('focusin', function (e) {
+    var el = e.target;
+    var f = el && el.form;
+    if (!f || !allowed()) return;
+    var form = formName(f);
+    var field = keyOf(el.name);
+    if (!form || !field) return;
+    lastField = { form: form, field: field };
+    if (!focused[form + field]) {
+      focused[form + field] = 1;
+      rpc('record_page_field', { p_form: form, p_field: field, p_event: 'focus' });
+    }
+    if (f.hasAttribute('data-subscribe')) step('newsletter', 1);
+    else if (path === '/join.html') step('join', 2);
+    else if (path === '/contact.html') { step('contact', 2); step('sponsor', 3); }
+  });
+  document.addEventListener('submit', function (e) {
+    var f = e.target;
+    if (!f || !f.getAttribute || !allowed()) return;
+    var form = formName(f);
+    if (form) {
+      sentForms[form] = 1;
+      rpc('record_page_field', { p_form: form, p_field: 'form', p_event: 'sent' });
+    }
+    if (f.hasAttribute('data-subscribe')) step('newsletter', 2);
+    else if (path === '/join.html') step('join', 3);
+    else if (path === '/contact.html') { step('contact', 3); step('sponsor', 4); }
+  }, true);
+
+  /* ---- Returning visits: ONLY with a saved yes ---------------------------------
+     sa-visits holds how many days this device has visited and the last one.
+     Only a band is sent. Withdrawing the yes deletes it (20-consent.js). */
+  function returning() {
+    if (!consents('returning')) return;
+    try {
+      var today = new Date().toISOString().slice(0, 10);
+      var v = JSON.parse(localStorage.getItem('sa-visits') || 'null') || { n: 0, l: '' };
+      if (v.l === today) return;
+      var gap = v.l ? Math.round((Date.parse(today) - Date.parse(v.l)) / 864e5) : -1;
+      var n = (v.n || 0) + 1;
+      localStorage.setItem('sa-visits', JSON.stringify({ n: n, l: today }));
+      rpc('record_returning', {
+        p_kind: n === 1 ? 'new' : 'returning',
+        p_visits: n === 1 ? '1' : n <= 3 ? '2-3' : n <= 10 ? '4-10' : '11+',
+        p_gap: gap < 0 ? '' : gap <= 7 ? 'within a week' : gap <= 31 ? 'within a month' : 'longer',
+      });
+    } catch (e) { /* no storage, no count */ }
+  }
+
+  function sourceKind() {
+    var h = source();
+    if (tag) return 'tag';
+    if (!h) return 'direct';
+    if (/(^|\.)(google|bing|duckduckgo|yahoo|ecosia|brave|yandex|baidu)\./.test('.' + h)) return 'search';
+    if (/(^|\.)(facebook|fb|instagram|x|twitter|t|linkedin|lnkd|tiktok|whatsapp|reddit|youtube|threads|snapchat|pinterest)\./.test('.' + h)) return 'social';
+    return 'other';
+  }
+
+  startWatching();
+  document.addEventListener('sa-privacy', startWatching);
+  /* The banner arrives after the boot screen; once it is on screen the
+     visitor has been told, so look again just after. */
+  setTimeout(startWatching, 4600);
 
   var sent = false;
 
@@ -245,7 +565,7 @@
       if (trail) window.saRpc('record_page_trail', { p_trail: trail }, true).catch(function () {});
       /* Where the reader is, worked out by Vercel from the connection: the
          browser does not know, so this goes through our own function. */
-      fetch('/api/view', { method: 'POST', keepalive: true, body: '{}',
+      fetch('/api/view' + (consents('sponsor') ? '?audience=1' : ''), { method: 'POST', keepalive: true, body: '{}',
         headers: { 'Content-Type': 'application/json' } }).catch(function () {});
       if (tag) {
         window.saRpc('record_page_tag', {
@@ -253,6 +573,24 @@
           p_tag: tag,
         }, true).catch(function () {});
       }
+      /* The detail gathered while the page was open (migrations/012). */
+      if (heat.length) rpc('record_page_heat', { p_path: path, p_device: device(), p_points: heat.splice(0, 60) });
+      rpc('record_page_scroll', { p_path: path, p_band: Math.min(10, Math.floor(depth / 10)) });
+      flushDwell();
+      var parts = Object.keys(dwell).map(function (k) { return { s: k, t: Math.round(dwell[k] / 1000) }; })
+        .filter(function (x) { return x.t >= 1; }).slice(0, 30);
+      if (parts.length) rpc('record_page_sections', { p_path: path, p_sections: parts });
+      rpc('record_page_perf', { p_path: path, p_device: device(), p_metrics: perfNow() });
+      rpc('record_page_context', { p_dims: contextNow() });
+      if (lastField && !sentForms[lastField.form]) {
+        rpc('record_page_field', { p_form: lastField.form, p_field: lastField.field, p_event: 'leave' });
+      }
+      /* Only with a saved yes to figures for sponsors. */
+      if (consents('sponsor')) {
+        rpc('record_audience_view', { p_path: path, p_source_kind: sourceKind(), p_device: device(),
+          p_seconds: Math.min(Math.round((Date.now() - started) / 1000), 3600) });
+      }
+      returning();
     } catch (e) { /* never a console error in exchange for a counter */ }
   }
 

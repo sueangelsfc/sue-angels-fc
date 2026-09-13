@@ -900,9 +900,53 @@ export async function panelChecks() {
       { day: '2026-09-02', trail: '>/index.html>/squad.html>/players/a.html', views: 1 },
       { day: '2026-09-02', trail: 'instagram.com>/programme.html', views: 6 },
     ];
+    /* The detail (012), each row chosen so its figure is worked out by hand in
+       the check that reads it. */
+    const detailRows = {
+      page_heat: [
+        { day: '2026-09-01', path: '/programme.html', device: 'mobile', kind: 'click', section: 'pr-get', x: 5, y: 40, count: 6 },
+        { day: '2026-09-01', path: '/programme.html', device: 'mobile', kind: 'dead', section: 'pr-hero', x: 10, y: 10, count: 2 },
+        { day: '2026-09-02', path: '/programme.html', device: 'desktop', kind: 'rage', section: 'pr-hero', x: 10, y: 11, count: 1 },
+      ],
+      page_scroll: [
+        { day: '2026-09-01', path: '/programme.html', band: 10, views: 2 },
+        { day: '2026-09-01', path: '/programme.html', band: 5, views: 1 },
+        { day: '2026-09-01', path: '/programme.html', band: 2, views: 1 },
+      ],
+      page_sections: [{ day: '2026-09-01', path: '/programme.html', section: 'pr-get', views: 3, seconds_total: 45 }],
+      page_media: [0, 25, 50, 75, 100].map((mark, i) => ({ day: '2026-09-01', path: '/matches/r1.html', kind: 'video', media: '/assets/video/goal.mp4', mark, count: [4, 3, 2, 2, 1][i] })),
+      page_perf: [
+        { day: '2026-09-01', path: '/index.html', device: 'mobile', metric: 'lcp', bucket: 5, count: 3 },
+        { day: '2026-09-01', path: '/index.html', device: 'mobile', metric: 'lcp', bucket: 9, count: 1 },
+      ],
+      page_errors: [{ day: '2026-09-01', path: '/index.html', kind: 'resource', file: '/assets/x.webp', message: 'img', count: 2 }],
+      page_context: [
+        { day: '2026-09-01', dimension: 'inapp', value: 'Instagram', views: 3 },
+        { day: '2026-09-01', dimension: 'inapp', value: 'none', views: 9 },
+      ],
+      page_funnel: [[1, 10], [2, 4], [3, 1]].map(([step, views]) => ({ day: '2026-09-01', funnel: 'join', step, views })),
+      page_fields: [
+        { day: '2026-09-01', form: 'enquiry-trial', field: 'email', event: 'focus', count: 5 },
+        { day: '2026-09-01', form: 'enquiry-trial', field: 'email', event: 'leave', count: 2 },
+      ],
+      audience_views: [{ day: '2026-09-01', path: '/index.html', source_kind: 'social', device: 'mobile', views: 7, seconds_total: 140 }],
+      audience_places: [{ day: '2026-09-01', country: 'GB', region: 'ENG', city: 'Kingston upon Thames', lat: '51.4', lon: '-0.3', views: 7 }],
+      audience_events: [{ day: '2026-09-01', kind: 'outbound', target: 'sportingsolutions.co.uk', count: 2 }],
+      page_returning: [
+        { day: '2026-09-01', kind: 'new', visits: '1', gap: '', views: 3 },
+        { day: '2026-09-02', kind: 'returning', visits: '2-3', gap: 'within a week', views: 1 },
+      ],
+      privacy_choices: [
+        { day: '2026-09-01', stats: true, sponsor: true, return_visits: false, count: 3 },
+        { day: '2026-09-01', stats: false, sponsor: false, return_visits: false, count: 1 },
+      ],
+    };
+    const DETAIL_RE = /^(page_heat|page_scroll|page_sections|page_media|page_perf|page_errors|page_context|page_funnel|page_fields|audience_views|audience_places|audience_events|page_returning|privacy_choices)\?/;
+    const detailOf = (q) => { const m = DETAIL_RE.exec(q || ''); return m ? detailRows[m[1]] : null; };
     const seenQueries = [];
     const serve = (method, q) => {
       seenQueries.push(q);
+      if (detailOf(q)) return detailOf(q);
       if (/page_places\?/.test(q)) return placeRows;
       if (/page_trails\?/.test(q)) return trailRows;
       if (/page_stats_hourly\?/.test(q)) return hourRows;
@@ -999,6 +1043,52 @@ export async function panelChecks() {
         && /<td>Left the site<\/td><td><b>6<\/b><\/td>/.test(host.html)
         && /<td>\/squad\.html<\/td><td><b>4<\/b><\/td>/.test(host.html), 'no before and after');
 
+    /* ---- The detail (012) ---- */
+    check('the heatmap draws clicks, clicks on nothing and repeated clicks for the busiest page',
+      (host.html.match(/class="cphm__cell"/g) || []).length === 1
+        && (host.html.match(/class="cphm__dead"/g) || []).length === 1
+        && (host.html.match(/class="cphm__rage"/g) || []).length === 1, 'heat cells');
+    check('scroll depth counts the views that got at least that far down',
+      /<td>\/programme\.html<\/td><td><b>4<\/b><\/td><td>75%<\/td><td>50%<\/td>/.test(host.html), 'scroll row');
+    check('a video is reported by how far through people watched',
+      /<td>goal\.mp4<\/td><td><b>4<\/b><\/td><td>3<\/td><td>2<\/td><td>2<\/td><td>1<\/td><td>25%<\/td>/.test(host.html), 'video row');
+    check('page speed is graded against the published thresholds',
+      /<td>Largest content drawn<\/td><td><b>75%<\/b><\/td><td>0%<\/td><td>25%<\/td><td>0\.8-1\.2s<\/td>/.test(host.html), 'speed row');
+    check('a funnel step is shared against the step before and the first step',
+      /<td>Started the form<\/td><td><b>4<\/b><\/td><td>40%<\/td><td>40%<\/td>/.test(host.html), 'funnel row');
+    check('a form field is reported by its name with how often it was the last one touched',
+      /<td>enquiry-trial · email<\/td><td><b>5<\/b><\/td><td>2<\/td><td>40%<\/td>/.test(host.html), 'field row');
+    check('browser settings are counted one at a time',
+      /<td>Instagram<\/td><td><b>3<\/b><\/td>/.test(host.html), 'context row');
+    check('returning visits say they come only from visitors who said yes',
+      /Only from visitors who said yes, once a day each: 4 in this period/.test(host.html), 'returning');
+    check('privacy choices are summarised without saying who chose',
+      /<span class="cpt__v">75%<\/span><span class="cpt__l">Kept statistics on/.test(host.html), 'choices');
+    check('old figures can be deleted as the privacy page promises', /data-purge/.test(host.html), 'no purge button');
+
+    /* PROBE: take the heat table away and the heatmap check must fail. */
+    const noHeatCtx = await PR.boot({
+      rows: { rest: serve },
+      transform: (src, file) => (file === 'control-stats.js' ? bust(src, /["']page_heat["'],/, '"page_heatX",') : src),
+    });
+    const noHeat = (await PR.openPanel(noHeatCtx, 'stats')).html;
+    check('probe: with no heat rows the heatmap check notices', !/class="cphm__cell"/.test(noHeat), 'weak heat check');
+
+    /* The sponsor report is built from the consented tables alone. */
+    const spBtn = host.body.querySelector('[data-report="sponsor"]');
+    check('with figures from visitors who said yes there is a sponsor report', !!spBtn, 'no sponsor report');
+    if (spBtn) {
+      spBtn.click();
+      const spDoc = spBtn.ownerDocument;
+      const sp = spDoc && spDoc.querySelector('.cprep');
+      const spText = sp ? sp.textContent.replace(/\s+/g, ' ') : '';
+      check('the sponsor report uses only figures from visitors who agreed',
+        /Figures from visitors who agreed/.test(spText) && /7page views/.test(spText) && !/24page views/.test(spText)
+          && !/journeys through the site/.test(spText), spText.slice(0, 240));
+      const spShut = sp && sp.querySelector('[data-report-close]');
+      if (spShut) spShut.click();
+    }
+
     /* PROBE: take towns and journeys away and those checks must fail. */
     const noTripCtx = await PR.boot({
       rows: { rest: serve },
@@ -1047,6 +1137,7 @@ export async function panelChecks() {
     /* Today, from a row dated today and nothing else. */
     const todayIso = new Date().toISOString().slice(0, 10);
     const withToday = (method, q) => {
+      if (detailOf(q)) return serve(method, q);
       if (/page_stats_hourly\?|page_routes\?|page_tags\?|page_events\?|page_places\?|page_trails\?/.test(q)) return serve(method, q);
       if (/day=lt\./.test(q)) return prevRows;
       return statRows.concat([{ day: todayIso, path: '/programme.html', zone: 'Europe/London', source: 'instagram.com', device: 'mobile', views: 5, seconds_total: 100, depth_total: 300 }]);
@@ -1406,6 +1497,7 @@ export async function panelChecks() {
         if (/page_events\?/.test(q)) return eventRows;
         if (/page_places\?/.test(q)) return placeRows;
         if (/page_trails\?/.test(q)) return trailRows;
+        if (detailOf(q)) return [];
         if (/day=lt\./.test(q)) return prevRows;
         return withCat;
       };
@@ -1501,7 +1593,7 @@ export async function panelChecks() {
        on the screen works, and the hour is the only thing missing. Saying
        "nothing yet" there would send somebody looking for traffic when what is
        missing is a file nobody has executed. */
-    const onlyDaily = (method, q) => (/page_stats_hourly\?|page_routes\?|page_tags\?|page_events\?|page_places\?|page_trails\?/.test(q)
+    const onlyDaily = (method, q) => (/page_stats_hourly\?|page_routes\?|page_tags\?|page_events\?|page_places\?|page_trails\?/.test(q) || DETAIL_RE.test(q)
       ? Promise.reject(new Error('404')) : statRows);
     const halfCtx = await PR.boot({ rows: { rest: onlyDaily } });
     const half = (await PR.openPanel(halfCtx, 'stats')).body.textContent.replace(/\s+/g, ' ');
@@ -1509,7 +1601,8 @@ export async function panelChecks() {
       /009_page_routes\.sql/.test(half) && /24 page views/.test(half)
         && /The route through the site\s*Not switched on yet/.test(half)
         && /010_page_events\.sql/.test(half)
-        && /011_page_places_trails\.sql/.test(half),
+        && /011_page_places_trails\.sql/.test(half)
+        && /012_page_detail_and_consented\.sql/.test(half),
       half.slice(0, 200));
   }
 

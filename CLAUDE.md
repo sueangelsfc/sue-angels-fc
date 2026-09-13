@@ -919,6 +919,40 @@ the line, so this reads the rules conservatively.**
   does not require this; the club asked for margin.
 - **Never built, with or without consent:** session replay, fingerprinting,
   reading form input before it is sent, IP-to-company lookup.
+- **Everything else the ICO's table allows is built** (`migrations/012_page_detail_and_consented.sql`,
+  the THE DETAIL block in `30-stats.js`, and the new sections on the stats
+  screen). All of it is anonymous statistics:
+  - where clicks land, as twentieths of a page's width and half-percent steps
+    of its height, including dead clicks and rage clicks;
+  - copy events, by position only;
+  - scroll depth in tenths, and time on screen for each section;
+  - video watch-through and photo opens (`00-core.js` announces `sa-photo`);
+  - page speed banded and graded against Google's thresholds;
+  - errors with every digit and address stripped;
+  - browser and settings, sent together and stored ONE ROW PER SETTING so no
+    row combines them;
+  - funnels, counted once per tab and only in order (`sa-funnel`);
+  - form fields by NAME, never value.
+
+  The observers that measure over time are not started until `allowed()` is
+  true.
+- **The two consent purposes are built too**, behind `saPrivacy.allows()` and
+  a saved choice (consent version 2 re-asks everybody once):
+  - **Figures for sponsors:** `audience_*` tables, and `/api/view?audience=1`
+    for the town. The stats screen's **Sponsor report** is built from these
+    alone and appears only once they hold something; the Internal report
+    stays internal.
+  - **Returning visits:** `sa-visits` holds a day count and the last day, and
+    only a band is sent. Withdrawing deletes it.
+
+  `privacy_choices` counts answers per day without saying who.
+  `purge_page_stats()` deletes anything older than three years (the button in
+  Site health), which is what makes the privacy page's retention promise true.
+- **Migrations are parsed before they are handed over.** Postgres's own parser
+  (`@libpg-query/parser`, installed in a scratch folder, never in the repo),
+  including every PL/pgSQL body. It caught `returning` used as a column
+  name, which is a reserved word and would have failed the whole file. Its
+  statement offsets are BYTES, so slice a UTF-8 Buffer, not the string.
 - **`/privacy.html` makes claims about code** (`src/templates/privacy.mjs`).
   It names every device key the stats keep (asserted) and cites the ICO and
   legislation.gov.uk (`SOURCES.ico`, `SOURCES.pecr`). Every page links to it

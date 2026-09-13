@@ -327,7 +327,9 @@
       get('page_events?select=day,path,kind,target,count' + since + '&limit=20000'),
       get('page_places?select=day,country,region,city,lat,lon,views' + since + '&limit=20000'),
       get('page_trails?select=day,trail,views' + since + '&limit=20000'),
-    ]).then(function (r) {
+    ].concat(DETAIL_Q.map(function (q) {
+      return get(q[0] + '?select=' + q[1] + since + '&limit=50000');
+    }))).then(function (r) {
       rows = r[0];
       prev = r[1] || [];
       hours = r[2];
@@ -336,6 +338,7 @@
       events = r[6];
       towns = r[7];
       trails = r[8];
+      DETAIL_Q.forEach(function (q, i) { D[q[0]] = r[9 + i]; });
     });
   }
 
@@ -992,7 +995,8 @@
             + 'to, rather than from the browser’s identifying user agent string. A phone held '
             + 'sideways can count as a tablet, which is the honest limit of measuring it this '
             + 'way.</p>',
-        }))
+        })
+        + contextSection() + returningSection())
       + chapter(3, sec({
         title: 'How they arrive',
         sub: 'The kind of place first, then the sites themselves.',
@@ -1017,6 +1021,7 @@
         actions: sortBar(),
         body: areaTable(areas, all) + pageTable(pages, all, v),
       })
+        + heatSection() + readSection()
         + publishSection(pages, all)
         + unopenedSection())
       + chapter(5, whenSection()
@@ -1037,8 +1042,8 @@
             + 'and those are opposite facts. A page that is shorter than the window counts as '
             + 'read to the bottom, because there was nothing to scroll.</p>',
         })
-        + clickSection())
-      + chapter(6, notHere())
+        + clickSection() + mediaSection() + funnelSection() + fieldSection())
+      + chapter(6, speedSection() + errorSection() + choiceSection() + notHere())
       + '</div>';
 
     wire(host);
@@ -1338,7 +1343,7 @@
   /* ---- Chapters ----------------------------------------------------------- */
   var CHAPTERS = [['now', 'Headline and today'], ['trend', 'Trends'], ['who', 'Audience'],
     ['route', 'Arrivals and routes'], ['read', 'Content'], ['act', 'Engagement'],
-    ['about', 'About the figures']];
+    ['about', 'Site health and the figures']];
 
   function chapter(i, body) {
     return '<div class="cpst__ch" id="st-' + CHAPTERS[i][0] + '">'
@@ -1352,8 +1357,14 @@
         return '<button type="button" class="cpst__jump" data-jump="st-' + c[0] + '"><span>0'
           + (i + 1) + '</span>' + esc(c[1]) + '</button>';
       }).join('')
-      + '<button type="button" class="btn btn--sm btn--primary cpst__present" data-report>'
-      + 'Internal report</button></nav>';
+      + '<button type="button" class="btn btn--sm btn--ghost cpst__present" data-report="internal">'
+      + 'Internal report</button>'
+      /* Only once visitors have said yes to figures for sponsors: that is the
+         only data a sponsor may be shown. */
+      + (total(rowsOf('audience_views', ['path']))
+        ? '<button type="button" class="btn btn--sm btn--primary" data-report="sponsor">Sponsor report</button>'
+        : '')
+      + '</nav>';
   }
 
   /* ---- Today ---------------------------------------------------------------
@@ -1722,28 +1733,46 @@
     }).join('') + '</ol>';
   }
 
-  function report() {
-    var v = view();
+  var SK = { search: 'Search engines', social: 'Social media', other: 'Other websites',
+    direct: 'Direct or unknown', tag: 'Links the club shared' };
+
+  /* Two reports from one layout. INTERNAL is the anonymous statistics, which
+     the law allows only for improving the website, so it says it is not for
+     sharing. SPONSOR is built only from visitors who said yes to figures for
+     sponsors (migrations/012 audience_*), and carries nothing from the
+     statistics: no journeys, no hours, no time zones. */
+  function report(mode) {
+    var sponsor = mode === 'sponsor';
+    var v = sponsor ? rowsOf('audience_views', ['path']).map(function (r) {
+      return { day: r.day, path: r.path, device: r.device, kind: r.source_kind,
+        views: num(r.views), seconds_total: num(r.seconds_total), depth_total: 0 };
+    }) : view();
     var all = total(v);
     if (!all) return '';
     var days = roll(v, function (r) { return r.day; })
       .sort(function (a, b) { return a.key < b.key ? -1 : 1; });
-    var places = roll(v, function (r) { return countryOf(r.zone); });
+    var townRows = (sponsor ? D.audience_places || [] : towns || []).filter(function (r) { return r.country; });
+    var townsN = total(townRows);
+    var places = sponsor
+      ? sumBy(townRows, function (r) { return countryName(r.country); }, function (r) { return r.views; })
+      : roll(v, function (r) { return countryOf(r.zone); });
     var pagesRead = roll(v, function (r) { return pageLabel(r.path); });
     var span = calendar(days);
     var byDay = {};
     days.forEach(function (d) { byDay[d.key] = d.views; });
     var first = days[0].key, last = days[days.length - 1].key;
-    var clicks = events ? roll(events.filter(function (r) { return r.kind; }).map(function (r) {
-      return { k: EVK[r.kind] || r.kind, views: r.count };
-    }), function (r) { return r.k; }) : [];
+    var clicks = sponsor
+      ? sumBy(D.audience_events || [], function (r) { return EVK[r.kind] || r.kind; }, function (r) { return r.count; })
+      : (events ? roll(events.filter(function (r) { return r.kind; }).map(function (r) {
+        return { k: EVK[r.kind] || r.kind, views: r.count };
+      }), function (r) { return r.k; }) : []);
     var byHour = {};
-    (hours || []).forEach(function (r) { byHour[r.hour] = (byHour[r.hour] || 0) + Number(r.views || 0); });
+    if (!sponsor) {
+      (hours || []).forEach(function (r) { byHour[r.hour] = (byHour[r.hour] || 0) + Number(r.views || 0); });
+    }
     var peak = Object.keys(byHour).sort(function (a, b) { return byHour[b] - byHour[a]; })[0];
-    var narrowed = Object.keys(FILT).map(function (k) { return FILT[k]; }).filter(Boolean);
-    var townRows = (towns || []).filter(function (r) { return r.country; });
-    var townsN = total(townRows);
-    var trips = trails ? journeyData().filter(function (t) { return t.views > 0; })
+    var narrowed = sponsor ? [] : Object.keys(FILT).map(function (k) { return FILT[k]; }).filter(Boolean);
+    var trips = !sponsor && trails ? journeyData().filter(function (t) { return t.views > 0; })
       .sort(function (a, b) { return b.views - a.views; }) : [];
     var tripN = total(trips);
     return '<div class="cprep" role="dialog" aria-modal="true" aria-labelledby="cprep-h">'
@@ -1752,10 +1781,12 @@
       + 'class="btn btn--sm btn--ghost" data-report-close>Close</button></div>'
       + '<article class="cprep__doc"><header class="cprep__head">'
       + '<p class="cprep__kicker">Website audience report</p>'
-      + '<p class="cprep__notice">For the club’s own use. These figures come from anonymous '
-      + 'statistics the law lets the website keep only to improve itself, so they are not for '
-      + 'sharing outside the club. Figures for sponsors come from visitors who have agreed to be '
-      + 'counted for that.</p>'
+      + '<p class="cprep__notice">' + (sponsor
+        ? 'Figures from visitors who agreed to be counted for the club’s sponsors. They cover fewer '
+          + 'people than the club’s own statistics, because only visitors who said yes are in them.'
+        : 'For the club’s own use. These figures come from anonymous statistics the law lets the '
+          + 'website keep only to improve itself, so they are not for sharing outside the club. Figures '
+          + 'for sponsors come from visitors who have agreed to be counted for that.') + '</p>'
       + '<h2 id="cprep-h" class="cprep__title">Sue’s Angels FC</h2>'
       + '<p class="cprep__period">' + esc(shortDate(first) + ' to ' + shortDate(last) + ' '
         + last.slice(0, 4) + ' · suesangelsfc.co.uk'
@@ -1765,18 +1796,20 @@
       + kpi(Math.round((all / Math.max(1, span.length || days.length)) * 10) / 10, 'views a day')
       + kpi(places.length, 'countries and regions')
       + kpi(dur(sum(v, function (r) { return r.seconds_total; }) / all), 'average time on a page')
-      + kpi(Math.round(sum(v, function (r) { return r.depth_total; }) / all) + '%',
-        'of each page read on average')
+      + (sponsor ? kpi(roll(townRows, townName).length, 'towns and cities')
+        : kpi(Math.round(sum(v, function (r) { return r.depth_total; }) / all) + '%', 'of each page read on average'))
       + kpi(pagesRead.length, 'different pages read')
       + '</div><h3 class="cprep__h">Views, day by day</h3>'
       + trend(days, { marks: marksFor(days) }) + matchdayEffect(span, byDay)
       + '<div class="cprep__two"><div><h3 class="cprep__h">How people find the site</h3>'
-      + donut(roll(v, function (r) { return sourceGroup(r.source); }), all, 'How views arrived')
+      + donut(sponsor
+        ? sumBy(v, function (r) { return SK[r.kind] || 'Not known'; }, function (r) { return r.views; })
+        : roll(v, function (r) { return sourceGroup(r.source); }), all, 'How views arrived')
       + '</div><div><h3 class="cprep__h">What they read it on</h3>'
       + donut(roll(v, function (r) { return r.device || 'Not known'; }), all, 'Devices')
       + '</div></div><h3 class="cprep__h">Where in the world</h3>' + worldMap(places, all)
       + '<div class="cprep__two"><div><h3 class="cprep__h">Top countries and regions</h3>'
-      + rlist(places.slice(0, 6), all) + '</div><div><h3 class="cprep__h">Most read</h3>'
+      + rlist(places.slice(0, 6), sponsor ? total(places) : all) + '</div><div><h3 class="cprep__h">Most read</h3>'
       + rlist(pagesRead.slice(0, 6), all) + '</div></div>'
       + (townsN ? '<div class="cprep__two"><div><h3 class="cprep__h">Across the UK and Ireland</h3>'
         + ukMap(townRows.filter(isUK), townsN) + '</div><div><h3 class="cprep__h">Top towns and cities</h3>'
@@ -1795,16 +1828,27 @@
         ? 'The busiest hour of the day is ' + (peak < 10 ? '0' : '') + peak + ':00. ' : '')
         + 'Every figure is a page view counted on the club’s own website, not a count of people: '
         + 'nothing identifying is recorded, so one person reading three pages is three views, and '
-        + 'readers whose browsers block scripts are not counted. Where in the world comes from '
-        + 'the time zone the reader’s device is set to. Prepared ' + shortDate(iso(new Date()))
-        + ' ' + iso(new Date()).slice(0, 4) + '.') + '</footer></article></div>';
+        + 'readers whose browsers block scripts are not counted. '
+        + (sponsor ? 'Where in the world is the town the website’s host works out from the connection. '
+          : 'Where in the world comes from the time zone the reader’s device is set to. ')
+        + 'Prepared ' + shortDate(iso(new Date())) + ' ' + iso(new Date()).slice(0, 4) + '.')
+      + '</footer></article></div>';
+  }
+
+  /* Runs as the signed-in administrator; the database refuses anybody else. */
+  function purgeOld() {
+    try {
+      return CP.rest('POST', 'rpc/purge_page_stats', { p_years: 3 })
+        .then(function (r) { return typeof r === 'number' ? r : num(r); })
+        .catch(function () { return null; });
+    } catch (e) { return Promise.resolve(null); }
   }
 
   function openReport(from) {
     var old = document.querySelector('.cprep');
     if (old && old.parentNode) old.parentNode.removeChild(old);
     var wrap = document.createElement('div');
-    wrap.innerHTML = report();
+    wrap.innerHTML = report(from && from.getAttribute ? from.getAttribute('data-report') : '');
     var el = wrap.firstChild;
     if (!el) return;
     document.body.appendChild(el);
@@ -2250,6 +2294,393 @@
     });
   }
 
+  /* ==========================================================================
+     THE DETAIL (migrations/012)
+
+     Fourteen more tables, each read once per period. Every section says
+     "not switched on yet" when its table is missing and "nothing yet" when it
+     is empty, and every row is checked for the fields it needs before it is
+     used, so a table that returns something unexpected draws nothing rather
+     than drawing nonsense.
+     ========================================================================== */
+  var DETAIL_Q = [
+    ['page_heat', 'day,path,device,kind,section,x,y,count'],
+    ['page_scroll', 'day,path,band,views'],
+    ['page_sections', 'day,path,section,views,seconds_total'],
+    ['page_media', 'day,path,kind,media,mark,count'],
+    ['page_perf', 'day,path,device,metric,bucket,count'],
+    ['page_errors', 'day,path,kind,file,message,count'],
+    ['page_context', 'day,dimension,value,views'],
+    ['page_funnel', 'day,funnel,step,views'],
+    ['page_fields', 'day,form,field,event,count'],
+    ['audience_views', 'day,path,source_kind,device,views,seconds_total'],
+    ['audience_places', 'day,country,region,city,lat,lon,views'],
+    ['audience_events', 'day,kind,target,count'],
+    ['page_returning', 'day,kind,visits,gap,views'],
+    ['privacy_choices', 'day,stats,sponsor,return_visits,count'],
+  ];
+  var D = {};
+  var HEATPAGE = '';
+  var HEATDEV = '';
+  function num(v) { var n = Number(v); return isFinite(n) ? n : 0; }
+  function rowsOf(t, need) {
+    return (D[t] || []).filter(function (r) {
+      return r && need.every(function (k) { return r[k] != null && r[k] !== ''; })
+        && (!FILT.area || !r.path || areaOf(r.path) === FILT.area);
+    });
+  }
+  function pending(title) {
+    return sec({ title: title, sub: 'Not switched on yet.',
+      body: '<p class="cp-note">Recorded once <b>migrations/012_page_detail_and_consented.sql</b> has been '
+        + 'run on the database.</p>' });
+  }
+  function quiet(title, what) {
+    return sec({ title: title, sub: 'Switched on, and nothing has come in yet.',
+      body: '<p class="cp-note">' + esc(what) + ' fill in from the next visitor onwards.</p>' });
+  }
+  function sumBy(list, key, val) {
+    var by = {};
+    list.forEach(function (r) { var k = key(r); by[k] = (by[k] || 0) + num(val(r)); });
+    return Object.keys(by).map(function (k) { return { key: k, views: by[k] }; })
+      .sort(function (a, b) { return b.views - a.views; });
+  }
+
+  /* ---- Where people click ----------------------------------------------- */
+  function cellsOf(list, cls, word) {
+    var by = {}, max = 0;
+    list.forEach(function (r) {
+      var k = num(r.x) + ':' + Math.floor(num(r.y) / 2);
+      by[k] = (by[k] || 0) + num(r.count);
+      if (by[k] > max) max = by[k];
+    });
+    return Object.keys(by).map(function (k) {
+      var p = k.split(':');
+      return '<rect class="' + cls + '" x="' + p[0] + '" y="' + p[1] + '" width="1" height="1"'
+        + (cls === 'cphm__cell' ? ' style="fill-opacity:' + (0.15 + (0.85 * by[k]) / (max || 1)).toFixed(2) + '"' : '')
+        + ' data-tip="' + esc(by[k] + ' ' + word + (by[k] === 1 ? '' : 's') + ', about ' + p[1] + '% down') + '"/>';
+    }).join('');
+  }
+
+  function heatSection() {
+    var title = 'Where people click';
+    if (D.page_heat == null) return pending(title);
+    var all = rowsOf('page_heat', ['path', 'kind', 'x', 'y']);
+    if (!all.length) return quiet(title, 'Clicks');
+    var pagesBy = sumBy(all, function (r) { return r.path; }, function (r) { return r.count; });
+    var page = pagesBy.some(function (p) { return p.key === HEATPAGE; }) ? HEATPAGE : pagesBy[0].key;
+    var mine = all.filter(function (r) { return r.path === page && (!HEATDEV || r.device === HEATDEV); });
+    var of = function (k) { return mine.filter(function (r) { return r.kind === k; }); };
+    var n = mine.reduce(function (t, r) { return t + num(r.count); }, 0);
+    return sec({
+      title: title,
+      sub: 'Every click on a page as a share of its width and height, so the busy parts and the '
+        + 'ignored parts show. A click on nothing and a burst of repeated clicks are marked, because '
+        + 'both mean something looked clickable and was not.',
+      body: '<div class="cpst__tagger"><label class="cpf__one"><span class="cpf__l">Page</span>'
+        + '<select class="select input--sm" data-heat-page>' + pagesBy.slice(0, 200).map(function (p) {
+          return '<option value="' + esc(p.key) + '"' + (p.key === page ? ' selected' : '') + '>'
+            + esc(pageLabel(p.key) + ' (' + p.views + ')') + '</option>';
+        }).join('') + '</select></label><span class="cpst__period">'
+        + [['', 'Every device'], ['mobile', 'Phones'], ['tablet', 'Tablets'], ['desktop', 'Computers']].map(function (d) {
+          return '<button type="button" class="btn btn--sm ' + (HEATDEV === d[0] ? 'btn--primary' : 'btn--ghost')
+            + '" data-heat-device="' + d[0] + '">' + esc(d[1]) + '</button>';
+        }).join('') + '</span></div>'
+        + '<div class="cphm"><div class="cphm__map"><svg class="cphm__svg" viewBox="0 0 20 100" '
+        + 'preserveAspectRatio="none" role="img" aria-label="' + esc('Clicks on ' + pageLabel(page) + ', '
+          + n + ' in all') + '"><rect class="cphm__page" x="0" y="0" width="20" height="100"/>'
+        + [10, 20, 30, 40, 50, 60, 70, 80, 90].map(function (y) {
+          return '<line class="cphm__rule" x1="0" x2="20" y1="' + y + '" y2="' + y + '"/>';
+        }).join('')
+        + cellsOf(of('click'), 'cphm__cell', 'click') + cellsOf(of('dead'), 'cphm__dead', 'click on nothing')
+        + cellsOf(of('rage'), 'cphm__rage', 'burst of repeated clicks')
+        + '</svg><p class="cphm__key"><span><i class="cphm__sw"></i>clicks</span>'
+        + '<span><i class="cphm__sw cphm__sw--dead"></i>on nothing</span>'
+        + '<span><i class="cphm__sw cphm__sw--rage"></i>repeated</span></p></div><div class="cphm__side">'
+        + '<h4 class="cp-sub">Clicks by part of the page</h4>'
+        + countTable('Part of the page', sumBy(mine.filter(function (r) { return r.kind !== 'copy'; }),
+          function (r) { return r.section || 'Not in a named part'; }, function (r) { return r.count; }), 'No clicks.', 'Clicks')
+        + '<h4 class="cp-sub">What looked clickable and was not</h4>'
+        + countTable('Where', sumBy(mine.filter(function (r) { return r.kind === 'dead' || r.kind === 'rage'; }),
+          function (r) { return (r.kind === 'rage' ? 'Repeated clicks · ' : 'Click on nothing · ') + (r.section || 'not in a named part'); },
+          function (r) { return r.count; }), 'Nothing: every click landed on something that works.', 'Clicks')
+        + (of('copy').length ? '<h4 class="cp-sub">Where text was copied</h4>'
+          + countTable('Part of the page', sumBy(of('copy'), function (r) { return r.section || 'Not in a named part'; },
+            function (r) { return r.count; }), '', 'Copies') : '')
+        + '</div></div>',
+    });
+  }
+
+  /* ---- How far down, and how long on each part ----------------------------- */
+  function readSection() {
+    var title = 'How far down, and how long on each part';
+    if (D.page_scroll == null) return pending(title);
+    var sc = rowsOf('page_scroll', ['path', 'band']);
+    var dw = rowsOf('page_sections', ['path', 'section']);
+    if (!sc.length && !dw.length) return quiet(title, 'Scroll depth and time on each part of a page');
+    var by = {};
+    sc.forEach(function (r) {
+      var p = by[r.path] || (by[r.path] = { key: r.path, views: 0, half: 0, end: 0 });
+      p.views += num(r.views);
+      if (num(r.band) >= 5) p.half += num(r.views);
+      if (num(r.band) >= 9) p.end += num(r.views);
+    });
+    var list = Object.keys(by).map(function (k) { return by[k]; }).sort(function (a, b) { return b.views - a.views; });
+    var page = by[HEATPAGE] ? HEATPAGE : (list[0] ? list[0].key : '');
+    var reach = [];
+    for (var band = 0; band <= 10; band++) {
+      var got = 0;
+      sc.forEach(function (r) { if (r.path === page && num(r.band) >= band) got += num(r.views); });
+      reach.push({ label: band * 10 + '%', views: by[page] ? pct(got, by[page].views) : 0,
+        title: (by[page] ? pct(got, by[page].views) : 0) + '% of views got ' + band * 10 + '% of the way down' });
+    }
+    var mineDw = dw.filter(function (r) { return r.path === page; });
+    var secs = {};
+    mineDw.forEach(function (r) { secs[r.section] = (secs[r.section] || 0) + num(r.seconds_total); });
+    var parts = sumBy(mineDw, function (r) { return r.section; }, function (r) { return r.views; });
+    return sec({
+      title: title,
+      sub: 'For every page, how many views got halfway and to the end; for the page picked in '
+        + '<b>Where people click</b>, how far down views got and how long each part stayed on screen.',
+      body: (list.length ? table(['Page', 'Views', 'Got halfway', 'Got to the end', ''], list.slice(0, 30).map(function (p) {
+        return '<tr><td>' + esc(p.key) + '</td><td><b>' + p.views + '</b></td><td>' + pct(p.half, p.views)
+          + '%</td><td>' + pct(p.end, p.views) + '%</td><td style="width:20%">' + bar(p.end, p.views) + '</td></tr>';
+      }).join('')) : '')
+        + (by[page] ? '<h4 class="cp-sub">How far down ' + esc(pageLabel(page)) + ' views got</h4>'
+          + columns(reach, 'Share of views reaching each depth') : '')
+        + (parts.length ? '<h4 class="cp-sub">Time on screen, part by part</h4>'
+          + table(['Part of the page', 'Views that showed it', 'Average on screen'], parts.slice(0, 30).map(function (r) {
+            return '<tr><td>' + esc(r.key) + '</td><td><b>' + r.views + '</b></td><td>'
+              + esc(dur(secs[r.key] / (r.views || 1))) + '</td></tr>';
+          }).join('')) : ''),
+    });
+  }
+
+  /* ---- Videos and photos ----------------------------------------------------- */
+  function mediaSection() {
+    var title = 'Videos and photos';
+    if (D.page_media == null) return pending(title);
+    var m = rowsOf('page_media', ['kind', 'media', 'mark']);
+    if (!m.length) return quiet(title, 'Videos watched and photos opened');
+    var vids = {};
+    m.filter(function (r) { return r.kind === 'video'; }).forEach(function (r) {
+      var v = vids[r.media] || (vids[r.media] = { 0: 0, 25: 0, 50: 0, 75: 0, 100: 0 });
+      v[num(r.mark)] = (v[num(r.mark)] || 0) + num(r.count);
+    });
+    var keys = Object.keys(vids).sort(function (a, b) { return vids[b][0] - vids[a][0]; });
+    var photos = sumBy(m.filter(function (r) { return r.kind === 'photo'; }),
+      function (r) { return r.media.split('/').pop(); }, function (r) { return r.count; });
+    return sec({
+      title: title,
+      sub: 'How many people started each video and how far through they got, and which photos were opened.',
+      body: (keys.length ? table(['Video', 'Started', 'A quarter', 'Halfway', 'Three quarters', 'To the end',
+        'Watched through'], keys.slice(0, 30).map(function (k) {
+        var v = vids[k];
+        return '<tr><td>' + esc(k.split('/').pop()) + '</td><td><b>' + v[0] + '</b></td><td>' + v[25]
+          + '</td><td>' + v[50] + '</td><td>' + v[75] + '</td><td>' + v[100] + '</td><td>' + pct(v[100], v[0]) + '%</td></tr>';
+      }).join('')) : '<p class="cp-note">No video has been played in this period.</p>')
+        + (photos.length ? '<h4 class="cp-sub">Photos opened</h4>' + countTable('Photo', photos, '', 'Opens') : ''),
+    });
+  }
+
+  /* ---- Steps towards getting involved --------------------------------------- */
+  var FUNNELS = [
+    ['join', 'Joining the club', ['Opened Join', 'Started the form', 'Pressed send']],
+    ['sponsor', 'Sponsoring', ['Opened Sponsors', 'Followed a way in', 'Started the contact form', 'Pressed send']],
+    ['donate', 'Donating', ['Opened Donate or the cause page', 'Pressed a donate button']],
+    ['contact', 'Contacting the club', ['Opened Contact', 'Started the form', 'Pressed send']],
+    ['newsletter', 'The newsletter', ['Started the sign-up', 'Pressed sign up']],
+    ['programme', 'The match programme', ['Opened the programme', 'Downloaded the PDF']],
+  ];
+  function funnelSection() {
+    var title = 'Steps towards getting involved';
+    if (D.page_funnel == null) return pending(title);
+    var f = rowsOf('page_funnel', ['funnel', 'step']);
+    if (!f.length) return quiet(title, 'Funnels');
+    return sec({
+      title: title,
+      sub: 'How many visits reached each step, counted once per visit and only in order, so each list '
+        + 'reads from the top down.',
+      body: '<div class="cp2">' + FUNNELS.map(function (fn) {
+        var steps = fn[2].map(function (label, i) {
+          var v = 0;
+          f.forEach(function (r) { if (r.funnel === fn[0] && num(r.step) === i + 1) v += num(r.views); });
+          return { label: label, views: v };
+        });
+        if (!steps[0].views) return '';
+        return '<div><h4 class="cp-sub">' + esc(fn[1]) + '</h4>'
+          + table(['Step', 'Visits', 'Of the step before', 'Of the first step'], steps.map(function (st, i) {
+            return '<tr><td>' + esc(st.label) + '</td><td><b>' + st.views + '</b></td><td>'
+              + (i ? pct(st.views, steps[i - 1].views) + '%' : '') + '</td><td>' + pct(st.views, steps[0].views) + '%</td></tr>';
+          }).join('')) + '</div>';
+      }).join('') + '</div><p class="cp-note">"Pressed send" counts a press, including one the form then '
+        + 'asked to be corrected.</p>',
+    });
+  }
+
+  /* ---- Which form field people stop at --------------------------------------- */
+  function fieldSection() {
+    var title = 'Which form field people stop at';
+    if (D.page_fields == null) return pending(title);
+    var f = rowsOf('page_fields', ['form', 'field', 'event']);
+    if (!f.length) return quiet(title, 'Form fields');
+    var by = {};
+    f.forEach(function (r) {
+      if (r.field === 'form') return;
+      var k = r.form + ' · ' + r.field;
+      var o = by[k] || (by[k] = { key: k, focus: 0, leave: 0 });
+      if (r.event === 'focus') o.focus += num(r.count);
+      if (r.event === 'leave') o.leave += num(r.count);
+    });
+    var list = Object.keys(by).map(function (k) { return by[k]; })
+      .sort(function (a, b) { return b.leave - a.leave || b.focus - a.focus; });
+    var sent = sumBy(f.filter(function (r) { return r.event === 'sent'; }), function (r) { return r.form; },
+      function (r) { return r.count; });
+    return sec({
+      title: title,
+      sub: 'Each field by its name, never what was typed: how often it was used, and how often it was '
+        + 'the last one touched before somebody left without sending.',
+      body: table(['Form and field', 'Used', 'Left here', 'Share left'], list.slice(0, 40).map(function (r) {
+        return '<tr><td>' + esc(r.key) + '</td><td><b>' + r.focus + '</b></td><td>' + r.leave + '</td><td>'
+          + pct(r.leave, r.focus) + '%</td></tr>';
+      }).join('')) + (sent.length ? '<h4 class="cp-sub">Forms sent</h4>' + countTable('Form', sent, '', 'Presses') : ''),
+    });
+  }
+
+  /* ---- Browser and settings, one at a time ------------------------------------- */
+  var DIMS = [['browser', 'Browser'], ['os', 'System'], ['inapp', 'Opened inside an app'],
+    ['viewport', 'Screen width'], ['scheme', 'Light or dark'], ['language', 'Language'],
+    ['connection', 'Connection'], ['motion', 'Motion'], ['touch', 'Touch screen'],
+    ['density', 'Screen sharpness'], ['standalone', 'Installed to the home screen']];
+  function contextSection() {
+    var title = 'Browser and settings';
+    if (D.page_context == null) return pending(title);
+    var c = rowsOf('page_context', ['dimension', 'value']);
+    if (!c.length) return quiet(title, 'Browser and settings');
+    return sec({
+      title: title,
+      sub: 'Each counted on its own, per page view, so no row joins them into something that could '
+        + 'single out a device.',
+      body: '<div class="cp3">' + DIMS.map(function (dm) {
+        var list = sumBy(c.filter(function (r) { return r.dimension === dm[0]; }), function (r) { return r.value; },
+          function (r) { return r.views; });
+        return list.length ? '<div><h4 class="cp-sub">' + esc(dm[1]) + '</h4>' + countTable(dm[1], list, '') + '</div>' : '';
+      }).join('') + '</div>',
+    });
+  }
+
+  /* ---- Returning visits: only from visitors who said yes ----------------------- */
+  function returningSection() {
+    var title = 'Returning visits';
+    if (D.page_returning == null) return pending(title);
+    var r = rowsOf('page_returning', ['kind']);
+    var n = r.reduce(function (t, x) { return t + num(x.views); }, 0);
+    if (!n) {
+      return sec({ title: title, sub: 'Only from visitors who said yes.',
+        body: '<p class="cp-note">Nobody who has said yes to counting returning visits has visited in this '
+          + 'period. It is counted only with permission, so it always covers fewer people than the rest '
+          + 'of this screen.</p>' });
+    }
+    return sec({
+      title: title,
+      sub: 'Only from visitors who said yes, once a day each: ' + n + ' in this period.',
+      body: '<div class="cp2"><div>' + donut(sumBy(r, function (x) { return x.kind === 'new' ? 'First visit' : 'Returning'; },
+        function (x) { return x.views; }), n, 'First and returning visits') + '</div><div>'
+        + '<h4 class="cp-sub">How many times they have visited</h4>'
+        + countTable('Visits', sumBy(r, function (x) { return x.visits === '1' ? 'The first time' : x.visits + ' times'; },
+          function (x) { return x.views; }), '')
+        + '<h4 class="cp-sub">Since their last visit</h4>'
+        + countTable('Gap', sumBy(r.filter(function (x) { return x.kind === 'returning'; }),
+          function (x) { return x.gap || 'Not known'; }, function (x) { return x.views; }), 'No returning visits yet.')
+        + '</div></div>',
+    });
+  }
+
+  /* ---- Speed, graded against Google's published thresholds for a good page ---- */
+  var SPEED = [['lcp', 'Largest content drawn', 7, 9], ['inp', 'Response to a tap or click', 1, 4],
+    ['cls', 'Layout shifting', 3, 6], ['fcp', 'First content drawn', 6, 8],
+    ['ttfb', 'First byte from the server', 4, 7], ['load', 'Page fully loaded', 7, 10]];
+  var MS_BAND = ['under 0.1s', '0.1-0.2s', '0.2-0.3s', '0.3-0.5s', '0.5-0.8s', '0.8-1.2s', '1.2-1.8s',
+    '1.8-2.5s', '2.5-4s', '4-6s', '6-10s', '10-15s', 'over 15s'];
+  var CLS_BAND = ['under 0.01', '0.01-0.025', '0.025-0.05', '0.05-0.1', '0.1-0.15', '0.15-0.25', '0.25-0.35',
+    '0.35-0.5', '0.5-0.75', '0.75-1', '1-1.5', '1.5-2', 'over 2'];
+  function speedSection() {
+    var title = 'How fast pages load';
+    if (D.page_perf == null) return pending(title);
+    var p = rowsOf('page_perf', ['metric', 'bucket']);
+    if (!p.length) return quiet(title, 'Loading times');
+    return sec({
+      title: title,
+      sub: 'Measured on real visitors’ devices, and graded against the thresholds Google publishes for a good page.',
+      body: table(['Measure', 'Good', 'Needs work', 'Poor', 'Typical', ''], SPEED.map(function (m) {
+        var rows = p.filter(function (r) { return r.metric === m[0]; })
+          .sort(function (a, b) { return num(a.bucket) - num(b.bucket); });
+        var n = rows.reduce(function (t, r) { return t + num(r.count); }, 0);
+        if (!n) return '';
+        var good = 0, poor = 0, seen = 0, mid = -1;
+        rows.forEach(function (r) {
+          var bk = num(r.bucket), c = num(r.count);
+          if (bk <= m[2]) good += c; else if (bk >= m[3]) poor += c;
+          seen += c;
+          if (mid < 0 && seen >= n / 2) mid = bk;
+        });
+        var g = pct(good, n), bd = pct(poor, n), md = Math.max(0, 100 - g - bd);
+        return '<tr><td>' + esc(m[1]) + '</td><td><b>' + g + '%</b></td><td>' + md + '%</td><td>' + bd + '%</td><td>'
+          + esc((m[0] === 'cls' ? CLS_BAND : MS_BAND)[mid] || '') + '</td><td style="width:22%">'
+          + '<span class="cpsp" aria-hidden="true"><i style="width:' + g + '%"></i><i class="is-mid" style="width:'
+          + md + '%"></i></span></td></tr>';
+      }).join('')),
+    });
+  }
+
+  /* ---- What broke ---------------------------------------------------------------- */
+  var BROKE = { error: 'Script error', promise: 'Failed request', resource: 'File that would not load' };
+  function errorSection() {
+    var title = 'What broke';
+    if (D.page_errors == null) return pending(title);
+    var e = rowsOf('page_errors', ['kind', 'path']);
+    if (!e.length) {
+      return sec({ title: title, sub: 'Nothing broke in this period.',
+        body: '<p class="cp-note">Errors are counted with every number and address taken out of the message, '
+          + 'so nothing a page said about somebody survives into this list.</p>' });
+    }
+    return sec({
+      title: title,
+      sub: 'Errors on real visitors’ pages, most frequent first.',
+      body: table(['What', 'Message', 'File', 'On page', 'Times'], sumBy(e, function (r) {
+        return JSON.stringify([r.kind, r.message || '', r.file || '', r.path]);
+      }, function (r) { return r.count; }).slice(0, 40).map(function (r) {
+        var k = JSON.parse(r.key);
+        return '<tr><td>' + esc(BROKE[k[0]] || k[0]) + '</td><td>' + esc(k[1] || '-') + '</td><td>' + esc(k[2] || '-')
+          + '</td><td>' + esc(pageLabel(k[3])) + '</td><td><b>' + r.views + '</b></td></tr>';
+      }).join('')),
+    });
+  }
+
+  /* ---- How visitors answered, and deleting old figures ------------------------------ */
+  function choiceSection() {
+    var title = 'Privacy choices, and deleting old figures';
+    var c = D.privacy_choices == null ? null : rowsOf('privacy_choices', ['stats']);
+    var n = c ? c.reduce(function (t, r) { return t + num(r.count); }, 0) : 0;
+    var yes = function (k) {
+      return c.filter(function (r) { return r[k] === true; }).reduce(function (t, r) { return t + num(r.count); }, 0);
+    };
+    return sec({
+      title: title,
+      sub: 'How visitors answered the privacy banner, with nothing that says who, and the deletion the '
+        + 'privacy page promises.',
+      body: (c === null ? '<p class="cp-note">Choices are counted once '
+        + '<b>migrations/012_page_detail_and_consented.sql</b> has been run on the database.</p>'
+        : (n ? '<div class="cpt-grid">' + tile(String(n), 'Choices saved', 'in this period')
+          + tile(pct(yes('stats'), n) + '%', 'Kept statistics on', yes('stats') + ' of ' + n)
+          + tile(pct(yes('sponsor'), n) + '%', 'Said yes to sponsor figures', yes('sponsor') + ' of ' + n)
+          + tile(pct(yes('return_visits'), n) + '%', 'Said yes to returning visits', yes('return_visits') + ' of ' + n)
+          + '</div>' : '<p class="cp-note">No choices were saved in this period.</p>'))
+        + '<p class="cp-note">The privacy page promises the figures are kept for up to three years. This '
+        + 'deletes everything older, from every table on this screen, and cannot be undone.</p>'
+        + '<p><button type="button" class="btn btn--sm btn--ghost" data-purge>Delete figures older than three years</button></p>',
+    });
+  }
+
   function sortBar() {
     return [['views', 'Most read'], ['seconds', 'Longest read'],
       ['depth', 'Read furthest']].map(function (s) {
@@ -2661,6 +3092,35 @@
       });
       desk.addEventListener('mouseleave', function () { tipEl.className = 'cptip'; });
     }
+    each('[data-heat-page]', function (sel) {
+      sel.addEventListener('change', function () {
+        HEATPAGE = sel.value || '';
+        draw(host);
+      });
+    });
+    each('[data-heat-device]', function (b) {
+      b.addEventListener('click', function () {
+        HEATDEV = b.getAttribute('data-heat-device') || '';
+        draw(host);
+      });
+    });
+    each('[data-purge]', function (b) {
+      b.addEventListener('click', function () {
+        /* Every destructive action in the panel goes through the one dialog. */
+        U.confirmAction({
+          title: 'Delete old website figures?',
+          body: 'Every website figure older than three years is deleted, from every table on this screen. '
+            + 'This is what the privacy page promises, and it cannot be undone.',
+          confirmLabel: 'Delete old figures',
+        }).then(function (sure) {
+          if (!sure) return;
+          purgeOld().then(function (gone) {
+            toast(gone == null ? 'Could not delete the old figures' : 'Deleted ' + gone + ' rows older than three years');
+            refresh();
+          });
+        });
+      });
+    });
     each('[data-jump]', function (b) {
       b.addEventListener('click', function () {
         var goTo = host.querySelector('#' + b.getAttribute('data-jump'));

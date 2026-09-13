@@ -222,7 +222,7 @@ export function squad(d) {
     ? `<img src="${attr(shot)}" alt="${attr(`${p.name}, ${p.position || 'player'} for Sue’s Angels FC`)}" width="320" height="480" loading="lazy" decoding="async" />`
     : `<img class="pc__crest" src="${STAR}" alt="Sue’s Angels FC star" width="200" height="248" loading="lazy" decoding="async" />`}
               </span>
-              <!-- One row for both chips rather than two independently pinned
+              ${/* One row for both chips rather than two independently pinned
                    corners. Pinned, a long leader badge ("Most clean sheets")
                    simply grew leftwards until it sat on top of the position,
                    which is what it did on every card narrower than about
@@ -233,19 +233,19 @@ export function squad(d) {
                    anybody calls a player: LCB reads as a typo unless you
                    already know it. Codes survive only on the pitch diagram,
                    where there is room for nothing else and each carries its
-                   name in a <title>. -->
+                   name in a <title>. */''}
               <span class="pc__tags">
                 <span class="pc__pos${p.positionCode ? '' : ' is-none'}">${esc(p.position || 'Squad player')}</span>
-                <!-- Always present so switching season can fill it, hidden
+                ${/* Always present so switching season can fill it, hidden
                      when this view has no leader mark for him. [hidden] is
-                     display:none, so an empty chip never paints. -->
+                     display:none, so an empty chip never paints. */''}
                 <span class="pc__badge" data-badge${badge ? '' : ' hidden'}>${esc(badge || '')}</span>
               </span>
               <span class="pc__body">
-                <!-- What he was THAT season. New signing, retained and back
+                ${/* What he was THAT season. New signing, retained and back
                      at the club are worked out from which seasons he has been
                      in the squad, so nobody has to keep them true and none of
-                     them carries a year baked into a string. -->
+                     them carries a year baked into a string. */''}
                 <span class="pc__state" data-state${nowStatus && nowStatus.label ? '' : ' hidden'}>${esc((nowStatus && nowStatus.label) || '')}</span>
                 <span class="pc__name">
                   <b>${esc(p.last)}</b>
@@ -408,8 +408,8 @@ export function squad(d) {
   /* ================= 01 FIRST TEAM ================= */
   const firstBand = `<section class="sec sq-first" id="first-team" aria-labelledby="sq-first-h">
       <div class="wrap">
-        <!-- The count follows the season tab: the band is filtered, so a
-             fixed figure beside it is a caption for a different page. -->
+        ${/* The count follows the season tab: the band is filtered, so a
+             fixed figure beside it is a caption for a different page. */''}
         ${rail(1, 'First team', `${first.filter((p) => (p.seasons || []).includes(VIEWS[DEF])).length} players`)
     .replace('<span class="xrail__r">', '<span class="xrail__r" data-band-count>')}
         <h2 class="h2 rv" id="sq-first-h">The first <span class="volt">team.</span></h2>

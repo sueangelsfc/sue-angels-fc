@@ -167,17 +167,17 @@ function matchesPage(d, mode) {
   const hero = `<section class="mt-hero" aria-labelledby="mt-h">
       <div class="wrap mt-hero__grid">
         <div>
-          <!-- Follows the season bar below. It named one season above a
-               filter that can show any of them. -->
+          ${/* Follows the season bar below. It named one season above a
+               filter that can show any of them. */''}
           <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Matchday ·
             <span data-hero-season>${esc(VIEWS[DEFAULT].label)}</span></p>
           <h1 class="mt-hero__title" id="mt-h">Results<span class="volt">.</span></h1>
           <p class="mt-hero__lede">Every match ${esc(CLUB.name)} has played, across league and cups.
             Filter by competition, by home or away, or by how it finished.</p>
         </div>
-        <!-- Follows the season bar. These were the club's career totals under
+        ${/* Follows the season bar. These were the club's career totals under
              an eyebrow naming one season, so 26/27 read "Played 33, Won 29,
-             Scored 137" for a season with no results in it. -->
+             Scored 137" for a season with no results in it. */''}
         <dl class="mt-tally glassbox" data-hero-tally${VIEWS.map((v) => {
     const sm = teamSummary(v.competitive);
     return ` data-tally-${v.id}="${attr([sm.played, sm.won, sm.goalsFor].join(','))}"`;
@@ -278,7 +278,7 @@ function matchesPage(d, mode) {
 
   const listBand = `<section class="sec mt-list" id="matches" aria-labelledby="mt-list-h">
       <div class="wrap">
-        <!-- Follows the season bar: the grid below it is filtered. -->
+        ${/* Follows the season bar: the grid below it is filtered. */''}
         ${rail(awaiting.length ? 3 : 2, 'Every match', `${VIEWS[DEFAULT].matches.length} played`)
     .replace('<span class="xrail__r">', '<span class="xrail__r" data-played-count>')}
         <h2 class="h2 rv" id="mt-list-h">Match by <span class="volt">match.</span></h2>
@@ -297,8 +297,8 @@ function matchesPage(d, mode) {
     ];
   })(), 'comp')}
           <div class="mt-filters__row">
-            <!-- Venue and result counts are the selected season's too. A
-                 filter's own count is a promise about what pressing it finds. -->
+            ${/* Venue and result counts are the selected season's too. A
+                 filter's own count is a promise about what pressing it finds. */''}
             ${chipRow('Venue', (() => {
     const n = (v, pred) => v.matches.filter(pred).length;
     const c = (pred) => VIEWS.map((v) => ` data-n-${v.id}="${attr(n(v, pred))}"`).join('');

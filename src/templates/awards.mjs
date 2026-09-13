@@ -133,8 +133,8 @@ export function awards(d) {
           <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Recognition ·
             <span data-aw-season>${esc(VIEWS[DEFAULT].label)}</span></p>
           <h1 class="aw-hero__title" id="aw-h">Awards &amp; honours<span class="volt">.</span></h1>
-          <!-- The season follows the tab. It was written in twice as a fixed
-               claim, sitting above a filter that can show any of them. -->
+          ${/* The season follows the tab. It was written in twice as a fixed
+               claim, sitting above a filter that can show any of them. */''}
           <p class="aw-hero__lede">A title is won by a squad, but it is decided in moments by individuals.
             These are the players the club picked out, month by month,
             match by match, and on the night it was all counted up.</p>

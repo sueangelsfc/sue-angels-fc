@@ -722,7 +722,23 @@ export async function panelChecks() {
       data: { ...(at > -1 ? photos[at].data : {}), players: [...prior, { num: 199, first: 'Testy', last: 'Newsigning', position: 'Midfielder' }] },
     };
     if (at > -1) photos[at] = signedRow; else photos.push(signedRow);
-    const signedRows = { ...rows, player_photos: photos };
+    /* A FIXTURE TO ENTER AND A MATCHDAY TO PICK FOR, whatever the diary holds.
+       These checks went red the week the club's fixtures table was empty,
+       having caught nothing, so a week without one gets a crafted fixture. */
+    const soon = new Date(Date.now() + 7 * 864e5);
+    const soonIso = soon.toISOString().slice(0, 10);
+    const probeFx = [{
+      key: `f${soonIso.replace(/-/g, '')}-probe`,
+      data: {
+        iso: soonIso, date: soon.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+        kick: '10:30', home: "Sue's Angels FC", away: 'Probe Rovers FC',
+        venue: 'The Reeves Sports Club', competition: 'League Eight', kind: 'fixture',
+      },
+    }];
+    const signedRows = {
+      ...rows, player_photos: photos,
+      fixtures: (rows.fixtures || []).length ? rows.fixtures : probeFx,
+    };
     /* A picker that BUILDS the sheet prints the position beside the name
        ("Testy Newsigning (Midfielder)"). This asked for the bare name, which
        only the after-the-sheet pickers print, and those fall back to the whole

@@ -256,10 +256,7 @@
             </div>
           </div>
 
-          <!-- role="group", not <aside>. A complementary landmark is supposed to
-               be top level; this one is nested inside the hero, so it showed up
-               as a landmark in the wrong place in the document outline. It is a
-               labelled card, not a section of the page. -->
+          
           <div class="hx__card glassbox drop" style="--dd:.3s" role="group" aria-label="Next match"
             data-next-match data-upcoming="[{&quot;home&quot;:&quot;Sue&#39;s Angels FC&quot;,&quot;away&quot;:&quot;Haydons Park&quot;,&quot;weAreHome&quot;:true,&quot;label&quot;:&quot;League Eight&quot;,&quot;competition&quot;:&quot;League Eight&quot;,&quot;venue&quot;:&quot;The Reeves Sports Club&quot;,&quot;kick&quot;:&quot;11:00&quot;,&quot;date&quot;:&quot;13 Sep 26&quot;,&quot;at&quot;:&quot;2026-09-13T10:00:00.000Z&quot;,&quot;badge&quot;:&quot;/assets/badge/haydons-park.png&quot;,&quot;them&quot;:&quot;Haydons Park&quot;,&quot;initials&quot;:&quot;HP&quot;},{&quot;home&quot;:&quot;Junction Elite FC Sunday 3rd Team&quot;,&quot;away&quot;:&quot;Sue&#39;s Angels FC&quot;,&quot;weAreHome&quot;:false,&quot;label&quot;:&quot;League Eight&quot;,&quot;competition&quot;:&quot;League Eight&quot;,&quot;venue&quot;:&quot;Richardson Evans Memorial Playing Fields&quot;,&quot;kick&quot;:&quot;10:30&quot;,&quot;date&quot;:&quot;20 Sep 26&quot;,&quot;at&quot;:&quot;2026-09-20T09:30:00.000Z&quot;,&quot;badge&quot;:&quot;/assets/badge/junction-elite.webp&quot;,&quot;them&quot;:&quot;Junction Elite FC Sunday 3rd Team&quot;,&quot;initials&quot;:&quot;JEF&quot;}]">
             <p class="hx__cardlabel" data-nx-label>Next match · League Eight</p>
@@ -488,18 +485,10 @@
         <a class="btn btn--ghost btn--sm rl__all" href="/results.html">All results <span aria-hidden="true">→</span></a>
       </div>
 
-      <!-- role="group": the rail is focusable so arrow keys can scroll it, and a
-           focusable element with no role announces as nothing. Matches the
-           pattern the awards carousel already uses. -->
+      
       <ol class="rl" id="rlRail" role="group" aria-label="Recent results" tabindex="0">
         <li class="rcard2 rcard2--glow">
-          <!-- No aria-label. It read "Sue's Angels FC 2-0 Hillside" while the
-               card visibly said "W 31 May 26 Sue's Angels 2 Hillside 0 League
-               Ten Home", so the accessible name did not contain the visible
-               text and WCAG 2.5.3 failed on all seven cards. Without it the
-               name is computed from the content, which cannot disagree with
-               itself. The outcome letter carries its word for screen readers
-               and is hidden visually, so "W" is not read as a letter. -->
+          
           <a class="rcard2__link" href="/matches/r20260830-bpr.html">
             <span class="rcard2__top"><span class="rchip rchip--w"><span class="sr-only">Won</span><span aria-hidden="true">W</span></span><span class="rcard2__date">30 Aug 26</span></span>
             <span class="rcard2__teams">
@@ -510,13 +499,7 @@
           </a>
         </li>
         <li class="rcard2">
-          <!-- No aria-label. It read "Sue's Angels FC 2-0 Hillside" while the
-               card visibly said "W 31 May 26 Sue's Angels 2 Hillside 0 League
-               Ten Home", so the accessible name did not contain the visible
-               text and WCAG 2.5.3 failed on all seven cards. Without it the
-               name is computed from the content, which cannot disagree with
-               itself. The outcome letter carries its word for screen readers
-               and is hidden visually, so "W" is not read as a letter. -->
+          
           <a class="rcard2__link" href="/matches/r20260823-kew.html">
             <span class="rcard2__top"><span class="rchip rchip--w"><span class="sr-only">Won</span><span aria-hidden="true">W</span></span><span class="rcard2__date">23 Aug 26</span></span>
             <span class="rcard2__teams">
@@ -527,13 +510,7 @@
           </a>
         </li>
         <li class="rcard2">
-          <!-- No aria-label. It read "Sue's Angels FC 2-0 Hillside" while the
-               card visibly said "W 31 May 26 Sue's Angels 2 Hillside 0 League
-               Ten Home", so the accessible name did not contain the visible
-               text and WCAG 2.5.3 failed on all seven cards. Without it the
-               name is computed from the content, which cannot disagree with
-               itself. The outcome letter carries its word for screen readers
-               and is hidden visually, so "W" is not read as a letter. -->
+          
           <a class="rcard2__link" href="/matches/r20260816-brentford.html">
             <span class="rcard2__top"><span class="rchip rchip--l"><span class="sr-only">Lost</span><span aria-hidden="true">L</span></span><span class="rcard2__date">16 Aug 26</span></span>
             <span class="rcard2__teams">
@@ -544,13 +521,7 @@
           </a>
         </li>
         <li class="rcard2">
-          <!-- No aria-label. It read "Sue's Angels FC 2-0 Hillside" while the
-               card visibly said "W 31 May 26 Sue's Angels 2 Hillside 0 League
-               Ten Home", so the accessible name did not contain the visible
-               text and WCAG 2.5.3 failed on all seven cards. Without it the
-               name is computed from the content, which cannot disagree with
-               itself. The outcome letter carries its word for screen readers
-               and is hidden visually, so "W" is not read as a letter. -->
+          
           <a class="rcard2__link" href="/matches/r20260812-kingsmeadow.html">
             <span class="rcard2__top"><span class="rchip rchip--l"><span class="sr-only">Lost</span><span aria-hidden="true">L</span></span><span class="rcard2__date">12 Aug 26</span></span>
             <span class="rcard2__teams">
@@ -561,13 +532,7 @@
           </a>
         </li>
         <li class="rcard2">
-          <!-- No aria-label. It read "Sue's Angels FC 2-0 Hillside" while the
-               card visibly said "W 31 May 26 Sue's Angels 2 Hillside 0 League
-               Ten Home", so the accessible name did not contain the visible
-               text and WCAG 2.5.3 failed on all seven cards. Without it the
-               name is computed from the content, which cannot disagree with
-               itself. The outcome letter carries its word for screen readers
-               and is hidden visually, so "W" is not read as a letter. -->
+          
           <a class="rcard2__link" href="/matches/r20260809-galacticos.html">
             <span class="rcard2__top"><span class="rchip rchip--d"><span class="sr-only">Drew</span><span aria-hidden="true">D</span></span><span class="rcard2__date">9 Aug 26</span></span>
             <span class="rcard2__teams">
@@ -578,13 +543,7 @@
           </a>
         </li>
         <li class="rcard2">
-          <!-- No aria-label. It read "Sue's Angels FC 2-0 Hillside" while the
-               card visibly said "W 31 May 26 Sue's Angels 2 Hillside 0 League
-               Ten Home", so the accessible name did not contain the visible
-               text and WCAG 2.5.3 failed on all seven cards. Without it the
-               name is computed from the content, which cannot disagree with
-               itself. The outcome letter carries its word for screen readers
-               and is hidden visually, so "W" is not read as a letter. -->
+          
           <a class="rcard2__link" href="/matches/r20260802-pure.html">
             <span class="rcard2__top"><span class="rchip rchip--w"><span class="sr-only">Won</span><span aria-hidden="true">W</span></span><span class="rcard2__date">2 Aug 26</span></span>
             <span class="rcard2__teams">
@@ -595,13 +554,7 @@
           </a>
         </li>
         <li class="rcard2">
-          <!-- No aria-label. It read "Sue's Angels FC 2-0 Hillside" while the
-               card visibly said "W 31 May 26 Sue's Angels 2 Hillside 0 League
-               Ten Home", so the accessible name did not contain the visible
-               text and WCAG 2.5.3 failed on all seven cards. Without it the
-               name is computed from the content, which cannot disagree with
-               itself. The outcome letter carries its word for screen readers
-               and is hidden visually, so "W" is not read as a letter. -->
+          
           <a class="rcard2__link" href="/matches/f20260531-hillside.html">
             <span class="rcard2__top"><span class="rchip rchip--w"><span class="sr-only">Won</span><span aria-hidden="true">W</span></span><span class="rcard2__date">31 May 26</span></span>
             <span class="rcard2__teams">
@@ -704,7 +657,7 @@
       <div class="wrap">
         <div class="xrail" aria-hidden="true">
       <span class="xrail__l"><span class="xrail__n">05</span><span class="xrail__t">The next match</span></span>
-      <span class="xrail__r">P18 W18 · Unbeaten</span>
+      <span class="xrail__r">Home fixture</span>
     </div>
         <div class="nhead rv">
           <div>
@@ -743,10 +696,7 @@
 
           <ol class="nrail" id="nrail">
             <li class="ncard">
-              <!-- The label must CONTAIN the link's visible text (WCAG 2.5.3),
-                   and the only visible text in here is the category pill. Just
-                   the headline meant a voice-control user saying "click News"
-                   hit nothing. Category first, then the headline. -->
+              
               <a class="ncard__cover" href="/news/today-the-next-chapter-begins-league-eight-starts-at-home.html" aria-label="News: Today, the next chapter begins: League Eight starts at home">
                 <span class="ncard__badge"><img src="/assets/badge/sue-angels-badge-star.webp" alt="Sue’s Angels FC star" width="120" height="148" loading="lazy" decoding="async" /></span>
                 <span class="ncard__pill">News</span>
@@ -755,10 +705,7 @@
               <span class="ncard__meta">06 Sep 2026</span>
             </li>
             <li class="ncard">
-              <!-- The label must CONTAIN the link's visible text (WCAG 2.5.3),
-                   and the only visible text in here is the category pill. Just
-                   the headline meant a voice-control user saying "click News"
-                   hit nothing. Category first, then the headline. -->
+              
               <a class="ncard__cover" href="/news/sues-angels-fc-confirm-pre-season-fixtures.html" aria-label="News: Sue’s Angels FC Confirm Pre-Season Fixtures">
                 <span class="ncard__badge"><img src="/assets/badge/sue-angels-badge-star.webp" alt="Sue’s Angels FC star" width="120" height="148" loading="lazy" decoding="async" /></span>
                 <span class="ncard__pill">News</span>
@@ -767,10 +714,7 @@
               <span class="ncard__meta">20 Jul 2026</span>
             </li>
             <li class="ncard">
-              <!-- The label must CONTAIN the link's visible text (WCAG 2.5.3),
-                   and the only visible text in here is the category pill. Just
-                   the headline meant a voice-control user saying "click News"
-                   hit nothing. Category first, then the headline. -->
+              
               <a class="ncard__cover" href="/news/angels-learn-league-eight-opponents-as-pre-season-kicks-off.html" aria-label="News: Angels learn League Eight opponents as pre-season kicks off">
                 <span class="ncard__badge"><img src="/assets/badge/sue-angels-badge-star.webp" alt="Sue’s Angels FC star" width="120" height="148" loading="lazy" decoding="async" /></span>
                 <span class="ncard__pill">News</span>
@@ -779,10 +723,7 @@
               <span class="ncard__meta">28 Jun 2026</span>
             </li>
             <li class="ncard">
-              <!-- The label must CONTAIN the link's visible text (WCAG 2.5.3),
-                   and the only visible text in here is the category pill. Just
-                   the headline meant a voice-control user saying "click News"
-                   hit nothing. Category first, then the headline. -->
+              
               <a class="ncard__cover" href="/news/invincible-season-outstanding-individuals-meet-sues-angels-fcs-2025-26-award-winners.html" aria-label="News: Invincible Season. Outstanding Individuals. Meet Sue’s Angels FC’s 2025/26 Award Winners.">
                 <span class="ncard__badge"><img src="/assets/badge/sue-angels-badge-star.webp" alt="Sue’s Angels FC star" width="120" height="148" loading="lazy" decoding="async" /></span>
                 <span class="ncard__pill">News</span>
@@ -791,10 +732,7 @@
               <span class="ncard__meta">21 Jun 2026</span>
             </li>
             <li class="ncard">
-              <!-- The label must CONTAIN the link's visible text (WCAG 2.5.3),
-                   and the only visible text in here is the category pill. Just
-                   the headline meant a voice-control user saying "click News"
-                   hit nothing. Category first, then the headline. -->
+              
               <a class="ncard__cover" href="/news/jims-playing-career-comes-to-an-end-but-his-sues-angels-journey-continues.html" aria-label="Club: Jim’s Playing Career Comes to an End, But His Sue’s Angels Journey Continues">
                 <span class="ncard__badge"><img src="/assets/badge/sue-angels-badge-star.webp" alt="Sue’s Angels FC star" width="120" height="148" loading="lazy" decoding="async" /></span>
                 <span class="ncard__pill">Club</span>
@@ -803,10 +741,7 @@
               <span class="ncard__meta">05 Jun 2026</span>
             </li>
             <li class="ncard">
-              <!-- The label must CONTAIN the link's visible text (WCAG 2.5.3),
-                   and the only visible text in here is the category pill. Just
-                   the headline meant a voice-control user saying "click News"
-                   hit nothing. Category first, then the headline. -->
+              
               <a class="ncard__cover" href="/news/william-clark-announces-retirement-from-football.html" aria-label="Club: William Clark Announces Retirement from Football">
                 <span class="ncard__badge"><img src="/assets/badge/sue-angels-badge-star.webp" alt="Sue’s Angels FC star" width="120" height="148" loading="lazy" decoding="async" /></span>
                 <span class="ncard__pill">Club</span>
@@ -892,10 +827,7 @@
           </article>
 
         </div>
-        <!-- The club exists because somebody died of sepsis, so the medical
-             authority is named where the cause is explained rather than left
-             to the reader to go and find. Both are already named in the site's
-             own disclaimer; this is the link that was missing. -->
+        
         <p class="srcnote">On sepsis, read <a href="https://www.sepsistrust.org/" rel="noopener" target="_blank">The UK Sepsis Trust</a> and <a href="https://www.nhs.uk/conditions/sepsis/" rel="noopener" target="_blank">NHS</a>.</p>
       </div>
     </section><section class="sec sec--awards" id="awards" aria-labelledby="awards-h">
@@ -1150,18 +1082,9 @@
             <img src="/assets/badge/sue-angels-badge-star.webp" alt="Sue’s Angels FC star" width="36" height="45" loading="lazy" decoding="async" />
             <span>Sue's Angels <b>FC</b></span>
           </a>
-          <!-- The footer is shared by every page and has no dataset to ask,
-               so it does not name a division. It named League Ten, which was
-               going to be wrong from the first whistle of League Eight and
-               could not be fixed here without handing the whole dataset to a
-               function that renders a logo and four links. Champions in the
-               club's first season, unbeaten, is true forever and needs
-               nothing. -->
+          
           <p class="ft2__tag">Sunday-league football, built in her name. Champions and unbeaten in our first season.</p>
-          <!-- From the club record, not typed in here. This list had drifted
-               from the shared footer in both directions: it carried TikTok,
-               which the other 99 pages did not, and YouTube, whose handle
-               does not resolve. -->
+          
           <div class="ft2__socials">
             <a href="https://www.instagram.com/suesangelsfc/" aria-label="Instagram" rel="me noopener" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></a>
             <a href="https://www.tiktok.com/@suesangelsfc" aria-label="TikTok" rel="me noopener" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.5 3c.3 2 1.6 3.4 3.5 3.6v2.6c-1.3 0-2.5-.4-3.5-1.1v6.2a5.3 5.3 0 1 1-5.3-5.3c.3 0 .6 0 .9.1v2.7a2.6 2.6 0 1 0 1.8 2.5V3h2.6z"/></svg></a>

@@ -82,8 +82,8 @@ export function cause(d) {
             <a class="btn btn--ghost" href="#donate">Donate in her memory</a>
           </div>
         </div>
-        <!-- A named region rather than a complementary landmark: see the
-             same note in about.mjs. It belongs to the section it is in. -->
+        ${/* A named region rather than a complementary landmark: see the
+             same note in about.mjs. It belongs to the section it is in. */''}
         <section class="cz-plate glassbox" aria-label="In memory">
           <img class="cz-plate__crest" src="${STAR}" alt="${attr(CLUB.name)} crest"
                width="150" height="186" decoding="async" />
@@ -169,9 +169,9 @@ export function cause(d) {
           <h2 class="h2" id="cz-signs-h">Could it be <span class="volt">sepsis?</span></h2>
           <p class="cz-signs__sub">In an adult, trust your instinct and get help quickly. Ask that
             question if you notice any of these.</p>
-          <!-- Real tel: links. Someone reading this on a phone, worried about
+          ${/* Real tel: links. Someone reading this on a phone, worried about
                a person in front of them, should be one tap from the call
-               rather than reading a number back to themselves. -->
+               rather than reading a number back to themselves. */''}
           <p class="cz-call">
             <a class="cz-call__btn" href="tel:999">
               <span class="cz-call__ico" aria-hidden="true">${phone}</span>
@@ -186,11 +186,11 @@ export function cause(d) {
         <ol class="cz-signs__grid rv">
           ${SEPSIS.adultSigns.map((s, i) => `<li class="cz-sign" style="--i:${i}">
             <span class="cz-sign__letter" aria-hidden="true">${esc(s.letter)}</span>
-            <!-- A div, not a span. This holds an <h3> and a <p>, and a
+            ${/* A div, not a span. This holds an <h3> and a <p>, and a
                  <span> may only contain phrasing content, so that was invalid
                  HTML. It rendered correctly by luck: .cz-sign is a grid, so
                  the span was blockified as a grid item and a div is exactly
-                 equivalent here. -->
+                 equivalent here. */''}
             <div class="cz-sign__text">
               <h3 class="cz-sign__title">${esc(s.title)}</h3>
               <p class="cz-sign__body">${esc(s.body)}</p>

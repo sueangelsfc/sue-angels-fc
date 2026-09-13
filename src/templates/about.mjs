@@ -110,11 +110,11 @@ export function about(d) {
           </div>
         </div>
 
-        <!-- A NAMED REGION, NOT A COMPLEMENTARY LANDMARK. It sits inside the
+        ${/* A NAMED REGION, NOT A COMPLEMENTARY LANDMARK. It sits inside the
              section it belongs to, and a complementary landmark nested that
              deep is announced in the landmark list as though it were a peer
              of the page's own main content. It is a named plate of facts
-             about the section it is in, which is what a region is. -->
+             about the section it is in, which is what a region is. */''}
         <section class="ab-plate glassbox" aria-label="Club at a glance">
           <img class="ab-plate__crest" src="${STAR}" alt="${attr(CLUB.name)} crest"
                width="150" height="186" decoding="async" />

@@ -119,11 +119,14 @@ let RAIL_REF = railRefs({ nextSeason: '' });
    module-level let: the bands are built as template literals in source order,
    long before anything knows which of them the club publishes. */
 let RAIL_N = {};
-const rail = (key, label) => {
+/* `ref` replaces the rotating mark where one would be read as a fact about the
+   band: "The Reeves, Hanworth" landed beside an away fixture and gave it the
+   wrong ground. */
+const rail = (key, label, ref) => {
   const n = RAIL_N[key] || 1;
   return `<div class="xrail" aria-hidden="true">
       <span class="xrail__l"><span class="xrail__n">${esc(String(n).padStart(2, '0'))}</span><span class="xrail__t">${esc(label)}</span></span>
-      <span class="xrail__r">${esc(RAIL_REF[(n - 1) % RAIL_REF.length])}</span>
+      <span class="xrail__r">${esc(ref || RAIL_REF[(n - 1) % RAIL_REF.length])}</span>
     </div>`;
 };
 
@@ -396,10 +399,10 @@ export function home(d) {
             </div>
           </div>
 
-          <!-- role="group", not <aside>. A complementary landmark is supposed to
+          ${/* role="group", not <aside>. A complementary landmark is supposed to
                be top level; this one is nested inside the hero, so it showed up
                as a landmark in the wrong place in the document outline. It is a
-               labelled card, not a section of the page. -->
+               labelled card, not a section of the page. */''}
           <div class="hx__card glassbox drop" style="--dd:.3s" role="group" aria-label="Next match"
             data-next-match data-upcoming="${attr(JSON.stringify(upcomingData))}">
             <p class="hx__cardlabel" data-nx-label>Next match${next.competition ? ` · ${esc(next.label || next.competition)}` : ''}</p>
@@ -482,10 +485,10 @@ export function home(d) {
 
           <ol class="nrail" id="nrail">
             ${news.map((a) => `<li class="ncard">
-              <!-- The label must CONTAIN the link's visible text (WCAG 2.5.3),
+              ${/* The label must CONTAIN the link's visible text (WCAG 2.5.3),
                    and the only visible text in here is the category pill. Just
                    the headline meant a voice-control user saying "click News"
-                   hit nothing. Category first, then the headline. -->
+                   hit nothing. Category first, then the headline. */''}
               <a class="ncard__cover" href="/news/${attr(a.slug)}.html" aria-label="${attr(`${a.category}: ${a.title}`)}">
                 ${a.cover
                   ? `<img class="ncard__photo" src="${attr(a.cover)}" alt="" width="320" height="320" loading="lazy" decoding="async" />`
@@ -579,10 +582,10 @@ export function home(d) {
           </article>
 
         </div>
-        <!-- The club exists because somebody died of sepsis, so the medical
+        ${/* The club exists because somebody died of sepsis, so the medical
              authority is named where the cause is explained rather than left
              to the reader to go and find. Both are already named in the site's
-             own disclaimer; this is the link that was missing. -->
+             own disclaimer; this is the link that was missing. */''}
         ${sourceNote(['sepsisTrust', 'nhs'], { lead: 'On sepsis, read' })}
       </div>
     </section>`;
@@ -685,9 +688,9 @@ export function home(d) {
 
         <div class="camp rv" style="--d:.06s">
 
-          <!-- The one fact the band exists to state. A hero figure, not a dial:
+          ${/* The one fact the band exists to state. A hero figure, not a dial:
                a single ratio against a limit wants a meter, and 46 gauge ticks
-               were chrome around one number. -->
+               were chrome around one number. */''}
           <article class="camp__hero">
             <p class="camp__k">${esc(d.titleDivision)} ${esc(d.titleSeason)}</p>
             <p class="camp__heroval"><b>${esc(league.won)}</b><span>from ${esc(league.played)}</span></p>
@@ -703,8 +706,8 @@ export function home(d) {
             </dl>
           </article>
 
-          <!-- The band's one real chart: axes, ticks, a legend, direct endpoint
-               labels and a table twin underneath. -->
+          ${/* The band's one real chart: axes, ticks, a legend, direct endpoint
+               labels and a table twin underneath. */''}
           <figure class="camp__chart">
             <figcaption class="camp__chartcap">
               <span class="camp__k">Goals across the season · all competitions</span>
@@ -720,9 +723,9 @@ export function home(d) {
               <polygon class="camp__area" points="${cx(0)},${cy(0)} ${line(cumFor)} ${cx(N - 1)},${cy(0)}"/>
               <polyline class="camp__for" points="${line(cumFor)}" pathLength="1"/>
               <polyline class="camp__ag" points="${line(cumAg)}" pathLength="1"/>
-              <!-- A short bright segment that travels the scored line for ever.
+              ${/* A short bright segment that travels the scored line for ever.
                    Unlike the entrance, this does not wait on the reveal, so the
-                   chart is alive whenever you happen to look at it. -->
+                   chart is alive whenever you happen to look at it. */''}
               <polyline class="camp__comet" points="${line(cumFor)}" pathLength="1"/>
               <circle class="camp__end camp__end--for" cx="${cx(N - 1)}" cy="${cy(cumFor[N - 1])}" r="4"/>
               <circle class="camp__end camp__end--ag" cx="${cx(N - 1)}" cy="${cy(cumAg[N - 1])}" r="4"/>
@@ -735,7 +738,7 @@ export function home(d) {
             </p>
           </figure>
 
-          <!-- Distinct measures only. The old row said W/D/L four times over. -->
+          ${/* Distinct measures only. The old row said W/D/L four times over. */''}
           <ul class="camp__kpis">
             <li class="camp__kpi" style="--i:0"><b>${esc(goalsPerGame)}</b><span>Goals a game</span></li>
             <li class="camp__kpi" style="--i:1"><b>${esc(all.cleanSheets)}</b><span>Clean sheets · ${esc(cleanPct)}%</span></li>
@@ -743,8 +746,8 @@ export function home(d) {
             <li class="camp__kpi" style="--i:3"><b>${esc(all.played)}</b><span>Matches played</span></li>
           </ul>
 
-          <!-- Every match, in order. This replaces three sparklines that had no
-               axis, no scale and no way to read a single value. -->
+          ${/* Every match, in order. This replaces three sparklines that had no
+               axis, no scale and no way to read a single value. */''}
           <section class="camp__season" aria-labelledby="camp-season-h">
             <div class="camp__seasonhead">
               <h3 class="camp__k" id="camp-season-h">Every match, in order</h3>
@@ -810,9 +813,9 @@ export function home(d) {
         <a class="btn btn--ghost btn--sm rl__all" href="/results.html">All results ${ARROW}</a>
       </div>
 
-      <!-- role="group": the rail is focusable so arrow keys can scroll it, and a
+      ${/* role="group": the rail is focusable so arrow keys can scroll it, and a
            focusable element with no role announces as nothing. Matches the
-           pattern the awards carousel already uses. -->
+           pattern the awards carousel already uses. */''}
       <ol class="rl" id="rlRail" role="group" aria-label="Recent results" tabindex="0">
         ${recent.map((m, i) => {
           const hs = m.isWalkover ? 'W/O' : m.hs;
@@ -820,13 +823,13 @@ export function home(d) {
           const homeWon = Number(m.hs) > Number(m.as);
           const awayWon = Number(m.as) > Number(m.hs);
           return `<li class="rcard2${i === 0 ? ' rcard2--glow' : ''}">
-          <!-- No aria-label. It read "Sue's Angels FC 2-0 Hillside" while the
+          ${/* No aria-label. It read "Sue's Angels FC 2-0 Hillside" while the
                card visibly said "W 31 May 26 Sue's Angels 2 Hillside 0 League
                Ten Home", so the accessible name did not contain the visible
                text and WCAG 2.5.3 failed on all seven cards. Without it the
                name is computed from the content, which cannot disagree with
                itself. The outcome letter carries its word for screen readers
-               and is hidden visually, so "W" is not read as a letter. -->
+               and is hidden visually, so "W" is not read as a letter. */''}
           <a class="rcard2__link" href="/matches/${attr(m.slug)}.html">
             <span class="rcard2__top"><span class="rchip rchip--${attr((m.outcome || 'w').toLowerCase())}"><span class="sr-only">${esc({ W: 'Won', D: 'Drew', L: 'Lost' }[m.outcome] || 'Result')}</span><span aria-hidden="true">${esc(m.outcome || '-')}</span></span><span class="rcard2__date">${esc(dayMonthYear(m.iso || m.date))}</span></span>
             <span class="rcard2__teams">
@@ -1045,9 +1048,9 @@ export function home(d) {
           <a class="nhead__all" href="/gallery/${attr(featAlbum.slug)}.html">All ${esc(String(featAlbum.photoCount || albumShots.length))} ${ARROW}</a>
         </div>
       </div>
-      <!-- The whole strip is one link to the album. Eight separate links to the
+      ${/* The whole strip is one link to the album. Eight separate links to the
            same page is eight stops for a keyboard and eight identical entries
-           in a screen reader's link list. -->
+           in a screen reader's link list. */''}
       <a class="fpho rv" href="/gallery/${attr(featAlbum.slug)}.html"
          aria-label="${attr(`Photographs: ${featAlbum.title}`)}">
         ${albumShots.map((src) => `<img class="fpho__i" src="${attr(src)}" alt="" width="320" height="213" loading="lazy" decoding="async" />`).join('\n        ')}
@@ -1076,9 +1079,9 @@ export function home(d) {
                 .filter(([, v]) => Number(v) > 0)
                 .map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(String(v))}</dd></div>`).join('\n              ')}
             </dl>
-            <!-- Say what the figures count. They are every competitive match
+            ${/* Say what the figures count. They are every competitive match
                  since 2025, not this season, and a run of bare numbers under a
-                 name invites the reader to assume whichever they had in mind. -->
+                 name invites the reader to assume whichever they had in mind. */''}
             <p class="fspot__note">Competitive matches, every season. ${esc(FRIENDLY_NOTE_SHORT)}</p>
             <a class="btn btn--ghost" href="/players/${attr(featPlayer.slug)}.html">His record ${ARROW}</a>
           </div>
@@ -1332,7 +1335,7 @@ export function home(d) {
   ].filter(Boolean).join(' ');
   const nextUpBand = nx ? `<section class="sec sec--nextup" id="nextup" aria-labelledby="nxt-h">
       <div class="wrap">
-        ${rail('nextup', 'The next match')}
+        ${rail('nextup', 'The next match', nx.weAreHome ? 'Home fixture' : 'Away fixture')}
         <div class="nhead rv">
           <div>
             <p class="eyebrow">${esc(nx.competition || nx.label || 'Next up')} · ${esc(nx.dateLabel || dayMonthYear(nx.iso || nx.date))}</p>
@@ -2071,12 +2074,12 @@ export function home(d) {
         ${bandHead('recordholders', 'Firsts and honours', 'Set by the club', '/records.html', 'Every record', 'rch-h')}
         <ul class="rcd rv">
           ${holders.map((r) => `<li class="rcd__c">
-            <!-- The SEASON in the figure slot, not the value. On a club_record
+            ${/* The SEASON in the figure slot, not the value. On a club_record
                  the value is usually a person: "Jim El Bayati" set in 30px
                  display type wrapped to two lines and read as a headline with
                  the record itself demoted underneath it. The season is short,
                  it is the thing that differs between cards, and it leaves the
-                 name where a name belongs. -->
+                 name where a name belongs. */''}
             <span class="rcd__v">${esc(String(r.season || ''))}</span>
             <b class="rcd__l">${esc(r.title || '')}</b>
             <span class="rcd__w">${esc(String(r.playerName || r.value || ''))}</span>
@@ -2627,18 +2630,18 @@ export function siteFooter() {
             <img src="${STAR}" alt="Sue’s Angels FC star" width="36" height="45" loading="lazy" decoding="async" />
             <span>Sue's Angels <b>FC</b></span>
           </a>
-          <!-- The footer is shared by every page and has no dataset to ask,
+          ${/* The footer is shared by every page and has no dataset to ask,
                so it does not name a division. It named League Ten, which was
                going to be wrong from the first whistle of League Eight and
                could not be fixed here without handing the whole dataset to a
                function that renders a logo and four links. Champions in the
                club's first season, unbeaten, is true forever and needs
-               nothing. -->
+               nothing. */''}
           <p class="ft2__tag">Sunday-league football, built in her name. Champions and unbeaten in our first season.</p>
-          <!-- From the club record, not typed in here. This list had drifted
+          ${/* From the club record, not typed in here. This list had drifted
                from the shared footer in both directions: it carried TikTok,
                which the other 99 pages did not, and YouTube, whose handle
-               does not resolve. -->
+               does not resolve. */''}
           <div class="ft2__socials">
             ${SOCIALS.map((s) => `<a href="${attr(s.href)}" aria-label="${attr(s.label)}" rel="me noopener" target="_blank">${SVG[s.icon] || ''}</a>`).join('\n            ')}
           </div>

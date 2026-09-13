@@ -614,9 +614,9 @@ export function playerPage(p, d) {
                     <stop offset="55%" stop-color="var(--volt)" stop-opacity="0.07" />
                     <stop offset="100%" stop-color="var(--volt)" stop-opacity="0" />
                   </linearGradient>
-                  <!-- THE REVEAL IS A WIPE. The line used to draw along a dash
+                  ${/* THE REVEAL IS A WIPE. The line used to draw along a dash
                        measured in the chart's own units, and the chart is
-                       stretched to its box, so it stopped two thirds of the way. -->
+                       stretched to its box, so it stopped two thirds of the way. */''}
                   <clipPath id="${attr(key)}-w"><rect class="pf-plot__wipe" x="0" y="0" width="${W}" height="${H}" /></clipPath>
                 </defs>
                 <g class="pf-plot__grid" aria-hidden="true">
@@ -653,9 +653,9 @@ export function playerPage(p, d) {
                 <b>${esc(top)} ${esc(unit)}</b>
                 <span class="pf-plot__hi">Last match</span>
               </figcaption>
-              <!-- Two hints, one shown per pointer. "Point at the line" is an
+              ${/* Two hints, one shown per pointer. "Point at the line" is an
                    instruction a phone cannot follow, and it was the only thing
-                   telling anyone the chart could be read at all. -->
+                   telling anyone the chart could be read at all. */''}
               <p class="pf-plot__hint pf-plot__hint--fine">Point at the line to read each match.</p>
               <p class="pf-plot__hint pf-plot__hint--coarse">Touch the line to read each match.</p>
             </figure>`;
@@ -665,13 +665,18 @@ export function playerPage(p, d) {
      Each of these takes a profile rather than closing over one, so the same
      code renders every season's panel. */
 
+  /* A season he was named in and never played has no win rate. "0%, 0 of 0"
+     reads as a man who lost every game, so the figure is left out instead. */
+  const winTile = (x) => (x.won + x.drawn + x.lost ? [{ v: `${x.winPct}%`, k: 'Won when playing', pct: x.winPct }] : []);
+  const winBar = (x) => (x.won + x.drawn + x.lost ? [bar('Won when playing', `${x.winPct}%`, x.winPct, `${x.won} of ${x.won + x.drawn + x.lost}`)] : []);
+
   const tilesFor = (x) => (gk ? [
     { v: x.starts, k: 'Starts', sub: `of ${x.teamGames} played${x.apps > x.starts ? `, ${x.apps - x.starts} off the bench` : ''}`, pct: x.teamGames ? Math.round((x.starts / x.teamGames) * 100) : 0 },
     { v: x.cleanSheets, k: 'Clean sheets', sub: `of ${x.onRecord} on record`, pct: x.cleanSheetPct },
     { v: x.conceded, k: 'Conceded' },
     { v: x.concededPerGame, k: 'Conceded a game' },
     { v: x.motm, k: 'Man of the Match' },
-    { v: `${x.winPct}%`, k: 'Won when playing', pct: x.winPct },
+    ...winTile(x),
     ...(x.keeperGames ? [
       { v: x.keeperSaves, k: 'Saves', sub: `in ${x.keeperGames} ${x.keeperGames === 1 ? 'game' : 'games'} in goal with saves recorded` },
       { v: (x.keeperSaves / x.keeperGames).toFixed(1), k: 'Saves a game' },
@@ -682,17 +687,17 @@ export function playerPage(p, d) {
     { v: x.goals, k: 'Goals' },
     { v: x.assists, k: 'Assists' },
     { v: x.perGame, k: 'Goals + assists a game' },
-    { v: `${x.winPct}%`, k: 'Won when playing', pct: x.winPct },
+    ...winTile(x),
   ]);
 
   const barsFor = (x) => (gk ? [
     bar('Clean sheets', x.cleanSheets, x.cleanSheetPct, `${x.cleanSheetPct}% of ${x.onRecord}`),
     bar('Games conceding', x.onRecord - x.cleanSheets, x.onRecord ? Math.round(((x.onRecord - x.cleanSheets) / x.onRecord) * 100) : 0),
-    bar('Won when playing', `${x.winPct}%`, x.winPct, `${x.won} of ${x.won + x.drawn + x.lost}`),
+    ...winBar(x),
   ] : [
     bar('Goals', x.goals, x.involvements ? Math.round((x.goals / x.involvements) * 100) : 0),
     bar('Assists', x.assists, x.involvements ? Math.round((x.assists / x.involvements) * 100) : 0),
-    bar('Won when playing', `${x.winPct}%`, x.winPct, `${x.won} of ${x.won + x.drawn + x.lost}`),
+    ...winBar(x),
   ]);
 
   const ranksFor = (x) => [
@@ -700,7 +705,7 @@ export function playerPage(p, d) {
     !gk && x.goalRank ? { v: ordinal(x.goalRank), k: 'Goalscorer in the squad', s: `${x.goals} scored` } : null,
     !gk && x.assistRank ? { v: ordinal(x.assistRank), k: 'Assister in the squad', s: `${x.assists} made` } : null,
     x.motmRank ? { v: ordinal(x.motmRank), k: 'Man of the Match in the squad', s: `${x.motm} awarded` } : null,
-    { v: `${x.winPct}%`, k: 'Won when playing', s: `${x.won}W ${x.drawn}D ${x.lost}L` },
+    x.won + x.drawn + x.lost ? { v: `${x.winPct}%`, k: 'Won when playing', s: `${x.won}W ${x.drawn}D ${x.lost}L` } : null,
   ].filter(Boolean);
 
   /* A season with no matches in the record. Said plainly, because a grid of
@@ -1110,19 +1115,19 @@ export function playerPage(p, d) {
             <svg viewBox="0 0 100 140" role="img" aria-labelledby="pf-pitch-t" preserveAspectRatio="xMidYMid meet">
               <title id="pf-pitch-t">Heat map of where ${esc(p.name)} lined up, for the season chosen above. The list beside it gives the figures.</title>
               <defs>
-                <!-- The classic heat-map pipeline, which is what makes one
+                ${/* The classic heat-map pipeline, which is what makes one
                      look like a heat map rather than a blurred smudge: blur
                      plain white blobs, lift the blurred ALPHA into every
                      channel, then remap that ramp to colour. Banded through a
                      table so the field builds from a dim ember at the edge to
-                     a near-white core, all inside the brand's orange. -->
+                     a near-white core, all inside the brand's orange. */''}
                 <filter id="pf-heat-${attr(p.slug)}" x="-25%" y="-25%" width="150%" height="150%"
                         color-interpolation-filters="sRGB">
                   <feGaussianBlur stdDeviation="3.4" result="b" />
-                  <!-- All four channels take the blurred ALPHA. The alpha row
+                  ${/* All four channels take the blurred ALPHA. The alpha row
                        must carry it too: set to a constant it made the whole
                        filter region opaque, and everywhere the blobs were not
-                       came out as a solid black rectangle over the pitch. -->
+                       came out as a solid black rectangle over the pitch. */''}
                   <feColorMatrix in="b" type="matrix" result="lum"
                     values="0 0 0 1 0
                             0 0 0 1 0
@@ -1135,9 +1140,9 @@ export function playerPage(p, d) {
                     <feFuncA type="table" tableValues="0 0.22 0.48 0.68 0.82 0.92 1" />
                   </feComponentTransfer>
                 </filter>
-                <!-- Heat stops at the touchline. The blur legitimately
+                ${/* Heat stops at the touchline. The blur legitimately
                      spreads past the pitch and a field bleeding into the
-                     panel margin reads as a leak rather than as play. -->
+                     panel margin reads as a leak rather than as play. */''}
                 <clipPath id="pf-clip-${attr(p.slug)}">
                   <rect x="1" y="1" width="98" height="138" rx="3" />
                 </clipPath>
@@ -1148,8 +1153,8 @@ export function playerPage(p, d) {
                 </linearGradient>
               </defs>
 
-              <!-- A real pitch: mown bands, both boxes with their spots and
-                   arcs, the centre circle. -->
+              ${/* A real pitch: mown bands, both boxes with their spots and
+                   arcs, the centre circle. */''}
               <rect x="1" y="1" width="98" height="138" rx="3" fill="rgba(255,255,255,0.028)" />
               <g class="pf-turf" aria-hidden="true">${[1, 3, 5, 7, 9].map((i) => `<rect x="1" y="${(1 + i * 13.8).toFixed(1)}" width="98" height="13.8"/>`).join('')}</g>
               <g class="pf-lines" aria-hidden="true">
@@ -1325,10 +1330,10 @@ export function playerPage(p, d) {
           </li>`;
   }).join('\n          ')}
         </ul>
-        <!-- Two counts, because a phone shows nine of the eighteen. Which
+        ${/* Two counts, because a phone shows nine of the eighteen. Which
              line is on screen is decided in CSS by the same breakpoint that
              decides how many frames are shown, so the sentence and the grid
-             cannot disagree. -->
+             cannot disagree. */''}
         <p class="pf-shots__more pf-shots__more--wide">${shots.length > SHOW
     ? `${esc(shots.length - SHOW)} more in <a href="/gallery.html">the gallery</a>.`
     : `All ${esc(shots.length)} of them, from <a href="/gallery.html">the gallery</a>.`}</p>
@@ -1403,9 +1408,13 @@ export function playerPage(p, d) {
     </section>` : '';
 
   return {
-
+    /* THE SOURCE'S INDENTATION STAYS IN THE SOURCE. A profile carries a panel
+       per season, so every new season adds another copy of it, and on the
+       longest career it was 24KB of a page over its 160KB ceiling. A line
+       break is still whitespace, so nothing renders differently: no player
+       page holds a <pre>, a <textarea> or white-space: pre. */
     body: numberRails(siteHeader('/squad.html') + hero + seasonBand + versusBand
-      + pitchBand + howBand + shotsBand + honoursBand + ctaBand),
+      + pitchBand + howBand + shotsBand + honoursBand + ctaBand).replace(/\n[ \t]+/g, '\n'),
     bodyClass: 'is-home is-sub is-player',
     css: 'home.css',
     shell: 'home',

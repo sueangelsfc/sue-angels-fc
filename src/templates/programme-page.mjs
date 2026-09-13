@@ -280,10 +280,16 @@ export function lastBand(d) {
           </div>
           <div class="pr-last__goals">
             <h3 class="pr-last__k">${goals.length ? `The ${goals.length === 1 ? 'goal' : `${goals.length} goals`}` : 'The goals'}</h3>
-            ${goals.length ? `<ol class="pr-goals">${goals.map((g, i) => `<li class="pr-goal">
-              <span class="pr-goal__n" aria-hidden="true">${esc(i + 1)}</span>
-              <span><b>${esc(g.by)}</b><span>${g.assist ? `Assisted by ${esc(g.assist)}` : 'Unassisted'}${Number.isFinite(Number(g.minute)) && g.minute !== '' && g.minute !== null ? ` · ${esc(g.minute)}′` : ''}</span></span>
-            </li>`).join('')}</ol>`
+            ${/* THE MINUTE IN THE DISC, NOT A COUNT. A bare numeral beside a
+                  name is the shape a squad number takes, and "6 Elis Brumpton"
+                  read as exactly that. The list is already in order. */''}
+            ${goals.length ? `<ol class="pr-goals">${goals.map((g) => {
+    const min = Number.isFinite(Number(g.minute)) && g.minute !== '' && g.minute !== null ? `${g.minute}′` : '';
+    return `<li class="pr-goal">
+              <span class="pr-goal__n">${esc(min)}</span>
+              <span><b>${esc(g.by)}</b><span>${g.assist ? `Assisted by ${esc(g.assist)}` : 'Unassisted'}</span></span>
+            </li>`;
+  }).join('')}</ol>`
     : '<p class="pr-last__none">The scorers are not on the record for this match.</p>'}
             <a class="btn btn--ghost btn--sm pr-last__link" href="/matches/${attr(past.slug)}.html">The match report ${ARROW}</a>
           </div>

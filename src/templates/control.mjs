@@ -90,32 +90,32 @@ export function control() {
   </section>`).join('');
 
   return `
-  <!-- ============ AUTH GATE ============ -->
-  <!-- A NAMED REGION, NOT A BARE DIV. Everything before sign-in was outside
+  ${/* ============ AUTH GATE ============ */''}
+  ${/* A NAMED REGION, NOT A BARE DIV. Everything before sign-in was outside
        every landmark, which is content a screen reader has no way to jump to.
        Not a second <main> either: the panel's own <main> is always in the
        document (its parent is what gets hidden), and two of them is a page
-       with no single main. -->
+       with no single main. */''}
   <section class="cp-gate" id="cp-gate" aria-label="Sign in to the control panel">
     <div class="cp-gate__card glass glass--lg">
       <span class="cp-gate__crest">${crest('', `${CLUB.name} crest`)}</span>
       <h1 class="cp-gate__title">Control panel</h1>
       <p class="cp-gate__sub">${esc(CLUB.name)}</p>
 
-      <!-- The club word. Asked for BEFORE the email and password, and checked
+      ${/* The club word. Asked for BEFORE the email and password, and checked
            in the browser: it is a doorway, not a security control, and it is
            not pretending otherwise. Real authorisation is Supabase Auth plus
            the admin_users registry, and neither of those can be talked past
            from here. What this does buy is that a stranger who finds
            /control.html sees a question they cannot answer instead of a login
-           form to point a password list at. -->
+           form to point a password list at. */''}
       <form class="cp-gate__form" id="cp-word" novalidate>
         <div class="field">
           <label class="field__label" for="cp-club-word">Club word</label>
-          <!-- type="text", NOT password. It is not a secret, it ships in a file
+          ${/* type="text", NOT password. It is not a secret, it ships in a file
                anyone can read, and masking it caused two real problems: Chrome
                offered to autofill a saved password over the top, and you could
-               not see what you had typed when it did not work. -->
+               not see what you had typed when it did not work. */''}
           <input class="input" id="cp-club-word" name="clubword" type="text"
                  autocomplete="off" autocapitalize="none" autocorrect="off"
                  spellcheck="false" required placeholder="Ask the club">
@@ -148,7 +148,7 @@ export function control() {
     </div>
   </section>
 
-  <!-- ============ APP ============ -->
+  ${/* ============ APP ============ */''}
   <div class="cp" id="cp-app" hidden>
     <aside class="cp-side" id="cp-sections">
       <a class="cp-side__brand" href="/">
@@ -175,11 +175,11 @@ export function control() {
 
     <main class="cp-main">
       <header class="cp-top">
-        <!-- A labelled hamburger. This was a chevron rotated 180 degrees, which
+        ${/* A labelled hamburger. This was a chevron rotated 180 degrees, which
              reads as a back arrow, so on any window under 900px the sidebar was
              off-screen and the one control that opened it looked like it went
              somewhere else. The panel appeared to be a dashboard with no
-             navigation at all. -->
+             navigation at all. */''}
         <button class="cp-menubtn" type="button" id="cp-menu" aria-label="Show sections"
                 aria-expanded="false" aria-controls="cp-sections">
           ${icon('menu')}<span>Sections</span>
@@ -187,9 +187,9 @@ export function control() {
         <h1 class="cp-top__title" data-cp-title>Dashboard</h1>
         <div class="cp-top__actions">
           <span class="badge badge--neutral" data-conn>Connecting</span>
-          <!-- Saving writes to the database; the website is generated from it.
+          ${/* Saving writes to the database; the website is generated from it.
                This is the step that joins the two, and without it every edit
-               made here sits in Supabase and the site never changes. -->
+               made here sits in Supabase and the site never changes. */''}
           <button class="btn btn--primary btn--sm" type="button" id="cp-publish">Publish to site</button>
           <a class="btn btn--ghost btn--sm" href="/" target="_blank" rel="noopener">View site ${icon('external')}</a>
         </div>

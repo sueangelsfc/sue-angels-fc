@@ -90,8 +90,8 @@ export function donate(d) {
             <a class="btn btn--ghost" href="#give">Two ways to give</a>
           </div>
         </div>
-        <!-- A named region rather than a complementary landmark, as on the
-             cause page: it belongs to the section it is in. -->
+        ${/* A named region rather than a complementary landmark, as on the
+             cause page: it belongs to the section it is in. */''}
         <section class="cz-plate glassbox" aria-label="Paying securely">
           <img class="cz-plate__crest" src="${STAR}" alt="${attr(CLUB.name)} crest"
                width="150" height="186" decoding="async" />

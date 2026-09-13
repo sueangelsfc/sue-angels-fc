@@ -110,10 +110,10 @@ export function coaches(d) {
   /* ================= HERO ================= */
   const hero = `<section class="co-hero" aria-labelledby="co-h">
       <div class="wrap">
-        <!-- Just "The dugout". The page has no season filter, and the staff
+        ${/* Just "The dugout". The page has no season filter, and the staff
              are not a season: naming one made a claim the page never keeps up
              with, and the sentence below did the same with "the club's first
-             season" once there was a second. -->
+             season" once there was a second. */''}
         <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> The dugout</p>
         <h1 class="co-hero__title" id="co-h">The coaches<span class="volt">.</span></h1>
         <p class="co-hero__lede">The people guiding ${esc(CLUB.name)}. ${esc(staff.length)} on the
@@ -152,8 +152,8 @@ export function coaches(d) {
                 ${c.managed.map((x) => `<li>${esc(x)}</li>`).join('\n                ')}
               </ul>` : ''}
 
-              <!-- Club names already end in "F.C.", so a full stop of our own
-                   produced "Fulham F.C..". -->
+              ${/* Club names already end in "F.C.", so a full stop of our own
+                   produced "Fulham F.C..". */''}
               ${c.supports ? `<p class="co-card__note">Supports ${esc(c.supports)}${/[.!?]$/.test(c.supports) ? '' : '.'}</p>` : ''}
             </div>
           </li>`;
@@ -229,9 +229,9 @@ export function coaches(d) {
             <ol class="co-used">
               ${used.map((p) => `<li>
                 <a href="/players/${attr(p.slug)}.html">
-                  <!-- alt="", and deliberately: his name is the next span,
+                  ${/* alt="", and deliberately: his name is the next span,
                        inside this same link, so naming the photograph makes a
-                       screen reader read the row twice. -->
+                       screen reader read the row twice. */''}
                   <span class="co-used__face">${playerShot(p.num)
     ? `<img src="${attr(playerShot(p.num))}" alt="" width="30" height="30" loading="lazy" decoding="async" />`
     : `<img class="co-used__crest" src="${STAR}" alt="" width="16" height="20" loading="lazy" decoding="async" />`}</span>

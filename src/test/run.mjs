@@ -1527,15 +1527,28 @@ for (const f of shipped) {
     const rx = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const { buildDataset: bdN } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
     const dN = bdN();
+    /* BESIDE MEANS ON THE SAME LINE. A row or a line ends at these tags, so the
+       last figure of one row cannot pair with the name opening the next: the
+       squad page's "Andrew Allen" followed by the next row's "2 starts" read as
+       "Andrew Allen 2", and a match report's "Dunkley, 3<br>Leon Burnett, 1"
+       as "3 Leon Burnett". A numeral and a name inside one row still meet. */
+    const flatN = (html) => html
+      .replace(/<script[\s\S]*?<\/script>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .replace(/<(?:br|\/li|\/p|\/div|\/tr|\/h[1-6]|\/dt|\/dd|\/figcaption)\b[^>]*>/gi, '\n')
+      .replace(/<[^>]+>/g, ' ').replace(/&#39;|&rsquo;/g, "'").replace(/ +/g, ' ');
+    const leakRx = (n, name) => new RegExp(`\\b${n} ${rx(name)}\\b|\\b${rx(name)} ${n}\\b`);
+    check('probe: a numeral beside a name inside one row is still a leak',
+      leakRx(38, 'Rob Heath').test(flatN('<li><span class="n">38</span> <span>Rob Heath</span></li>'))
+        && leakRx(38, 'Rob Heath').test(flatN('<td>Rob Heath</td><td>38</td>')));
+    check('probe: a figure ending one row does not pair with the name opening the next',
+      !leakRx(2, 'Andrew Allen').test(flatN('<li><b>29</b> starts <span>Andrew Allen</span> </li>\n <li> <b>2</b> starts')));
     const found = [];
     for (const f of htmlFiles) {
-      const txt = fs.readFileSync(path.join(ROOT, f), 'utf8')
-        .replace(/<script[\s\S]*?<\/script>/g, ' ')
-        .replace(/<[^>]+>/g, ' ').replace(/&#39;|&rsquo;/g, "'").replace(/\s+/g, ' ');
+      const txt = flatN(fs.readFileSync(path.join(ROOT, f), 'utf8'));
       for (const p of (dN.squad || [])) {
         if (!p.num || !p.name) continue;
-        const n = String(p.num);
-        const m = txt.match(new RegExp(`\\b${n} ${rx(p.name)}\\b|\\b${rx(p.name)} ${n}\\b`));
+        const m = txt.match(leakRx(String(p.num), p.name));
         if (m) found.push(`${f} :: ${m[0]}`);
       }
     }
@@ -5967,8 +5980,12 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const { publishedBands: pbL, resolveHomeLayout: rhL } = await import(path.join(ROOT, 'src', 'lib', 'home-layout.mjs'));
   const offRec = { order: ['news', 'who', 'table', 'results', 'fixtures'], hidden: ['table', 'results', 'fixtures'] };
   const leadL = pbL(offRec, dL);
+  /* Compared over as many places as there are leaders published: a week with
+     nothing left in the fixtures band has two, and slicing three put the band
+     after them in the comparison. */
+  const wantL = ['table', 'results', 'fixtures'].filter((k) => leadL.includes(k));
   check('while League Eight is played the table, results and fixtures lead, even switched off',
-    leadL.slice(0, 3).join(',') === ['table', 'results', 'fixtures'].filter((k) => leadL.includes(k)).join(',')
+    leadL.slice(0, wantL.length).join(',') === wantL.join(',')
       && leadL[0] === 'table' && leadL.includes('results'), leadL.join(','));
   const dLq = { ...dL, nextDivisionTable: { ...l8, rows: (l8.rows || []).map((r) => ({ ...r, played: 0 })) } };
   const quietL = pbL(offRec, dLq);

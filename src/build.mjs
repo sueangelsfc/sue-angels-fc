@@ -487,9 +487,12 @@ const adminSeed = {
      Keyed by what the PANEL holds - a match by its id, an article by its row
      key - because an article's card is named for its slug and the panel has
      never seen a slug. */
+  /* A cover stored on the record wins on the page (see ogImage below), so a
+     card left on disk behind one is not what that match shares, and calling
+     it drawn made the panel and the pages disagree by one. */
   drawnCovers: [
-    ...(d.matches || []).filter((m) => drawnCover(m.id)).map((m) => m.id),
-    ...(d.articles || []).filter((a) => drawnCover(`a-${articleSlug(a)}`)).map((a) => a.key),
+    ...(d.matches || []).filter((m) => !m.detail?.cover && drawnCover(m.id)).map((m) => m.id),
+    ...(d.articles || []).filter((a) => !a.cover && drawnCover(`a-${articleSlug(a)}`)).map((a) => a.key),
   ].filter(Boolean),
   baselineFixtures: (JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'fixtures-2627.json'), 'utf8')).fixtures || [])
     /* A FIXTURE THAT HAS BEEN PLAYED IS NOT MISSING FROM ANYTHING.

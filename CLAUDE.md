@@ -663,6 +663,28 @@ It does not fall back to something sensible: the whole declaration is invalid at
 - **League Eight leads once its table has a match in it**: the league page opens on its tab ("How the division stands") with its results and next round under the table, the home page's table band shows its standings, and "Around the league" stays League Ten's ninety, which is what League Ten's own check is derived from. One list per division.
 - **The next-match band says what happened last and where it left the club** ("Last time out: won 2-1 at home to Three Little Birds. 2nd in League Eight on 3 points."), counted from competitive matches, because it is the band the club always shows.
 - **While League Eight is played, the table, the results and the fixtures lead the home page**, in that order and whatever `home:layout` says (`LEAGUE_FIRST` / `leagueUnderway()` in `home-layout.mjs`, mirrored in the panel's preview from `SEED.leagueFirst`). The club asked for all three at the top and its saved record has them off, which only an admin login can change. The table band shows all nine clubs, and **Around League Eight** (`leagueNowBand` in `home.mjs`) sits directly under it with the round just played, the next round and the scorers. Before a ball is kicked the record decides alone, and a suite probe holds it to that. **The scorers are transcribed** from Full-Time's stat leaders page into `scorers` (goals only; cards need every page of that list), shown under the League Eight table on the league page, and `compareScorers()` in `stats.mjs` fails `npm run verify` if a club's scorers come to more goals than its results.
+- **A captaincy is a fact about a season.** The 25/26 leadership group (Jim El
+  Bayati, Daniel McLane, Andrew Allen) is in the baseline; 26/27's (Daniel
+  McLane captain, Andrew Allen vice) is in `src/data/recognition-extra.json`,
+  which loses to the database on the id and to any stored leadership record
+  for the same season. Every reader sorts leadership records newest first
+  instead of `find`ing the first: a season tab shows its own group, the
+  all-seasons tab and a player's chip show the latest, and a player's honours
+  list every season's role.
+- **The awards page's 26/27 tab printed 25/26.** "The record of the season"
+  is a claim about the season the published table describes (`d.tableSeason`),
+  so it shows on that tab and on all seasons, counted from that season's league
+  games (it read 20 games for an 18-game season). The Man of the Match headline
+  is the leader of the tab on screen, from that season's figures, and is left
+  out when the lead is shared.
+- **Player pages tag the seasons a player led** (`Top goalscorer · 26/27`), from
+  `d.playersBySeason`, jointly where the lead is shared. The suite checks every
+  season's leaders carry the tag and nobody else does.
+- **The records page lists milestones reached** (every 25 starts, 25 goals, 10
+  assists, dated to the match), per season tab and all of them on all seasons,
+  and every record card opens a breakdown for the tab it is in. A figure beside
+  a player there is initial and surname, never the full name: a numeral next to
+  a full name is what the squad-number check refuses.
 - **A pre-season result is never a record.** The results page's biggest win for a season read the season's whole list, so 26/27's record of one League Eight win named the 4-1 BPR friendly; it reads `v.competitive` now, like every figure beside it, and the suite fails any season panel naming a friendly. The About page's biggest win and the home page's record against the next opponent read competitive matches for the same reason. Friendlies still appear wherever matches are LISTED (the results list and its filters, the match pages), which is where they belong.
 - **A check about the summer builds the summer.** Fifteen checks read the shipped record as "before the first League Eight match" and went red on 6 September having caught nothing. They now construct that state (the record with this season's competitive matches taken out, matching a panel-saved row by `date` when it has no `iso`) and construct the after state too, so they hold whatever the date. A panel-drawn cover (`cover-match-*`, `cover-news-*`) is composed like the build's card, so the news card no longer prints a second chip and date over it.
 - **A goalkeeper's season tab carries saves and saves a game** where the record has them (`keeping()` in `player.mjs`, the engine's own rule over that season's matches: the game counts if `keeper` names him and `saves` is a number). Only games with saves on record count toward the rate, and a season with none shows no tile rather than a nought; eight tiles lay out as two rows of four (`pf-tiles--8`). Luke Munns's 26/27: 8 saves in 1 game.

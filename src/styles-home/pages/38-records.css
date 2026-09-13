@@ -170,3 +170,31 @@ a.rc-leader__name:hover{text-decoration: underline; text-underline-offset: 3px;}
 .rc-card__team + .rc-card__team{margin-top: 12px;
   padding-top: 12px; border-top: 1px solid var(--line-d);}
 .rc-card__team .rc-card__who{margin-top: 0;}
+
+/* THE BREAKDOWN BEHIND A RECORD. A native disclosure, so it opens with a
+   click or the keyboard and works with scripts blocked. It opens inside the
+   card, under the figure it explains. */
+.rc-more{margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line-d);}
+.rc-more summary{list-style: none; cursor: pointer; display: flex; align-items: center;
+  justify-content: space-between; gap: 8px; padding: 4px 0;
+  font-family: var(--ui); font-size: 9.5px; font-weight: 700; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--volt-text);}
+.rc-more summary::-webkit-details-marker{display: none;}
+.rc-more summary::after{content: '+'; font-size: 15px; line-height: 1; letter-spacing: 0;
+  transition: transform 0.25s var(--ease-out-expo);}
+.rc-more[open] summary::after{transform: rotate(45deg);}
+.rc-more summary:focus-visible{outline: 2px solid var(--volt); outline-offset: 3px; border-radius: 4px;}
+.rc-more__list{list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px;}
+.rc-more__list li{display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px;
+  align-items: baseline; font-size: 13px;}
+.rc-more__list a, .rc-more__list span{grid-column: 1; min-width: 0; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; color: var(--fg); text-decoration: none;}
+.rc-more__list a:hover{text-decoration: underline; text-underline-offset: 3px;}
+.rc-more__list i{grid-column: 1; font-style: normal; font-family: var(--ui); font-size: 9px;
+  font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);}
+.rc-more__list b{grid-column: 2; grid-row: 1; font-family: var(--display); font-weight: 500;
+  font-size: 15px; font-variant-numeric: tabular-nums; color: var(--fg);}
+.rc-more__list li:first-child b{color: var(--volt-text);}
+@media (prefers-reduced-motion: reduce){
+  .rc-more summary::after{transition: none;}
+}

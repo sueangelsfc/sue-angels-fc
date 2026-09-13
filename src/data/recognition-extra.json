@@ -1,0 +1,16 @@
+{
+  "_source": "Told by the club on 13 September 2026: for 26/27 the club captain is Daniel McLane and the vice-captain is Andrew Allen. No third-choice captain was named.",
+  "_note": "Recognition the club has decided and not entered in Control panel -> Recognition. The same device as articles-extra.json: it sits under the database, so a record entered in the panel with the same id, or a leadership record for the same season, wins and this one drops out of the build. A leadership record is a fact about a SEASON, so 25/26's (Jim El Bayati, Daniel McLane, Andrew Allen) stays in the site's own baseline and keeps its place on the 25/26 tabs; every page that shows today's armband reads the latest season's record.",
+  "recognition": [
+    {
+      "id": "rec-leadership-2627",
+      "type": "leadership",
+      "season": "26/27",
+      "clubCaptainPlayerId": 25,
+      "clubCaptainName": "Daniel McLane",
+      "viceCaptainPlayerId": 2,
+      "viceCaptainName": "Andrew Allen",
+      "note": "Daniel McLane is club captain for 26/27, with Andrew Allen as vice-captain."
+    }
+  ]
+}

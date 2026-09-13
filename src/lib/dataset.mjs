@@ -1013,8 +1013,20 @@ export function buildDataset(overrides = {}) {
   }
 
   /* ---- Recognition ---- */
+  const cloudRecognition = (live.recognition || []).map((row) => ({ key: row.key, ...(row.data || {}), source: 'cloud' }));
+  const cloudRecIds = new Set(cloudRecognition.flatMap((r) => [r.id, r.key]).filter(Boolean));
+  /* DECIDED BUT NOT YET ENTERED: src/data/recognition-extra.json, first used
+     for the 26/27 captains. It loses to the database on the id, and a
+     leadership record loses to any stored leadership for the same season, so
+     entering the captains in the panel quietly retires the file's copy. */
+  const extraRecognition = (read('recognition-extra.json').recognition || [])
+    .filter((r) => r && !cloudRecIds.has(r.id))
+    .filter((r) => r.type !== 'leadership'
+      || !cloudRecognition.some((c) => c.type === 'leadership' && String(c.season || '') === String(r.season || '')))
+    .map((r) => ({ ...r, source: 'extra' }));
   const recognition = [
-    ...(live.recognition || []).map((row) => ({ key: row.key, ...(row.data || {}), source: 'cloud' })),
+    ...cloudRecognition,
+    ...extraRecognition,
     ...(ps.SA_DEFAULT_RECOGNITION || []).map((r) => ({ ...r, source: 'baseline' })),
   ];
 

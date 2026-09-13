@@ -477,12 +477,20 @@ export function playerPage(p, d) {
   const recog = d.recognition || [];
   const seasonAwards = recog.filter((r) => r.type === 'season_award' && r.playerId === p.num);
   const potm = recog.filter((r) => r.type === 'potm' && r.playerId === p.num);
-  const leadership = recog.find((r) => r.type === 'leadership');
-  const captainOf = leadership && [
-    leadership.clubCaptainPlayerId === p.num ? 'Club captain' : null,
-    leadership.viceCaptainPlayerId === p.num ? 'Vice-captain' : null,
-    leadership.thirdChoiceCaptainPlayerId === p.num ? 'Third-choice captain' : null,
-  ].find(Boolean);
+  /* THE ARMBAND IS A SEASON'S. Every leadership record, newest first: the
+     chip is the latest season's role (today's armband), and the honours list
+     every season's, so Jim El Bayati keeps "Club captain · 25/26" while Daniel
+     McLane's page leads with 26/27. It was `find`, the first record in the
+     list whatever its season. */
+  const leaderships = recog.filter((r) => r.type === 'leadership')
+    .sort((a, b) => String(b.season || '').localeCompare(String(a.season || '')));
+  const roleIn = (l) => (l ? [
+    l.clubCaptainPlayerId === p.num ? 'Club captain' : null,
+    l.viceCaptainPlayerId === p.num ? 'Vice-captain' : null,
+    l.thirdChoiceCaptainPlayerId === p.num ? 'Third-choice captain' : null,
+  ].find(Boolean) : null);
+  const leadership = leaderships[0];
+  const captainOf = roleIn(leadership);
 
   /* "Retained for 26/27" was written here as a literal string, and in the
      control panel's dropdown as a second one, so in July 2027 both were wrong
@@ -524,7 +532,7 @@ export function playerPage(p, d) {
                   goalscorer" reads as that season's. */''}
             ${seasonAccolades.map((a) => `<span class="pf-chip">${esc(a.label)}<i>${esc(a.season)}</i></span>`).join('\n            ')}
             ${accolades.map((a) => `<span class="pf-chip">${esc(a)}<i>All seasons</i></span>`).join('\n            ')}
-            ${captainOf ? `<span class="pf-chip">${esc(captainOf)}</span>` : ''}
+            ${captainOf ? `<span class="pf-chip">${esc(captainOf)}<i>${esc(leadership.season || d.currentSeason)}</i></span>` : ''}
             ${statusLabel ? `<span class="pf-chip pf-chip--mut">${esc(statusLabel)}<i>${esc(d.currentSeason)}</i></span>` : ''}
             ${/* WHAT THE CLUB SAID BESIDE THE STATUS. "On trial" is a window
                   and this is when it opened; an injury says when he went out
@@ -1235,7 +1243,7 @@ export function playerPage(p, d) {
   const honours = [
     ...seasonAwards.map((a) => ({ k: a.title, v: a.season || d.titleSeason })),
     ...potm.map((a) => ({ k: 'Player of the Month', v: `${a.month} ${a.season || d.currentSeason}` })),
-    captainOf ? { k: captainOf, v: d.currentSeason } : null,
+    ...leaderships.map((l) => (roleIn(l) ? { k: roleIn(l), v: l.season || d.currentSeason } : null)),
     /* A season he led is dated to that season; the career ranks below are
        counted over every season, so they are not dated to the current one. */
     ...seasonAccolades.map((a) => ({ k: a.label, v: a.season })),

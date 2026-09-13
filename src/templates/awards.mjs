@@ -105,7 +105,10 @@ export function awards(d) {
   const ALL_RECOGNITION = recognition;
   const potm = recognition.filter((r) => r.type === 'potm');
   const seasonAwards = recognition.filter((r) => r.type === 'season_award');
-  const leadership = recognition.find((r) => r.type === 'leadership');
+  /* The latest season's, which is today's armband. `find` took whichever
+     leadership record came first, whatever its season. */
+  const leadership = recognition.filter((r) => r.type === 'leadership')
+    .sort((a, b) => String(b.season || '').localeCompare(String(a.season || '')))[0];
   const captainRecord = recognition.find((r) => r.type === 'club_record' && r.recordKey === 'first_club_captain');
 
   /* ---- Man of the Match, counted from the records ---- */
@@ -193,9 +196,19 @@ export function awards(d) {
     .map(([num, motm]) => ({ num, motm, name: nameOf(num) }))
     .sort((a, b) => b.motm - a.motm || a.name.localeCompare(b.name))
     .slice(0, 8);
-  /* The defensive record is a claim about a completed league season, so it
-     is only made where one has been played. */
-  const ourRow = scope.length ? table.find((r) => r.us) : null;
+  /* THE DEFENSIVE RECORD IS A CLAIM ABOUT ONE LEAGUE SEASON: the one the
+     published table describes (d.tableSeason, League Ten 25/26). It was made
+     on every tab that had a match in it, so 26/27 printed "The best defensive
+     record in League Ten history" under "League Eight · 26/27", and it counted
+     every league game the club has played, so 25/26 read "11 goals conceded in
+     20 league games" for an 18-game season. It shows on that season's tab and
+     on all seasons, labelled with that season, counted from that season. */
+  const gaSeason = d.tableSeason || '';
+  const gaGames = scope.filter((m) => isLeague(m) && m.season === gaSeason);
+  const gaLeague = teamSummary(gaGames);
+  const gaRun = longestRun(gaGames, (m) => m.theirGoals === 0, { goalRecordOnly: true });
+  const ourRow = gaSeason && gaGames.length && (view.key === 'all' || view.key === gaSeason)
+    ? table.find((r) => r.us) : null;
 
   /* ================= 01 THE DEFENSIVE RECORD =================
      The club's headline claim is that no side in League Ten has conceded
@@ -204,26 +217,26 @@ export function awards(d) {
      compares this season. */
   const gaBand = ourRow ? `<section class="sec aw-def" id="defence" aria-labelledby="aw-def-h">
       <div class="wrap">
-        ${rail(1, 'The record of the season', `${d.divisionOf(seasonKey)} · ${seasonLabel}`)}
+        ${rail(1, 'The record of the season', `${d.divisionOf(gaSeason)} · ${gaSeason}`)}
         <h2 class="h2 rv" id="aw-def-h">The best defensive record in
-          <span class="volt">League Ten history.</span></h2>
+          <span class="volt">${esc(d.divisionOf(gaSeason))} history.</span></h2>
         <div class="aw-def__grid rv">
           <div class="aw-def__lede">
-            <p class="aw-def__hero"><b>${esc(ourRow.goalsAgainst)}</b><span>goals conceded in ${esc(league.played)} league games</span></p>
-            <p>No side has gone through a ${esc(d.divisionOf(seasonKey))} season conceding fewer. ${gaGap !== null
+            <p class="aw-def__hero"><b>${esc(ourRow.goalsAgainst)}</b><span>goals conceded in ${esc(gaLeague.played)} league games</span></p>
+            <p>No side has gone through a ${esc(d.divisionOf(gaSeason))} season conceding fewer. ${gaGap !== null
               ? `${esc(Words(gaGap))} fewer than the next best defence in the division, and less than a goal a game across the whole campaign.`
               : 'Less than a goal a game across the whole campaign.'}</p>
             <ul class="aw-def__facts">
-              <li><b>${esc(league.concededPerGame)}</b><span>Conceded a game</span></li>
-              <li><b>${esc(league.cleanSheets)}</b><span>League clean sheets</span></li>
-              <li><b>${esc(csRun)}</b><span>Longest shut-out run</span></li>
+              <li><b>${esc(gaLeague.concededPerGame)}</b><span>Conceded a game</span></li>
+              <li><b>${esc(gaLeague.cleanSheets)}</b><span>League clean sheets</span></li>
+              <li><b>${esc(gaRun)}</b><span>Longest shut-out run</span></li>
             </ul>
             ${keeper ? `<p class="aw-def__note">${esc(nameOf(keeper.playerId))} took the ${esc(keeper.title)}
               for it, though the number belongs to a back line that defended as one all season.</p>` : ''}
           </div>
 
           <figure class="aw-ga">
-            <figcaption class="aw-ga__cap">Goals conceded · ${esc(d.divisionOf(seasonKey))} ${esc(seasonLabel)}</figcaption>
+            <figcaption class="aw-ga__cap">Goals conceded · ${esc(d.divisionOf(gaSeason))} ${esc(gaSeason)}</figcaption>
             <ol class="aw-ga__list">
               ${gaSorted.map((r, i) => `<li class="aw-ga__row${r.us ? ' is-us' : ''}" style="--i:${i}">
                 <span class="aw-ga__club">${esc(shortClub(r.club))}</span>
@@ -295,23 +308,38 @@ export function awards(d) {
     </section>` : '';
 
   /* ================= 03 MAN OF THE MATCH ================= */
+  /* THE LEADER OF THE SEASON ON SCREEN. The headline was the club's career
+     leader whatever the tab, so 26/27 opened on "Most awards · 26/27, Frazier-
+     Isaías Osunkoya, 5, 31 goals and 13 assists" above a board showing Ade
+     Owolana and Elis Brumpton on one each. Worked out from this view's board
+     and this view's player figures, and left out when the lead is shared,
+     because a headline naming one of two joint leaders is an editorial
+     decision the record does not make. */
+  const viewTable = view.key === 'all' ? players : ((d.playersBySeason || {})[view.key] || []);
+  const boardTop = motmBoard[0];
+  const leadShared = !!(boardTop && motmBoard[1] && motmBoard[1].motm === boardTop.motm);
+  const topFigures = boardTop && !leadShared ? viewTable.find((p) => p.num === boardTop.num) : null;
+  const motmLead = topFigures ? { ...topFigures, name: boardTop.name, motm: boardTop.motm } : null;
+  const nextBestMotm = motmBoard[1] ? motmBoard[1].motm : 0;
+  const n = (v, one, many) => `${esc(v)} ${Number(v) === 1 ? one : many}`;
   const motmBand = motmBoard.length ? `<section class="sec aw-motm" id="motm" aria-labelledby="aw-motm-h">
       <div class="wrap">
         ${rail(3, 'Chosen on the day', `${motmMatches.length} awarded`)}
         <h2 class="h2 rv" id="aw-motm-h">Most Man of the <span class="volt">Match.</span></h2>
 
-        ${motmTop ? `<div class="aw-top rv">
+        ${motmLead ? `<div class="aw-top rv">
           <div class="aw-top__shot">
-            <img src="${attr(shotFor(motmTop.num))}" alt="${attr(motmTop.name)}"
+            <img src="${attr(shotFor(motmLead.num))}" alt="${attr(motmLead.name)}"
                  width="300" height="450" loading="lazy" decoding="async" />
           </div>
           <div class="aw-top__body">
-            <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Most awards · ${esc(d.currentSeason)}</p>
-            <p class="aw-top__name">${esc(motmTop.name)}</p>
-            <p class="aw-top__count"><b>${esc(motmTop.motm)}</b><span>Man of the Match awards</span></p>
-            <p class="aw-top__sub">${esc(readablePos(motmTop.position))}${motmTop.position ? ' · ' : ''}${esc(motmTop.goals)} goals and ${esc(motmTop.assists)} assists
-              in ${esc(motmTop.apps)} appearances. No one else was picked out more than
-              ${esc(words(motmBoard[1] ? motmBoard[1].motm : 0))} times.</p>
+            <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Most awards · ${esc(seasonLabel)}</p>
+            <p class="aw-top__name">${esc(motmLead.name)}</p>
+            <p class="aw-top__count"><b>${esc(motmLead.motm)}</b><span>Man of the Match ${Number(motmLead.motm) === 1 ? 'award' : 'awards'}</span></p>
+            <p class="aw-top__sub">${esc(readablePos(motmLead.position))}${motmLead.position ? ' · ' : ''}${n(motmLead.goals || 0, 'goal', 'goals')} and ${n(motmLead.assists || 0, 'assist', 'assists')}
+              in ${n(motmLead.apps || 0, 'appearance', 'appearances')}. ${nextBestMotm
+    ? `No one else was picked out more than ${esc(words(nextBestMotm))} ${nextBestMotm === 1 ? 'time' : 'times'}.`
+    : 'Nobody else has been picked out yet.'}</p>
           </div>
         </div>` : ''}
 
@@ -320,7 +348,7 @@ export function awards(d) {
             <span class="aw-board__pos">${esc(i + 1)}</span>
             <span class="aw-board__face"><img src="${attr(shotFor(p.num))}" alt="" width="34" height="34" loading="lazy" decoding="async" /></span>
             <span class="aw-board__name">${esc(p.name)}</span>
-            <span class="aw-board__track" aria-hidden="true"><i style="--w:${motmTop ? Math.round((p.motm / motmTop.motm) * 1000) / 10 : 0}%"></i></span>
+            <span class="aw-board__track" aria-hidden="true"><i style="--w:${boardTop ? Math.round((p.motm / boardTop.motm) * 1000) / 10 : 0}%"></i></span>
             <span class="aw-board__n"><b>${esc(p.motm)}</b></span>
           </li>`).join('\n          ')}
         </ol>
@@ -344,7 +372,7 @@ export function awards(d) {
   /* ================= 04 END OF SEASON AWARDS ================= */
   const seasonBand = seasonAwards.length ? `<section class="sec aw-season" id="season" aria-labelledby="aw-season-h">
       <div class="wrap">
-        ${rail(4, `${d.currentSeason} awards night`, `${seasonAwards.length} winners`)}
+        ${rail(4, `${view.key === 'all' ? (seasonAwards[0].season || d.currentSeason) : view.label} awards night`, `${seasonAwards.length} winners`)}
         <h2 class="h2 rv" id="aw-season-h">End of season <span class="volt">awards.</span></h2>
         <ul class="aw-cards rv">
           ${seasonAwards.map((a, i) => `<li class="aw-card" style="--i:${i}">
@@ -364,15 +392,20 @@ export function awards(d) {
     </section>` : '';
 
   /* ================= 05 LEADERSHIP ================= */
-  const caps = leadership ? [
-    { k: 'Club captain', num: leadership.clubCaptainPlayerId, name: leadership.clubCaptainName },
-    { k: 'Vice-captain', num: leadership.viceCaptainPlayerId, name: leadership.viceCaptainName },
-    { k: 'Third-choice captain', num: leadership.thirdChoiceCaptainPlayerId, name: leadership.thirdChoiceCaptainName },
+  /* THE CAPTAINS OF THE SEASON ON SCREEN. The all-seasons tab shows the
+     latest group; a season's tab shows that season's, so 25/26 keeps Jim El
+     Bayati's armband and 26/27 shows Daniel McLane's. */
+  const lead = recognition.filter((r) => r.type === 'leadership' && inView(r))
+    .sort((a, b) => String(b.season || '').localeCompare(String(a.season || '')))[0];
+  const caps = lead ? [
+    { k: 'Club captain', num: lead.clubCaptainPlayerId, name: lead.clubCaptainName },
+    { k: 'Vice-captain', num: lead.viceCaptainPlayerId, name: lead.viceCaptainName },
+    { k: 'Third-choice captain', num: lead.thirdChoiceCaptainPlayerId, name: lead.thirdChoiceCaptainName },
   ].filter((c) => c.num !== undefined && c.num !== null) : [];
 
   const capBand = caps.length ? `<section class="sec aw-caps" aria-labelledby="aw-caps-h">
       <div class="wrap">
-        ${rail(5, 'Leading the side', d.currentSeason)}
+        ${rail(5, 'Leading the side', lead.season || seasonKey)}
         <h2 class="h2 rv" id="aw-caps-h">The <span class="volt">captains.</span></h2>
         <ul class="aw-caps__grid rv">
           ${caps.map((c, i) => `<li class="aw-cap glassbox" style="--i:${i}">
@@ -382,7 +415,10 @@ export function awards(d) {
             <p class="aw-cap__pos">${esc(posOf(c.num))}</p>
           </li>`).join('\n          ')}
         </ul>
-        ${captainRecord ? `<p class="aw-caps__note">${esc(captainRecord.description)}</p>` : ''}
+        ${/* "Jim El Bayati was appointed the first club captain... through the
+             inaugural 25/26 season" sat under the 26/27 captains. It is a
+             record of 25/26, so it shows where that season is on screen. */''}
+        ${captainRecord && inView(captainRecord) ? `<p class="aw-caps__note">${esc(captainRecord.description)}</p>` : ''}
       </div>
     </section>` : '';
 

@@ -1303,6 +1303,44 @@ for (const f of shipped) {
     check('and a player who left and did not come back still cannot',
       !!stays && !!dBack.unavailableFrom(stays.num), stays ? `${stays.name}: ${dBack.unavailableFrom(stays.num)}` : 'only one player has left');
 
+    /* A SEASON'S LEADER CARRIES THE TAG, AND NOBODY ELSE DOES. The tags on a
+       player page were career ranks only, so a player leading the season on
+       screen showed nothing for it. Asked of every player in every season,
+       against the page that shipped: whoever leads goals, assists or Man of
+       the Match (jointly or alone) has that season's tag, and a player who
+       does not lead it has neither form. Clean sheets are left out here
+       because that tag is only offered to a goalkeeper. */
+    const TAGS = [['goals', 'Top goalscorer', 'Joint top goalscorer'],
+      ['assists', 'Most assists', 'Joint most assists'],
+      ['motm', 'Most Man of the Match', 'Joint most Man of the Match']];
+    const tagWrong = [];
+    let tagsHeld = 0;
+    for (const [sn, pool] of Object.entries(dS.playersBySeason || {})) {
+      for (const [k, one, joint] of TAGS) {
+        const best = Math.max(0, ...pool.map((x) => x[k] || 0));
+        const leaders = best ? pool.filter((x) => (x[k] || 0) === best) : [];
+        const label = leaders.length > 1 ? joint : one;
+        for (const x of pool) {
+          const file = x.slug ? path.join(ROOT, 'players', `${x.slug}.html`) : '';
+          if (!file || !fs.existsSync(file)) continue;
+          const html = fs.readFileSync(file, 'utf8');
+          const chip = (l) => html.includes(`<span class="pf-chip">${l}<i>${sn}</i></span>`);
+          const leads = leaders.includes(x);
+          if (leads) { tagsHeld += 1; if (!chip(label)) tagWrong.push(`${x.name} leads ${k} in ${sn} with no tag`); }
+          else if (chip(one) || chip(joint)) tagWrong.push(`${x.name} tagged for ${k} in ${sn} without leading it`);
+        }
+      }
+    }
+    check('every season\'s leaders carry that season\'s tag on their page, and nobody else does',
+      tagsHeld > 0 && tagWrong.length === 0, tagWrong.slice(0, 4).join(' | ') || `${tagsHeld} tags checked`);
+
+    /* The captaincy is a season's, and the latest season's is today's. */
+    const leads = (dS.recognition || []).filter((r) => r.type === 'leadership')
+      .sort((a, b) => String(b.season || '').localeCompare(String(a.season || '')));
+    check('every leadership record names its season, and the newest leads',
+      leads.length > 0 && leads.every((r) => /^\d{2}\/\d{2}$/.test(String(r.season || '')))
+        && leads[0].season >= (leads[leads.length - 1].season || ''), leads.map((r) => r.season).join(', '));
+
     /* WHERE THE TWO DISAGREE, THE PANEL SAYS SO. Two players on the record
        are named in a side after the day they are recorded as leaving, which
        means one of the two facts is wrong and only the club knows which. */

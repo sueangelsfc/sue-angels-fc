@@ -50,6 +50,14 @@ const shortClub = (name) => String(name || '')
   .replace(/\s+FC 2\.0$/, ' 2.0')
   .replace(/\s+FC$/, '');
 
+/* Initial and surname, the way the stats table writes a player beside a
+   figure: a numeral right beside a FULL name reads as the storage key, and
+   the suite refuses it. */
+const shortName = (p) => (p && p.first && p.last ? `${p.first.charAt(0)}. ${p.last}` : String((p && p.name) || ''));
+
+/* The newest season first, so "the leadership record" means today's. */
+const latestFirst = (a, b) => String(b.season || '').localeCompare(String(a.season || ''));
+
 const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
       <span class="xrail__l"><span class="xrail__n">${esc(String(n).padStart(2, '0'))}</span><span class="xrail__t">${esc(label)}</span></span>
       <span class="xrail__r">${esc(ref)}</span>
@@ -70,6 +78,33 @@ export function records(d) {
      the matching panel. See src/lib/seasons.mjs. */
   const VIEWS = seasonViews(d);
   const DEFAULT = defaultView(VIEWS);
+
+  /* MILESTONES REACHED, worked out once over every competitive match.
+     Each time a player's running total crosses a step - every 25 starts,
+     every 25 goals, every 10 assists, the same steps the home page counts
+     towards - the match it happened in is recorded. A season's tab shows the
+     ones reached in that season, so they appear there as they happen; the
+     all-seasons tab shows every one. Clean sheets are not in it: the record
+     credits a clean sheet to a player for the season, not to a match, so the
+     day one was reached cannot be named. */
+  const STEPS = [['starts', 25, 'starts'], ['goals', 25, 'goals'], ['assists', 10, 'assists']];
+  const compById = new Map((d.competitive || []).map((m) => [m.id, m]));
+  const reached = [];
+  for (const p of (d.players || []).filter((x) => x && x.slug && !x.trialist && !x.unknown)) {
+    const rows = (p.matches || []).map((r) => ({ r, m: compById.get(r.id) })).filter((x) => x.m)
+      .sort((a, b) => String(a.m.iso || '').localeCompare(String(b.m.iso || '')));
+    for (const [key, step, unit] of STEPS) {
+      let run = 0;
+      for (const { r, m } of rows) {
+        const before = run;
+        run += key === 'starts' ? (r.role === 'start' ? 1 : 0) : (Number(r[key]) || 0);
+        for (let t = (Math.floor(before / step) + 1) * step; t <= run; t += step) {
+          reached.push({ p, value: t, unit, m });
+        }
+      }
+    }
+  }
+  reached.sort((a, b) => String(b.m.iso || '').localeCompare(String(a.m.iso || '')) || b.value - a.value);
 
   const bodyFor = (view) => {
   /* COMPETITIVE ONLY, because this page is the club's record book. It read
@@ -175,10 +210,22 @@ export function records(d) {
      it was not. */
   const atHome = played.filter((m) => m.weAreHome && !m.neutral);
   const away = played.filter((m) => !m.weAreHome && !m.neutral);
-  const venueCard = (m, label) => (m ? {
+  /* THE BREAKDOWN BEHIND A RECORD. Every card opens to show what the number
+     is made of, drawn from the same matches as the card for the tab it sits
+     in: the next best margins behind a biggest win, the matches behind a
+     clean-sheet count, the competitions behind the goals. */
+  const matchLine = (m, v) => ({ who: `v ${shortClub(m.opponent)}`, note: fmtDate(m.date), v });
+  const byMargin = (list, outcome, n = 5) => list
+    .filter((m) => m.countsGoals && m.outcome === outcome)
+    .sort((a, b) => Math.abs(b.ourGoals - b.theirGoals) - Math.abs(a.ourGoals - a.theirGoals)
+      || (outcome === 'W' ? b.ourGoals - a.ourGoals : b.theirGoals - a.theirGoals)
+      || String(b.iso || '').localeCompare(String(a.iso || '')))
+    .slice(0, n).map((m) => matchLine(m, m.ourScoreline));
+  const venueCard = (m, label, list, outcome) => (m ? {
     k: 'team', value: m.ourScoreline, label,
     who: `v ${shortClub(m.opponent)}`,
     sub: `${fmtDate(m.date)} · ${m.round ? `${shortComp(m.competition)} ${m.round.toLowerCase()}` : shortComp(m.competition)}`,
+    more: list ? byMargin(list, outcome) : [],
   } : null);
   /* Every defeat sharing the worst margin, not just the first one found. */
   const worstMargin = worst ? worst.theirGoals - worst.ourGoals : 0;
@@ -214,8 +261,18 @@ export function records(d) {
   const playerCard = (key, value, label) => {
     const hs = holdersOf(key);
     if (!hs.length) return null;
-    return { k: 'player', value: hs[0][key], label, holders: hs, sub: value || 'All competitions' };
+    return {
+      k: 'player', value: hs[0][key], label, holders: hs, sub: value || 'All competitions',
+      more: leaderboard(players, key, 5).map((p) => ({ who: shortName(p), href: `/players/${p.slug}.html`, v: p[key] })),
+    };
   };
+
+  /* Goals by competition, for the goals-scored card. */
+  const goalsByComp = [...inSeason.filter((m) => m.countsGoals).reduce((acc, m) => {
+    acc.set(m.competition, (acc.get(m.competition) || 0) + (m.ourGoals || 0));
+    return acc;
+  }, new Map())].sort((a, b) => b[1] - a[1]).map(([c, g]) => ({ who: shortComp(c), v: g }));
+  const newestFirst = (a, b) => String(b.iso || '').localeCompare(String(a.iso || ''));
 
   const cards = [
     playerCard('starts', '', 'Most starts'),
@@ -226,14 +283,21 @@ export function records(d) {
     /* ourScoreline, not scoreline: these cards name the opponent with no
        venue beside them, so the club's own goals have to come first. */
     big && { k: 'team', value: big.ourScoreline, label: 'Biggest win',
-      who: `v ${shortClub(big.opponent)}`, sub: `${fmtDate(big.date)} · ${big.homeAway}` },
-    { k: 'team', value: sum.goalsFor, label: 'Goals scored', who: CLUB.short, sub: 'All competitions' },
-    { k: 'team', value: leagueSum.goalsAgainst, label: 'Goals conceded in the league', who: CLUB.short, sub: `${d.divisionOf(season)} ${season}` },
-    { k: 'team', value: sum.cleanSheets, label: 'Clean sheets', who: CLUB.short, sub: 'All competitions' },
-    venueCard(biggestWin(atHome), 'Biggest home win'),
-    venueCard(biggestWin(away), 'Biggest away win'),
-    venueCard(heaviestDefeat(atHome), 'Heaviest home defeat'),
-    venueCard(heaviestDefeat(away), 'Heaviest away defeat'),
+      who: `v ${shortClub(big.opponent)}`, sub: `${fmtDate(big.date)} · ${big.homeAway}`, more: byMargin(played, 'W') },
+    { k: 'team', value: sum.goalsFor, label: 'Goals scored', who: CLUB.short, sub: 'All competitions', more: goalsByComp },
+    /* "Every league season" on the all-seasons tab: it counts League Ten and
+       League Eight together, and was captioned with this season's division. */
+    { k: 'team', value: leagueSum.goalsAgainst, label: 'Goals conceded in the league', who: CLUB.short,
+      sub: view.key === 'all' ? 'Every league season' : `${d.divisionOf(season)} ${season}`,
+      more: league.filter((m) => m.countsGoals && m.theirGoals > 0).sort(newestFirst).slice(0, 10)
+        .map((m) => matchLine(m, m.ourScoreline)) },
+    { k: 'team', value: sum.cleanSheets, label: 'Clean sheets', who: CLUB.short, sub: 'All competitions',
+      more: inSeason.filter((m) => m.countsGoals && m.theirGoals === 0).sort(newestFirst).slice(0, 10)
+        .map((m) => matchLine(m, m.ourScoreline)) },
+    venueCard(biggestWin(atHome), 'Biggest home win', atHome, 'W'),
+    venueCard(biggestWin(away), 'Biggest away win', away, 'W'),
+    venueCard(heaviestDefeat(atHome), 'Heaviest home defeat', atHome, 'L'),
+    venueCard(heaviestDefeat(away), 'Heaviest away defeat', away, 'L'),
     firstMatch && { k: 'team', value: firstMatch.ourScoreline || 'W/O',
       label: 'The club\u2019s first ever match', who: `v ${shortClub(firstMatch.opponent)}`,
       sub: `${fmtDate(firstMatch.date)} · ${firstMatch.homeAway} · ${OUTCOME[firstMatch.outcome] || ''}` },
@@ -243,7 +307,7 @@ export function records(d) {
        ground and "Away" would have been wrong for it. */
     worstAll.length && {
       k: 'team', value: worstAll[0].ourScoreline,
-      label: 'Heaviest defeat', shared: worstAll.length > 1,
+      label: 'Heaviest defeat', shared: worstAll.length > 1, more: byMargin(played, 'L'),
       teams: worstAll.map((m) => ({
         who: `v ${shortClub(m.opponent)}`,
         note: `${fmtDate(m.date)} · ${m.round ? `${shortComp(m.competition)} ${m.round.toLowerCase()}` : m.homeAway}`,
@@ -338,6 +402,12 @@ export function records(d) {
             </span>`).join('\n            ')
       : `<p class="rc-card__who is-team"><img class="rc-card__crest" src="${STAR}" alt="Sue’s Angels FC star" width="20" height="25" loading="lazy" decoding="async" /><span>${esc(c.who || '')}</span></p>`}
             ${c.teams ? '' : `<p class="rc-card__sub">${esc(c.sub || '')}</p>`}
+            ${c.more && c.more.length ? `<details class="rc-more">
+              <summary>Breakdown</summary>
+              <ol class="rc-more__list">${c.more.map((x) => `<li>${x.href
+    ? `<a href="${attr(x.href)}">${esc(x.who)}</a>`
+    : `<span>${esc(x.who)}</span>`}${x.note ? `<i>${esc(x.note)}</i>` : ''}<b>${esc(x.v)}</b></li>`).join('')}</ol>
+            </details>` : ''}
           </li>`;
 
   const recordsBand = `<section class="sec rc-grid" id="records" aria-labelledby="rc-g-h">
@@ -403,8 +473,35 @@ export function records(d) {
       </div>
     </section>` : '';
 
-  /* ================= 06 LEADERSHIP ================= */
-  const lead = rec.find((r) => r.type === 'leadership');
+  /* ================= 06 MILESTONES REACHED ================= */
+  /* Newest first. The date comes before the name, and a year is never a
+     storage key, so a figure cannot land beside a full name. */
+  const reachedHere = view.key === 'all' ? reached : reached.filter((x) => x.m.season === view.key);
+  const milestonesBand = reachedHere.length ? `<section class="sec rc-reached" aria-labelledby="rc-m-h">
+      <div class="wrap">
+        ${rail(6, 'Milestones', view.key === 'all' ? `${reachedHere.length} reached` : `${reachedHere.length} in ${view.label}`)}
+        <h2 class="h2 rv" id="rc-m-h">Milestones <span class="volt">reached.</span></h2>
+        <p class="rc-lede rv">${view.key === 'all'
+    ? 'Every 25 starts, every 25 goals and every 10 assists for the club, league and cup, newest first.'
+    : `Reached in ${esc(view.label)}, league and cup. A new one appears here the day it happens.`}</p>
+        <ul class="rc-firsts__list rv">
+          ${reachedHere.slice(0, 24).map((x) => `<li class="rc-first">
+            ${face(x.p, 54, false)}
+            <span class="rc-first__body">
+              <b>${esc(x.value)} ${esc(x.unit)} · ${esc(fmtDate(x.m.date))}</b>
+              <a href="/players/${attr(x.p.slug)}.html">${esc(x.p.name)}</a>
+              <span>v ${esc(shortClub(x.m.opponent))}</span>
+            </span>
+          </li>`).join('\n          ')}
+        </ul>
+      </div>
+    </section>` : '';
+
+  /* ================= 07 LEADERSHIP ================= */
+  /* A leadership group is a fact about a season. A season's tab shows its
+     own; the all-seasons tab shows the latest, which is today's armband. It
+     used to be `find`, the first record in the list whatever its season. */
+  const lead = rec.filter((r) => r.type === 'leadership').sort(latestFirst)[0];
   const capCounts = new Map();
   for (const m of played) {
     if (m.detail && m.detail.captain != null) {
@@ -415,11 +512,12 @@ export function records(d) {
     { role: 'Club captain', num: lead.clubCaptainPlayerId, name: lead.clubCaptainName },
     { role: 'Vice-captain', num: lead.viceCaptainPlayerId, name: lead.viceCaptainName },
     { role: 'Third-choice captain', num: lead.thirdChoiceCaptainPlayerId, name: lead.thirdChoiceCaptainName },
-  ].map((l) => ({ ...l, ...playerLink(l.num, l.name), led: capCounts.get(l.num) || 0 })) : [];
+  ].filter((l) => l.num !== undefined && l.num !== null)
+    .map((l) => ({ ...l, ...playerLink(l.num, l.name), led: capCounts.get(l.num) || 0 })) : [];
 
   const leadBand = leaders.length ? `<section class="sec rc-lead" aria-labelledby="rc-l-h">
       <div class="wrap">
-        ${rail(6, `${season} season`, 'Leadership group')}
+        ${rail(7, `${lead.season || season} season`, 'Leadership group')}
         <h2 class="h2 rv" id="rc-l-h">Who wore the <span class="volt">armband.</span></h2>
         <p class="rc-lede rv">${esc(lead.note || '')}</p>
         <ul class="rc-lead__list rv">
@@ -437,7 +535,7 @@ export function records(d) {
       </div>
     </section>` : '';
 
-  return { honoursBand, perfectBand, recordsBand, streaksBand, firstsBand, leadBand };
+  return { honoursBand, perfectBand, recordsBand, streaksBand, firstsBand, milestonesBand, leadBand };
   };
 
   /* ================= HERO ================= */
@@ -481,7 +579,7 @@ export function records(d) {
       + `<section class="sec rc-seasons"><div class="wrap">${seasonBar(VIEWS, DEFAULT, matchNote, { esc, attr })}</div></section>`
       + seasonPanels(VIEWS, DEFAULT, (v) => {
     const b = bodyFor(v);
-    return b.honoursBand + b.perfectBand + b.recordsBand + b.streaksBand + b.firstsBand + b.leadBand;
+    return b.honoursBand + b.perfectBand + b.recordsBand + b.streaksBand + b.firstsBand + b.milestonesBand + b.leadBand;
   }, { attr })
       + sourceNote(['fulltime', 'surreyfa'], { lead: 'League and cup figures reconcile with' })
       + ctaBand,

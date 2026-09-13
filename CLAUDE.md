@@ -965,10 +965,14 @@ the line, so this reads the rules conservatively.**
   interest for an enquiry, consent for the newsletter), retention and rights.
   **Every `form[data-enquiry]` and `form[data-subscribe]` links to it within
   a few hundred characters**, asserted per form rather than per page, because
-  the footer's link would otherwise vouch for a form further up. The
-  retention it promises (an enquiry deleted within two years of the last
-  contact; a newsletter address until the person leaves) is kept by the club
-  deleting from the Inbox and MailerLite, not by code.
+  the footer's link would otherwise vouch for a form further up.
+- **Enquiries delete themselves** (`migrations/013_enquiry_retention.sql`).
+  `purge_old_enquiries()` removes a row once nothing from the same address has
+  arrived in two years (a conversation, not a row, is what ages out), and
+  pg_cron runs it nightly at 03:17 UTC. Execute is revoked from anon and
+  authenticated, so it cannot be called over the API. A newsletter address is
+  still removed by hand, from MailerLite and the supporter list, when somebody
+  leaves.
 - **A YouTube video is a still until somebody presses play.** An iframe, even
   `youtube-nocookie` and `loading="lazy"`, contacts Google when it scrolls
   into view, which is a third party reaching the device before anybody asked.

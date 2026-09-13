@@ -4691,6 +4691,16 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     /id="forms"/.test(privacyHtml)
       && ['Supabase', 'Resend', 'MailerLite', 'YouTube', 'Stripe'].every((w) => privacyHtml.includes(w)),
     'privacy.html#forms');
+  /* The retention the page promises is a nightly job, not somebody remembering.
+     Nobody may call it over the API: pg_cron runs it as the owner. */
+  const retentionSql = (() => {
+    try { return fs.readFileSync(path.join(ROOT, 'migrations', '013_enquiry_retention.sql'), 'utf8'); } catch (e) { return ''; }
+  })();
+  check('enquiries delete themselves after the two years the privacy page promises',
+    /cron\.schedule\('purge-old-enquiries'/.test(retentionSql) && /purge_old_enquiries\(2\)/.test(retentionSql)
+      && /revoke all on function public\.purge_old_enquiries\(int\) from public, anon, authenticated/.test(retentionSql)
+      && !/grant execute on function public\.purge_old_enquiries/.test(retentionSql)
+      && /deleted automatically two years/.test(privacyHtml), 'migrations/013 or privacy.html');
   /* A YouTube iframe contacts Google as soon as it scrolls into view, before
      anybody pressed play. The report ships a still and a link instead. */
   const ytFrames = [...pages.entries()].filter(([, h]) => /<iframe\b[^>]*youtube/i.test(h)).map(([f]) => f);

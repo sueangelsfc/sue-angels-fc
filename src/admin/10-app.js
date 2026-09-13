@@ -688,7 +688,8 @@
         sub: 'Everything sent through the website: the join form, the contact form and the '
           + 'sponsorship form all land here, and so does every newsletter sign-up. '
           + 'They are hidden from anyone not signed in as an administrator, which is the '
-          + 'row-level security policy doing its job.',
+          + 'row-level security policy doing its job. An enquiry deletes itself two years '
+          + 'after the last one from the same address, as the privacy page promises.',
         body:
           '<div class="tabs" role="tablist">' +
             '<button class="tab" role="tab" aria-selected="true" data-tab="enq">Enquiries (' + enq.length + ')</button>' +

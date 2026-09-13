@@ -805,9 +805,22 @@ export function buildDataset(overrides = {}) {
     return d.toISOString().slice(0, 10);
   };
   const unavailableFrom = (num) => {
+    /* BACK AT THE CLUB CANCELS THE LEAVING DATE. This returned the first
+       season a player was gone in and never looked further, so Jim El Bayati,
+       retired at the end of 25/26 and in the squad again for 26/27, was given
+       31 May 2026 as the day he left - and the Matchday screen, which hides
+       anybody on or after that date, could not pick him for a single match of
+       the season he came back for. The date that counts is the start of the
+       LAST run of seasons he is gone in; a later season where he is at the
+       club again clears it. `absent` (no entry, no appearance) is not a
+       return, so somebody who left and is simply not mentioned stays gone. */
+    let goneSeason = null;
     for (const season of seasonsAll) {
       const key = statusIn(statusRecord, num, season, statusOpts);
-      if (!GONE_KEYS.has(key)) continue;
+      if (GONE_KEYS.has(key)) { if (!goneSeason) goneSeason = season; continue; }
+      if (key !== 'absent') goneSeason = null;
+    }
+    for (const season of goneSeason ? [goneSeason] : []) {
       const detail = statusDetail(statusRecord, num, season);
       if (detail.from) return detail.from;
       /* NO LEAVING DATE, SO THE ARCHIVE ANSWERS. The season's first day is

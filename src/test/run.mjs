@@ -1261,6 +1261,48 @@ for (const f of shipped) {
     }
     check('the derived cutoff was actually exercised', derived > 0, `${derived} players`);
 
+    /* BACK AT THE CLUB IS NOT GONE. The first version returned the first
+       season a man was gone in and never looked further, so Jim El Bayati -
+       retired in 25/26, in the squad for 26/27 - could not be picked on the
+       Matchday screen for any match of the season he came back for. Asked of
+       everybody: at the club in the latest season means no leaving date. */
+    /* Asked through the dataset's own statusIn, which carries the season list:
+       called bare, a flat "retired" reads as a season nobody named and comes
+       back as at the club, which is how the first draft of this check accused
+       William Clark. */
+    const seasonNames = (dS.seasons || []).map((x) => x.name || x);
+    const latestS = seasonNames[seasonNames.length - 1];
+    const HERE = new Set(['active', 'injured', 'unavailable', 'trial']);
+    const stillBarred = dS.squad.filter((p) => HERE.has(dS.statusIn(p.num, latestS)) && dS.unavailableFrom(p.num))
+      .map((p) => `${p.name} (${dS.unavailableFrom(p.num)})`);
+    check('a player back at the club this season has no leaving date, so he can be picked',
+      stillBarred.length === 0, stillBarred.join(', '));
+
+    /* AND ON A CRAFTED RETURN, because whether anybody has come back depends on
+       which snapshot is on disk, and a check that only fires on some copies of
+       the data is a check nobody can trust. Two men who have left: one is put
+       back in the squad for the latest season, the other is left alone. The
+       returner must lose his date and the other must keep his, so a fix that
+       simply wiped every leaving date fails too. */
+    const goneNow = dS.squad.filter((p) => dS.unavailableFrom(p.num));
+    const [back, stays] = goneNow;
+    const liveRaw = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'recovered-live.json'), 'utf8'));
+    const photos = (liveRaw.player_photos || []).map((r) => ({ ...r }));
+    let statusRow = photos.find((r) => r.key === 'roster:status');
+    if (!statusRow) { statusRow = { key: 'roster:status', data: { status: {} } }; photos.push(statusRow); }
+    const held = (statusRow.data && (statusRow.data.status || statusRow.data)) || {};
+    const earlier = seasonNames.slice(0, -1);
+    const craftedStatus = {
+      ...held,
+      [String(back.num)]: { [earlier[earlier.length - 1] || latestS]: { key: 'retired', from: dS.unavailableFrom(back.num) }, [latestS]: 'active' },
+    };
+    statusRow.data = { ...(statusRow.data || {}), status: craftedStatus };
+    const dBack = buildDataset({ live: { ...liveRaw, player_photos: photos } });
+    check('probe: a player put back in the squad this season can be picked again',
+      !!back && dBack.unavailableFrom(back.num) === null, back ? `${back.name}: ${dBack.unavailableFrom(back.num)}` : 'nobody has left');
+    check('and a player who left and did not come back still cannot',
+      !!stays && !!dBack.unavailableFrom(stays.num), stays ? `${stays.name}: ${dBack.unavailableFrom(stays.num)}` : 'only one player has left');
+
     /* WHERE THE TWO DISAGREE, THE PANEL SAYS SO. Two players on the record
        are named in a side after the day they are recorded as leaving, which
        means one of the two facts is wrong and only the club knows which. */

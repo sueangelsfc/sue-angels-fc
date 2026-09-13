@@ -2675,8 +2675,8 @@
           + tile(pct(yes('sponsor'), n) + '%', 'Said yes to sponsor figures', yes('sponsor') + ' of ' + n)
           + tile(pct(yes('return_visits'), n) + '%', 'Said yes to returning visits', yes('return_visits') + ' of ' + n)
           + '</div>' : '<p class="cp-note">No choices were saved in this period.</p>'))
-        + '<p class="cp-note">The privacy page promises the figures are kept for up to three years. This '
-        + 'deletes everything older, from every table on this screen, and cannot be undone.</p>'
+        + '<p class="cp-note">The privacy page promises the figures are kept for up to three years. Everything '
+        + 'older is deleted automatically every night; this button does the same now, and cannot be undone.</p>'
         + '<p><button type="button" class="btn btn--sm btn--ghost" data-purge>Delete figures older than three years</button></p>',
     });
   }

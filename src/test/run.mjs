@@ -4701,6 +4701,18 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
       && /revoke all on function public\.purge_old_enquiries\(int\) from public, anon, authenticated/.test(retentionSql)
       && !/grant execute on function public\.purge_old_enquiries/.test(retentionSql)
       && /deleted automatically two years/.test(privacyHtml), 'migrations/013 or privacy.html');
+  /* The same for the three years the website stats are kept. The button's
+     function checks for an admin, which a scheduled job never is, so the job
+     runs the inner delete, and nobody may call that over the API. */
+  const statsRetentionSql = (() => {
+    try { return fs.readFileSync(path.join(ROOT, 'migrations', '014_page_stats_retention.sql'), 'utf8'); } catch (e) { return ''; }
+  })();
+  check('website stats delete themselves after the three years the privacy page promises',
+    /cron\.schedule\('purge-old-page-stats'/.test(statsRetentionSql) && /purge_page_stats_now\(3\)/.test(statsRetentionSql)
+      && /revoke all on function public\.purge_page_stats_now\(int\) from public, anon, authenticated/.test(statsRetentionSql)
+      && !/grant execute on function public\.purge_page_stats_now/.test(statsRetentionSql)
+      && /is_club_admin\(\)/.test(statsRetentionSql)
+      && /three years/.test(privacyHtml), 'migrations/014 or privacy.html');
   /* A YouTube iframe contacts Google as soon as it scrolls into view, before
      anybody pressed play. The report ships a still and a link instead. */
   const ytFrames = [...pages.entries()].filter(([, h]) => /<iframe\b[^>]*youtube/i.test(h)).map(([f]) => f);

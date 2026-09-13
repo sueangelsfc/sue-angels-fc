@@ -973,6 +973,13 @@ the line, so this reads the rules conservatively.**
   authenticated, so it cannot be called over the API. A newsletter address is
   still removed by hand, from MailerLite and the supporter list, when somebody
   leaves.
+- **Website stats delete themselves too** (`migrations/014_page_stats_retention.sql`).
+  012's `purge_page_stats()` checks `is_club_admin()`, and a pg_cron job has no
+  signed-in user, so scheduling it would have raised `not allowed` every night.
+  The delete is `purge_page_stats_now()` (execute revoked from anon and
+  authenticated), the button's function keeps its admin check and calls it, and
+  `purge-old-page-stats` runs it at 03:27 UTC. One table list, so the button
+  and the job cannot disagree.
 - **A YouTube video is a still until somebody presses play.** An iframe, even
   `youtube-nocookie` and `loading="lazy"`, contacts Google when it scrolls
   into view, which is a third party reaching the device before anybody asked.

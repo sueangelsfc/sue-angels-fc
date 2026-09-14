@@ -7,6 +7,7 @@
 import { reconcileAssists } from './stats.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { POSITION_GROUPS, positionName } from './positions.mjs';
 import { readStatusRecord, statusIn, statusLabelIn, isPlaying, joinedAfter, signedOn,
   statusDetail } from './squad-status.mjs';
@@ -195,6 +196,16 @@ export function buildDataset(overrides = {}) {
   /* Which round of a knockout each cup tie was. Nothing in the match record
      carries it, and without it a cup run reads as a list of friendlies. */
   const rounds = read('cup-rounds.json').rounds || {};
+  /* A FORMATTED EDITION OF A STORED REPORT (src/data/report-editions.json):
+     the club's own words with headings, tables, graphics and profile links
+     added. Used only while the stored report is exactly the text it was built
+     from, compared by sha256 against the RAW stored row, so an edit in the
+     panel wins the moment it is saved. */
+  const editions = Object.fromEntries((read('report-editions.json').editions || []).map((e) => [e.match, e]));
+  const rawReport = (id) => {
+    const row = ((live && live.matches) || []).find((r) => r.key === id);
+    return row ? String((row.data || {}).polishedReport || (row.data || {}).commentary || '') : '';
+  };
   const matches = [...rawResults, ...allFixtures]
     .map((r) => normaliseMatch(r, detailById.get(r.id) || null))
     .map((m) => {
@@ -209,7 +220,13 @@ export function buildDataset(overrides = {}) {
     .map((m) => (rounds[m.id]
       ? { ...m, round: rounds[m.id].round, roundShort: rounds[m.id].short,
         roundAssumed: Boolean(rounds[m.id].assumed) }
-      : m));
+      : m))
+    .map((m) => {
+      const ed = editions[m.id];
+      if (!ed || !m.detail || !ed.text) return m;
+      const hash = crypto.createHash('sha256').update(rawReport(m.id)).digest('hex');
+      return hash === ed.basedOn ? { ...m, detail: { ...m.detail, polishedReport: ed.text } } : m;
+    });
 
   // Any Supabase match detail whose id is missing from the results baseline
   // would otherwise be invisible. Surface it rather than dropping it.

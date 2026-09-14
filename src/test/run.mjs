@@ -6569,6 +6569,35 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     }
   }
 
+  /* A FORMATTED EDITION OF A STORED REPORT is used while the stored text is
+     the one it was built from, and never after the club edits it. */
+  {
+    const eds = (JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'report-editions.json'), 'utf8')).editions || []);
+    for (const ed of eds) {
+      const row = (live.matches || []).find((r) => r.key === ed.match);
+      if (!row) continue;
+      /* Compared the way the site compares it: after the house-style pass the
+         dataset applies to every stored prose field. */
+      const { house: houseT } = await import(path.join(ROOT, 'src', 'lib', 'prose.mjs'));
+      const storedText = houseT(String(row.data.polishedReport || row.data.commentary || ''));
+      const same = (await import('node:crypto')).createHash('sha256').update(storedText).digest('hex') === ed.basedOn;
+      const m = base.matches.find((x) => x.id === ed.match);
+      check(`a report edition is used only while the stored report is the one it was built from: ${ed.match}`,
+        same ? m.detail.polishedReport === ed.text : m.detail.polishedReport !== ed.text, same ? 'matches' : 'stored text has moved on');
+      const edited = JSON.parse(JSON.stringify(live));
+      const er = edited.matches.find((r) => r.key === ed.match);
+      er.data.commentary = `${storedText}\n\nEdited in the panel.`;
+      delete er.data.polishedReport;
+      const m2 = bdA({ live: edited }).matches.find((x) => x.id === ed.match);
+      check(`and the club's edit in the panel wins over it: ${ed.match}`,
+        m2.detail.polishedReport !== ed.text, 'the edition still showed');
+      const bare = ed.text.replace(/^!!\[.*\]\(.*\)$/gm, '').replace(/\[([^\]]+)\]\(\/players\/[^)]+\)/g, '$1');
+      const sentences = storedText.split(/\n\s*\n/).filter((b) => b.length > 60 && !/\n/.test(b));
+      check(`and every paragraph of the club's report is in it word for word: ${ed.match}`,
+        sentences.length > 20 && sentences.every((s) => bare.includes(s)), `${sentences.filter((s) => !bare.includes(s)).length} missing`);
+    }
+  }
+
   /* THE DATABASE WINS. The same article entered in the panel must replace the
      file's copy outright, not sit beside it. */
   const first = (extra.articles || [])[0];

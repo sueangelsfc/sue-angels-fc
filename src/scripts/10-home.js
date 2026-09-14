@@ -365,6 +365,28 @@
     countdown(pick.at);
   })();
 
+  /* ---- Latest from the club: nothing older than a week -----------------
+     The build leaves out anything older than seven days on the day it runs,
+     and a page is read days after that, so the browser asks again by the
+     London calendar and takes the band away when the week has emptied. */
+  (function () {
+    var band = $('[data-latest]');
+    if (!band) return;
+    var day = function (t) {
+      try { return new Date(t).toLocaleDateString('en-CA', { timeZone: 'Europe/London' }); } catch (e) { return ''; }
+    };
+    var today = Date.parse(day(Date.now()) + 'T00:00:00Z');
+    if (isNaN(today)) return;
+    var left = 0;
+    $$('[data-posted]', band).forEach(function (li) {
+      var age = (today - Date.parse(li.getAttribute('data-posted') + 'T00:00:00Z')) / 86400000;
+      var keep = age >= 0 && age <= 7;
+      li.hidden = !keep;
+      if (keep) left += 1;
+    });
+    if (!left) band.hidden = true;
+  })();
+
   /* ---- News rail ------------------------------------------------------ */
   (function () {
     var rail = $('#nrail');

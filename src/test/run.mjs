@@ -1091,9 +1091,12 @@ for (const f of shipped) {
     /* The box follows the picture. 16/10 is the plate's shape; a 1200x630 card
        in it loses 16% of its width to object-fit: cover, and that is where the
        competition label and the club mark live. */
+    /* An article with no photograph draws its plate in markup at the same
+       shape, so it takes has-img too. */
     check('a card showing a picture takes the picture\'s shape',
       !/class="nw-card__top"[^>]*>\s*<img class="nw-card__img"/.test(newsHtml)
-      && (newsHtml.match(/nw-card__top has-img/g) || []).length === shown.length,
+      && (newsHtml.match(/nw-card__top has-img/g) || []).length
+        === shown.length + (newsHtml.match(/class="nw-plate"/g) || []).length,
       'has-img is not set on every card that shows one, so the cover is cropped');
 
     /* The drawn card is composed WITH its category and date in the same two
@@ -1113,9 +1116,15 @@ for (const f of shipped) {
     /* And the article page, which showed a crest plate while its own card
        existed. */
     const arts = htmlFiles.filter((f) => f.startsWith('news/'));
-    const withCover = arts.filter((f) => /class="nw-cover has-img"/
-      .test(fs.readFileSync(path.join(ROOT, f), 'utf8'))).length;
-    check('every article page leads with its own drawn cover',
+    /* A photograph, or the plate drawn in markup from the record, which
+       carries the page's own headline so a changed title or category shows. */
+    const withCover = arts.filter((f) => {
+      const h = fs.readFileSync(path.join(ROOT, f), 'utf8');
+      const title = ((h.match(/<h1 class="nw-art__title"[^>]*>([^<]+)</) || [])[1] || '').trim();
+      const cov = (h.match(/class="nw-cover has-img">([\s\S]*?)<\/div>/) || [])[1] || '';
+      return /nw-cover__img/.test(cov) || (title && cov.includes(`nw-plate__title`) && cov.includes(title));
+    }).length;
+    check('every article page leads with its own cover, a photograph or the plate drawn from its record',
       arts.length > 0 && withCover === arts.length, `${withCover} of ${arts.length}`);
   }
 
@@ -6464,6 +6473,24 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
       /<figure class="nw-art__fig nw-art__fig--graphic"><img src="[^"]+graphic-1\.png" alt="" width="1080" height="1350"/.test(g), g);
     check('a graphic pointing anywhere but the club\'s storage is left as text',
       !/<img/.test(ab('!![x](https://example.com/g.png)')));
+    /* LATEST FROM THE CLUB: seven days by the calendar, articles and reports
+       together, newest first, and nothing a day older. */
+    const { recentPosts: rp } = await import(path.join(ROOT, 'src', 'lib', 'home-layout.mjs'));
+    const longReport = 'A report long enough to be one. '.repeat(10);
+    const dRecent = {
+      articles: [{ title: 'Today', iso: '2026-09-14' }, { title: 'Week old', iso: '2026-09-07' },
+        { title: 'Eight days', iso: '2026-09-06' }, { title: 'Draft', iso: '2026-09-13', draft: true }],
+      played: [{ id: 'r1', iso: '2026-09-13', detail: { commentary: longReport } },
+        { id: 'r0', iso: '2026-08-30', detail: { commentary: longReport } }],
+    };
+    const got = rp(dRecent, '2026-09-14').map((p) => (p.kind === 'report' ? p.m.id : p.a.title));
+    check('latest posts are the last seven days of articles and reports, newest first',
+      got.join('|') === 'Today|r1|Week old', got.join('|'));
+    check('and a week later the same records have all gone',
+      rp(dRecent, '2026-09-22').length === 0, rp(dRecent, '2026-09-22').length);
+    const saSrcL = fs.readFileSync(path.join(ROOT, 'src', 'scripts', '10-home.js'), 'utf8');
+    check('the browser ages a latest post out by the London calendar too',
+      /\[data-latest\]/.test(saSrcL) && /data-posted/.test(saSrcL) && /Europe\/London/.test(saSrcL));
     const { plainText: pt } = await import(path.join(ROOT, 'src', 'lib', 'prose.mjs'));
     check('a graphic line and a table\'s tabs never reach a shortened version of the text',
       pt(`Note.\n\n!![c](${store}#10x10)`) === 'Note.' && pt('Played\t2') === 'Played · 2',
@@ -6498,8 +6525,12 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   for (const row of (extra.articles || [])) {
     const title = row.data.title;
     const mine = base.articles.filter((a) => a.title === title);
-    check(`an unentered article reaches the site: ${title.slice(0, 40)}`,
-      mine.length === 1 && mine[0].fromFile === true,
+    /* Once the club has imported it, the stored row is the one on the site. */
+    const entered = (live.articles || []).some((r) => (r.data || {}).title === title);
+    check(entered
+      ? `an article imported in the panel is on the site once, as the stored copy: ${title.slice(0, 30)}`
+      : `an unentered article reaches the site: ${title.slice(0, 40)}`,
+      mine.length === 1 && (entered ? !mine[0].fromFile : mine[0].fromFile === true),
       `${mine.length} matches`);
     check(`and it is a real page, not just a feed row: ${title.slice(0, 30)}`,
       fs.existsSync(path.join(ROOT, 'news', `${mine[0] ? mine[0].slug : 'x'}.html`)),
@@ -6511,6 +6542,9 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const first = (extra.articles || [])[0];
   if (first) {
     const withStored = JSON.parse(JSON.stringify(live));
+    /* Asked of a database that does not already hold it, whatever the club
+       has imported since. */
+    withStored.articles = withStored.articles.filter((r) => (r.data || {}).title !== first.data.title);
     withStored.articles.push({
       key: 'sim-entered', updated_at: '2026-09-05T12:00:00Z',
       data: { ...first.data, id: 'sim-entered', lede: 'Entered in the panel.' },

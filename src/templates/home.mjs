@@ -36,7 +36,7 @@ import {
 import {
   publishedBands, featuredFor, onThisDay, potmLatest, honoursIn, newFaces,
   previewFor, otherResults, leadershipIn, recordHoldersIn, reportsIn, albumsIn,
-  potmAll, photographersIn,
+  potmAll, photographersIn, recentPosts, LEAGUE_FIRST,
 } from '../lib/home-layout.mjs';
 import { preseasonFor, seasonAhead, sameClub, relatedClub, recordOf } from '../lib/preseason.mjs';
 import { reportText, house, plainText, FRIENDLY_NOTE_SHORT, FRIENDLY_NOTE_SET } from '../lib/prose.mjs';
@@ -247,6 +247,10 @@ export function home(d) {
      panel -> Home page; with no record this is the standard order and the page
      is identical to the one that shipped. See lib/home-layout.mjs. */
   const shown = publishedBands(d.homeLayout, d);
+  /* Latest from the club follows the League Eight bands that lead the page,
+     or opens it when they are not leading. */
+  const leadsL = shown.filter((k) => LEAGUE_FIRST.includes(k));
+  const latestAfter = leadsL.length ? leadsL[leadsL.length - 1] : null;
   RAIL_N = {};
   shown.forEach((k, i) => { RAIL_N[k] = i + 1; });
   const all = teamSummary(d.competitive);
@@ -508,6 +512,52 @@ export function home(d) {
             ${SVG.chev('M9 5l7 7-7 7')}
           </button>
         </div>
+      </div>
+    </section>` : '';
+
+  /* ================= LATEST FROM THE CLUB =================
+     Articles and match reports from the last seven days, and nothing older:
+     a revolving door the club asked for. Shown whatever the saved running
+     order says, straight after the League Eight bands, and gone when the week
+     is empty. The browser drops a card the day it turns eight days old, so a
+     page nobody republishes still cannot lead with last month. A drawn card
+     is a headline on the club's ground, which a square crop would cut in
+     half, so only a real photograph is used and the star stands in otherwise.
+     No rail number: the strip is numbered from the club's own order. */
+  const latestPosts = recentPosts(d);
+  const latestBand = latestPosts.length ? `<section class="sec latest" id="latest" aria-labelledby="lat-h" data-latest>
+      <div class="wrap">
+        <div class="xrail" aria-hidden="true">
+          <span class="xrail__l"><span class="xrail__t">Latest</span></span>
+          <span class="xrail__r">The last seven days</span>
+        </div>
+        <div class="nhead rv">
+          <div>
+            <p class="eyebrow">New this week</p>
+            <h2 class="h2" id="lat-h">Latest from the club<span class="volt">.</span></h2>
+          </div>
+          <a class="nhead__all" href="/news.html">All news and reports ${ARROW}</a>
+        </div>
+        <ol class="nrail latest__rail">
+          ${latestPosts.map((p) => {
+    const rep = p.kind === 'report';
+    const href = rep ? `/matches/${p.m.slug}.html` : `/news/${p.a.slug}.html`;
+    const title = rep ? `${p.m.home} ${p.m.scoreline || 'v'} ${p.m.away}` : p.a.title;
+    const cat = rep ? 'Match report' : (p.a.category || 'News');
+    const cover = rep ? ((p.m.detail || {}).cover || '') : (p.a.cover && p.a.cover !== 'None' ? p.a.cover : '');
+    const photo = cover && !/\/cover-(?:news|match)-\d+\.jpg$/.test(cover) ? cover : '';
+    return `<li class="ncard" data-posted="${attr(p.iso)}">
+            <a class="ncard__cover" href="${attr(href)}" aria-label="${attr(`${cat}: ${title}`)}">
+              ${photo
+      ? `<img class="ncard__photo" src="${attr(photo)}" alt="" width="320" height="320" loading="lazy" decoding="async" />`
+      : `<span class="ncard__badge"><img src="${STAR}" alt="" width="120" height="148" loading="lazy" decoding="async" /></span>`}
+              <span class="ncard__pill">${esc(cat)}</span>
+            </a>
+            <h3 class="ncard__title"><a href="${attr(href)}">${esc(title)}</a></h3>
+            <span class="ncard__meta">${esc(dayMonthYear(p.iso))}</span>
+          </li>`;
+  }).join('\n          ')}
+        </ol>
       </div>
     </section>` : '';
 
@@ -2504,7 +2554,7 @@ export function home(d) {
        The wordstrip travels with the CTA rather than sitting at a fixed point
        in the page, because that is what it is: the lead-in flourish to Pull on
        the shirt, not a divider at a particular height. */
-    body: hero + ticker + shown.map((k) => ({
+    body: hero + ticker + (latestAfter ? '' : latestBand) + shown.map((k) => (({
       news: newsBand,
       who: whoBand,
       awards: awardsBand,
@@ -2582,7 +2632,7 @@ export function home(d) {
       rate: rateBand,
       potmhistory: potmHistoryBand,
       photographers: photographersBand,
-    })[k] || '').join(''),
+    })[k] || '') + (k === latestAfter ? latestBand : '')).join(''),
     bodyClass: 'is-home',
     css: 'home.css',
     shell: 'home',

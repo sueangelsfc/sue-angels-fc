@@ -982,6 +982,29 @@ export function reportsIn(d) {
     .sort((a, b) => String(b.iso || '').localeCompare(String(a.iso || '')));
 }
 
+/* THE LAST SEVEN DAYS OF POSTS, articles and match reports together, newest
+   first. Asked by the London calendar so a post dated today is day nought and
+   one dated a week ago is day seven, the last day it shows. The build asks at
+   the moment it runs; the page asks again in the browser (10-home.js), because
+   it is read days after it is generated. `today` is a parameter so the suite
+   can ask about any day. */
+export const RECENT_DAYS = 7;
+const londonToday = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/London' }).format(new Date());
+export function recentPosts(d, today = londonToday()) {
+  const now = Date.parse(`${today}T00:00:00Z`);
+  const fresh = (iso) => {
+    const at = Date.parse(`${String(iso || '').slice(0, 10)}T00:00:00Z`);
+    if (Number.isNaN(at) || Number.isNaN(now)) return false;
+    const age = (now - at) / 864e5;
+    return age >= 0 && age <= RECENT_DAYS;
+  };
+  const arts = ((d && d.articles) || []).filter((a) => !a.draft && fresh(a.iso))
+    .map((a) => ({ kind: 'article', iso: String(a.iso).slice(0, 10), a }));
+  const reps = reportsIn(d).filter((m) => fresh(m.iso))
+    .map((m) => ({ kind: 'report', iso: String(m.iso).slice(0, 10), m }));
+  return [...arts, ...reps].sort((x, y) => y.iso.localeCompare(x.iso)).slice(0, 8);
+}
+
 export function albumsIn(d) {
   return ((d && d.galleries) || []).slice()
     .sort((a, b) => String(b.matchIso || b.date || '').localeCompare(String(a.matchIso || a.date || '')));

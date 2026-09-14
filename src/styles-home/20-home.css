@@ -1865,6 +1865,10 @@ html.js [data-season-scope][hidden]{display: none;}
 /* A league table in an article is the home page's table, frozen at the rows
    the article wrote. On a phone the club name wraps rather than cutting off. */
 .nw-art__body .tbl{margin: 4px 0;}
+/* Latest from the club: the news rail's cards, and a card or the whole band
+   the browser has aged out stays out. */
+.latest__rail{margin-top: 4px;}
+.ncard[hidden],.sec.latest[hidden]{display: none;}
 @media (max-width: 560px){
   .nw-art__body .tbl__club{white-space: normal; line-height: 1.2; gap: 9px; font-size: 12.5px !important; overflow-wrap: anywhere;}
 }

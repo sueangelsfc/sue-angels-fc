@@ -38,13 +38,23 @@ const STAR = '/assets/badge/sue-angels-badge-star.webp';
    reads as three images that failed to load rather than as a decision. A
    default cover is DRAWN: the crest, the club, and the kind of piece it is.
    ========================================================================== */
-const coverPlate = (art, eager) => (art.cover && art.cover !== 'None'
-  ? `<img class="nw-cover__img" src="${attr(art.cover)}" alt="" width="1200" height="675" loading="${eager ? 'eager' : 'lazy'}" decoding="async" />`
-  : `<span class="nw-plate">
-      <img class="nw-plate__crest" src="${STAR}" alt="Sue’s Angels FC star" width="76" height="94" loading="${eager ? 'eager' : 'lazy'}" decoding="async" />
-      <span class="nw-plate__rule" aria-hidden="true"></span>
-      <span class="nw-plate__club">Sue’s Angels FC</span>
-    </span>`);
+/* THE DEFAULT COVER IS DRAWN ON THE PAGE, NOT BAKED INTO A PICTURE. The
+   build's card and the panel's card were both images, so a category or a
+   headline changed in the panel stayed wrong on the cover until somebody
+   redrew it on a laptop: two posts moved from Club to News still said CLUB.
+   This is the same card in markup (the eyebrow and its dash, the headline in
+   Archivo 500, the date and the star with the club's name) sized to its box,
+   so it follows the record the moment the site is published. Decorative: the
+   headline is already the page's h1 or the card's title. */
+const coverPlate = (art, eager) => {
+  const t = String(art.title || '').trim();
+  const len = t.length > 88 ? ' nw-plate__title--l' : t.length > 58 ? ' nw-plate__title--m' : '';
+  return `<span class="nw-plate" aria-hidden="true">
+      <span class="nw-plate__eyebrow"><s></s>${esc(catLabel(art.category))}</span>
+      <span class="nw-plate__title${len}">${esc(t)}</span>
+      <span class="nw-plate__foot"><span>${esc(fmtDate(art.date))}</span><span class="nw-plate__club"><img src="${STAR}" alt="" width="22" height="27" loading="${eager ? 'eager' : 'lazy'}" decoding="async" />Sue’s Angels FC</span></span>
+    </span>`;
+};
 
 const ARROW = '<span aria-hidden="true">→</span>';
 
@@ -256,6 +266,15 @@ const drawnFor = (d, a) => (d.drawnCoverSrc
   ? d.drawnCoverSrc(a.isReport ? a.match.id : `a-${articleSlug(a)}`)
   : '');
 
+/* AN ARTICLE'S PHOTOGRAPH, if it has a real one. A card the panel drew
+   (cover-news-*, cover-match-*) is a picture of a headline, category baked in,
+   so on the site it gives way to the plate drawn in markup, which follows the
+   record; it is still what a shared link shows. */
+export const articlePhoto = (a) => {
+  const c = a.cover && a.cover !== 'None' ? a.cover : '';
+  return c && !/\/cover-(?:news|match)-\d+\.jpg$/.test(c) ? c : '';
+};
+
 export function news(d) {
   const items = sorted([...(d.articles || []), ...reportEntries(d)]);
   const cats = [...new Set(items.map((a) => a.category).filter(Boolean))];
@@ -277,20 +296,22 @@ export function news(d) {
 
        A STORED photograph carries neither, so it keeps both. The distinction
        is what the picture IS, not whether there is one. */
-    const stored = a.cover && a.cover !== 'None' ? a.cover : '';
-    const drawn = stored ? '' : drawnFor(d, a);
+    /* An article without a real photograph gets the plate in markup (see
+       coverPlate); a report keeps its drawn scoreline card. */
+    const stored = a.isReport ? (a.cover && a.cover !== 'None' ? a.cover : '') : articlePhoto(a);
+    const drawn = stored || !a.isReport ? '' : drawnFor(d, a);
     const src = stored || drawn;
     /* A card the PANEL drew is stored like a photograph and composed like the
        build's: `ensure()` uploads it as cover-match-* or cover-news-* with the
        competition, the score and the date already on it. Asking only whether
        the build drew it printed the Three Little Birds report's date twice. */
-    const composed = !!drawn || /\/cover-(?:match|news)-\d+\.jpg$/.test(stored);
+    const composed = a.isReport ? (!!drawn || /\/cover-(?:match|news)-\d+\.jpg$/.test(stored)) : !stored;
     const body = src
       ? `<img class="nw-card__img" src="${attr(src)}" alt="" width="1200" height="630" loading="lazy" decoding="async" />`
       : a.isReport
         ? `<span class="nw-card__score"><b>${esc(a.match.scoreline || 'v')}</b><i>${esc(a.match.competition)}${a.match.round ? ` · ${esc(a.match.round)}` : ''}</i></span>`
         : coverPlate(a, false);
-    return `<span class="nw-card__top${src ? ' has-img' : ''}">
+    return `<span class="nw-card__top${src || !a.isReport ? ' has-img' : ''}">
                 ${composed ? '' : `<span class="nw-card__cat">${esc(catLabel(a.category))}</span>`}
                 ${body}
                 ${composed ? '' : `<span class="nw-card__date">${esc(fmtDate(a.date))}</span>`}`;
@@ -380,10 +401,10 @@ export function newsArticle(a, d) {
         <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> ${esc(catLabel(a.category))}</p>
         <h1 class="nw-art__title" id="na-h">${esc(a.title)}</h1>
         <p class="nw-art__meta">${esc(fmtDate(a.date, { long: true }))} · ${esc(words)} min read${a.author ? ` · ${esc(a.author)}` : ''}</p>
-        <div class="nw-cover${(a.cover && a.cover !== 'None') || drawnFor(d, a) ? ' has-img' : ''}">${(() => {
-    /* Same three states as the card, and eager because this one is the
-       page's own hero rather than something below the fold. */
-    const src = (a.cover && a.cover !== 'None') ? a.cover : drawnFor(d, a);
+        <div class="nw-cover has-img">${(() => {
+    /* A real photograph, or the plate drawn in markup; eager because this is
+       the page's own hero rather than something below the fold. */
+    const src = articlePhoto(a);
     return src
       ? `<img class="nw-cover__img" src="${attr(src)}" alt="" width="1200" height="630" fetchpriority="high" decoding="async" />`
       : coverPlate(a, true);

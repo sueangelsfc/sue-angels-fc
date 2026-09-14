@@ -247,42 +247,92 @@
       });
   }
 
-  /* ---- The news card: the crest and the headline ---- */
+  /* ---- The news card: drawn as the build draws it ----
+     THE SAME CARD AS src/lib/cover-art.mjs articleCover(), whatever the
+     category. This one used to be its own design (a big crest, an 800-weight
+     headline) and, worse, named Archivo without ever loading it: the panel's
+     stylesheet has no web fonts, so the canvas fell back to a heavy system
+     face and every panel-drawn article card looked like somebody else's club.
+     The site's own variable fonts are loaded first, and the layout follows
+     the build's: orange eyebrow with its dash, the headline in Archivo 500 on
+     the club's ground, the date bottom left and the star with the club's
+     name bottom right. */
+  var FONTS = null;
+  function fontsReady() {
+    if (FONTS) return FONTS;
+    if (typeof FontFace !== 'function' || !document.fonts) { FONTS = Promise.resolve(); return FONTS; }
+    var faces = [
+      new FontFace('Archivo', 'url(/assets/fonts/Archivo-Variable.woff2)', { weight: '100 900', stretch: '62.5% 125%' }),
+      new FontFace('Geist', 'url(/assets/fonts/Geist-Variable.woff2)', { weight: '100 900' }),
+    ];
+    FONTS = Promise.race([
+      Promise.all(faces.map(function (f) { return f.load().then(function (x) { document.fonts.add(x); }); })),
+      new Promise(function (r) { setTimeout(r, 4000); }),
+    ]).catch(function () {});
+    return FONTS;
+  }
+
+  function drawCardGround(ctx) {
+    ctx.fillStyle = '#0B0A09';
+    ctx.fillRect(0, 0, W, H);
+    [[140, 100, 560, 0.2], [W - 120, H + 40, 440, 0.15]].forEach(function (g) {
+      var r = ctx.createRadialGradient(g[0], g[1], 0, g[0], g[1], g[2]);
+      r.addColorStop(0, 'rgba(255,112,52,' + g[3] + ')');
+      r.addColorStop(1, 'rgba(255,112,52,0)');
+      ctx.fillStyle = r;
+      ctx.fillRect(0, 0, W, H);
+    });
+    var v = ctx.createLinearGradient(0, 0, 0, H);
+    v.addColorStop(0, 'rgba(11,10,9,0.42)');
+    v.addColorStop(1, 'rgba(11,10,9,0.78)');
+    ctx.fillStyle = v;
+    ctx.fillRect(0, 0, W, H);
+  }
+
   function newsCover(a) {
-    return loadImage(SEED.crest).then(function (crest) {
+    return Promise.all([fontsReady(), loadImage(SEED.crest)]).then(function (both) {
+      var crest = both[1];
       var k = canvas();
       var ctx = k.ctx;
-      drawGround(ctx);
-
-      if (crest) {
-        var h = 300;
-        var w = crest.width * (h / crest.height);
-        ctx.globalAlpha = 0.9;
-        ctx.drawImage(crest, W - w - 70, (H - h) / 2 - 10, w, h);
-        ctx.globalAlpha = 1;
-      }
-
+      drawCardGround(ctx);
       ctx.textAlign = 'left';
       ctx.textBaseline = 'alphabetic';
+
+      /* The eyebrow: a 38px rule, then the category in tracked capitals. */
       ctx.fillStyle = BRAND;
-      ctx.font = '700 22px Archivo, system-ui, sans-serif';
+      ctx.fillRect(64, 67, 38, 2);
+      ctx.font = '700 17px Geist, system-ui, sans-serif';
       ctx.letterSpacing = '3px';
-      ctx.fillText(String(a.category || 'News').toUpperCase(), 70, 128);
-      ctx.letterSpacing = '0px';
+      ctx.fillText(String(a.category || 'Club news').toUpperCase(), 114, 74);
 
+      /* The headline, sized by length exactly as the build sizes it. */
+      var t = String(a.title || '').trim();
+      var size = t.length > 88 ? 60 : t.length > 58 ? 70 : 82;
       ctx.fillStyle = '#fff';
-      var fit = fitHeadline(ctx, a.title || '', 700, 3, 62, 30);
-      ctx.font = '800 ' + fit.size + 'px Archivo, system-ui, sans-serif';
-      /* Block centred on the card rather than pinned to a fixed top, so a
-         one-line headline and a three-line one both sit where the eye goes. */
-      var lh = fit.size * 1.14;
-      var top = (H - lh * fit.lines.length) / 2 + fit.size * 0.82;
-      fit.lines.forEach(function (l, i) { ctx.fillText(l, 70, top + i * lh); });
+      ctx.font = '500 ' + size + 'px Archivo, system-ui, sans-serif';
+      ctx.letterSpacing = (-0.032 * size).toFixed(1) + 'px';
+      var lines = wrap(ctx, t, size * 10.2, 5);
+      var lh = size * 1.06;
+      var top = (H - lh * lines.length) / 2 + size * 0.78;
+      lines.forEach(function (l, i) { ctx.fillText(l, 64, top + i * lh); });
 
+      /* The foot. */
+      ctx.letterSpacing = '2.3px';
       ctx.fillStyle = 'rgba(255,255,255,0.62)';
-      ctx.font = '500 22px Geist, system-ui, sans-serif';
-      ctx.fillText((a.date || '') + (a.date ? '  ·  ' : '') + US, 70, H - 72);
-
+      ctx.font = '600 18px Geist, system-ui, sans-serif';
+      ctx.fillText(String(a.date || '').toUpperCase(), 64, H - 60);
+      ctx.letterSpacing = '-0.2px';
+      ctx.fillStyle = '#fff';
+      ctx.font = '600 22px Archivo, system-ui, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('Sue’s Angels FC', W - 64, H - 60);
+      var nameW = ctx.measureText('Sue’s Angels FC').width;
+      if (crest) {
+        var cw = 44;
+        var ch = crest.height * (cw / crest.width);
+        ctx.drawImage(crest, W - 64 - nameW - 14 - cw, H - 60 - ch / 2 - 7, cw, ch);
+      }
+      ctx.letterSpacing = '0px';
       return toBlob(k.c);
     });
   }
@@ -339,10 +389,14 @@
       });
   }
 
-  /* Draw one only if the record has none. Resolves either way; the caller is
-     a save that has already succeeded and must not be made to fail. */
+  /* Draw one only if the record has none, OR if the article's cover is a card
+     this screen drew: that picture has the headline and the category baked
+     in, so a save that changed either redraws it and the shared link keeps up.
+     A real photograph is never touched. Resolves either way; the caller is a
+     save that has already succeeded and must not be made to fail. */
   function ensure(table, key, data) {
-    if (!key || (data && data.cover)) return Promise.resolve(null);
+    var had = data && data.cover;
+    if (!key || (had && !(table === 'articles' && /\/cover-news-\d+\.jpg$/.test(had)))) return Promise.resolve(null);
     var rec = { key: key, data: data || {} };
     var job = table === 'articles' ? forArticle(rec) : forMatch(rec);
     return job.then(function () { return 'drawn'; }).catch(function () { return null; });

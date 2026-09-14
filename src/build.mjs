@@ -492,7 +492,7 @@ const adminSeed = {
      it drawn made the panel and the pages disagree by one. */
   drawnCovers: [
     ...(d.matches || []).filter((m) => !m.detail?.cover && drawnCover(m.id)).map((m) => m.id),
-    ...(d.articles || []).filter((a) => !a.cover && drawnCover(`a-${articleSlug(a)}`)).map((a) => a.key),
+    ...(d.articles || []).filter((a) => (!a.cover || /\/cover-news-\d+\.jpg$/.test(a.cover)) && drawnCover(`a-${articleSlug(a)}`)).map((a) => a.key),
   ].filter(Boolean),
   baselineFixtures: (JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'fixtures-2627.json'), 'utf8')).fixtures || [])
     /* A FIXTURE THAT HAS BEEN PLAYED IS NOT MISSING FROM ANYTHING.
@@ -1397,7 +1397,9 @@ for (const a of (groupLive('news') ? d.articles : [])) {
     description: fitDesc(plainText(a.lede) || String(a.title), `${CLUB.name}, ${CLUB.venue.district}.`),
     /* The article's own cover, drawn or photographed, in preference to the
        generic news card. */
-    ogImage: a.cover || drawnCover(`a-${slug}`) || ogCard('og-news'),
+    /* A headline card the panel drew gives way to the build's (see
+       articleStoredCover in news.mjs). */
+    ogImage: ((/\/cover-news-\d+\.jpg$/.test(a.cover || '') && drawnCover(`a-${slug}`)) || a.cover || drawnCover(`a-${slug}`) || ogCard('og-news')),
     ogImageAlt: `${a.title} - ${CLUB.name}`,
     path: `/news/${slug}.html`,
     body: out.body,

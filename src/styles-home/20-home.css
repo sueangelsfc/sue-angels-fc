@@ -1862,6 +1862,12 @@ html.js [data-season-scope][hidden]{display: none;}
 .nw-art__table th,.nw-art__table td{padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line-d); color: var(--ink-2); font-weight: 400;}
 .nw-art__table thead th{font-family: var(--display); font-weight: 500; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg);}
 .nw-art__table tbody th{color: var(--fg);}
+/* A league table in an article is the home page's table, frozen at the rows
+   the article wrote. On a phone the club name wraps rather than cutting off. */
+.nw-art__body .tbl{margin: 4px 0;}
+@media (max-width: 560px){
+  .nw-art__body .tbl__club{white-space: normal; line-height: 1.2; gap: 9px; font-size: 12.5px !important; overflow-wrap: anywhere;}
+}
 
 /* ---- Cookie consent ------------------------------------------------------
    Built by src/scripts/20-consent.js, never shipped in the markup, so no page

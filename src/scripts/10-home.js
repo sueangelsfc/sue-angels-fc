@@ -679,9 +679,11 @@
   })();
 
   /* ---- League table reveal and points count-up ------------------------- */
-  (function () {
-    var tbl = $('#tbl');
-    if (!tbl) return;
+  /* EVERY TABLE OF THIS KIND, not the home page's one. The rows are hidden
+     under html.js until `.is-in` arrives, and this looked for `#tbl` alone, so
+     the same table drawn in an article would have shipped as a header over an
+     empty box. */
+  $$('.tbl').forEach(function (tbl) {
     var pts = $$('.tbl__pts[data-pts]', tbl);
     var countPts = function () {
       var ease = function (t) { return 1 - Math.pow(1 - t, 4); };
@@ -705,7 +707,7 @@
       });
     }, { threshold: 0.25 });
     io.observe(tbl);
-  })();
+  });
 
   /* ---- Player of the Month tabs (awards page) -------------------------
      The markup ships as jump links over four visible panels, which is what a

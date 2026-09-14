@@ -6443,6 +6443,15 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     const piped = ab('| Club | Pts |\n|---|---|\n| Sue’s Angels FC | 6 |');
     check('a table written between pipes, with its rule row, becomes a table',
       /<th scope="col">Club<\/th>/.test(piped) && /<th scope="row">Sue’s Angels FC<\/th><td>6<\/td>/.test(piped) && !/---/.test(piped), piped);
+    const leagueText = '| Club | P | W | D | L | GF | GA | GD | Pts |\n|---|---|---|---|---|---|---|---|---|\n'
+      + '| Sue’s Angels FC | 2 | 2 | 0 | 0 | 10 | 2 | +8 | 6 |\n| TSM Rovers | 2 | 1 | 0 | 1 | 7 | 5 | +2 | 3 |';
+    const lg = ab(leagueText, { badges: {} });
+    check('a league-shaped table in an article is drawn as the home page\'s table, with every column for a screen reader',
+      /<div class="tbl">/.test(lg) && /<a class="tbl__row tbl__row--us"[^>]*><span class="tbl__pos">1<\/span>/.test(lg)
+        && /<span>\+8<\/span><b class="tbl__pts">6<\/b>/.test(lg)
+        && /<table class="sr-only">[\s\S]*<th scope="row">TSM Rovers<\/th><td>2<\/td><td>1<\/td><td>0<\/td><td>1<\/td><td>7<\/td>/.test(lg), lg.slice(0, 400));
+    check('without the crest registry a league-shaped table stays an ordinary table',
+      !/class="tbl"/.test(ab(leagueText)) && /nw-art__table/.test(ab(leagueText)));
     const cellAttack = ab('A\tB\n<img src=x onerror=1>\t**2**');
     check('a table cell is escaped before its emphasis is read',
       !/<img/.test(cellAttack) && /&lt;img/.test(cellAttack) && /<td><strong>2<\/strong><\/td>/.test(cellAttack), cellAttack);

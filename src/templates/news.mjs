@@ -18,7 +18,7 @@
 import { esc, attr, CLUB_ID } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { fmtDate, slugify, isUs } from '../lib/stats.mjs';
-import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
+import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
 import { reportText, hasReport, plainText } from '../lib/prose.mjs';
 import { readFileSync } from 'node:fs';
 
@@ -116,13 +116,44 @@ function photo(b) {
    header and the first column names its row. Cells go through `inline`, which
    escapes before anything else. */
 const TABLE_RULE = /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?$/;
-function table(lines) {
+
+/* A LEAGUE TABLE IS DRAWN AS THE HOME PAGE DRAWS IT. A table whose header is
+   exactly Club, P, W, D, L, GF, GA, GD, Pts becomes the home page's `.tbl`:
+   position, crest, played, won, goal difference and points, with the club's
+   own row lit. The rows are the ones the article wrote, so a piece about
+   game week two keeps game week two's table however the season moves on. A
+   screen reader gets every column from the hidden table under it, the way
+   the home page does it. */
+const LEAGUE_HEAD = 'club|p|w|d|l|gf|ga|gd|pts';
+function leagueTable(rows, badges) {
+  const body = rows.slice(1).filter((r) => r[0]);
+  const cols = ['Position', 'Club', 'Played', 'Won', 'Drawn', 'Lost', 'Goals for', 'Goals against', 'Goal difference', 'Points'];
+  return `<div class="tbl">`
+    + '<div class="tbl__row tbl__head-row" aria-hidden="true"><span class="tbl__pos">#</span><span class="tbl__club">Club</span>'
+    + '<span>P</span><span>W</span><span>GD</span><span class="tbl__pts">Pts</span></div>'
+    + body.map((r, i) => {
+      const us = isUs(r[0]);
+      return `<a class="tbl__row${us ? ' tbl__row--us' : i === 1 ? ' tbl__row--runner' : ''}" href="/league.html" aria-hidden="true" tabindex="-1">`
+        + `<span class="tbl__pos">${i + 1}</span><span class="tbl__club">${us
+          ? `<img src="${STAR}" alt="" width="26" height="32" loading="lazy" decoding="async" />`
+          : oppBadge(r[0], badges, 26, 26)}${inline(r[0])}</span>`
+        + `<span>${inline(r[1] || '')}</span><span>${inline(r[2] || '')}</span><span>${inline(r[7] || '')}</span>`
+        + `<b class="tbl__pts">${inline(r[8] || '')}</b></a>`;
+    }).join('')
+    + '</div>'
+    + `<table class="sr-only"><thead><tr>${cols.map((c) => `<th scope="col">${c}</th>`).join('')}</tr></thead>`
+    + `<tbody>${body.map((r, i) => `<tr><td>${i + 1}</td><th scope="row">${inline(r[0])}</th>${r.slice(1, 9)
+      .map((c) => `<td>${inline(c || '')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+}
+
+function table(lines, opts = {}) {
   const tabbed = lines.every((l) => l.includes('\t'));
   const piped = lines.every((l) => /^\|.*\|$/.test(l));
   if (lines.length < 2 || (!tabbed && !piped)) return '';
   const rows = lines.filter((l) => !TABLE_RULE.test(l))
     .map((l) => (tabbed ? l.split('\t') : l.slice(1, -1).split('|')).map((c) => c.trim()));
   if (rows.length < 2) return '';
+  if (opts.badges && rows[0].map((c) => c.toLowerCase()).join('|') === LEAGUE_HEAD) return leagueTable(rows, opts.badges);
   const width = Math.max(...rows.map((r) => r.length));
   const full = (r) => [...r, ...Array(width - r.length).fill('')];
   const [head, ...body] = rows;
@@ -133,7 +164,9 @@ function table(lines) {
     + '</table></div>';
 }
 
-export function articleBody(text) {
+/* `opts.badges` is the crest registry: given it, a league-shaped table is
+   drawn as the home page's table; without it, as any other table. */
+export function articleBody(text, opts = {}) {
   const blocks = String(text || '').split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
   /* `#` and `##` are a heading, `###` a sub-heading under it. A sub-heading
      with no heading above it is still an h2, styled smaller, because an h3
@@ -149,7 +182,7 @@ export function articleBody(text) {
       underHeading = true;
       return `<h2 class="nw-art__h${sub ? ' nw-art__h--sub' : ''}">${words}</h2>`;
     }
-    const tbl = table(b.split('\n').map((l) => l.replace(/^ +| +$/g, '')).filter((l) => l.trim()));
+    const tbl = table(b.split('\n').map((l) => l.replace(/^ +| +$/g, '')).filter((l) => l.trim()), opts);
     if (tbl) return tbl;
     const lines = b.split('\n').map((l) => l.trim()).filter(Boolean);
     if (lines.length > 1 && lines.every((l) => /^[-*·•]\s+/.test(l))) {
@@ -361,7 +394,7 @@ export function newsArticle(a, d) {
   const body = `<section class="sec nw-art" aria-label="Article">
       <div class="wrap wrap--narrow">
         <div class="nw-art__body rv">
-        ${articleBody(a.lede)}
+        ${articleBody(a.lede, { badges: d.badges })}
         </div>
         <p class="nw-art__back"><a href="/news.html">${ARROW} All club news</a></p>
       </div>

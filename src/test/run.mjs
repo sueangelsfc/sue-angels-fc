@@ -3020,6 +3020,58 @@ for (const [f, kb] of Object.entries({
         check('the archive names two matches whose scoreline and goals disagree',
           askedOf(/scoreline says/).join() === ['r20260816-brentford', 'r20260830-bpr'].join(),
           askedOf(/scoreline says/).join(', ') || 'none');
+
+        /* THEIR GOALS, and the written report against the record. Named for
+           the same reason as the rest: the club writing one in is expected to
+           fail this and be settled by striking the line out. */
+        /* Filtered to the matches the snapshot holds: the committed snapshot
+           trails the database, and the two September league matches are only
+           in the synced one. */
+        const heldKeys = new Set((live.matches || []).map((m) => m.key));
+        check('the archive names the matches whose opponents\' goals are not written in',
+          askedOf(/opponents scored/).join() === [
+            'r20260201-bpr', 'r20260426-catania', 'r20260517-portolondon-drt', 'r20260809-galacticos',
+            'r20260812-kingsmeadow', 'r20260816-brentford', 'r20260823-kew', 'r20260830-bpr',
+            'r20260906-three', 'r20260913-haydons',
+          ].filter((k) => heldKeys.has(k)).join(), askedOf(/opponents scored/).join(', ') || 'none');
+        /* Asked with the squad's real names: the report question compares
+           surnames, and `P12` has none. */
+        const seedNames = {};
+        for (const p of (seedJson.squad || [])) if (p && p.num != null) seedNames[p.num] = p.name;
+        const reportAsked = (live.matches || [])
+          .filter((m) => win.CPREC.matchProblems(whole(m), (n) => seedNames[n] || 'P' + n).some((x) => /written report/.test(x)))
+          .map((m) => m.key);
+        check('no written report in the archive disagrees with its own record',
+          Object.keys(seedNames).length > 20 && reportAsked.length === 0, reportAsked.join(', ') || `${Object.keys(seedNames).length} names`);
+
+        check('a goal conceded with nothing under Their goals is found',
+          said({ starters: xi, goals: [], us: 0, home: "Sue's Angels FC", hs: 0, as: 2 }, /opponents scored 2 but none/));
+        check('their goals written in to match the score are not complained about',
+          !said({ starters: xi, goals: [], us: 0, home: "Sue's Angels FC", hs: 0, as: 1, opponentGoals: [{ minute: '60' }] }, /opponents scored/));
+        check('away from home, their score is the home side\'s',
+          said({ starters: xi, goals: [], us: 0, home: 'Junction Elite FC', away: "Sue's Angels FC", hs: 3, as: 0 }, /opponents scored 3/));
+
+        const R = (d) => win.CPREC.matchProblems(d, (n) => ['', 'Ade Owolana', 'Daniel McLane', 'Luke Munns'][n] || 'P' + n)
+          .filter((m) => /written report/.test(m));
+        const rep = (extra, text) => ({
+          starters: xi, goals: [{ num: 1 }, { num: 1 }, { num: 2 }], home: "Sue's Angels FC", hs: 3, as: 0,
+          motm: 1, captain: 2, keeper: 3, saves: 4, formation: '3-4-1-2',
+          commentary: text || 'Report.\n\nMatch details\n\nFull-time: Sue’s Angels FC 3–0 X\nPlayer of the Match: Ade Owolana\n'
+            + 'Captain: Dan McLane\nGoalkeeper: Luke Munns\nStarting formation: 3-4-1-2\nSaves: 4\n\nGoalscorers\nAde Owolana, 2\nDaniel McLane, 1',
+          ...extra,
+        });
+        check('a written report that agrees with its record, Dan for Daniel included, is not complained about',
+          R(rep()).length === 0, R(rep()).join(' | '));
+        check('a report naming a different Player of the Match is found',
+          R(rep({ motm: 2 })).some((m) => /names Ade Owolana as player of the match and the record names Daniel McLane/.test(m)),
+          R(rep({ motm: 2 })).join(' | '));
+        check('a report whose goalscorer tally differs is found',
+          R(rep({ goals: [{ num: 1 }, { num: 2 }, { num: 2 }] })).some((m) => /gives Ade Owolana 2 goals and the record 1/.test(m)),
+          R(rep({ goals: [{ num: 1 }, { num: 2 }, { num: 2 }] })).join(' | '));
+        check('a report giving a different score, saves or shape is found',
+          R(rep({ hs: 4, saves: 2, formation: '4-4-2' })).length === 3, R(rep({ hs: 4, saves: 2, formation: '4-4-2' })).join(' | '));
+        check('a report with no Match details block is not read at all',
+          R(rep({ motm: 2 }, 'Ade Owolana was Player of the Match.')).length === 0);
       }
     }
   }
@@ -4704,6 +4756,9 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const ALLOWED_THIRD_PARTY = [
     'googletagmanager.com',   // Google Analytics, inside the gate
     'connect.facebook.net',   // Meta pixel, inside the gate
+    /* The next-match card's Directions link, re-pointed when the card moves
+       on. A destination the visitor chooses to open; nothing is fetched. */
+    'www.google.com/maps/search/',
   ];
   const hosts = [...saJs.matchAll(/["'](https?:\/\/[^"']+)["']/g)].map((m) => m[1])
     .filter((u) => !/suesangelsfc\.co\.uk|schema\.org|w3\.org|supabase\.co/.test(u))
@@ -5522,7 +5577,9 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   }
   {
     const ih = pages.get('index.html') || '';
-    const hosts = new Set(hostsOf(ih));
+    /* The next-match card's Directions link is a way to the ground, not a
+       source a band rests on, so it is neither a citation nor a stray one. */
+    const hosts = new Set(hostsOf(ih.replace(/href="https:\/\/www\.google\.com\/maps\/search\/[^"]*"/g, '')));
     const bands = [...ih.matchAll(/<section class="sec sec--([a-z0-9]+)/g)].map((m) => m[1]);
     const hostOf = (k) => new URL(SOURCES[k].href).host;
     const need = [

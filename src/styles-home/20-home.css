@@ -500,6 +500,11 @@ b{font-weight: 700;}
   font-variant-numeric: tabular-nums;
   color: var(--volt);
   white-space: nowrap;}
+.hx__dir{display: inline-block; margin-top: 9px;
+  font-family: var(--ui); font-size: 12px; font-weight: 700; letter-spacing: 0.02em;
+  color: var(--volt); text-decoration: underline; text-underline-offset: 3px;}
+.hx__card.is-matchday .hx__cardlabel{color: var(--volt);}
+.hx__card.is-matchday .hx__countdown{background: rgba(var(--volt-rgb), 0.18); border-color: rgba(var(--volt-rgb), 0.5);}
 .hx__cta{display: block;
   margin-top: 14px;
   background: var(--volt); color: var(--navy);

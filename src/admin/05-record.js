@@ -79,6 +79,22 @@
         + (goals.length === 1 ? ' goal is' : ' goals are') + ' listed.');
     }
 
+    /* THEIR GOALS. The form has had a box for who scored against the club, and
+       when, since 25/26's archive was entered, and every 26/27 match that
+       conceded left it empty, so the match story says nothing about the goal
+       that changed a game. Asked of the stored score, like ours above. */
+    var theirs = null;
+    if (d.hs != null && d.as != null) theirs = d.home && !/Sue.s Angels/.test(d.home) ? Number(d.hs) : Number(d.as);
+    if (d.them != null) theirs = Number(d.them);
+    var logged = (d.opponentGoals || []).length;
+    if (theirs != null && !isNaN(theirs) && theirs > 0 && logged !== theirs) {
+      out.push('The opponents scored ' + theirs + ' but ' + (logged
+        ? logged + (logged === 1 ? ' of their goals is' : ' of their goals are') + ' written in.'
+        : 'none of their goals is written in under Their goals.'));
+    }
+
+    reportProblems(d, name, goals).forEach(function (p) { out.push(p); });
+
     var onSheet = {};
     starters.forEach(function (x) { onSheet[num(x)] = 1; });
     bench.forEach(function (x) { onSheet[num(x)] = 1; });
@@ -116,6 +132,69 @@
         + (idle.length === 1 ? ' is named on the bench as an unused substitute but is'
           : ' are named on the bench as unused substitutes but are')
         + ' credited with something in this match. Tick Came on, on the team sheet.');
+    }
+    return out;
+  }
+
+  /* DOES THE WRITTEN REPORT AGREE WITH THE RECORD? A finished report ends in a
+     "Match details" block - Full-time, Player of the Match, Captain,
+     Goalkeeper, Saves, Starting formation, then the Goalscorers with a tally
+     each - and the website publishes both the prose and the record beside it,
+     so a disagreement between them is printed twice on the same page. Only
+     those labelled lines are read: the prose above them is never guessed at.
+     People are compared by surname, because a report says Dan where the
+     squad says Daniel. */
+  function reportProblems(d, name, goals) {
+    var out = [];
+    var text = String(d.polishedReport || d.commentary || '');
+    var at = text.search(/^Match details[ \t]*$/m);
+    if (at < 0) return out;
+    var block = text.slice(at);
+    var line = function (label) {
+      var m = new RegExp('^' + label + ':[ \\t]*(.+)$', 'mi').exec(block);
+      return m ? m[1].trim() : '';
+    };
+    var surname = function (s) {
+      return String(s || '').toLowerCase().replace(/[^a-z\s-]/g, '').trim().split(/\s+/).pop();
+    };
+    var ft = /^Full-time:.*?(\d+)\s*[\u2013\u2014-]\s*(\d+)/mi.exec(block);
+    if (ft && d.hs != null && d.as != null && (Number(ft[1]) !== Number(d.hs) || Number(ft[2]) !== Number(d.as))) {
+      out.push('The written report gives the score as ' + ft[1] + '-' + ft[2]
+        + ' and the record as ' + d.hs + '-' + d.as + '.');
+    }
+    [['Player of the Match', 'motm'], ['Captain', 'captain'], ['Goalkeeper', 'keeper']].forEach(function (p) {
+      var said = line(p[0]);
+      if (!said || d[p[1]] == null || d[p[1]] === '') return;
+      var who = name(d[p[1]]);
+      if (/^\d+$/.test(String(who))) return;
+      if (surname(said) !== surname(who)) {
+        out.push('The written report names ' + said + ' as ' + p[0].toLowerCase()
+          + ' and the record names ' + who + '.');
+      }
+    });
+    var shape = line('Starting formation');
+    if (shape && d.formation && shape !== String(d.formation)) {
+      out.push('The written report starts in ' + shape + ' and the record in ' + d.formation + '.');
+    }
+    var saves = line('Saves');
+    if (/^\d+$/.test(saves) && d.saves != null && d.saves !== '' && Number(saves) !== Number(d.saves)) {
+      out.push('The written report gives ' + saves + ' saves and the record ' + d.saves + '.');
+    }
+    var gs = /^Goalscorers[ \t]*\n([\s\S]*?)(?:\n[ \t]*\n|$)/mi.exec(block);
+    if (gs) {
+      var tally = {};
+      goals.forEach(function (g) {
+        if (g && g.num != null) { var k = surname(name(g.num)); tally[k] = (tally[k] || 0) + 1; }
+      });
+      gs[1].split('\n').forEach(function (l) {
+        var m = /^(.+?),\s*(\d+)\s*$/.exec(l.trim());
+        if (!m) return;
+        var n = tally[surname(m[1])] || 0;
+        if (n !== Number(m[2])) {
+          out.push('The written report gives ' + m[1] + ' ' + m[2] + (m[2] === '1' ? ' goal' : ' goals')
+            + ' and the record ' + n + '.');
+        }
+      });
     }
     return out;
   }

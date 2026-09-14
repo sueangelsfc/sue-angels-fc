@@ -266,14 +266,34 @@
        kick-off it is counting to as an argument, so advancing the fixture
        re-points it rather than leaving it counting down to a game that has
        been played. */
+    var IN_PLAY = 2 * 60 * 60 * 1000;
+
+    /* MATCH DAY. On the day of the fixture, by the clock at the ground, the
+       card says so: the label reads Match day, the clock counts hours rather
+       than days, and from the whistle it says the game is under way and then
+       that the result follows. The build cannot know any of this, because the
+       page was generated days before. */
+    var londonDay = function (t) {
+      try { return new Date(t).toLocaleDateString('en-GB', { timeZone: 'Europe/London' }); } catch (e) { return ''; }
+    };
+    var label = card.querySelector('[data-nx-label]');
+
     var countdown = function (at) {
       if (!cd) return;
       var kick = new Date(at || cd.getAttribute('data-kick') || '').getTime();
       if (!kick || isNaN(kick)) { cd.textContent = 'TBC'; return; }
       var tick = function () {
-        var left = kick - Date.now();
-        if (left <= 0) { cd.textContent = 'Kick-off'; return; }
-        cd.textContent = Math.floor(left / 86400000) + 'd '
+        var now = Date.now();
+        var left = kick - now;
+        var today = londonDay(now) === londonDay(kick);
+        card.classList.toggle('is-matchday', today);
+        if (today && label && !/^Match day/.test(label.textContent)) label.textContent = 'Match day · today';
+        if (left <= 0) {
+          cd.textContent = -left < IN_PLAY ? 'Under way' : 'Result to follow';
+          if (-left < IN_PLAY) setTimeout(tick, 60000);
+          return;
+        }
+        cd.textContent = (today ? '' : Math.floor(left / 86400000) + 'd ')
           + Math.floor(left / 3600000) % 24 + 'h '
           + Math.floor(left / 60000) % 60 + 'm '
           + Math.floor(left / 1000) % 60 + 's';
@@ -286,7 +306,6 @@
     try { list = JSON.parse(card.getAttribute('data-upcoming') || '[]'); } catch (e) { list = []; }
     if (!list.length) { countdown(); return; }
 
-    var IN_PLAY = 2 * 60 * 60 * 1000;
     var now = Date.now();
     var pick = null;
     for (var i = 0; i < list.length; i++) {
@@ -313,6 +332,11 @@
     for (var k in fields) {
       var el = card.querySelector('[data-nx-' + k + ']');
       if (el) el.textContent = fields[k];
+    }
+    var dir = card.querySelector('[data-nx-dir]');
+    if (dir) {
+      dir.hidden = !pick.venue;
+      if (pick.venue) dir.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(pick.venue);
     }
 
     /* The crest, replaced rather than re-sourced: a club with no badge of its

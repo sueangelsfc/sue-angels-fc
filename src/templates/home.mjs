@@ -434,6 +434,10 @@ export function home(d) {
                 <span class="hx__metatext"><small>Venue</small><b data-nx-venue>${esc(next.venue || 'TBC')}</b></span>
               </div>
             </div>
+            ${/* DIRECTIONS, because on a match morning the ground is the question.
+                  A map search for the venue as the fixture names it; the script
+                  re-points it when it moves the card on to the next fixture. */''}
+            <a class="hx__dir" data-nx-dir href="${attr(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(next.venue || '')}`)}" target="_blank" rel="noopener"${next.venue ? '' : ' hidden'}>Directions to the ground <span aria-hidden="true">→</span></a>
 
             <div class="hx__countdown">
               <span class="hx__cdlabel">Countdown</span>

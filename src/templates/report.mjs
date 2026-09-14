@@ -139,6 +139,11 @@ export function matchReport(m, d) {
     : `<p class="mr-col__none">${m.isWalkover
       ? 'Awarded as a walkover, so no goals are recorded.'
       : 'No goalscorer is recorded for this match.'}</p>`}
+            ${/* THEIR GOALS, from the form's Their goals box: the minute, who
+                  (when anybody knows) and whether it was a penalty. */''}
+            ${((m.detail || {}).opponentGoals || []).length ? `<p class="mr-col__cap">${esc(shortClub(m.opponent))}: ${esc(m.detail.opponentGoals
+    .map((g) => [g.minute ? `${g.minute}′` : '', g.name && !/^unknown$/i.test(g.name) ? g.name : '', g.penalty ? '(pen)' : '']
+      .filter(Boolean).join(' ') || 'a goal').join(', '))}</p>` : ''}
           </div>
           <div class="mr-col">
             <h3 class="mr-col__h">Assists</h3>

@@ -24,21 +24,148 @@
   ],
   "tableAsOf": "2026-09-13",
   "table": [
-    { "p": 1, "c": "Sue's Angels FC", "pl": 2, "w": 2, "d": 0, "l": 0, "gf": 10, "ga": 2, "gd": 8, "pts": 6 },
-    { "p": 2, "c": "TSM Rovers", "pl": 2, "w": 1, "d": 0, "l": 1, "gf": 7, "ga": 5, "gd": 2, "pts": 3 },
-    { "p": 3, "c": "Brockwell Violets FC", "pl": 1, "w": 1, "d": 0, "l": 0, "gf": 2, "ga": 0, "gd": 2, "pts": 3 },
-    { "p": 4, "c": "Bristol City (London) Supporters", "pl": 1, "w": 1, "d": 0, "l": 0, "gf": 2, "ga": 1, "gd": 1, "pts": 3 },
-    { "p": 5, "c": "Three Little Birds FC", "pl": 2, "w": 1, "d": 0, "l": 1, "gf": 5, "ga": 5, "gd": 0, "pts": 3 },
-    { "p": 6, "c": "Barnes Stormers FC", "pl": 1, "w": 0, "d": 0, "l": 1, "gf": 1, "ga": 2, "gd": -1, "pts": 0 },
-    { "p": 7, "c": "Pure Football FC 1st Team", "pl": 1, "w": 0, "d": 0, "l": 1, "gf": 0, "ga": 2, "gd": -2, "pts": 0 },
-    { "p": 8, "c": "Junction Elite FC Sunday 3rd Team", "pl": 1, "w": 0, "d": 0, "l": 1, "gf": 1, "ga": 4, "gd": -3, "pts": 0 },
-    { "p": 9, "c": "Haydons Park", "pl": 1, "w": 0, "d": 0, "l": 1, "gf": 1, "ga": 8, "gd": -7, "pts": 0 }
+    {
+      "p": 1,
+      "c": "Sue's Angels FC",
+      "pl": 2,
+      "w": 2,
+      "d": 0,
+      "l": 0,
+      "gf": 10,
+      "ga": 2,
+      "gd": 8,
+      "pts": 6
+    },
+    {
+      "p": 2,
+      "c": "TSM Rovers",
+      "pl": 2,
+      "w": 1,
+      "d": 0,
+      "l": 1,
+      "gf": 7,
+      "ga": 5,
+      "gd": 2,
+      "pts": 3
+    },
+    {
+      "p": 3,
+      "c": "Brockwell Violets FC",
+      "pl": 1,
+      "w": 1,
+      "d": 0,
+      "l": 0,
+      "gf": 2,
+      "ga": 0,
+      "gd": 2,
+      "pts": 3
+    },
+    {
+      "p": 4,
+      "c": "Bristol City (London) Supporters",
+      "pl": 1,
+      "w": 1,
+      "d": 0,
+      "l": 0,
+      "gf": 2,
+      "ga": 1,
+      "gd": 1,
+      "pts": 3
+    },
+    {
+      "p": 5,
+      "c": "Three Little Birds FC",
+      "pl": 2,
+      "w": 1,
+      "d": 0,
+      "l": 1,
+      "gf": 5,
+      "ga": 5,
+      "gd": 0,
+      "pts": 3
+    },
+    {
+      "p": 6,
+      "c": "Barnes Stormers FC",
+      "pl": 1,
+      "w": 0,
+      "d": 0,
+      "l": 1,
+      "gf": 1,
+      "ga": 2,
+      "gd": -1,
+      "pts": 0
+    },
+    {
+      "p": 7,
+      "c": "Pure Football FC 1st Team",
+      "pl": 1,
+      "w": 0,
+      "d": 0,
+      "l": 1,
+      "gf": 0,
+      "ga": 2,
+      "gd": -2,
+      "pts": 0
+    },
+    {
+      "p": 8,
+      "c": "Junction Elite FC Sunday 3rd Team",
+      "pl": 1,
+      "w": 0,
+      "d": 0,
+      "l": 1,
+      "gf": 1,
+      "ga": 4,
+      "gd": -3,
+      "pts": 0
+    },
+    {
+      "p": 9,
+      "c": "Haydons Park",
+      "pl": 1,
+      "w": 0,
+      "d": 0,
+      "l": 1,
+      "gf": 1,
+      "ga": 8,
+      "gd": -7,
+      "pts": 0
+    }
   ],
   "results": [
-    { "date": "13 Sep 26", "kick": "11:00", "home": "Sue's Angels FC", "hs": 8, "as": 1, "away": "Haydons Park" },
-    { "date": "13 Sep 26", "kick": "10:30", "home": "Bristol City (London) Supporters", "hs": 2, "as": 1, "away": "Barnes Stormers FC" },
-    { "date": "13 Sep 26", "kick": "10:30", "home": "Brockwell Violets FC", "hs": 2, "as": 0, "away": "Pure Football FC 1st Team" },
-    { "date": "13 Sep 26", "kick": "10:30", "home": "TSM Rovers", "hs": 3, "as": 4, "away": "Three Little Birds FC" },
+    {
+      "date": "13 Sep 26",
+      "kick": "11:00",
+      "home": "Sue's Angels FC",
+      "hs": 8,
+      "as": 1,
+      "away": "Haydons Park"
+    },
+    {
+      "date": "13 Sep 26",
+      "kick": "10:30",
+      "home": "Bristol City (London) Supporters",
+      "hs": 2,
+      "as": 1,
+      "away": "Barnes Stormers FC"
+    },
+    {
+      "date": "13 Sep 26",
+      "kick": "10:30",
+      "home": "Brockwell Violets FC",
+      "hs": 2,
+      "as": 0,
+      "away": "Pure Football FC 1st Team"
+    },
+    {
+      "date": "13 Sep 26",
+      "kick": "10:30",
+      "home": "TSM Rovers",
+      "hs": 3,
+      "as": 4,
+      "away": "Three Little Birds FC"
+    },
     {
       "date": "06 Sep 26",
       "kick": "11:00",
@@ -57,14 +184,80 @@
     }
   ],
   "_scorersNote": "The division's scorers, from Full-Time's stat leaders page (Player stats, Summary, League Eight 26/27), which excludes county cup football. Every player with a goal is kept, spelt as Full-Time prints them; the page lists appearances for everybody else and those are not kept. npm run verify fails if a club's scorers add up to more goals than its results say it scored.",
-  "scorersAsOf": "2026-09-06",
+  "scorersAsOf": "2026-09-14",
   "scorers": [
-    { "name": "Makheyi Chilumbi", "club": "TSM Rovers", "goals": 3, "apps": 1 },
-    { "name": "Shaam Aravindhan", "club": "Three Little Birds FC", "goals": 1, "apps": 1 },
-    { "name": "Charlie Dunkley", "club": "Sue's Angels FC", "goals": 1, "apps": 1 },
-    { "name": "Jon Lloyd", "club": "Sue's Angels FC", "goals": 1, "apps": 1 },
-    { "name": "Vincent Narayna", "club": "TSM Rovers", "goals": 1, "apps": 1 },
-    { "name": "Liam O'mara leonard", "club": "Junction Elite FC Sunday 3rd Team", "goals": 1, "apps": 1 }
+    {
+      "name": "Makheyi Chilumbi",
+      "club": "TSM Rovers",
+      "goals": 4,
+      "apps": 2
+    },
+    {
+      "name": "Charlie Dunkley",
+      "club": "Sue's Angels FC",
+      "goals": 4,
+      "apps": 2
+    },
+    {
+      "name": "Vincent Narayna",
+      "club": "TSM Rovers",
+      "goals": 3,
+      "apps": 2
+    },
+    {
+      "name": "Ade Owolana",
+      "club": "Sue's Angels FC",
+      "goals": 3,
+      "apps": 2
+    },
+    {
+      "name": "Shaam Aravindhan",
+      "club": "Three Little Birds FC",
+      "goals": 1,
+      "apps": 1
+    },
+    {
+      "name": "Elis Brumpton",
+      "club": "Sue's Angels FC",
+      "goals": 1,
+      "apps": 2
+    },
+    {
+      "name": "Leon Burnett",
+      "club": "Sue's Angels FC",
+      "goals": 1,
+      "apps": 2
+    },
+    {
+      "name": "James Hayes",
+      "club": "Bristol City (London) Supporters",
+      "goals": 1,
+      "apps": 1
+    },
+    {
+      "name": "Jon Lloyd",
+      "club": "Sue's Angels FC",
+      "goals": 1,
+      "apps": 2
+    },
+    {
+      "name": "Jack Lowe",
+      "club": "Bristol City (London) Supporters",
+      "goals": 1,
+      "apps": 1
+    },
+    {
+      "name": "Aaron McNamara",
+      "club": "Haydons Park",
+      "goals": 1,
+      "apps": 1
+    },
+    {
+      "name": "Liam O'mara leonard",
+      "club": "Junction Elite FC Sunday 3rd Team",
+      "goals": 1,
+      "apps": 1
+    }
   ],
   "fixtures": [
     {

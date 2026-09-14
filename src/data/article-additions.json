@@ -1,0 +1,18 @@
+{
+  "_source": "Additions the club asked for on articles stored in the database, which cannot be written from a developer machine. Each is placed into the stored text at build time: after the paragraph that ends with `after` (or at the end when that is missing or empty).",
+  "_rule": "An addition is skipped when the stored text already contains its `unless` string, so pasting the same line into the article in Control panel -> News retires it here with no duplicate. The stored text itself is never changed.",
+  "additions": [
+    {
+      "slug": "pre-season-promise-becomes-a-competitive-statement-for-ade",
+      "after": "their movement repeatedly pulled the opposition defence out of position.",
+      "text": "!![Ade Owolana in League Eight’s first two matches, 6 and 13 September 2026](/assets/articles/ade-owolana-first-two-matches.jpg#1200x750)",
+      "unless": "/assets/articles/ade-owolana-first-two-matches.jpg"
+    },
+    {
+      "slug": "pre-season-promise-becomes-a-competitive-statement-for-ade",
+      "after": "",
+      "text": "Read [Ade Owolana’s player profile](/players/ade-owolana.html) for every appearance, goal and award.",
+      "unless": "](/players/ade-owolana.html)"
+    }
+  ]
+}

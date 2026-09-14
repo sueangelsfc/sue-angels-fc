@@ -6549,6 +6549,26 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
       mine[0] ? mine[0].slug : 'no slug');
   }
 
+  /* ADDITIONS TO A STORED ARTICLE land once, where they were asked for, and
+     retire themselves when the stored text already carries them. */
+  {
+    const adds = (JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'article-additions.json'), 'utf8')).additions || []);
+    for (const add of adds) {
+      const art = base.articles.find((a) => a.slug === add.slug);
+      const stored = (live.articles || []).find((r) => art && r.key === art.key);
+      if (!art || !stored) continue;
+      const count = art.lede.split(add.unless).length - 1;
+      check(`an addition to a stored article appears exactly once: ${add.unless.slice(0, 40)}`,
+        count === 1 && (!add.after || art.lede.indexOf(add.after) < art.lede.indexOf(add.unless)), `${count} times`);
+      const already = JSON.parse(JSON.stringify(live));
+      const row = already.articles.find((r) => r.key === stored.key);
+      row.data.lede = `${row.data.lede}\n\n${add.text}`;
+      const again = bdA({ live: already }).articles.find((a) => a.slug === add.slug);
+      check(`and it stands down once the club pastes it in the panel: ${add.unless.slice(0, 40)}`,
+        again.lede.split(add.unless).length - 1 === 1, `${again.lede.split(add.unless).length - 1} times`);
+    }
+  }
+
   /* THE DATABASE WINS. The same article entered in the panel must replace the
      file's copy outright, not sit beside it. */
   const first = (extra.articles || [])[0];

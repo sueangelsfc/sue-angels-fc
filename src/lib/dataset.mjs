@@ -1012,6 +1012,21 @@ export function buildDataset(overrides = {}) {
       || String(a.title).localeCompare(String(b.title)));
   }
 
+  /* ADDITIONS TO A STORED ARTICLE (src/data/article-additions.json): a graphic
+     or a link the club asked for on a piece that lives in the database, which
+     a developer machine cannot write. Placed after the paragraph ending with
+     `after`, or at the end, and skipped once the stored text already holds its
+     `unless`, so the club pasting the same line in the panel retires it. */
+  for (const add of (read('article-additions.json').additions || [])) {
+    const a = articles.find((x) => x.slug === add.slug);
+    if (!a || !add.text || (add.unless && String(a.lede || '').includes(add.unless))) continue;
+    const lede = String(a.lede || '');
+    const at = add.after ? lede.indexOf(add.after) : -1;
+    a.lede = at > -1
+      ? `${lede.slice(0, at + add.after.length)}\n\n${add.text}${lede.slice(at + add.after.length)}`
+      : `${lede.replace(/\s+$/, '')}\n\n${add.text}`;
+  }
+
   /* ---- Recognition ---- */
   const cloudRecognition = (live.recognition || []).map((row) => ({ key: row.key, ...(row.data || {}), source: 'cloud' }));
   const cloudRecIds = new Set(cloudRecognition.flatMap((r) => [r.id, r.key]).filter(Boolean));

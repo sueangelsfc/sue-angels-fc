@@ -46,7 +46,7 @@ const STAR = '/assets/badge/sue-angels-badge-star.webp';
    Archivo 500, the date and the star with the club's name) sized to its box,
    so it follows the record the moment the site is published. Decorative: the
    headline is already the page's h1 or the card's title. */
-const coverPlate = (art, eager) => {
+export const coverPlate = (art, eager) => {
   const t = String(art.title || '').trim();
   const len = t.length > 88 ? ' nw-plate__title--l' : t.length > 58 ? ' nw-plate__title--m' : '';
   return `<span class="nw-plate" aria-hidden="true">

@@ -6562,7 +6562,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
         count === 1 && (!add.after || art.lede.indexOf(add.after) < art.lede.indexOf(add.unless)), `${count} times`);
       const already = JSON.parse(JSON.stringify(live));
       const row = already.articles.find((r) => r.key === stored.key);
-      row.data.lede = `${row.data.lede}\n\n${add.text}`;
+      row.data.lede = `${row.data.lede}\n\n${add.text || `[${add.wrap}](${add.href})`}`;
       const again = bdA({ live: already }).articles.find((a) => a.slug === add.slug);
       check(`and it stands down once the club pastes it in the panel: ${add.unless.slice(0, 40)}`,
         again.lede.split(add.unless).length - 1 === 1, `${again.lede.split(add.unless).length - 1} times`);

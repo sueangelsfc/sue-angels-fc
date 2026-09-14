@@ -1,7 +1,13 @@
 {
-  "_source": "Additions the club asked for on articles stored in the database, which cannot be written from a developer machine. Each is placed into the stored text at build time: after the paragraph that ends with `after` (or at the end when that is missing or empty).",
-  "_rule": "An addition is skipped when the stored text already contains its `unless` string, so pasting the same line into the article in Control panel -> News retires it here with no duplicate. The stored text itself is never changed.",
+  "_source": "Additions the club asked for on articles stored in the database, which cannot be written from a developer machine. Applied at build time, in order: `wrap` turns the first mention of some words into a link to `href`; `text` is placed after the paragraph that ends with `after` (or at the end when that is missing or empty).",
+  "_rule": "An addition is skipped when the article already contains its `unless` string, so pasting the same thing into the article in Control panel -> News retires it here with no duplicate. The stored text itself is never changed.",
   "additions": [
+    {
+      "slug": "pre-season-promise-becomes-a-competitive-statement-for-ade",
+      "wrap": "Ade Owolana",
+      "href": "/players/ade-owolana.html",
+      "unless": "[Ade Owolana]("
+    },
     {
       "slug": "pre-season-promise-becomes-a-competitive-statement-for-ade",
       "after": "their movement repeatedly pulled the opposition defence out of position.",
@@ -12,7 +18,7 @@
       "slug": "pre-season-promise-becomes-a-competitive-statement-for-ade",
       "after": "",
       "text": "Read [Ade Owolana’s player profile](/players/ade-owolana.html) for every appearance, goal and award.",
-      "unless": "](/players/ade-owolana.html)"
+      "unless": "Ade Owolana’s player profile]("
     }
   ]
 }

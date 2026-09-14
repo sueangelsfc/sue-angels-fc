@@ -41,6 +41,10 @@ import {
 import { preseasonFor, seasonAhead, sameClub, relatedClub, recordOf } from '../lib/preseason.mjs';
 import { reportText, house, plainText, FRIENDLY_NOTE_SHORT, FRIENDLY_NOTE_SET } from '../lib/prose.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
+/* A cycle (news.mjs imports the shared shell from here) that is safe because
+   coverPlate is only called while a page renders, never while either module
+   loads. */
+import { coverPlate } from './news.mjs';
 
 /* THE OPENING OF A REPORT, for the front page to quote.
 
@@ -544,14 +548,25 @@ export function home(d) {
     const href = rep ? `/matches/${p.m.slug}.html` : `/news/${p.a.slug}.html`;
     const title = rep ? `${p.m.home} ${p.m.scoreline || 'v'} ${p.m.away}` : p.a.title;
     const cat = rep ? 'Match report' : (p.a.category || 'News');
+    /* THE DRAWN COVERS, as the news page shows them: an article's plate
+       (drawn in markup from its record, so it follows a changed headline or
+       category), a report's scoreline card, or a real photograph. The pill is
+       only for a photograph or the star, because a drawn cover already says
+       what it is. */
     const cover = rep ? ((p.m.detail || {}).cover || '') : (p.a.cover && p.a.cover !== 'None' ? p.a.cover : '');
-    const photo = cover && !/\/cover-(?:news|match)-\d+\.jpg$/.test(cover) ? cover : '';
+    const drawnCard = /\/cover-(?:news|match)-\d+\.jpg$/.test(cover);
+    const photo = cover && !drawnCard ? cover : '';
+    const reportCard = rep ? (photo || cover || (d.drawnCoverSrc ? d.drawnCoverSrc(p.m.id) : '')) : '';
+    const src = rep ? reportCard : photo;
+    const labelled = !!photo || (rep && !src);
     return `<li class="ncard" data-posted="${attr(p.iso)}">
             <a class="ncard__cover" href="${attr(href)}" aria-label="${attr(`${cat}: ${title}`)}">
-              ${photo
-      ? `<img class="ncard__photo" src="${attr(photo)}" alt="" width="320" height="320" loading="lazy" decoding="async" />`
-      : `<span class="ncard__badge"><img src="${STAR}" alt="" width="120" height="148" loading="lazy" decoding="async" /></span>`}
-              <span class="ncard__pill">${esc(cat)}</span>
+              ${src
+      ? `<img class="ncard__photo" src="${attr(src)}" alt="" width="1200" height="630" loading="lazy" decoding="async" />`
+      : rep
+        ? `<span class="ncard__badge"><img src="${STAR}" alt="" width="120" height="148" loading="lazy" decoding="async" /></span>`
+        : coverPlate(p.a, false)}
+              ${labelled ? `<span class="ncard__pill">${esc(cat)}</span>` : ''}
             </a>
             <h3 class="ncard__title"><a href="${attr(href)}">${esc(title)}</a></h3>
             <span class="ncard__meta">${esc(dayMonthYear(p.iso))}</span>

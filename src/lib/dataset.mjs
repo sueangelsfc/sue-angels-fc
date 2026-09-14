@@ -1019,8 +1019,15 @@ export function buildDataset(overrides = {}) {
      `unless`, so the club pasting the same line in the panel retires it. */
   for (const add of (read('article-additions.json').additions || [])) {
     const a = articles.find((x) => x.slug === add.slug);
-    if (!a || !add.text || (add.unless && String(a.lede || '').includes(add.unless))) continue;
+    if (!a || !(add.text || (add.wrap && add.href)) || (add.unless && String(a.lede || '').includes(add.unless))) continue;
     const lede = String(a.lede || '');
+    /* A LINK ON WORDS ALREADY THERE: the first mention of `wrap` becomes
+       `[wrap](href)`, which articleBody turns into a link. */
+    if (add.wrap) {
+      const i = lede.indexOf(add.wrap);
+      if (i > -1) a.lede = `${lede.slice(0, i)}[${add.wrap}](${add.href})${lede.slice(i + add.wrap.length)}`;
+      continue;
+    }
     const at = add.after ? lede.indexOf(add.after) : -1;
     a.lede = at > -1
       ? `${lede.slice(0, at + add.after.length)}\n\n${add.text}${lede.slice(at + add.after.length)}`

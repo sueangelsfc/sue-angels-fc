@@ -32,9 +32,12 @@
         '<button type="button" class="btn btn--ghost btn--sm" data-md="h3" data-md-for="' + id + '">Sub heading</button>' +
         '<button type="button" class="btn btn--ghost btn--sm" data-md="bold" data-md-for="' + id + '">Bold</button>' +
         '<button type="button" class="btn btn--ghost btn--sm" data-md="table" data-md-for="' + id + '">Table</button>' +
+        '<button type="button" class="btn btn--ghost btn--sm" data-md="link" data-md-for="' + id + '">Link</button>' +
       '</div>' +
       '<p class="cp-note">Heading and Sub heading turn the line the cursor is on into one. ' +
-        'A table can be pasted straight from a document or a spreadsheet, or started with Table.</p>' +
+        'A table can be pasted straight from a document or a spreadsheet, or started with Table. ' +
+        'Link wraps the words you have selected: replace the address with a page on the site, such as ' +
+        '/players/ade-owolana.html, or a full https address.</p>' +
       '<div class="picker" style="margin-top:var(--space-2)">' +
         '<input class="input" data-photo-cap="' + id + '" autocomplete="off" ' +
           'aria-label="Caption for the photo or graphic" placeholder="Caption: who or what is in it" ' +
@@ -110,6 +113,14 @@
       var picked = v.slice(s, e) || 'bold words';
       area.value = v.slice(0, s) + '**' + picked + '**' + v.slice(e);
       if (area.setSelectionRange) area.setSelectionRange(s + 2, s + 2 + picked.length);
+      changed(area);
+      return;
+    }
+    if (kind === 'link') {
+      var words = v.slice(s, e) || 'link words';
+      area.value = v.slice(0, s) + '[' + words + '](/players/)' + v.slice(e);
+      var addr = s + words.length + 3;
+      if (area.setSelectionRange) area.setSelectionRange(addr, addr + 9);
       changed(area);
       return;
     }

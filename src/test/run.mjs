@@ -6461,6 +6461,18 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
         && /<table class="sr-only">[\s\S]*<th scope="row">TSM Rovers<\/th><td>2<\/td><td>1<\/td><td>0<\/td><td>1<\/td><td>7<\/td>/.test(lg), lg.slice(0, 400));
     check('without the crest registry a league-shaped table stays an ordinary table',
       !/class="tbl"/.test(ab(leagueText)) && /nw-art__table/.test(ab(leagueText)));
+    /* LINKS: a page on the site or an https address, escaped first, and never
+       a picture line. */
+    const linked = ab('Read [Ade Owolana’s profile](/players/ade-owolana.html) and [Full-Time](https://fulltime.thefa.com/).');
+    check('a link in an article goes to a page on the site or an https address',
+      /<a href="\/players\/ade-owolana\.html">Ade Owolana’s profile<\/a>/.test(linked)
+        && /<a href="https:\/\/fulltime\.thefa\.com\/">Full-Time<\/a>/.test(linked), linked);
+    check('a javascript: or quoted address is never a link',
+      !/<a /.test(ab('[x](javascript:alert(1))')) && !/<a href="[^"]*"[^>]*on\w+=/.test(ab('[x](/a"onmouseover="y)')),
+      ab('[x](/a"onmouseover="y)'));
+    const { plainText: ptL } = await import(path.join(ROOT, 'src', 'lib', 'prose.mjs'));
+    check('a link reads as its words wherever the text is shortened',
+      ptL('See [his profile](/players/ade-owolana.html).') === 'See his profile.', ptL('See [his profile](/players/ade-owolana.html).'));
     const cellAttack = ab('A\tB\n<img src=x onerror=1>\t**2**');
     check('a table cell is escaped before its emphasis is read',
       !/<img/.test(cellAttack) && /&lt;img/.test(cellAttack) && /<td><strong>2<\/strong><\/td>/.test(cellAttack), cellAttack);

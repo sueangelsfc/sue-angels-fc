@@ -224,6 +224,12 @@ html.js .nw-card[hidden]{display: none;}
    coverPlate in news.mjs and articleCover in cover-art.mjs). Every size is a
    share of the box's own width, so a thumbnail and the article hero are the
    same card at two sizes. Dark in both themes, like the picture it replaces. */
+/* ARCHIVO, THE CARD'S OWN FACE. The site's display face is Geist (Archivo
+   was retired from the pages), so a plate set in var(--display) came out in
+   Geist while every drawn card, and the panel's, is Archivo 500 at 104%
+   width. Loaded here, by the news pages alone, for the plate. */
+@font-face{font-family: 'Archivo'; src: url('/assets/fonts/Archivo-Variable.woff2') format('woff2');
+  font-weight: 100 900; font-stretch: 62.5% 125%; font-display: swap;}
 .nw-card__top,.nw-cover{container-type: inline-size;}
 /* The plate is absolutely placed, so its box has to be the frame it fills.
    Without this the article hero's plate spread over the whole header. */
@@ -235,14 +241,14 @@ html.js .nw-card[hidden]{display: none;}
 .nw-plate__eyebrow{display: flex; align-items: center; gap: 1cqw; font-family: var(--ui); font-weight: 700;
   font-size: max(8px, 1.42cqw); letter-spacing: 0.18em; text-transform: uppercase; color: var(--volt);}
 .nw-plate__eyebrow s{display: block; width: 3.2cqw; height: 2px; background: currentColor; text-decoration: none;}
-.nw-plate__title{font-family: var(--display); font-weight: 500; font-stretch: 104%; font-size: 6.8cqw;
+.nw-plate__title{font-family: 'Archivo', var(--display); font-weight: 500; font-stretch: 104%; font-size: 6.8cqw;
   line-height: 1.06; letter-spacing: -0.032em; color: #FFFFFF; max-width: 19ch;}
 .nw-plate__title--m{font-size: 5.8cqw;}
 .nw-plate__title--l{font-size: 5cqw;}
 .nw-plate__foot{display: flex; justify-content: space-between; align-items: center; gap: 2cqw;
   font-family: var(--ui); font-weight: 600; font-size: max(7px, 1.5cqw); letter-spacing: 0.13em;
   text-transform: uppercase; color: rgba(255, 255, 255, 0.62);}
-.nw-plate__club{display: flex; align-items: center; gap: 1.2cqw; font-family: var(--display); font-weight: 600;
+.nw-plate__club{display: flex; align-items: center; gap: 1.2cqw; font-family: 'Archivo', var(--display); font-weight: 600; font-stretch: 108%;
   font-size: max(8px, 1.85cqw); letter-spacing: -0.01em; text-transform: none; color: #FFFFFF;}
 .nw-plate__club img{width: 3.6cqw; height: auto;}
 

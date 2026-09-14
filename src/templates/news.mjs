@@ -78,7 +78,12 @@ const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
    `**bold**` first, then what is left of `*italic*`, so the two-star form is
    never mistaken for a pair of one-star ones. Nothing else is a marker: a
    stray asterisk in the middle of a sentence stays a stray asterisk. */
+/* A LINK is `[words](address)`, read after escaping like everything else:
+   a page on this site (`/players/ade-owolana.html`) or an https address,
+   nothing else, so no `javascript:` and nothing a quote can break out of
+   (quotes are already entities). Never the `![...]` of a picture line. */
 const inline = (t) => esc(t)
+  .replace(/(?<!!)\[([^\]\n]+)\]\((\/[\w\-./#%]*|https:\/\/[^\s)]+)\)/g, '<a href="$2">$1</a>')
   .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
   .replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
 

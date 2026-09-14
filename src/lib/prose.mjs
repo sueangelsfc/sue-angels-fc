@@ -102,6 +102,8 @@ export const plainText = (text) => String(text || '')
   /* A pasted table's cells are separated by tabs, which a card would print
      run together. A graphic's line (`!![...]`) goes the way a photo's does. */
   .replace(/[ \t]*\t[ \t]*/g, ' · ')
+  /* A link reads as its words. */
+  .replace(/(?<!!)\[([^\]\n]+)\]\((?:\/[^\s)]*|https:\/\/[^\s)]+)\)/g, '$1')
   .replace(/\n{3,}/g, '\n\n')
   .trim();
 

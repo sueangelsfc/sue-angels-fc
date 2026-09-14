@@ -6072,7 +6072,20 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   /* THE SCORERS, under the League Eight table and against the results. */
   check('the league page lists League Eight\'s scorers under its table',
     (l8.scorers || []).length > 0 && /data-l8-scorers/.test(panel8)
-      && (panel8.match(/<tr( class="is-us")?>\s*<td class="lg-sc__pos">/g) || []).length === l8.scorers.length);
+      && (((panel8.match(/data-l8-scorers[\s\S]*?<\/table>/) || [''])[0]).match(/<tr( class="is-us")?>\s*<td class="lg-sc__pos">/g) || []).length === l8.scorers.length);
+  /* THE ASSISTS: every assister is in a table of his own, ranked by assists,
+     and the scorers table's A column carries the same figure. */
+  {
+    const assistRows = ((panel8.match(/data-l8-assists[\s\S]*?<\/table>/) || [''])[0].match(/<tr( class="is-us")?>\s*<td class="lg-sc__pos">/g) || []).length;
+    check('the league page lists League Eight\'s assisters in their own table',
+      (l8.assisters || []).length === 0 || assistRows === (l8.assisters || []).length,
+      `${assistRows} rows for ${(l8.assisters || []).length} assisters`);
+    const topA = (l8.assisters || [])[0];
+    const scRow = topA ? ((panel8.match(/data-l8-scorers[\s\S]*?<\/table>/) || [''])[0]
+      .match(new RegExp(`<span>${topA.name}</span></th>[\\s\\S]*?</tr>`)) || [''])[0] : '';
+    check('and a scorer who assisted carries the same figure in the scorers table',
+      !topA || !scRow || new RegExp(`<td>${topA.goals}</td>\\s*<td>${topA.assists}</td>`).test(scRow), scRow.replace(/\s+/g, ' ').slice(0, 200));
+  }
   const { compareScorers: cmpSc } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
   check('League Eight\'s scorers add up to no more than each club scored',
     cmpSc(l8.scorers || [], l8.results || []).length === 0, cmpSc(l8.scorers || [], l8.results || []).join(' | '));

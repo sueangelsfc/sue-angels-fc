@@ -515,7 +515,30 @@ export function league(d) {
                 </tr>
               </thead>
               <tbody>
-                ${chartRows(eightScorers.map((s) => ({ ...s, assists: null })))}
+                ${chartRows(eightScorers.map((s) => ({ ...s, assists: s.assists === undefined ? null : s.assists })))}
+              </tbody>
+            </table>
+          </div>` : '')
+    /* THE ASSISTERS, in a table of their own, because a man who made goals
+       and scored none never reaches the scorers table. Same columns, ranked by
+       assists. */
+    + ((next.assisters || []).length
+    ? `<h3 class="lg-sub">Assists</h3>
+          <div class="lg-tablewrap">
+            <table class="lg-tbl lg-sc" data-l8-assists>
+              <caption class="sr-only">${esc(next.division || 'League Eight')} assists${next.scorersAsOf ? `, as of ${esc(fmtDate(next.scorersAsOf))}` : ''}</caption>
+              <thead>
+                <tr>
+                  <th scope="col" class="lg-sc__pos">#</th>
+                  <th scope="col" class="lg-sc__who">Player</th>
+                  <th scope="col" class="lg-sc__club">Club</th>
+                  <th scope="col"><abbr title="Goals">G</abbr></th>
+                  <th scope="col"><abbr title="Assists">A</abbr></th>
+                  <th scope="col"><abbr title="Appearances">Apps</abbr></th>
+                </tr>
+              </thead>
+              <tbody>
+                ${chartRows(next.assisters)}
               </tbody>
             </table>
           </div>` : '')
@@ -531,8 +554,12 @@ export function league(d) {
           </ol>` : '');
 
   return {
-    body: siteHeader('/league.html') + hero + tableBand.replace('__L8_EXTRA__', eightExtra) + scorersBand + aroundBand + sourceNote(['fulltime', 'surreyfa'])
-      + compsBand + sourceBand + ctaBand,
+    /* The source's indentation stays in the source (the player pages do the
+       same): League Eight's scorers and assists tables took this page past its
+       160KB ceiling, and a line break is still whitespace. No pre, textarea or
+       inline script in the body. */
+    body: (siteHeader('/league.html') + hero + tableBand.replace('__L8_EXTRA__', eightExtra) + scorersBand + aroundBand + sourceNote(['fulltime', 'surreyfa'])
+      + compsBand + sourceBand + ctaBand).replace(/\n[ \t]+/g, '\n'),
     bodyClass: 'is-home is-sub is-league',
     css: 'home.css',
     shell: 'home',

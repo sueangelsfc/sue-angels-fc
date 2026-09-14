@@ -184,78 +184,135 @@
     }
   ],
   "_scorersNote": "The division's scorers, from Full-Time's stat leaders page (Player stats, Summary, League Eight 26/27), which excludes county cup football. Every player with a goal is kept, spelt as Full-Time prints them; the page lists appearances for everybody else and those are not kept. npm run verify fails if a club's scorers add up to more goals than its results say it scored.",
+  "_assistsNote": "Assists from Full-Time's stat leaders page, sorted by assists, as of 14 September 2026. Two are the club's corrections that Full-Time is being asked to make: Charlie Dunkley 3 (Full-Time shows 2) and Leon Burnett 2 (Full-Time shows 1), both matching the club's own match records. Everybody else is as Full-Time prints them.",
   "scorersAsOf": "2026-09-14",
   "scorers": [
     {
       "name": "Makheyi Chilumbi",
       "club": "TSM Rovers",
       "goals": 4,
-      "apps": 2
+      "apps": 2,
+      "assists": 0
     },
     {
       "name": "Charlie Dunkley",
       "club": "Sue's Angels FC",
       "goals": 4,
-      "apps": 2
+      "apps": 2,
+      "assists": 3
     },
     {
       "name": "Vincent Narayna",
       "club": "TSM Rovers",
       "goals": 3,
-      "apps": 2
+      "apps": 2,
+      "assists": 0
     },
     {
       "name": "Ade Owolana",
       "club": "Sue's Angels FC",
       "goals": 3,
-      "apps": 2
+      "apps": 2,
+      "assists": 0
     },
     {
       "name": "Shaam Aravindhan",
       "club": "Three Little Birds FC",
       "goals": 1,
-      "apps": 1
+      "apps": 1,
+      "assists": 0
     },
     {
       "name": "Elis Brumpton",
       "club": "Sue's Angels FC",
       "goals": 1,
-      "apps": 2
+      "apps": 2,
+      "assists": 0
     },
     {
       "name": "Leon Burnett",
       "club": "Sue's Angels FC",
       "goals": 1,
-      "apps": 2
+      "apps": 2,
+      "assists": 2
     },
     {
       "name": "James Hayes",
       "club": "Bristol City (London) Supporters",
       "goals": 1,
-      "apps": 1
+      "apps": 1,
+      "assists": 0
     },
     {
       "name": "Jon Lloyd",
       "club": "Sue's Angels FC",
       "goals": 1,
-      "apps": 2
+      "apps": 2,
+      "assists": 0
     },
     {
       "name": "Jack Lowe",
       "club": "Bristol City (London) Supporters",
       "goals": 1,
-      "apps": 1
+      "apps": 1,
+      "assists": 0
     },
     {
       "name": "Aaron McNamara",
       "club": "Haydons Park",
       "goals": 1,
-      "apps": 1
+      "apps": 1,
+      "assists": 0
     },
     {
       "name": "Liam O'mara leonard",
       "club": "Junction Elite FC Sunday 3rd Team",
       "goals": 1,
+      "apps": 1,
+      "assists": 0
+    }
+  ],
+  "assisters": [
+    {
+      "name": "Charlie Dunkley",
+      "club": "Sue's Angels FC",
+      "assists": 3,
+      "apps": 2
+    },
+    {
+      "name": "Dean Knight",
+      "club": "Sue's Angels FC",
+      "assists": 2,
+      "apps": 2
+    },
+    {
+      "name": "Leon Burnett",
+      "club": "Sue's Angels FC",
+      "assists": 2,
+      "apps": 2
+    },
+    {
+      "name": "Andrew Allen",
+      "club": "Sue's Angels FC",
+      "assists": 1,
+      "apps": 2
+    },
+    {
+      "name": "Nick Bellamy",
+      "club": "Bristol City (London) Supporters",
+      "assists": 1,
+      "apps": 1
+    },
+    {
+      "name": "Daniel McLane",
+      "club": "Sue's Angels FC",
+      "assists": 1,
+      "apps": 2
+    },
+    {
+      "name": "Jack smith",
+      "club": "Bristol City (London) Supporters",
+      "assists": 1,
       "apps": 1
     }
   ],

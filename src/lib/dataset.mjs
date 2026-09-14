@@ -935,6 +935,19 @@ export function buildDataset(overrides = {}) {
         .filter((s) => s.goals > 0)
         .sort((a, b) => (b.goals - a.goals) || String(a.name).localeCompare(String(b.name)))
         .map((s, i, all) => ({ ...s, pos: all.findIndex((x) => x.goals === s.goals) + 1 })),
+      /* And its assisters, ranked the same way: most assists first, level
+         players sharing a position, each carrying his goals from the scorers
+         list so the two tables agree about the same man. */
+      assisters: (t.assisters || [])
+        .map((s) => ({
+          ...s,
+          assists: Number(s.assists) || 0,
+          goals: Number(((t.scorers || []).find((x) => x.name === s.name) || {}).goals) || 0,
+          us: /Sue.s Angels/i.test(String(s.club || '')),
+        }))
+        .filter((s) => s.assists > 0)
+        .sort((a, b) => (b.assists - a.assists) || String(a.name).localeCompare(String(b.name)))
+        .map((s, i, all) => ({ ...s, pos: all.findIndex((x) => x.assists === s.assists) + 1 })),
     };
   })();
   /* The league's own pages for this division, built from the ids recorded

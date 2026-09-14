@@ -948,6 +948,24 @@ export function buildDataset(overrides = {}) {
         .filter((s) => s.assists > 0)
         .sort((a, b) => (b.assists - a.assists) || String(a.name).localeCompare(String(b.name)))
         .map((s, i, all) => ({ ...s, pos: all.findIndex((x) => x.assists === s.assists) + 1 })),
+      /* Goals and assists together: everybody on either list, ranked by the
+         two added up, then by goals, level players sharing a position. */
+      contributions: (() => {
+        const byName = new Map();
+        const add = (s, key) => {
+          const cur = byName.get(s.name) || { name: s.name, club: s.club, goals: 0, assists: 0, apps: 0 };
+          cur[key] = Number(s[key]) || 0;
+          cur.apps = Math.max(cur.apps, Number(s.apps) || 0);
+          byName.set(s.name, cur);
+        };
+        (t.scorers || []).forEach((s) => add(s, 'goals'));
+        (t.assisters || []).forEach((s) => add(s, 'assists'));
+        return [...byName.values()]
+          .map((s) => ({ ...s, ga: s.goals + s.assists, us: /Sue.s Angels/i.test(String(s.club || '')) }))
+          .filter((s) => s.ga > 0)
+          .sort((a, b) => (b.ga - a.ga) || (b.goals - a.goals) || String(a.name).localeCompare(String(b.name)))
+          .map((s, i, all) => ({ ...s, pos: all.findIndex((x) => x.ga === s.ga) + 1 }));
+      })(),
     };
   })();
   /* The league's own pages for this division, built from the ids recorded

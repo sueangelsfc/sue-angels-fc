@@ -499,49 +499,39 @@ export function league(d) {
               <span class="lg-res__side is-away${isUs(f.away) ? ' is-us' : ''}">${badge(f.away)}${esc(shortClub(f.away))}</span>
             </li>`).join('\n            ');
   const eightScorers = next.scorers || [];
-  const eightExtra = (eightScorers.length
-    ? `<h3 class="lg-sub">Scorers</h3>
+  /* THREE TABLES, EACH ABOUT ONE THING: the scorers by goals, the assisters by
+     assists, then goals and assists added up. Each shows only its own figures
+     beside the appearances, so a column is never a row of noughts belonging
+     to the table below. */
+  const statRows = (rows, cols) => rows.map((r) => `<tr${r.us ? ' class="is-us"' : ''}>
+                  <td class="lg-sc__pos">${esc(r.pos)}</td>
+                  <th scope="row" class="lg-sc__who">${face(r)}<span>${esc(r.name)}</span></th>
+                  <td class="lg-sc__club">${badge(r.club)}${esc(shortClub(r.club))}</td>
+                  ${cols.map(([key]) => `<td>${esc(r[key] ?? 0)}</td>`).join('')}
+                </tr>`).join('\n                ');
+  const statTable = (title, attr8, what, rows, cols) => (rows.length
+    ? `<h3 class="lg-sub">${title}</h3>
           <div class="lg-tablewrap">
-            <table class="lg-tbl lg-sc" data-l8-scorers>
-              <caption class="sr-only">${esc(next.division || 'League Eight')} scorers${next.scorersAsOf ? `, as of ${esc(fmtDate(next.scorersAsOf))}` : ''}</caption>
+            <table class="lg-tbl lg-sc" ${attr8}>
+              <caption class="sr-only">${esc(next.division || 'League Eight')} ${what}${next.scorersAsOf ? `, as of ${esc(fmtDate(next.scorersAsOf))}` : ''}</caption>
               <thead>
                 <tr>
                   <th scope="col" class="lg-sc__pos">#</th>
                   <th scope="col" class="lg-sc__who">Player</th>
                   <th scope="col" class="lg-sc__club">Club</th>
-                  <th scope="col"><abbr title="Goals">G</abbr></th>
-                  <th scope="col"><abbr title="Assists">A</abbr></th>
-                  <th scope="col"><abbr title="Appearances">Apps</abbr></th>
+                  ${cols.map(([, abbr, full]) => `<th scope="col"><abbr title="${full}">${abbr}</abbr></th>`).join('')}
                 </tr>
               </thead>
               <tbody>
-                ${chartRows(eightScorers.map((s) => ({ ...s, assists: s.assists === undefined ? null : s.assists })))}
+                ${statRows(rows, cols)}
               </tbody>
             </table>
-          </div>` : '')
-    /* THE ASSISTERS, in a table of their own, because a man who made goals
-       and scored none never reaches the scorers table. Same columns, ranked by
-       assists. */
-    + ((next.assisters || []).length
-    ? `<h3 class="lg-sub">Assists</h3>
-          <div class="lg-tablewrap">
-            <table class="lg-tbl lg-sc" data-l8-assists>
-              <caption class="sr-only">${esc(next.division || 'League Eight')} assists${next.scorersAsOf ? `, as of ${esc(fmtDate(next.scorersAsOf))}` : ''}</caption>
-              <thead>
-                <tr>
-                  <th scope="col" class="lg-sc__pos">#</th>
-                  <th scope="col" class="lg-sc__who">Player</th>
-                  <th scope="col" class="lg-sc__club">Club</th>
-                  <th scope="col"><abbr title="Goals">G</abbr></th>
-                  <th scope="col"><abbr title="Assists">A</abbr></th>
-                  <th scope="col"><abbr title="Appearances">Apps</abbr></th>
-                </tr>
-              </thead>
-              <tbody>
-                ${chartRows(next.assisters)}
-              </tbody>
-            </table>
-          </div>` : '')
+          </div>` : '');
+  const APPS = ['apps', 'Apps', 'Appearances'];
+  const eightExtra = statTable('Scorers', 'data-l8-scorers', 'scorers', eightScorers, [['goals', 'G', 'Goals'], APPS])
+    + statTable('Assists', 'data-l8-assists', 'assists', next.assisters || [], [['assists', 'A', 'Assists'], APPS])
+    + statTable('Goals and assists', 'data-l8-ga', 'goals and assists', next.contributions || [],
+      [['goals', 'G', 'Goals'], ['assists', 'A', 'Assists'], ['ga', 'G+A', 'Goals and assists'], APPS])
     + (eightResults.length
     ? `<h3 class="lg-sub">Results so far</h3>
           <ol class="lg-results">

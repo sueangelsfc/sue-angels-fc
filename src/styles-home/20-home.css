@@ -1842,6 +1842,21 @@ html.js [data-season-scope][hidden]{display: none;}
 .nw-art__fig{margin: 6px 0; display: grid; gap: 10px;}
 .nw-art__fig img{display: block; width: 100%; height: auto; border-radius: var(--r-sm);}
 .nw-art__fig figcaption{font-size: 14px; line-height: 1.5; color: var(--ink-2);}
+/* A graphic is shown whole: no corners taken off, never wider than it was
+   made, centred in the column. */
+.nw-art__fig--graphic img{width: auto; max-width: 100%; margin: 0 auto; border-radius: 0;}
+.nw-art__fig--graphic figcaption{text-align: center;}
+/* A sub-heading under an article heading. */
+.nw-art__sub,.nw-art__h--sub{margin: 2px 0 0;
+  font-family: var(--display); font-weight: 500; font-size: clamp(17px, 1.8vw, 20px);
+  letter-spacing: -0.016em; color: var(--fg);}
+/* A table typed or pasted into an article. It scrolls inside itself on a
+   narrow phone rather than pushing the page sideways. */
+.nw-art__table{overflow-x: auto; margin: 2px 0;}
+.nw-art__table table{width: 100%; border-collapse: collapse; font-size: 15px; line-height: 1.45; font-variant-numeric: tabular-nums;}
+.nw-art__table th,.nw-art__table td{padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line-d); color: var(--ink-2); font-weight: 400;}
+.nw-art__table thead th{font-family: var(--display); font-weight: 500; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg);}
+.nw-art__table tbody th{color: var(--fg);}
 
 /* ---- Cookie consent ------------------------------------------------------
    Built by src/scripts/20-consent.js, never shipped in the markup, so no page

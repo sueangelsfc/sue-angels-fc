@@ -6368,6 +6368,42 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     !/<h2/.test(ab('**Played 18. Won 18.**')) && /<strong>/.test(ab('**Played 18. Won 18.**')),
     ab('**Played 18. Won 18.**'));
 
+  /* HEADINGS, SUB-HEADINGS, TABLES AND GRAPHICS. The club asked for all four
+     in an article, and a table pasted from a document arrives as tab-separated
+     lines that used to publish as one run-on paragraph. */
+  {
+    const both = ab('## The early picture\n\n### After two matches\n\nText.');
+    check('a sub-heading under a heading is an h3',
+      /<h2 class="nw-art__h">The early picture<\/h2>/.test(both) && /<h3 class="nw-art__sub">After two matches<\/h3>/.test(both), both);
+    const orphan = ab('### Straight after the headline');
+    check('a sub-heading with no heading above it does not skip a level',
+      !/<h3/.test(orphan) && /<h2 class="nw-art__h nw-art__h--sub">/.test(orphan), orphan);
+    const pasted = ab('Before.\n\nStatistic\tTotal\nMatches played\t2\nGoal difference\t+8\nPosition\t1st\n\nAfter.');
+    check('rows pasted with tabs become a table with a header row and row names',
+      /<div class="nw-art__table"><table><thead><tr><th scope="col">Statistic<\/th><th scope="col">Total<\/th><\/tr><\/thead>/.test(pasted)
+        && /<tr><th scope="row">Goal difference<\/th><td>\+8<\/td><\/tr>/.test(pasted)
+        && /<p>Before\.<\/p>/.test(pasted) && /<p>After\.<\/p>/.test(pasted), pasted);
+    const piped = ab('| Club | Pts |\n|---|---|\n| Sue’s Angels FC | 6 |');
+    check('a table written between pipes, with its rule row, becomes a table',
+      /<th scope="col">Club<\/th>/.test(piped) && /<th scope="row">Sue’s Angels FC<\/th><td>6<\/td>/.test(piped) && !/---/.test(piped), piped);
+    const cellAttack = ab('A\tB\n<img src=x onerror=1>\t**2**');
+    check('a table cell is escaped before its emphasis is read',
+      !/<img/.test(cellAttack) && /&lt;img/.test(cellAttack) && /<td><strong>2<\/strong><\/td>/.test(cellAttack), cellAttack);
+    check('one line with a tab in it is a sentence, not a table',
+      !/<table/.test(ab('Kick-off\t10:30')));
+    const store = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'runtime.json'), 'utf8')).supabase.url
+      + '/storage/v1/object/public/gallery/graphic-1.png';
+    const g = ab(`!![The table after game week two](${store}#1080x1350)`);
+    check('a graphic line becomes a whole, uncropped figure',
+      /<figure class="nw-art__fig nw-art__fig--graphic"><img src="[^"]+graphic-1\.png" alt="" width="1080" height="1350"/.test(g), g);
+    check('a graphic pointing anywhere but the club\'s storage is left as text',
+      !/<img/.test(ab('!![x](https://example.com/g.png)')));
+    const { plainText: pt } = await import(path.join(ROOT, 'src', 'lib', 'prose.mjs'));
+    check('a graphic line and a table\'s tabs never reach a shortened version of the text',
+      pt(`Note.\n\n!![c](${store}#10x10)`) === 'Note.' && pt('Played\t2') === 'Played · 2',
+      JSON.stringify([pt(`Note.\n\n!![c](${store}#10x10)`), pt('Played\t2')]));
+  }
+
   check('paragraphs and bullet lists still work',
     /<p>one<\/p>/.test(ab('one\n\ntwo')) && /<li>a<\/li><li>b<\/li>/.test(ab('- a\n- b')),
     ab('- a\n- b'));

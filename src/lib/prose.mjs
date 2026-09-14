@@ -98,7 +98,10 @@ export const hasReport = (m) => plainText(reportText(m)).length > 200;
    meta description, the home page teaser, the length test above - that line
    would be printed as a web address, so it comes out first. */
 export const plainText = (text) => String(text || '')
-  .replace(/^[ \t]*!\[[^\]\n]*\]\(\S+\)[ \t]*$/gm, '')
+  .replace(/^[ \t]*!?!\[[^\]\n]*\]\(\S+\)[ \t]*$/gm, '')
+  /* A pasted table's cells are separated by tabs, which a card would print
+     run together. A graphic's line (`!![...]`) goes the way a photo's does. */
+  .replace(/[ \t]*\t[ \t]*/g, ' · ')
   .replace(/\n{3,}/g, '\n\n')
   .trim();
 

@@ -86,31 +86,71 @@ const inline = (t) => esc(t)
    held while it loads. */
 const STORAGE = `${JSON.parse(readFileSync(new URL('../data/runtime.json', import.meta.url), 'utf8'))
   .supabase.url}/storage/v1/object/public/`;
+/* A GRAPHIC is the same line with a second `!`: `!![caption](address)`. A
+   photograph fills the column with rounded corners; a graphic (a results card,
+   a poster, a table the club made in Canva) is shown whole on its own, with no
+   corners cut off it. Same address rule, same escaping. */
 function photo(b) {
-  const m = /^!\[([^\]\n]*)\]\((\S+)\)$/.exec(b);
+  const m = /^(!?)!\[([^\]\n]*)\]\((\S+)\)$/.exec(b);
   if (!m) return '';
-  const size = /#(\d{2,5})x(\d{2,5})$/.exec(m[2]);
-  const src = m[2].replace(/#.*$/, '');
+  const graphic = m[1] === '!';
+  const size = /#(\d{2,5})x(\d{2,5})$/.exec(m[3]);
+  const src = m[3].replace(/#.*$/, '');
   const ours = src.startsWith(STORAGE)
     ? /^[\w\-./%]+$/.test(src.slice(STORAGE.length))
     : /^\/assets\/[\w\-./]+\.(?:jpe?g|png|webp)$/i.test(src);
   if (!ours) return '';
-  const cap = m[1].trim();
+  const cap = m[2].trim();
   /* alt="" beside a caption: the figcaption already names the picture, and
      saying it twice is what a screen reader would otherwise do. */
-  return `<figure class="nw-art__fig"><img src="${attr(src)}" alt="" width="${size ? size[1] : 1600}" `
+  return `<figure class="nw-art__fig${graphic ? ' nw-art__fig--graphic' : ''}"><img src="${attr(src)}" alt="" width="${size ? size[1] : 1600}" `
     + `height="${size ? size[2] : 1067}" loading="lazy" decoding="async" />`
     + `${cap ? `<figcaption>${inline(cap)}</figcaption>` : ''}</figure>`;
 }
 
+/* A TABLE, from two markers that cannot be anything else. Rows pasted out of a
+   document or a spreadsheet arrive separated by TABS, and a table typed by hand
+   is written between PIPES (`| Played | 2 |`), with an optional `|---|` rule
+   under the header. Every line of the paragraph has to carry the marker, so a
+   stray tab in a sentence leaves the sentence alone. The first row is the
+   header and the first column names its row. Cells go through `inline`, which
+   escapes before anything else. */
+const TABLE_RULE = /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?$/;
+function table(lines) {
+  const tabbed = lines.every((l) => l.includes('\t'));
+  const piped = lines.every((l) => /^\|.*\|$/.test(l));
+  if (lines.length < 2 || (!tabbed && !piped)) return '';
+  const rows = lines.filter((l) => !TABLE_RULE.test(l))
+    .map((l) => (tabbed ? l.split('\t') : l.slice(1, -1).split('|')).map((c) => c.trim()));
+  if (rows.length < 2) return '';
+  const width = Math.max(...rows.map((r) => r.length));
+  const full = (r) => [...r, ...Array(width - r.length).fill('')];
+  const [head, ...body] = rows;
+  return `<div class="nw-art__table"><table>`
+    + `<thead><tr>${full(head).map((c) => `<th scope="col">${inline(c)}</th>`).join('')}</tr></thead>`
+    + `<tbody>${body.map((r) => `<tr>${full(r).map((c, i) => (i === 0
+      ? `<th scope="row">${inline(c)}</th>` : `<td>${inline(c)}</td>`)).join('')}</tr>`).join('')}</tbody>`
+    + '</table></div>';
+}
+
 export function articleBody(text) {
   const blocks = String(text || '').split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
+  /* `#` and `##` are a heading, `###` a sub-heading under it. A sub-heading
+     with no heading above it is still an h2, styled smaller, because an h3
+     straight after the headline skips a level. */
+  let underHeading = false;
   return blocks.map((b) => {
     const fig = photo(b);
     if (fig) return fig;
     if (/^#{1,6}\s/.test(b)) {
-      return `<h2 class="nw-art__h">${inline(b.replace(/^#{1,6}\s*/, ''))}</h2>`;
+      const words = inline(b.replace(/^#{1,6}\s*/, ''));
+      const sub = b.match(/^#+/)[0].length >= 3;
+      if (sub && underHeading) return `<h3 class="nw-art__sub">${words}</h3>`;
+      underHeading = true;
+      return `<h2 class="nw-art__h${sub ? ' nw-art__h--sub' : ''}">${words}</h2>`;
     }
+    const tbl = table(b.split('\n').map((l) => l.replace(/^ +| +$/g, '')).filter((l) => l.trim()));
+    if (tbl) return tbl;
     const lines = b.split('\n').map((l) => l.trim()).filter(Boolean);
     if (lines.length > 1 && lines.every((l) => /^[-*·•]\s+/.test(l))) {
       return `<ul class="nw-art__list">${lines

@@ -6569,6 +6569,14 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     const mine = base.articles.filter((a) => a.title === title);
     /* Once the club has imported it, the stored row is the one on the site. */
     const entered = (live.articles || []).some((r) => (r.data || {}).title === title);
+    /* A REWRITE AWAITING IMPORT: a new headline under a stored row's key.
+       Until it is imported the stored original is the article, and the file
+       copy must not show beside it under its new slug. */
+    if (!entered && (live.articles || []).some((r) => r.key === row.key)) {
+      check(`a rewrite awaiting import does not show beside the stored original: ${title.slice(0, 30)}`,
+        mine.length === 0 && base.articles.some((a) => a.key === row.key && !a.fromFile), `${mine.length} file copies`);
+      continue;
+    }
     check(entered
       ? `an article imported in the panel is on the site once, as the stored copy: ${title.slice(0, 30)}`
       : `an unentered article reaches the site: ${title.slice(0, 40)}`,

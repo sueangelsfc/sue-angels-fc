@@ -151,10 +151,11 @@ function leagueTable(rows, badges) {
       /* Not a link: the club asked for the rows in an article to be plain. */
       return `<div class="tbl__row${us ? ' tbl__row--us' : i === 1 ? ' tbl__row--runner' : ''}" aria-hidden="true">`
         + `<span class="tbl__pos">${i + 1}</span><span class="tbl__club">${us
-          ? `<img src="${STAR}" alt="" width="26" height="32" loading="lazy" decoding="async" />`
+          /* The orange and black crest with no star, at the club's request. */
+          ? '<img src="/assets/badge/sue-angels-badge-orange.webp" alt="" width="26" height="26" loading="lazy" decoding="async" />'
           : oppBadge(r[0], badges, 26, 26)}${inline(r[0])}</span>`
         + `<span>${inline(r[1] || '')}</span><span>${inline(r[2] || '')}</span><span>${inline(r[7] || '')}</span>`
-        + `<b class="tbl__pts">${inline(r[8] || '')}</b></a>`;
+        + `<b class="tbl__pts">${inline(r[8] || '')}</b></div>`;
     }).join('')
     + '</div>'
     + `<table class="sr-only"><thead><tr>${cols.map((c) => `<th scope="col">${c}</th>`).join('')}</tr></thead>`

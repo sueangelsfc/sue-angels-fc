@@ -6489,6 +6489,13 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
         && (lg.match(/<div\b/g) || []).length === (lg.match(/<\/div>/g) || []).length
         && /<span>\+8<\/span><b class="tbl__pts">6<\/b>/.test(lg)
         && /<table class="sr-only">[\s\S]*<th scope="row">TSM Rovers<\/th><td>2<\/td><td>1<\/td><td>0<\/td><td>1<\/td><td>7<\/td>/.test(lg), lg.slice(0, 400));
+    const clubText = '| Player | Club | Goals |\n|---|---|---|\n| A | Sue’s Angels FC | 4 |\n| B | TSM Rovers | 4 |\n| C | Nobody Known FC | 1 |';
+    const withCrests = ab(clubText, { badges: { 'TSM Rovers FC': { src: '/assets/badge/tsm-rovers.webp', match: 'tsm' } } });
+    check('a Club column in an article table wears the crests: the orange one for the Angels, the registry\'s for others, none for an unknown club',
+      /<span class="nw-art__club"><img class="nw-art__crest" src="\/assets\/badge\/sue-angels-badge-orange\.webp" alt="Sue’s Angels FC club crest"[^>]*>Sue’s Angels FC<\/span>/.test(withCrests)
+        && /<img class="nw-art__crest" src="\/assets\/badge\/tsm-rovers\.webp" alt="TSM Rovers club crest"[^>]*>TSM Rovers/.test(withCrests)
+        && /<span class="nw-art__club">Nobody Known FC<\/span>/.test(withCrests)
+        && !/nw-art__crest/.test(ab(clubText)), withCrests.slice(0, 500));
     check('without the crest registry a league-shaped table stays an ordinary table',
       !/class="tbl"/.test(ab(leagueText)) && /nw-art__table/.test(ab(leagueText)));
     /* LINKS: a page on the site or an https address, escaped first, and never

@@ -18,7 +18,7 @@
 import { esc, attr, CLUB_ID } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { fmtDate, slugify, isUs } from '../lib/stats.mjs';
-import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
+import { siteFooter, sitePreMain, siteHeader, oppBadge, oppBadgeSrc } from './home.mjs';
 import { reportText, hasReport, plainText } from '../lib/prose.mjs';
 import { readFileSync } from 'node:fs';
 
@@ -174,10 +174,21 @@ function table(lines, opts = {}) {
   const width = Math.max(...rows.map((r) => r.length));
   const full = (r) => [...r, ...Array(width - r.length).fill('')];
   const [head, ...body] = rows;
+  /* A COLUMN HEADED "Club" WEARS THE CRESTS, when the page passes the crest
+     registry: the club's own orange crest for the Angels, the registry's badge
+     for anyone else, and nothing for a club with no badge rather than a guess.
+     Named like every crest on the site: verbose beside the name, never wrong. */
+  const clubCol = opts.badges ? full(head).findIndex((c) => c.trim().toLowerCase() === 'club') : -1;
+  const crest = (name) => {
+    if (!name.trim()) return '';
+    const src = isUs(name) ? '/assets/badge/sue-angels-badge-orange.webp' : oppBadgeSrc(name, opts.badges);
+    return src ? `<img class="nw-art__crest" src="${attr(src)}" alt="${attr(`${name.trim()} club crest`)}" width="22" height="22" loading="lazy" decoding="async" />` : '';
+  };
+  const cell = (c, i) => (i === clubCol ? `<span class="nw-art__club">${crest(c)}${inline(c)}</span>` : inline(c));
   return `<div class="nw-art__table"><table>`
     + `<thead><tr>${full(head).map((c) => `<th scope="col">${inline(c)}</th>`).join('')}</tr></thead>`
     + `<tbody>${body.map((r) => `<tr>${full(r).map((c, i) => (i === 0
-      ? `<th scope="row">${inline(c)}</th>` : `<td>${inline(c)}</td>`)).join('')}</tr>`).join('')}</tbody>`
+      ? `<th scope="row">${cell(c, i)}</th>` : `<td>${cell(c, i)}</td>`)).join('')}</tr>`).join('')}</tbody>`
     + '</table></div>';
 }
 

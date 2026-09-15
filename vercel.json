@@ -20,6 +20,16 @@
   },
   "redirects": [
     {
+      "source": "/news/gameweek-two-round-up-three-little-birds-win-at-tsm-as-the-angels-go-top.html",
+      "destination": "/news/league-eight-round-up-angels-take-top-spot-as-gameweek-two-delivers-drama.html",
+      "permanent": true
+    },
+    {
+      "source": "/news/six-new-faces-six-league-eight-debuts.html",
+      "destination": "/news/six-new-angels-make-their-competitive-debuts.html",
+      "permanent": true
+    },
+    {
       "source": "/schedule",
       "destination": "/fixtures.html",
       "permanent": true

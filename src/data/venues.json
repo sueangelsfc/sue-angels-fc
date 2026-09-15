@@ -41,5 +41,13 @@
     "Wandsworth Common",
     "Woking Veterans Sundays",
     "Richardson Evans Memorial Playing Fields"
-  ]
+  ],
+  "_groundsNote": "What a visitor needs to find a ground, keyed by the canonical name above. `address` is what the map search is pointed at, so directions land on the ground rather than on a name the map may not know; `parking` is printed under the next-match card. Each entry says where it was read.",
+  "grounds": {
+    "Richardson Evans Memorial Playing Fields": {
+      "address": "Part Sports Pavilion, Roehampton Vale, London SW15 3PQ",
+      "parking": "Car park for 170",
+      "source": "FA Full-Time venue page for Junction Elite FC Sunday 3rd Team v Sue's Angels FC, read 15 September 2026"
+    }
+  }
 }

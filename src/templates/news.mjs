@@ -148,7 +148,8 @@ function leagueTable(rows, badges) {
     + '<span>P</span><span>W</span><span>GD</span><span class="tbl__pts">Pts</span></div>'
     + body.map((r, i) => {
       const us = isUs(r[0]);
-      return `<a class="tbl__row${us ? ' tbl__row--us' : i === 1 ? ' tbl__row--runner' : ''}" href="/league.html" aria-hidden="true" tabindex="-1">`
+      /* Not a link: the club asked for the rows in an article to be plain. */
+      return `<div class="tbl__row${us ? ' tbl__row--us' : i === 1 ? ' tbl__row--runner' : ''}" aria-hidden="true">`
         + `<span class="tbl__pos">${i + 1}</span><span class="tbl__club">${us
           ? `<img src="${STAR}" alt="" width="26" height="32" loading="lazy" decoding="async" />`
           : oppBadge(r[0], badges, 26, 26)}${inline(r[0])}</span>`

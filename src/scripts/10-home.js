@@ -325,6 +325,7 @@
       kick: pick.kick || 'TBC',
       comp: pick.competition,
       venue: pick.venue || 'TBC',
+      ground: pick.ground || '',
       usha: pick.weAreHome ? 'Home' : 'Away',
       themha: pick.weAreHome ? 'Away' : 'Home',
       label: 'Next match' + (pick.label ? ' · ' + pick.label : ''),
@@ -336,7 +337,7 @@
     var dir = card.querySelector('[data-nx-dir]');
     if (dir) {
       dir.hidden = !pick.venue;
-      if (pick.venue) dir.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(pick.venue);
+      if (pick.venue) dir.href = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(pick.mapQuery || pick.venue);
     }
 
     /* The crest, replaced rather than re-sourced: a club with no badge of its

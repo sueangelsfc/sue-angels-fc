@@ -187,6 +187,21 @@ export function buildDataset(overrides = {}) {
   /* Anything neither corrected nor recognised, reported once so it can be
      fixed at the source rather than accumulating another variant. */
   const unknownVenues = new Set();
+  /* HOW TO FIND A GROUND (venues.json `grounds`): the address a map search
+     should be pointed at and what the parking is, keyed by the canonical
+     name. A ground with no entry still gets a search for its name. */
+  const GROUNDS = venues.grounds || {};
+  const groundFor = (v) => {
+    const name = tidyVenue(v);
+    const g = GROUNDS[name] || {};
+    return {
+      name,
+      address: g.address || '',
+      parking: g.parking || '',
+      mapQuery: [name, g.address].filter(Boolean).join(', '),
+      line: [g.address, g.parking].filter(Boolean).join(' · '),
+    };
+  };
 
   /* A cup final is played at a neutral ground. The fixture list still names
      one club as home, so weAreHome stays as the record has it, but the site
@@ -1403,6 +1418,7 @@ export function buildDataset(overrides = {}) {
        after it. */
     todayISO,
     unknownVenues: [...unknownVenues],
+    groundFor,
     /* The merged baseline+database match list, before normalisation. The
        control panel needs it to pre-fill a match whose scoreline still comes
        from the code baseline rather than from a row it can edit. */

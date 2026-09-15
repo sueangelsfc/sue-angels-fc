@@ -91,7 +91,7 @@ export function heroBand(d, m, season) {
             <span class="pr-side__name">${esc(name)}</span>
             ${tag ? `<span class="pr-side__tag" aria-hidden="true">${esc(tag)}</span>` : ''}
           </span>`;
-  const maps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(m.venue || CLUB.venue.mapQuery)}`;
+  const maps = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(m.venue ? d.groundFor(m.venue).mapQuery : CLUB.venue.mapQuery)}`;
 
   return `<section class="sec pr-hero" aria-labelledby="pr-h">
       <span class="pr-hero__glow" aria-hidden="true"></span>

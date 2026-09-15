@@ -6483,7 +6483,8 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
       + '| Sue’s Angels FC | 2 | 2 | 0 | 0 | 10 | 2 | +8 | 6 |\n| TSM Rovers | 2 | 1 | 0 | 1 | 7 | 5 | +2 | 3 |';
     const lg = ab(leagueText, { badges: {} });
     check('a league-shaped table in an article is drawn as the home page\'s table, with every column for a screen reader',
-      /<div class="tbl">/.test(lg) && /<a class="tbl__row tbl__row--us"[^>]*><span class="tbl__pos">1<\/span>/.test(lg)
+      /<div class="tbl">/.test(lg) && /<div class="tbl__row tbl__row--us"[^>]*><span class="tbl__pos">1<\/span>/.test(lg)
+        && !/<a class="tbl__row/.test(lg) /* the club asked for no links on the rows in an article */
         && /<span>\+8<\/span><b class="tbl__pts">6<\/b>/.test(lg)
         && /<table class="sr-only">[\s\S]*<th scope="row">TSM Rovers<\/th><td>2<\/td><td>1<\/td><td>0<\/td><td>1<\/td><td>7<\/td>/.test(lg), lg.slice(0, 400));
     check('without the crest registry a league-shaped table stays an ordinary table',

@@ -314,6 +314,8 @@ export function home(d) {
     label: f.label || f.competition || '',
     competition: f.competition || '',
     venue: f.venue || '',
+    mapQuery: f.venue ? d.groundFor(f.venue).mapQuery : '',
+    ground: f.venue ? d.groundFor(f.venue).line : '',
     kick: f.kick || '',
     date: f.dateLabel || dayMonthYear(f.iso || f.date),
     at: f.isoDateTime || '',
@@ -445,7 +447,8 @@ export function home(d) {
             ${/* DIRECTIONS, because on a match morning the ground is the question.
                   A map search for the venue as the fixture names it; the script
                   re-points it when it moves the card on to the next fixture. */''}
-            <a class="hx__dir" data-nx-dir href="${attr(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(next.venue || '')}`)}" target="_blank" rel="noopener"${next.venue ? '' : ' hidden'}>Directions to the ground <span aria-hidden="true">→</span></a>
+            <a class="hx__dir" data-nx-dir href="${attr(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(next.venue ? d.groundFor(next.venue).mapQuery : '')}`)}" target="_blank" rel="noopener"${next.venue ? '' : ' hidden'}>Directions to the ground <span aria-hidden="true">→</span></a>
+            <p class="hx__ground" data-nx-ground>${esc(next.venue ? d.groundFor(next.venue).line : '')}</p>
 
             <div class="hx__countdown">
               <span class="hx__cdlabel">Countdown</span>

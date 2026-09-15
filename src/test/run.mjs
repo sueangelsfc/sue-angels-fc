@@ -6649,7 +6649,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     /* PROBE: drop the slug guard and the same article must appear twice, so
        the check above is shown to be doing the work. */
     const srcDs = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'dataset.mjs'), 'utf8');
-    const busted = srcDs.replace('.filter((a) => !storedSlugs.has(a.slug));', ';');
+    const busted = srcDs.replace('.filter((a) => !storedSlugs.has(a.slug) && !articles.some((s) => s.key === a.key));', ';');
     if (busted === srcDs) {
       check('probe: the slug guard is where the check thinks it is', false,
         'the dedup filter was not found, so this probe tests nothing');

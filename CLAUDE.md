@@ -1134,6 +1134,7 @@ from the build, so it can never produce a duplicate and forgetting to delete it
 costs nothing. A second source for editorial content is the fault this
 repository keeps having; the dedup is what stops it being one.
 
+- **A rewrite of a stored article travels under the stored row's key.** The file copy loses on the slug OR the key, so a new headline (a new slug) does not show beside the stored original; the panel offers it for import because it matches on the title, and importing upserts that key, replacing the original. The old URL then stops existing, so add a redirect in `vercel.json` once the club has published.
 - **The panel can adopt one.** An article shipped from the file is on the
   website and editable by nobody, which is the same bind the transcribed
   fixtures were in. The club IS signed in on Control panel → News, so their

@@ -1068,7 +1068,10 @@ export function buildDataset(overrides = {}) {
         fromFile: true,
       };
     })
-    .filter((a) => !storedSlugs.has(a.slug));
+    /* Loses on the slug AND on the key: a rewrite carried here under the
+       stored row's own key, with a new headline, would otherwise show beside
+       the stored original until it is imported, and importing writes that key. */
+    .filter((a) => !storedSlugs.has(a.slug) && !articles.some((s) => s.key === a.key));
   if (extraArticles.length) {
     articles.push(...extraArticles);
     articles.sort((a, b) => String(b.iso || '').localeCompare(String(a.iso || ''))

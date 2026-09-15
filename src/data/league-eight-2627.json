@@ -340,6 +340,22 @@
       "home": "Pure Football FC 1st Team",
       "away": "Bristol City (London) Supporters",
       "venue": "Barn Elms Sports Centre"
+    },
+    {
+      "iso": "2026-09-27",
+      "date": "27 Sep 26",
+      "kick": "10:30",
+      "home": "Bristol City (London) Supporters",
+      "away": "Junction Elite FC Sunday 3rd Team",
+      "venue": "Clapham Common, Pitch 8"
+    },
+    {
+      "iso": "2026-09-27",
+      "date": "27 Sep 26",
+      "kick": "11:00",
+      "home": "Sue's Angels FC",
+      "away": "Barnes Stormers FC",
+      "venue": "The Reeves Sports Club"
     }
   ]
 }

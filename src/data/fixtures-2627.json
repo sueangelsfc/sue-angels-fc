@@ -65,6 +65,15 @@
       "away": "Sue's Angels FC",
       "venue": "Richardson Evans Memorial Playing Fields",
       "competition": "League Eight"
+    },
+    {
+      "id": "f20260927-barnes",
+      "date": "27 Sep 2026",
+      "kick": "11:00",
+      "home": "Sue's Angels FC",
+      "away": "Barnes Stormers FC",
+      "venue": "The Reeves Sports Club",
+      "competition": "League Eight"
     }
   ]
 }

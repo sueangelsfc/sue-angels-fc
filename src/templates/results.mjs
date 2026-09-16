@@ -135,7 +135,10 @@ function matchesPage(d, mode) {
               ${m.played
     ? `<span class="mt__res" data-res="${attr(m.outcome || '')}">${esc(m.outcome || '·')}</span>`
     : `<span class="mt__tag">${m.awaitingScore ? 'Played' : isNext ? 'Next up' : 'To play'}</span>`}
-              <span class="mt__date">${esc(fmtDate(m.date, { weekday: true }))}</span>
+              ${/* A CUP TIE CAN BE DRAWN BEFORE IT IS DATED. The League publishes
+                    the draw first and the date later, so the card says so rather
+                    than heading a real fixture with an empty line. */''}
+              <span class="mt__date">${esc(fmtDate(m.date, { weekday: true }) || 'Date to be confirmed')}</span>
             </header>
             <div class="mt__sides${m.played ? '' : ' is-fixture'}">
               ${side(home, hs, m.weAreHome)}

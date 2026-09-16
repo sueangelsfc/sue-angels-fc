@@ -1209,7 +1209,7 @@ export function home(d) {
             <span class="psn__r"><a href="/matches/${attr(m.slug)}.html">${esc(m.ourScoreline || m.scoreline)}</a> <i>${esc(m.weAreHome ? 'H' : 'A')}</i></span>
           </li>`).join('\n          ')}
           ${ps.toCome.map((f) => `<li class="psn__m">
-            <span class="psn__d">${esc(f.dateLabel || dayMonthYear(f.iso || f.date))}</span>
+            <span class="psn__d">${esc(f.dateLabel || dayMonthYear(f.iso || f.date) || 'Date TBC')}</span>
             <span class="psn__o">${oppBadge(f.opponent, d.badges, 22, 22, 'psn__b')}<b>${esc(shortClub(f.opponent))}</b></span>
             <span class="psn__r"><em>${esc(f.kick || 'To play')}</em> <i>${esc(f.weAreHome ? 'H' : 'A')}</i></span>
           </li>`).join('\n          ')}
@@ -1536,7 +1536,7 @@ export function home(d) {
         ${bandHead('fixtures', 'What is coming up', `${d.upcoming.length} to play`, '/fixtures.html', 'The full list', 'fix-h')}
         ${rowList(soon.map((f) => ({
     a: `${oppBadge(f.opponent, d.badges, 22, 22, 'psn__b')}<b>${esc(shortClub(f.opponent))}</b>`,
-    b: esc(`${f.dateLabel || dayMonthYear(f.iso || f.date)}${f.competition ? ` · ${f.competition}` : ''}`),
+    b: esc(`${f.dateLabel || dayMonthYear(f.iso || f.date) || 'Date TBC'}${f.competition ? ` · ${f.competition}` : ''}`),
     c: `${esc(f.weAreHome ? 'Home' : 'Away')}${f.kick ? ` <i>${esc(f.kick)}</i>` : ''}`,
   })))}
       </div>

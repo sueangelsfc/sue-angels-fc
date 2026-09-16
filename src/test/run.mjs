@@ -6586,6 +6586,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
       ['Balham Bteckerz', '/assets/badge/balham-bteckerz.webp'],
       ['Dynamo London FC', '/assets/badge/dynamo-london.webp'],
       ['Clapham Chiefs FC', '/assets/badge/clapham-chiefs.webp'],
+      ['Peps All Stars', '/assets/badge/peps-all-stars.webp'],
       ['Woking Veterans Sundays', '/assets/badge/woking-vets.webp'],
       ['BPR Men’s', '/assets/badge/bpr-fc.webp'],
     ]) {

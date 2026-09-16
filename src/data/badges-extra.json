@@ -24,6 +24,12 @@
       "aspect": "circle",
       "deny": ["Club Internacional de Fútbol Clapham", "Balham & Clapham Albion"]
     },
+    "Peps All Stars": {
+      "match": "peps",
+      "src": "assets/badge/peps-all-stars.webp",
+      "alt": "Peps All Stars",
+      "aspect": "shield"
+    },
     "Brentford Town": {
       "match": "brentford",
       "src": "assets/badge/brentford-town-badge.webp",

@@ -6580,7 +6580,11 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   {
     const { oppBadgeSrc: badgeSrc } = await import(path.join(ROOT, 'src', 'templates', 'home.mjs'));
     for (const [club, want] of [
-      ['Balham & Clapham Albion', ''],
+      /* Their own crest now, supplied by the club: the exact name is looked up
+         before any needle, so the refusals below still hold for everyone else. */
+      ['Balham & Clapham Albion', '/assets/badge/balham-clapham-albion.webp'],
+      ['Celtic Swans FC', '/assets/badge/celtic-swans.webp'],
+      ['Deportivo Los Toros', '/assets/badge/deportivo-los-toros.webp'],
       ['Dynamo Putney FC', ''],
       ['Club Internacional de Fútbol Clapham', ''],
       ['Balham Bteckerz', '/assets/badge/balham-bteckerz.webp'],

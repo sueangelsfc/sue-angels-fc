@@ -24,6 +24,24 @@
       "aspect": "circle",
       "deny": ["Club Internacional de Fútbol Clapham", "Balham & Clapham Albion"]
     },
+    "Celtic Swans FC": {
+      "match": "celtic swans",
+      "src": "assets/badge/celtic-swans.webp",
+      "alt": "Celtic Swans FC",
+      "aspect": "circle"
+    },
+    "Deportivo Los Toros": {
+      "match": "toros",
+      "src": "assets/badge/deportivo-los-toros.webp",
+      "alt": "Deportivo Los Toros",
+      "aspect": "circle"
+    },
+    "Balham & Clapham Albion": {
+      "match": "clapham albion",
+      "src": "assets/badge/balham-clapham-albion.webp",
+      "alt": "Balham & Clapham Albion",
+      "aspect": "circle"
+    },
     "Peps All Stars": {
       "match": "peps",
       "src": "assets/badge/peps-all-stars.webp",

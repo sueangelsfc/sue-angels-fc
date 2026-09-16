@@ -312,19 +312,37 @@ export function tenureDetail(record, num, season, opts = {}) {
   const seasons = opts.seasons || [];
   const idx = seasons.indexOf(season);
   if (idx < 0) return null;
+  /* A SEASON SOMEBODY PLAYED IN IS A SEASON THEY WERE AT THE CLUB, whatever
+     their status says by the end of it. Asking `isPlaying` alone reads "left
+     the club" as never having been at it, so a man who played all season,
+     left in May and signed again in July had one season on the books instead
+     of two, and the page called his second season his first. Richard
+     Epathite, seven starts in 25/26, and number 10 the same shape.
+
+     `wasHere` is the evidence this file already trusts elsewhere: team sheets
+     weighed against the signing date, so a shirt handed on cannot credit its
+     previous holder.
+
+     IT ANSWERS THE BACKWARD LOOK ONLY, never the season being labelled. A
+     player who has left carries no tenure at all, and letting evidence
+     override the status of the season he went would hand a departed man a
+     "Retained" badge - which is exactly what it did, for four record shapes,
+     until the panel disagreed and said so. */
+  const wasHere = opts.wasHere || (() => false);
   const here = (s) => isPlaying(statusIn(record, num, s, opts));
+  const wasEverHere = (s) => here(s) || wasHere(num, s);
   if (!here(season)) return null;
 
-  /* Every season up to and including this one that they were in the squad. */
+  /* Every season up to and including this one that they were at the club. */
   const past = [];
-  for (let i = 0; i <= idx; i += 1) if (here(seasons[i])) past.push(seasons[i]);
+  for (let i = 0; i <= idx; i += 1) if (wasEverHere(seasons[i])) past.push(seasons[i]);
 
   let runningFor = 0;
-  for (let i = idx; i >= 0 && here(seasons[i]); i -= 1) runningFor += 1;
+  for (let i = idx; i >= 0 && wasEverHere(seasons[i]); i -= 1) runningFor += 1;
 
   let awayFor = 0;
   if (runningFor === 1 && idx > 0) {
-    for (let i = idx - 1; i >= 0 && !here(seasons[i]); i -= 1) awayFor += 1;
+    for (let i = idx - 1; i >= 0 && !wasEverHere(seasons[i]); i -= 1) awayFor += 1;
   }
 
   const firstEver = past.length === 1;

@@ -6578,6 +6578,22 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
      that club's crest: a wrong crest is worse than none, because nothing on the
      page says it is a guess. */
   {
+    /* A SEASON SOMEBODY PLAYED IN COUNTS, whatever their status says by the
+       end of it. Left in May and back in July is two seasons at the club, not
+       a first season: Richard Epathite played seven times in 25/26, was set
+       departed, and read "First season at the club" beside his name. */
+    {
+      const ss = await import(path.join(ROOT, 'src', 'lib', 'squad-status.mjs'));
+      const seasons = ['25/26', '26/27'];
+      const rec = ss.readStatusRecord({ 99: { '25/26': 'departed', '26/27': 'active' } });
+      const played = ss.tenureDetail(rec, 99, '26/27', { seasons, wasHere: (n, s) => s === '25/26' });
+      const never = ss.tenureDetail(rec, 98, '26/27', { seasons, wasHere: () => false });
+      check('a player who played last season, left and is back counts both seasons',
+        played && played.firstEver === false && played.nth === 2, JSON.stringify(played));
+      check('and somebody with no history at all is still a first season',
+        !never || never.firstEver === true, JSON.stringify(never));
+    }
+
     const { oppBadgeSrc: badgeSrc } = await import(path.join(ROOT, 'src', 'templates', 'home.mjs'));
     for (const [club, want] of [
       /* Their own crest now, supplied by the club: the exact name is looked up

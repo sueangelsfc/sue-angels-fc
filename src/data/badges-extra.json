@@ -1,7 +1,29 @@
 {
   "_source": "Badge files already in assets/badge/ that the recovered BADGES registry never listed",
   "_note": "The registry maps a club name to { match, src, alt, aspect }. `match` is the lowercase needle oppBadge() falls back to when the full club name does not match exactly, so a fixture listed under a slightly different spelling still resolves. Kingsmeadow United's crest was supplied by the club as a flat white square; the white is knocked back to transparent so it sits on the dark card like every other badge.",
+  "_deny": "A needle matches anywhere in a club's name, so a short one claims clubs it has nothing to do with: the Brian Howard President's Cup draw of 16 September 2026 put Balham & Clapham Albion, Dynamo Putney FC and Club Internacional de Fútbol Clapham in the same competition as us, and they resolved to the Balham Bteckerz, Dynamo London and Clapham Chiefs crests. `deny` names the clubs an entry's needle must never answer for. It is a judgement about who is who, so it is a list somebody writes, not a rule to be guessed; an exact name in the registry still wins, so supplying a club's own crest retires its entry here.",
   "badges": {
+    "Balham Bteckerz": {
+      "match": "balham",
+      "src": "assets/badge/balham-bteckerz.webp",
+      "alt": "Balham Bteckerz",
+      "aspect": "circle",
+      "deny": ["Balham & Clapham Albion"]
+    },
+    "Dynamo London FC": {
+      "match": "dynamo",
+      "src": "assets/badge/dynamo-london.webp",
+      "alt": "Dynamo London FC",
+      "aspect": "circle",
+      "deny": ["Dynamo Putney FC"]
+    },
+    "Clapham Chiefs FC": {
+      "match": "clapham",
+      "src": "assets/badge/clapham-chiefs.webp",
+      "alt": "Clapham Chiefs FC",
+      "aspect": "circle",
+      "deny": ["Club Internacional de Fútbol Clapham", "Balham & Clapham Albion"]
+    },
     "Brentford Town": {
       "match": "brentford",
       "src": "assets/badge/brentford-town-badge.webp",

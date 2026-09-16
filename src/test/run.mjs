@@ -6571,6 +6571,29 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     path.join(ROOT, 'src', 'data', 'recovered-live.json'), 'utf8'));
 
   const base = bdA();
+
+  /* A NEEDLE MUST NOT CLAIM A DIFFERENT CLUB, and must still do its job.
+     The President's Cup draw of 16 September 2026 put three clubs in the same
+     competition as us whose names contain another club's needle, and each wore
+     that club's crest: a wrong crest is worse than none, because nothing on the
+     page says it is a guess. */
+  {
+    const { oppBadgeSrc: badgeSrc } = await import(path.join(ROOT, 'src', 'templates', 'home.mjs'));
+    for (const [club, want] of [
+      ['Balham & Clapham Albion', ''],
+      ['Dynamo Putney FC', ''],
+      ['Club Internacional de Fútbol Clapham', ''],
+      ['Balham Bteckerz', '/assets/badge/balham-bteckerz.webp'],
+      ['Dynamo London FC', '/assets/badge/dynamo-london.webp'],
+      ['Clapham Chiefs FC', '/assets/badge/clapham-chiefs.webp'],
+      ['Woking Veterans Sundays', '/assets/badge/woking-vets.webp'],
+      ['BPR Men’s', '/assets/badge/bpr-fc.webp'],
+    ]) {
+      const got = badgeSrc(club, base.badges);
+      check(`crest for ${club}: ${want || "none, rather than another club's"}`, got === want, got || 'none');
+    }
+  }
+
   for (const row of (extra.articles || [])) {
     const title = row.data.title;
     const mine = base.articles.filter((a) => a.title === title);

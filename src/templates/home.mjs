@@ -171,7 +171,14 @@ export function oppBadgeSrc(name, badges) {
   let rec = badges?.[name];
   if (!rec && badges) {
     const needle = String(name || '').toLowerCase();
-    rec = Object.values(badges).find((r) => r && r.match && needle.includes(String(r.match).toLowerCase()));
+    /* A NEEDLE MAY BE REFUSED BY NAME. "balham" is meant to find the Balham
+       Bteckerz crest for a variant spelling of them; it also matches Balham &
+       Clapham Albion, who are a different club. `deny` is the entry's own list
+       of clubs it must not answer for, compared on the reduced name so an
+       apostrophe or an FC cannot slip past it. */
+    const denied = (r) => (r.deny || []).some((x) => clubKey(x) === clubKey(name));
+    rec = Object.values(badges).find((r) => r && r.match
+      && needle.includes(String(r.match).toLowerCase()) && !denied(r));
   }
   if (!rec && badges) {
     const key = clubKey(name);

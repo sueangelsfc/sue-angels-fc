@@ -30,6 +30,11 @@
       "permanent": true
     },
     {
+      "source": "/news/peps-all-stars-away-in-the-presidents-cup-first-round.html",
+      "destination": "/news/angels-handed-away-tie-against-peps-all-stars-in-presidents-cup.html",
+      "permanent": true
+    },
+    {
       "source": "/schedule",
       "destination": "/fixtures.html",
       "permanent": true

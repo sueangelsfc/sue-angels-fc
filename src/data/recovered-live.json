@@ -5528,6 +5528,24 @@
         "kick": "12:30",
         "kind": "score",
         "motm": null,
+        "subs": [
+          {
+            "on": 41,
+            "minute": 15
+          },
+          {
+            "on": 21,
+            "minute": 45
+          },
+          {
+            "on": 13,
+            "minute": 45
+          },
+          {
+            "on": 902,
+            "minute": 45
+          }
+        ],
         "bench": [
           {
             "on": true,
@@ -5549,26 +5567,6 @@
             "positions": [
               "RWB",
               "LWB"
-            ]
-          },
-          {
-            "on": true,
-            "num": 903,
-            "onAt": 15,
-            "spells": [
-              {
-                "pos": "ST",
-                "half": "1",
-                "role": ""
-              },
-              {
-                "pos": "ST",
-                "half": "2",
-                "role": ""
-              }
-            ],
-            "positions": [
-              "ST"
             ]
           },
           {
@@ -5606,8 +5604,24 @@
             "positions": [
               "CB"
             ]
+          },
+          {
+            "on": true,
+            "num": 41,
+            "onAt": 15,
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "ST"
+            ]
           }
         ],
+        "cover": "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/cover-match-1789209389314.jpg",
         "goals": [
           {
             "num": 12,
@@ -5644,7 +5658,7 @@
           }
         ],
         "captain": 23,
-        "savedAt": "2026-08-03T14:59:01.340Z",
+        "savedAt": "2026-09-12T10:36:27.874Z",
         "redCards": [],
         "starters": [
           {
@@ -5709,7 +5723,7 @@
             ]
           },
           {
-            "num": 900,
+            "num": 45,
             "spells": [
               {
                 "pos": "RCB",
@@ -5824,13 +5838,14 @@
         ],
         "competition": "Pre-season friendly",
         "yellowCards": [],
+        "opponentGoals": [],
         "penaltiesSaved": [],
-        "polishedReport": "Sue's Angels FC beat Pure Football FC 2.0 2-0 away in a pre-season friendly on Sunday 2 August 2026, at Barn Elms Sports centre, a solid win.\n\nSue's Angels FC lined up in a 3-4-2-1. Stewart Luwawa wore the armband.\n\nOn the scoresheet: Ade Owolona (with his left foot from inside the box) and Leon Burnett (with his right foot from outside the box, sent through by Ade Owolona).\n\nNeither Ade Owolona nor Leon Burnett had started a competitive match for the club before this one. Luke Munns has kept thirteen clean sheets for the club.\n\nPure Football will be in League Eight with us this season, so it was a useful early look at them. The youngsters were quality at the back alongside Jim.\n\nJeev impressed in the first half. Stewart was given the armband and looked rusty, understandably in a first pre-season game.\n\nHarry brought that engine in the middle, on the front foot all afternoon, never stopped running. Good to see the boys come off the bench.\n\nBoth scorers joined from Sheen Park over the summer. A tough afternoon in the heat, shaking off the rust.\n\nAde showed signs of quality, with some beautiful touches and passes, and it was his pass that put Leon through for the second. Leon, LJ to the lads, made an impact on his first start.\n\nThe clubs have met before: 2 meetings and 2 wins, 12 scored and 1 conceded. The last two finished 5-0 at home in Sep 25 and 7-1 away in Nov 25.\n\nThanks to Pure Football for hosting and good luck to them for the season.\n\nMATCH DETAILS\nLine-up: Luke Munns (Goalkeeper), Samakab Nur (Left wing back), Sean Sheehan (Left centre back), Jim El Bayati (Centre back), Sam Nichols (Right centre back), Daniel Thorz (Right wing back), Jeev Thilaganathan (Left defensive midfielder), Stewart Luwawa (Right defensive midfielder), Harry Pyke (Left attacking midfielder), Ade Owolona (Right attacking midfielder), Leon Burnett (Striker).\nShape: 3-4-2-1.\nCaptain: Stewart Luwawa.\nGoals: Ade Owolona, Leon Burnett.\nClean sheet: Luke Munns.\nSaves: Luke Munns 6.",
+        "polishedReport": "Sue's Angels FC beat Pure Football FC 2.0 2-0 away in a pre-season friendly on Sunday 2 August 2026, at Barn Elms Sports centre, a solid win.\n\nSue's Angels FC lined up in a 3-4-2-1. Stewart Luwawa wore the armband.\n\nOn the scoresheet: Ade Owolana (with his left foot from inside the box) and Leon Burnett (with his right foot from outside the box, sent through by Ade Owolana).\n\nNeither Ade Owolana nor Leon Burnett had started a competitive match for the club before this one. Luke Munns has kept thirteen clean sheets for the club.\n\nPure Football will be in League Eight with us this season, so it was a useful early look at them. The youngsters were quality at the back alongside Jim.\n\nJeev impressed in the first half. Stewart was given the armband and looked rusty, understandably in a first pre-season game.\n\nHarry brought that engine in the middle, on the front foot all afternoon, never stopped running. Good to see the boys come off the bench.\n\nBoth scorers joined from Sheen Park over the summer. A tough afternoon in the heat, shaking off the rust.\n\nAde showed signs of quality, with some beautiful touches and passes, and it was his pass that put Leon through for the second. Leon, LJ to the lads, made an impact on his first start.\n\nThe clubs have met before: 2 meetings and 2 wins, 12 scored and 1 conceded. The last two finished 5-0 at home in Sep 25 and 7-1 away in Nov 25.\n\nThanks to Pure Football for hosting and good luck to them for the season.\n\nMATCH DETAILS\nLine-up: Luke Munns (Goalkeeper), Samakab Nur (Left wing back), Sean Sheehan (Left centre back), Jim El Bayati (Centre back), Samuel Nichols (Right centre back), Daniel Thorz (Right wing back), Jeev Thilaganathan (Left defensive midfielder), Stewart Luwawa (Right defensive midfielder), Harry Pyke (Left attacking midfielder), Ade Owolana (Right attacking midfielder), Leon Burnett (Striker).\nShape: 3-4-2-1.\nCaptain: Stewart Luwawa.\nGoals: Ade Owolana, Leon Burnett.\nClean sheet: Luke Munns.\nSaves: Luke Munns 6.",
         "penaltiesMissed": [],
         "opponentRedCards": [],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-08-03T14:59:01.341+00:00"
+      "updated_at": "2026-09-12T11:08:12.266+00:00"
     },
     {
       "key": "r20260809-galacticos",
@@ -6072,6 +6087,1052 @@
         "penaltiesConceded": 0
       },
       "updated_at": "2026-09-03T20:06:43.413+00:00"
+    },
+    {
+      "key": "r20260906-three",
+      "data": {
+        "as": 1,
+        "hs": 2,
+        "id": "r20260906-three",
+        "away": "Three Little Birds FC",
+        "date": "06 Sep 2026",
+        "home": "Sue's Angels FC",
+        "kick": "11:00",
+        "kind": "score",
+        "motm": 6,
+        "subs": [],
+        "bench": [
+          {
+            "on": true,
+            "num": 41,
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "2",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "ST"
+            ]
+          },
+          {
+            "on": true,
+            "num": 30,
+            "spells": [
+              {
+                "pos": "RM",
+                "half": "2",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "RM"
+            ]
+          },
+          {
+            "on": true,
+            "num": 31,
+            "role": "IFB",
+            "spells": [
+              {
+                "pos": "LB",
+                "half": "1",
+                "role": "IFB"
+              }
+            ],
+            "positions": [
+              "LB"
+            ]
+          }
+        ],
+        "cover": "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/cover-match-1788914044275.jpg",
+        "goals": [
+          {
+            "num": 21,
+            "zone": "box",
+            "assist": {
+              "num": 9,
+              "type": "pass"
+            },
+            "minute": null,
+            "penalty": false,
+            "bodyPart": "left",
+            "situation": "open"
+          },
+          {
+            "num": 9,
+            "zone": "outside",
+            "assist": {
+              "num": 3,
+              "type": "headpass"
+            },
+            "minute": null,
+            "penalty": false,
+            "bodyPart": "right",
+            "situation": "open"
+          }
+        ],
+        "saves": 8,
+        "shape": "4-1-3-2",
+        "venue": "The Reeves Sports Club",
+        "keeper": 28,
+        "assists": [
+          {
+            "num": 9,
+            "type": "pass",
+            "minute": null,
+            "forGoalBy": 21
+          },
+          {
+            "num": 3,
+            "type": "headpass",
+            "minute": null,
+            "forGoalBy": 9
+          }
+        ],
+        "captain": 25,
+        "savedAt": "2026-09-13T18:43:22.635Z",
+        "redCards": [],
+        "starters": [
+          {
+            "num": 28,
+            "spells": [
+              {
+                "pos": "GK",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "GK"
+            ]
+          },
+          {
+            "num": 20,
+            "role": "OFB",
+            "spells": [
+              {
+                "pos": "RB",
+                "half": "1",
+                "role": "OFB"
+              }
+            ],
+            "positions": [
+              "RB"
+            ]
+          },
+          {
+            "num": 25,
+            "spells": [
+              {
+                "pos": "LCB",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "LCB"
+            ]
+          },
+          {
+            "num": 38,
+            "spells": [
+              {
+                "pos": "RCB",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "RCB"
+            ]
+          },
+          {
+            "num": 2,
+            "spells": [
+              {
+                "pos": "LB",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "LB"
+            ]
+          },
+          {
+            "num": 23,
+            "spells": [
+              {
+                "pos": "DM",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "DM"
+            ]
+          },
+          {
+            "num": 21,
+            "spells": [
+              {
+                "pos": "LAM",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "LAM"
+            ]
+          },
+          {
+            "num": 6,
+            "spells": [
+              {
+                "pos": "CAM",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "CAM"
+            ]
+          },
+          {
+            "num": 12,
+            "spells": [
+              {
+                "pos": "RAM",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "RAM"
+            ]
+          },
+          {
+            "num": 3,
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "ST"
+            ]
+          },
+          {
+            "num": 9,
+            "spells": [
+              {
+                "pos": "CF",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "CF"
+            ]
+          }
+        ],
+        "formation": "4-1-3-2",
+        "commentary": "",
+        "cleanSheets": [],
+        "competition": "League Eight",
+        "yellowCards": [
+          {
+            "num": 21
+          }
+        ],
+        "opponentGoals": [],
+        "penaltiesSaved": [],
+        "polishedReport": "Sue’s Angels FC began their League Eight campaign with a hard-fought 2–1 victory over Three Little Birds FC at The Reeves Sports Club.\n\nFollowing last season’s perfect league campaign and a two-division rise, the Angels entered the new season with high ambitions. However, their opening fixture quickly demonstrated that points at this level would have to be earned.\n\nThree Little Birds started the game strongly and caused several problems during the opening exchanges. The visitors played with confidence, moved the ball effectively and created opportunities that forced Sue’s Angels onto the back foot.\n\nLuke Munns was called into action on several occasions and produced a number of important saves to keep the game level. His eight saves across the match proved vital, particularly during a difficult opening period in which the Angels struggled to find their usual rhythm.\n\nSue’s Angels’ task was made more difficult when Andy Allen pulled up with a hamstring injury. Stephen Potter was introduced at left-back, while the team moved away from its starting 4-1-3-2 formation and switched to a 4-2-3-1.\n\nThe tactical adjustment made an immediate difference.\n\nThe additional presence in midfield gave the Angels greater control, improved the team’s defensive balance and gradually shifted the momentum of the game. After weathering the early pressure, Sue’s Angels began to play with more confidence and find spaces in the opposition half.\n\nThe breakthrough arrived following excellent hold-up play from Leon Burnett. Leon used his strength to bring the ball under control and helped release Charlie Dunkley into a dangerous position inside the penalty area.\n\nRather than forcing an attempt at goal, Charlie showed composure and awareness to lay the ball into the path of Jon Lloyd. Lloyd made no mistake, producing a classy finish to put the Angels ahead.\n\nThe opening goal changed the feeling around the game. Sue’s Angels began playing with greater belief, and just five minutes later they doubled their advantage through an extraordinary moment from Dunkley.\n\nCollecting the ball around 30 yards from goal, Charlie unleashed a stunning right-footed strike seemingly out of nowhere. The ball flew beyond the Three Little Birds goalkeeper and into the net, leaving him with absolutely no chance.\n\nIt was a spectacular finish and an immediate contender for the club’s Goal of the Season award.\n\nHaving endured a challenging start, the Angels had shown their quality to establish a two-goal advantage. The players protected the lead for the remainder of the first half and went into the interval 2–0 ahead.\n\nThe half-time message was clear.\n\nThe players were reminded of the standards they had established and the achievements that had brought them to League Eight. They were also reminded of the level of concentration required to finish the job. There was a clear focus on limiting the opposition’s opportunities during the second half and managing the game more effectively.\n\nFor much of the second period, the contest resembled the calm before the storm. The game passed without any major incident, with Sue’s Angels managing their advantage while Three Little Birds searched for a way back into the match.\n\nHowever, with 11 minutes remaining, the visitors were handed renewed hope.\n\nMunns, who had been dependable throughout the contest and had played such an important role in keeping the Angels ahead, misjudged a corner that went directly into the goal. It was an unfortunate error from a goalkeeper who had otherwise produced several crucial saves.\n\nThe goal immediately changed the atmosphere.\n\nAt 2–1, Three Little Birds sensed an opportunity to rescue a point on the opening day and increased the pressure during the closing stages. Sue’s Angels were required to demonstrate a different side of their game.\n\nIn response, the Angels made another tactical adjustment and moved into a 5-3-2 formation. The change provided greater defensive security, added another presence across the back line and allowed the team to remain compact through midfield.\n\nThe players stayed focused, managed the final minutes and refused to allow the setback to derail the result. Sue’s Angels successfully saw out the remaining time and walked away with all three points.\n\nIt was not the team’s best performance, and there will be areas to improve as the season develops. Three Little Birds deserve credit for the problems they caused and for remaining competitive until the final whistle.\n\nFor Sue’s Angels, however, the opening day was ultimately about getting points on the board.\n\nFollowing a historic debut campaign and a two-division rise, the expectations surrounding the club are naturally higher. The performance may not have reached the standards the players have set for themselves, but successful seasons are not built solely on comfortable victories.\n\nThey are also shaped by difficult matches when a team must adapt, remain together and find a way to win.\n\nThe Angels did exactly that.\n\nThree different formations. Two excellent goals. One determined team performance. Most importantly, three points.\n\nThe League Eight campaign is underway.\n\nMatch Details\n\nFull-time: Sue’s Angels FC 2–1 Three Little Birds FC\nSue’s Angels Goalscorers: Jon Lloyd and Charlie Dunkley\nPlayer of the Match: Elis Brumpton\nCaptain: Daniel McLane\nYellow card: Jon Lloyd\nStarting formation: 4-1-3-2\nSecond formation: 4-2-3-1\nClosing formation: 5-3-2\nCompetition: Southern Sunday Football League, League Eight\nVenue: The Reeves Sports Club\nDate: 6 September 2026",
+        "penaltiesMissed": [],
+        "opponentRedCards": [],
+        "penaltiesConceded": 0
+      },
+      "updated_at": "2026-09-13T18:43:22.635+00:00"
+    },
+    {
+      "key": "r20260913-haydons",
+      "data": {
+        "as": 1,
+        "hs": 8,
+        "id": "r20260913-haydons",
+        "iso": "2026-09-13",
+        "away": "Haydons Park",
+        "date": "13 Sep 2026",
+        "home": "Sue's Angels FC",
+        "kick": "11:00",
+        "kind": "score",
+        "motm": 12,
+        "subs": [],
+        "bench": [
+          {
+            "on": true,
+            "num": 44,
+            "onAt": 60,
+            "spells": [
+              {
+                "pos": "LWB",
+                "half": "2",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "LWB"
+            ]
+          },
+          {
+            "on": true,
+            "num": 21,
+            "onAt": 45,
+            "spells": [
+              {
+                "pos": "RWB",
+                "half": "2",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "RWB"
+            ]
+          },
+          {
+            "on": true,
+            "num": 4,
+            "onAt": 45,
+            "spells": [
+              {
+                "pos": "LCB",
+                "half": "2",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "LCB"
+            ]
+          },
+          {
+            "on": true,
+            "num": 43,
+            "onAt": 45,
+            "spells": [
+              {
+                "pos": "CB",
+                "half": "2",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "CB"
+            ]
+          },
+          {
+            "on": true,
+            "num": 29,
+            "onAt": 55,
+            "spells": [
+              {
+                "pos": "CAM",
+                "half": "2",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "CAM"
+            ]
+          }
+        ],
+        "cover": "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/cover-match-1789324983450.jpg",
+        "goals": [
+          {
+            "num": 12,
+            "zone": "box",
+            "assist": {
+              "num": 9,
+              "type": "pass"
+            },
+            "minute": 12,
+            "penalty": false,
+            "bodyPart": "left",
+            "situation": "open"
+          },
+          {
+            "num": 3,
+            "zone": null,
+            "assist": {
+              "num": 20,
+              "type": "headpass"
+            },
+            "minute": 29,
+            "penalty": true,
+            "bodyPart": "right",
+            "situation": "penalty"
+          },
+          {
+            "num": 9,
+            "zone": "six",
+            "assist": null,
+            "minute": 34,
+            "penalty": false,
+            "bodyPart": "left",
+            "situation": "open"
+          },
+          {
+            "num": 12,
+            "zone": null,
+            "assist": {
+              "num": 9,
+              "type": "pass"
+            },
+            "minute": 38,
+            "penalty": true,
+            "bodyPart": "right",
+            "situation": "penalty"
+          },
+          {
+            "num": 9,
+            "zone": "box",
+            "assist": {
+              "num": 25,
+              "type": "through"
+            },
+            "minute": 43,
+            "penalty": false,
+            "bodyPart": "right",
+            "situation": "open"
+          },
+          {
+            "num": 6,
+            "zone": "six",
+            "assist": {
+              "num": 20,
+              "type": "corner"
+            },
+            "minute": 57,
+            "penalty": false,
+            "bodyPart": "head",
+            "situation": "corner"
+          },
+          {
+            "num": 9,
+            "zone": "outside",
+            "assist": null,
+            "minute": 88,
+            "penalty": false,
+            "bodyPart": "right",
+            "situation": "freekick-direct"
+          },
+          {
+            "num": 12,
+            "zone": "box",
+            "assist": {
+              "num": 3,
+              "type": "through"
+            },
+            "minute": 92,
+            "penalty": false,
+            "bodyPart": "left",
+            "situation": "open"
+          }
+        ],
+        "saves": 2,
+        "shape": "",
+        "squad": [
+          28,
+          20,
+          38,
+          10,
+          25,
+          2,
+          6,
+          12,
+          23,
+          9,
+          3,
+          44,
+          21,
+          4,
+          43,
+          29
+        ],
+        "venue": "The Reeves Sports Club",
+        "keeper": 28,
+        "assists": [
+          {
+            "num": 9,
+            "type": "pass",
+            "minute": 12,
+            "forGoalBy": 12
+          },
+          {
+            "num": 20,
+            "type": "headpass",
+            "minute": 29,
+            "forGoalBy": 3
+          },
+          {
+            "num": 9,
+            "type": "pass",
+            "minute": 38,
+            "forGoalBy": 12
+          },
+          {
+            "num": 25,
+            "type": "through",
+            "minute": 43,
+            "forGoalBy": 9
+          },
+          {
+            "num": 20,
+            "type": "corner",
+            "minute": 57,
+            "forGoalBy": 6
+          },
+          {
+            "num": 3,
+            "type": "through",
+            "minute": 92,
+            "forGoalBy": 12
+          }
+        ],
+        "captain": 25,
+        "savedAt": "2026-09-14T08:38:33.927Z",
+        "redCards": [],
+        "starters": [
+          {
+            "num": 28,
+            "spells": [
+              {
+                "pos": "GK",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "GK"
+            ]
+          },
+          {
+            "num": 20,
+            "spells": [
+              {
+                "pos": "RWB",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "RWB"
+            ]
+          },
+          {
+            "num": 38,
+            "spells": [
+              {
+                "pos": "RCB",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "RCB"
+            ]
+          },
+          {
+            "num": 10,
+            "spells": [
+              {
+                "pos": "CB",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "CB"
+            ]
+          },
+          {
+            "num": 25,
+            "spells": [
+              {
+                "pos": "LCB",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "LCB"
+            ]
+          },
+          {
+            "num": 2,
+            "spells": [
+              {
+                "pos": "LWB",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "LWB"
+            ]
+          },
+          {
+            "num": 6,
+            "spells": [
+              {
+                "pos": "RDM",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "RDM"
+            ]
+          },
+          {
+            "num": 12,
+            "spells": [
+              {
+                "pos": "CAM",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "CAM"
+            ]
+          },
+          {
+            "num": 23,
+            "spells": [
+              {
+                "pos": "LDM",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "LDM"
+            ]
+          },
+          {
+            "num": 9,
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "ST"
+            ]
+          },
+          {
+            "num": 3,
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "ST"
+            ]
+          }
+        ],
+        "formation": "3-4-1-2",
+        "commentary": "Eight-goal Angels move to the top of League Eight\n\nSue’s Angels FC 8–1 Haydons Park\n\nSue’s Angels FC delivered the response they had demanded from themselves, defeating Haydons Park 8–1 at The Reeves Sports Club to move to the top of League Eight.\n\nHat-tricks from Player of the Match Ade Owolana and Charlie Dunkley were accompanied by goals from Leon Burnett and Elis Brumpton, who scored his first competitive goal for the club.\n\nThe afternoon also featured three significant appearances. Former captain Jimi El Bayati came out of retirement to start at the heart of the defence, while Danny Cain and George Churchill both made their competitive Sue’s Angels debuts from the bench.\n\nIt was a day of goals, milestones and returning faces, but above everything else, it was the performance the Angels wanted following the frustrations of the previous weekend.\n\nA response was required\n\nSeven days earlier, Sue’s Angels had opened their League Eight campaign with a hard-fought 2–1 victory over Three Little Birds FC.\n\nThe result secured three important points in the club’s first match following a two-division promotion, but the players knew their performance had fallen below the standards established during the previous season.\n\nThree Little Birds had started strongly, created several opportunities and forced Luke Munns into making eight saves. Sue’s Angels were required to change from a 4-1-3-2 into a 4-2-3-1 before eventually finishing the contest in a 5-3-2 to protect their lead.\n\nGoals from Jon Lloyd and Dunkley proved enough, but the Angels left The Reeves knowing there was considerable room for improvement.\n\nAgainst Haydons Park, the response was immediate.\n\nA familiar leader returns\n\nSue’s Angels started the match in a 3-4-1-2 formation, with a familiar and much-loved figure returning at the centre of the back three.\n\nJimi El Bayati had announced his retirement after the club’s historic first season. His expected final appearance had ended in fitting fashion, with a commanding performance, a clean sheet and a Player of the Match award.\n\nThe former captain had helped establish the standards and dressing-room culture that carried Sue’s Angels through an undefeated League Ten campaign. His influence was recognised when he received the 2025/26 Clubman of the Year award.\n\nJimi was expected to remain with the Angels as part of the coaching staff, but his playing career appeared to be over.\n\nAgainst Haydons Park, the boots came back out.\n\nJimi did not return simply for a late appearance after the result had been secured. He started the match at the heart of the defence, bringing experience, leadership and composure to the Angels’ shape from the opening whistle.\n\nWith Jimi providing the foundation from the back, Sue’s Angels immediately took control.\n\nAngels set the tone\n\nThe players pressed high, recovered possession quickly and prevented Haydons Park from settling into the contest.\n\nWhen the Angels had the ball, they moved it patiently from one side of the pitch to the other, waiting for the right moment to attack. Every pass carried purpose, and each press was supported by another player.\n\nWhenever possession was lost, the reaction was immediate.\n\nIt was a completely different beginning from the previous weekend.\n\nAgainst Three Little Birds, Munns had been required to keep the Angels in the match. Against Haydons Park, the goalkeeper was largely a spectator as the action unfolded in the visitors’ half.\n\nThe pressure eventually produced the opening goal.\n\nA quick break released LJ, whose intelligent run took him into the space behind the Haydons Park right-back. He delivered an excellent cross into the penalty area, where the ball fell to Dunkley.\n\nCharlie initially looked for an angle to shoot. When he realised the attempt was not available, he showed composure and awareness to lay the ball into the path of Owolana.\n\nAde shifted it onto his favoured left foot and placed his finish beyond the goalkeeper. The Haydons Park captain attempted to block the shot but instead left his goalkeeper unsighted and with little chance of reacting.\n\nIt was a composed finish and a deserved reward for the Angels’ dominant start.\n\nLeon doubles the advantage\n\nThe opening goal increased the confidence within the team.\n\nHaydons Park struggled to cope with the Angels’ pressing, movement and retention of possession. Sue’s Angels continued moving the ball across the pitch, refusing to force an opening when a better opportunity could be created.\n\nThe second goal arrived through a more direct attack.\n\nA long pass from the back found Dean Knight, who read the flight of the ball and intelligently headed it into Burnett’s path.\n\nLeon drove towards goal and placed the opposition centre-back under immediate pressure. As he attempted to advance into a scoring position, he was brought down.\n\nThe referee was left with little choice but to point to the penalty spot.\n\nAndy Allen, the club’s designated penalty taker, collected the ball. However, he decided to hand the responsibility to Leon, giving him the opportunity to finish the move he had created.\n\nLeon remained composed and sent his penalty to the goalkeeper’s right to make it 2–0.\n\nThe scoreline carried a warning.\n\nOnly one week earlier, Sue’s Angels had taken the same advantage against Three Little Birds before allowing the visitors back into the match.\n\nEveryone knows how quickly a 2–0 lead can become uncomfortable when the opposition scores next.\n\nThis time, the Angels refused to leave the door open.\n\nFrom two to five\n\nFive minutes after Leon’s penalty, Dunkley scored the third.\n\nCharlie had produced one of the early moments of the season during the opening weekend, scoring a spectacular right-footed strike from approximately 30 yards against Three Little Birds.\n\nOne week later, he continued his excellent start to the campaign by adding another goal.\n\nThe third removed any remaining uncertainty from the contest, but Sue’s Angels refused to reduce their intensity.\n\nFour minutes later, Ade scored his second.\n\nCharlie was once again central to the move. His energy and movement caused further problems for the Haydons Park defence before he created the opportunity for Ade.\n\nHaving opened the scoring with his favoured left foot, Ade demonstrated his composure on the opposite side by finishing confidently with his right.\n\nSue’s Angels led 4–0.\n\nBefore the interval, captain Daniel McLane stepped forward from defence and delivered a beautifully weighted lofted pass over the opposition back line.\n\nDunkley timed his run perfectly, advanced towards goal and converted the opportunity to score his second of the match.\n\nThe Angels entered half-time with a commanding 5–0 advantage.\n\nA first half that set the standard\n\nIt had been an outstanding opening 45 minutes.\n\nJimi’s return had provided a calm and experienced presence at the centre of the defence. In front of him, the Angels pressed relentlessly, retained possession and attacked with confidence.\n\nHaydons Park had been given very little opportunity to establish themselves in the game.\n\nFor those watching, the performance brought back memories of last season’s 6–0 home victory over Brockwell Violets.\n\nThat afternoon had been one of the Angels’ most complete performances during their title-winning campaign. The pressing, movement and control displayed against Haydons Park carried many of the same qualities.\n\nBrockwell earned promotion alongside Sue’s Angels and will be faced again later this season. The first half against Haydons Park demonstrated that the Angels can produce the same level of football in their new division.\n\nOne leader makes way for a new Angel\n\nThe manager’s half-time message was clear.\n\nThe standards had been set, but they now had to be maintained.\n\nThe first-half performance had shown desire, confidence and a passion for everything the club represents. The players were told not to become distracted by the scoreline or allow the intensity to disappear.\n\nSue’s Angels was founded in memory of Susan Anne Martin. Every time the players represent the badge, they carry a meaning that reaches beyond the result of a football match.\n\nIt is more than just a club.\n\nJimi’s work was complete after 45 minutes. His return had helped the Angels establish a five-goal lead and ensured Haydons Park were given little encouragement during the opening half.\n\nAt the interval, the former captain made way for Danny Cain.\n\nThe change connected two stages of the club’s story. One of the original leaders from the title-winning team left the field, and a new player entered to begin his own competitive journey with Sue’s Angels.\n\nDanny joined the back three for his competitive debut and helped the team continue controlling the match after the restart.\n\nElis opens his competitive account\n\nThe Angels began the second half exactly where they had left off.\n\nHaydons Park’s goalkeeper produced several impressive saves to prevent the scoreline from increasing further. His resistance eventually forced Sue’s Angels to settle for a corner following another period of pressure.\n\nKnight delivered an excellent ball into the penalty area.\n\nBrumpton attacked it decisively and headed home from inside the six-yard box in the 57th minute.\n\nThe goal made it 6–0 and represented an important personal milestone.\n\nIt was Elis’ first competitive goal for Sue’s Angels.\n\nThe midfielder had been named Player of the Match in the opening-day victory over Three Little Birds. Seven days later, he continued his strong start to the campaign by adding his name to the scoresheet.\n\nHis opening two performances have demonstrated his ability to influence very different matches.\n\nAgainst Three Little Birds, he stood out during a difficult contest in which the Angels were required to adapt and protect a narrow lead.\n\nAgainst Haydons Park, he helped the team control possession and territory before marking the performance with his first competitive goal.\n\nGeorge joins the competitive story\n\nThree minutes after Elis made it six, another debut arrived.\n\nGeorge Churchill was introduced from the bench in the 60th minute, replacing Andy Allen and taking his place at left wing-back.\n\nIt was George’s first competitive appearance for Sue’s Angels.\n\nHe entered with the team firmly in control but still determined to maintain its intensity and attacking purpose.\n\nHis introduction gave him the opportunity to experience League Eight football, settle into the team’s system and contribute during the closing half an hour.\n\nWith Danny beginning the second half and George joining shortly afterwards, two more players had now represented Sue’s Angels in competitive football.\n\nFrom the sublime to the wasteful\n\nThe following half an hour became one of the strangest periods of finishing the Angels are likely to experience this season.\n\nSue’s Angels continued creating opportunities and repeatedly found their way through the Haydons Park defence. However, after converting six times, the finishing suddenly deserted them.\n\nClear chances came and went.\n\nThe Angels had moved from the sublime to the wasteful. On another afternoon, and with greater composure in front of goal, the scoreline could easily have increased from six to ten, eleven or even twelve.\n\nIt was the clearest area for improvement in an otherwise dominant team performance.\n\nHaydons Park were eventually handed an opportunity to reduce the deficit.\n\nThe ball bounced up and struck Lloyd on the hand close to the edge of the penalty area. There was uncertainty over whether the contact had taken place inside or outside the box.\n\nThe referee decided it was inside and pointed to the penalty spot.\n\nThe Haydons Park captain (Aaron McNamara) stepped forward and calmly sent the spot kick to Munns’ right to make it 6–1.\n\nIt was a frustrating way for the Angels to lose their clean sheet.\n\nLuke had otherwise enjoyed a quiet afternoon, making two saves from distance and confidently claiming the ball whenever Haydons Park attempted to deliver it into his area.\n\nThe Angels demand more\n\nWith only a few minutes remaining before stoppage time, many teams would have accepted the result and waited for the final whistle.\n\nSue’s Angels wanted more.\n\nCharlie continued to press, chase and compete for every ball. His relentless approach created another problem for the opposition defence and earned the Angels a free kick approximately 25 yards from goal.\n\nDunkley took responsibility.\n\nHe curled his effort around the defensive wall and into the net to complete his hat-trick and restore the six-goal advantage.\n\nSue’s Angels led 7–1.\n\nEven then, the scoring was not finished.\n\nShortly before the final whistle, the Angels launched one final counterattack.\n\nFour players broke forward against two Haydons Park defenders. Leon carried the ball and assessed the options around him, while Ade continued his run to the left.\n\nLeon released the pass into Ade’s path.\n\nOwolana collected the ball inside the penalty area, opened his body and calmly placed a left-footed finish beyond the goalkeeper.\n\nThe goal completed Ade’s hat-trick and brought the scoring to a close.\n\nAde named Player of the Match\n\nAde’s performance earned him the Player of the Match award.\n\nThe attacking midfielder had shown his quality throughout pre-season, where his movement, confidence in possession and finishing ability made an immediate impression.\n\nThe challenge was to carry that form into competitive football.\n\nAgainst Haydons Park, he delivered a clear answer.\n\nAde scored with both feet, consistently found space between the opposition midfield and defence and combined effectively with the players around him.\n\nHis opening two goals were created by Charlie, while his third came after he maintained the energy and determination to join the final counterattack.\n\nIt was not only a hat-trick performance. It was an early demonstration of the additional attacking quality the Angels have added for their League Eight campaign.\n\nA statement response\n\nThe difference between the opening two weekends was clear.\n\nAgainst Three Little Birds, Sue’s Angels demonstrated resilience. The team had to absorb pressure, change shape and defend a narrow advantage.\n\nAgainst Haydons Park, the Angels demonstrated authority.\n\nThe pressing was aggressive. The possession had purpose. The movement repeatedly opened the opposition defence, and the players continued searching for goals until the final whistle.\n\nThere are still lessons to take forward.\n\nThe Angels should have converted more of their second-half opportunities. Conceding from the penalty spot also denied a largely untroubled defence the clean sheet its performance deserved.\n\nHowever, those details should not overshadow the quality of the overall display.\n\nThe players were asked to respond after falling below their standards during the opening weekend.\n\nThey responded with eight goals.\n\nTop after Gameweek Two\n\nThe victory moved Sue’s Angels to the top of League Eight after Gameweek Two.\n\nThe Angels have collected six points from six, scoring ten goals and conceding two. Their goal difference of plus eight placed them three points clear at the end of the weekend, although several clubs had played only once.\n\nMore importantly, Sue’s Angels were the only team to have won both of their opening league matches.\n\nLast season’s undefeated League Ten campaign created high expectations, but League Eight represents a fresh challenge.\n\nThe opening two fixtures have already demonstrated two different routes to victory.\n\nOne required resilience and tactical flexibility.\n\nThe other displayed confidence, control and attacking quality.\n\nBoth ended with three points.\n\nSue’s Angels have made the perfect start.\n\nNow the challenge is to maintain it.\n\nMatch details\n\nFull-time: Sue’s Angels FC 8–1 Haydons Park\nHalf-time: Sue’s Angels FC 5–0 Haydons Park\nCompetition: Southern Sunday Football League, League Eight\nVenue: The Reeves Sports Club\nDate: 13 September 2026\nPlayer of the Match: Ade Owolana\nCaptain: Daniel McLane\nStarting formation: 3-4-1-2\nGoalkeeper: Luke Munns\nSaves: 2\n\nGoalscorers\nAde Owolana, 3\nCharlie Dunkley, 3\nLeon Burnett, 1\nElis Brumpton, 1\n\nMilestones\nAde Owolana scored his first competitive hat-trick for Sue’s Angels\nCharlie Dunkley scored his first hat-trick of the season\nElis Brumpton scored his first competitive goal for the club\nJimi El Bayati returned from retirement and started the match\nDanny Cain made his competitive debut from the bench\nGeorge Churchill made his competitive debut from the bench\nSue’s Angels moved to the top of League Eight",
+        "cleanSheets": [],
+        "competition": "League Eight",
+        "yellowCards": [],
+        "opponentGoals": [],
+        "squadStarters": 11,
+        "penaltiesSaved": [],
+        "penaltiesMissed": [],
+        "opponentRedCards": [],
+        "penaltiesConceded": 1
+      },
+      "updated_at": "2026-09-14T08:38:33.928+00:00"
+    },
+    {
+      "key": "r20260920-junction",
+      "data": {
+        "as": 3,
+        "hs": 0,
+        "away": "Sue's Angels FC",
+        "date": "20 Sep 2026",
+        "home": "Junction Elite FC Sunday 3rd Team",
+        "kick": "10:30",
+        "kind": "score",
+        "motm": 12,
+        "subs": [
+          {
+            "on": 40,
+            "off": 4,
+            "minute": 45
+          },
+          {
+            "on": 44,
+            "off": 38,
+            "minute": 60
+          },
+          {
+            "on": 41,
+            "off": 9,
+            "minute": 84
+          },
+          {
+            "on": 2,
+            "off": 23,
+            "minute": 88
+          }
+        ],
+        "bench": [
+          {
+            "on": true,
+            "num": 41,
+            "onAt": 84,
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "2",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "ST"
+            ]
+          },
+          {
+            "on": true,
+            "num": 2,
+            "onAt": 88,
+            "role": "IFB",
+            "spells": [
+              {
+                "pos": "LWB",
+                "half": "2",
+                "role": "IFB"
+              }
+            ],
+            "positions": [
+              "LWB"
+            ]
+          },
+          {
+            "on": true,
+            "num": 40,
+            "onAt": 45,
+            "role": "STP",
+            "spells": [
+              {
+                "pos": "CB",
+                "half": "2",
+                "role": "STP"
+              }
+            ],
+            "positions": [
+              "CB"
+            ]
+          },
+          {
+            "on": true,
+            "num": 44,
+            "onAt": 60,
+            "role": "OFB",
+            "spells": [
+              {
+                "pos": "LWB",
+                "half": "2",
+                "role": "OFB"
+              }
+            ],
+            "positions": [
+              "LWB"
+            ]
+          }
+        ],
+        "cover": "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/cover-match-1789926156624.jpg",
+        "goals": [
+          {
+            "num": 12,
+            "zone": "box",
+            "assist": {
+              "num": 4,
+              "type": "through"
+            },
+            "minute": null,
+            "penalty": false,
+            "bodyPart": "left",
+            "situation": "open"
+          },
+          {
+            "num": 12,
+            "zone": "outside",
+            "assist": {
+              "num": 3,
+              "type": "freekick"
+            },
+            "minute": null,
+            "penalty": false,
+            "bodyPart": "left",
+            "situation": "freekick"
+          },
+          {
+            "num": 9,
+            "zone": "box",
+            "assist": {
+              "num": 20,
+              "type": "cross"
+            },
+            "minute": null,
+            "penalty": false,
+            "bodyPart": "right",
+            "situation": "open"
+          }
+        ],
+        "saves": 1,
+        "shape": "3-4-2-1",
+        "venue": "Richardson Evans Memorial Playing Fields",
+        "keeper": 28,
+        "assists": [
+          {
+            "num": 4,
+            "type": "through",
+            "minute": null,
+            "forGoalBy": 12
+          },
+          {
+            "num": 3,
+            "type": "freekick",
+            "minute": null,
+            "forGoalBy": 12
+          },
+          {
+            "num": 20,
+            "type": "cross",
+            "minute": null,
+            "forGoalBy": 9
+          }
+        ],
+        "captain": 25,
+        "savedAt": "2026-09-20T17:42:33.841Z",
+        "redCards": [],
+        "starters": [
+          {
+            "num": 28,
+            "spells": [
+              {
+                "pos": "GK",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "GK"
+            ]
+          },
+          {
+            "num": 20,
+            "role": "OFB",
+            "spells": [
+              {
+                "pos": "RWB",
+                "half": "1",
+                "role": "OFB"
+              }
+            ],
+            "positions": [
+              "RWB"
+            ]
+          },
+          {
+            "num": 38,
+            "role": "BPD",
+            "spells": [
+              {
+                "pos": "RCB",
+                "half": "1",
+                "role": "BPD"
+              }
+            ],
+            "positions": [
+              "RCB"
+            ],
+            "subbedOff": true
+          },
+          {
+            "num": 10,
+            "role": "BPD",
+            "spells": [
+              {
+                "pos": "CB",
+                "half": "1",
+                "role": "BPD"
+              }
+            ],
+            "positions": [
+              "CB"
+            ]
+          },
+          {
+            "num": 25,
+            "role": "BPD",
+            "spells": [
+              {
+                "pos": "LCB",
+                "half": "1",
+                "role": "BPD"
+              }
+            ],
+            "positions": [
+              "LCB"
+            ]
+          },
+          {
+            "num": 4,
+            "role": "IFB",
+            "spells": [
+              {
+                "pos": "LWB",
+                "half": "1",
+                "role": "IFB"
+              }
+            ],
+            "positions": [
+              "LWB"
+            ],
+            "subbedOff": true
+          },
+          {
+            "num": 11,
+            "role": "BWM",
+            "spells": [
+              {
+                "pos": "RDM",
+                "half": "1",
+                "role": "BWM"
+              }
+            ],
+            "positions": [
+              "RDM"
+            ]
+          },
+          {
+            "num": 23,
+            "role": "BWM",
+            "spells": [
+              {
+                "pos": "LDM",
+                "half": "1",
+                "role": "BWM"
+              }
+            ],
+            "positions": [
+              "LDM"
+            ],
+            "subbedOff": true
+          },
+          {
+            "num": 12,
+            "role": "APM",
+            "spells": [
+              {
+                "pos": "CAM",
+                "half": "1",
+                "role": "APM"
+              }
+            ],
+            "positions": [
+              "CAM"
+            ]
+          },
+          {
+            "num": 9,
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "ST"
+            ],
+            "subbedOff": true
+          },
+          {
+            "num": 3,
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "ST"
+            ]
+          }
+        ],
+        "formation": "3-4-1-2",
+        "commentary": "",
+        "cleanSheets": [
+          {
+            "num": 28
+          },
+          {
+            "num": 20
+          },
+          {
+            "num": 10
+          },
+          {
+            "num": 4
+          },
+          {
+            "num": 38
+          },
+          {
+            "num": 44
+          },
+          {
+            "num": 40
+          },
+          {
+            "num": 2
+          },
+          {
+            "num": 25
+          }
+        ],
+        "competition": "League Eight",
+        "yellowCards": [
+          {
+            "num": 23
+          },
+          {
+            "num": 40
+          }
+        ],
+        "opponentGoals": [],
+        "penaltiesSaved": [],
+        "polishedReport": "Angels stay perfect with commanding away win\n\n## Junction Elite 0-3 Sue’s Angels FC\n\nSue’s Angels maintained their perfect League Eight start with a disciplined 3-0 victory over Junction Elite.\n\nA first-half brace from Ade Owolana put the Angels in control before Charlie Dunkley completed the scoring late on. Luke Munns and the defence secured the club’s first clean sheet of the season.\n\n## Ade makes an immediate impact\n\nThe Angels needed only two minutes to take the lead.\n\nMaking his first start of the season at left wing-back, Michael Brabrook controlled the ball before lifting a perfectly weighted pass over the Junction defence.\n\nAde brought it down calmly and, with only the goalkeeper to beat, placed his finish to the keeper’s right.\n\nJunction responded with a spell of possession, but the Angels remained organised. Their opponents moved the ball neatly through midfield without finding a way through the defensive shape. Most attempted final passes were comfortably collected by Luke, who remained largely untested during the opening half-hour.\n\nMichael defended his side well, while Daniel McLane’s composure helped nullify Junction’s attempts to create an overload down the Angels’ left.\n\n## The second arrives\n\nThe Angels gradually took greater control of possession, with Stewart Luwawa and the returning Richard Epathite working through a competitive midfield battle.\n\nJunction operated with a 4-3-3 and regularly pushed their right-sided midfielder forward to create an extra option. The Angels adjusted well, keeping their shape and preventing that possession from becoming clear chances.\n\nAt the other end, Leon Burnett’s strength created the opportunity for a second goal. Leon collected the ball during a scramble near the edge of the area, held off his defender and turned before being fouled.\n\nAde took responsibility from around 22 yards, slightly to the right of goal. The left-footer went to the goalkeeper’s side and found the bottom-left corner to make it 2-0.\n\nIt completed a clinical first-half brace and gave the Angels a deserved advantage.\n\n## Dean provides the outlet\n\nDean Knight was a constant option at right wing-back, combining effectively with Ade, Charlie and Leon.\n\nOne low cross travelled beyond three Junction defenders before taking an awkward bounce in front of Leon. The ball struck the forward’s shin and went over the bar. A cleaner bounce would likely have left Leon with a straightforward finish.\n\nThe Angels entered half-time two goals ahead, but the instruction was clear: remain focused and find the third. Junction had shown enough on the ball to remain a threat if allowed back into the contest.\n\n## Angels manage the second half\n\nAdam Marie replaced Michael at half-time. Robert Heath moved to left wing-back, with Adam joining Jimi El Bayati and Daniel in the back three.\n\nAs expected, Junction began the second half with greater aggression. Their best move came down the flank before a pull-back found the forward inside the area. Luke saved the resulting shot, Junction’s only effort on target, and remained determined to protect the clean sheet.\n\nThat proved to be the home side’s final meaningful opportunity.\n\nGeorge Churchill replaced Robert after 60 minutes as the Angels continued to manage the game with maturity. The defence stayed compact, the midfield competed for second balls and the forwards continued to press Junction’s attempts to play out.\n\n## Charlie seals the result\n\nThe third goal arrived in the 84th minute and once again began through Dean.\n\nA quick throw found Leon, who laid the ball back into Dean’s path. The wing-back delivered first time, causing uncertainty between the Junction goalkeeper and centre-back.\n\nThe loose ball fell to Charlie, who finished emphatically off the underside of the crossbar. A defender attempted to keep it out with his hands, but the ball had already found its way into the net.\n\nIt was a deserved reward for Charlie’s relentless running and pressing. He had been denied earlier by good goalkeeping and determined defending, but his persistence was eventually rewarded.\n\nLiam Kirby replaced Charlie immediately after the goal, with Andrew Allen coming on for Stewart during the closing minutes.\n\n## A complete away performance\n\nThe result gave the Angels three wins from three League Eight matches and their first clean sheet of the season.\n\nMichael marked his first start of the campaign with an assist and an excellent defensive display. Dean recorded his third league assist of the season, while Charlie moved to five goals in three league appearances.\n\nAde was named Player of the Match after taking his total to five competitive goals from his opening three appearances. He has now scored five times across consecutive matches, including a hat-trick against Haydons Park and this decisive brace against Junction.\n\nIt was a workmanlike team performance built on structure, patience and clinical finishing. All three starting forwards played a part in the goals, while Luke and the defence earned their clean sheet with another composed display.\n\n## Match details\n\n**Junction Elite 0-3 Sue’s Angels FC**\n\n**Goals:** Ade Owolana 2, Ade Owolana 30, Charlie Dunkley 84\n**Assists:** Michael Brabrook, Dean Knight\n**Player of the Match:** Ade Owolana\n**Formation:** 3-4-1-2\n**Clean sheet:** Luke Munns\n**Bookings:** Stewart Luwawa, Adam Marie\n\n**Starting XI:** Luke Munns, Daniel McLane, Jimi El Bayati, Robert Heath, Michael Brabrook, Dean Knight, Stewart Luwawa, Richard Epathite, Ade Owolana, Charlie Dunkley, Leon Burnett.\n\n**Substitutions:** Adam Marie for Michael Brabrook, George Churchill for Robert Heath, Liam Kirby for Charlie Dunkley, Andrew Allen",
+        "penaltiesMissed": [],
+        "opponentRedCards": [],
+        "penaltiesConceded": 0
+      },
+      "updated_at": "2026-09-20T17:42:37.177+00:00"
     }
   ],
   "articles": [
@@ -6139,6 +7200,71 @@
         "sortISO": "2026-07-20T20:14:45.992Z"
       },
       "updated_at": "2026-07-20T20:14:45.995+00:00"
+    },
+    {
+      "key": "art-1788643052771",
+      "data": {
+        "id": "art-1788643052771",
+        "cat": "News",
+        "date": "06 Sep 2026",
+        "lede": "This morning, the waiting ends.\n\nAfter a summer of preparation, rebuilding and anticipation, competitive football returns for Sue’s Angels FC today.\n\nAt 11:00, Three Little Birds FC will visit The Reeves Sports Club as the Angels begin their 2026/27 Southern Sunday Football League campaign.\n\nIt will be the club’s first fixture in League Eight, the opening match of its second competitive season and the next step in a journey that has already created unforgettable memories.\n\nTwelve months ago, Sue’s Angels were preparing to play their first competitive match as a newly formed football club.\n\nThere was no previous campaign to look back on. There was no established league record, no reputation and no guarantee of what the group could achieve.\n\nThere was simply a collection of players, coaches, friends and volunteers brought together by football and by a shared commitment to honour the memory of Susan Anne Martin.\n\nBy the end of that first season, the Angels had made history.\n\nToday, after an extraordinary debut campaign, they begin again.\n\n## A first season that will never be forgotten\n\nSue’s Angels entered League Ten at the beginning of the 2025/26 season with ambition, belief and something greater than football behind the badge.\n\nThe team had been assembled, the identity of the club had been established and the purpose was clear. What remained unknown was how quickly everything would come together on the pitch.\n\nThe answer arrived almost immediately.\n\nThe Angels won their opening league fixture and continued winning until every league match had been completed.\n\nEighteen matches produced eighteen victories.\n\nThe team collected the maximum 54 points, finished as unbeaten League Ten champions and secured promotion with a perfect record.\n\n**Played 18. Won 18. Fifty-four points from a possible 54.**\n\nSome victories came through dominant attacking displays. Others required patience, discipline and the ability to find a way through difficult moments.\n\nThe Angels had to win in different conditions, at different venues and against opponents with different approaches. They had to manage expectations as their winning run grew and respond to the increasing determination of every team that wanted to be the first to take points from them.\n\nAs the season progressed, Sue’s Angels went from being an unknown new club to the team everybody wanted to stop.\n\nThe pressure increased, but the results continued.\n\nThe league title was secured before the final fixture, yet the group refused to allow its standards to fall. Once the championship had been won, the objective became even greater.\n\nThe players wanted to complete the entire campaign without dropping a single league point.\n\nThey achieved it.\n\nThe perfect record was not built in one afternoon. It was created through months of consistency, commitment and collective responsibility.\n\nDifferent players stepped forward at different moments. Goals came from across the squad, while the defensive unit repeatedly provided the platform for the team to perform with confidence.\n\nThe season belonged to everyone who represented the badge.\n\n## The numbers behind the achievement\n\nThe scale of the Angels’ opening campaign extended far beyond the final League Ten table.\n\nAcross all competitive competitions, Sue’s Angels played 33 matches.\n\nThey won 29, drew once and lost only three.\n\nThe team scored 137 goals and conceded just 25.\n\nThose numbers reflected the balance within the group.\n\nThe Angels could attack with pace, create chances in different ways and punish opponents when matches began to open up. At the other end, the team defended with discipline and produced a series of clean sheets throughout the campaign.\n\nThe club’s biggest competitive victory was a 12-0 win away to Balham Bteckerz in League Ten.\n\nThere were other emphatic results, including nine and ten-goal victories during the closing stages of the league campaign. But the season was not defined only by comfortable scorelines.\n\nThere were narrow wins, physical contests and matches in which the Angels had to remain patient.\n\nThere were days when the football flowed and others when character mattered more than performance.\n\nThose difficult victories played an equally important role in the championship. They showed that the team could continue finding answers when an opponent disrupted its rhythm or when the match did not unfold as expected.\n\nThat resilience will be needed again at the higher level.\n\n## A debut season filled with cup memories\n\nThe Angels’ first year also included memorable cup journeys.\n\nAlongside the perfect league campaign, Sue’s Angels competed against teams from different levels and tested themselves in unfamiliar environments.\n\nThe club progressed through several rounds of cup competition and reached the final of the Dylan Rigobert Trophy.\n\nFor a team completing its first season, reaching a final represented another significant achievement.\n\nThe final ended in a 3-0 defeat against FC Porto of London. It was a disappointing result on the day, but it did not erase the progress required to reach that stage.\n\nThe occasion gave the players experience of preparing for a final, competing under greater pressure and representing the club on another important platform.\n\nIt also provided a reminder that progress does not remove the possibility of disappointment.\n\nSuccess must be earned repeatedly. There will always be another opponent, another challenge and another standard to reach.\n\nThe Angels ended their first campaign with a league championship, a perfect record and the experience of competing in a cup final.\n\nTogether, those achievements created the foundation for what begins this morning.\n\n## More than a trophy\n\nWinning League Ten did not simply add the first piece of silverware to the club’s history.\n\nIt earned Sue’s Angels a two-division rise.\n\nThe Angels will compete in League Eight throughout the 2026/27 season, moving beyond League Nine and entering a division filled with new opponents and greater challenges.\n\nThat rise is recognition of everything the team achieved during its debut campaign.\n\nIt is also a demand to improve.\n\nThe margins are likely to become smaller. Mistakes will be punished more regularly and matches may remain competitive for longer.\n\nOpponents will arrive with experience, quality and ambitions of their own. There will be moments when the Angels cannot dominate possession or create chances as freely as they did last season.\n\nThe team will need to remain composed when games become tight and resilient when momentum moves in the opposite direction.\n\nLast season created belief.\n\nThis season will test how strong that belief has become.\n\n## The next level begins now\n\nMoving from League Ten to League Eight is an important moment in the club’s development.\n\nIt gives Sue’s Angels an opportunity to discover how their football compares against stronger and more established opposition.\n\nThe players have earned the right to test themselves at this level.\n\nHowever, promotion does not guarantee that the next stage will be comfortable.\n\nThe title, the perfect record and the goals scored during 2025/26 offer no advantage once the opening whistle is blown this morning.\n\nThey provide confidence and experience, but they cannot win a tackle, defend a cross or finish an opportunity.\n\nEverything must be earned again.\n\nThe challenge is not to reproduce every scoreline from last season. It is to carry forward the standards that made those results possible.\n\nThe work rate.\n\nThe discipline.\n\nThe togetherness.\n\nThe willingness to take responsibility when the match becomes difficult.\n\nThose qualities must travel with the team into League Eight.\n\n## Eight opponents stand in the way\n\nSue’s Angels will face a new group of teams during the 2026/27 campaign.\n\nBarnes Stormers, Bristol City (London) Supporters, Brockwell Violets, Haydons Park, Junction Elite, Pure Football, Three Little Birds and TSM Rovers will provide the opposition across the season.\n\nSome of those clubs will be familiar from cup competitions and previous fixtures outside the league. Others will present completely new challenges.\n\nEvery team will bring its own identity.\n\nThere will be opponents who look to control possession, teams prepared to defend before attacking quickly, and sides determined to turn matches into physical battles.\n\nThe Angels will need to recognise those differences and adapt.\n\nWinning a league requires more than one way of playing.\n\nThe team must be able to control matches when the opportunity is there, remain patient when space is limited and compete when the quality of football alone is not enough.\n\nThere will be mornings when everything works and others when the performance feels difficult from the opening minutes.\n\nThe response in those moments will help determine what Sue’s Angels can achieve in League Eight.\n\n## Three Little Birds arrive at The Reeves\n\nThe first challenge comes from Three Little Birds FC.\n\nLike Sue’s Angels, this morning’s visitors are entering unfamiliar surroundings and beginning a new chapter.\n\nThree Little Birds competed in the Metropolitan Sunday Football League last season before moving across to the Southern Sunday Football League for 2026/27.\n\nThey finished eighth in an eight-team division, recording three victories and two draws from 21 league matches.\n\nTheir final position suggests they endured a difficult campaign, particularly during the closing stages of the season.\n\nHowever, the league table does not tell the complete story of what they are capable of producing.\n\nThree Little Birds demonstrated their attacking threat in several convincing victories.\n\nTheir campaign included emphatic 5-1 and 5-0 wins at home, alongside impressive 5-1 and 5-2 victories away from home.\n\nThose performances show that the visitors are capable of scoring heavily when given space, confidence and momentum.\n\nThe Angels must ensure they are not allowed to find any of those things easily this morning.\n\n## A fresh start for the visitors\n\nThree Little Birds’ move into a new competition offers them the opportunity to reset.\n\nPlayers may have arrived during the summer. Previous weaknesses may have been addressed and the squad beginning today’s match may look very different from the one that completed last season.\n\nA change of league can create fresh energy around a club.\n\nIt removes the weight of previous results and gives every player the opportunity to begin with a clean record.\n\nThree Little Birds will travel to The Reeves knowing that victory over last season’s unbeaten League Ten champions would provide the perfect introduction to their new competition.\n\nThat motivation makes them dangerous.\n\nSue’s Angels cannot approach the fixture believing that last season’s records will determine what happens today.\n\nThe two clubs competed in different leagues, faced different opponents and experienced different circumstances.\n\nNeither previous table will be present on the pitch this morning.\n\n**At 11:00, the score will be 0-0.**\n\n## No history and no assumptions\n\nThere is no established rivalry between Sue’s Angels and Three Little Birds.\n\nThere is no previous meeting to analyse and no direct result that can be used to measure one side against the other.\n\nThat uncertainty adds another layer to the opening fixture.\n\nThe Angels will not know exactly how Three Little Birds intend to approach the match.\n\nThe visitors may press aggressively from the opening whistle. They may choose to defend in a compact shape and attack on the counter. They may look to make the contest physical and prevent the Angels from settling into their rhythm.\n\nSue’s Angels will need to read the game quickly.\n\nThey must recognise the spaces available, understand where the danger is coming from and make the necessary adjustments throughout the match.\n\nThat requires communication, concentration and patience.\n\nOpening-day energy can sometimes make teams rush their decisions. The Angels must play with intensity without losing control.\n\nThey must respect the opponent without allowing that respect to weaken their confidence.\n\nThe objective is to impose their own standards while remaining prepared for whatever challenge Three Little Birds present.\n\n## A summer of preparation\n\nThe period between seasons has given Sue’s Angels time to prepare for the step into League Eight.\n\nPre-season has included a varied schedule designed to provide minutes, test combinations and challenge the group against opponents with different qualities.\n\nThe results have been mixed.\n\nThere have been victories, a draw and defeats.\n\nThere have been encouraging performances, alongside difficult periods that exposed areas in which the team needed to improve.\n\nThat is the purpose of pre-season.\n\nIt is not there to extend an unbeaten record or create the appearance of perfection.\n\nIt exists to prepare players for competitive football.\n\nThe summer fixtures have allowed members of the squad to rebuild fitness, develop partnerships and gain experience against teams capable of punishing mistakes.\n\nThe Angels have experienced matches in which they controlled long periods of play and others in which they were forced to defend, recover and find different solutions.\n\nThose challenges should prove valuable.\n\nA team learns little when every match is comfortable.\n\nIt learns much more when the game forces players to communicate, solve problems and remain together when momentum moves against them.\n\nThe results will not count towards the League Eight table.\n\nThe lessons must.\n\n## Preparation must now become performance\n\nThis morning is where the experimentation ends.\n\nThere are points available.\n\nThe intensity will rise, every challenge will carry greater importance and each moment can influence the outcome.\n\nSue’s Angels must transfer the work completed during the summer into a competitive performance.\n\nThe opening stages will be particularly important.\n\nBoth sides will arrive with energy and a desire to establish control. The Angels will need to begin sharply, compete for second balls and avoid giving the visitors encouragement through unnecessary mistakes.\n\nPatience will also matter.\n\nThe first goal may not arrive immediately. The match may require the team to keep moving the ball, continue creating opportunities and trust the process rather than forcing the final pass.\n\nIf Three Little Birds start strongly, the Angels must remain composed.\n\nIf Sue’s Angels take control, they must use that control properly.\n\nLeague football rewards teams capable of managing every phase of a match, not only the moments when they are playing well.\n\n## The challenge of the second season\n\nA club’s second season presents a different psychological test from its first.\n\nWhen Sue’s Angels entered League Ten last year, they were unknown.\n\nThere were no achievements for opponents to discuss and no title-winning record for anybody to target.\n\nThat has changed.\n\nSue’s Angels begin 2026/27 as unbeaten champions.\n\nEvery opponent will know that the team won all 18 of its league fixtures last season. Every club will see the Angels as a side worth beating.\n\nThe badge now carries a reputation that did not exist twelve months ago.\n\nThat attention should be treated as a privilege.\n\nIt has been earned through performance.\n\nBut reputation alone will not protect the Angels when matches become difficult.\n\nThe players must continue doing the work that created the reputation in the first place.\n\nTraining must remain competitive. Standards must continue to be enforced and every member of the squad must remain accountable to the group.\n\nThe championship cannot be allowed to create complacency.\n\nWinning last season does not make the Angels entitled to success this season.\n\nIf anything, the standards must become higher.\n\n## From champions to challengers\n\nSue’s Angels will always be the 2025/26 League Ten champions.\n\nThat title is part of the club’s history and cannot be taken away.\n\nBut the players must enter League Eight as challengers.\n\nThis season is not about protecting an unbeaten record that belongs to a different division.\n\nIt is about pursuing the next level with the same hunger that existed before the first match in the club’s history.\n\nThere should be confidence in what the group has achieved, but there can be no assumption that another perfect campaign will follow.\n\nLeague Eight will contain difficult mornings.\n\nThere will be matches when the Angels are forced to defend for longer than they would like. There will be occasions when chances are missed, decisions go against them or the opposition performs at a high level.\n\nThere may be setbacks.\n\nThe strongest teams are not those that avoid every difficult moment. They are the teams capable of responding when those moments arrive.\n\nThe ability to respond was present throughout the Angels’ first season.\n\nIt will become even more important during their second.\n\n## Opportunities across the squad\n\nA new campaign brings new opportunities.\n\nEvery player begins the season with the chance to influence what comes next.\n\nThe individuals who played central roles in last season’s success will want to continue setting the standard. Those who received fewer minutes will have another opportunity to establish themselves.\n\nNew additions can bring different qualities and increase competition across the squad.\n\nThat internal competition will be important.\n\nA long season cannot be carried by eleven players.\n\nAvailability will change. Injuries and suspensions may arrive. Form will rise and fall, and different fixtures will require different solutions.\n\nEvery member of the squad must remain ready.\n\nThe strength of Sue’s Angels during their first campaign came from the collective. Goals, assists, defensive contributions and important moments arrived from throughout the team.\n\nThat same depth will be required in League Eight.\n\nThis morning represents the first opportunity for the group to show how it has developed.\n\n## The importance of beginning at home\n\nStarting the season at The Reeves Sports Club gives the Angels an opportunity to take their first League Eight step in familiar surroundings.\n\nThe Reeves has become the club’s home.\n\nIt is where the players, coaches, families, friends and supporters have gathered to share the journey.\n\nIt has witnessed victories, goals and the gradual development of a new football club into an unbeaten league champion.\n\nThis morning, it will host another important moment.\n\nHome advantage is created by more than familiarity with the pitch.\n\nIt comes from the energy around the ground, the encouragement from the touchline and the feeling that the entire club is moving in the same direction.\n\nA strong presence beside the pitch can lift the team during difficult periods and help create momentum when the Angels are on top.\n\nThat support will matter throughout the season.\n\nLeague Eight will test the group in new ways, and the connection between the players and everyone surrounding the club will remain important.\n\nSue’s Angels have never been built around the eleven players on the pitch alone.\n\nThe progress has always been collective.\n\n## Still built in her name\n\nWhatever changes on the pitch, the purpose behind Sue’s Angels remains unchanged.\n\nThe club was founded in memory of Susan Anne Martin and continues to play for sepsis awareness.\n\nThat purpose is not simply a message added to the team.\n\nIt is the foundation upon which the club was created.\n\nEvery match provides another opportunity to carry Susan’s name forward and encourage more people to understand the warning signs of sepsis.\n\nThe football matters.\n\nThe results matter.\n\nThe ambition to compete, improve and win remains strong.\n\nBut the badge represents something deeper than a league position or a final score.\n\nIt represents memory, family, friendship and the determination to create something positive that can continue growing.\n\nPromotion provides a bigger platform for that purpose.\n\nAs the club moves through the divisions and faces new opponents, more players, supporters and communities will discover what Sue’s Angels represents.\n\nEvery fixture allows the message to reach somebody new.\n\nEvery person who wears the shirt becomes part of carrying that message.\n\nThe team plays in her name.\n\nThe players compete for one another.\n\nThe club continues for everyone connected to its story.\n\nThat will remain true regardless of the division, the opposition or the result.\n\n## The standard remains the same\n\nThe surroundings will be familiar this morning.\n\nThe players will enter the same dressing room, step onto the same home pitch and see many of the same faces beside the touchline.\n\nBut almost everything else will feel different.\n\nThe league is new.\n\nThe opponent is new.\n\nThe pressure is different and the challenge is greater.\n\nThat is exactly what the Angels earned.\n\nThe expectation is not perfection.\n\nIt is commitment.\n\nCompete for every ball.\n\nCommunicate through every phase of the match.\n\nSupport one another when mistakes happen.\n\nRemain disciplined when the game becomes difficult.\n\nPlay with confidence when opportunities appear.\n\nRepresent the name on the shirt properly from the first whistle until the last.\n\nThose are the standards that created last season’s success.\n\nThey must remain at the centre of everything the team does next.\n\n## Setting the tone for the season\n\nThe opening fixture will not decide where either team finishes in May.\n\nThere will be many more matches, challenges and opportunities to follow.\n\nHowever, the first performance can establish the tone.\n\nSue’s Angels will want to show from the opening minutes that they are prepared to compete at the higher level.\n\nThat does not mean the team must play the perfect match.\n\nIt means displaying the behaviours that will be required throughout the campaign.\n\nIntensity without recklessness.\n\nConfidence without complacency.\n\nAmbition without losing discipline.\n\nTogetherness when the match becomes uncomfortable.\n\nThree points would provide the ideal beginning, but the performance must also demonstrate that the team understands the challenge ahead.\n\nThe Angels are not entering League Eight to admire the level.\n\nThey are entering it to compete.\n\n## The first step of a longer journey\n\nOne match will never define an entire season.\n\nA victory today would provide the perfect start, but it would still represent only the first step.\n\nA difficult result would not decide what follows either.\n\nA league campaign is built over months.\n\nIt requires consistency when energy is high and discipline when the weather changes, availability becomes difficult and the excitement of the opening weeks has faded.\n\nIt requires players to remain connected through victories and disappointments.\n\nThe Angels demonstrated those qualities last season.\n\nNow they must reproduce them in a stronger division.\n\nToday matters because it provides the first opportunity to collect points and make an impression.\n\nBut the club’s ambition extends far beyond one morning.\n\nSue’s Angels want to prove that the success of their debut season was not an isolated achievement.\n\nThe club wants to continue developing, competing and building something capable of lasting.\n\nThe League Ten trophy is part of the foundation.\n\nToday, another level begins to be built on top of it.\n\n## Today, the next chapter begins\n\nThis morning, Sue’s Angels will walk onto the pitch as unbeaten League Ten champions.\n\nThey will leave it having completed their first match in League Eight.\n\nBetween those two moments will be 90 minutes of competitive football against an opponent beginning a new journey of its own.\n\nThree Little Birds will arrive looking to make an immediate impact in the Southern Sunday Football League.\n\nSue’s Angels will be determined to establish themselves at the higher level and begin the new season strongly in front of their home support.\n\nNothing is guaranteed.\n\nThat is what makes the opening day special.\n\nThe table is empty.\n\nEvery team begins on zero points and the possibilities remain open.\n\nLast season has been written into the history of Sue’s Angels FC.\n\nToday, the club begins writing what comes next.\n\n## Be there for the beginning\n\nCompetitive football is back at The Reeves Sports Club.\n\nCome down, stand alongside the club and support the Angels as they take their first step into League Eight.\n\nBring your voice.\n\nBring your support.\n\nBe there when the next chapter begins.\n\n**FIXTURE**\n\nSue’s Angels FC v Three Little Birds FC\n\n**DATE**\n\nSunday 6 September 2026\n\n**KICK-OFF**\n\n11:00\n\n**VENUE**\n\nThe Reeves Sports Club\n\n**COMPETITION**\n\nSouthern Sunday Football League, League Eight\n\nLast season, we created history.\n\nToday, we begin again.\n\nA new league. A greater challenge. The same badge. The same purpose.\n\n**We go again.**",
+        "cover": null,
+        "title": "Today, the next chapter begins: League Eight starts at home",
+        "sortISO": "2026-09-06T01:50:25.867305Z"
+      },
+      "updated_at": "2026-09-14T10:30:41.03+00:00"
+    },
+    {
+      "key": "art-1789335893156",
+      "data": {
+        "id": "art-1789335893156",
+        "cat": "News",
+        "date": "13 Sep 2026",
+        "lede": "When Ade Owolana joined Sue’s Angels during the summer, it did not take long for his quality to become apparent.\n\nThroughout pre-season, Ade displayed confidence in possession, intelligent movement and the ability to influence matches from attacking midfield.\n\nThe early signs were promising. The beginning of the competitive season presented the real test.\n\nAgainst Haydons Park, that promise became a statement.\n\nAde scored three times in the Angels’ 8–1 victory and was named Player of the Match following his most influential performance since joining the club.\n\nWhat made the performance particularly impressive was the variety displayed across his three finishes.\n\nHis opening goal came on his favoured left foot. His second was confidently dispatched with his right. His third arrived during the final attack of the match, when he maintained the energy and determination to join one last counterattack.\n\nIt was not only the goals that defined his afternoon.\n\nAde repeatedly found space between the Haydons Park midfield and defence. His positioning gave the Angels another option when constructing attacks, while his composure helped turn promising moves into goals.\n\nHis relationship with Dunkley was particularly productive. Charlie created Ade’s opening two goals, and their movement repeatedly pulled the opposition defence out of position.\n\nThe hat-trick also showed how quickly Ade has adapted to his new surroundings.\n\nLast season’s Sue’s Angels team was built on established partnerships and a strong collective identity. The challenge for the summer arrivals was to enter that environment and contribute without disturbing what had already been created.\n\nAde has brought his own qualities while complementing the players around him.\n\nA strong pre-season demonstrated what might be possible.\n\nThree competitive goals and a Player of the Match award provided the first major confirmation.\n\nFor Ade Owolana, this may only be the beginning.",
+        "cover": "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/cover-news-1789335894789.jpg",
+        "draft": false,
+        "title": "Pre-season promise becomes a competitive statement for Ade",
+        "sortISO": "2026-09-13"
+      },
+      "updated_at": "2026-09-14T10:31:43.887+00:00"
+    },
+    {
+      "key": "art-1789368024044",
+      "data": {
+        "id": "art-1789368024044",
+        "cat": "News",
+        "date": "14 Sep 2026",
+        "lede": "There was a familiar and much-loved name in the Sue’s Angels starting line-up against Haydons Park.\n\nJimi El Bayati returned to competitive football and started at the centre of defence, completing the opening 45 minutes of the Angels’ 8–1 victory.\n\nHis appearance came only a few months after he announced his retirement following the conclusion of the club’s historic first season.\n\nAt the time, it appeared to be the perfect ending to a memorable playing career.\n\nJimi’s expected final appearance ended with a commanding performance, a clean sheet and a Player of the Match award. It completed a season in which he had played a central role in the defence behind the Angels’ undefeated League Ten campaign.\n\nHis influence stretched far beyond individual performances.\n\nAs the club’s first captain, Jimi helped establish the dressing-room culture during Sue’s Angels’ formation. His leadership, commitment and support for those around him helped shape the standards that carried the team through its first season.\n\nThat contribution was recognised when he received the 2025/26 Clubman of the Year award.\n\nFollowing his retirement, Jimi was expected to continue supporting the club as a member of the coaching staff.\n\nHis connection to Sue’s Angels remained as strong as ever, even if his playing days appeared to be over.\n\nAgainst Haydons Park, the boots came back out.\n\nJimi did not enter from the bench for a brief appearance after the result had been secured. He started at the centre of a three-man defence and helped the Angels establish control from the first whistle.\n\nHis experience and composure provided a platform for the team’s attacking players. Haydons Park created very little during the opening half, while Sue’s Angels scored five unanswered goals.\n\nAt half-time, Jimi made way for debutant Danny Cain.\n\nIt was a fitting transition. One of the players who helped build the club’s original standards left the pitch after an accomplished 45 minutes, allowing a new Angel to begin his own competitive journey.\n\nThe armband may now belong to McLane, but Jimi’s standing within the club has never depended solely on being captain.\n\nHe remains a leader.\n\nHe remains the reigning Clubman of the Year.\n\nMost importantly, he remains part of the Sue’s Angels family.\n\nHis retirement closed one chapter at the end of last season.\n\nHis return against Haydons Park added an unexpected new page to the story.",
+        "cover": "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/cover-news-1789368036685.jpg",
+        "draft": false,
+        "title": "Back in the starting eleven",
+        "sortISO": "2026-09-14"
+      },
+      "updated_at": "2026-09-14T11:02:31.631+00:00"
+    },
+    {
+      "key": "art-extra-20260914-setting-the-pace",
+      "data": {
+        "id": "art-extra-20260914-setting-the-pace",
+        "cat": "News",
+        "iso": "2026-09-14",
+        "date": "14 Sep 2026",
+        "lede": "Sue’s Angels sit at the top of League Eight after winning their opening two matches, but the story of their start cannot be explained by the table alone.\n\nThe victories arrived in completely different ways.\n\nOn the opening day, the Angels defeated Three Little Birds 2–1.\n\nIt was a difficult match in which the opposition started strongly and created several opportunities. Munns made eight saves, while the Angels moved through three formations as they attempted to gain control and eventually protect their lead.\n\nLloyd and Dunkley scored the goals, but Sue’s Angels did not reach their expected level.\n\nThe performance left the players with two truths.\n\nThey had collected three points in their first League Eight fixture, but they also knew significant improvement would be required.\n\nSeven days later, the response arrived.\n\nHaydons Park were beaten 8–1 as the Angels produced the type of football that defined their strongest performances during the previous campaign.\n\nThe pressing was aggressive. Possession was moved with patience and purpose. The attacking players combined effectively, while Haydons Park were prevented from developing any sustained momentum.\n\nFive goals before half-time placed the result beyond serious doubt.\n\nBy the final whistle, Owolana and Dunkley had completed hat-tricks. Burnett had converted a penalty, while Brumpton had registered his first competitive goal for the club.\n\nThe afternoon also welcomed Jimi back from retirement and introduced Cain and Churchill to competitive football with the Angels.\n\n## More than six points\n\nSue’s Angels have six points from six, but the most encouraging aspect of the opening fortnight has been the variety within the victories.\n\nThe first required resilience and tactical flexibility.\n\nThe second demonstrated confidence, control and attacking quality.\n\nSuccessful teams experience matches when their football does not flow. The ability to win those games is important. It becomes even more valuable when the players recognise their shortcomings and produce an immediate response.\n\nThat is what Sue’s Angels achieved.\n\nThe opening fixtures have also demonstrated the strength of the developing squad.\n\nSummer arrivals have contributed immediately. Established players have maintained their influence. Returning players have provided experience, and two more members of the squad have now made their competitive debuts.\n\n## The early League Eight picture\n\nAfter two fixtures, Sue’s Angels have scored ten goals, conceded two and collected the maximum six points.\n\nTheir goal difference of plus eight placed them at the top of League Eight after Gameweek Two.\n\n| Statistic | Total |\n|---|---|\n| Matches played | 2 |\n| Wins | 2 |\n| Draws | 0 |\n| Defeats | 0 |\n| Goals scored | 10 |\n| Goals conceded | 2 |\n| Goal difference | +8 |\n| Points | 6 |\n| Position | 1st |\n\n### League Eight after Gameweek Two\n\n| Club | P | W | D | L | GF | GA | GD | Pts |\n|---|---|---|---|---|---|---|---|---|\n| Sue’s Angels FC | 2 | 2 | 0 | 0 | 10 | 2 | +8 | 6 |\n| TSM Rovers | 2 | 1 | 0 | 1 | 7 | 5 | +2 | 3 |\n| Brockwell Violets FC | 1 | 1 | 0 | 0 | 2 | 0 | +2 | 3 |\n| Bristol City (London) Supporters | 1 | 1 | 0 | 0 | 2 | 1 | +1 | 3 |\n| Three Little Birds FC | 2 | 1 | 0 | 1 | 5 | 5 | 0 | 3 |\n| Barnes Stormers FC | 1 | 0 | 0 | 1 | 1 | 2 | -1 | 0 |\n| Pure Football FC 1st Team | 1 | 0 | 0 | 1 | 0 | 2 | -2 | 0 |\n| Junction Elite FC Sunday 3rd Team | 1 | 0 | 0 | 1 | 1 | 4 | -3 | 0 |\n| Haydons Park | 1 | 0 | 0 | 1 | 1 | 8 | -7 | 0 |\n\nThe table as it stood on 13 September 2026, from FA Full-Time. Clubs level on points are listed in the order Full-Time prints them.\n\nSeveral clubs below the Angels have played fewer matches, so it remains far too early to draw conclusions from the standings.\n\nHowever, the position confirms that Sue’s Angels have adapted quickly following their two-division promotion.\n\nLast season, the Angels won all 18 league fixtures and secured the League Ten title during their first year as a club.\n\nThe move into League Eight was always going to demand more. The opposition would be stronger, mistakes would carry a greater cost and the Angels would need to prove themselves again.\n\nThe opening-day victory showed that the team could find a way to win when below its best.\n\nThe victory over Haydons Park showed what could happen when the performance matched the ambition.\n\nTwo matches do not define a season.\n\nThey can establish its direction.\n\nSue’s Angels have made the perfect start. The challenge now is to continue setting the pace.",
+        "title": "From finding a way to setting the pace"
+      },
+      "updated_at": "2026-09-14T10:30:41.132+00:00"
+    },
+    {
+      "key": "art-extra-20260915-six-debuts",
+      "data": {
+        "id": "art-extra-20260915-six-debuts",
+        "cat": "News",
+        "iso": "2026-09-15",
+        "date": "15 Sep 2026",
+        "lede": "Two Gameweeks into the League Eight season, six players have already made their competitive debuts for Sue’s Angels.\n\nFour were handed their first appearances on the opening day against Three Little Birds. Two more followed a week later against Haydons Park.\n\nNone of the six had previously represented the club in a league or cup fixture. Between them, they have already contributed in defence, attack and from the bench as the Angels have opened the season with consecutive victories.\n\nFor Ade Owolana and Leon Burnett, the transition into competitive football has continued the attacking influence they demonstrated throughout pre-season, when both regularly contributed goals and assists.\n\n!![Six League Eight debuts: Ade Owolana, Leon Burnett, Robert Heath and Liam Kirby against Three Little Birds; Danny Cain and George Churchill against Haydons Park](/assets/articles/six-league-eight-debuts.jpg#1200x750)\n\n| Player | Debut | Result | How |\n|---|---|---|---|\n| Ade Owolana | Gameweek One | Won 2–1 v Three Little Birds FC | Started at right attacking midfield |\n| Leon Burnett | Gameweek One | Won 2–1 v Three Little Birds FC | Started up front |\n| Robert Heath | Gameweek One | Won 2–1 v Three Little Birds FC | Started at right centre-back |\n| Liam Kirby | Gameweek One | Won 2–1 v Three Little Birds FC | Introduced from the bench |\n| Danny Cain | Gameweek Two | Won 8–1 v Haydons Park | Introduced at half-time at centre-back |\n| George Churchill | Gameweek Two | Won 8–1 v Haydons Park | Introduced in the 60th minute at left wing-back |\n\n## Gameweek One: four debuts on opening day\n\nSue’s Angels began their first League Eight campaign at The Reeves Sports Club on Sunday 6 September.\n\nThe starting line-up featured three competitive debutants, with a fourth later introduced from the bench. All four played their part as the Angels overcame Three Little Birds 2–1 in a closely contested opening fixture.\n\n### Ade Owolana\n\n[Ade Owolana](/players/ade-owolana.html) made his competitive debut on the right of the attacking midfield line.\n\nAde entered the season having already established himself as a consistent goalscorer and creator during pre-season. Although he did not score against Three Little Birds, he needed only one more competitive appearance to carry that form into League Eight.\n\nAgainst Haydons Park, he completed a hat-trick with goals in the 12th, 38th and 92nd minutes. His performance also earned him the Player of the Match award.\n\nWith three goals from his first two league appearances, Ade is already joint-third in the early League Eight scoring standings.\n\nHis hat-trick was not an isolated breakthrough. It was the latest indication of the attacking threat he had shown throughout the summer and his ability to turn promising positions into goals.\n\n### Leon Burnett\n\n[Leon Burnett](/players/leon-burnett.html) also reached the opening day following a productive pre-season in which he regularly contributed both goals and assists.\n\nStarting up front alongside Charlie Dunkley, Leon made an immediate competitive impact by setting up Dunkley’s goal in the 2–1 victory.\n\nHis influence continued in Gameweek Two.\n\nLeon scored his first competitive goal for the club from the penalty spot in the 29th minute before providing the pass for Ade Owolana to complete his hat-trick in stoppage time.\n\nTwo league appearances have produced one goal and two assists, giving Leon a direct involvement in three of the Angels’ opening ten goals.\n\nLike Ade, his early competitive return represents a continuation of what he produced during pre-season. Leon has shown that he can both finish chances and create them for the players around him, adding another dimension to the Angels’ attack.\n\n### Robert Heath\n\n[Robert Heath](/players/robert-heath.html) was handed his competitive debut at right centre-back in a back four.\n\nAfter helping the Angels through a demanding opening fixture against Three Little Birds, Robert retained his place for Gameweek Two and again started at right centre-back, this time in a back three, in the 8–1 victory over Haydons Park.\n\nHe is one of three debutants to have started both league matches and has quickly become part of a defensive unit adapting to the demands of the new division.\n\nThe Angels conceded once in each of those opening games, but both victories required different qualities. The first demanded concentration and resilience during a close contest, while the second required the defence to remain disciplined while the team controlled possession and committed players forward.\n\n### Liam Kirby\n\n[Liam Kirby](/players/liam-kirby.html) became the fourth debutant of the opening weekend when he was introduced from the bench against Three Little Birds.\n\nThe striker entered a tight contest. The official team sheet confirms his appearance, although it does not record the exact minute of his introduction.\n\nHis debut added another attacking option to a squad that had already created competition across the forward positions during pre-season.\n\n## Gameweek Two: two more join the story\n\nOne week later, Sue’s Angels returned to The Reeves to face Haydons Park.\n\nWith the team producing a commanding attacking performance, Danny Cain and George Churchill were given their first competitive minutes for the club. Their appearances took the number of Angels debutants to six across the opening two Gameweeks.\n\n### Danny Cain\n\n[Danny Cain](/players/danny-cain.html) entered at half-time with the Angels leading 5–0.\n\nHe replaced [Jimi El Bayati](/players/jim-el-bayati.html) in the centre of the back three and played the full second half of the 8–1 victory.\n\nThere was added significance to the substitution. The match marked Jimi’s first appearance since coming out of retirement, meaning one of the leaders of last season’s title-winning squad handed over to a player taking his first competitive steps with the club.\n\nIt was a moment that connected two different stages of the Angels’ story: an established player returning to the team and a new one beginning his own journey.\n\n[Jimi’s return to the starting line-up has its own story.](/news/back-in-the-starting-eleven.html)\n\n### George Churchill\n\n[George Churchill](/players/george-churchill.html) became the sixth competitive debutant of the season when he replaced Andy Allen at left wing-back in the 60th minute.\n\nHe entered the match three minutes after Elis Brumpton’s header had extended the lead to 6–0 and helped the Angels complete the remaining half-hour of another winning performance.\n\nOperating at left wing-back, George added fresh energy on the outside as the Angels continued to attack without losing their defensive structure.\n\n## The six after two Gameweeks\n\n| Player | Starts | Substitute appearances | Goals | Assists |\n|---|---|---|---|---|\n| Ade Owolana | 2 | 0 | 3 | 0 |\n| Leon Burnett | 2 | 0 | 1 | 2 |\n| Robert Heath | 2 | 0 | 0 | 0 |\n| Liam Kirby | 0 | 1 | 0 | 0 |\n| Danny Cain | 0 | 1 | 0 | 0 |\n| George Churchill | 0 | 1 | 0 | 0 |\n\nThe early numbers underline the contribution the new group has already made.\n\nBetween them, the six debutants have scored four of the Angels’ ten League Eight goals and assisted two more. Three have started both matches, while the other three have provided additional options from the bench across attack and defence.\n\nFor Ade and Leon, those contributions have carried their productive pre-season form into the competitive campaign. Both had already demonstrated their ability to score and create for the team during the summer, and they have now translated that influence into League Eight goals and points.\n\nThe other four have added depth across the pitch. Robert has started both matches in defence, while Liam, Danny and George have each received their first competitive opportunities from the bench.\n\nMore importantly, all six have contributed to a squad that has collected maximum points from its opening two fixtures.\n\nThey have joined an established group stepping up two divisions following last season’s League Ten title and have quickly become part of the next chapter in the club’s development.\n\n## New faces, the same standards\n\nThe arrival of new players inevitably changes the shape of a squad, but the standards established during last season’s title-winning campaign remain in place.\n\nThe opening two matches have provided different tests.\n\nThree Little Birds pushed the Angels through a close and competitive 2–1 contest. Haydons Park presented a different challenge, with Sue’s Angels required to maintain their intensity and structure during an emphatic 8–1 victory.\n\nAcross both games, the new players have been trusted to start, influence matches and help manage different situations.\n\nAde and Leon have delivered goals and assists. Robert has started both matches in defence. Liam, Danny and George have provided further options from the bench.\n\nIt is an encouraging beginning, but only the beginning.\n\n## First away test awaits\n\nGameweek Three takes the Angels away from The Reeves for the first time this season.\n\nWe travel to Richardson Evans Memorial Playing Fields to face Junction Elite FC Sunday 3rd Team on Sunday 20 September, with kick-off scheduled for 10:30.\n\nIt will be the first meeting between the two clubs and another new experience for a squad that continues to evolve.\n\nSix players have begun their competitive journeys with Sue’s Angels. Two matches in, they have already helped the team reach the top of League Eight.\n\nWith the club’s first away fixture next, their stories are only just getting started.",
+        "title": "Six new Angels make their competitive debuts"
+      },
+      "updated_at": "2026-09-15T09:31:24.624+00:00"
     }
   ],
   "recognition": [
@@ -7171,7 +8297,7 @@
       "data": {
         "id": "m1782667162909dwmc",
         "src": "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/al17826671483932665/0-1782667148393.jpg",
-        "date": "2026-06-28T17:19:22.909Z",
+        "date": "2026-06-28",
         "sort": 1782667162909,
         "tags": [
           "Stephen Epathite",
@@ -7182,7 +8308,7 @@
           "Malachi Mullings",
           "Luke Munns"
         ],
-        "cover": "",
+        "cover": "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/al17826671483932665/0-1782667148393.jpg",
         "title": "Pure Football 2.0 1-7 Sue's Angels League Ten • Matchday 7 • 9 November 2025",
         "photos": [
           "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/al17826671483932665/0-1782667148393.jpg",
@@ -7222,6 +8348,7 @@
           "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/al17826671483932665/34-1782667162492.jpg"
         ],
         "caption": "Pure Football 2.0 1-7 Sue's Angels League Ten • Matchday 7 • 9 November 2025",
+        "matchId": "",
         "category": "Matchday",
         "awayBadge": "assets/badge/sue-angels-shield.png",
         "homeBadge": "assets/badge/pure-fc.png",
@@ -7303,9 +8430,9 @@
           ],
           []
         ],
-        "photographer": ""
+        "photographer": "Jimi El Bayati"
       },
-      "updated_at": "2026-06-28T19:57:16.837+00:00"
+      "updated_at": "2026-09-13T05:51:55.267+00:00"
     },
     {
       "key": "m1782670552164oesd",
@@ -8892,9 +10019,9 @@
       "data": {
         "pick": {},
         "order": [
+          "nextup",
           "preseason",
           "ahead",
-          "nextup",
           "news",
           "who",
           "awards",
@@ -9033,23 +10160,35 @@
           "headtohead",
           "clubswall",
           "whatsinhere",
-          "venues"
+          "venues",
+          "news",
+          "who",
+          "awards",
+          "records",
+          "milestones",
+          "seasons"
         ]
       },
-      "updated_at": "2026-08-25T14:16:42.509+00:00"
+      "updated_at": "2026-09-11T08:36:42.108+00:00"
     },
     {
       "key": "roster:coaches",
-      "data": [
-        {
-          "id": "c-jim-el-bayati",
-          "bio": [],
-          "name": "Jim El Bayati",
-          "role": "FIRST TEAM COACH",
-          "short": "First Team Coach"
-        }
-      ],
-      "updated_at": "2026-06-04T23:14:20.723+00:00"
+      "data": {
+        "coaches": [
+          {
+            "id": "louis-allen",
+            "bio": [
+              "Louis Allen has been a constant presence in the Sue’s Angels FC backroom throughout the 25/26 season, a campaign that ended with the League Ten title and an unbeaten record. His contribution goes far beyond the ninety minutes.",
+              "Known for his meticulous organisation and pre-game preparation, Louis makes sure everything is in place before kick-off so the squad can focus on the football. From logistics to the smallest details, his work behind the scenes has been a big part of why the team has performed so consistently, week in and week out.",
+              "It is his character, though, that sets him apart. A positive, dependable figure who lifts the group and holds everyone to the same standards, Louis embodies the togetherness and culture that have driven the club forward. A valued member of the staff and a key part of the journey."
+            ],
+            "name": "Louis Allen",
+            "role": "FIRST TEAM COACH",
+            "short": "Organisation & matchday prep"
+          }
+        ]
+      },
+      "updated_at": "2026-09-13T05:48:46.66+00:00"
     },
     {
       "key": "roster:s2627",
@@ -9059,13 +10198,7 @@
             "num": 3,
             "last": "Burnett",
             "first": "Leon",
-            "position": "Forward"
-          },
-          {
-            "num": 12,
-            "last": "Owolona",
-            "first": "Ade",
-            "position": "Midfielder"
+            "position": "Striker"
           },
           {
             "num": 37,
@@ -9074,26 +10207,62 @@
             "position": "Midfielder"
           },
           {
-            "num": 38,
-            "last": "Heath",
-            "first": "Rob",
-            "position": "Defender"
-          },
-          {
-            "num": 39,
-            "last": "Bridge",
-            "first": "Jack",
-            "position": "Midfielder"
-          },
-          {
             "num": 40,
             "last": "Marie",
             "first": "Adam",
+            "position": "Centre back"
+          },
+          {
+            "num": 41,
+            "last": "Kirby",
+            "first": "Liam",
+            "position": "Striker"
+          },
+          {
+            "num": 39,
+            "last": "Bridges",
+            "first": "Jack",
+            "position": "Attacking midfielder"
+          },
+          {
+            "num": 38,
+            "last": "Heath",
+            "first": "Robert",
+            "position": "Right back"
+          },
+          {
+            "num": 12,
+            "last": "Owolana",
+            "first": "Ade",
+            "position": "Attacking midfielder"
+          },
+          {
+            "num": 42,
+            "last": "Allen",
+            "first": "Louis",
+            "position": "Defender"
+          },
+          {
+            "num": 43,
+            "last": "Cain",
+            "first": "Danny",
+            "position": "Centre back"
+          },
+          {
+            "num": 44,
+            "last": "Churchill",
+            "first": "George",
+            "position": "Midfielder"
+          },
+          {
+            "num": 45,
+            "last": "Nichols",
+            "first": "Samuel",
             "position": "Defender"
           }
         ]
       },
-      "updated_at": "2026-09-06T05:51:52.491+00:00"
+      "updated_at": "2026-09-12T10:54:21.08+00:00"
     },
     {
       "key": "roster:status",
@@ -9118,6 +10287,9 @@
             }
           },
           "4": "retained",
+          "5": {
+            "26/27": "active"
+          },
           "6": "retained",
           "7": {
             "25/26": {
@@ -9130,13 +10302,15 @@
             "25/26": {
               "key": "retired",
               "from": "2026-05-31"
-            }
+            },
+            "26/27": "active"
           },
           "11": {
             "25/26": {
               "key": "departed",
               "from": "2026-05-31"
-            }
+            },
+            "26/27": "active"
           },
           "12": {
             "25/26": {
@@ -9159,14 +10333,18 @@
               "from": "2026-05-31"
             }
           },
+          "17": {
+            "26/27": "active"
+          },
           "18": {
-            "26/27": "departed"
+            "26/27": "active"
           },
           "19": {
             "25/26": {
               "to": "N/A",
               "key": "departed"
-            }
+            },
+            "26/27": "active"
           },
           "20": "retained",
           "21": "retained",
@@ -9177,11 +10355,14 @@
           "26": {
             "25/26": "departed"
           },
+          "27": {
+            "26/27": "active"
+          },
           "28": "retained",
           "29": "retained",
           "30": "retained",
           "32": {
-            "26/27": "departed"
+            "26/27": "active"
           },
           "33": {
             "25/26": {
@@ -9197,7 +10378,8 @@
             "25/26": {
               "key": "active",
               "from": "2026-08-01"
-            }
+            },
+            "26/27": "departed"
           },
           "38": {
             "26/27": {
@@ -9216,10 +10398,28 @@
               "key": "active",
               "from": "2026-08-01"
             }
+          },
+          "41": {
+            "26/27": {
+              "key": "active",
+              "from": "2026-08-26"
+            }
+          },
+          "42": {
+            "26/27": "active"
+          },
+          "43": {
+            "26/27": "active"
+          },
+          "44": {
+            "26/27": "active"
+          },
+          "45": {
+            "26/27": "active"
           }
         }
       },
-      "updated_at": "2026-09-06T06:07:09.821+00:00"
+      "updated_at": "2026-09-12T11:00:14.596+00:00"
     },
     {
       "key": "roster:trialists",
@@ -9232,31 +10432,14 @@
             "added": "2026-08-03"
           },
           {
-            "num": 903,
-            "from": "2026-08-01",
-            "name": "Liam Kirby",
-            "added": "2026-08-03"
-          },
-          {
             "num": 902,
             "from": "2026-08-01",
             "name": "Rabbi Sharif",
             "added": "2026-08-03"
-          },
-          {
-            "num": 900,
-            "from": "2026-08-01",
-            "name": "Sam Nichols",
-            "added": "2026-08-03"
-          },
-          {
-            "num": 905,
-            "from": "2026-08-01",
-            "name": "Liam Alford"
           }
         ]
       },
-      "updated_at": "2026-09-03T23:28:02.822+00:00"
+      "updated_at": "2026-09-12T11:08:13.501+00:00"
     },
     {
       "key": "sponsor:matchreport",
@@ -9266,31 +10449,47 @@
   ],
   "fixtures": [
     {
-      "key": "f20260906-tlb",
+      "key": "f20260927-barnes",
       "data": {
-        "away": "Three Little Birds FC",
-        "date": "06 Sep 2026",
+        "away": "Barnes Stormers FC",
+        "date": "27 Sep 2026",
         "home": "Sue's Angels FC",
         "kick": "11:00",
         "kind": "fixture",
         "venue": "The Reeves Sports Club",
         "competition": "League Eight"
       },
-      "updated_at": "2026-09-03T23:37:48.938+00:00"
+      "updated_at": "2026-09-20T16:37:19.472+00:00"
     },
     {
-      "key": "f20260913-haydons",
+      "key": "f2627-pcup-r1-peps",
       "data": {
-        "iso": "2026-09-13",
-        "away": "Haydons Park",
-        "date": "13 Sep 2026",
-        "home": "Sue's Angels FC",
-        "kick": "11:00",
+        "away": "Sue's Angels FC",
+        "date": "",
+        "home": "Peps All Stars",
+        "kick": "",
         "kind": "fixture",
-        "venue": "The Reeves Sports Club",
-        "competition": "League Eight"
+        "squad": [
+          28,
+          20,
+          38,
+          10,
+          25,
+          4,
+          11,
+          23,
+          12,
+          9,
+          3,
+          2,
+          41,
+          44
+        ],
+        "venue": "",
+        "competition": "Brian Howard President's Cup",
+        "squadStarters": 11
       },
-      "updated_at": "2026-09-03T23:38:23.231+00:00"
+      "updated_at": "2026-09-20T16:44:13.432+00:00"
     }
   ],
   "team_badges": []

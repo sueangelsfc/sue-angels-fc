@@ -81,6 +81,15 @@
       "home": "Peps All Stars",
       "away": "Sue's Angels FC",
       "competition": "Brian Howard President's Cup"
+    },
+    {
+      "id": "f20261004-pure",
+      "date": "04 Oct 2026",
+      "kick": "12:30",
+      "home": "Pure Football FC 1st Team",
+      "away": "Sue's Angels FC",
+      "venue": "Barn Elms Sports Centre",
+      "competition": "League Eight"
     }
   ]
 }

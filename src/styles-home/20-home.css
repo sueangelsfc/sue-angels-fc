@@ -1886,7 +1886,7 @@ html.js [data-season-scope][hidden]{display: none;}
 .nw-art__fig figcaption{font-size: 14px; line-height: 1.5; color: var(--ink-2);}
 /* A graphic is shown whole: no corners taken off, never wider than it was
    made, centred in the column. */
-.nw-art__fig--graphic img{width: auto; max-width: 100%; margin: 0 auto; border-radius: 0;}
+.nw-art__fig--graphic img{width: auto; max-width: 100%; margin: 0 auto; border-radius: var(--r);}
 .nw-art__fig--graphic figcaption{text-align: center;}
 /* A sub-heading under an article heading. */
 .nw-art__sub,.nw-art__h--sub{margin: 2px 0 0;

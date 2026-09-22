@@ -6769,6 +6769,7 @@
       "data": {
         "as": 3,
         "hs": 0,
+        "id": "r20260920-junction",
         "away": "Sue's Angels FC",
         "date": "20 Sep 2026",
         "home": "Junction Elite FC Sunday 3rd Team",
@@ -6792,8 +6793,13 @@
             "minute": 84
           },
           {
-            "on": 2,
+            "on": 4,
             "off": 23,
+            "minute": 84
+          },
+          {
+            "on": 2,
+            "off": 20,
             "minute": 88
           }
         ],
@@ -6871,7 +6877,7 @@
               "num": 4,
               "type": "through"
             },
-            "minute": null,
+            "minute": 2,
             "penalty": false,
             "bodyPart": "left",
             "situation": "open"
@@ -6883,7 +6889,7 @@
               "num": 3,
               "type": "freekick"
             },
-            "minute": null,
+            "minute": 30,
             "penalty": false,
             "bodyPart": "left",
             "situation": "freekick"
@@ -6895,38 +6901,38 @@
               "num": 20,
               "type": "cross"
             },
-            "minute": null,
+            "minute": 84,
             "penalty": false,
             "bodyPart": "right",
             "situation": "open"
           }
         ],
         "saves": 1,
-        "shape": "3-4-2-1",
+        "shape": "3-4-1-2",
         "venue": "Richardson Evans Memorial Playing Fields",
         "keeper": 28,
         "assists": [
           {
             "num": 4,
             "type": "through",
-            "minute": null,
+            "minute": 2,
             "forGoalBy": 12
           },
           {
             "num": 3,
             "type": "freekick",
-            "minute": null,
+            "minute": 30,
             "forGoalBy": 12
           },
           {
             "num": 20,
             "type": "cross",
-            "minute": null,
+            "minute": 84,
             "forGoalBy": 9
           }
         ],
         "captain": 25,
-        "savedAt": "2026-09-20T17:42:33.841Z",
+        "savedAt": "2026-09-21T12:11:30.108Z",
         "redCards": [],
         "starters": [
           {
@@ -6954,7 +6960,8 @@
             ],
             "positions": [
               "RWB"
-            ]
+            ],
+            "subbedOff": true
           },
           {
             "num": 38,
@@ -7011,8 +7018,7 @@
             ],
             "positions": [
               "LWB"
-            ],
-            "subbedOff": true
+            ]
           },
           {
             "num": 11,
@@ -7127,12 +7133,12 @@
         ],
         "opponentGoals": [],
         "penaltiesSaved": [],
-        "polishedReport": "Angels stay perfect with commanding away win\n\n## Junction Elite 0-3 Sue’s Angels FC\n\nSue’s Angels maintained their perfect League Eight start with a disciplined 3-0 victory over Junction Elite.\n\nA first-half brace from Ade Owolana put the Angels in control before Charlie Dunkley completed the scoring late on. Luke Munns and the defence secured the club’s first clean sheet of the season.\n\n## Ade makes an immediate impact\n\nThe Angels needed only two minutes to take the lead.\n\nMaking his first start of the season at left wing-back, Michael Brabrook controlled the ball before lifting a perfectly weighted pass over the Junction defence.\n\nAde brought it down calmly and, with only the goalkeeper to beat, placed his finish to the keeper’s right.\n\nJunction responded with a spell of possession, but the Angels remained organised. Their opponents moved the ball neatly through midfield without finding a way through the defensive shape. Most attempted final passes were comfortably collected by Luke, who remained largely untested during the opening half-hour.\n\nMichael defended his side well, while Daniel McLane’s composure helped nullify Junction’s attempts to create an overload down the Angels’ left.\n\n## The second arrives\n\nThe Angels gradually took greater control of possession, with Stewart Luwawa and the returning Richard Epathite working through a competitive midfield battle.\n\nJunction operated with a 4-3-3 and regularly pushed their right-sided midfielder forward to create an extra option. The Angels adjusted well, keeping their shape and preventing that possession from becoming clear chances.\n\nAt the other end, Leon Burnett’s strength created the opportunity for a second goal. Leon collected the ball during a scramble near the edge of the area, held off his defender and turned before being fouled.\n\nAde took responsibility from around 22 yards, slightly to the right of goal. The left-footer went to the goalkeeper’s side and found the bottom-left corner to make it 2-0.\n\nIt completed a clinical first-half brace and gave the Angels a deserved advantage.\n\n## Dean provides the outlet\n\nDean Knight was a constant option at right wing-back, combining effectively with Ade, Charlie and Leon.\n\nOne low cross travelled beyond three Junction defenders before taking an awkward bounce in front of Leon. The ball struck the forward’s shin and went over the bar. A cleaner bounce would likely have left Leon with a straightforward finish.\n\nThe Angels entered half-time two goals ahead, but the instruction was clear: remain focused and find the third. Junction had shown enough on the ball to remain a threat if allowed back into the contest.\n\n## Angels manage the second half\n\nAdam Marie replaced Michael at half-time. Robert Heath moved to left wing-back, with Adam joining Jimi El Bayati and Daniel in the back three.\n\nAs expected, Junction began the second half with greater aggression. Their best move came down the flank before a pull-back found the forward inside the area. Luke saved the resulting shot, Junction’s only effort on target, and remained determined to protect the clean sheet.\n\nThat proved to be the home side’s final meaningful opportunity.\n\nGeorge Churchill replaced Robert after 60 minutes as the Angels continued to manage the game with maturity. The defence stayed compact, the midfield competed for second balls and the forwards continued to press Junction’s attempts to play out.\n\n## Charlie seals the result\n\nThe third goal arrived in the 84th minute and once again began through Dean.\n\nA quick throw found Leon, who laid the ball back into Dean’s path. The wing-back delivered first time, causing uncertainty between the Junction goalkeeper and centre-back.\n\nThe loose ball fell to Charlie, who finished emphatically off the underside of the crossbar. A defender attempted to keep it out with his hands, but the ball had already found its way into the net.\n\nIt was a deserved reward for Charlie’s relentless running and pressing. He had been denied earlier by good goalkeeping and determined defending, but his persistence was eventually rewarded.\n\nLiam Kirby replaced Charlie immediately after the goal, with Andrew Allen coming on for Stewart during the closing minutes.\n\n## A complete away performance\n\nThe result gave the Angels three wins from three League Eight matches and their first clean sheet of the season.\n\nMichael marked his first start of the campaign with an assist and an excellent defensive display. Dean recorded his third league assist of the season, while Charlie moved to five goals in three league appearances.\n\nAde was named Player of the Match after taking his total to five competitive goals from his opening three appearances. He has now scored five times across consecutive matches, including a hat-trick against Haydons Park and this decisive brace against Junction.\n\nIt was a workmanlike team performance built on structure, patience and clinical finishing. All three starting forwards played a part in the goals, while Luke and the defence earned their clean sheet with another composed display.\n\n## Match details\n\n**Junction Elite 0-3 Sue’s Angels FC**\n\n**Goals:** Ade Owolana 2, Ade Owolana 30, Charlie Dunkley 84\n**Assists:** Michael Brabrook, Dean Knight\n**Player of the Match:** Ade Owolana\n**Formation:** 3-4-1-2\n**Clean sheet:** Luke Munns\n**Bookings:** Stewart Luwawa, Adam Marie\n\n**Starting XI:** Luke Munns, Daniel McLane, Jimi El Bayati, Robert Heath, Michael Brabrook, Dean Knight, Stewart Luwawa, Richard Epathite, Ade Owolana, Charlie Dunkley, Leon Burnett.\n\n**Substitutions:** Adam Marie for Michael Brabrook, George Churchill for Robert Heath, Liam Kirby for Charlie Dunkley, Andrew Allen",
+        "polishedReport": "Angels stay perfect with commanding away win\n\n## Junction Elite 0-3 Sue’s Angels FC\n\nSue’s Angels maintained their perfect League Eight start with a disciplined 3-0 victory over Junction Elite.\n\nA first-half brace from Ade Owolana put the Angels in control before Charlie Dunkley completed the scoring late on. Luke Munns and the defence secured the club’s first clean sheet of the season.\n\n## Ade makes an immediate impact\n\nThe Angels needed only two minutes to take the lead.\n\nMaking his first start of the season at left wing-back, Michael Brabrook controlled the ball before lifting a perfectly weighted pass over the Junction defence.\n\nAde brought it down calmly and, with only the goalkeeper to beat, placed his finish to the keeper’s right.\n\nJunction responded with a spell of possession, but the Angels remained organised. Their opponents moved the ball neatly through midfield without finding a way through the defensive shape. Most attempted final passes were comfortably collected by Luke, who remained largely untested during the opening half-hour.\n\nMichael defended his side well, while Daniel McLane’s composure helped nullify Junction’s attempts to create an overload down the Angels’ left.\n\n## The second arrives\n\nThe Angels gradually took greater control of possession, with Stewart Luwawa and the returning Richard Epathite working through a competitive midfield battle.\n\nJunction operated with a 4-3-3 and regularly pushed their right-sided midfielder forward to create an extra option. The Angels adjusted well, keeping their shape and preventing that possession from becoming clear chances.\n\nAt the other end, Leon Burnett’s strength created the opportunity for a second goal. Leon collected the ball during a scramble near the edge of the area, held off his defender and turned before being fouled.\n\nAde took responsibility from around 22 yards, slightly to the right of goal. The left-footer went to the goalkeeper’s side and found the bottom-left corner to make it 2-0.\n\nIt completed a clinical first-half brace and gave the Angels a deserved advantage.\n\n## Dean provides the outlet\n\nDean Knight was a constant option at right wing-back, combining effectively with Ade, Charlie and Leon.\n\nOne low cross travelled beyond three Junction defenders before taking an awkward bounce in front of Leon. The ball struck the forward’s shin and went over the bar. A cleaner bounce would likely have left Leon with a straightforward finish.\n\nThe Angels entered half-time two goals ahead, but the instruction was clear: remain focused and find the third. Junction had shown enough on the ball to remain a threat if allowed back into the contest.\n\n## Angels manage the second half\n\nAdam Marie replaced Michael at half-time. Robert Heath moved to left wing-back, with Adam joining Jimi El Bayati and Daniel in the back three.\n\nAs expected, Junction began the second half with greater aggression. Their best move came down the flank before a pull-back found the forward inside the area. Luke saved the resulting shot, Junction’s only effort on target, and remained determined to protect the clean sheet.\n\nThat proved to be the home side’s final meaningful opportunity.\n\nGeorge Churchill replaced Robert after 60 minutes as the Angels continued to manage the game with maturity. The defence stayed compact, the midfield competed for second balls and the forwards continued to press Junction’s attempts to play out.\n\n## Charlie seals the result\n\nThe third goal arrived in the 84th minute and once again began through Dean.\n\nA quick throw found Leon, who laid the ball back into Dean’s path. The wing-back delivered first time, causing uncertainty between the Junction goalkeeper and centre-back.\n\nThe loose ball fell to Charlie, who finished emphatically off the underside of the crossbar. A defender attempted to keep it out with his hands, but the ball had already found its way into the net.\n\nIt was a deserved reward for Charlie’s relentless running and pressing. He had been denied earlier by good goalkeeping and determined defending, but his persistence was eventually rewarded.\n\nLiam Kirby replaced Charlie immediately after the goal, with Andrew Allen coming on for Dean Knight during the closing minutes.\n\n## A complete away performance\n\nThe result gave the Angels three wins from three League Eight matches and their first clean sheet of the season.\n\nMichael marked his first start of the campaign with an assist and an excellent defensive display. Dean recorded his third league assist of the season, while Charlie moved to five goals in three league appearances.\n\nAde was named Player of the Match after taking his total to five competitive goals from his opening three appearances. He has now scored five times across consecutive matches, including a hat-trick against Haydons Park and this decisive brace against Junction.\n\nIt was a workmanlike team performance built on structure, patience and clinical finishing. All three starting forwards played a part in the goals, while Luke and the defence earned their clean sheet with another composed display.\n\n## Match details\n\n**Junction Elite 0-3 Sue’s Angels FC**\n\n**Goals:** Ade Owolana 2, Ade Owolana 30, Charlie Dunkley 84\n**Assists:** Michael Brabrook, Dean Knight\n**Player of the Match:** Ade Owolana\n**Formation:** 3-4-1-2\n**Clean sheet:** Luke Munns\n**Bookings:** Stewart Luwawa, Adam Marie\n\n**Starting XI:** Luke Munns, Daniel McLane, Jimi El Bayati, Robert Heath, Michael Brabrook, Dean Knight, Stewart Luwawa, Richard Epathite, Ade Owolana, Charlie Dunkley, Leon Burnett.\n\n**Substitutions:** Adam Marie for Michael Brabrook, George Churchill for Robert Heath, Liam Kirby for Charlie Dunkley, Andrew Allen for Dean Knight, Michael Brabrook for Stewart Luwawa.",
         "penaltiesMissed": [],
         "opponentRedCards": [],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-09-20T17:42:37.177+00:00"
+      "updated_at": "2026-09-21T12:11:30.108+00:00"
     }
   ],
   "articles": [

@@ -6478,7 +6478,10 @@
           {
             "num": 9,
             "zone": "six",
-            "assist": null,
+            "assist": {
+              "num": 2,
+              "type": "pass"
+            },
             "minute": 34,
             "penalty": false,
             "bodyPart": "left",
@@ -6578,6 +6581,12 @@
             "forGoalBy": 3
           },
           {
+            "num": 2,
+            "type": "pass",
+            "minute": 34,
+            "forGoalBy": 9
+          },
+          {
             "num": 9,
             "type": "pass",
             "minute": 38,
@@ -6603,7 +6612,7 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-09-14T08:38:33.927Z",
+        "savedAt": "2026-09-22T17:24:14.723Z",
         "redCards": [],
         "starters": [
           {
@@ -6762,7 +6771,7 @@
         "opponentRedCards": [],
         "penaltiesConceded": 1
       },
-      "updated_at": "2026-09-14T08:38:33.928+00:00"
+      "updated_at": "2026-09-22T17:24:14.723+00:00"
     },
     {
       "key": "r20260920-junction",

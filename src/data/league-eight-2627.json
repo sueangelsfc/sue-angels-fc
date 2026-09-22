@@ -208,7 +208,7 @@
     }
   ],
   "_scorersNote": "The division's scorers, from Full-Time's stat leaders page (Player stats, Summary, League Eight 26/27), which excludes county cup football. Every player with a goal is kept, spelt as Full-Time prints them; the page lists appearances for everybody else and those are not kept. npm run verify fails if a club's scorers add up to more goals than its results say it scored.",
-  "_assistsNote": "Assists as of 21 September 2026. For Sue's Angels players the figures are the club's own match records, which Full-Time is being asked to match (Full-Time shows Charlie Dunkley 2 and Leon Burnett 2; the club credits both with 3, Leon's third being the free kick he won for Ade Owolana's second at Junction Elite). Andrew Allen's 1 is as Full-Time printed it on 14 September. Everybody else is as Full-Time prints them.",
+  "_assistsNote": "Assists as of 21 September 2026. For Sue's Angels players the figures are the club's own match records, which the club is asking the league to match: Full-Time shows Charlie Dunkley 2 and Leon Burnett 2 (the club credits both with 3, Leon's third being the free kick he won for Ade Owolana's second at Junction Elite), and credits Andrew Allen with 1, which the club records as none. Everybody else is as Full-Time prints them.",
   "scorersAsOf": "2026-09-21",
   "scorers": [
     {
@@ -400,12 +400,6 @@
     },
     {
       "name": "Daniel McLane",
-      "club": "Sue's Angels FC",
-      "assists": 1,
-      "apps": 3
-    },
-    {
-      "name": "Andrew Allen",
       "club": "Sue's Angels FC",
       "assists": 1,
       "apps": 3

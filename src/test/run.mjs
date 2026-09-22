@@ -1535,6 +1535,9 @@ for (const f of shipped) {
       /* league.html: the League Eight goals-and-assists table's "#" column,
          Leon Burnett joint third on three. A rank, not his number. */
       'league.html :: 3 Leon Burnett',
+      /* league.html: the League Eight assists table, Michael Brabrook joint
+         fourth on one assist after gameweek three. A rank, not his number. */
+      'league.html :: 4 Michael Brabrook',
     ]);
     const rx = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const { buildDataset: bdN } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));

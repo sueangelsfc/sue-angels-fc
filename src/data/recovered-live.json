@@ -10274,10 +10274,22 @@
             "last": "Nichols",
             "first": "Samuel",
             "position": "Defender"
+          },
+          {
+            "num": 46,
+            "last": "Heath",
+            "first": "Elliot",
+            "position": ""
+          },
+          {
+            "num": 47,
+            "last": "Morally",
+            "first": "Sebastian",
+            "position": ""
           }
         ]
       },
-      "updated_at": "2026-09-12T10:54:21.08+00:00"
+      "updated_at": "2026-09-26T18:07:00.197+00:00"
     },
     {
       "key": "roster:status",
@@ -10431,10 +10443,16 @@
           },
           "45": {
             "26/27": "active"
+          },
+          "46": {
+            "26/27": "active"
+          },
+          "47": {
+            "26/27": "active"
           }
         }
       },
-      "updated_at": "2026-09-12T11:00:14.596+00:00"
+      "updated_at": "2026-09-26T18:07:00.634+00:00"
     },
     {
       "key": "roster:trialists",

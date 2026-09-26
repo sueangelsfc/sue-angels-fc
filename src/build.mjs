@@ -310,6 +310,13 @@ const d = buildDataset();
   if (rel && fs.existsSync(path.join(ROOT, rel))) {
     d.programmePdf = `/${rel}`;
     d.programmePdfKb = Math.round(fs.statSync(path.join(ROOT, rel)).size / 1024);
+    /* WHAT IS ACTUALLY IN IT (src/data/programme-contents.json). The page
+       described the programme the GENERATOR draws, and the club uploads its
+       own document, so the quiz and the word search were a claim about a file
+       nobody here had read. A fixture named in that file describes its own
+       PDF; one that is not falls back to the derived list. */
+    const pc = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'programme-contents.json'), 'utf8'));
+    d.programmeContents = (pc.fixtures || {})[id] || null;
   }
 
   /* EVERY PROGRAMME EVER MADE, so the page is a collection rather than one

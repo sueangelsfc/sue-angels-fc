@@ -1,0 +1,19 @@
+{
+  "_source": "What is actually inside the programme the club uploads for a fixture.",
+  "_rule": "The download band used to describe the programme THE GENERATOR draws (a half-time quiz, a squad word search, the registered list), and the club now uploads its own document instead, so those lines were a guess about a file nobody had read. A fixture named here describes its own PDF; a fixture with no entry falls back to the derived list, which is still true of a generated programme.",
+  "fixtures": {
+    "f20260927-barnes": {
+      "lede": "Ten pages: the win at Junction Elite, three ways to win, the opposition report, both matchday squads and the partners who back the club. One file, yours to keep.",
+      "items": [
+        "Last time out: the 3-0 at Junction Elite",
+        "Three ways to win, after three matches",
+        "Opposition report: Barnes Stormers",
+        "The previous meeting, and why it counts for nothing today",
+        "Player focus: Ade Owolana, five in three",
+        "Sponsor spotlight: Sporting Solutions",
+        "Both matchday squads, ours and theirs",
+        "Why we play, and how to spot sepsis"
+      ]
+    }
+  }
+}

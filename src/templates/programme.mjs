@@ -445,7 +445,10 @@ export function programme(d) {
      way, and the contents appear with the download. */
   const pdf = d.programmePdf || '';
   const pages = d.programmePdfPages || 0;
-  const contents = [
+  /* The club's own document says what is in it; the derived list below only
+     describes a programme this generator drew. */
+  const own = d.programmeContents || null;
+  const contents = own && own.items && own.items.length ? own.items : [
     m ? `What the archive knows about ${m.opponent}` : null,
     here.length ? `The ${here.length} players registered for ${season}` : null,
     us ? `${d.titleDivision} ${d.titleSeason}, won unbeaten` : null,
@@ -482,9 +485,10 @@ export function programme(d) {
        ${esc(fmtDate(m.date, { weekday: true }))}, ${esc(m.kick || '')}.${pdf ? ' The programme for this one is ready to take with you.' : ''}`
     : 'The programme for the next fixture appears here as soon as the match is announced.'}</p>
         ${pdf
-    ? `<p class="pr-lede rv">Today's match, the season ahead, the opposition, the squad, a half-time
+    ? `<p class="pr-lede rv">${own && own.lede ? esc(own.lede)
+      : `Today's match, the season ahead, the opposition, the squad, a half-time
           quiz, a word search and the partners who pay for the pitches. ${pages
-      ? `${esc(pages)} pages.` : ''} One file, yours to keep.</p>
+        ? `${esc(pages)} pages.` : ''} One file, yours to keep.`}</p>
         <p class="rv"><a class="pr-download" href="${attr(pdf)}" download>
           ${icon('download', '')} <span>Download this week's programme</span>
           <small>PDF${d.programmePdfKb ? ` · ${esc(d.programmePdfKb)}KB` : ''}</small></a></p>

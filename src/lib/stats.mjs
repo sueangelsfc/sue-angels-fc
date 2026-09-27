@@ -594,6 +594,12 @@ export function playerStats(matches, squad, trialists = {}, signedOn = () => nul
       rec[key] = (rec[key] || 0) + 1;
     };
     for (const g of d.goals || []) {
+      /* AN OWN GOAL BELONGS TO THE SCORELINE AND TO NOBODY'S RECORD. It is
+         one of the club's goals, so it counts where goals are counted off the
+         result, and it is credited to no player here: the man who put it in
+         plays for the other side, and `ensure(null)` would otherwise invent
+         a player called "No. undefined" and give him a career. */
+      if (g.og || g.num == null) continue;
       const p = ensure(g.num); p.goals++;
       if (g.penalty || g.situation === 'penalty') p.penalties++;
       if (g.bodyPart && p.byFoot[g.bodyPart] !== undefined) p.byFoot[g.bodyPart]++;
@@ -956,9 +962,20 @@ export function matchTimeline(match, nameFor) {
 
   for (const g of d.goals || []) {
     const extra = g.penalty ? ' (penalty)' : g.setType ? ` (${g.setType})` : '';
-    push('goal', g.minute, `${nameFor(g.num)} scores${extra}`);
+    /* An own goal names the side it went against, never a player of ours. */
+    push('goal', g.minute, g.og || g.num == null
+      ? `Own goal, ${match.opponent}${extra}`
+      : `${nameFor(g.num)} scores${extra}`);
   }
-  for (const g of d.opponentGoals || []) push('goal-against', g.minute, `${match.opponent} score`);
+  for (const g of d.opponentGoals || []) {
+    /* Their goals carry a NAME rather than a number: the box the club types
+       them into is free text, and the man who put through his own net is one
+       of ours, so his name is what there is to print. */
+    const who = g.num != null ? nameFor(g.num) : (g.name || '');
+    push('goal-against', g.minute, g.og
+      ? `Own goal${who && !/^unknown$/i.test(who) ? `, ${who}` : ''}`
+      : `${match.opponent} score`);
+  }
   for (const c of d.yellowCards || []) push('card', c.minute, `${nameFor(c.num ?? c)} booked`);
   for (const c of d.redCards || []) push('card', c.minute, `${nameFor(c.num ?? c)} sent off`);
   for (const s of d.subs || []) push('sub', s.minute, `${nameFor(s.on)} on for ${nameFor(s.off)}`);

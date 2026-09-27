@@ -290,7 +290,11 @@ export async function panelChecks() {
     `sheet ${sheetSize}`);
 
   if (modal) {
-    const opts = (s) => s.querySelectorAll('option').filter((o) => o.getAttribute('value')).length;
+    /* The own-goal choice on a scorer dropdown is not a player and is not a
+       claim about anybody on the sheet, so it is not counted against the
+       ring. Everything else with a value is a person. */
+    const opts = (s) => s.querySelectorAll('option')
+      .filter((o) => o.getAttribute('value') && o.getAttribute('value') !== 'og').length;
     const claims = [
       ...['m-capt', 'm-motm', 'm-keeper'].map((id) => [id, modal.querySelector('#' + id)]),
       ...modal.querySelectorAll('[data-g-num]').map((s, i) => ['scorer ' + i, s]),
@@ -1692,7 +1696,11 @@ export async function panelProbes() {
         await PR.settle(ctx);
         const modal = ctx.doc.querySelector('.modal-backdrop');
         if (!modal) { red = true; break; }
-        const opts = (s) => s.querySelectorAll('option').filter((o) => o.getAttribute('value')).length;
+        /* The own-goal choice on a scorer dropdown is not a player and is not a
+       claim about anybody on the sheet, so it is not counted against the
+       ring. Everything else with a value is a person. */
+    const opts = (s) => s.querySelectorAll('option')
+      .filter((o) => o.getAttribute('value') && o.getAttribute('value') !== 'og').length;
         const capt = modal.querySelector('#m-capt');
         red = !capt || opts(capt) !== size;
         break;

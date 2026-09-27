@@ -9035,6 +9035,51 @@ let orphanClasses = new Map();
     blocked.length === 0, [...new Set(blocked)].join('   |   '));
 }
 
+/* ==========================================================================
+   AN OWN GOAL IS ON THE SCOREBOARD AND ON NOBODY'S RECORD
+
+   The club asked to be able to enter one, and the trap is the credit: a goal
+   with no scorer must still count where goals are counted off a result, and
+   must never reach a player's career. Asked of the shipped engine with a
+   crafted record, both ways round: one the opposition put through their own
+   net (ours on the scoreline) and one of ours put through his (theirs).
+   ========================================================================== */
+{
+  const { matchTimeline: tl, playerProfile: pp } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+  const { buildDataset: bdOG } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const d = bdOG();
+  const base = d.matches.find((m) => m.id === 'r20260920-junction');
+  const det = JSON.parse(JSON.stringify(base.detail));
+  det.goals = [...det.goals, { og: true, num: null, minute: 70 }];
+  det.opponentGoals = [{ minute: 55, name: 'Daniel McLane', og: true }];
+  const crafted = { ...base, detail: det };
+  const lines = tl(crafted, d.nameFor).map((e) => e.text);
+  check('an own goal for us is named as one and credited to no player of ours',
+    lines.some((t) => /^Own goal, Junction Elite/.test(t))
+      && !lines.some((t) => /No\. (undefined|null)/.test(t)), lines.join(' | '));
+  check('an own goal against us names the man who put it in',
+    lines.some((t) => t === 'Own goal, Daniel McLane'), lines.join(' | '));
+
+  const squad = d.squad || d.players || [];
+  const charlie = (d.players || []).find((p) => p.name === 'Charlie Dunkley');
+  const swapped = d.matches.map((m) => (m.id === base.id ? crafted : m));
+  check("an own goal changes nobody's goal tally",
+    charlie && pp(charlie, swapped, squad).goals === pp(charlie, d.matches, squad).goals,
+    `${charlie && pp(charlie, swapped, squad).goals} against ${charlie && pp(charlie, d.matches, squad).goals}`);
+  /* PROBE: the guard is what keeps a nameless goal out of the career, so take
+     it away in the crafted record and the tally has to move. */
+  const withScorer = { ...crafted, detail: { ...det, goals: det.goals.map((g) => (g.og ? { ...g, og: false, num: 9 } : g)) } };
+  check('probe: without the own-goal rule the same goal would land on a career',
+    charlie && pp(charlie, d.matches.map((m) => (m.id === base.id ? withScorer : m)), squad).goals
+      === pp(charlie, d.matches, squad).goals + 1);
+
+  const { matchReport: reportTpl } = await import(path.join(ROOT, 'src', 'templates', 'report.mjs'));
+  const out = reportTpl(crafted, { ...d, matches: swapped });
+  const html = String(out && out.body ? out.body : out);
+  check('the match page lists the own goal as one, and names ours under their goals',
+    html.includes('Own goal') && /own goal, Daniel McLane/i.test(html));
+}
+
 console.log(`  classes on an element no rule reaches, one page per family: ${orphanClasses.size}`
   + ` (the panel is gated at zero; these are layout wrappers and SVG groups)`
   + (orphanClasses.size ? `

@@ -50,8 +50,10 @@ export function matchReport(m, d) {
     ? `<img class="mr-badge is-us" src="${STAR}" alt="Sue’s Angels FC star" width="${size}" height="${size}" loading="eager" />`
     : oppBadge(club, d.badges, size, size, 'mr-badge'));
 
+  /* An own goal is one of the club's goals and nobody's record, so it is
+     listed among the scorers as what it was rather than under a name. */
   const scorers = (det.goals || []).map((g) => ({
-    name: nameFor(g.num),
+    name: g.og || g.num == null ? 'Own goal' : nameFor(g.num),
     penalty: Boolean(g.penalty),
     minute: g.minute || '',
   }));
@@ -142,7 +144,9 @@ export function matchReport(m, d) {
             ${/* THEIR GOALS, from the form's Their goals box: the minute, who
                   (when anybody knows) and whether it was a penalty. */''}
             ${((m.detail || {}).opponentGoals || []).length ? `<p class="mr-col__cap">${esc(shortClub(m.opponent))}: ${esc(m.detail.opponentGoals
-    .map((g) => [g.minute ? `${g.minute}′` : '', g.name && !/^unknown$/i.test(g.name) ? g.name : '', g.penalty ? '(pen)' : '']
+    .map((g) => [g.minute ? `${g.minute}′` : '',
+      g.og ? `own goal${g.name && !/^unknown$/i.test(g.name) ? `, ${g.name}` : ''}`
+        : (g.name && !/^unknown$/i.test(g.name) ? g.name : ''), g.penalty ? '(pen)' : '']
       .filter(Boolean).join(' ') || 'a goal').join(', '))}</p>` : ''}
           </div>
           <div class="mr-col">

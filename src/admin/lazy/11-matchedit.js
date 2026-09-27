@@ -515,6 +515,14 @@
           '>' + esc(o.label) + '</option>';
       }).join('');
   }
+  /* The opponent's name for the own-goal option. Read from the form rather
+     than the record, so it follows the field as it is typed, and falling back
+     to plain words when the dialog is not in the document yet. */
+  function oppName() {
+    var el = document.getElementById('m-opp');
+    return el && el.value ? el.value.trim() : '';
+  }
+
   function playerOptions(chosen, blank) {
     return (blank ? '<option value="">' + esc(blank) + '</option>' : '') +
       offer('match', chosen).map(function (p) {
@@ -537,7 +545,13 @@
         '<div class="gcard__top">' +
           '<span class="gcard__n">' + (i + 1) + '</span>' +
           '<select class="select gcard__who" data-g-num aria-label="Who scored the ' + (i + 1) + ' goal">' +
-            playerOptions(g.num, '') + '</select>' +
+            /* AN OWN GOAL IS ONE OF OURS ON THE SCOREBOARD AND NOBODY'S IN
+               THE RECORD. It has to be enterable or the goals cannot add up
+               to the score, and it must not be filed under one of our
+               players, so it is a choice of its own rather than a name. */
+            '<option value="og"' + (g.og ? ' selected' : '') + '>Own goal, ' +
+              esc(oppName() || 'the opposition') + '</option>' +
+            playerOptions(g.og ? null : g.num, '') + '</select>' +
           '<label class="gcard__min"><span class="sr-only">Minute</span>' +
             '<input class="input" type="number" min="1" max="130" placeholder="min" ' +
               'value="' + (g.minute != null ? esc(g.minute) : '') + '" data-g-min ' +
@@ -1043,11 +1057,14 @@
       var raw = ($('#m-their', back) || {}).value || '';
       return raw.split('\n').map(function (l) { return l.trim(); }).filter(Boolean).map(function (l) {
         var pen = /\(pen\)/i.test(l);
-        var t = l.replace(/\(pen\)/ig, '').trim();
+        /* (og) marks one of ours put past our own keeper: it is their goal on
+           the scoreboard, and naming the man is the club's choice. */
+        var own = /\(og\)/i.test(l);
+        var t = l.replace(/\(pen\)/ig, '').replace(/\(og\)/ig, '').trim();
         var m2 = t.match(/^(\d{1,3})\s*[-\u2013\u2014:.)]?\s*(.*)$/);
         return {
-          name: (m2 ? m2[2] : t).trim(), type: pen ? 'pen' : 'open',
-          minute: m2 ? m2[1] : '', penalty: pen,
+          name: (m2 ? m2[2] : t).trim(), type: pen ? 'pen' : own ? 'og' : 'open',
+          minute: m2 ? m2[1] : '', penalty: pen, og: own,
         };
       });
     }
@@ -1263,10 +1280,11 @@
                 'placeholder="23 - Rayan Alhajeri\n41 - their number nine\n67 - unknown (pen)">' +
               esc(((d.opponentGoals || []).map(function (g) {
                 return (g.minute ? g.minute + ' - ' : '') + (g.name || '')
-                  + (g.penalty ? ' (pen)' : '');
+                  + (g.penalty ? ' (pen)' : '') + (g.og ? ' (og)' : '');
               }).filter(function (l) { return l.trim(); }).join('\n'))) + '</textarea>' +
               '<p class="field__hint">One a line. A minute in front puts it in the story where it ' +
-                'happened. Add (pen) for a penalty. Leave a name out if nobody knows it.</p>' +
+                'happened. Add (pen) for a penalty and (og) for an own goal, with the name of ' +
+                'whoever put it in. Leave a name out if nobody knows it.</p>' +
             '</div>' +
 
             '<h4 class="mform__h">Your notes</h4>' +
@@ -2059,7 +2077,14 @@
       if (!gr) return;
       var gi = Number(gr.getAttribute('data-goal'));
       var g = goals[gi];
-      if (e.target.matches('[data-g-num]')) { g.num = Number(e.target.value); return; }
+      if (e.target.matches('[data-g-num]')) {
+        if (e.target.value === 'og') {
+          /* Nobody of ours scored it, so nobody of ours is credited, and an
+             assist on an own goal would be a claim about the other side. */
+          g.og = true; g.num = null; g.assist = null; repaintGoals();
+        } else { g.og = false; g.num = Number(e.target.value); }
+        return;
+      }
       if (e.target.matches('[data-g-body]')) { g.bodyPart = e.target.value; return; }
       if (e.target.matches('[data-g-zone]')) { g.zone = e.target.value; return; }
       if (e.target.matches('[data-g-sit]')) {

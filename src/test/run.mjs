@@ -6011,8 +6011,12 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     /data-comp-chips/.test(stHtml) && !/Pre-season/.test((stHtml.match(/data-comp-chips[\s\S]*?<\/div>/) || [''])[0]));
   const { compareDivision: cmpDiv } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
   const gaps8 = cmpDiv(l8.rows || [], l8.results || []);
+  /* COUNTED FROM THE DIVISION, not from a literal: a tenth club joined in
+     September and a hard-coded 9 failed a check that had caught nothing. */
+  const l8Clubs = (l8.clubs || []).length;
   check('League Eight\'s transcribed table agrees with its transcribed results',
-    (l8.rows || []).length === 9 && gaps8.length === 0, gaps8.join(' | '));
+    l8Clubs > 0 && (l8.rows || []).length === l8Clubs && gaps8.length === 0,
+    `${(l8.rows || []).length} rows for ${l8Clubs} clubs | ${gaps8.join(' | ')}`);
   check('probe: one mistyped figure in the League Eight table is caught',
     cmpDiv((l8.rows || []).map((r) => (r.us ? { ...r, goalsFor: r.goalsFor + 1 } : r)), l8.results || []).length > 0);
   check('probe: a result for a club the table says has not played is caught',
@@ -6047,7 +6051,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const tblAt = homeBodyL.indexOf('id="table"');
   const tblSec = tblAt > -1 ? homeBodyL.slice(tblAt, homeBodyL.indexOf('</section>', tblAt)) : '';
   check('the table leads the page, carries every club in the division, and the League Eight band sits under it',
-    (l8.rows || []).length === 9 && (tblSec.match(/<a class="tbl__row/g) || []).length === 9
+    (l8.rows || []).length === l8Clubs && (tblSec.match(/<a class="tbl__row/g) || []).length === l8Clubs
       && tblAt > -1 && tblAt < l8At);
   const { publishedBands: pbL, resolveHomeLayout: rhL } = await import(path.join(ROOT, 'src', 'lib', 'home-layout.mjs'));
   const offRec = { order: ['news', 'who', 'table', 'results', 'fixtures'], hidden: ['table', 'results', 'fixtures'] };

@@ -17,24 +17,25 @@
     "Brockwell Violets FC",
     "Haydons Park",
     "Junction Elite FC Sunday 3rd Team",
+    "Mousa Mountain FC",
     "Pure Football FC 1st Team",
     "Sue's Angels FC",
     "TSM Rovers",
     "Three Little Birds FC"
   ],
-  "tableAsOf": "2026-09-20",
+  "tableAsOf": "2026-09-27",
   "table": [
     {
       "p": 1,
       "c": "Sue's Angels FC",
-      "pl": 3,
-      "w": 3,
+      "pl": 4,
+      "w": 4,
       "d": 0,
       "l": 0,
-      "gf": 13,
-      "ga": 2,
-      "gd": 11,
-      "pts": 9
+      "gf": 20,
+      "ga": 3,
+      "gd": 17,
+      "pts": 12
     },
     {
       "p": 2,
@@ -51,13 +52,13 @@
     {
       "p": 3,
       "c": "Bristol City (London) Supporters",
-      "pl": 2,
+      "pl": 3,
       "w": 1,
       "d": 1,
-      "l": 0,
-      "gf": 5,
-      "ga": 4,
-      "gd": 1,
+      "l": 1,
+      "gf": 6,
+      "ga": 7,
+      "gd": -1,
       "pts": 4
     },
     {
@@ -86,6 +87,18 @@
     },
     {
       "p": 6,
+      "c": "Junction Elite FC Sunday 3rd Team",
+      "pl": 3,
+      "w": 1,
+      "d": 0,
+      "l": 2,
+      "gf": 4,
+      "ga": 8,
+      "gd": -4,
+      "pts": 3
+    },
+    {
+      "p": 7,
       "c": "Pure Football FC 1st Team",
       "pl": 2,
       "w": 0,
@@ -97,31 +110,31 @@
       "pts": 1
     },
     {
-      "p": 7,
-      "c": "Barnes Stormers FC",
-      "pl": 1,
-      "w": 0,
-      "d": 0,
-      "l": 1,
-      "gf": 1,
-      "ga": 2,
-      "gd": -1,
-      "pts": 0
-    },
-    {
       "p": 8,
-      "c": "Junction Elite FC Sunday 3rd Team",
-      "pl": 2,
+      "c": "Mousa Mountain FC",
+      "pl": 0,
       "w": 0,
       "d": 0,
-      "l": 2,
-      "gf": 1,
-      "ga": 7,
-      "gd": -6,
+      "l": 0,
+      "gf": 0,
+      "ga": 0,
+      "gd": 0,
       "pts": 0
     },
     {
       "p": 9,
+      "c": "Barnes Stormers FC",
+      "pl": 2,
+      "w": 0,
+      "d": 0,
+      "l": 2,
+      "gf": 2,
+      "ga": 9,
+      "gd": -7,
+      "pts": 0
+    },
+    {
+      "p": 10,
       "c": "Haydons Park",
       "pl": 2,
       "w": 0,
@@ -134,6 +147,22 @@
     }
   ],
   "results": [
+    {
+      "date": "27 Sep 26",
+      "kick": "11:00",
+      "home": "Sue's Angels FC",
+      "hs": 7,
+      "as": 1,
+      "away": "Barnes Stormers FC"
+    },
+    {
+      "date": "27 Sep 26",
+      "kick": "10:30",
+      "home": "Bristol City (London) Supporters",
+      "hs": 1,
+      "as": 3,
+      "away": "Junction Elite FC Sunday 3rd Team"
+    },
     {
       "date": "20 Sep 26",
       "kick": "12:30",
@@ -430,22 +459,6 @@
     }
   ],
   "fixtures": [
-    {
-      "iso": "2026-09-27",
-      "date": "27 Sep 26",
-      "kick": "10:30",
-      "home": "Bristol City (London) Supporters",
-      "away": "Junction Elite FC Sunday 3rd Team",
-      "venue": "Clapham Common, Pitch 8"
-    },
-    {
-      "iso": "2026-09-27",
-      "date": "27 Sep 26",
-      "kick": "11:00",
-      "home": "Sue's Angels FC",
-      "away": "Barnes Stormers FC",
-      "venue": "The Reeves Sports Club"
-    },
     {
       "iso": "2026-10-04",
       "date": "04 Oct 26",

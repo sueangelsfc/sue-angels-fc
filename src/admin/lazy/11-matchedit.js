@@ -558,6 +558,14 @@
               'aria-label="Minute"></label>' +
           '<button type="button" class="me__x" data-g-del aria-label="Remove this goal">&times;</button>' +
         '</div>' +
+        /* THE FORM SHOWS WHAT IS SAVED. An own goal keeps none of the detail
+           below - what it was struck with, from where, what the ball was
+           doing, who made it - because every one of those is a fact about the
+           side that put it in, and the club's record is not where their
+           finishing goes. Offering the dropdowns and then dropping what was
+           chosen is worse than not offering them. */
+        (g.og ? '<p class="cp-note">A goal with no scorer. It counts on the scoreline and on '
+            + 'nobody’s record, and carries no detail of its own.</p>' :
         '<div class="gcard__grid">' +
           '<select class="select" data-g-body aria-label="What it was struck with">' +
             optionsOf(VOCAB.bodyParts, g.bodyPart, 'Struck with…') + '</select>' +
@@ -573,7 +581,7 @@
           '<select class="select" data-g-atype aria-label="How the chance was made"' +
             (a.num ? '' : ' disabled') + '>' +
             optionsOf(VOCAB.assistTypes, a.type || 'pass', 'How…') + '</select>' +
-        '</div>' +
+        '</div>') +
       '</div>';
     }).join('');
   }
@@ -1704,6 +1712,13 @@
           captain: captNum === '' ? '' : nameOf(Number(captNum)),
           motm: motmNum === '' ? '' : nameOf(Number(motmNum)),
           goals: goals.map(function (g) {
+            /* `nameOf(null)` is not a person, and the writer would have had a
+               goal with a blank scorer to write a sentence about. An own goal
+               is named as one, and says so, so the report can put it in the
+               story without crediting anybody. */
+            if (g.og || g.num == null) {
+              return { num: null, og: true, name: 'Own goal', minute: g.minute, assist: null };
+            }
             return {
               num: g.num, name: nameOf(g.num), minute: g.minute,
               bodyPart: g.bodyPart, zone: g.zone, situation: g.situation,
@@ -1884,6 +1899,20 @@
            from this, so the record says one thing once. */
         subs: subsFor(),
         goals: goals.map(function (g) {
+          /* AN OWN GOAL IS SAVED AS ONE. The flag was set in memory and left
+             out here, so the stored record carried a goal with no scorer and
+             nothing saying why: the site read it correctly (a goal with no
+             number is nobody's), and the FORM did not, so reopening the match
+             showed an empty scorer where the club had chosen Own goal. And
+             none of the detail below is a fact about this club - what it was
+             struck with, from where, and who passed it belong to the side that
+             put it in - so an own goal carries none of it. */
+          if (g.og) {
+            return {
+              num: null, og: true, minute: g.minute,
+              bodyPart: null, zone: null, situation: null, assist: null, penalty: false,
+            };
+          }
           return {
             num: g.num,
             minute: g.minute,

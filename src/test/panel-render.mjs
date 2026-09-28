@@ -305,6 +305,31 @@ export async function panelChecks() {
       claims.length >= 7 && wide.length === 0,
       `sheet ${sheetSize}; too wide: ${wide.join(', ')}`);
 
+    /* AN OWN GOAL, CHOSEN AND STILL THERE. The flag lived only in memory for
+       a while: the dropdown set it, the card repainted from it, and the save
+       left it out, so the club chose Own goal and the record kept a goal with
+       no scorer and nothing saying why - which the site read correctly and
+       the form did not, showing an empty scorer on the way back in. Driven
+       here through the shipped change handler rather than grepped for: choose
+       it, and ask the repainted card what it says. */
+    const g0 = modal.querySelector('[data-g-num]');
+    if (g0) {
+      PR.type(g0, 'og');
+      await PR.settle(ctx);
+      const card = ctx.doc.querySelector('.gcard');
+      const who = card && card.querySelector('[data-g-num]');
+      const sel = who && who.querySelectorAll('option')
+        .filter((o) => o.getAttribute('selected') != null || o.selected)
+        .map((o) => o.getAttribute('value'));
+      check('an own goal chosen on a goal card is still chosen after the repaint',
+        !!sel && sel.includes('og'), `selected: ${(sel || []).join(',') || 'nothing'}`);
+      /* And it carries none of the detail, because every part of it is a fact
+         about the side that put the ball in. */
+      check('an own goal card offers no detail of a shot this club did not take',
+        !!card && card.querySelectorAll('[data-g-body],[data-g-zone],[data-g-sit],[data-g-anum]').length === 0,
+        `${card ? card.querySelectorAll('[data-g-body],[data-g-zone],[data-g-sit],[data-g-anum]').length : '-'} detail controls`);
+    }
+
     /* The sheet BUILDERS are the other ring: they must offer the whole club,
        or an eleven could never be picked in the first place. */
     const builders = modal.querySelectorAll('[data-add]');

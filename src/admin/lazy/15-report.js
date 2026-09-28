@@ -206,7 +206,10 @@
   function compose(c) {
     var paras = [];
     var seed = seedOf(c);
-    var scorerNames = (c.goals || []).map(function (g) { return g.name; });
+    /* NOT AN OWN GOAL. These names are matched against the coach's notes
+       and read as people who played; 'Own goal' is neither. */
+    var scorerNames = (c.goals || []).filter(function (g) { return !g.og; })
+      .map(function (g) { return g.name; });
 
     /* A NOTE THAT IS AN INSTRUCTION IS NOT AN OBSERVATION. "Highlight
        individual and collective performance information gathered from the

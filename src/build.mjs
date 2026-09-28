@@ -1021,6 +1021,11 @@ function fitDesc(primary, ...topUps) {
   const unused = [];
   for (const t of topUps) {
     const c = clean(t);
+    /* A TOP-UP THAT IS NOTHING IS NOT A TOP-UP. Callers pass '' for a clause
+       that does not apply, and appending it left two spaces in the middle of
+       a meta description - and put an empty string into the leftovers, where
+       it is the shortest and would be chosen first. */
+    if (!c) continue;
     if (out.length >= 120) { unused.push(c); continue; }
     if (out.length + 1 + c.length <= 155) out = `${out} ${c}`;
     else unused.push(c);
@@ -1293,6 +1298,23 @@ if (!CHECK && process.env.SA_ALL_BANDS) {
 /* ---- Player profiles ---- */
 /* Everybody with a competitive record gets a page, league or cup: the figures
    on it are the league's, but a man who has only played cup ties still played. */
+/* WHO WAS ACTUALLY THERE. The title sentence below was printed on every
+   player page, so two men who signed in September 2026 were telling Google
+   they were part of the squad that won League Ten unbeaten in 25/26. The
+   derivation fixed the DIVISION and the SEASON and left the claim itself
+   unconditional, which is the same class of error one layer up: a historical
+   fact about the club stated as a fact about a person.
+
+   Being in that season's list is not evidence - every player the club has
+   ever had is in it, with zeroes - so the evidence is having played, which
+   is what the sentence means. `playersBySeason` is built with the signing
+   dates applied, so a shirt slot handed on from 25/26 does not lend the
+   title to whoever holds it now. */
+const titleSquad = d.lastTitle
+  ? new Set((d.playersBySeason[d.lastTitle.season] || [])
+    .filter((x) => (x.starts || 0) + (x.subApps || 0) > 0)
+    .map((x) => String(x.num)))
+  : null;
 const profilePlayers = groupLive('players') ? (d.playersCompetitive || d.players).filter((p) => !p.unknown) : [];
 for (const p of profilePlayers) {
   const out = playerPage(p, d);
@@ -1318,7 +1340,8 @@ for (const p of profilePlayers) {
     description: fitDesc(
       `${p.name}, ${p.position} for ${CLUB.name}. ${plural(pr.starts, 'start')}, `
       + `${plural(pr.goals, 'goal')} and ${plural(pr.assists, 'assist')} for the club.`,
-      d.lastTitle ? `Part of the squad that won ${d.lastTitle.division} unbeaten in ${d.lastTitle.season}.` : '',
+      d.lastTitle && titleSquad && titleSquad.has(String(p.num))
+        ? `Part of the squad that won ${d.lastTitle.division} unbeaten in ${d.lastTitle.season}.` : '',
       `${CLUB.name}, ${CLUB.venue.district}.`,
       `Sunday-league football in south-west London.`),
     path: `/players/${p.slug}.html`,

@@ -6792,6 +6792,35 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     check(`pages still name ${won.division} as the division won`, names > 3, `${names} pages`);
   }
 
+  /* A TITLE IS A CLAIM ABOUT A PERSON, NOT ONLY ABOUT A DIVISION. The block
+     above fixed which division and which season the sentence names, and left
+     the sentence itself on every player page: two men who signed in September
+     2026 told Google they were part of the squad that won League Ten unbeaten
+     in 25/26. Being on the club's books that season is not evidence, because
+     every player the club has ever had is in that season's list with zeroes,
+     so the evidence is having played. */
+  if (won) {
+    const played = new Set((dT.playersBySeason[won.season] || [])
+      .filter((x) => (x.starts || 0) + (x.subApps || 0) > 0).map((x) => String(x.num)));
+    const bySlug = new Map((dT.players || []).map((x) => [x.slug, String(x.num)]));
+    const claimed = [];
+    for (const [f, h] of pages) {
+      if (!f.startsWith('players/')) continue;
+      const dsc = (h.match(/<meta name="description" content="([^"]*)"/) || [])[1] || '';
+      if (!/part of the squad that won/i.test(dsc)) continue;
+      const num = bySlug.get(f.replace(/^players\//, '').replace(/\.html$/, ''));
+      if (!num || !played.has(num)) claimed.push(`${f}: ${dsc.slice(0, 60)}`);
+    }
+    check('no player claims a title he was not there for',
+      claimed.length === 0, claimed.slice(0, 3).join(' · '));
+    /* And it is still SAID of the men who were, or the check above passes on
+       a site that stopped making the claim at all. */
+    const saying = [...pages.entries()].filter(([f, h]) => f.startsWith('players/')
+      && /part of the squad that won/i.test(h)).length;
+    check(`player pages still name the ${won.season} title where it is true`,
+      saying > 10, `${saying} of ${played.size} who played`);
+  }
+
   /* A CAREER FIGURE MUST NOT CLAIM A SEASON. The player descriptions carried
      the player's whole record for the club under "in 25/26", which reads
      correctly only while every career IS one season. */

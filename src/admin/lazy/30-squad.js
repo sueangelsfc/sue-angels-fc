@@ -1097,6 +1097,15 @@
                 esc(editing ? (editing.last || '') : '') + '"></div>' +
             '<div class="field"><label class="field__label" for="p-pos">Position</label>' +
               '<select class="select" id="p-pos">' +
+                /* NOTHING SAID IS A CHOICE, AND IT HAS TO BE FIRST. A player
+                   with no position opened this dialog showing Goalkeeper,
+                   because that was the first option and nothing was selected,
+                   so correcting a misspelt name made him a goalkeeper. A
+                   stored position this list has never heard of is kept for
+                   the same reason. */
+                ('<option value="">Not recorded yet</option>') +
+                (editing && editing.pos && POSITIONS.indexOf(editing.pos) < 0
+                  ? '<option selected>' + esc(editing.pos) + '</option>' : '') +
                 POSITIONS.map(function (x) {
                   return '<option' + (editing && editing.pos === x ? ' selected' : '') +
                     '>' + esc(x) + '</option>';

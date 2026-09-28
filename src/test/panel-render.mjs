@@ -734,6 +734,55 @@ export async function panelChecks() {
   }
 
   /* ==========================================================================
+     A POSITION NOBODY STATED IS NOT GOALKEEPER
+
+     The dialog's position dropdown listed four words and nothing empty, so a
+     player whose position has never been recorded opened it with Goalkeeper
+     showing - the first option, with nothing selected - and saving anything
+     else about him wrote that down. Two men were added with no position and
+     this is the screen they would have been corrected on. Asked of the
+     rendered dialog. */
+  {
+    /* A CRAFTED PLAYER WITH NO POSITION, because the archive's first row has
+       one and the check would then pass on a player the bug cannot touch:
+       probing it with the fix removed showed exactly that. */
+    const ph = (rows.player_photos || []).slice();
+    const at = ph.findIndex((r) => r.key === 'roster:s2627');
+    const was = at > -1 ? ((ph[at].data || {}).players || []) : [];
+    const blankRow = {
+      key: 'roster:s2627',
+      data: { ...(at > -1 ? ph[at].data : {}), players: [...was, { num: 198, first: 'Noposition', last: 'Aaaardvark', position: '' }] },
+    };
+    if (at > -1) ph[at] = blankRow; else ph.push(blankRow);
+    const pctx = PR.boot({ rows: { ...rows, player_photos: ph } });
+    const sq2 = await PR.openPanel(pctx, 'squad');
+    const row = sq2.body.querySelectorAll('tr[data-num]')
+      .filter((t) => t.getAttribute('data-num') === '198')[0];
+    const edit = row && row.querySelector('[data-edit-player]');
+    check('the crafted player with no position is on the squad screen', !!edit,
+      row ? 'row present, no edit button' : 'no row');
+    if (edit) {
+      PR.click(edit);
+      await PR.settle(pctx);
+      PR.flushMutations(pctx.doc.body);
+      await PR.settle(pctx);
+      const sel = pctx.doc.querySelector('#p-pos');
+      const opts = sel ? sel.querySelectorAll('option') : [];
+      const first = opts[0];
+      check('a position nobody has stated is offered as nothing, not as goalkeeper',
+        !!first && first.getAttribute('value') === '' && !/goalkeeper/i.test(first.textContent),
+        first ? `first option: ${first.textContent}` : 'no position dropdown');
+      /* And the blank is what the dialog OPENS on, or the fix is cosmetic:
+         the browser selects the first option when none is marked, so what
+         this asks is that nothing carrying a real position is marked. */
+      const chosen = opts.filter((o) => o.getAttribute('selected') != null);
+      check('an unstated position opens on the blank rather than on a real one',
+        opts.length > 1 && chosen.length === 0,
+        chosen.map((o) => o.textContent).join(',') || 'nothing marked selected');
+    }
+  }
+
+  /* ==========================================================================
      A PLAYER ADDED ON THE SQUAD SCREEN CAN BE NAMED STRAIGHT AWAY
 
      Adding a player writes `roster:s2627`, and the match form and the matchday

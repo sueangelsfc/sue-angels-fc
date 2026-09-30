@@ -1238,6 +1238,57 @@ for (const f of shipped) {
   /* NOBODY WHO HAS LEFT IS OFFERED FOR A LATER MATCH. `unavailableFrom` is
      derived once so no screen judges it for itself - three already did, and
      one had drifted to a different season boundary. */
+  /* ---- ONE FIXTURE, NOT TWO ----
+     The President's Cup tie at Peps All Stars shipped twice in the same band:
+     the club's own row, entered in the panel with a matchday squad and no
+     date, and the transcribed row carrying the date. Identity is the day plus
+     the two clubs, so an empty date could not match a real one and both
+     survived. Asked of what the site actually publishes, and then of a
+     crafted pair, because today's records could satisfy the first by luck. */
+  {
+    const { buildDataset: bdD } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+    const dD = bdD();
+    const pair = (f) => [String(f.home || '').toLowerCase(), String(f.away || '').toLowerCase()]
+      .sort().join(' v ');
+    const seenPair = new Map();
+    const twice = [];
+    (dD.upcoming || []).forEach((f) => {
+      const k = pair(f);
+      if (seenPair.has(k)) twice.push(`${f.home} v ${f.away}`);
+      seenPair.set(k, f);
+    });
+    check('no fixture still to come is listed twice', twice.length === 0, twice.join(', '));
+    check('every fixture still to come carries a date',
+      (dD.upcoming || []).every((f) => String(f.date || f.iso || '').trim()),
+      (dD.upcoming || []).filter((f) => !String(f.date || f.iso || '').trim())
+        .map((f) => `${f.home} v ${f.away}`).join(', '));
+
+    /* CRAFTED: the club's undated row against the transcription's dated one.
+       The stored row must survive, because only it carries what the club
+       typed, and it must come out with the date the transcription had. */
+    const liveD = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/data/recovered-live.json'), 'utf8'));
+    const crafted = bdD({
+      live: {
+        ...liveD,
+        fixtures: [{
+          key: 'f-crafted-undated',
+          data: {
+            kind: 'fixture', home: 'Peps All Stars', away: "Sue's Angels FC",
+            date: '', kick: '', venue: '', competition: "Brian Howard President's Cup",
+            squad: [1, 2, 3],
+          },
+        }],
+      },
+    });
+    const peps = (crafted.upcoming || []).filter((f) => /peps/i.test(String(f.home) + f.away));
+    check('the club\u2019s undated fixture and its transcription are one match, not two',
+      peps.length === 1, `${peps.length} rows`);
+    check('and the row that survives is the club\u2019s own, with the date filled in',
+      peps.length === 1 && peps[0].id === 'f-crafted-undated'
+        && /11 Oct 2026|2026-10-11/.test(String(peps[0].date || peps[0].iso || '')),
+      peps.length === 1 ? `${peps[0].id} | ${peps[0].date || peps[0].iso}` : 'no single row');
+  }
+
   {
     const { buildDataset } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
     const dS = buildDataset();

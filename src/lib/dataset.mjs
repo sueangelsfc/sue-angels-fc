@@ -153,6 +153,21 @@ export function buildDataset(overrides = {}) {
     .map((row) => ({ id: row.key, kind: 'fixture', ...(row.data || {}) }))
     .filter((f) => !known.has(f.id) && !knownMatches.has(identity(f)));
   const storedIds = new Set(storedFixtures.map((f) => f.id));
+  /* A FIXTURE THE CLUB HAS ENTERED BUT NOT YET DATED IS STILL THAT FIXTURE.
+     Identity above is the day plus the two clubs, so a stored row with an
+     empty date cannot match a transcribed one that has the date, and the
+     President's Cup tie at Peps All Stars shipped twice in the same band:
+     once as Sunday 11 October with a 10:30 kick-off, and once as "date to be
+     confirmed". Neither row should simply win. The stored row is the club's
+     own and is the only one carrying what it typed - here a fourteen-man
+     matchday squad - so it stays and the transcription fills the blanks it
+     left rather than appearing beside it. */
+  const clubsOf = (m) => [String(m.home || '').toLowerCase(), String(m.away || '').toLowerCase()]
+    .sort().join(' v ');
+  const undatedStored = new Map();
+  storedFixtures.forEach((f) => {
+    if (!String(f.date || '').trim()) undatedStored.set(clubsOf(f), f);
+  });
   /* Every fixture known to the club, played or not. `upcoming` below is the
      subset still to come; this one is the raw pool the match list is built
      from, so it deliberately keeps dates that have already passed. */
@@ -164,6 +179,14 @@ export function buildDataset(overrides = {}) {
        straight back and the duplicate survived a fix aimed at it. */
     ...(read('fixtures-2627.json').fixtures || [])
       .filter((f) => !known.has(f.id) && !storedIds.has(f.id) && !knownMatches.has(identity(f)))
+      .filter((f) => {
+        const held = undatedStored.get(clubsOf(f));
+        if (!held) return true;
+        ['date', 'kick', 'venue', 'competition'].forEach((k) => {
+          if (!String(held[k] || '').trim() && String(f[k] || '').trim()) held[k] = f[k];
+        });
+        return false;
+      })
       .map((f) => ({ kind: 'fixture', competition: 'Pre-season friendly', ...f })),
   ];
 

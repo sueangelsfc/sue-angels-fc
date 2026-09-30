@@ -32,7 +32,7 @@ src/
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        4,646-check suite against the generated output
+  test/run.mjs        4,656-check suite against the generated output
   test/dom.mjs        a small, strict DOM that throws rather than guessing
   test/panel-render.mjs  the panel, rendered, and asked what came out
 ```
@@ -695,6 +695,7 @@ It does not fall back to something sensible: the whole declaration is invalid at
 - **Player pages tag the seasons a player led** (`Top goalscorer · 26/27`), from
   `d.playersBySeason`, jointly where the lead is shared. The suite checks every
   season's leaders carry the tag and nobody else does.
+- **A manager's record is a claim about a person, so it carries a date.** `managerRecord()` in `stats.mjs`, on `/coaches.html#manager`, split 25/26, 26/27 and all seasons by the shared season bar. It composes what the engine already derives rather than counting the same matches a second way - `teamSummary` knows a walkover is three points and no goals, `byCompetition` and `formationUse` already group - and adds what a manager is judged on: players used, different starting elevens, team sheets. **Players used is the engine's appearance rule, not a count off the team sheets**: a name on the bench with nothing beside it is not an appearance, so the caller passes the season's players and the count is who actually played, which is what stops it disagreeing with the squad page. Competitive only, like every other published figure. The band above it is the club's figures under the whole dugout and says so; this one names somebody. **`from` is on the record rather than assumed**, because Stephen Epathite founded the club and his record IS the club's - so today's data cannot tell a working takeover date from one that is ignored, and the check that it works is crafted. Without it the next manager inherits eighteen wins he had nothing to do with.
 - **A record with two holders names both.** The record grid derives its holders (`holdersOf`) and always did; the player streak cards above it took the top of a sort and printed one man. Four games into 26/27 all three runs were shared and only Charlie Dunkley was on the page, because he sorted first on goals and the man tying him had the same number of those - most consecutive starts is held by seven players. Two holders can reach the same run over DIFFERENT matches, so the dates are per holder and printed once only when they agree. The check derives the expected count for the season rather than asserting a number, because a record with one holder is a perfectly good record.
 - **The records page lists milestones reached** (every 25 starts, 25 goals, 10
   assists, dated to the match), per season tab and all of them on all seasons,
@@ -1186,7 +1187,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 4,646 checks against the generated output and the rendered panel
+npm test          # 4,656 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

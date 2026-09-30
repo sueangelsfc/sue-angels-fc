@@ -1749,6 +1749,74 @@ for (const [f, h] of pages) {
    Any card whose label claims a win must show at least as many goals for as
    against, and a defeat the reverse. That is checkable from the output
    alone. */
+/* ---- THE MANAGER'S RECORD IS A CLAIM ABOUT A PERSON ----
+   The band above it on the same page is the club's figures under the whole
+   dugout and says so. This one names somebody, so it is counted from the
+   matches he was in charge for, and the date is on the record rather than
+   assumed - otherwise the next manager inherits eighteen wins he had nothing
+   to do with. Reconciled against the figures the site already publishes,
+   because a second way of counting the same matches is exactly how two pages
+   come to disagree. */
+{
+  const { buildDataset: bdM } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const { managerRecord: mr, teamSummary: ts } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+  const dM = bdM();
+  const compM = (dM.played || []).filter((m) => !m.friendly);
+  const allM = mr(compM, dM.players);
+  const club = ts(compM);
+  check('the manager record agrees with the club record over the same matches',
+    allM.played === club.played && allM.won === club.won && allM.drawn === club.drawn
+      && allM.lost === club.lost && allM.goalsFor === club.goalsFor
+      && allM.goalsAgainst === club.goalsAgainst,
+    `${allM.played}/${allM.won}/${allM.drawn}/${allM.lost} vs ${club.played}/${club.won}/${club.drawn}/${club.lost}`);
+  check('a friendly is not counted towards it',
+    mr((dM.played || []), dM.players).played > allM.played,
+    'every played match equals the competitive ones, so this cannot be telling them apart');
+
+  /* Against the transcribed League Eight row, which is independent of us. */
+  const l8 = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/data/league-eight-2627.json'), 'utf8'));
+  const us = (l8.table || []).find((r) => /sue.s angels/i.test(r.c));
+  const league = mr(compM.filter((m) => m.season === '26/27' && /League Eight/i.test(m.competition)),
+    dM.playersBySeason['26/27']);
+  check('the manager\u2019s League Eight figures match the published table row',
+    !us || (league.played === us.pl && league.won === us.w && league.goalsFor === us.gf
+      && league.goalsAgainst === us.ga),
+    us ? `derived ${league.played}/${league.won}/${league.goalsFor}/${league.goalsAgainst} vs table ${us.pl}/${us.w}/${us.gf}/${us.ga}` : 'no row');
+
+  /* THE DATE IS THE WHOLE POINT. Crafted, because Stephen founded the club
+     and his record IS the club's, so today's data cannot tell a working
+     `from` from one that is ignored. */
+  const half = compM.slice().sort((a, b) => String(a.iso).localeCompare(String(b.iso)));
+  const cut = half[Math.floor(half.length / 2)].iso;
+  const since = mr(compM, dM.players, { from: cut });
+  check('a manager is credited only with the matches since he took over',
+    since.played < allM.played && since.played === half.filter((m) => m.iso >= cut).length,
+    `${since.played} since ${cut} of ${allM.played}`);
+
+  /* Players used is the engine's appearance rule, not a second count off the
+     team sheets: a name on the bench with nothing beside it is not one. */
+  const usedM = (dM.players || []).filter((p) => ((p.starts || 0) + (p.subApps || 0)) > 0).length;
+  check('players used is who the record puts on the pitch', allM.playersUsed === usedM,
+    `${allM.playersUsed} vs ${usedM}`);
+  check('the formations counted never exceed the matches played',
+    allM.formations.total <= allM.played && allM.formations.rows.length > 1,
+    `${allM.formations.total} of ${allM.played}, ${allM.formations.rows.length} shapes`);
+
+  const hM = pages.get('coaches.html');
+  if (hM) {
+    check('the coaches page carries the manager band',
+      /class="sec co-mgr"/.test(hM) && /by the numbers/i.test(hM));
+    const panels = (hM.match(/data-season-view="/g) || []).length;
+    check('and it is split by season, every season plus all of them',
+      panels >= (dM.seasons || []).length + 1, `${panels} panels`);
+    check('the band names the manager rather than the staff',
+      new RegExp(String(dM.coaches[0].name).split(' ')[0]).test(hM));
+    /* It must not repeat the club band's claim: that one is everybody. */
+    check('the formations table reached the page',
+      /Shape<\/th>/.test(hM) && /3-4-2-1/.test(hM));
+  }
+}
+
 /* ---- A SHARED RECORD NAMES EVERY HOLDER ----
    The record grid learned this long ago and says so in its own comment; the
    player streak cards directly above it still took the top of a sort and

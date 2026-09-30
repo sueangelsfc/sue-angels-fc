@@ -243,3 +243,53 @@ html.js .co-rec__grid.is-in .co-rec__arc{stroke-dashoffset: 0;}
   background: rgba(var(--lift), 0.06); border: 1px solid var(--line-d);}
 .co-best__face img{width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%;}
 .co-best__face .co-best__crest{width: 50%; height: auto; object-fit: contain; opacity: 0.5;}
+
+/* ---- The manager, by the numbers ---------------------------------------
+   Its own block rather than more .co-rec, because this one repeats: a set of
+   tiles, a rule, a table, three times over inside a season panel. It borrows
+   the tile face above deliberately, so the two bands on the page read as one
+   page rather than two designs. */
+.co-mgr .sn-bar{margin-top: clamp(20px, 2.4vw, 28px);}
+.mg{margin-top: clamp(22px, 2.6vw, 30px);}
+.mg__sub{margin: clamp(30px, 3.4vw, 42px) 0 14px;
+  font-family: var(--ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--volt-text);}
+.mg__tiles{list-style: none; margin: 0; padding: 0;
+  display: grid; gap: 12px; grid-template-columns: repeat(6, minmax(0, 1fr));}
+.mg__tiles li{padding: 16px 14px; border-radius: 16px;
+  border: 1px solid var(--line-d); background: rgba(var(--lift), 0.03);}
+.mg__tiles b{display: block;
+  font-family: var(--display); font-weight: 300;
+  font-size: clamp(22px, 2.4vw, 30px); line-height: 1; letter-spacing: -0.04em;
+  font-variant-numeric: proportional-nums; color: var(--fg);}
+.mg__tiles span{display: block; margin-top: 9px;
+  font-family: var(--ui); font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.13em; text-transform: uppercase; color: var(--ink-3);}
+.mg .co-wdl{margin-top: 18px;}
+/* THE PANEL'S OWN CLASS IS NOT THIS PAGE'S. `cp-note` is declared in
+   control.css, which coaches.html does not load, so a note written with
+   it would have shipped as unstyled body text. */
+.mg__note{margin-top: 12px; font-size: 12.5px; line-height: 1.55; color: var(--ink-3);}
+.mg__lines{list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 10px;}
+.mg__lines li{display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px;
+  padding: 13px 15px; border-radius: 14px;
+  border: 1px solid var(--line-d); background: rgba(var(--lift), 0.03);}
+.mg__lines i{font-style: normal; font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.13em; text-transform: uppercase; color: var(--ink-3);}
+.mg__lines b{font-weight: 500; color: var(--fg);}
+.mg__tbl{width: 100%; border-collapse: collapse; font-size: 13.5px;}
+.mg__tbl th, .mg__tbl td{padding: 11px 10px; text-align: right;
+  border-bottom: 1px solid var(--line-d); font-variant-numeric: tabular-nums;}
+.mg__tbl thead th{font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.13em; text-transform: uppercase; color: var(--ink-3);}
+.mg__tbl tbody th[scope="row"]{text-align: left; font-weight: 400; color: var(--fg);}
+.mg__tbl thead th:first-child{text-align: left;}
+
+@media (max-width: 900px){
+  .mg__tiles{grid-template-columns: repeat(3, minmax(0, 1fr));}
+}
+@media (max-width: 560px){
+  .mg__tiles{grid-template-columns: repeat(2, minmax(0, 1fr));}
+  .mg__tbl{font-size: 12.5px;}
+  .mg__tbl th, .mg__tbl td{padding: 9px 6px;}
+}

@@ -1415,6 +1415,59 @@ export function disciplineRecord(matches) {
   };
 }
 
+/* ---- A MANAGER'S RECORD ------------------------------------------------
+   What a manager is judged on is the same evidence every other figure here
+   comes from, arranged around the person who picked the side: the result, the
+   shape he set up in, and how many different players he needed to do it.
+
+   ONE THING IS NOT DERIVED, and it is the reason this takes a `from` date
+   rather than assuming: a record belongs to whoever was in charge for it.
+   Stephen Epathite founded the club, so his record is the club's entire
+   competitive history and the two happen to be the same list - but writing
+   that assumption into the engine is how the next manager inherits eighteen
+   wins he had nothing to do with. Matches before `from` are not his.
+
+   Everything else composes what the engine already derives, rather than
+   counting it a second way: teamSummary knows a walkover carries three points
+   and no goals, byCompetition and formationUse already group, and
+   PLAYERS USED IS NOT COUNTED OFF THE TEAM SHEETS. A name on the bench with
+   nothing beside it is not an appearance, the archive's `on` field came after
+   the fact, and the engine has already settled all of that in playerStats -
+   so the caller passes the season's players and the count is who actually
+   played. Counting sheets here would disagree with the squad page. */
+export function managerRecord(matches, players, { from = '' } = {}) {
+  const mine = (matches || []).filter((m) => m.played
+    && (!from || String(m.iso || '') >= String(from)));
+  const numOf = (x) => (x && typeof x === 'object' ? x.num : x);
+  const elevens = new Set();
+  let sheets = 0;
+  for (const m of mine) {
+    const st = ((m.detail && m.detail.starters) || []).map(numOf).filter((n) => n != null);
+    if (!st.length) continue;
+    sheets++;
+    elevens.add(st.map(Number).sort((a, b) => a - b).join(','));
+  }
+  const squad = (players || []).filter((p) => ((p.starts || 0) + (p.subApps || 0)) > 0);
+  const summary = teamSummary(mine);
+  return {
+    ...summary,
+    matches: mine,
+    formations: formationUse(mine),
+    competitions: byCompetition(mine),
+    homeAway: homeAwaySplit(mine),
+    best: biggestWin(mine),
+    worst: heaviestDefeat(mine),
+    discipline: disciplineRecord(mine),
+    playersUsed: squad.length,
+    everPresent: squad.filter((p) => (p.starts || 0) === summary.played && summary.played > 0).length,
+    /* How often he changed it. One unchanged side all season is one eleven. */
+    elevensUsed: elevens.size,
+    sheets,
+    first: mine.slice().sort((a, b) => String(a.iso).localeCompare(String(b.iso)))[0] || null,
+    last: mine.slice().sort((a, b) => String(b.iso).localeCompare(String(a.iso)))[0] || null,
+  };
+}
+
 /* Which shapes the club sets up in, and how each one has gone. */
 export function formationUse(matches) {
   const map = new Map();

@@ -1802,18 +1802,36 @@ for (const [f, h] of pages) {
     allM.formations.total <= allM.played && allM.formations.rows.length > 1,
     `${allM.formations.total} of ${allM.played}, ${allM.formations.rows.length} shapes`);
 
-  const hM = pages.get('coaches.html');
+  /* IT IS HIS PAGE, NOT THE DUGOUT'S. The figures were a band on
+     /coaches.html first, where a record this detailed reads as the club's,
+     and where it could not be linked to. */
+  const mgrM = (dM.coaches || []).find((c) => /manager/i.test(c.role || ''));
+  const hM = mgrM && pages.get(`coaches/${mgrM.slug}.html`);
+  check('the manager has a page of his own', !!hM, mgrM ? mgrM.slug : 'no manager');
   if (hM) {
-    check('the coaches page carries the manager band',
-      /class="sec co-mgr"/.test(hM) && /by the numbers/i.test(hM));
+    /* The heading is broken by the accent span, so the words are not adjacent
+       in the markup. Asked of the id it is labelled by instead. */
+    check('it carries his record',
+      /class="sec co-mgr"/.test(hM) && /id="cp-rec-h"/.test(hM) && /Players used/.test(hM));
     const panels = (hM.match(/data-season-view="/g) || []).length;
-    check('and it is split by season, every season plus all of them',
+    check('split by season, every season plus all of them',
       panels >= (dM.seasons || []).length + 1, `${panels} panels`);
-    check('the band names the manager rather than the staff',
-      new RegExp(String(dM.coaches[0].name).split(' ')[0]).test(hM));
-    /* It must not repeat the club band's claim: that one is everybody. */
-    check('the formations table reached the page',
-      /Shape<\/th>/.test(hM) && /3-4-2-1/.test(hM));
+    check('the formations table reached it', /Shape<\/th>/.test(hM) && /3-4-2-1/.test(hM));
+    check('and it is the only page with one heading for the whole document',
+      (hM.match(/<h1/g) || []).length === 1);
+  }
+  const hC = pages.get('coaches.html');
+  if (hC) {
+    check('the staff page links to it', hC.includes(`/coaches/${mgrM.slug}.html`));
+    /* ONLY THE MANAGER. A coach's record is the same list of matches with
+       nothing to distinguish it, so a link each would promise three pages
+       each claiming the same eighteen wins. */
+    const others = (dM.coaches || []).filter((c) => c !== mgrM);
+    check('and links to nobody else\u2019s, because nobody else has figures',
+      others.every((c) => !hC.includes(`/coaches/${c.slug}.html`)),
+      others.map((c) => c.slug).join(', '));
+    check('the detailed record is no longer on the staff page',
+      !/class="sec co-mgr"/.test(hC));
   }
 }
 
@@ -8584,7 +8602,7 @@ console.log(`\n${'='.repeat(66)}`);
     /* Per-item renderers and the panel are excluded by name and by reason:
        each takes something this test does not have. */
     const PER_ITEM = new Set(['newsArticle', 'matchReport', 'galleryAlbum',
-      'matchPage', 'articlePage', 'playerPage', 'control', 'articleSlug', 'splitTitle']);
+      'matchPage', 'articlePage', 'playerPage', 'coachPage', 'control', 'articleSlug', 'splitTitle']);
     const wanted = new Map();
     for (const m of buildSrc.matchAll(/import \{([^}]+)\} from '\.\/templates\/([\w-]+\.mjs)'/g)) {
       for (const nm of m[1].split(',').map((x) => x.trim()).filter(Boolean)) {
@@ -8611,6 +8629,21 @@ console.log(`\n${'='.repeat(66)}`);
       broke.length === 0, broke.slice(0, 4).join(' | '));
     check('there are pages being rendered, so the check above is not vacuous',
       rendered >= 20, `${rendered} templates`);
+
+    /* THE PER-ITEM ONES ARE EXCLUDED BY NAME AND SO ARE CHECKED BY NAME. A
+       manager's page is generated whenever the club has a manager, which a
+       brand-new club does before it has kicked a ball, and the deploy runs
+       the generator - so one that threw on a season with nothing in it would
+       fail the club's own publish. */
+    {
+      const { coachPage: cpE } = await import(path.join(ROOT, 'src', 'templates', 'coach.mjs'));
+      let ok = false; let why = '';
+      try {
+        const out = cpE({ name: 'A Manager', slug: 'a-manager', role: 'First-team manager', bio: [] }, dE);
+        ok = typeof out.body === 'string' && out.body.length > 0;
+      } catch (e) { why = e.message.slice(0, 90); }
+      check('the manager page renders for a club that has recorded nothing', ok, why);
+    }
   }
 }
 

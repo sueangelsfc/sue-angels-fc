@@ -42,8 +42,8 @@ export const LIVE_ROUTES = new Set([
   '404.html',
 ]);
 
-/* Detail families: 'players' | 'matches' | 'news' | 'gallery'. */
-export const LIVE_GROUPS = new Set(['players', 'news', 'matches', 'gallery']);
+/* Detail families: 'players' | 'matches' | 'news' | 'gallery' | 'coaches'. */
+export const LIVE_GROUPS = new Set(['players', 'news', 'matches', 'gallery', 'coaches']);
 
 /* Routes the rebuild has not reached. A link to one of these resolves on the
    live site and will resolve here again once the page is rebuilt, so the

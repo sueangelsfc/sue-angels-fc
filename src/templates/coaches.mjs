@@ -21,8 +21,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB, TRIALS_OPEN, CTA_SHUT, seasonAfter } from '../lib/club.mjs';
-import { teamSummary, isLeague, managerRecord } from '../lib/stats.mjs';
-import { seasonViews, defaultView, seasonBar, seasonPanels, matchNote } from '../lib/seasons.mjs';
+import { teamSummary, isLeague } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
 
@@ -140,7 +139,9 @@ export function coaches(d) {
             </div>
             <div class="co-card__body">
               <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> ${esc(roleOf(c))}${c.since ? ` · since ${esc(c.since)}` : ''}</p>
-              <h3 class="co-card__name">${esc(c.name)}</h3>
+              <h3 class="co-card__name">${c === manager
+    ? `<a class="co-card__link" href="/coaches/${attr(c.slug)}.html">${esc(c.name)}</a>`
+    : esc(c.name)}</h3>
               ${(c.bio || []).map((para) => `<p>${esc(para)}</p>`).join('\n              ')}
 
               ${(c.playedFor || []).length ? `<p class="co-card__k">Played for</p>
@@ -156,116 +157,17 @@ export function coaches(d) {
               ${/* Club names already end in "F.C.", so a full stop of our own
                    produced "Fulham F.C..". */''}
               ${c.supports ? `<p class="co-card__note">Supports ${esc(c.supports)}${/[.!?]$/.test(c.supports) ? '' : '.'}</p>` : ''}
+
+              ${/* ONLY THE MANAGER HAS FIGURES. A coach's record is the same list of
+                   matches with nothing to distinguish it, so a link each would
+                   promise three pages that each claim the same eighteen wins. */''}
+              ${c === manager ? `<p class="co-card__more"><a class="btn btn--volt" href="/coaches/${attr(c.slug)}.html">His full record ${ARROW}</a></p>` : ''}
             </div>
           </li>`;
   }).join('\n          ')}
         </ul>
       </div>
     </section>`;
-
-  /* ================= 02b THE MANAGER'S OWN RECORD =================
-     The band above is the club's figures under the whole dugout and says so.
-     This one is a claim about ONE PERSON, so it is counted from the matches
-     he was in charge for and nothing else: Stephen Epathite founded the club,
-     so that is every competitive match, and `since` is on the record rather
-     than assumed so the next manager does not inherit it.
-
-     Competitive only, like every other figure the site publishes. A friendly
-     was arranged to give minutes out and is not what a manager is judged on,
-     which the band above already says in its own comment. */
-  const MGR_VIEWS = seasonViews(d);
-  const MGR_DEFAULT = defaultView(MGR_VIEWS);
-  const pct = (n, of) => (of ? Math.round((n / of) * 100) : 0);
-  const mgrPanel = (v) => {
-    const r = managerRecord(v.competitive, v.key === 'all' ? d.players : d.playersBySeason[v.key],
-      { from: manager && manager.since });
-    if (!r.played) {
-      return `<p class="co-lede">Nothing has been played in ${esc(v.label)} yet, so there is
-        nothing to count. The figures appear with the first result.</p>`;
-    }
-    const wdl = Math.max(1, r.won + r.drawn + r.lost);
-    const tile = (b, l) => `<li><b>${esc(b)}</b><span>${esc(l)}</span></li>`;
-    const scoreOf = (m) => (m ? `${esc(m.ourScoreline || m.scoreline)} v ${esc(m.opponent)}` : '');
-    return `<div class="mg">
-        <ul class="mg__tiles">
-          ${tile(r.played, 'Played')}${tile(r.won, 'Won')}${tile(r.drawn, 'Drawn')}${tile(r.lost, 'Lost')}
-          ${tile(`${r.winPct}%`, 'Win rate')}${tile(r.pointsPerGame, 'Points a game')}
-        </ul>
-        <ol class="co-wdl" aria-label="Results in ${attr(v.label)}">
-          ${r.won ? `<li class="co-wdl__w" style="--w:${pct(r.won, wdl)}%"><span class="sr-only">Won ${esc(r.won)}</span></li>` : ''}
-          ${r.drawn ? `<li class="co-wdl__d" style="--w:${pct(r.drawn, wdl)}%"><span class="sr-only">Drawn ${esc(r.drawn)}</span></li>` : ''}
-          ${r.lost ? `<li class="co-wdl__l" style="--w:${pct(r.lost, wdl)}%"><span class="sr-only">Lost ${esc(r.lost)}</span></li>` : ''}
-        </ol>
-
-        <h3 class="mg__sub">Goals</h3>
-        <ul class="mg__tiles">
-          ${tile(r.goalsFor, 'Scored')}${tile(r.goalsAgainst, 'Conceded')}
-          ${tile(r.goalDifference > 0 ? `+${r.goalDifference}` : r.goalDifference, 'Difference')}
-          ${tile(r.goalsPerGame, 'Scored a game')}${tile(r.concededPerGame, 'Conceded a game')}
-          ${tile(r.cleanSheets, 'Clean sheets')}
-        </ul>
-        ${r.walkovers ? `<p class="mg__note">${esc(r.walkovers)} of the ${esc(r.played)} ${r.walkovers === 1 ? 'was awarded and carries' : 'were awarded and carry'}
-          no score, so the goal figures are counted over ${esc(r.onGoalRecord)} matches.</p>` : ''}
-        ${r.best || r.worst ? `<ul class="mg__lines">
-          ${r.best ? `<li><i>Biggest win</i><b>${scoreOf(r.best)}</b></li>` : ''}
-          ${r.worst ? `<li><i>Heaviest defeat</i><b>${scoreOf(r.worst)}</b></li>` : ''}
-        </ul>` : ''}
-
-        <h3 class="mg__sub">How he set up</h3>
-        ${r.formations.rows.length ? `<table class="mg__tbl">
-          <caption class="sr-only">Formations used in ${esc(v.label)}</caption>
-          <thead><tr><th scope="col">Shape</th><th scope="col">Used</th><th scope="col">Won</th><th scope="col">Share</th></tr></thead>
-          <tbody>
-            ${r.formations.rows.map((f) => `<tr>
-              <th scope="row">${esc(f.formation)}</th><td>${esc(f.n)}</td><td>${esc(f.won)}</td><td>${esc(f.pct)}%</td>
-            </tr>`).join('\n            ')}
-          </tbody>
-        </table>
-        <p class="mg__note">${esc(r.formations.total)} of ${esc(r.formations.of)} team sheets record a shape.
-          A match with none is left out rather than guessed at.</p>` : `<p class="mg__note">No team sheet in ${esc(v.label)} records a shape yet.</p>`}
-
-        <h3 class="mg__sub">Who he used</h3>
-        <ul class="mg__tiles">
-          ${tile(r.playersUsed, 'Players used')}${tile(r.elevensUsed, 'Different elevens')}
-          ${tile(r.sheets, 'Team sheets')}${r.everPresent ? tile(r.everPresent, 'Ever present') : ''}
-        </ul>
-        <p class="mg__note">A player counts as used when the record puts him on the pitch,
-          which is a start or a substitute the match proves came on. A name on the bench with
-          nothing beside it is not an appearance.</p>
-
-        <h3 class="mg__sub">By competition</h3>
-        <table class="mg__tbl">
-          <caption class="sr-only">Record by competition in ${esc(v.label)}</caption>
-          <thead><tr><th scope="col">Competition</th><th scope="col">P</th><th scope="col">W</th><th scope="col">D</th><th scope="col">L</th><th scope="col">F</th><th scope="col">A</th></tr></thead>
-          <tbody>
-            ${r.competitions.map((c) => `<tr>
-              <th scope="row">${esc(c.competition)}</th><td>${esc(c.played)}</td><td>${esc(c.won)}</td>
-              <td>${esc(c.drawn)}</td><td>${esc(c.lost)}</td><td>${esc(c.goalsFor)}</td><td>${esc(c.goalsAgainst)}</td>
-            </tr>`).join('\n            ')}
-            <tr><th scope="row">Home</th><td>${esc(r.homeAway.home.played)}</td><td>${esc(r.homeAway.home.won)}</td>
-              <td>${esc(r.homeAway.home.drawn)}</td><td>${esc(r.homeAway.home.lost)}</td>
-              <td>${esc(r.homeAway.home.goalsFor)}</td><td>${esc(r.homeAway.home.goalsAgainst)}</td></tr>
-            <tr><th scope="row">Away</th><td>${esc(r.homeAway.away.played)}</td><td>${esc(r.homeAway.away.won)}</td>
-              <td>${esc(r.homeAway.away.drawn)}</td><td>${esc(r.homeAway.away.lost)}</td>
-              <td>${esc(r.homeAway.away.goalsFor)}</td><td>${esc(r.homeAway.away.goalsAgainst)}</td></tr>
-          </tbody>
-        </table>
-        ${r.discipline.recorded ? `<p class="mg__note">Discipline: ${esc(r.discipline.yellow)} yellow
-          and ${esc(r.discipline.red)} red, across the ${esc(r.discipline.recorded)} of ${esc(r.discipline.played)}
-          matches that carry a card list.</p>` : ''}
-      </div>`;
-  };
-  const managerBand = manager ? `<section class="sec co-mgr" id="manager" aria-labelledby="co-mgr-h">
-      <div class="wrap">
-        ${rail(3, 'The manager', `${esc(manager.name)} · competitive only`)}
-        <h2 class="h2 rv" id="co-mgr-h">${esc(manager.name)}, <span class="volt">by the numbers.</span></h2>
-        <p class="co-lede rv">Every competitive match he has been in charge for, the shapes he
-          set up in and the players he needed. Derived from the match records, so it moves when
-          the next result is entered.</p>
-        ${seasonBar(MGR_VIEWS, MGR_DEFAULT, matchNote, { esc, attr })}
-        ${seasonPanels(MGR_VIEWS, MGR_DEFAULT, mgrPanel, { attr })}
-      </div>
-    </section>` : '';
 
   /* ================= 02 THE RECORD ================= */
   const wdlTotal = Math.max(1, all.won + all.drawn + all.lost);
@@ -403,7 +305,7 @@ export function coaches(d) {
     </section>`;
 
   return {
-    body: siteHeader('/coaches.html') + hero + staffBand + recordBand + managerBand + detailBand + ctaBand
+    body: siteHeader('/coaches.html') + hero + staffBand + recordBand + detailBand + ctaBand
       + sourceNote(['fulltime', 'surreyfa']),
     bodyClass: 'is-home is-sub is-coaches',
     css: 'home.css',

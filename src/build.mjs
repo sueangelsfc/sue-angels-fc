@@ -44,6 +44,7 @@ import { PENDING_ROUTES, isLive, groupLive } from './lib/routes.mjs';
 import { matchPage, articlePage } from './templates/detail.mjs';
 import { plainText } from './lib/prose.mjs';
 import { playerPage } from './templates/player.mjs';
+import { coachPage } from './templates/coach.mjs';
 import { control } from './templates/control.mjs';
 import { VOCAB } from './lib/football.mjs';
 import { POSITION_VOCAB, ROLE_VOCAB } from './lib/positions.mjs';
@@ -283,6 +284,7 @@ const PAGE_CSS = {
   'videos.html': 'media',
   'gallery/': 'gallery',
   'players/': 'player',
+  'coaches/': 'coaches',
   'join.html': 'join',
   'contact.html': 'contact',
   'programme.html': 'programme',
@@ -1375,6 +1377,52 @@ for (const p of profilePlayers) {
     ],
   }));
   cat(`/players/${p.slug}.html`, p.name, 'player');
+}
+
+/* ---- The manager's own page ----
+   ONLY THE MANAGER GETS ONE. A coach's record would be the same list of
+   matches with nothing to distinguish it, so a page each would say all three
+   of them personally won eighteen games. The figures are his because the
+   record says when he took charge. */
+const manager = groupLive('coaches')
+  ? (d.coaches || []).find((c) => /manager/i.test(c.role || '')) : null;
+if (manager) {
+  const out = coachPage(manager, d);
+  const r = out.record;
+  write(`coaches/${manager.slug}.html`, page({
+    title: `${manager.name} · ${CLUB.name}`,
+    description: fitDesc(
+      `${manager.name}, ${String(manager.role || 'manager').toLowerCase()} of ${CLUB.name}.`,
+      r.played ? `${plural(r.played, 'competitive match')} in charge, ${r.won} won, ${r.winPct}% of them.` : '',
+      `Formations, results and every player used, season by season.`,
+      `Sunday-league football in south-west London.`),
+    path: `/coaches/${manager.slug}.html`,
+    ogImage: ogCard('og-default'),
+    ogImageAlt: `${manager.name}, ${CLUB.name}`,
+    body: out.body,
+    bodyClass: out.bodyClass,
+    css: out.css,
+    pageCss: bandFor('coaches/'),
+    shell: out.shell,
+    footerHtml: out.footerHtml,
+    preMain: out.preMain,
+    assetV: homeV,
+    jsV: assetV,
+    schema: [
+      { '@type': 'ProfilePage', mainEntity: { '@id': `${CLUB.site}/coaches/${manager.slug}.html#person` } },
+      {
+        '@type': 'Person',
+        '@id': `${CLUB.site}/coaches/${manager.slug}.html#person`,
+        name: manager.name,
+        jobTitle: manager.role || 'First-team manager',
+        memberOf: { '@id': CLUB_ID },
+        url: `${CLUB.site}/coaches/${manager.slug}.html`,
+      },
+      breadcrumb([{ label: 'Home', href: '/' }, { label: 'The staff', href: '/coaches.html' },
+        { label: manager.name, href: `/coaches/${manager.slug}.html` }]),
+    ],
+  }));
+  cat(`/coaches/${manager.slug}.html`, manager.name, 'coach');
 }
 
 /* ---- Match centre ----

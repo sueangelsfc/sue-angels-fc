@@ -1749,6 +1749,46 @@ for (const [f, h] of pages) {
    Any card whose label claims a win must show at least as many goals for as
    against, and a defeat the reverse. That is checkable from the output
    alone. */
+/* ---- A SHARED RECORD NAMES EVERY HOLDER ----
+   The record grid learned this long ago and says so in its own comment; the
+   player streak cards directly above it still took the top of a sort and
+   printed one man. Four games into 26/27 all three were held jointly and only
+   Charlie Dunkley was on the page, because he sorted first on goals and the
+   man tying him had the same number of those. Asked of the shipped page
+   against the shipped derivation, and asserted to be non-vacuous, because a
+   season with no tie would pass this with one name per card. */
+{
+  const hS = pages.get('records.html');
+  if (hS) {
+    const cards = [...hS.matchAll(/<li class="rc-streak is-player">[\s\S]*?<\/li>/g)].map((m) => m[0]);
+    check('the records page still carries the player streak cards', cards.length > 0);
+    const named = cards.map((c) => (c.match(/class="rc-streak__who"/g) || []).length);
+    check('a player streak card names at least one holder',
+      named.length > 0 && named.every((n) => n >= 1), named.join(', '));
+    check('a shared player streak names more than one, so this is not vacuous',
+      named.some((n) => n > 1), `holders per card: ${named.join(', ')}`);
+    /* AND NOBODY IS LEFT OFF, derived rather than assumed. A record with one
+       holder is a perfectly good record - Stewart Luwawa's run of 30 is his
+       alone - so the count is computed for the season in question with the
+       shipped streak function and the page is held to it. */
+    const { buildDataset: bdR } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+    const { playerStreak: psR } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+    const dR = bdR();
+    const seasonR = dR.currentSeason;
+    const playedR = (dR.matchesCompetitive || dR.matches || [])
+      .filter((m) => m.played && m.season === seasonR);
+    const runs = (dR.playersBySeason[seasonR] || [])
+      .map((p) => psR(p, playedR, (r) => r.role === 'start').length);
+    const bestRun = Math.max(0, ...runs);
+    const tied = runs.filter((x) => x === bestRun && x > 0).length;
+    const onPage = cards.filter((c) => /Most consecutive starts/.test(c))
+      .map((c) => (c.match(/class="rc-streak__who"/g) || []).length);
+    check(`every player tied on ${seasonR}'s longest run of starts is named`,
+      tied > 0 && onPage.includes(tied),
+      `${tied} tied on ${bestRun}; cards name ${onPage.join(', ') || 'none'}`);
+  }
+}
+
 {
   const h = pages.get('records.html');
   if (h) {
@@ -3812,6 +3852,25 @@ for (const [f, kb] of Object.entries({
         [{ num: 9, minute: 55, type: 'pass' }], sit);
       check('one assist is not handed to two goals',
         !!same.goals[0].assist && !same.goals[1].assist);
+
+      /* AN OWN GOAL HAS NO SCORER AND CAN STILL HAVE AN ASSIST. The club
+         asked for this: the cross nobody else got a touch on is played by
+         this club even when their defender is the one who puts it in. It
+         pairs on nothing, because there is no scorer to pair with, so the
+         only thing keeping it is that reconcile walks every goal rather than
+         only the ones with a number. */
+      {
+        const { reconcileAssists: recOG } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+        const og = recOG(
+          [{ num: 9, assist: { num: 3, type: 'pass' } },
+            { og: true, num: null, assist: { num: 12, type: 'cross' } }], []);
+        check('an own goal\u2019s assist is credited to the man who forced it',
+          og.some((a) => String(a.num) === '12' && a.type === 'cross'),
+          JSON.stringify(og));
+        check('and it is not attached to somebody else\u2019s goal',
+          (og.find((a) => String(a.num) === '12') || {}).forGoalBy == null,
+          JSON.stringify(og.find((a) => String(a.num) === '12')));
+      }
 
       check('a man is never recorded as assisting his own goal',
         !carry([{ num: 9, minute: 30 }], [{ num: 9, minute: 30, type: 'pass' }], sit)

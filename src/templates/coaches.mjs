@@ -20,7 +20,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { esc, attr } from '../lib/html.mjs';
-import { CLUB, TRIALS_OPEN, seasonAfter } from '../lib/club.mjs';
+import { CLUB, TRIALS_OPEN, CTA_SHUT, seasonAfter } from '../lib/club.mjs';
 import { teamSummary, isLeague} from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
@@ -287,9 +287,9 @@ export function coaches(d) {
             <h2 class="h2" id="co-cta-h">Play under this <span class="volt">staff.</span></h2>
             <p class="cta2__sub">${TRIALS_OPEN
     ? `Trials are open for ${esc(d.nextSeason)}. Register your interest and we will be in touch with dates.`
-    : `Trials for ${esc(d.currentSeason)} have closed. Register your interest now and you will be the first to hear when trials open for ${esc(seasonAfter(d.currentSeason))}.`}</p>
+    : esc(CTA_SHUT.sub)}</p>
             <div class="cta2__btns">
-              <a class="btn btn--volt" href="/join.html">${TRIALS_OPEN ? 'Apply for a trial' : 'Register your interest'} ${ARROW}</a>
+              <a class="btn btn--volt" href="/join.html">${TRIALS_OPEN ? 'Apply for a trial' : esc(CTA_SHUT.cta)} ${ARROW}</a>
               <a class="btn btn--ghost" href="/squad.html">Meet the squad</a>
             </div>
           </div>

@@ -171,22 +171,35 @@ export function records(d) {
       who: 'At the sharpest', when: span(s), scope: 'All competitions' }; })(),
   ].filter((s) => Number(s.value) > 0);
 
-  /* Player streaks: the best holder of each, named. */
-  const bestStreak = (pred) => players
-    .map((p) => ({ p, s: playerStreak(p, played, pred) }))
-    .filter((r) => r.s.length > 0)
-    .sort((a, b) => b.s.length - a.s.length || b.p.goals - a.p.goals)[0];
+  /* Player streaks, EVERY HOLDER NAMED. This took the top of a sort and
+     printed one man, while the record grid directly below it had already
+     learned the opposite lesson and says so in its own comment: a record can
+     be shared, and picking one name off a tie-break is how a page credits the
+     wrong person. Four games into 26/27 all three of these were held jointly
+     by Charlie Dunkley and Ade Owolana, on identical figures, and only
+     Dunkley was on the page - he sorted first on goals, and they had the same
+     number of those too.
 
-  const scoring = bestStreak((r) => (r.goals || 0) > 0);
-  const contrib = bestStreak((r) => ((r.goals || 0) + (r.assists || 0)) > 0);
-  const starts = bestStreak((r) => r.role === 'start');
+     Two holders can reach the same run over DIFFERENT matches, so the dates
+     are per holder and printed once only when they agree. */
+  const bestStreaks = (pred) => {
+    const all = players.map((p) => ({ p, s: playerStreak(p, played, pred) }))
+      .filter((r) => r.s.length > 0);
+    const best = Math.max(0, ...all.map((r) => r.s.length));
+    if (!best) return null;
+    return all.filter((r) => r.s.length === best)
+      .sort((a, b) => b.p.starts - a.p.starts || a.p.num - b.p.num);
+  };
+  const streakCard = (rows, unit, label) => (rows && rows.length ? {
+    value: rows[0].s.length, unit, label, holders: rows,
+    when: [...new Set(rows.map((r) => span(r.s)))],
+  } : null);
+
   const playerStreaks = [
-    scoring && { value: scoring.s.length, unit: 'games', label: 'Longest scoring run',
-      p: scoring.p, when: span(scoring.s) },
-    contrib && { value: contrib.s.length, unit: 'games', label: 'Longest run with a goal or assist',
-      p: contrib.p, when: span(contrib.s) },
-    starts && { value: starts.s.length, unit: 'starts', label: 'Most consecutive starts',
-      p: starts.p, when: span(starts.s) },
+    streakCard(bestStreaks((r) => (r.goals || 0) > 0), 'games', 'Longest scoring run'),
+    streakCard(bestStreaks((r) => ((r.goals || 0) + (r.assists || 0)) > 0), 'games',
+      'Longest run with a goal or assist'),
+    streakCard(bestStreaks((r) => r.role === 'start'), 'starts', 'Most consecutive starts'),
   ].filter(Boolean);
 
   /* ---- The record grid -------------------------------------------------
@@ -446,8 +459,8 @@ export function records(d) {
             <span class="rc-streak__v">${esc(s.value)}<i>${esc(s.unit)}</i></span>
             <span class="rc-streak__body">
               <b>${esc(s.label)}</b>
-              <a class="rc-streak__who" href="/players/${attr(s.p.slug)}.html">${face(s.p, 30, false)}<span>${esc(s.p.name)}</span></a>
-              <span class="rc-streak__when">${esc(s.when)}</span>
+              <span class="rc-streak__whos">${s.holders.map((h) => `<a class="rc-streak__who" href="/players/${attr(h.p.slug)}.html">${face(h.p, 30, false)}<span>${esc(h.p.name)}</span>${s.when.length > 1 ? `<i class="rc-streak__when">${esc(span(h.s))}</i>` : ''}</a>`).join('')}</span>
+              ${s.when.length === 1 ? `<span class="rc-streak__when">${esc(s.when[0])}</span>` : ''}
             </span>
             <span class="rc-streak__scope">Player</span>
           </li>`).join('\n          ')}

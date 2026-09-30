@@ -326,8 +326,17 @@ export async function panelChecks() {
       /* And it carries none of the detail, because every part of it is a fact
          about the side that put the ball in. */
       check('an own goal card offers no detail of a shot this club did not take',
-        !!card && card.querySelectorAll('[data-g-body],[data-g-zone],[data-g-sit],[data-g-anum]').length === 0,
-        `${card ? card.querySelectorAll('[data-g-body],[data-g-zone],[data-g-sit],[data-g-anum]').length : '-'} detail controls`);
+        !!card && card.querySelectorAll('[data-g-body],[data-g-zone],[data-g-sit]').length === 0,
+        `${card ? card.querySelectorAll('[data-g-body],[data-g-zone],[data-g-sit]').length : '-'} shot controls`);
+      /* BUT WHOEVER FORCED IT IS OURS. How it was struck belongs to the side
+         that put it in; the cross nobody else touched was played by this club,
+         and is the one part of an own goal that is ours to record. */
+      check('an own goal card still asks who forced it',
+        !!card && card.querySelectorAll('[data-g-anum]').length === 1,
+        `${card ? card.querySelectorAll('[data-g-anum]').length : '-'} assist pickers`);
+      check('and the own goal card labels that person as having forced it, not made it',
+        !!card && /forced by/i.test(card.textContent) && !/made by/i.test(card.textContent),
+        card ? card.textContent.replace(/\s+/g, ' ').slice(0, 120) : '-');
     }
 
     /* The sheet BUILDERS are the other ring: they must offer the whole club,

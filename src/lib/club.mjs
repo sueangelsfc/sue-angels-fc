@@ -450,6 +450,25 @@ export const ENQUIRY_TYPES = [
    13 September 2026, at the club's request, once the squad was registered. */
 export const TRIALS_OPEN = false;
 
+/* WHAT THE INVITATION SAYS WHEN TRIALS ARE SHUT, in one place. Four pages
+   asked the same question and each wrote its own answer, so the club stated
+   its position four times and could drift four ways.
+
+   AND IT IS NO LONGER ABOUT TRIALS. A band headed "Trials have closed" spends
+   the club's most-read invitation telling a reader the one thing they cannot
+   do, and then asks them to wait a year. The squad is picked; the work around
+   it is not, and that is what the club is actually short of. No season is
+   named, because a season typed into copy is wrong from the following July. */
+export const CTA_SHUT = {
+  eyebrow: 'Want to be part of it?',
+  head: 'There is more to a club than',
+  volt: 'the eleven.',
+  sub: 'The squad is picked and the work around it is not. The club is looking for '
+    + 'somebody to film the goals, somebody to shoot matchday, hands on a Sunday, '
+    + 'and businesses to put their name behind the shirt.',
+  cta: 'Get involved',
+};
+
 /* "26/27" -> "27/28", for copy about the season after the one being played.
    d.nextSeason cannot say it: it stays on the current season until the
    club's own figures move on, which is why the trials band read "open for

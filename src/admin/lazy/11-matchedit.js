@@ -565,7 +565,8 @@
            finishing goes. Offering the dropdowns and then dropping what was
            chosen is worse than not offering them. */
         (g.og ? '<p class="cp-note">A goal with no scorer. It counts on the scoreline and on '
-            + 'nobody’s record, and carries no detail of its own.</p>' :
+            + 'nobody’s record. How it was struck belongs to the side that put it in, so there '
+            + 'is none of that here - but whoever forced it is ours, and can be named below.</p>' :
         '<div class="gcard__grid">' +
           '<select class="select" data-g-body aria-label="What it was struck with">' +
             optionsOf(VOCAB.bodyParts, g.bodyPart, 'Struck with…') + '</select>' +
@@ -573,15 +574,21 @@
             optionsOf(VOCAB.zones, g.zone, 'From…') + '</select>' +
           '<select class="select" data-g-sit aria-label="What the ball was doing">' +
             optionsOf(VOCAB.situations, g.situation, 'Situation…') + '</select>' +
-        '</div>' +
+        '</div>') +
+        /* WHOEVER FORCED IT IS OURS. An own goal carries none of the shot
+           detail, because that is a fact about the other side, and it used to
+           carry no assist for the same reason - which was wrong: the cross
+           that nobody else got a touch on, or the ball won that they turned
+           into their own net, was played by this club and is the one part of
+           an own goal that is. */
         '<div class="gcard__assist">' +
-          '<span class="gcard__lbl">Made by</span>' +
+          '<span class="gcard__lbl">' + (g.og ? 'Forced by' : 'Made by') + '</span>' +
           '<select class="select" data-g-anum aria-label="Who assisted">' +
-            playerOptions(a.num, 'Nobody, he made it himself') + '</select>' +
+            playerOptions(a.num, g.og ? 'Nobody, it was all theirs' : 'Nobody, he made it himself') + '</select>' +
           '<select class="select" data-g-atype aria-label="How the chance was made"' +
             (a.num ? '' : ' disabled') + '>' +
             optionsOf(VOCAB.assistTypes, a.type || 'pass', 'How…') + '</select>' +
-        '</div>') +
+        '</div>' +
       '</div>';
     }).join('');
   }
@@ -1717,7 +1724,11 @@
                is named as one, and says so, so the report can put it in the
                story without crediting anybody. */
             if (g.og || g.num == null) {
-              return { num: null, og: true, name: 'Own goal', minute: g.minute, assist: null };
+              return {
+                num: null, og: true, name: 'Own goal', minute: g.minute,
+                assist: g.assist && g.assist.num != null
+                  ? { name: nameOf(g.assist.num), type: g.assist.type } : null,
+              };
             }
             return {
               num: g.num, name: nameOf(g.num), minute: g.minute,
@@ -1906,11 +1917,14 @@
              showed an empty scorer where the club had chosen Own goal. And
              none of the detail below is a fact about this club - what it was
              struck with, from where, and who passed it belong to the side that
-             put it in - so an own goal carries none of it. */
+             put it in - so an own goal carries none of it. It DOES carry its
+            assist: the man who forced it played for this club. */
           if (g.og) {
             return {
               num: null, og: true, minute: g.minute,
-              bodyPart: null, zone: null, situation: null, assist: null, penalty: false,
+              bodyPart: null, zone: null, situation: null, penalty: false,
+              assist: g.assist && g.assist.num != null
+                ? { num: g.assist.num, type: g.assist.type || 'pass' } : null,
             };
           }
           return {
@@ -2110,7 +2124,7 @@
         if (e.target.value === 'og') {
           /* Nobody of ours scored it, so nobody of ours is credited, and an
              assist on an own goal would be a claim about the other side. */
-          g.og = true; g.num = null; g.assist = null; repaintGoals();
+          g.og = true; g.num = null; repaintGoals();
         } else { g.og = false; g.num = Number(e.target.value); }
         return;
       }

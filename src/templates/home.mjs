@@ -24,7 +24,7 @@ import { photoCredit } from './gallery.mjs';
 import { sizeAttrs } from '../lib/imagesize.mjs';
 import {
   CLUB, SPONSOR_TIERS, FAQS, NEXT_FIXTURE, SEASON_AWARDS, SOCIALS,
-  JOIN_PATHS, JOIN_FAQS, TRIALS_OPEN,
+  JOIN_PATHS, JOIN_FAQS, TRIALS_OPEN, CTA_SHUT,
 } from '../lib/club.mjs';
 import {
   teamSummary, formGuide, isLeague, clubRecords, milestones, leaderboard,
@@ -1079,7 +1079,7 @@ export function home(d) {
             <h2 class="h1b" id="cta-h">Pull on the shirt<span class="volt">.</span></h2>
             <p class="cta2__sub">${TRIALS_OPEN
     ? 'Trials, volunteering, media and sponsorship. All open for the new season.'
-    : 'Volunteering, media and sponsorship are all open. Trials for this season have closed.'}</p>
+    : esc(CTA_SHUT.sub)}</p>
             <div class="cta2__btns">
               <a class="btn btn--volt" href="/join.html">Join the club ${ARROW}</a>
               <a class="btn btn--ghost" href="/contact.html">Get in touch</a>

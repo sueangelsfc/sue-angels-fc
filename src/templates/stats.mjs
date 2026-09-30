@@ -23,7 +23,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { esc, attr } from '../lib/html.mjs';
-import { CLUB, TRIALS_OPEN, seasonAfter } from '../lib/club.mjs';
+import { CLUB, TRIALS_OPEN, CTA_SHUT, seasonAfter } from '../lib/club.mjs';
 import { playerStats, isLeague } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
@@ -646,15 +646,15 @@ export function stats(d) {
           <span class="cta2__glow" aria-hidden="true"></span>
           <img class="cta2__badge" src="${STAR}" alt="Sue’s Angels FC star" width="500" height="620" loading="lazy" decoding="async" aria-hidden="true" />
           <div class="cta2__glass glassbox rv">
-            <p class="eyebrow cta2__eyebrow">Want to play here?</p>
+            <p class="eyebrow cta2__eyebrow">${TRIALS_OPEN ? 'Want to play here?' : esc(CTA_SHUT.eyebrow)}</p>
             <h2 class="h2" id="st-cta-h">${TRIALS_OPEN
     ? `Trials are open for <span class="volt">${esc(d.nextSeason)}.</span>`
-    : `Trials for ${esc(d.currentSeason)} have <span class="volt">closed.</span>`}</h2>
+    : `${esc(CTA_SHUT.head)} <span class="volt">${esc(CTA_SHUT.volt)}</span>`}</h2>
             <p class="cta2__sub">${TRIALS_OPEN
     ? 'Think you can wear the shirt? Register your interest and we will be in touch with dates.'
-    : `The squad is set for this season. Register your interest now and you will be the first to hear when trials open for ${esc(seasonAfter(d.currentSeason))}.`}</p>
+    : esc(CTA_SHUT.sub)}</p>
             <div class="cta2__btns">
-              <a class="btn btn--volt" href="/join.html">${TRIALS_OPEN ? 'Apply for a trial' : 'Register your interest'} ${ARROW}</a>
+              <a class="btn btn--volt" href="/join.html">${TRIALS_OPEN ? 'Apply for a trial' : esc(CTA_SHUT.cta)} ${ARROW}</a>
               <a class="btn btn--ghost" href="/squad.html">Meet the squad</a>
             </div>
           </div>

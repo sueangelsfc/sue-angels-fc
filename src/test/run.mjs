@@ -1816,7 +1816,18 @@ for (const [f, h] of pages) {
     const panels = (hM.match(/data-season-view="/g) || []).length;
     check('split by season, every season plus all of them',
       panels >= (dM.seasons || []).length + 1, `${panels} panels`);
-    check('the formations table reached it', /Shape<\/th>/.test(hM) && /3-4-2-1/.test(hM));
+    /* THE SHAPES ARE DRAWN, NOT TABULATED, and drawn from the sheet that used
+       them: a pitch with no dots on it would be a picture of nothing. */
+    check('the formations reached it, as pitches with a shape named',
+      /class="mgf"/.test(hM) && /3-4-2-1/.test(hM)
+        && (hM.match(/class="mgf__dot"/g) || []).length >= 40,
+      `${(hM.match(/class="mgf__dot"/g) || []).length} markers`);
+    check('and the markers sit where the record says they stood',
+      /<circle class="mgf__dot" cx="50" cy="106.72"/.test(hM),
+      'no goalkeeper marker at the position POSITION_XY gives GK');
+    check('every match is a column on the strip',
+      (hM.match(/class="mgs__i /g) || []).length >= 37,
+      `${(hM.match(/class="mgs__i /g) || []).length} columns`);
     check('and it is the only page with one heading for the whole document',
       (hM.match(/<h1/g) || []).length === 1);
   }

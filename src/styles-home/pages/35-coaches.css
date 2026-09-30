@@ -265,7 +265,12 @@ html.js .co-rec__grid.is-in .co-rec__arc{stroke-dashoffset: 0;}
 .mg__tiles span{display: block; margin-top: 9px;
   font-family: var(--ui); font-size: 8.5px; font-weight: 700;
   letter-spacing: 0.13em; text-transform: uppercase; color: var(--ink-3);}
-.mg .co-wdl{margin-top: 18px;}
+/* THE BAR IS ANIMATED BY ITS PARENT, and this band is not that parent.
+   `.co-rec__grid.is-in .co-wdl li` sets the width, so borrowing the bar
+   without the grid around it drew an empty grey strip: the widths were on the
+   elements and nothing ever gave them a width to animate to. */
+.mg .co-wdl{margin-top: clamp(20px, 2.4vw, 28px);}
+.mg .co-wdl li{width: var(--w);}
 /* THE PANEL'S OWN CLASS IS NOT THIS PAGE'S. `cp-note` is declared in
    control.css, which coaches.html does not load, so a note written with
    it would have shipped as unstyled body text. */
@@ -300,7 +305,94 @@ html.js .co-rec__grid.is-in .co-rec__arc{stroke-dashoffset: 0;}
   text-decoration-color: var(--volt);}
 .co-card__more{margin-top: 18px;}
 
-/* His own page: the hero is a sub-page opener, not a band with a card in it. */
-.co-phero{padding-top: clamp(28px, 4vw, 48px);}
-.co-phero .h1b{margin: 6px 0 clamp(14px, 1.8vw, 20px);}
-.co-phero .co-lede{max-width: 62ch;}
+
+/* ==========================================================================
+   THE MANAGER'S PAGE
+   Its own block. Everything here is the site's own vocabulary - one accent,
+   Archivo for a figure, weight and fill rather than a second hue for a
+   result - and every moving part rests under prefers-reduced-motion.
+   ========================================================================== */
+.cph{padding-top: clamp(24px, 3.4vw, 42px);}
+.cph__grid{display: grid; gap: clamp(22px, 3vw, 44px);
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); align-items: center;}
+.cph__shot{position: relative; border-radius: 24px; overflow: hidden;
+  border: 1px solid var(--line-d); background: rgba(var(--lift), 0.04);
+  aspect-ratio: 4 / 5; display: grid; place-items: center;}
+.cph__shot img{width: 100%; height: 100%; object-fit: cover; object-position: 50% 16%;}
+.cph__shot .cph__crest{width: 46%; height: auto; object-fit: contain; opacity: 0.45;}
+/* A single warm wash off the top corner, the same light the atmosphere casts. */
+.cph__glow{position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(120% 78% at 86% 4%, rgba(var(--volt-rgb), 0.30), transparent 62%);
+  mix-blend-mode: screen;}
+.cph__body .h1b{margin: 8px 0 clamp(16px, 2vw, 24px);}
+.cph__figs{list-style: none; margin: 0 0 clamp(18px, 2.2vw, 26px); padding: 0;
+  display: flex; flex-wrap: wrap; gap: clamp(20px, 3vw, 44px);}
+.cph__figs b{display: block; font-family: var(--display); font-weight: 300;
+  font-size: clamp(38px, 5vw, 60px); line-height: 0.92; letter-spacing: -0.05em; color: var(--fg);}
+.cph__figs span{display: block; margin-top: 8px;
+  font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.15em; text-transform: uppercase; color: var(--volt-text);}
+.cph__btns{margin-top: clamp(16px, 2vw, 22px);}
+
+/* The headline: one dial, the rest as tiles beside it. */
+.mgh{display: grid; gap: clamp(20px, 2.6vw, 34px);
+  grid-template-columns: auto minmax(0, 1fr); align-items: center;}
+.mgh__dial{position: relative; display: grid; place-items: center;
+  width: clamp(150px, 16vw, 186px); aspect-ratio: 1;}
+.mgh__dial svg{position: absolute; inset: 0; width: 100%; height: 100%;}
+.mgh__arc{stroke-dashoffset: 0;
+  transition: stroke-dasharray 1.4s var(--ease-out-expo);}
+.mgh__dial b{font-family: var(--display); font-weight: 300;
+  font-size: clamp(38px, 4.4vw, 52px); line-height: 1; letter-spacing: -0.05em; color: var(--fg);}
+.mgh__dial b i{font-style: normal; font-size: 0.46em; margin-left: 2px; color: var(--ink-3);}
+.mgh__cap{position: absolute; bottom: 16%;
+  font-family: var(--ui); font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.15em; text-transform: uppercase; color: var(--volt-text);}
+.mg__tiles--4{grid-template-columns: repeat(4, minmax(0, 1fr));}
+
+/* Formations, drawn. */
+.mgf{list-style: none; margin: 4px 0 0; padding: 0;
+  display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 152px), 1fr));}
+.mgf__i{padding: 14px 14px 16px; border-radius: 18px;
+  border: 1px solid var(--line-d); background: rgba(var(--lift), 0.03);
+  display: grid; justify-items: center; gap: 3px;}
+.mgf__pitch{width: 100%; height: auto; max-width: 118px;
+  background: linear-gradient(180deg, rgba(var(--volt-rgb), 0.07), rgba(var(--lift), 0.02));
+  border-radius: 8px;}
+.mgf__dot{fill: var(--volt);}
+.mgf__name{margin-top: 10px; font-family: var(--display); font-weight: 500;
+  font-size: 17px; letter-spacing: -0.01em; color: var(--fg);}
+.mgf__n{font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.13em; text-transform: uppercase; color: var(--ink-3);}
+.mgf__w{font-size: 12.5px; color: var(--ink-2);}
+.mgf__bar{display: block; width: 100%; height: 3px; margin-top: 9px; border-radius: 2px;
+  background: rgba(var(--lift), 0.10); overflow: hidden;}
+.mgf__bar i{display: block; height: 100%; width: var(--w); background: var(--volt);}
+
+/* Match by match. Result by fill and weight, never by a second hue. */
+.mgs{list-style: none; margin: 4px 0 0; padding: 0;
+  display: flex; align-items: flex-end; justify-content: flex-start;
+  gap: 4px; height: 132px;
+  padding-bottom: 2px; border-bottom: 1px solid var(--line-d);}
+/* A SEASON FOUR MATCHES LONG IS NOT FOUR BILLBOARDS. Left to flex, four
+   columns took 190px each and read as a bar chart of nothing; capped, a short
+   season is a short strip and a full one still fills the width. */
+.mgs__i{position: relative; flex: 1 1 0; min-width: 0; max-width: 56px; height: var(--h);
+  border-radius: 5px 5px 0 0; display: grid; align-items: start; justify-items: center;}
+.mgs__i i{font-style: normal; font-family: var(--ui); font-size: 9px; font-weight: 700;
+  padding-top: 4px; color: var(--text-on-brand-2);}
+.mgs__i.is-w{background: var(--volt);}
+.mgs__i.is-d{background: repeating-linear-gradient(90deg,
+  rgba(var(--volt-rgb), 0.55) 0 3px, transparent 3px 6px), rgba(var(--lift), 0.10);}
+.mgs__i.is-l{background: rgba(var(--lift), 0.13); border: 1px solid var(--line-d);}
+.mgs__i.is-d i, .mgs__i.is-l i{color: var(--ink-3);}
+
+@media (max-width: 860px){
+  .cph__grid{grid-template-columns: 1fr;}
+  .cph__shot{max-width: 320px; aspect-ratio: 1;}
+  .mgh{grid-template-columns: 1fr; justify-items: center;}
+  .mg__tiles--4{grid-template-columns: repeat(2, minmax(0, 1fr));}
+}
+@media (prefers-reduced-motion: reduce){
+  .mgh__arc{transition: none;}
+}

@@ -12,6 +12,7 @@ import { isPending } from '../lib/routes.mjs';
 import { CLUB } from '../lib/club.mjs';
 import * as statusMod from '../lib/squad-status.mjs';
 import { seasonOf } from '../lib/stats.mjs';
+import { VOCAB, ASSIST_TYPE, describeAssist } from '../lib/football.mjs';
 
 const ROOT = process.cwd();
 let pass = 0;
@@ -2949,6 +2950,63 @@ for (const [f, kb] of Object.entries({
         check('a substitute the record says came on is not complained about',
           !said({ starters: xi, bench: [{ num: 40, on: true }], goals: [{ num: 40 }], us: 1 },
             /unused substitute/));
+
+        /* ---- WINNING THE FOUL IS AN ASSIST ----
+           The club credited Leon Burnett's third assist of 26/27 by hand, as
+           an override against Full-Time, because the form had no way to say
+           he won the free kick Ade Owolana scored from. The panel builds its
+           dropdown from VOCAB, so what the site can describe and what the
+           form can offer cannot drift apart - which is the whole point of
+           there being one vocabulary, and is asserted rather than assumed. */
+        for (const key of ['wonfreekick', 'wonpenalty']) {
+          check(`the panel can offer '${key}' because the vocabulary carries it`,
+            VOCAB.assistTypes.some((t) => t.key === key),
+            VOCAB.assistTypes.map((t) => t.key).join(', '));
+          check(`'${key}' is described in words rather than printed raw`,
+            /won by Leon Burnett$/.test(describeAssist({ type: key }, 'Leon Burnett')),
+            describeAssist({ type: key }, 'Leon Burnett'));
+        }
+        /* TAKING ONE AND WINNING ONE ARE DIFFERENT THINGS, and the older key
+           is the one that would quietly absorb the new meaning. */
+        check('winning a free kick does not read as taking it',
+          describeAssist({ type: 'wonfreekick' }, 'X') !== describeAssist({ type: 'freekick' }, 'X'),
+          describeAssist({ type: 'freekick' }, 'X'));
+        check('an assist type the record has never heard of still reads as a pass',
+          describeAssist({ type: 'nonsense' }, 'X') === describeAssist({ type: 'pass' }, 'X'));
+
+        /* ---- NOBODY ASSISTS HIS OWN GOAL ----
+           carryAssists already refuses to PAIR a man's old-format assist with
+           his own goal, and that is a different fault from this one: here the
+           assist is typed onto the goal, so there is nothing to pair and that
+           rule never sees it. Barely reachable while an assist meant passing
+           to somebody; reachable from 26/27, when winning the foul became one
+           and the man who wins a penalty and takes it himself is the obvious
+           way one goal comes to inflate two published figures. */
+        check('a man credited with assisting his own goal is found',
+          said({ starters: xi, goals: [{ num: 1, assist: { num: 1, type: 'wonpenalty' } }], us: 1 },
+            /P1 is credited with assisting his own goal/));
+        check('the same fault in the flat assists list is found',
+          said({ starters: xi, goals: [{ num: 1 }], us: 1,
+            assists: [{ num: 1, forGoalBy: 1, type: 'wonfreekick' }] },
+          /assisting his own goal/));
+        check('an ordinary assist by somebody else is not complained about',
+          !said({ starters: xi, goals: [{ num: 1, assist: { num: 2, type: 'wonfreekick' } }], us: 1 },
+            /own goal/));
+        {
+          const winS = {};
+          const bustedS = recSrc.replace('g.assist.num === g.num', 'false');
+          check('probe: the self-assist rule is where the check thinks it is',
+            bustedS !== recSrc, 'the rule was not found, so this probe tests nothing');
+          if (bustedS !== recSrc) {
+            new Function('window', bustedS)(winS);
+            const still = winS.CPREC.matchProblems(
+              { starters: xi, goals: [{ num: 1, assist: { num: 1, type: 'wonpenalty' } }], us: 1 },
+              (n) => 'P' + n,
+            ).some((m) => /assisting his own goal/.test(m));
+            check('probe: without the rule the self-assist goes unreported', !still,
+              'the check would pass with the rule removed');
+          }
+        }
         /* A fixture has not been played and a walkover was not, so neither
            has a team sheet to disagree with. */
         check('a fixture is not asked to have a team sheet',
@@ -3048,6 +3106,12 @@ for (const [f, kb] of Object.entries({
             'r20260201-bpr', 'r20260426-catania', 'r20260517-portolondon-drt', 'r20260809-galacticos',
             'r20260812-kingsmeadow', 'r20260816-brentford', 'r20260823-kew', 'r20260830-bpr',
             'r20260906-three', 'r20260913-haydons',
+            /* The 7-1 against Barnes Stormers, entered in the panel on
+               30 September. Barnes scored once and that goal is not written
+               in, so this is a real gap in a new record rather than an old
+               one: added deliberately, and struck out again the moment the
+               club fills it. */
+            'r20260927-barnes',
           ].filter((k) => heldKeys.has(k)).join(), askedOf(/opponents scored/).join(', ') || 'none');
         /* Asked with the squad's real names: the report question compares
            surnames, and `P12` has none. */

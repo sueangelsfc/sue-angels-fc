@@ -133,6 +133,27 @@
           : ' are named on the bench as unused substitutes but are')
         + ' credited with something in this match. Tick Came on, on the team sheet.');
     }
+    /* NOBODY ASSISTS HIS OWN GOAL. Barely reachable while an assist meant
+       passing to somebody, and reachable the moment winning the foul became
+       one: a man who wins the penalty and then takes it himself would be
+       credited the goal AND the assist for it, which is one goal inflating
+       two of the club's published figures. Asked of the goal's own assist and
+       of the flat list, because the flat list is on no tab of the form. */
+    var selfish = [];
+    goals.forEach(function (g) {
+      if (g && g.num != null && g.assist && g.assist.num === g.num) selfish.push(g.num);
+    });
+    (d.assists || []).forEach(function (a) {
+      if (a && a.num != null && a.forGoalBy === a.num) selfish.push(a.num);
+    });
+    selfish = selfish.filter(function (n, i) { return selfish.indexOf(n) === i; });
+    if (selfish.length) {
+      out.push(selfish.map(name).join(', ')
+        + (selfish.length === 1 ? ' is credited with assisting his own goal.'
+          : ' are credited with assisting their own goals.')
+        + ' Winning the penalty you then score is one goal, not a goal and an assist.');
+    }
+
     return out;
   }
 

@@ -68,6 +68,15 @@ export const ASSIST_TYPES = [
   { key: 'headpass', label: 'Headed pass', phrase: 'headed down by' },
   { key: 'corner', label: 'Corner', phrase: 'from', suffix: '’s corner' },
   { key: 'freekick', label: 'Free kick', phrase: 'from', suffix: '’s free kick' },
+  /* WINNING IT IS MAKING IT. A man who is fouled for the penalty or the free
+     kick that becomes a goal has made that goal as surely as the man who
+     passed, and the club has been crediting it by hand: Leon Burnett's third
+     assist of 26/27 is the free kick he won for Ade Owolana's second at
+     Junction Elite, a figure that had to be carried as an override against
+     Full-Time because the form had no way to say it. These are the two the
+     laws create, and they are distinct from taking one, above. */
+  { key: 'wonfreekick', label: 'Won the free kick', phrase: 'after the free kick won by' },
+  { key: 'wonpenalty', label: 'Won the penalty', phrase: 'after the penalty won by' },
   { key: 'throwin', label: 'Throw in', phrase: 'from', suffix: '’s throw in' },
   { key: 'rebound', label: 'Rebound off them', phrase: 'after a rebound off' },
 ];

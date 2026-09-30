@@ -92,11 +92,18 @@
 .lg-note{margin-top: 16px; max-width: 74ch; font-size: 13px; line-height: 1.7; color: var(--ink-3);}
 
 /* ---- Leading scorers ---------------------------------------------------- */
-.lg-sc__pos{width: 44px; text-align: center !important;}
-.lg-sc__who{text-align: left !important; font-weight: 400; color: var(--fg); min-width: 180px;}
-.lg-sc__club{text-align: left !important; min-width: 190px; white-space: nowrap;}
-.lg-sc__club .lg-badge{display: inline-block; vertical-align: middle; margin-right: 11px;}
-.lg-sc tbody tr.is-us .lg-sc__who{font-weight: 500;}
+/* WHICH COLUMN A CELL IS IN IS ITS POSITION, not a class attribute repeated
+   on it. Every row of all five .lg-sc tables is the same three columns in the
+   same order, in the head and the body alike, so saying so 399 times cost
+   7.7KB of the league page and bought nothing. The page was 601 bytes over
+   its 160KB ceiling and the division's scorer and assist lists grow every
+   week; this is where the room came from. Scoped to .lg-sc, which the
+   standings table does not carry. */
+.lg-sc tr > *:nth-child(1){width: 44px; text-align: center !important;}
+.lg-sc tr > *:nth-child(2){text-align: left !important; font-weight: 400; color: var(--fg); min-width: 180px;}
+.lg-sc tr > *:nth-child(3){text-align: left !important; min-width: 190px; white-space: nowrap;}
+.lg-sc tr > *:nth-child(3) .lg-badge{display: inline-block; vertical-align: middle; margin-right: 11px;}
+.lg-sc tbody tr.is-us > *:nth-child(2){font-weight: 500;}
 
 /* ---- Not a table yet ----------------------------------------------------- */
 .lg-fresh{margin-top: clamp(18px, 2.4vw, 26px); padding: clamp(26px, 3.4vw, 40px);
@@ -227,7 +234,7 @@
 /* ---- Our faces in the chart ---------------------------------------------
    The league publishes names only. A photograph is what this page can add
    that FA Full-Time cannot, and it makes ours findable in a list of 25. */
-.lg-sc__who > span{vertical-align: middle;}
+.lg-sc tr > *:nth-child(2) > span{vertical-align: middle;}
 .lg-sc__face{display: inline-grid; place-items: center; overflow: hidden;
   vertical-align: middle; margin-right: 12px;
   width: 34px; height: 34px; border-radius: 50%;

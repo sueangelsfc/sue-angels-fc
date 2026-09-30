@@ -214,9 +214,9 @@ export function league(d) {
   };
 
   const chartRows = (rows) => rows.map((r) => `<tr${r.us ? ' class="is-us"' : ''}>
-                  <td class="lg-sc__pos">${esc(r.pos)}</td>
-                  <th scope="row" class="lg-sc__who">${face(r)}<span>${esc(r.name)}</span></th>
-                  <td class="lg-sc__club">${badge(r.club)}${esc(shortClub(r.club))}</td>
+                  <td>${esc(r.pos)}</td>
+                  <th scope="row">${face(r)}<span>${esc(r.name)}</span></th>
+                  <td>${badge(r.club)}${esc(shortClub(r.club))}</td>
                   <td>${esc(r.goals)}</td>
                   <td>${r.assists === null || r.assists === undefined ? '·' : esc(r.assists)}</td>
                   <td>${esc(r.apps)}</td>
@@ -242,9 +242,9 @@ export function league(d) {
               <caption class="sr-only">Leading scorers, ${which === 'league' ? `${d.divisionOf(d.tableSeason)} only` : 'all competitions'}</caption>
               <thead>
                 <tr>
-                  <th scope="col" class="lg-sc__pos">#</th>
-                  <th scope="col" class="lg-sc__who">Player</th>
-                  <th scope="col" class="lg-sc__club">Club</th>
+                  <th scope="col">#</th>
+                  <th scope="col">Player</th>
+                  <th scope="col">Club</th>
                   <th scope="col"><abbr title="Goals">G</abbr></th>
                   <th scope="col"><abbr title="Assists">A</abbr></th>
                   <th scope="col"><abbr title="Appearances">Apps</abbr></th>
@@ -504,9 +504,9 @@ export function league(d) {
      beside the appearances, so a column is never a row of noughts belonging
      to the table below. */
   const statRows = (rows, cols) => rows.map((r) => `<tr${r.us ? ' class="is-us"' : ''}>
-                  <td class="lg-sc__pos">${esc(r.pos)}</td>
-                  <th scope="row" class="lg-sc__who">${face(r)}<span>${esc(r.name)}</span></th>
-                  <td class="lg-sc__club">${badge(r.club)}${esc(shortClub(r.club))}</td>
+                  <td>${esc(r.pos)}</td>
+                  <th scope="row">${face(r)}<span>${esc(r.name)}</span></th>
+                  <td>${badge(r.club)}${esc(shortClub(r.club))}</td>
                   ${cols.map(([key]) => `<td>${esc(r[key] ?? 0)}</td>`).join('')}
                 </tr>`).join('\n                ');
   const statTable = (title, attr8, what, rows, cols) => (rows.length
@@ -516,9 +516,9 @@ export function league(d) {
               <caption class="sr-only">${esc(next.division || 'League Eight')} ${what}${next.scorersAsOf ? `, as of ${esc(fmtDate(next.scorersAsOf))}` : ''}</caption>
               <thead>
                 <tr>
-                  <th scope="col" class="lg-sc__pos">#</th>
-                  <th scope="col" class="lg-sc__who">Player</th>
-                  <th scope="col" class="lg-sc__club">Club</th>
+                  <th scope="col">#</th>
+                  <th scope="col">Player</th>
+                  <th scope="col">Club</th>
                   ${cols.map(([, abbr, full]) => `<th scope="col"><abbr title="${full}">${abbr}</abbr></th>`).join('')}
                 </tr>
               </thead>

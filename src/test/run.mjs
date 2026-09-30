@@ -6146,11 +6146,11 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   /* THE SCORERS, under the League Eight table and against the results. */
   check('the league page lists League Eight\'s scorers under its table',
     (l8.scorers || []).length > 0 && /data-l8-scorers/.test(panel8)
-      && (((panel8.match(/data-l8-scorers[\s\S]*?<\/table>/) || [''])[0]).match(/<tr( class="is-us")?>\s*<td class="lg-sc__pos">/g) || []).length === l8.scorers.length);
+      && (((panel8.match(/data-l8-scorers[\s\S]*?<\/table>/) || [''])[0]).match(/<tr( class="is-us")?>\s*<td>/g) || []).length === l8.scorers.length);
   /* THE ASSISTS: every assister is in a table of his own, ranked by assists,
      and the scorers table's A column carries the same figure. */
   {
-    const assistRows = ((panel8.match(/data-l8-assists[\s\S]*?<\/table>/) || [''])[0].match(/<tr( class="is-us")?>\s*<td class="lg-sc__pos">/g) || []).length;
+    const assistRows = ((panel8.match(/data-l8-assists[\s\S]*?<\/table>/) || [''])[0].match(/<tr( class="is-us")?>\s*<td>/g) || []).length;
     check('the league page lists League Eight\'s assisters in their own table',
       (l8.assisters || []).length === 0 || assistRows === (l8.assisters || []).length,
       `${assistRows} rows for ${(l8.assisters || []).length} assisters`);
@@ -6165,7 +6165,11 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
        adding up. */
     const gaTable = (panel8.match(/data-l8-ga[\s\S]*?<\/table>/) || [''])[0];
     const gaRows = [...((gaTable.match(/<tbody>[\s\S]*?<\/tbody>/) || [''])[0]).matchAll(/<tr( class="is-us")?>[\s\S]*?<\/tr>/g)]
-      .map((m) => (m[0].match(/<td>(\d+)<\/td>/g) || []).map((x) => Number(x.replace(/\D/g, ''))));
+      /* WITHOUT THE RANK. It used to be excluded by its class attribute, and
+         the columns are positional now, so the first cell is dropped by
+         position too or the rank is read as a goal tally. */
+      .map((m) => (m[0].replace(/^<tr[^>]*>\s*<td>[^<]*<\/td>/, '').match(/<td>(\d+)<\/td>/g) || [])
+        .map((x) => Number(x.replace(/\D/g, ''))));
     const names = new Set([...(l8.scorers || []).filter((s) => s.goals > 0), ...(l8.assisters || []).filter((s) => s.assists > 0)].map((s) => s.name));
     check('the goals and assists table lists everybody on either list, and each row adds up',
       gaRows.length === names.size && gaRows.every(([g, a, ga]) => g + a === ga),

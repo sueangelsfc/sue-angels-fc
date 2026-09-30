@@ -663,7 +663,11 @@ export function stats(d) {
     </section>`;
 
   return {
-    body: siteHeader('/stats.html') + hero + leadersBand + tableBand + shareBand + picsBand + ctaBand + sourceNote(['fulltime', 'surreyfa']),
+    /* The source's indentation stays in the source, as on the league and
+       player pages: a season's leaders, the full table and the charts took
+       this page past its 160KB ceiling and a line break is still whitespace.
+       No pre, textarea or inline script in the body. */
+    body: (siteHeader('/stats.html') + hero + leadersBand + tableBand + shareBand + picsBand + ctaBand + sourceNote(['fulltime', 'surreyfa'])).replace(/\n[ \t]+/g, '\n'),
     bodyClass: 'is-home is-sub is-stats',
     css: 'home.css',
     shell: 'home',

@@ -25,7 +25,9 @@
     "Barn Elms Sports centre": "Barn Elms Sports Centre",
     "Prince Georges Playing Fields": "Prince George’s Playing Fields",
     "Tattenham Rovers Tattenham Rovers": "Tattenham Rovers",
-    "The Matthew Arnold School, Staines-upon-Thames, Staines TW18 1PF": "The Matthew Arnold School"
+    "The Matthew Arnold School, Staines-upon-Thames, Staines TW18 1PF": "The Matthew Arnold School",
+    "Dulwich Park, Pitch 1": "Dulwich Park",
+    "DULWICH PARK Pitch 1": "Dulwich Park"
   },
   "known": [
     "Barn Elms Sports Centre",
@@ -40,7 +42,8 @@
     "The Reeves Sports Club",
     "Wandsworth Common",
     "Woking Veterans Sundays",
-    "Richardson Evans Memorial Playing Fields"
+    "Richardson Evans Memorial Playing Fields",
+    "Dulwich Park"
   ],
   "_groundsNote": "What a visitor needs to find a ground, keyed by the canonical name above. `address` is what the map search is pointed at, so directions land on the ground rather than on a name the map may not know; `parking` is printed under the next-match card. Each entry says where it was read.",
   "grounds": {

@@ -76,13 +76,6 @@
       "competition": "League Eight"
     },
     {
-      "id": "f2627-pcup-r1-peps",
-      "date": "",
-      "home": "Peps All Stars",
-      "away": "Sue's Angels FC",
-      "competition": "Brian Howard President's Cup"
-    },
-    {
       "id": "f20261004-pure",
       "date": "04 Oct 2026",
       "kick": "12:30",
@@ -90,6 +83,15 @@
       "away": "Sue's Angels FC",
       "venue": "Barn Elms Sports Centre",
       "competition": "League Eight"
+    },
+    {
+      "id": "f20261011-peps-pcup",
+      "date": "11 Oct 2026",
+      "home": "Peps All Stars",
+      "away": "Sue's Angels FC",
+      "competition": "Brian Howard President's Cup",
+      "kick": "10:30",
+      "venue": "Dulwich Park, Pitch 1"
     }
   ]
 }

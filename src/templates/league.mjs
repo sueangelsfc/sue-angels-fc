@@ -27,6 +27,7 @@ import { CLUB } from '../lib/club.mjs';
 import { fmtDate, isUs, byCompetition, slugify, isLeague } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
+import { leagueUnderway } from '../lib/home-layout.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 /* Photographs are filed by shirt number. The number is the filename only: it
@@ -70,14 +71,30 @@ export function league(d) {
     ? `<img class="lg-badge is-us" src="${STAR}" alt="Sue’s Angels FC star" width="26" height="26" loading="lazy" />`
     : oppBadge(club, d.badges, 26, 26, 'lg-badge'));
 
+  /* THE PAGE DESCRIBES THE DIVISION IT OPENS ON. `d.tableSeason` is the season
+     the PUBLISHED table describes, which is still 25/26 until a League Eight
+     table is transcribed into it - correct for that table and wrong as a
+     description of the page, which has led with League Eight since the first
+     match was played in it. So the standfirst said "League Ten 25/26" above a
+     page opening on League Eight.
+
+     Read from `leagueUnderway()`, the shared rule the tabs and the home page
+     order already use, rather than a second copy of it here: the one thing
+     worse than a standfirst disagreeing with the tabs is two rules that agree
+     today and drift later. */
+  const leadEight = leagueUnderway(d);
+  const shownDivision = leadEight ? (next.division || d.divisionOf(d.nextSeason))
+    : d.divisionOf(d.tableSeason);
+  const shownSeason = leadEight ? (next.season || d.nextSeason) : d.tableSeason;
+
   /* ================= HERO ================= */
   const hero = `<section class="lg-hero" aria-labelledby="lg-h">
       <div class="wrap">
         <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> ${esc(CLUB.league)}</p>
         <h1 class="lg-hero__title" id="lg-h">The league<span class="volt">.</span></h1>
-        <p class="lg-hero__lede">${esc(d.divisionOf(d.tableSeason))} ${esc(d.tableSeason)}: the table, every
+        <p class="lg-hero__lede">${esc(shownDivision)} ${esc(shownSeason)}: the table${leadEight ? ' as it stands' : ''}, every
           result across the division, and the players topping its charts. Taken from the league's
-          own record rather than from ours.</p>
+          own record rather than from ours.${leadEight ? ` ${esc(d.divisionOf(d.tableSeason))} ${esc(d.tableSeason)} is under its own tab.` : ''}</p>
       </div>
     </section>`;
 
@@ -135,7 +152,8 @@ export function league(d) {
      League Ten's final standings whatever had happened since, so after the
      first League Eight weekend the page a supporter lands on still led with
      last season. A table of nine noughts does not lead: that is a club list. */
-  const leadEight = nextRows.some((r) => (r.played || 0) > 0);
+  /* Defined above from leagueUnderway(), so the standfirst and the tabs
+     cannot open on different divisions. */
 
   const tableBand = `<section class="sec lg-table" id="table" aria-labelledby="lg-tbl-h">
       <div class="wrap">

@@ -1,0 +1,941 @@
+{
+  "_source": "The two cup draws the league published as PDFs (Brian Howard President's Cup, printed Wed 16 Sept 2026; Supreme Trophies Marcus Lipton Cup, printed Fri 02 Oct 2026), parsed tie by tie, and the eleven Southern Sunday Football League division tables, which the club sent as screenshots. FA Full-Time refuses automated clients as policy and serves a challenge page to a browser as well, so nothing here was fetched.",
+  "_note": "WHICH SIDE OF THE DASH IS THE ANSWER. A draw prints a tie as 'home -v- away', so home and away is read rather than inferred, all the way to the final. A side that reads 'Winner of Tie N' is resolved by following that tie, which is also how the full list of possible opponents for a round is built: walk every branch feeding it.\n\nDIVISIONS ARE A FACT ABOUT TODAY and will go stale. They are here because the club asked which league each opponent plays in, and they are the club's transcription of the tables as they stood on 2 October 2026. BPR Vets appears in the Lipton draw and in none of the eleven tables, so it has no division here rather than a guessed one.",
+  "season": "26/27",
+  "divisionsAsOf": "2026-10-02",
+  "divisions": [
+    "Graham Dodd Premier Division",
+    "Tony Eldridge Championship",
+    "Bob Dixon League One",
+    "Voltra Sports League Two",
+    "League Three",
+    "League Four",
+    "League Five",
+    "League Six",
+    "League Seven",
+    "League Eight",
+    "League Nine"
+  ],
+  "divisionOf": {
+    "ACT Arantes United": "League Nine",
+    "AFC Broomwood": "Tony Eldridge Championship",
+    "AFC Old Town": "League Four",
+    "Albion": "Tony Eldridge Championship",
+    "Alfletico Madrid": "League Six",
+    "Argentina FC": "Bob Dixon League One",
+    "Argentina FC 2.0": "League Five",
+    "Atlético Madridlesbrough": "League Four",
+    "BPR Men's": "League Nine",
+    "Balham & Clapham Albion": "League Seven",
+    "Barking Mad FC": "Voltra Sports League Two",
+    "Barnes AFC": "Voltra Sports League Two",
+    "Barnes Stormers FC": "League Eight",
+    "Bath Old Boys United": "Graham Dodd Premier Division",
+    "Battersea Rise FC": "League Seven",
+    "Bev Old Boys": "League Six",
+    "Boston Manor FC": "League Three",
+    "Bristol City (London) Supporters": "League Eight",
+    "Brixton Town": "Voltra Sports League Two",
+    "Brockwell Violets FC": "League Eight",
+    "Casa Benfica Londres": "League Five",
+    "Celtic Swans FC": "League Seven",
+    "Chelsea Rovers FC (Sundays)": "League Seven",
+    "Clapham Chiefs": "Bob Dixon League One",
+    "Clapham Common FC": "League Five",
+    "Clapham Rovers": "Graham Dodd Premier Division",
+    "Club Internacional de Fútbol Clapham": "League Seven",
+    "Cosmos United": "Tony Eldridge Championship",
+    "Croydon United FC": "Voltra Sports League Two",
+    "Deportivo La Cowruna": "League Four",
+    "Deportivo Los Toros": "League Seven",
+    "Dynamo London FC": "League Nine",
+    "Dynamo Putney FC": "League Seven",
+    "East Putney FC": "League Six",
+    "Egg Fried Reus": "League Six",
+    "FC Porto of London": "League Four",
+    "Galacticos Elect": "Bob Dixon League One",
+    "Hampton Terriers": "Tony Eldridge Championship",
+    "Harbut Rovers": "Voltra Sports League Two",
+    "Haydons Park": "League Eight",
+    "Hillside FC (Blues)": "League Nine",
+    "Hillside FC (Golds)": "League Five",
+    "Holloway Royals FC": "Bob Dixon League One",
+    "Imber Old Boys": "League Three",
+    "Jeffs Chippy": "League Five",
+    "Juizo FC": "League Four",
+    "Junction Elite FC": "League Three",
+    "Junction Elite FC 2nd Team": "League Four",
+    "Junction Elite FC Sunday 3rd Team": "League Eight",
+    "Kew Antigua": "League Five",
+    "Kudos Athletic": "Tony Eldridge Championship",
+    "Ladzio FC": "Tony Eldridge Championship",
+    "Larkhall City FC": "League Seven",
+    "Lenton Old Boys FC": "League Six",
+    "London River Plate FC": "Tony Eldridge Championship",
+    "London Titans": "League Nine",
+    "MR7 Football": "League Three",
+    "Mala Vida FC": "League Four",
+    "Mitcham Strollers": "League Three",
+    "Motspur Park CFC (Sunday)": "League Six",
+    "Mousa Mountain FC": "League Eight",
+    "Norton FC": "League Three",
+    "Old Colytonians": "League Six",
+    "Old Fields FC": "Bob Dixon League One",
+    "Old Freemen's": "League Nine",
+    "Old Rutlishians AFC (Sunday)": "League Five",
+    "Old Suttonians (Sunday)": "League Six",
+    "Olympique Mayonnaise": "League Seven",
+    "Parklife 'B'": "Bob Dixon League One",
+    "Parklife FC": "Graham Dodd Premier Division",
+    "Parthenope FC": "League Four",
+    "Peps All Stars": "League Nine",
+    "Pure FC 2.0": "League Nine",
+    "Pure Football FC 1st Team": "League Eight",
+    "Putney Lions": "Bob Dixon League One",
+    "Putney Town": "Bob Dixon League One",
+    "Real Dundonald": "Voltra Sports League Two",
+    "Ribblesdale Rovers": "League Three",
+    "SW Lions": "League Six",
+    "SWAG FC": "Graham Dodd Premier Division",
+    "Sheen Park Rangers": "League Four",
+    "Shepherds Tuesday": "League Nine",
+    "Showista FC": "League Three",
+    "Sloane FC": "Voltra Sports League Two",
+    "South London United": "Graham Dodd Premier Division",
+    "South West Rangers": "Tony Eldridge Championship",
+    "Southside United FC": "Voltra Sports League Two",
+    "Sporting Club Catania": "League Nine",
+    "Sporting Continental": "Graham Dodd Premier Division",
+    "Sporting Crabs": "League Three",
+    "Sporting London": "League Six",
+    "Sporting WEP CP": "League Five",
+    "St. Andrews": "Graham Dodd Premier Division",
+    "St. Matthew's Project": "League Three",
+    "Sue's Angels FC": "League Eight",
+    "TSM Rovers": "League Eight",
+    "Thames River Plate": "Bob Dixon League One",
+    "Three Little Birds FC": "League Eight",
+    "Top Deck FC": "Voltra Sports League Two",
+    "Venezia Dons FC": "League Five",
+    "Wandsworth Warriors": "Tony Eldridge Championship",
+    "Westminster Wanderers": "Graham Dodd Premier Division",
+    "Westminster Wanderers FC 3rd Team": "League Four",
+    "Westminster Wanderers FC 4th Team": "League Five",
+    "Westminster Wanderers Reserves": "Bob Dixon League One",
+    "Wimbledon Commoners": "Tony Eldridge Championship"
+  },
+  "cups": [
+    {
+      "id": "presidents",
+      "name": "Brian Howard President's Cup",
+      "short": "President's Cup",
+      "ties": [
+        {
+          "n": 1,
+          "round": "1st Round",
+          "home": "Brockwell Violets FC",
+          "away": "Three Little Birds FC"
+        },
+        {
+          "n": 2,
+          "round": "1st Round",
+          "home": "Peps All Stars",
+          "away": "Sue's Angels FC"
+        },
+        {
+          "n": 3,
+          "round": "1st Round",
+          "home": "TSM Rovers",
+          "away": "ACT Arantes United"
+        },
+        {
+          "n": 4,
+          "round": "1st Round",
+          "home": "Haydons Park",
+          "away": "Balham & Clapham Albion"
+        },
+        {
+          "n": 5,
+          "round": "1st Round",
+          "home": "Dynamo Putney FC",
+          "away": "Chelsea Rovers FC (Sundays)"
+        },
+        {
+          "n": 6,
+          "round": "1st Round",
+          "home": "BPR Men's",
+          "away": "Pure Football FC 1st Team"
+        },
+        {
+          "n": 7,
+          "round": "1st Round",
+          "home": "Bristol City (London) Supporters",
+          "away": "Larkhall City FC"
+        },
+        {
+          "n": 8,
+          "round": "1st Round",
+          "home": "Sporting Club Catania",
+          "away": "Hillside FC (Blues)"
+        },
+        {
+          "n": 9,
+          "round": "1st Round",
+          "home": "Junction Elite FC Sunday 3rd Team",
+          "away": "Dynamo London FC"
+        },
+        {
+          "n": 10,
+          "round": "1st Round",
+          "home": "London Titans",
+          "away": "Barnes Stormers FC"
+        },
+        {
+          "n": 11,
+          "round": "1st Round",
+          "home": "Old Freemen's",
+          "away": "Battersea Rise FC"
+        },
+        {
+          "n": 12,
+          "round": "1st Round",
+          "home": "Club Internacional de Fútbol Clapham",
+          "away": "Olympique Mayonnaise"
+        },
+        {
+          "n": 13,
+          "round": "2nd Round",
+          "home": "Deportivo Los Toros",
+          "away": "Winner of Tie 4"
+        },
+        {
+          "n": 14,
+          "round": "2nd Round",
+          "home": "Winner of Tie 9",
+          "away": "Pure FC 2.0"
+        },
+        {
+          "n": 15,
+          "round": "2nd Round",
+          "home": "Winner of Tie 6",
+          "away": "Winner of Tie 7"
+        },
+        {
+          "n": 16,
+          "round": "2nd Round",
+          "home": "Shepherds Tuesday",
+          "away": "Winner of Tie 11"
+        },
+        {
+          "n": 17,
+          "round": "2nd Round",
+          "home": "Winner of Tie 5",
+          "away": "Winner of Tie 3"
+        },
+        {
+          "n": 18,
+          "round": "2nd Round",
+          "home": "Winner of Tie 12",
+          "away": "Winner of Tie 10"
+        },
+        {
+          "n": 19,
+          "round": "2nd Round",
+          "home": "Winner of Tie 1",
+          "away": "Winner of Tie 8"
+        },
+        {
+          "n": 20,
+          "round": "2nd Round",
+          "home": "Winner of Tie 2",
+          "away": "Celtic Swans FC"
+        },
+        {
+          "n": 21,
+          "round": "Quarter-Final",
+          "home": "Winner of Tie 16",
+          "away": "Winner of Tie 14"
+        },
+        {
+          "n": 22,
+          "round": "Quarter-Final",
+          "home": "Winner of Tie 18",
+          "away": "Winner of Tie 17"
+        },
+        {
+          "n": 23,
+          "round": "Quarter-Final",
+          "home": "Winner of Tie 13",
+          "away": "Winner of Tie 20"
+        },
+        {
+          "n": 24,
+          "round": "Quarter-Final",
+          "home": "Winner of Tie 19",
+          "away": "Winner of Tie 15"
+        },
+        {
+          "n": 25,
+          "round": "Semi-Final",
+          "home": "Winner of Tie 21",
+          "away": "Winner of Tie 22"
+        },
+        {
+          "n": 26,
+          "round": "Semi-Final",
+          "home": "Winner of Tie 23",
+          "away": "Winner of Tie 24"
+        },
+        {
+          "n": 27,
+          "round": "Final",
+          "home": "Winner of Tie 25",
+          "away": "Winner of Tie 26"
+        }
+      ]
+    },
+    {
+      "id": "lipton",
+      "name": "Supreme Trophies Marcus Lipton Cup",
+      "short": "Marcus Lipton Cup",
+      "ties": [
+        {
+          "n": 1,
+          "round": "1st Round",
+          "home": "Brockwell Violets FC",
+          "away": "Barnes AFC"
+        },
+        {
+          "n": 2,
+          "round": "1st Round",
+          "home": "Juizo FC",
+          "away": "Sue's Angels FC"
+        },
+        {
+          "n": 3,
+          "round": "1st Round",
+          "home": "Westminster Wanderers FC 4th Team",
+          "away": "Pure Football FC 1st Team"
+        },
+        {
+          "n": 4,
+          "round": "1st Round",
+          "home": "Alfletico Madrid",
+          "away": "Boston Manor FC"
+        },
+        {
+          "n": 5,
+          "round": "1st Round",
+          "home": "Galacticos Elect",
+          "away": "Argentina FC"
+        },
+        {
+          "n": 6,
+          "round": "1st Round",
+          "home": "Putney Lions",
+          "away": "Top Deck FC"
+        },
+        {
+          "n": 7,
+          "round": "1st Round",
+          "home": "Brixton Town",
+          "away": "Celtic Swans FC"
+        },
+        {
+          "n": 8,
+          "round": "1st Round",
+          "home": "Hillside FC (Golds)",
+          "away": "Sheen Park Rangers"
+        },
+        {
+          "n": 9,
+          "round": "1st Round",
+          "home": "Lenton Old Boys FC",
+          "away": "Barking Mad FC"
+        },
+        {
+          "n": 10,
+          "round": "1st Round",
+          "home": "Chelsea Rovers FC (Sundays)",
+          "away": "Argentina FC 2.0"
+        },
+        {
+          "n": 11,
+          "round": "1st Round",
+          "home": "Holloway Royals FC",
+          "away": "Westminster Wanderers Reserves"
+        },
+        {
+          "n": 12,
+          "round": "1st Round",
+          "home": "Junction Elite FC Sunday 3rd Team",
+          "away": "Larkhall City FC"
+        },
+        {
+          "n": 13,
+          "round": "1st Round",
+          "home": "Putney Town",
+          "away": "London Titans"
+        },
+        {
+          "n": 14,
+          "round": "1st Round",
+          "home": "Shepherds Tuesday",
+          "away": "AFC Old Town"
+        },
+        {
+          "n": 15,
+          "round": "1st Round",
+          "home": "ACT Arantes United",
+          "away": "Sloane FC"
+        },
+        {
+          "n": 16,
+          "round": "1st Round",
+          "home": "Bev Old Boys",
+          "away": "Junction Elite FC"
+        },
+        {
+          "n": 17,
+          "round": "1st Round",
+          "home": "Kew Antigua",
+          "away": "BPR Men's"
+        },
+        {
+          "n": 18,
+          "round": "1st Round",
+          "home": "Haydons Park",
+          "away": "BPR Vets"
+        },
+        {
+          "n": 19,
+          "round": "1st Round",
+          "home": "Old Fields FC",
+          "away": "Sporting WEP CP"
+        },
+        {
+          "n": 20,
+          "round": "1st Round",
+          "home": "Parklife 'B'",
+          "away": "Old Colytonians"
+        },
+        {
+          "n": 21,
+          "round": "1st Round",
+          "home": "Deportivo Los Toros",
+          "away": "Clapham Chiefs"
+        },
+        {
+          "n": 22,
+          "round": "1st Round",
+          "home": "Bristol City (London) Supporters",
+          "away": "East Putney FC"
+        },
+        {
+          "n": 23,
+          "round": "1st Round",
+          "home": "TSM Rovers",
+          "away": "Battersea Rise FC"
+        },
+        {
+          "n": 24,
+          "round": "1st Round",
+          "home": "Clapham Common FC",
+          "away": "Venezia Dons FC"
+        },
+        {
+          "n": 25,
+          "round": "1st Round",
+          "home": "Old Rutlishians AFC (Sunday)",
+          "away": "Harbut Rovers"
+        },
+        {
+          "n": 26,
+          "round": "1st Round",
+          "home": "Atlético Madridlesbrough",
+          "away": "Real Dundonald"
+        },
+        {
+          "n": 27,
+          "round": "1st Round",
+          "home": "SW Lions",
+          "away": "Motspur Park CFC (Sunday)"
+        },
+        {
+          "n": 28,
+          "round": "1st Round",
+          "home": "Old Suttonians (Sunday)",
+          "away": "Deportivo La Cowruna"
+        },
+        {
+          "n": 29,
+          "round": "1st Round",
+          "home": "Balham & Clapham Albion",
+          "away": "Sporting Crabs"
+        },
+        {
+          "n": 30,
+          "round": "1st Round",
+          "home": "Old Freemen's",
+          "away": "Dynamo Putney FC"
+        },
+        {
+          "n": 31,
+          "round": "1st Round",
+          "home": "Three Little Birds FC",
+          "away": "Sporting London"
+        },
+        {
+          "n": 32,
+          "round": "1st Round",
+          "home": "Olympique Mayonnaise",
+          "away": "Sporting Club Catania"
+        },
+        {
+          "n": 33,
+          "round": "1st Round",
+          "home": "Hillside FC (Blues)",
+          "away": "Croydon United FC"
+        },
+        {
+          "n": 34,
+          "round": "1st Round",
+          "home": "Mitcham Strollers",
+          "away": "Mousa Mountain FC"
+        },
+        {
+          "n": 35,
+          "round": "1st Round",
+          "home": "Showista FC",
+          "away": "Southside United FC"
+        },
+        {
+          "n": 36,
+          "round": "1st Round",
+          "home": "Thames River Plate",
+          "away": "Junction Elite FC 2nd Team"
+        },
+        {
+          "n": 37,
+          "round": "1st Round",
+          "home": "Ribblesdale Rovers",
+          "away": "Norton FC"
+        },
+        {
+          "n": 38,
+          "round": "1st Round",
+          "home": "Club Internacional de Fútbol Clapham",
+          "away": "Casa Benfica Londres"
+        },
+        {
+          "n": 39,
+          "round": "1st Round",
+          "home": "Westminster Wanderers FC 3rd Team",
+          "away": "Pure FC 2.0"
+        },
+        {
+          "n": 40,
+          "round": "1st Round",
+          "home": "Mala Vida FC",
+          "away": "St. Matthew's Project"
+        },
+        {
+          "n": 41,
+          "round": "1st Round",
+          "home": "Barnes Stormers FC",
+          "away": "Egg Fried Reus"
+        },
+        {
+          "n": 42,
+          "round": "1st Round",
+          "home": "FC Porto of London",
+          "away": "Parthenope FC"
+        },
+        {
+          "n": 43,
+          "round": "1st Round",
+          "home": "Dynamo London FC",
+          "away": "Imber Old Boys"
+        },
+        {
+          "n": 44,
+          "round": "1st Round",
+          "home": "Peps All Stars",
+          "away": "MR7 Football"
+        },
+        {
+          "n": 45,
+          "round": "2nd Round",
+          "home": "Ladzio FC",
+          "away": "Winner of Tie 20"
+        },
+        {
+          "n": 46,
+          "round": "2nd Round",
+          "home": "Winner of Tie 35",
+          "away": "Winner of Tie 16"
+        },
+        {
+          "n": 47,
+          "round": "2nd Round",
+          "home": "Westminster Wanderers",
+          "away": "Winner of Tie 3"
+        },
+        {
+          "n": 48,
+          "round": "2nd Round",
+          "home": "Winner of Tie 12",
+          "away": "Winner of Tie 18"
+        },
+        {
+          "n": 49,
+          "round": "2nd Round",
+          "home": "Winner of Tie 6",
+          "away": "AFC Broomwood"
+        },
+        {
+          "n": 50,
+          "round": "2nd Round",
+          "home": "Winner of Tie 33",
+          "away": "Winner of Tie 26"
+        },
+        {
+          "n": 51,
+          "round": "2nd Round",
+          "home": "Winner of Tie 40",
+          "away": "Winner of Tie 2"
+        },
+        {
+          "n": 52,
+          "round": "2nd Round",
+          "home": "Cosmos United",
+          "away": "Winner of Tie 41"
+        },
+        {
+          "n": 53,
+          "round": "2nd Round",
+          "home": "Winner of Tie 1",
+          "away": "Winner of Tie 34"
+        },
+        {
+          "n": 54,
+          "round": "2nd Round",
+          "home": "Bath Old Boys United",
+          "away": "Winner of Tie 17"
+        },
+        {
+          "n": 55,
+          "round": "2nd Round",
+          "home": "Winner of Tie 8",
+          "away": "Albion"
+        },
+        {
+          "n": 56,
+          "round": "2nd Round",
+          "home": "Wandsworth Warriors",
+          "away": "Winner of Tie 21"
+        },
+        {
+          "n": 57,
+          "round": "2nd Round",
+          "home": "Sporting Continental",
+          "away": "Hampton Terriers"
+        },
+        {
+          "n": 58,
+          "round": "2nd Round",
+          "home": "Winner of Tie 7",
+          "away": "Winner of Tie 15"
+        },
+        {
+          "n": 59,
+          "round": "2nd Round",
+          "home": "Winner of Tie 23",
+          "away": "Winner of Tie 30"
+        },
+        {
+          "n": 60,
+          "round": "2nd Round",
+          "home": "Winner of Tie 31",
+          "away": "Jeffs Chippy"
+        },
+        {
+          "n": 61,
+          "round": "2nd Round",
+          "home": "Winner of Tie 11",
+          "away": "Winner of Tie 9"
+        },
+        {
+          "n": 62,
+          "round": "2nd Round",
+          "home": "Winner of Tie 19",
+          "away": "St. Andrews"
+        },
+        {
+          "n": 63,
+          "round": "2nd Round",
+          "home": "Winner of Tie 44",
+          "away": "Winner of Tie 4"
+        },
+        {
+          "n": 64,
+          "round": "2nd Round",
+          "home": "Winner of Tie 28",
+          "away": "Winner of Tie 43"
+        },
+        {
+          "n": 65,
+          "round": "2nd Round",
+          "home": "Winner of Tie 39",
+          "away": "Clapham Rovers"
+        },
+        {
+          "n": 66,
+          "round": "2nd Round",
+          "home": "Winner of Tie 14",
+          "away": "Wimbledon Commoners"
+        },
+        {
+          "n": 67,
+          "round": "2nd Round",
+          "home": "Winner of Tie 36",
+          "away": "Winner of Tie 42"
+        },
+        {
+          "n": 68,
+          "round": "2nd Round",
+          "home": "Winner of Tie 32",
+          "away": "Winner of Tie 25"
+        },
+        {
+          "n": 69,
+          "round": "2nd Round",
+          "home": "Winner of Tie 22",
+          "away": "Parklife FC"
+        },
+        {
+          "n": 70,
+          "round": "2nd Round",
+          "home": "Winner of Tie 24",
+          "away": "Winner of Tie 13"
+        },
+        {
+          "n": 71,
+          "round": "2nd Round",
+          "home": "South West Rangers",
+          "away": "Kudos Athletic"
+        },
+        {
+          "n": 72,
+          "round": "2nd Round",
+          "home": "SWAG FC",
+          "away": "Winner of Tie 5"
+        },
+        {
+          "n": 73,
+          "round": "2nd Round",
+          "home": "Winner of Tie 27",
+          "away": "London River Plate FC"
+        },
+        {
+          "n": 74,
+          "round": "2nd Round",
+          "home": "Winner of Tie 10",
+          "away": "Winner of Tie 29"
+        },
+        {
+          "n": 75,
+          "round": "2nd Round",
+          "home": "Winner of Tie 38",
+          "away": "Winner of Tie 37"
+        },
+        {
+          "n": 76,
+          "round": "3rd Round",
+          "home": "Winner of Tie 60",
+          "away": "Winner of Tie 57"
+        },
+        {
+          "n": 77,
+          "round": "3rd Round",
+          "home": "Winner of Tie 70",
+          "away": "Winner of Tie 62"
+        },
+        {
+          "n": 78,
+          "round": "3rd Round",
+          "home": "Winner of Tie 73",
+          "away": "Winner of Tie 61"
+        },
+        {
+          "n": 79,
+          "round": "3rd Round",
+          "home": "Winner of Tie 54",
+          "away": "Winner of Tie 47"
+        },
+        {
+          "n": 80,
+          "round": "3rd Round",
+          "home": "Winner of Tie 68",
+          "away": "Winner of Tie 66"
+        },
+        {
+          "n": 81,
+          "round": "3rd Round",
+          "home": "Winner of Tie 45",
+          "away": "Winner of Tie 63"
+        },
+        {
+          "n": 82,
+          "round": "3rd Round",
+          "home": "Winner of Tie 58",
+          "away": "Winner of Tie 74"
+        },
+        {
+          "n": 83,
+          "round": "3rd Round",
+          "home": "Winner of Tie 75",
+          "away": "Winner of Tie 65"
+        },
+        {
+          "n": 84,
+          "round": "3rd Round",
+          "home": "Winner of Tie 50",
+          "away": "Winner of Tie 52"
+        },
+        {
+          "n": 85,
+          "round": "3rd Round",
+          "home": "Winner of Tie 56",
+          "away": "South London United"
+        },
+        {
+          "n": 86,
+          "round": "3rd Round",
+          "home": "Winner of Tie 67",
+          "away": "Winner of Tie 69"
+        },
+        {
+          "n": 87,
+          "round": "3rd Round",
+          "home": "Winner of Tie 71",
+          "away": "Winner of Tie 49"
+        },
+        {
+          "n": 88,
+          "round": "3rd Round",
+          "home": "Winner of Tie 46",
+          "away": "Winner of Tie 48"
+        },
+        {
+          "n": 89,
+          "round": "3rd Round",
+          "home": "Winner of Tie 53",
+          "away": "Winner of Tie 55"
+        },
+        {
+          "n": 90,
+          "round": "3rd Round",
+          "home": "Winner of Tie 51",
+          "away": "Winner of Tie 64"
+        },
+        {
+          "n": 91,
+          "round": "3rd Round",
+          "home": "Winner of Tie 72",
+          "away": "Winner of Tie 59"
+        },
+        {
+          "n": 92,
+          "round": "4th Round",
+          "home": "Winner of Tie 79",
+          "away": "Winner of Tie 81"
+        },
+        {
+          "n": 93,
+          "round": "4th Round",
+          "home": "Winner of Tie 87",
+          "away": "Winner of Tie 89"
+        },
+        {
+          "n": 94,
+          "round": "4th Round",
+          "home": "Winner of Tie 80",
+          "away": "Winner of Tie 82"
+        },
+        {
+          "n": 95,
+          "round": "4th Round",
+          "home": "Winner of Tie 83",
+          "away": "Winner of Tie 84"
+        },
+        {
+          "n": 96,
+          "round": "4th Round",
+          "home": "Winner of Tie 90",
+          "away": "Winner of Tie 88"
+        },
+        {
+          "n": 97,
+          "round": "4th Round",
+          "home": "Winner of Tie 78",
+          "away": "Winner of Tie 76"
+        },
+        {
+          "n": 98,
+          "round": "4th Round",
+          "home": "Winner of Tie 86",
+          "away": "Winner of Tie 77"
+        },
+        {
+          "n": 99,
+          "round": "4th Round",
+          "home": "Winner of Tie 85",
+          "away": "Winner of Tie 91"
+        },
+        {
+          "n": 100,
+          "round": "Quarter-Final",
+          "home": "Winner of Tie 92",
+          "away": "Winner of Tie 95"
+        },
+        {
+          "n": 101,
+          "round": "Quarter-Final",
+          "home": "Winner of Tie 99",
+          "away": "Winner of Tie 94"
+        },
+        {
+          "n": 102,
+          "round": "Quarter-Final",
+          "home": "Winner of Tie 93",
+          "away": "Winner of Tie 97"
+        },
+        {
+          "n": 103,
+          "round": "Quarter-Final",
+          "home": "Winner of Tie 96",
+          "away": "Winner of Tie 98"
+        },
+        {
+          "n": 104,
+          "round": "Semi-Final",
+          "home": "Winner of Tie 103",
+          "away": "Winner of Tie 100"
+        },
+        {
+          "n": 105,
+          "round": "Semi-Final",
+          "home": "Winner of Tie 101",
+          "away": "Winner of Tie 102"
+        },
+        {
+          "n": 106,
+          "round": "Final",
+          "home": "Winner of Tie 105",
+          "away": "Winner of Tie 104"
+        }
+      ]
+    }
+  ]
+}

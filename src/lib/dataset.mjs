@@ -200,6 +200,10 @@ export function buildDataset(overrides = {}) {
      A stated map rather than a fuzzy match, so a new mistake appears as a new
      venue instead of being quietly absorbed into an existing one. See
      src/data/venues.json, which also lists what it deliberately leaves. */
+  /* THE CUP DRAWS, read whole. Same device as the transcribed fixtures: the
+     league publishes the brackets as PDFs and Full-Time refuses automated
+     clients, so they are parsed in once and the site derives the route. */
+  const cups = read('cups-2627.json');
   const venues = read('venues.json');
   const CANON = venues.canonical || {};
   const KNOWN = new Set(venues.known || []);
@@ -1510,7 +1514,7 @@ export function buildDataset(overrides = {}) {
     statusIn: (num, season) => statusIn(statusRecord, num, season, statusOpts),
     statusLabelIn: (num, season) => statusLabelIn(statusRecord, num, season, statusOpts),
     isPlayingStatus: isPlaying,
-    coaches, table, leagueScorers, leagueScorersByComp, nextDivisionTable, leagueResults,
+    coaches, cups, table, leagueScorers, leagueScorersByComp, nextDivisionTable, leagueResults,
     fulltime,
     articles, recognition, galleries, playerPhotos, donate, hero, homeLayout, trialists,
     photoFor, photoSeasons, shotFor, sponsorships, partners,

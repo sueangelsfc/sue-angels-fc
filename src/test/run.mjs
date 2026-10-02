@@ -1749,6 +1749,148 @@ for (const [f, h] of pages) {
    Any card whose label claims a win must show at least as many goals for as
    against, and a defeat the reverse. That is checkable from the output
    alone. */
+/* ---- A CUP ROUTE IS READ OFF THE DRAW, NOT INFERRED ----
+   The league prints each tie "home -v- away", so which side the club is on is
+   already decided for every round, and a side reading "Winner of Tie N" is a
+   branch that names every club which could arrive. Both are derivations over
+   a bracket, which is exactly the shape that passes a weak check: a route of
+   the right LENGTH says nothing about whether it followed the right ties. */
+{
+  const { cupRoutes: cr, clubsUnder: cu, routeThrough: rt } =
+    await import(path.join(ROOT, 'src', 'lib', 'cups.mjs'));
+  const cupsD = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/data/cups-2627.json'), 'utf8'));
+  const US = "Sue's Angels FC";
+
+  /* The draws themselves: a bracket with a hole in it resolves to a shorter
+     route and nothing would say so. */
+  for (const cup of cupsD.cups) {
+    const ns = cup.ties.map((t) => t.n);
+    check(`${cup.short}: every tie number from 1 is present exactly once`,
+      ns.length === new Set(ns).size && ns.length === Math.max(...ns),
+      `${ns.length} ties, highest ${Math.max(...ns)}`);
+    const refs = cup.ties.flatMap((t) => [t.home, t.away])
+      .map((x) => /^winner of tie\s+(\d+)$/i.exec(String(x)))
+      .filter(Boolean).map((m) => Number(m[1]));
+    check(`${cup.short}: every "winner of tie" points at a tie that exists`,
+      refs.every((n) => ns.includes(n)), refs.filter((n) => !ns.includes(n)).join(', '));
+  }
+
+  const routes = cr(cupsD, US);
+  check('both cups produce a route for the club', routes.length === 2
+    && routes.every((r) => r.rounds.length >= 5), routes.map((r) => `${r.short}:${r.rounds.length}`).join(' '));
+
+  /* HOME AND AWAY, AGAINST THE DRAW ITSELF. Asserted tie by tie rather than
+     as a list of booleans: the test re-reads the printed tie and checks the
+     club is on the side the route claims. */
+  for (const cup of routes) {
+    const src = cupsD.cups.find((c) => c.id === cup.id);
+    const byNum = new Map(src.ties.map((t) => [t.n, t]));
+    const wrong = cup.rounds.filter((r) => {
+      const t = byNum.get(r.tie);
+      const side = r.home ? t.home : t.away;
+      const other = r.home ? t.away : t.home;
+      /* Either we are named on our side, or our side is the branch we came
+         out of; the other side must never resolve to us. */
+      return cu(other, byNum).includes(US) || (side !== US && !/^winner of tie/i.test(String(side)));
+    });
+    check(`${cup.short}: the club is on the side of each tie the route says`,
+      wrong.length === 0, wrong.map((r) => `${r.round} tie ${r.tie}`).join(', '));
+  }
+
+  /* The two openers, named, because these are the facts the club asked for. */
+  const pres = routes.find((r) => r.id === 'presidents');
+  const lip = routes.find((r) => r.id === 'lipton');
+  check('the President\u2019s Cup opens away at Peps All Stars of League Nine',
+    !pres.rounds[0].home && pres.rounds[0].opponents.length === 1
+      && pres.rounds[0].opponents[0].name === 'Peps All Stars'
+      && pres.rounds[0].opponents[0].division === 'League Nine'
+      && pres.rounds[0].opponents[0].where === 'lower',
+    JSON.stringify(pres.rounds[0].opponents));
+  check('the Lipton opens away at Juizo FC, four divisions up',
+    !lip.rounds[0].home && lip.rounds[0].opponents[0].name === 'Juizo FC'
+      && lip.rounds[0].opponents[0].division === 'League Four'
+      && lip.rounds[0].opponents[0].where === 'higher',
+    JSON.stringify(lip.rounds[0].opponents));
+  check('the Lipton draw has the club at home from the third round to the semi-final',
+    lip.rounds.slice(2, -1).every((r) => r.home),
+    lip.rounds.map((r) => (r.home ? 'H' : 'A')).join(''));
+
+  /* THE POSSIBLE OPPONENTS GROW, and the last round before the final must
+     cover a real slice of the draw rather than one branch. */
+  for (const cup of routes) {
+    const counts = cup.rounds.map((r) => r.opponents.length);
+    /* NOT STRICTLY, BECAUSE A BYE IS A ROUND WITH ONE KNOWN OPPONENT. Celtic
+       Swans were byed into the President's Cup second round, so rounds one
+       and two both have exactly one: the field never narrows, and the round
+       before the final is a real slice of the draw rather than one branch. */
+    check(`${cup.short}: the field never narrows and ends up wide`,
+      counts.every((n, i) => i === 0 || n >= counts[i - 1])
+        && counts[counts.length - 1] >= 8, counts.join(' -> '));
+    check(`${cup.short}: nobody is listed as a possible opponent twice`,
+      cup.rounds.every((r) => new Set(r.opponents.map((o) => o.name)).size === r.opponents.length));
+    check(`${cup.short}: the club never lists itself as its own opponent`,
+      cup.rounds.every((r) => !r.opponents.some((o) => o.name === US)));
+  }
+
+  /* A division for all but one, and the one is named rather than guessed. */
+  const named = new Set(Object.keys(cupsD.divisionOf));
+  const inDraw = new Set(cupsD.cups.flatMap((c) => c.ties)
+    .flatMap((t) => [t.home, t.away]).filter((x) => !/^winner of tie/i.test(String(x))));
+  const noDiv = [...inDraw].filter((c) => !named.has(c));
+  check('every club in either draw has a division, bar the one that is named',
+    noDiv.length === 1 && noDiv[0] === 'BPR Vets', noDiv.join(', '));
+
+  const hF = pages.get('fixtures.html');
+  if (hF) {
+    /* The page escapes an apostrophe, and the President's Cup has one in its
+       name, so the comparison is against the escaped text the page ships. */
+    const escd = (x) => String(x).replace(/&/g, '&amp;').replace(/'/g, '&#39;');
+    check('the fixtures page carries both cup brackets',
+      /class="sec mt-cups"/.test(hF)
+        && cupsD.cups.every((c) => hF.includes(escd(c.name))),
+      cupsD.cups.filter((c) => !hF.includes(escd(c.name))).map((c) => c.short).join(', '));
+    check('and every round of both is on it',
+      (hF.match(/class="cup-round"/g) || []).length
+        === routes.reduce((n, r) => n + r.rounds.length, 0),
+      `${(hF.match(/class="cup-round"/g) || []).length} rows`);
+    /* `cup-chip` is a prefix of `cup-chips`, the list that holds them, so the
+       loose match counted thirteen lists as opponents. */
+    const chips = (hF.match(/class="cup-chip["s ]/g) || [])
+      .filter((x) => !x.startsWith('class="cup-chips')).length;
+    const want = routes.reduce((n, r) => n + r.rounds.reduce((m, x) => m + x.opponents.length, 0), 0);
+    check('every possible opponent is listed, not just the next one',
+      chips === want, `${chips} chips for ${want} opponents`);
+  }
+}
+
+/* ---- A PAGE DESCRIBES THE DIVISION IT OPENS ON ----
+   `d.tableSeason` is the season the PUBLISHED table describes and is still
+   25/26 until a League Eight table is transcribed into it, which is right for
+   that table and wrong as a description of the page: the standfirst read
+   "League Ten 25/26" above a page that has opened on League Eight since the
+   first match was played in it. */
+{
+  const hL = pages.get('league.html');
+  const { buildDataset: bdL2 } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const { leagueUnderway: luL } = await import(path.join(ROOT, 'src', 'lib', 'home-layout.mjs'));
+  const dL2 = bdL2();
+  if (hL) {
+    const lede = (/<p class="lg-hero__lede">([\s\S]*?)<\/p>/.exec(hL) || [, ''])[1]
+      .replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    const on = luL(dL2)
+      ? `${(dL2.nextDivisionTable || {}).division || dL2.divisionOf(dL2.nextSeason)} ${(dL2.nextDivisionTable || {}).season || dL2.nextSeason}`
+      : `${dL2.divisionOf(dL2.tableSeason)} ${dL2.tableSeason}`;
+    check('the league page names the division it opens on', lede.startsWith(on),
+      `${lede.slice(0, 70)} | expected to open on ${on}`);
+    /* And the tab that is actually marked on must be that division too, so
+       the sentence and the control cannot part company. */
+    const onTab = (/<a class="lg-tab is-on"[\s\S]*?data-league="(\w+)"/.exec(hL)
+      || /data-league="(\w+)"[^>]*class="lg-tab is-on"/.exec(hL) || [, ''])[1];
+    check('and the tab marked on is that same division',
+      onTab === (luL(dL2) ? 'eight' : 'ten'), `tab "${onTab}"`);
+  }
+}
+
 /* ---- THE MANAGER'S RECORD IS A CLAIM ABOUT A PERSON ----
    The band above it on the same page is the club's figures under the whole
    dugout and says so. This one names somebody, so it is counted from the
@@ -5169,6 +5311,11 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 {
   const emDash = [];
   const division = [];
+  const DIVISION_NAMES = (JSON.parse(fs.readFileSync(
+    path.join(ROOT, 'src/data/cups-2627.json'), 'utf8')).divisions || [])
+    .filter((n) => /\bDivision\b/.test(n));
+  check('the league really does name a division "Division", so this exemption is not idle',
+    DIVISION_NAMES.length > 0, DIVISION_NAMES.join(', '));
   for (const [f, h] of pages) {
     /* The house list names ·, ’ and – as the literals to use. An em dash is
        not on it, and 52 of them arrived with six pasted match reports. */
@@ -5177,7 +5324,14 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
        habit from the league they played in before, and it reached 17 places
        across 8 pages, including a fact label whose own value said League
        Eight beside it. */
-    if (/\bDivision\b/.test(h)) division.push(f);
+    /* THE LEAGUE'S OWN NAMES ARE ALLOWED, AND ONLY THOSE. Two of the eleven
+       divisions are sponsor-named and one of them is literally "Graham Dodd
+       Premier Division", so a page listing the division a cup opponent plays
+       in prints the word legitimately. Taken out by exact name, read from the
+       same file the pages print from, so a real slip still fails and a
+       division the league renames cannot quietly widen the exemption. */
+    const bare = DIVISION_NAMES.reduce((t, n) => t.split(n).join(''), h);
+    if (/\bDivision\b/.test(bare)) division.push(f);
   }
   check('no em dash in any published page', emDash.length === 0,
     emDash.slice(0, 4).join(', '));

@@ -28,6 +28,7 @@
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { teamSummary, fmtDate } from '../lib/stats.mjs';
+import { cupRoutes } from '../lib/cups.mjs';
 import { seasonViews, defaultView, seasonBar, seasonPanels, matchNote } from '../lib/seasons.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
 import { hasReport as hasWrittenReport, FRIENDLY_FLAG, FRIENDLY_NOTE_SHORT } from '../lib/prose.mjs';
@@ -443,6 +444,66 @@ function matchesPage(d, mode) {
 
   const isFixtures = mode === 'fixtures';
 
+  /* ---- THE CUP DRAWS, THE WHOLE WAY DOWN ----
+     The league publishes each cup as a full bracket, and two things the club
+     kept asking are already in it: a tie is printed "home -v- away", so which
+     side we are on is read rather than inferred, every round to the final;
+     and a side reading "Winner of Tie N" is a branch, so every club that could
+     arrive in a round can be listed by walking it.
+
+     A LIST OF FIFTY IS NOT A LIST SOMEBODY READS, so a round with more than
+     eight opens on a count and a details element. The early rounds, which are
+     the ones anybody is actually looking for, are open on the page.
+
+     The draw is not a fixture. It says what is possible, not what is booked,
+     so the band says so and the fixture list above it stays the authority on
+     dates. */
+  const cupData = d.cups || null;
+  const cupBand = isFixtures && cupData && (cupData.cups || []).length ? (() => {
+    const blocks = cupRoutes(cupData, CLUB.name).filter((c) => c.rounds.length).map((cup) => {
+      const rows = cup.rounds.map((r) => {
+        const many = r.opponents.length > 8;
+        const chips = r.opponents.map((o) => `<li class="cup-chip${o.where === 'same' ? ' is-us' : ''}">
+                <b>${esc(o.name)}</b><i>${esc(o.division || 'Not in the eleven tables')}</i>
+              </li>`).join('\n              ');
+        const list = `<ul class="cup-chips">\n              ${chips}\n            </ul>`;
+        const n = r.opponents.length;
+        return `<li class="cup-round">
+            <p class="cup-round__h">
+              <span class="cup-round__r">${esc(r.round)}</span>
+              <span class="cup-ha${r.home ? ' is-home' : ''}">${r.home ? 'Home' : 'Away'}</span>
+            </p>
+            ${many
+    ? `<details class="cup-more">
+              <summary>${esc(n)} clubs could reach this round</summary>
+              ${list}
+            </details>`
+    : `${r.decided ? '' : `<p class="cup-round__n">${esc(n === 1 ? 'One club' : `${n} clubs`)} could reach this round</p>`}
+            ${list}`}
+          </li>`;
+      }).join('\n          ');
+      return `<div class="cup-block rv">
+          <h3 class="cup-block__h">${esc(cup.name)}</h3>
+          <ol class="cup-rounds">
+            ${rows}
+          </ol>
+        </div>`;
+    }).join('\n        ');
+    return `<section class="sec mt-cups" id="cups" aria-labelledby="cup-h">
+      <div class="wrap">
+        <p class="eyebrow rv"><i class="eyebrow__dash" aria-hidden="true"></i> The cup draws</p>
+        <h2 class="h2 rv" id="cup-h">How far it could <span class="volt">go.</span></h2>
+        <p class="mt-cups__lede rv">Both brackets, read off the draws the league published. A tie is
+          printed home against away, so which side ${esc(CLUB.name)} is on is already decided for every
+          round, and every club that could arrive in a round is listed with the division it plays in.
+          A draw is not a fixture: dates are above, and the club has to get there.</p>
+        ${blocks}
+        <p class="mt-cups__note rv">Divisions as they stood on ${esc(fmtDate(cupData.divisionsAsOf))}.
+          ${esc(CLUB.name)} play in League Eight, the eighth of ${esc((cupData.divisions || []).length)}.</p>
+      </div>
+    </section>`;
+  })() : '';
+
   /* THE LEAGUE'S OWN LIST, LIVE. What this page shows is what the club holds:
      a fixture reaches it when somebody enters it in the panel and publishes,
      and the league can move a kick-off or call a game off in between. So the
@@ -466,7 +527,7 @@ function matchesPage(d, mode) {
 
   return {
     body: siteHeader(isFixtures ? '/fixtures.html' : '/results.html')
-      + (isFixtures ? fixHero + fixBand : hero + recordBand + awaitingBand + listBand)
+      + (isFixtures ? fixHero + fixBand + cupBand : hero + recordBand + awaitingBand + listBand)
       + liveBand
       + sourceNote(['fulltime', 'surreyfa'])
       + ctaBand,

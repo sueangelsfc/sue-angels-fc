@@ -1,6 +1,10 @@
 {
   "_source": "The two cup draws the league published as PDFs (Brian Howard President's Cup, printed Wed 16 Sept 2026; Supreme Trophies Marcus Lipton Cup, printed Fri 02 Oct 2026), parsed tie by tie, and the eleven Southern Sunday Football League division tables, which the club sent as screenshots. FA Full-Time refuses automated clients as policy and serves a challenge page to a browser as well, so nothing here was fetched.",
   "_note": "WHICH SIDE OF THE DASH IS THE ANSWER. A draw prints a tie as 'home -v- away', so home and away is read rather than inferred, all the way to the final. A side that reads 'Winner of Tie N' is resolved by following that tie, which is also how the full list of possible opponents for a round is built: walk every branch feeding it.\n\nDIVISIONS ARE A FACT ABOUT TODAY and will go stale. They are here because the club asked which league each opponent plays in, and they are the club's transcription of the tables as they stood on 2 October 2026. BPR Vets appears in the Lipton draw and in none of the eleven tables, so it has no division here rather than a guessed one.",
+  "_neutralNote": "A FINAL IS PLAYED AT A NEUTRAL GROUND, so neither club is at home in one. The draw still prints a final as 'home -v- away' because the bracket has to name the sides, and reading that as a home tie would tell the club it was at The Reeves for a match played somewhere else. The site already holds this rule for matches it has a record of - see neutral-venues.json and the Dylan Rigobert Trophy final at Robert Parker Stadium, where the same sentence is written - and this is the same rule applied to a round that has not been played. Named here rather than tested for in code, because which rounds are neutral is the league's decision and not a fact about the word.",
+  "neutralRounds": [
+    "Final"
+  ],
   "season": "26/27",
   "divisionsAsOf": "2026-10-02",
   "divisions": [

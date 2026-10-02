@@ -471,7 +471,8 @@ function matchesPage(d, mode) {
         return `<li class="cup-round">
             <p class="cup-round__h">
               <span class="cup-round__r">${esc(r.round)}</span>
-              <span class="cup-ha${r.home ? ' is-home' : ''}">${r.home ? 'Home' : 'Away'}</span>
+              <span class="cup-ha${r.neutral ? ' is-neutral' : r.home ? ' is-home' : ''}">${
+    r.neutral ? 'Neutral' : r.home ? 'Home' : 'Away'}</span>
             </p>
             ${many
     ? `<details class="cup-more">
@@ -496,7 +497,8 @@ function matchesPage(d, mode) {
         <p class="mt-cups__lede rv">Both brackets, read off the draws the league published. A tie is
           printed home against away, so which side ${esc(CLUB.name)} is on is already decided for every
           round, and every club that could arrive in a round is listed with the division it plays in.
-          A draw is not a fixture: dates are above, and the club has to get there.</p>
+          A final is played at a neutral ground, so neither club is at home in one. A draw is not a
+          fixture: dates are above, and the club has to get there.</p>
         ${blocks}
         <p class="mt-cups__note rv">Divisions as they stood on ${esc(fmtDate(cupData.divisionsAsOf))}.
           ${esc(CLUB.name)} play in League Eight, the eighth of ${esc((cupData.divisions || []).length)}.</p>

@@ -244,3 +244,6 @@ html.js .mt[hidden]{display: none;}
   padding: 4px 0; list-style-position: inside;}
 .cup-more > summary:hover{color: var(--fg);}
 .cup-more[open] > summary{margin-bottom: 12px;}
+/* A FINAL IS NEITHER. Marked by the outline the away pill uses with the
+   accent on the text, so it reads as a third state rather than a home tie. */
+.cup-ha.is-neutral{border-color: rgba(var(--volt-rgb), 0.5); color: var(--volt-text);}

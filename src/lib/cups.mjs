@@ -99,12 +99,20 @@ export function divisionRank(data, division) {
 export function cupRoutes(data, club) {
   const of = data.divisionOf || {};
   const ours = divisionRank(data, of[club]);
+  /* A FINAL IS AT A NEUTRAL GROUND AND NEITHER CLUB IS AT HOME IN IT. The
+     draw still prints one, because a bracket has to name the sides, and
+     repeating that would tell the club it was at The Reeves for a match
+     played somewhere else. The rounds are named in the data, not detected
+     from the word "Final" here, because which ones are neutral is the
+     league's decision. */
+  const neutral = new Set(data.neutralRounds || []);
   return (data.cups || []).map((cup) => ({
     id: cup.id,
     name: cup.name,
     short: cup.short || cup.name,
     rounds: routeThrough(cup, club).map((r) => ({
       ...r,
+      neutral: neutral.has(r.round),
       opponents: r.opponents.map((name) => {
         const division = of[name] || '';
         const rank = divisionRank(data, division);

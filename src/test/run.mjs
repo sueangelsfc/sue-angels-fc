@@ -1797,6 +1797,31 @@ for (const [f, h] of pages) {
       wrong.length === 0, wrong.map((r) => `${r.round} tie ${r.tie}`).join(', '));
   }
 
+  /* A FINAL IS AT A NEUTRAL GROUND, so neither club is at home in one. The
+     draw still prints a side, because a bracket has to name one, and
+     repeating it would tell the club it was at The Reeves for a match played
+     somewhere else. The site already holds this rule for matches it has a
+     record of (neutral-venues.json, the Dylan Rigobert final), and this is
+     the same rule applied to a round nobody has played. */
+  check('the league names which rounds are neutral rather than the code guessing',
+    (cupsD.neutralRounds || []).length > 0, JSON.stringify(cupsD.neutralRounds));
+  for (const cup of routes) {
+    const last = cup.rounds[cup.rounds.length - 1];
+    check(`${cup.short}: the final is neutral, not a home or away tie`,
+      last.round === 'Final' && last.neutral === true, `${last.round} neutral=${last.neutral}`);
+    check(`${cup.short}: every round before it still says which side we are on`,
+      cup.rounds.slice(0, -1).every((r) => r.neutral === false),
+      cup.rounds.map((r) => `${r.round}:${r.neutral}`).join(' '));
+  }
+  if (pages.get('fixtures.html')) {
+    const hC = pages.get('fixtures.html');
+    const pills = [...hC.matchAll(/cup-ha[^"]*">([A-Za-z]+)</g)].map((m) => m[1]);
+    check('the fixtures page captions a final Neutral and never Home or Away',
+      pills.filter((p) => p === 'Neutral').length === routes.length
+        && pills.length === routes.reduce((n, r) => n + r.rounds.length, 0),
+      pills.join(' '));
+  }
+
   /* The two openers, named, because these are the facts the club asked for. */
   const pres = routes.find((r) => r.id === 'presidents');
   const lip = routes.find((r) => r.id === 'lipton');

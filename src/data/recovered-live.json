@@ -7154,12 +7154,13 @@
       "data": {
         "as": 1,
         "hs": 7,
+        "id": "r20260927-barnes",
         "away": "Barnes Stormers FC",
         "date": "27 Sep 2026",
         "home": "Sue's Angels FC",
         "kick": "11:00",
         "kind": "score",
-        "motm": null,
+        "motm": 9,
         "subs": [
           {
             "on": 43,
@@ -7311,10 +7312,12 @@
             "situation": "penalty"
           },
           {
-            "og": true,
             "num": null,
             "zone": null,
-            "assist": null,
+            "assist": {
+              "num": 20,
+              "type": "corner"
+            },
             "minute": null,
             "penalty": false,
             "bodyPart": null,
@@ -7378,6 +7381,12 @@
             "forGoalBy": 3
           },
           {
+            "num": 20,
+            "type": "corner",
+            "minute": null,
+            "forGoalBy": null
+          },
+          {
             "num": 4,
             "type": "through",
             "minute": null,
@@ -7391,7 +7400,7 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-09-30T21:26:10.687Z",
+        "savedAt": "2026-09-30T22:06:39.684Z",
         "redCards": [],
         "starters": [
           {
@@ -7558,7 +7567,7 @@
         ],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-09-30T21:26:10.687+00:00"
+      "updated_at": "2026-09-30T22:06:39.684+00:00"
     }
   ],
   "articles": [
@@ -7753,6 +7762,21 @@
         "playerName": ""
       },
       "updated_at": "2026-06-08T15:37:29.261+00:00"
+    },
+    {
+      "key": "potm-1791297762859",
+      "data": {
+        "id": "potm-1791297762859",
+        "type": "potm",
+        "month": "September",
+        "reason": "A huge congratulations to Ade on being named Sue's Angels FC Player of the Month for September.\n\nAde scored 7 goals in 4 starts across the month, including a hat-trick in the 8-1 against Haydons Park and two more at Junction Elite. He was named Player of the Match twice, in back-to-back weeks.\n\nThe club won all four, scoring 20 goals in the process, and 7 of them were his. It is some way to start life at Sue's Angels.\n\nCongratulations, Ade.",
+        "season": "26/27",
+        "playerId": 12,
+        "createdAt": "2026-10-06T14:42:42.859Z",
+        "updatedAt": "2026-10-06T14:50:28.956Z",
+        "playerName": "Ade Owolana"
+      },
+      "updated_at": "2026-10-06T14:50:28.957+00:00"
     }
   ],
   "gallery": [

@@ -344,3 +344,25 @@ html[data-theme="light"] .aw-board__track i{background: rgba(17, 19, 21, 0.34);}
 /* A season with nothing awarded yet says so, rather than showing the page
    with every band missing and no explanation. */
 .aw-none{max-width: 58ch; font-size: 15px; line-height: 1.72; color: var(--ink-3);}
+
+/* THE STAR IS NOT A PHOTOGRAPH, SO IT IS NOT CROPPED LIKE ONE. Every face slot
+   on this page sets object-fit: cover, which is right for a portrait and wrong
+   for a crest: covered, the star fills the box and loses its own points. It is
+   contained, inset, and sits on the faint tint the empty slots already use, so
+   a winner with no photograph reads as a club mark rather than a broken frame
+   or a stretched badge. */
+.aw-potm__shot img.aw-star,
+.aw-top__shot img.aw-star,
+.aw-card__shot img.aw-star,
+.aw-board__face img.aw-star,
+.aw-ml__face img.aw-star,
+.aw-cap__face img.aw-star{object-fit: contain; background: rgba(255, 255, 255, 0.04);}
+.aw-potm__shot img.aw-star,
+.aw-top__shot img.aw-star,
+.aw-card__shot img.aw-star{padding: 18%;}
+.aw-board__face img.aw-star,
+.aw-ml__face img.aw-star,
+.aw-cap__face img.aw-star{padding: 16%;}
+/* It never takes the hover push a photograph gets: nothing is being revealed. */
+.aw-potm__panel:hover .aw-potm__shot img.aw-star,
+.aw-card:hover .aw-card__shot img.aw-star{transform: none;}

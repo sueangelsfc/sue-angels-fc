@@ -182,6 +182,32 @@ async function main() {
     }
   }
 
+  /* ---- One tablist per season view, asked of the real thing -------------
+     The Player of the Month band ships once per season view, and the script
+     that promotes it asked the WHOLE DOCUMENT for its tabs and panels: ten
+     tabs, ten panels, lengths equal so the guard passed, and select(0) then
+     hid nine. The 26/27 view has one award, so its only panel was hidden and
+     the season drew a lone pill under a heading reading "1 awarded".
+
+     Nothing static could see it. The markup was correct and complete in the
+     HTML, every id resolved, and the suite's DOM has no scripts running over
+     it; the defect lived entirely in what the script did on load. So it is
+     asked here, of a real browser, the way the bug was actually found. */
+  await resize(1280);
+  await goto(`http://localhost:${PORT}/awards.html`);
+  const potm = await ask(`(() => {
+    const bands = [...document.querySelectorAll('.aw-potm')];
+    return {
+      bands: bands.length,
+      bad: bands.filter((b) => [...b.querySelectorAll('[data-potm-panel]')]
+        .filter((p) => !p.hidden).length !== 1).length,
+      empty: [...document.images].filter((i) => !i.getAttribute('src')).length,
+    };
+  })()`);
+  if (potm.bands < 2) fail('awards.html', 'fewer than two Player of the Month bands, so the one-per-view check proves nothing');
+  if (potm.bad) fail('awards.html', `${potm.bad} Player of the Month band(s) show other than exactly one panel`);
+  if (potm.empty) fail('awards.html', `${potm.empty} image(s) with an empty src, which re-request the page`);
+
   /* ---- The control panel ------------------------------------------------
      It is behind a Supabase sign-in, so it is booted the way the suite boots
      it: the shipped files, with the network stubbed and nothing else. The

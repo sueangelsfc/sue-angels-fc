@@ -25,19 +25,43 @@ import { sourceNote } from '../lib/blocks.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
-const AVATAR = '/assets/players/avatar.svg';
+
 
 const shortClub = (name) => String(name || '')
   .replace(/^Sue.s Angels FC$/, "Sue's Angels")
   .replace(/\s+FC 2\.0$/, '')
   .replace(/\s+FC$/, '');
 
-/* Squad photography is filed by shirt number. A missing file falls back to
-   the neutral avatar rather than to a stand-in face. */
+/* A MISSING PHOTOGRAPH IS THE CLUB STAR, NOT AN EMPTY src.
+
+   Six call sites on this page wrote src="${shotFor(num)}" with no guard, and
+   shotFor() returns '' for anybody with no file on disk, so awards.html
+   shipped NINE src="" images the day a player without a photograph won an
+   award. An empty src is worse than a 404: the spec resolves it against the
+   document, so each one re-requested awards.html as an image and drew a
+   broken-image icon over the winner's name.
+
+   Every other page that draws a face already had the fallback - squad.mjs and
+   player.mjs both branch on the shot and reach for the star. This file
+   declared an AVATAR constant, wrote a comment promising it fell back to one,
+   and used it nowhere, which is how the gap survived review.
+
+   The star is not a photograph of anybody, so a caller that was naming the
+   person hands that name over and the star says what it is instead; a caller
+   already using alt="" (the link beside it names him) keeps the empty alt. */
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 /* Resolved in src/lib/dataset.mjs, not here. Each page kept its own copy of
    "is there a file for this shirt number", and shirt numbers get reused: a new
    signing given number 12 inherited a previous holder's photograph. */
+
+const face = (src, { alt = '', w, h, cls = '' }) => {
+  const box = cls ? `class="${attr(cls)}" ` : '';
+  const tail = `width="${attr(w)}" height="${attr(h)}" loading="lazy" decoding="async" />`;
+  return src
+    ? `<img ${box}src="${attr(src)}" alt="${attr(alt)}" ${tail}`
+    : `<img class="${attr(`${cls} aw-star`.trim())}" src="${STAR}" `
+      + `alt="${alt ? attr('Sue’s Angels FC star') : ''}" ${tail}`;
+};
 
 const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
       <span class="xrail__l"><span class="xrail__n">${esc(String(n).padStart(2, '0'))}</span><span class="xrail__t">${esc(label)}</span></span>
@@ -275,8 +299,7 @@ export function awards(d) {
        which ARIA does not allow to override article's implicit role. */
     return `<div class="aw-potm__panel" id="potm-p-${i}" data-potm-panel="${i}">
             <div class="aw-potm__shot">
-              <img src="${attr(shotFor(num))}" alt="${attr(nameOf(num))}"
-                   width="360" height="540" loading="lazy" decoding="async" />
+              ${face(shotFor(num), { alt: nameOf(num), w: 360, h: 540 })}
               <span class="aw-potm__ribbon">Player of the Month</span>
             </div>
             <div class="aw-potm__body">
@@ -329,8 +352,7 @@ export function awards(d) {
 
         ${motmLead ? `<div class="aw-top rv">
           <div class="aw-top__shot">
-            <img src="${attr(shotFor(motmLead.num))}" alt="${attr(motmLead.name)}"
-                 width="300" height="450" loading="lazy" decoding="async" />
+            ${face(shotFor(motmLead.num), { alt: motmLead.name, w: 300, h: 450 })}
           </div>
           <div class="aw-top__body">
             <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> Most awards · ${esc(seasonLabel)}</p>
@@ -346,7 +368,7 @@ export function awards(d) {
         <ol class="aw-board rv">
           ${motmBoard.map((p, i) => `<li class="aw-board__row${i === 0 ? ' is-top' : ''}" style="--i:${i}">
             <span class="aw-board__pos">${esc(i + 1)}</span>
-            <span class="aw-board__face"><img src="${attr(shotFor(p.num))}" alt="" width="34" height="34" loading="lazy" decoding="async" /></span>
+            <span class="aw-board__face">${face(shotFor(p.num), { w: 34, h: 34 })}</span>
             <span class="aw-board__name">${esc(p.name)}</span>
             <span class="aw-board__track" aria-hidden="true"><i style="--w:${boardTop ? Math.round((p.motm / boardTop.motm) * 1000) / 10 : 0}%"></i></span>
             <span class="aw-board__n"><b>${esc(p.motm)}</b></span>
@@ -360,7 +382,7 @@ export function awards(d) {
             <span class="aw-ml__club">${esc(shortClub(m.opponent))}</span>
             <span class="aw-ml__score">${m.countsGoals ? `${esc(m.ourGoals)}-${esc(m.theirGoals)}` : 'W/O'}</span>
             <span class="aw-ml__date">${esc(fmtDate(m.date))}</span>
-            <span class="aw-ml__face"><img src="${attr(shotFor(m.detail.motm))}" alt="" width="28" height="28" loading="lazy" decoding="async" /></span>
+            <span class="aw-ml__face">${face(shotFor(m.detail.motm), { w: 28, h: 28 })}</span>
             <span class="aw-ml__who">${esc(nameOf(m.detail.motm))}</span>
           </li>`).join('\n          ')}
         </ol>
@@ -377,8 +399,7 @@ export function awards(d) {
         <ul class="aw-cards rv">
           ${seasonAwards.map((a, i) => `<li class="aw-card" style="--i:${i}">
             <div class="aw-card__shot">
-              <img src="${attr(shotFor(a.playerId))}" alt="${attr(nameOf(a.playerId))}"
-                   width="320" height="320" loading="lazy" decoding="async" />
+              ${face(shotFor(a.playerId), { alt: nameOf(a.playerId), w: 320, h: 320 })}
             </div>
             <div class="aw-card__body">
               <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> ${esc(a.title)}</p>
@@ -409,7 +430,7 @@ export function awards(d) {
         <h2 class="h2 rv" id="aw-caps-h">The <span class="volt">captains.</span></h2>
         <ul class="aw-caps__grid rv">
           ${caps.map((c, i) => `<li class="aw-cap glassbox" style="--i:${i}">
-            <span class="aw-cap__face"><img src="${attr(shotFor(c.num))}" alt="" width="64" height="64" loading="lazy" decoding="async" /></span>
+            <span class="aw-cap__face">${face(shotFor(c.num), { w: 64, h: 64 })}</span>
             <p class="aw-cap__k">${esc(c.k)}</p>
             <p class="aw-cap__name">${esc(c.name || nameOf(c.num))}</p>
             <p class="aw-cap__pos">${esc(posOf(c.num))}</p>

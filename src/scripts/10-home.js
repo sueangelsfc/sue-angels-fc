@@ -737,13 +737,29 @@
      reader gets with this file blocked. Here they are promoted to a real
      tablist: roles applied, arrow keys wired, and the panels other than the
      active one hidden. Nothing is hidden until this runs. */
-  (function () {
-    var tabs = $$('[data-potm-tab]');
-    if (tabs.length < 2) return;
-    var panels = $$('[data-potm-panel]');
-    if (panels.length !== tabs.length) return;
-    var list = tabs[0].parentNode;
+  /* ONE TABLIST PER SEASON VIEW, NOT ONE PER DOCUMENT.
 
+     This asked the whole document for [data-potm-tab], and the awards page
+     ships the band once per season view, so three independent tablists were
+     read as one: 10 tabs, 10 panels, lengths equal, guard passed, and
+     select(0) hid nine panels. The 26/27 view has exactly one award, so its
+     only panel was hidden and the season showed a lone pill over empty space
+     - the heading said "1 awarded" above nothing at all.
+
+     Same defect the season heat map had, from the same cause: every panel
+     ships in the HTML by design, so any query that is not scoped to the view
+     reaches into the seasons the reader is not looking at. */
+  $$('.aw-potm').forEach(function (band) {
+    var tabs = $$('[data-potm-tab]', band);
+    var panels = $$('[data-potm-panel]', band);
+    if (!tabs.length || panels.length !== tabs.length) return;
+    /* NO `tabs.length < 2` BAIL. That guard is what the document-wide version
+       needed and is wrong once the query is scoped: a season with one award
+       is a band of one tab and one panel, and select(0) marks that tab and
+       hides nothing, which is exactly right. Bailing instead left the pill
+       unmarked, and bailing in the OLD code is what could not happen at all,
+       because ten tabs were being counted as one list. */
+    var list = tabs[0].parentNode;
     list.setAttribute('role', 'tablist');
     list.setAttribute('aria-label', 'Player of the Month by month');
 
@@ -780,7 +796,7 @@
     /* Deep links such as /awards.html#potm-p-2 still land on their panel. */
     var want = panels.map(function (p) { return '#' + p.id; }).indexOf(window.location.hash);
     select(want > -1 ? want : 0);
-  })();
+  });
 
   /* ---- Squad position filter ------------------------------------------
      The chips ship as jump links to the position headings, which is what a

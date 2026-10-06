@@ -102,6 +102,16 @@ for (const p of pages) {
         decision this file does not second-guess. */
   for (const tag of html.match(/<img\b[^>]*>/gi) || []) {
     if (!/\balt\s*=/.test(tag)) bad('an image has no alt attribute at all', `${where}: ${tag.slice(0, 80)}`);
+    /* AN EMPTY src IS NOT A MISSING PICTURE, IT IS A SECOND REQUEST FOR THE
+       PAGE. The spec resolves src="" against the document, so the browser
+       re-fetches the HTML, fails to decode it as an image and draws the broken
+       icon. awards.html shipped nine of them the day a Player of the Month had
+       no photograph on file: every face slot interpolated shotFor(), which is
+       '' for anybody with no file, with no fallback to the club star.
+
+       Not a judgement call, which is why it belongs here rather than in the
+       suite: there is no page on which an empty src is what somebody meant. */
+    if (/\ssrc=""/.test(tag)) bad('an image has an empty src', `${where}: ${tag.slice(0, 80)}`);
   }
 
   /* 4. Local assets and links resolve. */

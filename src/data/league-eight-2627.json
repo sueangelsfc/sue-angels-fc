@@ -23,7 +23,7 @@
     "TSM Rovers",
     "Three Little Birds FC"
   ],
-  "tableAsOf": "2026-09-27",
+  "tableAsOf": "2026-10-04",
   "table": [
     {
       "p": 1,
@@ -40,77 +40,89 @@
     {
       "p": 2,
       "c": "Brockwell Violets FC",
-      "pl": 2,
-      "w": 2,
+      "pl": 3,
+      "w": 3,
       "d": 0,
       "l": 0,
-      "gf": 5,
+      "gf": 6,
       "ga": 2,
+      "gd": 4,
+      "pts": 9
+    },
+    {
+      "p": 3,
+      "c": "TSM Rovers",
+      "pl": 3,
+      "w": 2,
+      "d": 0,
+      "l": 1,
+      "gf": 11,
+      "ga": 5,
+      "gd": 6,
+      "pts": 6
+    },
+    {
+      "p": 4,
+      "c": "Three Little Birds FC",
+      "pl": 3,
+      "w": 2,
+      "d": 0,
+      "l": 1,
+      "gf": 8,
+      "ga": 5,
       "gd": 3,
       "pts": 6
     },
     {
-      "p": 3,
+      "p": 5,
       "c": "Bristol City (London) Supporters",
-      "pl": 3,
+      "pl": 4,
       "w": 1,
       "d": 1,
-      "l": 1,
+      "l": 2,
       "gf": 6,
-      "ga": 7,
-      "gd": -1,
+      "ga": 10,
+      "gd": -4,
       "pts": 4
     },
     {
-      "p": 4,
-      "c": "TSM Rovers",
-      "pl": 2,
-      "w": 1,
-      "d": 0,
-      "l": 1,
-      "gf": 7,
-      "ga": 5,
-      "gd": 2,
-      "pts": 3
-    },
-    {
-      "p": 5,
-      "c": "Three Little Birds FC",
-      "pl": 2,
-      "w": 1,
-      "d": 0,
-      "l": 1,
-      "gf": 5,
-      "ga": 5,
-      "gd": 0,
-      "pts": 3
-    },
-    {
       "p": 6,
-      "c": "Junction Elite FC Sunday 3rd Team",
+      "c": "Haydons Park",
       "pl": 3,
       "w": 1,
       "d": 0,
       "l": 2,
-      "gf": 4,
-      "ga": 8,
-      "gd": -4,
+      "gf": 7,
+      "ga": 13,
+      "gd": -6,
       "pts": 3
     },
     {
       "p": 7,
-      "c": "Pure Football FC 1st Team",
-      "pl": 2,
-      "w": 0,
-      "d": 1,
-      "l": 1,
-      "gf": 3,
-      "ga": 5,
-      "gd": -2,
-      "pts": 1
+      "c": "Junction Elite FC Sunday 3rd Team",
+      "pl": 4,
+      "w": 1,
+      "d": 0,
+      "l": 3,
+      "gf": 6,
+      "ga": 12,
+      "gd": -6,
+      "pts": 3
     },
     {
       "p": 8,
+      "c": "Pure Football FC 1st Team",
+      "pl": 3,
+      "w": 0,
+      "d": 1,
+      "l": 2,
+      "gf": 3,
+      "ga": 9,
+      "gd": -6,
+      "pts": 1
+    },
+    {
+      "p": 9,
       "c": "Mousa Mountain FC",
       "pl": 0,
       "w": 0,
@@ -122,31 +134,51 @@
       "pts": 0
     },
     {
-      "p": 9,
-      "c": "Barnes Stormers FC",
-      "pl": 2,
-      "w": 0,
-      "d": 0,
-      "l": 2,
-      "gf": 2,
-      "ga": 9,
-      "gd": -7,
-      "pts": 0
-    },
-    {
       "p": 10,
-      "c": "Haydons Park",
-      "pl": 2,
+      "c": "Barnes Stormers FC",
+      "pl": 3,
       "w": 0,
       "d": 0,
-      "l": 2,
-      "gf": 3,
-      "ga": 11,
+      "l": 3,
+      "gf": 2,
+      "ga": 10,
       "gd": -8,
       "pts": 0
     }
   ],
   "results": [
+    {
+      "date": "04 Oct 26",
+      "kick": "12:30",
+      "home": "Pure Football FC 1st Team",
+      "hs": 0,
+      "as": 4,
+      "away": "TSM Rovers"
+    },
+    {
+      "date": "04 Oct 26",
+      "kick": "10:30",
+      "home": "Barnes Stormers FC",
+      "hs": 0,
+      "as": 1,
+      "away": "Brockwell Violets FC"
+    },
+    {
+      "date": "04 Oct 26",
+      "kick": "10:30",
+      "home": "Haydons Park",
+      "hs": 4,
+      "as": 2,
+      "away": "Junction Elite FC Sunday 3rd Team"
+    },
+    {
+      "date": "04 Oct 26",
+      "kick": "10:30",
+      "home": "Three Little Birds FC",
+      "hs": 3,
+      "as": 0,
+      "away": "Bristol City (London) Supporters"
+    },
     {
       "date": "27 Sep 26",
       "kick": "11:00",
@@ -517,38 +549,5 @@
       "apps": 1
     }
   ],
-  "fixtures": [
-    {
-      "iso": "2026-10-04",
-      "date": "04 Oct 26",
-      "kick": "10:30",
-      "home": "Barnes Stormers FC",
-      "away": "Brockwell Violets FC",
-      "venue": "Barn Elms Sports Centre"
-    },
-    {
-      "iso": "2026-10-04",
-      "date": "04 Oct 26",
-      "kick": "10:30",
-      "home": "Haydons Park",
-      "away": "Junction Elite FC Sunday 3rd Team",
-      "venue": "Nursery Road Playing Fields, Pitch 3"
-    },
-    {
-      "iso": "2026-10-04",
-      "date": "04 Oct 26",
-      "kick": "10:30",
-      "home": "Three Little Birds FC",
-      "away": "Bristol City (London) Supporters",
-      "venue": "Dundonald Recreation Ground, Pitch 2"
-    },
-    {
-      "iso": "2026-10-04",
-      "date": "04 Oct 26",
-      "kick": "12:30",
-      "home": "Pure Football FC 1st Team",
-      "away": "TSM Rovers",
-      "venue": "Barn Elms Sports Centre"
-    }
-  ]
+  "fixtures": []
 }

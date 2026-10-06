@@ -8,6 +8,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
+import crypto from 'node:crypto';
 import { isPending } from '../lib/routes.mjs';
 import { CLUB } from '../lib/club.mjs';
 import * as statusMod from '../lib/squad-status.mjs';
@@ -2726,9 +2727,37 @@ const BUDGET = {
      fixture in the panel. */
   'control-seed.js': 9,
 };
+/* A BUDGET THAT MOVES WHEN NOTHING MOVED IS MEASURING THE WRONG THING.
+
+   control.js embeds its lazy chunks' cache-busting hashes, and gzip packs
+   `?v=654b865a` a couple of bytes worse than `?v=df502fe5`. The file is
+   byte-identical either way - 39,696 raw both times - but across 400 random
+   hashes the gzipped figure ranges 14,332 to 14,338 against a 14,336 ceiling,
+   so about a third of all possible hashes failed this check with nothing
+   wrong. The pre-push hook runs the suite, so a push was being blocked at
+   random by which eight hex characters a content hash happened to land on,
+   and the obvious reading of that failure - "the panel grew" - was false.
+
+   The hashes are normalised to a fixed, non-degenerate constant before
+   measuring, preserving length so nothing else shifts. Real growth still
+   shows; entropy no longer does, and the same figure comes back twice.
+   No ceiling moved for this. */
+const steady = (buf) => {
+  /* DISTINCT, or the cure is worse than the disease. Replacing all sixteen
+     cache-busters with the SAME constant lets gzip dedupe them and reports
+     14,204 for a file that really weighs 14,332 to 14,338: a budget under-
+     reading by 130 bytes hides real growth, which is the opposite of the job.
+     The nth buster becomes md5(n), so they stay as distinct and as
+     incompressible as real hashes. The figure lands at 14,336, mid-band of
+     what the file actually weighs, and is the same on every run. */
+  let i = 0;
+  return Buffer.from(String(buf).replace(/\?v=[0-9a-f]{6,}/g, (m) => '?v='
+    + crypto.createHash('md5').update(String(i++)).digest('hex').slice(0, m.length - 3)));
+};
+
 for (const [f, kb] of Object.entries(BUDGET)) {
   const raw = fs.readFileSync(path.join(ROOT, f));
-  const size = zlib.gzipSync(raw, { level: 9 }).length / 1024;
+  const size = zlib.gzipSync(steady(raw), { level: 9 }).length / 1024;
   check(`${f} within ${kb}KB gzipped`, size <= kb,
     `${size.toFixed(1)}KB gzipped, ${(raw.length / 1024).toFixed(0)}KB raw`);
 }
@@ -2788,7 +2817,7 @@ for (const [f, kb] of Object.entries({
   'src/admin/lazy/10-match.js': 34,
 })) {
   const raw = fs.readFileSync(path.join(ROOT, f));
-  const size = zlib.gzipSync(raw, { level: 9 }).length / 1024;
+  const size = zlib.gzipSync(steady(raw), { level: 9 }).length / 1024;
   check(`${f} code within ${kb}KB gzipped`, size <= kb,
     `${size.toFixed(1)}KB gzipped, ${(raw.length / 1024).toFixed(0)}KB raw`);
 }

@@ -268,9 +268,9 @@
       "away": "TSM Rovers"
     }
   ],
-  "_scorersNote": "The division's scorers, from Full-Time's stat leaders page (Player stats, Summary, League Eight 26/27), which excludes county cup football. Every player with a goal is kept, spelt as Full-Time prints them; the page lists appearances for everybody else and those are not kept. npm run verify fails if a club's scorers add up to more goals than its results say it scored. THE PAGE SHOWS 25 ROWS AND THE DIVISION HAS MORE: the cut falls inside the one-goal group, so Samuel Sayer, Shrithananjayan Theivendran and Omar Wing are carried over from the 21 September read rather than dropped. Replacing the list wholesale would have taken a goal off Three Little Birds, Bristol City and Haydons Park, each of which reconciles exactly with them in it.",
-  "_assistsNote": "Assists as of 27 September 2026, from the same stat leaders page sorted by assists. One figure is the club's own and not Full-Time's: the club credits Charlie Dunkley with 3 where Full-Time prints 2, and has asked the league to match it. Leon Burnett's third assist (the free kick he won for Ade Owolana's second at Junction Elite) was the same kind of correction and HAS now been applied, so it is no longer an override. Everybody else is as Full-Time prints them.",
-  "scorersAsOf": "2026-09-27",
+  "_scorersNote": "The division's scorers, from Full-Time's stat leaders page (Player stats, Summary, League Eight 26/27), which excludes county cup football. Every player with a goal is kept, spelt as Full-Time prints them; the page lists appearances for everybody else and those are not kept. npm run verify fails if a club's scorers add up to more goals than its results say it scored. THE PAGE SHOWS 25 ROWS AND THE DIVISION HAS MORE, so a re-read is MERGED, never swapped in. On 4 October the cut fell inside the one-goal group at surname O, and six real scorers sat below it (Otudeko, Reid, Rixon, Sayer, Theivendran, Wing); replacing the list would have deleted all six and taken a goal off four clubs. Reconciling every club's scorers against the goals its table row claims is how the transcription is checked: no club is credited with more than it scored, and the shortfalls are own goals and the rows below the cut. Full-Time lists Drew Daley of Haydons Park with a goal and no appearance, which is its own figure and is kept as printed rather than corrected here.",
+  "_assistsNote": "Assists as of 4 October 2026, from the same stat leaders page sorted by assists. That sort makes this list COMPLETE where the scorers' is not: the one-assist group ends at row 17 and rows 18 to 25 show none, so nothing is hidden below the 25-row cut and a re-read can be trusted to name everybody. One figure is the club's own and not Full-Time's: the club credits Charlie Dunkley with 3 where Full-Time prints 2, and has asked the league to match it, so the merge reapplies it after reading the page or re-reading would quietly undo it. Leon Burnett's third assist (the free kick he won for Ade Owolana's second at Junction Elite) was the same kind of correction and Full-Time has since applied it, so it is no longer an override and simply agrees. Everybody else is as Full-Time prints them.",
+  "scorersAsOf": "2026-10-04",
   "scorers": [
     {
       "name": "Charlie Dunkley",
@@ -287,29 +287,29 @@
       "assists": 1
     },
     {
-      "name": "Makheyi Chilumbi",
-      "club": "TSM Rovers",
-      "goals": 4,
-      "apps": 2,
-      "assists": 0
-    },
-    {
       "name": "Victor Awosanya",
       "club": "Three Little Birds FC",
-      "goals": 3,
-      "apps": 2,
+      "goals": 5,
+      "apps": 3,
       "assists": 0
     },
     {
-      "name": "Charlie Green",
-      "club": "Brockwell Violets FC",
-      "goals": 3,
-      "apps": 2,
+      "name": "Makheyi Chilumbi",
+      "club": "TSM Rovers",
+      "goals": 5,
+      "apps": 3,
       "assists": 0
     },
     {
       "name": "Vincent Narayna",
       "club": "TSM Rovers",
+      "goals": 5,
+      "apps": 3,
+      "assists": 0
+    },
+    {
+      "name": "Charlie Green",
+      "club": "Brockwell Violets FC",
       "goals": 3,
       "apps": 2,
       "assists": 0
@@ -331,8 +331,8 @@
     {
       "name": "Daniel Alexandre reis Pedrosa",
       "club": "Haydons Park",
-      "goals": 1,
-      "apps": 2,
+      "goals": 2,
+      "apps": 3,
       "assists": 0
     },
     {
@@ -346,14 +346,14 @@
       "name": "Dino B",
       "club": "Barnes Stormers FC",
       "goals": 1,
-      "apps": 2,
+      "apps": 3,
       "assists": 0
     },
     {
       "name": "Aaron Boniface",
       "club": "Brockwell Violets FC",
       "goals": 1,
-      "apps": 2,
+      "apps": 3,
       "assists": 0
     },
     {
@@ -361,6 +361,13 @@
       "club": "Sue's Angels FC",
       "goals": 1,
       "apps": 3,
+      "assists": 0
+    },
+    {
+      "name": "Drew Daley",
+      "club": "Haydons Park",
+      "goals": 1,
+      "apps": 0,
       "assists": 0
     },
     {
@@ -378,6 +385,13 @@
       "assists": 0
     },
     {
+      "name": "Ben Harget",
+      "club": "Brockwell Violets FC",
+      "goals": 1,
+      "apps": 2,
+      "assists": 0
+    },
+    {
       "name": "James Hayes",
       "club": "Bristol City (London) Supporters",
       "goals": 1,
@@ -387,6 +401,20 @@
     {
       "name": "Alfie James Inman",
       "club": "Sue's Angels FC",
+      "goals": 1,
+      "apps": 1,
+      "assists": 0
+    },
+    {
+      "name": "Riley Jackson-Hughes",
+      "club": "Haydons Park",
+      "goals": 1,
+      "apps": 2,
+      "assists": 1
+    },
+    {
+      "name": "Liam O'mara leonard",
+      "club": "Junction Elite FC Sunday 3rd Team",
       "goals": 1,
       "apps": 1,
       "assists": 0
@@ -409,18 +437,11 @@
       "name": "Aaron McNamara",
       "club": "Haydons Park",
       "goals": 1,
-      "apps": 2,
+      "apps": 3,
       "assists": 0
     },
     {
       "name": "Gereli Mutolo",
-      "club": "Junction Elite FC Sunday 3rd Team",
-      "goals": 1,
-      "apps": 1,
-      "assists": 0
-    },
-    {
-      "name": "Liam O'mara leonard",
       "club": "Junction Elite FC Sunday 3rd Team",
       "goals": 1,
       "apps": 1,
@@ -513,6 +534,12 @@
       "apps": 2
     },
     {
+      "name": "Frankie Brawn",
+      "club": "Haydons Park",
+      "assists": 1,
+      "apps": 3
+    },
+    {
       "name": "Thomas Eckersley",
       "club": "Barnes Stormers FC",
       "assists": 1,
@@ -523,6 +550,12 @@
       "club": "Bristol City (London) Supporters",
       "assists": 1,
       "apps": 3
+    },
+    {
+      "name": "Riley Jackson-Hughes",
+      "club": "Haydons Park",
+      "assists": 1,
+      "apps": 2
     },
     {
       "name": "Witse Konings",
@@ -537,10 +570,22 @@
       "apps": 4
     },
     {
+      "name": "Michael Bonsu Michaels",
+      "club": "Haydons Park",
+      "assists": 1,
+      "apps": 2
+    },
+    {
       "name": "Ade Owolana",
       "club": "Sue's Angels FC",
       "assists": 1,
       "apps": 4
+    },
+    {
+      "name": "George Sales",
+      "club": "Haydons Park",
+      "assists": 1,
+      "apps": 1
     },
     {
       "name": "Jack Williams",

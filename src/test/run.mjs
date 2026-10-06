@@ -1591,6 +1591,12 @@ for (const f of shipped) {
       /* league.html: the League Eight assists table, Michael Brabrook joint
          fourth on one assist after gameweek three. A rank, not his number. */
       'league.html :: 4 Michael Brabrook',
+      /* league.html: the goals-and-assists table shares a rank across ties,
+         and after the 4 October round TWENTY-SEVEN players are joint 17th on
+         one goal or one assist. Alfie James Inman is one of them and his key
+         is 17. Verified by reading the row: rank, player, club, G, A, G+A,
+         apps, with twenty-six other names carrying the same 17. */
+      'league.html :: 17 Alfie James Inman',
     ]);
     const rx = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const { buildDataset: bdN } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));

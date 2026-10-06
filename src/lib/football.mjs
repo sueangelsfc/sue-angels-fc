@@ -70,11 +70,19 @@ export const ASSIST_TYPES = [
   { key: 'freekick', label: 'Free kick', phrase: 'from', suffix: '’s free kick' },
   /* WINNING IT IS MAKING IT. A man who is fouled for the penalty or the free
      kick that becomes a goal has made that goal as surely as the man who
-     passed, and the club has been crediting it by hand: Leon Burnett's third
-     assist of 26/27 is the free kick he won for Ade Owolana's second at
-     Junction Elite, a figure that had to be carried as an override against
-     Full-Time because the form had no way to say it. These are the two the
-     laws create, and they are distinct from taking one, above. */
+     passed, and the club asked to be able to record it. These are the two the
+     laws create, and they are distinct from TAKING one, above.
+
+     NO EXAMPLE, BECAUSE THERE IS NOT ONE. This comment used to cite Leon
+     Burnett's third assist of 26/27 as a free kick he won at Junction Elite.
+     No match record says that. The stored goal is Ade Owolana, 30 minutes,
+     left foot from outside the box, situation `freekick`, assisted by Burnett
+     with type `freekick` - which is Burnett TAKING it, an ordinary assist.
+     The claim began as a line in a note, was copied into here and into
+     CLAUDE.md, and was later quoted back as if it were evidence about how the
+     goal happened. The club has since confirmed its own figure of four, all
+     four ordinary assists. Nothing in the archive has ever used these two
+     types; they exist for the next one, not for a past one. */
   { key: 'wonfreekick', label: 'Won the free kick', phrase: 'after the free kick won by' },
   { key: 'wonpenalty', label: 'Won the penalty', phrase: 'after the penalty won by' },
   { key: 'throwin', label: 'Throw in', phrase: 'from', suffix: '’s throw in' },

@@ -256,8 +256,10 @@ export function photographerChannels(name) {
        serves Kingston, Richmond, Twickenham and Teddington, our patch.
      - stainesrugby.uk lists its address as The Reeves, Snakey Lane, Hanworth,
        which is our ground. Definitive.
-     - hodgsonroofing.com is the right name and NFRC-registered, but describes
-       itself as Harrow and Windsor. Likely, and worth a check.
+     - hodgsonroofing.com is the right name and NFRC-registered. It describes
+       itself as Harrow and Windsor rather than our patch, which is why this
+       note used to say "worth a check"; the club confirmed on 8 October 2026
+       that it is the right company, so it is no longer an open question.
      - Sporting Solutions was supplied by the club. Several UK companies share
        the name and a web search surfaces a sports-betting firm first, so this
        one is not guessable and had to come from the club itself.

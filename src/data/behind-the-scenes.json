@@ -1,0 +1,7 @@
+{
+  "_note": "Behind-the-scenes clips: the dressing room, the travel, the warm-up, the daft stuff. Nothing here is a goal or a highlight; those are match footage and live on /videos.html against their match.",
+  "_where": "THE FILES ARE NOT IN THIS REPOSITORY. A clip is several megabytes, git history is permanent, and one deleted a year later still weighs the same for everybody who clones. They go in the club's own Supabase storage bucket, the same one holding badges and article covers, and `src` is the public address of the uploaded file. /assets/video is allowed too, for anything short enough to be worth committing.",
+  "_instagram": "A clip can instead carry only `instagram`, and the card then links out rather than playing. That is for a reel nobody wants to re-upload. A clip with both plays here AND links to the post.",
+  "_replaceWhen": "Delete this file once the clips live in a database row the control panel writes. Until then the club cannot add one without a developer, which is a gap worth closing and is named on the page itself.",
+  "clips": []
+}

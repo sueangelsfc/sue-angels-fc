@@ -14,6 +14,7 @@ import { readStatusRecord, statusIn, statusLabelIn, isPlaying, joinedAfter, sign
 import { houseRecord } from './prose.mjs';
 import { partnersFrom } from './partners.mjs';
 import { fulltimeLinks } from './fulltime.mjs';
+import { behindTheScenes } from './bts.mjs';
 import { normaliseMatch, normaliseTable, playerStats, slugify, isUs, seasonOf, toISO, isLeague, isCup,
   isCompetitive, isFriendly, figuresSeason, tableSeasonOf,
 } from './stats.mjs';
@@ -1454,6 +1455,13 @@ export function buildDataset(overrides = {}) {
        from the code baseline rather than from a row it can edit. */
     rawMatches: rawResults,
     squad, players, playersCompetitive, playersBySeason, statsByNum, nameFor, friendlyFor,
+    /* BEHIND-THE-SCENES CLIPS. Read once here rather than in the template, so
+       a page and any band that ever shows them cannot disagree about which
+       clips are publishable. The rules are in bts.mjs; a missing or unreadable
+       file is an empty list, because an absent clip reel is not an error. */
+    btsClips: (() => {
+      try { return behindTheScenes(read('behind-the-scenes.json')); } catch { return []; }
+    })(),
     /* GOAL CLIPS THE CLUB SENDS, filed in match-clips.json against a match and
        the goal's place in its record. Resolved here once, so the match page and
        the videos page name the same scorer and the same assist: both are read

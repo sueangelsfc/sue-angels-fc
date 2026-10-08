@@ -37,6 +37,7 @@ import { news, newsArticle, articleSlug } from './templates/news.mjs';
 import { matchReport } from './templates/report.mjs';
 import { gallery, galleryAlbum, splitTitle } from './templates/gallery.mjs';
 import { videos } from './templates/videos.mjs';
+import { behindScenes } from './templates/behind-the-scenes.mjs';
 import { join } from './templates/join.mjs';
 import { contact } from './templates/contact.mjs';
 import { notFound } from './templates/notfound.mjs';
@@ -282,6 +283,7 @@ const PAGE_CSS = {
   'matches/': 'report',
   'gallery.html': 'gallery',
   'videos.html': 'media',
+  'behind-the-scenes.html': 'media',
   'gallery/': 'gallery',
   'players/': 'player',
   'coaches/': 'coaches',
@@ -1005,6 +1007,7 @@ const OG = {
   'news.html': ['og-news', 'Club news from Sue’s Angels FC: match reports and announcements'],
   'gallery.html': ['og-gallery', 'The Sue’s Angels FC gallery: 606 photographs across seven matchdays'],
   'videos.html': ['og-videos', 'Goals and highlights from Sue’s Angels FC'],
+  'behind-the-scenes.html': ['og-videos', 'Behind the scenes at Sue’s Angels FC'],
   'join.html': ['og-join', 'Join Sue’s Angels FC: play, volunteer, shoot or sponsor'],
   'contact.html': ['og-contact', 'Contact Sue’s Angels FC at The Reeves, Hanworth'],
   '404.html': ['og-404', 'Off target: that page does not exist on the Sue’s Angels FC website'],
@@ -1072,6 +1075,7 @@ const DESC = {
   sponsors: "Meet the businesses backing Sue's Angels FC, and how your company can sponsor a London Sunday-league club playing for sepsis awareness.",
   news: "Match reports, club announcements and the stories behind the badge, straight from Sue's Angels FC in Hanworth, south-west London.",
   gallery: "Matchday photography from Sue's Angels FC: 606 photographs across seven albums, shot by the people who give up their Sundays for the club.",
+  bts: "Behind the scenes at Sue's Angels FC: the dressing room, the travel and the warm-up from the London Sunday-league club playing for sepsis awareness.",
   videos: "Goals, highlights and clips from Sue's Angels FC, the Hanworth Sunday-league club that won League Ten unbeaten in its first season.",
 };
 
@@ -1185,6 +1189,9 @@ const routes = [
 
   { file: 'videos.html', tpl: () => videos(d), ...meta('videos', `Videos · ${CLUB.name}`,
       `${CLUB.name} matchday videos and highlights from our unbeaten ${TITLE_DIV} season.`) },
+
+  { file: 'behind-the-scenes.html', tpl: () => behindScenes(d), ...meta('bts', `Behind the scenes · ${CLUB.name}`,
+      `The dressing room, the travel and the warm-up at ${CLUB.name}: the parts of a Sunday that never make the match report.`) },
 
   { file: 'sponsors.html', tpl: () => sponsors(d), ...meta('sponsors', `Sponsors · ${CLUB.name}`,
       `Meet the partners backing ${CLUB.name}, and find out how your business can sponsor a London Sunday-league club with a cause at its heart.`) },

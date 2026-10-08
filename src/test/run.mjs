@@ -6051,6 +6051,9 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const NO_SOURCE = new Set([
     '404.html', 'googlef4b3315c2212b0ef.html',
     'news.html', 'videos.html', 'live.html', 'gallery.html',
+    /* The club's own clips of its own Sundays. There is nothing outside the
+       club to cite for a video somebody filmed on the way to a pitch. */
+    'behind-the-scenes.html',
   ]);
   /* THE HOME PAGE IS WHAT THE CLUB PUTS ON IT, so it is held to the sources
      behind the bands it actually publishes rather than to a count. It carried

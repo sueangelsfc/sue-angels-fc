@@ -82,8 +82,12 @@ const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
    a page on this site (`/players/ade-owolana.html`) or an https address,
    nothing else, so no `javascript:` and nothing a quote can break out of
    (quotes are already entities). Never the `![...]` of a picture line. */
+/* `!` and `@` are refused a link so that a photograph's or an audio clip's
+   line, when its address is not one we allow, stays on the page as the text
+   it is and the writer can see it did not work. Without the `@` a refused
+   clip quietly became an ordinary link to wherever it pointed. */
 const inline = (t) => esc(t)
-  .replace(/(?<!!)\[([^\]\n]+)\]\((\/[\w\-./#%]*|https:\/\/[^\s)]+)\)/g, '<a href="$2">$1</a>')
+  .replace(/(?<![!@])\[([^\]\n]+)\]\((\/[\w\-./#%]*|https:\/\/[^\s)]+)\)/g, '<a href="$2">$1</a>')
   .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
   .replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
 
@@ -121,6 +125,96 @@ function photo(b) {
   return `<figure class="nw-art__fig${graphic ? ' nw-art__fig--graphic' : ''}"><img src="${attr(src)}" alt="" width="${size ? size[1] : 1600}" `
     + `height="${size ? size[2] : 1067}" loading="lazy" decoding="async" />`
     + `${cap ? `<figcaption>${inline(cap)}</figcaption>` : ''}</figure>`;
+}
+
+/* AN AUDIO CLIP, a line of its own: `@[caption](address#MM:SS)`.
+
+   Interviews are the reason this exists. `videos.mjs` has said since it was
+   written that an interview belongs in club news, "where a piece of writing
+   can sit around them", and until now there was no way to put one there: the
+   body could carry a photograph, a graphic and a table, and nothing a reader
+   could listen to.
+
+   SAME ADDRESS RULE AS A PHOTOGRAPH, for the same reasons - the club's own
+   storage or the site's own /assets/audio/, so a line typed into a textarea
+   cannot turn into a request to a third party on every page view. `media-src`
+   is already `'self'` alone, so a hot-linked file would be blocked by the
+   policy and leave a dead player; a line naming any other address is left as
+   the text it is, so the writer sees it did not work.
+
+   NATIVE CONTROLS, AND `preload="none"`. The browser's own player is
+   keyboard-operable and labelled in the reader's own language, and it costs
+   `sa.js` nothing - a bespoke one would be a budget raise to rebuild a pause
+   button. `preload="none"` is what stops a twenty-minute interview being
+   downloaded by everybody who opens the page to read it.
+
+   THE AUDIO IS NOT THE ARTICLE. A clip with no words around it is unreadable
+   to anybody deaf, anybody on a quiet train and every search engine, so the
+   piece carries what was said in text and the player sits inside it. That is
+   an editorial rule this function cannot enforce, and it is why the caption
+   is used as the player's label rather than left to chance. */
+function clip(b) {
+  const m = /^@\[([^\]\n]*)\]\((\S+)\)$/.exec(b);
+  if (!m) return '';
+  const dur = /#(\d{1,3}:[0-5]\d)$/.exec(m[2]);
+  const src = m[2].replace(/#.*$/, '');
+  const ours = src.startsWith(STORAGE)
+    ? /^[\w\-./%]+$/.test(src.slice(STORAGE.length))
+    : /^\/assets\/audio\/[\w\-./]+\.(?:mp3|m4a|ogg)$/i.test(src);
+  if (!ours) return '';
+  const cap = m[1].trim();
+  return `<figure class="nw-art__aud">`
+    + `<audio class="nw-art__player" controls preload="none" src="${attr(src)}"`
+    + ` aria-label="${attr(cap || 'Audio clip')}"></audio>`
+    + `${cap || dur ? `<figcaption>${cap ? inline(cap) : ''}`
+      + `${cap && dur ? ' · ' : ''}${dur ? esc(dur[1]) : ''}</figcaption>` : ''}`
+    + `</figure>`;
+}
+
+/* A VIDEO CLIP, a line of its own, with an optional poster after a pipe:
+   `@@[caption](/assets/video/clip.mp4|/assets/video/clip.jpg#1280x720)`.
+
+   The same thing as the audio marker above, for an interview somebody filmed
+   rather than recorded, and it follows every rule that one does: our own
+   addresses only, native controls, `preload="none"`, and the words still have
+   to be in the article underneath.
+
+   `playsinline` OR AN IPHONE TAKES THE PAGE OVER. Without it Safari on a phone
+   throws the clip into its own fullscreen player the moment it is pressed, so
+   the reader is dropped out of the article and has to find their way back.
+
+   THE POSTER IS GIVEN, NEVER GUESSED. A video with none is a black rectangle
+   with a play button, which looks like something that failed to load. The
+   obvious shortcut is to swap `.mp4` for `.jpg` and hope, and a poster that
+   404s is worse than none - `articleBody` cannot look at the disk, so a guess
+   here could not be checked. The size is for the space held while it loads,
+   the way a photograph's is.
+
+   SELF-HOSTED, SO SIZE IS A REAL DECISION. A YouTube embed costs this
+   repository nothing and the site already has a press-to-play poster for one
+   (`a.mr-yt[data-yt]` in report.mjs). A file here is committed and stays in
+   git history for ever. Short clips belong here; a full match does not. */
+function film(b) {
+  const m = /^@@\[([^\]\n]*)\]\(([^)\s|]+)(?:\|([^)\s]+))?\)$/.exec(b);
+  if (!m) return '';
+  const size = /#(\d{2,5})x(\d{2,5})$/.exec(m[3] || m[2]);
+  const src = m[2].replace(/#.*$/, '');
+  const poster = (m[3] || '').replace(/#.*$/, '');
+  const ourFilm = src.startsWith(STORAGE)
+    ? /^[\w\-./%]+$/.test(src.slice(STORAGE.length))
+    : /^\/assets\/video\/[\w\-./]+\.(?:mp4|webm)$/i.test(src);
+  if (!ourFilm) return '';
+  if (poster && !(poster.startsWith(STORAGE)
+    ? /^[\w\-./%]+$/.test(poster.slice(STORAGE.length))
+    : /^\/assets\/[\w\-./]+\.(?:jpe?g|png|webp)$/i.test(poster))) return '';
+  const cap = m[1].trim();
+  return `<figure class="nw-art__film">`
+    + `<video class="nw-art__video" controls playsinline preload="none"`
+    + `${poster ? ` poster="${attr(poster)}"` : ''}`
+    + ` width="${size ? size[1] : 1600}" height="${size ? size[2] : 900}"`
+    + ` src="${attr(src)}"${cap ? ` aria-label="${attr(cap)}"` : ''}></video>`
+    + `${cap ? `<figcaption>${inline(cap)}</figcaption>` : ''}`
+    + `</figure>`;
 }
 
 /* A TABLE, from two markers that cannot be anything else. Rows pasted out of a
@@ -203,6 +297,10 @@ export function articleBody(text, opts = {}) {
   return blocks.map((b) => {
     const fig = photo(b);
     if (fig) return fig;
+    const aud = clip(b);
+    if (aud) return aud;
+    const vid = film(b);
+    if (vid) return vid;
     if (/^#{1,6}\s/.test(b)) {
       const words = inline(b.replace(/^#{1,6}\s*/, ''));
       const sub = b.match(/^#+/)[0].length >= 3;

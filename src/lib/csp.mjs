@@ -64,7 +64,17 @@ export const CSP = {
     { host: 'https://www.facebook.com', why: 'the Meta pixel is an image beacon', requiredBy: 'https://connect.facebook.net' },
   ],
 
-  'media-src': [`'self'`],
+  'media-src': [
+    `'self'`,
+    /* BEHIND-THE-SCENES CLIPS, and any other video the club uploads rather
+       than commits. The files are too big to live in git: a 30-second clip is
+       several megabytes, git history is permanent, and a clip deleted a year
+       later still weighs the same for everybody who clones. The bucket is the
+       one already holding badges and article covers, which is why this host
+       is in `img-src` and `connect-src` above; a video from it needed saying
+       here as well, because `media-src` does not fall back to those. */
+    { host: SUPABASE, why: 'behind-the-scenes clips uploaded to the club bucket', provenBy: 'src/data/runtime.json' },
+  ],
 
   'connect-src': [
     `'self'`,

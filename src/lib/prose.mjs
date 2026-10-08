@@ -98,9 +98,13 @@ export const hasReport = (m) => plainText(reportText(m)).length > 200;
    meta description, the home page teaser, the length test above - that line
    would be printed as a web address, so it comes out first. */
 export const plainText = (text) => String(text || '')
-  .replace(/^[ \t]*!?!\[[^\]\n]*\]\(\S+\)[ \t]*$/gm, '')
+  .replace(/^[ \t]*(?:!?!|@@?)\[[^\]\n]*\]\(\S+\)[ \t]*$/gm, '')
   /* A pasted table's cells are separated by tabs, which a card would print
-     run together. A graphic's line (`!![...]`) goes the way a photo's does. */
+     run together. A graphic's line (`!![...]`) goes the way a photo's does,
+     and so do an audio clip's (`@[...]`) and a video's (`@@[...]`). The clip has to come out HERE
+     rather than later: the link rule below only refuses a leading `!`, so a
+     clip left standing would be shortened to its own caption and a card would
+     promise words that are actually a player. */
   .replace(/[ \t]*\t[ \t]*/g, ' · ')
   /* A heading reads as its words, and a table is not quoted in a preview. */
   .replace(/^#{1,6}[ \t]+/gm, '')

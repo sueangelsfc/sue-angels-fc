@@ -5,7 +5,9 @@
    files and it drifted (three different brand aria-labels, two different
    mobile CTA labels). Defining it once makes that class of bug impossible.
    ========================================================================== */
+import { readFileSync } from 'node:fs';
 import { CLUB, SOCIALS } from './club.mjs';
+import { behindTheScenes } from './bts.mjs';
 
 export const esc = (s) =>
   String(s ?? '')
@@ -107,6 +109,16 @@ export function clubCrest(name, badges, size = '') {
 }
 
 /* ---- Navigation - defined once ---------------------------------------- */
+/* Read once, at module load, by the same rules the page itself publishes by,
+   so the navigation and the page can never disagree about whether there is
+   anything to show. */
+const BTS_CLIPS = (() => {
+  try {
+    return behindTheScenes(JSON.parse(
+      readFileSync(new URL('../data/behind-the-scenes.json', import.meta.url), 'utf8')));
+  } catch { return []; }
+})();
+
 export const NAV = [
   { label: 'The Club', children: [
     { label: 'Our Story', href: '/about.html' },
@@ -130,6 +142,19 @@ export const NAV = [
     { label: 'News', href: '/news.html' },
     { label: 'Gallery', href: '/gallery.html' },
     { label: 'Videos', href: '/videos.html' },
+    /* BEHIND THE SCENES IS ADVERTISED ONLY ONCE THERE IS SOMETHING THERE.
+       The page always exists, so a link in an Instagram bio works from the
+       day it is built; what waits is the club's own navigation pointing every
+       visitor, on every page, at a page reading "Nothing filmed yet".
+
+       The same rule the home page bands follow: a switch with no data behind
+       it is a switch that lies. It turns itself on from the evidence - the
+       first publishable clip - so nobody has to remember to add it, and a
+       step somebody has to remember is another way of saying it does not
+       happen. Read through `behindTheScenes` rather than by counting the
+       file's rows, or a clip that is refused for having neither a file nor a
+       post would still put the link up. */
+    ...(BTS_CLIPS.length ? [{ label: 'Behind the scenes', href: '/behind-the-scenes.html' }] : []),
   ] },
   { label: 'Get Involved', children: [
     { label: 'Join the Club', href: '/join.html' },
@@ -233,6 +258,7 @@ export function footer() {
     { h: 'Media', links: [
       ['Match programme', '/programme.html'], ['Live', '/live.html'],
       ['News', '/news.html'], ['Gallery', '/gallery.html'], ['Videos', '/videos.html'],
+      ...(BTS_CLIPS.length ? [['Behind the scenes', '/behind-the-scenes.html']] : []),
     ] },
     { h: 'Get Involved', links: [
       ['Join the Club', '/join.html'], ['Contact', '/contact.html'],

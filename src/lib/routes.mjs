@@ -35,6 +35,7 @@ export const LIVE_ROUTES = new Set([
   'news.html',
   'gallery.html',
   'videos.html',
+  'behind-the-scenes.html',
   'programme.html',
   'join.html',
   'contact.html',

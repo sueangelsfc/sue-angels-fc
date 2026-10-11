@@ -23,7 +23,7 @@
     "TSM Rovers",
     "Three Little Birds FC"
   ],
-  "tableAsOf": "2026-10-04",
+  "tableAsOf": "2026-10-11",
   "table": [
     {
       "p": 1,
@@ -40,14 +40,14 @@
     {
       "p": 2,
       "c": "Brockwell Violets FC",
-      "pl": 3,
-      "w": 3,
+      "pl": 4,
+      "w": 4,
       "d": 0,
       "l": 0,
-      "gf": 6,
-      "ga": 2,
-      "gd": 4,
-      "pts": 9
+      "gf": 10,
+      "ga": 3,
+      "gd": 7,
+      "pts": 12
     },
     {
       "p": 3,
@@ -136,17 +136,25 @@
     {
       "p": 10,
       "c": "Barnes Stormers FC",
-      "pl": 3,
+      "pl": 4,
       "w": 0,
       "d": 0,
-      "l": 3,
-      "gf": 2,
-      "ga": 10,
-      "gd": -8,
+      "l": 4,
+      "gf": 3,
+      "ga": 14,
+      "gd": -11,
       "pts": 0
     }
   ],
   "results": [
+    {
+      "date": "11 Oct 26",
+      "kick": "10:30",
+      "home": "Brockwell Violets FC",
+      "hs": 4,
+      "as": 1,
+      "away": "Barnes Stormers FC"
+    },
     {
       "date": "04 Oct 26",
       "kick": "12:30",
@@ -594,7 +602,15 @@
       "apps": 1
     }
   ],
-  "fixtures": [],
+  "fixtures": [
+    {
+      "date": "18 Oct 26",
+      "kick": "11:00",
+      "home": "Sue's Angels FC",
+      "away": "Mousa Mountain FC",
+      "venue": "The Reeves Sports Club"
+    }
+  ],
   "_clubAssists": {
     "_note": "Sue's Angels assist figures the club's own match records hold where Full-Time's stat leaders page prints fewer. The club has asked the league to match them. Reapply these AFTER transcribing the page, every time, or a re-read silently reverts them.",
     "Charlie Dunkley": 3,

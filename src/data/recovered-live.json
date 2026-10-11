@@ -7574,12 +7574,13 @@
       "data": {
         "as": 4,
         "hs": 0,
+        "id": "r20261011-peps",
         "away": "Sue's Angels FC",
         "date": "11 Oct 2026",
         "home": "Peps All Stars",
         "kick": "11:00",
         "kind": "score",
-        "motm": null,
+        "motm": 20,
         "subs": [
           {
             "on": 41,
@@ -7672,7 +7673,7 @@
           }
         ],
         "saves": 2,
-        "shape": "",
+        "shape": "3-4-1-2",
         "squad": [
           28,
           20,
@@ -7718,7 +7719,7 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-10-11T14:46:27.406Z",
+        "savedAt": "2026-10-11T16:14:01.029Z",
         "redCards": [],
         "starters": [
           {
@@ -7879,7 +7880,7 @@
         "opponentRedCards": [],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-10-11T14:46:29.25+00:00"
+      "updated_at": "2026-10-11T16:14:01.029+00:00"
     }
   ],
   "articles": [

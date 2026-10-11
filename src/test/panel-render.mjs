@@ -1568,6 +1568,45 @@ export async function panelChecks() {
         !cappedText.includes(String(TOTAL)),
         'the paging check would pass on a screen that never paged');
 
+      /* A LIVE TABLE SHIFTS UNDER AN OFFSET PAGER, and the totals must not
+         move when it does. `page_stats` gains a row the first time any new
+         day/page/zone/source/device combination is seen; ordered `day.desc`
+         a new row for today sorts near the top and pushes everything below
+         it down a place, so the next page re-serves rows the last one
+         already returned. `total()` adds `views` over every row it is
+         handed, so one duplicate inflates the headline.
+
+         This stub overlaps every page with the one before it by a row,
+         which is exactly what that shift looks like from the client. The
+         answer must still be 1,800. */
+      const overlap = (method, q) => {
+        if (!/^page_stats\?/.test(q) || /day=lt\./.test(q)) return [];
+        const lim = Number((q.match(/[&?]limit=(\d+)/) || [])[1] || CAP);
+        const off = Number((q.match(/[&?]offset=(\d+)/) || [])[1] || 0);
+        const from = off === 0 ? 0 : off - 1;
+        return big.slice(from, from + Math.min(lim, CAP));
+      };
+      const overlapText = (await PR.openPanel(
+        await PR.boot({ rows: { rest: overlap } }), 'stats',
+      )).body.textContent.replace(/\s+/g, ' ');
+      check('a row served on two pages is counted once, not twice',
+        overlapText.includes(String(TOTAL)),
+        `expected ${TOTAL}; an overlapping page was double counted`);
+
+      /* PROBE: take the de-duplication out and the overlap must inflate it,
+         or the check above proves nothing. */
+      const dupeCtx = await PR.boot({
+        rows: { rest: overlap },
+        transform: (src, file) => (file === 'control-stats.js'
+          ? bust(src, /(\w+)\[(\w+)\]\|\|\(\1\[\2\]=1,(\w+)\.push\(([^)]+)\)\)/,
+            '$3.push($4)')
+          : src),
+      });
+      const dupeText = (await PR.openPanel(dupeCtx, 'stats')).body.textContent;
+      check('probe: without de-duplication the overlap does inflate the total',
+        !dupeText.includes(String(TOTAL)),
+        'the de-duplication check would pass with no de-duplication');
+
       /* A SERVER THAT IGNORES `offset` MUST NOT BE PAGED FOR EVER, and must
          not have its one page counted again and again. The suite's own stub
          behaves exactly like this, which is how the first two attempts at

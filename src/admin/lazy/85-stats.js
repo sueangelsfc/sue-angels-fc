@@ -302,7 +302,17 @@
        request with the same page, so paging either never ends or appends the
        same rows over and over; the suite's stub does precisely this and the
        run first hung, then reported inflated totals. A page identical to the
-       one before it is the end of the data, not more of it. */
+       one before it is the end of the data, not more of it.
+     - AND IT KEEPS EACH ROW ONCE, BY PRIMARY KEY. Offset paging over a table
+       that is being written to while you read it is not exact: `page_stats`
+       gains a row the first time any new day/page/zone/source/device
+       combination is seen, and ordered `day.desc` a new row for TODAY sorts
+       near the top and pushes everything below it down one place, so the
+       next page serves rows the last page already returned. `total()` adds
+       up `views` across every row it is given, so a single duplicate
+       silently inflates the headline. Deduplicating on the key the rows are
+       ordered by makes the figure exact no matter what arrives mid-read.
+       The club asked for the right number, not a better one. */
   /* The PRIMARY KEY of each table, minus the leading `day` the order already
      carries. Taken from the migrations, not guessed: this is what makes
      offset paging return each row exactly once. */
@@ -331,9 +341,16 @@
        broken panel rather than as a feature nobody has switched on. */
     try {
       var all = [];
+      var seen = {};
       var step = 0;
       var last = '';
       var n = 0;
+      var cols = ['day'].concat(pk || []);
+      var keyOf = function (r) {
+        var k = '';
+        for (var i = 0; i < cols.length; i += 1) k += String(r[cols[i]]) + '\u0000';
+        return k;
+      };
       var ord = '&order=day.desc' + (pk || []).map(function (c) {
         return ',' + c + '.asc';
       }).join('');
@@ -345,7 +362,12 @@
             var s2 = sig(got);
             if (s2 === last) { capped = true; return all; }
             last = s2;
-            all = all.concat(got);
+            for (var i = 0; i < got.length; i += 1) {
+              var k = keyOf(got[i]);
+              if (seen[k]) continue;
+              seen[k] = 1;
+              all.push(got[i]);
+            }
             if (!step) step = got.length;
             n += 1;
             if (got.length < step) return all;

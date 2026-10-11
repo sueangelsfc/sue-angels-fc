@@ -92,6 +92,16 @@
       "away": "Mousa Mountain FC",
       "venue": "The Reeves Sports Club",
       "competition": "League Eight"
+    },
+    {
+      "id": "f2627-pcup-r2-swans",
+      "date": "",
+      "tbc": true,
+      "home": "Sue's Angels FC",
+      "away": "Celtic Swans FC",
+      "venue": "The Reeves Sports Club",
+      "competition": "Brian Howard President's Cup"
     }
-  ]
+  ],
+  "_tbc": "A fixture with `tbc: true` is one the league has CONFIRMED but not yet dated. The flag is required rather than inferred from an empty date, because a fixture whose date went missing by accident and one the league has not set yet look identical in the data and are completely different things. The suite holds every undated fixture to carrying it."
 }

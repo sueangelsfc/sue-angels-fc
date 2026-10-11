@@ -1259,10 +1259,22 @@ for (const f of shipped) {
       seenPair.set(k, f);
     });
     check('no fixture still to come is listed twice', twice.length === 0, twice.join(', '));
-    check('every fixture still to come carries a date',
-      (dD.upcoming || []).every((f) => String(f.date || f.iso || '').trim()),
-      (dD.upcoming || []).filter((f) => !String(f.date || f.iso || '').trim())
-        .map((f) => `${f.home} v ${f.away}`).join(', '));
+    /* A FIXTURE EITHER SAYS WHEN, OR SAYS IT DOES NOT KNOW YET.
+       This used to demand a date outright, which is the right instinct and
+       the wrong rule: the league confirms cup ties long before it dates them,
+       and the President's Cup second round against Celtic Swans is a real
+       fixture the club wants listed. What the check is actually guarding
+       against is a fixture whose date went MISSING - and that is caught by
+       requiring the undated ones to say so in the data, so an accident still
+       fails while a genuine "to be confirmed" passes. The results page has
+       printed "Date to be confirmed" since it was written. The separate
+       duplicate check covers the undated-row-beside-its-dated-twin bug that
+       prompted this one. */
+    const undated = (dD.upcoming || [])
+      .filter((f) => !String(f.date || f.iso || '').trim() && f.tbc !== true);
+    check('every fixture still to come carries a date, or is marked to be confirmed',
+      undated.length === 0,
+      undated.map((f) => `${f.home} v ${f.away}`).join(', '));
 
     /* CRAFTED: the club's undated row against the transcription's dated one.
        The stored row must survive, because only it carries what the club

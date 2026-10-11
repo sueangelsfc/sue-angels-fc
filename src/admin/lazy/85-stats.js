@@ -279,14 +279,81 @@
 
   var COLS = 'day,path,zone,source,device,views,seconds_total,depth_total';
 
-  function get(q) {
+  /* THE SERVER CAPS HOW MANY ROWS IT WILL RETURN, AND THE CAP IS NOT OURS.
+     Every query here asked for `limit=20000` and that does not raise
+     PostgREST's own ceiling: one request came back holding the newest slice
+     of the period and this screen added it up as though it were the whole
+     thing. It reported ALL TIME as FEWER views than LAST MONTH, which cannot
+     happen, and gave both periods the same "averaged over 14 days" because
+     both responses had been cut to roughly the same number of rows.
+
+     So every query pages, and three details carry the correctness:
+
+     - EVERY PAGE IS ORDERED BY THE TABLE'S PRIMARY KEY. Offset paging over a
+       non-unique order is not paging: rows repeat and rows vanish between
+       pages, and the totals would be wrong again in a way far harder to see
+       than this one was. `day` alone ties in every one of these tables.
+     - THE STEP IS THE FIRST PAGE'S OWN LENGTH, not the limit we asked for. If
+       the server's cap is smaller than our page size then every full page is
+       short by our reckoning, and "stop on a short page" would declare the
+       data complete at exactly the moment it was being truncated - the
+       original bug wearing a loop.
+     - IT NOTICES A SERVER THAT IGNORES `offset`. Such a server answers every
+       request with the same page, so paging either never ends or appends the
+       same rows over and over; the suite's stub does precisely this and the
+       run first hung, then reported inflated totals. A page identical to the
+       one before it is the end of the data, not more of it. */
+  /* The PRIMARY KEY of each table, minus the leading `day` the order already
+     carries. Taken from the migrations, not guessed: this is what makes
+     offset paging return each row exactly once. */
+  var PK = {
+    page_stats: ['path', 'zone', 'source', 'device'],
+    page_stats_hourly: ['hour', 'path'],
+    page_routes: ['came_from', 'path'],
+    page_tags: ['tag', 'path'],
+    page_events: ['path', 'kind', 'target'],
+    page_places: ['country', 'region', 'city'],
+    page_trails: ['trail'],
+  };
+
+  var PAGE = 1000;
+  var MAXPAGES = 200;
+  var capped = false;
+
+  function sig(a) {
+    return a.length ? JSON.stringify([a.length, a[0], a[a.length - 1]]) : '';
+  }
+
+  function get(q, pk) {
     /* No table, no feature, no noise - the same contract band_views has. The
        try wraps the CALL as well as the promise: a helper that throws on the
        way in would otherwise reach the shell's error screen, which reads as a
        broken panel rather than as a feature nobody has switched on. */
     try {
-      return CP.rest('GET', q).then(function (r) { return r || []; })
-        .catch(function () { return null; });
+      var all = [];
+      var step = 0;
+      var last = '';
+      var n = 0;
+      var ord = '&order=day.desc' + (pk || []).map(function (c) {
+        return ',' + c + '.asc';
+      }).join('');
+      var page = function (off) {
+        return CP.rest('GET', q + ord + '&limit=' + PAGE + '&offset=' + off)
+          .then(function (r) {
+            var got = r || [];
+            if (!got.length) return all;
+            var s2 = sig(got);
+            if (s2 === last) { capped = true; return all; }
+            last = s2;
+            all = all.concat(got);
+            if (!step) step = got.length;
+            n += 1;
+            if (got.length < step) return all;
+            if (n >= MAXPAGES) { capped = true; return all; }
+            return page(off + got.length);
+          });
+      };
+      return page(0).catch(function () { return null; });
     } catch (e) { return Promise.resolve(null); }
   }
 
@@ -309,6 +376,7 @@
 
   function load() {
     if (!CP.state.isAdmin || !CP.rest) return Promise.resolve();
+    capped = false;
     var R = range();
     var since = R.n ? '&day=gte.' + R.from + '&day=lte.' + R.to : '';
     /* The period BEFORE this one, so every headline figure can say whether it
@@ -317,18 +385,18 @@
       ? '&day=gte.' + shiftDay(R.from, -R.n) + '&day=lt.' + R.from
       : '';
     return Promise.all([
-      get('page_stats?select=' + COLS + since + '&order=day.desc&limit=20000'),
-      R.n ? get('page_stats?select=' + COLS + before + '&limit=20000')
+      get('page_stats?select=' + COLS + since, PK.page_stats),
+      R.n ? get('page_stats?select=' + COLS + before, PK.page_stats)
         : Promise.resolve([]),
-      get('page_stats_hourly?select=day,hour,path,views' + since + '&limit=20000'),
+      get('page_stats_hourly?select=day,hour,path,views' + since, PK.page_stats_hourly),
       catalogue(),
-      get('page_routes?select=day,came_from,path,views' + since + '&limit=20000'),
-      get('page_tags?select=day,tag,path,views' + since + '&limit=20000'),
-      get('page_events?select=day,path,kind,target,count' + since + '&limit=20000'),
-      get('page_places?select=day,country,region,city,lat,lon,views' + since + '&limit=20000'),
-      get('page_trails?select=day,trail,views' + since + '&limit=20000'),
+      get('page_routes?select=day,came_from,path,views' + since, PK.page_routes),
+      get('page_tags?select=day,tag,path,views' + since, PK.page_tags),
+      get('page_events?select=day,path,kind,target,count' + since, PK.page_events),
+      get('page_places?select=day,country,region,city,lat,lon,views' + since, PK.page_places),
+      get('page_trails?select=day,trail,views' + since, PK.page_trails),
     ].concat(DETAIL_Q.map(function (q) {
-      return get(q[0] + '?select=' + q[1] + since + '&limit=50000');
+      return get(q[0] + '?select=' + q[1] + since, q[2]);
     }))).then(function (r) {
       rows = r[0];
       prev = r[1] || [];
@@ -1110,6 +1178,14 @@
         + tile(days.length ? Math.round(all / days.length) + '' : '0', 'Views a day',
           'averaged over ' + days.length + ' day' + (days.length === 1 ? '' : 's'))
         + '</div>'
+        /* IF THE PAGER EVER DOES HIT ITS CEILING, SAY SO. Reporting a
+           truncated total as the real one is the bug this screen just had,
+           and a silent safety limit would be the same bug with a nicer
+           implementation. */
+        + (capped ? '<p class="cp-note cp-note--warn"><b>These figures are incomplete.</b> '
+          + 'More rows were recorded in this period than this screen will load at once, '
+          + 'so every total below is an undercount. Narrow the dates and the figures '
+          + 'become exact again.</p>' : '')
         + '<p class="cp-note">These are <b>views, not visitors</b>. Nothing identifying is '
         + 'recorded, so two views cannot be told apart and this screen will never claim a '
         + 'number of unique people. It also counts only readers whose browser runs '
@@ -2303,21 +2379,24 @@
      used, so a table that returns something unexpected draws nothing rather
      than drawing nonsense.
      ========================================================================== */
+  /* Table, the columns to select, and the PRIMARY KEY after `day` that the
+     pager orders on. The third is not decoration: without it these page
+     wrongly. */
   var DETAIL_Q = [
-    ['page_heat', 'day,path,device,kind,section,x,y,count'],
-    ['page_scroll', 'day,path,band,views'],
-    ['page_sections', 'day,path,section,views,seconds_total'],
-    ['page_media', 'day,path,kind,media,mark,count'],
-    ['page_perf', 'day,path,device,metric,bucket,count'],
-    ['page_errors', 'day,path,kind,file,message,count'],
-    ['page_context', 'day,dimension,value,views'],
-    ['page_funnel', 'day,funnel,step,views'],
-    ['page_fields', 'day,form,field,event,count'],
-    ['audience_views', 'day,path,source_kind,device,views,seconds_total'],
-    ['audience_places', 'day,country,region,city,lat,lon,views'],
-    ['audience_events', 'day,kind,target,count'],
-    ['page_returning', 'day,kind,visits,gap,views'],
-    ['privacy_choices', 'day,stats,sponsor,return_visits,count'],
+    ['page_heat', 'day,path,device,kind,section,x,y,count', ['path', 'device', 'kind', 'section', 'x', 'y']],
+    ['page_scroll', 'day,path,band,views', ['path', 'band']],
+    ['page_sections', 'day,path,section,views,seconds_total', ['path', 'section']],
+    ['page_media', 'day,path,kind,media,mark,count', ['path', 'kind', 'media', 'mark']],
+    ['page_perf', 'day,path,device,metric,bucket,count', ['path', 'device', 'metric', 'bucket']],
+    ['page_errors', 'day,path,kind,file,message,count', ['path', 'kind', 'file', 'message']],
+    ['page_context', 'day,dimension,value,views', ['dimension', 'value']],
+    ['page_funnel', 'day,funnel,step,views', ['funnel', 'step']],
+    ['page_fields', 'day,form,field,event,count', ['form', 'field', 'event']],
+    ['audience_views', 'day,path,source_kind,device,views,seconds_total', ['path', 'source_kind', 'device']],
+    ['audience_places', 'day,country,region,city,lat,lon,views', ['country', 'region', 'city']],
+    ['audience_events', 'day,kind,target,count', ['kind', 'target']],
+    ['page_returning', 'day,kind,visits,gap,views', ['kind', 'visits', 'gap']],
+    ['privacy_choices', 'day,stats,sponsor,return_visits,count', ['stats', 'sponsor', 'return_visits']],
   ];
   var D = {};
   var HEATPAGE = '';

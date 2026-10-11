@@ -258,6 +258,11 @@ export function normaliseMatch(raw, detail) {
        how a friendly is spelled. */
     friendly: isFriendly({ competition: raw.competition || 'League Ten' }),
     venue: raw.venue || detail?.venue || '',
+    /* CONFIRMED BY THE LEAGUE, NOT YET DATED. Carried through rather than
+       inferred from an empty date: a fixture whose date went missing by
+       accident and one the league has not set yet are identical in the data
+       and are not the same thing at all. */
+    tbc: raw.tbc === true,
     season: seasonOf(raw.date),
     weAreHome,
     opponent,

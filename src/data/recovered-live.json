@@ -7568,6 +7568,318 @@
         "penaltiesConceded": 0
       },
       "updated_at": "2026-09-30T22:06:39.684+00:00"
+    },
+    {
+      "key": "r20261011-peps",
+      "data": {
+        "as": 4,
+        "hs": 0,
+        "away": "Sue's Angels FC",
+        "date": "11 Oct 2026",
+        "home": "Peps All Stars",
+        "kick": "11:00",
+        "kind": "score",
+        "motm": null,
+        "subs": [
+          {
+            "on": 41,
+            "off": 2
+          },
+          {
+            "on": 21,
+            "off": 38
+          }
+        ],
+        "bench": [
+          {
+            "on": true,
+            "num": 41,
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "2",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "ST"
+            ]
+          },
+          {
+            "on": true,
+            "num": 21,
+            "spells": [
+              {
+                "pos": "LAM",
+                "half": "2",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "LAM"
+            ]
+          }
+        ],
+        "cover": "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/cover-match-1791729988872.jpg",
+        "goals": [
+          {
+            "num": 12,
+            "zone": "outside",
+            "assist": {
+              "num": 2,
+              "type": "headpass"
+            },
+            "minute": 6,
+            "penalty": false,
+            "bodyPart": "left",
+            "situation": "open"
+          },
+          {
+            "num": 3,
+            "zone": "six",
+            "assist": {
+              "num": 47,
+              "type": "throwin"
+            },
+            "minute": 13,
+            "penalty": false,
+            "bodyPart": "head",
+            "situation": "throwin"
+          },
+          {
+            "num": 25,
+            "zone": "box",
+            "assist": {
+              "num": 20,
+              "type": "corner"
+            },
+            "minute": 49,
+            "penalty": false,
+            "bodyPart": "head",
+            "situation": "corner"
+          },
+          {
+            "num": 12,
+            "zone": "six",
+            "assist": {
+              "num": 9,
+              "type": "flickon"
+            },
+            "minute": 53,
+            "penalty": false,
+            "bodyPart": "right",
+            "situation": "open"
+          }
+        ],
+        "saves": 2,
+        "shape": "",
+        "squad": [
+          28,
+          20,
+          38,
+          10,
+          25,
+          4,
+          11,
+          23,
+          12,
+          9,
+          3,
+          2,
+          41,
+          44
+        ],
+        "venue": "Dulwich Park",
+        "keeper": 28,
+        "assists": [
+          {
+            "num": 2,
+            "type": "headpass",
+            "minute": 6,
+            "forGoalBy": 12
+          },
+          {
+            "num": 47,
+            "type": "throwin",
+            "minute": 13,
+            "forGoalBy": 3
+          },
+          {
+            "num": 20,
+            "type": "corner",
+            "minute": 49,
+            "forGoalBy": 25
+          },
+          {
+            "num": 9,
+            "type": "flickon",
+            "minute": 53,
+            "forGoalBy": 12
+          }
+        ],
+        "captain": 25,
+        "savedAt": "2026-10-11T14:46:27.406Z",
+        "redCards": [],
+        "starters": [
+          {
+            "num": 28,
+            "spells": [
+              {
+                "pos": "GK",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "GK"
+            ]
+          },
+          {
+            "num": 20,
+            "spells": [
+              {
+                "pos": "RWB",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "RWB"
+            ]
+          },
+          {
+            "num": 38,
+            "spells": [
+              {
+                "pos": "RCB",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "RCB"
+            ],
+            "subbedOff": true
+          },
+          {
+            "num": 25,
+            "spells": [
+              {
+                "pos": "LCB",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "LCB"
+            ]
+          },
+          {
+            "num": 23,
+            "spells": [
+              {
+                "pos": "LDM",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "LDM"
+            ]
+          },
+          {
+            "num": 12,
+            "spells": [
+              {
+                "pos": "CAM",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "CAM"
+            ]
+          },
+          {
+            "num": 9,
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "ST"
+            ]
+          },
+          {
+            "num": 3,
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "ST"
+            ]
+          },
+          {
+            "num": 47,
+            "spells": [
+              {
+                "pos": "RDM",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "RDM"
+            ]
+          },
+          {
+            "num": 40,
+            "spells": [
+              {
+                "pos": "CB",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "CB"
+            ]
+          },
+          {
+            "num": 2,
+            "spells": [
+              {
+                "pos": "LWB",
+                "half": "1",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "LWB"
+            ],
+            "subbedOff": true
+          }
+        ],
+        "formation": "3-4-1-2",
+        "commentary": "",
+        "cleanSheets": [],
+        "competition": "Brian Howard President's Cup",
+        "yellowCards": [],
+        "opponentGoals": [],
+        "squadStarters": 11,
+        "penaltiesSaved": [],
+        "penaltiesMissed": [],
+        "opponentRedCards": [],
+        "penaltiesConceded": 0
+      },
+      "updated_at": "2026-10-11T14:46:29.25+00:00"
     }
   ],
   "articles": [
@@ -10921,37 +11233,6 @@
       "updated_at": "2026-06-28T10:39:26.337+00:00"
     }
   ],
-  "fixtures": [
-    {
-      "key": "f2627-pcup-r1-peps",
-      "data": {
-        "away": "Sue's Angels FC",
-        "date": "",
-        "home": "Peps All Stars",
-        "kick": "",
-        "kind": "fixture",
-        "squad": [
-          28,
-          20,
-          38,
-          10,
-          25,
-          4,
-          11,
-          23,
-          12,
-          9,
-          3,
-          2,
-          41,
-          44
-        ],
-        "venue": "",
-        "competition": "Brian Howard President's Cup",
-        "squadStarters": 11
-      },
-      "updated_at": "2026-09-20T16:44:13.432+00:00"
-    }
-  ],
+  "fixtures": [],
   "team_badges": []
 }

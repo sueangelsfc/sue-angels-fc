@@ -27,7 +27,7 @@
    ========================================================================== */
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
-import { teamSummary, fmtDate } from '../lib/stats.mjs';
+import { teamSummary, fmtDate, isUs } from '../lib/stats.mjs';
 import { cupRoutes } from '../lib/cups.mjs';
 import { seasonViews, defaultView, seasonBar, seasonPanels, matchNote } from '../lib/seasons.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
@@ -460,6 +460,30 @@ function matchesPage(d, mode) {
      dates. */
   const cupData = d.cups || null;
   const cupBand = isFixtures && cupData && (cupData.cups || []).length ? (() => {
+    /* A ROUND THE CLUB HAS ALREADY PLAYED CARRIES ITS SCORELINE.
+
+       Joined on evidence rather than typed beside the draw: a round is
+       matched to a stored match when the competition is this cup and the
+       opponent is one the round could be against. A round with more than one
+       possible opponent cannot be matched to anything, which is right - that
+       is a round nobody has reached yet.
+
+       The score is written the way the club reads it, ours first, whichever
+       side of the draw we were on. The 0-4 at Peps All Stars is a 4-0 win to
+       read, and printing the draw's own orientation would have the winning
+       club looking beaten. */
+    const cupTie = (cupName, round) => {
+      if (round.opponents.length !== 1) return null;
+      const them = round.opponents[0].name;
+      const m = (d.played || []).find((x) => String(x.competition || '') === cupName
+        && String(x.opponent || '') === them);
+      if (!m || m.kind === 'walkover') return null;
+      const us = isUs(m.home) ? m.hs : m.as;
+      const they = isUs(m.home) ? m.as : m.hs;
+      if (!Number.isFinite(us) || !Number.isFinite(they)) return null;
+      return { us, they, won: us > they, lost: us < they, href: `/matches/${m.slug}.html` };
+    };
+
     const blocks = cupRoutes(cupData, CLUB.name).filter((c) => c.rounds.length).map((cup) => {
       const rows = cup.rounds.map((r) => {
         const many = r.opponents.length > 8;
@@ -468,18 +492,24 @@ function matchesPage(d, mode) {
               </li>`).join('\n              ');
         const list = `<ul class="cup-chips">\n              ${chips}\n            </ul>`;
         const n = r.opponents.length;
-        return `<li class="cup-round">
+        const tie = cupTie(cup.name, r);
+        const state = tie ? (tie.won ? ' is-won' : tie.lost ? ' is-lost' : ' is-drawn') : '';
+        return `<li class="cup-round${state}">
             <p class="cup-round__h">
               <span class="cup-round__r">${esc(r.round)}</span>
               <span class="cup-ha${r.neutral ? ' is-neutral' : r.home ? ' is-home' : ''}">${
     r.neutral ? 'Neutral' : r.home ? 'Home' : 'Away'}</span>
+              ${tie ? `<a class="cup-score" href="${attr(tie.href)}">
+                <b>${esc(`${tie.us}-${tie.they}`)}</b>
+                <i>${esc(tie.won ? 'Won' : tie.lost ? 'Lost' : 'Drawn')}</i>
+              </a>` : ''}
             </p>
             ${many
     ? `<details class="cup-more">
-              <summary>${esc(n)} clubs could reach this round</summary>
+              <summary>${esc(n)} clubs could still reach this round</summary>
               ${list}
             </details>`
-    : `${r.decided ? '' : `<p class="cup-round__n">${esc(n === 1 ? 'One club' : `${n} clubs`)} could reach this round</p>`}
+    : `${r.decided ? '' : `<p class="cup-round__n">${esc(n === 1 ? 'One club' : `${n} clubs`)} could still reach this round</p>`}
             ${list}`}
           </li>`;
       }).join('\n          ');
@@ -496,9 +526,10 @@ function matchesPage(d, mode) {
         <h2 class="h2 rv" id="cup-h">How far it could <span class="volt">go.</span></h2>
         <p class="mt-cups__lede rv">Both brackets, read off the draws the league published. A tie is
           printed home against away, so which side ${esc(CLUB.name)} is on is already decided for every
-          round, and every club that could arrive in a round is listed with the division it plays in.
-          A final is played at a neutral ground, so neither club is at home in one. A draw is not a
-          fixture: dates are above, and the club has to get there.</p>
+          round, and every club that could still arrive in a round is listed with the division it plays
+          in. A club that has been knocked out is taken off the list, so these are the sides still in
+          the way and not the sides that were. A final is played at a neutral ground, so neither club
+          is at home in one. A draw is not a fixture: dates are above, and the club has to get there.</p>
         ${blocks}
         <p class="mt-cups__note rv">Divisions as they stood on ${esc(fmtDate(cupData.divisionsAsOf))}.
           ${esc(CLUB.name)} play in League Eight, the eighth of ${esc((cupData.divisions || []).length)}.</p>

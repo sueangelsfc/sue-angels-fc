@@ -296,6 +296,26 @@
           "home": "Winner of Tie 25",
           "away": "Winner of Tie 26"
         }
+      ],
+      "results": [
+        {
+          "n": 2,
+          "hs": 0,
+          "as": 4,
+          "on": "2026-10-11"
+        },
+        {
+          "n": 3,
+          "hs": 5,
+          "as": 2,
+          "on": "2026-10-11"
+        },
+        {
+          "n": 11,
+          "hs": 3,
+          "as": 1,
+          "on": "2026-10-11"
+        }
       ]
     },
     {
@@ -941,5 +961,6 @@
         }
       ]
     }
-  ]
+  ],
+  "_resultsNote": "Cup ties the club has seen a result for, by tie number, so a club that has been knocked out stops being listed as a side we could still meet. Scorelines are recorded and the loser is DERIVED, never typed: a list of losers is a second place to be wrong. A tie with no entry has not been played as far as this file knows, so both clubs stay in - absent means unknown, never eliminated. An ABANDONED tie (Catania v Hillside, 11 Oct, A-A) is deliberately absent: nobody went out, it will be replayed."
 }

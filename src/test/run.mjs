@@ -1268,6 +1268,13 @@ for (const f of shipped) {
        The stored row must survive, because only it carries what the club
        typed, and it must come out with the date the transcription had. */
     const liveD = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/data/recovered-live.json'), 'utf8'));
+    /* BOTH HALVES ARE CRAFTED, and they have to be. This used to pair a
+       crafted undated row with the REAL transcription of the Peps tie, and on
+       11 October that match was played: the transcribed card dropped out as a
+       result, nothing was left to supply the date, and the check went red
+       having been incapable of failing for the right reason since kick-off.
+       A merge rule is tested against a match that is permanently in the
+       future, not against the next one in the calendar. */
     const crafted = bdD({
       live: {
         ...liveD,
@@ -1280,13 +1287,20 @@ for (const f of shipped) {
           },
         }],
       },
+      fixtures: {
+        fixtures: [{
+          id: 'f-crafted-transcribed', date: '11 Oct 2096', kick: '10:30',
+          home: 'Peps All Stars', away: "Sue's Angels FC",
+          venue: 'Dulwich Park, Pitch 1', competition: "Brian Howard President's Cup",
+        }],
+      },
     });
     const peps = (crafted.upcoming || []).filter((f) => /peps/i.test(String(f.home) + f.away));
     check('the club\u2019s undated fixture and its transcription are one match, not two',
       peps.length === 1, `${peps.length} rows`);
     check('and the row that survives is the club\u2019s own, with the date filled in',
       peps.length === 1 && peps[0].id === 'f-crafted-undated'
-        && /11 Oct 2026|2026-10-11/.test(String(peps[0].date || peps[0].iso || '')),
+        && /11 Oct 2096|2096-10-11/.test(String(peps[0].date || peps[0].iso || '')),
       peps.length === 1 ? `${peps[0].id} | ${peps[0].date || peps[0].iso}` : 'no single row');
   }
 
@@ -1881,10 +1895,15 @@ for (const [f, h] of pages) {
       /class="sec mt-cups"/.test(hF)
         && cupsD.cups.every((c) => hF.includes(escd(c.name))),
       cupsD.cups.filter((c) => !hF.includes(escd(c.name))).map((c) => c.short).join(', '));
+    /* The class may carry a modifier - a round the club has won is
+       `cup-round is-won` - so the match ends at a quote OR a space. An exact
+       `class="cup-round"` counted eleven of the twelve rounds the moment the
+       first tie was won, which is the same literal-match trap as the
+       `cup-chip`/`cup-chips` one below, pointing the other way. */
+    const roundRows = (hF.match(/class="cup-round[" ]/g) || []).length;
     check('and every round of both is on it',
-      (hF.match(/class="cup-round"/g) || []).length
-        === routes.reduce((n, r) => n + r.rounds.length, 0),
-      `${(hF.match(/class="cup-round"/g) || []).length} rows`);
+      roundRows === routes.reduce((n, r) => n + r.rounds.length, 0),
+      `${roundRows} rows`);
     /* `cup-chip` is a prefix of `cup-chips`, the list that holds them, so the
        loose match counted thirteen lists as opponents. */
     const chips = (hF.match(/class="cup-chip["s ]/g) || [])
@@ -6638,7 +6657,24 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const { stats: statsW } = await import(path.join(ROOT, 'src', 'templates', 'stats.mjs'));
   const rawW = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'recovered-live.json'), 'utf8'));
   const liveW = JSON.parse(JSON.stringify(rawW));
-  liveW.matches = (liveW.matches || []).filter((m) => !/^r2026090[6-9]|^r202609[1-3]/.test(m.key || ''));
+  /* EVERY 26/27 COMPETITIVE MATCH COMES OUT, by date rather than by a list of
+     key patterns. This named September's keys, so the cup tie of 11 October
+     survived the filter, carried a team sheet, gave the season its figures and
+     left nothing for the note to be about - the check went red on the day the
+     club entered a result, having quietly stopped describing a bare season.
+     A date test cannot go stale the same way. */
+  const seasonStartW = Date.parse('2026-07-01');
+  /* A STORED MATCH DOES NOT ALWAYS CARRY `iso`. The Peps record the club
+     entered on 11 October has only `date: '11 Oct 2026'`, so an ISO-shaped
+     test read it as undated and kept it - the same miss as the key patterns,
+     one layer down. Both shapes parse. */
+  const playedOnW = (m) => {
+    const d0 = (m && m.data) || {};
+    const t = Date.parse(String(d0.iso || '')) || Date.parse(String(d0.date || ''));
+    return Number.isFinite(t) ? t : null;
+  };
+  liveW.matches = (liveW.matches || [])
+    .filter((m) => { const t = playedOnW(m); return !(t !== null && t >= seasonStartW); });
   const bare = String((statsW(bdW({ live: JSON.parse(JSON.stringify(liveW)) })) || {}).body || '');
   liveW.matches.push({
     key: 'simw20260906-tlb', updated_at: '2026-09-06T12:00:00Z',

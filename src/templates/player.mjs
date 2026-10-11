@@ -395,6 +395,11 @@ const ordinal = (n) => {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 };
 
+/* An SVG coordinate, as short as it can be written without moving. `.0` on
+   every point of every chart is a tenth of a kilobyte on the heaviest profile
+   and means nothing to a renderer. */
+const sv = (n) => String(Math.round(Number(n) * 10) / 10);
+
 export function playerPage(p, d) {
   const squadRec = (d.squad || []).find((x) => x.num === p.num) || {};
   const gk = !!squadRec.gk;
@@ -643,7 +648,7 @@ export function playerPage(p, d) {
     const t = x.timeline[i];
     const made = gk ? (t.conceded === 0 ? 'Clean sheet' : `${t.conceded} conceded`)
       : [t.goals ? `${t.goals}G` : '', t.assists ? `${t.assists}A` : ''].filter(Boolean).join(' ') || 'No return';
-    return `<circle class="pf-plot__pt" cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="10" data-x="${px.toFixed(1)}" data-total="${attr(series[i])}" data-club="${attr(shortClub(t.opponent))}" data-score="${attr(t.scoreline)}" data-date="${attr(fmtDate(t.date))}" data-made="${attr(made)}"/>`;
+    return `<circle class="pf-plot__pt" cx="${sv(px)}" cy="${sv(py)}" r="10" data-total="${attr(series[i])}" data-club="${attr(shortClub(t.opponent))}" data-score="${attr(t.scoreline)}" data-date="${attr(fmtDate(t.date))}" data-made="${attr(made)}"/>`;
   }).join('')}
                 <line class="pf-plot__pulse" x1="${ex}" y1="${ey}" x2="${ex}" y2="${ey}" />
                 <line class="pf-plot__end" x1="${ex}" y1="${ey}" x2="${ex}" y2="${ey}" />

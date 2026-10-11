@@ -83,6 +83,14 @@ export function buildDataset(overrides = {}) {
      published without one and still reads back into the panel as the coach
      typed it. */
   const live = houseRecord(overrides.live || read('recovered-live.json'));
+  /* `overrides.fixtures` replaces the TRANSCRIBED fixture card file, and
+     exists for the same reason `overrides.live` does: a check about how a
+     stored row and a transcribed one merge has to be able to build both
+     halves. Relying on a real pair means the check stops testing anything the
+     day that match is played - which is exactly what happened on 11 October,
+     when the Peps tie got a result and the merge check started passing a row
+     with no date to compare. */
+  const transcribedFixtures = overrides.fixtures || read('fixtures-2627.json');
 
   /* ---- Match detail records, keyed by match id ---- */
   const detailById = new Map();
@@ -178,7 +186,7 @@ export function buildDataset(overrides = {}) {
        the database fixtures alone dropped the played one out of `storedIds`,
        which is what this list checks against, so the transcribed card put it
        straight back and the duplicate survived a fix aimed at it. */
-    ...(read('fixtures-2627.json').fixtures || [])
+    ...(transcribedFixtures.fixtures || [])
       .filter((f) => !known.has(f.id) && !storedIds.has(f.id) && !knownMatches.has(identity(f)))
       .filter((f) => {
         const held = undatedStored.get(clubsOf(f));

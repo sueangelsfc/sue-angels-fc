@@ -247,3 +247,38 @@ html.js .mt[hidden]{display: none;}
 /* A FINAL IS NEITHER. Marked by the outline the away pill uses with the
    accent on the text, so it reads as a third state rather than a home tie. */
 .cup-ha.is-neutral{border-color: rgba(var(--volt-rgb), 0.5); color: var(--volt-text);}
+
+/* A CUP TIE THE CLUB HAS PLAYED SHOWS ITS SCORE, ours first.
+
+   NO SECOND HUE. Green was asked for and would have been the first non-orange
+   colour on football data anywhere on this site; the rule here is that a
+   result is told apart by WEIGHT AND STRUCTURE, with orange as the only
+   accent, and a knockout is not a good enough reason to start an exception
+   that every other component would then want.
+
+   So a win is said three ways without a new colour: the numerals go up in
+   weight, the pill takes an orange rule and an orange label, and the round
+   itself gets an orange edge so it is findable scanning down the bracket.
+   A defeat is the same pill with the accent taken away and the ink dropped
+   back, which reads as quieter rather than as an error.
+
+   The Home pill beside it is SOLID orange and this one is OUTLINED, so two
+   orange things on one row stay two different things. */
+.cup-score{display: inline-flex; align-items: baseline; gap: 9px;
+  margin-left: auto; padding: 4px 12px; border-radius: 999px;
+  border: 1px solid var(--line-d); text-decoration: none; color: var(--fg);}
+.cup-score b{font-family: var(--ui); font-size: 14px; font-weight: 600;
+  font-variant-numeric: tabular-nums; letter-spacing: 0.01em;}
+.cup-score i{font-family: var(--ui); font-style: normal; font-size: 10px;
+  font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase;
+  color: var(--ink-2);}
+
+.cup-round.is-won .cup-score{border-color: rgba(var(--volt-rgb), 0.55);
+  background: rgba(var(--volt-rgb), 0.10);}
+.cup-round.is-won .cup-score b{font-weight: 800;}
+.cup-round.is-won .cup-score i{color: var(--volt-text);}
+/* Findable scanning down a bracket, without a colour the palette does not have. */
+.cup-round.is-won{border-left: 2px solid var(--volt); padding-left: 14px;}
+
+.cup-round.is-lost .cup-score{opacity: 0.72;}
+.cup-round.is-lost .cup-score b{font-weight: 500; color: var(--ink-2);}

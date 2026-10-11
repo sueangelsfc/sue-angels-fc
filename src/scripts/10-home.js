@@ -1075,8 +1075,8 @@
         if (pt === active) return;
         active = pt;
         pts.forEach(function (o) { o.classList.toggle('is-on', o === pt); });
-        cross.setAttribute('x1', pt.getAttribute('data-x'));
-        cross.setAttribute('x2', pt.getAttribute('data-x'));
+        cross.setAttribute('x1', pt.getAttribute('cx'));
+        cross.setAttribute('x2', pt.getAttribute('cx'));
         cross.setAttribute('opacity', '1');
         cap.classList.add('is-live');
         cap.innerHTML = '<span class="pf-plot__lo">' + pt.getAttribute('data-date') + '</span>'
@@ -1102,7 +1102,7 @@
         var x = ((clientX - box.left) / box.width) * vb.width;
         var best = null, bestD = Infinity;
         pts.forEach(function (o) {
-          var dx = Math.abs(parseFloat(o.getAttribute('data-x')) - x);
+          var dx = Math.abs(parseFloat(o.getAttribute('cx')) - x);
           if (dx < bestD) { bestD = dx; best = o; }
         });
         if (best) show(best);

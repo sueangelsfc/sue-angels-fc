@@ -86,6 +86,37 @@ export function routeThrough(cup, club) {
   function feeds() { return false; }
 }
 
+/**
+ * Clubs knocked out of a cup, DERIVED from the scorelines the file records
+ * rather than listed by hand, because a list of losers is a second place for
+ * the same fact to be wrong.
+ *
+ * A tie with no recorded result leaves BOTH clubs in. Absent means nobody has
+ * seen a score, never that somebody went out - this file is transcribed by
+ * hand from the league's pages and is always behind the football. The honest
+ * failure is listing a club that has actually gone out; claiming one is out
+ * when it is not would delete a side we could genuinely meet.
+ *
+ * A DRAWN tie eliminates nobody. Grassroots cups settle these by a replay or
+ * a shootout, and the shootout is not in the scoreline, so a 2-2 says only
+ * that both clubs are still in it until the next round's draw says otherwise.
+ */
+export function eliminated(cup) {
+  const { byNum } = index(cup);
+  const gone = new Set();
+  for (const r of cup.results || []) {
+    const tie = byNum.get(Number(r.n));
+    if (!tie) continue;
+    const hs = Number(r.hs);
+    const as = Number(r.as);
+    if (!Number.isFinite(hs) || !Number.isFinite(as) || hs === as) continue;
+    const loser = hs > as ? tie.away : tie.home;
+    /* "Winner of Tie 7" is a branch, not a club, so it cannot be knocked out. */
+    if (loser && !WINNER.test(String(loser).trim())) gone.add(String(loser).trim());
+  }
+  return gone;
+}
+
 /** How a division compares with ours: -1 above, 0 the same, 1 below, null unknown. */
 export function divisionRank(data, division) {
   const i = (data.divisions || []).indexOf(division);
@@ -106,14 +137,25 @@ export function cupRoutes(data, club) {
      from the word "Final" here, because which ones are neutral is the
      league's decision. */
   const neutral = new Set(data.neutralRounds || []);
-  return (data.cups || []).map((cup) => ({
+  return (data.cups || []).map((cup) => {
+    const out = eliminated(cup);
+    return {
     id: cup.id,
     name: cup.name,
     short: cup.short || cup.name,
     rounds: routeThrough(cup, club).map((r) => ({
       ...r,
       neutral: neutral.has(r.round),
-      opponents: r.opponents.map((name) => {
+      /* A CLUB THAT HAS GONE OUT IS NOT SOMEBODY WE COULD STILL MEET. The
+         bracket can only say who MIGHT arrive in a round; once a tie has been
+         played, half of it cannot.
+
+         A round the draw already names is left alone, even when its club has
+         been knocked out - that is OUR tie, and the one we have just played
+         is exactly the case: beating Peps All Stars put them out, and pruning
+         them would blank the round we won. Only the speculative sets are
+         pruned. */
+      opponents: (r.decided ? r.opponents : r.opponents.filter((n) => !out.has(n))).map((name) => {
         const division = of[name] || '';
         const rank = divisionRank(data, division);
         return {
@@ -127,5 +169,5 @@ export function cupRoutes(data, club) {
       }).sort((a, b) => (divisionRank(data, a.division) ?? 99) - (divisionRank(data, b.division) ?? 99)
         || a.name.localeCompare(b.name)),
     })),
-  }));
+  }; });
 }

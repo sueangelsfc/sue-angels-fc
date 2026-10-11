@@ -47,6 +47,26 @@
      has told the visitor, and never once they have objected: every entry
      point asks allowed() at the moment it would act. A choice changed half
      way through a visit takes effect from the next action. */
+  /* A BROWSER NOBODY IS SITTING AT IS NOT A READER.
+
+     `npm run visual` drives a headless Chrome over every page family at
+     three widths and `npm test` renders pages the same way; the page loads
+     this file, the banner is on screen so consent passes, and the beacon
+     posts to the PRODUCTION database. Over September and October that came
+     to 8,520 views against 2,013 real ones - the club's analytics were FOUR
+     FIFTHS our own test runs, and it showed: 266 views a day at six seconds
+     a page, where the truth is 67 a day at twenty-six seconds. Every page on
+     the site was visited on desktop, mobile AND tablet in lockstep, which is
+     not a thing an audience does.
+
+     CHECKED AGAINST A REAL HEADLESS CHROME RATHER THAN ASSUMED, and the
+     obvious test is the one that fails: `navigator.webdriver` is FALSE in
+     the browser this project actually drives. The user agent is what carries
+     it. `webdriver` is kept as well, because Puppeteer and Selenium do set
+     it and a future tool may be driven that way.
+
+     Read locally and never sent. Nothing about the device leaves the page
+     because of this; it only decides whether to speak at all. */
   function allowed() {
     try { return !!(window.saPrivacy && window.saPrivacy.allows('stats')); } catch (e) { return false; }
   }
@@ -54,6 +74,11 @@
   /* A path and nothing else. The database re-checks this - it has to, being
      callable by anyone - but sending something it will silently discard would
      mean the counter looked like it worked and recorded nothing. */
+  /* A BROWSER NOBODY IS SITTING AT IS NOT A READER, and it leaves before it
+     does anything at all: no listeners, no observers, no journey in
+     sessionStorage. Asking inside allowed() would be later and dearer. */
+  if (navigator.webdriver || /HeadlessChrome/.test(navigator.userAgent || '')) return;
+
   var path = String(location.pathname || '/');
   if (path.length > 120 || !/^\/[A-Za-z0-9/_.-]*$/.test(path)) return;
 

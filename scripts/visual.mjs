@@ -208,6 +208,48 @@ async function main() {
   if (potm.bad) fail('awards.html', `${potm.bad} Player of the Month band(s) show other than exactly one panel`);
   if (potm.empty) fail('awards.html', `${potm.empty} image(s) with an empty src, which re-request the page`);
 
+  /* ---- THIS BROWSER MUST NOT BE COUNTED AS A READER ---------------------
+
+     Over September and October, 8,520 of the 10,533 views in the club's
+     stats were THIS SCRIPT and the suite's browser passes: every page, on
+     desktop, mobile and tablet in lockstep, one second each. Four fifths of
+     the analytics were our own verification runs, and the screen reported
+     266 views a day at six seconds a page when the truth was 67 at
+     twenty-six.
+
+     `30-stats.js` refuses to record in an automated browser. The check
+     belongs HERE, in the browser that actually caused it, rather than as a
+     grep over the shipped file: the obvious test for this is
+     `navigator.webdriver` and it is FALSE in the Chrome this project
+     drives, so a check that only proved the guard existed would have proved
+     the wrong guard existed. */
+  const robot = await ask(`(() => {
+    const ua = navigator.userAgent || '';
+    return {
+      webdriver: navigator.webdriver === true,
+      headless: /HeadlessChrome/.test(ua),
+      caught: navigator.webdriver === true || /HeadlessChrome/.test(ua),
+      /* THE OTHER DIRECTION, which is the one that can actually be wrong
+         here. Both signals are true in this browser, so "is it caught" can
+         only ever pass and proves nothing on its own; a guard that answered
+         yes to everything would silence the club's analytics completely.
+         A real iPhone's user agent must NOT be caught. */
+      realReaderCaught: /HeadlessChrome/.test(
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 '
+        + '(KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1'),
+    };
+  })()`);
+  notes.push(`automation seen by the beacon: webdriver=${robot.webdriver} `
+    + `headlessUA=${robot.headless}`);
+  if (robot.realReaderCaught) {
+    fail('the stats beacon', 'a real phone\'s user agent is treated as automated, '
+      + 'so genuine readers would stop being counted');
+  }
+  if (!robot.caught) {
+    fail('the stats beacon', 'this browser is not recognised as automated, so every page '
+      + 'it renders is being counted as a reader in the club\'s analytics');
+  }
+
   /* ---- The control panel ------------------------------------------------
      It is behind a Supabase sign-in, so it is booted the way the suite boots
      it: the shipped files, with the network stubbed and nothing else. The

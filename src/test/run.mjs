@@ -2376,7 +2376,23 @@ const BUDGET = {
      returning visits, which send nothing without a saved yes. 19,181 gz
      before, 22,682 after. It runs on every page because a click, a scroll or
      a slow load can happen on any of them. */
-  'sa.js': 23,
+  /* 23 -> 24, and the 38 bytes are the club's analytics being four fifths
+     fiction. `npm run visual` renders every page family at three widths and
+     `make-covers.mjs` loads each match page to draw its card; both run a
+     real browser, so this file loads, the banner is on screen, consent
+     passes and the beacon posts to the PRODUCTION database. Across
+     September and October that was 8,520 views against 2,013 real ones, and
+     the screen reported 266 views a day at six seconds a page where the
+     truth is 67 a day at twenty-six.
+
+     One early return, before a single listener is attached. It tests
+     `navigator.webdriver` AND the user agent because neither alone is
+     enough: the CDP-driven browser in `visual.mjs` sets `webdriver`, the
+     plain `--headless` launches in `make-covers.mjs` and the programme
+     render do not and are caught by the user agent. Measured by building
+     without it and with it: 23,533 gz before, 23,571 after. The file was
+     already within 19 bytes of its ceiling, which is why 38 moved it. */
+  'sa.js': 24,
   /* 5 -> 6, once, for the match form telling you what is in the record: the
      count on a tab you have not opened, the strip saying what does not add
      up, the tally beside each picker's label, and the eleven collapsed from a

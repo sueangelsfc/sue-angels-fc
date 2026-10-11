@@ -235,24 +235,73 @@ html.js .nw-card[hidden]{display: none;}
 .nw-art{padding-block-start: clamp(30px, 4vw, 54px);}
 
 
-/* AN AUDIO CLIP IN AN ARTICLE BODY (`@[caption](address)` in news.mjs).
+/* AN AUDIO INTERVIEW IN AN ARTICLE (`@[caption](address|portrait)`).
 
-   The player is the browser's own, so this styles the frame around it and
-   nothing inside: the controls are the reader's, in the reader's language,
-   already keyboard-operable, and a bespoke one would cost sa.js a budget
-   raise to rebuild a pause button.
+   WHAT THIS BLOCK IS FOR is getting somebody to press play, and the first
+   version did the opposite: the browser's grey control bar in a thin frame,
+   dropped between two paragraphs, so the smallest and dullest thing on the
+   page was the thing the page was about.
 
-   Chrome and Safari draw the control strip on an opaque light background of
-   their own and will not be talked out of it, so the surface under it is the
-   article's elevated dark one with a hairline, and the two meet at a radius
-   rather than the strip floating on the page. `width: 100%` is on the element
-   because an <audio> has an intrinsic width that ignores its container. */
-.nw-art__aud{margin: clamp(24px, 3.4vw, 38px) 0; padding: 18px;
-  border: 1px solid var(--line-d); border-radius: 16px;
-  background: linear-gradient(168deg, rgba(var(--volt-rgb), 0.07), rgba(var(--sink), 0.55) 70%);}
-.nw-art__player{width: 100%; display: block; border-radius: 10px;}
-.nw-art__aud figcaption{margin-top: 12px; color: var(--ink-3);
-  font-size: 0.84rem; line-height: 1.45;}
+   THE SPEAKER IS THE HERO, not a waveform. A drawn waveform is the obvious
+   move and it is decoration pretending to be data - we have no amplitude,
+   so it would be an invention sitting where a fact should be. What is
+   actually true of this block is that somebody is TALKING, so the portrait
+   carries it and the duration is set as a real piece of type, because how
+   long it takes is what a reader is deciding about.
+
+   The controls stay the browser's. They are keyboard-operable and labelled
+   in the reader's own language for nothing, and `sa.js` has about a
+   kilobyte of headroom: rebuilding a pause button is not what to spend it
+   on. The panel around them does the work. */
+.aud{display: grid; grid-template-columns: minmax(0, 1fr); gap: 0;
+  margin: clamp(30px, 4.5vw, 46px) 0; border-radius: 20px; overflow: hidden;
+  border: 1px solid rgba(var(--volt-rgb), 0.28);
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(var(--volt-rgb), 0.16), transparent 58%),
+    linear-gradient(168deg, rgba(var(--lift), 0.05), rgba(var(--sink), 0.72));}
+
+.aud__face{width: 100%; height: 190px; object-fit: cover;
+  object-position: 50% 16%; display: block;
+  border-bottom: 1px solid rgba(var(--volt-rgb), 0.22);}
+
+.aud__body{padding: clamp(18px, 3vw, 26px);}
+
+/* One word, sentence case, doing one job: saying what this is before the
+   reader works it out from a control bar. */
+.aud__kind{margin: 0; font-family: var(--ui); font-size: 0.78rem;
+  font-weight: 700; letter-spacing: 0.02em; color: var(--volt-text);}
+
+/* Archivo, stated. The site's --display is Geist, so var(--display) would
+   quietly set this in the body face - the same trap the news plate hit. */
+.aud__h{margin: 6px 0 0; font-family: Archivo, var(--display), sans-serif;
+  font-weight: 600; font-size: clamp(1.18rem, 3.4vw, 1.5rem); line-height: 1.2;
+  letter-spacing: -0.015em; color: var(--fg); max-width: 24ch;}
+
+.aud__len{margin: 8px 0 0; color: var(--ink-2); font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;}
+
+/* An <audio> has an intrinsic width that ignores its container, so the width
+   has to be stated. The height gives the control bar room to read as part of
+   the panel rather than as something dropped onto it. */
+.aud__player{width: 100%; height: 44px; display: block;
+  margin-top: clamp(16px, 2.4vw, 22px); border-radius: 999px;
+  /* Ask the browser for its DARK controls. Without this Chrome draws the
+     light set on a panel that is nearly black, which is the one piece of the
+     block that still looks like somebody else's furniture. */
+  color-scheme: dark;}
+/* WebKit and Chrome let the control strip's own background go, so it sits on
+   the panel instead of on a grey pill of its own. Ignored everywhere else,
+   where the strip simply stays as it was. */
+.aud__player::-webkit-media-controls-enclosure,
+.aud__player::-webkit-media-controls-panel{
+  background: rgba(var(--sink), 0.55); border-radius: 999px;}
+
+/* Side by side once there is room for the portrait to be a portrait. */
+@media (min-width: 620px) {
+  .aud{grid-template-columns: 168px minmax(0, 1fr); align-items: stretch;}
+  .aud__face{height: 100%; min-height: 216px; border-bottom: 0;
+    border-right: 1px solid rgba(var(--volt-rgb), 0.22);}
+}
 
 /* A VIDEO CLIP, the same frame as the audio one so an article carrying both
    does not look like two different components. The element is given its own

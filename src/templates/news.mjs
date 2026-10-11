@@ -154,7 +154,7 @@ function photo(b) {
    an editorial rule this function cannot enforce, and it is why the caption
    is used as the player's label rather than left to chance. */
 function clip(b) {
-  const m = /^@\[([^\]\n]*)\]\((\S+)\)$/.exec(b);
+  const m = /^@\[([^\]\n]*)\]\(([^)\s|]+)(?:\|([^)\s]+))?\)$/.exec(b);
   if (!m) return '';
   const dur = /#(\d{1,3}:[0-5]\d)$/.exec(m[2]);
   const src = m[2].replace(/#.*$/, '');
@@ -162,13 +162,36 @@ function clip(b) {
     ? /^[\w\-./%]+$/.test(src.slice(STORAGE.length))
     : /^\/assets\/audio\/[\w\-./]+\.(?:mp3|m4a|ogg)$/i.test(src);
   if (!ours) return '';
+  /* An optional portrait of whoever is speaking, after a pipe, by the same
+     address rule as a photograph. */
+  const face = (m[3] || '').replace(/#.*$/, '');
+  const okFace = !face || (face.startsWith(STORAGE)
+    ? /^[\w\-./%]+$/.test(face.slice(STORAGE.length))
+    : /^\/assets\/[\w\-./]+\.(?:jpe?g|png|webp)$/i.test(face));
+  if (!okFace) return '';
   const cap = m[1].trim();
-  return `<figure class="nw-art__aud">`
-    + `<audio class="nw-art__player" controls preload="none" src="${attr(src)}"`
+  /* "4:16" is a timestamp. Said as minutes it is a decision about whether to
+     press play, which is what this block is for. */
+  const said = dur ? (() => {
+    const [mm, ss] = dur[1].split(':').map(Number);
+    const a = `${mm} minute${mm === 1 ? '' : 's'}`;
+    return ss ? `${a} ${ss} second${ss === 1 ? '' : 's'}` : a;
+  })() : '';
+  return `<figure class="aud">`
+    + (face ? `<img class="aud__face" src="${attr(face)}" alt="" width="320" height="320"`
+      + ` loading="lazy" decoding="async" />` : '')
+    + `<div class="aud__body">`
+    + `<p class="aud__kind">Listen</p>`
+    /* NOT A HEADING. It names the clip, it does not open a section, and the
+       article's own Q&A headings are h2 - so an h3 here skipped a level
+       straight from the headline, which the suite caught. The audio element
+       already carries the same words as its accessible name, so nothing is
+       lost by setting this as the label it is. */
+    + (cap ? `<p class="aud__h">${inline(cap)}</p>` : '')
+    + (said ? `<p class="aud__len">${esc(said)}</p>` : '')
+    + `<audio class="aud__player" controls preload="none" src="${attr(src)}"`
     + ` aria-label="${attr(cap || 'Audio clip')}"></audio>`
-    + `${cap || dur ? `<figcaption>${cap ? inline(cap) : ''}`
-      + `${cap && dur ? ' · ' : ''}${dur ? esc(dur[1]) : ''}</figcaption>` : ''}`
-    + `</figure>`;
+    + `</div></figure>`;
 }
 
 /* A VIDEO CLIP, a line of its own, with an optional poster after a pipe:

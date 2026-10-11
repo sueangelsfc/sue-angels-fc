@@ -11233,6 +11233,20 @@
       "updated_at": "2026-06-28T10:39:26.337+00:00"
     }
   ],
-  "fixtures": [],
+  "fixtures": [
+    {
+      "key": "f20261018-mousa",
+      "data": {
+        "away": "Mousa Mountain FC",
+        "date": "18 Oct 2026",
+        "home": "Sue's Angels FC",
+        "kick": "11:00",
+        "kind": "fixture",
+        "venue": "The Reeves Sports Club",
+        "competition": "League Eight"
+      },
+      "updated_at": "2026-10-11T15:22:27.842+00:00"
+    }
+  ],
   "team_badges": []
 }

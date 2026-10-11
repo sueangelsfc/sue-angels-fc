@@ -25,6 +25,13 @@
       "after": "",
       "text": "Read [Ade Owolana’s player profile](/players/ade-owolana.html) for every appearance, goal and award.",
       "unless": "Ade Owolana’s player profile]("
+    },
+    {
+      "_why": "Jim retired at the end of 25/26 and this piece was written to mark it. He is playing again in 26/27 - his roster:status record reads active for the season and he has started matches - so the article is now the only thing on the site saying his playing days are over. The stored text is left exactly as the club wrote it, because it was true when it was published and a retirement piece is not something to quietly rewrite; the update is added underneath it instead.",
+      "slug": "jims-playing-career-comes-to-an-end-but-his-sues-angels-journey-continues",
+      "after": "A captain. A leader. A friend. A Sue's Angels legend.",
+      "text": "**Update, October 2026.** Jim is playing again. He returned to the squad for the 26/27 season and has started in League Eight, alongside his work with the coaching staff. The chapter that closed above has reopened.",
+      "unless": "Update, October 2026"
     }
   ]
 }

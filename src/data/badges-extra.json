@@ -8,21 +8,28 @@
       "src": "assets/badge/balham-bteckerz.webp",
       "alt": "Balham Bteckerz",
       "aspect": "circle",
-      "deny": ["Balham & Clapham Albion"]
+      "deny": [
+        "Balham & Clapham Albion"
+      ]
     },
     "Dynamo London FC": {
       "match": "dynamo",
       "src": "assets/badge/dynamo-london.webp",
       "alt": "Dynamo London FC",
       "aspect": "circle",
-      "deny": ["Dynamo Putney FC"]
+      "deny": [
+        "Dynamo Putney FC"
+      ]
     },
     "Clapham Chiefs FC": {
       "match": "clapham",
       "src": "assets/badge/clapham-chiefs.webp",
       "alt": "Clapham Chiefs FC",
       "aspect": "circle",
-      "deny": ["Club Internacional de Fútbol Clapham", "Balham & Clapham Albion"]
+      "deny": [
+        "Club Internacional de Fútbol Clapham",
+        "Balham & Clapham Albion"
+      ]
     },
     "Celtic Swans FC": {
       "match": "celtic swans",
@@ -64,6 +71,18 @@
       "match": "kingsmeadow",
       "src": "assets/badge/kingsmeadow-united.webp",
       "alt": "Kingsmeadow United FC",
+      "aspect": "shield"
+    },
+    "Juizo FC": {
+      "match": "juizo",
+      "src": "assets/badge/juizo-fc.webp",
+      "alt": "Juizo FC",
+      "aspect": "shield"
+    },
+    "Mousa Mountain FC": {
+      "match": "mousa",
+      "src": "assets/badge/mousa-mountain.webp",
+      "alt": "Mousa Mountain FC",
       "aspect": "shield"
     }
   }

@@ -1490,6 +1490,104 @@ export async function panelChecks() {
       !/<b>7<\/b> of the period’s 24 views/.test(badDrill),
       'the drill-down check would pass on an unfiltered panel');
 
+    /* ---- IS EVERY ROW ACTUALLY FETCHED? -----------------------------------
+
+       The screen reported ALL TIME as fewer views than LAST MONTH, because
+       each query returned one server-capped page and the totals were sums of
+       a slice. "All time is at least as big as any period inside it" is not
+       the standard to hold this to: the figure has to be RIGHT, so these
+       serve a known body of rows through a stub that behaves like PostgREST
+       and assert the headline equals the arithmetic.
+
+       THE STUB'S CAP IS DELIBERATELY SMALLER THAN THE PAGE SIZE THE SCREEN
+       ASKS FOR. That is the case that breaks the obvious implementation:
+       every full page then looks short, and "stop on a short page" would
+       declare the data complete on the very first request. */
+    {
+      const CAP = 250;
+      const DAYS = 6;
+      const PER = 100;
+      const VIEWS = 3;
+      const big = [];
+      for (let d = 0; d < DAYS; d += 1) {
+        for (let i = 0; i < PER; i += 1) {
+          big.push({
+            day: `2026-09-0${d + 1}`,
+            path: `/p${String(i).padStart(3, '0')}.html`,
+            zone: 'Europe/London', source: '', device: 'mobile',
+            views: VIEWS, seconds_total: 10, depth_total: 50,
+          });
+        }
+      }
+      const TOTAL = DAYS * PER * VIEWS;
+
+      /* A stub that honours limit and offset the way the real one does, and
+         refuses to hand back more than CAP rows however many are asked for. */
+      const asked = [];
+      const paged = (method, q) => {
+        asked.push(q);
+        if (!/^page_stats\?/.test(q) || /day=lt\./.test(q)) return [];
+        const lim = Number((q.match(/[&?]limit=(\d+)/) || [])[1] || CAP);
+        const off = Number((q.match(/[&?]offset=(\d+)/) || [])[1] || 0);
+        return big.slice(off, off + Math.min(lim, CAP));
+      };
+
+      const pagedHost = await PR.openPanel(
+        await PR.boot({ rows: { rest: paged } }), 'stats',
+      );
+      const pagedText = pagedHost.body.textContent.replace(/\s+/g, ' ');
+
+      check('every row is fetched, not just the first page the server returns',
+        pagedText.includes(String(TOTAL)),
+        `expected ${TOTAL} views on the screen; page_stats was asked `
+          + `${asked.filter((q) => /^page_stats\?/.test(q)).length} times`);
+
+      check('and it pages rather than asking once',
+        asked.filter((q) => /^page_stats\?/.test(q) && !/day=lt\./.test(q)).length > 1,
+        'one request only, so nothing was paged');
+
+      check('every page is ordered, or offset paging repeats and skips rows',
+        asked.filter((q) => /^page_stats\?/.test(q)).every((q) => /[&?]order=/.test(q)),
+        'a page was requested with no order');
+
+      check('the day count is the days in the data, not the rows that fitted',
+        new RegExp('averaged over ' + DAYS + ' days').test(pagedText),
+        pagedText.slice(pagedText.indexOf('averaged over'), pagedText.indexOf('averaged over') + 40));
+
+      /* PROBE: break the pager into the bug it was, by stopping after the
+         first response. The total must go wrong, or these checks prove
+         nothing. */
+      const cappedCtx = await PR.boot({
+        rows: { rest: paged },
+        transform: (src, file) => (file === 'control-stats.js'
+          ? bust(src, /if\(!(\w+)\.length\)return (\w+);/, 'return $2;')
+          : src),
+      });
+      const cappedText = (await PR.openPanel(cappedCtx, 'stats')).body.textContent;
+      check('probe: stopping after one response under-reports the total',
+        !cappedText.includes(String(TOTAL)),
+        'the paging check would pass on a screen that never paged');
+
+      /* A SERVER THAT IGNORES `offset` MUST NOT BE PAGED FOR EVER, and must
+         not have its one page counted again and again. The suite's own stub
+         behaves exactly like this, which is how the first two attempts at
+         the loop were caught: one hung, the other inflated every figure. */
+      let calls = 0;
+      const stuck = (method, q) => {
+        if (!/^page_stats\?/.test(q) || /day=lt\./.test(q)) return [];
+        calls += 1;
+        return big.slice(0, CAP);
+      };
+      const stuckText = (await PR.openPanel(
+        await PR.boot({ rows: { rest: stuck } }), 'stats',
+      )).body.textContent.replace(/\s+/g, ' ');
+      check('a server that ignores offset is noticed rather than paged for ever',
+        calls > 0 && calls <= 3, `${calls} requests`);
+      check('and its one page is counted once, not over and over',
+        stuckText.includes(String(CAP * VIEWS)),
+        `expected ${CAP * VIEWS} views from a single repeated page`);
+    }
+
     /* ---- Narrowing the whole screen --------------------------------------
        A filter that narrows one table and not the total is worse than none,
        so the check is on the HEADLINE after the press, not on the table that

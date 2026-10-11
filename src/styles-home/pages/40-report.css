@@ -175,3 +175,10 @@
 .mr-subs__min:empty:before{content: "–"; color: var(--ink-3);}
 .mr-subs__pair{min-width: 0;}
 .mr-subs__pair b{color: var(--fg); font-weight: 600;}
+
+/* The recorded shape, beside the "Team sheet" heading it belongs to. Set in
+   the UI face with tabular figures so 3-4-1-2 and 4-4-2 align, and in the
+   accent so it reads as a label rather than as part of the heading. */
+.mr-form{margin-left: 10px; font-family: var(--ui); font-size: 0.72em;
+  font-weight: 700; letter-spacing: 0.08em; color: var(--volt-text);
+  font-variant-numeric: tabular-nums; white-space: nowrap;}

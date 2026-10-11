@@ -165,7 +165,15 @@ export function matchReport(m, d) {
         </div>
 
         ${starters.length ? `<div class="mr-sheet rv">
-          <h3 class="mr-col__h">Team sheet</h3>
+          <h3 class="mr-col__h">Team sheet${
+    /* THE SHAPE THE CLUB RECORDED, beside the eleven it describes. The pitch
+       diagram has always drawn it and the manager's page has always counted
+       it, but the one page about this match never said it in words, so a
+       reader on a phone who scrolled past the diagram never got it and a
+       screen reader never got it at all. Only printed where the club
+       actually entered one. */
+    m.detail && m.detail.formation
+      ? `<span class="mr-form">${esc(String(m.detail.formation))}</span>` : ''}</h3>
           <ol class="mr-xi">
             ${starters.map((s) => `<li><b>${esc(s.name)}</b>${s.pos ? `<i>${esc(s.pos)}</i>` : ''}</li>`).join('\n            ')}
           </ol>

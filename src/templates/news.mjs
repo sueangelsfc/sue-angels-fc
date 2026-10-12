@@ -17,7 +17,7 @@
    ========================================================================== */
 import { esc, attr, CLUB_ID } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
-import { fmtDate, slugify, isUs, teamSummary } from '../lib/stats.mjs';
+import { fmtDate, slugify, isUs, teamSummary, toISO } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge, oppBadgeSrc } from './home.mjs';
 import { reportText, hasReport, plainText } from '../lib/prose.mjs';
 import { readFileSync } from 'node:fs';
@@ -476,11 +476,25 @@ function table(lines, opts = {}) {
    every other marker in this file fails: the writer sees it did not work
    rather than the page shipping a heading over a hole.
    ========================================================================== */
-function statPlate(b, d) {
+function statPlate(b, d, on) {
   const m = /^\+\+\[([^\]\n]{1,24})\]$/.exec(b.trim());
   if (!m || !d) return '';
   const name = m[1].trim();
-  const list = (d.competitive || []).filter((x) => x.season === name && x.played);
+  /* ---- COUNTED AS AT THE DAY THE PIECE WAS WRITTEN -----------------------
+
+     The first version counted every competitive match on the record, which on
+     an article published BEFORE a game silently absorbs that game's result.
+     The pre-match interview opens with the manager saying "four games, four
+     wins" and the plate under it read five and five, because the cup tie he
+     was about to play had since been won. A figure that contradicts the
+     sentence it was put there to support is worse than no figure.
+
+     A piece of writing is a thing said on a day. So the plate is the record on
+     that day, it matches the words around it, and unlike the first version it
+     never moves again. */
+  const cut = (on || '').slice(0, 10);
+  const list = (d.competitive || []).filter((x) => x.season === name && x.played
+    && (!cut || String(x.iso || '').slice(0, 10) <= cut));
   if (!list.length) return '';
   const s = teamSummary(list);
   const cells = [
@@ -507,10 +521,10 @@ function statPlate(b, d) {
     + `<figcaption class="qa__plate-h">${esc(name)} season</figcaption>`
     + `<dl class="qa__fig">${cells.map(([k, v]) => `<div>`
       + `<dt>${esc(k)}</dt><dd>${esc(String(v))}</dd></div>`).join('')}</dl>`
-    /* SAID OUT LOUD, because a record beside a quotation invites the reader to
-       assume it is the record AT THE TIME HE SPOKE, and it is not: it is
-       counted when the site is published and moves on every result. */
-    + `<p class="qa__plate-f">League and cup, as the record stands</p>`
+    /* AND THE DAY IS PRINTED, because six numbers beside a quotation are read
+       as the record at the time of speaking, and now they are - so the page
+       should say which day it means rather than leave the reader to assume. */
+    + `<p class="qa__plate-f">League and cup${cut ? `, to ${esc(fmtDate(cut))}` : ''}</p>`
     + `</figure>`;
 }
 
@@ -584,7 +598,7 @@ export function articleBody(text, opts = {}) {
     }
     const vid = film(b);
     if (vid) return vid;
-    const plate = statPlate(b, opts.d);
+    const plate = statPlate(b, opts.d, opts.on);
     if (plate) { inAnswer = false; return plate; }
     if (/^\?\?\s/.test(b)) {
       inAnswer = true;
@@ -656,8 +670,12 @@ export const articleSlug = (a) => a.slug || slugify(a.title);
 /* The stored category is a short key; this is what a reader sees. "Club" on
    its own said nothing about what the piece was, so it reads as what these
    actually are: retirements, appointments, announcements from the club. */
-const CATEGORY_LABEL = { Club: 'Club announcement' };
+const CATEGORY_LABEL = { Club: 'Club announcement', Interview: 'Interview' };
+/* A CHIP NAMES A GROUP OF PIECES, an eyebrow names one, so the chip is plural
+   where the plural is not simply the label with an s on the end of it. */
+const CATEGORY_CHIP = { Interview: 'Interviews' };
 export const catLabel = (c) => CATEGORY_LABEL[c] || c || 'News';
+const catChip = (c) => CATEGORY_CHIP[c] || catLabel(c);
 
 /* Reading time from the actual text. Rounded up so a short piece never reads
    "0 min". 200 words a minute is the usual working figure. */
@@ -717,16 +735,50 @@ export const articlePhoto = (a) => {
   return c && !/\/cover-(?:news|match)-\d+\.jpg$/.test(c) ? c : '';
 };
 
+/* THE DEFAULT COVER FOR AN INTERVIEW: the face of whoever is talking and how
+   long they talk for.
+
+   ONE DEFINITION, TWO PLACES. The article page had this and the news feed did
+   not, so the same piece was a portrait on its own page and a drawn headline
+   plate in the list that links to it - the one card a reader sees FIRST being
+   the one that says least about what the piece is. A reader should recognise
+   the thing they clicked.
+
+   `eager` is the only difference between the two: on the article's own page
+   this is the hero, and in a feed of a dozen cards it is not. */
+function ivCover(c, eager) {
+  return `<img class="nw-cover__img nw-cover__face" src="${attr(c.face)}" alt=""`
+    + ` width="1200" height="630"`
+    + (eager ? ' fetchpriority="high"' : ' loading="lazy"')
+    + ` decoding="async" />`
+    /* A SPAN, NOT A PARAGRAPH. The news card wraps its whole cover in an `<a>`,
+       and an anchor is phrasing content: a `<p>` inside one is invalid and the
+       browser closes the link early, so the rest of the card stops being part
+       of it. The same markup is used in two places, so it has to be legal in
+       the stricter of them. */
+    + `<span class="nw-cover__listen"><span>Listen</span>`
+    + (c.ts ? `<b>${esc(c.ts)}</b>` : '') + `</span>`;
+}
+
+/* ---- WHAT KIND OF PIECE IT IS, DERIVED ---------------------------------
+
+   An interview is an article carrying a recording, which the writing already
+   says. Asking the club to ALSO pick a category for it would be a second
+   source for one fact and the two would disagree the first time somebody
+   forgot - the rule this repository keeps relearning. So the kind is read
+   from the piece, and the stored category still decides everything else. */
+export const articleKind = (a) => (!a.isReport && leadClip(a.lede) ? 'Interview' : a.category);
+
 export function news(d) {
   const items = sorted([...(d.articles || []), ...reportEntries(d)]);
-  const cats = [...new Set(items.map((a) => a.category).filter(Boolean))];
+  const cats = [...new Set(items.map((a) => articleKind(a)).filter(Boolean))];
   const lead = items[0];
   const rest = items.slice(1);
 
   const card = (a, cls = '') => {
     const words = readingTime(a.lede);
     const href = a.isReport ? a.href : `/news/${articleSlug(a)}.html`;
-    return `<li class="nw-card${cls ? ` ${cls}` : ''}${a.isReport ? ' is-report' : ''}" data-cat="${attr(slugify(a.category || 'news'))}">
+    return `<li class="nw-card${cls ? ` ${cls}` : ''}${a.isReport ? ' is-report' : ''}" data-cat="${attr(slugify(articleKind(a) || 'news'))}">
             <a class="nw-card__link" href="${attr(href)}">
               ${(() => {
     /* THE DRAWN CARD ALREADY CARRIES THE CHIP AND THE DATE.
@@ -748,12 +800,19 @@ export function news(d) {
        competition, the score and the date already on it. Asking only whether
        the build drew it printed the Three Little Birds report's date twice. */
     const composed = a.isReport ? (!!drawn || /\/cover-(?:match|news)-\d+\.jpg$/.test(stored)) : !stored;
+    /* AN INTERVIEW WEARS ITS OWN COVER HERE TOO. The article page showed the
+       portrait and this list showed the drawn headline plate for the same
+       piece, so the card a reader meets FIRST was the one saying least about
+       what it is. One definition, used in both places. */
+    const ivc = a.isReport || stored ? null : leadClip(a.lede);
     const body = src
       ? `<img class="nw-card__img" src="${attr(src)}" alt="" width="1200" height="630" loading="lazy" decoding="async" />`
       : a.isReport
         ? `<span class="nw-card__score"><b>${esc(a.match.scoreline || 'v')}</b><i>${esc(a.match.competition)}${a.match.round ? ` · ${esc(a.match.round)}` : ''}</i></span>`
-        : coverPlate(a, false);
-    return `<span class="nw-card__top${src || !a.isReport ? ' has-img' : ''}">
+        : ivc && ivc.face
+          ? ivCover(ivc, false)
+          : coverPlate(a, false);
+    return `<span class="nw-card__top${src || !a.isReport ? ' has-img' : ''}${ivc && ivc.face ? ' is-iv' : ''}">
                 ${composed ? '' : `<span class="nw-card__cat">${esc(catLabel(a.category))}</span>`}
                 ${body}
                 ${composed ? '' : `<span class="nw-card__date">${esc(fmtDate(a.date))}</span>`}`;
@@ -783,7 +842,7 @@ export function news(d) {
         <h2 class="h2 rv" id="nw-f-h">Straight from the <span class="volt">club.</span></h2>
         ${cats.length > 1 ? `<div class="lg-chiprow rv" role="tablist" aria-label="Category" data-news-tabs>
           <a class="lg-chip is-on" role="tab" href="#feed" aria-selected="true" data-news="all">All <b>${esc(items.length)}</b></a>
-          ${cats.map((c) => `<a class="lg-chip" role="tab" href="#feed" aria-selected="false" data-news="${attr(slugify(c))}">${esc(catLabel(c))} <b>${esc(items.filter((a) => a.category === c).length)}</b></a>`).join('\n          ')}
+          ${cats.map((c) => `<a class="lg-chip" role="tab" href="#feed" aria-selected="false" data-news="${attr(slugify(c))}">${esc(catChip(c))} <b>${esc(items.filter((a) => articleKind(a) === c).length)}</b></a>`).join('\n          ')}
         </div>` : ''}
         <ul class="nw-grid rv">
           ${lead ? card(lead, 'is-lead') : ''}
@@ -845,7 +904,7 @@ export function newsArticle(a, d) {
 
   const hero = `<section class="nw-art__hero" aria-labelledby="na-h">
       <div class="wrap wrap--narrow">
-        <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> ${esc(catLabel(a.category))}</p>
+        <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> ${esc(catLabel(articleKind(a)))}</p>
         <h1 class="nw-art__title" id="na-h">${esc(a.title)}</h1>
         <p class="nw-art__meta">${esc(fmtDate(a.date, { long: true }))} · ${esc(words)} min read${a.author ? ` · ${esc(a.author)}` : ''}</p>
         <div class="nw-cover has-img${ivc ? ' nw-cover--iv' : ''}">${(() => {
@@ -865,12 +924,7 @@ export function newsArticle(a, d) {
        there and it is already on the record: the face of whoever is talking
        and how long they talk for. The headline comes off it entirely, because
        the h1 three lines above has already said it. */
-    if (ivc && ivc.face) {
-      return `<img class="nw-cover__img nw-cover__face" src="${attr(ivc.face)}" alt=""`
-        + ` width="1200" height="630" fetchpriority="high" decoding="async" />`
-        + `<p class="nw-cover__listen"><span>Listen</span>`
-        + (ivc.ts ? `<b>${esc(ivc.ts)}</b>` : '') + `</p>`;
-    }
+    if (ivc && ivc.face) return ivCover(ivc, true);
     return coverPlate(a, true);
   })()}</div>
       </div>
@@ -887,7 +941,9 @@ export function newsArticle(a, d) {
 
      Asked of the rendered HTML, not of the source text, so the two can never
      disagree about whether a marker actually worked. */
-  const written = articleBody(a.lede, { badges: d.badges, d });
+  /* The day the piece was published, so a figure inside it is counted as at
+     that day rather than as at the next deploy. */
+  const written = articleBody(a.lede, { badges: d.badges, d, on: a.iso || toISO(a.date) });
   const isIv = /class="aud"|class="qa__q"/.test(written);
 
   /* ---- THE RAIL IS A REAL ELEMENT, because a grid row is not a column -----

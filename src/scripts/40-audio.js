@@ -159,4 +159,65 @@
   });
   player.addEventListener('pause', function () { save(Math.floor(player.currentTime)); });
   player.addEventListener('ended', function () { save(0); });
+
+  /* ---- THE PLAYER FOLLOWS YOU DOWN A NARROW SCREEN ---------------------
+
+     At a desk the panel sits in a rail and stays in view for the whole
+     article. On a phone there is no rail: it leads the page, scrolls away
+     after a screen and a half, and from then on somebody reading answer four
+     has no way to pause, skip or see where the recording has got to without
+     scrolling all the way back up a transcript.
+
+     THE PANEL SHRINKS RATHER THAN A SECOND ONE APPEARING. Two players on one
+     page is two things to keep in step, and the moment the reader pauses the
+     wrong one they are fighting the page. There is one `<audio>` element and
+     the figure around it collapses to a bar: the portrait, the controls, and
+     the waveform as a progress line. Everything else is the panel's
+     introduction, which somebody reading the fourth answer has finished with.
+
+     A SENTINEL, NOT A SCROLL HANDLER. CSS can stick the figure but cannot say
+     when it is stuck, and asking on every scroll event is work on the main
+     thread of a page somebody is reading. A zero-height element above the
+     figure, watched once, answers it: out of view means the figure is pinned.
+
+     It is ON only while the recording is in use. A bar across the top of the
+     page somebody has not pressed play on is an advert for itself. */
+  if (fig && 'IntersectionObserver' in window) {
+    /* THE RAIL STICKS, NOT THE FIGURE. A sticky element travels inside its
+       PARENT's box, and the figure's parent is the rail, which is exactly the
+       figure's height - so it had nowhere to go and scrolled away like
+       anything else. The rail's own parent is the article body, which is the
+       whole piece. Same mistake as the grid row, one level down.
+
+       And the sentinel has to sit before whatever is doing the sticking: put
+       inside the rail it would have been carried along by it and could never
+       report the rail as pinned. */
+    var host = fig.parentNode && / nw-art__rail|^nw-art__rail/.test(' ' + (fig.parentNode.className || ''))
+      ? fig.parentNode : fig;
+    var mark = document.createElement('span');
+    mark.className = 'aud__mark';
+    mark.setAttribute('aria-hidden', 'true');
+    if (host.parentNode) host.parentNode.insertBefore(mark, host);
+    var started = false;
+    var io = new IntersectionObserver(function (es) {
+      /* `boundingClientRect.top < 0` tells a sentinel scrolled PAST from one
+         not yet reached: a figure below the fold is equally out of view and
+         must not read as pinned. */
+      var e = es[0];
+      var pinned = started && !e.isIntersecting && e.boundingClientRect.top < 0;
+      fig.classList.toggle('is-pinned', pinned);
+    }, { threshold: 0 });
+    io.observe(mark);
+    player.addEventListener('play', function () {
+      started = true;
+      /* STICKY ONLY ONCE IT IS BEING USED. A 790px panel pinned to the top of a
+         phone from the first scroll is the page wearing a hat; this is a player
+         following somebody who pressed play. Set on the rail, because that is
+         what sticks. */
+      host.classList.add('is-playing');
+      /* The observer only fires on a crossing, so a reader who presses play
+         halfway down the page would see nothing until they scrolled again. */
+      if (mark.getBoundingClientRect().top < 0) fig.classList.add('is-pinned');
+    });
+  }
 })();

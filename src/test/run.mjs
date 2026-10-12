@@ -1095,10 +1095,15 @@ for (const f of shipped) {
        competition label and the club mark live. */
     /* An article with no photograph draws its plate in markup at the same
        shape, so it takes has-img too. */
+    /* A THIRD KIND OF PICTURE: an interview wears the face of whoever is
+       talking, which is neither a drawn cover on disk nor the plate. Counted
+       separately rather than loosening the equality, because the equality is
+       the check: a card that shows something and does not say so is cropped. */
     check('a card showing a picture takes the picture\'s shape',
       !/class="nw-card__top"[^>]*>\s*<img class="nw-card__img"/.test(newsHtml)
       && (newsHtml.match(/nw-card__top has-img/g) || []).length
-        === shown.length + (newsHtml.match(/class="nw-plate"/g) || []).length,
+        === shown.length + (newsHtml.match(/class="nw-plate"/g) || []).length
+          + (newsHtml.match(/nw-cover__face/g) || []).length,
       'has-img is not set on every card that shows one, so the cover is cropped');
 
     /* The drawn card is composed WITH its category and date in the same two

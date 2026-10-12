@@ -1123,8 +1123,19 @@ for (const f of shipped) {
     const withCover = arts.filter((f) => {
       const h = fs.readFileSync(path.join(ROOT, f), 'utf8');
       const title = ((h.match(/<h1 class="nw-art__title"[^>]*>([^<]+)</) || [])[1] || '').trim();
-      const cov = (h.match(/class="nw-cover has-img">([\s\S]*?)<\/div>/) || [])[1] || '';
-      return /nw-cover__img/.test(cov) || (title && cov.includes(`nw-plate__title`) && cov.includes(title));
+      /* The class list, not an exact class attribute: an interview carries a
+         modifier here and this read `has-img">` literally, so it found nothing
+         at all on that page and reported it as having no cover. */
+      const cov = (h.match(/class="nw-cover has-img[^"]*">([\s\S]*?)<\/div>/) || [])[1] || '';
+      /* A THIRD KIND OF ITS OWN COVER. A piece built round a recording leads
+         with the face of whoever is talking and how long they talk for, both
+         off its own record, because the drawn plate prints the headline a
+         second time directly under the h1 that already says it. Held to the
+         same standard as the other two: the portrait AND the length, so a
+         bare photograph with no label cannot pass as one. */
+      const iv = /nw-cover__face/.test(cov) && /nw-cover__listen/.test(cov);
+      return /nw-cover__img/.test(cov) || iv
+        || (title && cov.includes(`nw-plate__title`) && cov.includes(title));
     }).length;
     check('every article page leads with its own cover, a photograph or the plate drawn from its record',
       arts.length > 0 && withCover === arts.length, `${withCover} of ${arts.length}`);

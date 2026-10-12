@@ -325,6 +325,45 @@ html.js .nw-card[hidden]{display: none;}
 .aud__player::-webkit-media-controls-panel{
   background: rgba(var(--sink), 0.55); border-radius: 999px;}
 
+/* HOW FAST, AND WHERE YOU GOT TO. Neither of these can do anything without a
+   script - there is no "slower" to fall back to and no stored position to
+   offer - so unlike every other control in this panel they are hidden until
+   `html.js` says there is one. That is this repository's standing answer to
+   content that depends on JavaScript, and it is the opposite of the rule the
+   chapters and timestamps follow, deliberately. */
+.aud__rates{display: none;}
+html.js .aud__rates{display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  margin: 12px 0 0;}
+.aud__rates-l{font-family: var(--ui); font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.04em; color: var(--ink-3); margin-right: 2px;}
+.aud__rate{appearance: none; cursor: pointer;
+  padding: 4px 10px; border-radius: 999px;
+  border: 1px solid rgba(var(--volt-rgb), 0.28);
+  background: transparent; color: var(--ink-2);
+  font-family: var(--ui); font-size: 0.78rem; font-weight: 650;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;}
+.aud__rate:hover{background: rgba(var(--volt-rgb), 0.12); color: var(--fg);}
+/* The pressed one is the state, said in `aria-pressed` and shown here, so the
+   two cannot drift: there is no separate class deciding which looks on. */
+.aud__rate[aria-pressed="true"]{background: var(--volt); border-color: var(--volt);
+  color: var(--text-on-brand);}
+
+.aud__again{margin: 12px 0 0;}
+.aud__again-b{appearance: none; cursor: pointer; width: 100%;
+  padding: 9px 12px; border-radius: 10px; text-align: left;
+  border: 1px solid rgba(var(--volt-rgb), 0.3);
+  background: rgba(var(--volt-rgb), 0.08); color: var(--volt-text);
+  font-family: var(--body); font-size: 0.86rem; font-weight: 600;}
+.aud__again-b:hover{background: rgba(var(--volt-rgb), 0.18);}
+
+/* PRESSING THE WAVEFORM SEEKS, so it has to look like something that can be
+   pressed. Only where there is a pointer that can hover: on a phone a cursor
+   is nothing and the bars are a thumb-wide target either way. */
+@media (hover: hover) and (pointer: fine) {
+  html.js .aud__wave{cursor: pointer;}
+}
+
 /* WHAT IS IN IT. Each row is a link to the written answer, so it works with
    no script at all; `sa.js` upgrades the press to seek the recording. The
    time is tabular so the column of numerals lines up, which is what makes
@@ -340,6 +379,9 @@ html.js .nw-card[hidden]{display: none;}
   transition: background-color 0.18s ease, color 0.18s ease;}
 .nw-art__body .aud__ch:hover,.nw-art__body .aud__ch:focus-visible{background: rgba(var(--volt-rgb), 0.1);
   color: var(--fg);}
+.nw-art__body .aud__ch.is-now{background: rgba(var(--volt-rgb), 0.14);
+  color: var(--fg);}
+.nw-art__body .aud__ch.is-now .aud__chn{color: var(--volt);}
 .nw-art__body .aud__chn{font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
   font-weight: 650; color: var(--volt-text); font-size: 0.86rem;}
 
@@ -608,3 +650,45 @@ html.js .nw-card[hidden]{display: none;}
   /* Nothing here moves, so there is nothing to stop - said out loud because
      the next person to add to this block will want to know. */
 }
+
+/* HEAR HIM SAY IT. The pull quote is the hook of the piece and was the one
+   large thing on the page that did nothing. The quote itself is NOT the link:
+   three lines of display type wrapped in an anchor is an enormous target and
+   an underline through a sentence meant to be read, so the control is its own
+   short line underneath, the same shape as the timestamps beside the
+   questions. */
+.nw-art__body .qa__hear{display: inline-flex; align-items: center; gap: 8px;
+  margin-top: clamp(14px, 2vw, 20px);
+  font-family: var(--body); font-size: 0.84rem; font-weight: 600;
+  letter-spacing: 0;
+  color: var(--volt-text); text-decoration: none;}
+.nw-art__body .qa__hear:hover{text-decoration: underline;}
+.nw-art__body .qa__hear i{font-style: normal;
+  padding: 2px 8px; border-radius: 999px;
+  border: 1px solid rgba(var(--volt-rgb), 0.3);
+  background: rgba(var(--volt-rgb), 0.08);
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  font-size: 0.78rem;}
+/* The quote is display type and the control under it is not, so the control
+   has to opt out of everything the blockquote sets. */
+.nw-art__body .qa__pull{display: flex; flex-direction: column; align-items: flex-start;}
+
+/* AN INTERVIEW'S COVER IS THE PERSON. The drawn plate prints the headline a
+   second time directly under the h1; where the piece carries a recording the
+   face and the length are better and are already on the record. The portrait
+   is a square crop in a 1200x630 box, so it is positioned at the eyes rather
+   than centred, and the label sits on the darkest corner of it. */
+.nw-cover--iv{position: relative; border-radius: 18px; overflow: hidden;
+  border: 1px solid rgba(var(--volt-rgb), 0.22);}
+.nw-cover__face{width: 100%; height: auto; aspect-ratio: 1200 / 630;
+  object-fit: cover; object-position: 50% 22%; display: block;}
+.nw-cover--iv::after{content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(10deg, rgba(var(--sink), 0.86) 6%, rgba(var(--sink), 0) 58%);}
+.nw-cover__listen{position: absolute; left: clamp(14px, 3vw, 26px);
+  bottom: clamp(12px, 2.4vw, 22px); margin: 0; z-index: 1;
+  display: flex; align-items: baseline; gap: 12px;}
+.nw-cover__listen span{font-family: var(--ui); font-size: 0.78rem; font-weight: 700;
+  letter-spacing: 0.02em; color: var(--volt-text);}
+.nw-cover__listen b{font-family: Archivo, var(--display), sans-serif; font-weight: 600;
+  font-size: clamp(1.6rem, 5vw, 2.4rem); line-height: 1; letter-spacing: -0.04em;
+  color: var(--fg); font-variant-numeric: tabular-nums;}

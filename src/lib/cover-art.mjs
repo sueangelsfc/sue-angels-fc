@@ -173,3 +173,68 @@ export function articleCover(a) {
     line-height:1.06;letter-spacing:-.032em;padding-block:26px;
     max-width:19ch}`);
 }
+
+/* ---- An interview -------------------------------------------------------
+
+   An article built round a recording got the same crest-and-headline card as
+   every other article, so a link to a four-minute conversation with the
+   manager looked exactly like a link to a fixture announcement in the one
+   place most of this club's football is actually shared.
+
+   A share card is read at about 200px wide in a chat list, which decides
+   everything on this one. The face reads at that size; a headline set in
+   nineteen characters a line does not, so the headline is here but small and
+   the picture does the work. The length is set large because it is the thing
+   somebody is actually deciding about, and because a duration on a portrait
+   says "this is a recording" without a word of explanation.
+
+   THE WAVEFORM IS THE SAME DATA THE PAGE DRAWS, read from the file
+   `scripts/make-waveform.mjs` writes, so the card and the page cannot show
+   different shapes for the same recording. Absent, the strip is left out
+   rather than faked.
+
+   Portrait LEFT, words right. The face is a square crop and a 1200x630 card
+   is twice as wide as it is tall, so a full-bleed portrait would be a crop of
+   a crop: a column of its own keeps his whole head on the card. */
+export function interviewCover(a, clip, peaks) {
+  const t = String(a.title || '').trim();
+  const size = t.length > 76 ? 40 : t.length > 52 ? 46 : 52;
+  const bars = (peaks || []).length > 8 ? (() => {
+    const W = 3;
+    const GAP = 2;
+    const H = 54;
+    const d = peaks.map((v, i) => {
+      const h = Math.max(3, Math.round(v * H));
+      return `M${i * (W + GAP) + W / 2} ${Math.round((H - h) / 2)}v${h}`;
+    }).join('');
+    return `<svg class="wave" viewBox="0 0 ${peaks.length * (W + GAP) - GAP} ${H}">`
+      + `<path d="${d}" stroke="${BRAND}" stroke-width="${W}" stroke-linecap="round" fill="none"/>`
+      + `</svg>`;
+  })() : '';
+
+  return SHELL(`<div class="card iv">
+    <div class="iv__face">${clip.face ? `<img src="${esc(clip.face)}" alt="">` : ''}</div>
+    <div class="iv__body">
+      <div class="eyebrow"><s></s>Listen</div>
+      ${clip.ts ? `<div class="iv__len">${esc(clip.ts)}</div>` : ''}
+      <h1 class="iv__h" style="font-size:${size}px">${esc(t)}</h1>
+      ${bars}
+      ${foot(a.date || '')}
+    </div>
+  </div>`, `
+  .iv{flex-direction:row;gap:46px;padding:0 64px 0 0;align-items:stretch}
+  .iv__face{width:420px;flex:0 0 420px;overflow:hidden;position:relative}
+  .iv__face img{width:100%;height:100%;object-fit:cover;object-position:50% 18%;display:block}
+  /* The portrait is a photograph on a dark card, so it is faded into the card
+     on its inner edge rather than stopped with a line. */
+  .iv__face::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(90deg,rgba(11,10,9,0) 62%,rgba(11,10,9,.9) 100%)}
+  .iv__body{flex:1;min-width:0;display:flex;flex-direction:column;padding-block:56px}
+  .iv__len{font-family:Archivo,system-ui,sans-serif;font-weight:600;font-size:104px;
+    font-stretch:100%;letter-spacing:-.05em;line-height:1;margin-top:14px;
+    font-variant-numeric:tabular-nums}
+  .iv__h{font-family:Archivo,system-ui,sans-serif;font-weight:500;font-stretch:104%;
+    line-height:1.1;letter-spacing:-.028em;margin-top:18px;max-width:22ch;
+    color:rgba(255,255,255,.82)}
+  .wave{width:100%;height:54px;margin-top:26px;display:block}`);
+}

@@ -26,8 +26,8 @@ import http from 'node:http';
 import os from 'node:os';
 import { execFileSync, spawn } from 'node:child_process';
 import { buildDataset } from '../src/lib/dataset.mjs';
-import { matchCover, articleCover, COVER_W, COVER_H } from '../src/lib/cover-art.mjs';
-import { articleSlug } from '../src/templates/news.mjs';
+import { matchCover, articleCover, interviewCover, COVER_W, COVER_H } from '../src/lib/cover-art.mjs';
+import { articleSlug, leadClip } from '../src/templates/news.mjs';
 import { oppBadgeSrc } from '../src/templates/home.mjs';
 
 const ROOT = process.cwd();
@@ -99,8 +99,24 @@ for (const m of d.matches || []) {
   if (m.detail && m.detail.cover) continue;
   jobs.push({ id: m.id, html: matchCover(m, badgeFor), what: `${m.opponent} ${m.ourScoreline}` });
 }
+/* The peaks the page draws its waveform from, so a card and its page cannot
+   show different shapes for the same recording. */
+const PEAKS = (() => {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'audio-peaks.json'), 'utf8'));
+  } catch { return {}; }
+})();
+
 for (const a of d.articles || []) {
-  jobs.push({ id: `a-${articleSlug(a)}`, html: articleCover(a), what: a.title.slice(0, 46) });
+  /* AN ARTICLE BUILT ROUND A RECORDING GETS ITS OWN CARD. Asked of the
+     writing through the same parser the page uses, so a marker the page
+     refused - a hot-linked file, an address the policy does not permit -
+     cannot produce a card for a player that will never render. */
+  const iv = leadClip(a.lede);
+  const html = iv
+    ? interviewCover(a, iv, (PEAKS[iv.src] || {}).peaks)
+    : articleCover(a);
+  jobs.push({ id: `a-${articleSlug(a)}`, html, what: a.title.slice(0, 46) });
 }
 
 let drew = 0;

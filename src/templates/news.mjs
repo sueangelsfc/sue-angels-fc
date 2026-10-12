@@ -211,27 +211,41 @@ const atSecs = (t) => {
   return m ? Number(m[1]) * 60 + Number(m[2]) : null;
 };
 
-function clip(b, nav = {}) {
-  const m = /^@\[([^\]\n]*)\]\(([^)\s|]+)(?:\|([^)\s]+))?\)$/.exec(b);
-  if (!m) return '';
+/* THE MARKER, READ ONCE. Three things now need to know what the clip is: the
+   figure itself, the page's own cover picture, and the structured data that
+   tells a search engine the page carries a recording. A second copy of this
+   parsing is a second set of address rules to keep in step with the policy,
+   which is how a hot-linked file eventually gets through one of them. */
+export function parseClip(b) {
+  const m = /^@\[([^\]\n]*)\]\(([^)\s|]+)(?:\|([^)\s]+))?\)$/.exec(String(b || '').trim());
+  if (!m) return null;
   const dur = /#(\d{1,3}:[0-5]\d)$/.exec(m[2]);
   const src = m[2].replace(/#.*$/, '');
   const ours = src.startsWith(STORAGE)
     ? /^[\w\-./%]+$/.test(src.slice(STORAGE.length))
     : /^\/assets\/audio\/[\w\-./]+\.(?:mp3|m4a|ogg)$/i.test(src);
-  if (!ours) return '';
+  if (!ours) return null;
   /* An optional portrait of whoever is speaking, after a pipe, by the same
      address rule as a photograph. */
   const face = (m[3] || '').replace(/#.*$/, '');
   const okFace = !face || (face.startsWith(STORAGE)
     ? /^[\w\-./%]+$/.test(face.slice(STORAGE.length))
     : /^\/assets\/[\w\-./]+\.(?:jpe?g|png|webp)$/i.test(face));
-  if (!okFace) return '';
-  const cap = m[1].trim();
-  /* "4:16" is a timestamp. Said as minutes it is a decision about whether to
-     press play, which is what this block is for. */
+  if (!okFace) return null;
   const slug = src.replace(/^.*\//, '').replace(/\.[a-z0-9]+$/i, '')
     .replace(/[^\w-]+/g, '-').slice(0, 48) || 'clip';
+  return { src, face, slug, cap: m[1].trim(), ts: dur ? dur[1] : '', at: dur ? atSecs(dur[1]) : null };
+}
+
+/* The first clip in a piece of writing, which is the one the page is about. */
+export const leadClip = (text) => String(text || '').split(/\n\s*\n/)
+  .map((b) => parseClip(b)).find(Boolean) || null;
+
+function clip(b, nav = {}) {
+  const c = parseClip(b);
+  if (!c) return '';
+  const { src, face, slug, cap } = c;
+  const dur = c.ts ? [null, c.ts] : null;
   const noteId = `aud-note-${slug}`;
   /* WHERE "Read what was said" GOES. The first question is where the written
      answers begin, so when the article has questions the note points straight
@@ -262,9 +276,17 @@ function clip(b, nav = {}) {
       + `${c.at == null ? '' : `<b class="aud__chn">${esc(c.ts)}</b>`}`
       + `<span>${inline(c.label)}</span></a></li>`).join('')
     + `</ul>` : '';
+  /* THE LEADING CLIP'S PORTRAIT IS NOT A LAZY IMAGE. Moving the panel to the
+     top of the page on a narrow screen made this face the first thing drawn
+     and almost certainly the largest - and it was still marked `lazy`, so the
+     browser deliberately waited to discover it before fetching. Lazy is right
+     for a second clip further down the piece and wrong for the one the page
+     opens on, which is a fact about position rather than about audio. */
+  const lead = nav.lead !== false;
   return `<figure class="aud" id="listen-${attr(slug)}">`
     + (face ? `<img class="aud__face" src="${attr(face)}" alt="" width="320" height="320"`
-      + ` loading="lazy" decoding="async" />` : '')
+      + (lead ? ' fetchpriority="high"' : ' loading="lazy"')
+      + ` decoding="async" />` : '')
     + `<div class="aud__body">`
     + `<p class="aud__kind">Listen</p>`
     /* NOT A HEADING. It names the clip, it does not open a section, and the
@@ -286,6 +308,26 @@ function clip(b, nav = {}) {
        cannot collide. */
     + `<audio class="aud__player" controls preload="none" src="${attr(src)}"`
     + ` aria-label="${attr(cap || 'Audio clip')}" aria-describedby="${attr(noteId)}"></audio>`
+    /* HOW FAST. Chrome buries this in the three-dot menu, Safari and Firefox
+       each put it somewhere else, and on anything spoken it is the control
+       people actually reach for. Three steps rather than a slider: a slider
+       is a fiddly thing to drag on a phone to arrive at a number nobody has
+       an opinion about.
+
+       BUTTONS, NOT LINKS, and that is the opposite of the chapters above it
+       on purpose. A chapter has somewhere to go with the script blocked; a
+       speed control has nothing to fall back to, so it is marked as the
+       script's own: the stylesheet hides it and `html.js` is what shows it,
+       which is this repository's standing answer to content that only works
+       with a script. Hidden in CSS rather than with the `hidden` attribute,
+       because that attribute says "not relevant yet" to a screen reader and
+       this is simply not available. */
+    + `<p class="aud__rates">`
+    + `<span class="aud__rates-l">Speed</span>`
+    + ['1', '1.25', '1.5'].map((r) => `<button type="button" class="aud__rate"`
+      + ` data-rate="${attr(r)}" aria-pressed="${r === '1' ? 'true' : 'false'}">`
+      + `${esc(r)}&#215;</button>`).join('')
+    + `</p>`
     + chs
     + `<p class="aud__note" id="${attr(noteId)}">`
     /* A LINK ONLY WHERE THERE IS SOMEWHERE TO GO. An article carrying a clip
@@ -441,21 +483,19 @@ function statPlate(b, d) {
   const list = (d.competitive || []).filter((x) => x.season === name && x.played);
   if (!list.length) return '';
   const s = teamSummary(list);
-  const info = (d.seasons || []).find((x) => x.name === name) || {};
   const cells = [
     ['Played', s.played], ['Won', s.won], ['Drawn', s.drawn], ['Lost', s.lost],
     ['For', s.goalsFor], ['Against', s.goalsAgainst],
   ];
-  /* THE DIVISION, NOT THE PLACEHOLDER. A season carries its own league name
-     once it is known and reads `TBC` until then, which is not a division and
-     must never be printed as one. For the season being played NOW the club's
-     own current division is the answer, and it is read off the dataset rather
-     than off the constant in club.mjs: the standing warning about that
-     constant is that it describes the division the club is in today, which
-     makes it wrong for any season in the archive. This is not one. */
-  const league = /^(tbc|)$/i.test(String(info.league || '').trim())
-    ? (name === d.currentSeason ? d.division || '' : '')
-    : info.league;
+  /* THE SEASON, NOT THE DIVISION. This plate counts every COMPETITIVE match,
+     which is the league and the cups together, so heading it "League Eight"
+     labelled a cup run as league football - a figure captioned with the name
+     of a competition it is not confined to. The honest caption is the season,
+     and the line under it already says which matches are in it.
+
+     Not a style fix: a reader comparing these six numbers with the league
+     table would have found they disagreed, and the caption would have been
+     the reason why. */
   /* A FIGURE, NOT AN `<aside>`. An aside is a complementary landmark, and one
      nested inside the article's section is the exact defect an accessibility
      audit found on this site before - content a reader can jump to that turns
@@ -464,8 +504,7 @@ function statPlate(b, d) {
      at all. The caption is the heading rather than an `aria-label`, because a
      figure takes its accessible name from its own caption. */
   return `<figure class="qa__plate">`
-    + `<figcaption class="qa__plate-h">${esc(name)}`
-    + `${league ? ` · ${esc(league)}` : ''}</figcaption>`
+    + `<figcaption class="qa__plate-h">${esc(name)} season</figcaption>`
     + `<dl class="qa__fig">${cells.map(([k, v]) => `<div>`
       + `<dt>${esc(k)}</dt><dd>${esc(String(v))}</dd></div>`).join('')}</dl>`
     /* SAID OUT LOUD, because a record beside a quotation invites the reader to
@@ -515,6 +554,7 @@ export function articleBody(text, opts = {}) {
      of somebody's words, their words should be the biggest thing on it. */
   let inAnswer = false;
   let clipAnchor = '';
+  let clipN = 0;
   /* ---- WHAT IS IN THE RECORDING, WORKED OUT BEFORE ANYTHING IS WRITTEN ----
 
      The chapter list belongs in the audio panel, and the panel is rendered
@@ -535,10 +575,11 @@ export function articleBody(text, opts = {}) {
   return blocks.map((b) => {
     const fig = photo(b);
     if (fig) return fig;
-    const aud = clip(b, { chapters, firstId: asks.length ? asks[0].id : '' });
+    const aud = clip(b, { chapters, firstId: asks.length ? asks[0].id : '', lead: !clipN });
     if (aud) {
       const anc = /<figure class="aud" id="(listen-[\w-]+)"/.exec(aud);
       if (anc) [, clipAnchor] = anc;
+      clipN += 1;
       return aud;
     }
     const vid = film(b);
@@ -566,8 +607,24 @@ export function articleBody(text, opts = {}) {
        stopping on. It is a quotation of somebody, so it is a blockquote. */
     if (/^>\s/.test(b)) {
       inAnswer = false;
-      return `<blockquote class="qa__pull">${
-    inline(b.split('\n').map((l) => l.replace(/^>\s*/, '').trim()).join(' '))}</blockquote>`;
+      let q = b.split('\n').map((l) => l.replace(/^>\s*/, '').trim()).join(' ');
+      /* A PULL QUOTE CAN CARRY THE SECOND HE SAID IT (`> 2:18 the words`),
+         the same shape the questions take. It is the hook of the piece and it
+         was the one large thing on the page that did nothing.
+
+         THE QUOTE IS NOT THE LINK. Wrapping three lines of display type in an
+         anchor makes the loudest thing on the page one enormous target and
+         underlines a sentence that is meant to be read, so the control is a
+         short line under it saying what it does. Like every other control in
+         this block it is a link to the player first and a seek second. */
+      const qt = /^(\d{1,3}:[0-5]\d)\s+/.exec(q);
+      if (qt) q = q.slice(qt[0].length);
+      const at = qt ? atSecs(qt[1]) : null;
+      const hear = at == null || !clipAnchor ? '' : `<a class="qa__hear"`
+        + ` href="#${attr(clipAnchor)}" data-at="${attr(String(at))}">`
+        + `Hear him say it <i aria-hidden="true">${esc(qt[1])}</i></a>`;
+      return `<blockquote class="qa__pull"${at == null ? '' : ` data-at="${attr(String(at))}"`}>`
+        + `${inline(q)}${hear}</blockquote>`;
     }
     if (/^#{1,6}\s/.test(b)) {
       inAnswer = false;
@@ -781,18 +838,40 @@ export function newsArticle(a, d) {
   const more = items.filter((_, i) => i !== idx).slice(0, 3);
   const words = readingTime(a.lede);
 
+  /* What the piece is built round, if anything: read from the writing before
+     the page is assembled, because the cover, the body and the structured
+     data all need the same answer. */
+  const ivc = leadClip(a.lede);
+
   const hero = `<section class="nw-art__hero" aria-labelledby="na-h">
       <div class="wrap wrap--narrow">
         <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> ${esc(catLabel(a.category))}</p>
         <h1 class="nw-art__title" id="na-h">${esc(a.title)}</h1>
         <p class="nw-art__meta">${esc(fmtDate(a.date, { long: true }))} · ${esc(words)} min read${a.author ? ` · ${esc(a.author)}` : ''}</p>
-        <div class="nw-cover has-img">${(() => {
+        <div class="nw-cover has-img${ivc ? ' nw-cover--iv' : ''}">${(() => {
     /* A real photograph, or the plate drawn in markup; eager because this is
        the page's own hero rather than something below the fold. */
     const src = articlePhoto(a);
-    return src
-      ? `<img class="nw-cover__img" src="${attr(src)}" alt="" width="1200" height="630" fetchpriority="high" decoding="async" />`
-      : coverPlate(a, true);
+    if (src) {
+      return `<img class="nw-cover__img" src="${attr(src)}" alt="" width="1200" height="630" fetchpriority="high" decoding="async" />`;
+    }
+    /* AN INTERVIEW'S COVER IS THE PERSON, NOT THE HEADLINE AGAIN. With no
+       photograph on the record the drawn plate renders, and its content is the
+       category, the headline and the date - printed directly under an `<h1>`
+       saying the identical words in the identical face. Two headlines, one
+       above the other, is what this page actually shipped.
+
+       Where the piece carries a recording there is something better to put
+       there and it is already on the record: the face of whoever is talking
+       and how long they talk for. The headline comes off it entirely, because
+       the h1 three lines above has already said it. */
+    if (ivc && ivc.face) {
+      return `<img class="nw-cover__img nw-cover__face" src="${attr(ivc.face)}" alt=""`
+        + ` width="1200" height="630" fetchpriority="high" decoding="async" />`
+        + `<p class="nw-cover__listen"><span>Listen</span>`
+        + (ivc.ts ? `<b>${esc(ivc.ts)}</b>` : '') + `</p>`;
+    }
+    return coverPlate(a, true);
   })()}</div>
       </div>
     </section>`;
@@ -893,6 +972,32 @@ export function newsArticle(a, d) {
         author: { '@id': CLUB_ID },
         publisher: { '@id': CLUB_ID },
         mainEntityOfPage: { '@id': `${CLUB.site}/news/${articleSlug(a)}.html#webpage` },
+        /* ---- THE PAGE SAYS IT CARRIES A RECORDING ---------------------
+
+           The article shipped as a `NewsArticle` and its structured data did
+           not mention the audio at all, so to anything reading the page
+           mechanically this was a page of text that happened to have a player
+           on it. An `AudioObject` is how a search engine is told otherwise,
+           and it is free: every field here is already on the record.
+
+           `duration` is ISO 8601, which is what the vocabulary asks for -
+           "4:16" is a thing people read and `PT4M16S` is the same fact in the
+           form a machine takes. `transcript` is a claim worth making because
+           it is true: every word is written out on this page, which is the
+           same promise the player's own note makes to a reader. */
+        ...(ivc ? {
+          audio: {
+            '@type': 'AudioObject',
+            name: ivc.cap || a.title,
+            contentUrl: `${CLUB.site}${ivc.src}`,
+            encodingFormat: /\.mp3$/i.test(ivc.src) ? 'audio/mpeg' : undefined,
+            ...(ivc.at ? { duration: `PT${Math.floor(ivc.at / 60)}M${ivc.at % 60}S` } : {}),
+            ...(ivc.face ? { thumbnailUrl: `${CLUB.site}${ivc.face}` } : {}),
+            uploadDate: a.iso || undefined,
+            transcript: plainText(a.lede).slice(0, 4000),
+            isAccessibleForFree: true,
+          },
+        } : {}),
       },
       /* No BreadcrumbList here: build.mjs already adds one for this route, and
          it includes Home. Two on a page is one too many. */

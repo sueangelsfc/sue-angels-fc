@@ -49,8 +49,17 @@ const STAR = '/assets/badge/sue-angels-badge-star.webp';
 export const coverPlate = (art, eager) => {
   const t = String(art.title || '').trim();
   const len = t.length > 88 ? ' nw-plate__title--l' : t.length > 58 ? ' nw-plate__title--m' : '';
+  /* AN INTERVIEW IS A PLATE LIKE EVERY OTHER ARTICLE, and says so in the
+     eyebrow rather than by being a different kind of card. A wall of news
+     cards wants one shape: a photograph among them reads as a different sort
+     of thing, and what makes this piece different is not worth breaking the
+     grid for. The length rides in the corner, which is the one fact the plate
+     cannot otherwise carry - a reader deciding whether to open a recording is
+     deciding about minutes. */
+  const c = leadClip(art.lede);
   return `<span class="nw-plate" aria-hidden="true">
-      <span class="nw-plate__eyebrow"><s></s>${esc(catLabel(art.category))}</span>
+      <span class="nw-plate__eyebrow"><s></s>${esc(catLabel(articleKind(art)))}${
+  c && c.ts ? `<b class="nw-plate__len">${esc(c.ts)}</b>` : ''}</span>
       <span class="nw-plate__title${len}">${esc(t)}</span>
       <span class="nw-plate__foot"><span>${esc(fmtDate(art.date))}</span><span class="nw-plate__club"><img src="${STAR}" alt="" width="22" height="27" loading="${eager ? 'eager' : 'lazy'}" decoding="async" />Sue’s Angels FC</span></span>
     </span>`;
@@ -800,19 +809,19 @@ export function news(d) {
        competition, the score and the date already on it. Asking only whether
        the build drew it printed the Three Little Birds report's date twice. */
     const composed = a.isReport ? (!!drawn || /\/cover-(?:match|news)-\d+\.jpg$/.test(stored)) : !stored;
-    /* AN INTERVIEW WEARS ITS OWN COVER HERE TOO. The article page showed the
-       portrait and this list showed the drawn headline plate for the same
-       piece, so the card a reader meets FIRST was the one saying least about
-       what it is. One definition, used in both places. */
-    const ivc = a.isReport || stored ? null : leadClip(a.lede);
+    /* THE FEED IS ONE SHAPE. An interview was given the speaker's photograph
+       here as well as on its own page, and in a grid of plates and scorelines
+       it read as a different sort of object rather than as a different sort of
+       article. The plate carries the difference in words - the eyebrow says
+       Interview and the corner says how long - which is what the other kinds
+       do. The portrait is still the cover on the piece's own page, where it
+       has the room to be a photograph of somebody. */
     const body = src
       ? `<img class="nw-card__img" src="${attr(src)}" alt="" width="1200" height="630" loading="lazy" decoding="async" />`
       : a.isReport
         ? `<span class="nw-card__score"><b>${esc(a.match.scoreline || 'v')}</b><i>${esc(a.match.competition)}${a.match.round ? ` · ${esc(a.match.round)}` : ''}</i></span>`
-        : ivc && ivc.face
-          ? ivCover(ivc, false)
-          : coverPlate(a, false);
-    return `<span class="nw-card__top${src || !a.isReport ? ' has-img' : ''}${ivc && ivc.face ? ' is-iv' : ''}">
+        : coverPlate(a, false);
+    return `<span class="nw-card__top${src || !a.isReport ? ' has-img' : ''}">
                 ${composed ? '' : `<span class="nw-card__cat">${esc(catLabel(a.category))}</span>`}
                 ${body}
                 ${composed ? '' : `<span class="nw-card__date">${esc(fmtDate(a.date))}</span>`}`;

@@ -680,21 +680,15 @@ html.js .aud__rates{display: flex; align-items: center; flex-wrap: wrap; gap: 8p
    than centred, and the label sits on the darkest corner of it. */
 .nw-cover--iv{position: relative; border-radius: 18px; overflow: hidden;
   border: 1px solid rgba(var(--volt-rgb), 0.22);}
-/* THE SCRIM TRAVELS WITH THE COVER. On the article page the hero wrapper
-   carries it and on a news card the wrapper is a different element, so the
-   label was sitting straight on a lit patch of photograph: legible on one page
-   and not on the other, for the same picture. One modifier, set by whichever
-   call site is drawing it. */
+/* The scrim is what keeps the label legible over a lit patch of photograph. */
 .nw-cover__face{width: 100%; height: auto; aspect-ratio: 1200 / 630;
   object-fit: cover; object-position: 50% 22%; display: block;}
-.nw-cover--iv::after,.nw-card__top.is-iv::after{content: ""; position: absolute;
+.nw-cover--iv::after{content: ""; position: absolute;
   inset: 0; pointer-events: none; z-index: 1;
   background: linear-gradient(10deg, rgba(var(--sink), 0.88) 8%, rgba(var(--sink), 0) 60%);}
 .nw-cover__listen{display: flex; position: absolute; left: clamp(14px, 3vw, 26px);
   bottom: clamp(12px, 2.4vw, 22px); margin: 0; z-index: 1;
   display: flex; align-items: baseline; gap: 12px;}
-.nw-card__top.is-iv .nw-cover__listen{left: 16px; bottom: 14px;}
-.nw-card__top.is-iv .nw-cover__listen b{font-size: clamp(1.3rem, 3vw, 1.8rem);}
 .nw-cover__listen span{font-family: var(--ui); font-size: 0.78rem; font-weight: 700;
   letter-spacing: 0.02em; color: var(--volt-text);}
 .nw-cover__listen b{font-family: Archivo, var(--display), sans-serif; font-weight: 600;
@@ -765,3 +759,4 @@ html.js .aud__rates{display: flex; align-items: center; flex-wrap: wrap; gap: 8p
     height: 3px; width: var(--p, 0%); background: var(--volt);
     border-radius: 0 3px 3px 0; pointer-events: none;}
 }
+

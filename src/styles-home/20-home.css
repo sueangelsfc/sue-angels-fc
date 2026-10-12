@@ -751,6 +751,21 @@ html.js .rv.is-in{opacity: 1; transform: translateY(0);}
 .nw-plate__eyebrow{display: flex; align-items: center; gap: 1cqw; font-family: var(--ui); font-weight: 700;
   font-size: max(8px, 1.42cqw); letter-spacing: 0.18em; text-transform: uppercase; color: var(--volt);}
 .nw-plate__eyebrow s{display: block; width: 3.2cqw; height: 2px; background: currentColor; text-decoration: none;}
+
+/* HOW LONG, IN THE CORNER OF THE PLATE. An interview's card is the same plate
+   every other article gets, which is the point - a wall of news cards wants
+   one shape. What the plate cannot otherwise say is that there is a recording
+   and how many minutes of it, and that is the whole decision a reader is
+   making, so it rides at the end of the eyebrow where the kind is named.
+
+   HERE, NOT IN THE MEDIA BAND, because the plate is drawn on the home page's
+   latest band as well and that page loads home.css and its own band only. A
+   rule in 39-media.css styled it on /news.html and left it bare on the front
+   page, which the suite caught. */
+.nw-plate__len{margin-left: auto; font-family: Archivo, var(--display), sans-serif;
+  font-weight: 600; letter-spacing: -0.01em; color: var(--fg);
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  text-transform: none;}
 .nw-plate__title{font-family: 'Archivo', var(--display); font-weight: 500; font-stretch: 104%; font-size: 6.8cqw;
   line-height: 1.06; letter-spacing: -0.032em; color: #FFFFFF; max-width: 19ch;}
 .nw-plate__title--m{font-size: 5.8cqw;}

@@ -106,7 +106,13 @@ body{
   font-family: var(--body);
   font-size: 16px;
   line-height: 1.6;
-  overflow-x: hidden;
+  /* `clip`, NOT `hidden`. They clip identically and `hidden` makes BODY a
+     scroll container, which kills `position: sticky` anywhere on the site:
+     a sticky element pins to a box that never scrolls and so never moves.
+     That is why the interview page's rail could not stay in view. `html`
+     above still carries `overflow-x: hidden`, so a browser that does not
+     know `clip` clips there instead and nothing can scroll sideways. */
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   position: relative;}

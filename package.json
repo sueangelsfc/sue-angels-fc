@@ -17,6 +17,7 @@
     "covers": "node scripts/make-covers.mjs",
     "visual": "node scripts/visual.mjs",
     "programme": "node scripts/make-programme.mjs",
+    "waveform": "node scripts/make-waveform.mjs",
     "indexnow": "node scripts/indexnow.mjs"
   },
   "devDependencies": {

@@ -242,12 +242,14 @@ html.js .nw-card[hidden]{display: none;}
    dropped between two paragraphs, so the smallest and dullest thing on the
    page was the thing the page was about.
 
-   THE SPEAKER IS THE HERO, not a waveform. A drawn waveform is the obvious
-   move and it is decoration pretending to be data - we have no amplitude,
-   so it would be an invention sitting where a fact should be. What is
-   actually true of this block is that somebody is TALKING, so the portrait
-   carries it and the duration is set as a real piece of type, because how
-   long it takes is what a reader is deciding about.
+   THE SPEAKER AND THE SHAPE OF THE RECORDING, together. The portrait says
+   somebody is talking; the waveform says how much of it there is and where
+   the talking sits. This note used to argue against a waveform on the grounds
+   that it would be decoration pretending to be data - which was true while
+   there was no amplitude to draw. There is now: `scripts/make-waveform.mjs`
+   reads the committed mp3 with ffmpeg and the build draws its actual peaks,
+   so the shape on the page is this recording's own. The argument stands and
+   the answer changed, which is the difference between a rule and a habit.
 
    The controls stay the browser's. They are keyboard-operable and labelled
    in the reader's own language for nothing, and `sa.js` has about a
@@ -260,7 +262,11 @@ html.js .nw-card[hidden]{display: none;}
     radial-gradient(120% 120% at 0% 0%, rgba(var(--volt-rgb), 0.16), transparent 58%),
     linear-gradient(168deg, rgba(var(--lift), 0.05), rgba(var(--sink), 0.72));}
 
-.aud__face{width: 100%; height: 190px; object-fit: cover;
+/* A PORTRAIT THAT IS ONE. It was 190px tall above the panel and 168px wide
+   beside it, which is a thumbnail of a face on the page whose whole subject
+   is that face. The eyes sit high in the frame, so the crop is pinned there
+   rather than centred. */
+.aud__face{width: 100%; height: clamp(230px, 46vw, 330px); object-fit: cover;
   object-position: 50% 16%; display: block;
   border-bottom: 1px solid rgba(var(--volt-rgb), 0.22);}
 
@@ -277,14 +283,37 @@ html.js .nw-card[hidden]{display: none;}
   font-weight: 600; font-size: clamp(1.18rem, 3.4vw, 1.5rem); line-height: 1.2;
   letter-spacing: -0.015em; color: var(--fg); max-width: 24ch;}
 
-.aud__len{margin: 8px 0 0; color: var(--ink-2); font-size: 0.92rem;
-  font-variant-numeric: tabular-nums;}
+/* THE LENGTH, SET AS TYPE. It was a 0.92rem grey line under the title - the
+   one number a reader actually weighs before pressing play, printed in the
+   size and colour of a caption. The digits are the graphic and are hidden
+   from a screen reader, which gets the words beside them instead; "4:16"
+   read aloud mid-sentence is noise. */
+.aud__len{margin: 14px 0 0; display: flex; align-items: baseline; gap: 10px;
+  flex-wrap: wrap;}
+.aud__num{font-family: Archivo, var(--display), sans-serif; font-weight: 600;
+  font-size: clamp(2rem, 7vw, 2.9rem); line-height: 0.9;
+  letter-spacing: -0.04em; color: var(--fg);
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;}
+.aud__said{color: var(--ink-2); font-size: 0.9rem; line-height: 1.4;}
+
+/* THE WAVEFORM. One path of round-capped zero-height subpaths, drawn from
+   ffmpeg's peaks, plus a second copy revealed by `--p` so the shape doubles
+   as the progress bar. `sa.js` sets `--p`; with the script blocked the front
+   copy sits at 0% and never appears, which leaves a waveform.
+
+   preserveAspectRatio="none" because the point is the envelope, not its
+   proportions: it stretches to whatever width the panel has. */
+.aud__wave{display: block; width: 100%; height: auto; max-height: 64px;
+  margin: 14px 0 0; overflow: visible;}
+.aud__wv{fill: none; stroke: rgba(var(--volt-rgb), 0.32);}
+.aud__wv--on{stroke: var(--volt);
+  clip-path: inset(0 calc(100% - var(--p, 0%)) 0 0);}
 
 /* An <audio> has an intrinsic width that ignores its container, so the width
    has to be stated. The height gives the control bar room to read as part of
    the panel rather than as something dropped onto it. */
 .aud__player{width: 100%; height: 44px; display: block;
-  margin-top: clamp(16px, 2.4vw, 22px); border-radius: 999px;
+  margin-top: clamp(12px, 2vw, 16px); border-radius: 999px;
   /* Ask the browser for its DARK controls. Without this Chrome draws the
      light set on a panel that is nearly black, which is the one piece of the
      block that still looks like somebody else's furniture. */
@@ -296,16 +325,34 @@ html.js .nw-card[hidden]{display: none;}
 .aud__player::-webkit-media-controls-panel{
   background: rgba(var(--sink), 0.55); border-radius: 999px;}
 
+/* WHAT IS IN IT. Each row is a link to the written answer, so it works with
+   no script at all; `sa.js` upgrades the press to seek the recording. The
+   time is tabular so the column of numerals lines up, which is what makes
+   this read as a contents list rather than as five more links. */
+.aud__chs{list-style: none; margin: 16px 0 0; padding: 14px 0 0;
+  border-top: 1px solid rgba(var(--volt-rgb), 0.18);}
+.aud__chs li + li{margin-top: 2px;}
+.nw-art__body .aud__ch{display: grid; grid-template-columns: 3.4em minmax(0, 1fr);
+  gap: 10px; align-items: baseline;
+  padding: 7px 8px; margin: 0 -8px; border-radius: 10px;
+  color: var(--ink-2); text-decoration: none;
+  font-size: 0.92rem; line-height: 1.35;
+  transition: background-color 0.18s ease, color 0.18s ease;}
+.nw-art__body .aud__ch:hover,.nw-art__body .aud__ch:focus-visible{background: rgba(var(--volt-rgb), 0.1);
+  color: var(--fg);}
+.nw-art__body .aud__chn{font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  font-weight: 650; color: var(--volt-text); font-size: 0.86rem;}
+
 /* Says the words exist and takes you to them. Named as the player's
    description, so a screen reader hears it with the control. */
 .aud__note{margin: 12px 0 0; color: var(--ink-3);
   font-size: 0.86rem; line-height: 1.45;}
-.aud__note a{color: var(--volt-text);}
+.nw-art__body .aud__note a{color: var(--volt-text);}
 
 /* Side by side once there is room for the portrait to be a portrait. */
 @media (min-width: 620px) {
-  .aud{grid-template-columns: 168px minmax(0, 1fr); align-items: stretch;}
-  .aud__face{height: 100%; min-height: 216px; border-bottom: 0;
+  .aud{grid-template-columns: 230px minmax(0, 1fr); align-items: stretch;}
+  .aud__face{height: 100%; min-height: 300px; border-bottom: 0;
     border-right: 1px solid rgba(var(--volt-rgb), 0.22);}
 }
 
@@ -425,3 +472,139 @@ html.js .nw-card[hidden]{display: none;}
 .nw-art__body .qa__pull::before{content: ""; display: block;
   width: 56px; height: 3px; border-radius: 2px; background: var(--volt);
   margin-bottom: clamp(16px, 2.4vw, 22px);}
+
+/* THE TIMESTAMP BESIDE A QUESTION. A link, pointing at the player, upgraded
+   by `sa.js` into "play this answer". Tabular, so five of them down the page
+   form a column rather than five different widths, and quiet: it is a way in,
+   not a thing to read. */
+.nw-art__body .qa__t{display: inline-flex; align-items: center;
+  margin-right: 10px; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid rgba(var(--volt-rgb), 0.3);
+  background: rgba(var(--volt-rgb), 0.08);
+  color: var(--volt-text); text-decoration: none;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  font-size: 0.8rem; font-weight: 650; letter-spacing: 0.01em;
+  vertical-align: 0.1em;
+  transition: background-color 0.18s ease, border-color 0.18s ease;}
+.nw-art__body .qa__t,.nw-art__body .qa__t:hover{text-decoration: none;}
+.nw-art__body .qa__t i{font-style: normal;}
+.nw-art__body .qa__t:hover,.nw-art__body .qa__t:focus-visible{
+  background: rgba(var(--volt-rgb), 0.2); border-color: rgba(var(--volt-rgb), 0.55);}
+
+/* WHERE THE RECORDING HAS GOT TO. `sa.js` moves `is-now` down the questions
+   from `timeupdate`, so somebody reading one answer while hearing another can
+   see which is which. It is the existing rule brightening and the question
+   coming up to full colour - no new furniture appears, because something
+   appearing on the page while you read it is a distraction and this is meant
+   to be a bearing. */
+.nw-art__body .qa__q.is-now{color: var(--fg);}
+.nw-art__body .qa__q.is-now::before{opacity: 1; width: 4px;}
+.nw-art__body .qa__q.is-now .qa__t{background: var(--volt);
+  border-color: var(--volt); color: var(--text-on-brand);}
+
+/* A FIGURE THE SITE DERIVED, beside what somebody said about it (`++[26/27]`
+   in news.mjs). Numerals in Archivo, labels at the size labels belong at, and
+   a line underneath saying when it was counted - because a record printed next
+   to a quotation reads as the record at the time of the quotation, and it is
+   not. */
+.qa__plate{margin: clamp(26px, 4vw, 40px) 0; padding: clamp(16px, 2.6vw, 22px);
+  border: 1px solid rgba(var(--volt-rgb), 0.26); border-radius: 16px;
+  background: linear-gradient(168deg, rgba(var(--volt-rgb), 0.08), rgba(var(--sink), 0.6) 70%);}
+.qa__plate-h{margin: 0; font-family: var(--ui); font-size: 0.78rem;
+  font-weight: 700; letter-spacing: 0.02em; color: var(--volt-text);}
+.qa__fig{display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px 10px; margin: 14px 0 0;}
+.qa__fig dt{font-family: var(--ui); font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: none; color: var(--ink-3);}
+.qa__fig dd{margin: 2px 0 0; font-family: Archivo, var(--display), sans-serif;
+  font-weight: 600; font-size: clamp(1.5rem, 5vw, 1.95rem); line-height: 1;
+  letter-spacing: -0.03em; color: var(--fg);
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;}
+.qa__plate-f{margin: 14px 0 0; color: var(--ink-3); font-size: 0.78rem;}
+@media (min-width: 560px) {
+  .qa__fig{grid-template-columns: repeat(6, minmax(0, 1fr));}
+}
+
+/* ==========================================================================
+   AN INTERVIEW IS A DIFFERENT SHAPE OF PAGE  (.nw-art__body--iv)
+
+   Set by news.mjs on an article that actually rendered a clip or a question,
+   never on any other, because every other article wants one centred measure
+   and would read as knocked off-centre in a grid with an empty rail.
+
+   AT A DESK THE RECORDING STAYS IN VIEW. The answers get their own column and
+   the panel parks in a rail beside them, so somebody can read one answer
+   while hearing another and press a chapter without scrolling back up. That
+   is the whole reason for the two columns: not a shape, a use.
+
+   `overflow: clip` ON THE SECTION, NOT `hidden`. `.sec{overflow:hidden}` is
+   global and it makes every band its own scroll container, which kills
+   `position: sticky` outright - the element pins to a box that never scrolls,
+   so it simply never moves. `clip` clips identically and creates no scroll
+   container. Same reason `body` is `overflow-x: clip` in 20-home.css.
+   ========================================================================== */
+.nw-art{overflow: clip;}
+
+@media (min-width: 1100px) {
+  /* THE RAIL IS EXTRA WIDTH, NOT WIDTH TAKEN OFF THE PROSE. Dropped straight
+     into `wrap--narrow` the two columns split 740px into 365 and 330, which
+     is a thirty-character measure for the largest body type on the site: the
+     answers would have been harder to read than before anything was done to
+     them. The wrap widens by about the width of the rail, so the reading
+     column comes out where it was and the panel is beside it. */
+  .wrap--iv{max-width: 1140px;}
+  /* TWO ITEMS, ONE ROW. The prose is a column and the rail is a column, which
+     is what lets the rail's grid area be the height of the whole article and
+     so gives the sticky panel somewhere to travel. The reading column first,
+     because that is the reading order on a narrow screen too. */
+  .nw-art__body--iv{display: grid; align-items: start;
+    grid-template-columns: minmax(0, 1fr) 330px;
+    column-gap: clamp(30px, 4vw, 56px);}
+  .nw-art__body--iv > .nw-art__col{grid-column: 1; grid-row: 1; min-width: 0;}
+  .nw-art__body--iv > .nw-art__rail{grid-column: 2; grid-row: 1;}
+  /* `align-self: start` is what keeps the sticky box short enough to travel
+     at all: stretched to its area it would be the height of the article and
+     could never move within it. */
+  .nw-art__body--iv > .nw-art__rail > .aud{position: sticky; top: 92px;
+    margin: 0;
+    /* In the rail the portrait goes back on top: 330px is not a two-column
+       width, and a face is better tall than wide. */
+    grid-template-columns: minmax(0, 1fr);}
+  .nw-art__body--iv > .nw-art__rail > .aud .aud__face{height: 250px;
+    border-bottom: 1px solid rgba(var(--volt-rgb), 0.22);
+    border-right: 0; min-height: 0;}
+  /* The rail item itself has to be the full height for sticky to have a
+     containing block worth travelling in. */
+  .nw-art__body--iv > .nw-art__rail{align-self: stretch;}
+}
+
+/* THE PROSE COLUMN CARRIES THE BODY'S OWN SPACING CONTRACT. `.nw-art__body`
+   is a grid with a 20px gap and `.nw-art__body p` sets `margin: 0`, so the
+   space between paragraphs is the GAP and nothing else. Wrapping the prose in
+   a column of its own took that gap away from the paragraphs and left every
+   one of them flush against the next: three intro paragraphs reading as one
+   block. The wrapper has to be the same kind of box, not just a box. */
+.nw-art__col{display: grid; gap: 20px; align-content: start; min-width: 0;}
+
+/* A PAGE WITH A SURFACE. Two low layers behind the article: one soft orange
+   mass where the recording sits, and film grain over the lot at 3%. The grain
+   is what takes the flatness off a long column of type - a screen is sterile
+   in a way a printed page is not, and this is the cheapest honest way to say
+   so. Both are `pointer-events: none` and neither moves: the atmosphere
+   layers behind every page already drift, and a second animated thing on a
+   page somebody is reading is a page that will not keep still.
+
+   The grain is an inline SVG turbulence, which `img-src data:` permits and
+   which costs no request. */
+.nw-art__body--iv{position: relative;}
+.nw-art__body--iv::before{content: ""; position: absolute; z-index: -1;
+  inset: -6% -14% auto; height: 46vh; pointer-events: none;
+  background: radial-gradient(60% 60% at 78% 10%, rgba(var(--volt-rgb), 0.11), transparent 70%);}
+.nw-art__body--iv::after{content: ""; position: absolute; z-index: -1;
+  inset: 0; pointer-events: none; opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 120px 120px;}
+@media (prefers-reduced-motion: reduce) {
+  /* Nothing here moves, so there is nothing to stop - said out loud because
+     the next person to add to this block will want to know. */
+}

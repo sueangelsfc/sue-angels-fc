@@ -17,7 +17,7 @@
    ========================================================================== */
 import { esc, attr, CLUB_ID } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
-import { fmtDate, slugify, isUs } from '../lib/stats.mjs';
+import { fmtDate, slugify, isUs, teamSummary } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge, oppBadgeSrc } from './home.mjs';
 import { reportText, hasReport, plainText } from '../lib/prose.mjs';
 import { readFileSync } from 'node:fs';
@@ -103,6 +103,17 @@ const inline = (t) => esc(t)
    `inline`, which escapes before anything else. The size comes from the upload;
    a hand-typed line without one gets a 3:2 guess, which only affects the space
    held while it loads. */
+/* THE WAVEFORM, MEASURED, NOT DRAWN FROM IMAGINATION.
+   `scripts/make-waveform.mjs` writes this with ffmpeg: 150 peaks per file,
+   normalised 0..1. Committed, because the deploy has no ffmpeg, and absent
+   means no waveform rather than a broken one - the same contract the share
+   cards and the programme PDF have. */
+const PEAKS = (() => {
+  try {
+    return JSON.parse(readFileSync(new URL('../data/audio-peaks.json', import.meta.url), 'utf8'));
+  } catch { return {}; }
+})();
+
 const STORAGE = `${JSON.parse(readFileSync(new URL('../data/runtime.json', import.meta.url), 'utf8'))
   .supabase.url}/storage/v1/object/public/`;
 /* A GRAPHIC is the same line with a second `!`: `!![caption](address)`. A
@@ -153,7 +164,54 @@ function photo(b) {
    piece carries what was said in text and the player sits inside it. That is
    an editorial rule this function cannot enforce, and it is why the caption
    is used as the player's label rather than left to chance. */
-function clip(b) {
+/* THE SHAPE OF THE RECORDING, from `scripts/make-waveform.mjs`.
+
+   ONE `<path>`, NOT 150 RECTANGLES. Every bar is a zero-height subpath with a
+   round cap, which paints a rounded bar at the stroke's width - the same trick
+   the stats screen's world map uses to draw 2,856 land cells in one node. 150
+   rects would be 150 elements on a page that already carries a long
+   transcript, for a picture.
+
+   TWO PATHS, ONE CLIPPED, so the shape doubles as the progress bar: the front
+   copy is revealed by `--p`, which `sa.js` sets from `timeupdate`. With the
+   script blocked the front copy simply never appears and the waveform is a
+   waveform. The height is a viewBox, so it scales with CSS and nothing ever
+   measures the page. */
+function waveform(src) {
+  const rec = PEAKS[src];
+  const peaks = (rec && rec.peaks) || [];
+  if (peaks.length < 8) return '';
+  const W = 2;
+  const GAP = 1.5;
+  const H = 42;
+  const d = peaks.map((v, i) => {
+    /* A floor of 2, because a silent slice drawn at no height leaves a gap in
+       the shape and reads as a file that failed rather than as a pause. */
+    const h = Math.max(2, Math.round(v * H * 10) / 10);
+    const x = i * (W + GAP) + W / 2;
+    const y = Math.round(((H - h) / 2) * 10) / 10;
+    return `M${x} ${y}v${h}`;
+  }).join('');
+  const w = Math.round((peaks.length * (W + GAP) - GAP) * 10) / 10;
+  /* SCALED UNIFORMLY, never stretched. `preserveAspectRatio="none"` was the
+     obvious way to make it fill the panel's width and it squashes the bars and
+     the gaps between them into a solid orange block the moment the box is
+     narrower than the viewBox - which the rail always is. The shape keeps its
+     own proportions and the height follows the width. */
+  return `<svg class="aud__wave" viewBox="0 0 ${w} ${H}"`
+    + ` aria-hidden="true" focusable="false">`
+    + `<path class="aud__wv" d="${d}" stroke-width="${W}" stroke-linecap="round" />`
+    + `<path class="aud__wv aud__wv--on" d="${d}" stroke-width="${W}" stroke-linecap="round" />`
+    + `</svg>`;
+}
+
+/* `m:ss` as seconds, for `data-at`. */
+const atSecs = (t) => {
+  const m = /^(\d{1,3}):([0-5]\d)$/.exec(String(t || ''));
+  return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+};
+
+function clip(b, nav = {}) {
   const m = /^@\[([^\]\n]*)\]\(([^)\s|]+)(?:\|([^)\s]+))?\)$/.exec(b);
   if (!m) return '';
   const dur = /#(\d{1,3}:[0-5]\d)$/.exec(m[2]);
@@ -175,13 +233,36 @@ function clip(b) {
   const slug = src.replace(/^.*\//, '').replace(/\.[a-z0-9]+$/i, '')
     .replace(/[^\w-]+/g, '-').slice(0, 48) || 'clip';
   const noteId = `aud-note-${slug}`;
-  const tranId = `aud-text-${slug}`;
+  /* WHERE "Read what was said" GOES. The first question is where the written
+     answers begin, so when the article has questions the note points straight
+     at the first one and nothing has to carry a second, invisible anchor. An
+     article with a clip and no questions keeps the id of its own. */
+  const tranId = nav.firstId || `aud-text-${slug}`;
   const said = dur ? (() => {
     const [mm, ss] = dur[1].split(':').map(Number);
     const a = `${mm} minute${mm === 1 ? '' : 's'}`;
     return ss ? `${a} ${ss} second${ss === 1 ? '' : 's'}` : a;
   })() : '';
-  return `<figure class="aud">`
+  /* THE LENGTH AS TYPE. It was a 0.92rem grey line under the title, which is
+     where a caption goes, and the one number a reader actually weighs before
+     pressing play was the quietest thing in the panel. The numeral is the
+     graphic; the words after it are what a screen reader gets, said properly,
+     so the digits carry `aria-hidden` rather than being read as "four sixteen". */
+  const len = dur ? `<p class="aud__len">`
+    + `<b class="aud__num" aria-hidden="true">${esc(dur[1])}</b>`
+    + `<span class="aud__said">${esc(said)} with the manager</span></p>` : '';
+  /* WHAT IS IN IT, AND WHERE. Each chapter is a LINK to the written answer, so
+     with no JavaScript at all it does the useful half of its job; `sa.js`
+     upgrades the press to seek the audio instead. A control that needs a script
+     to do anything is a dead control, which is why these are not buttons. */
+  const chapters = nav.chapters || [];
+  const chs = chapters.length ? `<ul class="aud__chs">`
+    + chapters.map((c) => `<li><a class="aud__ch" href="#${attr(c.id)}"`
+      + `${c.at == null ? '' : ` data-at="${attr(String(c.at))}"`}>`
+      + `${c.at == null ? '' : `<b class="aud__chn">${esc(c.ts)}</b>`}`
+      + `<span>${inline(c.label)}</span></a></li>`).join('')
+    + `</ul>` : '';
+  return `<figure class="aud" id="listen-${attr(slug)}">`
     + (face ? `<img class="aud__face" src="${attr(face)}" alt="" width="320" height="320"`
       + ` loading="lazy" decoding="async" />` : '')
     + `<div class="aud__body">`
@@ -192,7 +273,8 @@ function clip(b) {
        already carries the same words as its accessible name, so nothing is
        lost by setting this as the label it is. */
     + (cap ? `<p class="aud__h">${inline(cap)}</p>` : '')
-    + (said ? `<p class="aud__len">${esc(said)}</p>` : '')
+    + len
+    + waveform(src)
     /* THE TRANSCRIPT IS ON THE PAGE AND NOTHING SAID SO. An accessibility
        audit called this critical and was right: every word is written out
        below, but the audio element carried no association with it, so to
@@ -204,8 +286,16 @@ function clip(b) {
        cannot collide. */
     + `<audio class="aud__player" controls preload="none" src="${attr(src)}"`
     + ` aria-label="${attr(cap || 'Audio clip')}" aria-describedby="${attr(noteId)}"></audio>`
+    + chs
     + `<p class="aud__note" id="${attr(noteId)}">`
-    + `<a href="#${attr(tranId)}">Read what was said</a> instead, or alongside.</p>`
+    /* A LINK ONLY WHERE THERE IS SOMEWHERE TO GO. An article carrying a clip
+       and no questions has no anchor to offer, and a link to an id nothing
+       holds lands the reader nowhere and tells them nothing - worse than the
+       plain sentence, which is still true. */
+    + (nav.firstId
+      ? `<a href="#${attr(tranId)}">Read what was said</a> instead, or alongside.`
+      : 'Every word is written out below, if you would rather read it.')
+    + `</p>`
     + `</div></figure>`;
 }
 
@@ -326,6 +416,86 @@ function table(lines, opts = {}) {
 
 /* `opts.badges` is the crest registry: given it, a league-shaped table is
    drawn as the home page's table; without it, as any other table. */
+/* ==========================================================================
+   A FIGURE THE SITE ALREADY KNOWS, dropped into the prose: `++[26/27]`.
+
+   A manager saying "four games, four wins" is worth more with the record
+   beside it, and the one thing this repository will not do is let somebody
+   type that record into an article. Every published figure is derived in
+   `stats.mjs` from match records, so the marker names a SEASON and the plate
+   is counted at build time from that season's competitive matches. It is right
+   the day it is written and still right after the next game.
+
+   COMPETITIVE ONLY, like every other published team figure, so a pre-season
+   friendly cannot flatter it.
+
+   NO SEASON, NO PLATE. An unknown name, a season with nothing played, or a
+   render with no dataset leaves the marker as the text it is, which is how
+   every other marker in this file fails: the writer sees it did not work
+   rather than the page shipping a heading over a hole.
+   ========================================================================== */
+function statPlate(b, d) {
+  const m = /^\+\+\[([^\]\n]{1,24})\]$/.exec(b.trim());
+  if (!m || !d) return '';
+  const name = m[1].trim();
+  const list = (d.competitive || []).filter((x) => x.season === name && x.played);
+  if (!list.length) return '';
+  const s = teamSummary(list);
+  const info = (d.seasons || []).find((x) => x.name === name) || {};
+  const cells = [
+    ['Played', s.played], ['Won', s.won], ['Drawn', s.drawn], ['Lost', s.lost],
+    ['For', s.goalsFor], ['Against', s.goalsAgainst],
+  ];
+  /* THE DIVISION, NOT THE PLACEHOLDER. A season carries its own league name
+     once it is known and reads `TBC` until then, which is not a division and
+     must never be printed as one. For the season being played NOW the club's
+     own current division is the answer, and it is read off the dataset rather
+     than off the constant in club.mjs: the standing warning about that
+     constant is that it describes the division the club is in today, which
+     makes it wrong for any season in the archive. This is not one. */
+  const league = /^(tbc|)$/i.test(String(info.league || '').trim())
+    ? (name === d.currentSeason ? d.division || '' : '')
+    : info.league;
+  /* A FIGURE, NOT AN `<aside>`. An aside is a complementary landmark, and one
+     nested inside the article's section is the exact defect an accessibility
+     audit found on this site before - content a reader can jump to that turns
+     out to be four numbers mid-sentence. A figure with a caption is what this
+     is: self-contained, referred to from the text around it, and no landmark
+     at all. The caption is the heading rather than an `aria-label`, because a
+     figure takes its accessible name from its own caption. */
+  return `<figure class="qa__plate">`
+    + `<figcaption class="qa__plate-h">${esc(name)}`
+    + `${league ? ` · ${esc(league)}` : ''}</figcaption>`
+    + `<dl class="qa__fig">${cells.map(([k, v]) => `<div>`
+      + `<dt>${esc(k)}</dt><dd>${esc(String(v))}</dd></div>`).join('')}</dl>`
+    /* SAID OUT LOUD, because a record beside a quotation invites the reader to
+       assume it is the record AT THE TIME HE SPOKE, and it is not: it is
+       counted when the site is published and moves on every result. */
+    + `<p class="qa__plate-f">League and cup, as the record stands</p>`
+    + `</figure>`;
+}
+
+/* A QUESTION LINE, parsed once so the pre-pass and the render cannot disagree.
+   `?? 0:42 | Where to improve | We have scored 20 goals...?`
+   Both middle parts are optional and the order is fixed: the time, then a
+   short label for the chapter list, then the question itself.
+
+   THE LABEL HAS TO BE SHORT TO BE ONE. A question containing a pipe would
+   otherwise have its first clause taken as a chapter heading, so anything
+   over forty characters is read as part of the question, pipe and all. */
+const askedAt = (b) => {
+  let t = b.replace(/^\?\?\s*/, '');
+  const ts = /^(\d{1,3}:[0-5]\d)\s*\|?\s*/.exec(t);
+  if (ts) t = t.slice(ts[0].length);
+  let label = '';
+  const bar = t.indexOf('|');
+  if (bar > 0 && bar <= 40) {
+    label = t.slice(0, bar).trim();
+    t = t.slice(bar + 1).trim();
+  }
+  return { ts: ts ? ts[1] : '', at: ts ? atSecs(ts[1]) : null, label, q: t };
+};
+
 export function articleBody(text, opts = {}) {
   const blocks = String(text || '').split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
   /* `#` and `##` are a heading, `###` a sub-heading under it. A sub-heading
@@ -344,27 +514,53 @@ export function articleBody(text, opts = {}) {
      questions large and white, the manager's words small and grey. On a page
      of somebody's words, their words should be the biggest thing on it. */
   let inAnswer = false;
-  let lastClipId = '';
-  let tranAnchored = false;
+  let clipAnchor = '';
+  /* ---- WHAT IS IN THE RECORDING, WORKED OUT BEFORE ANYTHING IS WRITTEN ----
+
+     The chapter list belongs in the audio panel, and the panel is rendered
+     before the questions it lists. So the questions are read in a pass of
+     their own first and handed to `clip()`. A pre-pass rather than a second
+     band under the player, because what is in a recording is a fact about the
+     recording and reads as furniture anywhere else.
+
+     ONLY QUESTIONS THAT CARRY BOTH A TIME AND A LABEL. A chapter with no
+     timestamp cannot seek and a chapter with no label would have to be named
+     by guessing at the question's first few words, which is this file's
+     commonest mistake wearing a new hat. */
+  const asks = blocks.filter((b) => /^\?\?\s/.test(b)).map((b, i) => ({
+    ...askedAt(b), id: `qa-${i + 1}`,
+  }));
+  const chapters = asks.filter((a) => a.at != null && a.label);
+  let qi = 0;
   return blocks.map((b) => {
     const fig = photo(b);
     if (fig) return fig;
-    const aud = clip(b);
+    const aud = clip(b, { chapters, firstId: asks.length ? asks[0].id : '' });
     if (aud) {
-      const id = /id="(aud-note-[\w-]+)"/.exec(aud);
-      if (id) { lastClipId = id[1].replace('aud-note-', 'aud-text-'); tranAnchored = false; }
+      const anc = /<figure class="aud" id="(listen-[\w-]+)"/.exec(aud);
+      if (anc) [, clipAnchor] = anc;
       return aud;
     }
     const vid = film(b);
     if (vid) return vid;
+    const plate = statPlate(b, opts.d);
+    if (plate) { inAnswer = false; return plate; }
     if (/^\?\?\s/.test(b)) {
       inAnswer = true;
-      /* The first question is where the written answers begin, so it is what
-         the clip's "Read what was said" points at. */
-      const first = !tranAnchored && lastClipId;
-      if (first) tranAnchored = true;
-      return `<p class="qa__q"${first ? ` id="${attr(lastClipId)}"` : ''}>`
-        + `${inline(b.replace(/^\?\?\s*/, ''))}</p>`;
+      const a = asks[qi] || askedAt(b);
+      qi += 1;
+      /* THE TIME IS A LINK, AND IT WORKS WITH THE SCRIPT BLOCKED. It points at
+         the player, so the useful half of pressing it (take me to the audio)
+         needs nothing; `sa.js` upgrades the press to seek to this answer. The
+         digits are hidden from a screen reader and the link is named in words,
+         because "0:42" read aloud in a sentence of prose is noise. */
+      const t = a.at == null || !clipAnchor ? '' : `<a class="qa__t" href="#${attr(clipAnchor)}"`
+        + ` data-at="${attr(String(a.at))}"`
+        + ` aria-label="${attr(`Play this answer, ${a.ts}`)}">`
+        + `<i aria-hidden="true">${esc(a.ts)}</i></a>`;
+      return `<p class="qa__q" id="${attr(a.id)}"`
+        + `${a.at == null ? '' : ` data-at="${attr(String(a.at))}"`}>`
+        + `${t}<span class="qa__qt">${inline(a.q)}</span></p>`;
     }
     /* A PULL QUOTE, `>` at the start of a line, for the one sentence worth
        stopping on. It is a quotation of somebody, so it is a blockquote. */
@@ -601,11 +797,56 @@ export function newsArticle(a, d) {
       </div>
     </section>`;
 
+  /* ---- AN INTERVIEW IS A DIFFERENT SHAPE OF PAGE ------------------------
+
+     A piece built round a recording wants the player kept in view and the
+     answers given a column of their own; every other article wants one
+     centred measure and would look off-centre in a two-column grid with an
+     empty rail. So the layout is a modifier, and what sets it is the markup
+     that came out rather than a flag somebody has to remember: an article
+     that rendered a clip or a question gets the rail, and nothing else does.
+
+     Asked of the rendered HTML, not of the source text, so the two can never
+     disagree about whether a marker actually worked. */
+  const written = articleBody(a.lede, { badges: d.badges, d });
+  const isIv = /class="aud"|class="qa__q"/.test(written);
+
+  /* ---- THE RAIL IS A REAL ELEMENT, because a grid row is not a column -----
+
+     The obvious version of this leaves the figure where the writer put it and
+     gives it `grid-column: 2; grid-row: 1 / -1`, and that silently does not
+     work: negative grid lines count from the end of the EXPLICIT grid, there
+     are no explicit rows here, so `-1` resolves to line 1 and the panel
+     occupies row one alone. Row one is then as tall as the panel, the prose
+     after the first paragraph starts underneath it, and the page ships with
+     seven hundred pixels of empty column beside the thing it is about. It
+     looks like a layout that failed rather than a line of CSS that did.
+
+     So the figure is lifted into a rail of its own and the prose into a
+     column of its own, which makes the grid two items in one row and gives
+     the sticky panel the whole article to travel through.
+
+     THE PANEL GOES FIRST, and that is a decision about the narrow screen
+     rather than about the grid. With no second column the rail renders where
+     it sits in the document, and on a page whose subject is a recording the
+     recording belongs at the top: headline, the man talking, then his words.
+     The alternative - the rail last - would park the player under the final
+     answer on every phone.
+
+     Lifted by matching the figure, not by rebuilding it. The audio figure has
+     no nested `</figure>`, so this takes exactly one block and leaves the rest
+     of the article untouched. */
+  const audOne = /<figure class="aud"[\s\S]*?<\/figure>/.exec(written);
+  const railed = isIv && audOne;
+  const railHtml = railed ? `<div class="nw-art__rail">${audOne[0]}</div>` : '';
+  const prose = railed ? written.replace(audOne[0], '') : written;
+
   const body = `<section class="sec nw-art" aria-label="Article">
-      <div class="wrap wrap--narrow">
-        <div class="nw-art__body rv">
-        ${articleBody(a.lede, { badges: d.badges })}
-        </div>
+      <div class="wrap wrap--narrow${isIv ? ' wrap--iv' : ''}">
+        <div class="nw-art__body${isIv ? ' nw-art__body--iv' : ''} rv">
+        ${railHtml}${railed ? '<div class="nw-art__col">' : ''}
+        ${prose}
+        ${railed ? '</div>' : ''}</div>
         <p class="nw-art__back"><a href="/news.html">${ARROW} All club news</a></p>
       </div>
     </section>`;

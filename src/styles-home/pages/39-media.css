@@ -296,6 +296,12 @@ html.js .nw-card[hidden]{display: none;}
 .aud__player::-webkit-media-controls-panel{
   background: rgba(var(--sink), 0.55); border-radius: 999px;}
 
+/* Says the words exist and takes you to them. Named as the player's
+   description, so a screen reader hears it with the control. */
+.aud__note{margin: 12px 0 0; color: var(--ink-3);
+  font-size: 0.86rem; line-height: 1.45;}
+.aud__note a{color: var(--volt-text);}
+
 /* Side by side once there is room for the portrait to be a portrait. */
 @media (min-width: 620px) {
   .aud{grid-template-columns: 168px minmax(0, 1fr); align-items: stretch;}
@@ -371,3 +377,51 @@ html.js .nw-card[hidden]{display: none;}
   max-width: 640px;}
 .bts-none__h{margin: 0; font-weight: 650; font-size: 1.12rem;}
 .bts-none__p{margin: 8px 0 18px; color: var(--ink-2); line-height: 1.55;}
+
+/* AN INTERVIEW, LAID OUT AS ONE (`??` question, `>` pull quote in news.mjs).
+
+   THE HIERARCHY WAS BACKWARDS. The interviewer's questions were set large
+   and white and the manager's answers small and grey, so the loudest thing
+   on a page of somebody's words was somebody else's prompts. The questions
+   are scaffolding. His answers are the piece, and they are now the largest
+   body type on the page.
+
+   Scale is the whole device, and it is the one thing taken from the
+   "premium" playbook that belongs here: a page of uniform grey paragraphs
+   reads as a wall whatever else is done to it. What is NOT taken is the
+   rest of that playbook - no scroll hijacking, no custom cursor, no
+   animation library. `sa.js` has about a kilobyte of headroom, the policy
+   does not permit the script hosts those need, and this site's own rule is
+   subtle, purposeful transitions and nothing else. Nothing here moves. */
+
+/* The prompt. Quiet, and marked by a rule rather than by shouting: the eye
+   needs to find where each answer begins, which is structure doing the job
+   that size was doing badly. */
+.nw-art__body .qa__q{position: relative; margin: clamp(34px, 5vw, 52px) 0 0;
+  padding-left: 18px; max-width: 52ch;
+  font-family: Archivo, var(--display), sans-serif; font-weight: 500;
+  font-size: clamp(0.95rem, 1.9vw, 1.04rem); line-height: 1.45;
+  letter-spacing: 0.002em; color: var(--ink-2);}
+.nw-art__body .qa__q::before{content: ""; position: absolute; left: 0; top: 0.35em;
+  width: 3px; height: calc(100% - 0.7em); border-radius: 2px;
+  background: var(--volt); opacity: 0.85;}
+
+/* His voice. The largest body type on the page, with the leading to match -
+   a long measure at this size needs it or it reads as a slab. */
+.nw-art__body .qa__a{margin: 14px 0 0; max-width: 60ch;
+  font-size: clamp(1.1rem, 2.5vw, 1.32rem); line-height: 1.62;
+  letter-spacing: -0.004em; color: var(--fg);}
+.nw-art__body .qa__q + .qa__a{margin-top: 16px;}
+
+/* One sentence worth stopping on. It breaks the measure and the rhythm,
+   which is the only reason to have it: a second one on the same page would
+   make it furniture. */
+.nw-art__body .qa__pull{margin: clamp(38px, 6vw, 62px) 0; padding: 0;
+  border: 0; max-width: 20ch;
+  font-family: Archivo, var(--display), sans-serif; font-weight: 600;
+  font-size: clamp(1.6rem, 6vw, 2.5rem); line-height: 1.1;
+  letter-spacing: -0.028em; color: var(--fg);
+  text-wrap: balance;}
+.nw-art__body .qa__pull::before{content: ""; display: block;
+  width: 56px; height: 3px; border-radius: 2px; background: var(--volt);
+  margin-bottom: clamp(16px, 2.4vw, 22px);}

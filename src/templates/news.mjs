@@ -172,6 +172,10 @@ function clip(b) {
   const cap = m[1].trim();
   /* "4:16" is a timestamp. Said as minutes it is a decision about whether to
      press play, which is what this block is for. */
+  const slug = src.replace(/^.*\//, '').replace(/\.[a-z0-9]+$/i, '')
+    .replace(/[^\w-]+/g, '-').slice(0, 48) || 'clip';
+  const noteId = `aud-note-${slug}`;
+  const tranId = `aud-text-${slug}`;
   const said = dur ? (() => {
     const [mm, ss] = dur[1].split(':').map(Number);
     const a = `${mm} minute${mm === 1 ? '' : 's'}`;
@@ -189,8 +193,19 @@ function clip(b) {
        lost by setting this as the label it is. */
     + (cap ? `<p class="aud__h">${inline(cap)}</p>` : '')
     + (said ? `<p class="aud__len">${esc(said)}</p>` : '')
+    /* THE TRANSCRIPT IS ON THE PAGE AND NOTHING SAID SO. An accessibility
+       audit called this critical and was right: every word is written out
+       below, but the audio element carried no association with it, so to
+       anybody who cannot hear the clip the page offered a player and no
+       visible promise of an alternative. The note is a real sentence, it is
+       named as the player's description, and it is a link, so it is useful
+       to somebody skipping the audio as well as to somebody who cannot
+       hear it. The id is derived from the file so two clips in one article
+       cannot collide. */
     + `<audio class="aud__player" controls preload="none" src="${attr(src)}"`
-    + ` aria-label="${attr(cap || 'Audio clip')}"></audio>`
+    + ` aria-label="${attr(cap || 'Audio clip')}" aria-describedby="${attr(noteId)}"></audio>`
+    + `<p class="aud__note" id="${attr(noteId)}">`
+    + `<a href="#${attr(tranId)}">Read what was said</a> instead, or alongside.</p>`
     + `</div></figure>`;
 }
 
@@ -317,14 +332,49 @@ export function articleBody(text, opts = {}) {
      with no heading above it is still an h2, styled smaller, because an h3
      straight after the headline skips a level. */
   let underHeading = false;
+  /* AN INTERVIEW IS A SEQUENCE OF QUESTIONS, so `??` marks one and every
+     paragraph after it is that answer until the next question, the next
+     heading, or anything that is plainly not prose. The club writes these
+     now that the audio exists, and the alternative was styling `##` headings
+     differently when the article happens to contain a clip - which is the
+     page guessing at intent from unrelated evidence.
+
+     THE ANSWER IS THE CONTENT AND THE QUESTION IS SCAFFOLDING. The first
+     version of this page had it the other way round: the interviewer's
+     questions large and white, the manager's words small and grey. On a page
+     of somebody's words, their words should be the biggest thing on it. */
+  let inAnswer = false;
+  let lastClipId = '';
+  let tranAnchored = false;
   return blocks.map((b) => {
     const fig = photo(b);
     if (fig) return fig;
     const aud = clip(b);
-    if (aud) return aud;
+    if (aud) {
+      const id = /id="(aud-note-[\w-]+)"/.exec(aud);
+      if (id) { lastClipId = id[1].replace('aud-note-', 'aud-text-'); tranAnchored = false; }
+      return aud;
+    }
     const vid = film(b);
     if (vid) return vid;
+    if (/^\?\?\s/.test(b)) {
+      inAnswer = true;
+      /* The first question is where the written answers begin, so it is what
+         the clip's "Read what was said" points at. */
+      const first = !tranAnchored && lastClipId;
+      if (first) tranAnchored = true;
+      return `<p class="qa__q"${first ? ` id="${attr(lastClipId)}"` : ''}>`
+        + `${inline(b.replace(/^\?\?\s*/, ''))}</p>`;
+    }
+    /* A PULL QUOTE, `>` at the start of a line, for the one sentence worth
+       stopping on. It is a quotation of somebody, so it is a blockquote. */
+    if (/^>\s/.test(b)) {
+      inAnswer = false;
+      return `<blockquote class="qa__pull">${
+    inline(b.split('\n').map((l) => l.replace(/^>\s*/, '').trim()).join(' '))}</blockquote>`;
+    }
     if (/^#{1,6}\s/.test(b)) {
+      inAnswer = false;
       const words = inline(b.replace(/^#{1,6}\s*/, ''));
       const sub = b.match(/^#+/)[0].length >= 3;
       if (sub && underHeading) return `<h3 class="nw-art__sub">${words}</h3>`;
@@ -344,7 +394,7 @@ export function articleBody(text, opts = {}) {
        section title. A rule that guesses which emphasised lines are really
        headings will guess wrong on somebody's copy, so `##` is the heading and
        `**` is bold, everywhere, with no cleverness in between. */
-    return `<p>${lines.map((l) => inline(l)).join('<br />')}</p>`;
+    return `<p${inAnswer ? ' class="qa__a"' : ''}>${lines.map((l) => inline(l)).join('<br />')}</p>`;
   }).join('\n        ');
 }
 

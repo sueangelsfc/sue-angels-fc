@@ -108,6 +108,10 @@ export const plainText = (text) => String(text || '')
   .replace(/[ \t]*\t[ \t]*/g, ' · ')
   /* A heading reads as its words, and a table is not quoted in a preview. */
   .replace(/^#{1,6}[ \t]+/gm, '')
+  /* An interview question and a pull quote read as their words wherever the
+     writing is shortened; the marker is how the page lays them out, not
+     something anybody should see in a card or a meta description. */
+  .replace(/^(?:\?\?|>)[ \t]+/gm, '')
   .replace(/^\|.*\|[ \t]*$/gm, '')
   /* A link reads as its words. */
   .replace(/(?<!!)\[([^\]\n]+)\]\((?:\/[^\s)]*|https:\/\/[^\s)]+)\)/g, '$1')

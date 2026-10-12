@@ -3786,8 +3786,17 @@ for (const [f, kb] of Object.entries({
        declaration. */
     const rcss = fs.readFileSync(path.join(ROOT, 'src', 'styles-home', 'pages', '40-report.css'), 'utf8');
     const subsCss = (rcss.match(/\.mr-subs[\s\S]*$/) || [''])[0];
+    /* `--text-` WAS TOO WIDE AND CAUGHT A NAME THAT IS FINE. home.css declares
+       `--text-on-brand` and `--text-on-brand-2` - they are the dark ink that
+       keeps a label legible on an orange pill, and the band above this block
+       has used one since it was written. The sa.css name this is actually
+       about is `--text-muted`. The pattern only ever looked harmless because
+       everything after `.mr-subs` used to be four rules; it is the rest of the
+       band now, so a blunt pattern here fails real work. The question it asks
+       is also asked properly elsewhere, against every token home.css and this
+       band actually declare. */
     check('the substitution styles use the vocabulary the report page loads',
-      !/var\(--(space|step|text-|radius|brand|surface)/.test(subsCss),
+      !/var\(--(space|step|text-muted|text-dim|radius|brand|surface)/.test(subsCss),
       'an sa.css token on a home.css page silently deletes its own rule');
   }
 
@@ -7256,8 +7265,25 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
         m2.detail.polishedReport !== ed.text, 'the edition still showed');
       const bare = ed.text.replace(/^!!\[.*\]\(.*\)$/gm, '').replace(/\[([^\]]+)\]\(\/players\/[^)]+\)/g, '$1');
       const sentences = storedText.split(/\n\s*\n/).filter((b) => b.length > 60 && !/\n/.test(b));
-      check(`and every paragraph of the club's report is in it word for word: ${ed.match}`,
-        sentences.length > 20 && sentences.every((s) => bare.includes(s)), `${sentences.filter((s) => !bare.includes(s)).length} missing`);
+      /* AN EDITION CAN EXIST WHERE NOTHING IS STORED, and the word-for-word
+         question is then the wrong one to ask: there are no stored words. The
+         `articles` table cannot be written from a developer machine and nor
+         can a match row, so a report the club has written and not yet typed in
+         reaches the site this way, with `basedOn` the sha256 of the empty
+         string. The two checks above are what matter in that case and they
+         still run: the edition shows while nothing is stored, and the club's
+         own text wins outright the moment it is saved. The `> 20` guard is
+         there so this cannot pass by having nothing to compare, so it has to
+         be the branch that is skipped rather than the guard that is dropped. */
+      if (storedText.trim()) {
+        check(`and every paragraph of the club's report is in it word for word: ${ed.match}`,
+          sentences.length > 20 && sentences.every((s) => bare.includes(s)), `${sentences.filter((s) => !bare.includes(s)).length} missing`);
+      } else {
+        check(`an edition over an empty report is built on the empty string: ${ed.match}`,
+          ed.basedOn === (await import('node:crypto')).createHash('sha256').update('').digest('hex')
+          && ed.text.trim().length > 400,
+          'a no-stored-text edition must hash the empty string and carry a real report');
+      }
     }
   }
 
@@ -9689,6 +9715,195 @@ let orphanClasses = new Map();
   const html = String(out && out.body ? out.body : out);
   check('the match page lists the own goal as one, and names ours under their goals',
     html.includes('Own goal') && /own goal, Daniel McLane/i.test(html));
+}
+
+/* ==========================================================================
+   A MATCH REPORT, DRAWN  (src/lib/report-visuals.mjs)
+
+   Fifteen visual changes to one page family, every one of them derived from
+   the record rather than typed, and the thing that would go wrong quietly is
+   the derivation: a timeline that silently drops an untimed goal, a standing
+   counted from the wrong matches, a shape drawn from positions nobody gave.
+   So these ask the shipped functions crafted questions as well as reading the
+   built pages.
+
+   AND THEY ASK THE GATE BOTH WAYS. The club asked for 25/26 to stay exactly
+   as it is, so a check that only confirms 26/27 gained something would pass
+   just as happily on the day the archive gained it too.
+   ========================================================================== */
+{
+  const rv = await import(path.join(ROOT, 'src', 'lib', 'report-visuals.mjs'));
+  const { buildDataset: bdRV } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const { matchReport: reportTpl } = await import(path.join(ROOT, 'src', 'templates', 'report.mjs'));
+  const d = bdRV();
+  const by = (id) => d.matches.find((x) => x.id === id);
+
+  check('the drawn page starts at 26/27 and the archive keeps the one it has',
+    rv.isRich({ season: '26/27' }) && rv.isRich({ season: '27/28' })
+    && !rv.isRich({ season: '25/26' }) && !rv.isRich({ season: '24/25' }));
+  /* A match with no season at all is not drawn, rather than being drawn by
+     a comparison against NaN that happens to come out false today. */
+  check('a match with no season is left alone',
+    !rv.isRich({}) && !rv.isRich({ season: '' }) && !rv.isRich(null));
+
+  const peps = by('r20261011-peps');
+  const old = d.matches.find((x) => x.season === '25/26' && x.played && (x.detail || {}).goals);
+  check('there is a 26/27 match and a 25/26 one to ask about', Boolean(peps && old));
+
+  if (peps && old) {
+    const newPage = String(reportTpl(peps, d).body || '');
+    const oldPage = String(reportTpl(old, d).body || '');
+    for (const cls of ['mr-keys', 'mr-tl__board', 'mr-gs', 'mr-pin', 'mr-whos', 'mr-walk']) {
+      check(`the 26/27 report draws ${cls}, and the 25/26 one does not`,
+        newPage.includes(cls) && !oldPage.includes(cls), `${old.id} gained it`);
+    }
+    /* The one the archive keeps: the three-column band it has always had. */
+    check('and the archive keeps the band it has always had',
+      oldPage.includes('mr-facts') && !newPage.includes('class="sec mr-facts"'));
+
+    /* NO ANIMATION, NO OBSERVER, NO NEW BYTES IN sa.js. The whole point of
+       building this out of `.rv`, `[data-count]` and `position: sticky` was
+       that the bundle had 235 bytes of headroom, so a page that quietly
+       started needing a script would be the failure to catch. */
+    const visuals = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'report-visuals.mjs'), 'utf8');
+    check('the drawn report ships no script of its own',
+      !/<script/.test(newPage.replace(/<script type="application\/ld\+json">[\s\S]*?<\/script>/g, '')),
+      'a match page grew a script tag');
+    check('and it rides on the mechanisms that already exist',
+      /data-count=/.test(visuals) && /pf-tiles/.test(visuals) && newPage.includes('class="mr-pin"'));
+    /* The pinned board must not be inside a `.sec`: that rule is
+       `overflow: hidden` site-wide, which stops a sticky child moving at all
+       and says nothing on screen about why. */
+    const beforePin = newPage.slice(0, newPage.indexOf('class="mr-pin"'));
+    check('the pinned scoreboard is outside every .sec, or sticky silently dies',
+      (beforePin.match(/<section class="sec/g) || []).length === 0,
+      'an overflow container above it kills position: sticky');
+  }
+
+  /* ---- The timeline places what is timed and lists what is not ---------- */
+  {
+    const nameFor = (n) => `No ${n}`;
+    const craft = (det, over = {}) => ({
+      id: 'x', season: '26/27', opponent: 'Someone', ourGoals: 2, theirGoals: 1,
+      scoreline: '2-1', detail: det, ...over,
+    });
+    const tl = (det, over) => rv.timeline(craft(det, over), { ...d, nameFor });
+    const two = tl({ goals: [{ num: 9, minute: 20 }, { num: 9 }], opponentGoals: [{ minute: 70 }] });
+    check('a goal with a minute is placed on the axis', /--x:22\.22%/.test(two));
+    check('and a goal with none is listed after it, never at minute zero',
+      /mr-tl__untimed/.test(two) && !/--x:0\.00%/.test(two));
+    check('their goal goes in its own lane under the axis', /is-them/.test(two));
+    const noneTimed = tl({ goals: [{ num: 9 }, { num: 3 }] });
+    check('and a match where nothing is timed draws no axis at all', noneTimed === '');
+    /* A 94th-minute goal is drawn at the right-hand edge, not off it. */
+    const late = tl({ goals: [{ num: 9, minute: 94 }] });
+    check('a goal after full time lands on the end of the axis, not past it',
+      /--x:100\.00%/.test(late) && /is-end/.test(late));
+    /* Ten records in the archive are short of a line under Their goals, and
+       an empty lane beside a tile reading "Conceded 1" reads as a bug. */
+    const short = tl({ goals: [{ num: 9, minute: 10 }], opponentGoals: [] });
+    check('a goal they scored that is not on the record is said out loud',
+      /mr-tl__gap/.test(short) && /not on the record/.test(short));
+    check('and nothing is said where the record is complete',
+      !/mr-tl__gap/.test(tl({ goals: [{ num: 9, minute: 10 }], opponentGoals: [{ minute: 70 }] })));
+  }
+
+  /* ---- The shape is drawn from positions, or not drawn ------------------ */
+  {
+    const eleven = (pos) => ({ starters: pos.map((p, i) => ({ num: i + 1, positions: p ? [p] : [] })) });
+    const full = ['GK', 'RCB', 'CB', 'LCB', 'RWB', 'LWB', 'RDM', 'LDM', 'CAM', 'ST', 'ST'];
+    const m1 = { id: 'x', season: '26/27', detail: { ...eleven(full), formation: '3-4-1-2' } };
+    const drawn = rv.pitchXI(m1, d);
+    check('the eleven are drawn where the club said they stood',
+      /mr-pitch__svg/.test(drawn) && (drawn.match(/mr-pitch__man/g) || []).length === 11);
+    /* Two strikers share one code and must not be drawn on top of each other. */
+    /* The markers only - the centre circle has a cx too, and counting it is
+       how a check comes to be measuring the pitch rather than the eleven. */
+    const spots = [...drawn.matchAll(/class="mr-pitch__dot" cx="([\d.]+)" cy="([\d.]+)"/g)]
+      .map((x) => `${x[1]},${x[2]}`);
+    check('and two men given the same position are nudged apart, not stacked',
+      spots.length === 11 && new Set(spots).size === spots.length, spots.join(' '));
+    const thin = { id: 'x', season: '26/27', detail: eleven([...full.slice(0, 4), '', '', '', '', '', '', '']) };
+    check('a sheet with no positions on most of it draws no pitch rather than a pile',
+      rv.pitchXI(thin, d) === '');
+  }
+
+  /* ---- Where the result left the club ----------------------------------- */
+  {
+    const hay = by('r20260913-haydons');
+    const after = hay ? rv.afterMatch(hay, d) : '';
+    check('a league match says where the result left the club that afternoon',
+      /mr-after/.test(after) && /League Eight/.test(after), after.slice(0, 90));
+    /* COUNTED AS AT THE MATCH, not from the live table. A page about
+       September captioned with October's position is wrong in a way nobody
+       spots, because both numbers are real. */
+    const later = by('r20260927-barnes');
+    const a1 = (after.match(/(\d+)\s+point/) || [])[1];
+    const a2 = ((later ? rv.afterMatch(later, d) : '').match(/(\d+)\s+point/) || [])[1];
+    check('and the standing moves between two matches, so it is not the live table',
+      a1 && a2 && Number(a2) > Number(a1), `${a1} then ${a2}`);
+    const friendly = d.matches.find((x) => x.season === '26/27' && x.friendly && x.played);
+    check('a friendly produces no standing, because it counts towards nothing',
+      !friendly || rv.afterMatch(friendly, d) === '');
+    check('a cup tie names the round the draw gave it',
+      peps && /1st Round/.test(rv.afterMatch(peps, d)));
+  }
+
+  /* ---- Head to head, and the first meeting ------------------------------ */
+  {
+    check('a first meeting prints no record rather than an empty one',
+      peps && rv.headToHead(peps, d) === '');
+    const repeat = d.matches.filter((x) => x.played && x.season === '26/27')
+      .map((x) => rv.headToHead(x, d)).filter(Boolean);
+    const anyPrior = d.matches.filter((x) => x.played && x.season === '26/27')
+      .some((x) => d.played.some((y) => y.id !== x.id && y.opponent === x.opponent
+        && String(y.iso || '') < String(x.iso || '')));
+    check('and a repeat meeting prints one', repeat.length > 0 === anyPrior);
+  }
+
+  /* ---- The numbers of the match ----------------------------------------- */
+  {
+    const k = peps ? rv.keyNumbers(peps) : [];
+    const find = (key) => (k.find((t) => t.k === key) || {}).v;
+    check('the numbers of the match are counted from the record',
+      find('Scored') === peps.ourGoals && find('Conceded') === peps.theirGoals
+      && find('On the scoresheet') === 3 && find('From a set piece') === 2,
+      JSON.stringify(k));
+    /* A walkover carries no goals, so it carries no numbers either. */
+    const wo = d.matches.find((x) => x.isWalkover);
+    check('a walkover draws no figures, because it has none',
+      !wo || rv.keyNumbers({ ...wo, season: '26/27' }).length === 0);
+  }
+
+  /* ---- The team sheet names everybody, and links what it can ------------ */
+  {
+    const sh = peps ? rv.sheetRows(peps, d) : { xi: '', bench: '' };
+    const starters = ((peps.detail || {}).starters || []).length;
+    check('every man on the sheet gets a row',
+      (sh.xi.match(/<li class="mr-who/g) || []).length === starters, `${starters} expected`);
+    /* A FACE INSIDE THE LINK. An `alt=""` photograph is correct exactly when
+       the thing beside it has said who it is; inside the anchor that prints
+       the name, that is provable rather than asserted. */
+    check('and the photograph sits inside the link that names him',
+      /<a class="mr-who__a"[^>]*>\s*<span class="mr-face">/.test(sh.xi));
+    check('a man with no photograph gets his initials, never a blank',
+      /mr-face__ini/.test(sh.xi) && /mr-face__img/.test(sh.xi));
+    check('a position is written out, never left as a storage code',
+      /Left wing back/.test(sh.xi) && !/>LWB</.test(sh.xi));
+  }
+
+  /* ---- One id, one element ---------------------------------------------- */
+  {
+    const filmed = d.matches.find((x) => x.season === '26/27' && (d.goalFilmFor(x) || []).length);
+    if (filmed) {
+      const h = String(reportTpl(filmed, d).body || '');
+      const ids = [...h.matchAll(/ id="(goal-\d+|g-\d+)"/g)].map((x) => x[1]);
+      check('a goal card and its film do not answer to the same id',
+        new Set(ids).size === ids.length, ids.join(' '));
+      check('and the card points at the film instead',
+        /class="mr-g__film" href="#goal-\d+"/.test(h));
+    }
+  }
 }
 
 console.log(`  classes on an element no rule reaches, one page per family: ${orphanClasses.size}`

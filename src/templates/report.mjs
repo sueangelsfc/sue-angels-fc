@@ -16,11 +16,15 @@
 import { esc, attr } from '../lib/html.mjs';
 import { substitutions } from '../lib/subs.mjs';
 import { CLUB } from '../lib/club.mjs';
-import { fmtDate, isUs, matchTimeline } from '../lib/stats.mjs';
-import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
-import { articleBody } from './news.mjs';
+import { fmtDate, isUs } from '../lib/stats.mjs';
+import { siteFooter, sitePreMain, siteHeader, oppBadge, oppBadgeSrc } from './home.mjs';
+import { articleBody, articlePhoto } from './news.mjs';
 import { reportText, hasReport as hasReportOf, FRIENDLY_NOTE } from '../lib/prose.mjs';
 import { photoCredit } from './gallery.mjs';
+import {
+  isRich, keysBand, timeline, goalCards, pitchXI, sheetRows,
+  headToHead, afterMatch, neighbours,
+} from '../lib/report-visuals.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
 const ARROW = '<span aria-hidden="true">→</span>';
@@ -97,8 +101,42 @@ export function matchReport(m, d) {
   };
   const captain = det.captain != null ? nameFor(det.captain) : '';
 
+  /* WHICH REPORT THIS IS. Everything from 26/27 is drawn; 25/26 is the
+     archive and keeps the page it has, which is the club's decision about its
+     own history rather than a judgement about the markup. See
+     src/lib/report-visuals.mjs. */
+  const rich = isRich(m);
+  /* WHAT IS BEHIND THE SCOREBOARD.
+
+     A PHOTOGRAPH IF THE CLUB HAS ONE, and the test for that is `articlePhoto`
+     rather than a second one written here: a `cover-match-*` is a card the
+     panel DREW, two badges and a scoreline, so using it as a backdrop would
+     paint a picture of this scoreline behind this scoreline. Every 26/27
+     match carries exactly that today and no album has been published for one,
+     so the photograph path is real and currently draws for nothing - which is
+     why it is not the only path.
+
+     THE TWO CRESTS OTHERWISE, enormous and veiled, bleeding off either side.
+     They cost no bytes at all: the same two files are already in the board
+     above them, so the second reference is a cache hit. 25 of 26 opponents
+     resolve a badge through the site's own resolver, and the one that does
+     not draws the club crest, which is what every other badge slot on the
+     site already falls back to. */
+  const shotSrc = rich ? articlePhoto({ cover: det.cover })
+    || ((d.galleries || []).find((g) => g.matchId === m.id) || {}).cover || '' : '';
+  const oppSrc = rich && !shotSrc ? oppBadgeSrc(m.opponent, d.badges) : '';
+  const heroArt = shotSrc
+    ? `<img class="mr-hero__shot" src="${attr(shotSrc)}" alt="" width="1200" height="630"
+        loading="eager" decoding="async" />
+      <i class="mr-hero__veil" aria-hidden="true"></i>`
+    : (rich ? `<span class="mr-hero__marks" aria-hidden="true">
+        <img class="mr-hero__mark is-us" src="${STAR}" alt="" width="300" height="370" loading="eager" decoding="async" />
+        ${oppSrc ? `<img class="mr-hero__mark is-them" src="${attr(oppSrc)}" alt="" width="300" height="300" loading="eager" decoding="async" />` : ''}
+      </span>` : '');
+
   /* ---- Scoreboard ---- */
-  const hero = `<section class="mr-hero" aria-labelledby="mr-h">
+  const hero = `<section class="mr-hero${rich ? ' mr-hero--rich' : ''}" aria-labelledby="mr-h">
+      ${heroArt}
       <div class="wrap">
         <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i>
           ${esc(m.competition)}${m.round ? ` · ${esc(m.round)}` : ''}</p>
@@ -126,6 +164,46 @@ export function matchReport(m, d) {
         ${m.friendly ? `<p class="mr-note is-flag">${esc(FRIENDLY_NOTE)}</p>` : ''}
       </div>
     </section>`;
+
+  /* ---- The pinned scoreboard, and how far down the report you are --------
+     The scoreline leaves the screen in the first swipe and everything below it
+     is minutes, names and prose ABOUT that scoreline. A reader who scrolls
+     into the second half of a report and has to scroll back up to check
+     whether the club won is reading a page that forgot what it was about.
+
+     `position: sticky` and nothing else: no observer, no sentinel, no script.
+     It has to sit OUTSIDE a `.sec`, because `.sec{overflow:hidden}` is global
+     on this site and an overflow container kills sticky silently - the
+     element simply never moves and nothing anywhere says why.
+
+     The line under it is a scroll-driven CSS animation, which is why it needs
+     no script either. Where the browser has not got them the bar is still a
+     pinned scoreboard and the line is just not there, which is a feature
+     missing rather than a page broken. */
+  const pinBar = rich ? `<div class="mr-pin" aria-hidden="true">
+      <span class="mr-pin__in">
+        <span class="mr-pin__side">${badge(m.home, 26)}<b>${esc(shortClub(m.home))}</b></span>
+        <span class="mr-pin__score">${m.isWalkover ? 'W/O' : esc(m.scoreline || 'v')}</span>
+        <span class="mr-pin__side">${badge(m.away, 26)}<b>${esc(shortClub(m.away))}</b></span>
+      </span>
+      <i class="mr-pin__bar"></i>
+    </div>` : '';
+
+  /* ---- What led in, and where it left the club --------------------------
+     Two facts a match page could never answer and the record always held:
+     what the club had done to this opponent BEFORE this afternoon, and the
+     standing the result produced. Neither is drawn where there is nothing to
+     draw - a first meeting says so in the band below rather than printing an
+     empty record, and a friendly produces no standing because a friendly
+     counts towards nothing. */
+  const ctxStrip = rich ? (() => {
+    const h2h = headToHead(m, d);
+    const after = afterMatch(m, d);
+    if (!h2h && !after) return '';
+    return `<section class="sec mr-ctx" aria-label="What led into this match, and where it left the club">
+      <div class="wrap">${after}${h2h}</div>
+    </section>`;
+  })() : '';
 
   /* ---- Goals and the team sheet ---- */
   const factsBand = `<section class="sec mr-facts" aria-labelledby="mr-f-h">
@@ -195,12 +273,107 @@ export function matchReport(m, d) {
       </div>
     </section>`;
 
+  /* ---- How it went, drawn (26/27 onwards) --------------------------------
+     The same facts the three columns carried, plus the five the record held
+     and no page read: the minute, the foot, the zone, the situation and how
+     the chance was made. The columns are still the fallback, because a match
+     whose goals carry no detail would otherwise lose its assist list to a
+     band that had nothing to put in its place.
+
+     The rail number is COUNTED rather than typed. Every band below this is
+     conditional - a report, a video, an album - and a typed number is right
+     for exactly one arrangement: the existing page prints 1 then 3 on any
+     match with no written report. Fixed for the drawn reports only, because
+     renumbering the archive would change pages the club asked to leave alone. */
+  let railN = 0;
+  const nextRail = (label, ref) => rail((railN += 1), label, ref);
+
+  const gs = rich ? goalCards(m, d) : '';
+  const tl = rich ? timeline(m, d) : '';
+  const howBand = rich ? `<section class="sec mr-how" aria-labelledby="mr-f-h">
+      <div class="wrap">
+        ${nextRail('How it went', m.isWalkover ? 'Awarded' : `${m.ourGoals}-${m.theirGoals}`)}
+        <h2 class="h2 rv" id="mr-f-h">How it <span class="volt">went.</span></h2>
+        ${keysBand(m)}
+        ${tl}
+        ${gs}
+        ${gs ? '' : `<div class="mr-cols rv">
+          <div class="mr-col">
+            <h3 class="mr-col__h">Goals</h3>
+            ${scorers.length
+    ? `<ul class="mr-list">${grouped(scorers.map((x) => x.name)).map((n) => `<li>${esc(n)}</li>`).join('')}</ul>`
+    : `<p class="mr-col__none">${m.isWalkover
+      ? 'Awarded as a walkover, so no goals are recorded.'
+      : 'No goalscorer is recorded for this match.'}</p>`}
+          </div>
+          <div class="mr-col">
+            <h3 class="mr-col__h">Assists</h3>
+            ${assists.length
+    ? `<ul class="mr-list">${grouped(assists).map((n) => `<li>${esc(n)}</li>`).join('')}</ul>`
+    : '<p class="mr-col__none">No assist is recorded for this match.</p>'}
+          </div>
+        </div>`}
+        ${((m.detail || {}).opponentGoals || []).length ? `<p class="mr-how__theirs rv">${esc(shortClub(m.opponent))} scored through ${esc(m.detail.opponentGoals
+    .map((g) => [g.minute ? `${g.minute}′` : '',
+      g.og ? `an own goal${g.name && !/^unknown$/i.test(g.name) ? `, ${g.name}` : ''}`
+        : (g.name && !/^unknown$/i.test(g.name) ? g.name : 'a goal'), g.penalty ? '(pen)' : '']
+      .filter(Boolean).join(' ')).join(', '))}.</p>` : ''}
+        ${motm ? `<div class="mr-award rv">
+          <span class="mr-award__k">Player of the Match</span>
+          <b class="mr-award__n">${esc(motm)}</b>
+          ${captain ? `<i class="mr-award__c">${esc(captain)} wore the armband</i>` : ''}
+          ${credit('motm', 'Award sponsored by')}
+        </div>` : ''}
+      </div>
+    </section>` : '';
+
+  /* ---- Who played, drawn ------------------------------------------------
+     The eleven as a shape rather than a list, the shape the club actually
+     recorded, and a face against every name the club has a photograph for.
+     The list is still underneath it: the diagram is a second way of reading
+     the same eleven, never the only way, because it carries no position names
+     a screen reader can use beyond its own label. */
+  const sheet = rich ? sheetRows(m, d) : null;
+  const whoBand = rich && starters.length ? `<section class="sec mr-who-b" aria-labelledby="mr-w-h">
+      <div class="wrap">
+        ${nextRail('Who played', `${starters.length} and ${bench.length} named`)}
+        <h2 class="h2 rv" id="mr-w-h">Who <span class="volt">played.</span></h2>
+        <div class="mr-sheet2">
+          ${pitchXI(m, d)}
+          <div class="mr-sheet2__list rv">
+            <h3 class="mr-col__h">The eleven${det.formation
+    ? `<span class="mr-form">${esc(String(det.formation))}</span>` : ''}</h3>
+            <ol class="mr-whos">
+            ${sheet.xi}
+            </ol>
+            ${sheet.anyBench ? `<h3 class="mr-col__h mr-col__h--2">The bench</h3>
+            <ul class="mr-whos mr-whos--bench">
+            ${sheet.bench}
+            </ul>` : ''}
+            ${subs.length ? `<ul class="mr-subs">
+            ${subs.map((x) => `<li>
+              <span class="mr-subs__min">${esc(x.minute != null ? `${x.minute}'` : '')}</span>
+              <span class="mr-subs__pair">${x.on != null ? `<b>${esc(nameFor(x.on))}</b>` : ''}${x.on != null && x.off != null ? ' for ' : ''}${x.off != null ? esc(nameFor(x.off)) : ''}</span>
+            </li>`).join('\n            ')}
+          </ul>` : `<p class="mr-sheet__note">No substitution is recorded for this match, so none is shown
+            rather than estimated.</p>`}
+          </div>
+        </div>
+      </div>
+    </section>` : '';
+
   /* ---- The written report ---- */
-  const reportBand = hasReportOf(m) ? `<section class="sec mr-report" aria-labelledby="mr-r-h">
-      <div class="wrap wrap--narrow">
-        ${rail(2, 'The report', 'Written by the club')}
+  const reportBand = hasReportOf(m) ? `<section class="sec mr-report${rich ? ' mr-report--rich' : ''}" aria-labelledby="mr-r-h">
+      <div class="wrap ${rich ? 'wrap--mr' : 'wrap--narrow'}">
+        ${rich ? nextRail('The report', 'Written by the club') : rail(2, 'The report', 'Written by the club')}
         <h2 class="h2 rv" id="mr-r-h">The full <span class="volt">report.</span></h2>
-        <div class="nw-art__body rv">
+        ${/* A DROP CAP AND A STAND-FIRST, which are a claim about the FIRST
+              paragraph, so they are addressed by position in CSS and the
+              markup is untouched. Doing it by wrapping the opening paragraph
+              in a class would mean the formatted edition and the club's own
+              stored text produced different markup for the same report, and
+              the stored text is the one that wins the moment it is typed. */''}
+        <div class="nw-art__body${rich ? ' mr-prose' : ''} rv">
         ${articleBody(reportText(m))}
         </div>
       </div>
@@ -241,7 +414,7 @@ export function matchReport(m, d) {
   const filmCount = clips.length + goalFilm.length;
   const videoBand = filmCount ? `<section class="sec mr-video" id="watch" aria-labelledby="mr-v-h">
       <div class="wrap wrap--narrow">
-        ${rail(3, 'Watch it', filmCount === 1 ? (goalFilm.length ? 'The goal' : 'Match video') : `${filmCount} clips`)}
+        ${(rich ? nextRail : (l, r) => rail(3, l, r))('Watch it', filmCount === 1 ? (goalFilm.length ? 'The goal' : 'Match video') : `${filmCount} clips`)}
         <h2 class="h2 rv" id="mr-v-h">See it for <span class="volt">yourself.</span></h2>
         ${goalFilm.map((f) => `<figure class="mr-clip rv" id="goal-${f.n}">
           <figcaption class="mr-clip__cap">Goal ${esc(f.n)} · ${esc(f.scorer)}${f.assist ? `, assisted by ${esc(f.assist)}` : ''}</figcaption>
@@ -288,7 +461,7 @@ export function matchReport(m, d) {
   const album = (d.galleries || []).find((g) => g.matchId === m.id);
   const albumBand = album ? `<section class="sec mr-album" aria-labelledby="mr-a-h">
       <div class="wrap wrap--narrow">
-        ${rail(4, 'The photographs', `${album.photos.length} from the day`)}
+        ${(rich ? nextRail : (l, r) => rail(4, l, r))('The photographs', `${album.photos.length} from the day`)}
         <h2 class="h2 rv" id="mr-a-h">Somebody was <span class="volt">there.</span></h2>
         <a class="mr-album__link rv" href="${attr(`/gallery/${album.slug}.html`)}">
           ${album.cover
@@ -302,6 +475,14 @@ export function matchReport(m, d) {
         </a>
       </div>
     </section>` : '';
+
+  /* ---- One match either side -------------------------------------------- */
+  const walkBand = rich ? (() => {
+    const w = neighbours(m, d);
+    return w ? `<section class="sec mr-walk-b" aria-label="The matches either side of this one">
+      <div class="wrap">${w}</div>
+    </section>` : '';
+  })() : '';
 
   const backBand = `<section class="sec mr-back">
       <div class="wrap">
@@ -318,7 +499,9 @@ export function matchReport(m, d) {
     bodyClass: 'is-home is-sub is-report',
     preMain: sitePreMain(),
     footerHtml: siteFooter(),
-    body: siteHeader("/results.html") + hero + factsBand + reportBand + videoBand + albumBand + sponsorBand + backBand,
+    body: siteHeader('/results.html') + hero + pinBar + ctxStrip
+      + (rich ? howBand + whoBand : factsBand)
+      + reportBand + videoBand + albumBand + sponsorBand + walkBand + backBand,
     hasReport: hasReportOf(m),
   };
 }

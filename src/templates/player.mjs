@@ -37,7 +37,7 @@ import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { BODY_PARTS, ZONES, SITUATIONS, ASSIST_TYPES } from '../lib/football.mjs';
 import { POSITION_LABEL, POSITION_XY, positionName } from '../lib/positions.mjs';
-import { playerProfile, playerStats, fmtDate, isLeague } from '../lib/stats.mjs';
+import { playerProfile, playerStats, fmtDate, isLeague, ordinal } from '../lib/stats.mjs';
 import { FRIENDLY_NOTE_SHORT } from '../lib/prose.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
 import { photoCredit } from './gallery.mjs';
@@ -387,12 +387,6 @@ const profileWheel = (me, won, team, gk, where, face) => {
               </div>
               <p class="pf-chart__sub">Each wedge is his part of the club’s own total ${esc(where)}: his starts out of the matches played, his goals out of the goals the club scored, his assists out of every assist, his wins out of the club’s wins and his clean sheets out of the club’s clean sheets.</p>
             </figure>`;
-};
-
-const ordinal = (n) => {
-  const s = ['th', 'st', 'nd', 'rd'];
-  const v = n % 100;
-  return n + (s[(v - 20) % 10] || s[v] || s[0]);
 };
 
 /* An SVG coordinate, as short as it can be written without moving. `.0` on

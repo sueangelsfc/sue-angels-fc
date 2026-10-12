@@ -75,6 +75,18 @@ function routes() {
     const key = r.includes('/') ? r.slice(0, r.lastIndexOf('/')) : 'root:' + r;
     if (!seen.has(key)) seen.set(key, '/' + r.replace(/^\//, ''));
   }
+  /* A SECOND SHAPE OF AN EXISTING FAMILY IS A SECOND FAMILY. One page per
+     directory is right while a directory is one template, and `matches/` is
+     two: a report from 26/27 onwards is drawn - a timeline, a pitch, goal
+     cards, a pinned scoreboard - and the archive keeps the three columns it
+     has always had. Keyed on the directory, the first id in the manifest wins
+     and that is a 25/26 match, so every one of those bands would have gone
+     unrendered in a browser while this printed "nothing renders wrongly".
+     Named by id rather than found by rule, so a match the club edits cannot
+     quietly change what this checks. */
+  for (const r of ['matches/r20261011-peps.html']) {
+    if (man.routes.includes(r)) seen.set(`second:${r}`, `/${r}`);
+  }
   return [...seen.values()].sort();
 }
 

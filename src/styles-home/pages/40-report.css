@@ -182,3 +182,417 @@
 .mr-form{margin-left: 10px; font-family: var(--ui); font-size: 0.72em;
   font-weight: 700; letter-spacing: 0.08em; color: var(--volt-text);
   font-variant-numeric: tabular-nums; white-space: nowrap;}
+
+/* ==========================================================================
+   A MATCH REPORT, DRAWN  (26/27 onwards)
+
+   Everything below is scoped to a class the template only writes for a match
+   from 26/27, so the archive keeps the page it has. See
+   src/lib/report-visuals.mjs for why that is a decision rather than a test.
+
+   WRITTEN IN HOME.CSS'S VOCABULARY THROUGHOUT. A report page loads home.css
+   plus this band and nothing else, so `--space-*`, `--step-*` and `--brand`
+   are not words here: an undefined custom property deletes its whole
+   declaration rather than falling back, which reads as a layout mistake
+   rather than a spelling one.
+
+   NO SCRIPT ANYWHERE IN HERE. `sa.js` had 235 bytes left under its ceiling,
+   so the reveal rides on `.rv`, which the home script already watches on
+   every page, the figures tick through the `[data-count]` mechanism that
+   already exists, the pinned board is `position: sticky`, and the progress
+   line is a scroll-driven animation that is simply absent where the browser
+   has not got one. Every fact survives scripting being blocked.
+   ========================================================================== */
+
+/* ---- The two crests behind the scoreboard --------------------------------
+   The same two files as the board above them, so this costs no download at
+   all. Clipped rather than hidden by overflow: `overflow: hidden` on a
+   positioned band is what kills `position: sticky` further down the page. */
+.mr-hero--rich{position: relative; overflow: clip;}
+.mr-hero--rich > .wrap{position: relative; z-index: 2;}
+.mr-hero__marks{position: absolute; inset: 0; z-index: 1; pointer-events: none;}
+.mr-hero__mark{position: absolute; top: 50%; width: clamp(190px, 30vw, 330px);
+  height: auto; object-fit: contain; opacity: 0.07;
+  filter: grayscale(1) contrast(1.1);
+  transform: translateY(-50%);}
+/* MASKED TOWARDS THE MIDDLE OF THE PAGE, and that is not decoration.
+   A crest is a solid shape with hard internal edges - Peps All Stars is a
+   shield in quarters and one of them is almost black - and at this size a
+   dark quarter reads as a rectangle somebody left on the page rather than as
+   part of a badge. Fading each one out across its own width leaves the outer
+   sliver, which is the part that says whose crest it is. */
+.mr-hero__mark.is-us{left: clamp(-70px, -4vw, -30px);
+  mask-image: linear-gradient(to right, #000 8%, transparent 78%);}
+.mr-hero__mark.is-them{right: clamp(-70px, -4vw, -30px);
+  mask-image: linear-gradient(to left, #000 8%, transparent 78%);}
+/* A photograph of the match wins outright, and carries the veil that keeps
+   white body text over it above AA. */
+.mr-hero__shot{position: absolute; inset: 0; z-index: 0;
+  width: 100%; height: 100%; object-fit: cover;}
+.mr-hero__veil{position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(180deg, rgba(var(--sink), 0.72), rgba(var(--sink), 0.93));}
+
+/* The board assembles itself once, on load. Two sides in from their own
+   edges and the score up through its own weight: a scoreline is the one thing
+   on this page worth announcing, and it is above the fold, so it is the one
+   animation that cannot wait for a reveal observer. */
+@media (prefers-reduced-motion: no-preference){
+  .mr-hero--rich .mr-board__side{animation: mr-in 0.72s var(--ease-out-expo) both;}
+  .mr-hero--rich .mr-board__side:first-child{--mr-from: -22px;}
+  .mr-hero--rich .mr-board__side:last-child{--mr-from: 22px;}
+  .mr-hero--rich .mr-board__score{animation: mr-pop 0.66s var(--ease-out-quint) 0.16s both;}
+  .mr-hero--rich .mr-meta{animation: mr-in 0.6s var(--ease-out-expo) 0.3s both; --mr-from: 0px;}
+}
+@keyframes mr-in{from{opacity: 0; transform: translateX(var(--mr-from, 0)) translateY(6px);}
+  to{opacity: 1; transform: none;}}
+@keyframes mr-pop{from{opacity: 0; transform: scale(0.82);} to{opacity: 1; transform: none;}}
+
+/* ---- The pinned scoreboard ----------------------------------------------
+   Sticky, and it must stay outside every `.sec`: that rule carries
+   `overflow: hidden` site-wide, which creates a scroll container and stops a
+   sticky child moving at all, with nothing on screen to say why. */
+/* Anything a link lands on has to clear the pinned board, or the heading it
+   jumped to is underneath it. */
+.is-report [id]{scroll-margin-top: 64px;}
+.mr-pin{position: sticky; top: 0; z-index: 30;
+  border-block: 1px solid var(--line-d);
+  background: rgba(var(--sink), 0.86); backdrop-filter: blur(14px) saturate(1.3);}
+.mr-pin__in{display: flex; align-items: center; justify-content: center;
+  gap: clamp(10px, 2vw, 22px); padding: 8px 16px; max-width: 1180px; margin-inline: auto;}
+.mr-pin__side{display: flex; align-items: center; gap: 8px; min-width: 0;}
+.mr-pin__side:last-of-type{flex-direction: row-reverse;}
+.mr-pin .mr-badge{width: 20px; height: 20px; flex: none;}
+.mr-pin__side b{font-family: var(--display); font-weight: 400; font-size: 12px;
+  letter-spacing: -0.01em; color: var(--ink-2); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;}
+.mr-pin__score{font-family: var(--display); font-weight: 500; font-size: 16px;
+  letter-spacing: -0.03em; color: var(--fg); font-variant-numeric: tabular-nums;
+  padding-inline: 8px;}
+/* HOW FAR DOWN YOU ARE, with no script. Absent rather than broken where the
+   browser has no scroll-driven animations. */
+.mr-pin__bar{display: block; height: 2px; transform-origin: 0 50%;
+  transform: scaleX(0); background: var(--volt);}
+@supports (animation-timeline: scroll()){
+  @media (prefers-reduced-motion: no-preference){
+    .mr-pin__bar{animation: mr-read linear; animation-timeline: scroll(root block);}
+  }
+}
+@keyframes mr-read{from{transform: scaleX(0);} to{transform: scaleX(1);}}
+@media (max-width: 520px){
+  .mr-pin__side b{max-width: 7.5em;}
+}
+
+/* ---- What led in, and where it left the club ---------------------------- */
+.mr-ctx{padding-block: clamp(14px, 2vw, 22px);}
+.mr-ctx > .wrap{display: grid; gap: 12px;}
+.mr-after{display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 12px;
+  margin: 0; padding: 14px 18px; border-radius: 16px;
+  border: 1px solid var(--line-d); background: var(--slab);
+  font-size: 13.5px; line-height: 1.5; color: var(--ink-2);}
+.mr-after b{font-family: var(--display); font-weight: 500; font-size: 24px;
+  letter-spacing: -0.03em; color: var(--fg); font-variant-numeric: tabular-nums;}
+.mr-after a{margin-left: auto; font-size: 13px; color: var(--volt-text);
+  text-decoration: underline; text-underline-offset: 3px;}
+
+.mr-h2h{display: grid; gap: 10px;}
+.mr-h2h__line{display: flex; align-items: baseline; gap: 10px; margin: 0;
+  font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.mr-h2h__line b{font-family: var(--display); font-size: 17px; font-weight: 500;
+  letter-spacing: -0.02em; text-transform: none; color: var(--fg);}
+.mr-h2h__pips{list-style: none; margin: 0; padding: 0; display: flex;
+  flex-wrap: wrap; gap: 8px;}
+.mr-pip{display: grid; gap: 2px; min-width: 92px; padding: 10px 12px;
+  border-radius: 14px; border: 1px solid var(--line-d); background: var(--slab);
+  text-decoration: none; transition: border-color 0.24s, transform 0.28s var(--ease-out-expo);}
+.mr-pip:hover{border-color: rgba(var(--volt-rgb), 0.4); transform: translateY(-2px);}
+.mr-pip:focus-visible{outline: 2px solid var(--volt); outline-offset: 3px;}
+.mr-pip b{font-family: var(--display); font-weight: 500; font-size: 16px;
+  letter-spacing: -0.02em; color: var(--fg); font-variant-numeric: tabular-nums;}
+.mr-pip i{font-style: normal; font-family: var(--ui); font-size: 8.5px;
+  font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);}
+/* Won, drawn and lost by weight and fill, never by a second hue: orange is
+   the only accent colour on this site and football data never takes one. */
+.mr-pip--w{background: var(--volt); border-color: var(--volt);}
+.mr-pip--w b{color: var(--text-on-brand);}
+.mr-pip--w i{color: var(--text-on-brand-2);}
+.mr-pip--d{border-color: rgba(var(--lift), 0.3);}
+.mr-pip--l{opacity: 0.6;}
+
+/* ---- The numbers of the match ------------------------------------------
+   `pf-stat` is the class the existing counter sets `--i` on, which is what
+   staggers these: the hook and the stagger are the same thing, so neither
+   class is decoration. */
+.mr-keys{display: grid; gap: 8px; margin-top: clamp(16px, 2.2vw, 24px);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 148px), 1fr));}
+.mr-key{padding: 16px 18px; border-radius: 16px;
+  border: 1px solid var(--line-d); background: var(--slab);}
+.mr-key__n{display: block; font-family: var(--display); font-weight: 500;
+  font-size: clamp(28px, 4.4vw, 40px); line-height: 1; letter-spacing: -0.045em;
+  color: var(--fg); font-variant-numeric: tabular-nums;
+  font-variation-settings: "wdth" var(--wide-num, 100);}
+.mr-key__k{display: block; margin-top: 8px; font-family: var(--ui);
+  font-size: 9px; font-weight: 700; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--ink-3);}
+.mr-key__of{display: block; margin-top: 3px; font-style: normal;
+  font-size: 12px; color: var(--ink-2);}
+/* `pf-tiles` and `pf-stat` are the two classes the existing counter looks for
+   - it observes a `.pf-tiles` and sets `--i` on each `.pf-stat` inside it - so
+   the figures tick up here with no new JavaScript at all. They are named in
+   the selectors below rather than left on the element unstyled: a class a
+   page uses and no sheet it loads defines is how a screen renders correct
+   markup and looks like nothing, and the suite asks that question. */
+@media (prefers-reduced-motion: no-preference){
+  .mr-keys.pf-tiles.rv.is-in .mr-key.pf-stat{animation: mr-rise 0.6s var(--ease-out-expo) both;
+    animation-delay: calc(var(--i, 0) * 70ms);}
+}
+@keyframes mr-rise{from{opacity: 0; transform: translateY(12px);} to{opacity: 1; transform: none;}}
+
+/* ---- The match, minute by minute ---------------------------------------- */
+.mr-tl{margin-top: clamp(20px, 3vw, 34px);}
+.mr-tl__board{position: relative; display: grid; gap: 0;
+  grid-template-rows: auto 26px auto;}
+.mr-tl__lane{position: relative; min-height: 62px;}
+/* A match the opponents did not score in leaves that lane with nothing in it,
+   and an empty 62px band under the axis reads as something that failed to
+   draw. It collapses to the depth of the markers' own discs. */
+.mr-tl__lane.is-empty{min-height: 6px;}
+.mr-tl__lane--us{align-content: end;}
+.mr-tl__axis{position: relative; border-block: 1px solid var(--line-d);
+  background: linear-gradient(90deg, rgba(var(--volt-rgb), 0.07), rgba(var(--volt-rgb), 0.16));}
+.mr-tl__axis > span{position: absolute; top: 0; bottom: 0; left: var(--x);
+  border-left: 1px dashed rgba(var(--lift), 0.34);}
+.mr-tl__axis > span i{position: absolute; top: 50%; left: 4px; transform: translateY(-50%);
+  font-style: normal; font-family: var(--ui); font-size: 8px; font-weight: 700;
+  letter-spacing: 0.12em; color: var(--ink-3);}
+.mr-tl__ft{left: calc(var(--x) - 1px) !important;}
+.mr-tl__ft i{left: auto !important; right: 4px;}
+
+.mr-tl__mark{position: absolute; left: var(--x); transform: translateX(-50%);
+  display: grid; justify-items: center; gap: 3px; width: max-content;
+  max-width: 140px; text-align: center;}
+.mr-tl__mark.is-start{transform: translateX(-10%);}
+.mr-tl__mark.is-end{transform: translateX(-90%);}
+.mr-tl__lane--us .mr-tl__mark{bottom: calc(4px + var(--r, 0) * 30px);}
+.mr-tl__lane--them .mr-tl__mark{top: calc(4px + var(--r, 0) * 30px);}
+.mr-tl__min{font-family: var(--ui); font-size: 9.5px; font-weight: 800;
+  letter-spacing: 0.04em; color: var(--volt-text); font-variant-numeric: tabular-nums;}
+.mr-tl__who{font-size: 11.5px; line-height: 1.25; color: var(--ink-2);}
+.mr-tl__who a{color: var(--fg); text-decoration: none;
+  border-bottom: 1px solid rgba(var(--volt-rgb), 0.45);}
+.mr-tl__who a:hover{border-bottom-color: var(--volt);}
+.mr-tl__who i{font-style: normal; display: block; font-family: var(--ui);
+  font-size: 8px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--ink-3);}
+/* A goal is a filled disc on the axis, a card and a substitution a hollow
+   one: three kinds of event told apart by fill and weight, not by colour. */
+.mr-tl__mark:before{content: ""; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--volt); order: 2;}
+.mr-tl__lane--us .mr-tl__mark:before{order: 3;}
+.mr-tl__mark--yellow:before, .mr-tl__mark--red:before, .mr-tl__mark--sub:before{
+  background: transparent; border: 2px solid rgba(var(--lift), 0.5);}
+.mr-tl__mark--goal.is-them:before{background: rgba(var(--lift), 0.55);}
+@media (prefers-reduced-motion: no-preference){
+  .mr-tl.rv.is-in .mr-tl__mark{animation: mr-rise 0.5s var(--ease-out-expo) both;
+    animation-delay: calc(240ms + var(--i, 0) * 110ms);}
+  .mr-tl.rv.is-in .mr-tl__axis{animation: mr-sweep 0.9s var(--ease-out-expo) both;}
+}
+@keyframes mr-sweep{from{clip-path: inset(0 100% 0 0);} to{clip-path: inset(0 0 0 0);}}
+
+/* The margin, as a staircase. On the axis at nought and growing away from it
+   whichever way the match was going, so a losing position reads as depth. */
+.mr-tl__marginfig{margin: 10px 0 0;}
+.mr-tl__ribbon{display: block; width: 100%; height: 44px;}
+.mr-tl__zero{stroke: var(--line-d); stroke-width: 1; vector-effect: non-scaling-stroke;}
+.mr-tl__fill{fill: rgba(var(--volt-rgb), 0.3); stroke: var(--volt);
+  stroke-width: 1.4; vector-effect: non-scaling-stroke;}
+.mr-tl__margincap{margin-top: 6px; font-family: var(--ui); font-size: 8.5px;
+  font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3);}
+.mr-tl__untimed{display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px;
+  margin: 14px 0 0; font-size: 13px; color: var(--ink-2);}
+.mr-tl__untimed > span:first-child{font-family: var(--ui); font-size: 8.5px;
+  font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3);}
+/* A link mid-sentence needs a cue that is not the hue: orange is the only
+   accent here, so colour alone cannot be the thing that says it is a link. */
+.mr-tl__u a{color: var(--fg); text-decoration: underline; text-underline-offset: 3px;
+  text-decoration-color: rgba(var(--volt-rgb), 0.6);}
+.mr-tl__u a:hover{text-decoration-color: var(--volt);}
+.mr-tl__u i{font-style: normal; color: var(--ink-3);}
+.mr-tl__gap{margin: 12px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--ink-3);}
+/* ON A PHONE THE AXIS CARRIES MINUTES AND NOTHING ELSE. Nine minutes is a
+   tenth of the axis, which is 34px at 375px wide and not room for a surname:
+   "Owolana" and "Burnett" at 6 and 13 minutes drew straight through each
+   other. Every one of those names is in the goal cards directly below, so
+   nothing is lost by taking them off the strip. */
+@media (max-width: 680px){
+  .mr-tl__mark{max-width: 44px;}
+  .mr-tl__who{display: none;}
+  .mr-tl__min{font-size: 9px;}
+  .mr-tl__lane{min-height: 26px;}
+  .mr-tl__lane.is-empty{min-height: 4px;}
+}
+
+/* ---- Every goal, and what the club recorded about it -------------------- */
+.mr-gs{list-style: none; margin: clamp(18px, 2.6vw, 28px) 0 0; padding: 0;
+  display: grid; gap: 8px;}
+.mr-g{display: grid; align-items: center; gap: 14px;
+  grid-template-columns: 54px minmax(0, 1fr) auto;
+  padding: 16px 18px; border-radius: 16px;
+  border: 1px solid var(--line-d); background: var(--slab);
+  scroll-margin-top: 72px;}
+.mr-g__min{font-family: var(--display); font-weight: 500; font-size: 26px;
+  line-height: 1; letter-spacing: -0.04em; color: var(--volt-text);
+  font-variant-numeric: tabular-nums; text-align: right;}
+/* The prime sits on the baseline in the display face, which reads as a
+   comma beside a 26px numeral. The UI face draws it where a minute mark
+   belongs, and it is the face the substitutions list already uses. */
+.mr-g__min i{font-style: normal; font-family: var(--ui); font-size: 0.46em;
+  font-weight: 700; color: var(--ink-3);}
+.mr-g__min > i:only-child{display: block; font-family: var(--ui); font-size: 8px;
+  font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.3;}
+.mr-g__body{display: grid; gap: 3px; min-width: 0;}
+.mr-g__who{font-family: var(--display); font-weight: 500; font-size: 18px;
+  letter-spacing: -0.022em; color: var(--fg);}
+.mr-g__who a{color: inherit; text-decoration: none;
+  border-bottom: 1px solid rgba(var(--volt-rgb), 0.45);}
+.mr-g__who a:hover{border-bottom-color: var(--volt);}
+.mr-g__how{font-size: 13.5px; line-height: 1.5; color: var(--ink-2);}
+.mr-g__made{font-size: 13px; line-height: 1.5; color: var(--ink-3);}
+.mr-g__made a{color: var(--ink-2); text-decoration: underline; text-underline-offset: 2px;}
+.mr-g__film{justify-self: start; margin-top: 4px; font-family: var(--ui);
+  font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--volt-text); text-decoration: underline; text-underline-offset: 3px;}
+/* Where it was struck from, to the honest limit of the record: three bands,
+   because three is what somebody remembers after the game. */
+.mr-g__zone{width: 60px; height: 50px; flex: none;}
+.mr-g__turf{fill: rgba(var(--lift), 0.06); stroke: var(--line-d); stroke-width: 1;}
+.mr-g__lines{fill: none; stroke: rgba(var(--lift), 0.3); stroke-width: 1;}
+.mr-g__spot{fill: var(--volt);}
+@media (prefers-reduced-motion: no-preference){
+  .mr-gs.rv.is-in .mr-g{animation: mr-rise 0.56s var(--ease-out-expo) both;
+    animation-delay: calc(var(--i, 0) * 90ms);}
+  .mr-gs.rv.is-in .mr-g__spot{animation: mr-ping 0.5s var(--ease-out-quint) both;
+    animation-delay: calc(260ms + var(--i, 0) * 90ms); transform-box: fill-box;
+    transform-origin: 50% 50%;}
+}
+@keyframes mr-ping{from{transform: scale(0);} to{transform: scale(1);}}
+@media (max-width: 560px){
+  .mr-g{grid-template-columns: 44px minmax(0, 1fr); gap: 12px;}
+  .mr-g__zone{display: none;}
+}
+
+/* The award, and who wore the armband. */
+.mr-award{display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px;
+  margin-top: 10px; padding: 16px 18px; border-radius: 16px;
+  border: 1px solid rgba(var(--volt-rgb), 0.3);
+  background: linear-gradient(120deg, rgba(var(--volt-rgb), 0.1), var(--slab) 60%);}
+.mr-award__k{font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.mr-award__n{font-family: var(--display); font-weight: 500; font-size: 20px;
+  letter-spacing: -0.025em; color: var(--fg);}
+.mr-award__c{font-style: normal; font-size: 13px; color: var(--ink-3);}
+.mr-award .mr-sponsor{flex-basis: 100%; margin: 0;}
+.mr-how__theirs{margin: 12px 0 0; font-size: 13.5px; color: var(--ink-2);}
+
+/* ---- Who played --------------------------------------------------------- */
+.mr-sheet2{display: grid; gap: clamp(14px, 2.4vw, 26px);
+  margin-top: clamp(16px, 2.2vw, 24px);}
+/* 1040px, not 900: at 900 the pitch column is about 420px wide, which is
+   where "McLane", "Marie" and "Heath" across a back three start to touch.
+   Measured in a browser rather than guessed. */
+@media (min-width: 1040px){
+  .mr-sheet2{grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr); align-items: start;}
+}
+/* CAPPED, because the column it sits in is the whole page below 1040px and
+   a 976px square pitch with 30px surnames on it is not a diagram, it is a
+   wall. 460px is where the back three's names stop touching, measured. */
+.mr-pitch{margin: 0 auto; max-width: 460px;}
+.mr-pitch__svg{display: block; width: 100%; height: auto;
+  border-radius: 16px; overflow: hidden;}
+.mr-pitch__turf{fill: rgba(var(--volt-rgb), 0.05); stroke: var(--line-d); stroke-width: 0.6;}
+.mr-pitch__lines{stroke: rgba(var(--lift), 0.26); stroke-width: 0.5;}
+.mr-pitch__dot{fill: var(--volt); stroke: rgba(var(--sink), 0.8); stroke-width: 0.8;}
+.mr-pitch__nm{fill: var(--fg); font-family: var(--ui); font-size: 2.9px;
+  font-weight: 700; letter-spacing: 0.02em;}
+.mr-pitch__man.is-off{opacity: 0.5;}
+.mr-pitch__man.is-off .mr-pitch__dot{fill: transparent;
+  stroke: var(--volt); stroke-width: 1.2;}
+.mr-pitch__cap{display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px;
+  margin-top: 10px; font-size: 12.5px; line-height: 1.5; color: var(--ink-3);}
+.mr-pitch__cap b{font-family: var(--ui); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.1em; color: var(--volt-text); font-variant-numeric: tabular-nums;}
+@media (prefers-reduced-motion: no-preference){
+  .mr-pitch.rv.is-in .mr-pitch__man{animation: mr-rise 0.5s var(--ease-out-expo) both;
+    animation-delay: calc(var(--i, 0) * 55ms);}
+}
+
+.mr-sheet2__list{padding: 20px 22px; border-radius: 18px;
+  border: 1px solid var(--line-d); background: var(--slab);}
+.mr-col__h--2{margin-top: 20px;}
+.mr-whos{list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px;}
+.mr-who{min-width: 0;}
+.mr-who__a{display: flex; align-items: center; gap: 11px; min-width: 0;
+  text-decoration: none; border-radius: 10px; padding: 2px;
+  transition: background-color 0.2s;}
+a.mr-who__a:hover{background: rgba(var(--lift), 0.07);}
+a.mr-who__a:focus-visible{outline: 2px solid var(--volt); outline-offset: 2px;}
+/* A FACE WHERE THE CLUB HAS ONE AND INITIALS WHERE IT DOES NOT. Both are a
+   row; a face on some rows and a blank on others is a layout bug somebody
+   reports. 7 of the 13 named in the first of these had a photograph. */
+.mr-face{flex: none; width: 34px; height: 34px; border-radius: 50%;
+  overflow: hidden; display: grid; place-items: center;
+  border: 1px solid var(--line-d); background: rgba(var(--lift), 0.08);}
+.mr-face__img{width: 100%; height: 100%; object-fit: cover;}
+.mr-face__ini{font-family: var(--ui); font-size: 11px; font-weight: 800;
+  letter-spacing: 0.04em; color: var(--ink-3);}
+.mr-who__t{display: grid; gap: 1px; min-width: 0;}
+.mr-who__t b{font-family: var(--display); font-weight: 400; font-size: 15px;
+  letter-spacing: -0.016em; color: var(--fg);}
+a.mr-who__a:hover .mr-who__t b{color: var(--volt-text);}
+.mr-who__t i{font-style: normal; font-family: var(--ui); font-size: 8.5px;
+  font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);}
+.mr-who.is-off .mr-face{opacity: 0.6;}
+.mr-who.is-unused{opacity: 0.6;}
+.mr-who.is-unused .mr-who__t i:after{content: " · unused";}
+@media (prefers-reduced-motion: no-preference){
+  .mr-sheet2__list.rv.is-in .mr-who{animation: mr-rise 0.45s var(--ease-out-expo) both;
+    animation-delay: calc(var(--i, 0) * 1ms);}
+}
+
+/* ---- The report, set as a piece of writing ------------------------------
+   A wider measure than `wrap--narrow` gives, a stand-first on the opening
+   paragraph and a drop cap on its first letter. Addressed by POSITION, never
+   by a class on the paragraph: the formatted edition and the club's own
+   stored text have to produce the same markup, because the stored text wins
+   outright the moment somebody types it in the panel. */
+.wrap--mr{max-width: 760px;}
+/* `:first-of-type`, not `:first-child`. An edition opens with the club's own
+   headline, so the first CHILD is an h2 and the stand-first matched nothing
+   at all - a rule that silently applies to no element, which is the failure
+   this band's own notes keep describing. */
+.mr-prose > p:first-of-type{font-family: var(--display); font-weight: 300;
+  font-size: clamp(17px, 2.1vw, 21px); line-height: 1.5; letter-spacing: -0.018em;
+  color: var(--fg);}
+.mr-prose > p:first-of-type:first-letter{float: left; margin: 6px 10px 0 0;
+  font-weight: 500; font-size: 3.1em; line-height: 0.76; color: var(--volt-text);}
+.mr-prose > p{max-width: 68ch;}
+.mr-prose a{color: var(--volt-text);}
+
+/* ---- One match either side ---------------------------------------------- */
+.mr-walk{display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));}
+.mr-walk__a{display: grid; gap: 3px; padding: 16px 18px; border-radius: 16px;
+  border: 1px solid var(--line-d); background: var(--slab); text-decoration: none;
+  transition: border-color 0.24s, transform 0.3s var(--ease-out-expo);}
+.mr-walk__a:hover{border-color: rgba(var(--volt-rgb), 0.4); transform: translateY(-2px);}
+.mr-walk__a:focus-visible{outline: 2px solid var(--volt); outline-offset: 3px;}
+.mr-walk__a--next{text-align: right;}
+.mr-walk__a i{font-style: normal; font-family: var(--ui); font-size: 8.5px;
+  font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3);}
+.mr-walk__a b{font-family: var(--display); font-weight: 500; font-size: 17px;
+  letter-spacing: -0.022em; color: var(--fg);}
+.mr-walk__a span{font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums;}
+
+@media (prefers-reduced-motion: reduce){
+  .mr-pip, .mr-walk__a{transition: none;}
+  .mr-pip:hover, .mr-walk__a:hover{transform: none;}
+}

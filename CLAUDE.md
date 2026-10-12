@@ -1057,6 +1057,94 @@ could not parse, which is exactly what that error message asks for.
   left it correct; and "Direct or unknown" matched the paragraph explaining
   the phrase rather than the table cell.
 
+### A match report, drawn (26/27 onwards)
+
+`src/lib/report-visuals.mjs`, band `40-report.css`, wired in
+`src/templates/report.mjs`. The page carried the scoreline, three columns of
+names and the prose; every other fact the club records about a match reached no
+reader at all. The minute each goal went in, what it was struck with and from
+where, who made it and how, the shape the eleven played, who came on for whom:
+all of it in the record, none of it on the page, so a 4-0 away in a cup tie and
+a 1-0 at home read as the same document with different nouns.
+
+**Fifteen things**: the two crests behind the scoreboard (or the match
+photograph where the club has one); the board assembling itself on load; a
+pinned mini-scoreboard with a reading line; the numbers of the match, counting
+up; the match minute by minute, ours above the line and theirs below; the
+margin as a staircase under it; a card per goal with the recorded detail; a
+mini pitch per goal marking the band it was struck from; the eleven drawn in
+the shape the club recorded; a face and a full position on every row of the
+team sheet, each row a link to the profile; the head-to-head as outcome pips;
+where the result left the club; one match either side; the prose set with a
+stand-first and a drop cap; and the players' names in that prose linked.
+
+- **FROM 26/27 ONWARDS, AND THAT IS THE CLUB'S DECISION**, not a capability
+  test. It is true that 25/26 records carry almost none of this detail, so most
+  of these bands would empty themselves on an older match anyway, and "it would
+  look thin" is still not the reason. `RICH_FROM` is a named constant with the
+  reason beside it. The suite asks the gate **both ways**, because a check that
+  only confirms 26/27 gained something passes just as happily on the day the
+  archive gains it too.
+- **NOT ONE BYTE OF NEW JAVASCRIPT.** `sa.js` had 235 bytes under its 24KB
+  ceiling, and fifteen visual changes to one page family are not a reason to
+  raise it. The reveal rides on `.rv`, which the home script already watches on
+  every page; the figures tick through the `[data-count]` mechanism the player
+  charts already use (`pf-tiles` and `pf-stat` are the hooks, and both carry
+  rules of their own here, because a class a page uses and no sheet it loads
+  defines is how a screen renders correct markup and looks like nothing); the
+  pinned board is `position: sticky`; the reading line is a scroll-driven CSS
+  animation, absent rather than broken where a browser has not got one. Every
+  fact survives scripting being blocked.
+- **The pinned board must stay outside every `.sec`.** That rule is
+  `overflow: hidden` site-wide, which creates a scroll container and stops a
+  sticky child moving at all, with nothing on screen to say why. Asserted.
+- **Nothing is invented.** A goal with no minute is listed after the timeline
+  rather than placed at minute zero, which is the trap the assist pairing fell
+  into. A 94th-minute goal is drawn at the right-hand edge and aligned to it,
+  not centred half off the page. A sheet with no positions on most of the
+  eleven draws no pitch rather than a pile on the halfway line. A first meeting
+  says so instead of printing an empty record. A friendly produces no standing,
+  because it counts towards nothing.
+- **The standing is counted AS AT THE MATCH**, from the transcribed division
+  results up to and including that day, never from the live table. A page about
+  September captioned with October's position is wrong in a way nobody spots,
+  because both numbers are real. The suite asserts it moves between two
+  matches, which is the only way to tell it from the live table.
+- **A goal the opponents scored that is not on the record is said out loud.**
+  Ten archive records are short of a line under Their goals, so the lane under
+  the axis is empty beside a tile reading "Conceded 1", which reads as
+  something that failed to draw. The record checker already counts this; the
+  page now says it where it shows.
+- **The card does not take `goal-N`.** The video band already owns that id for
+  every goal the club has filed film of, and two elements answering to one id
+  is a page where a link lands on whichever the browser saw first. Cards are
+  `g-N` and link AT the film.
+- **The face sits inside the player's link.** An `alt=""` photograph is correct
+  exactly when the thing beside it has said who it is, and putting the picture
+  inside the anchor that prints the name is what makes that provable rather
+  than asserted. 7 of the 13 named in the first of these had a photograph; the
+  other six get their initials, because a face on some rows and a blank on
+  others is a layout bug somebody reports.
+- **`npm run visual` renders a drawn report by name.** One page per directory
+  is right while a directory is one template, and `matches/` is two now: keyed
+  on the directory the first id in the manifest wins, which is a 25/26 match,
+  so every one of these bands would have gone unrendered in a browser while the
+  check printed "nothing renders wrongly".
+- **`ordinal()` moved into `stats.mjs`.** `home.mjs` and `player.mjs` each
+  carried an identical copy and this needed a third.
+
+### A report the club has written and not yet typed in
+
+`src/data/report-editions.json` already carried formatted editions of STORED
+reports, keyed by the sha256 of the stored text so the club's own edit wins the
+moment it is saved. `r20261011-peps` has no stored report at all, so `basedOn`
+is **the sha256 of the empty string** and the same rule applies unchanged: the
+edition shows while nothing is stored, and the club typing it in Control panel
+replaces it outright. The word-for-word paragraph check is the wrong question
+where there are no stored words, so that branch is skipped and the empty case
+is asserted instead; the `> 20` guard stays, because it is what stops the check
+passing by having nothing to compare.
+
 ### The digital match programme
 
 `/programme.html`, under **Media**, and `assets/programme/<fixture-id>.pdf`.

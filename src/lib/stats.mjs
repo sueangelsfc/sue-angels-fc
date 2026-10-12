@@ -115,6 +115,15 @@ export function fmtDate(str, opts = {}) {
    corrected - which is exactly why it was worth correcting now rather than
    discovering it on the first June friendly, when it would have filed a
    match under the wrong season and taken a player's tenure with it. */
+/* 1st, 2nd, 3rd, and the three places that used to answer this question.
+   home.mjs and player.mjs each carried an identical copy and this file needed
+   a third for the match page's standing, which is three chances to disagree
+   about what 11th is called. One definition, and the two templates import it. */
+export const ordinal = (n) => {
+  const v = n % 100;
+  return `${n}${['th', 'st', 'nd', 'rd'][(v - 20) % 10] || ['th', 'st', 'nd', 'rd'][v] || 'th'}`;
+};
+
 export function seasonOf(dateStr) {
   const d = parseDate(dateStr);
   if (!d) return null;

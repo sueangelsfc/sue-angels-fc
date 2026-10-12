@@ -31,7 +31,7 @@ import {
   currentRun, goalKinds, opponentRecords, byCompetition, homeAwaySplit, longestRun,
   winMargins, commonScorelines, byMonth, penaltyRecord, disciplineRecord,
   formationUse, venueRecords, squadShape, scoringRuns, clubFirsts,
-  goalsByGroup, heaviestDefeats, scoringRate, fmtDate,
+  goalsByGroup, heaviestDefeats, scoringRate, fmtDate, ordinal,
 } from '../lib/stats.mjs';
 import {
   publishedBands, featuredFor, onThisDay, potmLatest, honoursIn, newFaces,
@@ -278,10 +278,6 @@ export function home(d) {
   const l8Rows = l8.rows || [];
   const l8Live = l8Rows.some((r) => (r.played || 0) > 0);
   const usL8 = l8Live ? l8Rows.find((r) => r.us) : null;
-  const ordinal = (n) => {
-    const v = n % 100;
-    return `${n}${['th', 'st', 'nd', 'rd'][(v - 20) % 10] || ['th', 'st', 'nd', 'rd'][v] || 'th'}`;
-  };
   const standing = usL8
     ? `${ordinal(usL8.pos)} in ${l8.division} on ${usL8.points} point${usL8.points === 1 ? '' : 's'}`
     : '';

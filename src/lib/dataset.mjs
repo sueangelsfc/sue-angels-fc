@@ -71,6 +71,62 @@ function inferPositions(matches) {
    page, not an exception. The campaign band read `scored[0]` with no guard and
    crashed on exactly this, and was unreachable only for as long as the band
    was hard-coded onto a page with 33 matches behind it. */
+/* A CORRECTION THE CLUB HAS AGREED AND HAS NOT YET SAVED
+   (src/data/match-corrections.json). The `matches` table cannot be written
+   from a developer machine - an anonymous write is refused by row-level
+   security, which is the posture working as designed - so a figure the club
+   has already agreed is wrong would otherwise sit on the page until somebody
+   was at a laptop with an admin session.
+
+   IT RETIRES ITSELF, which is the only reason a second source for match data
+   is safe here. Every correction names the value it is correcting, and is
+   applied ONLY while the stored record still holds that value. The moment
+   somebody types the right figure in the panel the correction matches
+   nothing and vanishes from the build: it cannot drift, it cannot fight the
+   panel, and forgetting to delete it costs nothing. That is
+   report-editions.json's `basedOn` hash applied to one field.
+
+   AT MODULE SCOPE, because a rule that can rewrite the club's own record is
+   one the suite has to be able to run on its own - the same reason
+   carryAssists() is not buried in the form that calls it.
+
+   APPLIED BEFORE ANYTHING IS DERIVED, so the timeline, the goal card, the
+   player profile and every figure read the same record. Patching the
+   assembled match afterwards would correct the page and leave the statistics
+   describing the old one. */
+export function applyCorrections(detailById, corrections) {
+  const done = [];
+  for (const c of corrections || []) {
+    const data = detailById.get ? detailById.get(c.match) : detailById[c.match];
+    const goal = data && (data.goals || [])[Number(c.goal) - 1];
+    if (!goal) continue;
+    const path = String(c.field || '').split('.');
+    let at = goal;
+    for (const step of path.slice(0, -1)) at = at && at[step];
+    const leaf = path[path.length - 1];
+    /* The guard, and the whole safety of this file. Compared loosely on
+       purpose: the panel stores a minute as a number and sometimes as the
+       string it was typed as, and a correction that silently stopped applying
+       over a type would be worse than one that never applied at all. */
+    if (!at || String(at[leaf]) !== String(c.was)) continue;
+    at[leaf] = c.now;
+    done.push(c);
+    /* The flat `assists` list is DERIVED from the goals on save, so where a
+       goal is corrected its entry is brought into line. The two disagreeing
+       is the fault that once published four assists each for two men, and
+       reconcileAssists keeps an existing entry rather than rebuilding it, so
+       nothing else would have moved it. */
+    if (!goal.assist) continue;
+    for (const a of data.assists || []) {
+      if (String(a.num) !== String(goal.assist.num)
+        || String(a.forGoalBy) !== String(goal.num)) continue;
+      a.type = goal.assist.type;
+      a.minute = goal.minute ?? null;
+    }
+  }
+  return done;
+}
+
 export function buildDataset(overrides = {}) {
   const ps = overrides.pageshell || read('recovered-pageshell.json');
   /* Club-written prose gets the house typography on the way in, once, rather
@@ -101,6 +157,8 @@ export function buildDataset(overrides = {}) {
     detailById.set(row.key, data && Array.isArray(data.assists)
       ? { ...data, assists: reconcileAssists(data.goals, data.assists) } : data);
   }
+
+  applyCorrections(detailById, read('match-corrections.json').corrections || []);
 
   /* ---- Matches ----------------------------------------------------------
      A match used to be assembled from two places that only one of them could

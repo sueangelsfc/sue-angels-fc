@@ -1133,6 +1133,43 @@ stand-first and a drop cap; and the players' names in that prose linked.
 - **`ordinal()` moved into `stats.mjs`.** `home.mjs` and `player.mjs` each
   carried an identical copy and this needed a third.
 
+### A correction the club has agreed and has not yet saved
+
+`src/data/match-corrections.json`, applied by `applyCorrections()` in
+`dataset.mjs`. The `matches` table **cannot be written from a developer
+machine** - an anonymous write is refused with `42501`, which is the posture
+working exactly as designed - so a figure the club has already agreed is wrong
+sits on the page until somebody is at a laptop with an admin session. Two were:
+the Peps header is recorded at 13' and the club's own report says the 28th
+minute, and the fourth goal's assist was typed `flickon` when the report has
+LJ doing the flick-on and Charlie Dunkley playing Ade through.
+
+**It retires itself, and that is the only reason a second source for match
+data is safe here.** Every correction names the value it is correcting, in
+`was`, and is applied ONLY while the stored record still holds that value. The
+moment somebody types the right figure in the panel the correction matches
+nothing and vanishes from the build: it cannot drift, it cannot fight the
+panel, and forgetting to delete it costs nothing. That is
+`report-editions.json`'s `basedOn` hash applied to one field instead of to a
+whole report, and it is the same device as `fixtures-2627.json` and
+`articles-extra.json`.
+
+- **Goals only, by their place in the match's own goal list** - the same
+  identity `match-clips.json` files a clip against. Not the scoreline, not the
+  team sheet, not who scored.
+- **Applied before anything is derived.** Patching the assembled match
+  afterwards would correct the page and leave the statistics describing the
+  old one.
+- **The derived flat `assists` entry is brought into line with its goal.**
+  `reconcileAssists` KEEPS an existing entry rather than rebuilding it, so
+  correcting a goal's assist and leaving the flat list alone is how two
+  published figures come to disagree about the same pass.
+- **At module scope**, because a rule that can rewrite the club's own record
+  is one the suite has to be able to run on its own - the same reason
+  `carryAssists()` is not buried in the form that calls it. The probe that
+  matters is the guard: remove it and "a correction aimed at a value the
+  record does not hold changes nothing" goes red.
+
 ### The team sheet, read as a team sheet
 
 `sheetRows` in `src/lib/report-visuals.mjs`, styled at the foot of

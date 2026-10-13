@@ -7227,6 +7227,78 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
       mine[0] ? mine[0].slug : 'no slug');
   }
 
+  /* ====================================================================
+     A CORRECTION THE CLUB HAS AGREED AND HAS NOT YET SAVED
+
+     src/data/match-corrections.json. A second source for match data, which
+     is the fault this repository keeps having to remove, and the ONLY thing
+     that makes it safe is that it retires itself: a correction names the
+     value it is correcting and is applied only while the record still holds
+     it. So that guard is what these checks are about, and the probe matters
+     more than the happy path - a guard that never bites is a file that can
+     silently rewrite the club's record forever.
+     ==================================================================== */
+  {
+    const { applyCorrections } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+    const fixes = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'match-corrections.json'), 'utf8')).corrections || [];
+    check('a correction changes something, and says what it is changing',
+      fixes.length > 0 && fixes.every((c) => c.match && c.goal && c.field
+        && c.was !== undefined && c.now !== undefined && String(c.was) !== String(c.now)
+        && String(c.why || '').length > 40));
+    const at = (data, c) => {
+      const g = (data.goals || [])[Number(c.goal) - 1];
+      return String(c.field).split('.').reduce((o, k) => (o == null ? o : o[k]), g);
+    };
+    const stored = () => new Map((live.matches || [])
+      .map((r) => [r.key, JSON.parse(JSON.stringify(r.data || {}))]));
+    for (const c of fixes) {
+      /* THE RECORD STILL HOLDS THE WRONG VALUE, or the club has saved the
+         right one and the correction is already inert. Anything else means
+         it is correcting a value nobody recognises. */
+      const now = stored().get(c.match);
+      const held = now ? String(at(now, c)) : '';
+      check(`the record this corrects is the one it says: ${c.match} goal ${c.goal} ${c.field}`,
+        held === String(c.was) || held === String(c.now), held);
+      /* And whatever the stored record holds, the site publishes `now`. */
+      const after = stored();
+      applyCorrections(after, fixes);
+      check(`and the site publishes the corrected value: ${c.field} ${c.was} to ${c.now}`,
+        String(at(after.get(c.match), c)) === String(c.now), String(at(after.get(c.match), c)));
+    }
+    /* THE GUARD BITES. A correction aimed at a value the record does not hold
+       changes nothing at all - which is exactly what happens the moment the
+       club types the right figure in the panel. */
+    const wrong = stored();
+    const before = JSON.stringify(wrong.get(fixes[0].match).goals);
+    applyCorrections(wrong, fixes.map((c) => ({ ...c, was: '__not_what_is_stored__' })));
+    check('a correction aimed at a value the record does not hold changes nothing',
+      JSON.stringify(wrong.get(fixes[0].match).goals) === before);
+    /* AND IT CANNOT TOUCH ANYTHING BUT A GOAL. The scoreline, the team sheet
+       and who scored are the record; a file that could rewrite them would be
+       the second source this device exists to avoid being. */
+    const scoped = stored();
+    applyCorrections(scoped, [{ match: fixes[0].match, goal: 1, field: 'num', was: scoped.get(fixes[0].match).goals[0].num, now: 999 }]);
+    check('a correction can only reach a goal, by its place in the match list',
+      scoped.get(fixes[0].match).goals[0].num === 999
+      && scoped.get(fixes[0].match).starters.length === (live.matches.find((r) => r.key === fixes[0].match).data.starters || []).length,
+      'the sheet is untouched');
+    /* THE DERIVED FLAT LIST FOLLOWS THE GOAL. reconcileAssists keeps an
+       existing entry rather than rebuilding it, so correcting a goal's assist
+       and leaving the flat list alone is how two published figures come to
+       disagree about the same pass. */
+    const peps2 = stored();
+    applyCorrections(peps2, fixes);
+    const pd = peps2.get('r20261011-peps');
+    if (pd) {
+      check('a corrected assist carries into the derived list, which is built from it',
+        (pd.assists || []).every((a) => {
+          const g = (pd.goals || []).find((x) => String(x.num) === String(a.forGoalBy)
+            && x.assist && String(x.assist.num) === String(a.num));
+          return !g || (a.type === g.assist.type && String(a.minute) === String(g.minute));
+        }));
+    }
+  }
+
   /* ADDITIONS TO A STORED ARTICLE land once, where they were asked for, and
      retire themselves when the stored text already carries them. */
   {

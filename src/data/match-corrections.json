@@ -1,0 +1,23 @@
+{
+  "_why": "A CORRECTION THE CLUB HAS AGREED AND HAS NOT YET SAVED. The matches table cannot be written from a developer machine: an anonymous write is refused by row-level security, which is the posture working exactly as designed, so only an admin session in Control panel can change a stored record. This file is the bridge, and it is the same device as report-editions.json rather than a second source of truth.",
+  "_how_it_retires_itself": "Every correction names the value it is correcting, in `was`. It is applied ONLY while the stored record still holds that value, so the moment somebody types the right figure in the panel the correction matches nothing and vanishes from the build. It cannot drift, it cannot fight the panel, and forgetting to delete it costs nothing. That is report-editions.json's basedOn hash, applied to one field instead of to a whole report.",
+  "_what_it_may_touch": "Goals only, by their place in the match's own goal list, which is the same identity match-clips.json files a clip against. Not the scoreline, not the team sheet, not who scored: those are the record, and a file that could rewrite them would be the second source this repository keeps having to remove. Where a goal's assist is corrected the derived flat `assists` entry is brought into line with it, because that list is derived from the goals on save and the two disagreeing is the fault that once published four assists each for two men.",
+  "corrections": [
+    {
+      "match": "r20261011-peps",
+      "goal": 2,
+      "field": "minute",
+      "was": 13,
+      "now": 28,
+      "why": "The club's own report of this match says the header was in the 28th minute, and the club has confirmed the report is right and the stored minute wrong. Until then the page carried 13' on the timeline and on the goal card, directly above prose saying 28th."
+    },
+    {
+      "match": "r20261011-peps",
+      "goal": 4,
+      "field": "assist.type",
+      "was": "flickon",
+      "now": "through",
+      "why": "The assist is Charlie Dunkley's and always was. The TYPE described the wrong action: the report has LJ flicking the ball on to Charlie, whose touch released Ade on a third-man run, so the flick-on is Burnett's and Dunkley played him through. The card read 'Flicked on by Charlie Dunkley' over prose saying otherwise. The club has confirmed the report's account of the assists is correct."
+    }
+  ]
+}

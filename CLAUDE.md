@@ -1193,6 +1193,70 @@ down as the same four digits.
   `src/admin/lazy/11-matchedit.js` budgeted as source so code growth still
   shows up on its own.
 
+### A season on a player's page, and on the manager's
+
+The season panel was six tiles, three bars, four ranks and five charts, and it
+had **no answer to the two questions a reader actually arrives with**: how did
+it go, and where did he play. The club records both and neither reached the
+page.
+
+- **How it went.** Every match he played, in order, as a pip carrying the
+  result and the score, each one a link to that match. Won, drawn and lost
+  told apart by **weight and structure** - filled, outlined, faded - because
+  win/draw/loss is football data and the token set keeps its status colours
+  for forms and toasts. A dot marks a return of his own, sized by how many,
+  which is the difference between the club's form and his.
+- **A pip, not a card.** The first draft was a card per match carrying the
+  opponent and the return in words, and on the heaviest profile it cost 9.6KB
+  of a page already at 158KB of its 160KB ceiling. A strip reads at a glance
+  rather than by reading and costs a third as much.
+- **It replaced the match-by-match columns, which paid for it.** Both were
+  every match in order; the columns gave bar height for goals and assists and
+  named the match in a **hover title**, which is a fact behind a pointer. The
+  strip gives the result, the score, the opponent, the minutes and the return,
+  in text, as a link, readable on a phone - and the size of the return
+  survives as the size of the dot.
+- **Where he played**, which the club writes down every match and the page
+  threw away. The position AND the job, per spell, so a man who began at
+  centre half and finished in midfield has both. **Grouped by position with
+  the jobs under it**: keyed on both, a man who played right wing back three
+  times overlapping and once with nothing recorded got two cards headed
+  "Right wing back", which reads as a page repeating itself.
+- **Minutes on the pitch**, counted from the substitutions and absent where
+  they carry no minute, which is most of the archive. `minutesPlayed()` moved
+  to `subs.mjs`, beside the substitutions it is counted from, because the
+  match report and the profile asking the same question twice is two counts
+  that can disagree.
+- **No tile for a non-event.** "Unused sub 0" and "Goals 0" each took a sixth
+  of the headline row to say nothing happened. Dropped at nought unless nought
+  is the point - a goalkeeper's conceded column is a fact at nought and the
+  best one he will ever have. Nothing is hidden: it is all still in the record
+  band and the table.
+- **A bar at nought shows its track**, dashed, rather than an empty rail that
+  reads as a chart which failed to draw.
+- **An outfielder's clean sheets**, now the club names the back line.
+- **The rails inside a panel are numbered from the panel's own order.** The
+  outer bands have been numbered that way since the strip read 04 then 06 with
+  a band hidden; the bands INSIDE a panel were still typed by hand, which is
+  correct for exactly one arrangement - and two of these are conditional, so
+  "03 How it went" sat above "03 In pictures" on the first page that drew both.
+- **`pf-run`, not `pf-form`.** The last-time-out band already owned that class,
+  and the new strip's grid would have rebuilt it into pips.
+- **The pip's label opens with the text on the pip.** A voice-control user
+  activates a link by speaking what they can see, so `aria-label="Won 2-1 home
+  v Three Little Birds"` over a pip reading "W 2-1" is a control they cannot
+  reach. Found by an accessibility engine, not by reading it, and now asked by
+  the suite.
+
+**The manager gets how he played.** `approachUse()` in `stats.mjs` over the
+three axes, beside "How he set up": a shape is where eleven men stood and is
+not how they played, and this is the only page where the pattern across a
+season can be read at all. Grouped by axis, because the three are independent
+questions and a flat list would put "high press" beside "down the wings" as
+though he had to choose. A match the club has not answered for is counted in
+the total and in none of the rows, so a share is always a share of the matches
+that answered.
+
 ### A menu that cannot be clicked
 
 `.pghead` was `position: static`. The note beside it argued against

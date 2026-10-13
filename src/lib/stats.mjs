@@ -1146,7 +1146,21 @@ export function playerProfile(player, matches, squad) {
       spotTally.get(key).games += 1;
     }
   }
-  const spots = [...spotTally.values()].sort((a, b) => b.games - a.games || a.code.localeCompare(b.code));
+  /* GROUPED BY POSITION, with the jobs listed under it. Keyed on position AND
+     role, a man who played right wing back three times overlapping and once
+     with nothing recorded got two cards both headed "Right wing back", which
+     reads as a page that has repeated itself. Where he stood is the fact; what
+     he was asked to do there is a note on it. */
+  const byPos = new Map();
+  for (const sp of spotTally.values()) {
+    if (!byPos.has(sp.code)) byPos.set(sp.code, { code: sp.code, name: sp.name, group: sp.group, games: 0, roles: [] });
+    const row = byPos.get(sp.code);
+    row.games += sp.games;
+    if (sp.roleName) row.roles.push({ name: sp.roleName, games: sp.games });
+  }
+  const spots = [...byPos.values()]
+    .map((r) => ({ ...r, roles: r.roles.sort((a, b) => b.games - a.games) }))
+    .sort((a, b) => b.games - a.games || a.code.localeCompare(b.code));
   const timed = timeline.filter((t) => t.minutes != null);
   const minutes = timed.reduce((n, t) => n + t.minutes, 0);
 
@@ -1564,6 +1578,45 @@ export function formationUse(matches) {
     total,
     of: (matches || []).filter((x) => x.played).length,
   };
+}
+
+/* HOW THE SIDE PLAYED, and how each answer has gone.
+
+   A shape is where eleven men stood and is not how they played: a 3-4-1-2
+   sitting in and countering and a 3-4-1-2 pressing from the whistle are two
+   different afternoons written down as the same four digits. The club records
+   the second now, on three axes with one answer each, and this is the only
+   page where the pattern across a season can be read at all.
+
+   GROUPED BY AXIS, because the three are independent questions and a flat
+   list of answers would put "high press" beside "down the wings" as though a
+   manager had to choose. A match with nothing recorded is counted in `of` and
+   in no row, so a share is always a share of the matches that answered. */
+export function approachUse(matches, axes) {
+  const played = (matches || []).filter((x) => x.played);
+  return (axes || []).map((ax) => {
+    const map = new Map();
+    let answered = 0;
+    for (const m of played) {
+      const key = ((m.detail || {}).approach || {})[ax.key];
+      const opt = (ax.options || []).find((o) => o.key === key);
+      if (!opt) continue;
+      answered += 1;
+      if (!map.has(opt.key)) map.set(opt.key, { ...opt, n: 0, won: 0 });
+      const row = map.get(opt.key);
+      row.n += 1;
+      if (m.outcome === 'W') row.won += 1;
+    }
+    return {
+      axis: ax.key,
+      label: ax.label,
+      answered,
+      of: played.length,
+      rows: [...map.values()]
+        .map((r) => ({ ...r, pct: answered ? Math.round((r.n / answered) * 100) : 0 }))
+        .sort((a, b) => b.n - a.n || a.label.localeCompare(b.label)),
+    };
+  }).filter((a) => a.rows.length);
 }
 
 /* Every ground the club has played on, with the record there. */

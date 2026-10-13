@@ -18,7 +18,8 @@
    ========================================================================== */
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
-import { managerRecord } from '../lib/stats.mjs';
+import { managerRecord, approachUse } from '../lib/stats.mjs';
+import { APPROACH_AXES } from '../lib/football.mjs';
 import { POSITION_XY, positionName } from '../lib/positions.mjs';
 import { seasonViews, defaultView, seasonBar, seasonPanels, matchNote } from '../lib/seasons.mjs';
 import { siteFooter, sitePreMain, siteHeader } from './home.mjs';
@@ -141,6 +142,33 @@ export function coachPage(manager, d) {
         <p class="mg__note">${esc(r.formations.total)} of ${esc(r.formations.of)} team sheets record a shape,
           and each pitch is the most recent eleven to line up in it. A match with no shape on record is
           left out rather than guessed at.</p>` : `<p class="mg__note">No team sheet in ${esc(v.label)} records a shape yet.</p>`}
+
+        ${/* HOW HE PLAYED, which the shape cannot say and which nothing else
+              on the site can show across a season. Absent entirely where the
+              club has answered for no match, because there is no derivation
+              to fall back on: nothing in a return says where the press began,
+              so this is his answer or it is silence. */''}
+        ${(() => {
+    const ap = approachUse(r.matches, APPROACH_AXES);
+    if (!ap.length) return '';
+    return `<h3 class="mg__sub">How he played</h3>
+        <ul class="mga">
+          ${ap.map((a) => `<li class="mga__ax">
+            <i class="mga__k">${esc(a.label)}</i>
+            <ul class="mga__rows">
+              ${a.rows.map((x) => `<li class="mga__r">
+                <b>${esc(x.label)}</b>
+                <span class="mga__n">${esc(x.n)} ${x.n === 1 ? 'time' : 'times'}, ${esc(x.won)} won</span>
+                <span class="mga__bar" aria-hidden="true"><i style="--w:${esc(x.pct)}%"></i></span>
+              </li>`).join('\n              ')}
+            </ul>
+            <span class="mga__of">${esc(a.answered)} of ${esc(a.of)} answered</span>
+          </li>`).join('\n          ')}
+        </ul>
+        <p class="mg__note">Three questions, one answer each: where the side defended, what it did with
+          the ball, and where the attack came from. A match the club has not answered for is counted in
+          the total and in none of the rows, so a share is always a share of the matches that answered.</p>`;
+  })()}
 
         <h3 class="mg__sub">Match by match</h3>
         ${matchStrip(r.matches)}

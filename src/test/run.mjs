@@ -4160,8 +4160,37 @@ for (const [f, kb] of Object.entries({
       }
       check('and each chart agrees with the figures printed beside it', chartBad.length === 0, chartBad.slice(0, 3).join(' | '));
       const allPanel = cdPanels[(dPS.seasons || []).length] || '';
-      check('the match-by-match columns belong to a season, not to All seasons',
-        cdPanels.slice(0, (dPS.seasons || []).length).some((pn) => /class="pf-cols"/.test(pn)) && !/class="pf-cols"/.test(allPanel));
+      /* "HOW IT WENT" REPLACED THE MATCH-BY-MATCH COLUMNS and inherited their
+         rule: it belongs to a season, because under All seasons it is the
+         longest season again with every other season added to it, on a page
+         that was already at its byte ceiling. Same question, new band. */
+      check('the form strip belongs to a season, not to All seasons',
+        cdPanels.slice(0, (dPS.seasons || []).length).some((pn) => /class="pf-run /.test(pn))
+        && !/class="pf-run /.test(allPanel));
+      /* Every match he played gets a pip, and each one opens that match. A
+         strip that silently dropped a defeat would read as a better season
+         than he had. */
+      {
+        const i26 = (dPS.seasons || []).findIndex((x) => x.name === '26/27');
+        const pan = i26 >= 0 ? (cdPanels[i26] || '') : '';
+        const played = (dPS.competitive || []).filter((m) => m.played && m.season === '26/27'
+          && [...((m.detail || {}).starters || []), ...((m.detail || {}).bench || [])]
+            .some((r) => Number(r.num) === cd.num));
+        const pips = (pan.match(/class="pf-run__m/g) || []).length;
+        check('every match he played gets a pip in the form strip',
+          !pan || pips === played.length, `${pips} pips, ${played.length} matches`);
+        check('and every pip opens the match it came from',
+          !pan || (pan.match(/class="pf-run__m[^"]*"[^>]*href="\/matches\//g) || []).length === pips);
+        /* THE LABEL OPENS WITH WHAT THE PIP SAYS. A voice-control user
+           activates a link by speaking the text they can see, so a name that
+           does not contain the visible one is a control they cannot reach.
+           An accessibility engine found this on the first draft; this is what
+           keeps it found. */
+        const bad = [...pan.matchAll(/aria-label="([^"]*)"[^>]*><b>([^<]*)<\/b><span>([^<]*)<\/span>/g)]
+          .filter(([, label, w, sc]) => !label.startsWith(`${w} ${sc}`));
+        check('and the pip\u2019s label opens with the text a reader can see',
+          bad.length === 0, bad.slice(0, 2).map((m) => m[1]).join(' | '));
+      }
       /* Where he played, per tab: every season he appeared in has its own map. */
       const cdSeasonsPlayed = (dPS.seasons || []).map((s, i) => [s.name, i])
         .filter(([n]) => (dPS.competitive || []).some((m) => m.played && m.season === n

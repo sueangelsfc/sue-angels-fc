@@ -77,6 +77,21 @@ const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
    calling themselves 06. A band that does not render leaves no placeholder,
    so the sequence closes up rather than skipping a number. The season block
    keeps its own 01-05, which are inside a panel and describe one season. */
+/* THE SAME RULE INSIDE A SEASON PANEL. The outer bands have been numbered
+   from the published order since the strip read 04 then 06 with a band
+   hidden; the bands INSIDE a panel were still numbered by hand, which was
+   correct for exactly one arrangement. Two of them are conditional now -
+   where he played is absent where the record names no position, and the form
+   strip is absent under All seasons - so a typed number was wrong the moment
+   either went missing, and "03 How it went" sat above "03 In pictures" on the
+   first page that drew both. Counted per panel, because each panel restarts
+   at one. */
+const numberPanel = (html) => {
+  let n = 0;
+  return html.replace(/<span class="xrail__n">NUM<\/span>/g,
+    () => `<span class="xrail__n">${String(n += 1).padStart(2, '0')}</span>`);
+};
+
 const numberRails = (html) => {
   let n = 5;
   return html.replace(/<span class="xrail__n">NUM<\/span>/g,
@@ -155,7 +170,7 @@ const statTile = (t) => `<li class="pf-stat${t.pct === undefined ? '' : ' has-ri
 
 /* A bar with the figure printed beside it: the bar is reinforcement, never
    the only way to read the value. */
-const bar = (label, value, pct, note) => `<li class="pf-bar">
+const bar = (label, value, pct, note) => `<li class="pf-bar${Number(pct) ? '' : ' pf-bar--none'}">
         <span class="pf-bar__k">${esc(label)}</span>
         <span class="pf-bar__v"><span data-count="${attr(value)}">${esc(value)}</span>${note ? `<i>${esc(note)}</i>` : ''}</span>
         <span class="pf-bar__track" aria-hidden="true"><i style="--w:${Math.max(0, Math.min(100, pct))}%"></i></span>
@@ -669,23 +684,54 @@ export function playerPage(p, d) {
   const winTile = (x) => (x.won + x.drawn + x.lost ? [{ v: `${x.winPct}%`, k: 'Won when playing', pct: x.winPct }] : []);
   const winBar = (x) => (x.won + x.drawn + x.lost ? [bar('Won when playing', `${x.winPct}%`, x.winPct, `${x.won} of ${x.won + x.drawn + x.lost}`)] : []);
 
-  const tilesFor = (x) => (gk ? [
+  /* A TILE FOR A NON-EVENT IS NOISE. "Unused sub 0" and "Goals 0" each took
+     a sixth of the headline row to say that nothing happened, and the two of
+     them together pushed the figures that DID happen off the first line a
+     reader looks at. Dropped when they are nought - unless nought is the
+     point, which is what `keep` is for: a goalkeeper's conceded column is a
+     fact at nought and the best one he will ever have.
+
+     The club's own figure is never hidden: everything dropped here is still
+     in the record band, the charts and the table below. */
+  const live = (list) => list.filter((t) => t && (t.keep || Number(t.v) > 0 || /[1-9]/.test(String(t.v))));
+
+  /* MINUTES ON THE PITCH, where the record can count them. It needs the
+     substitutions to carry a minute, which is true of this season and of
+     almost nothing before it, so the tile is absent rather than wrong on an
+     older tab. The second line is not decoration: 448 minutes is a different
+     claim over five matches and over eighteen. */
+  const minuteTile = (x) => (x.minutes && x.minutesGames ? [{
+    v: `${x.minutes}'`, k: 'On the pitch',
+    sub: `over ${x.minutesGames} ${x.minutesGames === 1 ? 'match' : 'matches'}`
+      + (x.minutesPerStart ? `, ${x.minutesPerStart} a game` : ''),
+    pct: Math.min(100, Math.round((x.minutes / (x.minutesGames * (x.fullMatch || 90))) * 100)),
+    keep: true,
+  }] : []);
+
+  const tilesFor = (x) => live(gk ? [
     { v: x.starts, k: 'Starts', sub: `of ${x.teamGames} played${x.apps > x.starts ? `, ${x.apps - x.starts} off the bench` : ''}`, pct: x.teamGames ? Math.round((x.starts / x.teamGames) * 100) : 0 },
-    { v: x.cleanSheets, k: 'Clean sheets', sub: `of ${x.onRecord} on record`, pct: x.cleanSheetPct },
-    { v: x.conceded, k: 'Conceded' },
-    { v: x.concededPerGame, k: 'Conceded a game' },
+    { v: x.cleanSheets, k: 'Clean sheets', sub: `of ${x.onRecord} on record`, pct: x.cleanSheetPct, keep: true },
+    { v: x.conceded, k: 'Conceded', keep: true },
+    { v: x.concededPerGame, k: 'Conceded a game', keep: true },
     { v: x.motm, k: 'Man of the Match' },
     ...winTile(x),
+    ...minuteTile(x),
     ...(x.keeperGames ? [
       { v: x.keeperSaves, k: 'Saves', sub: `in ${x.keeperGames} ${x.keeperGames === 1 ? 'game' : 'games'} in goal with saves recorded` },
       { v: (x.keeperSaves / x.keeperGames).toFixed(1), k: 'Saves a game' },
     ] : []),
   ] : [
-    { v: x.starts, k: 'Starts', sub: `of ${x.teamGames} played${x.apps > x.starts ? `, ${x.apps - x.starts} off the bench` : ''}`, pct: x.teamGames ? Math.round((x.starts / x.teamGames) * 100) : 0 },
-    { v: x.bench, k: 'Unused sub' },
+    { v: x.starts, k: 'Starts', sub: `of ${x.teamGames} played${x.apps > x.starts ? `, ${x.apps - x.starts} off the bench` : ''}`, pct: x.teamGames ? Math.round((x.starts / x.teamGames) * 100) : 0, keep: true },
+    ...minuteTile(x),
     { v: x.goals, k: 'Goals' },
     { v: x.assists, k: 'Assists' },
     { v: x.perGame, k: 'Goals + assists a game' },
+    /* An outfielder's share of the clean sheets, which the club records by
+       NAMING the back line. It is his afternoon's work as much as a goal is
+       a striker's, and the page had no way of saying so. */
+    { v: x.cleanSheets, k: 'Clean sheets', sub: x.onRecord ? `of ${x.onRecord} on record` : '' },
+    { v: x.motm, k: 'Man of the Match' },
+    { v: x.bench, k: 'Unused sub' },
     ...winTile(x),
   ]);
 
@@ -738,23 +784,97 @@ export function playerPage(p, d) {
           </div>`;
   };
 
+  /* WHERE HE PLAYED, which the club writes down every match and the page
+     threw away. A profile that says "Defender" says less than the record
+     holds: it holds the position AND the job, per spell, so a man who began
+     at centre half and finished in midfield has both here.
+
+     Counted, and ordered by how often. Nothing is drawn where the record
+     names no position, which is most of the archive. */
+  const spotsBand = (x, idx) => {
+    const spots = (x.spots || []).filter((sp) => sp.name);
+    if (!spots.length) return '';
+    return `<section class="pf-sub" aria-labelledby="pf-w-${idx}">
+            ${rail('NUM', 'Where he played', `${spots.length} ${spots.length === 1 ? 'role' : 'roles'}`)}
+            <h3 class="h2 rv" id="pf-w-${idx}">Where he <span class="volt">played.</span></h3>
+            <ul class="pf-spots rv">
+              ${spots.map((sp, i) => `<li class="pf-spot" style="--i:${i}">
+                <b>${esc(sp.name)}</b>
+                ${sp.roles.length ? `<span>${esc(sp.roles.map((r) => r.name
+    + (sp.roles.length > 1 || r.games < sp.games ? ` (${r.games})` : '')).join(' · '))}</span>` : ''}
+                <i>${esc(String(sp.games))} ${sp.games === 1 ? 'match' : 'matches'}</i>
+              </li>`).join('\n              ')}
+            </ul>
+          </section>`;
+  };
+
+  /* THE SEASON AS IT WENT, which is the one thing every football page has and
+     this one did not. Won, drawn and lost told apart by weight and structure
+     rather than by a second colour, in the order they happened, each one a
+     link to the match it came from.
+
+     A PIP, NOT A CARD. The first version was a card per match carrying the
+     opponent and what he did in words, and on the heaviest profile it cost
+     9.6KB of a page already at 158KB of its 160KB ceiling. A strip of pips is
+     what a form guide actually looks like, reads at a glance rather than by
+     reading, and costs a third as much; everything the card said is on the
+     link's own label, where a screen reader gets all of it and the bytes are
+     spent once.
+
+     SEASON TABS ONLY. Under All seasons this is the longest season again with
+     every other season added to it - the same reason the match-by-match
+     columns and the last-time-out card are season-only. */
+  const formBand = (x, idx, all) => {
+    const tl = (x.timeline || []);
+    if (all || tl.length < 2) return '';
+    const OUT = { W: 'Won', D: 'Drawn', L: 'Lost' };
+    const w = tl.filter((t) => t.outcome === 'W').length;
+    const dr = tl.filter((t) => t.outcome === 'D').length;
+    const l = tl.filter((t) => t.outcome === 'L').length;
+    return `<section class="pf-sub" aria-labelledby="pf-f-${idx}">
+            ${rail('NUM', 'How it went', `${w}W ${dr}D ${l}L`)}
+            <h3 class="h2 rv" id="pf-f-${idx}">How it <span class="volt">went.</span></h3>
+            <p class="pf-run__cap">Every match he played, in order. A filled pip is a win, an outline a draw.
+              A dot marks a goal or an assist. Each one opens the match.</p>
+            <ol class="pf-run rv">${tl.map((t, i) => {
+    const did = [t.goals ? `${t.goals} ${t.goals === 1 ? 'goal' : 'goals'}` : '',
+      t.assists ? `${t.assists} ${t.assists === 1 ? 'assist' : 'assists'}` : '',
+      t.motm ? 'Player of the Match' : ''].filter(Boolean).join(', ');
+    const o = String(t.outcome || '').toUpperCase();
+    /* THE LABEL OPENS WITH WHAT THE PIP SAYS. A voice-control user activates
+       a link by speaking the text they can see, so an accessible name that
+       does not contain the visible one is a control they cannot reach -
+       "Won 2-1 home v Three Little Birds" against a pip reading "W 2-1".
+       Found by the accessibility engine, not by reading it. */
+    const label = `${o} ${t.scoreline}, ${(OUT[o] || 'played').toLowerCase()} ${t.home ? 'at home' : 'away'} to ${shortClub(t.opponent)}`
+      + `${t.minutes != null ? `, ${t.minutes} mins` : ''}${did ? `, ${did}` : ''}`;
+    const ret = (t.goals || 0) + (t.assists || 0);
+    return `<li style="--i:${i}"><a class="pf-run__m${o === 'W' ? ' is-w' : o === 'L' ? ' is-l' : ' is-d'}${ret ? ' has-ret' : ''}"${ret ? ` style="--r:${Math.min(ret, 4)}"` : ''} href="${attr(`/matches/${t.id}.html`)}" aria-label="${attr(label)}"><b>${esc(o || '-')}</b><span>${esc(t.scoreline)}</span></a></li>`;
+  }).join('')}</ol>
+          </section>`;
+  };
+
   const seasonPanel = (sn, x, idx) => {
     if (!x.apps && !x.bench) {
       return `<div class="pf-panel" id="pf-s-${idx}" data-season-panel="${idx}">
           ${emptyPanel(sn)}
         </div>`;
     }
-    return `<div class="pf-panel" id="pf-s-${idx}" data-season-panel="${idx}">
+    return numberPanel(`<div class="pf-panel" id="pf-s-${idx}" data-season-panel="${idx}">
           <section class="pf-sub" aria-labelledby="pf-n-${idx}">
-            ${rail(1, sn === 'All seasons' ? 'Every season' : 'The season', `${sn} · ${x.starts} ${x.starts === 1 ? 'start' : 'starts'}`)}
+            ${rail('NUM', sn === 'All seasons' ? 'Every season' : 'The season', `${sn} · ${x.starts} ${x.starts === 1 ? 'start' : 'starts'}`)}
             <h3 class="h2 rv" id="pf-n-${idx}">${esc(sn)} in <span class="volt">numbers.</span></h3>
             <ul class="pf-tiles${tilesFor(x).length > 6 ? ' pf-tiles--8' : ''} rv">
               ${tilesFor(x).map(statTile).join('\n              ')}
             </ul>
           </section>
 
+          ${spotsBand(x, idx)}
+
+          ${formBand(x, idx, sn === 'All seasons')}
+
           <section class="pf-sub" aria-labelledby="pf-r-${idx}">
-            ${rail(2, gk ? 'Defensive record' : 'Attacking record', `${x.starts} ${x.starts === 1 ? 'start' : 'starts'}`)}
+            ${rail('NUM', gk ? 'Defensive record' : 'Attacking record', `${x.starts} ${x.starts === 1 ? 'start' : 'starts'}`)}
             <h3 class="h2 rv" id="pf-r-${idx}">The <span class="volt">record.</span></h3>
             <div class="pf-record__grid rv">
               <ul class="pf-bars">
@@ -775,7 +895,15 @@ export function playerPage(p, d) {
        away, and every match as a column. The columns are a season's; under
        All seasons they would be the longest season's again. */
     const charts = [resultsDonut(x), shareGauge(x, gk), homeAway(x, gk)].filter(Boolean);
-    const cols = sn === 'All seasons' ? '' : matchColumns(x, gk);
+    /* THE MATCH-BY-MATCH COLUMNS ARE GONE, and "How it went" is what replaced
+       them. Both were every match in order; the columns gave bar height for
+       goals and assists and named the match in a hover title, which is a fact
+       behind a pointer. The strip gives the result, the score, the opponent,
+       the minutes and the return, in text, as a link, readable on a phone -
+       and the size of the return survives as the size of the dot. It also
+       paid for itself: the heaviest profile was at its byte ceiling and could
+       not have carried both. */
+    const cols = '';
     /* The club's own record over exactly the matches this panel counts. */
     const wheelPool = sn === 'All seasons' ? (d.players || []) : ((d.playersBySeason || {})[sn] || []);
     const teamList = sn === 'All seasons' ? counted : ((seasons.find((s) => s.name === sn) || {}).matches || []);
@@ -791,7 +919,7 @@ export function playerPage(p, d) {
       sn === 'All seasons' ? 'across every season' : `in ${sn}`, shot);
     const n = charts.length + (cols ? 1 : 0) + (wheel ? 1 : 0);
     return n ? `<section class="pf-sub" aria-labelledby="pf-g-${idx}">
-            ${rail(3, 'In pictures', `${n} ${n === 1 ? 'chart' : 'charts'}`)}
+            ${rail('NUM', 'In pictures', `${n} ${n === 1 ? 'chart' : 'charts'}`)}
             <h3 class="h2 rv" id="pf-g-${idx}">${esc(sn === 'All seasons' ? 'Every season' : sn)} in <span class="volt">pictures.</span></h3>
             <div class="pf-charts rv">
             ${wheel}${cols}${charts.join('')}
@@ -803,14 +931,14 @@ export function playerPage(p, d) {
                 with a single season of any length it is that season's plot twice. */''}
           ${x.timeline.length > 1 && (sn !== 'All seasons'
     || seasons.filter((s) => s.profile.timeline.length > 1).length > 1) ? `<section class="pf-sub" aria-labelledby="pf-c-${idx}">
-            ${rail(4, 'Through the season', `${x.timeline.length} ${x.timeline.length === 1 ? 'match' : 'matches'}`)}
+            ${rail('NUM', 'Through the season', `${x.timeline.length} ${x.timeline.length === 1 ? 'match' : 'matches'}`)}
             <h3 class="h2 rv" id="pf-c-${idx}">${gk ? 'Clean sheets' : 'Goals and assists'} as they
               <span class="volt">came.</span></h3>
             ${chartFor(x, `pf-plot-${idx}`)}
           </section>` : ''}
 
           ${x.byCompetition.length ? `<section class="pf-sub" aria-labelledby="pf-k-${idx}">
-            ${rail(5, 'By competition', `${x.byCompetition.length} entered`)}
+            ${rail('NUM', 'By competition', `${x.byCompetition.length} entered`)}
             <h3 class="h2 rv" id="pf-k-${idx}">Across every <span class="volt">competition.</span></h3>
             <div class="pf-tablewrap rv">
               <table class="pf-tbl">
@@ -841,7 +969,7 @@ export function playerPage(p, d) {
           ${/* Recency belongs to a season; under All seasons it is the latest
                 season's list again. */''}
           ${x.last.length && sn !== 'All seasons' ? `<section class="pf-sub" aria-labelledby="pf-l-${idx}">
-            ${rail(6, 'Most recent', `${x.last.length} ${x.last.length === 1 ? 'match' : 'matches'}`)}
+            ${rail('NUM', 'Most recent', `${x.last.length} ${x.last.length === 1 ? 'match' : 'matches'}`)}
             <h3 class="h2 rv" id="pf-l-${idx}">The last time <span class="volt">out.</span></h3>
             <ol class="pf-form rv">
               ${x.last.map((t) => `<li class="pf-form__item">
@@ -858,7 +986,7 @@ export function playerPage(p, d) {
               </li>`).join('\n              ')}
             </ol>
           </section>` : ''}
-        </div>`;
+        </div>`);
   };
 
   /* ================= 01 SEASONS =================

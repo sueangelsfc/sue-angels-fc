@@ -335,7 +335,7 @@ html.js .pf-charts.is-in .pf-split__bars i:first-child{animation: pf-glow 3.6s e
 .pf-tbl td{color: var(--ink-2);}
 
 /* ---- 06 Last starts ----------------------------------------------------- */
-.pf-form{list-style: none; margin: clamp(20px, 3vw, 30px) 0 0; padding: 0;
+.pf-run{list-style: none; margin: clamp(20px, 3vw, 30px) 0 0; padding: 0;
   display: grid; gap: 6px;}
 .pf-form__item{display: grid; align-items: center; gap: 14px;
   grid-template-columns: 34px minmax(0, 200px) 54px minmax(0, 1fr) 92px 30px;
@@ -980,3 +980,73 @@ html.js .pf-pitch__grid.is-picking .pf-spot.is-picked{opacity: 1;}
 .pf-sponsor{margin: 14px 0 0; font-size: 13.5px; line-height: 1.7; color: var(--ink-3);}
 .pf-sponsor a{color: var(--volt-text);}
 .pf-sponsor i{font-style: normal; opacity: 0.8;}
+
+/* ---- Where he played ----------------------------------------------------
+   The club records the position AND the job, per spell, every match. None of
+   it reached this page: a profile said "Defender" where the record said right
+   wing back, overlapping, three times out of five. */
+.pf-spots{list-style: none; margin: clamp(14px, 2vw, 22px) 0 0; padding: 0; display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));}
+.pf-spot{display: grid; gap: 3px; padding: 16px 18px; border-radius: 16px;
+  border: 1px solid var(--line-d); background: var(--slab); min-width: 0;}
+.pf-spot b{font-family: var(--display); font-weight: 500; font-size: clamp(16px, 1.8vw, 19px);
+  letter-spacing: -0.022em; color: var(--fg);}
+.pf-spot span{font-family: var(--ui); font-size: 9px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--volt-text);}
+.pf-spot i{font-style: normal; font-size: 12.5px; color: var(--ink-3);
+  font-variant-numeric: tabular-nums;}
+@media (prefers-reduced-motion: no-preference){
+  .pf-spots.rv.is-in .pf-spot{animation: pf-rise 0.5s var(--ease-out-expo) both;
+    animation-delay: calc(var(--i, 0) * 60ms);}
+}
+
+/* ---- How it went --------------------------------------------------------
+   The season in order, told apart by weight and structure rather than by a
+   second colour, because win/draw/loss is football data and the token set
+   keeps its status colours for forms and toasts. */
+.pf-run__cap{margin: 10px 0 0; max-width: 62ch; font-size: 13.5px; line-height: 1.55; color: var(--ink-3);}
+ /* CAPPED, not stretched. A season of five matches across the full width
+   gives five 145px slabs where a season of twenty-nine gives 62px pips, and
+   the same band reads as two different things. */
+.pf-run{list-style: none; margin: 14px 0 0; padding: 0;
+  display: grid; gap: 7px; justify-content: start;
+  grid-template-columns: repeat(auto-fit, minmax(62px, 86px));}
+.pf-run__m{position: relative; display: grid; gap: 1px; justify-items: center;
+  padding: 9px 4px 10px; border-radius: 12px; text-decoration: none; min-width: 0;
+  border: 1px solid var(--line-d); background: var(--slab);
+  transition: border-color 0.22s, transform 0.28s var(--ease-out-expo);}
+.pf-run__m:hover{border-color: rgba(var(--volt-rgb), 0.5); transform: translateY(-2px);}
+.pf-run__m:focus-visible{outline: 2px solid var(--volt); outline-offset: 3px;}
+.pf-run__m b{font-family: var(--ui); font-size: 12px; font-weight: 800; letter-spacing: 0.1em;
+  line-height: 1; color: var(--ink-3);}
+.pf-run__m span{font-family: var(--display); font-weight: 500; font-size: 15px;
+  letter-spacing: -0.02em; color: var(--fg); font-variant-numeric: tabular-nums;}
+/* A win is filled, a draw is outlined, a defeat is neither. One accent. */
+.pf-run__m.is-w{border-color: rgba(var(--volt-rgb), 0.55);
+  background: linear-gradient(180deg, rgba(var(--volt-rgb), 0.16), transparent 72%), var(--slab);}
+.pf-run__m.is-w b{color: var(--volt-text);}
+.pf-run__m.is-d{border-style: dashed;}
+.pf-run__m.is-l{opacity: 0.62;}
+/* A return of his own, which is the difference between the club's form and
+   his. Drawn as a dot rather than written, because the words are on the
+   link's label and the strip is meant to be scanned. */
+.pf-run__m.has-ret:after{content: ""; position: absolute; top: 6px; right: 6px;
+  width: calc(4px + var(--r, 1) * 2px); height: calc(4px + var(--r, 1) * 2px);
+  border-radius: 50%; background: var(--volt);}
+@media (prefers-reduced-motion: no-preference){
+  .pf-run.rv.is-in li{animation: pf-rise 0.4s var(--ease-out-expo) both;
+    animation-delay: calc(var(--i, 0) * 26ms);}
+}
+@media (prefers-reduced-motion: reduce){
+  .pf-run__m{transition: none;}
+  .pf-run__m:hover{transform: none;}
+}
+
+/* A bar at nought shows its track rather than an empty rail, which reads as
+   a chart that failed to draw rather than as a figure of nought. */
+.pf-bar--none .pf-bar__track{background-image: repeating-linear-gradient(90deg,
+  rgba(var(--lift), 0.22) 0 3px, transparent 3px 9px);}
+
+/* The rise these two bands reveal with. Named here because nothing else on
+   this page had one: every other chart animates its own geometry. */
+@keyframes pf-rise{from{opacity: 0; transform: translateY(12px);} to{opacity: 1; transform: none;}}

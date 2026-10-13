@@ -12,7 +12,8 @@
    import for a reason that no longer holds is a comment that makes somebody
    duplicate a rule instead.
    ========================================================================== */
-import { cameOn as subsCameOn } from './subs.mjs';
+import { cameOn as subsCameOn, minutesPlayed, FULL_MATCH } from './subs.mjs';
+import { positionName, roleName, POSITION_GROUPS } from './positions.mjs';
 import { clubIdentity } from './club-name.mjs';
 import { isPlaying } from './squad-status.mjs';
 
@@ -1056,6 +1057,34 @@ export function playerProfile(player, matches, squad) {
     assists += (m.detail?.assists || []).filter((x) => x.num === player.num).length;
     if (m.detail?.motm === player.num) motm++;
   }
+  /* The places he stood in one match, from the team sheet's own spells, with
+     the first position as the fallback for a record written before spells
+     existed. A code nothing recognises is dropped rather than printed. */
+  const GROUP_OF = Object.fromEntries(POSITION_GROUPS
+    .flatMap((g) => g.codes.map((c) => [c, g.key])));
+  const spotsIn = (m) => {
+    const det = m.detail || {};
+    const me = [...(det.starters || []), ...(det.bench || [])]
+      .find((r) => Number(r.num) === Number(player.num));
+    if (!me) return [];
+    const spells = (me.spells || []).filter((sp) => sp && sp.pos);
+    const raw = spells.length
+      ? spells.map((sp) => ({ pos: sp.pos, role: sp.role || me.role || '' }))
+      : (me.positions || []).map((c) => ({ pos: c, role: me.role || '' }));
+    const seen = new Set();
+    const out = [];
+    for (const r of raw) {
+      const code = String(r.pos || '').toUpperCase();
+      const name = positionName(code);
+      if (!code || name === 'Squad player') continue;
+      const key = `${code}|${r.role || ''}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ code, name, group: GROUP_OF[code] || '', role: r.role || '', roleName: roleName(r.role) });
+    }
+    return out;
+  };
+
   const timeline = [];
   let runGoals = 0, runAssists = 0, runClean = 0;
   /* Which of these he began, so a page leading with starts can count them per
@@ -1094,9 +1123,32 @@ export function playerProfile(player, matches, squad) {
       home: !!m.weAreHome,
       started: startIds.has(m.id),
       ourGoals: m.countsGoals ? m.ourGoals : null,
+      /* HOW LONG HE WAS ON, where the record can say. Null where it cannot,
+         which is most of the archive, and the page prints nothing rather than
+         ninety. */
+      minutes: minutesPlayed(player.num, m.detail),
+      /* WHERE HE PLAYED IN THIS ONE. Every spell, not only the first: a man
+         who started at centre half and finished in midfield did both, and the
+         page used to publish the first and throw the rest away. */
+      spots: spotsIn(m),
       runGoals, runAssists, runClean,
     });
   }
+
+  /* WHERE HE PLAYED ACROSS THE SEASON, counted. A profile that says
+     "Defender" says less than the record holds: the club writes down the
+     position AND the job, every match, and none of it reached the page. */
+  const spotTally = new Map();
+  for (const t of timeline) {
+    for (const sp of t.spots) {
+      const key = `${sp.code}|${sp.role}`;
+      if (!spotTally.has(key)) spotTally.set(key, { ...sp, games: 0 });
+      spotTally.get(key).games += 1;
+    }
+  }
+  const spots = [...spotTally.values()].sort((a, b) => b.games - a.games || a.code.localeCompare(b.code));
+  const timed = timeline.filter((t) => t.minutes != null);
+  const minutes = timed.reduce((n, t) => n + t.minutes, 0);
 
   const decided = won + drawn + lost;
   const pct = (n, of) => (of ? Math.round((n / of) * 100) : 0);
@@ -1135,6 +1187,15 @@ export function playerProfile(player, matches, squad) {
     motmRank: rankOf('motm'),
     cleanSheetRank: rankOf('cleanSheets'),
     byCompetition: [...comps.values()].sort((a, b) => b.apps - a.apps),
+    /* MINUTES, and how many matches they could be counted over. The second
+       figure is not decoration: 180 minutes is a different claim over two
+       matches and over twelve, and without it the page would quietly imply
+       the whole season had been counted. */
+    minutes,
+    minutesGames: timed.length,
+    minutesPerStart: timed.length ? Math.round(minutes / timed.length) : null,
+    fullMatch: FULL_MATCH,
+    spots,
     timeline,
     last: timeline.slice(-10).reverse(),
   };

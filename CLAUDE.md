@@ -1193,6 +1193,44 @@ down as the same four digits.
   `src/admin/lazy/11-matchedit.js` budgeted as source so code growth still
   shows up on its own.
 
+### A menu that cannot be clicked
+
+`.pghead` was `position: static`. The note beside it argued against
+`absolute`, which would take the header out of flow and let the first band
+slide under it, and settled on `static` - but `relative` keeps every pixel of
+that and buys the one thing `static` cannot have: **a z-index that means
+something**. Static, the header is painted over by any POSITIONED band that
+comes after it in the document, whatever either of them claims.
+
+**The casualty is always the drop-down menu**, because the menu is the only
+part of the header drawn outside its own box. On a match report the scoreboard
+is `position: relative` and the pinned bar is sticky at 30, so opening "On the
+Pitch" drew a 0-4 through the menu and **all seven links were dead**. With the
+fix reverted the browser pass counts **72 unreachable menu links across the
+site**: this was never one page's bug.
+
+- **35**: above every band (the pinned scoreboard is the highest, at 30) and
+  below the fixed overlays, because the mobile menu at 40 has to cover the
+  header rather than slide behind it.
+- The programme page hit this in September and was fixed **in its own
+  stylesheet**, which was the wrong altitude for a fault every rebuilt page
+  shares. That rule is gone; this one replaces it.
+- **Only `npm run visual` can ask this.** The suite's DOM has no layout and no
+  cascade, so it cannot know what is painted over what, and every static check
+  of the header passed throughout. The check opens the fullest drop-down on
+  every page family at the widest width and asks, of each link, what a click
+  at the middle of it would actually hit. **Hit-tested, not measured**: the
+  question is not where the panel is, it is where the click lands.
+- **It waits for the boot screen first.** The home page holds a fixed crest
+  splash at z-index 9999 for three seconds, so the check's first honest answer
+  was "every link on the front page is covered" - by the loading screen, which
+  is true and is not a bug. A check that cries wolf on the club's own front
+  page is a check somebody switches off.
+- **One group per page, at one width.** Every group opens the same panel in
+  the same place, so a band painting over one paints over all of them; five
+  groups on thirty-three pages would add two minutes to the run to re-prove
+  the same fact. Below 768 there is no drop-down to open.
+
 ### A correction the club has agreed and has not yet saved
 
 `src/data/match-corrections.json`, applied by `applyCorrections()` in

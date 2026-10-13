@@ -106,7 +106,26 @@
    every rebuilt page wears it. It sat in the About band until the stylesheet
    was split per page, at which point being in the wrong file would have
    stripped the header colours from eleven pages. */
-.pghead{position: static; padding-top: 22px; padding-bottom: 22px;}
+/* RELATIVE, NOT STATIC, AND THAT IS NOT THE SAME QUESTION AS ABSOLUTE.
+   The note above is about `absolute`, which would take the header out of
+   flow and let the first band slide under it. `relative` keeps every pixel
+   of that and buys the one thing `static` cannot have: a z-index that means
+   something. Static, the header is painted over by any POSITIONED band that
+   comes after it in the document, whatever either one claims - and the
+   casualty is always the same, the drop-down menu, because the menu is the
+   only part of the header drawn outside its own box.
+
+   It shipped broken on the match reports: the scoreboard is
+   `position: relative` and the pinned bar is sticky at 30, so opening
+   "On the Pitch" drew a 0-4 through the menu and the links under it could
+   not be clicked. The programme page had already hit it in September and was
+   fixed one page at a time, in that page's own stylesheet, which was the
+   wrong altitude for a fault every rebuilt page shares.
+
+   35: above every band (the pinned scoreboard is the highest at 30) and
+   below the fixed overlays, because the mobile menu at 40 has to cover the
+   header rather than slide behind it. */
+.pghead{position: relative; z-index: 35; padding-top: 22px; padding-bottom: 22px;}
 .is-sub .pghead .hx__brand span,
 .is-sub .pghead .hx__navtop{color: var(--ink-1);}
 .is-sub .pghead .hx__navtop:hover{color: var(--fg); background: rgba(var(--volt-rgb), 0.10);}

@@ -35,7 +35,8 @@
 import { esc, attr } from './html.mjs';
 import { POSITION_XY, POSITION_GROUPS, positionName, roleName } from './positions.mjs';
 import { describeGoal, describeAssist, shortGoal, SITUATION, approachOf, describeApproach } from './football.mjs';
-import { substitutions } from './subs.mjs';
+import { substitutions, minutesPlayed } from './subs.mjs';
+export { minutesPlayed };
 import { deriveTable, toISO, fmtDate, isLeague, isCup, ordinal } from './stats.mjs';
 import { sameClub } from './preseason.mjs';
 
@@ -463,30 +464,6 @@ export function sheetMarks(numIn, m) {
     yellow: (det.yellowCards || []).filter((c) => Number(c.num) === n).map((c) => c.minute),
     red: (det.redCards || []).filter((c) => Number(c.num) === n).map((c) => c.minute),
   };
-}
-
-/* How long he was on the pitch, counted from the substitutions and from
-   nothing else.
-
-   NULL WHERE IT CANNOT BE COUNTED, which is the rule the rest of this file
-   runs on: a substitution with no minute makes every figure that depends on
-   it a guess, and a guess printed as `73'` is indistinguishable from a fact.
-   The archive is full of unminuted changes, so this returns null often and
-   the row simply carries no figure. */
-export function minutesPlayed(numIn, det) {
-  const n = Number(numIn);
-  const started = (det.starters || []).some((s) => Number(s.num) === n);
-  const evs = substitutions(det).filter((s) => s.off === n || s.on === n);
-  if (!started && !evs.some((s) => s.on === n)) return null;
-  if (evs.some((s) => s.minute == null)) return null;
-  let on = started ? 0 : null;
-  let total = 0;
-  for (const s of evs) {
-    if (s.on === n) on = s.minute;
-    else if (s.off === n && on != null) { total += Math.max(0, s.minute - on); on = null; }
-  }
-  if (on != null) total += Math.max(0, MINS - on);
-  return total;
 }
 
 /* Back to front, then left to right, from the pitch's own coordinates. A man

@@ -7598,15 +7598,16 @@
             "on": true,
             "num": 41,
             "onAt": 77,
+            "role": "TRQ",
             "spells": [
               {
-                "pos": "ST",
+                "pos": "AM",
                 "half": "2",
-                "role": ""
+                "role": "TRQ"
               }
             ],
             "positions": [
-              "ST"
+              "AM"
             ]
           },
           {
@@ -7724,17 +7725,22 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-10-12T19:15:19.514Z",
+        "savedAt": "2026-10-13T08:55:45.167Z",
+        "approach": {
+          "build": "counter",
+          "press": "mid",
+          "attack": "channels"
+        },
         "redCards": [],
         "starters": [
           {
             "num": 28,
-            "role": "SK",
+            "role": "SHS",
             "spells": [
               {
                 "pos": "GK",
                 "half": "1",
-                "role": "SK"
+                "role": "SHS"
               }
             ],
             "positions": [
@@ -7800,26 +7806,32 @@
           },
           {
             "num": 12,
-            "role": "APM",
+            "role": "RPM",
             "spells": [
               {
                 "pos": "CAM",
                 "half": "1",
-                "role": "APM"
+                "role": "RPM"
+              },
+              {
+                "pos": "RDM",
+                "half": "2",
+                "role": "REG"
               }
             ],
             "positions": [
-              "CAM"
+              "CAM",
+              "RDM"
             ]
           },
           {
             "num": 9,
-            "role": "CFW",
+            "role": "CHR",
             "spells": [
               {
                 "pos": "ST",
                 "half": "1",
-                "role": "CFW"
+                "role": "CHR"
               }
             ],
             "positions": [
@@ -7848,10 +7860,16 @@
                 "pos": "RDM",
                 "half": "1",
                 "role": "BWM"
+              },
+              {
+                "pos": "RCB",
+                "half": "2",
+                "role": "BPD"
               }
             ],
             "positions": [
-              "RDM"
+              "RDM",
+              "RCB"
             ]
           },
           {
@@ -7889,6 +7907,21 @@
         "cleanSheets": [
           {
             "num": 28
+          },
+          {
+            "num": 38
+          },
+          {
+            "num": 25
+          },
+          {
+            "num": 40
+          },
+          {
+            "num": 2
+          },
+          {
+            "num": 20
           }
         ],
         "competition": "Brian Howard President's Cup",
@@ -7900,7 +7933,7 @@
         "opponentRedCards": [],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-10-12T19:15:19.514+00:00"
+      "updated_at": "2026-10-13T08:55:45.167+00:00"
     }
   ],
   "articles": [

@@ -122,3 +122,34 @@ export function flagsFrom(starters, bench, events) {
     }),
   };
 }
+
+/* HOW LONG HE WAS ON THE PITCH, counted from the substitutions and from
+   nothing else.
+
+   NULL WHERE IT CANNOT BE COUNTED, which is the rule the whole record runs
+   on: a substitution with no minute makes every figure depending on it a
+   guess, and `73'` printed over a guess is indistinguishable from a fact.
+   Most of the archive's changes carry no minute at all, so this returns null
+   often and the page simply carries no figure.
+
+   HERE RATHER THAN IN THE PAGE THAT FIRST DREW IT. The match report had it
+   first; the player profile needs the same answer, and two counts of the same
+   thing are two counts that can disagree. */
+export const FULL_MATCH = 90;
+
+export function minutesPlayed(numIn, detail) {
+  const n = Number(numIn);
+  const det = detail || {};
+  const started = (det.starters || []).some((s) => Number(s.num) === n);
+  const evs = substitutions(det).filter((s) => s.off === n || s.on === n);
+  if (!started && !evs.some((s) => s.on === n)) return null;
+  if (evs.some((s) => s.minute == null)) return null;
+  let on = started ? 0 : null;
+  let total = 0;
+  for (const s of evs) {
+    if (s.on === n) on = s.minute;
+    else if (s.off === n && on != null) { total += Math.max(0, s.minute - on); on = null; }
+  }
+  if (on != null) total += Math.max(0, FULL_MATCH - on);
+  return total;
+}

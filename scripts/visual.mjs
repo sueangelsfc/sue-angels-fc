@@ -122,6 +122,55 @@ const fails = [];
 const notes = [];
 const fail = (where, what) => fails.push(`${where}: ${what}`);
 
+/* Open a drop-down and ask, of every link in it, what a click at the middle
+   of that link would actually hit. Returns the ones where the answer is not
+   the link.
+
+   ONE GROUP PER PAGE, the fullest one, and only at the widest width. Every
+   group opens the SAME panel in the same place under the header, so a band
+   painting over one paints over all of them; five groups on thirty-three
+   pages would add two minutes to this run to re-prove the same fact. Below
+   768 there is no drop-down at all - the full-screen mobile nav takes over -
+   so there is nothing to ask. */
+const MENU = `(async () => {
+  /* WAIT FOR THE BOOT SCREEN. The home page holds a fixed crest splash at
+     z-index 9999 for three seconds, and this check runs well inside that, so
+     its first honest answer was "every link on the front page is covered" -
+     by the loading screen, which is true and is not a bug. A check that cries
+     wolf on the club's own front page is a check somebody switches off. */
+  for (let i = 0; i < 60 && document.querySelector('#sa-boot'); i += 1) {
+    await new Promise((r) => setTimeout(r, 100));
+  }
+  const groups = [...document.querySelectorAll('.hx__navgrp')]
+    .map((g) => [g, g.querySelectorAll('.hx__dd a').length])
+    .sort((a, b) => b[1] - a[1]);
+  if (!groups.length || !groups[0][1]) return [];
+  const g = groups[0][0];
+  const trig = g.querySelector('.hx__navtrig');
+  if (!trig) return [];
+  for (const t of ['pointerenter', 'mouseenter', 'mouseover', 'pointerover']) {
+    trig.dispatchEvent(new PointerEvent(t, { bubbles: true }));
+  }
+  await new Promise((r) => setTimeout(r, 560));
+  const panel = document.querySelector('.hx__vp');
+  const links = panel ? [...panel.querySelectorAll('a')] : [];
+  const out = [];
+  for (const a of links) {
+    const r = a.getBoundingClientRect();
+    if (!r.width || !r.height) continue;
+    const top = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    if (top === a || a.contains(top)) continue;
+    const name = (e) => (e ? e.tagName + (e.id ? '#' + e.id : '')
+      + (e.className ? '.' + String(e.className).trim().split(/\s+/).slice(0, 2).join('.') : '') : 'nothing');
+    const cs = top ? getComputedStyle(top) : null;
+    out.push({ text: a.textContent.trim().slice(0, 24),
+      hit: name(top) + ' [pos=' + (cs ? cs.position : '-') + ' z=' + (cs ? cs.zIndex : '-') + ']'
+        + ' under ' + name(top && top.parentElement) });
+  }
+  if (!links.length) out.push({ text: '(the panel never opened)', hit: 'no links to hit-test' });
+  return out;
+})()`;
+
 async function main() {
   if (!findChrome()) {
     console.error('No Chrome found. Install one, or set CHROME_PATH.');
@@ -191,6 +240,27 @@ async function main() {
       report(`${route} @${w}`, a);
       measured += a.measured; unverifiable += a.unverifiable;
       for (const [b, n] of Object.entries(a.clipped || {})) clippedBy.set(b, Math.max(clippedBy.get(b) || 0, n));
+      /* ---- CAN THE MENU BE CLICKED? -----------------------------------
+         Asked at the widest width only, because below 768 the drop-downs are
+         replaced by the full-screen mobile nav and there is nothing to open.
+
+         Nothing else on this project can ask this. The suite's DOM has no
+         layout and no cascade, so it cannot know what is painted over what;
+         every static check of the header passed while every link in it was
+         unreachable. It shipped that way on the match reports: `.pghead` was
+         `position: static`, the scoreboard is `position: relative`, and a
+         positioned sibling later in the document paints over a static one
+         whatever either of them claims about z-index. Seven links, all dead,
+         and the only symptom was a 0-4 drawn through the menu.
+
+         Hit-tested rather than measured: the question is not where the panel
+         IS, it is what a reader's click would actually land on. */
+      if (w === WIDTHS[WIDTHS.length - 1]) {
+        const blocked = await ask(MENU);
+        for (const b of (blocked || []).slice(0, 4)) {
+          fail(`${route} @${w}`, `menu link "${b.text}" cannot be clicked: ${b.hit} is on top of it`);
+        }
+      }
     }
   }
 

@@ -741,4 +741,5 @@ html.js .pr-count__static { display: none; }
    painting over every open menu and taking its clicks, so nothing in the
    nav could be reached from this page. Relative changes no layout; the
    z-index lifts the header, and its menus, over the band beneath it. */
-.is-programme .pghead { position: relative; z-index: 20; }
+/* The per-page lift this band used to carry is in 25-nav.css now, where it
+   covers every rebuilt page rather than the one that happened to report it. */

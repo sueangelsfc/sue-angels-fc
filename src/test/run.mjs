@@ -9876,7 +9876,7 @@ let orphanClasses = new Map();
    ========================================================================== */
 {
   const rv = await import(path.join(ROOT, 'src', 'lib', 'report-visuals.mjs'));
-  const { positionName } = await import(path.join(ROOT, 'src', 'lib', 'positions.mjs'));
+  const { positionName, roleName } = await import(path.join(ROOT, 'src', 'lib', 'positions.mjs'));
   const { buildDataset: bdRV } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
   const { matchReport: reportTpl } = await import(path.join(ROOT, 'src', 'templates', 'report.mjs'));
   const d = bdRV();
@@ -10146,8 +10146,20 @@ let orphanClasses = new Map();
        position rule covers ten archive matches nobody answered for and is a
        fallback for a career total, not something to print on one match page
        as though somebody had said it. */
-    check('a clean sheet is credited where the club named somebody',
-      mk(28).clean === true && mk(25).clean === false);
+    /* DERIVED FROM THE RECORD, not from a man who happened not to be named
+       the day this was written. The club has since named six men on this
+       sheet, and an assertion that Daniel McLane is NOT one of them went red
+       for the best possible reason: the club filled the field in. A check
+       that has to be rewritten every time the record improves is a check that
+       stops being run. */
+    const named = new Set([...(det.cleanSheets || []), ...(det.cleanSheetContributors || [])]
+      .map((c) => String(c && c.num != null ? c.num : c)));
+    const onSheet = [...(det.starters || []), ...(det.bench || [])].map((r) => String(r.num));
+    const notNamed = onSheet.filter((n) => !named.has(n));
+    check('a clean sheet is credited to exactly the men the club named',
+      named.size > 0 && [...named].every((n) => mk(Number(n)).clean === true)
+      && notNamed.every((n) => mk(Number(n)).clean === false),
+      `${named.size} named, ${notNamed.length} not`);
     check('and a match the opponents scored in credits nobody',
       rv.sheetMarks(28, { ...peps, theirGoals: 1 }).clean === false);
 
@@ -10162,8 +10174,16 @@ let orphanClasses = new Map();
       sh.foot === '13 named · 11 started · 2 off the bench · 0 unused', sh.foot);
 
     /* ---- The role, and every place he played ---------------------------- */
-    check('a role the club recorded is printed, not thrown away',
-      /Goalkeeper · Sweeper keeper/.test(sh.xi));
+    /* The role is the club's to change - Luke Munns was a sweeper keeper and
+       is a shot stopper now - so the expected string is read off the record
+       rather than typed here. */
+    const withRole = (det.starters || []).find((r) => r.role || (r.spells || []).some((sp) => sp.role));
+    if (withRole) {
+      const rc = withRole.role || (withRole.spells || []).find((sp) => sp.role).role;
+      const want = `${positionName((withRole.positions || [])[0])} · ${roleName(rc)}`;
+      check('a role the club recorded is printed, not thrown away',
+        sh.xi.includes(want), want);
+    }
     /* EVERY PLACE HE PLAYED. The record holds a spell per position and the
        page kept only the first, so a centre half who finished the match in
        midfield read as a centre half all afternoon. */

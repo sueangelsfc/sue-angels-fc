@@ -33,7 +33,7 @@
    the reason these bands can be trusted on a page that is mostly numbers.
    ========================================================================== */
 import { esc, attr } from './html.mjs';
-import { POSITION_XY, positionName } from './positions.mjs';
+import { POSITION_XY, POSITION_GROUPS, positionName, roleName } from './positions.mjs';
 import { describeGoal, describeAssist, shortGoal, SITUATION } from './football.mjs';
 import { substitutions } from './subs.mjs';
 import { deriveTable, toISO, fmtDate, isLeague, isCup, ordinal } from './stats.mjs';
@@ -339,7 +339,10 @@ export function goalCards(m, d) {
    list it replaces, and the team sheet below carries every name either way. */
 export function pitchXI(m, d) {
   const det = m.detail || {};
-  const starters = det.starters || [];
+  /* In the same order as the list beside it, so the stagger runs back to
+     front and the SVG's own label reads like a team sheet rather than like
+     the order a form was filled in. */
+  const starters = inPositionOrder(det.starters || []);
   const placed = starters.map((s) => {
     const code = (s.positions || [])[0];
     const xy = POSITION_XY[String(code || '').toUpperCase()];
@@ -388,22 +391,154 @@ export function pitchXI(m, d) {
         </figure>`;
 }
 
-/* ---- 5. The team sheet, with faces ---------------------------------------
-   `shotFor` is the whole photograph resolution in one place - that season's,
-   then the default, then a file on disk only for somebody in the code
-   baseline - and the honest answer for the other six is their initials, which
-   is what every other screen on the site shows. A face per row and initials
-   per row are both a row; a face per row and a BLANK per row is a layout
-   mistake somebody will report as a bug.
+/* ---- 5. The team sheet, read as a team sheet ------------------------------
+   IT IS IN POSITION ORDER, which is the club's ask and is the whole reason
+   this band is readable at all. The record stores the eleven in the order
+   somebody filled the form in - keeper, right wing back, right centre back,
+   left centre back, then a midfielder, then an attacking midfielder, then two
+   strikers, then back to a defensive midfielder and a centre half - and a
+   list in that order is not a team sheet, it is a form. Back to front and
+   left to right is how every team sheet in football has ever been written,
+   and it is the order the diagram beside it already draws.
 
-   And a full position rather than a code. `LWB` is a storage key, like a
-   shirt number: the site prints "Left wing back" everywhere a person reads. */
+   BOTH HALVES OF THAT ORDER ARE DERIVED FROM `POSITION_XY`, the same
+   coordinates the pitch is drawn from, so the list and the diagram cannot
+   disagree about where somebody stood. `y` descending is back to front
+   (the keeper is at 92 and a striker at 14); `x` ascending is left to right
+   within a line. Nothing is typed.
+
+   NO COUNT ON A LINE HEADING. Group the recorded positions and this eleven
+   is 5-3-2; the club recorded it as 3-4-1-2, reading the wing backs forward
+   and the attacking midfielder as his own line. BOTH ARE RIGHT - where a
+   wing back belongs is a judgement, not a fact - so the headings name the
+   lines and count nothing, because a page printing 5-3-2 beside the club's
+   own 3-4-1-2 would be arguing with itself in public.
+
+   `shotFor` is the whole photograph resolution in one place, and the honest
+   answer where there is none is initials, which is what every other screen
+   on the site shows. A face per row and initials per row are both a row; a
+   face per row and a BLANK per row is a layout mistake somebody reports.
+
+   And a full position in words rather than a code. `LWB` is a storage key,
+   like a shirt number. The code survives in exactly one place - a chip on
+   the face, carrying the full name as its title and hidden from a screen
+   reader, which already has the words on the next line - because it is the
+   mark the pitch diagram uses and the chip is what lets a reader find the
+   same man in both. */
+
+/* Everything the record says this man did, and nothing it does not. Returned
+   as marks rather than rendered here, so the suite can ask what was derived
+   without reading it back out of HTML. */
+export function sheetMarks(numIn, m) {
+  const n = Number(numIn);
+  const det = m.detail || {};
+  const goals = (det.goals || []).filter((g) => !g.og && Number(g.num) === n);
+  /* FROM THE GOAL, not from the flat list. The assist is a field on the goal
+     and `assists` is derived from it on save, so counting the flat one risks
+     counting a stored duplicate - the fault that published four assists each
+     for two men in one evening of edits. An orphan (an assist belonging to no
+     goal) is in the flat list alone, so it is taken from there and from
+     nowhere else. */
+  const made = (det.goals || []).filter((g) => g.assist && Number(g.assist.num) === n)
+    .map((g) => ({ minute: g.minute }));
+  const orphans = (det.assists || [])
+    .filter((a) => Number(a.num) === n && a.forGoalBy == null)
+    .map((a) => ({ minute: a.minute }));
+  const named = (list) => (list || []).some((c) => Number(c && c.num != null ? c.num : c) === n);
+  return {
+    goals: goals.map((g) => ({ minute: g.minute, i: (det.goals || []).indexOf(g) + 1 })),
+    assists: [...made, ...orphans],
+    captain: det.captain != null && Number(det.captain) === n,
+    potm: det.motm != null && Number(det.motm) === n,
+    keeper: det.keeper != null && Number(det.keeper) === n,
+    saves: det.keeper != null && Number(det.keeper) === n && typeof det.saves === 'number'
+      ? det.saves : null,
+    /* A clean sheet is credited to the men the CLUB named, never to whoever
+       happened to start in a defensive position. The engine's position rule
+       covers the ten archive matches nobody answered for, and it is a
+       fallback for a career total - not a thing to print on one match page as
+       though somebody had said it. */
+    clean: m.theirGoals === 0 && (named(det.cleanSheets) || named(det.cleanSheetContributors)),
+    yellow: (det.yellowCards || []).filter((c) => Number(c.num) === n).map((c) => c.minute),
+    red: (det.redCards || []).filter((c) => Number(c.num) === n).map((c) => c.minute),
+  };
+}
+
+/* How long he was on the pitch, counted from the substitutions and from
+   nothing else.
+
+   NULL WHERE IT CANNOT BE COUNTED, which is the rule the rest of this file
+   runs on: a substitution with no minute makes every figure that depends on
+   it a guess, and a guess printed as `73'` is indistinguishable from a fact.
+   The archive is full of unminuted changes, so this returns null often and
+   the row simply carries no figure. */
+export function minutesPlayed(numIn, det) {
+  const n = Number(numIn);
+  const started = (det.starters || []).some((s) => Number(s.num) === n);
+  const evs = substitutions(det).filter((s) => s.off === n || s.on === n);
+  if (!started && !evs.some((s) => s.on === n)) return null;
+  if (evs.some((s) => s.minute == null)) return null;
+  let on = started ? 0 : null;
+  let total = 0;
+  for (const s of evs) {
+    if (s.on === n) on = s.minute;
+    else if (s.off === n && on != null) { total += Math.max(0, s.minute - on); on = null; }
+  }
+  if (on != null) total += Math.max(0, MINS - on);
+  return total;
+}
+
+/* Back to front, then left to right, from the pitch's own coordinates. A man
+   with a position nothing recognises sorts to the end rather than to the
+   front: an unknown code is not a goalkeeper. */
+const GROUP_OF = Object.fromEntries(POSITION_GROUPS
+  .flatMap((g) => g.codes.map((c) => [c, g.key])));
+const LINES = [
+  { key: 'gk', label: 'In goal' },
+  { key: 'def', label: 'At the back' },
+  { key: 'mid', label: 'In midfield' },
+  { key: 'fwd', label: 'Up front' },
+  { key: '', label: 'Also named' },
+];
+const spotOf = (s) => {
+  const code = String(((s.positions || [])[0]) || '').toUpperCase();
+  const xy = POSITION_XY[code];
+  return { code, group: GROUP_OF[code] || '', x: xy ? xy[0] : 50, y: xy ? xy[1] : -1 };
+};
+/* THE Y IS BANDED BEFORE IT IS SORTED ON, and that is the whole difference
+   between a team sheet and a list. A left centre back sits at 81 and a centre
+   half at 80, which is a drawing decision rather than a fact about who played
+   further forward, and sorting on the raw figure put the back three in the
+   order McLane, Heath, Marie - left, right, middle. Rounded to the nearest
+   eight they are one line and the x decides, which is left to right as every
+   team sheet in football has ever been written. A wing back at 64 is a band
+   of his own, correctly, because he really did play further up. */
+const band = (y) => Math.round(y / 8);
+/* THE LINE COMES FIRST, then the band, then the x. A wing back is drawn at 64
+   and a defensive midfielder at 67, so on the coordinates alone the two lines
+   interleave - left wing back, left defensive midfielder, right defensive
+   midfielder, right wing back - which is where everybody stood and is not a
+   team sheet. Grouping first keeps the back line together and still reads
+   back to front inside it, because a wing back really is in front of a centre
+   half. A position nothing recognises sorts last: an unknown code is not a
+   goalkeeper. */
+const LINE_RANK = { gk: 0, def: 1, mid: 2, fwd: 3 };
+const rank = (g) => (LINE_RANK[g] == null ? 4 : LINE_RANK[g]);
+export const inPositionOrder = (list) => (list || [])
+  .map((s, i) => ({ s, i, ...spotOf(s) }))
+  .sort((a, b) => (rank(a.group) - rank(b.group))
+    || (band(b.y) - band(a.y)) || (a.x - b.x) || (a.i - b.i))
+  .map((r) => r.s);
+
 export function sheetRows(m, d) {
   const det = m.detail || {};
   const { nameFor } = linkers(d);
   const shot = d.shotFor || (() => '');
+  const subs = substitutions(det);
   const initials = (n) => String(nameFor(n) || '').split(/\s+/).filter(Boolean)
     .slice(0, 2).map((w) => w.charAt(0).toUpperCase()).join('');
+  const pages = new Map(((d.playersCompetitive || d.players || [])
+    .filter((p) => p && !p.unknown && p.slug)).map((p) => [String(p.num), p.slug]));
   const face = (n) => {
     const src = shot(n, m.season);
     return src
@@ -415,22 +550,97 @@ export function sheetRows(m, d) {
      already said who it is - the site's own rule - and putting the picture
      inside the anchor that prints the name is what makes that provable rather
      than asserted. The suite asks the same question the same way. */
-  const pages = new Map(((d.playersCompetitive || d.players || [])
-    .filter((p) => p && !p.unknown && p.slug)).map((p) => [String(p.num), p.slug]));
-  const row = (s, extra = '') => {
-    const pos = (s.positions || []).map((c) => positionName(c)).filter(Boolean).join(', ');
-    const inner = `<span class="mr-face">${face(s.num)}</span>`
-      + `<span class="mr-who__t"><b>${esc(nameFor(s.num))}</b>${pos ? `<i>${esc(pos)}</i>` : ''}</span>`;
-    const slug = pages.get(String(s.num));
-    return `<li class="mr-who${extra}">
+  const min = (v) => (v == null || v === '' ? '' : `${Number(v)}'`);
+
+  /* A mark is a pill with a word in it, never a letter and never a picture.
+     `C` for the captain and a star for the Player of the Match read as
+     decoration, and a numeral on its own beside a name is the one thing this
+     site refuses to print. Where a mark points at something on this page it
+     is a link, which is why the marks sit OUTSIDE the row's own anchor:
+     nesting a link in a link is not markup, and the goal card is worth
+     reaching from the man who scored it. */
+  const mark = (cls, label, detail, href) => {
+    const inner = `<b>${esc(label)}</b>${detail ? `<i>${esc(detail)}</i>` : ''}`;
+    return `<li>${href ? `<a class="mr-mk mr-mk--${cls}" href="${attr(href)}">${inner}</a>`
+      : `<span class="mr-mk mr-mk--${cls}">${inner}</span>`}</li>`;
+  };
+
+  let seq = 0;
+  const row = (s, kind) => {
+    const n = Number(s.num);
+    const spot = spotOf(s);
+    const spells = (s.spells || []).filter((p) => p && p.pos);
+    /* EVERY PLACE HE PLAYED, not only the first. The record holds a spell per
+       position and the page threw all but one away, so a centre half who
+       finished the match in midfield read as a centre half all afternoon.
+       Where there is only one spell this is exactly what it was before. */
+    const codes = spells.length
+      ? [...new Set(spells.map((p) => String(p.pos).toUpperCase()))]
+      : (s.positions || []).map((c) => String(c).toUpperCase());
+    const posText = codes.map((c) => positionName(c)).filter(Boolean).join(', ');
+    /* The role, which this page used to discard entirely. A false nine is a
+       striker with a job, and the club records the job. */
+    const roles = [...new Set([s.role, ...spells.map((p) => p.role)]
+      .map((r) => roleName(r)).filter(Boolean))];
+    const mins = minutesPlayed(n, det);
+    const mk = sheetMarks(n, m);
+    const pair = subs.find((x) => (kind === 'xi' ? x.off : x.on) === n);
+    const other = pair ? (kind === 'xi' ? pair.on : pair.off) : null;
+    const slug = pages.get(String(n));
+    const marks = [
+      mk.captain ? mark('cap', 'Captain', '') : '',
+      mk.potm ? mark('potm', 'Player of the match', '') : '',
+      ...mk.goals.map((g) => mark('goal', 'Goal', min(g.minute), `#g-${g.i}`)),
+      ...mk.assists.map((a) => mark('ast', 'Assist', min(a.minute))),
+      mk.saves ? mark('save', `${mk.saves} save${mk.saves === 1 ? '' : 's'}`, '') : '',
+      mk.clean ? mark('cs', 'Clean sheet', '') : '',
+      ...mk.yellow.map((t) => mark('yel', 'Booked', min(t))),
+      ...mk.red.map((t) => mark('red', 'Sent off', min(t))),
+    ].filter(Boolean).join('');
+    /* The change on BOTH rows, each pointing at the other. It was a list at
+       the foot of the band saying the same two facts a third time, in a place
+       where neither man's row could be seen. */
+    const swap = other != null ? `<p class="mr-who__sw mr-who__sw--${kind === 'xi' ? 'off' : 'on'}">
+          <span>${esc(kind === 'xi' ? 'Off' : 'On')}${pair.minute != null ? ` ${pair.minute}'` : ''}</span>
+          ${kind === 'xi' ? 'for' : 'for'} <a href="${attr(`#w${other}`)}">${esc(nameFor(other))}</a></p>` : '';
+    const state = kind === 'xi'
+      ? (mk.red.length ? ' is-off' : (pair ? ' is-off' : ''))
+      : (pair || s.on ? ' is-on' : ' is-unused');
+    const inner = `<span class="mr-face">${face(n)}${spot.code
+      ? `<i class="mr-face__pos" aria-hidden="true" title="${attr(positionName(spot.code))}">${esc(spot.code)}</i>` : ''}</span>`
+      + `<span class="mr-who__t"><b>${esc(nameFor(n))}</b>`
+      + `<i>${esc([posText || 'Squad player', ...roles].join(' · '))}</i></span>`
+      + (mins != null ? `<span class="mr-who__m"><b>${esc(String(mins))}'</b><i>on the pitch</i></span>` : '');
+    const part = mins != null && mins < MINS ? ' is-part' : '';
+    return `<li class="mr-who${state}${part}" id="${attr(`w${n}`)}" style="--i:${seq += 1};--mins:${mins == null ? 100 : Math.round((mins / MINS) * 100)}">
               ${slug ? `<a class="mr-who__a" href="${attr(`/players/${slug}.html`)}">${inner}</a>`
     : `<span class="mr-who__a">${inner}</span>`}
+              ${marks ? `<ul class="mr-who__marks">${marks}</ul>` : ''}
+              ${swap}
             </li>`;
   };
+
+  const starters = inPositionOrder(det.starters || []);
+  const xi = LINES.map((ln) => {
+    const men = starters.filter((s) => spotOf(s).group === ln.key);
+    if (!men.length) return '';
+    return `<h4 class="mr-line">${esc(ln.label)}</h4>
+            <ol class="mr-whos">
+            ${men.map((s) => row(s, 'xi')).join('\n            ')}
+            </ol>`;
+  }).filter(Boolean).join('\n            ');
+
+  const bench = inPositionOrder(det.bench || []);
+  const used = bench.filter((b) => subs.some((x) => x.on === Number(b.num)) || b.on).length;
   return {
-    xi: (det.starters || []).map((s) => row(s, s.subbedOff ? ' is-off' : '')).join('\n            '),
-    bench: (det.bench || []).map((b) => row(b, b.on ? ' is-on' : ' is-unused')).join('\n            '),
-    anyBench: (det.bench || []).length > 0,
+    xi,
+    bench: bench.map((b) => row(b, 'bench')).join('\n            '),
+    anyBench: bench.length > 0,
+    /* What the sheet comes to, counted off the sheet itself. It is the line
+       that says a 14-man return is a 14-man return, and it is the only place
+       on the page where the bench's unused men are counted at all. */
+    foot: `${starters.length + bench.length} named · ${starters.length} started`
+      + (bench.length ? ` · ${used} off the bench · ${bench.length - used} unused` : ''),
   };
 }
 

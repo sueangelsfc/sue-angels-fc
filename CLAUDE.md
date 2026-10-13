@@ -1133,6 +1133,87 @@ stand-first and a drop cap; and the players' names in that prose linked.
 - **`ordinal()` moved into `stats.mjs`.** `home.mjs` and `player.mjs` each
   carried an identical copy and this needed a third.
 
+### The team sheet, read as a team sheet
+
+`sheetRows` in `src/lib/report-visuals.mjs`, styled at the foot of
+`40-report.css`. The band drew the eleven as a flat list of names and
+positions, **in the order somebody filled the form in** - keeper, right wing
+back, right centre back, left centre back, a midfielder, an attacking
+midfielder, two strikers, then back to a defensive midfielder and a centre
+half. That is a form, not a team sheet, and it ran eleven rows down a
+thousand pixels with nothing on any of them but a name.
+
+- **IT IS IN POSITION ORDER**, which is the club's ask: back to front, left to
+  right, from `POSITION_XY` - the same coordinates the pitch beside it is
+  drawn from, so the list and the diagram cannot disagree about where somebody
+  stood. Nothing is typed.
+- **The line comes first, then the band, then the x.** Two things that each
+  looked like a one-line sort and are not. A wing back is drawn at y 64 and a
+  defensive midfielder at 67, so on the coordinates alone the two lines
+  interleave - left wing back, left defensive midfielder, right defensive
+  midfielder, right wing back - which is where everybody stood and is not a
+  team sheet; grouping by line first keeps the back line together. And a left
+  centre back sits at 81 against a centre half's 80, which is a **drawing
+  decision rather than a fact about who played further forward**: sorted on
+  the raw figure the back three read McLane, Heath, Marie - left, right,
+  middle. Rounded to the nearest eight they are one line and the x decides.
+- **The lines are named and nothing is counted on them.** Group these
+  positions and the Peps eleven is 5-3-2; the club recorded 3-4-1-2, reading
+  the wing backs forward and the attacking midfielder as his own line. **Both
+  are right** - where a wing back belongs is a judgement - so the headings say
+  where they stood and the arithmetic is left to the shape the club recorded.
+  A page printing 5-3-2 beside its own 3-4-1-2 would be arguing with itself.
+- **How long he was on, counted off the substitutions and off nothing else**,
+  with a gauge drawn **only** where he did not play the whole match: eleven
+  identical full bars say nothing and the one short bar is the entire point.
+  Null where it cannot be counted, which is most of the archive - a
+  substitution with no minute makes every figure depending on it a guess, and
+  `73'` printed over a guess is indistinguishable from a fact.
+- **Everything the record says he did, on his row**: goals (each linking at
+  its own card), assists, the armband, Player of the Match, the keeper's
+  saves, the clean sheet, bookings, and the role where the club recorded one.
+  The role reached no reader at all before this; a false nine is a striker
+  with a job and the club records the job.
+- **Every place he played, not only the first.** The record holds a spell per
+  position and the page kept one, so a centre half who finished the match in
+  midfield read as a centre half all afternoon.
+- **The assist is taken from the goal, never from the flat list.** A record
+  saved more than once can hold the same assist twice there - the fault that
+  published four each for two men in one evening of edits. An orphan belongs
+  to no goal, so it is taken from the flat list and from nowhere else.
+- **A clean sheet is credited to the men the CLUB named.** The engine's
+  position rule covers the ten archive matches nobody answered for and is a
+  fallback for a career total, not something to print on one match page as
+  though somebody had said it.
+- **The change is on both rows, each pointing at the other**, which retired a
+  list at the foot of the band repeating the same two facts a third time in a
+  place where neither man's row could be seen.
+- **The marks sit outside the row's own anchor.** A goal mark links at that
+  goal's card and a link inside a link is not markup. The face stays inside
+  the anchor, for the reason it always was.
+- **A storage code survives in exactly one place**: the chip on the face,
+  which is the key that lets a reader find the same man on the diagram. On the
+  diagram's own terms - the full name as its title, hidden from a screen
+  reader that has the words on the next line. The suite asks it of **every**
+  code in the sheet rather than of one, because the defect is a reader seeing
+  `RDM` and nothing else.
+- **Two abreast wherever the column can hold them.** Eleven rows was a 700px
+  scroll to read a team sheet.
+- **A mark is a word, never a letter and never a picture.** `C` for the
+  captain and a star for the Player of the Match read as decoration, and a
+  numeral on its own beside a name is the one thing this site refuses to
+  print.
+- The order is probed by **scrambling the record** and asking for the same
+  sheet back: a check that reads the shipped order is otherwise only
+  describing the order the club happened to save.
+
+**One check of the article dedup was failing on an apostrophe.** The club
+imported the President's Cup piece in the panel, the site carried exactly one
+copy of it, and the check went red because the panel stores a typographic
+apostrophe where `articles-extra.json` holds a straight one. The dedup is on
+the key or the slug; the title match is a proxy for it, and a check that goes
+red over a quote mark is a check nobody trusts.
+
 ### A report the club has written and not yet typed in
 
 `src/data/report-editions.json` already carried formatted editions of STORED

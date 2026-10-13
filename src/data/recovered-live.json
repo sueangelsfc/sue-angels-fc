@@ -6941,7 +6941,7 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-09-21T12:11:30.108Z",
+        "savedAt": "2026-10-12T19:15:32.243Z",
         "redCards": [],
         "starters": [
           {
@@ -7147,7 +7147,7 @@
         "opponentRedCards": [],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-09-21T12:11:30.108+00:00"
+      "updated_at": "2026-10-12T19:15:32.243+00:00"
     },
     {
       "key": "r20260927-barnes",
@@ -7583,18 +7583,21 @@
         "motm": 20,
         "subs": [
           {
-            "on": 41,
-            "off": 2
+            "on": 21,
+            "off": 38,
+            "minute": 60
           },
           {
-            "on": 21,
-            "off": 38
+            "on": 41,
+            "off": 2,
+            "minute": 77
           }
         ],
         "bench": [
           {
             "on": true,
             "num": 41,
+            "onAt": 77,
             "spells": [
               {
                 "pos": "ST",
@@ -7609,15 +7612,17 @@
           {
             "on": true,
             "num": 21,
+            "onAt": 60,
+            "role": "IW",
             "spells": [
               {
-                "pos": "LAM",
+                "pos": "LW",
                 "half": "2",
-                "role": ""
+                "role": "IW"
               }
             ],
             "positions": [
-              "LAM"
+              "LW"
             ]
           }
         ],
@@ -7719,16 +7724,17 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-10-11T16:14:01.029Z",
+        "savedAt": "2026-10-12T19:15:19.514Z",
         "redCards": [],
         "starters": [
           {
             "num": 28,
+            "role": "SK",
             "spells": [
               {
                 "pos": "GK",
                 "half": "1",
-                "role": ""
+                "role": "SK"
               }
             ],
             "positions": [
@@ -7737,11 +7743,12 @@
           },
           {
             "num": 20,
+            "role": "OFB",
             "spells": [
               {
                 "pos": "RWB",
                 "half": "1",
-                "role": ""
+                "role": "OFB"
               }
             ],
             "positions": [
@@ -7750,11 +7757,12 @@
           },
           {
             "num": 38,
+            "role": "BPD",
             "spells": [
               {
                 "pos": "RCB",
                 "half": "1",
-                "role": ""
+                "role": "BPD"
               }
             ],
             "positions": [
@@ -7764,11 +7772,12 @@
           },
           {
             "num": 25,
+            "role": "BPD",
             "spells": [
               {
                 "pos": "LCB",
                 "half": "1",
-                "role": ""
+                "role": "BPD"
               }
             ],
             "positions": [
@@ -7777,11 +7786,12 @@
           },
           {
             "num": 23,
+            "role": "REG",
             "spells": [
               {
                 "pos": "LDM",
                 "half": "1",
-                "role": ""
+                "role": "REG"
               }
             ],
             "positions": [
@@ -7790,11 +7800,12 @@
           },
           {
             "num": 12,
+            "role": "APM",
             "spells": [
               {
                 "pos": "CAM",
                 "half": "1",
-                "role": ""
+                "role": "APM"
               }
             ],
             "positions": [
@@ -7803,11 +7814,12 @@
           },
           {
             "num": 9,
+            "role": "CFW",
             "spells": [
               {
                 "pos": "ST",
                 "half": "1",
-                "role": ""
+                "role": "CFW"
               }
             ],
             "positions": [
@@ -7816,11 +7828,12 @@
           },
           {
             "num": 3,
+            "role": "TM",
             "spells": [
               {
                 "pos": "ST",
                 "half": "1",
-                "role": ""
+                "role": "TM"
               }
             ],
             "positions": [
@@ -7829,11 +7842,12 @@
           },
           {
             "num": 47,
+            "role": "BWM",
             "spells": [
               {
                 "pos": "RDM",
                 "half": "1",
-                "role": ""
+                "role": "BWM"
               }
             ],
             "positions": [
@@ -7842,11 +7856,12 @@
           },
           {
             "num": 40,
+            "role": "BPD",
             "spells": [
               {
                 "pos": "CB",
                 "half": "1",
-                "role": ""
+                "role": "BPD"
               }
             ],
             "positions": [
@@ -7855,11 +7870,12 @@
           },
           {
             "num": 2,
+            "role": "OFB",
             "spells": [
               {
                 "pos": "LWB",
                 "half": "1",
-                "role": ""
+                "role": "OFB"
               }
             ],
             "positions": [
@@ -7870,7 +7886,11 @@
         ],
         "formation": "3-4-1-2",
         "commentary": "",
-        "cleanSheets": [],
+        "cleanSheets": [
+          {
+            "num": 28
+          }
+        ],
         "competition": "Brian Howard President's Cup",
         "yellowCards": [],
         "opponentGoals": [],
@@ -7880,7 +7900,7 @@
         "opponentRedCards": [],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-10-11T16:14:01.029+00:00"
+      "updated_at": "2026-10-12T19:15:19.514+00:00"
     }
   ],
   "articles": [
@@ -7991,6 +8011,20 @@
       "updated_at": "2026-09-14T11:02:31.631+00:00"
     },
     {
+      "key": "art-1791664491859",
+      "data": {
+        "id": "art-1791664491859",
+        "cat": "Club",
+        "date": "10 Oct 2026",
+        "lede": "On Sunday morning we play our first Brian Howard President's Cup tie, away to Peps All Stars at Dulwich Park.\n\nBefore kick-off we sat down with manager [Stephen Epathite](/coaches/stephen-epathite.html) to talk about the opening month, the cup final we lost last season, and what he wants from the side from the first whistle.\n\nPress play above for the whole conversation. Everything he said is written out below it, and every timestamp takes you straight to that answer in the recording.\n\n@[Stephen Epathite on the President's Cup tie](/assets/audio/stephen-presidents-cup.mp3#4:16|/assets/players/stephen-epathite-portrait.webp)\n\n> 2:18 That sting is giving me fire to go and repair what happened last year.\n\n?? 0:09 | Adapting to League Eight | Four games, four wins, and we have stepped up two divisions. What has impressed you most about how we have adapted to League Eight?\n\nThe consistency, and the transition from where we left off last season. All the credit goes to the players: they have carried on exactly as we ended last season. The mentality, the attitude, the hunger, the desire. And I still think we have not got started properly yet.\n\n++[26/27]\n\n?? 0:42 | Where he wants more | We have scored 20 goals in those four games. If there was one area you wanted improved, what would it be?\n\nI am really happy so far with what they have done, and without over-criticising the team, I still think we have gears to go through. I still think we need to gel, and that there is more to come in terms of the football we want to play and the chemistry between the players.\n\nIf I am critical, clean sheets is probably the one area where I would say we need to keep more of them. And in front of goal, just be more ruthless with the chances we get. Overall, I am happy at the moment.\n\n?? 1:32 | The cup final sting | We came close in the cup last season, reaching a final, but fell short. What does that experience give us this season?\n\nThere is definitely a sting from that cup final. I feel it, and I think some of the players feel it as well.\n\nAs a team we want to get back to the same final we were in last year. We want to get there. And if we do get the chance to get there, a lot of things will be done differently, from my point of view and from the players'.\n\nIt definitely stung. And that sting is giving me fire to go and repair what happened last year.\n\n?? 2:28 | Preparing for Peps | Sunday is against Peps All Stars, a team we have never played. How do you prepare for a cup tie against opposition we are unfamiliar with?\n\nI prepare for every game exactly the same. I treat every game as a big game. I do not write anybody off, and I do not have any less respect for a team a division below or a division above, top of the league or bottom of the league.\n\nI have prepared every single team I have ever managed exactly the same. Every game is a big game and you have to treat it like that. If you want to progress, especially in cup matches, if you take your eye off the ball you can get a nice little surprise along the way.\n\n?? 3:14 | From the first whistle | When we step onto the pitch, what is the one thing you will be demanding from the very first whistle?\n\nThe week off has been good. I know the group very well, and I think it was a good thing to keep them fresh and keep their minds ready, because we had a lot of games in pre-season and a fast start to the season.\n\nSo tomorrow, I expect, and I know, that the players will be at it from minute one. I want the intensity, the aggression and the consistency we had last season carried into this season. The main thing is to win.\n\n## Sunday\n\nPeps All Stars v Sue's Angels FC, Brian Howard President's Cup round one, Dulwich Park, 10:30.\n\nThere is no previous meeting between the two clubs, and no second chance in this competition.",
+        "cover": "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/a-cover-1791829244627.jpg",
+        "draft": false,
+        "title": "What the manager wants to see at Dulwich Park",
+        "sortISO": "2026-10-10"
+      },
+      "updated_at": "2026-10-12T18:20:50.973+00:00"
+    },
+    {
       "key": "art-extra-20260914-setting-the-pace",
       "data": {
         "id": "art-extra-20260914-setting-the-pace",
@@ -8013,6 +8047,33 @@
         "title": "Six new Angels make their competitive debuts"
       },
       "updated_at": "2026-09-15T09:31:24.624+00:00"
+    },
+    {
+      "key": "art-extra-20260916-presidents-cup",
+      "data": {
+        "id": "art-extra-20260916-presidents-cup",
+        "cat": "News",
+        "iso": "2026-09-16",
+        "date": "16 Sep 2026",
+        "lede": "Sue’s Angels FC will travel to Peps All Stars in the first round of the Brian Howard President’s Cup.\n\nThe draw, completed on Wednesday 16 September, placed the Angels in Tie 2. A date and venue have yet to be confirmed by the Southern Sunday Football League.\n\n!![Brian Howard President’s Cup first round: Peps All Stars v Sue’s Angels FC, Tie 2, date to be confirmed](/assets/articles/presidents-cup-first-round.jpg#1200x750)\n\n## A first meeting\n\nPeps All Stars are completely new opposition for Sue’s Angels.\n\nThe clubs have never met in the league, a cup competition or a friendly, leaving both sides without a previous result to study.\n\nThat unfamiliarity adds another dimension to the Angels’ first President’s Cup campaign. With no existing form line between the teams, preparation, discipline and the ability to understand the contest quickly will be essential.\n\n## The route ahead\n\nA total of 28 clubs entered the competition. Twenty-four will contest the first round, while Celtic Swans, Deportivo Los Toros, Pure FC 2.0 and Shepherds Tuesday received byes.\n\nIf the Angels overcome Peps All Stars, Celtic Swans will await them in the second round.\n\nThe quarter-final section contains Deportivo Los Toros, Balham and Clapham Albion and League Eight opponents Haydons Park. That creates the possibility of a reunion with the side beaten 8–1 at The Reeves, although both clubs must first progress through their earlier ties.\n\nPossible semi-final opponents include Brockwell Violets, Three Little Birds, Sporting Club Catania, Hillside Blues, BPR, Pure Football 1st Team, Bristol City (London) Supporters and Larkhall City.\n\n!![The Angels’ potential route: Peps All Stars away, followed by Celtic Swans and then one of several familiar league and cup opponents](/assets/articles/presidents-cup-route-wide.jpg#1400x660)\n\n| Round | Tie | Possible opposition |\n|---|---|---|\n| First round | 2 | Peps All Stars, away |\n| Second round | 20 | Celtic Swans |\n| Quarter-final | 23 | Deportivo Los Toros, Haydons Park or Balham and Clapham Albion |\n| Semi-final | 26 | One of eight clubs from the Angels’ half |\n| Final | 27 | Winner of the opposite half |\n\nLeague Eight rivals TSM Rovers, Junction Elite, Barnes Stormers and Old Freemen’s are all positioned in the opposite half. The Angels could only meet one of those clubs in the final.\n\n## Experience to build upon\n\nSue’s Angels played 15 cup ties and won 11 during their first season.\n\nTheir longest run came in the Dylan Rigobert Trophy, where victories over Brockwell Violets, Larkhall City, Barnes Stormers and Hillside Blues earned the club a place in the final.\n\nThe Angels scored 21 goals and conceded only once across those four victories before losing 3–0 to FC Porto of London in the final.\n\nThat experience showed both sides of knockout football. The team demonstrated its ability to produce commanding performances, but also learned how quickly a cup journey can end.\n\nThe President’s Cup now offers another opportunity to compete for silverware and build upon an encouraging first-season record.\n\n## League business comes first\n\nBefore attention turns fully towards Peps All Stars, the Angels face two important League Eight fixtures.\n\nSue’s Angels travel to Junction Elite on Sunday 20 September before welcoming Barnes Stormers to The Reeves the following weekend.\n\nThe Angels currently lead League Eight after opening the campaign with a hard-fought 2–1 victory over Three Little Birds and an emphatic 8–1 win against Haydons Park.\n\nThe date for the cup tie will be announced once confirmed by the league.\n\nFor now, the route is visible, but only the opening challenge matters.\n\nPeps All Stars away.",
+        "title": "Angels drawn away to Peps All Stars in President's Cup"
+      },
+      "updated_at": "2026-10-12T18:03:27.338+00:00"
+    },
+    {
+      "key": "art-extra-20261012-peps-reaction",
+      "data": {
+        "id": "art-extra-20261012-peps-reaction",
+        "cat": "News",
+        "iso": "2026-10-12",
+        "date": "12 Oct 2026",
+        "lede": "Sue's Angels came away from Dulwich Park with a 4-0 win over Peps All Stars and a place in round two of the Brian Howard President's Cup. Ade Owolana scored twice, Leon Burnett and Daniel McLane got the others, and Luke Munns kept the clean sheet his manager had asked for.\n\nAfterwards we sat down with [Stephen Epathite](/coaches/stephen-epathite.html) at the ground.\n\nPress play above for the whole conversation. Everything he said is written out below it, and every timestamp takes you straight to that answer in the recording.\n\n@[Stephen Epathite after the win at Peps All Stars](/assets/audio/stephen-peps-reaction.mp3#5:12|/assets/players/stephen-epathite-portrait.webp)\n\n> 3:28 If we start thinking final, and it is only round two, we will be out quicker than we know it.\n\n?? 0:08 | Four and a clean sheet | Four goals, a clean sheet and a place in the next round. What is your overall assessment of the performance?\n\nI am happy. Very happy with the win and with going through. We are in the draw for the next round of the other cup we want to win.\n\nI do not think 4-0 reflected the game. If we had come away with five or six more, I think that would have been about right. Credit to Peps All Stars: they battled, and they made things difficult for us.\n\nBut the clean sheet is the thing. That was somewhere I wanted to get to, I wanted a clean sheet, and I am pleased we have won 4-0 and pleased the strikers have been in positions to score.\n\nOn another day, and without being disrespectful to Peps All Stars, they are really good guys and they battled. The crossbar and the post helped them out today, and so did our lack of ruthlessness in front of goal.\n\n++[26/27]\n\n?? 1:27 | Why the clean sheet comes first | Before the game you spoke about wanting intensity from the first whistle and about improving our defensive record. How pleased were you with the way we delivered on that?\n\nA clean sheet. I am always grateful for a clean sheet. That is my number one priority in every game.\n\nIt gives you a nice base to work from. If you are able to keep a clean sheet, it shows the other team have not been good enough to score against you in ninety minutes.\n\nAnd with the defenders we have got, and the number of them, and with the midfielders, that gives the attacking players a nice base to work off. Which is what they did today.\n\n?? 2:07 | The front players | Ade has two more goals to his tally, with Leon Burnett and Daniel McLane also on the score sheet. What pleased you most about our attacking play?\n\nWhen we moved the ball quickly we had some nice patterns of play. Little one-touch movements, getting the ball out wide quickly. I thought we looked really good and really effective.\n\nI am happy with all the strikers we have got. I am pleased with Ade and the goals he is getting. LJ was fantastic today: his first touch and his hold-up play were excellent. And Charlie's ability to run and create his own chances, although he did not score today. On another day he gets five or six.\n\nI am pleased that our front players are creating those chances for themselves, and other players as well. So I am really pleased with the attacking part, and with the defensive part as well.\n\n?? 3:08 | Another cup run | We spoke before the game about the disappointment of last season's cup final. Now we have cleared the first hurdle, what is the key to putting together another strong run?\n\nThe key is what I said before. It is game by game. If we start thinking final, and it is only round two, we will be out quicker than we know it.\n\nSo again, it is a process. Game by game, minute by minute, match by match, each week as it comes. We will deal with whatever comes in that week and we will see where we get to.\n\n?? 3:41 | Mousa Mountain next | We return to league football next week against the division's newcomers, Mousa Mountain, looking to make it five wins from five. What is your main focus as we prepare?\n\nMousa Mountain are a new team and they have not played a game yet. So in a way we are the test pilots. It is their first game. I do not know much about them, and I do not think the league knows much about them either, so the league will be watching and will probably gauge off the result how things might play out.\n\nBut we have to treat them as we treat every team. We have to make sure that we are on it, and make sure that we are ready. Winning this league is something we want to do, and I think we are in a position where we can.\n\nThey are unknown, so the league will be watching, and we are the first to play them. I think they will be up for it. We will be up for it. That should make for a good game.\n\n## Next\n\nSue's Angels FC v Mousa Mountain FC, League Eight, The Reeves Sports Club, Sunday 18 October.\n\nThe President's Cup round two tie is at home to Celtic Swans FC.",
+        "cover": "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/a-cover-1791828740076.jpg",
+        "draft": false,
+        "title": "Four goals, a clean sheet, and no talk of the final",
+        "sortISO": "2026-10-12"
+      },
+      "updated_at": "2026-10-12T18:15:33.51+00:00"
     }
   ],
   "recognition": [

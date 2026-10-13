@@ -7200,9 +7200,15 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 
   for (const row of (extra.articles || [])) {
     const title = row.data.title;
-    const mine = base.articles.filter((a) => a.title === title);
+    /* THE APOSTROPHE IS NOT PART OF THE IDENTITY. The dedup is on the key or
+       the slug; this is a proxy for it, and it failed on a President's Cup
+       article the club had imported perfectly well, because the panel stored
+       a typographic apostrophe where the file holds a straight one. A check
+       that goes red over a quote mark is a check nobody trusts. */
+    const flat = (t) => String(t || '').replace(/[’‘']/g, "'");
+    const mine = base.articles.filter((a) => flat(a.title) === flat(title));
     /* Once the club has imported it, the stored row is the one on the site. */
-    const entered = (live.articles || []).some((r) => (r.data || {}).title === title);
+    const entered = (live.articles || []).some((r) => flat((r.data || {}).title) === flat(title));
     /* A REWRITE AWAITING IMPORT: a new headline under a stored row's key.
        Until it is imported the stored original is the article, and the file
        copy must not show beside it under its new slug. */
@@ -9733,6 +9739,7 @@ let orphanClasses = new Map();
    ========================================================================== */
 {
   const rv = await import(path.join(ROOT, 'src', 'lib', 'report-visuals.mjs'));
+  const { positionName } = await import(path.join(ROOT, 'src', 'lib', 'positions.mjs'));
   const { buildDataset: bdRV } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
   const { matchReport: reportTpl } = await import(path.join(ROOT, 'src', 'templates', 'report.mjs'));
   const d = bdRV();
@@ -9888,8 +9895,105 @@ let orphanClasses = new Map();
       /<a class="mr-who__a"[^>]*>\s*<span class="mr-face">/.test(sh.xi));
     check('a man with no photograph gets his initials, never a blank',
       /mr-face__ini/.test(sh.xi) && /mr-face__img/.test(sh.xi));
+    /* A POSITION IS WRITTEN OUT. The storage code survives in exactly one
+       place - the chip on the face, which is the key that lets a reader find
+       the same man on the diagram - and only on the diagram's own terms: the
+       full name as its title, hidden from a screen reader that has the words
+       on the next line anyway. Asked of EVERY code in the sheet rather than
+       of one, because the defect is a reader seeing `RDM` and nothing else,
+       and a check naming a single position cannot see the others. */
+    const codes = [...sh.xi.matchAll(/<i class="mr-face__pos"([^>]*)>([A-Z]{2,3})</g)];
     check('a position is written out, never left as a storage code',
-      /Left wing back/.test(sh.xi) && !/>LWB</.test(sh.xi));
+      /Left wing back/.test(sh.xi) && codes.length === starters
+      && codes.every(([, at, code]) => /aria-hidden="true"/.test(at)
+        && at.includes(`title="${positionName(code)}"`)),
+      `${codes.length} coded of ${starters}`);
+    check('and no code is printed anywhere else in the sheet',
+      !/>(?:LWB|RWB|LCB|RCB|CDM|LDM|RDM|CAM)</.test(sh.xi.replace(/<i class="mr-face__pos"[^>]*>[A-Z]{2,3}</g, '')));
+
+    /* ---- IT IS A TEAM SHEET, WHICH MEANS IT IS IN POSITION ORDER --------
+       The record stores the eleven in the order somebody filled the form in.
+       Back to front and left to right is how every team sheet in football has
+       ever been written, and it is derived from the same coordinates the
+       pitch is drawn from, so the list and the diagram cannot disagree. */
+    const codeOf = (x) => String((x.positions || [])[0] || '').toUpperCase();
+    const ordered = rv.inPositionOrder((peps.detail || {}).starters || []).map(codeOf);
+    check('the eleven is in position order, back to front and left to right',
+      ordered.join(' ') === 'GK LCB CB RCB LWB RWB LDM RDM CAM ST ST', ordered.join(' '));
+    /* THE ORDER IS A PROPERTY OF THE POSITIONS, NOT OF THE RECORD. Scramble
+       the input and the same sheet comes back, or the check above is only
+       describing the order the club happened to save. */
+    const scrambled = [...((peps.detail || {}).starters || [])].reverse();
+    check('and it does not depend on the order the record was saved in',
+      rv.inPositionOrder(scrambled).map(codeOf).join(' ') === ordered.join(' '));
+    /* A left centre back sits at y 81 and a centre half at 80, which is a
+       drawing decision and not a fact about who played further forward.
+       Sorting on the raw figure gave McLane, Heath, Marie - left, right,
+       middle - so the band is what the check is really about. */
+    check('a one-pixel difference in the diagram does not reorder a back three',
+      ordered.slice(1, 4).join(' ') === 'LCB CB RCB');
+    check('the lines are named and nothing is counted on them',
+      /In goal/.test(sh.xi) && /At the back/.test(sh.xi) && /In midfield/.test(sh.xi)
+      && /Up front/.test(sh.xi) && !/>5-3-2</.test(sh.xi));
+
+    /* ---- How long he was on, and never a minute that was not recorded --- */
+    const det = peps.detail || {};
+    check('minutes are counted off the substitutions',
+      rv.minutesPlayed(38, det) === 60 && rv.minutesPlayed(2, det) === 77
+      && rv.minutesPlayed(21, det) === 30 && rv.minutesPlayed(41, det) === 13
+      && rv.minutesPlayed(28, det) === 90,
+      [38, 2, 21, 41, 28].map((n) => `${n}:${rv.minutesPlayed(n, det)}`).join(' '));
+    /* NOTHING IS INVENTED. Most of the archive's changes carry no minute at
+       all, and `73'` printed over a guess is indistinguishable from a fact. */
+    const noMin = { ...det, subs: (det.subs || []).map((x) => ({ ...x, minute: null })) };
+    check('a substitution with no minute produces no figure, rather than a guess',
+      rv.minutesPlayed(38, noMin) === null && rv.minutesPlayed(21, noMin) === null);
+    check('a man who was never used has no minutes either',
+      rv.minutesPlayed(999, det) === null);
+
+    /* ---- What the record says he did ------------------------------------ */
+    const mk = (n) => rv.sheetMarks(n, peps);
+    check('the marks on a row are the record and nothing else',
+      mk(12).goals.length === 2 && mk(25).captain === true && mk(25).goals.length === 1
+      && mk(20).potm === true && mk(20).assists.length === 1 && mk(28).saves === 2,
+      JSON.stringify({ ade: mk(12).goals.length, cap: mk(25).captain, potm: mk(20).potm }));
+    /* THE ASSIST IS TAKEN FROM THE GOAL, never from the flat list, because a
+       record saved more than once can hold the same assist twice there - the
+       fault that published four each for two men in one evening of edits. */
+    const twice = { ...peps, detail: { ...det, assists: [...(det.assists || []), ...(det.assists || [])] } };
+    check('an assist stored twice is still one assist on the row',
+      rv.sheetMarks(2, twice).assists.length === 1);
+    /* A CLEAN SHEET IS CREDITED TO THE MEN THE CLUB NAMED. The engine's
+       position rule covers ten archive matches nobody answered for and is a
+       fallback for a career total, not something to print on one match page
+       as though somebody had said it. */
+    check('a clean sheet is credited where the club named somebody',
+      mk(28).clean === true && mk(25).clean === false);
+    check('and a match the opponents scored in credits nobody',
+      rv.sheetMarks(28, { ...peps, theirGoals: 1 }).clean === false);
+
+    /* ---- The change is on both rows, each pointing at the other ---------- */
+    check('the man who came off says who for, and the man who came on says who for',
+      /Off 60'<\/span>\s*for <a href="#w21">/.test(sh.xi)
+      && /On 60'<\/span>\s*for <a href="#w38">/.test(sh.bench),
+      sh.bench.slice(0, 0) || 'pairs');
+    check('and the row he points at exists',
+      sh.xi.includes('id="w38"') && sh.bench.includes('id="w21"'));
+    check('the sheet reconciles with itself',
+      sh.foot === '13 named · 11 started · 2 off the bench · 0 unused', sh.foot);
+
+    /* ---- The role, and every place he played ---------------------------- */
+    check('a role the club recorded is printed, not thrown away',
+      /Goalkeeper · Sweeper keeper/.test(sh.xi));
+    /* EVERY PLACE HE PLAYED. The record holds a spell per position and the
+       page kept only the first, so a centre half who finished the match in
+       midfield read as a centre half all afternoon. */
+    const moved = d.matches.find((x) => x.id === 'r20260802-pure');
+    if (moved) {
+      const ms = rv.sheetRows(moved, d);
+      check('a man who moved position in the match has both places on his row',
+        /Centre back, Defensive midfielder/.test(ms.xi), 'r20260802-pure, 10');
+    }
   }
 
   /* ---- One id, one element ---------------------------------------------- */

@@ -343,20 +343,19 @@ export function matchReport(m, d) {
           <div class="mr-sheet2__list rv">
             <h3 class="mr-col__h">The eleven${det.formation
     ? `<span class="mr-form">${esc(String(det.formation))}</span>` : ''}</h3>
-            <ol class="mr-whos">
+            ${/* IN POSITION ORDER, back to front and left to right, derived
+                  from the same coordinates the pitch is drawn from. The lines
+                  are named and nothing is counted on them: this eleven groups
+                  as 5-3-2 and the club recorded 3-4-1-2, and both are right,
+                  so the page says neither number twice. */''}
             ${sheet.xi}
-            </ol>
             ${sheet.anyBench ? `<h3 class="mr-col__h mr-col__h--2">The bench</h3>
-            <ul class="mr-whos mr-whos--bench">
+            <ul class="mr-whos">
             ${sheet.bench}
             </ul>` : ''}
-            ${subs.length ? `<ul class="mr-subs">
-            ${subs.map((x) => `<li>
-              <span class="mr-subs__min">${esc(x.minute != null ? `${x.minute}'` : '')}</span>
-              <span class="mr-subs__pair">${x.on != null ? `<b>${esc(nameFor(x.on))}</b>` : ''}${x.on != null && x.off != null ? ' for ' : ''}${x.off != null ? esc(nameFor(x.off)) : ''}</span>
-            </li>`).join('\n            ')}
-          </ul>` : `<p class="mr-sheet__note">No substitution is recorded for this match, so none is shown
+            ${subs.length ? '' : `<p class="mr-sheet__note">No substitution is recorded for this match, so none is shown
             rather than estimated.</p>`}
+            <p class="mr-sheet__foot">${esc(sheet.foot)}</p>
           </div>
         </div>
       </div>

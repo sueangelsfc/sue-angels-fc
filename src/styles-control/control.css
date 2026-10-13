@@ -28,3 +28,10 @@
   .input--sm { font-size: 16px; }
   .cp-when__f { flex: 1 1 100%; }
 }
+
+/* How the side played: three questions, one answer each. A row at any width
+   the panel is actually used at, stacking on a phone at the side of a pitch. */
+.cp-approach{display: grid; gap: 10px; margin-top: 6px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));}
+.cp-approach__a{display: grid; gap: 4px; min-width: 0;}
+.cp-approach__l{font-size: 12px; font-weight: 600; color: var(--text-muted);}

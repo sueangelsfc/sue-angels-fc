@@ -63,7 +63,15 @@ export const POSITIONS = [
 
   /* ---- Midfield ---- */
   { code: 'CDM', name: 'Defensive midfielder', group: 'mid', x: 50, y: 66 },
-  { code: 'DM', name: 'Defensive midfielder', group: 'mid', x: 50, y: 66 },
+  /* ALIASES, NOT DUPLICATES, and the difference is the `alias` flag. `DM` and
+     `AM` name the same place as `CDM` and `CAM` and the archive holds both
+     spellings - 10 team sheets say CDM and 4 say DM - so DELETING one would
+     print "Squad player" on four real records. They still resolve, and they
+     are not OFFERED: a dropdown with two entries reading "Defensive
+     midfielder" asks somebody to choose between two spellings of one fact,
+     and whichever they pick the formation count is the same and the two
+     cannot be told apart afterwards. One code to write, both to read. */
+  { code: 'DM', name: 'Defensive midfielder', group: 'mid', x: 50, y: 66, alias: 'CDM' },
   { code: 'LDM', name: 'Left defensive midfielder', group: 'mid', x: 37, y: 67 },
   { code: 'RDM', name: 'Right defensive midfielder', group: 'mid', x: 63, y: 67 },
   { code: 'CM', name: 'Central midfielder', group: 'mid', x: 50, y: 51 },
@@ -72,7 +80,7 @@ export const POSITIONS = [
   { code: 'LM', name: 'Left midfielder', group: 'mid', x: 15, y: 49 },
   { code: 'RM', name: 'Right midfielder', group: 'mid', x: 85, y: 49 },
   { code: 'CAM', name: 'Attacking midfielder', group: 'mid', x: 50, y: 37 },
-  { code: 'AM', name: 'Attacking midfielder', group: 'mid', x: 50, y: 37 },
+  { code: 'AM', name: 'Attacking midfielder', group: 'mid', x: 50, y: 37, alias: 'CAM' },
   { code: 'LAM', name: 'Left attacking midfielder', group: 'mid', x: 34, y: 38 },
   { code: 'RAM', name: 'Right attacking midfielder', group: 'mid', x: 66, y: 38 },
 
@@ -103,42 +111,80 @@ export const ROLES = [
   /* ---- In goal ---- */
   { code: 'SK', name: 'Sweeper keeper', for: ['GK'],
     note: 'Comes off his line and plays as an extra defender.' },
+  { code: 'SHS', name: 'Shot stopper', for: ['GK'],
+    note: 'Holds his line and deals with whatever reaches it.' },
+  { code: 'BPG', name: 'Ball-playing keeper', for: ['GK'],
+    note: 'Starts the attack with his feet instead of clearing it.' },
 
   /* ---- Defence ---- */
   { code: 'BPD', name: 'Ball-playing centre back', for: ['CB', 'LCB', 'RCB', 'SW'],
     note: 'Carries and passes out of defence rather than clearing it.' },
+  { code: 'NCB', name: 'No-nonsense centre back', for: ['CB', 'LCB', 'RCB'],
+    note: 'Heads it, clears it, and takes no risks with it.' },
   { code: 'STP', name: 'Stopper', for: ['CB', 'LCB', 'RCB'],
     note: 'Steps out and meets the striker early.' },
+  { code: 'COV', name: 'Cover centre back', for: ['CB', 'LCB', 'RCB', 'SW'],
+    note: 'Drops behind the man who steps out and sweeps up what gets past him.' },
+  { code: 'WCB', name: 'Wide centre back', for: ['LCB', 'RCB'],
+    note: 'The outside man of a back three, carrying it into the channel.' },
+  { code: 'LIB', name: 'Libero', for: ['SW', 'CB'],
+    note: 'Sweeps behind the line and brings the ball out into midfield himself.' },
   { code: 'IFB', name: 'Inverted full back', for: ['LB', 'RB', 'LWB', 'RWB'],
     note: 'Tucks into midfield with the ball instead of staying wide.' },
   { code: 'OFB', name: 'Overlapping full back', for: ['LB', 'RB', 'LWB', 'RWB'],
     note: 'Gets outside the winger and to the by-line.' },
+  { code: 'UFB', name: 'Underlapping full back', for: ['LB', 'RB', 'LWB', 'RWB'],
+    note: 'Goes inside the winger rather than round him.' },
+  { code: 'DFB', name: 'Defensive full back', for: ['LB', 'RB', 'LWB', 'RWB'],
+    note: 'Stays behind the ball and defends his touchline.' },
 
   /* ---- Midfield ---- */
   { code: 'ANC', name: 'Anchor man', for: ['CDM', 'DM', 'LDM', 'RDM'],
     note: 'Sits in front of the back four and does not leave it.' },
+  { code: 'HLF', name: 'Half back', for: ['CDM', 'DM', 'LDM', 'RDM'],
+    note: 'Drops between the centre backs to take the ball off them.' },
   { code: 'BWM', name: 'Ball-winning midfielder', for: ['CDM', 'DM', 'LDM', 'RDM', 'CM', 'LCM', 'RCM'],
     note: 'Hunts the ball and breaks play up.' },
   { code: 'REG', name: 'Deep-lying playmaker', for: ['CDM', 'DM', 'LDM', 'RDM', 'CM'],
     note: 'Sets the tempo by passing from the base of midfield.' },
+  { code: 'SV', name: 'Breaking midfielder', for: ['CDM', 'DM', 'LDM', 'RDM'],
+    note: 'Starts at the base and breaks past the forwards into the box.' },
   { code: 'B2B', name: 'Box to box midfielder', for: ['CM', 'LCM', 'RCM'],
     note: 'Gets between both penalty areas all afternoon.' },
+  { code: 'CAR', name: 'Carrilero', for: ['CM', 'LCM', 'RCM', 'LDM', 'RDM'],
+    note: 'Shuttles across to hold the width of midfield instead of getting forward.' },
   { code: 'MEZ', name: 'Mezzala', for: ['LCM', 'RCM', 'CM'],
     note: 'Drifts into the channel outside his own centre and arrives late.' },
   { code: 'APM', name: 'Advanced playmaker', for: ['CAM', 'AM', 'LAM', 'RAM', 'CM', 'LCM', 'RCM'],
     note: 'The one everything goes through in the final third.' },
+  { code: 'RPM', name: 'Roaming playmaker', for: ['CM', 'LCM', 'RCM', 'CAM', 'AM'],
+    note: 'Leaves his position to find the ball wherever it has gone.' },
   { code: 'TRQ', name: 'Free role', for: ['CAM', 'AM', 'LAM', 'RAM', 'SS'],
     note: 'Roams between the lines with no fixed job.' },
+  { code: 'WRK', name: 'Pressing midfielder', for: ['CM', 'LCM', 'RCM', 'CAM', 'AM', 'LAM', 'RAM'],
+    note: 'Chases the ball down from the front of midfield and gives them no time.' },
 
   /* ---- Attack ---- */
   { code: 'IW', name: 'Inverted winger', for: ['LW', 'RW', 'LM', 'RM', 'LF', 'RF'],
     note: 'Comes in off the touchline onto his stronger foot.' },
+  { code: 'TWG', name: 'Touchline winger', for: ['LW', 'RW', 'LM', 'RM'],
+    note: 'Stays wide, takes the full back on, and puts it in the box.' },
   { code: 'WPM', name: 'Wide playmaker', for: ['LW', 'RW', 'LM', 'RM'],
     note: 'Drops in from wide to make the play rather than beat a man.' },
+  { code: 'RAI', name: 'Blind-side runner', for: ['LW', 'RW', 'LF', 'RF', 'SS'],
+    note: 'Plays off the far shoulder of the full back and arrives in the box unseen.' },
+  { code: 'WTM', name: 'Wide target man', for: ['LW', 'RW', 'LM', 'RM', 'LF', 'RF'],
+    note: 'Holds it up on the touchline and brings the runners past him.' },
   { code: 'F9', name: 'False nine', for: ['ST', 'CF'],
     note: 'Starts as the centre forward and drops between the lines.' },
+  { code: 'DLF', name: 'Deep-lying forward', for: ['ST', 'CF', 'SS'],
+    note: 'Comes short to link the play, then arrives late in the box.' },
   { code: 'TM', name: 'Target man', for: ['ST', 'CF'],
     note: 'Holds it up thirty yards out and brings others in.' },
+  { code: 'CHR', name: 'Channel runner', for: ['ST', 'CF', 'SS', 'LF', 'RF'],
+    note: 'Runs the channel outside the centre back and into the space behind him.' },
+  { code: 'PRS', name: 'Pressing forward', for: ['ST', 'CF', 'SS'],
+    note: 'Leads the press and gives the centre backs no time on the ball.' },
   { code: 'POA', name: 'Poacher', for: ['ST', 'CF'],
     note: 'Lives in the six yard box and does little else, which is a compliment.' },
   { code: 'CFW', name: 'Complete forward', for: ['ST', 'CF'],
@@ -182,8 +228,17 @@ export const POSITION_GROUPS = [
 export const positionName = (code) => POSITION_LABEL[String(code || '').toUpperCase()] || 'Squad player';
 
 /* Shipped to the control panel so its team-sheet dropdown offers exactly the
-   positions the site can name and draw. */
-export const POSITION_VOCAB = POSITIONS.map(({ code, name, group, x, y }) => ({ code, name, group, x, y }));
+   positions the site can name and draw. THE ALIASES GO TOO, carrying the
+   flag, and the dropdown is what filters them out: a sheet already saying
+   `DM` has to find `DM` in the list when somebody opens it, or the select
+   falls back to its first option and the next save quietly rewrites a
+   position nobody touched. Whoever is already stored is always offered - the
+   same rule the player pickers run on, for the same reason. */
+export const POSITION_VOCAB = POSITIONS
+  .map(({ code, name, group, x, y, alias }) => (alias
+    ? { code, name, group, x, y, alias } : { code, name, group, x, y }));
+export const POSITION_ALIASES = Object.fromEntries(POSITIONS.filter((p) => p.alias)
+  .map((p) => [p.code, p.alias]));
 
 /* Shipped alongside it, so the team sheet's second dropdown is filtered by
    the first without another round trip. */

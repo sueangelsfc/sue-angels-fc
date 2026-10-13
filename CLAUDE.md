@@ -1133,6 +1133,66 @@ stand-first and a drop cap; and the players' names in that prose linked.
 - **`ordinal()` moved into `stats.mjs`.** `home.mjs` and `player.mjs` each
   carried an identical copy and this needed a third.
 
+### Thirty-eight roles, and how the side played
+
+**A role is attached to a position, never instead of one.** A false nine is a
+centre forward with a job. `ROLES` in `src/lib/positions.mjs` held nineteen,
+defended on the grounds that "a dropdown of forty instructions nobody uses is
+worse than no dropdown at all" - which is true of forty invented by a video
+game and not of the ones a manager actually says out loud. The club asked for
+more and named one: a forward who **runs the channels**.
+
+- **Thirty-eight now**, three to eight per position, every one carrying the
+  sentence that explains it. The suite asks that no two share a code, a name
+  **or a description** - the last one because that is how a duplicate hides,
+  with different letters over the same idea - and that every position offers at
+  least two, so the second dropdown is never a dead control beside the first.
+- **Nothing the archive uses was dropped.** Twelve role codes are in stored
+  team sheets and the check names them, so a tidy that renamed one would print
+  nothing where the club had answered.
+- **The dropdown is built from `ROLE_VOCAB`**, so what can be entered and what
+  can be published cannot drift apart. A new role needs no panel change.
+
+**`DM` and `AM` are aliases, not duplicates.** They name the same place as
+`CDM` and `CAM`, and the archive holds both spellings - 10 sheets say CDM and 4
+say DM - so **deleting one would print "Squad player" on four real records**.
+They carry an `alias` flag, they are still shipped to the panel, and the
+DROPDOWN is what hides them: offered only where the record already holds one,
+because a select that cannot find its own value falls back to its first option
+and the next save rewrites a position nobody touched. Same rule as the player
+pickers, for the same reason.
+
+**How the side played** is `APPROACH_AXES` in `football.mjs`, recorded on the
+match as `approach` and drawn under the shape by `approachBand()`. A shape is
+where eleven men stood; it is not how they played, and a 3-4-1-2 sitting in and
+countering and a 3-4-1-2 pressing from the whistle are two afternoons written
+down as the same four digits.
+
+- **Three axes, one answer each.** Out of possession, in possession, and where
+  the attack came from. One flat list of twelve with "pick any" would let
+  somebody record a high press AND a low block in the same match, which
+  describes nothing.
+- **It cannot be derived and nothing pretends otherwise.** Nothing in a
+  Sunday-league return says where the press began, so this is the coach's
+  answer or it is silence - and a chip reading "Mid block" over a match nobody
+  answered for would be the site inventing tactics. Each axis is optional, a
+  blank one is left OUT of the record rather than stored empty, and a match
+  with none recorded draws no band at all.
+- **It reaches the report writer too**, beside the roles that already did. A
+  writer told the side sat in and countered writes a different report from one
+  told only that it was a 3-4-1-2.
+- **The three selects are checked by RENDERING the dialog**, not by grepping
+  for them, and the check that matters is that a value already recorded comes
+  back selected. That is this panel's recurring fault - a correct mechanism
+  attached to nothing - and the probe that removes `selected` turns it red.
+- **`control-seed.js` went over its ceiling the moment the data landed**, for
+  the third time and by the third different door: the roles and the goal
+  vocabulary are read by the match editor alone and were in the file every one
+  of the eighteen panels loads first. They ride with `control-matchedit.js`
+  now, whose emitted ceiling moved 15 to 18 for DATA, with
+  `src/admin/lazy/11-matchedit.js` budgeted as source so code growth still
+  shows up on its own.
+
 ### A correction the club has agreed and has not yet saved
 
 `src/data/match-corrections.json`, applied by `applyCorrections()` in

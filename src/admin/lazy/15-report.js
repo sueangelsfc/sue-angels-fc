@@ -1110,6 +1110,9 @@
     if ((c.yellows || []).length) say('Booked', c.yellows.join(', '));
     if ((c.reds || []).length) say('Sent off', c.reds.join(', '));
     (c.roles || []).forEach(function (r) { L.push('Role: ' + r.name + ' played as ' + r.role); });
+    (c.approach || []).forEach(function (a) {
+      L.push('How the side played, ' + a.axis.toLowerCase() + ': ' + a.is + '. ' + a.note);
+    });
 
     if (c.h2h) {
       var h = c.h2h;

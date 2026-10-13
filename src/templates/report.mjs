@@ -22,7 +22,7 @@ import { articleBody, articlePhoto } from './news.mjs';
 import { reportText, hasReport as hasReportOf, FRIENDLY_NOTE } from '../lib/prose.mjs';
 import { photoCredit } from './gallery.mjs';
 import {
-  isRich, keysBand, timeline, goalCards, pitchXI, sheetRows,
+  isRich, keysBand, timeline, goalCards, pitchXI, sheetRows, approachBand,
   headToHead, afterMatch, neighbours,
 } from '../lib/report-visuals.mjs';
 
@@ -343,6 +343,12 @@ export function matchReport(m, d) {
           <div class="mr-sheet2__list rv">
             <h3 class="mr-col__h">The eleven${det.formation
     ? `<span class="mr-form">${esc(String(det.formation))}</span>` : ''}</h3>
+            ${/* HOW THEY PLAYED, where the club has said so and nothing at
+                  all where it has not. There is no derivation to fall back on
+                  here - nothing in a match return says where the press began -
+                  so a chip over a match nobody answered for would be the site
+                  inventing tactics. */''}
+            ${approachBand(m)}
             ${/* IN POSITION ORDER, back to front and left to right, derived
                   from the same coordinates the pitch is drawn from. The lines
                   are named and nothing is counted on them: this eleven groups

@@ -871,6 +871,13 @@ const CHUNK_SEED_KEYS = {
      visitor, which is the same fault as homeBands above and was caught the
      same way: by the budget, the first time the data was added. */
   content: ['partners'],
+  /* The thirty-eight player roles and the goal vocabulary, each option
+     carrying the sentence that explains it, are read by the match editor and
+     by nothing else - and control-seed.js loads first for every one of the
+     eighteen panels. Third time this rule has arrived by a different door,
+     and the third time the budget is what found it. `positions` stays in the
+     shared seed because the match LISTS chunk reads it too. */
+  matchedit: ['roles', 'vocab'],
 };
 const chunkSeedJs = {};
 for (const [chunk, keys] of Object.entries(CHUNK_SEED_KEYS)) {

@@ -34,7 +34,7 @@
    ========================================================================== */
 import { esc, attr } from './html.mjs';
 import { POSITION_XY, POSITION_GROUPS, positionName, roleName } from './positions.mjs';
-import { describeGoal, describeAssist, shortGoal, SITUATION } from './football.mjs';
+import { describeGoal, describeAssist, shortGoal, SITUATION, approachOf, describeApproach } from './football.mjs';
 import { substitutions } from './subs.mjs';
 import { deriveTable, toISO, fmtDate, isLeague, isCup, ordinal } from './stats.mjs';
 import { sameClub } from './preseason.mjs';
@@ -386,7 +386,8 @@ export function pitchXI(m, d) {
           </svg>
           <figcaption class="mr-pitch__cap">
             ${det.formation ? `<b>${esc(String(det.formation))}</b>` : ''}
-            <span>Where the eleven were named. ${placed.some((p) => p.off) ? 'A faded marker came off.' : 'Nobody in the eleven came off.'}</span>
+            <span>Where the eleven were named${describeApproach(det) ? `, ${describeApproach(det)}` : ''}.
+              ${placed.some((p) => p.off) ? 'A faded marker came off.' : 'Nobody in the eleven came off.'}</span>
           </figcaption>
         </figure>`;
 }
@@ -529,6 +530,27 @@ export const inPositionOrder = (list) => (list || [])
   .sort((a, b) => (rank(a.group) - rank(b.group))
     || (band(b.y) - band(a.y)) || (a.x - b.x) || (a.i - b.i))
   .map((r) => r.s);
+
+/* HOW THE SIDE PLAYED, where the club has said. A shape is where eleven men
+   stood; it is not how they played, and a 3-4-1-2 sitting in and countering
+   and a 3-4-1-2 pressing from the whistle are two afternoons written down as
+   the same four digits.
+
+   NOTHING RECORDED DRAWS NOTHING. Every band on this page follows that rule
+   and this one has to follow it hardest, because there is no derivation to
+   fall back on: nothing in a Sunday-league return says where the press
+   started, so this is the coach's answer or it is silence. A chip reading
+   "Mid block" over a match nobody answered for would be the site inventing
+   tactics, which is the one thing a record of a football match must not do. */
+export function approachBand(m) {
+  const picked = approachOf(m.detail || {});
+  if (!picked.length) return '';
+  return `<ul class="mr-how-xi">
+            ${picked.map((x) => `<li class="mr-how-xi__i">
+              <i>${esc(x.axisLabel)}</i><b>${esc(x.label)}</b><span>${esc(x.note)}</span>
+            </li>`).join('\n            ')}
+          </ul>`;
+}
 
 export function sheetRows(m, d) {
   const det = m.detail || {};

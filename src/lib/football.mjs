@@ -89,12 +89,106 @@ export const ASSIST_TYPES = [
   { key: 'rebound', label: 'Rebound off them', phrase: 'after a rebound off' },
 ];
 
+/* ==========================================================================
+   HOW THE SIDE PLAYED
+
+   A shape is where eleven men stood. It is not how they played, and the club
+   asked to be able to say the second: a 3-4-1-2 sitting in and countering and
+   a 3-4-1-2 pressing from the whistle are two different afternoons written
+   down as the same four digits.
+
+   THREE AXES, ONE ANSWER EACH, and that is the whole design. A flat list of
+   ten with "pick up to three" lets somebody record a high press AND a low
+   block in the same match, which is not a description of anything. Out of
+   possession, in possession, and where the attack came from are independent
+   of each other, so each is its own question and each is OPTIONAL - a match
+   with nothing recorded says nothing, which is the rule the body part and the
+   minute already follow.
+
+   NOT DERIVED, AND IT CANNOT BE. Nothing in a Sunday-league return says where
+   the press started. This is the coach's answer or it is silence; there is no
+   third option where the site works it out, and a band that guessed would be
+   worse than the gap. */
+export const APPROACH_AXES = [
+  {
+    key: 'press',
+    label: 'Out of possession',
+    hint: 'Where the side started defending.',
+    options: [
+      { key: 'high', label: 'High press', phrase: 'pressing high',
+        note: 'Hunted the ball in their half and gave them no time to play out.' },
+      { key: 'mid', label: 'Mid block', phrase: 'in a mid block',
+        note: 'Held a line around halfway and pressed when the ball came in.' },
+      { key: 'low', label: 'Low block', phrase: 'in a low block',
+        note: 'Dropped in, stayed compact and defended the edge of the box.' },
+    ],
+  },
+  {
+    key: 'build',
+    label: 'In possession',
+    hint: 'How the side went forward with it.',
+    options: [
+      { key: 'out', label: 'Out from the back', phrase: 'playing out from the back',
+        note: 'Built through the keeper and the back line rather than clearing it.' },
+      { key: 'keep', label: 'Keeping the ball', phrase: 'keeping the ball',
+        note: 'Held possession and made them chase it.' },
+      { key: 'counter', label: 'Counter-attacking', phrase: 'countering',
+        note: 'Won it back and went at them before they were set.' },
+      { key: 'direct', label: 'Going direct', phrase: 'going direct',
+        note: 'Put it forward early and played off the second ball.' },
+    ],
+  },
+  {
+    key: 'attack',
+    label: 'Where the attack came from',
+    hint: 'The route to their goal.',
+    options: [
+      { key: 'wide', label: 'Down the wings', phrase: 'down the wings',
+        note: 'Got round the outside and into the box from the touchline.' },
+      { key: 'middle', label: 'Through the middle', phrase: 'through the middle',
+        note: 'Played through the lines in front of their centre backs.' },
+      { key: 'channels', label: 'Into the channels', phrase: 'into the channels',
+        note: 'Ran the space outside the centre backs and in behind them.' },
+      { key: 'switch', label: 'Switching the play', phrase: 'switching the play',
+        note: 'Moved them side to side and attacked the far flank.' },
+      { key: 'overload', label: 'Overloading one side', phrase: 'overloading one side',
+        note: 'Put bodies down one flank and beat them for numbers.' },
+    ],
+  },
+];
+
+/* What the club recorded, in order, as {axis, option} pairs. Anything the
+   vocabulary does not recognise is dropped rather than printed: a page is not
+   the place to find out that somebody typed a key by hand. */
+export function approachOf(detail) {
+  const a = (detail || {}).approach;
+  if (!a || typeof a !== 'object') return [];
+  return APPROACH_AXES
+    .map((ax) => {
+      const opt = APPROACH_AT[ax.key][a[ax.key]];
+      return opt ? { axis: ax.key, axisLabel: ax.label, ...opt } : null;
+    })
+    .filter(Boolean);
+}
+
+/* The same in one sentence, for a caption. Empty where nothing was recorded,
+   so a caption with nothing to say prints nothing rather than a stub. */
+export function describeApproach(detail) {
+  const picked = approachOf(detail);
+  if (!picked.length) return '';
+  const p = picked.map((x) => x.phrase);
+  const last = p.pop();
+  return `${p.length ? `${p.join(', ')} and ${last}` : last}`;
+}
+
 /* Look-ups, so nothing downstream writes its own switch statement. */
 const index = (list) => Object.fromEntries(list.map((x) => [x.key, x]));
 export const BODY_PART = index(BODY_PARTS);
 export const SITUATION = index(SITUATIONS);
 export const ZONE = index(ZONES);
 export const ASSIST_TYPE = index(ASSIST_TYPES);
+const APPROACH_AT = Object.fromEntries(APPROACH_AXES
+  .map((ax) => [ax.key, index(ax.options)]));
 
 /* A goal in words, from whatever was recorded and nothing more. Returns an
    empty string when nothing was, which is how a goal from an old record
@@ -140,4 +234,11 @@ export const VOCAB = {
   situations: SITUATIONS.map(({ key, label }) => ({ key, label })),
   zones: ZONES.map(({ key, label }) => ({ key, label })),
   assistTypes: ASSIST_TYPES.map(({ key, label }) => ({ key, label })),
+  /* The panel's three "how they played" dropdowns are built from this, so
+     what can be ENTERED and what can be PUBLISHED cannot drift apart. The
+     note rides along, because an option called "Mid block" needs a sentence
+     under it more than "Left foot" does. */
+  approach: APPROACH_AXES.map(({ key, label, hint, options }) => ({
+    key, label, hint, options: options.map(({ key: k, label: l, note }) => ({ key: k, label: l, note })),
+  })),
 };

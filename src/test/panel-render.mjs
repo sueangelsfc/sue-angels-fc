@@ -305,6 +305,60 @@ export async function panelChecks() {
       claims.length >= 7 && wide.length === 0,
       `sheet ${sheetSize}; too wide: ${wide.join(', ')}`);
 
+    /* HOW THE SIDE PLAYED, rendered rather than grepped for. This is the
+       panel's recurring fault in one sentence - a correct mechanism attached
+       to nothing - so the question is whether the three selects are actually
+       on the dialog with the options the site can publish, and whether a
+       value already stored comes back selected rather than silently reset.
+       The list is built from VOCAB, so what can be entered and what can be
+       published cannot drift apart. */
+    {
+      const axes = ['press', 'build', 'attack']
+        .map((k) => [k, modal.querySelector(`[data-ap="${k}"]`)]);
+      check('the match editor asks how the side played, on three axes',
+        axes.every(([, el]) => el),
+        axes.filter(([, el]) => !el).map(([k]) => k).join(' ') || 'all three');
+      const press = axes[0][1];
+      check('and each offers a blank, because nothing is guessed from the team sheet',
+        !!press && press.querySelectorAll('option')
+          .filter((o) => o.getAttribute('value') === '').length === 1);
+      check('and the options are the ones the site can publish',
+        !!press && press.querySelectorAll('option').map((o) => o.getAttribute('value'))
+          .filter(Boolean).join(' ') === 'high mid low',
+        press ? press.querySelectorAll('option').map((o) => o.getAttribute('value')).join('|') : '-');
+      /* A value already stored has to come back selected. The same trap as
+         the position alias: a select that cannot find its own value falls
+         back to its first option, and the next save rewrites an answer
+         nobody touched. */
+      const ctx2 = PR.boot({
+        rows: {
+          ...rows,
+          matches: rows.matches.map((m) => (m.key === chosen.key
+            ? { ...m, data: { ...m.data, approach: { press: 'low', build: 'direct' } } } : m)),
+        },
+      });
+      const r2 = await PR.openPanel(ctx2, 'results');
+      const tr2 = r2.body.querySelectorAll('tr[data-key]')
+        .filter((t) => t.getAttribute('data-key') === chosen.key)[0];
+      if (tr2) {
+        PR.click(tr2.querySelector('[data-edit]'));
+        await PR.settle(ctx2);
+        PR.flushMutations(ctx2.doc.body);
+        await PR.settle(ctx2);
+        const m2 = ctx2.doc.querySelector('.modal-backdrop');
+        const chosenOf = (k) => {
+          const el = m2 && m2.querySelector(`[data-ap="${k}"]`);
+          const sel = el && el.querySelectorAll('option')
+            .filter((o) => o.getAttribute('selected') != null || o.selected)
+            .map((o) => o.getAttribute('value'));
+          return (sel || []).join('');
+        };
+        check('an approach already recorded comes back selected, never reset',
+          chosenOf('press') === 'low' && chosenOf('build') === 'direct' && chosenOf('attack') === '',
+          `${chosenOf('press')}/${chosenOf('build')}/${chosenOf('attack')}`);
+      }
+    }
+
     /* AN OWN GOAL, CHOSEN AND STILL THERE. The flag lived only in memory for
        a while: the dropdown set it, the card repainted from it, and the save
        left it out, so the club chose Own goal and the record kept a goal with

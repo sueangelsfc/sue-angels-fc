@@ -507,6 +507,10 @@
      engine and every page already read it.
      ========================================================================== */
   var VOCAB = SEED.vocab || { bodyParts: [], situations: [], zones: [], assistTypes: [] };
+  /* From the same list the site describes a match with, so what can be
+     ENTERED and what can be PUBLISHED cannot drift apart. The same reason the
+     goal dropdowns are built from VOCAB rather than written out here. */
+  var APPROACH = VOCAB.approach || [];
 
   function optionsOf(list, chosen, blank) {
     return '<option value="">' + esc(blank) + '</option>' +
@@ -689,7 +693,16 @@
       '<select class="select spell__p" data-sp-pos aria-label="Where he played">' +
         '<option value="">Where did he play</option>' +
         ['gk', 'def', 'mid', 'fwd'].map(function (g) {
-          var inGroup = POSITIONS.filter(function (p) { return p.group === g; });
+          /* AN ALIAS IS OFFERED ONLY WHERE IT IS ALREADY STORED. `DM` and
+             `AM` name the same place as `CDM` and `CAM`, and two lines of a
+             dropdown reading "Defensive midfielder" ask somebody to pick
+             between two spellings of one fact. Dropping them outright would
+             be worse: a sheet saved as DM would find no matching option, the
+             select would fall back to its first, and the next save would
+             rewrite a position nobody had touched. */
+          var inGroup = POSITIONS.filter(function (p) {
+            return p.group === g && (!p.alias || p.code === code);
+          });
           if (!inGroup.length) return '';
           return '<optgroup label="' +
             ({ gk: 'In goal', def: 'Defence', mid: 'Midfield', fwd: 'Attack' })[g] + '">' +
@@ -1282,6 +1295,42 @@
                 'three with wing backs is a 3-4-2-1 to most people and a 5-4-1 to a computer.</p>' +
             '</div>' +
 
+            /* HOW THE SIDE PLAYED, which the shape cannot say. A 3-4-1-2
+               sitting in and countering and a 3-4-1-2 pressing from the
+               whistle are two different afternoons written down as the same
+               four digits, and the club asked to be able to tell them apart.
+
+               THREE QUESTIONS, ONE ANSWER EACH. One list of ten with "pick
+               any" would let somebody record a high press and a low block in
+               the same match, which describes nothing. Each is optional and
+               a blank one publishes nothing: there is no derivation to fall
+               back on here, because nothing in a match return says where the
+               press began, so this is the coach's answer or it is silence. */
+            '<div class="field">' +
+              '<p class="field__label">How the side played</p>' +
+              '<div class="cp-approach">' +
+                APPROACH.map(function (ax) {
+                  var at = (d.approach || {})[ax.key] || '';
+                  return '<div class="cp-approach__a">' +
+                    '<label class="cp-approach__l" for="m-ap-' + ax.key + '">' + esc(ax.label) + '</label>' +
+                    '<select class="select" id="m-ap-' + ax.key + '" data-ap="' + ax.key + '">' +
+                      '<option value="">Not recorded</option>' +
+                      ax.options.map(function (o) {
+                        return '<option value="' + esc(o.key) + '"' + (o.key === at ? ' selected' : '') +
+                          ' title="' + esc(o.note) + '">' + esc(o.label) + '</option>';
+                      }).join('') + '</select></div>';
+                }).join('') +
+              '</div>' +
+              /* `cp-note`, not `field__hint`: it describes the block of three
+                 selects rather than any one of them, and each select already
+                 has its own label. A hint class that does not mean what it
+                 says is how "every field hint is announced" came to be true
+                 only because three of them were never going to be. */
+              '<p class="cp-note">Optional, and nothing is guessed from the team sheet. ' +
+                'What you pick shows under the shape on the match report, each with the ' +
+                'sentence that explains it. Leave one blank and it is not mentioned.</p>' +
+            '</div>' +
+
             /* THEIR GOALS. Nineteen are stored across the archive and there
                has never been a way to enter one: they came in with the code
                baseline and the form could not touch them. A report of a 3-0
@@ -1716,6 +1765,17 @@
           xi: counts.starters.length,
           roles: startersNow().filter(function (st) { return st.role && ROLE_NAME[st.role]; })
             .map(function (st) { return { name: nameOf(st.num), role: ROLE_NAME[st.role] }; }),
+          /* HOW THE SIDE PLAYED, handed to the report writer with everything
+             else. The roles already reached it; the approach is the other
+             half of the same answer, and a writer told the side sat in a low
+             block and countered writes a different report from one told only
+             that it was a 3-4-1-2. Names, not keys: the writer is reading
+             English, not a vocabulary. */
+          approach: APPROACH.map(function (ax) {
+            var el = $('[data-ap="' + ax.key + '"]', back);
+            var opt = el && el.value && ax.options.filter(function (o) { return o.key === el.value; })[0];
+            return opt ? { axis: ax.label, is: opt.label, note: opt.note } : null;
+          }).filter(Boolean),
           captain: captNum === '' ? '' : nameOf(Number(captNum)),
           motm: motmNum === '' ? '' : nameOf(Number(motmNum)),
           goals: goals.map(function (g) {
@@ -1972,6 +2032,18 @@
         /* Derived from where the XI actually lined up, so it can never
            disagree with the team sheet printed beside it. */
         formation: detectFormation(startersNow()),
+        /* HOW THE SIDE PLAYED. An axis left blank is left OUT rather than
+           stored empty, so a record carries only what somebody answered and
+           the page's "nothing recorded draws nothing" rule has something
+           honest to test. */
+        approach: (function () {
+          var out = {};
+          APPROACH.forEach(function (ax) {
+            var el = $('[data-ap="' + ax.key + '"]', back);
+            if (el && el.value) out[ax.key] = el.value;
+          });
+          return out;
+        }()),
         /* Stored separately from the derived one so the derivation stays
            true and a blank override keeps deriving. */
         shape: $('#m-shape', back).value.trim(),

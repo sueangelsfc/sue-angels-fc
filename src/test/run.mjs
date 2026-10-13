@@ -2593,7 +2593,15 @@ const BUDGET = {
      one boolean each. Each row's two dropdowns are walked forward through the
      list so they offer who was actually available at that moment, which is
      what makes a return offerable without a special case. */
-  'control-matchedit.js': 15,
+  /* 15 -> 17, and the two kilobytes are DATA rather than code: the
+     thirty-eight player roles and the goal vocabulary now ride with this
+     chunk instead of control-seed.js, which loads first and was making all
+     eighteen panels pay for a dropdown only the match editor draws. Third
+     time that rule has arrived by a different door and the third time the
+     budget found it. `src/admin/lazy/11-matchedit.js` is budgeted as SOURCE
+     below so an edit to the code still shows up on its own, exactly as
+     95-home.js and 30-squad.js are. */
+  'control-matchedit.js': 18,
   /* 15 -> 16. What bought it: the length gauge under the notes box, and the
      word count beside the Build button.
 
@@ -2864,6 +2872,9 @@ for (const [f, kb] of Object.entries({
      which stores no identifier of any kind. It does not sort anything: the
      club's arrangement is the club's, and a panel that reordered the page by
      its own numbers would be breaking that rule while claiming to help. */
+  /* Source, so the roles and the goal vocabulary riding with the chunk
+     cannot hide code growth in the biggest form in the panel. */
+  'src/admin/lazy/11-matchedit.js': 35,
   'src/admin/lazy/95-home.js': 11,
   /* Source, so the bios riding with the chunk cannot hide code growth.
 
@@ -2931,6 +2942,16 @@ for (const [f, kb] of Object.entries({
       for (const c of s2.positions || []) used.add(c);
     }
   }
+  /* ALIASES MUST STILL BE OFFERED. `DM` and `AM` name the same place as `CDM`
+     and `CAM`; they are flagged rather than deleted, and the DROPDOWN is what
+     hides them, because a sheet already saved as DM has to find DM in the
+     list or the select falls back to its first option and the next save
+     rewrites a position nobody touched. */
+  check('an alias is still shipped to the panel, flagged rather than deleted',
+    (seed.positions || []).filter((p2) => p2.alias).length === 2
+    && (seed.positions || []).every((p2) => !p2.alias || codes.has(p2.alias)));
+  check('and the dropdown hides it unless it is the value already stored',
+    /!p\.alias \|\| p\.code === code/.test(fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '11-matchedit.js'), 'utf8')));
   const orphans = [...used].filter((c) => !codes.has(c));
   check('every position in the archive has a full name', orphans.length === 0,
     orphans.length ? `no name for ${orphans.join(', ')}` : '');
@@ -7228,6 +7249,50 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   }
 
   /* ====================================================================
+     WHAT HE WAS ASKED TO DO THERE
+
+     A role is attached to a position, never instead of one: a false nine is
+     a centre forward with a job. The list grew from nineteen to thirty-eight
+     at the club's request, which makes the question "are any two of them the
+     same thing wearing different letters" worth asking of the list rather
+     than of a reader.
+     ==================================================================== */
+  {
+    const { ROLES, POSITION_LABEL, rolesFor, POSITIONS } = await import(path.join(ROOT, 'src', 'lib', 'positions.mjs'));
+    check('no two roles share a code or a name',
+      new Set(ROLES.map((r) => r.code)).size === ROLES.length
+      && new Set(ROLES.map((r) => r.name)).size === ROLES.length,
+      `${ROLES.length} roles`);
+    check('and no two share a description either, which is how a duplicate hides',
+      new Set(ROLES.map((r) => r.note)).size === ROLES.length);
+    check('every role attaches to positions the site can name',
+      ROLES.every((r) => r.for.length && r.for.every((c) => POSITION_LABEL[c])));
+    check('every role says what it means, in a sentence',
+      ROLES.every((r) => /^[A-Z].*\.$/.test(String(r.note || '')) && r.note.length > 25));
+    /* A POSITION WITH NO ROLES IS A DROPDOWN WITH NOTHING IN IT. Every place
+       on the pitch offers at least two, so the second question is never a
+       dead control beside the first. */
+    check('every position offers roles, so the second dropdown is never empty',
+      POSITIONS.every((p) => rolesFor(p.code).length >= 2),
+      POSITIONS.filter((p) => rolesFor(p.code).length < 2).map((p) => p.code).join(' ') || 'all');
+    /* THE ARCHIVE KEEPS WHAT IT HAS. Twelve role codes are in stored team
+       sheets and a rename or a tidy that dropped one would print nothing
+       where the club had answered. */
+    const usedRoles = new Set();
+    for (const row of live.matches || []) {
+      for (const p of [...((row.data || {}).starters || []), ...((row.data || {}).bench || [])]) {
+        if (p.role) usedRoles.add(p.role);
+        for (const sp of p.spells || []) if (sp.role) usedRoles.add(sp.role);
+      }
+    }
+    const lost = [...usedRoles].filter((c) => !ROLES.some((r) => r.code === c));
+    check('no role the archive already uses was dropped', lost.length === 0, lost.join(' '));
+    /* The club asked for this one by name. */
+    check('a forward can be described as a channel runner',
+      rolesFor('ST').some((r) => r.code === 'CHR') && rolesFor('CF').some((r) => r.code === 'CHR'));
+  }
+
+  /* ====================================================================
      A CORRECTION THE CLUB HAS AGREED AND HAS NOT YET SAVED
 
      src/data/match-corrections.json. A second source for match data, which
@@ -10007,6 +10072,48 @@ let orphanClasses = new Map();
     check('the lines are named and nothing is counted on them',
       /In goal/.test(sh.xi) && /At the back/.test(sh.xi) && /In midfield/.test(sh.xi)
       && /Up front/.test(sh.xi) && !/>5-3-2</.test(sh.xi));
+
+    /* ---- HOW THE SIDE PLAYED --------------------------------------------
+       A shape is where eleven men stood and is not how they played. There is
+       NO derivation to fall back on here - nothing in a Sunday-league return
+       says where the press began - so the only two states are the coach's
+       answer and silence, and the silence is what these checks are really
+       about. A chip reading "Mid block" over a match nobody answered for
+       would be the site inventing tactics. */
+    check('a match with no approach recorded says nothing about how it played',
+      rv.approachBand({ detail: { ...(peps.detail || {}), approach: undefined } }) === ''
+      && rv.approachBand({ detail: {} }) === '' && rv.approachBand({}) === '');
+    const played = rv.approachBand({ detail: { approach: { press: 'high', build: 'counter', attack: 'wide' } } });
+    check('and one that does says all three, each with the sentence that explains it',
+      /High press/.test(played) && /Counter-attacking/.test(played) && /Down the wings/.test(played)
+      && /Won it back and went at them before they were set/.test(played)
+      && (played.match(/mr-how-xi__i/g) || []).length === 3);
+    check('an axis left blank is left out rather than drawn empty',
+      (rv.approachBand({ detail: { approach: { build: 'counter' } } }).match(/mr-how-xi__i/g) || []).length === 1);
+    /* A key nothing recognises is dropped, not printed. A page is not where
+       somebody finds out that a value was typed by hand. */
+    check('a value the vocabulary does not know draws nothing',
+      rv.approachBand({ detail: { approach: { press: 'gegenpressing', build: 'counter' } } })
+        .match(/mr-how-xi__i/g).length === 1);
+    {
+      const fb = await import(path.join(ROOT, 'src', 'lib', 'football.mjs'));
+      check('three axes, one answer each, so a high press and a low block cannot both be recorded',
+        fb.APPROACH_AXES.length === 3
+        && fb.APPROACH_AXES.every((ax) => ax.options.length >= 3
+          && ax.options.every((o) => o.key && o.label && o.phrase && String(o.note || '').length > 20))
+        && new Set(fb.APPROACH_AXES.flatMap((ax) => ax.options.map((o) => o.label))).size
+          === fb.APPROACH_AXES.reduce((n, ax) => n + ax.options.length, 0));
+      check('it reads as a sentence where a caption needs one',
+        fb.describeApproach({ approach: { press: 'high', build: 'counter', attack: 'wide' } })
+          === 'pressing high, countering and down the wings',
+        fb.describeApproach({ approach: { press: 'high', build: 'counter', attack: 'wide' } }));
+      /* THE PANEL IS BUILT FROM THE SAME LIST, so what can be ENTERED and
+         what can be PUBLISHED cannot drift apart. Same rule as the goal
+         vocabulary, which is why it rides in the same object. */
+      check('the panel is offered exactly the approaches the site can publish',
+        JSON.stringify(fb.VOCAB.approach.map((a) => [a.key, a.options.map((o) => o.key)]))
+        === JSON.stringify(fb.APPROACH_AXES.map((a) => [a.key, a.options.map((o) => o.key)])));
+    }
 
     /* ---- How long he was on, and never a minute that was not recorded --- */
     const det = peps.detail || {};

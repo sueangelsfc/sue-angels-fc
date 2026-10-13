@@ -254,7 +254,8 @@ const homeAway = (x, gk) => {
     return {
       apps: ts.length,
       starts: ts.filter((t) => t.started).length,
-      ga: ts.reduce((n, t) => n + t.goals + t.assists, 0),
+      goals: ts.reduce((n, t) => n + t.goals, 0),
+      assists: ts.reduce((n, t) => n + t.assists, 0),
       cs: ts.filter((t) => t.conceded === 0).length,
       won: ts.filter((t) => t.outcome === 'W').length,
     };
@@ -265,18 +266,28 @@ const homeAway = (x, gk) => {
   /* Home grows left from the middle and away grows right, three measures
      deep, so the two sides are read against each other rather than as two
      separate lists. Every figure is printed at the end of its bar. */
+  /* ONE THING A ROW. "Goals and assists" merged two different measures into
+     a single figure, so a reader could not tell four assists from two goals
+     and two assists, and the one row people most want to read was the one
+     that said least. They are separate rows now, and a row that is nought on
+     both sides is dropped rather than drawn as two empty bars - which is the
+     same rule the tiles follow. */
   const rows = [
     ['Starts', h.starts, a.starts],
-    [gk ? 'Clean sheets' : 'Goals and assists', gk ? h.cs : h.ga, gk ? a.cs : a.ga],
+    ...(gk ? [['Clean sheets', h.cs, a.cs]] : [
+      ['Goals', h.goals, a.goals],
+      ['Assists', h.assists, a.assists],
+    ]),
     ['Won', h.won, a.won],
-  ];
+  ].filter(([, hv, av]) => hv || av);
+  if (!rows.length) return '';
   return `<figure class="pf-chart pf-chart--split">
               <figcaption class="pf-chart__k">Home and away</figcaption>
               <p class="pf-split__head" aria-hidden="true"><span>Home</span><span>Away</span></p>
               <ul class="pf-split" data-home-away="${attr(`${h.starts},${a.starts}`)}">
                 ${rows.map(([k, hv, av], i) => {
     const m = Math.max(hv, av, 1);
-    return `<li style="--i:${i}"><b class="pf-split__h" data-count="${attr(hv)}">${esc(hv)}</b><span class="pf-split__bars" aria-hidden="true"><i style="--w:${pctOf(hv, m)}%"></i><i style="--w:${pctOf(av, m)}%"></i></span><b class="pf-split__a" data-count="${attr(av)}">${esc(av)}</b><span class="pf-split__k">${esc(k)}<span class="sr-only">: ${esc(hv)} at home, ${esc(av)} away</span></span></li>`;
+    return `<li style="--i:${i}"><span class="pf-split__k">${esc(k)}<span class="sr-only">: ${esc(hv)} at home, ${esc(av)} away</span></span><b class="pf-split__h" data-count="${attr(hv)}">${esc(hv)}</b><span class="pf-split__bars" aria-hidden="true"><i style="--w:${pctOf(hv, m)}%"></i><i style="--w:${pctOf(av, m)}%"></i></span><b class="pf-split__a" data-count="${attr(av)}">${esc(av)}</b></li>`;
   }).join('\n                ')}
               </ul>
             </figure>`;
@@ -473,20 +484,43 @@ export function playerPage(p, d) {
      Worked out from the same per-season figures the stats page's leaders read
      (d.playersBySeason, competitive matches), newest season first. A shared
      lead is said as joint rather than awarded to whoever sorts first. */
+  /* `solo` means the chip is only awarded OUTRIGHT. Minutes, starts and
+     appearances are attendance, and in a squad where everyone available plays
+     every week a tie is the normal case rather than the notable one: seven
+     men share the lead in starts this season, so a "joint most starts" chip
+     would appear on seven pages and say nothing about any of them. Goals and
+     assists are shared rarely enough that joint is worth printing. */
   const LEAD_CATS = [['goals', 'Top goalscorer', 'Joint top goalscorer'],
     ['assists', 'Most assists', 'Joint most assists'],
     ['cleanSheets', 'Most clean sheets', 'Joint most clean sheets'],
-    ['motm', 'Most Man of the Match', 'Joint most Man of the Match']];
+    ['motm', 'Most Man of the Match', 'Joint most Man of the Match'],
+    ['minutes', 'Most minutes', '', 'solo'],
+    ['starts', 'Most starts', '', 'solo'],
+    ['apps', 'Most appearances', '', 'solo']];
   const seasonAccolades = Object.keys(d.playersBySeason || {}).slice().reverse().flatMap((sn) => {
     const pool = d.playersBySeason[sn] || [];
     const me = pool.find((x) => String(x.num) === String(p.num));
     if (!me) return [];
-    return LEAD_CATS.filter(([k]) => k !== 'cleanSheets' || gk).flatMap(([k, label, joint]) => {
+    return LEAD_CATS.filter(([k]) => k !== 'cleanSheets' || gk).flatMap(([k, label, joint, solo]) => {
       const best = Math.max(0, ...pool.map((x) => x[k] || 0));
       if (!best || (me[k] || 0) !== best) return [];
-      return [{ label: pool.filter((x) => (x[k] || 0) === best).length > 1 ? joint : label, season: sn }];
+      const shared = pool.filter((x) => (x[k] || 0) === best).length > 1;
+      if (shared && solo) return [];
+      return [{ label: shared ? joint : label, season: sn }];
     });
   });
+
+  /* STARTS AND APPEARANCES ARE THE SAME CHIP when nobody came off the bench,
+     which is most seasons: a man who started every match also appeared in
+     every match, and saying both is saying one thing twice. Appearances is
+     dropped where it would only repeat starts. */
+  for (let i = seasonAccolades.length - 1; i >= 0; i -= 1) {
+    const a = seasonAccolades[i];
+    if (a.label !== 'Most appearances') continue;
+    if (seasonAccolades.some((b) => b.label === 'Most starts' && b.season === a.season)) {
+      seasonAccolades.splice(i, 1);
+    }
+  }
 
   const recog = d.recognition || [];
   const seasonAwards = recog.filter((r) => r.type === 'season_award' && r.playerId === p.num);
@@ -657,7 +691,17 @@ export function playerPage(p, d) {
     const t = x.timeline[i];
     const made = gk ? (t.conceded === 0 ? 'Clean sheet' : `${t.conceded} conceded`)
       : [t.goals ? `${t.goals}G` : '', t.assists ? `${t.assists}A` : ''].filter(Boolean).join(' ') || 'No return';
-    return `<circle class="pf-plot__pt" cx="${sv(px)}" cy="${sv(py)}" r="10" data-total="${attr(series[i])}" data-club="${attr(shortClub(t.opponent))}" data-score="${attr(t.scoreline)}" data-date="${attr(fmtDate(t.date))}" data-made="${attr(made)}"/>`;
+    /* THE OPPONENT AND THE SCORE ARE NOT CARRIED HERE ANY MORE. "How it went"
+       sits one band above with the same matches in the same order, the score
+       printed on every pip and the club named on hover - so this readout was
+       answering a question that had already been answered, at 45 bytes a
+       point on a page at its ceiling.
+
+       THE PLOT IS THE TREND AND THE STRIP IS THE MATCH LIST. What is left is
+       what a running total is actually for: what he did at that point and
+       where it took him. Which match it was is one band up, in order, on a
+       link. */
+    return `<circle class="pf-plot__pt" cx="${sv(px)}" cy="${sv(py)}" r="10" data-total="${attr(series[i])}" data-made="${attr(made)}"/>`;
   }).join('')}
                 <line class="pf-plot__pulse" x1="${ex}" y1="${ey}" x2="${ex}" y2="${ey}" />
                 <line class="pf-plot__end" x1="${ex}" y1="${ey}" x2="${ex}" y2="${ey}" />
@@ -835,7 +879,8 @@ export function playerPage(p, d) {
             ${rail('NUM', 'How it went', `${w}W ${dr}D ${l}L`)}
             <h3 class="h2 rv" id="pf-f-${idx}">How it <span class="volt">went.</span></h3>
             <p class="pf-run__cap">Every match he played, in order. A filled pip is a win, an outline a draw.
-              A dot marks a goal or an assist. Each one opens the match.</p>
+              A dot marks a goal or an assist, bigger for more than one. Point at one for the opponent and
+              the date; press it to open the match.</p>
             <ol class="pf-run rv">${tl.map((t, i) => {
     const did = [t.goals ? `${t.goals} ${t.goals === 1 ? 'goal' : 'goals'}` : '',
       t.assists ? `${t.assists} ${t.assists === 1 ? 'assist' : 'assists'}` : '',
@@ -849,7 +894,17 @@ export function playerPage(p, d) {
     const label = `${o} ${t.scoreline}, ${(OUT[o] || 'played').toLowerCase()} ${t.home ? 'at home' : 'away'} to ${shortClub(t.opponent)}`
       + `${t.minutes != null ? `, ${t.minutes} mins` : ''}${did ? `, ${did}` : ''}`;
     const ret = (t.goals || 0) + (t.assists || 0);
-    return `<li style="--i:${i}"><a class="pf-run__m${o === 'W' ? ' is-w' : o === 'L' ? ' is-l' : ' is-d'}${ret ? ' has-ret' : ''}"${ret ? ` style="--r:${Math.min(ret, 4)}"` : ''} href="${attr(`/matches/${t.id}.html`)}" aria-label="${attr(label)}"><b>${esc(o || '-')}</b><span>${esc(t.scoreline)}</span></a></li>`;
+    /* THE CREST AND THE DATE ON HOVER. A pip says what happened; it does not
+       say who to, and a strip of thirty-four results with no opponent on it is
+       a shape rather than a season. Shown on hover AND on keyboard focus, so
+       it is not a fact only a mouse can reach.
+
+       `aria-hidden`, because the link's own label already carries every word
+       of it and a screen reader reading the opponent twice is worse than not
+       drawing it. The crest is lazy, so thirty-four of them cost nothing
+       until somebody points at one. */
+    const tip = `<span class="pf-run__tip" aria-hidden="true">${oppBadge(t.opponent, d.badges, 22, 22, '', true)}<b>${esc(shortClub(t.opponent))}</b><i>${esc(fmtDate(t.date))}</i></span>`;
+    return `<li style="--i:${i}"><a class="pf-run__m${o === 'W' ? ' is-w' : o === 'L' ? ' is-l' : ' is-d'}${ret ? ' has-ret' : ''}"${ret ? ` style="--r:${Math.min(ret, 4)}"` : ''} href="${attr(`/matches/${t.id}.html`)}" aria-label="${attr(label)}"><b>${esc(o || '-')}</b><span>${esc(t.scoreline)}</span>${tip}</a></li>`;
   }).join('')}</ol>
           </section>`;
   };

@@ -16,7 +16,7 @@
                          served from an old entry.
      everything else     straight to the network, untouched.
 
-   sa-1ce31f43 is stamped by the build from the same content hash the pages
+   sa-b3035d11 is stamped by the build from the same content hash the pages
    carry. A deploy therefore changes the cache name, and `activate` deletes
    every cache that is not the current one, so a release cannot leave a
    visitor on the previous build. The old worker hard-coded 'sa-static-v2'
@@ -26,7 +26,7 @@
    auth and its answers are per-user, and an API response has no business in
    a static cache.
    ========================================================================== */
-const CACHE = 'sa-1ce31f43';
+const CACHE = 'sa-b3035d11';
 const OFFLINE = '/404.html';
 
 self.addEventListener('install', (event) => {

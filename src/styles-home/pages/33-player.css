@@ -25,11 +25,17 @@
   letter-spacing: 0.16em; text-transform: uppercase; color: var(--volt-text);}
 .pf-chip--pos{background: var(--volt); border-color: var(--volt); color: var(--text-on-brand);}
 .pf-chip--mut{background: rgba(var(--lift), 0.06); border-color: var(--line-d); color: var(--ink-2);}
-/* The season the status refers to. It used to be inside the words ("Retained
-   for 26/27"), which meant the sentence went stale on a date nobody was
-   watching. Beside them it is a fact the generator supplies. */
-.pf-chip--mut i{font-style: normal; margin-left: 7px; padding-left: 7px;
-  border-left: 1px solid var(--line-d); color: var(--ink-3);}
+/* The season a chip refers to. It used to be inside the words ("Retained for
+   26/27"), which meant the sentence went stale on a date nobody was watching.
+   Beside them it is a fact the generator supplies.
+
+   SET LIKE THE REST OF THE CHIP, on every chip and not only the muted one.
+   An `<i>` with no rule of its own is italic by browser default, so every
+   accolade read "TOP GOALSCORER25/26" with the season slanted and shoved
+   against the label - two faults from one missing declaration. */
+.pf-chip i{font-style: normal; margin-left: 8px; padding-left: 8px;
+  border-left: 1px solid rgba(var(--volt-rgb), 0.3); color: var(--volt-text); opacity: 0.8;}
+.pf-chip--mut i{border-left-color: var(--line-d); color: var(--ink-3); opacity: 1;}
 
 .pf-hero__name{margin: 18px 0 0; display: grid; gap: 2px;}
 .pf-hero__name b{font-family: var(--display); font-weight: 300;
@@ -1050,3 +1056,38 @@ html.js .pf-pitch__grid.is-picking .pf-spot.is-picked{opacity: 1;}
 /* The rise these two bands reveal with. Named here because nothing else on
    this page had one: every other chart animates its own geometry. */
 @keyframes pf-rise{from{opacity: 0; transform: translateY(12px);} to{opacity: 1; transform: none;}}
+
+/* The opponent and the date, on hover and on keyboard focus. A pip says what
+   happened and not who to, and thirty-four results with no opponent on them
+   are a shape rather than a season.
+
+   ABOVE THE PIP, never below: `.sec` is `overflow: hidden` site-wide, so a
+   tooltip hanging off the bottom of the last row would be cut in half by the
+   band rather than by anything that looks like a mistake. */
+.pf-run__tip{position: absolute; left: 50%; bottom: calc(100% + 8px);
+  transform: translate(-50%, 4px); z-index: 5;
+  display: grid; grid-template-columns: auto 1fr; align-items: center;
+  gap: 2px 8px; width: max-content; max-width: 190px; padding: 8px 11px;
+  border-radius: 11px; border: 1px solid var(--line-d); background: var(--sheet, #11161d);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity 0.16s, transform 0.22s var(--ease-out-expo), visibility 0.16s;}
+.pf-run__tip img{grid-row: span 2; width: 22px; height: 22px; object-fit: contain;}
+.pf-run__tip b{font-family: var(--display); font-weight: 500; font-size: 13.5px;
+  letter-spacing: -0.015em; color: var(--fg); line-height: 1.15;}
+.pf-run__tip i{font-style: normal; font-family: var(--ui); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);}
+/* THE HOVERED PIP HAS TO RISE, not just its tooltip. Every pip is
+   `position: relative` with no z-index, so they paint in document order and
+   the pips AFTER the one being pointed at painted straight over its tooltip -
+   a z-index inside a box cannot lift that box above its own siblings. Same
+   trap as the site header, one band wide. */
+.pf-run__m:hover,
+.pf-run__m:focus-visible{z-index: 6;}
+.pf-run__m:hover .pf-run__tip,
+.pf-run__m:focus-visible .pf-run__tip{opacity: 1; visibility: visible; transform: translate(-50%, 0);}
+/* The first row has nowhere to hang one, so the strip makes room for it. */
+.pf-run{padding-top: 4px;}
+@media (prefers-reduced-motion: reduce){
+  .pf-run__tip{transition: none;}
+}

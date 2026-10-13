@@ -4190,6 +4190,17 @@ for (const [f, kb] of Object.entries({
           .filter(([, label, w, sc]) => !label.startsWith(`${w} ${sc}`));
         check('and the pip\u2019s label opens with the text a reader can see',
           bad.length === 0, bad.slice(0, 2).map((m) => m[1]).join(' | '));
+        /* THE CREST AND THE DATE, on hover and on focus. A pip says what
+           happened and not who to. Hidden from a screen reader on purpose,
+           because the link's own label already carries every word of it, and
+           the crest carries no alt for the same reason - an alt inside
+           `aria-hidden` is bytes nobody can reach. */
+        const tips = [...pan.matchAll(/<span class="pf-run__tip"([^>]*)>(.*?)<\/span><\/a>/g)];
+        check('a pip carries the opponent and the date for a pointer',
+          !pan || (tips.length === pips
+            && tips.every(([, at, inner]) => /aria-hidden="true"/.test(at)
+              && /<img [^>]*alt=""/.test(inner) && /<b>/.test(inner) && /<i>/.test(inner))),
+          `${tips.length} tips, ${pips} pips`);
       }
       /* Where he played, per tab: every season he appeared in has its own map. */
       const cdSeasonsPlayed = (dPS.seasons || []).map((s, i) => [s.name, i])

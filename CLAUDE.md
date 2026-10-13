@@ -1193,6 +1193,26 @@ down as the same four digits.
   `src/admin/lazy/11-matchedit.js` budgeted as source so code growth still
   shows up on its own.
 
+### How the side played is the club's, not the league's
+
+The approach is recorded for the club's own use and for the **writing** of a
+match report. The manager's page gathered the same three answers across a
+season into a table with the record in each, and that readout is **gone at the
+club's request**: one match described is reportage, a season of them in a table
+is a scouting document, and his page is the one an opponent would read to find
+out what this side usually does.
+
+- **The record still holds it, the panel still asks for it, and the report
+  writer is still handed it.** Nothing was taken from the club; one readout
+  was.
+- **The match report keeps it, in a report's words.** The panel asks "Out of
+  possession" because that is how a coach fills a form in; the report says
+  "Without the ball" because that is how a match report talks. Two labels on
+  the same axis, because they are two jobs - `label` for the form, `caption`
+  for the page.
+- `approachUse()` went with the band. A derivation nothing reads is the same
+  fault as a field nothing reads.
+
 ### A season on a player's page, and on the manager's
 
 The season panel was six tiles, three bars, four ranks and five charts, and it
@@ -1242,6 +1262,39 @@ page.
   "03 How it went" sat above "03 In pictures" on the first page that drew both.
 - **`pf-run`, not `pf-form`.** The last-time-out band already owned that class,
   and the new strip's grid would have rebuilt it into pips.
+- **The crest and the date on hover**, and on keyboard focus, so it is not a
+  fact only a mouse can reach. Hidden from a screen reader, which already has
+  all of it on the link's own label, and the crest carries no `alt` for the
+  same reason: an alt inside `aria-hidden` is bytes nobody can reach, and
+  there are thirty-four of them on a page at its ceiling.
+- **The hovered pip has to RISE, not just its tooltip.** Every pip is
+  `position: relative` with no z-index, so they paint in document order and
+  the pips AFTER the one being pointed at painted straight over its tooltip. A
+  z-index inside a box cannot lift that box above its own siblings. Same trap
+  as the site header, one band wide.
+- **It paid for itself out of the running plot.** Those points carried
+  `data-club`, `data-score` and `data-date` for a hover readout - 11.4KB on the
+  heaviest profile - and the strip one band up now answers all three, in order,
+  on a link, with the score printed on the pip. The plot is the trend and the
+  strip is the match list: its readout says what he did and where it took him,
+  which is what a running total is for.
+- **One thing a row in home and away.** "Goals and assists" merged two
+  measures into one figure, so a reader could not tell four assists from two
+  goals and two assists, and the row people most want to read was the one that
+  said least. Separate rows, a row that is nought on both sides dropped, and
+  the label moved ABOVE the bars - it used to sit under them, so a reader met
+  two numbers and two bars before being told what any of it counted.
+- **Minutes, starts and appearances get a leader chip, awarded outright only.**
+  They are attendance, and in a squad where everyone available plays every week
+  a tie is the normal case: seven men share the lead in starts this season, so
+  a joint chip would appear on seven pages and say nothing about any of them.
+  Goals and assists are shared rarely enough that joint is worth printing. And
+  appearances is dropped where it would only repeat starts, which is most
+  seasons.
+- **A chip's season is set like the chip.** `.pf-chip i` had no rule of its
+  own, so every accolade read "TOP GOALSCORER25/26" with the season italic by
+  browser default and shoved against the label - two faults from one missing
+  declaration.
 - **The pip's label opens with the text on the pip.** A voice-control user
   activates a link by speaking what they can see, so `aria-label="Won 2-1 home
   v Three Little Birds"` over a pip reading "W 2-1" is a control they cannot

@@ -1079,10 +1079,8 @@
         cross.setAttribute('x2', pt.getAttribute('cx'));
         cross.setAttribute('opacity', '1');
         cap.classList.add('is-live');
-        cap.innerHTML = '<span class="pf-plot__lo">' + pt.getAttribute('data-date') + '</span>'
-          + '<b>' + pt.getAttribute('data-club') + ' ' + pt.getAttribute('data-score') + '</b>'
-          + '<span class="pf-plot__hi">' + pt.getAttribute('data-made')
-          + ' · ' + pt.getAttribute('data-total') + ' total</span>';
+        cap.innerHTML = '<b>' + pt.getAttribute('data-made') + '</b>'
+          + '<span class="pf-plot__hi">' + pt.getAttribute('data-total') + ' total</span>';
       };
 
       var clear = function () {

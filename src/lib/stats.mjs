@@ -460,6 +460,12 @@ export function playerStats(matches, squad, trialists = {}, signedOn = () => nul
         assistsByType: {},
         goalsDetailed: 0,
         saves: 0, keeperApps: 0,
+        /* MINUTES, and the matches they could be counted over. Counted here
+           as well as in playerProfile because the leaderboards read this
+           table and a profile reads the other, and a figure counted twice in
+           two places is a figure that can disagree with itself - so both go
+           through minutesPlayed() in subs.mjs and neither has its own rule. */
+        minutes: 0, minutesGames: 0,
         penalties: 0, matches: [],
       });
     }
@@ -571,6 +577,8 @@ export function playerStats(matches, squad, trialists = {}, signedOn = () => nul
     for (const num of starters) {
       const p = ensure(num);
       p.starts++; p.apps++;
+      const mins = minutesPlayed(num, d);
+      if (mins != null) { p.minutes += mins; p.minutesGames += 1; }
       p.matches.push({ id: m.id, role: 'start' });
       if (keptIt.has(Number(num))) { p.cleanSheets++; keptIt.delete(Number(num)); }
     }
@@ -581,6 +589,8 @@ export function playerStats(matches, squad, trialists = {}, signedOn = () => nul
       if (playedOffBench(num)) {
         p.apps++;
         appeared.add(num);
+        const mins = minutesPlayed(num, d);
+        if (mins != null) { p.minutes += mins; p.minutesGames += 1; }
         /* A role of its own, so everything downstream can still tell a start
            from a substitute appearance from an unused bench listing. */
         p.matches.push({ id: m.id, role: 'sub' });
@@ -1578,45 +1588,6 @@ export function formationUse(matches) {
     total,
     of: (matches || []).filter((x) => x.played).length,
   };
-}
-
-/* HOW THE SIDE PLAYED, and how each answer has gone.
-
-   A shape is where eleven men stood and is not how they played: a 3-4-1-2
-   sitting in and countering and a 3-4-1-2 pressing from the whistle are two
-   different afternoons written down as the same four digits. The club records
-   the second now, on three axes with one answer each, and this is the only
-   page where the pattern across a season can be read at all.
-
-   GROUPED BY AXIS, because the three are independent questions and a flat
-   list of answers would put "high press" beside "down the wings" as though a
-   manager had to choose. A match with nothing recorded is counted in `of` and
-   in no row, so a share is always a share of the matches that answered. */
-export function approachUse(matches, axes) {
-  const played = (matches || []).filter((x) => x.played);
-  return (axes || []).map((ax) => {
-    const map = new Map();
-    let answered = 0;
-    for (const m of played) {
-      const key = ((m.detail || {}).approach || {})[ax.key];
-      const opt = (ax.options || []).find((o) => o.key === key);
-      if (!opt) continue;
-      answered += 1;
-      if (!map.has(opt.key)) map.set(opt.key, { ...opt, n: 0, won: 0 });
-      const row = map.get(opt.key);
-      row.n += 1;
-      if (m.outcome === 'W') row.won += 1;
-    }
-    return {
-      axis: ax.key,
-      label: ax.label,
-      answered,
-      of: played.length,
-      rows: [...map.values()]
-        .map((r) => ({ ...r, pct: answered ? Math.round((r.n / answered) * 100) : 0 }))
-        .sort((a, b) => b.n - a.n || a.label.localeCompare(b.label)),
-    };
-  }).filter((a) => a.rows.length);
 }
 
 /* Every ground the club has played on, with the record there. */

@@ -192,13 +192,20 @@ export function oppBadgeSrc(name, badges) {
   return src.startsWith('/') ? src : `/${src}`;
 }
 
-export function oppBadge(name, badges, w, h, cls = '') {
+export function oppBadge(name, badges, w, h, cls = '', mute = false) {
   const path = oppBadgeSrc(name, badges);
   if (!path) return clubCrest(name, badges, cls);
   /* Named for the same reason clubCrest is: this one badge function draws the
      crest in the league table, every result row, the crest wall and the
-     next-match card, and in half of those it is the only thing in its cell. */
-  return `<img${cls ? ` class="${attr(cls)}"` : ''} src="${attr(path)}" alt="${attr(`${name} club crest`)}" width="${attr(w)}" height="${attr(h)}" loading="lazy" decoding="async" />`;
+     next-match card, and in half of those it is the only thing in its cell.
+
+     `mute` is for the one case where it is NOT the only thing: a crest inside
+     something already hidden from a screen reader, where the surrounding link
+     has named the club in its own label. Naming it again is not redundancy a
+     reader hears, it is bytes nobody can reach - thirty-four of them on a
+     profile at its ceiling. The caller takes responsibility for having said
+     it, which is why this is a parameter and not a default. */
+  return `<img${cls ? ` class="${attr(cls)}"` : ''} src="${attr(path)}" alt="${mute ? '' : attr(`${name} club crest`)}" width="${attr(w)}" height="${attr(h)}" loading="lazy" decoding="async" />`;
 }
 
 /* Club names read short on match furniture, the way a scoreboard writes them. */

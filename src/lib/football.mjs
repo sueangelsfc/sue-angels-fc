@@ -113,6 +113,10 @@ export const APPROACH_AXES = [
   {
     key: 'press',
     label: 'Out of possession',
+    /* THE PANEL ASKS A QUESTION AND THE REPORT TELLS A READER. "Out of
+       possession" is how a coach fills a form in; "Without the ball" is how a
+       match report says it. Two labels, because they are two jobs. */
+    caption: 'Without the ball',
     hint: 'Where the side started defending.',
     options: [
       { key: 'high', label: 'High press', phrase: 'pressing high',
@@ -126,6 +130,7 @@ export const APPROACH_AXES = [
   {
     key: 'build',
     label: 'In possession',
+    caption: 'With the ball',
     hint: 'How the side went forward with it.',
     options: [
       { key: 'out', label: 'Out from the back', phrase: 'playing out from the back',
@@ -141,6 +146,7 @@ export const APPROACH_AXES = [
   {
     key: 'attack',
     label: 'Where the attack came from',
+    caption: 'The route to goal',
     hint: 'The route to their goal.',
     options: [
       { key: 'wide', label: 'Down the wings', phrase: 'down the wings',
@@ -166,7 +172,7 @@ export function approachOf(detail) {
   return APPROACH_AXES
     .map((ax) => {
       const opt = APPROACH_AT[ax.key][a[ax.key]];
-      return opt ? { axis: ax.key, axisLabel: ax.label, ...opt } : null;
+      return opt ? { axis: ax.key, axisLabel: ax.label, caption: ax.caption || ax.label, ...opt } : null;
     })
     .filter(Boolean);
 }

@@ -396,25 +396,3 @@ html.js .co-rec__grid.is-in .co-rec__arc{stroke-dashoffset: 0;}
 @media (prefers-reduced-motion: reduce){
   .mgh__arc{transition: none;}
 }
-
-/* ---- How he played ------------------------------------------------------
-   Three axes, one answer each, grouped - because a flat list would put "high
-   press" beside "down the wings" as though a manager had to choose between
-   them. Absent entirely where the club has answered for no match. */
-.mga{list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 14px;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));}
-.mga__ax{display: grid; gap: 8px; align-content: start; padding: 18px;
-  border-radius: 16px; border: 1px solid var(--line-d); background: var(--slab); min-width: 0;}
-.mga__k{font-style: normal; font-family: var(--ui); font-size: 8.5px; font-weight: 700;
-  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
-.mga__rows{list-style: none; margin: 0; padding: 0; display: grid; gap: 10px;}
-.mga__r{display: grid; gap: 3px; min-width: 0;}
-.mga__r b{font-family: var(--display); font-weight: 500; font-size: 17px;
-  letter-spacing: -0.022em; color: var(--fg);}
-.mga__n{font-size: 12.5px; color: var(--ink-3); font-variant-numeric: tabular-nums;}
-.mga__bar{display: block; height: 4px; border-radius: 4px; overflow: hidden;
-  background: rgba(var(--lift), 0.12);}
-.mga__bar i{display: block; height: 100%; width: var(--w, 0%); border-radius: 4px;
-  background: var(--volt);}
-.mga__of{font-family: var(--ui); font-size: 8.5px; font-weight: 700; letter-spacing: 0.1em;
-  text-transform: uppercase; color: var(--ink-3); font-variant-numeric: tabular-nums;}

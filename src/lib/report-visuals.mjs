@@ -518,13 +518,20 @@ export const inPositionOrder = (list) => (list || [])
    fall back on: nothing in a Sunday-league return says where the press
    started, so this is the coach's answer or it is silence. A chip reading
    "Mid block" over a match nobody answered for would be the site inventing
-   tactics, which is the one thing a record of a football match must not do. */
+   tactics, which is the one thing a record of a football match must not do.
+
+   AND IT IS ONLY EVER ABOUT THIS AFTERNOON. The manager's page gathered the
+   same answers across a season and that readout is gone: one match described
+   is reportage, a season of them in a table is a scouting document. The
+   captions here are a report's words rather than the form's - "Without the
+   ball" where the panel asks "Out of possession" - because this band is
+   painting a picture for a reader and not filling anything in. */
 export function approachBand(m) {
   const picked = approachOf(m.detail || {});
   if (!picked.length) return '';
   return `<ul class="mr-how-xi">
             ${picked.map((x) => `<li class="mr-how-xi__i">
-              <i>${esc(x.axisLabel)}</i><b>${esc(x.label)}</b><span>${esc(x.note)}</span>
+              <i>${esc(x.caption)}</i><b>${esc(x.label)}</b><span>${esc(x.note)}</span>
             </li>`).join('\n            ')}
           </ul>`;
 }

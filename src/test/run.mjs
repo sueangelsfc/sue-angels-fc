@@ -1196,18 +1196,28 @@ for (const f of shipped) {
      published from the panel keeps the generic card until somebody runs
      `npm run covers`. What is checked is that no two pages claim the SAME
      drawn cover, which would mean an id collision quietly pointing two
-     matches at one picture. */
+     matches at one picture.
+
+     THREE STATES, NOT TWO, and reading it as two is what made this line lie.
+     A page whose record carries its own picture ships THAT, which is the
+     preferred state and always wins: counting anything outside
+     /assets/covers/ as generic reported nine of those as a job to do, and
+     the job was to run a script that correctly refuses to redraw over them
+     (`drew 0, kept 50`). Only the club's two fallback images are a real gap,
+     and they are the only ones the line now names. */
   {
     const shareOf = (f) => {
       const m1 = /property="og:image" content="([^"]+)"/.exec(fs.readFileSync(path.join(ROOT, f), 'utf8'));
       return m1 ? m1[1] : '';
     };
     const drawn = new Map();
-    let generic = 0;
+    const stored = [];
+    const generic = [];
     for (const f of htmlFiles.filter((x) => x.startsWith('matches/') || x.startsWith('news/'))) {
       const img = shareOf(f);
       if (!img) continue;
-      if (!/\/assets\/covers\//.test(img)) { generic += 1; continue; }
+      if (/\/(og-match|og-news)\.jpg/.test(img)) { generic.push(f); continue; }
+      if (!/\/assets\/covers\//.test(img)) { stored.push(f); continue; }
       if (drawn.has(img)) {
         check(`${f}: does not share a drawn cover with ${drawn.get(img)}`, false, img);
       }
@@ -1217,7 +1227,19 @@ for (const f of shipped) {
     check('every drawn cover is a file that is actually there',
       [...drawn.keys()].every((u) => fs.existsSync(
         path.join(ROOT, u.replace(/^https?:\/\/[^/]+/, '').replace(/^\//, '')))));
-    if (generic) console.log(`  ${generic} report/article page(s) still on the generic card - run npm run covers`);
+    /* A stored cover is a picture on the club's OWN storage, and saying so is
+       the only part of this that can fail: `stored` is otherwise everything
+       that was neither a drawn card nor a fallback, which is a bucket rather
+       than a claim. An address pointing anywhere else is a share image the
+       club does not control. */
+    const badStored = stored.filter((f) => !/^https:\/\/hvbquuvxcswylyguplfb\.supabase\.co\/storage\//.test(shareOf(f)));
+    check('a stored cover is a picture on the club\'s own storage',
+      badStored.length === 0, `${stored.length} stored, ${badStored.length} elsewhere`);
+    if (generic.length) {
+      console.log(`  ${generic.length} report/article page(s) still on the generic card - run npm run covers`);
+      console.log(`    ${generic.join(', ')}`);
+    }
+    if (stored.length) console.log(`  ${stored.length} ship a picture the club uploaded, which beats a drawn card`);
   }
 
   /* A FIXTURE THAT HAS BEEN PLAYED IS NOT OFFERED FOR IMPORT. The panel's

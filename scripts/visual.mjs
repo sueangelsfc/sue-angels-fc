@@ -162,18 +162,53 @@ const MENU = `(async () => {
      green on the next run. Settled means two consecutive reads of the same
      size, with a cap so a panel that never opens still returns. */
   const panel = document.querySelector('.hx__vp');
+  const inside = (p, r) => r.left + r.width / 2 >= p.left && r.left + r.width / 2 <= p.right
+    && r.top + r.height / 2 >= p.top && r.top + r.height / 2 <= p.bottom;
+
+  /* AND WAIT FOR THE LINKS TO BE INSIDE THE PANEL, which is the thing the
+     size test only stands in for. Settling on size alone was still wrong on
+     a slower machine: the loop breaks on two equal reads, and two equal reads
+     happen immediately when the panel has not STARTED opening yet - the hover
+     has been dispatched, the animation has not begun, and the size is stable
+     because nothing is moving. The check then hit-tested links whose centres
+     were nowhere near the drawn panel and reported, with complete confidence,
+     that a static hero was painted over the menu.
+
+     A static element cannot paint over a positioned one, so that answer was
+     never physically possible and the check had no way to notice. It went red
+     on /awards.html and one player page in CI, green on the next run, and
+     green on every local run, which is the shape this exact check has failed
+     in twice now.
+
+     So the condition is the one that actually matters: every link's centre
+     lies within the panel's own rectangle. That is false while it is opening,
+     false if it never opens, and true exactly when a hit test means
+     something. */
   if (panel) {
     let last = -1;
-    for (let i = 0; i < 40; i += 1) {
-      const r = panel.getBoundingClientRect();
-      const now = Math.round(r.width) * 10000 + Math.round(r.height);
-      if (now === last && r.width > 0) break;
-      last = now;
+    for (let i = 0; i < 80; i += 1) {
+      const p = panel.getBoundingClientRect();
+      const ls = [...panel.querySelectorAll('a')];
+      const settled = Math.round(p.width) * 10000 + Math.round(p.height) === last;
+      const placed = p.width > 0 && p.height > 0 && ls.length
+        && ls.every((a) => { const r = a.getBoundingClientRect(); return !r.width || inside(p, r); });
+      if (settled && placed) break;
+      last = Math.round(p.width) * 10000 + Math.round(p.height);
       await new Promise((r2) => setTimeout(r2, 60));
     }
   }
   const links = panel ? [...panel.querySelectorAll('a')] : [];
   const out = [];
+  const pr = panel ? panel.getBoundingClientRect() : null;
+
+  /* A PANEL THAT NEVER OPENED IS ITS OWN FAILURE, not forty dead links.
+     Reported once, in its own words, so the two can never be confused again. */
+  if (pr && links.length && !links.every((a) => { const r = a.getBoundingClientRect(); return !r.width || inside(pr, r); })) {
+    return [{ text: '(the drop-down never finished opening)',
+      hit: 'panel ' + Math.round(pr.width) + 'x' + Math.round(pr.height)
+        + ', so no click could be tested - this is the CHECK failing, not the menu' }];
+  }
+
   for (const a of links) {
     const r = a.getBoundingClientRect();
     if (!r.width || !r.height) continue;

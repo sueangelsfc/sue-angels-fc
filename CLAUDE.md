@@ -1284,13 +1284,24 @@ page.
   said least. Separate rows, a row that is nought on both sides dropped, and
   the label moved ABOVE the bars - it used to sit under them, so a reader met
   two numbers and two bars before being told what any of it counted.
-- **Minutes, starts and appearances get a leader chip, awarded outright only.**
+- **Minutes, starts and appearances get a leader chip, joint ones included.**
   They are attendance, and in a squad where everyone available plays every week
-  a tie is the normal case: seven men share the lead in starts this season, so
-  a joint chip would appear on seven pages and say nothing about any of them.
-  Goals and assists are shared rarely enough that joint is worth printing. And
-  appearances is dropped where it would only repeat starts, which is most
-  seasons.
+  a tie is the normal case - seven men share the lead in starts this season.
+  The club's call is that sharing it is the fact rather than a reason to
+  withhold it: a man who has started every match has started every match
+  whether or not six others did too. Appearances is still dropped where it
+  would only repeat starts, which is most seasons.
+- **A position card is timed in minutes, not counted in matches** - and the
+  minutes are attributed ONLY where the match had one position in it. A man
+  who began at centre half and finished in midfield played some of his ninety
+  in each, and the record says which HALF he moved in, not which minute:
+  splitting them would invent a substitution nobody made, and giving ninety to
+  both would publish a hundred and eighty. Four player-matches in the whole
+  archive move, so the suite asks this of **every** player rather than of
+  whichever one a check happened to pick - the first version asked it of one
+  man who had never moved, and taking the rule out left the probe green.
+  The card says "1 match, not timed" in two words rather than the band
+  carrying a sentence to explain it.
 - **A chip's season is set like the chip.** `.pf-chip i` had no rule of its
   own, so every accolade read "TOP GOALSCORER25/26" with the season italic by
   browser default and shoved against the label - two faults from one missing

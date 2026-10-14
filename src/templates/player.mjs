@@ -484,28 +484,27 @@ export function playerPage(p, d) {
      Worked out from the same per-season figures the stats page's leaders read
      (d.playersBySeason, competitive matches), newest season first. A shared
      lead is said as joint rather than awarded to whoever sorts first. */
-  /* `solo` means the chip is only awarded OUTRIGHT. Minutes, starts and
+  /* A SHARED LEAD IS SAID AS JOINT AND IS STILL SAID. Minutes, starts and
      appearances are attendance, and in a squad where everyone available plays
-     every week a tie is the normal case rather than the notable one: seven
-     men share the lead in starts this season, so a "joint most starts" chip
-     would appear on seven pages and say nothing about any of them. Goals and
-     assists are shared rarely enough that joint is worth printing. */
+     every week a tie is the normal case: seven men share the lead in starts
+     this season. The club's call is that sharing it is the fact, not a reason
+     to withhold it - a man who has started every match has started every
+     match whether or not six others did too. */
   const LEAD_CATS = [['goals', 'Top goalscorer', 'Joint top goalscorer'],
     ['assists', 'Most assists', 'Joint most assists'],
     ['cleanSheets', 'Most clean sheets', 'Joint most clean sheets'],
     ['motm', 'Most Man of the Match', 'Joint most Man of the Match'],
-    ['minutes', 'Most minutes', '', 'solo'],
-    ['starts', 'Most starts', '', 'solo'],
-    ['apps', 'Most appearances', '', 'solo']];
+    ['minutes', 'Most minutes', 'Joint most minutes'],
+    ['starts', 'Most starts', 'Joint most starts'],
+    ['apps', 'Most appearances', 'Joint most appearances']];
   const seasonAccolades = Object.keys(d.playersBySeason || {}).slice().reverse().flatMap((sn) => {
     const pool = d.playersBySeason[sn] || [];
     const me = pool.find((x) => String(x.num) === String(p.num));
     if (!me) return [];
-    return LEAD_CATS.filter(([k]) => k !== 'cleanSheets' || gk).flatMap(([k, label, joint, solo]) => {
+    return LEAD_CATS.filter(([k]) => k !== 'cleanSheets' || gk).flatMap(([k, label, joint]) => {
       const best = Math.max(0, ...pool.map((x) => x[k] || 0));
       if (!best || (me[k] || 0) !== best) return [];
       const shared = pool.filter((x) => (x[k] || 0) === best).length > 1;
-      if (shared && solo) return [];
       return [{ label: shared ? joint : label, season: sn }];
     });
   });
@@ -516,8 +515,8 @@ export function playerPage(p, d) {
      dropped where it would only repeat starts. */
   for (let i = seasonAccolades.length - 1; i >= 0; i -= 1) {
     const a = seasonAccolades[i];
-    if (a.label !== 'Most appearances') continue;
-    if (seasonAccolades.some((b) => b.label === 'Most starts' && b.season === a.season)) {
+    if (!/most appearances$/i.test(a.label)) continue;
+    if (seasonAccolades.some((b) => /most starts$/i.test(b.label) && b.season === a.season)) {
       seasonAccolades.splice(i, 1);
     }
   }
@@ -846,9 +845,29 @@ export function playerPage(p, d) {
                 <b>${esc(sp.name)}</b>
                 ${sp.roles.length ? `<span>${esc(sp.roles.map((r) => r.name
     + (sp.roles.length > 1 || r.games < sp.games ? ` (${r.games})` : '')).join(' · '))}</span>` : ''}
-                <i>${esc(String(sp.games))} ${sp.games === 1 ? 'match' : 'matches'}</i>
+                ${/* MINUTES WHERE THEY CAN BE COUNTED, matches where they
+                      cannot. A match in which he moved position has minutes
+                      belonging to two places and a record that cannot say how
+                      they split - which half, not which minute - so it is
+                      counted and not timed.
+
+                      THE CARD SAYS SO IN TWO WORDS rather than the band
+                      carrying a sentence to explain it. "1 match" on its own,
+                      beside two cards reading minutes, invites exactly the
+                      question those two words answer, and a note repeated in
+                      every season panel costs more than saying it where it is
+                      asked. */''}
+                <i>${sp.minutes && sp.minGames === sp.games
+    ? `${esc(String(sp.minutes))} minutes`
+    : sp.minutes
+      ? `${esc(String(sp.minutes))} minutes, ${esc(String(sp.games - sp.minGames))} not timed`
+      : `${esc(String(sp.games))} ${sp.games === 1 ? 'match' : 'matches'}, not timed`}</i>
               </li>`).join('\n              ')}
             </ul>
+            ${/* SAID ONCE, where it is needed. A card reading "1 match" beside
+                  two reading minutes invites the question, and the answer is
+                  worth a sentence rather than a shrug. Absent where every card
+                  is timed, because then there is nothing to explain. */''}
           </section>`;
   };
 

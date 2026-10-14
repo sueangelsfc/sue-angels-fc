@@ -1150,10 +1150,21 @@ export function playerProfile(player, matches, squad) {
      position AND the job, every match, and none of it reached the page. */
   const spotTally = new Map();
   for (const t of timeline) {
+    /* MINUTES ARE ATTRIBUTED ONLY WHERE THE MATCH HAD ONE POSITION IN IT.
+       A man who began at centre half and finished in midfield played some of
+       his ninety in each, and the record says which halves but not which
+       minute he moved - so splitting them would be inventing a substitution
+       nobody made, and giving all ninety to both would publish a hundred and
+       eighty. Four player-matches in the whole archive move; they are counted
+       in `games` and left out of `minutes`, and the page says so where it
+       matters. */
+    const sole = t.spots.length === 1 && t.minutes != null;
     for (const sp of t.spots) {
       const key = `${sp.code}|${sp.role}`;
-      if (!spotTally.has(key)) spotTally.set(key, { ...sp, games: 0 });
-      spotTally.get(key).games += 1;
+      if (!spotTally.has(key)) spotTally.set(key, { ...sp, games: 0, minutes: 0, minGames: 0 });
+      const row = spotTally.get(key);
+      row.games += 1;
+      if (sole) { row.minutes += t.minutes; row.minGames += 1; }
     }
   }
   /* GROUPED BY POSITION, with the jobs listed under it. Keyed on position AND
@@ -1163,9 +1174,13 @@ export function playerProfile(player, matches, squad) {
      he was asked to do there is a note on it. */
   const byPos = new Map();
   for (const sp of spotTally.values()) {
-    if (!byPos.has(sp.code)) byPos.set(sp.code, { code: sp.code, name: sp.name, group: sp.group, games: 0, roles: [] });
+    if (!byPos.has(sp.code)) {
+      byPos.set(sp.code, { code: sp.code, name: sp.name, group: sp.group, games: 0, minutes: 0, minGames: 0, roles: [] });
+    }
     const row = byPos.get(sp.code);
     row.games += sp.games;
+    row.minutes += sp.minutes;
+    row.minGames += sp.minGames;
     if (sp.roleName) row.roles.push({ name: sp.roleName, games: sp.games });
   }
   const spots = [...byPos.values()]

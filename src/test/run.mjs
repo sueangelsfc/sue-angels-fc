@@ -4190,6 +4190,38 @@ for (const [f, kb] of Object.entries({
           .filter(([, label, w, sc]) => !label.startsWith(`${w} ${sc}`));
         check('and the pip\u2019s label opens with the text a reader can see',
           bad.length === 0, bad.slice(0, 2).map((m) => m[1]).join(' | '));
+        /* MINUTES ON A POSITION CARD, where they can be counted. A match in
+           which he moved has minutes belonging to two places and a record
+           that cannot say how they split, so it is counted and not timed -
+           and the card says which figure it is short of rather than quietly
+           under-reporting. Four player-matches in the whole archive move, so
+           this is asked of a crafted profile as well as of the real one. */
+        {
+          const spots = [...pan.matchAll(/<li class="pf-spot"[^>]*>(.*?)<\/li>/gs)]
+            .map((m) => m[1].replace(/<[^>]+>/g, '|'));
+          check('a position card is timed in minutes where the record can',
+            !pan || (spots.length > 0 && spots.every((t) => /\d+ minutes|\d+ match/.test(t))),
+            spots.join(' // ').slice(0, 120));
+          /* AND NEVER PUBLISHES A MINUTE TWICE. Giving a moved match to both
+             places would publish a hundred and eighty minutes out of ninety.
+
+             ASKED OF EVERY PLAYER, not of the one this block happened to
+             pick: four player-matches in the whole archive move position, and
+             the man this check first chose was not in any of them, so taking
+             the guard out changed nothing and the probe came back green on a
+             rule that was broken. */
+          const { playerProfile: ppSpot } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+          const seasonMs = (dPS.competitive || []).filter((m) => m.season === '26/27');
+          const over = (dPS.players || []).map((pl) => {
+            const pr = ppSpot(pl, seasonMs, dPS.players || []);
+            const summed = (pr.spots || []).reduce((n, sp) => n + (sp.minutes || 0), 0);
+            return summed > (pr.minutes || 0) ? `${pl.name} ${summed} of ${pr.minutes}` : null;
+          }).filter(Boolean);
+          const moved = (dPS.players || []).some((pl) => ppSpot(pl, seasonMs, dPS.players || [])
+            .timeline.some((t) => (t.spots || []).length > 1));
+          check('the timed minutes across a player\u2019s positions never exceed the minutes he played',
+            over.length === 0 && moved, over.slice(0, 2).join(' | ') || (moved ? '' : 'nobody moved position, so this proves nothing'));
+        }
         /* THE CREST AND THE DATE, on hover and on focus. A pip says what
            happened and not who to. Hidden from a screen reader on purpose,
            because the link's own label already carries every word of it, and

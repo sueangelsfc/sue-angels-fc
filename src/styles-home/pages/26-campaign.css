@@ -895,17 +895,41 @@
 .rcd--ico .rcd__v svg{width: 22px; height: 22px;}
 
 /* ---- The latest story ---------------------------------------------------- */
-.lead{display: grid; grid-template-columns: minmax(0, 1fr) 1.1fr;
+/* minmax(0, 1.1fr), NOT a bare 1.1fr. A bare fr is minmax(auto, 1.1fr), so the
+   track cannot shrink below its content's min-content width and a long word,
+   a headline with no break or a wide child forces it open - and .sec is
+   overflow:hidden site-wide, so the overflow is CLIPPED rather than scrolled
+   and nothing on screen says why. The first track already said minmax(0, 1fr)
+   and the second did not, which is the campaign band's bug exactly: a 606px
+   chart held a 272px grid open at 320 and the band laid out at 648px.
+
+   The 640px breakpoint below stacks this to one column, so the clipping only
+   happened in the band of widths where it is still two. */
+.lead{display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
   gap: clamp(18px, 3vw, 38px); align-items: center;
   margin-top: 22px; padding: clamp(18px, 2.4vw, 28px);
   border: 1px solid var(--line-d); border-radius: 24px;
   background: rgba(6, 20, 31, 0.42); color: inherit;}
 .lead__i{width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: var(--r-sm);}
 .lead__i--none{display: grid; place-items: center; background: rgba(255,255,255,0.05);}
-.lead__t{display: grid; gap: 8px; min-width: 0;}
+/* grid-template-columns, NOT just min-width:0 on the container. The column
+   here was implicit, so it is an `auto` track, and an auto track sizes to the
+   widest max-content contribution of its items - which is NOT bounded by the
+   container. `.lead__d` carries max-width: 46ch, and a max-width still drives
+   that contribution: 46ch resolves to 309.77px, so at 320 the track came out
+   309.77px inside a 234px box and pushed the HEADLINE 33px off the side of the
+   phone. The teaser was setting the headline's width.
+
+   `.sec` is overflow:hidden site-wide, so the text was cut off rather than
+   scrolled and there was nothing on screen to say why. minmax(0, 1fr) is the
+   only thing that clamps a track to its container. */
+.lead__t{display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; min-width: 0;}
 .lead__t b{font-family: var(--display); font-size: clamp(20px, 2.6vw, 30px);
   font-weight: 800; line-height: 1.12;}
-.lead__d{font-size: 15px; color: var(--ink-2); line-height: 1.6; max-width: 46ch;}
+/* min(46ch, 100%), because a bare 46ch is a width this element asks for
+   whether or not there is room: it is a reading-measure, which is a cap and
+   not a demand. */
+.lead__d{font-size: 15px; color: var(--ink-2); line-height: 1.6; max-width: min(46ch, 100%);}
 .lead__m{font-family: var(--ui); font-size: 11px; color: var(--ink-3);
   letter-spacing: 0.06em; text-transform: uppercase;}
 .lead:hover b{color: var(--volt);}

@@ -280,6 +280,7 @@ async function main() {
 
   let measured = 0; let unverifiable = 0; let pages = 0;
   const clippedBy = new Map();
+  const clippedWhat = new Map();   /* band -> the widest example seen, in words */
 
   const extra = makeAllBands();
   if (!extra) fail('__all-bands.html', 'could not be generated, so 58 of the 75 bands went unchecked');
@@ -294,6 +295,10 @@ async function main() {
       report(`${route} @${w}`, a);
       measured += a.measured; unverifiable += a.unverifiable;
       for (const [b, n] of Object.entries(a.clipped || {})) clippedBy.set(b, Math.max(clippedBy.get(b) || 0, n));
+      for (const line of (a.clippedWhat || [])) {
+        const band = line.split(' | ')[0];
+        if (!clippedWhat.has(band)) clippedWhat.set(band, `@${w} ` + line.slice(band.length + 3));
+      }
       /* ---- CAN THE MENU BE CLICKED? -----------------------------------
          Asked at the widest width only, because below 768 the drop-downs are
          replaced by the full-screen mobile nav and there is nothing to open.
@@ -552,6 +557,10 @@ async function main() {
     }
     measured += a.measured; unverifiable += a.unverifiable;
     for (const [b, n] of Object.entries(a.clipped || {})) clippedBy.set(b, Math.max(clippedBy.get(b) || 0, n));
+    for (const line of (a.clippedWhat || [])) {
+      const band = line.split(' | ')[0];
+      if (!clippedWhat.has(band)) clippedWhat.set(band, line.slice(band.length + 3));
+    }
   }
 
   await browser.close();
@@ -565,7 +574,8 @@ async function main() {
      cut off on their phone. */
   const clipTotal = [...clippedBy.values()].reduce((a, b) => a + b, 0);
   console.log(`  ${clipTotal} pieces of text clipped by a container at some width, across ${clippedBy.size} bands`
-    + (clippedBy.size ? `\n    ${[...clippedBy].sort((a, b) => b[1] - a[1]).slice(0, 8).map(([b, n]) => b + ' ' + n).join(', ')}` : ''));
+    + (clippedBy.size ? `\n` + [...clippedBy].sort((a, b) => b[1] - a[1]).slice(0, 8)
+      .map(([b, n]) => `    ${b} ${n}` + (clippedWhat.has(b) ? `\n      ${clippedWhat.get(b)}` : '')).join('\n') : ''));
 
   if (fails.length) {
     console.log(`\n${fails.length} FAILURE(S):`);

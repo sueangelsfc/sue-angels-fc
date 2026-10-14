@@ -188,7 +188,18 @@ export const AUDIT = String.raw`(() => {
       const ellipsis = cs.textOverflow === 'ellipsis' && cs.whiteSpace === 'nowrap';
       if (contained && !scroller && !ellipsis) {
         const band = el.closest('[class*="sec--"]');
-        clippedText.push(band ? (/sec--([a-z0-9-]+)/.exec(band.className) || [, '?'])[1] : 'outside a band');
+        /* THE BAND NAME ALONE IS A FIGURE NOBODY CAN ACT ON. "leadnews 3" says
+           a band somewhere clips three pieces of text, at one of three widths,
+           and leaves whoever reads it to rebuild the page and go looking. This
+           carries what was clipped and how far past the edge it went, because
+           a report meant to be judged - this one is reported, never failed -
+           has to give the reader enough to judge WITH. */
+        clippedText.push({
+          band: band ? (/sec--([a-z0-9-]+)/.exec(band.className) || [, '?'])[1] : 'outside a band',
+          label: label,
+          text: text,
+          over: Math.round(r.right > window.innerWidth ? r.right - window.innerWidth : -r.left),
+        });
       }
     }
 
@@ -226,6 +237,11 @@ export const AUDIT = String.raw`(() => {
   }
 
   out.clipped = {};
-  for (const b of clippedText) out.clipped[b] = (out.clipped[b] || 0) + 1;
+  out.clippedWhat = [];
+  for (const c of clippedText) {
+    out.clipped[c.band] = (out.clipped[c.band] || 0) + 1;
+    out.clippedWhat.push(c.band + ' | ' + c.label + ' | ' + (c.over > 0 ? c.over + 'px past the edge' : 'off the left')
+      + ' | ' + c.text);
+  }
   return out;
 })()`;

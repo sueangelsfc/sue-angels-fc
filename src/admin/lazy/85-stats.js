@@ -1244,6 +1244,37 @@
     }).join(''));
   }
 
+
+  /* A TABLE THAT EXISTS AND IS EMPTY IS A THIRD STATE, and until now the
+     screen knew two. `null` means the migration has not been run, which is a
+     file somebody has to execute; rows mean there is something to draw. An
+     EMPTY ARRAY is neither, and it went down the drawing path - 168 blank
+     heatmap squares reading as a week nobody visited, and journey sections
+     with headings over nothing.
+
+     Unreachable while every table filled up together, and reachable the
+     moment one was cleared on its own: the hour-of-day and journey records
+     were started again from scratch on 14 October because four fifths of
+     them were our own test runs and nothing in those tables could tell a
+     machine's row from a reader's. Saying "not switched on yet" there would
+     be false, and drawing an empty grid would be worse: it would read as an
+     audience that had gone away.
+
+     THE HOURLY SECTION ALREADY HAD THIS and the other two did not, which is
+     the whole shape of the bug: one of three sections reading three tables
+     the same way had been given the third state, so nothing looked missing
+     from the code and the gap only showed when a table was actually
+     emptied. */
+  function startedAgain(title, what) {
+    return sec({
+      title: title,
+      sub: 'Nothing recorded in this period.',
+      body: '<p class="cp-note">' + esc(what) + ' is being recorded, and nothing has been '
+        + 'counted in the days this screen is showing. Widen the period, or come back once '
+        + 'the site has had a few more visits.</p>',
+    });
+  }
+
   function whenSection() {
     /* No hourly table is not the same as a quiet one, and the screen has to
        tell those apart: one is a file somebody has to execute, the other is a
@@ -1337,6 +1368,7 @@
           + 'database. It switches on <b>When people read it</b> at the same time.</p>',
       });
     }
+    if (!routes.length) return startedAgain(title, 'Where each view came from');
     /* Part of the site narrows everything here. A source filter keeps the
        arrivals from that source and cannot reach a move between pages, which
        has no source; where people left is counted without it, because a
@@ -2340,6 +2372,7 @@
           + '<b>migrations/011_page_places_trails.sql</b> has been run on the database.</p>',
       });
     }
+    if (!trails.length) return startedAgain(title, 'The journey through the site');
     var items = journeyData().filter(function (t) {
       if (FILT.source && sourceLabel(t.from) !== FILT.source) return false;
       return !FILT.area || t.pages.some(function (p) { return areaOf(p) === FILT.area; });

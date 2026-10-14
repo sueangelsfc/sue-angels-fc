@@ -1501,6 +1501,39 @@ export async function panelChecks() {
         && /United Kingdom/.test(noPlace.body.textContent),
       'the bubble check would pass without a working centroid list');
 
+    /* A TABLE THAT EXISTS AND IS EMPTY IS A THIRD STATE, and the screen knew
+       two: null for a migration nobody has run, rows for something to draw.
+       An empty array is neither, and it went down the drawing path - 168
+       blank heatmap squares that read as a week nobody visited, and journey
+       headings over nothing.
+
+       Unreachable while every table filled up together. Reachable the moment
+       one was cleared on its own, which is what happened on 14 October when
+       the hour-of-day and journey records were started again because four
+       fifths of them were our own test runs. So this is the state the club
+       is actually in, asked of the shipped screen.
+
+       The tell that this was a real gap rather than a tidy-up: the HOURLY
+       section already handled it and the other two did not. Three sections
+       reading three tables the same way, one of them given a third state, so
+       nothing looked missing until a table was emptied. */
+    const emptyJourneys = (method, q) => (
+      /page_routes\?|page_trails\?/.test(q) ? [] : serve(method, q));
+    const cleared = (await PR.openPanel(
+      await PR.boot({ rows: { rest: emptyJourneys } }), 'stats'));
+    const clearedText = cleared.body.textContent.replace(/\s+/g, ' ');
+    check('a cleared routes table does not claim the migration was never run',
+      !/Where each view came from and the page it landed on is recorded once/.test(clearedText),
+      clearedText.slice(0, 200));
+    check('it says the period is empty instead',
+      (clearedText.match(/Nothing recorded in this period/g) || []).length >= 2,
+      (clearedText.match(/Nothing recorded in this period/g) || []).length + ' section(s)');
+    check('and it draws no journey flow over no journeys',
+      !/class="cpj__flow"/.test(cleared.html) && !/class="cpj__chip"/.test(cleared.html));
+    check('while everything built on the tables still holding rows is untouched',
+      /class="cph__v"/.test(cleared.html) && /Hemel Hempstead|United Kingdom/.test(clearedText),
+      'the hourly heatmap and the towns must survive the other two being emptied');
+
     /* PROBE: cut the hourly table off and both the heatmap and the profile
        checks must go red, and the screen must say which file turns it on. */
     const noHourCtx = await PR.boot({

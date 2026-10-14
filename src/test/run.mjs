@@ -2849,6 +2849,33 @@ const steady = (buf) => {
     + crypto.createHash('md5').update(String(i++)).digest('hex').slice(0, m.length - 3)));
 };
 
+/* AND CLAUDE.md HAS TO QUOTE THEM CORRECTLY, because it is the only document
+   that explains what a ceiling is for and it had FIVE of the six wrong: it
+   said `sa.css` 22 against a real 13 and `home.css` 26 against 17, so a
+   reader would have believed there was ten kilobytes of headroom where there
+   was one and a half, and spent it.
+
+   A ceiling's whole job is to make somebody write down what they spent. One
+   misquoted in the file that teaches that discipline is a ceiling nobody is
+   really keeping, and nothing here could notice - the numbers drifted apart
+   silently because only one of them was ever executed. Written to catch the
+   four I could see by reading, it found a fifth on its first run.
+
+   Six named bundles, the ones that sentence lists. A lazy chunk's ceiling is
+   not quoted there and is not asked for here. */
+{
+  const md = fs.readFileSync(path.join(ROOT, 'CLAUDE.md'), 'utf8');
+  const quoted = ['sa.css', 'home.css', 'sa.js', 'control.css', 'control.js', 'control-seed.js'];
+  const wrong = [];
+  for (const f of quoted) {
+    const m = new RegExp('`' + f.replace('.', '\\.') + '` (\\d+)[,.]').exec(md);
+    if (!m) { wrong.push(`${f}: not quoted in CLAUDE.md`); continue; }
+    if (Number(m[1]) !== BUDGET[f]) wrong.push(`${f}: CLAUDE.md says ${m[1]}, BUDGET says ${BUDGET[f]}`);
+  }
+  check('CLAUDE.md quotes the budgets the suite actually enforces',
+    wrong.length === 0, wrong.join(' · '));
+}
+
 for (const [f, kb] of Object.entries(BUDGET)) {
   const raw = fs.readFileSync(path.join(ROOT, f));
   const size = zlib.gzipSync(steady(raw), { level: 9 }).length / 1024;

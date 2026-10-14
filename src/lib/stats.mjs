@@ -13,7 +13,6 @@
    duplicate a rule instead.
    ========================================================================== */
 import { cameOn as subsCameOn, minutesPlayed, FULL_MATCH } from './subs.mjs';
-import { positionName, roleName, POSITION_GROUPS } from './positions.mjs';
 import { clubIdentity } from './club-name.mjs';
 import { isPlaying } from './squad-status.mjs';
 
@@ -1067,34 +1066,6 @@ export function playerProfile(player, matches, squad) {
     assists += (m.detail?.assists || []).filter((x) => x.num === player.num).length;
     if (m.detail?.motm === player.num) motm++;
   }
-  /* The places he stood in one match, from the team sheet's own spells, with
-     the first position as the fallback for a record written before spells
-     existed. A code nothing recognises is dropped rather than printed. */
-  const GROUP_OF = Object.fromEntries(POSITION_GROUPS
-    .flatMap((g) => g.codes.map((c) => [c, g.key])));
-  const spotsIn = (m) => {
-    const det = m.detail || {};
-    const me = [...(det.starters || []), ...(det.bench || [])]
-      .find((r) => Number(r.num) === Number(player.num));
-    if (!me) return [];
-    const spells = (me.spells || []).filter((sp) => sp && sp.pos);
-    const raw = spells.length
-      ? spells.map((sp) => ({ pos: sp.pos, role: sp.role || me.role || '' }))
-      : (me.positions || []).map((c) => ({ pos: c, role: me.role || '' }));
-    const seen = new Set();
-    const out = [];
-    for (const r of raw) {
-      const code = String(r.pos || '').toUpperCase();
-      const name = positionName(code);
-      if (!code || name === 'Squad player') continue;
-      const key = `${code}|${r.role || ''}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push({ code, name, group: GROUP_OF[code] || '', role: r.role || '', roleName: roleName(r.role) });
-    }
-    return out;
-  };
-
   const timeline = [];
   let runGoals = 0, runAssists = 0, runClean = 0;
   /* Which of these he began, so a page leading with starts can count them per
@@ -1137,55 +1108,10 @@ export function playerProfile(player, matches, squad) {
          which is most of the archive, and the page prints nothing rather than
          ninety. */
       minutes: minutesPlayed(player.num, m.detail),
-      /* WHERE HE PLAYED IN THIS ONE. Every spell, not only the first: a man
-         who started at centre half and finished in midfield did both, and the
-         page used to publish the first and throw the rest away. */
-      spots: spotsIn(m),
       runGoals, runAssists, runClean,
     });
   }
 
-  /* WHERE HE PLAYED ACROSS THE SEASON, counted. A profile that says
-     "Defender" says less than the record holds: the club writes down the
-     position AND the job, every match, and none of it reached the page. */
-  const spotTally = new Map();
-  for (const t of timeline) {
-    /* MINUTES ARE ATTRIBUTED ONLY WHERE THE MATCH HAD ONE POSITION IN IT.
-       A man who began at centre half and finished in midfield played some of
-       his ninety in each, and the record says which halves but not which
-       minute he moved - so splitting them would be inventing a substitution
-       nobody made, and giving all ninety to both would publish a hundred and
-       eighty. Four player-matches in the whole archive move; they are counted
-       in `games` and left out of `minutes`, and the page says so where it
-       matters. */
-    const sole = t.spots.length === 1 && t.minutes != null;
-    for (const sp of t.spots) {
-      const key = `${sp.code}|${sp.role}`;
-      if (!spotTally.has(key)) spotTally.set(key, { ...sp, games: 0, minutes: 0, minGames: 0 });
-      const row = spotTally.get(key);
-      row.games += 1;
-      if (sole) { row.minutes += t.minutes; row.minGames += 1; }
-    }
-  }
-  /* GROUPED BY POSITION, with the jobs listed under it. Keyed on position AND
-     role, a man who played right wing back three times overlapping and once
-     with nothing recorded got two cards both headed "Right wing back", which
-     reads as a page that has repeated itself. Where he stood is the fact; what
-     he was asked to do there is a note on it. */
-  const byPos = new Map();
-  for (const sp of spotTally.values()) {
-    if (!byPos.has(sp.code)) {
-      byPos.set(sp.code, { code: sp.code, name: sp.name, group: sp.group, games: 0, minutes: 0, minGames: 0, roles: [] });
-    }
-    const row = byPos.get(sp.code);
-    row.games += sp.games;
-    row.minutes += sp.minutes;
-    row.minGames += sp.minGames;
-    if (sp.roleName) row.roles.push({ name: sp.roleName, games: sp.games });
-  }
-  const spots = [...byPos.values()]
-    .map((r) => ({ ...r, roles: r.roles.sort((a, b) => b.games - a.games) }))
-    .sort((a, b) => b.games - a.games || a.code.localeCompare(b.code));
   const timed = timeline.filter((t) => t.minutes != null);
   const minutes = timed.reduce((n, t) => n + t.minutes, 0);
 
@@ -1234,7 +1160,6 @@ export function playerProfile(player, matches, squad) {
     minutesGames: timed.length,
     minutesPerStart: timed.length ? Math.round(minutes / timed.length) : null,
     fullMatch: FULL_MATCH,
-    spots,
     timeline,
     last: timeline.slice(-10).reverse(),
   };

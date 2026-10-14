@@ -827,50 +827,6 @@ export function playerPage(p, d) {
           </div>`;
   };
 
-  /* WHERE HE PLAYED, which the club writes down every match and the page
-     threw away. A profile that says "Defender" says less than the record
-     holds: it holds the position AND the job, per spell, so a man who began
-     at centre half and finished in midfield has both here.
-
-     Counted, and ordered by how often. Nothing is drawn where the record
-     names no position, which is most of the archive. */
-  const spotsBand = (x, idx) => {
-    const spots = (x.spots || []).filter((sp) => sp.name);
-    if (!spots.length) return '';
-    return `<section class="pf-sub" aria-labelledby="pf-w-${idx}">
-            ${rail('NUM', 'Where he played', `${spots.length} ${spots.length === 1 ? 'role' : 'roles'}`)}
-            <h3 class="h2 rv" id="pf-w-${idx}">Where he <span class="volt">played.</span></h3>
-            <ul class="pf-spots rv">
-              ${spots.map((sp, i) => `<li class="pf-spot" style="--i:${i}">
-                <b>${esc(sp.name)}</b>
-                ${sp.roles.length ? `<span>${esc(sp.roles.map((r) => r.name
-    + (sp.roles.length > 1 || r.games < sp.games ? ` (${r.games})` : '')).join(' · '))}</span>` : ''}
-                ${/* MINUTES WHERE THEY CAN BE COUNTED, matches where they
-                      cannot. A match in which he moved position has minutes
-                      belonging to two places and a record that cannot say how
-                      they split - which half, not which minute - so it is
-                      counted and not timed.
-
-                      THE CARD SAYS SO IN TWO WORDS rather than the band
-                      carrying a sentence to explain it. "1 match" on its own,
-                      beside two cards reading minutes, invites exactly the
-                      question those two words answer, and a note repeated in
-                      every season panel costs more than saying it where it is
-                      asked. */''}
-                <i>${sp.minutes && sp.minGames === sp.games
-    ? `${esc(String(sp.minutes))} minutes`
-    : sp.minutes
-      ? `${esc(String(sp.minutes))} minutes, ${esc(String(sp.games - sp.minGames))} not timed`
-      : `${esc(String(sp.games))} ${sp.games === 1 ? 'match' : 'matches'}, not timed`}</i>
-              </li>`).join('\n              ')}
-            </ul>
-            ${/* SAID ONCE, where it is needed. A card reading "1 match" beside
-                  two reading minutes invites the question, and the answer is
-                  worth a sentence rather than a shrug. Absent where every card
-                  is timed, because then there is nothing to explain. */''}
-          </section>`;
-  };
-
   /* THE SEASON AS IT WENT, which is the one thing every football page has and
      this one did not. Won, drawn and lost told apart by weight and structure
      rather than by a second colour, in the order they happened, each one a
@@ -942,8 +898,6 @@ export function playerPage(p, d) {
               ${tilesFor(x).map(statTile).join('\n              ')}
             </ul>
           </section>
-
-          ${spotsBand(x, idx)}
 
           ${formBand(x, idx, sn === 'All seasons')}
 

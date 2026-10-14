@@ -1236,12 +1236,6 @@ page.
   strip gives the result, the score, the opponent, the minutes and the return,
   in text, as a link, readable on a phone - and the size of the return
   survives as the size of the dot.
-- **Where he played**, which the club writes down every match and the page
-  threw away. The position AND the job, per spell, so a man who began at
-  centre half and finished in midfield has both. **Grouped by position with
-  the jobs under it**: keyed on both, a man who played right wing back three
-  times overlapping and once with nothing recorded got two cards headed
-  "Right wing back", which reads as a page repeating itself.
 - **Minutes on the pitch**, counted from the substitutions and absent where
   they carry no minute, which is most of the archive. `minutesPlayed()` moved
   to `subs.mjs`, beside the substitutions it is counted from, because the
@@ -1291,17 +1285,13 @@ page.
   withhold it: a man who has started every match has started every match
   whether or not six others did too. Appearances is still dropped where it
   would only repeat starts, which is most seasons.
-- **A position card is timed in minutes, not counted in matches** - and the
-  minutes are attributed ONLY where the match had one position in it. A man
-  who began at centre half and finished in midfield played some of his ninety
-  in each, and the record says which HALF he moved in, not which minute:
-  splitting them would invent a substitution nobody made, and giving ninety to
-  both would publish a hundred and eighty. Four player-matches in the whole
-  archive move, so the suite asks this of **every** player rather than of
-  whichever one a check happened to pick - the first version asked it of one
-  man who had never moved, and taking the rule out left the probe green.
-  The card says "1 match, not timed" in two words rather than the band
-  carrying a sentence to explain it.
+- **"Where he played" was built and taken down**, at the club's request: the
+  heat map at the foot of the page already shows every position he has stood
+  in, so a band of cards above it was the same answer twice. Its class
+  `.pf-spot` was the heat map's own, which is the tell - two things that
+  looked like one thing because they were. The role names the club records now
+  reach a reader on the match report's team sheet and nowhere else on a
+  profile, which is worth knowing before anybody adds them to the heat map.
 - **A chip's season is set like the chip.** `.pf-chip i` had no rule of its
   own, so every accolade read "TOP GOALSCORER25/26" with the season italic by
   browser default and shoved against the label - two faults from one missing
@@ -1354,6 +1344,18 @@ site**: this was never one page's bug.
   was "every link on the front page is covered" - by the loading screen, which
   is true and is not a bug. A check that cries wolf on the club's own front
   page is a check somebody switches off.
+- **And it waits for the panel to STOP MOVING, not for a number of
+  milliseconds.** The panel animates its own width and height from nought over
+  0.42s and clips what overflows, so while it is still opening a link can have
+  a box whose centre is outside the part actually drawn - and the hit test then
+  reports, truthfully, that something else is on top. A fixed 560ms was enough
+  on most runs and not on all of them, which is the worst kind of check: it
+  went red on two pages nobody had touched and green on the next run. Settled
+  means two consecutive reads of the same size.
+- **Never run two browser passes at once.** Each one rebuilds the whole site
+  with `SA_ALL_BANDS` and deletes `__all-bands.html` afterwards, so two of them
+  race over the output the other is reading and produce failures that look
+  exactly like a regression.
 - **One group per page, at one width.** Every group opens the same panel in
   the same place, so a band painting over one paints over all of them; five
   groups on thirty-three pages would add two minutes to the run to re-prove

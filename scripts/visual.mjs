@@ -151,8 +151,27 @@ const MENU = `(async () => {
   for (const t of ['pointerenter', 'mouseenter', 'mouseover', 'pointerover']) {
     trig.dispatchEvent(new PointerEvent(t, { bubbles: true }));
   }
-  await new Promise((r) => setTimeout(r, 560));
+  /* WAIT FOR THE PANEL TO STOP MOVING, rather than for a number of
+     milliseconds. It animates its own width and height from nought over
+     0.42s and clips what overflows, so while it is still opening a link can
+     have a box whose centre is outside the part of the panel actually drawn -
+     and the hit test then reports, truthfully, that something else is on top.
+
+     A fixed 560ms was enough on most runs and not on all of them, which is
+     the worst kind of check: it went red on two pages nobody had touched and
+     green on the next run. Settled means two consecutive reads of the same
+     size, with a cap so a panel that never opens still returns. */
   const panel = document.querySelector('.hx__vp');
+  if (panel) {
+    let last = -1;
+    for (let i = 0; i < 40; i += 1) {
+      const r = panel.getBoundingClientRect();
+      const now = Math.round(r.width) * 10000 + Math.round(r.height);
+      if (now === last && r.width > 0) break;
+      last = now;
+      await new Promise((r2) => setTimeout(r2, 60));
+    }
+  }
   const links = panel ? [...panel.querySelectorAll('a')] : [];
   const out = [];
   for (const a of links) {

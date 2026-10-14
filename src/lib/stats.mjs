@@ -960,23 +960,6 @@ export function reconcileAssists(goals, flat) {
   return carried.concat(pool.slice(0, Math.max(0, gs.length - carried.length)));
 }
 
-/* ---- Season grouping ------------------------------------------------- */
-export function groupBySeason(matches) {
-  const map = new Map();
-  for (const m of matches) {
-    const s = m.season || 'unknown';
-    if (!map.has(s)) map.set(s, []);
-    map.get(s).push(m);
-  }
-  return [...map.entries()]
-    .map(([season, list]) => ({
-      season,
-      matches: list.sort((a, b) => (b.iso || '').localeCompare(a.iso || '')),
-      ...teamSummary(list),
-    }))
-    .sort((a, b) => b.season.localeCompare(a.season));
-}
-
 /* ---- Match event timeline -------------------------------------------- */
 export function matchTimeline(match, nameFor) {
   const d = match.detail;
@@ -1009,15 +992,6 @@ export function matchTimeline(match, nameFor) {
   const timed = ev.filter((e) => e.min).sort((a, b) => parseInt(a.min, 10) - parseInt(b.min, 10));
   const untimed = ev.filter((e) => !e.min);
   return [...timed, ...untimed];
-}
-
-/* ---- Monthly aggregation (Player of the Month support) --------------- */
-export function monthlyStats(matches, month, year) {
-  const inMonth = matches.filter((m) => {
-    const d = parseDate(m.date);
-    return d && d.getUTCMonth() === month && (year == null || d.getUTCFullYear() === year);
-  });
-  return inMonth;
 }
 
 /* ---- Player profile ----------------------------------------------------

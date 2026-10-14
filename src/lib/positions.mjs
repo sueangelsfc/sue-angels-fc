@@ -202,10 +202,6 @@ export const roleName = (code) => ROLE_LABEL[String(code || '').toUpperCase()] |
 export const rolesFor = (code) =>
   ROLES.filter((r) => r.for.includes(String(code || '').toUpperCase()));
 
-/* The order a team sheet is filled in: back to front, left to right, so the
-   dropdown reads like a line-up rather than like an alphabet. */
-export const POSITION_CODES = POSITIONS.map((p) => p.code);
-
 /* Positions AND roles, because a record written in the few minutes when roles
    were briefly positions must still resolve to a name rather than printing a
    code. Nothing writes those any more. */
@@ -237,9 +233,6 @@ export const positionName = (code) => POSITION_LABEL[String(code || '').toUpperC
 export const POSITION_VOCAB = POSITIONS
   .map(({ code, name, group, x, y, alias }) => (alias
     ? { code, name, group, x, y, alias } : { code, name, group, x, y }));
-export const POSITION_ALIASES = Object.fromEntries(POSITIONS.filter((p) => p.alias)
-  .map((p) => [p.code, p.alias]));
-
 /* Shipped alongside it, so the team sheet's second dropdown is filtered by
    the first without another round trip. */
 export const ROLE_VOCAB = ROLES.map(({ code, name, for: on, note }) => ({ code, name, for: on, note }));

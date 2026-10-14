@@ -195,36 +195,6 @@ export function timelineBlock(events) {
   </div>`;
 }
 
-/* ---- Article card --------------------------------------------------- */
-export function articleCard(a, { glass = false } = {}) {
-  const cover = a.cover
-    ? `<div class="card__media"><img src="${attr(a.cover)}" alt="" width="600" height="338" loading="lazy" decoding="async" style="aspect-ratio:16/9"></div>`
-    : '';
-  return `<a class="card card--link ${glass ? 'glass' : ''}" href="/news/${attr(a.slug)}.html">
-    ${cover}
-    <span class="badge badge--brand" style="align-self:flex-start">${esc(a.category)}</span>
-    <h3 class="card__title">${esc(a.title)}</h3>
-    ${a.lede ? `<p style="font-size:var(--step--1);color:var(--text-muted)">${esc(plainText(a.lede).split('\n')[0].slice(0, 150))}</p>` : ''}
-    <span class="card__meta">${esc(a.date)}</span>
-  </a>`;
-}
-
-/* ---- Recognition / honour ------------------------------------------- */
-export function honourRow(r, nameFor) {
-  const who = r.player != null ? nameFor(r.player) : r.name || r.winner || '';
-  const label = r.type === 'potm' ? `Player of the Month${r.month ? ` · ${esc(r.month)}` : ''}`
-    : r.type === 'season' ? 'End of season'
-    : r.title || r.label || 'Recognition';
-  const mark = r.type === 'potm' ? 'POTM' : r.type === 'season' ? 'EOS' : '★';
-  return `<div class="honour glass">
-    <span class="honour__mark" aria-hidden="true">${mark}</span>
-    <div class="honour__body">
-      <p class="honour__title">${esc(who || label)}</p>
-      <p class="honour__meta">${label}</p>
-    </div>
-  </div>`;
-}
-
 /* ==========================================================================
    WHERE THIS PAGE'S FIGURES CAME FROM
 

@@ -672,8 +672,6 @@ export const HOME_AREAS = [
     what: 'Everything the club has done, looked at as a whole rather than as this week. '
       + 'These grow with the seasons instead of turning over.' },
 ];
-export const HOME_AREA_KEYS = HOME_AREAS.map((a) => a.key);
-
 const KEYS = HOME_BANDS.map((b) => b.key);
 const KNOWN = new Set(KEYS);
 

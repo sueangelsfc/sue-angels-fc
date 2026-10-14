@@ -517,20 +517,6 @@ export function sectionHead({ index, eyebrow, title, action }) {
   </div>`;
 }
 
-export function pageHero({ eyebrow, title, lede, meta = [], crumbs }) {
-  return `<section class="phero">
-    <div class="wrap">
-      ${crumbs || ''}
-      <div class="phero__inner">
-        ${eyebrow ? `<span class="eyebrow">${esc(eyebrow)}</span>` : ''}
-        <h1>${title}</h1>
-        ${lede ? `<p class="phero__lede">${lede}</p>` : ''}
-        ${meta.length ? `<div class="phero__meta">${meta.map((m) => `<span>${m}</span>`).join('')}</div>` : ''}
-      </div>
-    </div>
-  </section>`;
-}
-
 export function crumbs(trail) {
   const items = trail.map((t, i) => {
     const last = i === trail.length - 1;

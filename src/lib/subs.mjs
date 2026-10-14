@@ -102,27 +102,6 @@ export function onPitchAfter(starters, events, upTo) {
   return on;
 }
 
-/* The flags the old shape carried, derived from the list, so a record written
-   by the new form still reads correctly to anything that has not been taught
-   about `subs`. A man who came off and went back on is NOT marked subbedOff. */
-export function flagsFrom(starters, bench, events) {
-  const off = wentOff({ subs: events, starters: [], bench: [] });
-  const onNow = new Set();
-  const at = {};
-  for (const e of events) {
-    if (e.on != null) { onNow.add(e.on); if (at[e.on] == null) at[e.on] = e.minute; }
-  }
-  return {
-    starters: (starters || []).map((s) => ({ ...s, subbedOff: off.has(numOf(s)) })),
-    bench: (bench || []).map((b) => {
-      const n = numOf(b);
-      const out = { ...b, on: onNow.has(n) || !!b.on };
-      if (out.on && at[n] != null) out.onAt = at[n];
-      return out;
-    }),
-  };
-}
-
 /* HOW LONG HE WAS ON THE PITCH, counted from the substitutions and from
    nothing else.
 

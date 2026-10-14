@@ -84,9 +84,6 @@ export const DERIVED_STATUSES = [
 export const STATUS_LABEL = Object.fromEntries(
   [...SET_STATUSES, ...DERIVED_STATUSES].map((s) => [s.key, s.label]),
 );
-export const STATUS_HINT = Object.fromEntries(
-  [...SET_STATUSES, ...DERIVED_STATUSES].map((s) => [s.key, s.hint]),
-);
 export const PLAYING = Object.fromEntries(SET_STATUSES.map((s) => [s.key, s.playing]));
 /* Not at the club that season at all. Never set by anybody: it is what the
    record says when there is no entry for a season and no evidence the player

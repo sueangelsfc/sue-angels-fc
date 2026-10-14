@@ -2849,6 +2849,55 @@ const steady = (buf) => {
     + crypto.createHash('md5').update(String(i++)).digest('hex').slice(0, m.length - 3)));
 };
 
+/* AN EXPORT NOTHING READS IS A FIELD NOTHING READS, WRITTEN IN CODE
+
+   This file keeps saying it about data - a field with no consumer is a lie
+   with a save button, a derivation nothing reads is the same fault as a field
+   nothing reads - and never once asked it of the library. It had 179 lines of
+   answer: twelve exported symbols across eight modules that nothing anywhere
+   referenced, their own definition aside, not even a test.
+
+   The worst of them was `flagsFrom` in subs.mjs, 21 lines deriving subbedOff
+   and the bench's on/onAt from the substitution list. The match editor derives
+   exactly that, itself, in browser JavaScript - so this was a SECOND copy of a
+   rule about the club's own record, which is the fault this repository keeps
+   having, except that this copy had never run and so could never be caught
+   disagreeing with the one that does.
+
+   WHAT THIS DOES NOT ASK. An export used only inside its own module is
+   surplus `export` and nothing worse; there are about thirty-seven and
+   narrowing them is churn against a real risk of breaking a dynamic
+   reference. The question here is the sharp one: is there a reader at all. */
+{
+  const libDir = path.join(ROOT, 'src', 'lib');
+  const read = (f) => { try { return fs.readFileSync(f, 'utf8'); } catch (e) { return ''; } };
+  const walk = (dir, out = []) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) walk(full, out);
+      else if (/\.(mjs|js)$/.test(e.name)) out.push(full);
+    }
+    return out;
+  };
+  const all = [...walk(path.join(ROOT, 'src')), ...walk(path.join(ROOT, 'scripts'))];
+  const text = new Map(all.map((f) => [f, read(f)]));
+  const orphans = [];
+  for (const lib of fs.readdirSync(libDir).filter((f) => f.endsWith('.mjs'))) {
+    const full = path.join(libDir, lib);
+    const body = text.get(full) || read(full);
+    for (const m of body.matchAll(/^export (?:const|function|class) ([A-Za-z0-9_]+)/gm)) {
+      const name = m[1];
+      const re = new RegExp(`\\b${name}\\b`);
+      const elsewhere = all.some((f) => f !== full && re.test(text.get(f) || ''));
+      if (elsewhere) continue;
+      const here = (body.match(new RegExp(`\\b${name}\\b`, 'g')) || []).length;
+      if (here <= 1) orphans.push(`${lib}:${name}`);
+    }
+  }
+  check('every export in src/lib has a reader somewhere',
+    orphans.length === 0, orphans.join(', '));
+}
+
 /* AND CLAUDE.md HAS TO QUOTE THEM CORRECTLY, because it is the only document
    that explains what a ceiling is for and it had FIVE of the six wrong: it
    said `sa.css` 22 against a real 13 and `home.css` 26 against 17, so a

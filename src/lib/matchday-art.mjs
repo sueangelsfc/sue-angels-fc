@@ -55,10 +55,6 @@
 export const ART_W = 1080;
 export const ART_H = 1920;
 
-/* The club's own, verbatim, and not shortened: "what we do echoes" is a
-   different sentence. It is on the crest, so the cards do not repeat it. */
-export const MOTTO = 'What we do in life echoes in eternity.';
-
 const ACCENT = '#FF7034';
 const INK = '#08090C';
 const PAPER = '#FFFFFF';
@@ -699,76 +695,4 @@ function scorerLine(g, squad) {
   const min = g.minute == null || g.minute === '' ? '' : ` ${g.minute}’`;
   const pen = g.penalty ? ' (pen)' : '';
   return `${name}${min}${pen}`;
-}
-
-export function cardDataFor(kind, m, d) {
-  const squad = (d && (d.squad || d.players)) || [];
-
-  /* The monthly award is a recognition row, not a match. */
-  if (kind === 'potm') {
-    if (!m) return null;
-    const p = playerOf(m.playerId, squad);
-    const name = (m.playerName && m.playerName.trim()) || (p && p.name) || '';
-    if (!name) return null;
-    /* The club writes a paragraph. A card takes the first sentence of it and
-       nothing more: anything longer stops being a graphic. */
-    const first = String(m.reason || '').split('\n')[0].split(/(?<=\.)\s/)[0].trim();
-    return {
-      player: name,
-      position: (p && (p.position || p.positionName)) || '',
-      slug: (p && p.slug) || '',
-      month: m.month || '',
-      season: m.season || '',
-      line: first.length > 150 ? '' : first,
-    };
-  }
-
-  const det = (m && m.detail) || {};
-  const base = {
-    opponent: m.opponent || '',
-    competition: m.competition || '',
-    weAreHome: !!m.weAreHome,
-    venue: m.venue || '',
-    kick: m.kick || '',
-    dateLine: dateLine(m.iso || m.date),
-  };
-
-  if (kind === 'next') return base;
-
-  if (kind === 'squad') {
-    return {
-      ...base,
-      /* No filter. Eleven entries in the record are eleven names on the card;
-         one that cannot be named says Guest rather than disappearing. */
-      starters: (det.starters || []).map((s) => nameOf(s.num, squad)),
-      subs: (det.subs || []).map((s) => nameOf(s.num, squad)),
-    };
-  }
-
-  if (kind === 'motm') {
-    const p = playerOf(det.motm, squad);
-    if (!p) return null;                     /* no award, no card */
-    return {
-      ...base,
-      player: p.name,
-      position: p.position || p.positionName || '',
-      slug: p.slug || '',
-      scoreLine: m.countsGoals === false ? '' : `${m.ourGoals}-${m.theirGoals}`,
-    };
-  }
-
-  if (kind === 'result') {
-    return {
-      ...base,
-      ourGoals: m.ourGoals,
-      theirGoals: m.theirGoals,
-      /* A walkover is a result with no scoreline: the published table adds no
-         goals for one, so printing 3-0 would invent a score the league never
-         recorded. */
-      noScore: m.isWalkover ? 'Awarded · walkover' : '',
-      scorers: (det.goals || []).map((g) => scorerLine(g, squad)).filter(Boolean),
-    };
-  }
-
-  return null;
 }

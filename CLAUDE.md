@@ -1540,6 +1540,21 @@ passing by having nothing to compare.
 
 ### The digital match programme
 
+**IT SHIPPED, AND THE RULE SAYING NOT TO COMMIT IT IS DEAD.** `programme-long.mjs`
+and the two templates were draft work once and were kept out of the repository
+on purpose; `/programme.html` has been live for weeks and is the **most-read
+page on the site** - 31 views in a day in the sample period, ahead of every
+match report. All three files are in the live import chain (`build.mjs` ->
+`templates/programme.mjs` -> `lib/programme-long.mjs` and
+`templates/programme-page.mjs`), so deleting any of them takes the page down.
+There are no drafts left to clean out: the only residue was `barChart` and
+`formRibbon` carrying a surplus `export`, and they are used inside their own
+file. A standing instruction that outlives the thing it was protecting is a
+trap for whoever reads it next, which is why this paragraph exists rather than
+the instruction being quietly dropped.
+
+
+
 `/programme.html`, under **Media**, and `assets/programme/<fixture-id>.pdf`.
 `src/templates/programme.mjs`, band `45-programme.css`,
 `scripts/make-programme.mjs`.
@@ -1741,7 +1756,7 @@ Adding one takes effect only on the NEXT deployment: `vercel redeploy <latest-pr
 
 Four rules, each of them written after the failure it prevents. `harden-site` audits for these after the fact; these are how not to need it.
 
-- **Write the reader first.** A field with no consumer is a lie with a save button. Two tables were written by the panel and read by nothing for as long as their editors existed.
+- **Write the reader first.** A field with no consumer is a lie with a save button. **Asked of the code too, since October 2026**: `npm test` fails if a symbol exported from `src/lib` is referenced nowhere at all, its own definition aside, and that question found **179 lines across twelve symbols in eight modules** the first time anybody asked it. The worst was `flagsFrom` in `subs.mjs`, deriving `subbedOff` and the bench's `on`/`onAt` from the substitution list - a second copy of a rule about the club's own record, which is the fault this repository keeps having, except that this copy had never run and so could never be caught disagreeing with the one that does. It does **not** ask about an export used only inside its own module: there are about thirty-seven of those, narrowing them is churn, and the sharp question is whether there is a reader at all. Two tables were written by the panel and read by nothing for as long as their editors existed.
 - **Say where it shows, in the hint, and make it a `where:` link.** A label that promises an outcome is a testable claim, and "What the website publishes" was false for six match reports.
 - **Absent must mean the safe default.** `draft: true` hides an article; missing means published, so nothing already saved needs migrating.
 - **The panel never offers what the site derives.** New signing, retained and returned are worked out from evidence. Offering them as choices creates a second source for one fact, and the two will disagree - the panel called a first-ever signing "Retained" for exactly this reason.

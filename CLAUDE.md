@@ -62,6 +62,23 @@ way it is wrong, and this one was wrong both ways at once.
   that looked entirely fine. The panel draws YouTube thumbnails from
   `i.ytimg.com`, which `img-src` did not allow, so those were broken live.
 
+**AND THE NARROW ONE CAME TRUE, ON THE HOST THIS SECTION WAS WRITTEN ABOUT.**
+The paragraph above said analytics would fail silently the day somebody set
+`SA_GA_ID`. It was right about the failure and wrong about the address.
+**GA4 does not post to `www.google-analytics.com`. It posts to a REGIONAL
+host** - `region1.google-analytics.com` from here - so permitting the www
+address alone blocked **every single hit** on 14 October while the page looked
+completely fine: the tag loaded, `gtag` was a function, the data layer filled
+with five events, and nothing left the browser. Google's own screen said *"No
+data received from your website yet"*, which reads as a tagging job nobody has
+done rather than as a site refusing to speak, so **neither end could see it
+alone**. Found by switching analytics on, opening the live site and reading
+the console - no amount of reasoning about the policy would have produced it.
+The allowance is a **wildcard** on `google-analytics.com`, in `connect-src`
+and `img-src`, because the region is Google's to choose and may differ by
+visitor: pin it to `region1` and a reader elsewhere becomes the one person
+never counted, which is the kind of gap nobody ever spots.
+
 Two kinds of evidence, because there are two kinds of host. **`provenBy`** is a
 shipped file that names it, and the suite greps that file, so an allowance
 outlives its cause by one test run. **`requiredBy`** is for an address only a
@@ -329,6 +346,36 @@ Tokens in `src/styles/00-tokens.css` are the single source of truth. Nothing dow
 - **Atmosphere:** four large orange masses drift and breathe behind every page, animated on `transform`/`opacity` only. `.atmos__veil` is what keeps white body text above AA over a saturated orange peak — do not remove it. Motion stops entirely under `prefers-reduced-motion`.
 - **Themes:** coordinated dark and light, `prefers-color-scheme` respected, manual toggle persisted to `localStorage`, applied by an inline head script before first paint so there is no flash. `--text-on-brand` is **dark ink in both themes**: white on `#FF7034` is only 2.76:1 and fails AA.
 - **Hero interior** pins dark-theme tokens because the photograph is dark in both themes. Note it re-declares `color: var(--text)` — descendants inherit `body`'s *computed* colour, so redefining the token alone would change nothing.
+
+### Google Analytics is live, and it was three parts with no switch
+
+**`G-4KPG5PZK0Z`**, account Sue's Angels FC, a web stream already pointed at
+`https://www.suesangelsfc.co.uk`, created at some point and **never tagged**.
+The consent choice, the CSP allowances and a suite note saying "the day the
+club set `SA_GA_ID`" were all in place, and **nothing anywhere set it** - the
+club could not have turned analytics on without a developer, and every check
+passed throughout because each asked whether its own part worked rather than
+whether the chain did. That is the field-with-no-reader fault read backwards:
+a reader with no field.
+
+- **The switch is `gaId` in `src/data/runtime.json`**, emitted as
+  `window.SA_GA_ID` by `build.mjs` only when it matches `/^G-[A-Z0-9]{4,}$/`,
+  so a half-pasted value leaves the banner offering three choices rather than
+  advertising a fourth that cannot work. A measurement ID is **public by
+  design** - it names a property and grants nothing - so it belongs beside the
+  anon key, not in Vercel's environment.
+- **The checks build the string the build builds**, rather than grepping for
+  the feature, because a grep passes on a shipped file where the ID is empty
+  and the global is correctly absent, which is exactly how the gap survived.
+  The probe that bites is an ID configured but not rebuilt.
+- **It is off until a visitor opts in**, which is the law and not a
+  preference: the club's own statistics are exempt and on by default, and a
+  third party receiving data is not. **So GA will always see a fraction of
+  what the club's own screen sees, and the club's own figure is the better
+  one.** GA earns its place for Search Console and Ads, not for counting.
+- Verified end to end on the live site: the tag loads only after a saved yes,
+  the collect call reaches `region1.google-analytics.com`, and GA's realtime
+  shows the visit.
 
 ## Data layer
 Supabase project `hvbquuvxcswylyguplfb`. All seven content tables share the shape `{ key text primary key, data jsonb, updated_at timestamptz }`:

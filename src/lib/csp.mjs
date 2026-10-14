@@ -61,6 +61,7 @@ export const CSP = {
     { host: SUPABASE, why: 'player photographs, badges and uploaded covers', provenBy: 'src/data/runtime.json' },
     { host: 'https://i.ytimg.com', why: 'YouTube thumbnails in the panel’s video screen', provenBy: 'src/admin/lazy/80-video.js' },
     { host: 'https://www.google-analytics.com', why: 'GA4 sends some hits as an image beacon', requiredBy: 'https://www.googletagmanager.com' },
+    { host: 'https://*.google-analytics.com', why: 'and it sends them to a REGIONAL host, not the www one', requiredBy: 'https://www.googletagmanager.com' },
     { host: 'https://www.facebook.com', why: 'the Meta pixel is an image beacon', requiredBy: 'https://connect.facebook.net' },
   ],
 
@@ -81,6 +82,20 @@ export const CSP = {
     { host: SUPABASE, why: 'every read and write the panel and the forms make', provenBy: 'src/data/runtime.json' },
     { host: `wss://hvbquuvxcswylyguplfb.supabase.co`, why: 'Supabase realtime, same origin over a socket', provenBy: 'src/data/runtime.json' },
     { host: 'https://www.google-analytics.com', why: 'where GA4 posts its events', requiredBy: 'https://www.googletagmanager.com' },
+    /* AND THE HOST IT ACTUALLY POSTS TO IS A REGIONAL ONE. GA4 collects on
+       `region1.google-analytics.com` from here, not on the www address every
+       guide names, so permitting www alone blocks EVERY hit while the page
+       looks perfectly fine - the tag loads, `gtag` is a function, the data
+       layer fills up, and nothing is ever sent. That is the "too narrow is
+       worse" failure in this file's own heading, happening to the one host
+       the file was written about, and it was found by switching analytics on
+       and reading the console rather than by reasoning about it.
+
+       A wildcard, because the region is Google's to choose and may differ by
+       visitor: a reader in another region posts to another regionN and would
+       be the only one not counted, which is the kind of gap nobody ever
+       spots. It grants nothing beyond Google's own collection domain. */
+    { host: 'https://*.google-analytics.com', why: 'where GA4 actually posts, regionN rather than www', requiredBy: 'https://www.googletagmanager.com' },
     { host: 'https://www.googletagmanager.com', why: 'gtag fetches its own configuration', provenBy: 'src/scripts/20-consent.js' },
   ],
 

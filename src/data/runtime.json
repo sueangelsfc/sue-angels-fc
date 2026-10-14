@@ -3,5 +3,7 @@
   "supabase": {
     "url": "https://hvbquuvxcswylyguplfb.supabase.co",
     "anonKey": "sb_publishable_2VEdxWZCLW98qItINt6TPQ_r7y_Tcly"
-  }
+  },
+  "_analytics": "Google Analytics is OFF until gaId holds a GA4 measurement ID (G-XXXXXXXXXX). The ID is public by design, like the key above: it names a property, it grants nothing. Setting it adds a Google Analytics choice to the consent banner, OFF until a visitor turns it on, and nothing is sent to Google before that. Leave it empty and no Google code is loaded by anybody.",
+  "gaId": ""
 }

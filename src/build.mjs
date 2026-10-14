@@ -194,7 +194,21 @@ homeCss = absAssets(homeCss);
    is designed to be public and all protection comes from RLS). Prepended
    BEFORE minification so it is part of the hashed bytes. */
 const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'runtime.json'), 'utf8'));
-js = `window.SA_SUPABASE=${JSON.stringify(cfg.supabase)};window.SA_EMAIL=${JSON.stringify(CLUB.email)};\n${js}`;
+/* GOOGLE ANALYTICS IS A FIELD NOBODY COULD FILL IN. `20-consent.js` has always
+   offered a Google choice when `window.SA_GA_ID` is set, the CSP has always
+   permitted googletagmanager and google-analytics, and the suite has a check
+   about the day somebody sets it - and NOTHING ANYWHERE SET IT. Three parts of
+   a mechanism and no switch, which is the same fault as a field with no reader
+   read backwards: a reader with no field.
+
+   Emitted ONLY when the ID is a real one, so an empty string leaves the global
+   undefined and the banner offers three choices rather than four. A measurement
+   ID is public by design - it names a property and grants nothing - so it
+   belongs here beside the anon key and not in Vercel's environment. */
+const gaId = typeof cfg.gaId === 'string' && /^G-[A-Z0-9]{4,}$/.test(cfg.gaId.trim()) ? cfg.gaId.trim() : '';
+js = `window.SA_SUPABASE=${JSON.stringify(cfg.supabase)};window.SA_EMAIL=${JSON.stringify(CLUB.email)};`
+  + (gaId ? `window.SA_GA_ID=${JSON.stringify(gaId)};` : '')
+  + `\n${js}`;
 
 const cssSrc = css;
 const homeCssSrc = homeCss;

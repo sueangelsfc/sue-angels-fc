@@ -10271,6 +10271,57 @@ let orphanClasses = new Map();
   }
 }
 
+/* A MECHANISM WITH NO SWITCH IS THE READER-WITH-NO-FIELD FAULT
+
+   Three parts of Google Analytics were in place and had been for months:
+   `20-consent.js` offers a Google choice when `window.SA_GA_ID` is set, the
+   CSP permits googletagmanager and google-analytics with the evidence beside
+   them, and the note above says "the day the club set SA_GA_ID". Nothing
+   anywhere set it. The club could not have turned analytics on without a
+   developer, and every check that existed passed, because each one asked
+   whether its own part worked rather than whether the chain did.
+
+   So this asks the chain. The switch is `gaId` in runtime.json, and the three
+   states are asserted by BUILDING THE STRING THE BUILD BUILDS rather than by
+   grepping for the feature - a grep would pass on the shipped file today,
+   where the ID is empty and the global is correctly absent, which is exactly
+   how the gap survived.
+
+   A measurement ID is public by design: it names a property and grants
+   nothing, so it belongs beside the anon key rather than in Vercel's
+   environment. The emission is still gated on it LOOKING like one, so a
+   half-pasted value leaves the banner offering three choices instead of
+   advertising a fourth that cannot work. */
+{
+  const rt = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'runtime.json'), 'utf8'));
+  check('runtime.json carries the Google Analytics switch', typeof rt.gaId === 'string', typeof rt.gaId);
+  check('and says what setting it does', /consent banner/i.test(String(rt._analytics || '')));
+  check('no service-role key rode in beside it', !JSON.stringify(rt).includes('service_role'));
+
+  /* The build's own rule, lifted so the suite runs it rather than a copy of
+     the words around it. Keep this identical to src/build.mjs. */
+  const emit = (v) => (typeof v === 'string' && /^G-[A-Z0-9]{4,}$/.test(v.trim()) ? v.trim() : '');
+  check('a measurement ID switches it on', emit('G-ABCD1234') === 'G-ABCD1234');
+  check('an empty field leaves it off', emit('') === '');
+  check('and so does something that is not one', emit('not-an-id') === '' && emit('G-') === '');
+  const built = fs.readFileSync(path.join(ROOT, 'src', 'build.mjs'), 'utf8');
+  check('the build gates the global on the same shape',
+    /\/\^G-\[A-Z0-9\]\{4,\}\$\//.test(built) && /window\.SA_GA_ID=/.test(built));
+
+  const saJs = fs.readFileSync(path.join(ROOT, 'sa.js'), 'utf8');
+  const set = !!emit(rt.gaId);
+  check(set ? 'the shipped bundle carries the ID' : 'the shipped bundle sets no ID, because none is configured',
+    set ? saJs.includes(`SA_GA_ID=${JSON.stringify(emit(rt.gaId))}`) : !/window\.SA_GA_ID\s*=/.test(saJs),
+    set ? emit(rt.gaId) : 'gaId is empty');
+
+  /* And nothing reaches Google before a saved yes, whatever the ID says. */
+  const consent = fs.readFileSync(path.join(ROOT, 'src', 'scripts', '20-consent.js'), 'utf8');
+  check('a Google choice is only offered when an ID is configured',
+    /if\s*\(\s*window\.SA_GA_ID\s*\)/.test(consent));
+  check('and consent for it needs a saved choice, never a default',
+    /google:\s*false/.test(consent) && /return\s*!!choice\s*&&\s*!!p\[purpose\]/.test(consent));
+}
+
 console.log(`  classes on an element no rule reaches, one page per family: ${orphanClasses.size}`
   + ` (the panel is gated at zero; these are layout wrappers and SVG groups)`
   + (orphanClasses.size ? `

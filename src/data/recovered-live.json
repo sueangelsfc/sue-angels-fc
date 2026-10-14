@@ -6100,11 +6100,18 @@
         "kick": "11:00",
         "kind": "score",
         "motm": 6,
-        "subs": [],
+        "subs": [
+          {
+            "on": 31,
+            "off": 2,
+            "minute": 20
+          }
+        ],
         "bench": [
           {
             "on": true,
             "num": 41,
+            "onAt": 75,
             "spells": [
               {
                 "pos": "ST",
@@ -6119,11 +6126,13 @@
           {
             "on": true,
             "num": 30,
+            "onAt": 55,
+            "role": "IW",
             "spells": [
               {
                 "pos": "RM",
                 "half": "2",
-                "role": ""
+                "role": "IW"
               }
             ],
             "positions": [
@@ -6133,6 +6142,7 @@
           {
             "on": true,
             "num": 31,
+            "onAt": 20,
             "role": "IFB",
             "spells": [
               {
@@ -6192,16 +6202,18 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-09-13T18:43:22.635Z",
+        "savedAt": "2026-10-13T22:16:01.473Z",
+        "approach": {},
         "redCards": [],
         "starters": [
           {
             "num": 28,
+            "role": "SHS",
             "spells": [
               {
                 "pos": "GK",
                 "half": "1",
-                "role": ""
+                "role": "SHS"
               }
             ],
             "positions": [
@@ -6259,28 +6271,37 @@
             ],
             "positions": [
               "LB"
-            ]
+            ],
+            "subbedOff": true
           },
           {
             "num": 23,
+            "role": "ANC",
             "spells": [
               {
                 "pos": "DM",
                 "half": "1",
-                "role": ""
+                "role": "ANC"
+              },
+              {
+                "pos": "RCB",
+                "half": "2",
+                "role": "BPD"
               }
             ],
             "positions": [
-              "DM"
+              "DM",
+              "RCB"
             ]
           },
           {
             "num": 21,
+            "role": "APM",
             "spells": [
               {
                 "pos": "LAM",
                 "half": "1",
-                "role": ""
+                "role": "APM"
               }
             ],
             "positions": [
@@ -6289,11 +6310,12 @@
           },
           {
             "num": 6,
+            "role": "WRK",
             "spells": [
               {
                 "pos": "CAM",
                 "half": "1",
-                "role": ""
+                "role": "WRK"
               }
             ],
             "positions": [
@@ -6302,11 +6324,12 @@
           },
           {
             "num": 12,
+            "role": "APM",
             "spells": [
               {
                 "pos": "RAM",
                 "half": "1",
-                "role": ""
+                "role": "APM"
               }
             ],
             "positions": [
@@ -6315,11 +6338,12 @@
           },
           {
             "num": 3,
+            "role": "TM",
             "spells": [
               {
                 "pos": "ST",
                 "half": "1",
-                "role": ""
+                "role": "TM"
               }
             ],
             "positions": [
@@ -6328,15 +6352,16 @@
           },
           {
             "num": 9,
+            "role": "CHR",
             "spells": [
               {
-                "pos": "CF",
+                "pos": "ST",
                 "half": "1",
-                "role": ""
+                "role": "CHR"
               }
             ],
             "positions": [
-              "CF"
+              "ST"
             ]
           }
         ],
@@ -6356,7 +6381,7 @@
         "opponentRedCards": [],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-09-13T18:43:22.635+00:00"
+      "updated_at": "2026-10-13T22:16:01.474+00:00"
     },
     {
       "key": "r20260913-haydons",
@@ -6612,7 +6637,8 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-09-22T17:24:14.723Z",
+        "savedAt": "2026-10-13T22:16:29.400Z",
+        "approach": {},
         "redCards": [],
         "starters": [
           {
@@ -6771,7 +6797,7 @@
         "opponentRedCards": [],
         "penaltiesConceded": 1
       },
-      "updated_at": "2026-09-22T17:24:14.723+00:00"
+      "updated_at": "2026-10-13T22:16:29.4+00:00"
     },
     {
       "key": "r20260920-junction",
@@ -6941,16 +6967,18 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-10-12T19:15:32.243Z",
+        "savedAt": "2026-10-13T22:20:23.872Z",
+        "approach": {},
         "redCards": [],
         "starters": [
           {
             "num": 28,
+            "role": "SHS",
             "spells": [
               {
                 "pos": "GK",
                 "half": "1",
-                "role": ""
+                "role": "SHS"
               }
             ],
             "positions": [
@@ -7074,11 +7102,12 @@
           },
           {
             "num": 9,
+            "role": "CHR",
             "spells": [
               {
                 "pos": "ST",
                 "half": "1",
-                "role": ""
+                "role": "CHR"
               }
             ],
             "positions": [
@@ -7088,11 +7117,12 @@
           },
           {
             "num": 3,
+            "role": "TM",
             "spells": [
               {
                 "pos": "ST",
                 "half": "1",
-                "role": ""
+                "role": "TM"
               }
             ],
             "positions": [
@@ -7147,7 +7177,7 @@
         "opponentRedCards": [],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-10-12T19:15:32.243+00:00"
+      "updated_at": "2026-10-13T22:20:23.872+00:00"
     },
     {
       "key": "r20260927-barnes",
@@ -7164,23 +7194,33 @@
         "subs": [
           {
             "on": 43,
-            "off": 40
+            "off": 40,
+            "minute": 45
           },
           {
             "on": 47,
-            "off": 23
+            "off": 23,
+            "minute": 45
           },
           {
             "on": 17,
-            "off": 6
+            "off": 6,
+            "minute": 60
           },
           {
             "on": 46,
-            "off": 3
+            "off": 3,
+            "minute": 68
+          },
+          {
+            "on": 23,
+            "off": 20,
+            "minute": 70
           },
           {
             "on": 41,
-            "off": 25
+            "off": 25,
+            "minute": 80
           }
         ],
         "bench": [
@@ -7188,16 +7228,17 @@
             "on": true,
             "num": 17,
             "onAt": 60,
+            "role": "B2B",
             "spells": [
               {
                 "pos": "CM",
                 "half": "2",
-                "role": ""
+                "role": "B2B"
               },
               {
                 "pos": "RB",
                 "half": "2",
-                "role": ""
+                "role": "IFB"
               }
             ],
             "positions": [
@@ -7209,16 +7250,17 @@
             "on": true,
             "num": 43,
             "onAt": 45,
+            "role": "BPD",
             "spells": [
               {
                 "pos": "RCB",
                 "half": "2",
-                "role": ""
+                "role": "BPD"
               },
               {
                 "pos": "CB",
                 "half": "2",
-                "role": ""
+                "role": "NCB"
               }
             ],
             "positions": [
@@ -7245,12 +7287,13 @@
           {
             "on": true,
             "num": 46,
-            "onAt": 65,
+            "onAt": 68,
+            "role": "PRS",
             "spells": [
               {
                 "pos": "ST",
                 "half": "2",
-                "role": ""
+                "role": "PRS"
               }
             ],
             "positions": [
@@ -7400,16 +7443,18 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-09-30T22:06:39.684Z",
+        "savedAt": "2026-10-13T22:19:37.783Z",
+        "approach": {},
         "redCards": [],
         "starters": [
           {
             "num": 38,
+            "role": "SHS",
             "spells": [
               {
                 "pos": "GK",
                 "half": "1",
-                "role": ""
+                "role": "SHS"
               }
             ],
             "positions": [
@@ -7428,15 +7473,17 @@
             ],
             "positions": [
               "RWB"
-            ]
+            ],
+            "subbedOff": true
           },
           {
             "num": 40,
+            "role": "BPD",
             "spells": [
               {
                 "pos": "RCB",
                 "half": "1",
-                "role": ""
+                "role": "BPD"
               }
             ],
             "positions": [
@@ -7446,11 +7493,12 @@
           },
           {
             "num": 25,
+            "role": "BPD",
             "spells": [
               {
                 "pos": "CB",
                 "half": "1",
-                "role": ""
+                "role": "BPD"
               }
             ],
             "positions": [
@@ -7460,11 +7508,12 @@
           },
           {
             "num": 4,
+            "role": "BPD",
             "spells": [
               {
                 "pos": "LCB",
                 "half": "1",
-                "role": ""
+                "role": "BPD"
               }
             ],
             "positions": [
@@ -7487,39 +7536,53 @@
           },
           {
             "num": 23,
+            "role": "CAR",
             "spells": [
               {
                 "pos": "LDM",
                 "half": "1",
                 "role": ""
+              },
+              {
+                "pos": "LCM",
+                "half": "2",
+                "role": "CAR"
               }
             ],
             "positions": [
-              "LDM"
-            ],
-            "subbedOff": true
+              "LDM",
+              "LCM"
+            ]
           },
           {
             "num": 6,
+            "role": "WRK",
             "spells": [
               {
                 "pos": "RDM",
                 "half": "1",
                 "role": ""
+              },
+              {
+                "pos": "RCM",
+                "half": "2",
+                "role": "WRK"
               }
             ],
             "positions": [
-              "RDM"
+              "RDM",
+              "RCM"
             ],
             "subbedOff": true
           },
           {
             "num": 12,
+            "role": "RPM",
             "spells": [
               {
                 "pos": "CAM",
                 "half": "1",
-                "role": ""
+                "role": "RPM"
               }
             ],
             "positions": [
@@ -7528,11 +7591,12 @@
           },
           {
             "num": 9,
+            "role": "CHR",
             "spells": [
               {
                 "pos": "ST",
                 "half": "1",
-                "role": ""
+                "role": "CHR"
               }
             ],
             "positions": [
@@ -7541,11 +7605,12 @@
           },
           {
             "num": 3,
+            "role": "TM",
             "spells": [
               {
                 "pos": "ST",
                 "half": "1",
-                "role": ""
+                "role": "TM"
               }
             ],
             "positions": [
@@ -7567,7 +7632,7 @@
         ],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-09-30T22:06:39.684+00:00"
+      "updated_at": "2026-10-13T22:19:37.783+00:00"
     },
     {
       "key": "r20261011-peps",
@@ -7725,7 +7790,7 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-10-13T08:55:45.167Z",
+        "savedAt": "2026-10-13T22:21:04.998Z",
         "approach": {
           "build": "counter",
           "press": "mid",
@@ -7933,7 +7998,7 @@
         "opponentRedCards": [],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-10-13T08:55:45.167+00:00"
+      "updated_at": "2026-10-13T22:21:05+00:00"
     }
   ],
   "articles": [

@@ -1930,14 +1930,19 @@ html.js [data-season-scope][hidden]{display: none;}
   text-decoration-thickness: 1px; text-underline-offset: 3px; transition: text-decoration-thickness 0.2s;}
 .nw-art__body a:hover{text-decoration-thickness: 2px;}
 /* A league table in an article is the home page's table, frozen at the rows
-   the article wrote. On a phone the club name wraps rather than cutting off. */
+   the article wrote. THE CLUB NAME WRAPS AT EVERY WIDTH, not only on a phone:
+   the band has the whole page to lay out in and an article column is 74ch, so
+   the rule written for 560px was the right rule at the wrong breakpoint and
+   six of ten clubs came out as "Brockwell Viole...". A truncated club name in
+   a league table is the one thing in it a reader cannot reconstruct. */
 .nw-art__body .tbl{margin: 4px 0;}
+.nw-art__body .tbl__club{white-space: normal; line-height: 1.25; overflow-wrap: anywhere;}
 /* Latest from the club: the news rail's cards, and a card or the whole band
    the browser has aged out stays out. */
 .latest__rail{margin-top: 4px;}
 .ncard[hidden],.sec.latest[hidden]{display: none;}
 @media (max-width: 560px){
-  .nw-art__body .tbl__club{white-space: normal; line-height: 1.2; gap: 9px; font-size: 12.5px !important; overflow-wrap: anywhere;}
+  .nw-art__body .tbl__club{gap: 9px; font-size: 12.5px !important;}
 }
 
 /* ---- Cookie consent ------------------------------------------------------

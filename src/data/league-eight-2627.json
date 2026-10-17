@@ -602,18 +602,11 @@
       "apps": 1
     }
   ],
-  "fixtures": [
-    {
-      "date": "18 Oct 26",
-      "kick": "11:00",
-      "home": "Sue's Angels FC",
-      "away": "Mousa Mountain FC",
-      "venue": "The Reeves Sports Club"
-    }
-  ],
+  "fixtures": [],
   "_clubAssists": {
     "_note": "Sue's Angels assist figures the club's own match records hold where Full-Time's stat leaders page prints fewer. The club has asked the league to match them. Reapply these AFTER transcribing the page, every time, or a re-read silently reverts them.",
     "Charlie Dunkley": 3,
     "Leon Burnett": 4
-  }
+  },
+  "_cancelledNote": "Sue's Angels FC v Mousa Mountain FC, 18 October 2026, is not in `fixtures`: Mousa Mountain folded on 17 October and the match was called off. The club's row is LEFT IN `table` and in `clubs`, because this file transcribes what FA Full-Time published and on 11 October it published them. What the league does with a folded club - expunge the record or leave the noughts - is the league's decision, not this file's, so it is re-read rather than guessed. The fixture is also cancelled in src/data/fixture-cancellations.json, which is what removes the club's own copy of it from the database."
 }

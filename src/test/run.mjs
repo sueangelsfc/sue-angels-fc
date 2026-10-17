@@ -1347,6 +1347,49 @@ for (const f of shipped) {
       peps.length === 1 && peps[0].id === 'f-crafted-undated'
         && /11 Oct 2096|2096-10-11/.test(String(peps[0].date || peps[0].iso || '')),
       peps.length === 1 ? `${peps[0].id} | ${peps[0].date || peps[0].iso}` : 'no single row');
+
+    /* A FIXTURE THAT IS NOT GOING TO BE PLAYED (fixture-cancellations.json).
+       The `fixtures` table cannot be written from a developer machine, so a
+       match called off the day before would stay on the front page, in the
+       countdown and on the programme until somebody signed in to the panel.
+       Three questions, and the SECOND is the one that matters: a file that
+       deletes fixtures has to delete exactly the one it names, or a wrong
+       entry quietly takes a real match off the site - and there would be
+       nothing on the page to notice, because the gap looks like a free
+       Sunday. Crafted rather than read off the shipped record: the real
+       cancellation stops testing anything the day the club deletes the row
+       in the panel, which is exactly what it is designed to allow. */
+    const withCancel = (cancelled) => bdD({
+      live: {
+        ...liveD,
+        fixtures: [{
+          key: 'f-crafted-called-off',
+          data: {
+            kind: 'fixture', home: "Sue's Angels FC", away: 'Crafted Wanderers',
+            date: '09 Oct 2096', kick: '11:00', venue: 'The Reeves Sports Club',
+            competition: 'League Eight',
+          },
+        }],
+      },
+      fixtures: { fixtures: [] },
+      cancellations: { cancelled },
+    });
+    const stillOn = withCancel([]).upcoming
+      .filter((f) => /crafted wanderers/i.test(String(f.home) + f.away));
+    check('a fixture nobody has cancelled is on the site', stillOn.length === 1, `${stillOn.length} rows`);
+
+    const calledOff = withCancel([{ date: '09 Oct 2096', home: "Sue's Angels FC", away: 'Crafted Wanderers' }])
+      .upcoming.filter((f) => /crafted wanderers/i.test(String(f.home) + f.away));
+    check('and cancelling it takes it off', calledOff.length === 0, `${calledOff.length} rows`);
+
+    /* THE GUARD. Same day, different clubs, and the same clubs on a different
+       day: neither is this match and neither may touch it. */
+    const wrongAim = withCancel([
+      { date: '09 Oct 2096', home: "Sue's Angels FC", away: 'Somebody Else FC' },
+      { date: '16 Oct 2096', home: "Sue's Angels FC", away: 'Crafted Wanderers' },
+    ]).upcoming.filter((f) => /crafted wanderers/i.test(String(f.home) + f.away));
+    check('a cancellation aimed at another fixture changes nothing',
+      wrongAim.length === 1, `${wrongAim.length} rows`);
   }
 
   {

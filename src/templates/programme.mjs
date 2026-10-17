@@ -552,11 +552,16 @@ export function programme(d) {
     quizQuestions: questions,
     wordSearch: ws,
     docTitle: m ? `${m.home} v ${m.away}` : `${CLUB.name} programme`,
+    /* A FIXTURE WITH NO DATE YET IS STILL THE NEXT FIXTURE, and a search
+       engine is told what is known rather than `startDate: null`, which is
+       not a date and not an absent field either. Reachable the first time
+       the next match was a cup tie whose round had been drawn and not yet
+       scheduled. */
     schema: m ? [{
       '@context': 'https://schema.org',
       '@type': 'SportsEvent',
       name: `${m.home} v ${m.away}`,
-      startDate: m.isoDateTime || m.iso,
+      ...(m.isoDateTime || m.iso ? { startDate: m.isoDateTime || m.iso } : {}),
       eventStatus: 'https://schema.org/EventScheduled',
       location: { '@type': 'Place', name: m.venue || CLUB.venue.name },
       homeTeam: { '@type': 'SportsTeam', name: m.home },

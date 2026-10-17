@@ -1445,6 +1445,41 @@ whole report, and it is the same device as `fixtures-2627.json` and
   matters is the guard: remove it and "a correction aimed at a value the
   record does not hold changes nothing" goes red.
 
+### A match that is not going to be played
+
+`src/data/fixture-cancellations.json`, applied in `dataset.mjs` where the
+stored and transcribed fixtures are assembled. The `fixtures` table **cannot be
+written from a developer machine** - an anonymous write is refused with
+`42501`, the posture working as designed - so a match called off on the
+Saturday sits on the front page, in the countdown, in the next-match card and
+on `/programme.html` until somebody is at a laptop with an admin session. On a
+static site rebuilt by a push, that is the one kind of stale content a reader
+acts on: they turn up.
+
+**It retires itself, for the same reason `match-corrections.json` does.** A
+cancellation is matched on the fixture's own **identity** - the day and the two
+clubs, in whatever order they were typed - which is the same test that already
+tells a fixture from its result. So it removes exactly the match it names, and
+the moment the club deletes the row in Control panel -> Fixtures it matches
+nothing and does nothing. Forgetting to delete it costs nothing.
+
+- **Applied before anything is derived**, not to the assembled list, so no band
+  ever sees the match. A band that counted it would otherwise disagree with the
+  band that drew it.
+- **It cannot cancel a match that was played**: a result wins over a fixture
+  before this is reached.
+- The suite's probe is the **guard**, not the feature. Deleting fixtures is the
+  easy half; the half that matters is that a wrong entry cannot quietly take a
+  real match off the site, where the gap would look like a free Sunday rather
+  than a bug. Same day with different clubs, and the same clubs on a different
+  day, both leave the fixture alone, and both go red if the identity test is
+  loosened to the clubs alone.
+- **First used on 17 October 2026**: Mousa Mountain FC folded the day before
+  they were due at The Reeves, and League Eight's 18 October fixture went with
+  them. What the league then does with a folded club - expunge the record or
+  leave the noughts - is the league's decision, so `league-eight-2627.json`
+  keeps their transcribed table row and is re-read rather than guessed.
+
 ### The team sheet, read as a team sheet
 
 `sheetRows` in `src/lib/report-visuals.mjs`, styled at the foot of

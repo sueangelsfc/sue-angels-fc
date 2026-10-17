@@ -216,9 +216,23 @@ export function buildDataset(overrides = {}) {
 
   const known = new Set(rawResults.map((r) => r.id));
   const knownMatches = new Set(rawResults.map(identity));
+  /* A FIXTURE THAT IS NOT GOING TO BE PLAYED (src/data/fixture-cancellations.json).
+     The `fixtures` table cannot be written from a developer machine, so a
+     match called off on the Saturday would otherwise stay on the front page,
+     in the countdown and on the programme until somebody is at a laptop with
+     an admin session. Matched on the fixture's own identity - the day and the
+     two clubs - which is the same test that tells a fixture from its result,
+     so it takes out exactly that fixture and nothing else, and it retires
+     itself the moment the club deletes the row in the panel. Applied here
+     rather than to the assembled list, so nothing downstream ever sees the
+     match: a band that counted it would otherwise disagree with the band
+     that drew it. */
+  const cancellationFile = overrides.cancellations || read('fixture-cancellations.json');
+  const cancelled = new Set((cancellationFile.cancelled || []).map(identity));
   const storedFixtures = (live.fixtures || [])
     .map((row) => ({ id: row.key, kind: 'fixture', ...(row.data || {}) }))
-    .filter((f) => !known.has(f.id) && !knownMatches.has(identity(f)));
+    .filter((f) => !known.has(f.id) && !knownMatches.has(identity(f)))
+    .filter((f) => !cancelled.has(identity(f)));
   const storedIds = new Set(storedFixtures.map((f) => f.id));
   /* A FIXTURE THE CLUB HAS ENTERED BUT NOT YET DATED IS STILL THAT FIXTURE.
      Identity above is the day plus the two clubs, so a stored row with an
@@ -246,6 +260,7 @@ export function buildDataset(overrides = {}) {
        straight back and the duplicate survived a fix aimed at it. */
     ...(transcribedFixtures.fixtures || [])
       .filter((f) => !known.has(f.id) && !storedIds.has(f.id) && !knownMatches.has(identity(f)))
+      .filter((f) => !cancelled.has(identity(f)))
       .filter((f) => {
         const held = undatedStored.get(clubsOf(f));
         if (!held) return true;

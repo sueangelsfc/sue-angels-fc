@@ -33,7 +33,7 @@ import { results, fixtures } from './templates/results.mjs';
 import { league } from './templates/league.mjs';
 import { records } from './templates/records.mjs';
 import { live } from './templates/live.mjs';
-import { news, newsArticle, articleSlug } from './templates/news.mjs';
+import { news, newsArticle, articleSlug, isDrawnCard } from './templates/news.mjs';
 import { matchReport } from './templates/report.mjs';
 import { gallery, galleryAlbum, splitTitle } from './templates/gallery.mjs';
 import { videos } from './templates/videos.mjs';
@@ -517,7 +517,7 @@ const adminSeed = {
      it drawn made the panel and the pages disagree by one. */
   drawnCovers: [
     ...(d.matches || []).filter((m) => !m.detail?.cover && drawnCover(m.id)).map((m) => m.id),
-    ...(d.articles || []).filter((a) => (!a.cover || /\/cover-news-\d+\.jpg$/.test(a.cover)) && drawnCover(`a-${articleSlug(a)}`)).map((a) => a.key),
+    ...(d.articles || []).filter((a) => (!a.cover || isDrawnCard(a.cover)) && drawnCover(`a-${articleSlug(a)}`)).map((a) => a.key),
   ].filter(Boolean),
   baselineFixtures: (JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'fixtures-2627.json'), 'utf8')).fixtures || [])
     /* A FIXTURE THAT HAS BEEN PLAYED IS NOT MISSING FROM ANYTHING.
@@ -1505,7 +1505,7 @@ for (const a of (groupLive('news') ? d.articles : [])) {
        generic news card. */
     /* A headline card the panel drew gives way to the build's (see
        articleStoredCover in news.mjs). */
-    ogImage: ((/\/cover-news-\d+\.jpg$/.test(a.cover || '') && drawnCover(`a-${slug}`)) || a.cover || drawnCover(`a-${slug}`) || ogCard('og-news')),
+    ogImage: ((isDrawnCard(a.cover) && drawnCover(`a-${slug}`)) || a.cover || drawnCover(`a-${slug}`) || ogCard('og-news')),
     ogImageAlt: `${a.title} - ${CLUB.name}`,
     path: `/news/${slug}.html`,
     body: out.body,

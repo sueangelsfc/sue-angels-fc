@@ -9253,9 +9253,14 @@ console.log(`\n${'='.repeat(66)}`);
 
     const buildSrc = fs.readFileSync(path.join(ROOT, 'src', 'build.mjs'), 'utf8');
     /* Per-item renderers and the panel are excluded by name and by reason:
-       each takes something this test does not have. */
+       each takes something this test does not have. The last three are not
+       renderers at all - a slug, a split title and the question of whether a
+       stored cover is a card - and a check that renders every import and
+       demands markup has to say which ones are helpers rather than quietly
+       accepting an empty string from anything. */
     const PER_ITEM = new Set(['newsArticle', 'matchReport', 'galleryAlbum',
-      'matchPage', 'articlePage', 'playerPage', 'coachPage', 'control', 'articleSlug', 'splitTitle']);
+      'matchPage', 'articlePage', 'playerPage', 'coachPage', 'control',
+      'articleSlug', 'splitTitle', 'isDrawnCard']);
     const wanted = new Map();
     for (const m of buildSrc.matchAll(/import \{([^}]+)\} from '\.\/templates\/([\w-]+\.mjs)'/g)) {
       for (const nm of m[1].split(',').map((x) => x.trim()).filter(Boolean)) {

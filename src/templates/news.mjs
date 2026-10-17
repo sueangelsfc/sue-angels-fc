@@ -735,13 +735,33 @@ const drawnFor = (d, a) => (d.drawnCoverSrc
   ? d.drawnCoverSrc(a.isReport ? a.match.id : `a-${articleSlug(a)}`)
   : '');
 
-/* AN ARTICLE'S PHOTOGRAPH, if it has a real one. A card the panel drew
-   (cover-news-*, cover-match-*) is a picture of a headline, category baked in,
-   so on the site it gives way to the plate drawn in markup, which follows the
-   record; it is still what a shared link shows. */
+/* IS THIS STORED COVER A CARD OR A PHOTOGRAPH?
+
+   Everything downstream turns on the answer. A photograph is the best picture
+   of the piece there will ever be and wins outright; a CARD is a picture of a
+   headline with the category and the date baked into it, so on the site it
+   gives way to the plate drawn in markup, which follows the record, and in a
+   shared link it gives way to the build's own card, which is richer.
+
+   There is no field saying which, so the name is the evidence - and the
+   PANEL IS NOT THE ONLY THING THAT UPLOADS A CARD. The test was the two
+   prefixes `ensure()` writes, `cover-news-` and `cover-match-`, and the two
+   interviews carry cards the club made and uploaded as `a-cover-<stamp>.jpg`,
+   which is the build's own article-card naming with a timestamp on it. They
+   therefore read as PHOTOGRAPHS: both interviews printed a flat headline card
+   where the page draws the speaker's face, and a shared link to either showed
+   that same flat card instead of the build's interview card, which carries
+   the portrait, the running time and the waveform of the actual recording.
+
+   One definition, used by the page, the feed, the seed and the share image,
+   because four regular expressions that could disagree about the same file is
+   how a cover comes to be a photograph in one place and a card in another. */
+export const isDrawnCard = (url) => /\/(?:cover-(?:news|match)|a-cover)-\d+\.jpg$/.test(String(url || ''));
+
+/* AN ARTICLE'S PHOTOGRAPH, if it has a real one. */
 export const articlePhoto = (a) => {
   const c = a.cover && a.cover !== 'None' ? a.cover : '';
-  return c && !/\/cover-(?:news|match)-\d+\.jpg$/.test(c) ? c : '';
+  return c && !isDrawnCard(c) ? c : '';
 };
 
 /* THE DEFAULT COVER FOR AN INTERVIEW: the face of whoever is talking and how
@@ -808,7 +828,7 @@ export function news(d) {
        build's: `ensure()` uploads it as cover-match-* or cover-news-* with the
        competition, the score and the date already on it. Asking only whether
        the build drew it printed the Three Little Birds report's date twice. */
-    const composed = a.isReport ? (!!drawn || /\/cover-(?:match|news)-\d+\.jpg$/.test(stored)) : !stored;
+    const composed = a.isReport ? (!!drawn || isDrawnCard(stored)) : !stored;
     /* THE FEED IS ONE SHAPE. An interview was given the speaker's photograph
        here as well as on its own page, and in a grid of plates and scorelines
        it read as a different sort of object rather than as a different sort of

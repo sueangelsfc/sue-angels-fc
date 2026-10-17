@@ -40,7 +40,7 @@ import {
 } from '../lib/home-layout.mjs';
 import { preseasonFor, seasonAhead, sameClub, relatedClub, recordOf } from '../lib/preseason.mjs';
 import { reportText, house, plainText, FRIENDLY_NOTE_SHORT, FRIENDLY_NOTE_SET } from '../lib/prose.mjs';
-import { sourceNote } from '../lib/blocks.mjs';
+import { sourceNote, tableMark, tableFootnote } from '../lib/blocks.mjs';
 /* A cycle (news.mjs imports the shared shell from here) that is safe because
    coverPlate is only called while a page renders, never while either module
    loads. */
@@ -953,7 +953,7 @@ export function home(d) {
             <span class="tbl__pos">${esc(r.pos)}</span>
             <span class="tbl__club">${r.us
               ? `<img src="${STAR}" alt="Sue’s Angels FC star" width="26" height="32" loading="lazy" decoding="async" />`
-              : oppBadge(r.club, d.badges, 26, 26)}${esc(r.club)}</span>
+              : oppBadge(r.club, d.badges, 26, 26)}${esc(r.club)}${tableMark(r)}</span>
             <span>${esc(r.played)}</span><span>${esc(r.won)}</span><span>${r.goalDifference > 0 ? '+' : ''}${esc(r.goalDifference)}</span><b class="tbl__pts" data-pts="${attr(r.points)}">${esc(r.points)}</b>
           </a>`).join('\n          ')}
         </div>
@@ -965,6 +965,7 @@ export function home(d) {
             <td>${esc(r.played)}</td><td>${esc(r.won)}</td>
             <td>${r.goalDifference > 0 ? '+' : ''}${esc(r.goalDifference)}</td><td>${esc(r.points)}</td></tr>`).join('')}</tbody>
         </table>
+        ${tableFootnote(tblRows)}
       </div>
     </section>` : '';
 

@@ -99,6 +99,29 @@ export function playerCard(p) {
   </a>`;
 }
 
+/* ---- A club with something to say about it --------------------------- */
+/* An asterisk against a club in the table, and the sentence it stands for
+   printed under it. One definition, because the division is drawn on three
+   pages - the league page, the front page and the programme - and three
+   asterisks that could disagree would be worse than none.
+
+   The mark is an `abbr` carrying the same sentence as its title, so a reader
+   who hovers gets the answer where they are looking, and the footnote is
+   there for everybody who does not hover, which is most people and every
+   printed copy. */
+export function tableMark(r) {
+  return r && r.note
+    ? `<abbr class="tbl-mark" title="${attr(`${r.club}: ${r.note}`)}">*</abbr>`
+    : '';
+}
+
+export function tableFootnote(rows) {
+  const marked = (rows || []).filter((r) => r.note);
+  if (!marked.length) return '';
+  return `<p class="tbl-foot">${marked
+    .map((r) => `<b>*</b> ${esc(r.club)}: ${esc(r.note)}`).join('<br />')}</p>`;
+}
+
 /* ---- League table ---------------------------------------------------- */
 export function leagueTable(rows, { caption = '', promotionSpots = 0 } = {}) {
   if (!rows.length) return emptyState({ title: 'No table yet', body: 'The division table appears once the season is under way.' });

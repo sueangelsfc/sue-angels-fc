@@ -772,6 +772,11 @@ export function normaliseTable(raw) {
     goalsAgainst: r.ga,
     goalDifference: typeof r.gd === 'string' ? Number(r.gd.replace('+', '')) : r.gd,
     points: r.pts,
+    /* WHY A CLUB IS MARKED, carried from the transcription. A club that has
+       folded is still in the table it was transcribed from, and a reader
+       looking at a row of noughts has no way of telling that from a club
+       that has simply not played yet. */
+    note: r.note || '',
     us: !!r.us || isUs(r.c),
   }));
 }

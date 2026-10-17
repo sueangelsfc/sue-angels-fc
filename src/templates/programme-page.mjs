@@ -23,6 +23,7 @@
    ========================================================================== */
 import { esc, attr, icon, crest } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
+import { tableMark, tableFootnote } from '../lib/blocks.mjs';
 import { fmtDate, isUs, toISO, isoDateTime } from '../lib/stats.mjs';
 import { clubIdentity } from '../lib/club-name.mjs';
 import { oppBadge } from './home.mjs';
@@ -329,7 +330,7 @@ export function tableBand(d, m) {
     const gd = r.goalDifference || 0;
     return `<tr class="${us ? 'is-us' : ''}${them ? 'is-them' : ''}">
                 <td>${esc(r.pos)}</td>
-                <th scope="row" class="pr-tbl__club"><span class="pr-tbl__name"><span class="pr-tbl__crest" aria-hidden="true">${badgeOf(r.club, d.badges, 24)}</span><span>${esc(short(r.club))}</span>${us || them ? '<span class="pr-tbl__tag">This match</span>' : ''}</span></th>
+                <th scope="row" class="pr-tbl__club"><span class="pr-tbl__name"><span class="pr-tbl__crest" aria-hidden="true">${badgeOf(r.club, d.badges, 24)}</span><span>${esc(short(r.club))}</span>${tableMark(r)}${us || them ? '<span class="pr-tbl__tag">This match</span>' : ''}</span></th>
                 <td>${esc(r.played)}</td>
                 <td class="pr-tbl__wdl">${esc(r.won)}</td>
                 <td class="pr-tbl__wdl">${esc(r.drawn)}</td>
@@ -341,6 +342,7 @@ export function tableBand(d, m) {
             </tbody>
           </table>
         </div>
+        ${tableFootnote(rows)}
         <p class="pr-foot rv"><span>${t.tableAsOf ? `As of ${esc(fmtDate(t.tableAsOf, { weekday: true }))}, from FA Full-Time.` : 'From FA Full-Time.'}</span>
           <a href="/league.html">The full table and every result ${ARROW}</a></p>
       </div>

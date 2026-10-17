@@ -2040,3 +2040,35 @@ html:not(.js) [data-privacy-open]{display: none;}
   text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
 }
 .srcnote a:hover, .srcnote a:focus-visible{ color: var(--volt); text-decoration-color: currentColor; }
+
+/* ==========================================================================
+   A MARKED CLUB IN THE TABLE
+
+   In home.css for the reason .srcnote is: the division is drawn on three
+   pages that load three different bands, and an asterisk styled once in one
+   of them would be a bare character on the other two. A club that has folded
+   is a row of noughts, which is exactly what a club that has not played yet
+   looks like, so the mark is the only thing telling them apart.
+
+   The asterisk is not a link and not a control: it is quiet, it carries its
+   sentence as a title for anybody who hovers, and the footnote under the
+   table carries the same sentence for everybody who does not.
+   ========================================================================== */
+.tbl-mark{
+  margin-left: 4px;
+  font-size: .78em;
+  line-height: 1;
+  vertical-align: super;
+  color: var(--ink-3);
+  text-decoration: none;
+  border: 0;
+  cursor: help;
+}
+.tbl-foot{
+  margin: 12px 0 0;
+  font-family: var(--ui);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ink-3);
+}
+.tbl-foot b{ color: var(--ink-2); font-weight: 600; }

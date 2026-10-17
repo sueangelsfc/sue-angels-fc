@@ -26,7 +26,7 @@ import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { fmtDate, isUs, byCompetition, slugify, isLeague } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
-import { sourceNote } from '../lib/blocks.mjs';
+import { sourceNote, tableMark, tableFootnote } from '../lib/blocks.mjs';
 import { leagueUnderway } from '../lib/home-layout.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -131,7 +131,7 @@ export function league(d) {
               <tbody>
                 ${rows.map((r) => `<tr${r.us ? ' class="is-us"' : ''}${up && r.pos <= up ? ' data-up' : ''}>
                   <td class="lg-tbl__pos">${esc(r.pos)}</td>
-                  <th scope="row" class="lg-tbl__club">${badge(r.club)}${esc(shortClub(r.club))}</th>
+                  <th scope="row" class="lg-tbl__club">${badge(r.club)}${esc(shortClub(r.club))}${tableMark(r)}</th>
                   <td>${esc(r.played)}</td>
                   <td>${esc(r.won)}</td>
                   <td>${esc(r.drawn)}</td>
@@ -143,6 +143,7 @@ export function league(d) {
                 </tr>`).join('\n                ')}
               </tbody>
             </table>
+            ${tableFootnote(rows)}
           </div>`;
 
   /* The new division's own standing, when the league has published one.

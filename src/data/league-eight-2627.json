@@ -131,7 +131,8 @@
       "gf": 0,
       "ga": 0,
       "gd": 0,
-      "pts": 0
+      "pts": 0,
+      "note": "Folded on 17 October 2026. Their fixtures will not be played."
     },
     {
       "p": 10,
@@ -608,5 +609,6 @@
     "Charlie Dunkley": 3,
     "Leon Burnett": 4
   },
-  "_cancelledNote": "Sue's Angels FC v Mousa Mountain FC, 18 October 2026, is not in `fixtures`: Mousa Mountain folded on 17 October and the match was called off. The club's row is LEFT IN `table` and in `clubs`, because this file transcribes what FA Full-Time published and on 11 October it published them. What the league does with a folded club - expunge the record or leave the noughts - is the league's decision, not this file's, so it is re-read rather than guessed. The fixture is also cancelled in src/data/fixture-cancellations.json, which is what removes the club's own copy of it from the database."
+  "_cancelledNote": "Sue's Angels FC v Mousa Mountain FC, 18 October 2026, is not in `fixtures`: Mousa Mountain folded on 17 October and the match was called off. The club's row is LEFT IN `table` and in `clubs`, because this file transcribes what FA Full-Time published and on 11 October it published them. What the league does with a folded club - expunge the record or leave the noughts - is the league's decision, not this file's, so it is re-read rather than guessed. The fixture is also cancelled in src/data/fixture-cancellations.json, which is what removes the club's own copy of it from the database.",
+  "_tableNoteNote": "A `note` on a table row is printed as an asterisk against that club with the sentence under the table. It is a fact about the CLUB, not about the transcription, which is why it rides on the row and not in a comment: every page that draws the division draws the mark."
 }

@@ -6731,6 +6731,42 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   check('League Eight\'s results and its next round are listed under its table',
     (l8.results || []).length > 0 && rows8 === (l8.results || []).length + (l8.fixturesAhead || []).length,
     `${rows8} rows for ${(l8.results || []).length} results and ${(l8.fixturesAhead || []).length} fixtures ahead`);
+  /* A CLUB WITH SOMETHING TO SAY ABOUT IT. A row of noughts in October is
+     what a folded club and a club yet to play both look like, so a `note` on
+     a table row prints as an asterisk with its sentence under the table, on
+     all three pages that draw the division.
+
+     ASKED OF CRAFTED ROWS, NOT OF THE SHIPPED TABLE, and that is the whole
+     point of writing it this way: Mousa Mountain carried the only mark this
+     site has ever shown, for one day, between folding and the league
+     confirming they were out of the division. A check reading the real table
+     would have gone green on 17 October, red on the 18th, and been deleted
+     as noise - which is how a mechanism ends up with no test at all by the
+     time somebody needs it again. */
+  {
+    const { tableMark, tableFootnote } = await import(path.join(ROOT, 'src', 'lib', 'blocks.mjs'));
+    const marked = { club: 'Crafted Wanderers', note: 'Folded in October.' };
+    const plain = { club: 'Ordinary FC' };
+    const mark = tableMark(marked);
+    check('a club with a note is marked with an asterisk',
+      /^<abbr class="tbl-mark"[^>]*>\*<\/abbr>$/.test(mark), mark);
+    check('and the mark carries the sentence where a pointer can reach it',
+      mark.includes('Crafted Wanderers: Folded in October.'), mark);
+    check('a club with nothing to say about it is not marked', tableMark(plain) === '', tableMark(plain));
+
+    const foot = tableFootnote([plain, marked]);
+    check('the footnote prints the sentence for everybody who cannot hover',
+      foot.includes('Crafted Wanderers: Folded in October.') && !foot.includes('Ordinary FC'), foot);
+    check('and a table with nothing marked has no footnote at all',
+      tableFootnote([plain, plain]) === '' && tableFootnote([]) === '', tableFootnote([plain, plain]));
+
+    /* The division is drawn by three templates and the mark is one helper, so
+       the thing worth asserting is that all three reach for it. */
+    const callers = ['templates/league.mjs', 'templates/home.mjs', 'templates/programme-page.mjs']
+      .filter((f) => /tableMark\(/.test(fs.readFileSync(path.join(ROOT, 'src', f), 'utf8')));
+    check('every page that draws the division draws the mark', callers.length === 3, callers.join(', '));
+  }
+
   /* League Ten's scorers and its ninety results belong to the League Ten tab,
      so choosing League Eight 26/27 hides them with last season's table. */
   const lgBandTag = (cls) => ((bodyL8.match(new RegExp(`<section class="sec ${cls}"[^>]*>`)) || [''])[0]);

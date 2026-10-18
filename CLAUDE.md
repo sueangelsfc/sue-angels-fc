@@ -1445,6 +1445,30 @@ whole report, and it is the same device as `fixtures-2627.json` and
   matters is the guard: remove it and "a correction aimed at a value the
   record does not hold changes nothing" goes red.
 
+### A club with something to say about it
+
+A `note` on a row of `league-eight-2627.json`'s table prints as an **asterisk**
+against that club, with the sentence under the table, on **all three pages that
+draw the division** - the league page, the front page and the programme.
+`tableMark()` and `tableFootnote()` in `blocks.mjs` are the one definition,
+because three asterisks that could disagree would be worse than none, and the
+style sits in `home.css` for the reason `.srcnote` does: those three pages load
+three different bands, and a mark styled in one of them is a bare character on
+the other two.
+
+It exists because **a row of noughts in October is what a folded club and a
+club yet to play both look like**. Mousa Mountain carried the only mark this
+site has shown, for one day, between folding and the league confirming they
+were out of the division. The mark went with that confirmation and nothing
+carries one now.
+
+**So the suite exercises it on crafted rows, never on the shipped table.** A
+check reading the real data would have been green on 17 October, red on the
+18th, and deleted as noise - which is how a mechanism ends up with no test at
+all by the time somebody needs it again. What IS asked of the real templates is
+that all three reach for the helper, because the mark being right in one page
+and missing from another is the failure that matters.
+
 ### A match that is not going to be played
 
 `src/data/fixture-cancellations.json`, applied in `dataset.mjs` where the
@@ -1476,9 +1500,12 @@ nothing and does nothing. Forgetting to delete it costs nothing.
   loosened to the clubs alone.
 - **First used on 17 October 2026**: Mousa Mountain FC folded the day before
   they were due at The Reeves, and League Eight's 18 October fixture went with
-  them. What the league then does with a folded club - expunge the record or
-  leave the noughts - is the league's decision, so `league-eight-2627.json`
-  keeps their transcribed table row and is re-read rather than guessed.
+  them. **The entry outlives the fixture on purpose.** The league confirmed on
+  the 18th that the club is out of the division, and `league-eight-2627.json`
+  was re-read rather than guessed - the row is gone, the nine below it moved
+  up, and the division reconciles over nine clubs - but the fixture itself is
+  a row in the `fixtures` table that only an admin session can delete, so this
+  file is what keeps it off the site until somebody presses that button.
 
 ### The team sheet, read as a team sheet
 

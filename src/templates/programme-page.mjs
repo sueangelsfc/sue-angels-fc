@@ -342,7 +342,7 @@ export function tableBand(d, m) {
             </tbody>
           </table>
         </div>
-        ${tableFootnote(rows)}
+        ${tableFootnote([...rows, ...(t.removed || [])])}
         <p class="pr-foot rv"><span>${t.tableAsOf ? `As of ${esc(fmtDate(t.tableAsOf, { weekday: true }))}, from FA Full-Time.` : 'From FA Full-Time.'}</span>
           <a href="/league.html">The full table and every result ${ARROW}</a></p>
       </div>

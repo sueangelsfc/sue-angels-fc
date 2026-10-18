@@ -6760,6 +6760,24 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     check('and a table with nothing marked has no footnote at all',
       tableFootnote([plain, plain]) === '' && tableFootnote([]) === '', tableFootnote([plain, plain]));
 
+    /* A CLUB THE LEAGUE HAS REMOVED is named under the table, not deleted off
+       the page: a table that quietly has one club fewer than last week
+       explains nothing to somebody who remembers the fixture. Asked of the
+       SHIPPED pages and conditioned on the data, so it tests all three while
+       a removed club is listed and retires with the listing rather than
+       going red the day the club takes the line down. */
+    const goneList = ((dL.nextDivisionTable || {}).removed || []);
+    if (goneList.length) {
+      const where = ['league.html', 'index.html', 'programme.html']
+        .filter((f) => {
+          const html = pages.get(f) || fs.readFileSync(path.join(ROOT, f), 'utf8');
+          const foot = (html.match(/<p class="tbl-foot">[\s\S]*?<\/p>/) || [''])[0];
+          return goneList.every((g) => foot.includes(g.club));
+        });
+      check('a club the league removed is named under the division table, on every page that draws it',
+        where.length === 3, `${where.join(', ') || 'nowhere'} of 3`);
+    }
+
     /* The division is drawn by three templates and the mark is one helper, so
        the thing worth asserting is that all three reach for it. */
     const callers = ['templates/league.mjs', 'templates/home.mjs', 'templates/programme-page.mjs']

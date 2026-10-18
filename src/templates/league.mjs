@@ -111,7 +111,11 @@ export function league(d) {
      Same markup for both, so a live table cannot drift from the finished one
      it sits beside under a tab. `up` is the promotion cut and is 0 for a
      division where nothing has been decided yet. */
-  const standings = (rows, caption, up = 0) => `<div class="lg-tablewrap">
+  /* `gone` is the clubs the LEAGUE has taken out of the division. They are not
+     rows - a removed club has no position and no record to stand on - but a
+     reader who remembers the fixture is owed the reason, and a table that
+     quietly has one club fewer than last week explains nothing. */
+  const standings = (rows, caption, up = 0, gone = []) => `<div class="lg-tablewrap">
             <table class="lg-tbl">
               <caption class="sr-only">${esc(caption)}</caption>
               <thead>
@@ -143,7 +147,7 @@ export function league(d) {
                 </tr>`).join('\n                ')}
               </tbody>
             </table>
-            ${tableFootnote(rows)}
+            ${tableFootnote([...rows, ...gone])}
           </div>`;
 
   /* The new division's own standing, when the league has published one.
@@ -178,7 +182,7 @@ export function league(d) {
         </div>
 
         <div class="lg-panel rv" data-league-panel="eight">
-          ${nextRows.length ? `${standings(nextRows, `${next.division || d.divisionOf(d.nextSeason)} ${next.season || d.nextSeason} standings`, 0)}
+          ${nextRows.length ? `${standings(nextRows, `${next.division || d.divisionOf(d.nextSeason)} ${next.season || d.nextSeason} standings`, 0, next.removed || [])}
           <p class="lg-note">${esc(`${(() => {
     /* Guarded rather than reading nextRows[0], which is the same trap the
        campaign band fell into: unreachable while the caller checks the

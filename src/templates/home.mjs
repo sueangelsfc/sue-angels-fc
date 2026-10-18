@@ -965,7 +965,7 @@ export function home(d) {
             <td>${esc(r.played)}</td><td>${esc(r.won)}</td>
             <td>${r.goalDifference > 0 ? '+' : ''}${esc(r.goalDifference)}</td><td>${esc(r.points)}</td></tr>`).join('')}</tbody>
         </table>
-        ${tableFootnote(tblRows)}
+        ${tableFootnote([...tblRows, ...((d.nextDivisionTable || {}).removed || [])])}
       </div>
     </section>` : '';
 

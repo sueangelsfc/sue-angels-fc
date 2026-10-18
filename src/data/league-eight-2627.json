@@ -596,5 +596,12 @@
     "Leon Burnett": 4
   },
   "_cancelledNote": "Mousa Mountain FC folded on 17 October 2026 and the league confirmed their removal from League Eight. They are out of `table` and out of `clubs`, and the 18 October fixture against them is cancelled in src/data/fixture-cancellations.json, which is what removes the club's own copy of it from the database. No points were awarded to anyone for the cancelled fixtures. The division is nine clubs now, so the published results and the derived table are reconciled over nine.",
-  "_tableNoteNote": "A `note` on a table row prints as an asterisk against that club with the sentence under the table, on every page that draws the division. Nothing carries one at the moment: Mousa Mountain did while their record was in limbo, and the mark went when the league settled it. The suite exercises the mechanism on a crafted row rather than on the shipped data, so it keeps testing after a mark is retired."
+  "_tableNoteNote": "A `note` on a table row prints as an asterisk against that club with the sentence under the table, on every page that draws the division. Nothing carries one at the moment: Mousa Mountain did while their record was in limbo, and the mark went when the league settled it. The suite exercises the mechanism on a crafted row rather than on the shipped data, so it keeps testing after a mark is retired.",
+  "removed": [
+    {
+      "club": "Mousa Mountain FC",
+      "note": "Folded on 17 October 2026 and removed from League Eight by the league. Their fixture at Sue’s Angels on Sunday 18 October was not played, and no points were awarded."
+    }
+  ],
+  "_removedNote": "A club the league has taken OUT of the division, named under the table rather than deleted from the page. A removed club is not a row - it has no position and no record to stand on - but a reader who remembers the fixture is owed an explanation, and a table that simply has one fewer club than last week explains nothing. Rendered with the same tableFootnote() that draws a marked row's asterisk, on the three pages that draw the division."
 }

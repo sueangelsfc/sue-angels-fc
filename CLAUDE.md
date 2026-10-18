@@ -1457,10 +1457,18 @@ three different bands, and a mark styled in one of them is a bare character on
 the other two.
 
 It exists because **a row of noughts in October is what a folded club and a
-club yet to play both look like**. Mousa Mountain carried the only mark this
-site has shown, for one day, between folding and the league confirming they
-were out of the division. The mark went with that confirmation and nothing
-carries one now.
+club yet to play both look like**. Mousa Mountain carried that mark for one
+day, between folding and the league confirming they were out of the division.
+
+**A club the league has REMOVED is named under the table rather than deleted
+off the page**, which is `removed` in the same file, drawn by the same
+footnote. A removed club is not a row - it has no position and no record to
+stand on - but a table that quietly has one club fewer than it had last week
+explains nothing to somebody who remembers the fixture, so the line carries
+the date of the match that was not played and says no points were awarded.
+That check is asked of the shipped pages and **conditioned on the data**: it
+tests all three while a club is listed and retires with the listing, instead
+of going red the day the club takes the line down.
 
 **So the suite exercises it on crafted rows, never on the shipped table.** A
 check reading the real data would have been green on 17 October, red on the

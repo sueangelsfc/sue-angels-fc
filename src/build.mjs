@@ -353,9 +353,34 @@ const d = buildDataset();
          result is saved as r20260913-haydons, the same match with one letter
          changed. Matching the id exactly found nothing once the result was in,
          so the collection printed the file's code and a bare ISO date where
-         the opponent, the day and the score belong. */
+         the opponent, the day and the score belong.
+
+         AND A CUP TIE HAS NO DATE TO MATCH ON. A tie read off the draw is
+         identified by its round rather than by a day (f2627-pcup-r1-peps),
+         because the league publishes the bracket months before it schedules
+         it - so the file and the result (r20261011-peps) share no date, no
+         suffix and no letter. Both of the club's next two matches are that
+         shape, so this is the ordinary case from here and not a one-off.
+
+         The last resort reads the MATCH's id as a description of the match
+         and asks whether the file's name contains all of it: r20261011-peps
+         is "peps", which the cup key carries, while f2627-pcup-r2-swans is
+         "pcup, r2, swans", which it does not. Asking it the other way round
+         - any segment in common - answers Peps AND Celtic Swans, because
+         both ties are in the same cup and so share `pcup`.
+
+         The leading token is dropped from both before comparing, because it
+         is the date or the season and is exactly the part these two shapes
+         disagree about. And it refuses to guess: two matches that fit
+         resolve to neither, so a club played twice in a season can never
+         have one programme labelled with the other fixture. */
+      const seg = (id) => String(id || '').split('-').slice(1).filter(Boolean);
+      const want = new Set(seg(key));
+      const shared = [...(d.matches || [])]
+        .filter((x) => seg(x.id).length && seg(x.id).every((t) => want.has(t)));
       const match = [...(d.matches || [])].find((x) => x.id === key)
-        || [...(d.matches || [])].find((x) => /^[fr]/.test(key) && String(x.id || '').slice(1) === key.slice(1));
+        || [...(d.matches || [])].find((x) => /^[fr]/.test(key) && String(x.id || '').slice(1) === key.slice(1))
+        || (shared.length === 1 ? shared[0] : null);
       const day = /^[fr](\d{4})(\d{2})(\d{2})/.exec(key);
       return {
         id: key,

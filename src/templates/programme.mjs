@@ -506,7 +506,16 @@ export function programme(d) {
      disagree about what exists, and it fills itself in as the season goes.
      One programme is not a collection, so it says so rather than showing a
      list of one and calling it an archive. */
-  const past = (d.programmes || []).filter((x) => !m || x.id !== m.id);
+  /* A PROGRAMME THE BUILD CANNOT NAME IS LEFT OUT, never printed as its own
+     file name. `x.opponent || x.id` put the storage key `f2627-pcup-r1-peps`
+     in the column where the opponent goes, under a blank date and beside an
+     empty competition - a row that reads as a file somebody forgot to label,
+     which is the one thing this site refuses to show a reader. Dropping it
+     would be a silent gap, so `npm test` names any programme on disk that
+     resolves to no match: a job rather than a missing row. */
+  const past = (d.programmes || [])
+    .filter((x) => !m || x.id !== m.id)
+    .filter((x) => x.opponent);
   /* Only once there is something in it. "This is the first" printed over an
      empty list the moment the one programme there was had been taken down. */
   const archiveBand = !past.length ? '' : `<section class="sec pr-band" aria-labelledby="pr-arch-h">
@@ -519,7 +528,7 @@ export function programme(d) {
       <ul class="pr-arch rv">${past.map((x) => `<li>
         <a href="${attr(x.href)}" download>
           <span class="pr-arch__date">${esc(x.date || x.iso || '')}</span>
-          <span class="pr-arch__opp">${esc(x.opponent || x.id)}</span>
+          <span class="pr-arch__opp">${esc(x.opponent)}</span>
           <span class="pr-arch__meta">${esc([x.competition, x.homeAway].filter(Boolean).join(' · '))}${x.result ? ` · ${esc(x.result)}` : ''}</span>
           <span class="pr-arch__get">PDF · ${esc(x.kb)}KB</span>
         </a></li>`).join('')}</ul>`

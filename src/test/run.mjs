@@ -7052,6 +7052,32 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
       && (withPdf.body.match(/\/players\/[a-z-]+\.html/g) || []).length === 0);
   check('an empty collection is not shown',
     /pr-arch-h/.test(prog({ ...dP, programmes: [] }).body) === false);
+  /* A STORAGE KEY IS NEVER THE LABEL ON A ROW. The collection printed
+     `f2627-pcup-r1-peps` where the opponent goes, under a blank date, because
+     a cup tie is identified by its round rather than by a day and so shares
+     nothing with the result it became. The template drops a programme it
+     cannot name, which would be a silent gap on its own - so the file on disk
+     is what is asked here, by name, and this is a job rather than a row that
+     quietly stopped appearing. Crafted as well as real, because every
+     programme resolves today and a check that only reads the directory passes
+     with the matching rule deleted. */
+  const archive = flatten(prog({
+    ...dP,
+    programmes: [{ id: 'f2627-pcup-r1-peps', href: '/x.pdf', kb: 1, opponent: '', date: '' }],
+  }).body);
+  check('a programme the build cannot name is left out rather than labelled with its file name',
+    !/f2627-pcup-r1-peps/.test(archive) && !/pr-arch-h/.test(archive), archive.slice(0, 160));
+  /* ASKED OF THE SHIPPED PAGE, because the collection is assembled in
+     build.mjs from the directory and the dataset carries none of it: a check
+     reading `dP.programmes` passes on an empty array, which is what every run
+     of it would have done. Every PDF on disk is either this week's download
+     or a row in the collection, and a row is only there once it has a name. */
+  const progHtml = pages.get('programme.html') || fs.readFileSync(path.join(ROOT, 'programme.html'), 'utf8');
+  const onDisk = fs.existsSync(path.join(ROOT, 'assets', 'programme'))
+    ? fs.readdirSync(path.join(ROOT, 'assets', 'programme')).filter((f) => f.endsWith('.pdf')) : [];
+  const missing = onDisk.filter((f) => !progHtml.includes(`/assets/programme/${f}`));
+  check('every programme on disk is on the page, named by its match rather than its file',
+    onDisk.length > 2 && missing.length === 0, missing.join(', ') || `${onDisk.length} on disk`);
   /* The preview is about THIS match. It took the newest article, so the week
      after the opener the next fixture's page linked the opener's preview. */
   const prevMatch = /pr-read__t">([^<]*)/.exec(outP.body);

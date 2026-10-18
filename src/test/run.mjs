@@ -1966,6 +1966,77 @@ for (const [f, h] of pages) {
       cup.rounds.every((r) => !r.opponents.some((o) => o.name === US)));
   }
 
+  /* ---- A CLUB THAT IS OUT STOPS BEING A CLUB WE COULD MEET ----
+     The route lists every side that could still arrive in a round, so a
+     result read off the league's table has to take the loser out of it. The
+     derivation is `eliminated()`, and the probes are crafted, because every
+     recorded result today eliminates somebody and a check over the real file
+     would pass with the rule reversed on the ties nobody has played. */
+  const { eliminated: el } = await import(path.join(ROOT, 'src', 'lib', 'cups.mjs'));
+  const toy = (results) => ({
+    ties: [
+      { n: 1, round: '1st Round', home: 'Alpha FC', away: 'Beta FC' },
+      { n: 2, round: '2nd Round', home: 'Winner of Tie 1', away: 'Gamma FC' },
+    ],
+    results,
+  });
+  check('a scoreline knocks out the side that lost it, home or away',
+    [...el(toy([{ n: 1, hs: 0, as: 2 }]))].join() === 'Alpha FC'
+      && [...el(toy([{ n: 1, hs: 2, as: 0 }]))].join() === 'Beta FC');
+  check('a draw, an abandonment and a tie nobody has played knock out nobody',
+    el(toy([{ n: 1, hs: 1, as: 1 }])).size === 0 && el(toy([])).size === 0
+      && el(toy([{ n: 1 }])).size === 0);
+  /* A WALKOVER HAS A WINNER AND NO SCORE. BPR Men's were given one over Pure
+     Football FC 1st Team on 18 October, and read as a missing scoreline it
+     left a club in a cup it is out of - the one direction the route is not
+     allowed to be wrong in, because it invents an opponent. */
+  check('a walkover knocks out the club that did not get it, whichever side it was',
+    [...el(toy([{ n: 1, wo: 'H-W' }]))].join() === 'Beta FC'
+      && [...el(toy([{ n: 1, wo: 'A-W' }]))].join() === 'Alpha FC');
+  check('and a branch is never knocked out, because it is not a club',
+    el(toy([{ n: 2, hs: 0, as: 3 }])).size === 0,
+    [...el(toy([{ n: 2, hs: 0, as: 3 }]))].join());
+
+  /* And over the real draws: a result must name a tie, both its sides must be
+     clubs rather than branches (a branch cannot play), and nobody knocked out
+     of a cup may appear anywhere in that cup's route. */
+  for (const cup of cupsD.cups) {
+    const byNum = new Map(cup.ties.map((t) => [t.n, t]));
+    const bad = (cup.results || []).filter((r) => {
+      const t = byNum.get(Number(r.n));
+      return !t || [t.home, t.away].some((x) => /^winner of tie/i.test(String(x)));
+    });
+    check(`${cup.short}: every recorded result names a tie between two clubs`,
+      bad.length === 0, bad.map((r) => r.n).join(', '));
+    const gone = el(cup);
+    const route = routes.find((r) => r.id === cup.id);
+    /* A ROUND THE CLUB HAS PLAYED NAMES WHO IT PLAYED, and the side we beat
+       is out by definition - the first round would fail this on Peps All
+       Stars, whom we knocked out ourselves. It is the rounds still to come
+       that must not list a club that has gone. */
+    const played = new Set((cup.results || []).map((r) => Number(r.n)));
+    const ghosts = route.rounds.filter((r) => !played.has(r.tie))
+      .flatMap((r) => r.opponents.map((o) => o.name))
+      .filter((n) => gone.has(n));
+    check(`${cup.short}: nobody knocked out is still listed as a side we could meet`,
+      ghosts.length === 0, ghosts.join(', ') || `${gone.size} out`);
+    /* THE CRAFTED PROBE ABOVE CANNOT CATCH THIS ONE. Forgetting walkovers
+       leaves a club IN, so `gone` never names it and the question above
+       passes while the page invents an opponent. Asked of the real file, of
+       every walkover it holds: exactly one of the two clubs must be out of
+       it. Conditioned on there being one, because a cup with none has
+       nothing here to protect. */
+    const wos = (cup.results || []).filter((r) => r.wo);
+    if (wos.length) {
+      const unread = wos.filter((r) => {
+        const t = byNum.get(Number(r.n));
+        return [t.home, t.away].filter((c) => gone.has(c)).length !== 1;
+      });
+      check(`${cup.short}: a walkover puts a club out, like any other result`,
+        unread.length === 0, unread.map((r) => `tie ${r.n}`).join(', ') || `${wos.length} walkover(s)`);
+    }
+  }
+
   /* A division for all but one, and the one is named rather than guessed. */
   const named = new Set(Object.keys(cupsD.divisionOf));
   const inDraw = new Set(cupsD.cups.flatMap((c) => c.ties)

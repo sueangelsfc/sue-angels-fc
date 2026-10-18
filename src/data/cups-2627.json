@@ -311,6 +311,29 @@
           "on": "2026-10-11"
         },
         {
+          "n": 4,
+          "hs": 0,
+          "as": 6,
+          "on": "2026-10-18"
+        },
+        {
+          "n": 6,
+          "wo": "H-W",
+          "on": "2026-10-18"
+        },
+        {
+          "n": 7,
+          "hs": 0,
+          "as": 2,
+          "on": "2026-10-18"
+        },
+        {
+          "n": 9,
+          "hs": 2,
+          "as": 1,
+          "on": "2026-10-18"
+        },
+        {
           "n": 11,
           "hs": 3,
           "as": 1,
@@ -959,8 +982,46 @@
           "home": "Winner of Tie 105",
           "away": "Winner of Tie 104"
         }
+      ],
+      "results": [
+        {
+          "n": 1,
+          "hs": 0,
+          "as": 1,
+          "on": "2026-10-18"
+        },
+        {
+          "n": 7,
+          "hs": 2,
+          "as": 0,
+          "on": "2026-10-18"
+        },
+        {
+          "n": 13,
+          "hs": 7,
+          "as": 1,
+          "on": "2026-10-18"
+        },
+        {
+          "n": 15,
+          "hs": 1,
+          "as": 3,
+          "on": "2026-10-18"
+        },
+        {
+          "n": 21,
+          "hs": 2,
+          "as": 4,
+          "on": "2026-10-18"
+        },
+        {
+          "n": 41,
+          "hs": 3,
+          "as": 4,
+          "on": "2026-10-18"
+        }
       ]
     }
   ],
-  "_resultsNote": "Cup ties the club has seen a result for, by tie number, so a club that has been knocked out stops being listed as a side we could still meet. Scorelines are recorded and the loser is DERIVED, never typed: a list of losers is a second place to be wrong. A tie with no entry has not been played as far as this file knows, so both clubs stay in - absent means unknown, never eliminated. An ABANDONED tie (Catania v Hillside, 11 Oct, A-A) is deliberately absent: nobody went out, it will be replayed."
+  "_resultsNote": "Cup ties the club has seen a result for, by tie number, so a club that has been knocked out stops being listed as a side we could still meet. Scorelines are recorded and the loser is DERIVED, never typed: a list of losers is a second place to be wrong. A tie with no entry has not been played as far as this file knows, so both clubs stay in - absent means unknown, never eliminated. An ABANDONED tie (Catania v Hillside, 11 Oct, A-A) is deliberately absent: nobody went out, it will be replayed. A WALKOVER carries no score, because the league awards none, so it is recorded as `wo`, H-W or A-W, exactly as a match record is (BPR Men's over Pure Football FC 1st Team, 18 Oct). Read as a missing scoreline it would have left a club in a cup it is out of. Results read from the league's full results table, pages covering 11 and 18 October 2026, sent by the club on 18 October."
 }

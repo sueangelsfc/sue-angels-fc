@@ -100,19 +100,34 @@ export function routeThrough(cup, club) {
  * A DRAWN tie eliminates nobody. Grassroots cups settle these by a replay or
  * a shootout, and the shootout is not in the scoreline, so a 2-2 says only
  * that both clubs are still in it until the next round's draw says otherwise.
+ * An ABANDONED tie is recorded as no result at all, for the same reason.
+ *
+ * A WALKOVER HAS A WINNER AND NO SCORE, and reading it off a scoreline is
+ * impossible, because the league prints no goals for one: the table counts a
+ * walkover as three points and nothing else, which is the rule this site
+ * already keeps everywhere it counts a match. So the tie carries `wo`,
+ * `H-W` or `A-W`, exactly as a match record does, and the club that did not
+ * get the walkover is out. Without this a walkover read as a missing score
+ * and left BOTH clubs in the route, which is the one direction this function
+ * is allowed to be wrong in - but it would have left Pure Football FC 1st
+ * Team listed as a side we could meet in a cup they are out of.
  */
 export function eliminated(cup) {
   const { byNum } = index(cup);
   const gone = new Set();
+  const out = (club) => {
+    /* "Winner of Tie 7" is a branch, not a club, so it cannot be knocked out. */
+    if (club && !WINNER.test(String(club).trim())) gone.add(String(club).trim());
+  };
   for (const r of cup.results || []) {
     const tie = byNum.get(Number(r.n));
     if (!tie) continue;
+    if (r.wo === 'H-W' || r.wo === 'A-W') { out(r.wo === 'H-W' ? tie.away : tie.home); continue; }
     const hs = Number(r.hs);
     const as = Number(r.as);
     if (!Number.isFinite(hs) || !Number.isFinite(as) || hs === as) continue;
     const loser = hs > as ? tie.away : tie.home;
-    /* "Winner of Tie 7" is a branch, not a club, so it cannot be knocked out. */
-    if (loser && !WINNER.test(String(loser).trim())) gone.add(String(loser).trim());
+    out(loser);
   }
   return gone;
 }

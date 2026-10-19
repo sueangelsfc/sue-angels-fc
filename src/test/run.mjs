@@ -8812,6 +8812,47 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
       `${missing.join(', ')} - used by ${links.join(' + ')} and declared by neither`);
   }
   check('the custom-property check ran over every page', checked >= 20, `${checked} pages`);
+
+  /* ---- AN <i> THAT CARRIES WORDS MUST SAY WHAT STYLE IT IS IN -------------
+     This site uses `<i>` as a small styled label, never as emphasis - a
+     season beside an accolade, a count under a tab, the dates under a shared
+     record - and a class that sets the family, the size, the weight, the
+     spacing and the colour but NOT `font-style` leaves the browser's italic
+     showing. It reads as emphasis nobody meant, and it is invisible in the
+     source because every declaration you look at is correct.
+
+     THREE TIMES NOW. `.pf-chip i` printed every accolade as "TOP
+     GOALSCORER25/26" with the season italic and jammed against the label;
+     `.pf-tab i` was the same; and the club spotted the third on the records
+     page, where a record with two holders prints each man's dates and both
+     came out in italic small caps. Fixing the third one and leaving the
+     question unasked is how there comes to be a fourth. */
+  const italics = new Map();
+  for (const [f, h] of pages) {
+    for (const m of h.matchAll(/<i class="([a-z0-9_-]+)"[^>]*>([^<]*)</gi)) {
+      if (m[2] && m[2].trim()) if (!italics.has(m[1])) italics.set(m[1], f);
+    }
+  }
+  const allCss = [...new Set([...pages.keys()])]
+    .flatMap(() => [])
+    .concat([]);
+  const sheets = fs.readdirSync(path.join(ROOT, 'src', 'styles-home'), { recursive: true })
+    .filter((f) => String(f).endsWith('.css'))
+    .map((f) => fs.readFileSync(path.join(ROOT, 'src', 'styles-home', String(f)), 'utf8'))
+    .concat(fs.readdirSync(path.join(ROOT, 'src', 'styles'))
+      .filter((f) => f.endsWith('.css'))
+      .map((f) => fs.readFileSync(path.join(ROOT, 'src', 'styles', f), 'utf8')))
+    .join('\n');
+  const upright = (cls) => {
+    /* The whole rule body, not the first line: these are multi-line. */
+    const re = new RegExp(`\\.${cls}\\s*\\{([^}]*)\\}`, 'g');
+    for (const m of sheets.matchAll(re)) if (/font-style\s*:/.test(m[1])) return true;
+    return false;
+  };
+  const bare = [...italics.keys()].filter((c) => !upright(c));
+  check('every <i> that carries words says what font style it is in',
+    bare.length === 0 && italics.size > 0,
+    bare.length ? bare.map((c) => `.${c} (${italics.get(c)})`).join(', ') : `${italics.size} checked`);
 }
 
 /* ---- Pre-season, and the season ahead -------------------------------------

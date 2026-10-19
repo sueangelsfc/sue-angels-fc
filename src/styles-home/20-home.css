@@ -1536,14 +1536,6 @@ html{scroll-behavior: auto;}
 .cta2__glow{transition: none;}
 .cta2:hover .cta2__badge{transform: translate(-50%, -50%);}
 }
-html[data-brand="volt"]{--paper: #F3F7F9;          /* light band */
-  --navy: #071D29;           /* primary ink */
-  --navy-deep: #04121B;      /* dark canvas */
-  --navy-2: #0A2433;
-  --volt: var(--volt);           /* legacy volt accent */
-  --volt-rgb: 255, 106, 42;
-  --volt-2: #FF7D42;
-  --volt-ink: #56660A;}
 .tsw{position: relative; width: 62px; height: 30px; flex: 0 0 auto;
   border-radius: var(--pillr); border: 1px solid var(--line-d);
   background: var(--glass-d); cursor: pointer; padding: 0;

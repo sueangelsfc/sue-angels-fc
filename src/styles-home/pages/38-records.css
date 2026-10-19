@@ -107,7 +107,14 @@ html.js .rc-card[hidden]{display: none;}
 .rc-streak__body b{font-family: var(--display); font-weight: 500; font-size: 15.5px;
   letter-spacing: -0.014em; color: var(--fg);}
 .rc-streak__body > span{font-size: 13.5px; color: var(--ink-2);}
+/* `font-style: normal` because several holders put each man's dates in an
+   <i>, and a class that styles everything EXCEPT the style leaves the
+   browser's italic showing: "6 SEPT 2026 TO 27 SEPT 2026" in italic small
+   caps beside a name, which reads as emphasis nobody meant. Third time this
+   exact fault has shipped - `.pf-chip i` and `.pf-tab i` were the first two
+   - so it is asked of every shipped <i> now rather than fixed again. */
 .rc-streak__when{font-family: var(--ui); font-size: 9.5px !important; font-weight: 700;
+  font-style: normal;
   letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3) !important;}
 /* Several names on one record. A shared record is the normal case, not the
    exception, so they sit in a row that wraps rather than stacking. */

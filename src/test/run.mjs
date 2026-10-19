@@ -3361,6 +3361,23 @@ for (const [f, kb] of Object.entries({
       appDates.length > 0 && String(appDates) !== String(startDates),
       `appearances ${appDates.join(' / ')} vs starts ${startDates.join(' / ')}`);
 
+    /* AND THE RECORD THE OTHER TWO CANNOT SAY. Most appearances and Most
+       starts name the same man with the same number on every tab today,
+       because nobody who leads either has ever sat on the bench - so the
+       pair reads as one record printed twice and the club said so. The gap
+       between them is the record: William Clark played eleven times and
+       started twice. */
+    const { offBench: ob } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+    check('appearances off the bench is the gap between the two, floored at nought',
+      ob({ apps: 11, starts: 2 }) === 9 && ob({ apps: 5, starts: 5 }) === 0
+      && ob({ apps: 2, starts: 5 }) === 0 && ob(null) === 0,
+      `${ob({ apps: 11, starts: 2 })}, ${ob({ apps: 5, starts: 5 })}, ${ob({ apps: 2, starts: 5 })}`);
+    const benchVal = (/>(\d+)<[^>]*>[\s\S]{0,80}?Most appearances off the bench/.exec(recHtml) || [])[1];
+    const startsVal = (/>(\d+)<[^>]*>[\s\S]{0,80}?Most starts/.exec(recHtml) || [])[1];
+    check('the records page publishes it, and it is not a third copy of the starts figure',
+      /Most appearances off the bench/.test(recHtml) && benchVal && benchVal !== startsVal,
+      `off the bench ${benchVal}, starts ${startsVal}`);
+
     /* And on the real page. */
     const homeHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
     if (/sec--milestones/.test(homeHtml)) {

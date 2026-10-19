@@ -26,7 +26,7 @@ import { CLUB } from '../lib/club.mjs';
 import { seasonViews, defaultView, seasonBar, seasonPanels, matchNote } from '../lib/seasons.mjs';
 import {
   fmtDate, longestStreak, playerStreak, teamSummary, leaderboard,
-  biggestWin, heaviestDefeat, slugify, isLeague } from '../lib/stats.mjs';
+  biggestWin, heaviestDefeat, slugify, isLeague, offBench } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
 import { sourceNote } from '../lib/blocks.mjs';
 
@@ -145,7 +145,11 @@ const stepOf = (key, r) => {
   const seasonTable = view.key === 'all'
     ? (d.players || [])
     : ((d.playersBySeason || {})[view.key] || []);
-  const players = seasonTable.filter((p) => !p.unknown);
+  /* `offBench` rides on the player here so `holdersOf` and `leaderboard`
+     read it like any other figure, and it is the ENGINE's definition rather
+     than a second subtraction written on this page. */
+  const players = seasonTable.filter((p) => !p.unknown)
+    .map((p) => ({ ...p, offBench: offBench(p) }));
   /* And so is the recognition. A record with no season recorded belongs to
      the all-seasons view rather than to a year nobody wrote down. */
   const rec = (d.recognition || [])
@@ -307,6 +311,12 @@ const stepOf = (key, r) => {
   const cards = [
     playerCard('apps', '', 'Most appearances'),
     playerCard('starts', '', 'Most starts'),
+    /* THE ONE THE OTHER TWO CANNOT SAY. Most appearances and Most starts name
+       the same man with the same number on every tab today, because nobody
+       who leads either has sat on the bench, so the pair reads as one record
+       printed twice. This is the gap between them, and it is the only place
+       a bench outing is ever the headline. */
+    playerCard('offBench', '', 'Most appearances off the bench'),
     playerCard('goals', '', 'Most goals'),
     playerCard('assists', '', 'Most assists'),
     playerCard('cleanSheets', '', 'Most clean sheets'),

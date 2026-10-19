@@ -1868,6 +1868,19 @@ Adding one takes effect only on the NEXT deployment: `vercel redeploy <latest-pr
     compares the DATES the two milestones were reached on and fails if they
     are the same set: counting a substitute as nothing moves one from 24 May
     to 31 May 2026.
+  - **AND "MOST APPEARANCES" ON ITS OWN SAID NOTHING.** It shipped, it was
+    live, and the club reported it as missing - because on every tab it names
+    the same man with the same number as Most starts (5 and 5 on 26/27, 35
+    and 35 on all seasons). Nobody who leads either record has ever sat on
+    the bench, so the two cards read as one record printed twice and the only
+    difference was buried in the breakdown, where Andrew Allen is second on
+    appearances and third on starts. A record that duplicates the card above
+    it is a card nobody can see. **`offBench(p)`** in `stats.mjs` is the gap
+    between them, floored at nought, and **Most appearances off the bench**
+    is the record a start can never hold: William Clark played eleven times
+    and started twice. The check asserts its figure DIFFERS from the starts
+    figure on the shipped page, because a third card agreeing with the first
+    two would be the same failure again.
 - **The milestone step and its label name the same figure, and that figure is now starts.** It once counted starts under the label "appearances", which were the same number until a substitute the record can prove was on the pitch started counting, and the band told the front page that Charlie Dunkley was one appearance from 25 when he had already played 25. It read `apps` after that; since September 2026 the club counts milestones in starts, so the key is `starts` and the label says starts.
 - **No em dashes** in copy.
 - **Writing about the cause.** The club exists because Susan Anne Martin died of sepsis, and that asks for care the style rules above do not cover. Say **she died of sepsis**, never "lost her battle" or "fought": it was an illness, not a defeat. Warm and plain, not mournful and not inspirational. **Never point it at an outcome** - it does not appear in a sponsorship pitch, a recruitment line or as a reason to click, because a death is not a selling point. **Never medical advice**: link the UK Sepsis Trust and let them do that. And when a piece is about football, let it be about football; the cause has its own page and does not need a paragraph bolted onto a match report.

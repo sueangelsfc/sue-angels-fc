@@ -733,6 +733,17 @@ export function leaderboard(rows, key, n = 10) {
    a home page band read it and printed 0-12 under "Biggest win". A correction
    that lives in one renderer is not a fix, it is a patch that the next
    renderer will not know about. */
+/* APPEARANCES MADE AS A SUBSTITUTE, which is the one figure starts cannot
+   show and appearances alone does not either: the club's most-used players
+   have never been on the bench, so Most appearances and Most starts name the
+   same man with the same number and read as one record printed twice. The
+   gap between them is the record worth publishing - William Clark played
+   eleven times and started twice. Derived rather than stored, and derived
+   HERE so the record grid and the club records list cannot compute it two
+   ways. Floored at nought: a profile whose starts somehow exceed its
+   appearances is a broken record, not a negative one. */
+export const offBench = (p) => Math.max(0, (Number(p && p.apps) || 0) - (Number(p && p.starts) || 0));
+
 export function clubRecords(matches, players) {
   const played = matches.filter((m) => m.played);
   const big = biggestWin(matches);
@@ -741,6 +752,7 @@ export function clubRecords(matches, players) {
   const topAssist = leaderboard(players, 'assists', 1)[0];
   const topApps = leaderboard(players, 'starts', 1)[0];
   const topAppearances = leaderboard(players, 'apps', 1)[0];
+  const topBench = leaderboard((players || []).map((p) => ({ ...p, offBench: offBench(p) })), 'offBench', 1)[0];
   const topMotm = leaderboard(players, 'motm', 1)[0];
   const first = played.slice().sort((a, b) => (a.iso || '').localeCompare(b.iso || ''))[0];
 
@@ -759,6 +771,7 @@ export function clubRecords(matches, players) {
        narrower question and hides every bench outing the club has recorded. */
     topAppearances && { value: topAppearances.apps, label: 'Most appearances', who: topAppearances.name, href: `/players/${topAppearances.slug}.html` },
     topApps && { value: topApps.starts, label: 'Most starts', who: topApps.name, href: `/players/${topApps.slug}.html` },
+    topBench && topBench.offBench > 0 && { value: topBench.offBench, label: 'Most appearances off the bench', who: topBench.name, href: `/players/${topBench.slug}.html` },
     topMotm && { value: topMotm.motm, label: 'Most Player of the Match awards', who: topMotm.name, href: `/players/${topMotm.slug}.html` },
     first && { value: first.ourScoreline, label: 'First competitive result', who: `v ${first.opponent}, ${fmtDate(first.date)}`, href: `/matches/${first.slug}.html` },
     worst && { value: worst.ourScoreline, label: 'Heaviest defeat', who: `v ${worst.opponent}, ${fmtDate(worst.date)}` },

@@ -1399,7 +1399,30 @@ site**: this was never one page's bug.
   on most runs and not on all of them, which is the worst kind of check: it
   went red on two pages nobody had touched and green on the next run. Settled
   means two consecutive reads of the same size.
-- **Never run two browser passes at once.** Each one rebuilds the whole site
+- **A check that waits a fixed time is measuring the clock, not the page.**
+`goto()` waited a flat 900ms and then audited, and on 18 October a selected
+season tab failed contrast at 1.03:1 on a player page whose bytes had not
+changed in weeks - green on the next two runs over the identical file. The
+two colours in the failure named the cause between them: `#1a0a02` is
+`--text-on-brand` and `#101214` is the UNSELECTED tab's background composited
+over the canvas, so one element was wearing both states. `.pf-tab` transitions
+`background` over 250ms and does not transition `color` at all, so the ink
+snaps and the orange arrives a quarter of a second later; a tab measured in
+that window looks exactly like one whose background declaration was dropped,
+which is how it first read as the undefined-property trap. The audit now waits
+for no CSS **transition** to have been running for two consecutive reads -
+transitions only, because the four atmosphere masses never stop and waiting on
+`getAnimations()` entire would never return - immediately before each
+measurement rather than only after navigating, since the panel's screens
+change long after their page has loaded. **Reproduced on demand before it was
+fixed**: drop `is-on`, let the background settle back for 320ms, re-add it and
+audit, which produced four failures at the same two ratios and none with the
+wait in place. Removing and re-adding the class in one task proves nothing,
+because the background has not moved yet and the transition restarts from
+orange. Same fault as the menu hit-test, which already waits for the panel to
+stop moving; the contrast question had never been given the same rule.
+
+**Never run two browser passes at once.** Each one rebuilds the whole site
   with `SA_ALL_BANDS` and deletes `__all-bands.html` afterwards, so two of them
   race over the output the other is reading and produce failures that look
   exactly like a regression.

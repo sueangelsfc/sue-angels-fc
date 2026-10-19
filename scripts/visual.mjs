@@ -253,6 +253,44 @@ async function main() {
   await cdp.send('Log.enable');
   await cdp.send('Page.enable');
 
+  /* IT WAITS FOR THE PAGE TO STOP MOVING, not for a number of milliseconds.
+     900ms was enough on most runs and not on all of them, which is the worst
+     kind of check: a selected season tab went red on a player page whose
+     bytes had not changed in weeks, at 1.03:1, and the two colours in the
+     failure are what named the cause: #1a0a02 is --text-on-brand and #101214
+     is the UNSELECTED tab's own background over the canvas. One element
+     wearing both states, because `.pf-tab` transitions `background` over
+     250ms and does not transition `color` at all - the ink snaps and the
+     orange takes a quarter of a second to arrive. A tab measured in that
+     window is indistinguishable from one whose background declaration was
+     dropped, which is how this first read as the undefined-property trap.
+     Same fault the menu hit-test paid for, one check along in this file.
+
+     Reproduced on demand before it was fixed, by dropping `is-on`, letting
+     the background settle back for 320ms and re-adding it immediately before
+     the audit: four failures, the same two elements at the same two ratios,
+     and none with the wait below in place. Removing and re-adding the class
+     in ONE task proves nothing - the background has not moved yet, so the
+     transition restarts from orange and the audit sees orange.
+
+     TRANSITIONS ONLY, NEVER EVERY ANIMATION. Four orange masses drift behind
+     every page for ever and the ticker never stops, so waiting on
+     `getAnimations()` entire would wait for the heat death. A transition is
+     a change settling; an animation may be a permanent one. Settled means
+     two consecutive reads with none running - the rule the menu check
+     already uses - and it gives up after a second rather than hanging CI. */
+  const SETTLE = `(async () => {
+    const running = () => document.getAnimations().filter((a) => a instanceof CSSTransition
+      && a.playState === 'running').length;
+    const until = Date.now() + 1000;
+    let calm = 0;
+    while (Date.now() < until && calm < 2) {
+      calm = running() === 0 ? calm + 1 : 0;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    return running();
+  })()`;
+
   const goto = async (url) => {
     log = [];
     await cdp.send('Page.navigate', { url });
@@ -291,6 +329,8 @@ async function main() {
       await goto(`http://localhost:${PORT}${route}`);
       if (w === WIDTHS[0]) pages += 1;
       for (const l of log) fail(`${route}`, l);
+      /* AT REST, NOT MID-CROSSFADE. See SETTLE above. */
+      await ask(SETTLE);
       const a = await ask(AUDIT);
       report(`${route} @${w}`, a);
       measured += a.measured; unverifiable += a.unverifiable;
@@ -517,6 +557,9 @@ async function main() {
     await ask(`window.CPU.goto(${JSON.stringify(key)})`);
     await new Promise((r) => setTimeout(r, 700));
     for (const l of log) fail(`panel:${key}`, l);
+    /* The panel's screens carry the same pill-and-chip transitions the pages
+       do, so the same rule applies: measure at rest. */
+    await ask(SETTLE);
     const a = await ask(AUDIT);
     report(`panel:${key}`, a);
 

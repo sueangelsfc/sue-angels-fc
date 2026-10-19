@@ -3319,9 +3319,47 @@ for (const [f, kb] of Object.entries({
     const nearly = ms([mk('Nearly There', 'active', { apps: 26, starts: 24 })]);
     check('the starts milestone counts starts, under a starts label',
       !reached.some((r) => r.label === 'starts')
-      && nearly.some((r) => r.label === 'starts' && r.away === 1 && r.next === 25)
-      && !nearly.some((r) => r.label === 'appearances'),
+      && nearly.some((r) => r.label === 'starts' && r.away === 1 && r.next === 25),
       `reached ${JSON.stringify(reached.map((r) => r.label))}, nearly ${JSON.stringify(nearly.map((r) => [r.label, r.away, r.next]))}`);
+
+    /* APPEARANCES TOO, AND NOT TWICE. An appearance is a start or a
+       substitute the record can prove came on, so for most of the squad the
+       two figures are equal and the same afternoon would be announced under
+       both labels. It is worth saying only where they differ. Crafted,
+       because today exactly one player in the real squad has the gap, so a
+       check reading live data would go green the week he starts again. */
+    const twin = ms([mk('Same Figure', 'active', { apps: 23, starts: 23 })], 6);
+    const split = ms([mk('Off The Bench', 'active', { apps: 23, starts: 20 })], 6);
+    check('a man whose appearances equal his starts is not told twice',
+      twin.filter((r) => r.next === 25).length === 1
+      && twin.some((r) => r.label === 'starts') && !twin.some((r) => r.label === 'appearances'),
+      JSON.stringify(twin.map((r) => [r.label, r.away])));
+    check('and where they differ, the appearance milestone is its own',
+      split.some((r) => r.label === 'appearances' && r.away === 2 && r.next === 25)
+      && split.some((r) => r.label === 'starts' && r.away === 5 && r.next === 25),
+      JSON.stringify(split.map((r) => [r.label, r.away, r.next])));
+
+    /* And the record book carries both, because they are two records: the
+       top five under each is already in a different order. */
+    const recHtml = fs.readFileSync(path.join(ROOT, 'records.html'), 'utf8');
+    check('the records page keeps an appearances record beside the starts one',
+      /Most appearances/.test(recHtml) && /Most starts/.test(recHtml)
+      && /First to 25 appearances/.test(recHtml),
+      `appearances ${/Most appearances/.test(recHtml)}, starts ${/Most starts/.test(recHtml)}`);
+
+    /* AND THE SUBSTITUTE HAS TO COUNT, which the question above cannot ask:
+       a page that counted only starts under the word appearances would carry
+       every heading this check wants and be wrong by a week. Twenty-one
+       players have more appearances than starts, so the dates the two
+       milestones were reached on cannot be the same set - and counting a
+       substitute as nothing moves one of them from 24 May to 31 May. */
+    const dates = (unit) => [...new Set(
+      [...recHtml.matchAll(new RegExp(`25 ${unit} · ([^<]+)`, 'g'))].map((m) => m[1]))].sort();
+    const appDates = dates('appearances');
+    const startDates = dates('starts');
+    check('an appearance counts a substitute who came on, not starts under another name',
+      appDates.length > 0 && String(appDates) !== String(startDates),
+      `appearances ${appDates.join(' / ')} vs starts ${startDates.join(' / ')}`);
 
     /* And on the real page. */
     const homeHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');

@@ -740,6 +740,7 @@ export function clubRecords(matches, players) {
   const topScorer = leaderboard(players, 'goals', 1)[0];
   const topAssist = leaderboard(players, 'assists', 1)[0];
   const topApps = leaderboard(players, 'starts', 1)[0];
+  const topAppearances = leaderboard(players, 'apps', 1)[0];
   const topMotm = leaderboard(players, 'motm', 1)[0];
   const first = played.slice().sort((a, b) => (a.iso || '').localeCompare(b.iso || ''))[0];
 
@@ -750,6 +751,13 @@ export function clubRecords(matches, players) {
     { value: longestRun(matches, (m) => m.theirGoals === 0, { goalRecordOnly: true }), label: 'Consecutive clean sheets', who: 'matches without conceding' },
     topScorer && { value: topScorer.goals, label: 'Most goals', who: topScorer.name, href: `/players/${topScorer.slug}.html` },
     topAssist && { value: topAssist.assists, label: 'Most assists', who: topAssist.name, href: `/players/${topAssist.slug}.html` },
+    /* BOTH, because they are two records that happen to share a leader. An
+       appearance is a start or a substitute the record can prove came on, so
+       the two columns diverge for 21 players and the top five under each card
+       are already in a different order - Andrew Allen is third on starts and
+       second on appearances. Printing only the starts record answers the
+       narrower question and hides every bench outing the club has recorded. */
+    topAppearances && { value: topAppearances.apps, label: 'Most appearances', who: topAppearances.name, href: `/players/${topAppearances.slug}.html` },
     topApps && { value: topApps.starts, label: 'Most starts', who: topApps.name, href: `/players/${topApps.slug}.html` },
     topMotm && { value: topMotm.motm, label: 'Most Player of the Match awards', who: topMotm.name, href: `/players/${topMotm.slug}.html` },
     first && { value: first.ourScoreline, label: 'First competitive result', who: `v ${first.opponent}, ${fmtDate(first.date)}`, href: `/matches/${first.slug}.html` },
@@ -1164,6 +1172,10 @@ const MILESTONE_STEPS = [
      the rule that fixed that still holds - the key and the label name the
      same figure - and the figure the club counts towards is now the start. */
   { key: 'starts', label: 'starts', step: 25 },
+  /* AND APPEARANCES, which is a different figure for anybody who has come off
+     the bench. `milestones()` drops it where the two are equal, because then
+     it is the same afternoon said twice. */
+  { key: 'apps', label: 'appearances', step: 25 },
   { key: 'goals', label: 'goals', step: 25 },
   { key: 'assists', label: 'assists', step: 10 },
   { key: 'cleanSheets', label: 'clean sheets', step: 10 },
@@ -1190,6 +1202,15 @@ export function milestones(players, within = 3) {
   const out = [];
   for (const p of (players || []).filter((x) => isPlaying(x && x.status))) {
     for (const m of MILESTONE_STEPS) {
+      /* AN APPEARANCE MILESTONE REACHED IN THE SAME MATCH AS A START
+         MILESTONE IS ONE EVENT SAID TWICE. Most of the squad has never been
+         an unused substitute, so the two figures are equal and the band
+         would print "2 from 25 starts" directly above "2 from 25
+         appearances". It is worth saying only where they differ: Jon Lloyd
+         is three from 25 appearances and five from 25 starts, and those are
+         two different Sundays. Same rule the player pages already keep for
+         the leader chips. */
+      if (m.key === 'apps' && (Number(p.apps) || 0) === (Number(p.starts) || 0)) continue;
       const v = Number(p[m.key]) || 0;
       /* Nobody is "approaching" their first. A milestone is a number somebody
          has been building towards, so the first step only counts once they are

@@ -79,6 +79,22 @@ export function records(d) {
   const VIEWS = seasonViews(d);
   const DEFAULT = defaultView(VIEWS);
 
+/* HOW MUCH ONE MATCH ROW ADDS TO A RUNNING TOTAL, in one place.
+
+   `starts` and `apps` are facts about the ROLE rather than a number sitting
+   on the row - a start is a start, and an appearance is a start or a
+   substitute who came on, never an unused bench place - so neither can be
+   read with `r[key]` the way goals and assists are. Two loops on this page
+   count the same totals (the milestones reached, and who reached N first)
+   and each carried its own copy of the starts rule. A second copy of a
+   counting rule is how two figures on one page come to disagree, and adding
+   appearances would have made a third. */
+const stepOf = (key, r) => {
+  if (key === 'starts') return r.role === 'start' ? 1 : 0;
+  if (key === 'apps') return r.role === 'start' || r.role === 'sub' ? 1 : 0;
+  return Number(r[key]) || 0;
+};
+
   /* MILESTONES REACHED, worked out once over every competitive match.
      Each time a player's running total crosses a step - every 25 starts,
      every 25 goals, every 10 assists, the same steps the home page counts
@@ -87,7 +103,8 @@ export function records(d) {
      all-seasons tab shows every one. Clean sheets are not in it: the record
      credits a clean sheet to a player for the season, not to a match, so the
      day one was reached cannot be named. */
-  const STEPS = [['starts', 25, 'starts'], ['goals', 25, 'goals'], ['assists', 10, 'assists']];
+  const STEPS = [['apps', 25, 'appearances'], ['starts', 25, 'starts'],
+    ['goals', 25, 'goals'], ['assists', 10, 'assists']];
   const compById = new Map((d.competitive || []).map((m) => [m.id, m]));
   const reached = [];
   for (const p of (d.players || []).filter((x) => x && x.slug && !x.trialist && !x.unknown)) {
@@ -97,7 +114,7 @@ export function records(d) {
       let run = 0;
       for (const { r, m } of rows) {
         const before = run;
-        run += key === 'starts' ? (r.role === 'start' ? 1 : 0) : (Number(r[key]) || 0);
+        run += stepOf(key, r);
         for (let t = (Math.floor(before / step) + 1) * step; t <= run; t += step) {
           reached.push({ p, value: t, unit, m });
         }
@@ -257,7 +274,7 @@ export function records(d) {
       .sort((a, b) => (a.m.iso || '').localeCompare(b.m.iso || ''));
     let run = 0;
     for (const r of order) {
-      run += key === 'starts' ? (r.role === 'start' ? 1 : 0) : (r[key] || 0);
+      run += stepOf(key, r);
       if (run >= target) return r.m;
     }
     return null;
@@ -288,6 +305,7 @@ export function records(d) {
   const newestFirst = (a, b) => String(b.iso || '').localeCompare(String(a.iso || ''));
 
   const cards = [
+    playerCard('apps', '', 'Most appearances'),
     playerCard('starts', '', 'Most starts'),
     playerCard('goals', '', 'Most goals'),
     playerCard('assists', '', 'Most assists'),
@@ -330,6 +348,7 @@ export function records(d) {
 
   const milestones = [
     milestone('goals', 25, 'First to 25 goals'),
+    milestone('apps', 25, 'First to 25 appearances'),
     milestone('starts', 25, 'First to 25 starts'),
     milestone('goals', 10, 'First to 10 goals'),
     milestone('assists', 10, 'First to 10 assists'),

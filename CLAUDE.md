@@ -1840,6 +1840,34 @@ Adding one takes effect only on the NEXT deployment: `vercel redeploy <latest-pr
 - **A page that rests on an external source names it.** `SOURCES` in `club.mjs` holds the three the site actually draws on: **FA Full-Time** (the table, the division's ninety results and the scoring chart are transcribed from it), **Surrey FA** (the county cup the club plays in - provable from four ties in the archive, which is why it is not London FA) and **the UK Sepsis Trust / NHS**. `sourceNote()` in `blocks.mjs` renders it once so fourteen pages cannot word it fourteen ways. An AEO audit scored the site 0/7 on outbound citations; the rule is not "two links per page" and six pages still carry none **on purpose** - 404 and the Google token have no content, and news, videos, live and the gallery are the club's own work. The suite names those six, so adding to the list is a decision rather than a way to silence a check.
 - **Structured data describes the page it is on.** The home page shipped `FAQPage` markup naming five questions whatever the club had chosen, and the club has Ask the Angels switched off - so it told a search engine it carried content it did not. `faqSchema` follows the band now, and the suite fails any page whose FAQ markup has no visible questions behind it.
 - **A claim about the FUTURE is only made about somebody still at the club.** `milestones()` is the one band that says what is about to happen, and it said it about everybody: William Clark retired in June 2026 and the front page had him two assists from ten. It filters on `isPlaying()` now - retired, left and moved into coaching are out; injured and unavailable this season stay, because a man out for the season is coming back. **The past tense is untouched and that is the point**: every appearance, goal, leaderboard place, club record and Those who came before entry stands exactly as it did. What stops is the club saying they are about to add to it. The filter is inside `milestones()` rather than at the call site because the band and the test that decides whether to draw it both call it, and a band that empties itself on a different question from the one it renders is how a heading ends up over an empty list.
+- **Appearances are a record too, since 19 October 2026.** The record book
+  counted starts alone, which answers the narrower question and hides every
+  bench outing the club has recorded: an appearance is a start **or** a
+  substitute the record can prove came on, and **21 players have more
+  appearances than starts** (William Clark 11 from 2 starts; Liam Kirby has 4
+  and has never started). `/records.html` carries **Most appearances** beside
+  Most starts and **First to 25 appearances** beside First to 25 starts, and
+  `milestones()` counts towards both. The top five under the two cards are
+  already in a different order, which is why they are two records rather than
+  one said twice.
+  - **The same afternoon is never announced twice.** Most of the squad has
+    never been an unused substitute, so apps and starts are equal for them
+    and the band would print "2 from 25 starts" directly above "2 from 25
+    appearances". `milestones()` drops the appearance step where the two
+    figures are equal, so Jim El Bayati (23 and 23) is told once and Jon
+    Lloyd (22 and 20) gets both, three Sundays apart.
+  - **`stepOf()` in `records.mjs` is the one definition** of what a match row
+    adds to a running total. `starts` and `apps` are facts about the ROLE and
+    cannot be read with `r[key]` like goals and assists, and TWO loops on
+    that page count these totals - the milestones reached, and who reached N
+    first - each carrying its own copy of the starts rule. Adding appearances
+    would have made a third copy of a counting rule, which is how two figures
+    on one page come to disagree.
+  - **The check that matters is not the heading.** A page counting only
+    starts under the word "appearances" carries every heading, so the suite
+    compares the DATES the two milestones were reached on and fails if they
+    are the same set: counting a substitute as nothing moves one from 24 May
+    to 31 May 2026.
 - **The milestone step and its label name the same figure, and that figure is now starts.** It once counted starts under the label "appearances", which were the same number until a substitute the record can prove was on the pitch started counting, and the band told the front page that Charlie Dunkley was one appearance from 25 when he had already played 25. It read `apps` after that; since September 2026 the club counts milestones in starts, so the key is `starts` and the label says starts.
 - **No em dashes** in copy.
 - **Writing about the cause.** The club exists because Susan Anne Martin died of sepsis, and that asks for care the style rules above do not cover. Say **she died of sepsis**, never "lost her battle" or "fought": it was an illness, not a defeat. Warm and plain, not mournful and not inspirational. **Never point it at an outcome** - it does not appear in a sponsorship pitch, a recruitment line or as a reason to click, because a death is not a selling point. **Never medical advice**: link the UK Sepsis Trust and let them do that. And when a piece is about football, let it be about football; the cause has its own page and does not need a paragraph bolted onto a match report.

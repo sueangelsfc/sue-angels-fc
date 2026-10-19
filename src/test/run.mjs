@@ -7178,6 +7178,35 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
       && (withPdf.body.match(/\/players\/[a-z-]+\.html/g) || []).length === 0);
   check('an empty collection is not shown',
     /pr-arch-h/.test(prog({ ...dP, programmes: [] }).body) === false);
+
+  /* ---- AN AWAY PROGRAMME CANNOT WELCOME ANYBODY TO THE REEVES ------------
+     The welcome band opened "Welcome to The Reeves" and named the opponent as
+     the visitors whatever the fixture. Caught before it reached anybody: the
+     generator had only ever been asked for home matches, and the one away
+     document the club has is its own Matchday Standard, which gets it right.
+     The Juizo tie of 25 October 2026 is the first away programme this code
+     has drawn. The host welcomes and the visitor travels, and only the record
+     knows which this club is.
+
+     Crafted both ways, because the fixture the programme is for is whatever
+     the league has next: a check reading the real one is green on a home tie
+     with the rule deleted, and this is exactly the week that flips. */
+  const { welcomeBand: wb } = await import(path.join(ROOT, 'src', 'lib', 'programme-long.mjs'));
+  const fx = (home) => ({
+    opponent: 'Someone FC', competition: 'A Cup', kick: '10:30', season: dP.currentSeason,
+    weAreHome: home, venue: home ? 'The Reeves Sports Club' : 'Clapham Common',
+  });
+  const awayTxt = flatten(wb({ ...dP, competitive: dP.competitive }, fx(false)));
+  const homeTxt = flatten(wb({ ...dP, competitive: dP.competitive }, fx(true)));
+  check('an away programme names the ground it is played at, not the club\u2019s own',
+    /Clapham Common/.test(awayTxt) && !/Reeves/.test(awayTxt),
+    awayTxt.slice(0, 200));
+  check('and it calls the other side the hosts, never the visitors',
+    /are the hosts/.test(awayTxt) && !/are the visitors/.test(awayTxt),
+    awayTxt.slice(0, 200));
+  check('a home programme still welcomes people to The Reeves',
+    /Reeves/.test(homeTxt) && /are the visitors/.test(homeTxt),
+    homeTxt.slice(0, 160));
   /* A STORAGE KEY IS NEVER THE LABEL ON A ROW. The collection printed
      `f2627-pcup-r1-peps` where the opponent goes, under a blank date, because
      a cup tie is identified by its round rather than by a day and so shares

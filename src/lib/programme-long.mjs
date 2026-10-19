@@ -359,8 +359,21 @@ export function welcomeBand(d, m) {
     p.push('Opening day is the one morning of the season when every club in the division is '
       + 'level. The table is empty. Nobody has a run to protect and nobody has a deficit to '
       + 'chase. Whatever anybody did last year, at eleven o’clock it is nought each.');
+  } else if (m && !m.weAreHome) {
+    /* AN AWAY PROGRAMME CANNOT WELCOME ANYBODY TO THE REEVES. This band read
+       "Welcome to The Reeves" and "<opponent> are the visitors" whatever the
+       fixture. It never reached a reader: every programme this generator has
+       drawn was a home match, and the one away document the club has - the
+       cup tie at Peps All Stars - is the club's own Matchday Standard, which
+       says "away to Peps All Stars" and names Dulwich Park correctly. The
+       Juizo tie of 25 October 2026 is the first away programme the GENERATOR
+       has been asked for, and it is where this would have shipped. The host
+       welcomes; the visitor travels. */
+    p.push(`${esc(CLUB.short)} are away this morning, at ${esc(m.venue || 'the home side\u2019s ground')}, `
+      + `and this one is ${esc(m.competition)}.`);
+    p.push(`${esc(m.opponent)} are the hosts and kick-off is ${esc(m.kick || 'this morning')}.`);
   } else {
-    p.push(`Welcome to The Reeves, and welcome to ${esc(m ? m.competition : 'a new season')}.`);
+    p.push(`Welcome to ${esc(CLUB.venue.shortName)}, and welcome to ${esc(m ? m.competition : 'a new season')}.`);
     if (m) {
       p.push(`${esc(m.opponent)} are the visitors and kick-off is ${esc(m.kick || 'this morning')}.`);
     }
@@ -384,9 +397,11 @@ export function welcomeBand(d, m) {
     + 'remembered, which is why there are no round numbers in it, and why, where something '
     + 'has not been written down, this programme says so instead of filling the gap.');
   p.push('Enjoy the match.');
-  return sec('pg-welcome', 1, opener ? 'Opening day' : 'Welcome',
+  const away = !!(m && !m.weAreHome && !opener);
+  return sec('pg-welcome', 1, opener ? 'Opening day' : (away ? 'Away from home' : 'Welcome'),
     opener ? 'Opening day<span class="volt">.</span>'
-      : 'Welcome to The Reeves<span class="volt">.</span>',
+      : (away ? 'On the road<span class="volt">.</span>'
+        : `Welcome to ${esc(CLUB.venue.shortName)}<span class="volt">.</span>`),
     paras(p));
 }
 

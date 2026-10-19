@@ -11395,17 +11395,30 @@
   ],
   "fixtures": [
     {
-      "key": "f20261018-mousa",
+      "key": "f20261025-juizo-mlip",
       "data": {
-        "away": "Mousa Mountain FC",
-        "date": "18 Oct 2026",
+        "away": "Sue's Angels FC",
+        "date": "25 Oct 2026",
+        "home": "Juizo FC",
+        "kick": "10:30",
+        "kind": "fixture",
+        "venue": "Clapham Common, Pitch 6",
+        "competition": "Supreme Trophies Marcus Lipton Cup"
+      },
+      "updated_at": "2026-10-19T22:39:05.124+00:00"
+    },
+    {
+      "key": "f2627-pcup-r2-swans",
+      "data": {
+        "away": "Celtic Swans FC",
+        "date": "",
         "home": "Sue's Angels FC",
-        "kick": "11:00",
+        "kick": "",
         "kind": "fixture",
         "venue": "The Reeves Sports Club",
-        "competition": "League Eight"
+        "competition": "Brian Howard President's Cup"
       },
-      "updated_at": "2026-10-11T15:22:27.842+00:00"
+      "updated_at": "2026-10-19T22:39:05.176+00:00"
     }
   ],
   "team_badges": []

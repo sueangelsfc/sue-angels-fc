@@ -249,6 +249,18 @@ export function buildDataset(overrides = {}) {
   storedFixtures.forEach((f) => {
     if (!String(f.date || '').trim()) undatedStored.set(clubsOf(f), f);
   });
+  const storedById = new Map(storedFixtures.map((f) => [f.id, f]));
+  /* WHAT "FILLS THE BLANKS" ACTUALLY MEANS, in one place, because there are
+     two ways a transcribed row can turn out to be the same fixture as a
+     stored one and both have to do it. `tbc` is handled apart from the rest
+     because it is a BOOLEAN: `false` is not a blank string, so the loop
+     below would never carry it. */
+  const fill = (held, f) => {
+    ['date', 'kick', 'venue', 'competition'].forEach((k) => {
+      if (!String(held[k] || '').trim() && String(f[k] || '').trim()) held[k] = f[k];
+    });
+    if (f.tbc === true && held.tbc !== true) held.tbc = true;
+  };
   /* Every fixture known to the club, played or not. `upcoming` below is the
      subset still to come; this one is the raw pool the match list is built
      from, so it deliberately keeps dates that have already passed. */
@@ -259,14 +271,24 @@ export function buildDataset(overrides = {}) {
        which is what this list checks against, so the transcribed card put it
        straight back and the duplicate survived a fix aimed at it. */
     ...(transcribedFixtures.fixtures || [])
-      .filter((f) => !known.has(f.id) && !storedIds.has(f.id) && !knownMatches.has(identity(f)))
+      .filter((f) => !known.has(f.id) && !knownMatches.has(identity(f)))
       .filter((f) => !cancelled.has(identity(f)))
       .filter((f) => {
+        /* THE SAME ID IS ALSO THE SAME FIXTURE, and dropping the
+           transcription on that test alone filled nothing. The club entered
+           the Celtic Swans tie itself on 19 October 2026 under the very id
+           this file had transcribed it with, undated because the league has
+           not set a date - and the panel's fixture form has no field for
+           saying a date is still to come. So the stored row arrived with no
+           date and nothing marking it, which is precisely the shape the "a
+           date went missing" check exists to catch: a real fixture failing
+           the build as though it were an accident. Blank-filling only ever
+           ran where the ids DIFFERED and the clubs matched. */
+        const same = storedById.get(f.id);
+        if (same) { fill(same, f); return false; }
         const held = undatedStored.get(clubsOf(f));
         if (!held) return true;
-        ['date', 'kick', 'venue', 'competition'].forEach((k) => {
-          if (!String(held[k] || '').trim() && String(f[k] || '').trim()) held[k] = f[k];
-        });
+        fill(held, f);
         return false;
       })
       .map((f) => ({ kind: 'fixture', competition: 'Pre-season friendly', ...f })),

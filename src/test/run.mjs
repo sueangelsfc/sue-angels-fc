@@ -1348,6 +1348,48 @@ for (const f of shipped) {
         && /11 Oct 2096|2096-10-11/.test(String(peps[0].date || peps[0].iso || '')),
       peps.length === 1 ? `${peps[0].id} | ${peps[0].date || peps[0].iso}` : 'no single row');
 
+    /* THE SAME ID IS THE SAME FIXTURE TOO, and that path filled nothing.
+       Blank-filling only ran where the ids DIFFERED and the clubs matched;
+       a transcribed row whose id the club later typed in itself was dropped
+       on the id test before it could supply anything. On 19 October 2026 the
+       club entered the Celtic Swans tie under the id this repository had
+       already transcribed it with, undated because the league has not set a
+       date - and `tbc` is a BOOLEAN, so even the clubs-match path would have
+       left it behind, since `false` is not a blank string. The row arrived
+       with no date and nothing saying the date was still to come, which is
+       the exact shape of a date going missing by accident, and a real
+       fixture failed the build.
+
+       Dated in 2096 for the reason the pair above is: a merge rule tested
+       against the next match in the calendar stops testing anything the week
+       that match is played. */
+    const sameId = bdD({
+      live: {
+        ...liveD,
+        fixtures: [{
+          key: 'f-crafted-sameid',
+          data: {
+            kind: 'fixture', home: "Sue's Angels FC", away: 'Celtic Swans FC',
+            date: '', kick: '', venue: 'The Reeves Sports Club',
+            competition: "Brian Howard President's Cup",
+          },
+        }],
+      },
+      fixtures: {
+        fixtures: [{
+          id: 'f-crafted-sameid', date: '', tbc: true,
+          home: "Sue's Angels FC", away: 'Celtic Swans FC',
+          competition: "Brian Howard President's Cup",
+        }],
+      },
+    });
+    const swans = (sameId.upcoming || []).filter((f) => /celtic swans/i.test(String(f.away) + f.home));
+    check('a transcription whose id the club has since typed in is still one fixture',
+      swans.length === 1, `${swans.length} rows`);
+    check('and it hands over "to be confirmed", which a string test would drop',
+      swans.length === 1 && swans[0].tbc === true,
+      swans.length === 1 ? `tbc=${swans[0].tbc}` : 'no single row');
+
     /* A FIXTURE THAT IS NOT GOING TO BE PLAYED (fixture-cancellations.json).
        The `fixtures` table cannot be written from a developer machine, so a
        match called off the day before would stay on the front page, in the

@@ -1,14 +1,6 @@
 {
   "_why": "A fixture that is not going to be played, named so the build can take it out. The `fixtures` table cannot be written from a developer machine - an anonymous write is refused with 42501, which is the posture working as designed - so a match called off on the Saturday would otherwise sit on the front page, in the countdown and on the programme until somebody is at a laptop with an admin session. Same device as match-corrections.json and fixtures-2627.json.",
   "_retires": "IT IS SAFE BECAUSE IT CANNOT DRIFT. A cancellation is matched on the fixture's own identity - the day and the two clubs, the same test dataset.mjs already uses to tell a fixture from its result - so it removes exactly that fixture and nothing else. The moment the club deletes the fixture in Control panel -> Fixtures it matches nothing and does nothing, so forgetting to delete it costs nothing. It can never cancel a match that has been played either: a result wins over a fixture before this is reached.",
-  "cancelled": [
-    {
-      "date": "18 Oct 2026",
-      "home": "Sue's Angels FC",
-      "away": "Mousa Mountain FC",
-      "competition": "League Eight",
-      "on": "2026-10-17",
-      "reason": "Mousa Mountain FC folded. The league told us on the evening of Saturday 17 October 2026, the day before the match, and confirmed on 18 October that the club is out of League Eight. No points were awarded. This entry is still what takes the fixture out of the build, because the row is in the database and cannot be deleted from here."
-    }
-  ]
+  "cancelled": [],
+  "_retired": "IT RETIRED ITSELF, AND THAT WAS CHECKED RATHER THAN ASSUMED. The one entry this file has ever held cancelled 18 Oct 2026, Sue's Angels FC v Mousa Mountain FC, after the club folded. While the stored fixture row existed, emptying this file changed 19 shipped pages. The club deleted that row in Control panel -> Fixtures on 19 October 2026, and emptying the file then changed NOTHING - index, fixtures, programme, league and news all byte for byte identical - which is the proof that the entry had stopped doing anything and was safe to take out. The mechanism stays for the next one; an empty list is it at rest. The club is still named under the League Eight table, which is `removed` in league-eight-2627.json and a different thing: that is a fact about the division, not about one match."
 }

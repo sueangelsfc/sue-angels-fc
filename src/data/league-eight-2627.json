@@ -589,7 +589,32 @@
       "apps": 1
     }
   ],
-  "fixtures": [],
+  "fixtures": [
+    {
+      "iso": "2026-11-01",
+      "date": "01 Nov 26",
+      "kick": "10:30",
+      "home": "Barnes Stormers FC",
+      "away": "Junction Elite FC Sunday 3rd Team",
+      "venue": "Barn Elms Sports Centre"
+    },
+    {
+      "iso": "2026-11-01",
+      "date": "01 Nov 26",
+      "kick": "10:30",
+      "home": "Three Little Birds FC",
+      "away": "Brockwell Violets FC",
+      "venue": "Dundonald Recreation Ground, Pitch 2"
+    },
+    {
+      "iso": "2026-11-01",
+      "date": "01 Nov 26",
+      "kick": "11:00",
+      "home": "Sue's Angels FC",
+      "away": "TSM Rovers",
+      "venue": "The Reeves Sports Club"
+    }
+  ],
   "_clubAssists": {
     "_note": "Sue's Angels assist figures the club's own match records hold where Full-Time's stat leaders page prints fewer. The club has asked the league to match them. Reapply these AFTER transcribing the page, every time, or a re-read silently reverts them.",
     "Charlie Dunkley": 3,

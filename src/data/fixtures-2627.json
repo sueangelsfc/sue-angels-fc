@@ -110,6 +110,15 @@
       "away": "Celtic Swans FC",
       "venue": "The Reeves Sports Club",
       "competition": "Brian Howard President's Cup"
+    },
+    {
+      "id": "f20261101-tsm",
+      "date": "01 Nov 2026",
+      "kick": "11:00",
+      "home": "Sue's Angels FC",
+      "away": "TSM Rovers",
+      "venue": "The Reeves Sports Club",
+      "competition": "League Eight"
     }
   ],
   "_tbc": "A fixture with `tbc: true` is one the league has CONFIRMED but not yet dated. The flag is required rather than inferred from an empty date, because a fixture whose date went missing by accident and one the league has not set yet look identical in the data and are completely different things. The suite holds every undated fixture to carrying it."

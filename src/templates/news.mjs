@@ -207,11 +207,17 @@ function waveform(src) {
      the gaps between them into a solid orange block the moment the box is
      narrower than the viewBox - which the rail always is. The shape keeps its
      own proportions and the height follows the width. */
-  return `<svg class="aud__wave" viewBox="0 0 ${w} ${H}"`
+  /* THE TRACK WRAPS THE ENVELOPE so the playhead has something to be absolute
+     inside. The click that seeks is still bound to the svg itself, which
+     measures its own box, so this changes nothing the script relies on. */
+  return `<div class="aud__track">`
+    + `<svg class="aud__wave" viewBox="0 0 ${w} ${H}"`
     + ` aria-hidden="true" focusable="false">`
     + `<path class="aud__wv" d="${d}" stroke-width="${W}" stroke-linecap="round" />`
     + `<path class="aud__wv aud__wv--on" d="${d}" stroke-width="${W}" stroke-linecap="round" />`
-    + `</svg>`;
+    + `</svg>`
+    + `<span class="aud__head" aria-hidden="true"></span>`
+    + `</div>`;
 }
 
 /* `m:ss` as seconds, for `data-at`. */
@@ -271,9 +277,17 @@ function clip(b, nav = {}) {
      pressing play was the quietest thing in the panel. The numeral is the
      graphic; the words after it are what a screen reader gets, said properly,
      so the digits carry `aria-hidden` rather than being read as "four sixteen". */
+  /* THE LENGTH IS SAID ONCE ON SCREEN AND PROPERLY TO A SCREEN READER. It
+     used to be printed twice in the same line - "3:11" and then "3 minutes 11
+     seconds with the manager" - and since the cover plate above now carries
+     it in its corner too, a reader met the same number three times before
+     reaching the play button. The digits stay as the graphic, the spoken form
+     moves behind `.sr-only`, and what is left visible is the half that is
+     not a repetition. */
   const len = dur ? `<p class="aud__len">`
     + `<b class="aud__num" aria-hidden="true">${esc(dur[1])}</b>`
-    + `<span class="aud__said">${esc(said)} with the manager</span></p>` : '';
+    + `<span class="sr-only">${esc(said)}</span>`
+    + `<span class="aud__said">with the manager</span></p>` : '';
   /* WHAT IS IN IT, AND WHERE. Each chapter is a LINK to the written answer, so
      with no JavaScript at all it does the useful half of its job; `sa.js`
      upgrades the press to seek the audio instead. A control that needs a script
@@ -764,30 +778,6 @@ export const articlePhoto = (a) => {
   return c && !isDrawnCard(c) ? c : '';
 };
 
-/* THE DEFAULT COVER FOR AN INTERVIEW: the face of whoever is talking and how
-   long they talk for.
-
-   ONE DEFINITION, TWO PLACES. The article page had this and the news feed did
-   not, so the same piece was a portrait on its own page and a drawn headline
-   plate in the list that links to it - the one card a reader sees FIRST being
-   the one that says least about what the piece is. A reader should recognise
-   the thing they clicked.
-
-   `eager` is the only difference between the two: on the article's own page
-   this is the hero, and in a feed of a dozen cards it is not. */
-function ivCover(c, eager) {
-  return `<img class="nw-cover__img nw-cover__face" src="${attr(c.face)}" alt=""`
-    + ` width="1200" height="630"`
-    + (eager ? ' fetchpriority="high"' : ' loading="lazy"')
-    + ` decoding="async" />`
-    /* A SPAN, NOT A PARAGRAPH. The news card wraps its whole cover in an `<a>`,
-       and an anchor is phrasing content: a `<p>` inside one is invalid and the
-       browser closes the link early, so the rest of the card stops being part
-       of it. The same markup is used in two places, so it has to be legal in
-       the stricter of them. */
-    + `<span class="nw-cover__listen"><span>Listen</span>`
-    + (c.ts ? `<b>${esc(c.ts)}</b>` : '') + `</span>`;
-}
 
 /* ---- WHAT KIND OF PIECE IT IS, DERIVED ---------------------------------
 
@@ -943,17 +933,22 @@ export function newsArticle(a, d) {
     if (src) {
       return `<img class="nw-cover__img" src="${attr(src)}" alt="" width="1200" height="630" fetchpriority="high" decoding="async" />`;
     }
-    /* AN INTERVIEW'S COVER IS THE PERSON, NOT THE HEADLINE AGAIN. With no
-       photograph on the record the drawn plate renders, and its content is the
-       category, the headline and the date - printed directly under an `<h1>`
-       saying the identical words in the identical face. Two headlines, one
-       above the other, is what this page actually shipped.
+    /* AN INTERVIEW GETS THE PLATE, LIKE EVERY OTHER ARTICLE, AT THE CLUB'S
+       REQUEST.
 
-       Where the piece carries a recording there is something better to put
-       there and it is already on the record: the face of whoever is talking
-       and how long they talk for. The headline comes off it entirely, because
-       the h1 three lines above has already said it. */
-    if (ivc && ivc.face) return ivCover(ivc, true);
+       This branch used to put the speaker's face here instead, on the
+       argument that a plate under an `<h1>` prints the same headline twice in
+       the same typeface. That is true and it was not the whole picture: the
+       face is already in the player a few lines below, so the page carried
+       two photographs of the same man instead, and the plate is the one that
+       tells a reader at a glance what kind of piece this is and how long the
+       recording runs. The club looked at both and chose the plate.
+
+       `coverPlate` already carries the length in its corner for a piece with
+       a clip, so nothing is lost by coming back here: the eyebrow says
+       Interview, the corner says 3:11, and the face keeps its place beside
+       the player where it belongs. One branch, so all three interviews move
+       together. */
     return coverPlate(a, true);
   })()}</div>
       </div>

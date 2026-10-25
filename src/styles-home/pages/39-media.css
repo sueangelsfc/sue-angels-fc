@@ -267,6 +267,10 @@ html.js .nw-card[hidden]{display: none;}
    is that face. The eyes sit high in the frame, so the crop is pinned there
    rather than centred. */
 .aud__face{width: 100%; height: clamp(230px, 46vw, 330px); object-fit: cover;
+  /* A PORTRAIT IS NOT CENTRED ON ITS MIDDLE. `cover` crops from the centre,
+     which on a standing figure takes the chest and loses the top of the head;
+     these are photographs of somebody talking, so the face is the content. */
+  object-position: 50% 24%;
   object-position: 50% 16%; display: block;
   border-bottom: 1px solid rgba(var(--volt-rgb), 0.22);}
 
@@ -308,6 +312,25 @@ html.js .nw-card[hidden]{display: none;}
 .aud__wv{fill: none; stroke: rgba(var(--volt-rgb), 0.32);}
 .aud__wv--on{stroke: var(--volt);
   clip-path: inset(0 calc(100% - var(--p, 0%)) 0 0);}
+/* WHERE YOU ARE, NOT ONLY HOW FAR YOU HAVE GOT. The played part of the
+   envelope was lit and nothing marked the edge of it, so on a quiet passage -
+   which is most of the start of an interview - the boundary between played
+   and unplayed is two faint strokes and a reader cannot see the position at
+   all. The script already writes `--p` on the figure for the fill, so the
+   head costs nothing but a rule. Hidden until there is a script, because
+   without one `--p` never moves and a playhead frozen at nought is furniture
+   pretending to be a control. */
+.aud__head{display: none;}
+html.js .aud__head{display: block; position: absolute; top: 0; bottom: 0;
+  left: var(--p, 0%); width: 2px; margin-left: -1px; border-radius: 2px;
+  background: var(--volt); box-shadow: 0 0 0 3px rgba(var(--volt-rgb), 0.18);
+  pointer-events: none;}
+.aud__track{position: relative;}
+/* IT HAS TO LOOK PRESSABLE. Clicking the envelope has seeked since it was
+   written and nothing said so: the cursor changed and that is all, which a
+   touch reader never sees. The unplayed stroke lifts on hover and on focus,
+   so the whole strip reads as one control. */
+html.js .aud__track:hover .aud__wv{stroke: rgba(var(--volt-rgb), 0.5);}
 
 /* An <audio> has an intrinsic width that ignores its container, so the width
    has to be stated. The height gives the control bar room to read as part of

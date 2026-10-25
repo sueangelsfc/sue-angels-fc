@@ -1927,8 +1927,15 @@ for (const [f, h] of pages) {
   }
 
   const routes = cr(cupsD, US);
+  /* ASKED OF `bracket`, NOT `rounds`. The draw is a fact about the league
+     and does not change when this club goes out; `rounds` is how far the
+     club can still go and is one round long in a cup it has lost. Every
+     check below about the SHAPE OF THE DRAW reads the bracket, so an exit
+     cannot quietly retire it - which is what happened the day the Lipton
+     route was truncated and four of these went green-by-emptiness or red
+     for the wrong reason. */
   check('both cups produce a route for the club', routes.length === 2
-    && routes.every((r) => r.rounds.length >= 5), routes.map((r) => `${r.short}:${r.rounds.length}`).join(' '));
+    && routes.every((r) => r.bracket.length >= 5), routes.map((r) => `${r.short}:${r.bracket.length}`).join(' '));
 
   /* HOME AND AWAY, AGAINST THE DRAW ITSELF. Asserted tie by tie rather than
      as a list of booleans: the test re-reads the printed tie and checks the
@@ -1936,7 +1943,7 @@ for (const [f, h] of pages) {
   for (const cup of routes) {
     const src = cupsD.cups.find((c) => c.id === cup.id);
     const byNum = new Map(src.ties.map((t) => [t.n, t]));
-    const wrong = cup.rounds.filter((r) => {
+    const wrong = cup.bracket.filter((r) => {
       const t = byNum.get(r.tie);
       const side = r.home ? t.home : t.away;
       const other = r.home ? t.away : t.home;
@@ -1957,18 +1964,22 @@ for (const [f, h] of pages) {
   check('the league names which rounds are neutral rather than the code guessing',
     (cupsD.neutralRounds || []).length > 0, JSON.stringify(cupsD.neutralRounds));
   for (const cup of routes) {
-    const last = cup.rounds[cup.rounds.length - 1];
+    const last = cup.bracket[cup.bracket.length - 1];
     check(`${cup.short}: the final is neutral, not a home or away tie`,
       last.round === 'Final' && last.neutral === true, `${last.round} neutral=${last.neutral}`);
     check(`${cup.short}: every round before it still says which side we are on`,
-      cup.rounds.slice(0, -1).every((r) => r.neutral === false),
-      cup.rounds.map((r) => `${r.round}:${r.neutral}`).join(' '));
+      cup.bracket.slice(0, -1).every((r) => r.neutral === false),
+      cup.bracket.map((r) => `${r.round}:${r.neutral}`).join(' '));
   }
   if (pages.get('fixtures.html')) {
     const hC = pages.get('fixtures.html');
     const pills = [...hC.matchAll(/cup-ha[^"]*">([A-Za-z]+)</g)].map((m) => m[1]);
+    /* ONE Neutral PILL PER CUP THE CLUB IS STILL IN. A cup it has gone out
+       of draws no final, so counting one per cup went red the moment a route
+       was truncated - and silently counting them all would be worse. */
+    const alive = routes.filter((r) => !r.knockedOut);
     check('the fixtures page captions a final Neutral and never Home or Away',
-      pills.filter((p) => p === 'Neutral').length === routes.length
+      pills.filter((p) => p === 'Neutral').length === alive.length
         && pills.length === routes.reduce((n, r) => n + r.rounds.length, 0),
       pills.join(' '));
   }
@@ -1988,13 +1999,13 @@ for (const [f, h] of pages) {
       && lip.rounds[0].opponents[0].where === 'higher',
     JSON.stringify(lip.rounds[0].opponents));
   check('the Lipton draw has the club at home from the third round to the semi-final',
-    lip.rounds.slice(2, -1).every((r) => r.home),
-    lip.rounds.map((r) => (r.home ? 'H' : 'A')).join(''));
+    lip.bracket.slice(2, -1).length >= 3 && lip.bracket.slice(2, -1).every((r) => r.home),
+    lip.bracket.map((r) => (r.home ? 'H' : 'A')).join(''));
 
   /* THE POSSIBLE OPPONENTS GROW, and the last round before the final must
      cover a real slice of the draw rather than one branch. */
   for (const cup of routes) {
-    const counts = cup.rounds.map((r) => r.opponents.length);
+    const counts = cup.bracket.map((r) => r.opponents.length);
     /* NOT STRICTLY, BECAUSE A BYE IS A ROUND WITH ONE KNOWN OPPONENT. Celtic
        Swans were byed into the President's Cup second round, so rounds one
        and two both have exactly one: the field never narrows, and the round
@@ -2003,9 +2014,9 @@ for (const [f, h] of pages) {
       counts.every((n, i) => i === 0 || n >= counts[i - 1])
         && counts[counts.length - 1] >= 8, counts.join(' -> '));
     check(`${cup.short}: nobody is listed as a possible opponent twice`,
-      cup.rounds.every((r) => new Set(r.opponents.map((o) => o.name)).size === r.opponents.length));
+      cup.bracket.every((r) => new Set(r.opponents.map((o) => o.name)).size === r.opponents.length));
     check(`${cup.short}: the club never lists itself as its own opponent`,
-      cup.rounds.every((r) => !r.opponents.some((o) => o.name === US)));
+      cup.bracket.every((r) => !r.opponents.some((o) => o.name === US)));
   }
 
   /* ---- A CLUB THAT IS OUT STOPS BEING A CLUB WE COULD MEET ----
@@ -2039,6 +2050,62 @@ for (const [f, h] of pages) {
     el(toy([{ n: 2, hs: 0, as: 3 }])).size === 0,
     [...el(toy([{ n: 2, hs: 0, as: 3 }]))].join());
 
+  /* ---- A SHOOTOUT SETTLES A TIE, AND A DRAW WITH NO SHOOTOUT SETTLES
+     NOTHING ----
+     The league prints the shootout beside a level scoreline and this file
+     could not read one, so a 0-0 left both clubs in. On 25 October 2026 that
+     stopped being an abstraction: Juizo FC 0-0 Sue's Angels FC, 4-3 on
+     penalties, and the club was out of the Marcus Lipton Cup while the route
+     still ran to the final. Crafted, because the probe that matters is the
+     GUARD - a level tie nobody has settled must still knock nobody out. */
+  check('a shootout knocks out the side that lost it, either way round',
+    [...el(toy([{ n: 1, hs: 1, as: 1, pens: '4-3' }]))].join() === 'Beta FC'
+      && [...el(toy([{ n: 1, hs: 0, as: 0, pens: '3-4' }]))].join() === 'Alpha FC');
+  check('and a level tie with no shootout on record still knocks out nobody',
+    el(toy([{ n: 1, hs: 1, as: 1 }])).size === 0
+      && el(toy([{ n: 1, hs: 1, as: 1, pens: '' }])).size === 0
+      && el(toy([{ n: 1, hs: 2, as: 2, pens: '3-3' }])).size === 0);
+
+  /* ---- A ROUTE STOPS WHERE THE CLUB DOES ----
+     The bracket runs to the final whatever happens, so with nothing reading
+     the results the band went on printing a quarter-final, a semi and a
+     final of a cup the club was already out of, under a heading that reads
+     "How far it could go". Crafted both ways, because a rule that truncates
+     on any played tie would pass a check that only ever loses: the round the
+     club WON must not end the route, and the side we were on is what decides
+     which of the two it was. */
+  const toyData = (results) => ({ divisions: ['League Eight'], divisionOf: {}, cups: [{ ...toy(results), id: 'toy', name: 'Toy Cup', short: 'Toy' }] });
+  const ride = (club, results) => cr(toyData(results), club)[0];
+  check('a club that lost its tie gets no rounds past it, and is told it is out',
+    ride('Alpha FC', [{ n: 1, hs: 0, as: 2 }]).rounds.length === 1
+      && ride('Alpha FC', [{ n: 1, hs: 0, as: 2 }]).knockedOut.round === '1st Round',
+    JSON.stringify(ride('Alpha FC', [{ n: 1, hs: 0, as: 2 }]).rounds.map((r) => r.round)));
+  check('a club that WON its tie keeps every round ahead of it',
+    ride('Alpha FC', [{ n: 1, hs: 2, as: 0 }]).rounds.length === 2
+      && ride('Alpha FC', [{ n: 1, hs: 2, as: 0 }]).knockedOut === null
+      && ride('Alpha FC', []).rounds.length === 2);
+  /* THE SAME RESULT, THE OTHER SIDE OF IT. 2-0 to the home side ends the away
+     club's route and not the home club's, so a rule that read the scoreline
+     without reading which side we were on would pass the check above and
+     knock the winner out here. */
+  check('and which side of the tie the club was on is what decides it',
+    ride('Beta FC', [{ n: 1, hs: 2, as: 0 }]).rounds.length === 1
+      && ride('Beta FC', [{ n: 1, hs: 0, as: 2 }]).rounds.length === 2
+      && ride('Alpha FC', [{ n: 1, hs: 2, as: 0 }]).rounds.length === 2
+      && ride('Alpha FC', [{ n: 1, hs: 0, as: 2 }]).rounds.length === 1);
+  /* The shootout is printed as the club reads it, ours first, whichever side
+     of the draw we were on - the same rule the scoreline beside it follows. */
+  /* NULL-SAFE, BECAUSE A PROBE MUST TURN A CHECK RED AND NOT THROW. Breaking
+     the shootout rule on purpose made `knockedOut` null here, and reading
+     through it crashed the runner two thirds of the way down the file - which
+     is gotcha 10 wearing a different hat: the report never printed, so the
+     four checks that HAD gone red were thrown away with it. */
+  const pensOf = (club, pens) => (ride(club, [{ n: 1, hs: 1, as: 1, pens }]).knockedOut || {}).pens || {};
+  check('a shootout ends a route, printed ours first on either side of the draw',
+    pensOf('Alpha FC', '3-5').us === 3 && pensOf('Alpha FC', '3-5').them === 5
+      && pensOf('Beta FC', '5-3').us === 3 && pensOf('Beta FC', '5-3').them === 5
+      && pensOf('Alpha FC', '3-5').won === false);
+
   /* And over the real draws: a result must name a tie, both its sides must be
      clubs rather than branches (a branch cannot play), and nobody knocked out
      of a cup may appear anywhere in that cup's route. */
@@ -2057,7 +2124,7 @@ for (const [f, h] of pages) {
        Stars, whom we knocked out ourselves. It is the rounds still to come
        that must not list a club that has gone. */
     const played = new Set((cup.results || []).map((r) => Number(r.n)));
-    const ghosts = route.rounds.filter((r) => !played.has(r.tie))
+    const ghosts = route.bracket.filter((r) => !played.has(r.tie))
       .flatMap((r) => r.opponents.map((o) => o.name))
       .filter((n) => gone.has(n));
     check(`${cup.short}: nobody knocked out is still listed as a side we could meet`,
@@ -2105,6 +2172,25 @@ for (const [f, h] of pages) {
     check('and every round of both is on it',
       roundRows === routes.reduce((n, r) => n + r.rounds.length, 0),
       `${roundRows} rows`);
+    /* A CUP THE CLUB IS OUT OF SAYS SO, ON THE PAGE. Counted against the
+       routes rather than against a number, so it keeps testing when the club
+       goes out of the other one or a new season's draws arrive: the page
+       must carry exactly one out line per cup the derivation says we are out
+       of, naming that cup's round. A page printing the line everywhere would
+       fail it as surely as a page printing it nowhere. */
+    const outLines = (hF.match(/class="cup-block__out"/g) || []).length;
+    const outCups = routes.filter((r) => r.knockedOut);
+    check('a cup the club has gone out of says so above its bracket',
+      outLines === outCups.length
+        && outCups.every((r) => hF.includes(`Out in the ${r.knockedOut.round.toLowerCase()}`)),
+      `${outLines} line(s) for ${outCups.length} exit(s)`);
+    /* AND THE ROUNDS STOP THERE. The heading over this band is "How far it
+       could go", so a bracket running past the club's exit is a claim rather
+       than a stale list - which is what it was until 25 October 2026. */
+    const over = outCups.filter((r) => r.rounds[r.rounds.length - 1].round !== r.knockedOut.round);
+    check('and its bracket ends at the round the club went out in',
+      over.length === 0, over.map((r) => r.short).join(', ')
+        || `${outCups.length} exit(s), ${routes.length - outCups.length} still alive`);
     /* `cup-chip` is a prefix of `cup-chips`, the list that holds them, so the
        loose match counted thirteen lists as opponents. */
     const chips = (hF.match(/class="cup-chip["s ]/g) || [])

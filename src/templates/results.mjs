@@ -485,7 +485,12 @@ function matchesPage(d, mode) {
     };
 
     const blocks = cupRoutes(cupData, CLUB.name).filter((c) => c.rounds.length).map((cup) => {
-      const rows = cup.rounds.map((r) => {
+      const rows = cup.rounds.map((r, i) => {
+        /* The round the club went out in is the last one listed, so it is the
+           only one that can be it. Said here rather than left to the stored
+           match, because a shootout is not in a match record: the Juizo tie
+           is a 0-0 and the record will always read as a draw. */
+        const gone = cup.knockedOut && i === cup.rounds.length - 1 ? cup.knockedOut : null;
         const many = r.opponents.length > 8;
         const chips = r.opponents.map((o) => `<li class="cup-chip${o.where === 'same' ? ' is-us' : ''}">
                 <b>${esc(o.name)}</b><i>${esc(o.division || 'Not in the eleven tables')}</i>
@@ -493,7 +498,10 @@ function matchesPage(d, mode) {
         const list = `<ul class="cup-chips">\n              ${chips}\n            </ul>`;
         const n = r.opponents.length;
         const tie = cupTie(cup.name, r);
-        const state = tie ? (tie.won ? ' is-won' : tie.lost ? ' is-lost' : ' is-drawn') : '';
+        const state = gone ? ' is-lost' : tie ? (tie.won ? ' is-won' : tie.lost ? ' is-lost' : ' is-drawn') : '';
+        const pens = gone && gone.pens
+          ? `<span class="cup-score is-pens"><b>${esc(`${gone.pens.us}-${gone.pens.them}`)}</b>
+                <i>Lost on penalties</i></span>` : '';
         return `<li class="cup-round${state}">
             <p class="cup-round__h">
               <span class="cup-round__r">${esc(r.round)}</span>
@@ -502,7 +510,7 @@ function matchesPage(d, mode) {
               ${tie ? `<a class="cup-score" href="${attr(tie.href)}">
                 <b>${esc(`${tie.us}-${tie.they}`)}</b>
                 <i>${esc(tie.won ? 'Won' : tie.lost ? 'Lost' : 'Drawn')}</i>
-              </a>` : ''}
+              </a>` : ''}${pens}
             </p>
             ${many
     ? `<details class="cup-more">
@@ -515,6 +523,9 @@ function matchesPage(d, mode) {
       }).join('\n          ');
       return `<div class="cup-block rv">
           <h3 class="cup-block__h">${esc(cup.name)}</h3>
+          ${cup.knockedOut ? `<p class="cup-block__out">Out in the ${esc(cup.knockedOut.round.toLowerCase())}${
+  cup.knockedOut.pens ? `, ${esc(`${cup.knockedOut.pens.us}-${cup.knockedOut.pens.them}`)} on penalties` : ''
+}. The rest of the bracket is somebody else's.</p>` : ''}
           <ol class="cup-rounds">
             ${rows}
           </ol>
@@ -529,7 +540,9 @@ function matchesPage(d, mode) {
           round, and every club that could still arrive in a round is listed with the division it plays
           in. A club that has been knocked out is taken off the list, so these are the sides still in
           the way and not the sides that were. A final is played at a neutral ground, so neither club
-          is at home in one. A draw is not a fixture: dates are above, and the club has to get there.</p>
+          is at home in one. A draw is not a fixture: dates are above, and the club has to get there.
+          A route stops at the round ${esc(CLUB.name)} went out in, because a cup the club is out of
+          has no next round for it.</p>
         ${blocks}
         <p class="mt-cups__note rv">Divisions as they stood on ${esc(fmtDate(cupData.divisionsAsOf))}.
           ${esc(CLUB.name)} play in League Eight, the eighth of ${esc((cupData.divisions || []).length)}.</p>

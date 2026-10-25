@@ -1500,6 +1500,46 @@ all by the time somebody needs it again. What IS asked of the real templates is
 that all three reach for the helper, because the mark being right in one page
 and missing from another is the failure that matters.
 
+### A cup route stops where the club does
+
+The bracket runs to the final whatever happens, and nothing read the results
+back against it, so `/fixtures.html#cups` went on printing a quarter-final, a
+semi and a final of a cup the club was already out of - under a heading that
+reads **How far it could go**, which turns a stale list into a claim.
+
+**It went live on 25 October 2026.** Juizo FC 0-0 Sue's Angels FC, lost 4-3 on
+penalties, and the Marcus Lipton Cup route still showed four rounds ahead.
+
+- **A SHOOTOUT SETTLES A TIE.** `eliminated()` read scorelines and walkovers
+  and treated every draw as settling nothing, on the reasoning that the
+  shootout is not in the scoreline. The league prints it - `(Pens 4-3)` - so
+  it is in `pens` on the result now, written home-away exactly as the
+  scoreline is. A drawn tie with **no** shootout on record still eliminates
+  nobody, which is the half the probe has to protect: a replay is coming, or
+  nobody has read the result yet, and from here those are the same thing.
+- **`winnerOf()` is the one definition** of who won a tie, and the exit and
+  the elimination both read it. Two rules for the same question is how a club
+  comes to be out of a cup in one band and in it in another.
+- **The exit is the club's OWN tie, read on the side it was on.** A rule that
+  truncated on any played tie would pass a check that only ever loses, so the
+  crafted probe asks the same 2-0 from both ends: it ends the away club's
+  route and not the home club's.
+- **`bracket` and `rounds` are both published.** The draw is a fact about the
+  league and stays true; how far this club can go is a claim about the club
+  and stopped being true at Juizo. Four checks about the shape of the DRAW
+  were reading `rounds` and either went red or went vacuous the moment one
+  was truncated - "at home from the third round to the semi-final" passed on
+  an empty slice. They read `bracket`, so an exit cannot quietly retire them.
+- **A probe must turn a check red, not throw.** Breaking the shootout rule
+  left `knockedOut` null, a check read through it, and the runner crashed two
+  thirds of the way down the file - so the report never printed and the four
+  checks that HAD gone red were thrown away with it. That is gotcha 10 in a
+  different hat, and it is why that check is null-safe.
+- **The shootout is the league's, never the match record's.** A stored match
+  carries no shootout - which is why the Kew Antigua tie of April 2026 names
+  no winner - so the Juizo record will read 0-0 drawn for ever. The page
+  prints the league's figure beside it rather than inventing a scoreline.
+
 ### A match that is not going to be played
 
 `src/data/fixture-cancellations.json`, applied in `dataset.mjs` where the

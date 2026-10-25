@@ -97,10 +97,12 @@ export function routeThrough(cup, club) {
  * failure is listing a club that has actually gone out; claiming one is out
  * when it is not would delete a side we could genuinely meet.
  *
- * A DRAWN tie eliminates nobody. Grassroots cups settle these by a replay or
- * a shootout, and the shootout is not in the scoreline, so a 2-2 says only
- * that both clubs are still in it until the next round's draw says otherwise.
- * An ABANDONED tie is recorded as no result at all, for the same reason.
+ * A DRAWN tie eliminates nobody BY ITS SCORELINE, and the league prints the
+ * shootout beside it, so where one is recorded it decides the tie exactly as
+ * a scoreline does. A draw with no shootout on record still eliminates
+ * nobody: a replay is coming, or nobody has read the result yet, and those
+ * are the same thing from here. An ABANDONED tie is recorded as no result at
+ * all, for the same reason.
  *
  * A WALKOVER HAS A WINNER AND NO SCORE, and reading it off a scoreline is
  * impossible, because the league prints no goals for one: the table counts a
@@ -112,6 +114,21 @@ export function routeThrough(cup, club) {
  * is allowed to be wrong in - but it would have left Pure Football FC 1st
  * Team listed as a side we could meet in a cup they are out of.
  */
+export function winnerOf(r) {
+  if (!r) return null;
+  if (r.wo === 'H-W') return 'home';
+  if (r.wo === 'A-W') return 'away';
+  const hs = Number(r.hs);
+  const as = Number(r.as);
+  if (!Number.isFinite(hs) || !Number.isFinite(as)) return null;
+  if (hs !== as) return hs > as ? 'home' : 'away';
+  /* Level after ninety minutes, so the tie is settled by the shootout if the
+     league printed one, and by nothing at all if it did not. */
+  const m = /^(\d+)\s*-\s*(\d+)$/.exec(String(r.pens || '').trim());
+  if (!m || m[1] === m[2]) return null;
+  return Number(m[1]) > Number(m[2]) ? 'home' : 'away';
+}
+
 export function eliminated(cup) {
   const { byNum } = index(cup);
   const gone = new Set();
@@ -122,14 +139,20 @@ export function eliminated(cup) {
   for (const r of cup.results || []) {
     const tie = byNum.get(Number(r.n));
     if (!tie) continue;
-    if (r.wo === 'H-W' || r.wo === 'A-W') { out(r.wo === 'H-W' ? tie.away : tie.home); continue; }
-    const hs = Number(r.hs);
-    const as = Number(r.as);
-    if (!Number.isFinite(hs) || !Number.isFinite(as) || hs === as) continue;
-    const loser = hs > as ? tie.away : tie.home;
-    out(loser);
+    const won = winnerOf(r);
+    if (!won) continue;
+    out(won === 'home' ? tie.away : tie.home);
   }
   return gone;
+}
+
+/** The shootout as the club reads it, ours first, or null where there was none. */
+function shootout(r, weAreHome) {
+  const m = /^(\d+)\s*-\s*(\d+)$/.exec(String((r && r.pens) || '').trim());
+  if (!m) return null;
+  const us = Number(weAreHome ? m[1] : m[2]);
+  const them = Number(weAreHome ? m[2] : m[1]);
+  return { us, them, won: us > them };
 }
 
 /** How a division compares with ours: -1 above, 0 the same, 1 below, null unknown. */
@@ -154,11 +177,29 @@ export function cupRoutes(data, club) {
   const neutral = new Set(data.neutralRounds || []);
   return (data.cups || []).map((cup) => {
     const out = eliminated(cup);
-    return {
-    id: cup.id,
-    name: cup.name,
-    short: cup.short || cup.name,
-    rounds: routeThrough(cup, club).map((r) => ({
+    /* A ROUTE STOPS WHERE THE CLUB DOES.
+
+       The bracket runs to the final whatever happens, so with nothing reading
+       the results this band went on printing the quarter-final, the semi and
+       the final of a cup the club was already out of - and the heading over
+       it says "How far it could go", which turns a stale list into a claim.
+       On 25 October 2026 that was live: a 0-0 at Juizo FC, lost 4-3 on
+       penalties, and the Marcus Lipton Cup route still showed four rounds
+       ahead.
+
+       The exit is the club's OWN tie, read the same way every other tie is
+       read, so a round the club won can never end the route and a round
+       nobody has played cannot either. Rounds past it are dropped rather
+       than greyed: a cup the club is out of has no next round for it. */
+    const byN = new Map((cup.results || []).map((r) => [Number(r.n), r]));
+    const all = routeThrough(cup, club);
+    let exit = -1;
+    for (let i = 0; i < all.length; i += 1) {
+      const won = winnerOf(byN.get(all[i].tie));
+      if (!won) break;
+      if ((won === 'home') !== all[i].home) { exit = i; break; }
+    }
+    const mapped = all.map((r) => ({
       ...r,
       neutral: neutral.has(r.round),
       /* A CLUB THAT HAS GONE OUT IS NOT SOMEBODY WE COULD STILL MEET. The
@@ -183,6 +224,27 @@ export function cupRoutes(data, club) {
         };
       }).sort((a, b) => (divisionRank(data, a.division) ?? 99) - (divisionRank(data, b.division) ?? 99)
         || a.name.localeCompare(b.name)),
-    })),
+    }));
+    return {
+    id: cup.id,
+    name: cup.name,
+    short: cup.short || cup.name,
+    knockedOut: exit < 0 ? null : {
+      round: all[exit].round,
+      /* The shootout is the league's, not the match record's: a stored match
+         carries no shootout, which is why the Kew Antigua tie of April names
+         no winner. Printing it here says what happened without the site
+         inventing a scoreline. */
+      pens: shootout(byN.get(all[exit].tie), all[exit].home),
+    },
+    /* `bracket` is every round of the draw on this club's side of it and
+       `rounds` is the part that is still the club's: they are the same list
+       until the club goes out. Both are published because they answer two
+       different questions - what the league drew, which is a fact about the
+       bracket and stays true, and how far this club can go, which is a claim
+       about the club and stopped being true at Juizo. A check about the draw
+       asks `bracket`, so going out of a cup cannot quietly delete it. */
+    bracket: mapped,
+    rounds: exit < 0 ? mapped : mapped.slice(0, exit + 1),
   }; });
 }

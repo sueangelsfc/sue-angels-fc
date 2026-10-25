@@ -142,8 +142,11 @@ export function seasonOf(dateStr) {
      walkover  played and awarded to us; 3 points, but NO goals are added,
                which is exactly how the official table treats them
      penalty   played; hs/as is the NORMAL-TIME score (a draw), and the tie
-               was settled on penalties. The shootout result is not stored,
-               so no winner is inferred.
+               was settled on penalties. The shootout rides on `phs`/`pas`
+               where the club recorded one, and it is NOT folded into the
+               result: a tie won on penalties is a draw in the official
+               table, so it stays a draw here. A record with no shootout is
+               shown as decided on penalties with no winner claimed.
 */
 /* ==========================================================================
    A FRIENDLY IS NOT A COMPETITIVE MATCH
@@ -189,6 +192,19 @@ export const isCompetitive = (m) => !isFriendly(m);
 const CUP_WORD = /\b(cup|trophy|shield|plate|vase|bowl)\b/i;
 export const isCup = (m) => !isFriendly(m) && CUP_WORD.test(String(m?.competition || ''));
 export const isLeague = (m) => !isFriendly(m) && !CUP_WORD.test(String(m?.competition || ''));
+
+/** A stored shootout as the club reads it, ours first, or null where the
+    record holds none. `phs`/`pas` are stored by SIDE like `hs`/`as`, so this
+    is the only place that has to know which end the club was at. */
+export function shootoutOf(raw, weAreHome) {
+  if ((raw && raw.kind) !== 'penalty') return null;
+  const h = Number(raw.phs);
+  const a = Number(raw.pas);
+  if (!Number.isFinite(h) || !Number.isFinite(a) || h === a) return null;
+  const us = weAreHome ? h : a;
+  const them = weAreHome ? a : h;
+  return { us, them, won: us > them };
+}
 
 export function normaliseMatch(raw, detail) {
   const home = raw.home || '';
@@ -261,6 +277,19 @@ export function normaliseMatch(raw, detail) {
     kind,
     isWalkover,
     decidedOnPenalties: isPenalty,
+    /* THE SHOOTOUT, AND IT DOES NOT MOVE THE RECORD.
+
+       `outcome` above is still D, because a cup tie settled on penalties is
+       a draw in every official record there is - the league's own table
+       counts it as one, so a site that turned it into a win would disagree
+       with the figures `npm run verify` is reconciled against, and would
+       move a player's won-drawn-lost with it. The shootout is a fact about
+       the tie, printed beside the result, never folded into it.
+
+       Blank is a real answer: the Kew Antigua tie of April 2026 is 2-2 with
+       no shootout on record, and it is shown as decided on penalties with no
+       winner claimed rather than having one invented to fill the field. */
+    shootout: shootoutOf(raw, weAreHome),
     countsGoals,
     competition: raw.competition || 'League Ten',
     /* Worked out once, here, so a page filtering matches never has to know

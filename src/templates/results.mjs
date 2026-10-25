@@ -153,7 +153,9 @@ function matchesPage(d, mode) {
     : m.isWalkover
     ? `<p class="mt__note is-flag">Awarded · walkover</p>`
     : m.decidedOnPenalties
-      ? `<p class="mt__note is-flag">Level after ninety · decided on penalties</p>`
+      ? `<p class="mt__note is-flag">Level after ninety · ${m.shootout
+        ? esc(`${m.shootout.won ? 'won' : 'lost'} ${m.shootout.us}-${m.shootout.them} on penalties`)
+        : 'decided on penalties'}</p>`
       : scorers.length ? `<p class="mt__scorers">${scorers.map((s) => esc(s)).join(', ')}</p>` : ''}
             ${/* Sits alongside the scorers rather than instead of them: a friendly
                   has both a scoreline and a caveat, and the walkover branch above
@@ -481,7 +483,17 @@ function matchesPage(d, mode) {
       const us = isUs(m.home) ? m.hs : m.as;
       const they = isUs(m.home) ? m.as : m.hs;
       if (!Number.isFinite(us) || !Number.isFinite(they)) return null;
-      return { us, they, won: us > they, lost: us < they, href: `/matches/${m.slug}.html` };
+      return {
+        us, they, won: us > they, lost: us < they, href: `/matches/${m.slug}.html`,
+        /* THE CLUB'S OWN SHOOTOUT WINS OVER THE LEAGUE'S. Both hold one now -
+           the league prints it in its results table and the record carries it
+           since the club could enter it - and the club's record is the one
+           the rest of the site is derived from, so it is the one printed
+           here. The suite fails if the two ever disagree, because two
+           sources for one fact that nobody compares is how a site comes to
+           say different things on two pages. */
+        pens: m.shootout || null,
+      };
     };
 
     const blocks = cupRoutes(cupData, CLUB.name).filter((c) => c.rounds.length).map((cup) => {
@@ -499,9 +511,10 @@ function matchesPage(d, mode) {
         const n = r.opponents.length;
         const tie = cupTie(cup.name, r);
         const state = gone ? ' is-lost' : tie ? (tie.won ? ' is-won' : tie.lost ? ' is-lost' : ' is-drawn') : '';
-        const pens = gone && gone.pens
-          ? `<span class="cup-score is-pens"><b>${esc(`${gone.pens.us}-${gone.pens.them}`)}</b>
-                <i>Lost on penalties</i></span>` : '';
+        const shot = (tie && tie.pens) || (gone && gone.pens) || null;
+        const pens = shot
+          ? `<span class="cup-score is-pens"><b>${esc(`${shot.us}-${shot.them}`)}</b>
+                <i>${esc(shot.won ? 'Won on penalties' : 'Lost on penalties')}</i></span>` : '';
         return `<li class="cup-round${state}">
             <p class="cup-round__h">
               <span class="cup-round__r">${esc(r.round)}</span>

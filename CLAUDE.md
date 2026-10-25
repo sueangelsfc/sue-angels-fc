@@ -315,7 +315,7 @@ Three kinds of completed match count differently, and getting this wrong is what
 |---|---|---|---|
 | `score` | yes | yes | ordinary result |
 | `walkover` | yes, 3 pts to one side | **no** | official table adds no goals; 15×3 + 3×3 = 54 |
-| `penalty` | yes | yes (normal time) | shootout result is not stored, so no winner is inferred |
+| `penalty` | yes | yes (normal time) | the shootout rides on `phs`/`pas`; the tie is still a **draw** |
 
 ### Who kept the clean sheet is something the club records
 The match form asks. It stores the keeper in `cleanSheets` and the back line in `cleanSheetContributors`, the club has answered on **fourteen** matches, and the site read **neither** - it credited whoever STARTED in a position matching `/GK|CB|LB|RB|WB/`.
@@ -1499,6 +1499,46 @@ check reading the real data would have been green on 17 October, red on the
 all by the time somebody needs it again. What IS asked of the real templates is
 that all three reach for the helper, because the mark being right in one page
 and missing from another is the failure that matters.
+
+### The shootout is recorded, and it does not move the record
+
+The match form said it out loud - *"the shootout itself is not stored, so the
+site reports the tie as decided on penalties without claiming a winner"* - so
+a cup tie settled on penalties was a scoreline and nothing else. The club
+asked to be able to enter it, on 25 October 2026, the day it went out of the
+Marcus Lipton Cup on one.
+
+- **`phs`/`pas`, by SIDE, exactly as `hs`/`as` are**, so it survives the two
+  clubs swapping ends in the reverse fixture. `shootoutOf()` in `stats.mjs`
+  is the only place that knows which end the club was at, and the panel
+  renders from the same rule.
+- **A TIE WON ON PENALTIES IS STILL A DRAW.** That is what it is in the
+  league's own table, so folding the shootout into `outcome` would move the
+  club's won-drawn-lost, every player's record with it, and would disagree
+  with the figures `npm run verify` reconciles against. The shootout is
+  printed beside the result and never into it, and the probe that proves it
+  turns a won shootout into a W and watches the check go red.
+- **Blank stays a real answer.** The Kew Antigua cup tie of April 2026 is 2-2
+  with no shootout on record, and it still shows as decided on penalties with
+  no winner claimed. The form refuses a half-entered shootout and a level
+  one - one figure is half a shootout and a level one did not finish - and
+  accepts neither-figure without complaint.
+- **Two sources, compared.** The league's results table carries the shootout
+  in `cups-2627.json` and the club's record carries its own. The club's wins
+  on the cup route, and the suite fails if the two ever disagree: two sources
+  for one fact that nobody compares is how a site comes to print two figures
+  for one afternoon.
+- **Rendered, not grepped.** The panel checks open the dialog, switch the
+  result to penalties and watch the box appear, then reopen a stored penalty
+  tie and read the figures off the inputs. The archive match they run on is
+  an AWAY one, so a form that read the shootout home-first shows the
+  opponent's count as the club's and the check says so.
+- **The source ceiling moved 35 to 36 and the spend is written down** beside
+  it in `run.mjs`: 419 bytes gzipped for two fields, the validation and the
+  save, on a file that was already at 34.7. What a reader actually downloads
+  is the emitted chunk, still 17.4 of its 18KB. **One builder for both pairs
+  of fields was tried and measured: it cost 128 bytes MORE**, because gzip
+  already compresses the repetition and the abstraction is new text.
 
 ### A cup route stops where the club does
 

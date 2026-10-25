@@ -359,6 +359,61 @@ export async function panelChecks() {
       }
     }
 
+    /* THE SHOOTOUT, RENDERED. The record could not hold one and the form
+       said so in a note, so the club could enter a 0-0 and nothing else of
+       an afternoon decided on penalties. Driven rather than grepped: the box
+       is hidden until the result IS a penalty tie, and a stored shootout has
+       to come back on the right side of the dialog - stored by side like the
+       scoreline, so an away tie's figures are the other way round and a form
+       that ignored that would show the opponent's count as the club's. */
+    {
+      const box = modal.querySelector('[data-pensbox]');
+      check('the match editor asks for the shootout', !!box
+        && !!modal.querySelector('#m-pus') && !!modal.querySelector('#m-pthem'));
+      const kindSel = modal.querySelector('#m-kind');
+      check('and keeps it hidden until the tie was decided on one',
+        !!box && box.hidden === true && !!kindSel,
+        box ? `hidden=${box.hidden}` : 'no box');
+      if (kindSel && box) {
+        PR.type(kindSel, 'penalty');
+        await PR.settle(ctx);
+        check('and shows it the moment the result says penalties',
+          box.hidden === false, `hidden=${box.hidden}`);
+      }
+      const ctx3 = PR.boot({
+        rows: {
+          ...rows,
+          matches: rows.matches.map((m) => (m.key === chosen.key
+            ? { ...m, data: { ...m.data, kind: 'penalty', hs: 1, as: 1, phs: 5, pas: 3 } } : m)),
+        },
+      });
+      const r3 = await PR.openPanel(ctx3, 'results');
+      const tr3 = r3.body.querySelectorAll('tr[data-key]')
+        .filter((t) => t.getAttribute('data-key') === chosen.key)[0];
+      if (tr3) {
+        PR.click(tr3.querySelector('[data-edit]'));
+        await PR.settle(ctx3);
+        PR.flushMutations(ctx3.doc.body);
+        await PR.settle(ctx3);
+        const m3 = ctx3.doc.querySelector('.modal-backdrop');
+        const val = (id) => {
+          const el = m3 && m3.querySelector('#' + id);
+          return el ? String(el.getAttribute('value') || el.value || '') : '';
+        };
+        /* Worked out from the record rather than written down, so the check
+           discriminates: 5 and 3 are the HOME and AWAY counts, and the club
+           is one of the two. */
+        const weAreHome = /Sue.s Angels/i.test(String(chosen.data.home || ''));
+        check('a stored shootout comes back on the club\u2019s own side of the dialog',
+          val('m-pus') === (weAreHome ? '5' : '3')
+            && val('m-pthem') === (weAreHome ? '3' : '5'),
+          `${val('m-pus')}-${val('m-pthem')}, home=${weAreHome}`);
+        const box3 = m3 && m3.querySelector('[data-pensbox]');
+        check('and the box is open, because the record says it was a penalty tie',
+          !!box3 && box3.hidden === false);
+      }
+    }
+
     /* AN OWN GOAL, CHOSEN AND STILL THERE. The flag lived only in memory for
        a while: the dropdown set it, the card repainted from it, and the save
        left it out, so the club chose Own goal and the record kept a goal with

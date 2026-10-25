@@ -1110,6 +1110,18 @@
           esc(weAreHome ? (d.as != null ? d.as : '') : (d.hs != null ? d.hs : '')) + '"></div>';
     }
 
+    /* phs/pas, by SIDE like hs/as, so it survives the clubs swapping ends.
+       Both blank is a real answer: the Kew Antigua tie has none on record. */
+    function pensFields() {
+      return '<div class="field"><label class="field__label" for="m-pus">' +
+          esc(SEED.club || 'Us') + ' penalties</label>' +
+          '<input class="input" id="m-pus" type="number" min="0" value="' +
+          esc(weAreHome ? (d.phs != null ? d.phs : '') : (d.pas != null ? d.pas : '')) + '"></div>' +
+        '<div class="field"><label class="field__label" for="m-pthem">Opponent penalties</label>' +
+          '<input class="input" id="m-pthem" type="number" min="0" value="' +
+          esc(weAreHome ? (d.pas != null ? d.pas : '') : (d.phs != null ? d.phs : '')) + '"></div>';
+    }
+
     var back = document.createElement('div');
     back.className = 'modal-backdrop';
     back.setAttribute('role', 'dialog');
@@ -1184,6 +1196,8 @@
                on how the match finished. A walkover has no score to enter and
                a match not yet played has neither. */
             '<div class="grid grid--2" data-scorebox style="margin-top:var(--space-4)">' + scoreFields() + '</div>' +
+
+            '<div class="grid grid--2" data-pensbox hidden style="margin-top:var(--space-4)">' + pensFields() + '</div>' +
 
             '<div class="field" data-wobox hidden style="margin-top:var(--space-4)">' +
               '<label class="field__label" for="m-wo">Awarded to</label>' +
@@ -1597,10 +1611,13 @@
     function paintKind() {
       var kind = $('#m-kind', back).value;
       $('[data-scorebox]', back).hidden = !(kind === 'score' || kind === 'penalty');
+      $('[data-pensbox]', back).hidden = kind !== 'penalty';
       $('[data-wobox]', back).hidden = kind !== 'walkover';
       $('[data-kindnote]', back).textContent = kind === 'penalty'
-        ? 'Enter the score at the end of normal time. The shootout itself is not stored, '
-          + 'so the site reports the tie as decided on penalties without claiming a winner.'
+        ? 'The score at the end of normal time, then the shootout, which is shown beside it '
+          + 'on the match page and the cup route. The tie stays a draw in the record, because '
+          + 'that is what it is in every official one. Leave the shootout blank if nobody wrote '
+          + 'it down.'
         : kind === 'fixture'
           ? 'This stays in the fixture list and no result is shown for it.'
           : '';
@@ -1946,6 +1963,15 @@
       if ((kind === 'score' || kind === 'penalty') && (us === '' || them === '')) {
         fail('A played match needs both scores.', 'match'); return;
       }
+      var pUs = kind === 'penalty' ? $('#m-pus', back).value : '';
+      var pThem = kind === 'penalty' ? $('#m-pthem', back).value : '';
+      /* Neither or both, never level, blank allowed. */
+      if ((pUs === '') !== (pThem === '')) {
+        fail('A shootout needs both figures, or neither.', 'match'); return;
+      }
+      if (pUs !== '' && Number(pUs) === Number(pThem)) {
+        fail('A shootout cannot finish level.', 'match'); return;
+      }
       /* A walkover with no club named would be a match that counted as played
          and awarded nobody the points. */
       if (kind === 'walkover' && !woSide) {
@@ -2062,6 +2088,12 @@
         next.hs = Number(home ? us : them);
         next.as = Number(home ? them : us);
       } else { delete next.hs; delete next.as; }
+      /* Deleted where there is none, so a match changed away from penalties
+         cannot keep a shootout it no longer has. */
+      if (kind === 'penalty' && pUs !== '') {
+        next.phs = Number(home ? pUs : pThem);
+        next.pas = Number(home ? pThem : pUs);
+      } else { delete next.phs; delete next.pas; }
       /* Stored the way the record has always stored it: which SIDE took the
          walkover, not which club, so it survives the two clubs swapping ends
          in the reverse fixture. */

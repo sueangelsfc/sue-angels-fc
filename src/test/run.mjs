@@ -2050,6 +2050,71 @@ for (const [f, h] of pages) {
     el(toy([{ n: 2, hs: 0, as: 3 }])).size === 0,
     [...el(toy([{ n: 2, hs: 0, as: 3 }]))].join());
 
+  /* ---- THE CLUB'S OWN SHOOTOUT, AND WHAT IT MUST NOT MOVE ----
+     The match record could not hold a shootout, so the form said so in a
+     note and the Kew Antigua tie of April 2026 has been 2-2 with no winner
+     named since it was played. It can hold one now, and the guard that
+     matters is that holding it changes NOTHING: a cup tie settled on
+     penalties is a draw in the league's own table, so turning it into a win
+     here would move the club's won-drawn-lost, every player's record with
+     it, and would disagree with the figures `npm run verify` reconciles
+     against. The shootout is printed beside the result, never folded in. */
+  const { shootoutOf: so, normaliseMatch: nm } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+  const pen = (extra) => ({ id: 'r1', date: '25 Oct 2026', competition: 'Cup',
+    home: 'Juizo FC', away: US, kind: 'penalty', hs: 0, as: 0, ...extra });
+  check('a stored shootout is read by side, so the club is ours either end',
+    so(pen({ phs: 4, pas: 3 }), false).us === 3 && so(pen({ phs: 4, pas: 3 }), false).them === 4
+      && so(pen({ phs: 4, pas: 3 }), true).us === 4 && so(pen({ phs: 4, pas: 3 }), true).won === true
+      && so(pen({ phs: 4, pas: 3 }), false).won === false);
+  check('a tie with no shootout, a level one, and a match that is not a penalty tie all read none',
+    so(pen({}), false) === null && so(pen({ phs: 3, pas: 3 }), false) === null
+      && so({ ...pen({ phs: 4, pas: 3 }), kind: 'score' }, false) === null);
+  /* THE PROBE THAT MATTERS. A shootout the club won must leave the tie a
+     draw: the record, the points and every figure derived from them. */
+  /* The club is AWAY in this tie, so `pas` is ours - the same trap the two
+     scorelines exist for, and the reason the first draft of this check read
+     a 5-4 win as a 4-5 defeat. */
+  const wonPens = nm(pen({ phs: 4, pas: 5 }), {});
+  const lostPens = nm(pen({ phs: 5, pas: 4 }), {});
+  check('a tie won on penalties is still a draw in the club\u2019s record',
+    wonPens.outcome === 'D' && lostPens.outcome === 'D'
+      && nm(pen({}), {}).outcome === 'D' && wonPens.played === true,
+    `${wonPens.outcome} / ${lostPens.outcome}`);
+  check('and the shootout rides beside it, said as won or lost',
+    wonPens.shootout.won === true && wonPens.shootout.us === 5
+      && lostPens.shootout.won === false && lostPens.shootout.us === 4
+      && nm(pen({}), {}).shootout === null,
+    JSON.stringify(wonPens.shootout));
+
+  /* TWO SOURCES FOR ONE SHOOTOUT, SO THEY ARE COMPARED. The league's results
+     table carries it in cups-2627.json and the club's record carries its own;
+     the club's wins where they differ, and a disagreement nobody compares is
+     how a site comes to print two figures for one afternoon. Conditioned on
+     both existing, so it keeps testing as either side fills up. */
+  {
+    const pairs = [];
+    const { buildDataset: bdC } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+    const dC = bdC();
+    for (const cup of cupsD.cups) {
+      const byNum = new Map(cup.ties.map((t) => [t.n, t]));
+      for (const r of cup.results || []) {
+        if (!r.pens) continue;
+        const t = byNum.get(Number(r.n));
+        if (!t || ![t.home, t.away].includes(US)) continue;
+        const weAreHome = t.home === US;
+        const m = (dC.played || []).find((x) => x.competition === cup.name
+          && x.opponent === (weAreHome ? t.away : t.home));
+        if (!m || !m.shootout) continue;
+        const [h, a] = String(r.pens).split('-').map(Number);
+        pairs.push([`tie ${r.n}`, m.shootout.us === (weAreHome ? h : a)
+          && m.shootout.them === (weAreHome ? a : h)]);
+      }
+    }
+    check('where the league and the club both record a shootout, they agree',
+      pairs.every(([, ok]) => ok),
+      pairs.filter(([, ok]) => !ok).map(([n]) => n).join(', ') || `${pairs.length} compared`);
+  }
+
   /* ---- A SHOOTOUT SETTLES A TIE, AND A DRAW WITH NO SHOOTOUT SETTLES
      NOTHING ----
      The league prints the shootout beside a level scoreline and this file
@@ -3213,8 +3278,24 @@ for (const [f, kb] of Object.entries({
      club's arrangement is the club's, and a panel that reordered the page by
      its own numbers would be breaking that rule while claiming to help. */
   /* Source, so the roles and the goal vocabulary riding with the chunk
-     cannot hide code growth in the biggest form in the panel. */
-  'src/admin/lazy/11-matchedit.js': 35,
+     cannot hide code growth in the biggest form in the panel.
+
+     35 -> 36, and this one IS code: the shootout. The record could not hold
+     one, so the form said so in a note - "the shootout itself is not stored"
+     - and the club asked to be able to enter it. 419 bytes gzipped for two
+     fields, the validation that a shootout is neither half-entered nor level,
+     and the save that stores it by side and deletes it when a match stops
+     being a penalty tie. The file was at 34.7 of 35 before it, which is why
+     a feature this small needed a kilobyte.
+
+     WHAT THE READER PAYS IS THE EMITTED CHUNK, and that is 17.4 of its 18KB,
+     so nobody downloads a kilobyte for this - the source ceiling is a signal
+     about code growth, and it did its job by making this note exist.
+
+     ONE BUILDER FOR BOTH PAIRS OF FIELDS WAS TRIED AND MEASURED: it cost 128
+     bytes MORE, because gzip already compresses the repetition and the
+     abstraction is new text. Written out longhand on the evidence. */
+  'src/admin/lazy/11-matchedit.js': 36,
   'src/admin/lazy/95-home.js': 11,
   /* Source, so the bios riding with the chunk cannot hide code growth.
 

@@ -63,7 +63,13 @@ export function scoreboard(m, badges) {
       ? `<div style="text-align:center"><span class="scoreboard__score">W/O</span><p class="eyebrow eyebrow--muted" style="margin-top:var(--space-2)">Walkover</p></div>`
       : `<div style="text-align:center">
            <span class="scoreboard__score">${esc(m.hs)}<span style="opacity:.4">–</span>${esc(m.as)}</span>
-           ${m.decidedOnPenalties ? '<p class="eyebrow eyebrow--muted" style="margin-top:var(--space-2)">On penalties</p>' : ''}
+           ${/* THE SHOOTOUT, WHERE THE CLUB RECORDED ONE. Ours first, like
+                 every other score the club reads, and "On penalties" alone
+                 where nobody wrote it down - which is the Kew Antigua tie and
+                 was every penalty tie until the record could hold one. */''}
+           ${m.decidedOnPenalties ? `<p class="eyebrow eyebrow--muted" style="margin-top:var(--space-2)">${
+  m.shootout ? esc(`${m.shootout.won ? 'Won' : 'Lost'} ${m.shootout.us}-${m.shootout.them} on penalties`)
+    : 'On penalties'}</p>` : ''}
          </div>`
     : `<div style="text-align:center"><span class="scoreboard__score" style="font-size:var(--step-4)">v</span></div>`;
 

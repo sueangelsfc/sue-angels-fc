@@ -84,6 +84,12 @@
       "src": "assets/badge/mousa-mountain.webp",
       "alt": "Mousa Mountain FC",
       "aspect": "shield"
+    },
+    "The Station": {
+      "match": "the station",
+      "src": "assets/badge/the-station.webp",
+      "alt": "The Station Football Club",
+      "aspect": "shield"
     }
   }
 }

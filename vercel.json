@@ -233,6 +233,16 @@
       "source": "/players/ade-owolona",
       "destination": "/players/ade-owolana.html",
       "permanent": true
+    },
+    {
+      "source": "/news/angels-at-home-to-the-station-in-the-county-cup.html",
+      "destination": "/news/back-at-the-reeves-and-back-in-the-county-cup.html",
+      "permanent": true
+    },
+    {
+      "source": "/news/angels-at-home-to-the-station-in-the-county-cup",
+      "destination": "/news/back-at-the-reeves-and-back-in-the-county-cup.html",
+      "permanent": true
     }
   ],
   "headers": [

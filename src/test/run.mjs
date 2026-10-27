@@ -7185,7 +7185,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 
   /* LEAGUE EIGHT, PINNED UNDER THE HERO. The club's layout has the table,
      results and fixtures off, so this band is the division on the front page.
-     It must come before every band the layout places, carry all nine clubs,
+     It must come before every band the layout places, carry every club in the division,
      and name the scorers; and it must be absent before a ball is kicked. */
   const homeBodyL = String((homeTpl(dL) || {}).body || '');
   const l8At = homeBodyL.indexOf('id="league-eight"');
@@ -7215,8 +7215,12 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     !quietL.includes('table') && !quietL.includes('results'), quietL.join(','));
   check('and the club\'s own order is kept beneath them',
     leadL.indexOf('news') < leadL.indexOf('who') && typeof rhL === 'function');
+  /* RETIRES WITH THE DATA, like the removed-club footnote. The chart is held
+     empty while a transcription is re-read, and a check that goes red on the
+     day the club takes a stale list down is a check somebody deletes. The
+     mechanism keeps its teeth on crafted rows further down. */
   check('and the division\'s scorers',
-    (l8.scorers || []).length > 0 && (l8.scorers || []).slice(0, 6).every((s) => l8Sec.includes(String(s.name).replace(/&/g, '&amp;').replace(/'/g, '&#39;'))));
+    (l8.scorers || []).length === 0 || (l8.scorers || []).slice(0, 6).every((s) => l8Sec.includes(String(s.name).replace(/&/g, '&amp;').replace(/'/g, '&#39;'))));
   check('and the round just played and the round to come',
     /Latest results/.test(l8Sec) && ((l8.fixturesAhead || []).length === 0 || /Next round/.test(l8Sec)));
   const dL0 = { ...dL, nextDivisionTable: { ...l8, rows: (l8.rows || []).map((r) => ({ ...r, played: 0 })) } };
@@ -7227,7 +7231,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 
   /* THE SCORERS, under the League Eight table and against the results. */
   check('the league page lists League Eight\'s scorers under its table',
-    (l8.scorers || []).length > 0 && /data-l8-scorers/.test(panel8)
+    (l8.scorers || []).length === 0 || /data-l8-scorers/.test(panel8)
       && (((panel8.match(/data-l8-scorers[\s\S]*?<\/table>/) || [''])[0]).match(/<tr( class="is-us")?>\s*<td>/g) || []).length === l8.scorers.length);
   /* THE ASSISTS: every assister is in a table of his own, ranked by assists,
      and the scorers table's A column carries the same figure. */
@@ -7241,7 +7245,8 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     const scHead = ((panel8.match(/data-l8-scorers[\s\S]*?<\/thead>/) || [''])[0]);
     const asHead = ((panel8.match(/data-l8-assists[\s\S]*?<\/thead>/) || [''])[0]);
     check('the scorers table shows goals and not assists, the assists table assists and not goals',
-      /title="Goals"/.test(scHead) && !/title="Assists"/.test(scHead)
+      (l8.scorers || []).length === 0
+        || /title="Goals"/.test(scHead) && !/title="Assists"/.test(scHead)
         && (!asHead || (/title="Assists"/.test(asHead) && !/title="Goals"/.test(asHead))), scHead.replace(/\s+/g, ' ').slice(-160));
     /* And goals and assists together: everybody on either list, each row
        adding up. */
@@ -7256,6 +7261,42 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     check('the goals and assists table lists everybody on either list, and each row adds up',
       gaRows.length === names.size && gaRows.every(([g, a, ga]) => g + a === ga),
       `${gaRows.length} rows for ${names.size} players`);
+  }
+  /* THE SCORER AND ASSIST TABLES, ON CRAFTED ROWS.
+
+     The three checks above now retire when `scorers` is empty, and it IS
+     empty: the 4 October chart counted goals scored in the Pure Football
+     matches the league later expunged, so the club is re-reading it. That
+     leaves the rendering untested by the shipped data, which is how a
+     mechanism ends up with no test at all by the time somebody needs it. Same
+     answer as the removed-club footnote: ask it of rows made up here. */
+  {
+    const craftS = [
+      { name: 'A Crafted', club: "Sue's Angels FC", goals: 4, assists: 2 },
+      { name: 'B Crafted', club: 'Barnes Stormers FC', goals: 1, assists: 0 },
+    ];
+    const craftA = [{ name: 'C Crafted', club: 'Haydons Park', assists: 3, goals: 0 }];
+    const bodyC = String((lgFn({ ...dL, nextDivisionTable: { ...l8, scorers: craftS, assisters: craftA } }) || {}).body || '');
+    const atC = bodyC.indexOf('data-league-panel="eight"');
+    const panC = atC > -1 ? bodyC.slice(atC, bodyC.indexOf('</section>', atC)) : '';
+    const scT = (panC.match(/data-l8-scorers[\s\S]*?<\/table>/) || [''])[0];
+    const asT = (panC.match(/data-l8-assists[\s\S]*?<\/table>/) || [''])[0];
+    const rowsOf = (t) => ((t.match(/<tr( class="is-us")?>\s*<td>/g) || []).length);
+    check('crafted: a published chart draws a row per scorer and per assister',
+      rowsOf(scT) === craftS.length && rowsOf(asT) === craftA.length,
+      `${rowsOf(scT)} scorers, ${rowsOf(asT)} assisters`);
+    check('crafted: each table carries only its own figure',
+      /title="Goals"/.test(scT) && !/title="Assists"/.test((scT.match(/[\s\S]*?<\/thead>/) || [''])[0])
+        && /title="Assists"/.test(asT) && !/title="Goals"/.test((asT.match(/[\s\S]*?<\/thead>/) || [''])[0]));
+    check('crafted: the club\'s own man is marked in the table',
+      /is-us/.test(scT));
+    /* THE PROBE: take the rows away again and the tables must go, or the two
+       checks above would pass on a page that always draws them. */
+    const bodyN = String((lgFn({ ...dL, nextDivisionTable: { ...l8, scorers: [], assisters: [] } }) || {}).body || '');
+    const atN = bodyN.indexOf('data-league-panel="eight"');
+    const panN = atN > -1 ? bodyN.slice(atN, bodyN.indexOf('</section>', atN)) : '';
+    check('probe: with no chart transcribed the league page draws no scorer table',
+      !/data-l8-scorers/.test(panN) && !/data-l8-assists/.test(panN));
   }
   const { compareScorers: cmpSc } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
   check('League Eight\'s scorers add up to no more than each club scored',

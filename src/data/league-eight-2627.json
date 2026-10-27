@@ -1,5 +1,5 @@
 {
-  "_source": "FA Full-Time, Southern Sunday Football League, League Eight 26/27. league=3545957 · season 2026-27=709965053 · division League Eight=879497042. Table and club list read 25 August 2026. These ids were recorded nowhere before, which is why the division had to be re-found by hand each time it was checked.",
+  "_source": "FA Full-Time, Southern Sunday Football League, League Eight 26/27. league=3545957 · season 2026-27=709965053 · division League Eight=879497042. Table and club list read 25 August 2026. These ids were recorded nowhere before, which is why the division had to be re-found by hand each time it was checked. FROM 27 OCTOBER 2026 THE TABLE IS DERIVED, NOT TRANSCRIBED: the league confirmed Pure Football FC 1st Team out of the division and the club relayed it, so the eight rows are computed from the remaining transcribed results rather than copied off a republished Full-Time page. Re-read Full-Time when it republishes and transcribe over this, which is what every other row in this file is.",
   "_fulltimeNote": "The four ids FA Full-Time needs to address this division. They were prose in _source above and are fields now, because the site builds live links out of them: a number quoted in a sentence is a number nothing can use. Changing division or season is a change to these four values and to nothing else.",
   "fulltime": {
     "league": "3545957",
@@ -17,7 +17,6 @@
     "Brockwell Violets FC",
     "Haydons Park",
     "Junction Elite FC Sunday 3rd Team",
-    "Pure Football FC 1st Team",
     "Sue's Angels FC",
     "TSM Rovers",
     "Three Little Birds FC"
@@ -39,29 +38,17 @@
     {
       "p": 2,
       "c": "Brockwell Violets FC",
-      "pl": 4,
-      "w": 4,
+      "pl": 3,
+      "w": 3,
       "d": 0,
       "l": 0,
-      "gf": 10,
+      "gf": 8,
       "ga": 3,
-      "gd": 7,
-      "pts": 12
+      "gd": 5,
+      "pts": 9
     },
     {
       "p": 3,
-      "c": "TSM Rovers",
-      "pl": 3,
-      "w": 2,
-      "d": 0,
-      "l": 1,
-      "gf": 11,
-      "ga": 5,
-      "gd": 6,
-      "pts": 6
-    },
-    {
-      "p": 4,
       "c": "Three Little Birds FC",
       "pl": 3,
       "w": 2,
@@ -73,16 +60,28 @@
       "pts": 6
     },
     {
+      "p": 4,
+      "c": "TSM Rovers",
+      "pl": 2,
+      "w": 1,
+      "d": 0,
+      "l": 1,
+      "gf": 7,
+      "ga": 5,
+      "gd": 2,
+      "pts": 3
+    },
+    {
       "p": 5,
       "c": "Bristol City (London) Supporters",
-      "pl": 4,
+      "pl": 3,
       "w": 1,
-      "d": 1,
+      "d": 0,
       "l": 2,
-      "gf": 6,
-      "ga": 10,
+      "gf": 3,
+      "ga": 7,
       "gd": -4,
-      "pts": 4
+      "pts": 3
     },
     {
       "p": 6,
@@ -110,18 +109,6 @@
     },
     {
       "p": 8,
-      "c": "Pure Football FC 1st Team",
-      "pl": 3,
-      "w": 0,
-      "d": 1,
-      "l": 2,
-      "gf": 3,
-      "ga": 9,
-      "gd": -6,
-      "pts": 1
-    },
-    {
-      "p": 9,
       "c": "Barnes Stormers FC",
       "pl": 4,
       "w": 0,
@@ -141,14 +128,6 @@
       "hs": 4,
       "as": 1,
       "away": "Barnes Stormers FC"
-    },
-    {
-      "date": "04 Oct 26",
-      "kick": "12:30",
-      "home": "Pure Football FC 1st Team",
-      "hs": 0,
-      "as": 4,
-      "away": "TSM Rovers"
     },
     {
       "date": "04 Oct 26",
@@ -192,14 +171,6 @@
     },
     {
       "date": "20 Sep 26",
-      "kick": "12:30",
-      "home": "Pure Football FC 1st Team",
-      "hs": 3,
-      "as": 3,
-      "away": "Bristol City (London) Supporters"
-    },
-    {
-      "date": "20 Sep 26",
       "kick": "10:30",
       "home": "Brockwell Violets FC",
       "hs": 3,
@@ -233,14 +204,6 @@
     {
       "date": "13 Sep 26",
       "kick": "10:30",
-      "home": "Brockwell Violets FC",
-      "hs": 2,
-      "as": 0,
-      "away": "Pure Football FC 1st Team"
-    },
-    {
-      "date": "13 Sep 26",
-      "kick": "10:30",
       "home": "TSM Rovers",
       "hs": 3,
       "as": 4,
@@ -263,332 +226,11 @@
       "away": "TSM Rovers"
     }
   ],
-  "_scorersNote": "The division's scorers, from Full-Time's stat leaders page (Player stats, Summary, League Eight 26/27), which excludes county cup football. Every player with a goal is kept, spelt as Full-Time prints them; the page lists appearances for everybody else and those are not kept. npm run verify fails if a club's scorers add up to more goals than its results say it scored. THE PAGE SHOWS 25 ROWS AND THE DIVISION HAS MORE, so a re-read is MERGED, never swapped in. On 4 October the cut fell inside the one-goal group at surname O, and six real scorers sat below it (Otudeko, Reid, Rixon, Sayer, Theivendran, Wing); replacing the list would have deleted all six and taken a goal off four clubs. Reconciling every club's scorers against the goals its table row claims is how the transcription is checked: no club is credited with more than it scored, and the shortfalls are own goals and the rows below the cut. Full-Time lists Drew Daley of Haydons Park with a goal and no appearance, which is its own figure and is kept as printed rather than corrected here.",
+  "_scorersNote": "HELD EMPTY SINCE 27 OCTOBER 2026, awaiting a re-read. The chart transcribed on 4 October counted goals scored in the three Pure Football FC 1st Team matches, and those results were expunged when the league removed the club, so it overstated TSM Rovers by 3 goals and Bristol City by 3. It lists goals PER PLAYER, not per match, so which man scored them is not recoverable from it and correcting it would have meant guessing at a real person's record. The 31 scorer rows and 17 assister rows are in git at the commit before this one. The club is re-reading Full-Time's stat leaders page; transcribe that over this and the tables come back. `_clubAssists` is deliberately kept, because it is the club's own corrections to reapply after any read.\n\nThe division's scorers, from Full-Time's stat leaders page (Player stats, Summary, League Eight 26/27), which excludes county cup football. Every player with a goal is kept, spelt as Full-Time prints them; the page lists appearances for everybody else and those are not kept. npm run verify fails if a club's scorers add up to more goals than its results say it scored. THE PAGE SHOWS 25 ROWS AND THE DIVISION HAS MORE, so a re-read is MERGED, never swapped in. On 4 October the cut fell inside the one-goal group at surname O, and six real scorers sat below it (Otudeko, Reid, Rixon, Sayer, Theivendran, Wing); replacing the list would have deleted all six and taken a goal off four clubs. Reconciling every club's scorers against the goals its table row claims is how the transcription is checked: no club is credited with more than it scored, and the shortfalls are own goals and the rows below the cut. Full-Time lists Drew Daley of Haydons Park with a goal and no appearance, which is its own figure and is kept as printed rather than corrected here.",
   "_assistsNote": "Assists as of 4 October 2026, from the stat leaders page sorted by assists. That sort makes this list COMPLETE where the scorers' is not: the one-assist group ends at row 17 and rows 18 to 25 show none, so nothing is hidden below the 25-row cut. Reconciled against the club's own match records, which agree on every Sue's Angels goal, appearance and assist except two, both of them Full-Time counting one fewer than the club: Charlie Dunkley 3 against 2, and Leon Burnett 4 against 3. The club has confirmed its own four for Burnett and is asking the league to match both. They are listed in _clubAssists and reapplied after every transcription, because a figure defended only in prose is one the next re-read overwrites. Dean Knight's 5 agree on both sides, and both are counting the corner he delivered for the own goal at Barnes Stormers. Everybody else is as Full-Time prints them.",
   "scorersAsOf": "2026-10-04",
-  "scorers": [
-    {
-      "name": "Charlie Dunkley",
-      "club": "Sue's Angels FC",
-      "goals": 7,
-      "apps": 4,
-      "assists": 3
-    },
-    {
-      "name": "Ade Owolana",
-      "club": "Sue's Angels FC",
-      "goals": 7,
-      "apps": 4,
-      "assists": 1
-    },
-    {
-      "name": "Victor Awosanya",
-      "club": "Three Little Birds FC",
-      "goals": 5,
-      "apps": 3,
-      "assists": 0
-    },
-    {
-      "name": "Makheyi Chilumbi",
-      "club": "TSM Rovers",
-      "goals": 5,
-      "apps": 3,
-      "assists": 0
-    },
-    {
-      "name": "Vincent Narayna",
-      "club": "TSM Rovers",
-      "goals": 5,
-      "apps": 3,
-      "assists": 0
-    },
-    {
-      "name": "Charlie Green",
-      "club": "Brockwell Violets FC",
-      "goals": 3,
-      "apps": 2,
-      "assists": 0
-    },
-    {
-      "name": "Leon Burnett",
-      "club": "Sue's Angels FC",
-      "goals": 2,
-      "apps": 4,
-      "assists": 4
-    },
-    {
-      "name": "Ben Earle",
-      "club": "Bristol City (London) Supporters",
-      "goals": 2,
-      "apps": 2,
-      "assists": 0
-    },
-    {
-      "name": "Daniel Alexandre reis Pedrosa",
-      "club": "Haydons Park",
-      "goals": 2,
-      "apps": 3,
-      "assists": 0
-    },
-    {
-      "name": "Shaam Aravindhan",
-      "club": "Three Little Birds FC",
-      "goals": 1,
-      "apps": 2,
-      "assists": 0
-    },
-    {
-      "name": "Dino B",
-      "club": "Barnes Stormers FC",
-      "goals": 1,
-      "apps": 3,
-      "assists": 0
-    },
-    {
-      "name": "Aaron Boniface",
-      "club": "Brockwell Violets FC",
-      "goals": 1,
-      "apps": 3,
-      "assists": 0
-    },
-    {
-      "name": "Elis Brumpton",
-      "club": "Sue's Angels FC",
-      "goals": 1,
-      "apps": 3,
-      "assists": 0
-    },
-    {
-      "name": "Drew Daley",
-      "club": "Haydons Park",
-      "goals": 1,
-      "apps": 0,
-      "assists": 0
-    },
-    {
-      "name": "Meddy Deschamps",
-      "club": "Bristol City (London) Supporters",
-      "goals": 1,
-      "apps": 3,
-      "assists": 0
-    },
-    {
-      "name": "Damilare Fadairo",
-      "club": "Junction Elite FC Sunday 3rd Team",
-      "goals": 1,
-      "apps": 2,
-      "assists": 0
-    },
-    {
-      "name": "Ben Harget",
-      "club": "Brockwell Violets FC",
-      "goals": 1,
-      "apps": 2,
-      "assists": 0
-    },
-    {
-      "name": "James Hayes",
-      "club": "Bristol City (London) Supporters",
-      "goals": 1,
-      "apps": 3,
-      "assists": 1
-    },
-    {
-      "name": "Alfie James Inman",
-      "club": "Sue's Angels FC",
-      "goals": 1,
-      "apps": 1,
-      "assists": 0
-    },
-    {
-      "name": "Riley Jackson-Hughes",
-      "club": "Haydons Park",
-      "goals": 1,
-      "apps": 2,
-      "assists": 1
-    },
-    {
-      "name": "Liam O'mara leonard",
-      "club": "Junction Elite FC Sunday 3rd Team",
-      "goals": 1,
-      "apps": 1,
-      "assists": 0
-    },
-    {
-      "name": "Jon Lloyd",
-      "club": "Sue's Angels FC",
-      "goals": 1,
-      "apps": 2,
-      "assists": 0
-    },
-    {
-      "name": "Jack Lowe",
-      "club": "Bristol City (London) Supporters",
-      "goals": 1,
-      "apps": 3,
-      "assists": 0
-    },
-    {
-      "name": "Aaron McNamara",
-      "club": "Haydons Park",
-      "goals": 1,
-      "apps": 3,
-      "assists": 0
-    },
-    {
-      "name": "Gereli Mutolo",
-      "club": "Junction Elite FC Sunday 3rd Team",
-      "goals": 1,
-      "apps": 1,
-      "assists": 0
-    },
-    {
-      "name": "Oluwatimilehin Otudeko",
-      "club": "Brockwell Violets FC",
-      "goals": 1,
-      "apps": 1,
-      "assists": 0
-    },
-    {
-      "name": "Keanu Reid",
-      "club": "Junction Elite FC Sunday 3rd Team",
-      "goals": 1,
-      "apps": 1,
-      "assists": 0
-    },
-    {
-      "name": "George Rixon",
-      "club": "Barnes Stormers FC",
-      "goals": 1,
-      "apps": 2,
-      "assists": 0
-    },
-    {
-      "name": "Samuel Sayer",
-      "club": "Bristol City (London) Supporters",
-      "goals": 1,
-      "apps": 1,
-      "assists": 0
-    },
-    {
-      "name": "Shrithananjayan Theivendran",
-      "club": "Three Little Birds FC",
-      "goals": 1,
-      "apps": 2,
-      "assists": 0
-    },
-    {
-      "name": "Omar Wing",
-      "club": "Haydons Park",
-      "goals": 1,
-      "apps": 1,
-      "assists": 0
-    }
-  ],
-  "assisters": [
-    {
-      "name": "Dean Knight",
-      "club": "Sue's Angels FC",
-      "assists": 5,
-      "apps": 4
-    },
-    {
-      "name": "Leon Burnett",
-      "club": "Sue's Angels FC",
-      "assists": 4,
-      "apps": 4
-    },
-    {
-      "name": "Charlie Dunkley",
-      "club": "Sue's Angels FC",
-      "assists": 3,
-      "apps": 4
-    },
-    {
-      "name": "Andrew Allen",
-      "club": "Sue's Angels FC",
-      "assists": 2,
-      "apps": 4
-    },
-    {
-      "name": "Nick Bellamy",
-      "club": "Bristol City (London) Supporters",
-      "assists": 2,
-      "apps": 2
-    },
-    {
-      "name": "Michael Brabrook",
-      "club": "Sue's Angels FC",
-      "assists": 2,
-      "apps": 3
-    },
-    {
-      "name": "Jack smith",
-      "club": "Bristol City (London) Supporters",
-      "assists": 2,
-      "apps": 2
-    },
-    {
-      "name": "Frankie Brawn",
-      "club": "Haydons Park",
-      "assists": 1,
-      "apps": 3
-    },
-    {
-      "name": "Thomas Eckersley",
-      "club": "Barnes Stormers FC",
-      "assists": 1,
-      "apps": 2
-    },
-    {
-      "name": "James Hayes",
-      "club": "Bristol City (London) Supporters",
-      "assists": 1,
-      "apps": 3
-    },
-    {
-      "name": "Riley Jackson-Hughes",
-      "club": "Haydons Park",
-      "assists": 1,
-      "apps": 2
-    },
-    {
-      "name": "Witse Konings",
-      "club": "Bristol City (London) Supporters",
-      "assists": 1,
-      "apps": 2
-    },
-    {
-      "name": "Daniel McLane",
-      "club": "Sue's Angels FC",
-      "assists": 1,
-      "apps": 4
-    },
-    {
-      "name": "Michael Bonsu Michaels",
-      "club": "Haydons Park",
-      "assists": 1,
-      "apps": 2
-    },
-    {
-      "name": "Ade Owolana",
-      "club": "Sue's Angels FC",
-      "assists": 1,
-      "apps": 4
-    },
-    {
-      "name": "George Sales",
-      "club": "Haydons Park",
-      "assists": 1,
-      "apps": 1
-    },
-    {
-      "name": "Jack Williams",
-      "club": "Haydons Park",
-      "assists": 1,
-      "apps": 1
-    }
-  ],
+  "scorers": [],
+  "assisters": [],
   "fixtures": [
     {
       "iso": "2026-11-01",
@@ -620,12 +262,16 @@
     "Charlie Dunkley": 3,
     "Leon Burnett": 4
   },
-  "_cancelledNote": "Mousa Mountain FC folded on 17 October 2026 and the league confirmed their removal from League Eight. They are out of `table` and out of `clubs`, and the 18 October fixture against them is cancelled in src/data/fixture-cancellations.json, which is what removes the club's own copy of it from the database. No points were awarded to anyone for the cancelled fixtures. The division is nine clubs now, so the published results and the derived table are reconciled over nine.",
+  "_cancelledNote": "Mousa Mountain FC folded on 17 October 2026 and the league confirmed their removal from League Eight. They are out of `table` and out of `clubs`, and the 18 October fixture against them is cancelled in src/data/fixture-cancellations.json, which is what removes the club's own copy of it from the database. No points were awarded to anyone for the cancelled fixtures. The division is nine clubs now, so the published results and the derived table are reconciled over nine. Pure Football FC 1st Team were removed in turn: they are out of `table`, `clubs`, `results` and `fixtures`, and because their three played matches were EXPUNGED rather than left standing, Brockwell Violets, TSM Rovers and Bristol City all lost the record of a match they had played. Brockwell go 12 points to 9, TSM 6 to 3, Bristol City 4 to 3 - a draw taken away, not a win, which is why they drop a point rather than three. The division is eight clubs and the derived table reconciles over eight.",
   "_tableNoteNote": "A `note` on a table row prints as an asterisk against that club with the sentence under the table, on every page that draws the division. Nothing carries one at the moment: Mousa Mountain did while their record was in limbo, and the mark went when the league settled it. The suite exercises the mechanism on a crafted row rather than on the shipped data, so it keeps testing after a mark is retired.",
   "removed": [
     {
       "club": "Mousa Mountain FC",
       "note": "Folded on 17 October 2026 and removed from League Eight by the league. Their fixture at Sue’s Angels on Sunday 18 October was not played, and no points were awarded."
+    },
+    {
+      "club": "Pure Football FC 1st Team",
+      "note": "Collapsed in October 2026 and removed from League Eight by the league. Their three results were expunged, so the clubs that played them no longer carry the points from those matches. With two clubs gone the division is eight, and no club will be relegated from League Eight this season."
     }
   ],
   "_removedNote": "A club the league has taken OUT of the division, named under the table rather than deleted from the page. A removed club is not a row - it has no position and no record to stand on - but a reader who remembers the fixture is owed an explanation, and a table that simply has one fewer club than last week explains nothing. Rendered with the same tableFootnote() that draws a marked row's asterisk, on the three pages that draw the division."

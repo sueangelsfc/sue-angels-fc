@@ -532,7 +532,7 @@ export function league(d) {
                   <td>${badge(r.club)}${esc(shortClub(r.club))}</td>
                   ${cols.map(([key]) => `<td>${esc(r[key] ?? 0)}</td>`).join('')}
                 </tr>`).join('\n                ');
-  const statTable = (title, attr8, what, rows, cols) => (rows.length
+  const statTable = (title, attr8, what, rows, cols, note = '') => (rows.length
     ? `<h3 class="lg-sub">${title}</h3>
           <div class="lg-tablewrap">
             <table class="lg-tbl lg-sc" ${attr8}>
@@ -549,9 +549,10 @@ export function league(d) {
                 ${statRows(rows, cols)}
               </tbody>
             </table>
-          </div>` : '');
+          </div>${note ? `
+          <p class="tbl-foot">${esc(note)}</p>` : ''}` : '');
   const APPS = ['apps', 'Apps', 'Appearances'];
-  const eightExtra = statTable('Scorers', 'data-l8-scorers', 'scorers', eightScorers, [['goals', 'G', 'Goals'], APPS])
+  const eightExtra = statTable('Scorers', 'data-l8-scorers', 'scorers', eightScorers, [['goals', 'G', 'Goals'], APPS], next.scorersNote || '')
     + statTable('Assists', 'data-l8-assists', 'assists', next.assisters || [], [['assists', 'A', 'Assists'], APPS])
     + statTable('Goals and assists', 'data-l8-ga', 'goals and assists', next.contributions || [],
       [['goals', 'G', 'Goals'], ['assists', 'A', 'Assists'], ['ga', 'G+A', 'Goals and assists'], APPS])

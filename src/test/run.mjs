@@ -7258,18 +7258,30 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
       .map((m) => (m[0].replace(/^<tr[^>]*>\s*<td>[^<]*<\/td>/, '').match(/<td>(\d+)<\/td>/g) || [])
         .map((x) => Number(x.replace(/\D/g, ''))));
     const names = new Set([...(l8.scorers || []).filter((s) => s.goals > 0), ...(l8.assisters || []).filter((s) => s.assists > 0)].map((s) => s.name));
+    /* It needs BOTH halves: with no assist chart transcribed the combined
+       table would restate the scorers and print a nought against every real
+       player, so the page draws none and this retires with it. */
     check('the goals and assists table lists everybody on either list, and each row adds up',
-      gaRows.length === names.size && gaRows.every(([g, a, ga]) => g + a === ga),
+      (l8.assisters || []).length === 0
+        || (gaRows.length === names.size && gaRows.every(([g, a, ga]) => g + a === ga)),
       `${gaRows.length} rows for ${names.size} players`);
+    check('with no assist chart transcribed the league page draws no combined table',
+      (l8.assisters || []).length > 0 || !/data-l8-ga/.test(panel8));
+    /* The chart has had the expunged matches taken out of it, so it says so
+       where it is drawn rather than only in the data file. */
+    check('a scorer chart with a note published prints it under the table',
+      !l8.scorersNote || new RegExp(`data-l8-scorers[\\s\\S]*?tbl-foot`).test(panel8));
   }
   /* THE SCORER AND ASSIST TABLES, ON CRAFTED ROWS.
 
-     The three checks above now retire when `scorers` is empty, and it IS
-     empty: the 4 October chart counted goals scored in the Pure Football
-     matches the league later expunged, so the club is re-reading it. That
-     leaves the rendering untested by the shipped data, which is how a
-     mechanism ends up with no test at all by the time somebody needs it. Same
-     answer as the removed-club footnote: ask it of rows made up here. */
+     The checks above retire when their chart is empty, and `assisters` IS
+     empty: the 4 October chart counted goals and assists from the three Pure
+     Football matches the league later expunged, the scorers have been
+     corrected from the match sheets the club supplied, and the assists are
+     still being re-read. A check conditioned on live data covers nothing on
+     the day the data goes, which is how a mechanism ends up with no test at
+     all by the time somebody needs it. Same answer as the removed-club
+     footnote: ask it of rows made up here. */
   {
     const craftS = [
       { name: 'A Crafted', club: "Sue's Angels FC", goals: 4, assists: 2 },

@@ -1097,6 +1097,11 @@ export function buildDataset(overrides = {}) {
       /* Goals and assists together: everybody on either list, ranked by the
          two added up, then by goals, level players sharing a position. */
       contributions: (() => {
+        /* A combined table needs both halves. With no assist chart transcribed
+           it would restate the scorers and print a nought against every real
+           player, which reads as a man who has made no assists rather than as
+           a figure nobody has read yet. */
+        if (!(t.assisters || []).length) return [];
         const byName = new Map();
         const add = (s, key) => {
           const cur = byName.get(s.name) || { name: s.name, club: s.club, goals: 0, assists: 0, apps: 0 };

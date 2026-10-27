@@ -226,10 +226,208 @@
       "away": "TSM Rovers"
     }
   ],
-  "_scorersNote": "HELD EMPTY SINCE 27 OCTOBER 2026, awaiting a re-read. The chart transcribed on 4 October counted goals scored in the three Pure Football FC 1st Team matches, and those results were expunged when the league removed the club, so it overstated TSM Rovers by 3 goals and Bristol City by 3. It lists goals PER PLAYER, not per match, so which man scored them is not recoverable from it and correcting it would have meant guessing at a real person's record. The 31 scorer rows and 17 assister rows are in git at the commit before this one. The club is re-reading Full-Time's stat leaders page; transcribe that over this and the tables come back. `_clubAssists` is deliberately kept, because it is the club's own corrections to reapply after any read.\n\nThe division's scorers, from Full-Time's stat leaders page (Player stats, Summary, League Eight 26/27), which excludes county cup football. Every player with a goal is kept, spelt as Full-Time prints them; the page lists appearances for everybody else and those are not kept. npm run verify fails if a club's scorers add up to more goals than its results say it scored. THE PAGE SHOWS 25 ROWS AND THE DIVISION HAS MORE, so a re-read is MERGED, never swapped in. On 4 October the cut fell inside the one-goal group at surname O, and six real scorers sat below it (Otudeko, Reid, Rixon, Sayer, Theivendran, Wing); replacing the list would have deleted all six and taken a goal off four clubs. Reconciling every club's scorers against the goals its table row claims is how the transcription is checked: no club is credited with more than it scored, and the shortfalls are own goals and the rows below the cut. Full-Time lists Drew Daley of Haydons Park with a goal and no appearance, which is its own figure and is kept as printed rather than corrected here.",
+  "_scorersNote": "RESTORED 27 OCTOBER 2026, with the expunged goals removed player by player. The chart was transcribed on 4 October and counted goals scored in the three Pure Football FC 1st Team matches, which the league expunged when it removed the club. The club supplied Full-Time's match sheets for all three, so who scored them is read rather than guessed: Makheyi Chilumbi 1 and Vincent Narayna 2 (Pure 0-4 TSM Rovers), Meddy Deschamps, Ben Earle and Samuel Sayer 1 each (Pure 3-3 Bristol City), Charlie Green and Aaron Boniface 1 each (Brockwell Violets 2-0 Pure). Illo Sissoko also scored in the first of those and is below Full-Time's 25-row cut, so he was never in the chart. Deschamps, Sayer and Boniface fall to no goals at all and their rows are gone; a man with nothing but an expunged goal is not a scorer in this division. Appearances are reduced by one for everybody named in those three team sheets, which is why the apps column still reconciles with the table. Club totals after it: TSM Rovers 7 (results 7), Bristol City 3 (results 3), Brockwell Violets 4 (results 8, the rest below the cut). ASSISTS ARE STILL HELD EMPTY at the club's request - they are being re-read separately - and `_clubAssists` is kept for reapplying after that read.\n\nThe division's scorers, from Full-Time's stat leaders page (Player stats, Summary, League Eight 26/27), which excludes county cup football. Every player with a goal is kept, spelt as Full-Time prints them; the page lists appearances for everybody else and those are not kept. npm run verify fails if a club's scorers add up to more goals than its results say it scored. THE PAGE SHOWS 25 ROWS AND THE DIVISION HAS MORE, so a re-read is MERGED, never swapped in. On 4 October the cut fell inside the one-goal group at surname O, and six real scorers sat below it (Otudeko, Reid, Rixon, Sayer, Theivendran, Wing); replacing the list would have deleted all six and taken a goal off four clubs. Reconciling every club's scorers against the goals its table row claims is how the transcription is checked: no club is credited with more than it scored, and the shortfalls are own goals and the rows below the cut. Full-Time lists Drew Daley of Haydons Park with a goal and no appearance, which is its own figure and is kept as printed rather than corrected here.",
   "_assistsNote": "Assists as of 4 October 2026, from the stat leaders page sorted by assists. That sort makes this list COMPLETE where the scorers' is not: the one-assist group ends at row 17 and rows 18 to 25 show none, so nothing is hidden below the 25-row cut. Reconciled against the club's own match records, which agree on every Sue's Angels goal, appearance and assist except two, both of them Full-Time counting one fewer than the club: Charlie Dunkley 3 against 2, and Leon Burnett 4 against 3. The club has confirmed its own four for Burnett and is asking the league to match both. They are listed in _clubAssists and reapplied after every transcription, because a figure defended only in prose is one the next re-read overwrites. Dean Knight's 5 agree on both sides, and both are counting the corner he delivered for the own goal at Barnes Stormers. Everybody else is as Full-Time prints them.",
+  "scorersNote": "The three Pure Football FC 1st Team matches were expunged when the league removed the club, so the goals scored in them have been taken out of this chart and out of the appearances beside it. Assists are being re-read and are not shown yet.",
   "scorersAsOf": "2026-10-04",
-  "scorers": [],
+  "scorers": [
+    {
+      "name": "Ade Owolana",
+      "club": "Sue's Angels FC",
+      "goals": 7,
+      "apps": 4,
+      "assists": 1
+    },
+    {
+      "name": "Charlie Dunkley",
+      "club": "Sue's Angels FC",
+      "goals": 7,
+      "apps": 4,
+      "assists": 3
+    },
+    {
+      "name": "Victor Awosanya",
+      "club": "Three Little Birds FC",
+      "goals": 5,
+      "apps": 3,
+      "assists": 0
+    },
+    {
+      "name": "Makheyi Chilumbi",
+      "club": "TSM Rovers",
+      "goals": 4,
+      "apps": 2,
+      "assists": 0
+    },
+    {
+      "name": "Vincent Narayna",
+      "club": "TSM Rovers",
+      "goals": 3,
+      "apps": 2,
+      "assists": 0
+    },
+    {
+      "name": "Charlie Green",
+      "club": "Brockwell Violets FC",
+      "goals": 2,
+      "apps": 1,
+      "assists": 0
+    },
+    {
+      "name": "Daniel Alexandre reis Pedrosa",
+      "club": "Haydons Park",
+      "goals": 2,
+      "apps": 3,
+      "assists": 0
+    },
+    {
+      "name": "Leon Burnett",
+      "club": "Sue's Angels FC",
+      "goals": 2,
+      "apps": 4,
+      "assists": 4
+    },
+    {
+      "name": "Aaron McNamara",
+      "club": "Haydons Park",
+      "goals": 1,
+      "apps": 3,
+      "assists": 0
+    },
+    {
+      "name": "Alfie James Inman",
+      "club": "Sue's Angels FC",
+      "goals": 1,
+      "apps": 1,
+      "assists": 0
+    },
+    {
+      "name": "Ben Earle",
+      "club": "Bristol City (London) Supporters",
+      "goals": 1,
+      "apps": 1,
+      "assists": 0
+    },
+    {
+      "name": "Ben Harget",
+      "club": "Brockwell Violets FC",
+      "goals": 1,
+      "apps": 2,
+      "assists": 0
+    },
+    {
+      "name": "Damilare Fadairo",
+      "club": "Junction Elite FC Sunday 3rd Team",
+      "goals": 1,
+      "apps": 2,
+      "assists": 0
+    },
+    {
+      "name": "Dino B",
+      "club": "Barnes Stormers FC",
+      "goals": 1,
+      "apps": 3,
+      "assists": 0
+    },
+    {
+      "name": "Drew Daley",
+      "club": "Haydons Park",
+      "goals": 1,
+      "apps": 0,
+      "assists": 0
+    },
+    {
+      "name": "Elis Brumpton",
+      "club": "Sue's Angels FC",
+      "goals": 1,
+      "apps": 3,
+      "assists": 0
+    },
+    {
+      "name": "George Rixon",
+      "club": "Barnes Stormers FC",
+      "goals": 1,
+      "apps": 2,
+      "assists": 0
+    },
+    {
+      "name": "Gereli Mutolo",
+      "club": "Junction Elite FC Sunday 3rd Team",
+      "goals": 1,
+      "apps": 1,
+      "assists": 0
+    },
+    {
+      "name": "Jack Lowe",
+      "club": "Bristol City (London) Supporters",
+      "goals": 1,
+      "apps": 2,
+      "assists": 0
+    },
+    {
+      "name": "James Hayes",
+      "club": "Bristol City (London) Supporters",
+      "goals": 1,
+      "apps": 2,
+      "assists": 1
+    },
+    {
+      "name": "Jon Lloyd",
+      "club": "Sue's Angels FC",
+      "goals": 1,
+      "apps": 2,
+      "assists": 0
+    },
+    {
+      "name": "Keanu Reid",
+      "club": "Junction Elite FC Sunday 3rd Team",
+      "goals": 1,
+      "apps": 1,
+      "assists": 0
+    },
+    {
+      "name": "Liam O'mara leonard",
+      "club": "Junction Elite FC Sunday 3rd Team",
+      "goals": 1,
+      "apps": 1,
+      "assists": 0
+    },
+    {
+      "name": "Oluwatimilehin Otudeko",
+      "club": "Brockwell Violets FC",
+      "goals": 1,
+      "apps": 1,
+      "assists": 0
+    },
+    {
+      "name": "Omar Wing",
+      "club": "Haydons Park",
+      "goals": 1,
+      "apps": 1,
+      "assists": 0
+    },
+    {
+      "name": "Riley Jackson-Hughes",
+      "club": "Haydons Park",
+      "goals": 1,
+      "apps": 2,
+      "assists": 1
+    },
+    {
+      "name": "Shaam Aravindhan",
+      "club": "Three Little Birds FC",
+      "goals": 1,
+      "apps": 2,
+      "assists": 0
+    },
+    {
+      "name": "Shrithananjayan Theivendran",
+      "club": "Three Little Birds FC",
+      "goals": 1,
+      "apps": 2,
+      "assists": 0
+    }
+  ],
   "assisters": [],
   "fixtures": [
     {

@@ -192,8 +192,15 @@ export function buildDataset(overrides = {}) {
      Existing rows carry none of these fields, so nothing about the recorded
      season moves: `npm run verify` still reconciles the derived figures
      against the published league table. */
+  /* THE SHOOTOUT IS A FIELD ABOUT THE MATCH, SO IT HAS TO BE ON THIS LIST.
+     `phs`/`pas` are what the panel stores when a cup tie is settled on
+     penalties, and this overlay rebuilds the match from a NAMED list of
+     fields - so anything missing from it is dropped on the way in and reaches
+     nothing. The panel asked for the shootout, stored it and rendered it back
+     correctly, and the site read the Juizo tie of 25 October 2026 as a bare
+     0-0 for three days: a field with a save button, a writer and no reader. */
   const FIXTURE_FIELDS = ['date', 'kick', 'home', 'away', 'hs', 'as', 'kind',
-    'competition', 'venue', 'wo'];
+    'phs', 'pas', 'competition', 'venue', 'wo'];
 
   const byId = new Map((ps.SEASON_RESULTS || []).map((r) => [r.id, r]));
   for (const [key, data] of detailById) {

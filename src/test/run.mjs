@@ -2121,6 +2121,32 @@ for (const [f, h] of pages) {
       && lostPens.shootout.won === false && lostPens.shootout.us === 4
       && nm(pen({}), {}).shootout === null,
     JSON.stringify(wonPens.shootout));
+  /* AND IT IS SAID IN THE NOTE BESIDE THE RESULT. "Decided on penalties"
+     was all this ever said, correctly, while the record could not hold a
+     shootout; saying only that over figures the club HAS entered is the
+     page withholding the one thing somebody opened it for. A tie with none
+     on record still reads the old way, which is the half that must not
+     change: the Kew Antigua tie of April 2026 is 2-2 with no shootout. */
+  check('the result note names the shootout where the club recorded one',
+    wonPens.resultNote === 'Won 5-4 on penalties'
+      && lostPens.resultNote === 'Lost 4-5 on penalties'
+      && nm(pen({}), {}).resultNote === 'Decided on penalties',
+    `${wonPens.resultNote} / ${nm(pen({}), {}).resultNote}`);
+
+  /* THE FIELD HAS TO SURVIVE THE WAY A MATCH IS ASSEMBLED. dataset.mjs
+     rebuilds every match from a NAMED list of fields, so a field missing
+     from that list is dropped on the way in and reaches nothing - which is
+     what happened: the panel asked for the shootout, stored it and rendered
+     it back correctly, and the site read the Juizo tie of 25 October 2026 as
+     a bare 0-0 for three days. Asked of the shipped file rather than of one
+     match, because the list is the thing that can lose a field again. */
+  {
+    const dsSrc = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'dataset.mjs'), 'utf8');
+    const fields = /const FIXTURE_FIELDS = (\[[^\]]*\])/.exec(dsSrc);
+    const list = fields ? fields[1] : '';
+    check('the shootout is on the list of fields a stored match carries over',
+      /'phs'/.test(list) && /'pas'/.test(list) && /'wo'/.test(list), list.slice(0, 120));
+  }
 
   /* TWO SOURCES FOR ONE SHOOTOUT, SO THEY ARE COMPARED. The league's results
      table carries it in cups-2627.json and the club's record carries its own;

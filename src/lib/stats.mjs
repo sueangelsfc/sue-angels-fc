@@ -216,6 +216,7 @@ export function normaliseMatch(raw, detail) {
   const kind = raw.kind || 'fixture';
   const hasScore = Number.isFinite(hs) && Number.isFinite(as);
 
+  const shootout = shootoutOf(raw, weAreHome);
   const isWalkover = kind === 'walkover';
   const isPenalty = kind === 'penalty';
   const played = isWalkover || (hasScore && (kind === 'score' || isPenalty));
@@ -289,7 +290,7 @@ export function normaliseMatch(raw, detail) {
        Blank is a real answer: the Kew Antigua tie of April 2026 is 2-2 with
        no shootout on record, and it is shown as decided on penalties with no
        winner claimed rather than having one invented to fill the field. */
-    shootout: shootoutOf(raw, weAreHome),
+    shootout,
     countsGoals,
     competition: raw.competition || 'League Ten',
     /* Worked out once, here, so a page filtering matches never has to know
@@ -319,7 +320,17 @@ export function normaliseMatch(raw, detail) {
     resultNote: isWalkover
       ? (outcome === 'L' ? 'Conceded as a walkover' : 'Awarded as a walkover')
       : isPenalty
-        ? 'Decided on penalties'
+        /* NAMED WHERE THE CLUB HAS RECORDED IT. The note said only "Decided
+           on penalties" because for a long time the record could not hold a
+           shootout, and a winner would have been invented. It can, so where
+           the figures are there they are said; the Kew Antigua tie of April
+           2026 has none and still reads as it did, which is the half of this
+           that must not change. A TIE WON ON PENALTIES IS STILL A DRAW in
+           `outcome`, here as everywhere: this is a note beside the result and
+           never a part of it. */
+        ? (shootout
+          ? `${shootout.won ? 'Won' : 'Lost'} ${shootout.us}-${shootout.them} on penalties`
+          : 'Decided on penalties')
         : null,
   };
 }

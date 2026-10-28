@@ -27,7 +27,7 @@
    ========================================================================== */
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
-import { teamSummary, fmtDate, isUs } from '../lib/stats.mjs';
+import { teamSummary, fmtDate, isUs, byCompetition, slugify } from '../lib/stats.mjs';
 import { cupRoutes } from '../lib/cups.mjs';
 import { seasonViews, defaultView, seasonBar, seasonPanels, matchNote } from '../lib/seasons.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
@@ -282,10 +282,84 @@ function matchesPage(d, mode) {
       </div>
     </section>` : '';
 
+  /* ================= EVERY COMPETITION =================
+     MOVED HERE FROM /league.html, at the club's request. That page is the
+     division - the table, the scoring chart, the round just played - and the
+     club's own record across the league and both cups is a record of its
+     MATCHES, which is what this page is.
+
+     It follows the season bar, which it did not have to on the league page:
+     there it hid with the division tab and named its season in its own lede.
+     Here the bar is three lines above it, so a band describing 26/27 under a
+     25/26 tab would be the page arguing with itself. Built from the match
+     record, so a cup entered next season appears the moment its first result
+     is saved, and no friendlies: pre-season is not a competition the club
+     entered, and on the first League Eight weekend this band was all
+     pre-season when it counted them. */
+  const compRecord = (v) => {
+    const played = (v.competitive || []).filter((m) => m.played);
+    const list = byCompetition(played);
+    if (!list.length) return '<p class="mt-lede">No competitive matches in this season yet.</p>';
+    const run = (name) => played.filter((m) => m.competition === name)
+      .slice().sort((a, b) => (a.iso || '').localeCompare(b.iso || ''));
+    const crest = (club) => (isUs(club)
+      ? `<img class="lg-res__crest" src="${STAR}" alt="" width="18" height="22" loading="lazy" decoding="async" />`
+      : oppBadge(club, d.badges, 18, 18));
+    return `<p class="lg-around__lede">${esc(CLUB.short)} played in ${esc(list.length)}
+          ${list.length === 1 ? 'competition' : 'competitions'} in ${esc(v.label || v.name || '')}.
+          This is the club's own record of each.</p>
+        <div class="lg-chiprow" role="tablist" aria-label="Competition" data-comp-tabs>
+          ${list.map((cp, i) => `<a class="lg-chip${i === 0 ? ' is-on' : ''}" role="tab"
+            id="cp-t-${esc(slugify(cp.competition))}" href="#cp-${esc(slugify(cp.competition))}"
+            aria-selected="${i === 0 ? 'true' : 'false'}" aria-controls="cp-${esc(slugify(cp.competition))}"
+            data-comp="${attr(slugify(cp.competition))}">${esc(shortComp(cp.competition))}</a>`).join('\n          ')}
+        </div>
+        ${list.map((cp, i) => `<div class="lg-panel" role="tabpanel" tabindex="0"
+          id="cp-${esc(slugify(cp.competition))}" aria-labelledby="cp-t-${esc(slugify(cp.competition))}"
+          data-comp-panel="${attr(slugify(cp.competition))}"${i === 0 ? '' : ' hidden'}>
+          <p class="lg-cp__name">${esc(cp.competition)}</p>
+          <ul class="lg-cp__sum">
+            <li><b>${esc(cp.played)}</b><i>Played</i></li>
+            <li><b>${esc(cp.won)}</b><i>Won</i></li>
+            <li><b>${esc(cp.drawn)}</b><i>Drawn</i></li>
+            <li><b>${esc(cp.lost)}</b><i>Lost</i></li>
+            <li><b>${esc(cp.goalsFor)}</b><i>Scored</i></li>
+            <li><b>${esc(cp.goalsAgainst)}</b><i>Conceded</i></li>
+            <li><b>${esc(cp.cleanSheets)}</b><i>Clean sheets</i></li>
+          </ul>
+          <ol class="lg-results lg-cp__run">
+            ${run(cp.competition).map((m) => `<li class="lg-res${m.isWalkover ? ' is-wo' : ''} is-us">
+              <span class="lg-res__date">${esc(fmtDate(m.date))}${m.round
+      ? `<i class="lg-res__round">${esc(m.roundShort || m.round)}</i>` : ''}</span>
+              <span class="lg-res__side${m.weAreHome ? ' is-us' : ''}">${esc(shortClub(m.weAreHome ? CLUB.name : m.opponent))}${crest(m.weAreHome ? CLUB.name : m.opponent)}</span>
+              <span class="lg-res__score">${m.isWalkover
+      ? '<abbr class="lg-res__wo" title="Awarded as a walkover">W/O</abbr>'
+      : esc(m.scoreline || '·')}${m.decidedOnPenalties
+      ? `<i class="lg-res__pens">${esc(m.shootout ? `pens ${m.shootout}` : 'on pens')}</i>` : ''}</span>
+              <span class="lg-res__side is-away${m.weAreHome ? '' : ' is-us'}">${crest(m.weAreHome ? m.opponent : CLUB.name)}${esc(shortClub(m.weAreHome ? m.opponent : CLUB.name))}</span>
+            </li>`).join('\n            ')}
+          </ol>
+        </div>`).join('\n        ')}
+        <p class="lg-note">The club's own record. It counts a walkover as played and won with no
+          goals, which is why these figures and the league's own table agree on points and not
+          always on goals.</p>`;
+  };
+
+  const compsBand = `<section class="sec mt-comps" id="comps" aria-labelledby="mt-cp-h">
+      <div class="wrap">
+        ${rail(awaiting.length ? 3 : 2, 'Every competition', 'League and cups')}
+        <h2 class="h2 rv" id="mt-cp-h">Not just the <span class="volt">league.</span></h2>
+        <div class="rv">
+          ${seasonBar(VIEWS, DEFAULT, matchNote, { esc, attr })}
+          ${seasonPanels(VIEWS, DEFAULT, compRecord, { attr })}
+        </div>
+      </div>
+    </section>`;
+
   const listBand = `<section class="sec mt-list" id="matches" aria-labelledby="mt-list-h">
       <div class="wrap">
         ${/* Follows the season bar: the grid below it is filtered. */''}
-        ${rail(awaiting.length ? 3 : 2, 'Every match', `${VIEWS[DEFAULT].matches.length} played`)
+        ${rail(awaiting.length ? 4 : 3, 'Every match', `${VIEWS[DEFAULT].matches.length} played`)
     .replace('<span class="xrail__r">', '<span class="xrail__r" data-played-count>')}
         <h2 class="h2 rv" id="mt-list-h">Match by <span class="volt">match.</span></h2>
 
@@ -586,7 +660,7 @@ function matchesPage(d, mode) {
 
   return {
     body: siteHeader(isFixtures ? '/fixtures.html' : '/results.html')
-      + (isFixtures ? fixHero + fixBand + cupBand : hero + recordBand + awaitingBand + listBand)
+      + (isFixtures ? fixHero + fixBand + cupBand : hero + recordBand + awaitingBand + compsBand + listBand)
       + liveBand
       + sourceNote(['fulltime', 'surreyfa'])
       + ctaBand,

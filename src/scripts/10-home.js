@@ -1810,11 +1810,15 @@
    One panel visible at a time. The markup ships every panel present and only
    this script adds [hidden], so a script failure leaves all five readable
    rather than blanking the band. */
-(function () {
-  var strip = document.querySelector('[data-comp-tabs]');
-  if (!strip) return;
+/* EVERY STRIP, NOT THE FIRST. This moved to the results page, where it sits
+   inside the season panels: one strip per season, all of them shipped in the
+   HTML, and `querySelector` would wire whichever came first in the document,
+   which is not the season the page opens on. Panels are scoped to the strip's
+   own season panel for the same reason. */
+[].slice.call(document.querySelectorAll('[data-comp-tabs]')).forEach(function (strip) {
+  var scope = strip.closest('[data-season-view]') || document;
   var tabs = [].slice.call(strip.querySelectorAll('[data-comp]'));
-  var panels = [].slice.call(document.querySelectorAll('[data-comp-panel]'));
+  var panels = [].slice.call(scope.querySelectorAll('[data-comp-panel]'));
   if (!tabs.length || !panels.length) return;
 
   function show(key, focus) {
@@ -1847,7 +1851,7 @@
       show(tabs[n].getAttribute('data-comp'), true);
     });
   });
-})();
+});
 
 /* ---- Records page: filter the record cards -----------------------------
    The cards ship visible and unfiltered; only this script adds [hidden], so

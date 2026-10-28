@@ -293,3 +293,65 @@ html.js .mt[hidden]{display: none;}
    the league's own figure is printed beside it. Only the first pill pushes
    to the right, or the two would part company across the row. */
 .cup-score.is-pens{margin-left: 0;}
+
+/* ---- Every competition ---------------------------------------------------
+   The band moved here from /league.html, and so did the rules it needs. They
+   are copies of 37-league.css's, scoped to .mt-comps: the league page still
+   draws its own results list and its own Full-Time chips with the originals,
+   so this is a copy rather than a move, and the scope is what stops the two
+   ever reaching each other. `.lg-chip` and `.lg-chiprow` are not here because
+   they live in 20-home.css, which every rebuilt page already loads. */
+.mt-comps .lg-around__lede{margin: 16px 0 0; max-width: 62ch;
+  font-size: 14.5px; line-height: 1.7; color: var(--ink-2);}
+.mt-comps .lg-note{margin-top: 16px; max-width: 74ch; font-size: 13px;
+  line-height: 1.7; color: var(--ink-3);}
+.mt-comps .lg-panel:focus-visible{outline: 2px solid var(--volt); outline-offset: 6px;
+  border-radius: 14px;}
+.mt-comps .lg-cp__name{margin: clamp(16px, 2.2vw, 22px) 0 0;
+  font-family: var(--display); font-weight: 500; font-size: clamp(18px, 2vw, 22px);
+  letter-spacing: -0.02em; color: var(--fg);}
+.mt-comps .lg-cp__sum{list-style: none; margin: 16px 0 0; padding: 0;
+  display: grid; gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 108px), 1fr));}
+.mt-comps .lg-cp__sum li{display: grid; gap: 3px; padding: 14px 16px; border-radius: 14px;
+  border: 1px solid var(--line-d); background: rgba(var(--sink), 0.5);}
+.mt-comps .lg-cp__sum b{font-family: var(--display); font-weight: 500;
+  font-size: clamp(21px, 2.4vw, 27px); letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums; color: var(--fg);}
+.mt-comps .lg-cp__sum i{font-style: normal; font-family: var(--ui); font-size: 9px;
+  font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ink-3);}
+.mt-comps .lg-cp__run{margin-top: 14px;}
+.mt-comps .lg-results{list-style: none; margin: clamp(20px, 3vw, 30px) 0 0; padding: 0;
+  display: grid; gap: 4px;}
+.mt-comps .lg-res{display: grid; align-items: center; gap: 14px;
+  grid-template-columns: 86px minmax(0, 1fr) 62px minmax(0, 1fr);
+  padding: 11px 16px; border-radius: 12px;
+  border: 1px solid transparent; background: rgba(var(--lift), 0.022);}
+.mt-comps .lg-res.is-us{background: rgba(var(--volt-rgb), 0.07);
+  border-color: rgba(var(--volt-rgb), 0.22);}
+.mt-comps .lg-res__date{font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);}
+.mt-comps .lg-res__round{display: block; margin-top: 3px; font-style: normal;
+  font-family: var(--ui); font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--volt-text);}
+.mt-comps .lg-res__side{display: flex; align-items: center; justify-content: flex-end;
+  gap: 10px; min-width: 0; font-size: 14px; color: var(--ink-2); text-align: right;}
+.mt-comps .lg-res__side.is-away{justify-content: flex-start; text-align: left;}
+.mt-comps .lg-res__side.is-us{color: var(--fg); font-weight: 500;}
+.mt-comps .lg-res__crest{flex: none; width: 18px; height: 22px; object-fit: contain;}
+.mt-comps .lg-res__score{text-align: center;
+  font-family: var(--display); font-weight: 500; font-size: 16px;
+  letter-spacing: -0.01em; font-variant-numeric: tabular-nums; color: var(--fg);}
+/* A tie settled on penalties is still a draw in the record, so the shootout
+   is printed BESIDE the scoreline and never into it. */
+.mt-comps .lg-res__pens{display: block; margin-top: 2px; font-style: normal;
+  font-family: var(--ui); font-size: 8.5px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--volt-text);}
+.mt-comps .lg-res.is-wo .lg-res__score{font-family: var(--ui);}
+.mt-comps .lg-res__wo{font-family: var(--ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.08em; color: var(--ink-3); text-decoration: none;
+  border-bottom: 1px dotted rgba(var(--lift), 0.28); cursor: help;}
+@media (max-width: 680px){
+  .mt-comps .lg-res{grid-template-columns: minmax(0, 1fr) 54px minmax(0, 1fr); row-gap: 6px;}
+  .mt-comps .lg-res__date{grid-column: 1 / -1;}
+}

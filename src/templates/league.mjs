@@ -24,7 +24,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
-import { fmtDate, isUs, byCompetition, slugify, isLeague, positionByRound, ordinal } from '../lib/stats.mjs';
+import { fmtDate, isUs, slugify, positionByRound, ordinal } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
 import { sourceNote, tableMark, tableFootnote } from '../lib/blocks.mjs';
 import { leagueUnderway } from '../lib/home-layout.mjs';
@@ -485,68 +485,13 @@ export function league(d) {
 
      Built from the match record, so a cup entered next season appears here
      the moment its first result is saved. Nothing to add by hand. */
-  /* NO FRIENDLIES, AND THE SEASON THAT HAD A CUP. Pre-season was listed here
-     as a competition, and on the first League Eight weekend this band was all
-     pre-season. It covers the most recent season with a cup in it, and it is
-     part of that season's division tab, so it hides with that table. */
-  const inCompetition = (m) => m.played && !m.friendly;
-  const compSeason = [...new Set((d.played || [])
-    .filter((m) => inCompetition(m) && !isLeague(m)).map((m) => m.season))].sort().pop();
-  const inCompSeason = (m) => inCompetition(m) && m.season === compSeason;
-  const comps = compSeason ? byCompetition((d.played || []).filter(inCompSeason)) : [];
-  const compRun = (name) => (d.played || [])
-    .filter((m) => inCompSeason(m) && m.competition === name)
-    .slice()
-    .sort((a, b) => (a.iso || '').localeCompare(b.iso || ''));
-  const compPanel = compSeason === (next.season || d.nextSeason) ? 'eight' : 'ten';
-
-  const compsBand = comps.length ? `<section class="sec lg-comps" id="comps" data-league-panel="${compPanel}" aria-labelledby="lg-cp-h">
-      <div class="wrap">
-        ${rail(4, 'Every competition', `${comps.length} entered`)}
-        <h2 class="h2 rv" id="lg-cp-h">Not just the <span class="volt">league.</span></h2>
-        <p class="lg-around__lede rv">${esc(CLUB.short)} played in ${esc(comps.length)} competitions
-          in ${esc(compSeason)}. This is the club's own record of each.</p>
-
-        <div class="lg-chiprow rv" role="tablist" aria-label="Competition" data-comp-tabs>
-          ${comps.map((c, i) => `<a class="lg-chip${i === 0 ? ' is-on' : ''}" role="tab"
-            id="cp-t-${esc(slugify(c.competition))}" href="#cp-${esc(slugify(c.competition))}"
-            aria-selected="${i === 0 ? 'true' : 'false'}" aria-controls="cp-${esc(slugify(c.competition))}"
-            data-comp="${attr(slugify(c.competition))}">${esc(shortComp(c.competition))}</a>`).join('\n          ')}
-        </div>
-
-        ${comps.map((c, i) => {
-    const run = compRun(c.competition);
-    return `<div class="lg-panel rv" role="tabpanel" tabindex="0"
-          id="cp-${esc(slugify(c.competition))}" aria-labelledby="cp-t-${esc(slugify(c.competition))}"
-          data-comp-panel="${attr(slugify(c.competition))}"${i === 0 ? '' : ' hidden'}>
-          <p class="lg-cp__name">${esc(c.competition)}</p>
-          <ul class="lg-cp__sum">
-            <li><b>${esc(c.played)}</b><i>Played</i></li>
-            <li><b>${esc(c.won)}</b><i>Won</i></li>
-            <li><b>${esc(c.drawn)}</b><i>Drawn</i></li>
-            <li><b>${esc(c.lost)}</b><i>Lost</i></li>
-            <li><b>${esc(c.goalsFor)}</b><i>Scored</i></li>
-            <li><b>${esc(c.goalsAgainst)}</b><i>Conceded</i></li>
-            <li><b>${esc(c.cleanSheets)}</b><i>Clean sheets</i></li>
-          </ul>
-          <ol class="lg-results lg-cp__run">
-            ${run.map((m) => `<li class="lg-res${m.isWalkover ? ' is-wo' : ''} is-us">
-              <span class="lg-res__date">${esc(fmtDate(m.date))}${m.round
-      ? `<i class="lg-res__round">${esc(m.roundShort || m.round)}</i>` : ''}</span>
-              <span class="lg-res__side${m.weAreHome ? ' is-us' : ''}">${esc(shortClub(m.weAreHome ? CLUB.name : m.opponent))}${badge(m.weAreHome ? CLUB.name : m.opponent)}</span>
-              <span class="lg-res__score">${m.isWalkover
-      ? '<abbr class="lg-res__wo" title="Awarded as a walkover">W/O</abbr>'
-      : esc(m.scoreline || '·')}</span>
-              <span class="lg-res__side is-away${m.weAreHome ? '' : ' is-us'}">${badge(m.weAreHome ? m.opponent : CLUB.name)}${esc(shortClub(m.weAreHome ? m.opponent : CLUB.name))}</span>
-            </li>`).join('\n            ')}
-          </ol>
-        </div>`;
-  }).join('\n        ')}
-        <p class="lg-note">The club's own record. It counts a walkover as played and won with no
-          goals, which is why these figures and the league's own table agree on points and not
-          always on goals.</p>
-      </div>
-    </section>` : '';
+  /* EVERY COMPETITION MOVED TO /results.html, at the club's request. This
+     page is the division: the table, the chart, the round just played. The
+     club's own record across the league and both cups is a record of its
+     MATCHES, which is what the results page is, and it belongs beside the
+     season bar that filters them rather than under a League Eight table it
+     has nothing to do with. `byCompetition` is in stats.mjs and is read
+     there now; nothing of it is left here. */
 
   /* ================= SOURCE ================= */
   /* GO AND CHECK IT. Everything above is transcribed, and the one Full-Time
@@ -668,7 +613,7 @@ export function league(d) {
        160KB ceiling, and a line break is still whitespace. No pre, textarea or
        inline script in the body. */
     body: (siteHeader('/league.html') + hero + tableBand.replace('__L8_EXTRA__', eightExtra) + scorersBand + aroundBand + sourceNote(['fulltime', 'surreyfa'])
-      + compsBand + sourceBand + ctaBand).replace(/\n[ \t]+/g, '\n'),
+      + sourceBand + ctaBand).replace(/\n[ \t]+/g, '\n'),
     bodyClass: 'is-home is-sub is-league',
     css: 'home.css',
     shell: 'home',

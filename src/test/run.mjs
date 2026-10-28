@@ -1266,6 +1266,20 @@ for (const f of shipped) {
         path.join(ROOT, 'src', 'data', 'fixtures-2627.json'), 'utf8')).fixtures || [];
       check('the played-fixture filter is actually removing some',
         raw0.length > offered.length, `${raw0.length} in the baseline, ${offered.length} offered`);
+      /* AND THE BANNER'S SENTENCE HAS TO BE TRUE. It says the website is
+         showing these from the site's code, so every one offered must be a
+         fixture the site is actually showing. A transcribed fixture whose day
+         has passed with no result is on no page - the Mousa Mountain match of
+         18 October was offered for weeks after the club folded - and
+         importing it creates a row for a match nobody will play. */
+      const shown = new Set((dF.upcoming || []).map((f) => f.id));
+      const unshown = offered.filter((f) => !shown.has(f.id));
+      check('every fixture offered for import is one the website is showing',
+        unshown.length === 0, unshown.map((f) => f.id).join(', '));
+      const stale0 = raw0.filter((f) => !shown.has(f.id)
+        && !playedDays.has(String(f.id || '').slice(1, 9)));
+      check('and the baseline holds at least one it would have offered wrongly',
+        stale0.length > 0, 'nothing past and unplayed in the baseline');
     }
   }
 

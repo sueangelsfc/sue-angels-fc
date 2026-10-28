@@ -562,6 +562,16 @@ const adminSeed = {
       const day = String(f.id || '').slice(1, 9);
       return !(d.matches || []).some((m) => m.played && String(m.id || '').slice(1, 9) === day);
     })
+    /* AND THE BANNER'S OWN SENTENCE HAS TO BE TRUE. It says "the website is
+       showing these from the site's code", which is the whole reason to
+       import them, and that was false for any transcribed fixture whose day
+       has gone by with no result: the site derives what is still to come
+       against the day it was generated, so those are on no page. The Mousa
+       Mountain fixture of 18 October was being offered weeks after the club
+       folded, and importing it would have created a row for a match nobody
+       will ever play, on the Fixtures list and on Matchday, deletable only by
+       hand. Offer what the site is actually showing. */
+    .filter((f) => (d.upcoming || []).some((x) => x.id === f.id))
     .map((f) => {
       const resolved = (d.fixtures || []).find((x) => x.id === f.id) || {};
       return { ...f, competition: resolved.competition || '', kick: f.kick || resolved.kick || '' };

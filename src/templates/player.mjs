@@ -1381,8 +1381,18 @@ export function playerPage(p, d) {
                       ${/* One line a match, no indentation inside: these rows repeat
                             for every position a player ever held, and on the
                             longest careers the whitespace alone was 8KB of a
-                            page sitting at its 160KB ceiling. */''}
-                      ${ms.map((x) => `<li data-season-scope="${x.si} all"><span class="pf-pos__res" data-res="${attr(x.outcome || '')}">${esc(x.outcome || '-')}</span><span class="pf-pos__badge">${oppBadge(x.opponent, d.badges, 22, 22)}</span><span class="pf-pos__club">${esc(shortClub(x.opponent))}</span><span class="pf-pos__score">${esc(x.score)}</span><span class="pf-pos__comp">${esc(shortComp(x.competition))}</span><span class="pf-pos__date">${esc(x.date)}${x.bench ? ' · bench' : ''}</span></li>`).join('')}
+                            page sitting at its 160KB ceiling.
+
+                            AND NO CLASS ON ANY CELL, for the same reason the
+                            league page's 399 result cells lost theirs: every
+                            row is the same six spans in the same order, so
+                            saying so six times a row bought nothing a
+                            positional selector scoped to the list does not.
+                            6KB on the heaviest profile, which is what paid for
+                            the 36th match. `data-res` stays, because W, D and
+                            L are data the stylesheet reads rather than a name
+                            for a column. */''}
+                      ${ms.map((x) => `<li data-season-scope="${x.si} all"><span data-res="${attr(x.outcome || '')}">${esc(x.outcome || '-')}</span><span>${oppBadge(x.opponent, d.badges, 22, 22)}</span><span>${esc(shortClub(x.opponent))}</span><span>${esc(x.score)}</span><span>${esc(shortComp(x.competition))}</span><span>${esc(x.date)}${x.bench ? ' · bench' : ''}</span></li>`).join('')}
                     </ol>
                   </div>
                 </details>

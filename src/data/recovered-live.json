@@ -7999,6 +7999,275 @@
         "penaltiesConceded": 0
       },
       "updated_at": "2026-10-13T22:21:05+00:00"
+    },
+    {
+      "key": "r20261025-juizo",
+      "data": {
+        "as": 0,
+        "hs": 0,
+        "id": "r20261025-juizo",
+        "pas": 3,
+        "phs": 4,
+        "away": "Sue's Angels FC",
+        "date": "25 Oct 2026",
+        "home": "Juizo FC",
+        "kick": "10:30",
+        "kind": "penalty",
+        "motm": null,
+        "subs": [
+          {
+            "on": 4,
+            "off": 6,
+            "minute": 45
+          },
+          {
+            "on": 38,
+            "off": 3,
+            "minute": 60
+          },
+          {
+            "on": 3,
+            "off": 23,
+            "minute": 80
+          }
+        ],
+        "bench": [
+          {
+            "num": 41,
+            "positions": []
+          },
+          {
+            "num": 29,
+            "positions": []
+          },
+          {
+            "on": true,
+            "num": 4,
+            "onAt": 45,
+            "spells": [
+              {
+                "pos": "LDM",
+                "half": "2",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "LDM"
+            ]
+          },
+          {
+            "on": true,
+            "num": 38,
+            "onAt": 60,
+            "spells": [
+              {
+                "pos": "LWB",
+                "half": "2",
+                "role": ""
+              }
+            ],
+            "positions": [
+              "LWB"
+            ]
+          }
+        ],
+        "cover": "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/cover-match-1792963194041.jpg",
+        "goals": [],
+        "saves": 4,
+        "shape": "",
+        "venue": "Clapham Common, Pitch 6",
+        "keeper": 28,
+        "assists": [],
+        "captain": 25,
+        "savedAt": "2026-10-28T20:14:30.389Z",
+        "approach": {},
+        "redCards": [],
+        "starters": [
+          {
+            "num": 28,
+            "role": "SHS",
+            "spells": [
+              {
+                "pos": "GK",
+                "half": "1",
+                "role": "SHS"
+              }
+            ],
+            "positions": [
+              "GK"
+            ]
+          },
+          {
+            "num": 20,
+            "role": "OFB",
+            "spells": [
+              {
+                "pos": "RWB",
+                "half": "1",
+                "role": "OFB"
+              }
+            ],
+            "positions": [
+              "RWB"
+            ]
+          },
+          {
+            "num": 10,
+            "role": "STP",
+            "spells": [
+              {
+                "pos": "RCB",
+                "half": "1",
+                "role": "STP"
+              }
+            ],
+            "positions": [
+              "RCB"
+            ]
+          },
+          {
+            "num": 40,
+            "role": "STP",
+            "spells": [
+              {
+                "pos": "CB",
+                "half": "1",
+                "role": "STP"
+              }
+            ],
+            "positions": [
+              "CB"
+            ]
+          },
+          {
+            "num": 25,
+            "role": "STP",
+            "spells": [
+              {
+                "pos": "LCB",
+                "half": "1",
+                "role": "STP"
+              }
+            ],
+            "positions": [
+              "LCB"
+            ]
+          },
+          {
+            "num": 2,
+            "role": "DFB",
+            "spells": [
+              {
+                "pos": "LWB",
+                "half": "1",
+                "role": "DFB"
+              }
+            ],
+            "positions": [
+              "LWB"
+            ]
+          },
+          {
+            "num": 6,
+            "role": "B2B",
+            "spells": [
+              {
+                "pos": "RCM",
+                "half": "1",
+                "role": "B2B"
+              }
+            ],
+            "positions": [
+              "RCM"
+            ],
+            "subbedOff": true
+          },
+          {
+            "num": 23,
+            "role": "REG",
+            "spells": [
+              {
+                "pos": "CM",
+                "half": "1",
+                "role": "REG"
+              }
+            ],
+            "positions": [
+              "CM"
+            ],
+            "subbedOff": true
+          },
+          {
+            "num": 12,
+            "role": "APM",
+            "spells": [
+              {
+                "pos": "LCM",
+                "half": "1",
+                "role": "APM"
+              }
+            ],
+            "positions": [
+              "LCM"
+            ]
+          },
+          {
+            "num": 3,
+            "role": "TM",
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "1",
+                "role": "TM"
+              }
+            ],
+            "positions": [
+              "ST"
+            ]
+          },
+          {
+            "num": 9,
+            "role": "CHR",
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "1",
+                "role": "CHR"
+              }
+            ],
+            "positions": [
+              "ST"
+            ]
+          }
+        ],
+        "formation": "3-5-2",
+        "commentary": "",
+        "cleanSheets": [
+          {
+            "num": 28
+          }
+        ],
+        "competition": "Supreme Trophies Marcus Lipton Cup",
+        "yellowCards": [
+          {
+            "num": 4
+          },
+          {
+            "num": 25
+          },
+          {
+            "num": 6
+          }
+        ],
+        "opponentGoals": [],
+        "penaltiesSaved": [],
+        "penaltiesMissed": [],
+        "opponentRedCards": [
+          {}
+        ],
+        "penaltiesConceded": 0
+      },
+      "updated_at": "2026-10-28T20:14:30.389+00:00"
     }
   ],
   "articles": [
@@ -11395,17 +11664,30 @@
   ],
   "fixtures": [
     {
-      "key": "f20261025-juizo-mlip",
+      "key": "f20261101-tsm",
       "data": {
-        "away": "Sue's Angels FC",
-        "date": "25 Oct 2026",
-        "home": "Juizo FC",
-        "kick": "10:30",
+        "away": "TSM Rovers",
+        "date": "01 Nov 2026",
+        "home": "Sue's Angels FC",
+        "kick": "11:00",
         "kind": "fixture",
-        "venue": "Clapham Common, Pitch 6",
-        "competition": "Supreme Trophies Marcus Lipton Cup"
+        "venue": "The Reeves Sports Club",
+        "competition": "League Eight"
       },
-      "updated_at": "2026-10-19T22:39:05.124+00:00"
+      "updated_at": "2026-10-28T19:56:05.45+00:00"
+    },
+    {
+      "key": "f20261115-station-sljc",
+      "data": {
+        "away": "The Station",
+        "date": "15 Nov 2026",
+        "home": "Sue's Angels FC",
+        "kick": "11:00",
+        "kind": "fixture",
+        "venue": "The Reeves Sports Club",
+        "competition": "Surrey FA Sunday Lower Junior County Cup"
+      },
+      "updated_at": "2026-10-28T19:56:05.541+00:00"
     },
     {
       "key": "f2627-pcup-r2-swans",

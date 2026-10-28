@@ -274,7 +274,18 @@ export async function panelChecks() {
   for (const tr of res.body.querySelectorAll('tr[data-key]')) {
     const k = tr.getAttribute('data-key');
     const m = rows.matches.find((x) => x.key === k);
-    if (m && (m.data.starters || []).length >= 11) {
+    /* NOT SIMPLY THE NEWEST MATCH WITH A TEAM SHEET. The dialog opened here
+       is asked three different questions below, and each needs the record to
+       hold the thing it is about: the claim pickers only exist where there
+       are goals, and the shootout box is only shut where the tie was not
+       decided on one. Taking the first full sheet meant whichever match the
+       club saved last, and on 28 October that became a goalless cup tie
+       settled on penalties - so the claims check saw three dropdowns instead
+       of seven and the shootout check found the box correctly open and called
+       it a failure. Both were checks conditioned on live data, and the data
+       moved. */
+    if (m && (m.data.starters || []).length >= 11
+      && (m.data.goals || []).length > 0 && (m.data.kind || 'score') === 'score') {
       chosen = m;
       sheetSize = new Set([...(m.data.starters || []), ...(m.data.bench || [])]
         .map((x) => String(x.num))).size;
@@ -286,8 +297,9 @@ export async function panelChecks() {
       break;
     }
   }
-  check('a match with a full team sheet can be opened for editing', !!modal && sheetSize >= 11,
-    `sheet ${sheetSize}`);
+  check('a match with a full team sheet, goals and an ordinary score can be opened for editing',
+    !!modal && sheetSize >= 11 && (chosen.data.goals || []).length > 0,
+    `sheet ${sheetSize}, ${chosen ? (chosen.data.goals || []).length : 0} goals`);
 
   if (modal) {
     /* The own-goal choice on a scorer dropdown is not a player and is not a
@@ -371,9 +383,12 @@ export async function panelChecks() {
       check('the match editor asks for the shootout', !!box
         && !!modal.querySelector('#m-pus') && !!modal.querySelector('#m-pthem'));
       const kindSel = modal.querySelector('#m-kind');
+      /* The record opened here is an ordinary score by construction above,
+         so "shut" is a fact about the form rather than about whichever match
+         the club saved last. */
       check('and keeps it hidden until the tie was decided on one',
-        !!box && box.hidden === true && !!kindSel,
-        box ? `hidden=${box.hidden}` : 'no box');
+        !!box && box.hidden === true && !!kindSel && (chosen.data.kind || 'score') === 'score',
+        box ? `hidden=${box.hidden}, kind=${chosen.data.kind || 'score'}` : 'no box');
       if (kindSel && box) {
         PR.type(kindSel, 'penalty');
         await PR.settle(ctx);

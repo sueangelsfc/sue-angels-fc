@@ -846,23 +846,23 @@ html.js .pf-plot__hint--fine{display: block;}
   padding: 9px 0; border-top: 1px solid rgba(var(--lift), 0.06);
   font-size: 13px;}
 /* The opponent's own mark, never recoloured, only sized. */
-.pf-pos__badge{display: grid; place-items: center; width: 26px; height: 26px;
+.pf-pos__list li > :nth-child(2){display: grid; place-items: center; width: 26px; height: 26px;
   border-radius: 50%; background: rgba(var(--lift), 0.06);
   border: 1px solid var(--line-d);}
-.pf-pos__badge img{width: 17px; height: 17px; object-fit: contain;}
-.pf-pos__comp{font-family: var(--ui); font-size: 9px; font-weight: 700;
+.pf-pos__list li > :nth-child(2) img{width: 17px; height: 17px; object-fit: contain;}
+.pf-pos__list li > :nth-child(5){font-family: var(--ui); font-size: 9px; font-weight: 700;
   letter-spacing: 0.12em; text-transform: uppercase; color: var(--volt-text);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
-.pf-pos__res{display: grid; place-items: center; width: 20px; height: 20px;
+.pf-pos__list li > :first-child{display: grid; place-items: center; width: 20px; height: 20px;
   border-radius: 6px; border: 1px solid var(--line-d);
   font-family: var(--ui); font-size: 9px; font-weight: 700; color: var(--ink-3);}
-.pf-pos__res[data-res="W"]{background: var(--volt); border-color: var(--volt);
+.pf-pos__list li > [data-res="W"]{background: var(--volt); border-color: var(--volt);
   color: var(--text-on-brand);}
-.pf-pos__res[data-res="D"]{border-color: rgba(var(--volt-rgb), 0.5); color: var(--volt-text);}
-.pf-pos__club{color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
-.pf-pos__score{font-family: var(--display); font-weight: 500; color: var(--fg);
+.pf-pos__list li > [data-res="D"]{border-color: rgba(var(--volt-rgb), 0.5); color: var(--volt-text);}
+.pf-pos__list li > :nth-child(3){color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;}
+.pf-pos__list li > :nth-child(4){font-family: var(--display); font-weight: 500; color: var(--fg);
   font-variant-numeric: tabular-nums;}
-.pf-pos__date{font-family: var(--ui); font-size: 10px; letter-spacing: 0.06em;
+.pf-pos__list li > :nth-child(6){font-family: var(--ui); font-size: 10px; letter-spacing: 0.06em;
   color: var(--ink-3); text-align: right; white-space: nowrap;}
 
 /* Opening a row picks that spot out on the pitch beside it. */
@@ -874,8 +874,8 @@ html.js .pf-pitch__grid.is-picking .pf-spot.is-picked{opacity: 1;}
 
 @media (max-width: 900px){
   .pf-pos__list li{grid-template-columns: 22px 26px minmax(0, 1fr) 46px;}
-  .pf-pos__comp{grid-column: 3 / -1; font-size: 8.5px;}
-  .pf-pos__date{grid-column: 3 / -1; text-align: left;}
+  .pf-pos__list li > :nth-child(5){grid-column: 3 / -1; font-size: 8.5px;}
+  .pf-pos__list li > :nth-child(6){grid-column: 3 / -1; text-align: left;}
 }
 
 @media (prefers-reduced-motion: reduce){

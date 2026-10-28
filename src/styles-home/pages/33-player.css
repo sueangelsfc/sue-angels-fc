@@ -1072,3 +1072,43 @@ html.js .pf-pitch__grid.is-picking .pf-spot.is-picked{opacity: 1;}
 @media (prefers-reduced-motion: reduce){
   .pf-run__tip{transition: none;}
 }
+
+/* ---- Where he scores from ------------------------------------------------
+   One pitch, a layer per season tab, and a list beside it carrying the same
+   facts in words - the marks are a shape to read at a glance and the list is
+   what a screen reader and a printer get. */
+.pf-shots__grid{display: grid; gap: clamp(20px, 4vw, 40px); align-items: start;
+  grid-template-columns: minmax(0, 1fr);}
+@media (min-width: 860px){.pf-shots__grid{grid-template-columns: minmax(0, 300px) minmax(0, 1fr);}}
+.pf-shots__fig{margin: 0; display: grid; gap: 10px; justify-items: center;}
+.pf-shots__svg{width: 100%; max-width: 300px; height: auto; display: block;}
+.pf-shots__fig figcaption{font-size: 12px; line-height: 1.5; color: var(--ink-3);
+  max-width: 34ch;}
+.pf-shots__none{margin: 0; color: var(--ink-3); font-size: 14px;}
+.pf-sh__turf{fill: rgba(255, 255, 255, 0.03);}
+.pf-sh__lines{fill: none; stroke: rgba(255, 255, 255, 0.22); stroke-width: 0.6;
+  vector-effect: non-scaling-stroke;}
+.pf-sh__pk{fill: rgba(255, 255, 255, 0.22);}
+/* A goal is filled, an assist is the same mark hollow. Difference by weight
+   and structure rather than by a second hue, which is the site's rule for
+   football data everywhere else. */
+.pf-sh--g .pf-sh__o{fill: rgba(var(--volt-rgb), 0.18);}
+.pf-sh--g .pf-sh__c{fill: var(--volt);}
+.pf-sh--a .pf-sh__o{fill: none; stroke: rgba(var(--volt-rgb), 0.55);
+  stroke-width: 0.8; vector-effect: non-scaling-stroke;}
+.pf-sh--a .pf-sh__c{fill: none;}
+.pf-shots__list{list-style: none; margin: 0; padding: 0; display: grid; gap: 2px;}
+.pf-shots__list li{display: grid; grid-template-columns: 56px minmax(0, 1fr);
+  gap: 4px 10px; padding: 9px 0; border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 13.5px; align-items: baseline;}
+.pf-shots__list b{font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);}
+.pf-shots__list span{color: var(--fg);}
+.pf-shots__list i{grid-column: 2; font-style: normal; color: var(--ink-3);
+  font-size: 12.5px;}
+@media (prefers-reduced-motion: no-preference){
+  .pf-shots .pf-sh{opacity: 0; transform-box: fill-box;}
+  .pf-shots.is-in .pf-sh{animation: pf-sh-in 0.45s both;
+    animation-delay: calc(0.3s + var(--n) * 0.07s);}
+}
+@keyframes pf-sh-in{from{opacity: 0;}to{opacity: 1;}}

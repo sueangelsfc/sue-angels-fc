@@ -371,6 +371,98 @@ export async function panelChecks() {
       }
     }
 
+    /* MARKING A GOAL ON THE PITCH, RENDERED AND DRIVEN.
+       The club records what a goal was struck with and roughly where from -
+       three buckets - and asked for the Harry Kane picture: every goal as a
+       point on a pitch. The point is the record now, so the three-bucket
+       dropdown has to stop being editable the moment there is one, or the
+       two say different things about one goal the first time somebody moves
+       the marker and leaves the select alone.
+
+       Driven rather than grepped, for this panel's recurring reason: a
+       correct mechanism attached to nothing passes every static check. The
+       button is pressed, the chunk is fetched through the shell's own
+       loader, the dialog is opened, the marker is moved with a key and the
+       record is read back. */
+    {
+      const withSpot = {
+        ...chosen,
+        data: {
+          ...chosen.data,
+          goals: (chosen.data.goals || []).map((g, i) => (i === 0
+            ? { ...g, og: false, situation: '', spot: { x: 38.5, y: 9.2 } }
+            : { ...g, og: false, situation: '', spot: undefined })),
+        },
+      };
+      const ctx3 = PR.boot({
+        rows: { ...rows, matches: rows.matches.map((m) => (m.key === chosen.key ? withSpot : m)) },
+      });
+      const r3 = await PR.openPanel(ctx3, 'results');
+      const tr3 = r3.body.querySelectorAll('tr[data-key]')
+        .filter((t) => t.getAttribute('data-key') === chosen.key)[0];
+      PR.click(tr3.querySelector('[data-edit]'));
+      await PR.settle(ctx3);
+      PR.flushMutations(ctx3.doc.body);
+      await PR.settle(ctx3);
+      const m3 = ctx3.doc.querySelector('.modal-backdrop');
+      const cards = m3 ? m3.querySelectorAll('[data-goal]') : [];
+      const btn0 = cards[0] && cards[0].querySelector('[data-g-mark="g"]');
+      check('a goal already marked on the pitch says so on its card',
+        !!btn0 && btn0.getAttribute('class').includes('is-set'),
+        btn0 ? btn0.getAttribute('class') : 'no button');
+      /* THE HALF THAT MATTERS. A button that reads "Marked" on every card
+         would pass the check above and tell the club nothing. */
+      const btn1 = cards[1] && cards[1].querySelector('[data-g-mark="g"]');
+      check('a goal nobody has marked does not claim to be',
+        cards.length < 2 || (!!btn1 && !btn1.getAttribute('class').includes('is-set')),
+        btn1 ? btn1.getAttribute('class') : `${cards.length} cards`);
+      /* ONE FACT, ONE SOURCE. The zone dropdown is the same answer in three
+         buckets, so while there is a point it cannot be edited. */
+      const z0 = cards[0] && cards[0].querySelector('[data-g-zone]');
+      const z1 = cards[1] && cards[1].querySelector('[data-g-zone]');
+      check('the three-bucket zone is switched off where a point is marked',
+        !!z0 && z0.getAttribute('disabled') != null
+          && (cards.length < 2 || (!!z1 && z1.getAttribute('disabled') == null)),
+        `${z0 && z0.getAttribute('disabled')} / ${z1 && z1.getAttribute('disabled')}`);
+
+      /* The pitch itself, fetched on the press like the report writer. */
+      if (btn1) {
+        PR.click(btn1);
+        await PR.settle(ctx3);
+        await PR.settle(ctx3);
+        const dlg = ctx3.doc.querySelector('.cpp');
+        check('pressing Mark fetches the pitch chunk and opens it',
+          !!dlg && !!dlg.querySelector('.cpp__svg'), dlg ? 'open' : 'nothing opened');
+        if (dlg) {
+          /* A POINTER IS NOT THE ONLY WAY TO ANSWER. The arrow keys are the
+             only route a keyboard has into this control, and a picker a
+             keyboard cannot reach is a field only a mouse can fill in. */
+          const field = dlg.querySelector('.cpp__svg');
+          const ev = new PR.DomEvent('keydown', { bubbles: true });
+          ev.key = 'ArrowUp';
+          field.dispatchEvent(ev);
+          await PR.settle(ctx3);
+          /* Read off the screen, not off the record handed in: the editor
+             carries its own copy of the goals (carryAssists rebuilds them),
+             so a check reading the fixture would pass whether anything
+             reached the form or not. One press up from the middle of the box
+             is y 11, which is 15.4 in the pitch's own 140-tall box. */
+          const mark = dlg.querySelector('[data-mark]');
+          check('the arrow keys move the marker, so a keyboard can answer',
+            !!mark && mark.getAttribute('hidden') == null
+              && /15\.40/.test(mark.getAttribute('transform') || ''),
+            mark ? `${mark.getAttribute('hidden')} ${mark.getAttribute('transform')}` : 'no marker');
+          /* And the card behind it says so straight away, rather than at
+             the end: a button still reading "Mark it" over a marked point
+             is how somebody marks the same goal twice. */
+          check('marking a point sets the card behind the dialog',
+            btn1.getAttribute('class').includes('is-set')
+              && cards[1].querySelector('[data-g-zone]').disabled === true,
+            btn1.getAttribute('class'));
+        }
+      }
+    }
+
     /* THE SHOOTOUT, RENDERED. The record could not hold one and the form
        said so in a note, so the club could enter a 0-0 and nothing else of
        an afternoon decided on penalties. Driven rather than grepped: the box
@@ -487,6 +579,11 @@ export async function panelChecks() {
       const prev = h.previousElementSibling;
       return !(prev && (['input', 'select', 'textarea'].includes(prev.localName)
         || (prev.localName === 'label' && prev.querySelector('input,select,textarea'))
+        /* A BUTTON THAT OPENS A PICKER IS A CONTROL. The pitch marker is a
+           field whose widget happens to be a dialog, and it names its own
+           hint, which is what tells it apart from the three block-level notes
+           this check exists for: none of those pointed at anything. */
+        || (prev.localName === 'button' && prev.getAttribute('aria-describedby') === h.id)
         || prev.classList.contains('field__hint')));
     });
     check('every field hint in the match editor is beside a field',

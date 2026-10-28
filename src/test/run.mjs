@@ -2768,7 +2768,16 @@ const BUDGET = {
      stats page is where somebody is most tempted to invent a component set. */
   /* 7 -> 8, 1.6KB, for the data desk and the printable sponsor report. */
   /* 8 -> 9, 1.1KB, for the maps, the flow, journey chips and the motion. */
-  'control.css': 9,
+  /* 9 -> 10, and the 360 bytes are the pitch picker: the button that sits on
+     a goal card, the dialog it opens and the pitch inside it. Measured by
+     building without the block (9,196 gz, which is 20 bytes under the old
+     ceiling) and with it (9,556).
+
+     There was nothing to trim it out of. The dialog reuses `.btn`, `.me__x`
+     and `.field__hint`, the panel's own tokens carry every colour and radius,
+     and the pitch markings are drawn from figures the build hands over rather
+     than written here. What is left is a control the panel did not have. */
+  'control.css': 10,
   /* 11 -> 12 for draft recovery, deliberately and once. The shell was at
      10.78KB of 11, and what pushed it over is cross-cutting safety code that
      CANNOT be lazy: a listener that loads on demand cannot catch typing that
@@ -2811,7 +2820,15 @@ const BUDGET = {
      which is how every lazy file is cache-busted: 13,344 bytes against 13,312.
      Any new lazy chunk at all would have failed here, whatever it held, so the
      ceiling was describing this file rather than limiting it. */
-    'control.js': 14,
+  /* 14 -> 15, and it is the same sentence coming true. `control-pitch.js` is
+     a new chunk, so its hashed address goes in CP_CHUNKS, so this file grew
+     by FOURTEEN BYTES and went over. Nothing in the shell changed.
+
+     Not raised to make room for more shell code: everything the pitch picker
+     does is in its own chunk and the hook for it is in control-matchedit.js.
+     What this number has to keep measuring is the shell, so the next raise
+     still has to name what it bought. */
+    'control.js': 15,
   /* The heaviest, and fairly: the pitch, the position names, five tabs, the
      goal detail (what it was struck with, where from, what the ball was doing,
      who made it and how), and the composer that turns a coach's bullets into a
@@ -3309,7 +3326,16 @@ for (const [f, kb] of Object.entries({
      ONE BUILDER FOR BOTH PAIRS OF FIELDS WAS TRIED AND MEASURED: it cost 128
      bytes MORE, because gzip already compresses the repetition and the
      abstraction is new text. Written out longhand on the evidence. */
-  'src/admin/lazy/11-matchedit.js': 36,
+  /* 36 -> 37, and the 613 bytes are marking a goal on a pitch: the button on
+     each card, the one that opens for an assist, the opener that fetches the
+     chunk, and a penalty filling its own point in. Measured at 36,015 gz of
+     source before and 36,628 after.
+
+     THE PITCH ITSELF IS NOT IN HERE and that is the point of the number. A
+     dialog, an SVG and a drag is `control-pitch.js`, fetched on the first
+     press, so the most-opened chunk in the panel carries the hook and not the
+     feature. The emitted chunk moved 17.4 -> 17.9 of its 18KB. */
+  'src/admin/lazy/11-matchedit.js': 37,
   'src/admin/lazy/95-home.js': 11,
   /* Source, so the bios riding with the chunk cannot hide code growth.
 
@@ -10996,6 +11022,96 @@ let orphanClasses = new Map();
     /if\s*\(\s*window\.SA_GA_ID\s*\)/.test(consent));
   check('and consent for it needs a saved choice, never a default',
     /google:\s*false/.test(consent) && /return\s*!!choice\s*&&\s*!!p\[purpose\]/.test(consent));
+}
+
+/* ==========================================================================
+   WHERE IT HAPPENED, AS A POINT
+
+   The club records a goal's location in three buckets and now records a point
+   where somebody has marked one on the pitch in the panel. Two sources for
+   one fact is the fault this repository keeps having, so the rule is that the
+   point wins and the bucket is DERIVED from it in dataset.mjs, before
+   anything is counted.
+
+   Asked on CRAFTED records, never on the archive. Nobody has marked a point
+   yet - this is the week the panel learned to ask - so every one of these
+   checks would pass over the shipped data with nothing implemented at all,
+   and would go red and be deleted as noise on the day the club marks its
+   first goal from outside the box. */
+{
+  const { zoneOf, spotOf, spotWords, shotsFor, assistSpotsFor, PITCH } =
+    await import('../lib/pitch.mjs');
+
+  /* The boundaries, from both sides. A check that only ever asks about the
+     middle of each region passes on a rule with its comparisons the wrong
+     way round. */
+  check('a point inside the six-yard box is the six-yard box',
+    zoneOf({ x: 50, y: PITCH.six.y1 - 0.1 }) === 'six', String(zoneOf({ x: 50, y: 5 })));
+  check('a point level with the six-yard line but wide of it is not',
+    zoneOf({ x: PITCH.six.x0 - 0.1, y: 3 }) === 'box', String(zoneOf({ x: 30, y: 3 })));
+  check('a point past the eighteen-yard line is outside the box',
+    zoneOf({ x: 50, y: PITCH.box.y1 + 0.1 }) === 'outside', String(zoneOf({ x: 50, y: 20 })));
+  check('a point wide of the box is outside it however deep',
+    zoneOf({ x: PITCH.box.x0 - 0.1, y: 2 }) === 'outside', String(zoneOf({ x: 20, y: 2 })));
+
+  /* NOTHING IS INVENTED. A goal nobody marked has to come back as nothing:
+     a default would put it on the penalty spot and publish that as a fact
+     about where this man scores from. */
+  check('a goal nobody marked has no point, and junk is not a point',
+    spotOf({}) === null && spotOf({ spot: {} }) === null
+      && spotOf({ spot: { x: 'left', y: 4 } }) === null
+      && spotOf({ spot: { x: 50, y: 4 } }) !== null, 'guarded');
+
+  const crafted = [
+    {
+      id: 'c1', season: '26/27', opponent: 'Crafted FC', score: '3-0',
+      detail: {
+        goals: [
+          { num: 7, minute: 12, spot: { x: 50, y: 3 }, bodyPart: 'right' },
+          { num: 7, minute: 44, zone: 'six', spot: { x: 50, y: 30 } },
+          { num: 7, minute: 60 },
+          { num: 9, minute: 70, spot: { x: 40, y: 8 }, assist: { num: 7, type: 'cross', spot: { x: 88, y: 20 } } },
+          { og: true, num: null, minute: 80, spot: { x: 50, y: 4 } },
+        ],
+      },
+    },
+  ];
+  const shots = shotsFor(crafted, 7);
+  check('a shot map holds the goals a man marked and only those',
+    shots.length === 2 && shots.every((s) => s.zone),
+    `${shots.length} of 5 goals`);
+  check('an own goal is on nobody’s shot map',
+    !shotsFor(crafted, null).length && !shots.some((s) => s.minute === 80), 'excluded');
+  const made = assistSpotsFor(crafted, 7);
+  check('the point on an assist is read off the assist, not the goal',
+    made.length === 1 && made[0].x === 88 && made[0].type === 'cross',
+    made.length ? `${made[0].x},${made[0].y}` : 'none');
+  check('the words under a point say where it was, in a sentence',
+    spotWords({ x: 50, y: 3 }) === 'the six-yard box, the middle'
+      && /outside the box/.test(spotWords({ x: 50, y: 30 })),
+    spotWords({ x: 50, y: 30 }));
+
+  /* THE POINT BEATS THE BUCKET, AND THIS IS THE CHECK THAT MATTERS. The
+     second crafted goal is stored as "six-yard box" with its marker thirty
+     yards out, which is exactly what a record looks like after somebody
+     moves the marker and leaves the select alone. */
+  const probeDet = JSON.parse(JSON.stringify(crafted[0].detail));
+  for (const g of probeDet.goals) {
+    const z = zoneOf(spotOf(g));
+    if (z) g.zone = z;
+  }
+  check('a stored zone disagreeing with its own point loses to the point',
+    probeDet.goals[1].zone === 'outside' && probeDet.goals[0].zone === 'six',
+    `${probeDet.goals[1].zone} / ${probeDet.goals[0].zone}`);
+  check('a goal with no point keeps whatever bucket it was stored with',
+    probeDet.goals[2].zone === undefined, String(probeDet.goals[2].zone));
+
+  /* The probe: take the guard out of spotOf and a goal nobody marked
+     acquires a point and a zone, which is the failure this whole file is
+     built to make impossible. */
+  const loose = (o) => (o && o.spot ? { x: Number(o.spot.x) || 0, y: Number(o.spot.y) || 0 } : { x: 50, y: 10 });
+  check('probe: a spot reader that invents a default marks every goal',
+    zoneOf(loose(crafted[0].detail.goals[2])) !== null, 'probe fires');
 }
 
 console.log(`  classes on an element no rule reaches, one page per family: ${orphanClasses.size}`

@@ -49,6 +49,7 @@ import { coachPage } from './templates/coach.mjs';
 import { control } from './templates/control.mjs';
 import { VOCAB } from './lib/football.mjs';
 import { POSITION_VOCAB, ROLE_VOCAB } from './lib/positions.mjs';
+import { pitchMarks } from './lib/pitch.mjs';
 import { STATUS_VOCAB } from './lib/squad-status.mjs';
 import * as esbuild from 'esbuild';
 
@@ -835,6 +836,11 @@ const adminSeed = {
      src/lib/football.mjs. The panel builds its dropdowns from this, so the
      words it offers and the words the website prints cannot drift apart. */
   vocab: VOCAB,
+  /* The pitch the picker draws, measured once in src/lib/pitch.mjs. The panel
+     cannot import a module, so the markings are handed over rather than drawn
+     a second time by hand - which is how a penalty spot ends up in two
+     different places on the same website. */
+  pitch: pitchMarks(140),
   /* Club crests, so the panel can DRAW a match-report cover: two badges, the
      score and the date. The panel matches names exactly, so every opponent
      the club has played or will play is also keyed under the name as STORED,
@@ -927,6 +933,7 @@ const CHUNK_SEED_KEYS = {
      and the third time the budget is what found it. `positions` stays in the
      shared seed because the match LISTS chunk reads it too. */
   matchedit: ['roles', 'vocab'],
+  pitch: ['pitch'],
 };
 const chunkSeedJs = {};
 for (const [chunk, keys] of Object.entries(CHUNK_SEED_KEYS)) {

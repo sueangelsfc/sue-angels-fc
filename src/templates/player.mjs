@@ -37,6 +37,7 @@ import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { BODY_PARTS, ZONES, SITUATIONS, ASSIST_TYPES } from '../lib/football.mjs';
 import { POSITION_LABEL, POSITION_XY, positionName } from '../lib/positions.mjs';
+import { pitchMarks, shotsFor, assistSpotsFor, spotWords } from '../lib/pitch.mjs';
 import { playerProfile, playerStats, fmtDate, isLeague, ordinal } from '../lib/stats.mjs';
 import { FRIENDLY_NOTE_SHORT } from '../lib/prose.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
@@ -1259,6 +1260,72 @@ export function playerPage(p, d) {
     return blobs.map((b) => `<circle cx="${b.x.toFixed(1)}" cy="${b.y.toFixed(1)}" r="${b.r.toFixed(1)}" style="--o:${b.o.toFixed(2)};--d:${((b.i % 9) * 0.72).toFixed(1)}s"/>`).join('');
   };
 
+  /* ================= WHERE HE SCORES FROM =================
+     The club records a POINT for a goal now, marked on a pitch in the panel,
+     and this is the reader for it. Before this the record held three buckets
+     - six-yard box, inside, outside - which a season of goals reduces to a
+     bar chart of three bars, and a striker who scores everything from the
+     penalty spot and one who scores everything from the back post came out
+     identical.
+
+     IT DRAWS ONLY WHAT SOMEBODY MARKED. No point, no marker: a default would
+     put a goal on the penalty spot and publish it as a fact about where this
+     man scores. So the band empties itself, and on a profile where nobody has
+     marked anything it does not exist - which is most of them today, because
+     this is the week the panel learned to ask.
+
+     THE ATTACKING HALF, unless something happened outside it. Every goal but
+     a freak one is struck inside it, so drawing the whole pitch spends half
+     the picture on grass where nothing is and makes the part that matters
+     half the size. A goal from beyond halfway widens it rather than falling
+     off the edge. */
+  const strikeOf = (list) => {
+    const goals = shotsFor(list, p.num);
+    const made = assistSpotsFor(list, p.num);
+    const deep = [...goals, ...made].some((s) => s.y > 50);
+    return { goals, made, span: deep ? 100 : 55, any: goals.length + made.length };
+  };
+  const strikeViews = views.map((v) => ({ ...v, ...strikeOf(v.list) }));
+  const strikeAny = strikeViews.some((v) => v.any);
+  /* One pitch, a layer per tab, the same device the heat map uses - three
+     pitches would be the 207KB mistake again, in a different band. */
+  const strikePitch = (v) => {
+    const H = 140;
+    const mk = pitchMarks(H);
+    const sy = (y) => ((y / v.span) * H).toFixed(2);
+    const mark = (s, i, kind) => `<g class="pf-sh pf-sh--${kind}" style="--n:${i}" transform="translate(${s.x.toFixed(1)} ${sy(s.y)})">
+              <circle class="pf-sh__o" r="4.6"/><circle class="pf-sh__c" r="2.3"/>
+              <title>${esc(kind === 'g' ? 'Goal' : 'Assist')}${s.minute ? `, ${s.minute}′` : ''} v ${esc(s.opponent)}: ${esc(spotWords(s))}.</title>
+            </g>`;
+    return `<svg class="pf-shots__svg" viewBox="0 0 100 ${H}" preserveAspectRatio="xMidYMid meet" data-season-scope="${attr(v.key)}" role="img" aria-labelledby="pf-sh-t${attr(v.key.split(' ')[0])}">
+            <title id="pf-sh-t${attr(v.key.split(' ')[0])}">Where ${esc(p.first)} struck ${v.goals.length === 1 ? 'his goal' : `his ${v.goals.length} goals`} from${v.made.length ? ` and where he played ${v.made.length === 1 ? 'his assist' : 'his assists'} from` : ''}. Every one is listed under the pitch.</title>
+            <rect class="pf-sh__turf" x="1" y="1" width="98" height="${H - 2}" rx="3"/>
+            <path class="pf-sh__lines" d="${mk.lines}"/><path class="pf-sh__lines" d="${mk.arcs}"/>
+            <circle class="pf-sh__lines" cx="${mk.circle.cx}" cy="${mk.circle.cy}" r="${mk.circle.r}"/>
+            ${mk.spots.map((s) => `<circle class="pf-sh__pk" cx="${s.cx}" cy="${s.cy}" r="0.9"/>`).join('')}
+            ${v.made.map((s, i) => mark(s, i, 'a')).join('')}
+            ${v.goals.map((s, i) => mark(s, i, 'g')).join('')}
+          </svg>`;
+  };
+  const strikeBand = strikeAny ? `<section class="sec pf-shots" aria-labelledby="pf-shots-h">
+      <div class="wrap">
+        ${rail(RAIL.next(), 'Where he scores from', `${strikeViews[strikeViews.length - 1].goals.length} marked`)}
+        <h2 class="h2 rv" id="pf-shots-h">Where he <span class="volt">scores.</span></h2>
+        <div class="pf-shots__grid rv">
+          <figure class="pf-shots__fig">
+            ${strikeViews.map((v) => (v.any ? strikePitch(v) : `<p class="pf-shots__none" data-season-scope="${attr(v.key)}">Nothing marked on the pitch for this season.</p>`)).join('\n            ')}
+            <figcaption>Attacking upward. Filled is a goal, hollow is where he played an assist from. Only goals somebody has marked on the pitch in the control panel appear here.</figcaption>
+          </figure>
+          <div class="pf-shots__body">
+            ${strikeViews.map((v) => `<ol class="pf-shots__list" data-season-scope="${attr(v.key)}">
+              ${[...v.goals.map((s) => ({ ...s, kind: 'Goal' })), ...v.made.map((s) => ({ ...s, kind: 'Assist' }))]
+      .map((s) => `<li><b>${esc(s.kind)}</b><span>${esc(s.opponent)}${s.minute ? `, ${esc(String(s.minute))}′` : ''}</span><i>${esc(spotWords(s))}</i></li>`).join('')}
+            </ol>`).join('\n            ')}
+          </div>
+        </div>
+      </div>
+    </section>` : '';
+
   const pitchBand = heat.length ? `<section class="sec pf-pitch" aria-labelledby="pf-pitch-h">
       <div class="wrap">
         ${/* The count follows the tab: each layer's own number of positions. */''}
@@ -1579,7 +1646,7 @@ export function playerPage(p, d) {
        break is still whitespace, so nothing renders differently: no player
        page holds a <pre>, a <textarea> or white-space: pre. */
     body: numberRails(siteHeader('/squad.html') + hero + seasonBand + versusBand
-      + pitchBand + howBand + shotsBand + honoursBand + ctaBand).replace(/\n[ \t]+/g, '\n'),
+      + pitchBand + strikeBand + howBand + shotsBand + honoursBand + ctaBand).replace(/\n[ \t]+/g, '\n'),
     bodyClass: 'is-home is-sub is-player',
     css: 'home.css',
     shell: 'home',

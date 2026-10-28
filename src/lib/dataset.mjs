@@ -9,6 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { POSITION_GROUPS, positionName } from './positions.mjs';
+import { zoneOf, spotOf } from './pitch.mjs';
 import { readStatusRecord, statusIn, statusLabelIn, isPlaying, joinedAfter, signedOn,
   statusDetail } from './squad-status.mjs';
 import { houseRecord } from './prose.mjs';
@@ -159,6 +160,20 @@ export function buildDataset(overrides = {}) {
   }
 
   applyCorrections(detailById, read('match-corrections.json').corrections || []);
+
+  /* A POINT ON THE PITCH BEATS A DROPDOWN SAYING ROUGHLY THE SAME THING.
+     The club has recorded the zone in three buckets since the form was
+     written and now records a point where somebody has marked one, and the
+     two are one fact. So the zone is derived from the point wherever there is
+     one, here, before anything is counted - which means a record carrying
+     both can never publish a goal as struck from outside the box with its
+     marker inside it, however the panel is edited afterwards. */
+  for (const data of detailById.values()) {
+    for (const g of (data && data.goals) || []) {
+      const z = zoneOf(spotOf(g));
+      if (z) g.zone = z;
+    }
+  }
 
   /* ---- Matches ----------------------------------------------------------
      A match used to be assembled from two places that only one of them could

@@ -35,3 +35,44 @@
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));}
 .cp-approach__a{display: grid; gap: 4px; min-width: 0;}
 .cp-approach__l{font-size: 12px; font-weight: 600; color: var(--text-muted);}
+
+/* ---- Marking a point on the pitch ---------------------------------------
+   The button lives on a goal card and the dialog opens over the form. The
+   pitch is the control, so it is the thing that gets the room; everything
+   else in here is a label for it. */
+.gcard__mark{margin: var(--space-2) 0 0;}
+.cpp-btn{display: inline-flex; align-items: center; gap: var(--space-2);
+  cursor: pointer; font: inherit; font-size: var(--step--1); color: var(--text-muted);
+  background: var(--surface-inset); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 7px 12px;}
+.cpp-btn:hover{border-color: var(--border-brand); color: var(--text);}
+.cpp-btn__i{width: 13px; height: 17px; border: 1.5px solid currentColor;
+  border-radius: 2px; position: relative; flex: none; opacity: 0.55;}
+.cpp-btn__i::after{content: ""; position: absolute; inset: auto 3px 2px;
+  height: 4px; border: 1.5px solid currentColor; border-bottom: 0;}
+.cpp-btn.is-set{color: var(--brand-text); border-color: var(--border-brand);}
+.cpp-btn.is-set .cpp-btn__i{opacity: 1;}
+.cpp-btn.is-set .cpp-btn__i::before{content: ""; position: absolute;
+  left: 50%; top: 55%; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px;
+  border-radius: 50%; background: currentColor;}
+.cpp{position: fixed; inset: 0; z-index: 60; display: grid; place-items: center;
+  padding: var(--space-3); background: rgba(0, 0, 0, 0.62); overflow: auto;}
+.cpp__panel{background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: var(--space-4);
+  width: min(380px, 100%); display: grid; gap: var(--space-3);}
+.cpp__head{display: flex; align-items: center; justify-content: space-between;
+  gap: var(--space-3);}
+.cpp__h{margin: 0; font-size: var(--step-1); font-weight: var(--weight-semi);
+  color: var(--text);}
+.cpp__field{display: grid; justify-items: center;}
+.cpp__svg{width: min(260px, 100%); height: auto; display: block;
+  border-radius: var(--radius-sm); cursor: crosshair; touch-action: none;}
+.cpp__turf{fill: var(--surface-inset);}
+.cpp__lines{fill: none; stroke: var(--border); stroke-width: 0.7;
+  vector-effect: non-scaling-stroke;}
+.cpp__dot{fill: var(--text-subtle);}
+.cpp__halo{fill: var(--brand); opacity: 0.22;}
+.cpp__pin{fill: var(--brand); stroke: var(--surface); stroke-width: 0.8;}
+.cpp__read{margin: 0; font-size: var(--step--1); color: var(--text-muted);
+  text-align: center; min-height: 1.4em;}
+.cpp__acts{display: flex; gap: var(--space-2); justify-content: flex-end;}

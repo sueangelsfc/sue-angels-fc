@@ -118,8 +118,14 @@
       if (idx >= 0) pool.splice(idx, 1);
     });
     var goals = rawGoals.map(function (g) {
+      /* THE POINT RIDES WITH THE ASSIST, and it has to be named here or it
+         is deleted. This rebuilds each goal from an explicit list of fields,
+         so anything not named is dropped on the way in and gone on the next
+         save - which would have quietly wiped every marked point the first
+         time somebody opened an old match. */
       var assist = g.assist && g.assist.num
-        ? { num: g.assist.num, type: g.assist.type || 'pass' } : null;
+        ? { num: g.assist.num, type: g.assist.type || 'pass', spot: g.assist.spot } : null;
+      if (assist && !assist.spot) delete assist.spot;
       var gm = minOf(g.minute);
       if (!assist && gm != null) {
         var idx = -1;
@@ -137,6 +143,7 @@
         bodyPart: g.bodyPart || '',
         zone: g.zone || '',
         situation: situationOf(g),
+        spot: g.spot,
         assist: assist,
       };
     });
@@ -535,6 +542,66 @@
       }).join('');
   }
 
+  /* A point somebody actually marked, or nothing. Never a default: the
+     middle of the pitch stored for every unmarked goal would publish a shot
+     map describing where nobody scored from. Mirrors spotOf() in
+     src/lib/pitch.mjs, which is what the site reads the same field with. */
+  function spotOf(o) {
+    var s = o && o.spot;
+    if (!s || typeof s.x !== 'number' || typeof s.y !== 'number') return null;
+    return { x: s.x, y: s.y };
+  }
+
+  /* The button on a card. It does NOT describe the point: the words for that
+     are the site's, derived from the same coordinates, and a second sentence
+     written here is a second rule that can disagree with the published one.
+     It says whether anybody has answered, which is the question somebody
+     opening a three-week-old record actually has. */
+  function markField(i, kind, spot, hint) {
+    var id = 'g' + i + '-' + kind + '-mark';
+    return '<div class="gcard__mark">' +
+      '<button type="button" class="cpp-btn' + (spot ? ' is-set' : '') + '"' +
+        ' data-g-mark="' + kind + '" aria-describedby="' + id + '">' +
+        '<span class="cpp-btn__i" aria-hidden="true"></span>' +
+        '<span class="cpp-btn__t">' + (spot ? 'Marked on the pitch' : 'Mark it on the pitch') + '</span>' +
+      '</button>' +
+      '<p class="field__hint" id="' + id + '">' + esc(hint) + '</p>' +
+    '</div>';
+  }
+
+  /* Open the pitch for one goal's strike point or one assist's origin.
+     Lives here rather than in the chunk because the chunk must know nothing
+     about what a match is: it takes a point and gives a point back. */
+  function openMark(g, kind, btn) {
+    /* Handed the goal rather than its index: the goal list belongs to the
+       open match and lives inside openMatch, and this is at module scope so
+       the suite can reach it. */
+    if (!g) return;
+    var holder = kind === 'a' ? g.assist : g;
+    if (!holder) return;
+    U.chunk('pitch').then(function () {
+      window.CPPITCH.open({
+        spot: spotOf(holder),
+        title: kind === 'a' ? 'Where it was played from' : 'Where it was struck from',
+        hint: kind === 'a'
+          ? 'Tap the pitch, or use the arrow keys. Attacking upwards.'
+          : 'Tap the pitch where the ball was struck, or use the arrow keys. Attacking upwards.',
+        onPick: function (spot) {
+          if (spot) holder.spot = spot; else delete holder.spot;
+          btn.classList.toggle('is-set', !!spot);
+          btn.querySelector('.cpp-btn__t').textContent =
+            spot ? 'Marked on the pitch' : 'Mark it on the pitch';
+          /* The three-bucket dropdown and the point are one fact, so the
+             moment there is a point the dropdown stops being editable. */
+          if (kind === 'g') {
+            var sel = btn.closest('[data-goal]').querySelector('[data-g-zone]');
+            if (sel) sel.disabled = !!spot;
+          }
+        },
+      });
+    }).catch(function (err) { toast(err.message, 'error'); });
+  }
+
   /* One card per goal, in the order they went in. Every field below the first
      line is optional: a goal with nothing but a scorer is still a goal, and
      the site says nothing about how it was scored rather than inventing it. */
@@ -574,11 +641,21 @@
         '<div class="gcard__grid">' +
           '<select class="select" data-g-body aria-label="What it was struck with">' +
             optionsOf(VOCAB.bodyParts, g.bodyPart, 'Struck with…') + '</select>' +
-          '<select class="select" data-g-zone aria-label="Where it was struck from">' +
+          '<select class="select" data-g-zone aria-label="Where it was struck from"' +
+            (spotOf(g) ? ' disabled' : '') + '>' +
             optionsOf(VOCAB.zones, g.zone, 'From…') + '</select>' +
           '<select class="select" data-g-sit aria-label="What the ball was doing">' +
             optionsOf(VOCAB.situations, g.situation, 'Situation…') + '</select>' +
-        '</div>') +
+        '</div>' +
+        /* WHERE IT WAS STRUCK, TO A POINT. The dropdown above it is the same
+           fact in three buckets, so while a point is marked the dropdown is
+           turned off rather than left to be edited into disagreeing with it:
+           the site reads the point and derives the zone from it. A penalty
+           needs neither, because the laws say where the ball was. */
+        (g.situation === 'penalty' ? '' : markField(i, 'g', spotOf(g),
+          'Where it was struck from. Marking a point switches off the choice above, '
+          + 'which says the same thing in three buckets, and puts the goal on the '
+          + 'scorer’s shot map on his profile.')) ) +
         /* WHOEVER FORCED IT IS OURS. An own goal carries none of the shot
            detail, because that is a fact about the other side, and it used to
            carry no assist for the same reason - which was wrong: the cross
@@ -593,6 +670,12 @@
             (a.num ? '' : ' disabled') + '>' +
             optionsOf(VOCAB.assistTypes, a.type || 'pass', 'How…') + '</select>' +
         '</div>' +
+        /* And where he was standing when he made it. Only once somebody is
+           named: a button asking where nobody played the ball from is a
+           control with nothing to be about. */
+        (a.num ? markField(i, 'a', spotOf(a),
+          'Where the ball was played from. It appears on his own profile as an '
+          + 'assist map beside the goals he has scored.') : '') +
       '</div>';
     }).join('');
   }
@@ -1640,6 +1723,22 @@
     });
 
     back.addEventListener('click', function (e) {
+      /* THE PITCH ARRIVES WHEN SOMEBODY ASKS FOR IT. A dialog, a pitch and a
+         drag is a chunk of its own, fetched on the first press and by nobody
+         else, so the most-opened chunk in the panel does not carry a field
+         most matches will never use. A failure to download it is said out
+         loud rather than producing a button that does nothing.
+
+         It is a BUTTON, so it belongs on the click listener. The first
+         version of this sat among the goal card's dropdowns on the `change`
+         listener, where everything around it is a select and nothing it
+         could ever be told about is a press. */
+      var mk = e.target.closest('[data-g-mark]');
+      if (mk) {
+        var mg = mk.closest('[data-goal]');
+        if (mg) openMark(goals[Number(mg.getAttribute('data-goal'))], mk.getAttribute('data-g-mark'), mk);
+        return;
+      }
       if (e.target.matches('[data-sp-add]')) {
         var af = e.target.getAttribute('data-field');
         var an = (counts[af] || [])[Number(e.target.getAttribute('data-i'))];
@@ -2238,7 +2337,13 @@
         g.situation = e.target.value;
         /* A penalty is not assisted and is not struck from anywhere but the
            spot, so those fields go rather than sitting there contradicting it. */
-        if (g.situation === 'penalty') { g.assist = null; g.zone = ''; repaintGoals(); }
+        /* THE LAWS SAY WHERE THE BALL WAS. A penalty is struck from the
+           penalty spot, so the point is known rather than guessed, and
+           leaving it blank would take every penalty off a striker's shot
+           map for no reason anybody could defend. */
+        if (g.situation === 'penalty') {
+          g.assist = null; g.zone = ''; g.spot = { x: 50, y: 10.4 }; repaintGoals();
+        }
         return;
       }
       if (e.target.matches('[data-g-anum]')) {

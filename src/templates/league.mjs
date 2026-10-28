@@ -24,7 +24,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
-import { fmtDate, isUs, byCompetition, slugify, isLeague } from '../lib/stats.mjs';
+import { fmtDate, isUs, byCompetition, slugify, isLeague, positionByRound, ordinal } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
 import { sourceNote, tableMark, tableFootnote } from '../lib/blocks.mjs';
 import { leagueUnderway } from '../lib/home-layout.mjs';
@@ -55,6 +55,100 @@ const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
       <span class="xrail__l"><span class="xrail__n">${esc(String(n).padStart(2, '0'))}</span><span class="xrail__t">${esc(label)}</span></span>
       <span class="xrail__r">${esc(ref)}</span>
     </div>`;
+
+/* ---- WHERE THE CLUB HAS STOOD, ROUND BY ROUND -----------------------------
+
+   Under the division's own table, because that table is one Sunday and this
+   is the shape of the season so far. One point per round the DIVISION played,
+   not per match the club played: a side can be overtaken on a weekend it had
+   off, and a chart that skipped those weeks would not show it.
+
+   NO JAVASCRIPT AT ALL. `sa.js` has under a hundred bytes of its ceiling
+   left, and this needs none: the draw-on is the `.rv` class the home script
+   already watches on every page, and with scripting blocked the whole thing
+   is simply there. The figures come from `positionByRound`, which derives
+   them with the same `deriveTable` that `npm run verify` reconciles the
+   whole division against, so the chart and the table above it cannot
+   disagree about who is top.
+
+   The table beside it is not decoration. A line is a picture, and the same
+   numbers in a `.sr-only` table are the only version of this a screen reader
+   can read at all - the same pairing the league table itself ships. */
+function positionChart(next, division) {
+  const pts = positionByRound(next);
+  /* One point is not a line and two is a claim about a trend drawn from a
+     single Sunday. Nothing is shown until the division has played three. */
+  if (pts.length < 3) return '';
+  const field = pts[0].field;
+  const W = 100; const H = 50;
+  const x = (i) => 1.5 + ((W - 3) * (i / (pts.length - 1)));
+  const y = (p) => 3 + ((H - 6) * ((p - 1) / Math.max(1, field - 1)));
+  const line = pts.map((r, i) => `${x(i).toFixed(2)},${y(r.pos).toFixed(2)}`).join(' ');
+  const area = `${x(0).toFixed(2)},${H} ${line} ${x(pts.length - 1).toFixed(2)},${H}`;
+  const last = pts[pts.length - 1];
+  const first = pts[0];
+  const off = pts.some((r) => !r.playedThis);
+  const rules = Array.from({ length: field }, (_, i) => i + 1);
+  /* One subpath per point, each of zero length, so a round cap paints it. */
+  const dots = (list) => list.map(([i, p]) => `M${x(i).toFixed(2)} ${y(p).toFixed(2)}h0`).join('');
+  const plain = pts.map((r, i) => [i, r.pos, r.playedThis && i < pts.length - 1]).filter((z) => z[2]);
+  const hollow = pts.map((r, i) => [i, r.pos, !r.playedThis && i < pts.length - 1]).filter((z) => z[2]);
+  /* What the line actually says, in a sentence, because a reader who glances
+     at a chart and reads nothing else should still come away with the fact.
+     Derived, never written down: a run at the top has to end the moment it
+     stops being true. */
+  const since = (() => {
+    let i = pts.length - 1;
+    while (i > 0 && pts[i - 1].pos === last.pos) i -= 1;
+    if (i === 0) return `${ordinal(last.pos)} all season`;
+    return `${ordinal(last.pos)} since ${fmtDate(pts[i].iso).replace(/ \d{4}$/, '')}`;
+  })();
+  return `<h3 class="lg-sub" id="movement">Where the club has stood</h3>
+          <figure class="lg-mv rv">
+            <p class="lg-mv__now"><b>${esc(ordinal(last.pos))}</b><span>of ${esc(String(field))}
+              after ${esc(String(pts.length))} rounds</span><i>${esc(since)}</i></p>
+            <p class="lg-mv__ty" aria-hidden="true">Position</p>
+            <ol class="lg-mv__y" aria-hidden="true">${rules.map((p) => `<li>${p}</li>`).join('')}</ol>
+            <svg class="lg-mv__svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"
+              role="img" aria-hidden="true" focusable="false">
+              <defs><linearGradient id="lg-mv-fade" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="var(--volt)" stop-opacity="0.34" />
+                <stop offset="1" stop-color="var(--volt)" stop-opacity="0.02" />
+              </linearGradient></defs>
+              ${rules.map((p) => `<line class="lg-mv__rule" x1="0" x2="${W}" y1="${y(p).toFixed(2)}" y2="${y(p).toFixed(2)}" />`).join('')}
+              ${pts.map((r, i) => `<line class="lg-mv__rule is-v" x1="${x(i).toFixed(2)}" x2="${x(i).toFixed(2)}" y1="${y(1).toFixed(2)}" y2="${y(field).toFixed(2)}" />`).join('')}
+              <polygon class="lg-mv__area" points="${area}" />
+              <polyline class="lg-mv__line" points="${line}" />
+              ${/* A DOT HAS TO STAY ROUND. The viewBox is stretched by
+                    `preserveAspectRatio="none"` so the chart fills its box at
+                    any width, and that stretch is not uniform, so a
+                    `<circle>` is drawn as a wide ellipse. A zero-length
+                    subpath with a round cap paints a dot of exactly the
+                    stroke width, and a stroke is in pixels under
+                    `vector-effect`, so it cannot be stretched. The stats
+                    screen's world map and a player page's running plot
+                    already draw their points this way, and they are grouped
+                    into one path per kind for the same reason that map draws
+                    2,856 cells with a single path. */''}
+              <path class="lg-mv__halo" d="${dots(pts.map((r, i) => [i, r.pos]))}" />
+              ${plain.length ? `<path class="lg-mv__dot" d="${dots(plain)}" />` : ''}
+              ${hollow.length ? `<path class="lg-mv__dot is-off" d="${dots(hollow)}" />
+              <path class="lg-mv__hole" d="${dots(hollow)}" />` : ''}
+              <path class="lg-mv__last" d="${dots([[pts.length - 1, last.pos]])}" />
+            </svg>
+            <ol class="lg-mv__x" aria-hidden="true">${pts.map((r) => `<li${r.playedThis ? '' : ' class="is-off"'}><b>${r.round}</b><i>${esc(fmtDate(r.iso).replace(/ \d{4}$/, ''))}</i></li>`).join('')}</ol>
+            <p class="lg-mv__tx" aria-hidden="true">Matchweek</p>
+            <figcaption class="lg-mv__cap">${esc(`${ordinal(first.pos)} after the opening round, ${ordinal(last.pos)} now.`)}${off ? ' A hollow point is a weekend the club did not play: the position moved and somebody else moved it.' : ''}</figcaption>
+            <table class="sr-only">
+              <caption>${esc(division)} position after each round played</caption>
+              <thead><tr><th scope="col">Round</th><th scope="col">Date</th><th scope="col">Position</th><th scope="col">Played</th><th scope="col">Points</th></tr></thead>
+              <tbody>${pts.map((r) => `<tr><th scope="row">${r.round}</th><td>${esc(fmtDate(r.iso))}</td><td>${esc(ordinal(r.pos))} of ${field}</td><td>${r.played}</td><td>${r.points}</td></tr>`).join('')}</tbody>
+            </table>
+          </figure>
+          <p class="lg-note">Counted over the division as it now stands, ${esc(String(field))} clubs. Two clubs have
+            been removed this season and the matches against one of them were expunged, so these are the positions
+            the surviving record gives rather than the ones printed on the day.</p>`;
+}
 
 export function league(d) {
   const shotFor = (num) => (d.shotFor ? d.shotFor(num, d.currentSeason) : '');
@@ -552,7 +646,8 @@ export function league(d) {
           </div>${note ? `
           <p class="tbl-foot">${esc(note)}</p>` : ''}` : '');
   const APPS = ['apps', 'Apps', 'Appearances'];
-  const eightExtra = statTable('Scorers', 'data-l8-scorers', 'scorers', eightScorers, [['goals', 'G', 'Goals'], APPS], next.scorersNote || '')
+  const eightExtra = positionChart(next, next.division || d.divisionOf(d.nextSeason))
+    + statTable('Scorers', 'data-l8-scorers', 'scorers', eightScorers, [['goals', 'G', 'Goals'], APPS], next.scorersNote || '')
     + statTable('Assists', 'data-l8-assists', 'assists', next.assisters || [], [['assists', 'A', 'Assists'], APPS])
     + statTable('Goals and assists', 'data-l8-ga', 'goals and assists', next.contributions || [],
       [['goals', 'G', 'Goals'], ['assists', 'A', 'Assists'], ['ga', 'G+A', 'Goals and assists'], APPS])

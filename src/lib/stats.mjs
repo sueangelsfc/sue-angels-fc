@@ -902,12 +902,74 @@ export function deriveTable(results) {
     else { h.drawn += 1; a.drawn += 1; h.points += 1; a.points += 1; }
   }
 
-  return [...rows.values()]
+  return rankTable([...rows.values()]);
+}
+
+/* THE ONE ORDERING RULE: points, then goal difference, then goals scored,
+   and a position per row. Pulled out of `deriveTable` because the position
+   chart has to rank a table with clubs ADDED to it - a club that has not
+   played yet is a row of noughts and is still in the division - and a second
+   copy of a sort that decides who is top is exactly the fault this file
+   keeps catching elsewhere. Idempotent, so ranking an already-ranked list
+   with rows appended is a normal thing to do. */
+export function rankTable(rows) {
+  return (rows || [])
     .map((r) => ({ ...r, goalDifference: r.goalsFor - r.goalsAgainst, us: isUs(r.club) }))
     .sort((x, y) => y.points - x.points
       || y.goalDifference - x.goalDifference
       || y.goalsFor - x.goalsFor)
     .map((r, i) => ({ pos: i + 1, ...r }));
+}
+
+/* WHERE THE CLUB STOOD AFTER EVERY ROUND THE DIVISION HAS PLAYED.
+
+   One entry per date the division played on, not per match the club played:
+   a side can be overtaken on a Sunday it had off, and that is exactly the
+   movement this answers. Derived with the same `deriveTable` the match
+   report's standing uses and `npm run verify` reconciles the whole division
+   with, so the chart and the table underneath it cannot disagree.
+
+   THE FIELD IS THE DIVISION, NOT THE CLUBS WITH A RESULT. `deriveTable` only
+   knows the clubs named in the results it is given, so on the opening weekend
+   it built a table of four and reported the club 2nd of 4 when it was 2nd of
+   8. Every club in the division is padded in as a row of noughts, the way
+   `compareDivision` already does, so a position always means the same thing
+   down the whole line.
+
+   It is the division AS IT NOW STANDS. Two clubs have been removed this
+   season and one had its results expunged, so these are the positions the
+   surviving record produces rather than the ones Full-Time printed on the
+   day. That is the official record - an expunged match did not happen - and
+   the page says so rather than leaving a reader to wonder. */
+export function positionByRound(t) {
+  const results = (t && t.results) || [];
+  const clubs = (t && t.clubs) || [];
+  const dates = [...new Set(results.map((r) => toISO(r.date)).filter(Boolean))].sort();
+  const out = [];
+  for (const iso of dates) {
+    const upTo = results.filter((r) => String(toISO(r.date) || '') <= iso);
+    const rows = deriveTable(upTo);
+    const known = new Set(rows.map((r) => r.club));
+    const full = rankTable(rows.concat(clubs.filter((c) => !known.has(c)).map((club) => ({
+      club, played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0,
+    }))));
+    const ours = full.find((r) => r.us);
+    if (!ours) continue;
+    out.push({
+      iso,
+      round: out.length + 1,
+      pos: ours.pos,
+      field: full.length,
+      played: ours.played,
+      points: ours.points,
+      /* Did the club play that day? A week off is a real part of the shape
+         and is drawn differently, because a position that moved while the
+         club was not playing is somebody else's result. */
+      playedThis: results.some((r) => String(toISO(r.date) || '') === iso
+        && (isUs(r.home) || isUs(r.away))),
+    });
+  }
+  return out;
 }
 
 /* Does the transcribed table agree with the results? Compared club by club

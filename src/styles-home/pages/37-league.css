@@ -267,3 +267,88 @@
 .lg-res__round{display: block; margin-top: 3px; font-style: normal;
   font-family: var(--ui); font-size: 8.5px; font-weight: 700;
   letter-spacing: 0.14em; text-transform: uppercase; color: var(--volt-text);}
+
+/* ---- Where the club has stood, round by round ---------------------------
+
+   A five-part grid: the rotated axis title, the position scale, the chart,
+   the rounds along the bottom and the caption. The SVG is stretched by
+   `preserveAspectRatio="none"` so it fills its box at any width, which is
+   why every stroke in it carries `vector-effect` and every point is a
+   round-capped subpath rather than a circle. */
+.lg-mv{display: grid; margin: 16px 0 0;
+  grid-template-columns: 13px 20px minmax(0, 1fr);
+  grid-template-rows: auto auto auto auto auto;
+  column-gap: 7px;}
+.lg-mv__now{grid-column: 1 / -1; display: flex; align-items: baseline; gap: 9px;
+  margin: 0 0 12px; flex-wrap: wrap;}
+.lg-mv__now b{font-family: var(--display); font-weight: 600; font-size: 34px;
+  line-height: 0.9; color: var(--volt); letter-spacing: -0.02em;}
+.lg-mv__now span{color: var(--ink-2); font-size: 14px;}
+.lg-mv__now i{font-style: normal; font-family: var(--ui); font-size: 10px;
+  font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--volt-text); border: 1px solid rgba(var(--volt-rgb), 0.4);
+  border-radius: 999px; padding: 4px 10px; margin-left: auto;}
+.lg-mv__ty{grid-column: 1; grid-row: 2; margin: 0; align-self: center;
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.lg-mv__svg{grid-column: 3; grid-row: 2; width: 100%; height: 250px; display: block;}
+.lg-mv__rule{stroke: rgba(255, 255, 255, 0.07); stroke-width: 1;
+  vector-effect: non-scaling-stroke;}
+.lg-mv__rule.is-v{stroke: rgba(255, 255, 255, 0.05);}
+.lg-mv__area{fill: url(#lg-mv-fade);}
+.lg-mv__line{fill: none; stroke: var(--volt); stroke-width: 2.4px;
+  stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 5px rgba(var(--volt-rgb), 0.45));}
+/* Every point is a zero-length subpath with a round cap, so it is a circle
+   of exactly the stroke width whatever the viewBox is stretched to. */
+.lg-mv__halo, .lg-mv__dot, .lg-mv__hole, .lg-mv__last{fill: none;
+  stroke-linecap: round; vector-effect: non-scaling-stroke;}
+.lg-mv__halo{stroke: var(--navy-deep); stroke-width: 11px;}
+.lg-mv__dot{stroke: var(--volt); stroke-width: 6.5px;}
+/* A weekend the club did not play: the position still moved and somebody
+   else moved it. Hollow says so without reaching for a second colour. */
+.lg-mv__hole{stroke: var(--navy-deep); stroke-width: 3px;}
+.lg-mv__last{stroke: var(--volt); stroke-width: 10px;
+  filter: drop-shadow(0 0 7px rgba(var(--volt-rgb), 0.7));}
+.lg-mv__y, .lg-mv__x{list-style: none; margin: 0; padding: 0;
+  font-family: var(--ui); font-size: 10px; font-weight: 700; color: var(--ink-3);
+  letter-spacing: 0.04em;}
+.lg-mv__y{grid-column: 2; grid-row: 2; display: grid; height: 250px;
+  align-content: space-between; padding: 9px 0; text-align: right;
+  box-sizing: border-box; line-height: 1;}
+.lg-mv__y li:first-child{color: var(--volt-text);}
+.lg-mv__x{grid-column: 3; grid-row: 3; display: flex;
+  justify-content: space-between; margin-top: 9px;}
+.lg-mv__x li{display: grid; justify-items: center; gap: 2px;}
+.lg-mv__x b{color: var(--ink-2);}
+.lg-mv__x li.is-off b{color: var(--ink-3);}
+.lg-mv__x i{font-style: normal; font-size: 8.5px; font-weight: 600; color: var(--ink-3);}
+.lg-mv__tx{grid-column: 3; grid-row: 4; margin: 7px 0 0; text-align: center;
+  font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3);}
+.lg-mv__cap{grid-column: 1 / -1; grid-row: 5; margin: 12px 0 0;
+  font-size: 12.5px; line-height: 1.5; color: var(--ink-2);}
+
+/* The line draws itself in on the scroll reveal, which costs no JavaScript:
+   `.rv` is already watched on every page. A dash length in a stretched
+   viewBox is measured in the chart's own units, so it is set long enough to
+   cover any season rather than computed. */
+@media (prefers-reduced-motion: no-preference){
+  .lg-mv .lg-mv__line{stroke-dasharray: 400; stroke-dashoffset: 400;}
+  .lg-mv .lg-mv__area{opacity: 0;}
+  .lg-mv .lg-mv__halo, .lg-mv .lg-mv__dot, .lg-mv .lg-mv__hole,
+  .lg-mv .lg-mv__last{opacity: 0;}
+  .lg-mv.is-in .lg-mv__line{transition: stroke-dashoffset 1.2s var(--ease-out-expo);
+    stroke-dashoffset: 0;}
+  .lg-mv.is-in .lg-mv__area{transition: opacity 0.7s 0.5s; opacity: 1;}
+  .lg-mv.is-in .lg-mv__halo, .lg-mv.is-in .lg-mv__dot, .lg-mv.is-in .lg-mv__hole{
+    transition: opacity 0.5s 0.6s; opacity: 1;}
+  .lg-mv.is-in .lg-mv__last{transition: opacity 0.5s 1.1s; opacity: 1;}
+}
+@media (max-width: 560px){
+  .lg-mv__svg, .lg-mv__y{height: 190px;}
+  .lg-mv__x i{display: none;}
+  .lg-mv__now b{font-size: 28px;}
+  .lg-mv__now i{margin-left: 0;}
+}

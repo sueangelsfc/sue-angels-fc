@@ -1806,52 +1806,11 @@
   })();
 })();
 
-/* ---- League page: the competition tab strip ----------------------------
-   One panel visible at a time. The markup ships every panel present and only
-   this script adds [hidden], so a script failure leaves all five readable
-   rather than blanking the band. */
-/* EVERY STRIP, NOT THE FIRST. This moved to the results page, where it sits
-   inside the season panels: one strip per season, all of them shipped in the
-   HTML, and `querySelector` would wire whichever came first in the document,
-   which is not the season the page opens on. Panels are scoped to the strip's
-   own season panel for the same reason. */
-[].slice.call(document.querySelectorAll('[data-comp-tabs]')).forEach(function (strip) {
-  var scope = strip.closest('[data-season-view]') || document;
-  var tabs = [].slice.call(strip.querySelectorAll('[data-comp]'));
-  var panels = [].slice.call(scope.querySelectorAll('[data-comp-panel]'));
-  if (!tabs.length || !panels.length) return;
-
-  function show(key, focus) {
-    tabs.forEach(function (t) {
-      var on = t.getAttribute('data-comp') === key;
-      t.classList.toggle('is-on', on);
-      t.setAttribute('aria-selected', on ? 'true' : 'false');
-      t.tabIndex = on ? 0 : -1;
-      if (on && focus) t.focus();
-    });
-    panels.forEach(function (p) {
-      if (p.getAttribute('data-comp-panel') === key) p.removeAttribute('hidden');
-      else p.setAttribute('hidden', '');
-    });
-  }
-  tabs.forEach(function (t, i) {
-    t.tabIndex = t.getAttribute('aria-selected') === 'true' ? 0 : -1;
-    t.addEventListener('click', function (e) {
-      e.preventDefault();
-      show(t.getAttribute('data-comp'), false);
-    });
-    /* Arrow keys move between tabs, which is what a tablist is expected to
-       do and what a plain list of links would not give. */
-    t.addEventListener('keydown', function (e) {
-      var d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1
-        : e.key === 'Home' ? -i : e.key === 'End' ? tabs.length - 1 - i : 0;
-      if (!d) return;
-      e.preventDefault();
-      var n = (i + d + tabs.length) % tabs.length;
-      show(tabs[n].getAttribute('data-comp'), true);
-    });
-  });
-});
+/* The competition tab strip is gone. It drove the "Every competition" band
+   on /league.html, which moved to /results.html and was then folded into the
+   record band as a table: one season bar and one competition control on that
+   page rather than two of each. A strip nothing draws is bytes every visitor
+   to every page downloads to wire nothing. */
 
 /* ---- Records page: filter the record cards -----------------------------
    The cards ship visible and unfiltered; only this script adds [hidden], so

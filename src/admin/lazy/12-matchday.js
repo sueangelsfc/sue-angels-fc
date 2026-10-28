@@ -327,8 +327,21 @@
         })
         .filter(function (f) { return !byDay[dayOf(f.__key)]; })
         .sort(function (a, b) {
-          return fixtureIso({ data: a, key: a.__key })
-            .localeCompare(fixtureIso({ data: b, key: b.__key }));
+          /* AN UNDATED FIXTURE SORTS LAST, NOT FIRST. `fixtureIso` returns
+             the empty string for a fixture with no date and a key carrying
+             no day (f2627-pcup-r2-swans, the President's Cup second round,
+             waiting on a draw), and the empty string sorts before every real
+             date. So the one fixture nobody knows the date of LED the screen
+             the club picks a matchday squad on, and the match actually being
+             played next sat underneath it: on 28 October the squad for TSM
+             Rovers was being typed under a heading reading Celtic Swans.
+             Same trap as an empty minute reading as minute zero. A fixture
+             with no date is the least certain thing on the list, never the
+             most imminent. */
+          var ai = fixtureIso({ data: a, key: a.__key });
+          var bi = fixtureIso({ data: b, key: b.__key });
+          if (!ai !== !bi) return ai ? -1 : 1;
+          return ai.localeCompare(bi);
         });
 
       if (!live.length) {

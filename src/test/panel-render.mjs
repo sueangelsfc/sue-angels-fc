@@ -975,6 +975,36 @@ export async function panelChecks() {
     check('and named in a matchday squad', slots.length > 0 && offersName(md.body),
       `${slots.length} slots`);
 
+    /* AN UNDATED FIXTURE DOES NOT LEAD THE SCREEN.
+
+       `fixtureIso` is the empty string for a fixture with no date whose key
+       carries no day either, and the empty string sorts before every real
+       date, so the one match nobody knows the date of led the screen the club
+       picks a matchday squad on. It was live on 28 October 2026: the squad for
+       TSM Rovers on 1 November was being typed under a heading reading Celtic
+       Swans, the President's Cup tie still waiting on a draw.
+
+       CRAFTED, never read off the shipped fixtures. A check over real rows
+       would pass today with no rule implemented at all - there is usually
+       exactly one fixture waiting - and would go red or vacuous the week the
+       club's list changed shape. */
+    {
+      const twoFx = [
+        { key: 'f2627-cup-r2-undated', data: { home: "Sue's Angels FC", away: 'Crafted Undated FC', date: '', kind: 'fixture' } },
+        { key: 'f29991107-dated', data: { home: "Sue's Angels FC", away: 'Crafted Dated FC', date: '07 Nov 2999', kick: '11:00', kind: 'fixture' } },
+      ];
+      const oc = PR.boot({ rows: { ...signedRows, fixtures: twoFx } });
+      const om = await PR.openPanel(oc, 'matchday');
+      const head = (om.body.textContent || '').slice(0, 400);
+      const opts = om.body.querySelectorAll('#md-which option').map((o) => (o.textContent || '').trim());
+      check('the matchday screen leads on the dated fixture, not the one with no date',
+        /Crafted Dated FC/.test(head) && !/Crafted Undated FC/.test(head.split('Crafted Dated FC')[0]),
+        head.replace(/\s+/g, ' ').slice(0, 120));
+      check('and the undated one is still offered, last',
+        opts.length === 2 && /Crafted Undated FC/.test(opts[1]) && /No date yet/.test(opts[1]),
+        opts.join(' | ') || 'no picker');
+    }
+
     /* THE ELEVEN AND THE BENCH. Enter result puts the first eleven in the
        starting eleven and the rest on the bench, and the screen used to call
        all sixteen "Player N". */

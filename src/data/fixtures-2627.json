@@ -85,15 +85,6 @@
       "venue": "Dulwich Park, Pitch 1"
     },
     {
-      "id": "f20261018-mousa",
-      "date": "18 Oct 2026",
-      "kick": "11:00",
-      "home": "Sue's Angels FC",
-      "away": "Mousa Mountain FC",
-      "venue": "The Reeves Sports Club",
-      "competition": "League Eight"
-    },
-    {
       "id": "f20261025-juizo-mlip",
       "date": "25 Oct 2026",
       "kick": "10:30",
@@ -130,5 +121,6 @@
       "competition": "Surrey FA Sunday Lower Junior County Cup"
     }
   ],
-  "_tbc": "A fixture with `tbc: true` is one the league has CONFIRMED but not yet dated. The flag is required rather than inferred from an empty date, because a fixture whose date went missing by accident and one the league has not set yet look identical in the data and are completely different things. The suite holds every undated fixture to carrying it."
+  "_tbc": "A fixture with `tbc: true` is one the league has CONFIRMED but not yet dated. The flag is required rather than inferred from an empty date, because a fixture whose date went missing by accident and one the league has not set yet look identical in the data and are completely different things. The suite holds every undated fixture to carrying it.",
+  "_removedFixture": "A TRANSCRIBED FIXTURE IS A CLAIM ABOUT WHO IS PLAYING, so when a club stops existing the claim stops being true and the row goes. 18 Oct 2026, Sue's Angels FC v Mousa Mountain FC, League Eight: the club folded on 17 October and the league removed them from the division. The club's own stored row was deleted in Control panel -> Fixtures on 19 October and fixture-cancellations.json retired with it - but this copy was still here, and with nothing left to lose to it came back as a dated match in the past with no score, published under \"Played, not yet counted\" on the results page as though somebody had forgotten to enter it. Removed rather than cancelled: a cancellation is for a match the club has a row for, and there is no row. Mousa Mountain are still named under the League Eight table, which is `removed` in league-eight-2627.json and a different thing: that is a fact about the division, not about one match."
 }

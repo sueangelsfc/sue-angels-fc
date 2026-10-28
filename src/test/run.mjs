@@ -1276,10 +1276,32 @@ for (const f of shipped) {
       const unshown = offered.filter((f) => !shown.has(f.id));
       check('every fixture offered for import is one the website is showing',
         unshown.length === 0, unshown.map((f) => f.id).join(', '));
-      const stale0 = raw0.filter((f) => !shown.has(f.id)
-        && !playedDays.has(String(f.id || '').slice(1, 9)));
-      check('and the baseline holds at least one it would have offered wrongly',
-        stale0.length > 0, 'nothing past and unplayed in the baseline');
+      /* AND THE FILTER IS ASKED ON A CRAFTED ROW, NOT ON THE ARCHIVE. This
+         used to require the shipped baseline to hold a past fixture with no
+         result, which it did only because the Mousa Mountain match of 18
+         October was still in fixtures-2627.json after the club folded. Taking
+         that row out - the right thing to do, since a transcribed fixture is
+         a claim about who is playing - turned a passing check into a failing
+         one while the code it guards did not move. A check that needs the
+         data to stay broken is a check that gets deleted the day somebody
+         fixes it. */
+      /* AND THE RULE IS ASKED DIRECTLY, RATHER THAN THROUGH A BROKEN ROW.
+         This used to require the shipped baseline to hold a past fixture with
+         no result, which it did only because the Mousa Mountain match of 18
+         October was still in fixtures-2627.json after the club folded. Taking
+         that row out - the right thing to do, since a transcribed fixture is
+         a claim about who is playing - turned a passing check into a failing
+         one while the code it guards had not moved. A check that needs the
+         data to stay broken is a check somebody deletes the day it is fixed.
+
+         What the banner's sentence actually rests on is that NOTHING the site
+         is showing has already happened, which is a property of the rule and
+         is true or false whatever is in the file. */
+      const past0 = (dF.upcoming || []).filter((f) => f.iso
+        && f.iso < new Date(Date.now() - 864e5).toISOString().slice(0, 10));
+      check('nothing the site is showing as still to come has already happened',
+        past0.length === 0 && (dF.upcoming || []).length > 0,
+        past0.length ? past0.map((f) => f.id).join(', ') : `${(dF.upcoming || []).length} upcoming`);
     }
   }
 

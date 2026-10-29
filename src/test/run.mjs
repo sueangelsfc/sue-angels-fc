@@ -3429,7 +3429,17 @@ for (const [f, kb] of Object.entries({
      that draw the static line, the four that open the chunk and the seven
      that write it back, with the reasoning around them. The editor is not in
      this file at all, which is what kept the emitted figure to 228 bytes. */
-  'src/admin/lazy/11-matchedit.js': 38,
+  /* 38 -> 39 for WHERE AN ASSIST WAS PLAYED FROM, 38,887 -> 39,168 gz of
+     source: 281 bytes for the dropdown beside the assister, the handler, the
+     zone surviving a change of assister, and the three save paths that each
+     have to NAME the field or it is dropped on the way in.
+
+     The goal has carried a zone since before the pitch picker existed and the
+     assist carried nothing at all, so the club had no easy question to answer
+     about it and the player pages had nothing to draw. The dropdown is built
+     from `VOCAB.zones`, the same list the goal's is, so what can be entered
+     and what the site can describe cannot drift apart. */
+  'src/admin/lazy/11-matchedit.js': 39,
   'src/admin/lazy/95-home.js': 11,
   /* Source, so the bios riding with the chunk cannot hide code growth.
 
@@ -10797,7 +10807,7 @@ console.log(`\n${'='.repeat(66)}`);
        the penalty spot drew at twice the depth of the penalty spot beside
        it. Nothing caught it, because the band had never appeared.
        ====================================================================== */
-    const { ZONE_AREA, ZONE_WORDS, zoneGoalsFor } = await import(path.join(ROOT, 'src', 'lib', 'pitch.mjs'));
+    const { ZONE_AREA, ZONE_WORDS, zoneGoalsFor, zoneAssistsFor } = await import(path.join(ROOT, 'src', 'lib', 'pitch.mjs'));
     const PH = 140;
     const zoneOfWords = (t) => Object.keys(ZONE_WORDS).find((k) => t.includes(ZONE_WORDS[k]));
     const zoned = pool2.map((q) => ({ q, list: zoneGoalsFor(counted, q.num) }))
@@ -10810,6 +10820,10 @@ console.log(`\n${'='.repeat(66)}`);
     const miscount = [];
     const outside = [];
     const unworded = [];
+    const nameless = [];
+    const adrift = [];
+    const painted = [];
+    const shut = [];
     for (const { q, list } of zoned) {
       const f = path.join(ROOT, 'players', `${q.slug}.html`);
       if (!fs.existsSync(f)) continue;
@@ -10819,13 +10833,32 @@ console.log(`\n${'='.repeat(66)}`);
       /* The career layer is the last pitch, the one under All seasons. */
       const svgs = [...sec[0].matchAll(/<svg class="pf-strike__svg"[\s\S]*?<\/svg>/g)].map((m) => m[0]);
       const career = svgs[svgs.length - 1] || '';
+      /* THE WORDS ARE IN THE HIT LAYER NOW, not on the mark. The crest on
+         hover has to paint above every mark, and SVG paints in document
+         order with no z-index, so the badge and the `<title>` it comes with
+         moved into a layer of their own after all the marks. A check reading
+         `<title>` off the mark group would run on into that layer and read
+         a title belonging to somebody else's mark. */
       const marks = [...career.matchAll(
-        /<g class="pf-sh pf-sh--z"[^>]*transform="translate\(([\d.]+) ([\d.]+)\)"[\s\S]*?<title>([\s\S]*?)<\/title>/g,
+        /<g class="pf-sh pf-sh--z( pf-sh--za)?"[^>]*transform="translate\(([\d.]+) ([\d.]+)\)"/g,
       )];
+      const hits = [...career.matchAll(
+        /<g class="pf-hit" transform="translate\(([\d.]+) ([\d.]+)\)">[\s\S]*?<title>([\s\S]*?)<\/title>/g,
+      )].filter((m) => / the area recorded rather than a spot\.$/.test(m[3]));
       if (marks.length !== list.length) {
         miscount.push(`${q.name}: ${marks.length} drawn, ${list.length} recorded`);
       }
-      for (const m of marks) {
+      if (hits.length !== marks.length) {
+        nameless.push(`${q.name}: ${marks.length} marks, ${hits.length} named`);
+      }
+      /* The badge has to be ON the mark, which is the same coordinate. */
+      const at = new Set(marks.map((m) => `${m[2]},${m[3]}`));
+      for (const h of hits) if (!at.has(`${h[1]},${h[2]}`)) adrift.push(`${q.name}: ${h[1]},${h[2]}`);
+      /* And the layer carrying it has to come after every mark it covers. */
+      const lastMark = career.lastIndexOf('<g class="pf-sh ');
+      const firstHit = career.indexOf('<g class="pf-hit"');
+      if (firstHit !== -1 && lastMark > firstHit) painted.push(q.name);
+      for (const m of hits) {
         const key = zoneOfWords(m[3]);
         if (!key) { unworded.push(`${q.name}: ${m[3].slice(0, 40)}`); continue; }
         const a = ZONE_AREA[key];
@@ -10834,6 +10867,19 @@ console.log(`\n${'='.repeat(66)}`);
         if (x < a.x0 || x > a.x1 || y < a.y0 || y > a.y1) {
           outside.push(`${q.name}: ${key} mark at ${x.toFixed(1)},${y.toFixed(1)}`);
         }
+      }
+      /* CLOSED, AND COUNTING WHAT IS IN IT. */
+      /* NOT ANCHORED ON `class` COMING FIRST. It was, and the probe said so:
+         adding `open` before the class took the whole block out of the match
+         and the check went red for the wrong reason, which means the `open`
+         test inside it could never have fired on its own. */
+      const det = [...sec[0].matchAll(/<details\b[^>]*class="pf-marks"[^>]*>([\s\S]*?)<\/details>/g)];
+      if (!det.length) shut.push(`${q.name}: no details`);
+      for (const x of det) {
+        if (/<details\b[^>]*\sopen[\s>]/.test(x[0])) shut.push(`${q.name}: open`);
+        const n = (x[1].match(/<li>/g) || []).length;
+        const said = Number((x[1].match(/<summary>[^<]*<i>(\d+)<\/i>/) || [])[1]);
+        if (!n || said !== n) shut.push(`${q.name}: says ${said}, holds ${n}`);
       }
     }
     check('a goal whose area the club recorded is drawn on his pitch',
@@ -10844,6 +10890,14 @@ console.log(`\n${'='.repeat(66)}`);
       outside.length === 0, outside.slice(0, 5).join(' | '));
     check('and says which area it is, in words, rather than by position alone',
       unworded.length === 0, unworded.slice(0, 4).join(' | '));
+    check('every mark on the pitch can be hovered for the club it was against',
+      nameless.length === 0, nameless.slice(0, 4).join(' | '));
+    check('and the crest sits on the mark rather than near it',
+      adrift.length === 0, adrift.slice(0, 4).join(' | '));
+    check('the layer carrying it is drawn after every mark, so nothing paints over it',
+      painted.length === 0, painted.slice(0, 4).join(', '));
+    check('the list of every mark in words is collapsed, and says how many it holds',
+      shut.length === 0, shut.slice(0, 4).join(' | '));
 
     /* THE PRECISION IS SAID OUT LOUD, twice: on the mark and in the list.
        A dash is not a sentence. */
@@ -10867,6 +10921,55 @@ console.log(`\n${'='.repeat(66)}`);
     });
     check('a pitch showing the attacking half crops to it rather than stretching the marks',
       stretched.length === 0, stretched.map((x) => x.q.name).slice(0, 4).join(', '));
+
+    /* ======================================================================
+       AND WHERE HE PLAYED THE ASSIST FROM
+
+       The club asked for both on the pitch. The goal has carried a zone
+       since before the picker existed; the ASSIST has never carried one at
+       all - the panel offered only the pitch picker for it, which nobody has
+       used - so there was no easier question for the club to answer and the
+       site had nothing to draw. `data-a-zone` in the match editor is the
+       field and `zoneAssistsFor` is the reader, written in the same change
+       for the reason this file keeps relearning: a field with no reader is a
+       lie with a save button, and a reader with no field is a band that
+       empties itself perfectly for the wrong reason.
+
+       NOTHING IN THE ARCHIVE CARRIES ONE YET, so a check over real data
+       passes with no reader implemented at all. It is asked of a CRAFTED
+       record, rendered through the shipped template.
+       ====================================================================== */
+    check('no assist in the archive carries a recorded area yet, so this is asked of a crafted one',
+      pool2.every((q) => zoneAssistsFor(counted, q.num).length === 0), 'the club has not answered one');
+
+    const { playerPage } = await import(path.join(ROOT, 'src', 'templates', 'player.mjs'));
+    const craft = (zone) => {
+      const d2 = bdCS();
+      const mine = (d2.played || []).filter((m) => m.played && !m.friendly
+        && ((m.detail || {}).goals || []).some((g) => g.assist && g.assist.num != null));
+      const m = mine[0];
+      const g = ((m.detail || {}).goals || []).find((x) => x.assist && x.assist.num != null);
+      if (zone) g.assist.zone = zone; else delete g.assist.zone;
+      delete g.assist.spot;
+      const who = (d2.playersCompetitive || d2.players || []).find((q) => Number(q.num) === Number(g.assist.num));
+      /* `playerPage` returns the parts of a page, not a string. */
+      return { html: who ? String(playerPage(who, d2).body || '') : '', who, opponent: m.opponent };
+    };
+    const inBox = craft('box');
+    check('an assist recorded as an area is drawn on the pitch, hollow and dashed',
+      /class="pf-sh pf-sh--z pf-sh--za"/.test(inBox.html),
+      inBox.who ? inBox.who.name : 'nobody to craft on');
+    check('and it is listed as an assist, naming the area and not a spot',
+      /<b>Assist<\/b>[\s\S]{0,120}?inside the box, area only</.test(inBox.html), '');
+    check('and the crest of the club he made it against is on its mark',
+      new RegExp(`<g class="pf-hit"[^>]*>[\\s\\S]{0,400}?<title>Assist[^<]*v ${
+        inBox.opponent.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}: inside the box`).test(inBox.html), '');
+    /* THE PROBE IS THE GUARD. Take the zone off and the mark has to go: a
+       check that only confirms a mark appears passes just as happily on a
+       template that draws one for every assist, zone or none. */
+    const noZone = craft(null);
+    check('an assist the club recorded no area for draws no mark',
+      !/pf-sh--za/.test(noZone.html), '');
   }
 }
 

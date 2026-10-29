@@ -124,8 +124,10 @@
          save - which would have quietly wiped every marked point the first
          time somebody opened an old match. */
       var assist = g.assist && g.assist.num
-        ? { num: g.assist.num, type: g.assist.type || 'pass', spot: g.assist.spot } : null;
+        ? { num: g.assist.num, type: g.assist.type || 'pass',
+          spot: g.assist.spot, zone: g.assist.zone } : null;
       if (assist && !assist.spot) delete assist.spot;
+      if (assist && !assist.zone) delete assist.zone;
       var gm = minOf(g.minute);
       if (!assist && gm != null) {
         var idx = -1;
@@ -683,6 +685,16 @@
           '<select class="select" data-g-atype aria-label="How the chance was made"' +
             (a.num ? '' : ' disabled') + '>' +
             optionsOf(VOCAB.assistTypes, a.type || 'pass', 'How…') + '</select>' +
+          /* WHERE HE PLAYED IT FROM, IN THREE BUCKETS. The goal has had this
+             beside the point since the picker landed and the assist had only
+             the point, so the one place a coach can answer in two seconds was
+             missing from the half of the record that is harder to remember.
+             Same vocabulary as the goal's, so the two cannot describe one
+             pitch differently, and switched off while a point is marked for
+             the reason the goal's is. */
+          '<select class="select" data-a-zone aria-label="Where the ball was played from"' +
+            (a.num && !spotOf(a) ? '' : ' disabled') + '>' +
+            optionsOf(VOCAB.zones, a.zone, 'From…') + '</select>' +
         '</div>' +
         /* And where he was standing when he made it. Only once somebody is
            named: a button asking where nobody played the ball from is a
@@ -2153,7 +2165,8 @@
               num: null, og: true, minute: g.minute,
               bodyPart: null, zone: null, situation: null, penalty: false,
               assist: g.assist && g.assist.num != null
-                ? { num: g.assist.num, type: g.assist.type || 'pass' } : null,
+                ? { num: g.assist.num, type: g.assist.type || 'pass',
+                  zone: g.assist.zone || null } : null,
             };
           }
           return {
@@ -2162,7 +2175,8 @@
             bodyPart: g.bodyPart || null,
             zone: g.zone || null,
             situation: g.situation || null,
-            assist: g.assist ? { num: g.assist.num, type: g.assist.type || 'pass' } : null,
+            assist: g.assist ? { num: g.assist.num, type: g.assist.type || 'pass',
+              zone: g.assist.zone || null } : null,
             /* Kept because the statistics engine and three pages already read
                it, and because a penalty is the one piece of goal detail the
                site has always printed. */
@@ -2402,12 +2416,17 @@
       }
       if (e.target.matches('[data-g-anum]')) {
         var who = Number(e.target.value);
-        g.assist = who ? { num: who, type: (g.assist && g.assist.type) || 'pass' } : null;
+        g.assist = who ? { num: who, type: (g.assist && g.assist.type) || 'pass',
+          zone: (g.assist && g.assist.zone) || '' } : null;
         repaintGoals();
         return;
       }
       if (e.target.matches('[data-g-atype]')) {
         if (g.assist) g.assist.type = e.target.value;
+        return;
+      }
+      if (e.target.matches('[data-a-zone]')) {
+        if (g.assist) g.assist.zone = e.target.value;
       }
     });
 

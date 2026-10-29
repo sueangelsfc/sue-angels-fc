@@ -1338,6 +1338,64 @@ for the pitch, and the answer is not to invent coordinates.
   rectangle. Three probes: nudging the grid, restoring the stretch, dropping a
   mark.
 
+#### And where he played the assist from
+
+The club asked for assists on the same pitch, and the site had nothing to draw:
+a goal has carried a **zone** since before the pitch picker existed and an
+assist has **never carried one at all**, because the panel offered the assist
+only the pitch picker and nobody has used that on a single goal or assist in
+the archive. So there was no easier question for the club to answer.
+
+- **`data-a-zone` in the match editor is the field and `zoneAssistsFor()` is
+  the reader, written in the same change.** A field with no reader is a lie
+  with a save button; a reader with no field is a band that empties itself
+  perfectly for the wrong reason. This repository has shipped both.
+- **All three save paths have to NAME it** - the `rawGoals` rebuild and the two
+  serialisers - or it is dropped on the way in, and the zone survives a change
+  of assister rather than being cleared with him.
+- **The dropdown is built from `VOCAB.zones`**, the same list the goal's is, so
+  what can be entered and what the site can describe cannot drift apart.
+- **Filled against hollow is goal against assist; dashed against solid is area
+  against point.** The two are independent, so an assist recorded as an area
+  wears both (`pf-sh--z pf-sh--za`) and nothing needs a second hue.
+- **The check is CRAFTED, because nothing in the archive carries one yet.** A
+  check over real data passes with no reader implemented at all, so the suite
+  puts a zone on a real assist, renders the shipped template and reads the mark,
+  the list row and the crest off the output. The probe takes the zone away
+  again: a check that only confirms a mark appears passes just as happily on a
+  template that draws one for every assist.
+- **The source ceiling moved 38 to 39** and the 281 gzipped bytes are written
+  down in `run.mjs` beside it. The emitted chunk did not move.
+
+#### The crest is on the mark, and the marks have no z-index
+
+The club asked to hover a mark for the club it was against. **SVG paints in
+document order and has no z-index**, so a badge drawn inside its own mark is
+painted over by every mark that comes after it - and the marks it would cover
+are exactly the ones a row further up the pitch, which is where the badge is
+drawn. Same trap as the form pips and the site header, a third time.
+
+- **The visible marks paint first and take no pointer at all** (`.pf-sh` is
+  `pointer-events: none`), and a `pf-hit` layer comes last: one transparent
+  circle per mark, bigger than the mark, carrying the badge and the `<title>`.
+  Only one badge is ever shown, so nothing inside that layer can cover
+  anything either.
+- **The words moved with it.** The `<title>` is on the hit group now, not the
+  mark, so a check reading a title off a mark group runs on into the hit layer
+  and reads one belonging to somebody else's mark. The suite's parser had to be
+  rewritten for that, and it asserts the hit sits at the mark's own coordinate
+  and that the layer comes after every mark.
+- **It is hover-only and hides nothing**: the same sentence is in the title, in
+  the list under the pitch and in the SVG's own description.
+
+#### Every mark in words, collapsed
+
+Eleven marks is eleven rows of three facts each, which ran further down the page
+than the pitch they describe and pushed everything under it off a phone. It is a
+`<details>` closed by default, which needs no JavaScript, so the words are one
+press away with scripting blocked. The summary counts what it holds, and the
+suite asserts the count equals the rows and that nothing ships `open`.
+
 ### Who he does it against
 
 `playerOpponents()` in `stats.mjs`, band `pf-opp` on every profile. Every goal
@@ -1963,7 +2021,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 5,242 checks against the generated output and the rendered panel
+npm test          # 5,251 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

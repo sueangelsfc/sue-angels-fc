@@ -1117,6 +1117,39 @@ html.js .pf-pitch__grid.is-picking .pf-spot.is-picked{opacity: 1;}
   stroke-width: 0.9; stroke-dasharray: 2 1.6;
   vector-effect: non-scaling-stroke;}
 .pf-sh--z .pf-sh__c{fill: rgba(var(--volt-rgb), 0.55);}
+/* AN ASSIST FROM AN AREA IS STILL HOLLOW. Filled against hollow is what tells
+   a goal from an assist everywhere on this pitch, and dashed against solid is
+   what tells a recorded area from a marked point. The two are independent, so
+   an assist recorded as an area wears both and nothing needs a second hue. */
+.pf-sh--za .pf-sh__c{fill: none;}
+/* THE MARKS TAKE NO POINTER AT ALL. The hit layer below is on top of them and
+   carries the `<title>`, so a mark that accepted hover would be the one
+   element able to swallow its own tooltip. */
+.pf-sh{pointer-events: none;}
+.pf-hit__t{fill: transparent;}
+.pf-hit__tip{opacity: 0; transition: opacity 0.14s ease;}
+.pf-hit__tip rect{fill: #fff; stroke: rgba(0, 0, 0, 0.18); stroke-width: 0.4;}
+.pf-hit:hover .pf-hit__tip{opacity: 1;}
+@media (prefers-reduced-motion: reduce){.pf-hit__tip{transition: none;}}
+/* EVERY MARK IN WORDS, CLOSED. Eleven marks is eleven rows of three facts,
+   which ran further down the page than the pitch they describe. `details`
+   needs no script, so the words are one press away with scripting off. */
+.pf-marks{margin: 0;}
+.pf-marks summary{display: flex; align-items: center; gap: 8px; cursor: pointer;
+  padding: 10px 0; border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-family: var(--ui); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3);}
+.pf-marks summary:hover{color: var(--fg);}
+.pf-marks summary:focus-visible{outline: 2px solid var(--volt); outline-offset: 3px;}
+.pf-marks summary i{font-style: normal; font-family: var(--display);
+  font-size: 12px; letter-spacing: 0; color: var(--volt-text);}
+/* A SUMMARY SET TO `flex` LOSES ITS DISCLOSURE TRIANGLE, which leaves a row
+   that opens something looking exactly like a heading that does not. */
+.pf-marks summary::after{content: ''; width: 6px; height: 6px; margin-left: auto;
+  border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translate(-2px, -2px); transition: transform 0.16s ease;}
+.pf-marks[open] summary::after{transform: rotate(-135deg);}
+@media (prefers-reduced-motion: reduce){.pf-marks summary::after{transition: none;}}
 /* THE SAME MARKS IN WORDS, AND IT IS ONE COMPONENT. Both maps list what they
    drew - what it was, who against, and where from - so this is `pf-marklist`
    rather than a class belonging to one of them that the other borrows. That

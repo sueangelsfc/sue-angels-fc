@@ -285,3 +285,32 @@ export function zoneLayout(list) {
   }
   return out;
 }
+
+/* The other half of the same question, and the panel could not ask it until
+   now: the goal has carried a zone dropdown beside its pitch mark since the
+   picker landed and the assist had only the mark, so the quick answer a coach
+   gives in two seconds existed for the harder fact and not the easier one.
+   Reading `g.assist.zone`, with the point winning wherever there is one. */
+export function zoneAssistsFor(matches, num) {
+  const out = [];
+  for (const m of matches || []) {
+    const det = m.detail || {};
+    for (const g of det.goals || []) {
+      const a = g.assist;
+      if (!a || Number(a.num) !== Number(num)) continue;
+      if (spotOf(a)) continue;
+      const zone = a.zone && ZONE_AREA[a.zone] ? a.zone : null;
+      if (!zone) continue;
+      out.push({
+        zone,
+        minute: g.minute,
+        type: a.type || 'pass',
+        season: m.season,
+        matchId: m.id,
+        opponent: m.opponent,
+        score: m.score,
+      });
+    }
+  }
+  return out;
+}

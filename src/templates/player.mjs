@@ -37,12 +37,12 @@ import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { BODY_PARTS, ZONES, SITUATIONS, ASSIST_TYPES } from '../lib/football.mjs';
 import { POSITION_LABEL, POSITION_XY, positionName } from '../lib/positions.mjs';
-import { pitchMarks, shotsFor, assistSpotsFor, savesFor, spotWords, zoneGoalsFor, zoneLayout, ZONE_WORDS } from '../lib/pitch.mjs';
+import { pitchMarks, shotsFor, assistSpotsFor, savesFor, spotWords, zoneGoalsFor, zoneAssistsFor, zoneLayout, ZONE_WORDS } from '../lib/pitch.mjs';
 import {
   playerProfile, playerStats, playerOpponents, fmtDate, isLeague, ordinal,
 } from '../lib/stats.mjs';
 import { FRIENDLY_NOTE_SHORT } from '../lib/prose.mjs';
-import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
+import { siteFooter, sitePreMain, siteHeader, oppBadge, oppBadgeSrc } from './home.mjs';
 import { photoCredit } from './gallery.mjs';
 
 const STAR = '/assets/badge/sue-angels-badge-star.webp';
@@ -1286,12 +1286,28 @@ export function playerPage(p, d) {
   const strikeOf = (list) => {
     const goals = shotsFor(list, p.num);
     const made = assistSpotsFor(list, p.num);
-    /* The zones the club recorded before the picker existed, drawn as areas.
-       A goal somebody has marked is not in here: the point is the record. */
-    const zoned = zoneLayout(zoneGoalsFor(list, p.num));
+    /* The zones the club recorded, drawn as areas, GOALS AND ASSISTS ALIKE.
+       Laid out in one pass per area so a goal and an assist recorded in the
+       same third of the pitch cannot land on top of each other. Anything
+       somebody has marked to a point is not in here: the point is the record. */
+    const zoned = zoneLayout([
+      ...zoneGoalsFor(list, p.num).map((x) => ({ ...x, kind: 'g' })),
+      ...zoneAssistsFor(list, p.num).map((x) => ({ ...x, kind: 'a' })),
+    ]);
     const deep = [...goals, ...made].some((s) => s.y > 50);
     return {
-      goals, made, zoned, span: deep ? 100 : 55, any: goals.length + made.length + zoned.length,
+      goals,
+      made,
+      zoned,
+      span: deep ? 100 : 55,
+      any: goals.length + made.length + zoned.length,
+      /* What the pitch actually draws, which is not `goals.length`: most of
+         it is zones. A description counting only the marked points said "his
+         0 goals" over nine of them. */
+      shown: {
+        goals: goals.length + zoned.filter((x) => x.kind === 'g').length,
+        made: made.length + zoned.filter((x) => x.kind === 'a').length,
+      },
     };
   };
   const strikeViews = views.map((v) => ({ ...v, ...strikeOf(v.list) }));
@@ -1308,40 +1324,76 @@ export function playerPage(p, d) {
        it. One mapping for both now, and the span crops the viewBox. */
     const VH = Math.round((v.span / 100) * H);
     const sy = (y) => ((y / 100) * H).toFixed(2);
+    /* WHO IT WAS AGAINST, ON THE MARK ITSELF. The club asked for the crest.
+       A `<title>` is the browser's own tooltip and carries the words already,
+       so this is the picture beside them rather than the only route to the
+       fact - which is what lets it be hover-only without hiding anything:
+       the words are in the title, in the list under the pitch, and in the
+       SVG's own description. No JavaScript: a sibling group, hidden, shown
+       on hover. */
     const mark = (s, i, kind) => `<g class="pf-sh pf-sh--${kind}" style="--n:${i}" transform="translate(${s.x.toFixed(1)} ${sy(s.y)})">
               <circle class="pf-sh__o" r="4.6"/><circle class="pf-sh__c" r="2.3"/>
-              <title>${esc(kind === 'g' ? 'Goal' : 'Assist')}${s.minute ? `, ${s.minute}′` : ''} v ${esc(s.opponent)}: ${esc(spotWords(s))}.</title>
             </g>`;
+    /* WHO IT WAS AGAINST, ON THE MARK, AND IN ITS OWN LAYER ABOVE THEM ALL.
+       The club asked for the crest on hover. SVG has no z-index - it paints
+       in document order - so a badge drawn inside its own mark is painted
+       over by every mark that comes after it, and the ones it would cover
+       are exactly the marks a row further up the pitch. Same trap as the
+       form pips, which already have this rule.
+       So the visible marks paint first and take no pointer at all, and this
+       layer comes last: one transparent hit circle per mark, bigger than the
+       mark, carrying the badge and the `<title>`. Only one badge is ever
+       shown, so nothing in this layer can cover anything either.
+       The words are in the title, in the list under the pitch and in the
+       SVG's own description, which is what lets the picture be hover-only. */
+    const hit = (s, kind) => {
+      const src = oppBadgeSrc(s.opponent, d.badges);
+      const words = kind === 'z' ? `${ZONE_WORDS[s.zone]}, the area recorded rather than a spot` : spotWords(s);
+      const what = kind === 'g' || (kind === 'z' && s.kind !== 'a') ? 'Goal' : 'Assist';
+      return `<g class="pf-hit" transform="translate(${s.x.toFixed(1)} ${sy(s.y)})">
+              <circle class="pf-hit__t" r="7"/>${src ? `<g class="pf-hit__tip" aria-hidden="true"><rect x="-9" y="-25.5" width="18" height="18" rx="4.5"/><image href="${attr(src)}" x="-6.5" y="-23" width="13" height="13" preserveAspectRatio="xMidYMid meet"/></g>` : ''}
+              <title>${esc(what)}${s.minute ? `, ${esc(String(s.minute))}′` : ''} v ${esc(s.opponent)}: ${esc(words)}.</title>
+            </g>`;
+    };
     return `<svg class="pf-strike__svg" viewBox="0 0 100 ${VH}" preserveAspectRatio="xMidYMid meet" data-season-scope="${attr(v.key)}" role="img" aria-labelledby="pf-sh-t${attr(v.key.split(' ')[0])}">
-            <title id="pf-sh-t${attr(v.key.split(' ')[0])}">Where ${esc(p.first)} struck ${v.goals.length === 1 ? 'his goal' : `his ${v.goals.length} goals`} from${v.made.length ? ` and where he played ${v.made.length === 1 ? 'his assist' : 'his assists'} from` : ''}. Every one is listed under the pitch.</title>
+            <title id="pf-sh-t${attr(v.key.split(' ')[0])}">Where ${esc(p.first)} struck ${v.shown.goals === 1 ? 'his goal' : `his ${v.shown.goals} goals`} from${v.shown.made ? ` and where he played ${v.shown.made === 1 ? 'his assist' : 'his assists'} from` : ''}. Every one is listed under the pitch.</title>
             <rect class="pf-sh__turf" x="1" y="1" width="98" height="${VH - 2}" rx="3"/>
             <path class="pf-sh__lines" d="${mk.lines}"/><path class="pf-sh__lines" d="${mk.arcs}"/>
             <circle class="pf-sh__lines" cx="${mk.circle.cx}" cy="${mk.circle.cy}" r="${mk.circle.r}"/>
             ${mk.spots.map((s) => `<circle class="pf-sh__pk" cx="${s.cx}" cy="${s.cy}" r="0.9"/>`).join('')}
-            ${v.zoned.map((s, i) => `<g class="pf-sh pf-sh--z" style="--n:${i}" transform="translate(${s.x.toFixed(1)} ${sy(s.y)})">
+            ${v.zoned.map((s, i) => `<g class="pf-sh pf-sh--z${s.kind === 'a' ? ' pf-sh--za' : ''}" style="--n:${i}" transform="translate(${s.x.toFixed(1)} ${sy(s.y)})">
               <circle class="pf-sh__o" r="4.6"/><circle class="pf-sh__c" r="2.3"/>
-              <title>Goal${s.minute ? `, ${s.minute}′` : ''} v ${esc(s.opponent)}: ${esc(ZONE_WORDS[s.zone])}, the area recorded rather than a spot.</title>
             </g>`).join('')}
             ${v.made.map((s, i) => mark(s, i, 'a')).join('')}
             ${v.goals.map((s, i) => mark(s, i, 'g')).join('')}
+            ${v.zoned.map((s) => hit(s, 'z')).join('')}${v.made.map((s) => hit(s, 'a')).join('')}${v.goals.map((s) => hit(s, 'g')).join('')}
           </svg>`;
   };
   const strikeBand = strikeAny ? `<section class="sec pf-strike" aria-labelledby="pf-strike-h">
       <div class="wrap">
-        ${rail(RAIL.next(), 'Where he scores from', `${strikeViews[strikeViews.length - 1].goals.length + strikeViews[strikeViews.length - 1].zoned.length} on the pitch`)}
+        ${rail(RAIL.next(), 'Where he scores from', `${strikeViews[strikeViews.length - 1].any} on the pitch`)}
         <h2 class="h2 rv" id="pf-strike-h">Where he <span class="volt">scores.</span></h2>
         <div class="pf-strike__grid rv">
           <figure class="pf-strike__fig">
             ${strikeViews.map((v) => (v.any ? strikePitch(v) : `<p class="pf-strike__none" data-season-scope="${attr(v.key)}">Nothing marked on the pitch for this season.</p>`)).join('\n            ')}
-            <figcaption>Attacking upward. Filled is a goal, hollow is where he played an assist from. A dashed mark sits anywhere in the area the club recorded rather than on a spot: mark the goal on the pitch in the control panel and it moves to where it was struck.</figcaption>
+            <figcaption>Attacking upward. Filled is a goal, hollow is where he played an assist from. A dashed mark sits anywhere in the area the club recorded rather than on a spot: mark it on the pitch in the control panel and it moves to where it happened. Hover a mark for the club it was against.</figcaption>
           </figure>
           <div class="pf-strike__body">
-            ${strikeViews.map((v) => `<ol class="pf-marklist" data-season-scope="${attr(v.key)}">
-              ${[...v.goals.map((s) => ({ ...s, kind: 'Goal', words: spotWords(s) })),
-    ...v.zoned.map((s) => ({ ...s, kind: 'Goal', words: `${ZONE_WORDS[s.zone]}, area only` })),
-    ...v.made.map((s) => ({ ...s, kind: 'Assist', words: spotWords(s) }))]
-      .map((s) => `<li><b>${esc(s.kind)}</b><span>${esc(s.opponent)}${s.minute ? `, ${esc(String(s.minute))}′` : ''}</span><i>${esc(s.words)}</i></li>`).join('')}
-            </ol>`).join('\n            ')}
+            ${strikeViews.map((v) => {
+    /* CLOSED BY DEFAULT. Eleven marks is eleven rows of three facts each,
+       which ran further down the page than the pitch they describe and
+       pushed everything under it off the screen. `details` needs no
+       JavaScript, so the words are one press away with the script blocked. */
+    const rows = [...v.goals.map((s) => ({ ...s, kind: 'Goal', words: spotWords(s) })),
+      ...v.zoned.map((s) => ({ ...s, kind: s.kind === 'a' ? 'Assist' : 'Goal', words: `${ZONE_WORDS[s.zone]}, area only` })),
+      ...v.made.map((s) => ({ ...s, kind: 'Assist', words: spotWords(s) }))];
+    if (!rows.length) return '';
+    return `<details class="pf-marks" data-season-scope="${attr(v.key)}">
+              <summary>Every mark, in words <i>${rows.length}</i></summary>
+              <ol class="pf-marklist">${rows
+    .map((s) => `<li><b>${esc(s.kind)}</b><span>${esc(s.opponent)}${s.minute ? `, ${esc(String(s.minute))}′` : ''}</span><i>${esc(s.words)}</i></li>`).join('')}</ol>
+            </details>`;
+  }).join('\n            ')}
           </div>
         </div>
       </div>

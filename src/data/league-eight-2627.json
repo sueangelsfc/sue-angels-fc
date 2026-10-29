@@ -228,23 +228,9 @@
   ],
   "_scorersNote": "RESTORED 27 OCTOBER 2026, with the expunged goals removed player by player. The chart was transcribed on 4 October and counted goals scored in the three Pure Football FC 1st Team matches, which the league expunged when it removed the club. The club supplied Full-Time's match sheets for all three, so who scored them is read rather than guessed: Makheyi Chilumbi 1 and Vincent Narayna 2 (Pure 0-4 TSM Rovers), Meddy Deschamps, Ben Earle and Samuel Sayer 1 each (Pure 3-3 Bristol City), Charlie Green and Aaron Boniface 1 each (Brockwell Violets 2-0 Pure). Illo Sissoko also scored in the first of those and is below Full-Time's 25-row cut, so he was never in the chart. Deschamps, Sayer and Boniface fall to no goals at all and their rows are gone; a man with nothing but an expunged goal is not a scorer in this division. Appearances are reduced by one for everybody named in those three team sheets, which is why the apps column still reconciles with the table. Club totals after it: TSM Rovers 7 (results 7), Bristol City 3 (results 3), Brockwell Violets 4 (results 8, the rest below the cut). ASSISTS ARE STILL HELD EMPTY at the club's request - they are being re-read separately - and `_clubAssists` is kept for reapplying after that read.\n\nThe division's scorers, from Full-Time's stat leaders page (Player stats, Summary, League Eight 26/27), which excludes county cup football. Every player with a goal is kept, spelt as Full-Time prints them; the page lists appearances for everybody else and those are not kept. npm run verify fails if a club's scorers add up to more goals than its results say it scored. THE PAGE SHOWS 25 ROWS AND THE DIVISION HAS MORE, so a re-read is MERGED, never swapped in. On 4 October the cut fell inside the one-goal group at surname O, and six real scorers sat below it (Otudeko, Reid, Rixon, Sayer, Theivendran, Wing); replacing the list would have deleted all six and taken a goal off four clubs. Reconciling every club's scorers against the goals its table row claims is how the transcription is checked: no club is credited with more than it scored, and the shortfalls are own goals and the rows below the cut. Full-Time lists Drew Daley of Haydons Park with a goal and no appearance, which is its own figure and is kept as printed rather than corrected here.",
   "_assistsNote": "Assists as of 4 October 2026, from the stat leaders page sorted by assists. That sort makes this list COMPLETE where the scorers' is not: the one-assist group ends at row 17 and rows 18 to 25 show none, so nothing is hidden below the 25-row cut. Reconciled against the club's own match records, which agree on every Sue's Angels goal, appearance and assist except two, both of them Full-Time counting one fewer than the club: Charlie Dunkley 3 against 2, and Leon Burnett 4 against 3. The club has confirmed its own four for Burnett and is asking the league to match both. They are listed in _clubAssists and reapplied after every transcription, because a figure defended only in prose is one the next re-read overwrites. Dean Knight's 5 agree on both sides, and both are counting the corner he delivered for the own goal at Barnes Stormers. Everybody else is as Full-Time prints them.",
-  "scorersNote": "The three Pure Football FC 1st Team matches were expunged when the league removed the club, so the goals scored in them have been taken out of this chart and out of the appearances beside it. Assists are being re-read and are not shown yet.",
+  "scorersNote": "The three Pure Football FC 1st Team matches were expunged when the league removed the club, so the goals scored in them have been taken out of this chart and out of the appearances beside it. Assists are being re-read and are not shown yet. The club's own players are counted from its match records and are current; every other club's figures are as the league's chart last read, so a player at another club may have scored since.",
   "scorersAsOf": "2026-10-04",
   "scorers": [
-    {
-      "name": "Ade Owolana",
-      "club": "Sue's Angels FC",
-      "goals": 7,
-      "apps": 4,
-      "assists": 1
-    },
-    {
-      "name": "Charlie Dunkley",
-      "club": "Sue's Angels FC",
-      "goals": 7,
-      "apps": 4,
-      "assists": 3
-    },
     {
       "name": "Victor Awosanya",
       "club": "Three Little Birds FC",
@@ -281,24 +267,10 @@
       "assists": 0
     },
     {
-      "name": "Leon Burnett",
-      "club": "Sue's Angels FC",
-      "goals": 2,
-      "apps": 4,
-      "assists": 4
-    },
-    {
       "name": "Aaron McNamara",
       "club": "Haydons Park",
       "goals": 1,
       "apps": 3,
-      "assists": 0
-    },
-    {
-      "name": "Alfie James Inman",
-      "club": "Sue's Angels FC",
-      "goals": 1,
-      "apps": 1,
       "assists": 0
     },
     {
@@ -337,13 +309,6 @@
       "assists": 0
     },
     {
-      "name": "Elis Brumpton",
-      "club": "Sue's Angels FC",
-      "goals": 1,
-      "apps": 3,
-      "assists": 0
-    },
-    {
       "name": "George Rixon",
       "club": "Barnes Stormers FC",
       "goals": 1,
@@ -370,13 +335,6 @@
       "goals": 1,
       "apps": 2,
       "assists": 1
-    },
-    {
-      "name": "Jon Lloyd",
-      "club": "Sue's Angels FC",
-      "goals": 1,
-      "apps": 2,
-      "assists": 0
     },
     {
       "name": "Keanu Reid",
@@ -455,11 +413,6 @@
       "venue": "The Reeves Sports Club"
     }
   ],
-  "_clubAssists": {
-    "_note": "Sue's Angels assist figures the club's own match records hold where Full-Time's stat leaders page prints fewer. The club has asked the league to match them. Reapply these AFTER transcribing the page, every time, or a re-read silently reverts them.",
-    "Charlie Dunkley": 3,
-    "Leon Burnett": 4
-  },
   "_cancelledNote": "Mousa Mountain FC folded on 17 October 2026 and the league confirmed their removal from League Eight. They are out of `table` and out of `clubs`, and the 18 October fixture against them is cancelled in src/data/fixture-cancellations.json, which is what removes the club's own copy of it from the database. No points were awarded to anyone for the cancelled fixtures. The division is nine clubs now, so the published results and the derived table are reconciled over nine. Pure Football FC 1st Team collapsed on 25 October 2026 and were removed in turn: they are out of `table`, `clubs`, `results` and `fixtures`, and because their three played matches were EXPUNGED rather than left standing, Brockwell Violets, TSM Rovers and Bristol City all lost the record of a match they had played. Brockwell go 12 points to 9, TSM 6 to 3, Bristol City 4 to 3 - a draw taken away, not a win, which is why they drop a point rather than three. The division is eight clubs and the derived table reconciles over eight.",
   "_tableNoteNote": "A `note` on a table row prints as an asterisk against that club with the sentence under the table, on every page that draws the division. Nothing carries one at the moment: Mousa Mountain did while their record was in limbo, and the mark went when the league settled it. The suite exercises the mechanism on a crafted row rather than on the shipped data, so it keeps testing after a mark is retired.",
   "removed": [
@@ -472,5 +425,54 @@
       "note": "Collapsed on 25 October 2026 and removed from League Eight by the league. Their three results were expunged, so the clubs that played them no longer carry the points from those matches. With two clubs gone the division is eight, and no club will be relegated from League Eight this season."
     }
   ],
-  "_removedNote": "A club the league has taken OUT of the division, named under the table rather than deleted from the page. A removed club is not a row - it has no position and no record to stand on - but a reader who remembers the fixture is owed an explanation, and a table that simply has one fewer club than last week explains nothing. Rendered with the same tableFootnote() that draws a marked row's asterisk, on the three pages that draw the division."
+  "_removedNote": "A club the league has taken OUT of the division, named under the table rather than deleted from the page. A removed club is not a row - it has no position and no record to stand on - but a reader who remembers the fixture is owed an explanation, and a table that simply has one fewer club than last week explains nothing. Rendered with the same tableFootnote() that draws a marked row's asterisk, on the three pages that draw the division.",
+  "_clubRowsNote": "WHAT FULL-TIME PRINTED FOR THE CLUB'S OWN PLAYERS, kept as transcription evidence and read by nothing. The club's rows in this chart are DERIVED from its own match records in clubChartRows(), because every published figure on this site comes from match records and a figure read off a screenshot is the one thing that can go stale without anybody touching it. On 29 Oct 2026 the two agree to the goal on every player, which is why the change was safe: Owolana 9, Dunkley 7, Burnett 3, Brumpton 1, Lloyd 1, Inman 1, and 23 attributable goals plus the own goal at Barnes against 20 league and 4 cup goals. APPEARANCES DISAGREE BY ONE and nothing here guesses why: Full-Time printed 5 on 28 Oct where the club has played 6 matches it counts (4 League Eight, the President's Cup tie at Peps, the Marcus Lipton tie at Juizo), so it had most likely not yet taken in the 25 Oct round. The site publishes the club's own count.",
+  "_clubRowsAsRead": {
+    "asOf": "2026-10-04",
+    "rows": [
+      {
+        "name": "Ade Owolana",
+        "club": "Sue's Angels FC",
+        "goals": 7,
+        "apps": 4,
+        "assists": 1
+      },
+      {
+        "name": "Charlie Dunkley",
+        "club": "Sue's Angels FC",
+        "goals": 7,
+        "apps": 4,
+        "assists": 3
+      },
+      {
+        "name": "Leon Burnett",
+        "club": "Sue's Angels FC",
+        "goals": 2,
+        "apps": 4,
+        "assists": 4
+      },
+      {
+        "name": "Alfie James Inman",
+        "club": "Sue's Angels FC",
+        "goals": 1,
+        "apps": 1,
+        "assists": 0
+      },
+      {
+        "name": "Elis Brumpton",
+        "club": "Sue's Angels FC",
+        "goals": 1,
+        "apps": 3,
+        "assists": 0
+      },
+      {
+        "name": "Jon Lloyd",
+        "club": "Sue's Angels FC",
+        "goals": 1,
+        "apps": 2,
+        "assists": 0
+      }
+    ]
+  },
+  "_clubAssistsRetired": "WAS _clubAssists: a hand-kept map of the two assist figures Full-Time counted one short of the club's own records, to be reapplied after every transcription or it reverted in silence. The club's own rows are derived now, so there is nothing to reapply and nothing to forget. Charlie Dunkley and Leon Burnett read 4 each off the records."
 }

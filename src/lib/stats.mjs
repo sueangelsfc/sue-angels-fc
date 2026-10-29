@@ -1078,6 +1078,68 @@ export function compareScorers(scorers, results, cupResults) {
     .map(([club, goals]) => `${club}: scorers total ${goals}, results say ${scored[club] || 0}`);
 }
 
+/* THE CLUB'S OWN ROWS IN THE DIVISION'S CHART ARE DERIVED, NOT TRANSCRIBED.
+
+   Every published figure on this site comes from match records and no page
+   hard-codes a number, and the one place that rule was quietly broken is the
+   club's own men inside a transcribed list: Ade Owolana's goals were a number
+   somebody read off a screenshot, while the same figure was derived three
+   other ways on his own profile.
+
+   Checked before it was built, which is why it is safe: on 29 October 2026
+   the club's records and Full-Time agree to the goal on every one of its
+   players - Owolana 9, Dunkley 7, Burnett 3, Brumpton 1, Lloyd 1, Inman 1 -
+   and reconcile exactly against the club's own scorelines, 23 attributable
+   plus the own goal at Barnes Stormers against 20 league and 4 cup goals.
+
+   So this does not change a figure. What it changes is that the club's own
+   rows can never again be the stale part of a list nobody has re-read: a
+   result saved in the panel moves them, and it retires `_clubAssists`, a
+   hand-kept map of the two assists Full-Time counted one short, which had to
+   be reapplied after every transcription or it reverted in silence.
+
+   THE COMPETITIONS ARE FULL-TIME'S, not the site's idea of competitive. Its
+   stat leaders page excludes County cup stats and nothing else, so this is
+   the division plus the league's own cups - whose names come from the cup
+   draws rather than a list here, so a new cup needs no change - and never a
+   friendly, which Full-Time does not count and the site publishes elsewhere. */
+export function clubChartRows(matches, opts) {
+  const o = opts || {};
+  const inChart = new Set([o.division, ...(o.cupNames || [])].filter(Boolean));
+  const nameOf = o.nameOf || ((n) => String(n));
+  const goals = new Map();
+  const assists = new Map();
+  const apps = new Map();
+  const bump = (m, k) => { if (k) m.set(k, (m.get(k) || 0) + 1); };
+  for (const mt of matches || []) {
+    if (o.season && mt.season !== o.season) continue;
+    if (!inChart.has(mt.competition)) continue;
+    const det = mt.detail || {};
+    for (const g of det.goals || []) {
+      /* An own goal belongs to nobody's record, which is the engine's rule
+         everywhere else, and Full-Time credits one to nobody either. */
+      if (!(g.og || g.num == null)) bump(goals, nameOf(g.num));
+      const a = g.assist;
+      const an = a && (typeof a === 'object' ? a.num : a);
+      if (an != null && an !== '') bump(assists, nameOf(an));
+    }
+    /* An appearance is a start or a substitute the record can prove came on,
+       the same rule the profiles publish, so a name on the bench with nothing
+       beside it is not one. */
+    for (const s of det.starters || []) bump(apps, nameOf(s && s.num != null ? s.num : s));
+    for (const b of det.bench || []) {
+      const on = b && (b.on || b.onAt != null);
+      if (on) bump(apps, nameOf(b.num != null ? b.num : b));
+    }
+  }
+  const row = (name) => ({
+    name, club: o.club, goals: goals.get(name) || 0,
+    assists: assists.get(name) || 0, apps: apps.get(name) || 0,
+  });
+  const everyone = new Set([...goals.keys(), ...assists.keys()]);
+  return [...everyone].map(row);
+}
+
 /* Every played cup tie as a result row, resolved from the draw. The draw
    names the two sides per tie number and the results are recorded by that
    number, so a club is never typed twice and a tie with no result is simply

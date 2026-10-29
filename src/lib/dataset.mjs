@@ -4,7 +4,7 @@
    rows) into one canonical in-memory dataset that both the generator and the
    control panel read. Single source of truth for every published figure.
    ========================================================================== */
-import { reconcileAssists } from './stats.mjs';
+import { reconcileAssists, clubChartRows } from './stats.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -1090,6 +1090,49 @@ export function buildDataset(overrides = {}) {
     const fixturesAhead = (t.fixtures || [])
       .filter((f) => String(f.iso || '') >= todayIso)
       .sort((a, b) => `${a.iso} ${a.kick || ''}`.localeCompare(`${b.iso} ${b.kick || ''}`));
+    /* THE CLUB'S OWN ROWS COME OFF ITS OWN RECORDS. The rest of the chart is
+       a transcription of the division's and stays one; this overlays the men
+       whose every goal the site already derives, so they can never be the
+       stale part of a list nobody has re-read, and the figure here can never
+       disagree with the same figure on a profile.
+
+       Applied to all three tables through one function, because scorers,
+       assisters and the combined table each read the raw list and three
+       overlays is three chances to overlay two of them. */
+    const ours = clubChartRows(matches, {
+      season: forSeason,
+      division: t.division || divisionOf(forSeason),
+      cupNames: (cups.cups || []).map((x) => x.name),
+      /* The name the DIVISION spells it with, taken from its own table, so
+         an overlaid row sits beside the transcribed ones under one spelling
+         rather than introducing a second. */
+      club: (rows.find((r) => r.us) || {}).club
+        || ((t.scorers || []).find((s) => isUs(s.club)) || {}).club,
+      nameOf: (n) => {
+        const p = players.find((x) => Number(x.num) === Number(n));
+        return p ? p.name : null;
+      },
+    }).filter((r) => r.name);
+    /* THE SCORERS CHART ONLY, AND THAT IS NOT TIMIDITY.
+
+       A chart is a RANKING, and a ranking is a claim about a division. The
+       scorers chart is transcribed, so overlaying our men onto it leaves
+       every other club's goals in place and the order stays true. The
+       division's ASSISTERS list is empty, so overlaying there would publish a
+       table headed by this club's own players from top to bottom - Dean
+       Knight leading the division on six - when no opposition assist has been
+       read at all. Our figures would be right and the table would be a lie.
+
+       The combined table already refuses to draw for the same reason and says
+       so: with no assist chart it would restate the scorers and print a
+       nought against every real player.
+
+       Our players' ASSISTS still come off our records, because they ride on
+       their own scorer rows, which is what retires `_clubAssists`. */
+    const chartRows = (list) => [
+      ...(list || []).filter((s) => !isUs(s.club)),
+      ...ours.filter((r) => (Number(r.goals) || 0) > 0),
+    ];
     return {
       ...t,
       division: t.division || divisionOf(forSeason),
@@ -1098,7 +1141,7 @@ export function buildDataset(overrides = {}) {
       fixturesAhead,
       /* The division's scorers, most goals first and then by name, ranked
          the way the league ranks them: level players share a position. */
-      scorers: (t.scorers || [])
+      scorers: chartRows(t.scorers)
         .map((s) => ({ ...s, goals: Number(s.goals) || 0, us: /Sue.s Angels/i.test(String(s.club || '')) }))
         .filter((s) => s.goals > 0)
         .sort((a, b) => (b.goals - a.goals) || String(a.name).localeCompare(String(b.name)))
@@ -1110,7 +1153,7 @@ export function buildDataset(overrides = {}) {
         .map((s) => ({
           ...s,
           assists: Number(s.assists) || 0,
-          goals: Number(((t.scorers || []).find((x) => x.name === s.name) || {}).goals) || 0,
+          goals: Number((chartRows(t.scorers).find((x) => x.name === s.name) || {}).goals) || 0,
           us: /Sue.s Angels/i.test(String(s.club || '')),
         }))
         .filter((s) => s.assists > 0)
@@ -1131,7 +1174,7 @@ export function buildDataset(overrides = {}) {
           cur.apps = Math.max(cur.apps, Number(s.apps) || 0);
           byName.set(s.name, cur);
         };
-        (t.scorers || []).forEach((s) => add(s, 'goals'));
+        chartRows(t.scorers).forEach((s) => add(s, 'goals'));
         (t.assisters || []).forEach((s) => add(s, 'assists'));
         return [...byName.values()]
           .map((s) => ({ ...s, ga: s.goals + s.assists, us: /Sue.s Angels/i.test(String(s.club || '')) }))

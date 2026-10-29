@@ -1777,6 +1777,15 @@ for (const f of shipped) {
          is 17. Verified by reading the row: rank, player, club, G, A, G+A,
          apps, with twenty-six other names carrying the same 17. */
       'league.html :: 17 Alfie James Inman',
+      /* THE GOALS COLUMN OF A GOALSCORERS LIST. The club plays with no
+         numbers and prints none; these are goals, in `<b>`, in a list where
+         every row carries the same column - Chilumbi 4, Burnett 3, and so on
+         - and Burnett's storage key happens to be 3. Verified by reading the
+         markup rather than the flattened text. It retires itself the moment
+         he scores again, which is what a coincidence does. */
+      'index.html :: Leon Burnett 3',
+      'league.html :: Leon Burnett 3',
+      'programme.html :: Leon Burnett 3',
     ]);
     const rx = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const { buildDataset: bdN } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
@@ -1802,8 +1811,14 @@ for (const f of shipped) {
       const txt = flatN(fs.readFileSync(path.join(ROOT, f), 'utf8'));
       for (const p of (dN.squad || [])) {
         if (!p.num || !p.name) continue;
-        const m = txt.match(leakRx(String(p.num), p.name));
-        if (m) found.push(`${f} :: ${m[0]}`);
+        /* EVERY HIT ON A PAGE, NOT THE FIRST. `match` returns the first, so a
+           NAMED coincidence earlier in the document masked every later hit
+           for the same man on the same page: league.html's allowed rank
+           "3 Leon Burnett" hid the goals form below it, and would have hidden
+           a real leak just as well. An allow-list that can swallow the thing
+           it sits beside is worse than no allow-list. */
+        const all = [...txt.matchAll(new RegExp(leakRx(String(p.num), p.name), 'g'))];
+        for (const m of new Set(all.map((x) => x[0]))) found.push(`${f} :: ${m}`);
       }
     }
     const leaks = found.filter((x) => !ALLOWED.has(x));
@@ -7430,6 +7445,101 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   check('League Eight\'s scorers add up to no more than each club scored',
     cmpSc(l8.scorers || [], l8.results || [], cupPool).length === 0,
     cmpSc(l8.scorers || [], l8.results || [], cupPool).join(' | '));
+  /* ---- THE CLUB'S OWN ROWS IN THE CHART ARE DERIVED ----------------------
+     Every published figure on this site comes from match records, and the one
+     place that was quietly untrue is the club's own men inside a transcribed
+     list: Ade Owolana's goals were a number read off a screenshot while the
+     same figure was derived three other ways on his own profile. A
+     transcription goes stale the moment a result is saved and nothing says so.
+
+     Asked against the ENGINE rather than against a figure, so it cannot be
+     satisfied by the number happening to be right today. */
+  {
+    const l8raw = JSON.parse(fs.readFileSync(
+      path.join(ROOT, 'src', 'data', 'league-eight-2627.json'), 'utf8'));
+    check('the stored chart holds no row for the club, because its rows are derived',
+      !(l8raw.scorers || []).some((s) => /Sue.s Angels/i.test(String(s.club || ''))),
+      `${(l8raw.scorers || []).filter((s) => /Sue.s Angels/i.test(String(s.club || ''))).length} stored`);
+    const mine = (l8.scorers || []).filter((s) => s.us);
+    check('and the chart still carries them, ranked among the division',
+      mine.length >= 4 && mine.every((s) => s.goals > 0),
+      mine.map((s) => `${s.name} ${s.goals}`).join(', ') || 'none');
+    /* THE FIGURE HAS TO BE THE ENGINE'S. Every man in the chart is checked
+       against what the site publishes on his own profile, which is the
+       disagreement this exists to make impossible. */
+    const prof = new Map((dL.players || []).map((x) => [x.name, x]));
+    const off = mine.filter((s) => {
+      const p = prof.get(s.name);
+      return !p || Number(p.goals) < Number(s.goals);
+    });
+    check('no row credits a man with more goals than his own profile publishes',
+      off.length === 0, off.map((s) => `${s.name} chart ${s.goals}`).join(', ') || 'none');
+    /* A MAN THE CLUB HAS SINCE RECORDED A GOAL FOR IS IN IT. Daniel McLane's
+       only goal of the season is the President's Cup tie at Peps, and the
+       transcription cannot have him: he is one goal in a group the 25-row
+       page cuts off at surname Hayes. The derived rows are the only thing
+       that puts him in the chart at all. */
+    check('a scorer the transcription could not reach is in the chart',
+      mine.some((s) => s.name === 'Daniel McLane'),
+      mine.map((s) => s.name).join(', '));
+    /* AND THE ASSISTS TABLE IS NOT OVERLAID, which is not timidity. A chart
+       is a ranking and a ranking is a claim about a division: with no
+       opposition assist read at all, overlaying ours would publish a table
+       headed by this club from top to bottom. */
+    check('the division assists table is not built from the club alone',
+      !(l8.assisters || []).length || (l8.assisters || []).some((s) => !s.us),
+      `${(l8.assisters || []).length} rows, ${(l8.assisters || []).filter((s) => s.us).length} ours`);
+    /* And the table says what it is, because its rows are now of two dates. */
+    check('the chart says the club\'s figures are current and the rest is as read',
+      /club's own players are counted from its match records and are current/
+        .test(String(l8raw.scorersNote || '')), 'said');
+    const { clubChartRows: ccr } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+    /* FOUR PROBES ON CRAFTED RECORDS, because the real archive answers most
+       of these the same way whether the rule is implemented or not. */
+    const nameOf = (n) => ({ 1: 'A Striker', 2: 'A Passer', 3: 'A Sub' }[n] || null);
+    const crafted = [
+      { season: '26/27', competition: 'League Eight', detail: {
+        /* THE OWN GOAL CARRIES A NUMBER, which the panel never writes - it
+           stores `{og: true, num: null}` - and that is exactly why it is
+           crafted this way: with the number absent, `num == null` alone
+           answers the question and the `og` half of the engine's rule is
+           never exercised. Deleting it then changes nothing and the probe
+           reports a guard that is doing no work. The shape it protects is a
+           record whose own goal names somebody, which would credit one of
+           this club's own men with an opponent's own goal. */
+        goals: [{ num: 1, assist: { num: 2 } }, { og: true, num: 1, assist: { num: 2 } }],
+        starters: [{ num: 1 }, { num: 2 }], bench: [{ num: 3 }] } },
+      { season: '26/27', competition: 'A Cup', detail: {
+        goals: [{ num: 3 }], starters: [{ num: 1 }], bench: [{ num: 3, on: true, onAt: 70 }] } },
+      { season: '26/27', competition: 'Pre-season friendly', detail: {
+        goals: [{ num: 1 }, { num: 1 }], starters: [{ num: 1 }] } },
+      { season: '25/26', competition: 'League Eight', detail: {
+        goals: [{ num: 1 }], starters: [{ num: 1 }] } },
+    ];
+    const got = ccr(crafted, { season: '26/27', division: 'League Eight',
+      cupNames: ['A Cup'], club: 'Crafted FC', nameOf });
+    const by = new Map(got.map((r) => [r.name, r]));
+    check('crafted: a friendly and another season are not counted',
+      by.get('A Striker') && by.get('A Striker').goals === 1,
+      JSON.stringify(got));
+    check('crafted: the league\'s own cup is counted and an own goal belongs to nobody',
+      by.get('A Sub') && by.get('A Sub').goals === 1 && !by.has(null)
+        && by.get('A Passer') && by.get('A Passer').goals === 0,
+      JSON.stringify(got));
+    /* An own goal has no scorer and CAN have an assist, which is the engine's
+       rule, so the man who forced it keeps his two. */
+    check('crafted: the assist on an own goal still counts to the man who made it',
+      by.get('A Passer') && by.get('A Passer').assists === 2,
+      JSON.stringify(got));
+    /* A name on the bench with nothing beside it is not an appearance, the
+       rule every profile publishes: the sub appears once, off the bench in
+       the cup, and not in the league match he was named for and did not play. */
+    check('crafted: an unused substitute has no appearance',
+      by.get('A Sub') && by.get('A Sub').apps === 1
+        && by.get('A Striker').apps === 2,
+      JSON.stringify(got.map((r) => `${r.name} ${r.apps}`)));
+  }
+
   /* A tie with no result recorded is not a nil-nil. Absent means unknown,
      which is the rule the cup route already reads these with, and counting
      one as played would hand both clubs a scoreline nobody has seen. */

@@ -1396,6 +1396,62 @@ than the pitch they describe and pushed everything under it off a phone. It is a
 press away with scripting blocked. The summary counts what it holds, and the
 suite asserts the count equals the rows and that nothing ships `open`.
 
+#### `[hidden]` loses to any class that sets a display
+
+The season bar hides a tab's content by **setting the `hidden` attribute**,
+which is a user-agent rule - and **any class declaring `display` beats it**.
+It works perfectly on the heat map's `<g>` layers because an SVG group has no
+display rule of its own, and it did nothing at all for `.pf-opp__list`
+(`display: grid`), `.pf-strike__svg` (`display: block`) or the mark list. So a
+profile showed **every season's clubs and every season's pitch stacked under
+one tab**, which reads as a band ignoring the filter rather than as a
+specificity fault, and the club reported it as exactly that.
+
+`.pf-strike [hidden], .pf-saves [hidden], .pf-opp [hidden]{display:none}` - a
+rule per band, scoped so it outranks the component's own. **The check is of
+the STYLESHEET**, because the test DOM has no cascade and can never answer
+this: every class worn by a season-scoped element on a shipped page is read
+back, and one that declares a `display` of its own must have a `[hidden]` rule
+that beats it. It generalises, so the next component to grow a `display` is
+caught on the run that adds it.
+
+#### A reveal that waits on a class its element can never be given
+
+`is-in` is added to the `.rv`, and `.rv` is the GRID. The rule read
+`html.js .pf-strike.is-in .pf-sh` - the section - so it could not match
+anything, and **every mark on every profile sat at nought opacity for good**:
+a pitch with its markings, its caption and its list of seven marks underneath,
+and nothing drawn on it. Invisible for as long as the band had never appeared.
+
+The check asks the same question of every rule in the player sheet: take the
+compound carrying `.is-in`, and fail unless some shipped element wears all of
+its other classes **and** something the script actually gives `is-in` to
+(`rv`, or the five it replays by name).
+
+#### The frame is cut to the marks
+
+A pitch drawn to the halfway line to carry four marks in the six-yard box puts
+the whole record in the top sixth of the picture. The span is the deepest mark
+plus a margin, rounded to five so two profiles with similar records share a
+frame. `sy()` still maps every mark against the **full** pitch whatever the
+crop is, which is what stops the markings and the marks parting company - the
+bug this band shipped with.
+
+#### A figure above the panels is a career figure on every tab
+
+The rail sits outside the season-scoped content and nothing rewrites it, so
+**"17 clubs" was printed over a season holding five** and "9 on the pitch"
+over a season holding two. The count that is true of what is on screen lives
+inside the panel it describes - the mark list's own summary - and the rail says
+what the band is instead.
+
+**The check's first version was a no-op and the probe is what said so.** It
+looked for "a rail-ish element" and matched non-greedily to the first
+`</span>`, which is the band's position number and nothing else, so restoring
+the career count left it green. It reads `xrail__r` by name now: nothing
+rewrites that caption per tab, so a digit in it is a figure that is wrong on
+every tab but one.
+
 ### Who he does it against
 
 `playerOpponents()` in `stats.mjs`, band `pf-opp` on every profile. Every goal
@@ -2021,7 +2077,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 5,251 checks against the generated output and the rendered panel
+npm test          # 5,255 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

@@ -10974,6 +10974,115 @@ console.log(`\n${'='.repeat(66)}`);
 }
 
 /* ==========================================================================
+   A SEASON FILTER THAT HIDES NOTHING, AND A REVEAL THAT NEVER FIRES
+
+   Two faults, both reported by the club looking at a profile, both invisible
+   to every check in this file and to the browser pass, and both the same
+   kind of thing: a rule that is written, shipped, and matches nothing.
+
+   1. `[hidden]` IS A USER-AGENT RULE AND ANY CLASS DECLARING `display` BEATS
+      IT. The season bar hides a tab's content by setting that attribute,
+      which works perfectly on the heat map's `<g>` layers because an SVG
+      group has no display rule of its own - and did nothing at all for the
+      shot map, its mark list and the club list, each of which declares
+      `display: grid` or `display: block`. So a profile showed every season's
+      pitch and every season's clubs stacked under one tab: the filter looked
+      ignored rather than broken.
+
+   2. `is-in` IS ADDED TO THE `.rv`, NEVER TO THE SECTION. `.pf-strike.is-in`
+      was waiting for a class that element can never receive, so every mark
+      sat at nought opacity for good - a pitch with markings, a caption and a
+      list of seven marks underneath, and nothing drawn on it.
+
+   Neither can be asked of the test DOM, which has no cascade. Both can be
+   asked of the STYLESHEET, which is where each of them is a flat fact.
+   ========================================================================== */
+{
+  const css = fs.readFileSync(path.join(ROOT, 'p-player.css'), 'utf8');
+  const rules = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+    .map((m) => ({ sel: m[1].trim(), body: m[2] }));
+  const pages = fs.readdirSync(path.join(ROOT, 'players')).filter((f) => f.endsWith('.html'));
+  const html = pages.map((f) => fs.readFileSync(path.join(ROOT, 'players', f), 'utf8'));
+
+  /* Every class that a season-scoped element actually wears, on real pages. */
+  const scoped = new Set();
+  for (const h of html) {
+    for (const m of h.matchAll(/<[a-z]+[^>]*\sdata-season-scope="[^"]*"[^>]*>/g)) {
+      const cls = (m[0].match(/\sclass="([^"]*)"/) || [, ''])[1];
+      for (const c of cls.split(/\s+/)) if (c) scoped.add(c);
+    }
+  }
+  check('player pages carry season-scoped elements with classes of their own',
+    scoped.size >= 4, `${scoped.size} classes`);
+
+  /* A class with a `display` of its own outranks `[hidden]`, so the band it
+     belongs to has to say so itself. The rule has to be MORE specific than
+     the class, which `.band [hidden]` is and a bare `[hidden]` is not. */
+  const beaten = [];
+  for (const c of scoped) {
+    const own = rules.filter((r) => r.sel.split(',').some((x) => x.trim() === `.${c}`));
+    if (!own.some((r) => /(^|;)\s*display\s*:/.test(r.body))) continue;
+    const covered = rules.some((r) => /\[hidden\]/.test(r.sel)
+      && /display\s*:\s*none/.test(r.body)
+      && r.sel.split(',').some((x) => /^\.[\w-]+\s+\[hidden\]$/.test(x.trim())
+        && html.some((h) => new RegExp(`class="[^"]*\\b${x.trim().slice(1).split(/\s/)[0]}\\b[^"]*"[\\s\\S]{0,40000}?data-season-scope`).test(h))));
+    if (!covered) beaten.push(c);
+  }
+  check('a season-scoped element that sets its own display says how [hidden] beats it',
+    beaten.length === 0, beaten.slice(0, 6).join(', '));
+
+  /* A rule waiting for `is-in` must be waiting on an element that can ever
+     be given it. The script adds it to `.rv`, and to five named things it
+     replays; anything else is a selector that will never match. */
+  const GETS_IN = ['rv', 'pf-charts', 'pf-tiles', 'pf-record__grid', 'pf-plot', 'pf-pitch__grid'];
+  const never = [];
+  for (const r of rules) {
+    for (const sel of r.sel.split(',')) {
+      const compound = (sel.trim().match(/[^\s>+~]*\.is-in[^\s>+~]*/) || [])[0];
+      if (!compound) continue;
+      const classes = [...compound.matchAll(/\.([\w-]+)/g)].map((m) => m[1]).filter((c) => c !== 'is-in');
+      if (!classes.length) continue;
+      /* Does any shipped element wear all of them AND something that is given
+         `is-in`? */
+      const ok = html.some((h) => [...h.matchAll(/\sclass="([^"]*)"/g)].some((m) => {
+        const has = m[1].split(/\s+/);
+        return classes.every((c) => has.includes(c)) && GETS_IN.some((g) => has.includes(g));
+      }));
+      if (!ok) never.push(compound);
+    }
+  }
+  check('nothing waits on an `is-in` the element it names can never be given',
+    never.length === 0, [...new Set(never)].slice(0, 5).join(' | '));
+
+  /* A FIGURE ABOVE THE PANELS IS A CAREER FIGURE ON EVERY TAB. The rail sits
+     outside the season-scoped content and nothing rewrites it, so "17 clubs"
+     was printed over a season holding five, and "9 on the pitch" over a
+     season holding two. The count that is true of what is on screen lives
+     inside the panel it describes. */
+  const railed = [];
+  for (let i = 0; i < html.length; i += 1) {
+    for (const band of ['pf-opp', 'pf-strike']) {
+      const sec = html[i].match(new RegExp(`<section class="sec ${band}"[\\s\\S]*?</section>`));
+      if (!sec) continue;
+      /* THE RAIL'S RIGHT-HAND CAPTION, read directly. The first version of
+         this check looked for "a rail-ish element" and matched non-greedily
+         up to the first `</span>`, which is the band's POSITION NUMBER and
+         nothing else - so restoring the career count left it green. A check
+         that has to guess which element it is reading is a check that reads
+         the wrong one. The left side holds the position and the band name;
+         the right side is the caption, and nothing rewrites it per tab, so a
+         digit in it is a figure that is wrong on every tab but one. */
+      const cap = sec[0].match(/<span class="xrail__r">([\s\S]*?)<\/span>/);
+      if (cap && /\d/.test(cap[1].replace(/<[^>]+>/g, ' '))) {
+        railed.push(`${pages[i]}: ${band} says "${cap[1].replace(/<[^>]+>/g, ' ').trim()}"`);
+      }
+    }
+  }
+  check('neither band prints a season-varying figure above its own season panels',
+    railed.length === 0, railed.slice(0, 4).join(' | '));
+}
+
+/* ==========================================================================
    THE PANEL, RENDERED
 
    Everything above this point reads generated output or loads a chunk against

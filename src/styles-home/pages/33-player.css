@@ -1087,11 +1087,21 @@ html.js .pf-pitch__grid.is-picking .pf-spot.is-picked{opacity: 1;}
    band's single column instead, so on a phone the photographs drew ONE WIDE,
    which is the nine-thousand-pixel band the comment up there says was fixed.
    A fix undone by a name, with nothing in either band's own rules changed. */
+/* `[hidden]` IS A UA RULE AND ANY CLASS WITH A `display` BEATS IT.
+   The season bar hides a tab's content by setting the attribute, which works
+   perfectly on the heat map's `<g>` layers because an SVG group has no
+   display rule of its own - and silently did nothing for every component
+   here, because each one declares `display: grid` or `display: block`. So a
+   profile showed EVERY season's pitch, every season's mark list and every
+   season's club list stacked under one tab, which reads as the band ignoring
+   the filter rather than as a specificity fault. One rule per band, scoped so
+   it outranks the component's own. */
+.pf-strike [hidden], .pf-saves [hidden], .pf-opp [hidden]{display: none;}
 .pf-strike__grid{display: grid; gap: clamp(20px, 4vw, 40px); align-items: start;
   grid-template-columns: minmax(0, 1fr);}
-@media (min-width: 860px){.pf-strike__grid{grid-template-columns: minmax(0, 300px) minmax(0, 1fr);}}
+@media (min-width: 860px){.pf-strike__grid{grid-template-columns: minmax(0, 340px) minmax(0, 1fr);}}
 .pf-strike__fig{margin: 0; display: grid; gap: 10px; justify-items: center;}
-.pf-strike__svg{width: 100%; max-width: 300px; height: auto; display: block;}
+.pf-strike__svg{width: 100%; max-width: 340px; height: auto; display: block;}
 .pf-strike__fig figcaption{font-size: 12px; line-height: 1.5; color: var(--ink-3);
   max-width: 34ch;}
 .pf-strike__none{margin: 0; color: var(--ink-3); font-size: 14px;}
@@ -1170,7 +1180,12 @@ html.js .pf-pitch__grid.is-picking .pf-spot.is-picked{opacity: 1;}
    revealed thing in this file follows, and the one this band was missing. */
 @media (prefers-reduced-motion: no-preference){
   html.js .pf-strike .pf-sh{opacity: 0; transform-box: fill-box;}
-  html.js .pf-strike.is-in .pf-sh{animation: pf-sh-in 0.45s both;
+  /* `is-in` LANDS ON THE `.rv`, WHICH IS THE GRID, NEVER ON THE SECTION.
+     `.pf-strike.is-in` could not match anything, so every mark on every
+     profile sat at nought opacity for good: a pitch with its markings, its
+     caption, its list of seven marks underneath, and nothing drawn on it.
+     Invisible while the band itself had never appeared on a page. */
+  html.js .pf-strike .rv.is-in .pf-sh{animation: pf-sh-in 0.45s both;
     animation-delay: calc(0.3s + var(--n) * 0.07s);}
 }
 @keyframes pf-sh-in{from{opacity: 0;}to{opacity: 1;}}

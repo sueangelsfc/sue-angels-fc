@@ -1294,12 +1294,21 @@ export function playerPage(p, d) {
       ...zoneGoalsFor(list, p.num).map((x) => ({ ...x, kind: 'g' })),
       ...zoneAssistsFor(list, p.num).map((x) => ({ ...x, kind: 'a' })),
     ]);
-    const deep = [...goals, ...made].some((s) => s.y > 50);
+    /* THE FRAME IS CUT TO THE MARKS, not to a fixed half. A pitch drawn to
+       the halfway line to carry four marks in the six-yard box puts the
+       whole record in the top sixth of the picture and leaves the reader
+       looking at grass. Deepest mark plus a margin, rounded to five so two
+       profiles with similar records share a frame rather than each getting
+       its own slightly different crop. `sy()` maps a mark against the FULL
+       pitch whatever this is, so the markings and the marks cannot part
+       company - that was the bug this band shipped with. */
+    const deepest = Math.max(0, ...[...goals, ...made, ...zoned].map((s) => s.y));
+    const span = Math.min(100, Math.max(40, Math.ceil((deepest + 9) / 5) * 5));
     return {
       goals,
       made,
       zoned,
-      span: deep ? 100 : 55,
+      span,
       any: goals.length + made.length + zoned.length,
       /* What the pitch actually draws, which is not `goals.length`: most of
          it is zones. A description counting only the marked points said "his
@@ -1371,7 +1380,12 @@ export function playerPage(p, d) {
   };
   const strikeBand = strikeAny ? `<section class="sec pf-strike" aria-labelledby="pf-strike-h">
       <div class="wrap">
-        ${rail(RAIL.next(), 'Where he scores from', `${strikeViews[strikeViews.length - 1].any} on the pitch`)}
+        ${/* A FIGURE IN THE RAIL IS A CAREER FIGURE ON EVERY TAB. The rail sits
+             above the season panels and nothing rewrites it, so "9 on the
+             pitch" was printed over a season holding two. The count that is
+             true of what you are looking at is on the list's own summary,
+             one per season, so the rail says what the band is instead. */''}
+        ${rail(RAIL.next(), 'Where he scores from', 'Goals and assists')}
         <h2 class="h2 rv" id="pf-strike-h">Where he <span class="volt">scores.</span></h2>
         <div class="pf-strike__grid rv">
           <figure class="pf-strike__fig">
@@ -1733,7 +1747,7 @@ export function playerPage(p, d) {
   });
   const vsBand = vsViews.some((v) => v.rows.length) ? `<section class="sec pf-opp" aria-labelledby="pf-opp-h">
       <div class="wrap">
-        ${rail(RAIL.next(), 'Who he does it against', `${vsViews[vsViews.length - 1].rows.length} clubs`)}
+        ${rail(RAIL.next(), 'Who he does it against', 'Club by club')}
         <h2 class="h2 rv" id="pf-opp-h">Who he does it <span class="volt">against.</span></h2>
         <p class="pf-opp__key rv">
           <span class="pf-opp__sw" aria-hidden="true"></span>Scored

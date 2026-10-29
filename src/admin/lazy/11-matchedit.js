@@ -2166,7 +2166,7 @@
               bodyPart: null, zone: null, situation: null, penalty: false,
               assist: g.assist && g.assist.num != null
                 ? { num: g.assist.num, type: g.assist.type || 'pass',
-                  zone: g.assist.zone || null } : null,
+                  zone: g.assist.zone || null, spot: g.assist.spot || null } : null,
             };
           }
           return {
@@ -2175,8 +2175,16 @@
             bodyPart: g.bodyPart || null,
             zone: g.zone || null,
             situation: g.situation || null,
+            /* THE MARKED POINT HAS TO BE NAMED HERE OR IT IS DROPPED. This
+               rebuilds each goal from an explicit list of fields, the same
+               trap `carryAssists` carries a comment about - and this one, the
+               writer, did not name `spot` at all. So the picker set it, the
+               button read "Marked on the pitch", and the save threw it away:
+               nothing the club marked on the pitch had ever reached the
+               database, on a goal or on an assist. */
+            spot: g.spot || null,
             assist: g.assist ? { num: g.assist.num, type: g.assist.type || 'pass',
-              zone: g.assist.zone || null } : null,
+              zone: g.assist.zone || null, spot: g.assist.spot || null } : null,
             /* Kept because the statistics engine and three pages already read
                it, and because a penalty is the one piece of goal detail the
                site has always printed. */

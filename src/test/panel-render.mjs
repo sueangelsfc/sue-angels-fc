@@ -490,6 +490,37 @@ export async function panelChecks() {
             btn1.getAttribute('class').includes('is-set')
               && cards[1].querySelector('[data-g-zone]').disabled === true,
             btn1.getAttribute('class'));
+          /* AND IT REACHES THE RECORD, which for months it did not. The
+             writer rebuilds each goal from an explicit list of fields and
+             never named `spot`, so the picker set it, the card said "Marked
+             on the pitch", and the save threw it away - every point the club
+             ever marked, on a goal and on an assist alike. Everything above
+             this line passed throughout, because every one of them is a
+             question about the SCREEN. The club found it by marking a goal
+             and opening the record again. */
+          const done3 = dlg.querySelector('[data-cpp-close]');
+          if (done3) { PR.click(done3); await PR.settle(ctx3); }
+          const save3 = m3.querySelector('[data-save]');
+          if (save3) {
+            PR.click(save3);
+            await PR.settle(ctx3);
+            await PR.settle(ctx3);
+            const w3 = ctx3.store.writes
+              .filter((x) => x.op === 'upsert' && x.t === 'matches' && x.d);
+            const saved = ((w3[0] || {}).d || {}).goals || [];
+            /* The point just marked, on the goal it was marked on, and the
+               one that was already stored still on the first - a writer that
+               passed the stored record through untouched would keep that one
+               and lose this one, which is exactly what it did. */
+            check('a point marked on the pitch is written onto the goal',
+              saved.length > 1 && saved[1] && saved[1].spot
+                && saved[1].spot.y === 11 && saved[1].spot.x === 50,
+              JSON.stringify(saved.map((g) => g && g.spot)));
+            check('and a goal that was already marked keeps its own point',
+              saved.length > 0 && saved[0] && saved[0].spot
+                && saved[0].spot.x === 38.5 && saved[0].spot.y === 9.2,
+              JSON.stringify(saved[0] && saved[0].spot));
+          }
         }
       }
     }

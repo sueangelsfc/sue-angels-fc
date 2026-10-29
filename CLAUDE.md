@@ -1387,9 +1387,37 @@ drawn. Same trap as the form pips and the site header, a third time.
   and that the layer comes after every mark.
 - **It is hover-only and hides nothing**: the same sentence is in the title, in
   the list under the pitch and in the SVG's own description.
-- **The crest is 13 viewBox units**, 44px on the shipped 340px pitch, cut back
-  from 18 at the club's request: a badge wide enough to cover the mark beside
-  the one being pointed at is a tooltip arguing with the chart it explains.
+- **The crest is 10 viewBox units**, 34px on the shipped 340px pitch, cut back
+  from 18 over two passes at the club's request: a badge wide enough to cover
+  the mark beside the one being pointed at is a tooltip arguing with the chart
+  it explains. **The hit circle is bigger than the mark and stays that way**
+  (48px against the dashed ring's 31px), so what a reader hovers is the area,
+  not a point inside it.
+
+#### EVERY POINT THE CLUB MARKED ON THE PITCH WAS THROWN AWAY ON SAVE
+
+The picker set `holder.spot`, the card read **Marked on the pitch**, the zone
+dropdown correctly switched itself off - and the writer rebuilds each goal
+from an explicit list of fields and **never named `spot`**, on the goal or on
+the assist. So nothing anybody ever marked reached the database, which is why
+the archive's count of marked points is nought and why reopening a record
+showed an empty pitch. `carryAssists` carries a comment about exactly this
+trap, three hundred lines above the writer that fell into it.
+
+- **Found by the club**, marking a goal and opening the record again.
+- **Every check about the picker passed throughout**, because every one of
+  them is a question about the SCREEN: the chunk is fetched, the dialog opens,
+  the arrows move the marker, the card behind says so. Not one of them pressed
+  **Save** and read what was written, which is this panel's recurring fault
+  with the pieces in a different order.
+- The check now does, on the same crafted record: a point marked with the
+  arrow keys must come back on that goal, **and** the goal that was already
+  marked must keep its own - a writer passing the stored record through
+  untouched would keep the second and lose the first, which is what it did.
+  The probe takes the field out again and turns both red.
+- **An own goal carries no spot**, for the reason it carries no body part or
+  zone: where the ball was struck from is a fact about the side that put it
+  in. Its assist carries one, because the man who forced it played here.
 
 #### The control panel's pitch is twice the size
 
@@ -1398,11 +1426,11 @@ by the size of the thing being tapped: 260px of pitch is about two and a half
 millimetres per yard. It is 520px now, and **nothing in `17-pitch.js` changed**
 - the reader divides by the measured rectangle (`fromView`), so the picker has
 always been resolution-independent and the size is a CSS fact alone. The cap is
-`min(520px, 100%, 54vh)` because the pitch is 100 by 140: capped on width
-alone, a laptop would get 728px of pitch inside a 900px window and the club
+`min(620px, 100%, 62vh)` because the pitch is 100 by 140: capped on width
+alone, a laptop would get 868px of pitch inside a 900px window and the club
 would be scrolling to see the goal it was aiming at. `.cpp__panel` went 380 to
-640 to hold it, and `vector-effect: non-scaling-stroke` keeps the markings
-hairline at either size.
+740 to hold it, and `vector-effect: non-scaling-stroke` keeps the markings
+hairline at any size.
 
 #### Every mark in words, collapsed
 
@@ -2093,7 +2121,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 5,255 checks against the generated output and the rendered panel
+npm test          # 5,257 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

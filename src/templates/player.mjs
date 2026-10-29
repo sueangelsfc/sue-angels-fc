@@ -1667,11 +1667,25 @@ export function playerPage(p, d) {
         </section>`;
   };
 
-  const foot = pr.byFoot || {};
-  const zone = pr.byZone || {};
-  const sit = pr.bySituation || {};
-  const asType = pr.assistsByType || {};
-  const detailed = pr.goalsDetailed || 0;
+  /* OFF `p`, THE SQUAD ROW, NOT OFF THE PROFILE. `playerProfile` has never
+     returned any of these - they are `playerStats`' own tallies of how each
+     goal was struck - so `pr.byFoot` was undefined on every page, every bar
+     came out at nought, `detailBars` correctly refused to draw an empty
+     chart, and the band vanished. `pf-how` appears on 0 of the 47 profiles
+     and always has: the club has recorded what every one of 141 goals was
+     struck with, from where, and what the ball was doing, and not one reader
+     ever saw it. CLAUDE.md said "all of it surfaces on the player profile".
+
+     The reader-with-no-field, which is the one failure this repository has
+     written down in both directions and had never caught in this one. The
+     checks passed because they asked whether the band EMPTIES itself
+     correctly, and it does - perfectly, on every page, for the wrong
+     reason. */
+  const foot = p.byFoot || {};
+  const zone = p.byZone || {};
+  const sit = p.bySituation || {};
+  const asType = p.assistsByType || {};
+  const detailed = p.goalsDetailed || 0;
 
   /* WHAT THIS BAND WILL ACTUALLY CONTAIN, worked out before deciding to draw
      it. The gate used to be `detailed || pr.assists || pr.saves`, and nothing
@@ -1687,18 +1701,18 @@ export function playerPage(p, d) {
     detailBars('How he makes them for others', ASSIST_TYPES.map((a) => ({ label: a.label, n: asType[a.key] || 0 }))),
   ].filter(Boolean);
 
-  const howBand = (howSections.length || pr.keeperApps) ? `<section class="sec pf-how" data-season-scope="all" aria-labelledby="pf-how-h">
+  const howBand = (howSections.length || p.keeperApps) ? `<section class="sec pf-how" data-season-scope="all" aria-labelledby="pf-how-h">
       <div class="wrap">
         ${rail(RAIL.next(), 'The detail', detailed ? `All seasons · ${detailed} of ${pr.goals} goals recorded in full` : 'All seasons · from the match records')}
         <h2 class="h2 rv" id="pf-how-h">How he <span class="volt">does it.</span></h2>
         <div class="pf-how__grid rv">
           ${howSections.join('\n          ')}
-          ${pr.keeperApps ? `<section class="pf-sub">
+          ${p.keeperApps ? `<section class="pf-sub">
             <h3 class="pf-how__h">In goal</h3>
             <ul class="pf-how__keeper">
-              <li><b>${pr.saves}</b><span>saves</span></li>
-              <li><b>${esc(pr.savesPerGame || '0')}</b><span>a game</span></li>
-              <li><b>${pr.keeperApps}</b><span>games in goal</span></li>
+              <li><b>${p.saves}</b><span>saves</span></li>
+              <li><b>${esc(p.savesPerGame || '0')}</b><span>a game</span></li>
+              <li><b>${p.keeperApps}</b><span>games in goal</span></li>
             </ul>
           </section>` : ''}
         </div>

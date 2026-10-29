@@ -10548,6 +10548,98 @@ console.log(`\n${'='.repeat(66)}`);
     check('probe: the same team sheet on a real nil is credited, so the walkover rule is what refused it',
       okGot === 2, `${okGot} credited from a played nil`);
   }
+
+  /* ========================================================================
+     WHAT EVERY GOAL WAS STRUCK WITH REACHED NOBODY
+
+     The club records what each goal was struck with, from where, and what the
+     ball was doing. 141 goals, and `pf-how` - the band that publishes it -
+     appeared on 0 of the 47 profiles and always had. The band reads
+     `pr.byFoot`, and `pr` is `playerProfile`, which has never returned any of
+     those tallies: they are `playerStats`' own, on the squad row. So every
+     bar came out at nought, `detailBars` correctly refused to draw an empty
+     chart, and the whole section vanished.
+
+     A reader with no field, which is the fault this repository has written
+     down in both directions and had never caught in this one. Nothing failed,
+     because every check about this band asked whether it EMPTIES itself when
+     the detail is taken away - and it did, perfectly, on every page, for the
+     wrong reason. So the question has to be the other one: is it THERE, and
+     does it say what the record says.
+     ======================================================================== */
+  {
+    const BODY = [['right', 'Right foot'], ['left', 'Left foot'],
+      ['head', 'Header'], ['other', 'Other']];
+    const pool = (dCS.playersCompetitive || dCS.players || []).filter((q) => !q.unknown);
+    const withDetail = pool.filter((q) => (q.goalsDetailed || 0) > 0);
+    const keepers = pool.filter((q) => (q.keeperApps || 0) > 0);
+    /* 23 goals of 160, across 7 players: this is the 26/27 detail the club
+       has entered so far, and the figure is printed rather than a ceiling
+       asserted, because how much of it is recorded is the club's business
+       and not something a build should refuse over. */
+    const detailedGoals = withDetail.reduce((t, q) => t + (q.goalsDetailed || 0), 0);
+    check('the archive holds goals whose detail the club recorded',
+      withDetail.length >= 5 && detailedGoals >= 15,
+      `${detailedGoals} goals detailed across ${withDetail.length} players`);
+
+    const missing = [];
+    const wrongFig = [];
+    for (const q of withDetail) {
+      const f = path.join(ROOT, 'players', `${q.slug}.html`);
+      if (!fs.existsSync(f)) continue;
+      const html = fs.readFileSync(f, 'utf8');
+      if (!/class="sec pf-how"/.test(html)) { missing.push(q.name); continue; }
+      /* NOT "the band exists". Every figure in it, against the record. */
+      for (const [key, label] of BODY) {
+        const n = (q.byFoot || {})[key] || 0;
+        if (!n) continue;
+        const rx = new RegExp(`<span class="pf-how__k">${label}</span>[\\s\\S]{0,200}?`
+          + '<b class="pf-how__v">(\\d+)</b>');
+        const got = html.match(rx);
+        if (!got || Number(got[1]) !== n) {
+          wrongFig.push(`${q.name} ${label}: page ${got ? got[1] : 'absent'}, record ${n}`);
+        }
+      }
+    }
+    check('every player whose goals the club detailed has the band that publishes it',
+      missing.length === 0, missing.slice(0, 6).join(', '));
+    check('and every figure in it is the one the record holds',
+      wrongFig.length === 0, wrongFig.slice(0, 6).join(' | '));
+    /* THE COVERAGE LINE IS THE HONEST HALF. A share quoted over a fraction of
+       the evidence without saying so is the thing this site refuses to do. */
+    const partial = withDetail.filter((q) => (q.goalsDetailed || 0) < (q.goals || 0));
+    const quiet = partial.filter((q) => {
+      const f = path.join(ROOT, 'players', `${q.slug}.html`);
+      return fs.existsSync(f) && !/recorded before\s+the club kept this level of detail/
+        .test(fs.readFileSync(f, 'utf8'));
+    });
+    check('a player whose detail covers only some of his goals is told so on the page',
+      partial.length === 0 || quiet.length === 0,
+      `${partial.length} partial, ${quiet.map((q) => q.name).slice(0, 4).join(', ')} silent`);
+
+    /* A KEEPER'S SAVES WERE IN THE SAME BAND AND THE SAME STATE. */
+    const gkQuiet = keepers.filter((q) => {
+      const f = path.join(ROOT, 'players', `${q.slug}.html`);
+      if (!fs.existsSync(f)) return false;
+      const html = fs.readFileSync(f, 'utf8');
+      return !new RegExp(`<li><b>${q.saves}</b><span>saves</span></li>`).test(html);
+    });
+    check('a goalkeeper with saves on record has them on his own page',
+      keepers.length > 0 && gkQuiet.length === 0,
+      `${keepers.length} keepers, ${gkQuiet.map((q) => q.name).join(', ')} silent`);
+
+    /* THE NEGATIVE HALF, which is what the old checks were asking - kept,
+       because a band drawn over nothing is the other failure. */
+    const bare = pool.filter((q) => !(q.goalsDetailed || 0) && !(q.keeperApps || 0)
+      && !Object.keys(q.assistsByType || {}).length);
+    const drawnAnyway = bare.filter((q) => {
+      const f = path.join(ROOT, 'players', `${q.slug}.html`);
+      return fs.existsSync(f) && /class="sec pf-how"/.test(fs.readFileSync(f, 'utf8'));
+    });
+    check('a player the club has recorded no detail for carries no band at all',
+      bare.length > 0 && drawnAnyway.length === 0,
+      `${bare.length} without detail, ${drawnAnyway.map((q) => q.name).slice(0, 4).join(', ')} drawn anyway`);
+  }
 }
 
 /* ==========================================================================

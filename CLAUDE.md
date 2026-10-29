@@ -32,7 +32,7 @@ src/
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        4,716-check suite against the generated output
+  test/run.mjs        5,225-check suite against the generated output
   test/dom.mjs        a small, strict DOM that throws rather than guessing
   test/panel-render.mjs  the panel, rendered, and asked what came out
 ```
@@ -316,6 +316,51 @@ Three kinds of completed match count differently, and getting this wrong is what
 | `score` | yes | yes | ordinary result |
 | `walkover` | yes, 3 pts to one side | **no** | official table adds no goals; 15×3 + 3×3 = 54 |
 | `penalty` | yes | yes (normal time) | the shootout rides on `phs`/`pas`; the tie is still a **draw** |
+
+### A clean sheet is credited, and the page said it twice
+
+A player page printed **two different clean-sheet figures under one word**,
+on all 36 profiles that carried a figure at all. Stewart Luwawa's 26/27 panel
+read *"3 clean sheets, of 6 on record"* directly above a wheel reading
+*"Clean sheets 0 of 3"*. Both numbers were true.
+
+- The tile, the bars and the competition table counted the matches he was **on
+  the pitch** for where the club conceded nothing, which is a fact about the
+  **team** over his matches.
+- The wheel, the leaderboards, the club records, the milestones and the
+  keeper's own record counted the club's clean sheets he is **credited** with,
+  which is the club's own answer on the match form.
+
+**The credited one is the published figure**, so it is the only one on a
+profile now. It is read off a **mark the engine leaves on each match entry**
+rather than worked out a second way, so a profile and the squad list cannot
+disagree - the same device as the per-match goal tallies, and the fix for why
+the page had nothing to break down by season and reached for the team's figure
+instead. The tile's own comment already described the credited figure while
+the code read the team's.
+
+**AND THE TWO DISAGREED FOR A REASON.** `cleanSheets` (the keeper) was in the
+list of things that **prove** a substitute was on the pitch and
+`cleanSheetContributors` (the back line) was not - the keeper-against-back-line
+asymmetry this file fixed once for the credit and never for the proof. Three
+men are named in a clean sheet and listed on a bench nobody ticked: Michael
+Brabrook against Pure, Kieron Horrill at Larkhall, Jeev Thilaganathan at
+Hillside. Being named in the club's own back line is the same kind of claim as
+scoring, so each gains the substitute appearance the club's answer already
+implied, and the figures meet.
+
+**A WALKOVER CANNOT PROVE A CLEAN SHEET.** All three are recorded as nought
+conceded because no football was played, so the engine's `theirGoals === 0`
+was true of each and it credited every defender on their sheets. It cost
+nothing only because none of the three **has** a team sheet. `playerProfile`
+already asked this and the engine did not, which is how one figure came to be
+the ceiling of the other. **Asked on a crafted walkover with a sheet**, since
+the archive has none and a check over the real data passes over an empty set
+whichever way the rule falls.
+
+**The check that matters compares two figures on one shipped page**, per season
+panel. Every existing clean-sheet check asked whether the credited figure
+matched the record, and all of them passed throughout.
 
 ### Who kept the clean sheet is something the club records
 The match form asks. It stores the keeper in `cleanSheets` and the back line in `cleanSheetContributors`, the club has answered on **fourteen** matches, and the site read **neither** - it credited whoever STARTED in a position matching `/GK|CB|LB|RB|WB/`.
@@ -612,7 +657,7 @@ What it can now prove, none of which was checkable before:
   - **Composed.** Arranged in the browser from the facts alone, threading the notes through by time and by player name. No key, no network. This is the fallback for a missing session, a missing key, an over-long prompt, no network or a 500, so the button can never do nothing.
 - It also knows two things no tab on the form holds: **how the club has done against this opponent before**, and **where the match sits in a run of pre-season friendlies**. Both are counted from the match list the panel already ships, walkovers carrying no goals exactly as the site counts them, and the suite reconciles the head-to-head against the site's own figures for every opponent.
 - It invents nothing either way: a goal with no minute does not acquire one.
-- **A goal carries what it was struck with, where from, what the ball was doing, and who made it and how.** The vocabulary is `src/lib/football.mjs`, following Opta's qualifiers, and it is shared by the panel, the stats engine and the pages so they cannot describe the same goal differently. The assist is a field ON the goal; the flat `assists` array is derived on save so everything downstream keeps working. Goalkeepers have saves. All of it surfaces on the player profile, with a line saying how many of his goals the detail actually covers.
+- **A goal carries what it was struck with, where from, what the ball was doing, and who made it and how.** The vocabulary is `src/lib/football.mjs`, following Opta's qualifiers, and it is shared by the panel, the stats engine and the pages so they cannot describe the same goal differently. The assist is a field ON the goal; the flat `assists` array is derived on save so everything downstream keeps working. Goalkeepers have saves. All of it surfaces on the player profile, with a line saying how many of his goals the detail actually covers - **and for months it surfaced on none of them.** `pf-how` is the band that publishes it and it appeared on **0 of the 47 profiles**: it reads `pr.byFoot`, and `pr` is `playerProfile`, which has never returned any of those tallies - they are `playerStats`' own, on the squad row. Every bar came out at nought, `detailBars` correctly refused to draw an empty chart, and the whole section vanished. A reader with no field, which is the one fault this file has written down in both directions and had never caught in this one. **Nothing failed, because every check about the band asked whether it EMPTIES itself when the detail is taken away** - and it did, perfectly, on every page, for the wrong reason. The questions now are the other ones: is it there for every player whose goals the club detailed, does every figure in it equal the record, is the coverage line printed where the detail is partial, does a keeper's saves reach his own page, and is the band still absent where there is nothing to say. Five probes, each turning one of those red.
 - **Winning the foul is an assist.** `wonfreekick` and `wonpenalty`, distinct from taking one (`freekick` is "from X's free kick"; these read "after the free kick won by X"). The club asked to be able to record it. **This note used to cite Leon Burnett's third assist of 26/27 as a free kick he won at Junction Elite, and no match record says that**: the stored goal is Ade Owolana, 30 minutes, left foot from outside the box, assisted by Burnett with type `freekick`, which is Burnett TAKING it. The claim started as a line in a data note, was copied into here and into `football.mjs`, and was later quoted back as evidence about how the goal happened. The club has confirmed its own figure of four, all four ordinary assists, so **the override in `league-eight-2627.json` is Full-Time counting one fewer, not a type the form could not express**. Neither `wonfreekick` nor `wonpenalty` has ever been used in the archive; they exist for the next one. **The panel is not told about new types** - its dropdown is built from `VOCAB`, the same list the site describes a goal with, so what can be entered and what can be published cannot drift apart. Note that official stats do not award an assist on a penalty won or an own goal forced, so the club's figure and Full-Time's will differ by design.
 - **Nobody assists his own goal**, asked in `05-record.js` so the form, the dashboard and the suite all ask it. `carryAssists` already refuses to PAIR a man's old-format assist with his own goal and does not cover this: here the assist is typed onto the goal, so there is nothing to pair and that rule never sees it. Barely reachable while an assist meant passing to somebody; reachable the moment winning the foul became one, because the man who wins a penalty and then takes it himself would be credited the goal AND the assist for it.
 - **An own goal has no scorer and can still have an assist.** Stored as `{og: true, num: null}` in `goals` (and `{og: true, name}` in `opponentGoals`, parsed from `(og)` in the free-text box); the engine reads `g.og || g.num == null` as belonging to nobody's record. It carries none of the shot detail, because what it was struck with is a fact about the side that put it in, and the card says so. It DOES carry its assist: the cross nobody else got a touch on was played by this club, and the picker reads **Forced by**. `reconcileAssists` needed no change, because it walks every goal rather than only the ones with a number.
@@ -1860,7 +1905,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 4,716 checks against the generated output and the rendered panel
+npm test          # 5,225 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

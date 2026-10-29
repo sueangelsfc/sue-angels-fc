@@ -1107,6 +1107,16 @@ html.js .pf-pitch__grid.is-picking .pf-spot.is-picked{opacity: 1;}
 .pf-sh--a .pf-sh__o{fill: none; stroke: rgba(var(--volt-rgb), 0.55);
   stroke-width: 0.8; vector-effect: non-scaling-stroke;}
 .pf-sh--a .pf-sh__c{fill: none;}
+/* A GOAL WHOSE AREA IS KNOWN AND WHOSE SPOT IS NOT. A third state, and it has
+   to be legible as one rather than reading like a goal drawn slightly wrong:
+   the ring is dashed, which says the position is approximate in the one piece
+   of vocabulary nothing else on this pitch uses, and the core is dimmer than a
+   marked goal so a reader comparing two marks can see which is the firmer
+   claim. The caption says it in words, because a dash is not a sentence. */
+.pf-sh--z .pf-sh__o{fill: none; stroke: rgba(var(--volt-rgb), 0.5);
+  stroke-width: 0.9; stroke-dasharray: 2 1.6;
+  vector-effect: non-scaling-stroke;}
+.pf-sh--z .pf-sh__c{fill: rgba(var(--volt-rgb), 0.55);}
 /* THE SAME MARKS IN WORDS, AND IT IS ONE COMPONENT. Both maps list what they
    drew - what it was, who against, and where from - so this is `pf-marklist`
    rather than a class belonging to one of them that the other borrows. That

@@ -10776,6 +10776,97 @@ console.log(`\n${'='.repeat(66)}`);
     });
     check('the band names its own two marks rather than relying on the shapes',
       noKey.length === 0, noKey.map((q) => q.name).slice(0, 4).join(', '));
+
+    /* ======================================================================
+       WHERE HE SCORES, WHEN NOBODY HAS MARKED A SPOT
+
+       `pf-strike` reads a POINT somebody tapped on the pitch in the panel,
+       and not one goal of 166 carries one - so the band drew on no profile
+       at all, and the 26 goals whose ZONE the club did record reached no
+       reader. The club asked for the pitch.
+
+       A zone is evidence at the precision it was recorded at, so it is drawn
+       as an AREA: a dashed mark on a regular grid inside its own rectangle,
+       which reads as "somewhere in here" rather than as a measurement, and
+       the caption says so. `spotOf` still refuses to invent a coordinate.
+
+       THE CHECK IS THE GEOMETRY. A mark claiming the six-yard box and drawn
+       outside it is a lie told confidently, and it is exactly the shape of
+       the bug the band already had: the markings were drawn over the whole
+       pitch while the marks were scaled by the cropped span, so a goal on
+       the penalty spot drew at twice the depth of the penalty spot beside
+       it. Nothing caught it, because the band had never appeared.
+       ====================================================================== */
+    const { ZONE_AREA, ZONE_WORDS, zoneGoalsFor } = await import(path.join(ROOT, 'src', 'lib', 'pitch.mjs'));
+    const PH = 140;
+    const zoneOfWords = (t) => Object.keys(ZONE_WORDS).find((k) => t.includes(ZONE_WORDS[k]));
+    const zoned = pool2.map((q) => ({ q, list: zoneGoalsFor(counted, q.num) }))
+      .filter((x) => x.list.length);
+    check('the archive holds goals whose area the club recorded and nobody has marked',
+      zoned.length >= 5 && zoned.reduce((t, x) => t + x.list.length, 0) >= 20,
+      `${zoned.reduce((t, x) => t + x.list.length, 0)} across ${zoned.length} players`);
+
+    const noMap = [];
+    const miscount = [];
+    const outside = [];
+    const unworded = [];
+    for (const { q, list } of zoned) {
+      const f = path.join(ROOT, 'players', `${q.slug}.html`);
+      if (!fs.existsSync(f)) continue;
+      const html = fs.readFileSync(f, 'utf8');
+      const sec = html.match(/<section class="sec pf-strike"[\s\S]*?<\/section>/);
+      if (!sec) { noMap.push(q.name); continue; }
+      /* The career layer is the last pitch, the one under All seasons. */
+      const svgs = [...sec[0].matchAll(/<svg class="pf-strike__svg"[\s\S]*?<\/svg>/g)].map((m) => m[0]);
+      const career = svgs[svgs.length - 1] || '';
+      const marks = [...career.matchAll(
+        /<g class="pf-sh pf-sh--z"[^>]*transform="translate\(([\d.]+) ([\d.]+)\)"[\s\S]*?<title>([\s\S]*?)<\/title>/g,
+      )];
+      if (marks.length !== list.length) {
+        miscount.push(`${q.name}: ${marks.length} drawn, ${list.length} recorded`);
+      }
+      for (const m of marks) {
+        const key = zoneOfWords(m[3]);
+        if (!key) { unworded.push(`${q.name}: ${m[3].slice(0, 40)}`); continue; }
+        const a = ZONE_AREA[key];
+        const x = Number(m[1]);
+        const y = (Number(m[2]) / PH) * 100;
+        if (x < a.x0 || x > a.x1 || y < a.y0 || y > a.y1) {
+          outside.push(`${q.name}: ${key} mark at ${x.toFixed(1)},${y.toFixed(1)}`);
+        }
+      }
+    }
+    check('a goal whose area the club recorded is drawn on his pitch',
+      noMap.length === 0, noMap.slice(0, 4).join(', '));
+    check('and every one of them is drawn, none twice',
+      miscount.length === 0, miscount.slice(0, 4).join(' | '));
+    check('every area mark sits inside the area it claims',
+      outside.length === 0, outside.slice(0, 5).join(' | '));
+    check('and says which area it is, in words, rather than by position alone',
+      unworded.length === 0, unworded.slice(0, 4).join(' | '));
+
+    /* THE PRECISION IS SAID OUT LOUD, twice: on the mark and in the list.
+       A dash is not a sentence. */
+    const quietAbout = zoned.filter(({ q }) => {
+      const f = path.join(ROOT, 'players', `${q.slug}.html`);
+      const html = fs.readFileSync(f, 'utf8');
+      return !/A dashed mark sits anywhere in the area the club recorded/.test(html)
+        || !/area only<\/i>/.test(html);
+    });
+    check('the page says an area mark is an area and not a spot',
+      quietAbout.length === 0, quietAbout.map((x) => x.q.name).slice(0, 4).join(', '));
+
+    /* THE CROP, which is the bug above. A pitch showing the attacking half
+       has to crop its viewBox; scaling the marks instead moves them off the
+       markings they are drawn against. */
+    const stretched = zoned.filter(({ q }) => {
+      const f = path.join(ROOT, 'players', `${q.slug}.html`);
+      const sec = fs.readFileSync(f, 'utf8').match(/<section class="sec pf-strike"[\s\S]*?<\/section>/);
+      if (!sec) return false;
+      return [...sec[0].matchAll(/viewBox="0 0 100 (\d+)"/g)].some((m) => Number(m[1]) >= PH);
+    });
+    check('a pitch showing the attacking half crops to it rather than stretching the marks',
+      stretched.length === 0, stretched.map((x) => x.q.name).slice(0, 4).join(', '));
   }
 }
 

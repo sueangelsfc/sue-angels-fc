@@ -1308,6 +1308,36 @@ out what this side usually does.
 - `approachUse()` went with the band. A derivation nothing reads is the same
   fault as a field nothing reads.
 
+### The pitch a goal was scored from, when nobody marked the spot
+
+`pf-strike` reads a POINT somebody tapped on the pitch in the panel, and **not
+one goal of 166 carries one**, so the band drew on no profile at all and the
+**26 goals whose zone the club did record** reached no reader. The club asked
+for the pitch, and the answer is not to invent coordinates.
+
+- **A zone is evidence at the precision it was recorded at, so it is drawn as
+  an AREA.** `zoneGoalsFor()` and `zoneLayout()` in `pitch.mjs` place each
+  unmarked goal on a regular grid inside its own rectangle - the six-yard box,
+  the rest of the box, outside it - and the mark is **dashed**, which is the
+  one piece of vocabulary nothing else on that pitch uses. The caption says it
+  in words, because a dash is not a sentence, and the list under the pitch
+  reads "inside the box, area only".
+- **`spotOf` still refuses to invent a coordinate**, and a goal carrying a
+  marked point is never in here: `dataset.mjs` derives the zone from the point,
+  so the point is the record and the exact mark wins outright. Mark a goal in
+  the panel and it moves from its area to where it was struck.
+- **THE PITCH WAS DRAWN AT ONE SCALE AND THE MARKS AT ANOTHER.** `pitchMarks`
+  draws the whole pitch over the SVG's height while the marks were divided by
+  the attacking-half span, so a goal on the penalty spot drew at twice the
+  depth of the penalty spot beside it. The span crops the viewBox now and both
+  share one mapping. Nothing had ever caught it, because the band had never
+  appeared on a page - the latent-bug shape this file keeps recording.
+- **The check is the geometry.** A mark claiming the six-yard box and drawn
+  outside it is a lie told confidently, so every mark is read off the shipped
+  SVG, its zone taken from its own title, and tested against that zone's
+  rectangle. Three probes: nudging the grid, restoring the stretch, dropping a
+  mark.
+
 ### Who he does it against
 
 `playerOpponents()` in `stats.mjs`, band `pf-opp` on every profile. Every goal
@@ -1933,7 +1963,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 5,235 checks against the generated output and the rendered panel
+npm test          # 5,242 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

@@ -208,3 +208,80 @@ export function savesFor(matches, num) {
      100%, and a nought count says "marked" alone instead of "4 of 0". */
   return { spots: out, made, coverage: made ? Math.min(1, out.length / made) : null };
 }
+
+/* ---- A ZONE IS EVIDENCE, AT THE PRECISION IT WAS RECORDED AT ------------
+   Nobody has marked a point yet - 0 goals of 166 - and 26 carry the three
+   zones the club recorded before the picker existed. The shot map read the
+   points alone, so it drew on no profile at all, and the goals the club HAD
+   answered for reached no reader.
+
+   So a zone is drawn as an AREA, never as a point. `spotOf` still refuses to
+   invent coordinates, and nothing here writes any: a zone marker is placed on
+   a regular grid inside its own rectangle, which is what makes it read as
+   "somewhere in here" rather than as a measurement. The caption says so in
+   words, and a goal somebody does mark gets the exact mark and beats this.
+
+   The rectangles are the laws' own, from PITCH, with the outside band ending
+   where the attacking third does - a goal from the halfway line would be
+   drawn at the edge of it rather than off the picture. */
+export const ZONE_AREA = {
+  six: { x0: PITCH.six.x0, x1: PITCH.six.x1, y0: 1.2, y1: PITCH.six.y1 },
+  box: { x0: PITCH.box.x0, x1: PITCH.box.x1, y0: PITCH.six.y1 + 1.4, y1: PITCH.box.y1 },
+  outside: { x0: 8, x1: 92, y0: PITCH.box.y1 + 2.4, y1: 42 },
+};
+
+export const ZONE_WORDS = {
+  six: 'the six-yard box',
+  box: 'inside the box',
+  outside: 'outside the box',
+};
+
+/* Every goal whose zone the club recorded and nobody has marked a point for.
+   A goal carrying both is not here: `dataset.mjs` derives the zone from the
+   point, so the point is the record and the shot map already has it. */
+export function zoneGoalsFor(matches, num) {
+  const out = [];
+  for (const m of matches || []) {
+    const det = m.detail || {};
+    for (const g of det.goals || []) {
+      if (g.og || Number(g.num) !== Number(num)) continue;
+      if (spotOf(g)) continue;
+      const zone = g.zone && ZONE_AREA[g.zone] ? g.zone : null;
+      if (!zone) continue;
+      out.push({
+        zone,
+        minute: g.minute,
+        bodyPart: g.bodyPart || '',
+        situation: g.situation || '',
+        season: m.season,
+        matchId: m.id,
+        opponent: m.opponent,
+        score: m.score,
+      });
+    }
+  }
+  return out;
+}
+
+/* Laid out, not located. One tidy grid per area, widest first, so the marks
+   never overlap and never pretend to be anywhere in particular. */
+export function zoneLayout(list) {
+  const out = [];
+  for (const key of ['six', 'box', 'outside']) {
+    const mine = list.filter((g) => g.zone === key);
+    if (!mine.length) continue;
+    const a = ZONE_AREA[key];
+    const cols = Math.min(mine.length, Math.max(2, Math.ceil(Math.sqrt(mine.length * 1.8))));
+    const rows = Math.ceil(mine.length / cols);
+    mine.forEach((g, i) => {
+      const c = i % cols;
+      const r = Math.floor(i / cols);
+      out.push({
+        ...g,
+        x: a.x0 + ((a.x1 - a.x0) * (c + 1)) / (cols + 1),
+        y: a.y0 + ((a.y1 - a.y0) * (r + 1)) / (rows + 1),
+      });
+    });
+  }
+  return out;
+}

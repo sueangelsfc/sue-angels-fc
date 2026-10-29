@@ -37,7 +37,7 @@ import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { BODY_PARTS, ZONES, SITUATIONS, ASSIST_TYPES } from '../lib/football.mjs';
 import { POSITION_LABEL, POSITION_XY, positionName } from '../lib/positions.mjs';
-import { pitchMarks, shotsFor, assistSpotsFor, savesFor, spotWords } from '../lib/pitch.mjs';
+import { pitchMarks, shotsFor, assistSpotsFor, savesFor, spotWords, zoneGoalsFor, zoneLayout, ZONE_WORDS } from '../lib/pitch.mjs';
 import {
   playerProfile, playerStats, playerOpponents, fmtDate, isLeague, ordinal,
 } from '../lib/stats.mjs';
@@ -1286,8 +1286,13 @@ export function playerPage(p, d) {
   const strikeOf = (list) => {
     const goals = shotsFor(list, p.num);
     const made = assistSpotsFor(list, p.num);
+    /* The zones the club recorded before the picker existed, drawn as areas.
+       A goal somebody has marked is not in here: the point is the record. */
+    const zoned = zoneLayout(zoneGoalsFor(list, p.num));
     const deep = [...goals, ...made].some((s) => s.y > 50);
-    return { goals, made, span: deep ? 100 : 55, any: goals.length + made.length };
+    return {
+      goals, made, zoned, span: deep ? 100 : 55, any: goals.length + made.length + zoned.length,
+    };
   };
   const strikeViews = views.map((v) => ({ ...v, ...strikeOf(v.list) }));
   const strikeAny = strikeViews.some((v) => v.any);
@@ -1296,34 +1301,46 @@ export function playerPage(p, d) {
   const strikePitch = (v) => {
     const H = 140;
     const mk = pitchMarks(H);
-    const sy = (y) => ((y / v.span) * H).toFixed(2);
+    /* CROPPED, NOT STRETCHED. The markings are drawn by `pitchMarks` over the
+       whole pitch and the marks were being scaled by the span instead, so a
+       goal on the penalty spot drew at twice the depth of the penalty spot
+       beside it. The band had never appeared on a profile, so nothing caught
+       it. One mapping for both now, and the span crops the viewBox. */
+    const VH = Math.round((v.span / 100) * H);
+    const sy = (y) => ((y / 100) * H).toFixed(2);
     const mark = (s, i, kind) => `<g class="pf-sh pf-sh--${kind}" style="--n:${i}" transform="translate(${s.x.toFixed(1)} ${sy(s.y)})">
               <circle class="pf-sh__o" r="4.6"/><circle class="pf-sh__c" r="2.3"/>
               <title>${esc(kind === 'g' ? 'Goal' : 'Assist')}${s.minute ? `, ${s.minute}′` : ''} v ${esc(s.opponent)}: ${esc(spotWords(s))}.</title>
             </g>`;
-    return `<svg class="pf-strike__svg" viewBox="0 0 100 ${H}" preserveAspectRatio="xMidYMid meet" data-season-scope="${attr(v.key)}" role="img" aria-labelledby="pf-sh-t${attr(v.key.split(' ')[0])}">
+    return `<svg class="pf-strike__svg" viewBox="0 0 100 ${VH}" preserveAspectRatio="xMidYMid meet" data-season-scope="${attr(v.key)}" role="img" aria-labelledby="pf-sh-t${attr(v.key.split(' ')[0])}">
             <title id="pf-sh-t${attr(v.key.split(' ')[0])}">Where ${esc(p.first)} struck ${v.goals.length === 1 ? 'his goal' : `his ${v.goals.length} goals`} from${v.made.length ? ` and where he played ${v.made.length === 1 ? 'his assist' : 'his assists'} from` : ''}. Every one is listed under the pitch.</title>
-            <rect class="pf-sh__turf" x="1" y="1" width="98" height="${H - 2}" rx="3"/>
+            <rect class="pf-sh__turf" x="1" y="1" width="98" height="${VH - 2}" rx="3"/>
             <path class="pf-sh__lines" d="${mk.lines}"/><path class="pf-sh__lines" d="${mk.arcs}"/>
             <circle class="pf-sh__lines" cx="${mk.circle.cx}" cy="${mk.circle.cy}" r="${mk.circle.r}"/>
             ${mk.spots.map((s) => `<circle class="pf-sh__pk" cx="${s.cx}" cy="${s.cy}" r="0.9"/>`).join('')}
+            ${v.zoned.map((s, i) => `<g class="pf-sh pf-sh--z" style="--n:${i}" transform="translate(${s.x.toFixed(1)} ${sy(s.y)})">
+              <circle class="pf-sh__o" r="4.6"/><circle class="pf-sh__c" r="2.3"/>
+              <title>Goal${s.minute ? `, ${s.minute}′` : ''} v ${esc(s.opponent)}: ${esc(ZONE_WORDS[s.zone])}, the area recorded rather than a spot.</title>
+            </g>`).join('')}
             ${v.made.map((s, i) => mark(s, i, 'a')).join('')}
             ${v.goals.map((s, i) => mark(s, i, 'g')).join('')}
           </svg>`;
   };
   const strikeBand = strikeAny ? `<section class="sec pf-strike" aria-labelledby="pf-strike-h">
       <div class="wrap">
-        ${rail(RAIL.next(), 'Where he scores from', `${strikeViews[strikeViews.length - 1].goals.length} marked`)}
+        ${rail(RAIL.next(), 'Where he scores from', `${strikeViews[strikeViews.length - 1].goals.length + strikeViews[strikeViews.length - 1].zoned.length} on the pitch`)}
         <h2 class="h2 rv" id="pf-strike-h">Where he <span class="volt">scores.</span></h2>
         <div class="pf-strike__grid rv">
           <figure class="pf-strike__fig">
             ${strikeViews.map((v) => (v.any ? strikePitch(v) : `<p class="pf-strike__none" data-season-scope="${attr(v.key)}">Nothing marked on the pitch for this season.</p>`)).join('\n            ')}
-            <figcaption>Attacking upward. Filled is a goal, hollow is where he played an assist from. Only goals somebody has marked on the pitch in the control panel appear here.</figcaption>
+            <figcaption>Attacking upward. Filled is a goal, hollow is where he played an assist from. A dashed mark sits anywhere in the area the club recorded rather than on a spot: mark the goal on the pitch in the control panel and it moves to where it was struck.</figcaption>
           </figure>
           <div class="pf-strike__body">
             ${strikeViews.map((v) => `<ol class="pf-marklist" data-season-scope="${attr(v.key)}">
-              ${[...v.goals.map((s) => ({ ...s, kind: 'Goal' })), ...v.made.map((s) => ({ ...s, kind: 'Assist' }))]
-      .map((s) => `<li><b>${esc(s.kind)}</b><span>${esc(s.opponent)}${s.minute ? `, ${esc(String(s.minute))}′` : ''}</span><i>${esc(spotWords(s))}</i></li>`).join('')}
+              ${[...v.goals.map((s) => ({ ...s, kind: 'Goal', words: spotWords(s) })),
+    ...v.zoned.map((s) => ({ ...s, kind: 'Goal', words: `${ZONE_WORDS[s.zone]}, area only` })),
+    ...v.made.map((s) => ({ ...s, kind: 'Assist', words: spotWords(s) }))]
+      .map((s) => `<li><b>${esc(s.kind)}</b><span>${esc(s.opponent)}${s.minute ? `, ${esc(String(s.minute))}′` : ''}</span><i>${esc(s.words)}</i></li>`).join('')}
             </ol>`).join('\n            ')}
           </div>
         </div>
@@ -1353,10 +1370,11 @@ export function playerPage(p, d) {
   const savePitch = (v) => {
     const H = 140;
     const mk = pitchMarks(H);
-    const sy = (y) => ((y / v.sspan) * H).toFixed(2);
-    return `<svg class="pf-saves__svg" viewBox="0 0 100 ${H}" preserveAspectRatio="xMidYMid meet" data-season-scope="${attr(v.key)}" role="img" aria-labelledby="pf-sv-t${attr(v.key.split(' ')[0])}">
+    const VH = Math.round((v.sspan / 100) * H);
+    const sy = (y) => ((y / 100) * H).toFixed(2);
+    return `<svg class="pf-saves__svg" viewBox="0 0 100 ${VH}" preserveAspectRatio="xMidYMid meet" data-season-scope="${attr(v.key)}" role="img" aria-labelledby="pf-sv-t${attr(v.key.split(' ')[0])}">
             <title id="pf-sv-t${attr(v.key.split(' ')[0])}">Where ${esc(p.first)} made ${v.saves.length === 1 ? 'his marked save' : `the ${v.saves.length} saves somebody has marked`}, his own goal at the top. Every one is listed under the pitch.</title>
-            <rect class="pf-sh__turf" x="1" y="1" width="98" height="${H - 2}" rx="3"/>
+            <rect class="pf-sh__turf" x="1" y="1" width="98" height="${VH - 2}" rx="3"/>
             <path class="pf-sh__lines" d="${mk.lines}"/><path class="pf-sh__lines" d="${mk.arcs}"/>
             <circle class="pf-sh__lines" cx="${mk.circle.cx}" cy="${mk.circle.cy}" r="${mk.circle.r}"/>
             ${mk.spots.map((s) => `<circle class="pf-sh__pk" cx="${s.cx}" cy="${s.cy}" r="0.9"/>`).join('')}

@@ -53,10 +53,26 @@
      in his own six-yard box, and the record looks perfectly fine. A word at
      each end cannot be missed, and it is the CALLER's word, because only the
      caller knows what is being marked. */
-  function svg(spot, ends) {
+  /* THE MARKER LOOKS LIKE WHAT IT IS. A goal is filled, an assist is the same
+     mark hollow and a save is a cross - the vocabulary the published maps on
+     a player's profile already use, told apart by weight and structure rather
+     than by a second colour, which is the site's rule for football data. The
+     picker drew one orange pin for all three, so the screen where somebody
+     DECIDES carried less information than the page that publishes it. */
+  function mark(kind) {
+    if (kind === 's') {
+      return '<circle class="cpp__o" r="4.4"/>'
+        + '<path class="cpp__x" d="M-1.8 -1.8L1.8 1.8M1.8 -1.8L-1.8 1.8"/>';
+    }
+    return '<circle class="cpp__halo' + (kind === 'a' ? ' is-hollow' : '') + '" r="5.5"/>'
+      + (kind === 'a' ? '' : '<circle class="cpp__pin" r="2.4"/>');
+  }
+
+  function svg(spot, ends, kind, also) {
     if (!MARKS) return '<p class="cp-note">The pitch could not be drawn.</p>';
     var m = MARKS;
     var e = ends || {};
+    var av = also && also.spot ? toView(also.spot) : null;
     return '<svg class="cpp__svg" viewBox="0 0 100 ' + H + '" role="application"'
       + ' aria-label="The pitch, '
       + (e.top ? esc(e.top).toLowerCase() + ' at the top. ' : '')
@@ -69,8 +85,21 @@
       + m.spots.map(function (s) {
         return '<circle class="cpp__dot" cx="' + s.cx + '" cy="' + s.cy + '" r="0.9"/>';
       }).join('')
+      /* THE GOAL ITSELF, at the end the mark is about. Every reading this
+         dialog gives is a distance from it - "almost on the goal line",
+         "around the edge of the area" - and it was the one thing on a pitch
+         about shooting that was not drawn. */
+      + '<path class="cpp__goal" d="M43 1H57"/>'
+      /* THE OTHER HALF OF THE PAIR, dimmed, with a hairline to the live one.
+         A goal and its assist are one event described twice, and marking the
+         pass with no sight of where the shot was struck from is placing half
+         a relationship blind. The caller already holds both. */
+      + (av ? '<line class="cpp__link" data-link x1="' + av.x + '" y1="' + av.y.toFixed(2)
+        + '" x2="' + av.x + '" y2="' + av.y.toFixed(2) + '"' + (spot ? '' : ' hidden') + '/>'
+        + '<g class="cpp__also" transform="translate(' + av.x + ' ' + av.y.toFixed(2) + ')">'
+        + mark(also.kind) + '<title>' + esc(also.label || 'Already marked') + '</title></g>' : '')
       + '<g class="cpp__mark" data-mark' + (spot ? '' : ' hidden') + '>'
-      + '<circle class="cpp__halo" r="5.5"/><circle class="cpp__pin" r="2.4"/>'
+      + mark(kind)
       + '</g>'
       /* Hidden from a screen reader: the label on the field above already
          says which way round the pitch is, in a whole sentence, and reading
@@ -84,11 +113,23 @@
 
   function place(box, spot) {
     var g = box.querySelector('[data-mark]');
+    var ln = box.querySelector('[data-link]');
     if (!g) return;
-    if (!spot) { g.setAttribute('hidden', ''); return; }
+    if (!spot) {
+      g.setAttribute('hidden', '');
+      /* A line to nowhere is worse than no line: with the mark cleared it
+         would run from the companion to the top-left corner. */
+      if (ln) ln.setAttribute('hidden', '');
+      return;
+    }
     var v = toView(spot);
     g.removeAttribute('hidden');
     g.setAttribute('transform', 'translate(' + v.x + ' ' + v.y.toFixed(2) + ')');
+    if (ln) {
+      ln.removeAttribute('hidden');
+      ln.setAttribute('x2', v.x);
+      ln.setAttribute('y2', v.y.toFixed(2));
+    }
   }
 
   /* WHAT IS MARKED, IN WORDS, AND NOT IN COORDINATES. "x 34, y 9" is a
@@ -118,7 +159,7 @@
       + '<div class="cpp__head"><h2 class="cpp__h" id="cpp-h">' + esc(o.title || 'Mark it on the pitch') + '</h2>'
       + '<button type="button" class="me__x" data-cpp-close aria-label="Close">&times;</button></div>'
       + (o.hint ? '<p class="cp-note">' + esc(o.hint) + '</p>' : '')
-      + '<div class="cpp__field">' + svg(spot, o.ends) + '</div>'
+      + '<div class="cpp__field">' + svg(spot, o.ends, o.kind, o.also) + '</div>'
       + '<p class="cpp__read" data-cpp-read aria-live="polite">' + esc(reading(spot)) + '</p>'
       + '<div class="cpp__acts">'
       + '<button type="button" class="btn btn--ghost" data-cpp-clear>Clear the mark</button>'
@@ -238,6 +279,7 @@
       if (e.target.closest('[data-sv-mark]')) {
         var row = spots[at(e.target)];
         open({ spot: { x: row.x, y: row.y }, title: 'Where the save was made',
+          kind: 's',
           ends: { top: 'The goal he was defending', bottom: 'The goal we were attacking' },
           hint: 'Tap the pitch where he made it, or use the arrow keys. His own goal at the top.',
           onPick: function (spot) { if (spot) { row.x = spot.x; row.y = spot.y; } paint(); } });
@@ -249,6 +291,7 @@
            carry with no location, which is the half-written entry every
            reader filters out and then cannot explain. */
         open({ spot: null, title: 'Where the save was made',
+          kind: 's',
           ends: { top: 'The goal he was defending', bottom: 'The goal we were attacking' },
           hint: 'Tap the pitch where he made it, or use the arrow keys. His own goal at the top.',
           onPick: function (spot) {

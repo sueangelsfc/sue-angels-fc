@@ -3172,6 +3172,19 @@ const BUDGET = {
   'control-photos-donations.js': 4,
   'control-pipeline.js': 4,
   'control-covers.js': 4,
+  /* IT HAD NONE, AND THE RULE IS ONE PER LAZY CHUNK. `control-pitch.js` has
+     been shipping unbudgeted since it was split out, so the one file whose
+     whole existence is a budget decision - the pitch is a chunk precisely so
+     the most-opened editor does not carry a field most matches never use -
+     was the one nothing measured.
+
+     4, against 2,881 bytes today. What the last 249 bought: the goal mouth
+     drawn at the end every reading is measured from, a marker shaped like
+     what it is (a goal filled, an assist hollow, a save a cross, the
+     vocabulary the published maps use), and the companion mark with a
+     hairline to it, so marking the pass is no longer placing half a
+     relationship blind. */
+  'control-pitch.js': 4,
   /* The photo tools for long writing: the caption field, the upload and the
      line it inserts. Fetched by the article editor and the match editor before
      they open, and by nobody else - it started in the shell, which took

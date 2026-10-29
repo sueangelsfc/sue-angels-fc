@@ -446,6 +446,20 @@ export async function panelChecks() {
 
              BOTH ENDS, AND OPPOSITE. One label would pass whichever way
              round it was, which is the failure being guarded against. */
+          /* THE MARKER LOOKS LIKE WHAT IT IS, in the vocabulary the
+             published maps use: a goal filled, an assist the same mark
+             hollow, a save a cross. One orange pin for all three meant the
+             screen where somebody DECIDES carried less than the page that
+             publishes it. */
+          check('a goal is marked with a filled disc',
+            !!dlg.querySelector('.cpp__mark .cpp__pin')
+              && !dlg.querySelector('.cpp__mark .cpp__x'),
+            'filled');
+          /* AND THE GOAL IS DRAWN. Every reading this dialog gives is a
+             distance from it, and it was the one thing on a pitch about
+             shooting that was not on the pitch. */
+          check('the goal mouth is drawn at the end the reading measures from',
+            !!dlg.querySelector('.cpp__goal'), 'drawn');
           const ends = Array.from(dlg.querySelectorAll('.cpp__end'))
             .map((t) => t.textContent.trim());
           check('the goal picker names both ends of the pitch, and they differ',
@@ -477,6 +491,114 @@ export async function panelChecks() {
               && cards[1].querySelector('[data-g-zone]').disabled === true,
             btn1.getAttribute('class'));
         }
+      }
+    }
+
+    /* THE OTHER HALF OF THE PAIR, DRAWN.
+       A goal and its assist are one event described twice, and the picker
+       showed one at a time: marking where the pass was played from with no
+       sight of where the shot was struck is placing half a relationship
+       blind. So the companion is drawn dimmed with a hairline to the live
+       marker.
+
+       CRAFTED, because no goal in the archive carries both points - the
+       fields are days old - and a check reading the shipped record would
+       pass today with nothing implemented and go red on the day the club
+       marks its first pair. Both halves are asked: a goal whose assist has
+       no point must draw no companion, or a club that has answered once
+       sees a mark it never made. */
+    {
+      const anum = ((chosen.data.starters || [])[1] || {}).num
+        || ((chosen.data.goals || [])[0] || {}).num;
+      const withPair = {
+        ...chosen,
+        data: {
+          ...chosen.data,
+          assists: [],
+          goals: (chosen.data.goals || []).map((g, i) => (i === 0
+            ? { ...g, og: false, situation: '', spot: { x: 70, y: 30 },
+              assist: { num: anum, type: 'pass', spot: { x: 20, y: 40 } } }
+            : { ...g, og: false, situation: '', spot: undefined,
+              assist: { num: anum, type: 'pass' } })),
+        },
+      };
+      const ctx5 = PR.boot({
+        rows: { ...rows, matches: rows.matches.map((m) => (m.key === chosen.key ? withPair : m)) },
+      });
+      const r5 = await PR.openPanel(ctx5, 'results');
+      const tr5 = r5.body.querySelectorAll('tr[data-key]')
+        .filter((t) => t.getAttribute('data-key') === chosen.key)[0];
+      PR.click(tr5.querySelector('[data-edit]'));
+      await PR.settle(ctx5);
+      PR.flushMutations(ctx5.doc.body);
+      await PR.settle(ctx5);
+      const m5 = ctx5.doc.querySelector('.modal-backdrop');
+      const c5 = m5 ? m5.querySelectorAll('[data-goal]') : [];
+      const aBtn = c5[0] && c5[0].querySelector('[data-g-mark="a"]');
+      check('an assist that carries a point says so on its own card',
+        !!aBtn && aBtn.getAttribute('class').includes('is-set'),
+        aBtn ? aBtn.getAttribute('class') : 'no assist button');
+      if (aBtn) {
+        PR.click(aBtn);
+        await PR.settle(ctx5);
+        await PR.settle(ctx5);
+        const d5 = ctx5.doc.querySelector('.cpp');
+        const also = d5 && d5.querySelector('.cpp__also');
+        check('opening the assist picker draws where the goal was struck from',
+          !!also && /translate\(70 42\.00\)/.test(also.getAttribute('transform') || ''),
+          also ? also.getAttribute('transform') : 'no companion');
+        /* AND IT IS THE OTHER MARK, not a second copy of this one. The whole
+           point of the vocabulary is that a reader can tell the pass from the
+           shot at a glance; two hollow rings would be worse than one. */
+        check('the companion is drawn as a goal while the live mark is an assist',
+          !!also && !!also.querySelector('.cpp__pin')
+            && !!d5.querySelector('.cpp__mark .cpp__halo.is-hollow')
+            && !d5.querySelector('.cpp__mark .cpp__pin'),
+          also ? `companion pin ${!!also.querySelector('.cpp__pin')},`
+            + ` live hollow ${!!d5.querySelector('.cpp__mark .cpp__halo.is-hollow')}`
+            : 'no companion');
+        /* THE HAIRLINE FOLLOWS THE MARKER. A line drawn once at render and
+           left behind would point at where the pass used to be the moment
+           somebody moved it, which is a drawing that lies rather than one
+           that is missing. */
+        if (d5) {
+          const f5 = d5.querySelector('.cpp__svg');
+          const k5 = new PR.DomEvent('keydown', { bubbles: true });
+          k5.key = 'ArrowUp';
+          f5.dispatchEvent(k5);
+          await PR.settle(ctx5);
+          const ln = d5.querySelector('[data-link]');
+          const at = (n) => ln && String(ln.getAttribute(n));
+          check('the hairline runs from the companion to wherever the marker now is',
+            !!ln && ln.getAttribute('hidden') == null
+              && at('x1') === '70' && at('y1') === '42.00'
+              && at('x2') === '20' && at('y2') === '54.60',
+            ln ? `${at('x1')},${at('y1')} -> ${at('x2')},${at('y2')}` : 'no line');
+          /* And clearing the mark takes the line with it: a hairline left
+             behind would run from the companion to the top-left corner. */
+          const clr = d5.querySelector('[data-cpp-clear]');
+          if (clr) {
+            PR.click(clr);
+            await PR.settle(ctx5);
+            check('clearing the mark takes the hairline with it',
+              !!ln && ln.getAttribute('hidden') != null,
+              ln ? String(ln.getAttribute('hidden')) : 'no line');
+          }
+        }
+        const back5 = ctx5.doc.querySelector('.cpp');
+        if (back5) back5.remove();
+      }
+      /* THE NEGATIVE HALF. */
+      const aBtn1 = c5[1] && c5[1].querySelector('[data-g-mark="a"]');
+      if (aBtn1) {
+        PR.click(aBtn1);
+        await PR.settle(ctx5);
+        await PR.settle(ctx5);
+        const d6 = ctx5.doc.querySelector('.cpp');
+        check('an assist whose goal is unmarked draws no companion at all',
+          !!d6 && !d6.querySelector('.cpp__also') && !d6.querySelector('[data-link]'),
+          d6 ? `also ${!!d6.querySelector('.cpp__also')},`
+            + ` line ${!!d6.querySelector('[data-link]')}` : 'nothing opened');
       }
     }
 
@@ -546,6 +668,10 @@ export async function panelChecks() {
                drawn once in the chunk: the same pitch, the same coordinates,
                and "the six-yard box" means his own on this one and the
                opponents' on the goal map. */
+            check('a save is marked with a cross, not a third filled disc',
+              !!dlg4.querySelector('.cpp__mark .cpp__x')
+                && !dlg4.querySelector('.cpp__mark .cpp__pin'),
+              'a cross');
             const sends = Array.from(dlg4.querySelectorAll('.cpp__end'))
               .map((t) => t.textContent.trim());
             check('the save picker names the defended goal at the top instead',

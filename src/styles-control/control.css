@@ -94,3 +94,23 @@
    them. */
 .cpp__end{fill: var(--text-subtle); font-size: 4px; text-anchor: middle;
   letter-spacing: 0.04em; text-transform: uppercase;}
+
+/* THE MARKER SAYS WHAT IT IS, in the vocabulary the published maps use: a
+   goal filled, an assist the same mark hollow, a save a cross. Told apart by
+   weight and structure rather than by a second colour, which is the site's
+   rule for football data everywhere.
+
+   The companion is the other half of the pair - the goal while the assist is
+   being marked, and the other way round - drawn quiet with a hairline to the
+   live mark, so the relationship is visible while it is being placed. */
+.cpp__goal{fill: none; stroke: var(--brand); stroke-width: 2.2;
+  stroke-linecap: round; vector-effect: non-scaling-stroke; opacity: 0.75;}
+.cpp__halo.is-hollow{fill: none; stroke: var(--brand); stroke-width: 1.1;
+  opacity: 1; vector-effect: non-scaling-stroke;}
+.cpp__o{fill: none; stroke: var(--brand); stroke-width: 1;
+  vector-effect: non-scaling-stroke;}
+.cpp__x{stroke: var(--brand); stroke-width: 1.4; stroke-linecap: round;
+  fill: none; vector-effect: non-scaling-stroke;}
+.cpp__also{opacity: 0.45;}
+.cpp__link{stroke: var(--brand); stroke-width: 0.6; opacity: 0.5;
+  stroke-dasharray: 2 2; vector-effect: non-scaling-stroke;}

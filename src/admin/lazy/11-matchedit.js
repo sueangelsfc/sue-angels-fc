@@ -579,9 +579,18 @@
     if (!g) return;
     var holder = kind === 'a' ? g.assist : g;
     if (!holder) return;
+    /* THE OTHER HALF OF THE PAIR. A goal and its assist are one event
+       described twice, and marking the pass with no sight of where the shot
+       was struck from is placing half a relationship blind. Only passed when
+       the other one has actually been marked: an absent companion draws
+       nothing rather than a mark at the origin. */
+    var other = kind === 'a' ? spotOf(g) : spotOf(g.assist);
     U.chunk('pitch').then(function () {
       window.CPPITCH.open({
         spot: spotOf(holder),
+        kind: kind === 'a' ? 'a' : 'g',
+        also: other ? { spot: other, kind: kind === 'a' ? 'g' : 'a',
+          label: kind === 'a' ? 'Where the goal was struck from' : 'Where the assist was played from' } : null,
         title: kind === 'a' ? 'Where it was played from' : 'Where it was struck from',
         /* The ends are named on the pitch itself. Whatever the club was
            kicking towards on the day, a goal is marked towards the goal it

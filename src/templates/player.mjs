@@ -1297,7 +1297,7 @@ export function playerPage(p, d) {
               <circle class="pf-sh__o" r="4.6"/><circle class="pf-sh__c" r="2.3"/>
               <title>${esc(kind === 'g' ? 'Goal' : 'Assist')}${s.minute ? `, ${s.minute}′` : ''} v ${esc(s.opponent)}: ${esc(spotWords(s))}.</title>
             </g>`;
-    return `<svg class="pf-shots__svg" viewBox="0 0 100 ${H}" preserveAspectRatio="xMidYMid meet" data-season-scope="${attr(v.key)}" role="img" aria-labelledby="pf-sh-t${attr(v.key.split(' ')[0])}">
+    return `<svg class="pf-strike__svg" viewBox="0 0 100 ${H}" preserveAspectRatio="xMidYMid meet" data-season-scope="${attr(v.key)}" role="img" aria-labelledby="pf-sh-t${attr(v.key.split(' ')[0])}">
             <title id="pf-sh-t${attr(v.key.split(' ')[0])}">Where ${esc(p.first)} struck ${v.goals.length === 1 ? 'his goal' : `his ${v.goals.length} goals`} from${v.made.length ? ` and where he played ${v.made.length === 1 ? 'his assist' : 'his assists'} from` : ''}. Every one is listed under the pitch.</title>
             <rect class="pf-sh__turf" x="1" y="1" width="98" height="${H - 2}" rx="3"/>
             <path class="pf-sh__lines" d="${mk.lines}"/><path class="pf-sh__lines" d="${mk.arcs}"/>
@@ -1307,17 +1307,17 @@ export function playerPage(p, d) {
             ${v.goals.map((s, i) => mark(s, i, 'g')).join('')}
           </svg>`;
   };
-  const strikeBand = strikeAny ? `<section class="sec pf-shots" aria-labelledby="pf-shots-h">
+  const strikeBand = strikeAny ? `<section class="sec pf-strike" aria-labelledby="pf-strike-h">
       <div class="wrap">
         ${rail(RAIL.next(), 'Where he scores from', `${strikeViews[strikeViews.length - 1].goals.length} marked`)}
-        <h2 class="h2 rv" id="pf-shots-h">Where he <span class="volt">scores.</span></h2>
-        <div class="pf-shots__grid rv">
-          <figure class="pf-shots__fig">
-            ${strikeViews.map((v) => (v.any ? strikePitch(v) : `<p class="pf-shots__none" data-season-scope="${attr(v.key)}">Nothing marked on the pitch for this season.</p>`)).join('\n            ')}
+        <h2 class="h2 rv" id="pf-strike-h">Where he <span class="volt">scores.</span></h2>
+        <div class="pf-strike__grid rv">
+          <figure class="pf-strike__fig">
+            ${strikeViews.map((v) => (v.any ? strikePitch(v) : `<p class="pf-strike__none" data-season-scope="${attr(v.key)}">Nothing marked on the pitch for this season.</p>`)).join('\n            ')}
             <figcaption>Attacking upward. Filled is a goal, hollow is where he played an assist from. Only goals somebody has marked on the pitch in the control panel appear here.</figcaption>
           </figure>
-          <div class="pf-shots__body">
-            ${strikeViews.map((v) => `<ol class="pf-shots__list" data-season-scope="${attr(v.key)}">
+          <div class="pf-strike__body">
+            ${strikeViews.map((v) => `<ol class="pf-marklist" data-season-scope="${attr(v.key)}">
               ${[...v.goals.map((s) => ({ ...s, kind: 'Goal' })), ...v.made.map((s) => ({ ...s, kind: 'Assist' }))]
       .map((s) => `<li><b>${esc(s.kind)}</b><span>${esc(s.opponent)}${s.minute ? `, ${esc(String(s.minute))}′` : ''}</span><i>${esc(spotWords(s))}</i></li>`).join('')}
             </ol>`).join('\n            ')}
@@ -1331,7 +1331,10 @@ export function playerPage(p, d) {
      is about a man stopping something rather than doing it. Its own class
      names rather than the shot map's: the two are the same component and
      sharing a name is how `.pf-shots__grid` came to be declared twice for
-     two different bands.
+     two different bands. That collision is fixed - the shot map is
+     `pf-strike` and `pf-shots` belongs to the photographs alone - and the
+     list of marks in words is one class, `pf-marklist`, used by both maps,
+     because that genuinely IS one component.
 
      ONLY A KEEPER GETS ONE, and only one somebody has marked. An outfielder
      who went in goal for ten minutes has no saves on record, and a band that
@@ -1382,7 +1385,7 @@ export function playerPage(p, d) {
           <div class="pf-saves__body">
             ${saveViews.map((v) => `<div data-season-scope="${attr(v.key)}">
               <p class="pf-saves__cov">${esc(saveCover(v))}</p>
-              <ol class="pf-shots__list">
+              <ol class="pf-marklist">
               ${v.saves.map((s) => `<li><b>Save</b><span>${esc(s.opponent)}${s.minute ? `, ${esc(String(s.minute))}′` : ''}</span><i>${esc(spotWords(s))}</i></li>`).join('')}
               </ol>
             </div>`).join('\n            ')}

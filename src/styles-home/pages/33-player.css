@@ -1076,15 +1076,25 @@ html.js .pf-pitch__grid.is-picking .pf-spot.is-picked{opacity: 1;}
 /* ---- Where he scores from ------------------------------------------------
    One pitch, a layer per season tab, and a list beside it carrying the same
    facts in words - the marks are a shape to read at a glance and the list is
-   what a screen reader and a printer get. */
-.pf-shots__grid{display: grid; gap: clamp(20px, 4vw, 40px); align-items: start;
+   what a screen reader and a printer get.
+
+   IT IS `pf-strike`, AND IT WAS `pf-shots`, WHICH WAS ALREADY TAKEN. The
+   photographs band 180 lines up has been `pf-shots` since it was written -
+   a shot meaning a photograph - and this one arrived meaning a shot at goal.
+   Two unrelated components, one name, and the later declaration of
+   `.pf-shots__grid` silently won for both: the contact sheet lost `gap: 8px`
+   and `repeat(auto-fill, minmax(min(100%, 150px), 1fr))` and took this
+   band's single column instead, so on a phone the photographs drew ONE WIDE,
+   which is the nine-thousand-pixel band the comment up there says was fixed.
+   A fix undone by a name, with nothing in either band's own rules changed. */
+.pf-strike__grid{display: grid; gap: clamp(20px, 4vw, 40px); align-items: start;
   grid-template-columns: minmax(0, 1fr);}
-@media (min-width: 860px){.pf-shots__grid{grid-template-columns: minmax(0, 300px) minmax(0, 1fr);}}
-.pf-shots__fig{margin: 0; display: grid; gap: 10px; justify-items: center;}
-.pf-shots__svg{width: 100%; max-width: 300px; height: auto; display: block;}
-.pf-shots__fig figcaption{font-size: 12px; line-height: 1.5; color: var(--ink-3);
+@media (min-width: 860px){.pf-strike__grid{grid-template-columns: minmax(0, 300px) minmax(0, 1fr);}}
+.pf-strike__fig{margin: 0; display: grid; gap: 10px; justify-items: center;}
+.pf-strike__svg{width: 100%; max-width: 300px; height: auto; display: block;}
+.pf-strike__fig figcaption{font-size: 12px; line-height: 1.5; color: var(--ink-3);
   max-width: 34ch;}
-.pf-shots__none{margin: 0; color: var(--ink-3); font-size: 14px;}
+.pf-strike__none{margin: 0; color: var(--ink-3); font-size: 14px;}
 .pf-sh__turf{fill: rgba(255, 255, 255, 0.03);}
 .pf-sh__lines{fill: none; stroke: rgba(255, 255, 255, 0.22); stroke-width: 0.6;
   vector-effect: non-scaling-stroke;}
@@ -1097,18 +1107,27 @@ html.js .pf-pitch__grid.is-picking .pf-spot.is-picked{opacity: 1;}
 .pf-sh--a .pf-sh__o{fill: none; stroke: rgba(var(--volt-rgb), 0.55);
   stroke-width: 0.8; vector-effect: non-scaling-stroke;}
 .pf-sh--a .pf-sh__c{fill: none;}
-.pf-shots__list{list-style: none; margin: 0; padding: 0; display: grid; gap: 2px;}
-.pf-shots__list li{display: grid; grid-template-columns: 56px minmax(0, 1fr);
+/* THE SAME MARKS IN WORDS, AND IT IS ONE COMPONENT. Both maps list what they
+   drew - what it was, who against, and where from - so this is `pf-marklist`
+   rather than a class belonging to one of them that the other borrows. That
+   borrowing is how the collision above came to look harmless: a name used by
+   two bands reads exactly like a name used by one. */
+.pf-marklist{list-style: none; margin: 0; padding: 0; display: grid; gap: 2px;}
+.pf-marklist li{display: grid; grid-template-columns: 56px minmax(0, 1fr);
   gap: 4px 10px; padding: 9px 0; border-top: 1px solid rgba(255, 255, 255, 0.07);
   font-size: 13.5px; align-items: baseline;}
-.pf-shots__list b{font-family: var(--ui); font-size: 9.5px; font-weight: 700;
+.pf-marklist b{font-family: var(--ui); font-size: 9.5px; font-weight: 700;
   letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);}
-.pf-shots__list span{color: var(--fg);}
-.pf-shots__list i{grid-column: 2; font-style: normal; color: var(--ink-3);
+.pf-marklist span{color: var(--fg);}
+.pf-marklist i{grid-column: 2; font-style: normal; color: var(--ink-3);
   font-size: 12.5px;}
+/* SCOPED TO `html.js`, which it was not. A mark starting at nought opacity
+   outside that scope is invisible for good on a browser with scripting off,
+   because nothing is ever going to add `is-in` - the rule every other
+   revealed thing in this file follows, and the one this band was missing. */
 @media (prefers-reduced-motion: no-preference){
-  .pf-shots .pf-sh{opacity: 0; transform-box: fill-box;}
-  .pf-shots.is-in .pf-sh{animation: pf-sh-in 0.45s both;
+  html.js .pf-strike .pf-sh{opacity: 0; transform-box: fill-box;}
+  html.js .pf-strike.is-in .pf-sh{animation: pf-sh-in 0.45s both;
     animation-delay: calc(0.3s + var(--n) * 0.07s);}
 }
 @keyframes pf-sh-in{from{opacity: 0;}to{opacity: 1;}}
@@ -1117,9 +1136,10 @@ html.js .pf-pitch__grid.is-picking .pf-spot.is-picked{opacity: 1;}
    WHERE HE SAVES
 
    The shot map read from the defending end. Its own selectors rather than a
-   second home for `.pf-shots__grid`, which is already declared twice in this
-   file for two different bands - a name shared by two components is a rule
-   one of them never asked for.
+   second home for the shot map's grid, which was declared twice in this file
+   for two different bands when this was written - a name shared by two
+   components is a rule one of them never asked for. The shot map is
+   `pf-strike` now and the photographs keep `pf-shots`.
 
    A save is a cross, not a disc: filled is a goal and hollow is an assist on
    the map above, so a third filled circle would be a fourth thing told apart

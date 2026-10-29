@@ -11270,6 +11270,151 @@ let orphanClasses = new Map();
     zoneOf(loose(crafted[0].detail.goals[2])) !== null, 'probe fires');
 }
 
+/* ==========================================================================
+   A COMPONENT'S OWN PART IS DECLARED IN ONE PLACE
+
+   `.pf-shots__grid` was declared twice in `33-player.css`, for two unrelated
+   bands: the photographs - a shot meaning a photograph, written first - and
+   the shot map, meaning a shot at goal, written months later. Same
+   specificity, so the later one silently won for BOTH, and the contact sheet
+   lost `gap: 8px` and `repeat(auto-fill, minmax(min(100%, 150px), 1fr))` and
+   drew ONE WIDE on a phone: the nine-thousand-pixel band whose own comment
+   says it was fixed, un-fixed by a name, with nothing in either band's rules
+   changed.
+
+   5,178 checks passed before and after the repair, which is the point of
+   this block. Every existing question was about a class with no rule; this
+   is the mirror - a class with two, and the second belonging to somebody
+   else. Nothing could see it: the DOM has no cascade and refuses
+   `getComputedStyle`, and a browser pass only renders a band that is
+   currently drawn.
+
+   The rule is one sentence: WITHIN ONE STYLESHEET, a `block__element` class
+   sets a given property once per media level. Six classes re-theme a part of
+   their own component in their own file, so they are named - the same device
+   as `PUBLISHES_NOTHING` and the six pages with no outbound citation. ADDING
+   TO THE LIST IS A DECISION, not a way to silence the check: a name here is
+   somebody saying the second declaration belongs to the same component as
+   the first.
+
+   PER FILE, BECAUSE TWO ROUTE BANDS NEVER LOAD TOGETHER. Asked across every
+   sheet at once it flagged five more, all of them `consent__*` declared in
+   both `30-components.css` and `20-home.css` - which is the two-vocabulary
+   rule doing its job, since a page loads `sa.css` or `home.css` and never
+   both, and the banner has to be styled in each. A cross-sheet duplicate is
+   a question about which sheets co-load; this one is about a component
+   arguing with itself.
+   ========================================================================== */
+{
+  /* Deliberate, each a later rule in the SAME file re-theming a part of its
+     own component. */
+  const RETHEMED = new Set(['aud__face', 'bento__card', 'cmp__num', 'hx__l3',
+    'hx__title', 'lg-mv__y']);
+  /* A top-level rule walk rather than a regular expression: a media query
+     legitimately overrides what sits above it, so the media text is part of
+     the key and a nested block has to be entered rather than matched.
+
+     COMMENTS COME OUT FIRST, and the first version of this skipped PAST one
+     without moving the start of the selector, so every rule with a comment
+     above it - which in this file is most of them - had the whole comment
+     folded into its selector and failed the one-bare-class test. The check
+     ran, passed, and was reading almost nothing: the fault it exists to
+     catch, in the check itself. Found by the probe below, which is the only
+     thing that could have found it. */
+  const topRules = (raw, media = '') => {
+    const css = raw.replace(/\/\*[\s\S]*?\*\//g, '');
+    const out = []; let i = 0, depth = 0, start = 0, head = '';
+    while (i < css.length) {
+      if (css[i] === '{') {
+        if (depth === 0) { head = css.slice(start, i).trim(); start = i + 1; }
+        depth++; i++; continue;
+      }
+      if (css[i] === '}') {
+        depth--;
+        if (depth === 0) {
+          const body = css.slice(start, i);
+          if (head.startsWith('@media')) out.push(...topRules(body, head.replace(/\s+/g, ' ')));
+          else if (!head.startsWith('@')) out.push({ media, sel: head, body });
+          start = i + 1; head = '';
+        }
+        i++; continue;
+      }
+      i++;
+    }
+    return out;
+  };
+  const sheetDirs = ['styles', 'styles-home', path.join('styles-home', 'pages'), 'styles-control'];
+  const sheetFiles = sheetDirs.flatMap((d) => {
+    const dir = path.join(ROOT, 'src', d);
+    if (!fs.existsSync(dir)) return [];
+    return fs.readdirSync(dir).filter((f) => f.endsWith('.css')).map((f) => path.join(dir, f));
+  });
+  const clashes = [];
+  let first = new Map();
+  for (const f of sheetFiles) {
+    first = new Map();
+    for (const r of topRules(fs.readFileSync(f, 'utf8'))) {
+      for (const sel of r.sel.split(',').map((s) => s.trim())) {
+        /* ONE BARE CLASS ONLY. `.a .b` and `.a.b` are narrowings somebody
+           wrote on purpose; this asks about the part itself. */
+        if (!/^\.[A-Za-z][\w-]*$/.test(sel)) continue;
+        const cls = sel.slice(1);
+        if (!cls.includes('__') || RETHEMED.has(cls)) continue;
+        for (const decl of r.body.split(';')) {
+          const m = decl.match(/^\s*([a-z-]+)\s*:\s*([^;]+)$/);
+          if (!m) continue;
+          const key = `${r.media}|${cls}|${m[1]}`;
+          const val = m[2].trim().replace(/\s+/g, ' ');
+          const had = first.get(key);
+          if (had && had.val !== val) {
+            clashes.push(`${path.basename(f)}: .${cls} { ${m[1]} } is `
+              + `"${had.val}" then "${val}"`);
+          } else if (!had) first.set(key, { val });
+        }
+      }
+    }
+  }
+  check('every component part sets a property in one place, or is a named re-theme',
+    clashes.length === 0, clashes.slice(0, 4).join(' · ') || 'none');
+  /* THE PROBE IS THE DEFECT ITSELF, put back: the shot map's grid under the
+     photographs' name, which is what shipped. */
+  const probeCss = `/* a comment, because one of these broke the walk */
+.pf-shots__grid{display: grid; gap: 8px;}
+/* and the shot map, arriving later under the same name */
+.pf-shots__grid{display: grid; gap: 40px;}
+`;
+  let probeHit = 0;
+  const pseen = new Map();
+  for (const r of topRules(probeCss)) {
+    for (const sel of r.sel.split(',').map((s) => s.trim())) {
+      if (!/^\.[A-Za-z][\w-]*$/.test(sel)) continue;
+      for (const decl of r.body.split(';')) {
+        const m = decl.match(/^\s*([a-z-]+)\s*:\s*([^;]+)$/);
+        if (!m) continue;
+        const k = `${sel}|${m[1]}`; const v = m[2].trim();
+        if (pseen.has(k) && pseen.get(k) !== v) probeHit++; else pseen.set(k, v);
+      }
+    }
+  }
+  /* ONE, not two: `display: grid` is the same in both and is not a clash,
+     and a comment above each rule must not stop either being read. */
+  check('probe: the same part declared twice with different values is caught',
+    probeHit === 1, `${probeHit} caught`);
+  /* And the narrowing is real: a name on the list must still be a class the
+     sheets actually declare, or the list outlives its cause in silence. */
+  const declared = new Set();
+  for (const f of sheetFiles) {
+    for (const r of topRules(fs.readFileSync(f, 'utf8'))) {
+      for (const sel of r.sel.split(',').map((s) => s.trim())) {
+        if (/^\.[A-Za-z][\w-]*$/.test(sel)) declared.add(sel.slice(1));
+      }
+    }
+  }
+  const stale = [...RETHEMED].filter((x) => !declared.has(x));
+  check('no named re-theme has outlived the class it was named for',
+    stale.length === 0, stale.join(', ') || 'none stale');
+}
+
 console.log(`  classes on an element no rule reaches, one page per family: ${orphanClasses.size}`
   + ` (the panel is gated at zero; these are layout wrappers and SVG groups)`
   + (orphanClasses.size ? `

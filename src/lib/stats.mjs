@@ -1047,9 +1047,27 @@ export function compareDivision(rows, results) {
    Full-Time, so a club's scorers can come to fewer goals than its results (an
    own goal is nobody's) but never to more: that is a mistyped figure or a
    player filed under the wrong club. Returns one line per club that is over. */
-export function compareScorers(scorers, results) {
+/* THE POOL IS EVERY MATCH FULL-TIME COUNTS, WHICH IS NOT THE LEAGUE ALONE.
+
+   Its stat leaders page carries one footnote - "Does not include County cup
+   stats" - and the league's own cups are therefore IN. Proved rather than
+   reasoned: between the 4 October reading and the 28th the club's only match
+   was the Brian Howard President's Cup tie at Peps All Stars, and the page
+   moved Ade Owolana 7 to 9, Leon Burnett 2 to 3 and appearances 4 to 5, which
+   is exactly that tie's two goals, one goal and one appearance.
+
+   Compared against League Eight results alone the arithmetic is then wrong by
+   a whole cup run, and it fails in the direction that reads as a mistyped
+   transcription: Daniel McLane arrives as a one-goal scorer whose goal is in
+   no league result. `league-eight-2627.json` keeps only League Eight fixtures
+   on purpose - another club's cup tie is not this club's match - so the cup
+   pool comes from `cups-2627.json`, which already records a scoreline per tie.
+
+   It passed before today by luck: the published reading predates the club's
+   first cup tie of the season, so there were no cup goals to miss. */
+export function compareScorers(scorers, results, cupResults) {
   const scored = {};
-  for (const r of results || []) {
+  for (const r of [...(results || []), ...(cupResults || [])]) {
     scored[r.home] = (scored[r.home] || 0) + (Number(r.hs) || 0);
     scored[r.away] = (scored[r.away] || 0) + (Number(r.as) || 0);
   }
@@ -1058,6 +1076,24 @@ export function compareScorers(scorers, results) {
   return Object.entries(byClub)
     .filter(([club, goals]) => goals > (scored[club] || 0))
     .map(([club, goals]) => `${club}: scorers total ${goals}, results say ${scored[club] || 0}`);
+}
+
+/* Every played cup tie as a result row, resolved from the draw. The draw
+   names the two sides per tie number and the results are recorded by that
+   number, so a club is never typed twice and a tie with no result is simply
+   absent - the same rule the cup route reads it with. */
+export function cupResultRows(cups) {
+  const out = [];
+  for (const cup of cups || []) {
+    const byN = new Map((cup.ties || []).map((t) => [t.n, t]));
+    for (const r of cup.results || []) {
+      const t = byN.get(r.n);
+      if (!t || !t.home || !t.away) continue;
+      if (r.hs == null || r.as == null) continue;
+      out.push({ home: t.home, away: t.away, hs: Number(r.hs), as: Number(r.as) });
+    }
+  }
+  return out;
 }
 
 /* THE ASSISTS A STORED MATCH ACTUALLY HOLDS. The match form derives its flat

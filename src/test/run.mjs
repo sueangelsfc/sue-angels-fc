@@ -7416,9 +7416,44 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     check('probe: with no chart transcribed the league page draws no scorer table',
       !/data-l8-scorers/.test(panN) && !/data-l8-assists/.test(panN));
   }
-  const { compareScorers: cmpSc } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+  const { compareScorers: cmpSc, cupResultRows: cupRows } =
+    await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+  /* THE POOL IS EVERY MATCH FULL-TIME COUNTS, AND IT IS NOT THE LEAGUE ALONE.
+     Its stat leaders page excludes County cup stats and nothing else, so the
+     league's own two cups are in - proved by the club's own figures moving by
+     exactly the Peps President's Cup tie between two readings of the page and
+     by nothing else. `league-eight-2627.json` keeps League Eight fixtures
+     only, by design, so the cup goals come from the cup draws. */
+    const cupsJ = JSON.parse(fs.readFileSync(
+      path.join(ROOT, 'src', 'data', 'cups-2627.json'), 'utf8'));
+  const cupPool = cupRows(cupsJ.cups);
   check('League Eight\'s scorers add up to no more than each club scored',
-    cmpSc(l8.scorers || [], l8.results || []).length === 0, cmpSc(l8.scorers || [], l8.results || []).join(' | '));
+    cmpSc(l8.scorers || [], l8.results || [], cupPool).length === 0,
+    cmpSc(l8.scorers || [], l8.results || [], cupPool).join(' | '));
+  /* A tie with no result recorded is not a nil-nil. Absent means unknown,
+     which is the rule the cup route already reads these with, and counting
+     one as played would hand both clubs a scoreline nobody has seen. */
+  check('every cup result row names two clubs and carries both scores',
+    cupPool.length > 0 && cupPool.every((r) => r.home && r.away
+      && Number.isFinite(r.hs) && Number.isFinite(r.as)),
+    `${cupPool.length} rows from ${cupsJ.cups.length} cups`);
+  check('probe: a tie the draw does not number contributes nothing',
+    cupRows([{ ties: [{ n: 1, home: 'A', away: 'B' }], results: [{ n: 9, hs: 3, as: 0 }] }]).length === 0);
+  check('probe: a tie with no scoreline is not counted as a nil-nil',
+    cupRows([{ ties: [{ n: 1, home: 'A', away: 'B' }], results: [{ n: 1 }] }]).length === 0);
+  /* AND THE POOL HAS TO BE DOING SOMETHING. Crafted, because today's
+     published reading predates the club's first cup tie, so the same
+     question over the real files passes with no cup pool at all - which is
+     exactly how this went unnoticed until the figures moved. */
+  /* The club was AWAY at Peps and won 0-4, so the side of the dash matters
+     here exactly as it does everywhere else in this file: written home-first
+     it credits the four goals to Peps. */
+  const cupOnly = [{ ties: [{ n: 1, home: 'Peps All Stars', away: 'Sue\'s Angels FC' }],
+    results: [{ n: 1, hs: 0, as: 4 }] }];
+  check('a cup goal is reconciled by the cup pool and by nothing else',
+    cmpSc([{ name: 'A Scorer', club: 'Sue\'s Angels FC', goals: 4 }], [], cupRows(cupOnly)).length === 0
+      && cmpSc([{ name: 'A Scorer', club: 'Sue\'s Angels FC', goals: 4 }], []).length === 1,
+    'cup pool carries it');
   /* The panel's Home page screen is handed the same three the site leads with,
      and draws them as pinned rows, so what it shows is what the page does. */
   const homeChunkL8 = fs.readFileSync(path.join(ROOT, 'control-home.js'), 'utf8');
@@ -7438,7 +7473,8 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
      none, and went quiet the day they scored in an 8-1. A probe has to break
      the rule whatever the season has done. */
   check('probe: a scorer filed under the wrong club is caught',
-    cmpSc([...(l8.scorers || []), { name: 'X', club: 'Haydons Park', goals: 999 }], l8.results || []).length > 0);
+    cmpSc([...(l8.scorers || []), { name: 'X', club: 'Haydons Park', goals: 999 }],
+      l8.results || [], cupPool).length > 0);
 }
 
 /* ==========================================================================

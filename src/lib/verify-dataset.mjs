@@ -4,7 +4,8 @@
    no page should publish a number. */
 import { buildDataset } from './dataset.mjs';
 import { teamSummary, leaderboard, clubRecords, formGuide, homeAwaySplit, byCompetition,
-  deriveTable, compareTable, compareDivision, compareScorers } from './stats.mjs';
+  deriveTable, compareTable, compareDivision, compareScorers,
+  cupResultRows } from './stats.mjs';
 
 const d = buildDataset();
 let fails = 0;
@@ -74,7 +75,10 @@ console.log(`matches with detail records: ${d.matches.filter((m) => m.detail).le
   }
   const sc = l8.scorers || [];
   if (sc.length && res.length) {
-    const over = compareScorers(sc, res);
+    /* The league's own cups count towards these figures, so they count
+       towards the pool the figures are checked against. */
+    const cupRows = cupResultRows(d.cups && d.cups.cups);
+    const over = compareScorers(sc, res, cupRows);
     console.log(`\n=== ${l8.division || 'NEW DIVISION'} SCORERS vs RESULTS (as of ${l8.scorersAsOf || 'undated'}) ===`);
     /* TWO READINGS OF ONE DIVISION HAVE TO BE OF THE SAME DAY, and when they
        are not this comparison says the wrong thing with total confidence. A
@@ -103,7 +107,8 @@ console.log(`matches with detail records: ${d.matches.filter((m) => m.detail).le
       fails += over.length;
       over.forEach((g) => console.log(`FAIL  ${g}`));
     } else {
-      console.log(`PASS  ${sc.length} scorers, no club credited with more goals than it scored`);
+      console.log(`PASS  ${sc.length} scorers, no club credited with more goals`
+        + ` than it scored in ${res.length} league and ${cupRows.length} cup results`);
     }
   }
 }

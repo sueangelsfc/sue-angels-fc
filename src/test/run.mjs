@@ -11119,6 +11119,71 @@ console.log(`\n${'='.repeat(66)}`);
     const noZone = craft(null);
     check('an assist the club recorded no area for draws no mark',
       !/pf-sh--za/.test(noZone.html), '');
+
+    /* ======================================================================
+       AND EVERY WORD ABOVE THE PITCH ANSWERS THE SWITCH
+
+       The club pressed Assists and read "Where he scores." over a pitch of
+       assists. CSS cannot rewrite text, so each of the four captions - the
+       heading, the rail's two halves and the caption under the pitch -
+       carries all three wordings and the `:checked` rules show the true one.
+       The check that matters is not that three spans exist: it is that the
+       goals wording and the assists wording DIFFER in every one of them, a
+       caption that says the same thing under both answers being a switch
+       that lies.
+       ====================================================================== */
+    const sameWord = [];
+    const tooFew = [];
+    for (const q of pool2) {
+      const f = path.join(ROOT, 'players', `${q.slug}.html`);
+      if (!fs.existsSync(f)) continue;
+      const sec = (fs.readFileSync(f, 'utf8')
+        .match(/<section class="sec pf-strike"[\s\S]*?<\/section>/) || [])[0];
+      if (!sec || !sec.includes('class="pf-pick"')) continue;
+      const words = (k) => [...sec.matchAll(new RegExp(`<span class="pf-w pf-w--${k}">([\\s\\S]*?)</span>`, 'g'))]
+        .map((m) => m[1]);
+      const [all, g, a] = ['all', 'g', 'a'].map(words);
+      if (all.length !== 4 || g.length !== 4 || a.length !== 4) {
+        tooFew.push(`${q.name}: ${all.length}/${g.length}/${a.length} of 4`);
+      }
+      g.forEach((t, i) => { if (a[i] === t) sameWord.push(`${q.name}: "${t}" under both answers`); });
+    }
+    check('the heading, the rail and the caption each write all three wordings',
+      tooFew.length === 0 && pool2.length > 0, tooFew.slice(0, 4).join(' | '));
+    check('and not one of them says the same thing under goals as under assists',
+      sameWord.length === 0, sameWord.slice(0, 4).join(' | '));
+
+    /* WITH NO SWITCH THE WORD STILL HAS TO BE RIGHT, and no profile in the
+       archive shows assists without goals, so this is crafted: take the
+       marks off his goals and his own assists are all that is left. A
+       heading reading "scores" over those is the fault one answer wide. */
+    const d3 = bdCS();
+    const comp3 = (d3.played || []).filter((m) => m.played && !m.friendly);
+    const hasMark = (o) => o && (o.spot || o.zone);
+    const only = (d3.playersCompetitive || d3.players || []).find((q) => {
+      let g = 0; let a = 0;
+      for (const m of comp3) {
+        for (const gl of (m.detail || {}).goals || []) {
+          if (hasMark(gl) && !gl.og && Number(gl.num) === Number(q.num)) g += 1;
+          if (gl.assist && hasMark(gl.assist) && Number(gl.assist.num) === Number(q.num)) a += 1;
+        }
+      }
+      return g > 0 && a > 0;
+    });
+    let onlyHtml = '';
+    if (only) {
+      for (const m of comp3) {
+        for (const gl of (m.detail || {}).goals || []) {
+          if (Number(gl.num) === Number(only.num)) { delete gl.spot; delete gl.zone; }
+        }
+      }
+      onlyHtml = String(playerPage(only, d3).body || '');
+    }
+    const h2Of = (h) => ((h.match(/<h2[^>]*id="pf-strike-h"[\s\S]*?<\/h2>/) || [''])[0]);
+    check('crafted: a pitch of assists alone is headed "creates", and offers no switch',
+      !!only && /creates\./.test(h2Of(onlyHtml)) && !/scores/.test(h2Of(onlyHtml))
+        && !onlyHtml.includes('class="pf-pick"'),
+      only ? h2Of(onlyHtml).replace(/<[^>]+>/g, '') : 'nobody to craft on');
   }
 }
 

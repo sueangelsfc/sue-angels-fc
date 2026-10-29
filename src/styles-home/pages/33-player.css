@@ -1132,9 +1132,9 @@ html.js .pf-pitch__grid.is-picking .pf-spot.is-picked{opacity: 1;}
   border-radius: var(--pillr);
   transition: background 0.2s var(--ease-out-expo), color 0.2s linear;}
 .pf-pick label:hover{color: var(--fg); background: rgba(var(--lift), 0.07);}
-.pf-k--all:checked ~ .pf-strike__fig label[for="pf-k-all"],
-.pf-k--g:checked ~ .pf-strike__fig label[for="pf-k-g"],
-.pf-k--a:checked ~ .pf-strike__fig label[for="pf-k-a"]{background: var(--volt);
+.pf-k--all:checked ~ .pf-strike__grid label[for="pf-k-all"],
+.pf-k--g:checked ~ .pf-strike__grid label[for="pf-k-g"],
+.pf-k--a:checked ~ .pf-strike__grid label[for="pf-k-a"]{background: var(--volt);
   color: var(--text-on-brand);}
 /* THE RING GOES ROUND THE TRACK, not round a segment. The input it belongs to
    is a clipped pixel in the corner, so without a ring somewhere a keyboard
@@ -1143,27 +1143,38 @@ html.js .pf-pitch__grid.is-picking .pf-spot.is-picked{opacity: 1;}
    a heavy second outline inside the orange fill of the answer just chosen.
    Round the whole control it reads as the control being focused, and the
    filled segment goes on saying which answer is current. */
-.pf-k:focus-visible ~ .pf-strike__fig .pf-pick{outline: 2px solid var(--volt);
+.pf-k:focus-visible ~ .pf-strike__grid .pf-pick{outline: 2px solid var(--volt);
   outline-offset: 3px;}
 /* WHAT EACH ANSWER HIDES - the mark, the circle that carries its crest, and
    its row in the list, so the pitch and the words can never disagree. */
-.pf-k--g:checked ~ .pf-strike__fig .pf-sh--a,
-.pf-k--g:checked ~ .pf-strike__fig .pf-sh--za,
-.pf-k--g:checked ~ .pf-strike__fig .pf-hit--a,
-.pf-k--g:checked ~ .pf-strike__body .pf-mark--a,
-.pf-k--a:checked ~ .pf-strike__fig .pf-sh--g,
-.pf-k--a:checked ~ .pf-strike__fig .pf-sh--z:not(.pf-sh--za),
-.pf-k--a:checked ~ .pf-strike__fig .pf-hit--g,
-.pf-k--a:checked ~ .pf-strike__body .pf-mark--g{display: none;}
+.pf-k--g:checked ~ .pf-strike__grid .pf-sh--a,
+.pf-k--g:checked ~ .pf-strike__grid .pf-sh--za,
+.pf-k--g:checked ~ .pf-strike__grid .pf-hit--a,
+.pf-k--g:checked ~ .pf-strike__grid .pf-mark--a,
+.pf-k--a:checked ~ .pf-strike__grid .pf-sh--g,
+.pf-k--a:checked ~ .pf-strike__grid .pf-sh--z:not(.pf-sh--za),
+.pf-k--a:checked ~ .pf-strike__grid .pf-hit--g,
+.pf-k--a:checked ~ .pf-strike__grid .pf-mark--g{display: none;}
 /* And the count beside the summary. Absent the switch only the first of
    these is written, which is why it is the one that shows by default. */
 .pf-kc{display: none; font-style: normal; font-family: var(--display);
   font-size: 12px; letter-spacing: 0; color: var(--volt-text);}
 .pf-kc--all{display: inline;}
-.pf-k--g:checked ~ .pf-strike__body .pf-kc--all,
-.pf-k--a:checked ~ .pf-strike__body .pf-kc--all{display: none;}
-.pf-k--g:checked ~ .pf-strike__body .pf-kc--g,
-.pf-k--a:checked ~ .pf-strike__body .pf-kc--a{display: inline;}
+.pf-k--g:checked ~ .pf-strike__grid .pf-kc--all,
+.pf-k--a:checked ~ .pf-strike__grid .pf-kc--all{display: none;}
+.pf-k--g:checked ~ .pf-strike__grid .pf-kc--g,
+.pf-k--a:checked ~ .pf-strike__grid .pf-kc--a{display: inline;}
+/* AND THE WORDS. CSS cannot rewrite text, so the heading, the rail's two
+   captions and the caption under the pitch each carry all three wordings and
+   the switch shows the true one. `~ *` rather than a list of three parents,
+   because the next sentence that has to answer the switch should need no new
+   rule here. */
+.pf-w{display: none;}
+.pf-w--all{display: inline;}
+.pf-k--g:checked ~ * .pf-w--all,
+.pf-k--a:checked ~ * .pf-w--all{display: none;}
+.pf-k--g:checked ~ * .pf-w--g,
+.pf-k--a:checked ~ * .pf-w--a{display: inline;}
 .pf-sh__turf{fill: rgba(255, 255, 255, 0.03);}
 .pf-sh__lines{fill: none; stroke: rgba(255, 255, 255, 0.22); stroke-width: 0.6;
   vector-effect: non-scaling-stroke;}

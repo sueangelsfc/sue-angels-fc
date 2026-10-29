@@ -69,9 +69,12 @@ const shortComp = (name) => String(name || '')
   .replace(/^Supreme Trophies /, '')
   .replace(/^Surrey FA Sunday Lower Junior County Cup$/, 'Surrey FA Cup');
 
-const rail = (n, label, ref) => `<div class="xrail" aria-hidden="true">
-      <span class="xrail__l"><span class="xrail__n">${n === 'NUM' ? 'NUM' : esc(String(n).padStart(2, '0'))}</span><span class="xrail__t">${esc(label)}</span></span>
-      <span class="xrail__r">${esc(ref)}</span>
+/* `raw` is for the one band whose caption answers a switch, so the three
+   wordings are written and the stylesheet shows the true one. One rail, not a
+   second copy of its markup living in a template. */
+const rail = (n, label, ref, raw) => `<div class="xrail" aria-hidden="true">
+      <span class="xrail__l"><span class="xrail__n">${n === 'NUM' ? 'NUM' : esc(String(n).padStart(2, '0'))}</span><span class="xrail__t">${raw ? label : esc(label)}</span></span>
+      <span class="xrail__r">${raw ? ref : esc(ref)}</span>
     </div>`;
 
 /* Page-level bands number themselves in the order a reader meets them. They
@@ -1399,20 +1402,37 @@ export function playerPage(p, d) {
      band reaches them with `:checked ~`. */
   const strikeSeg = strikeBoth ? `<div class="pf-pick"><span class="pf-pick__l">Show</span><label for="pf-k-all">Both</label><label for="pf-k-g">Goals</label><label for="pf-k-a">Assists</label></div>
             ` : '';
+  /* EVERY WORD ABOVE THE PITCH ANSWERS THE SWITCH TOO. A heading reading
+     "Where he scores." over nothing but assists is the band disagreeing with
+     its own filter, and the club said so. CSS cannot rewrite text, so all
+     three wordings are written and the `:checked` rules show the true one -
+     the same device as the count on the summary.
+     WITH NO SWITCH THE WORD STILL HAS TO BE RIGHT: a man with assists on
+     record and no goals had "Where he scores." over his, which nothing had
+     ever asked about because the band had never drawn. */
+  const hasG = strikeViews.some((v) => v.shown.goals);
+  const w = (all, g, a) => (strikeBoth
+    ? `<span class="pf-w pf-w--all">${all}</span><span class="pf-w pf-w--g">${g}</span><span class="pf-w pf-w--a">${a}</span>`
+    : (hasG ? g : a));
   const strikeBand = strikeAny ? `<section class="sec pf-strike" aria-labelledby="pf-strike-h">
       <div class="wrap">
+        ${/* THE INPUTS SIT AT THE TOP OF THE WRAP, not inside the grid, because
+             everything they answer is a later sibling of theirs or inside one:
+             the rail, the heading and the grid alike. A radio that can only
+             reach half the band is a band that half agrees with itself. */''}
+        ${strikePick}
         ${/* A FIGURE IN THE RAIL IS A CAREER FIGURE ON EVERY TAB. The rail sits
              above the season panels and nothing rewrites it, so "9 on the
              pitch" was printed over a season holding two. The count that is
              true of what you are looking at is on the list's own summary,
              one per season, so the rail says what the band is instead. */''}
-        ${rail(RAIL.next(), 'Where he scores from', 'Goals and assists')}
-        <h2 class="h2 rv" id="pf-strike-h">Where he <span class="volt">scores.</span></h2>
+        ${rail(RAIL.next(), `Where he ${w('scores', 'scores', 'creates')} from`,
+    w('Goals and assists', 'Goals', 'Assists'), true)}
+        <h2 class="h2 rv" id="pf-strike-h">Where he <span class="volt">${w('scores and creates.', 'scores.', 'creates.')}</span></h2>
         <div class="pf-strike__grid rv">
-          ${strikePick}
           <figure class="pf-strike__fig">
             ${strikeSeg}${strikeViews.map((v) => (v.any ? strikePitch(v) : `<p class="pf-strike__none" data-season-scope="${attr(v.key)}">Nothing marked on the pitch for this season.</p>`)).join('\n            ')}
-            <figcaption>Attacking upward. Filled is a goal, hollow is where he played an assist from. A dashed mark sits anywhere in the area the club recorded rather than on a spot: mark it on the pitch in the control panel and it moves to where it happened. Hover a mark for the club it was against.</figcaption>
+            <figcaption>Attacking upward. ${w('Filled is a goal, hollow is where he played an assist from.', 'Each mark is a goal.', 'Each hollow mark is where he played an assist from.')} A dashed mark sits anywhere in the area the club recorded rather than on a spot: mark it on the pitch in the control panel and it moves to where it happened. Hover a mark for the club it was against.</figcaption>
           </figure>
           <div class="pf-strike__body">
             ${strikeViews.map((v) => {

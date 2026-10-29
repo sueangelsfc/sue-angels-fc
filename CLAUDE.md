@@ -1543,6 +1543,34 @@ siblings at the top of the grid, because every rule in the band reaches its
 target with `:checked ~` - and the rules that hide the other kind, which the
 suite reads off the minified sheet, are untouched.
 
+#### The words answer the switch too
+
+The club pressed **Assists** and read **"Where he scores."** over a pitch of
+assists. The marks, their crests and the list rows all moved and the four
+captions above them did not, which is the band disagreeing with its own
+filter in the largest type on the screen.
+
+- **CSS cannot rewrite text**, so each caption carries all three wordings and
+  the same `:checked` rules show the true one - the device the count on the
+  summary already used. The heading, the rail's label, the rail's right-hand
+  caption and the sentence under the pitch: *scores and creates* / *scores* /
+  *creates*, *Goals and assists* / *Goals* / *Assists*, and a caption that
+  explains filled against hollow only where both are on the pitch.
+- **The inputs moved to the top of the `wrap`.** They were inside the grid,
+  which can reach the pitch and the list and nothing above them. A radio that
+  can only reach half its band is a band that half agrees with itself.
+- **`rail()` grew a `raw` flag** rather than the band growing its own copy of
+  the rail's markup. One definition, one place a rail can be wrong.
+- **The check is not that three spans exist.** It is that the goals wording
+  and the assists wording DIFFER in all four, because a caption saying the
+  same thing under both answers is a switch that lies - and that all four are
+  present, because three of four is the same defect one caption wide.
+- **AND THE WORD WAS WRONG WITH NO SWITCH AT ALL.** A profile showing assists
+  and no goals gets no switch, and its heading said *"Where he scores."* -
+  shipped, live, and unaskable of real data, because no profile in the
+  archive is in that state today. It is crafted: take the marks off one
+  player's goals and his assists are all that is left.
+
 #### The control panel's pitch is twice the size
 
 A goal is marked by tapping a point, so the accuracy of the record is bounded
@@ -2245,7 +2273,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 5,272 checks against the generated output and the rendered panel
+npm test          # 5,275 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

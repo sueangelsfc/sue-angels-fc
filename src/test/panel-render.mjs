@@ -437,6 +437,23 @@ export async function panelChecks() {
           /* A POINTER IS NOT THE ONLY WAY TO ANSWER. The arrow keys are the
              only route a keyboard has into this control, and a picker a
              keyboard cannot reach is a field only a mouse can fill in. */
+          /* WHICH END IS WHICH, WRITTEN ON THE PITCH. Every mark on this
+             site is read with y=0 at the goal the event is about, so the club
+             never tells us which way it kicked - and that convention lived in
+             a sentence above the diagram, where a convention gets skimmed.
+             Somebody reading it backwards puts every goal in his own
+             six-yard box and the record looks perfectly fine.
+
+             BOTH ENDS, AND OPPOSITE. One label would pass whichever way
+             round it was, which is the failure being guarded against. */
+          const ends = Array.from(dlg.querySelectorAll('.cpp__end'))
+            .map((t) => t.textContent.trim());
+          check('the goal picker names both ends of the pitch, and they differ',
+            ends.length === 2 && ends[0] !== ends[1] && ends.every(Boolean),
+            JSON.stringify(ends));
+          check('and the end at the top is the one the club was attacking',
+            /attack/i.test(ends[0] || '') && /own/i.test(ends[1] || ''),
+            JSON.stringify(ends));
           const field = dlg.querySelector('.cpp__svg');
           const ev = new PR.DomEvent('keydown', { bubbles: true });
           ev.key = 'ArrowUp';
@@ -524,6 +541,17 @@ export async function panelChecks() {
           check('marking another save opens the same pitch',
             !!dlg4 && !!dlg4.querySelector('.cpp__svg'), dlg4 ? 'open' : 'nothing opened');
           if (dlg4) {
+            /* AND THE SAVE PICKER IS THE OTHER WAY ROUND, which is the
+               whole reason the labels come from the caller rather than being
+               drawn once in the chunk: the same pitch, the same coordinates,
+               and "the six-yard box" means his own on this one and the
+               opponents' on the goal map. */
+            const sends = Array.from(dlg4.querySelectorAll('.cpp__end'))
+              .map((t) => t.textContent.trim());
+            check('the save picker names the defended goal at the top instead',
+              sends.length === 2 && /defend/i.test(sends[0] || '')
+                && /attack/i.test(sends[1] || ''),
+              JSON.stringify(sends));
             const fld = dlg4.querySelector('.cpp__svg');
             const ev4 = new PR.DomEvent('keydown', { bubbles: true });
             ev4.key = 'ArrowUp';

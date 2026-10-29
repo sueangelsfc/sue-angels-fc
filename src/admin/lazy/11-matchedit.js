@@ -583,9 +583,14 @@
       window.CPPITCH.open({
         spot: spotOf(holder),
         title: kind === 'a' ? 'Where it was played from' : 'Where it was struck from',
+        /* The ends are named on the pitch itself. Whatever the club was
+           kicking towards on the day, a goal is marked towards the goal it
+           went in, which is what makes "the six-yard box" mean his own box on
+           a save map and the opponents' on this one, with one rule. */
+        ends: { top: 'The goal we were attacking', bottom: 'Our own goal' },
         hint: kind === 'a'
-          ? 'Tap the pitch, or use the arrow keys. Attacking upwards.'
-          : 'Tap the pitch where the ball was struck, or use the arrow keys. Attacking upwards.',
+          ? 'Tap the pitch, or use the arrow keys. The goal we were attacking is at the top.'
+          : 'Tap the pitch where the ball was struck, or use the arrow keys. The goal we were attacking is at the top.',
         onPick: function (spot) {
           if (spot) holder.spot = spot; else delete holder.spot;
           btn.classList.toggle('is-set', !!spot);

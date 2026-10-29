@@ -43,11 +43,24 @@
   /* The pitch, drawn from the figures the build handed over. Attacking end at
      the top, which is the orientation every shot map on the site uses and the
      one somebody picturing the goal expects. */
-  function svg(spot) {
+  /* WHICH END IS WHICH IS WRITTEN ON THE PITCH, not only above it. Every
+     mark on this site is read with y=0 at the goal the event is ABOUT - the
+     goal being attacked for a goal, the goal being defended for a save - so
+     the club never has to say which way it kicked, and the marks on one
+     profile cannot disagree with each other. But that convention lived in a
+     sentence over the diagram, and a sentence over a diagram is where a
+     convention gets skimmed: somebody who reads it backwards puts every goal
+     in his own six-yard box, and the record looks perfectly fine. A word at
+     each end cannot be missed, and it is the CALLER's word, because only the
+     caller knows what is being marked. */
+  function svg(spot, ends) {
     if (!MARKS) return '<p class="cp-note">The pitch could not be drawn.</p>';
     var m = MARKS;
+    var e = ends || {};
     return '<svg class="cpp__svg" viewBox="0 0 100 ' + H + '" role="application"'
-      + ' aria-label="The pitch. Press or tap where it happened, or move the marker with the arrow keys."'
+      + ' aria-label="The pitch, '
+      + (e.top ? esc(e.top).toLowerCase() + ' at the top. ' : '')
+      + 'Press or tap where it happened, or move the marker with the arrow keys."'
       + ' tabindex="0">'
       + '<rect class="cpp__turf" x="1" y="1" width="98" height="' + (H - 2) + '" rx="3"/>'
       + '<path class="cpp__lines" d="' + m.lines + '"/>'
@@ -58,7 +71,15 @@
       }).join('')
       + '<g class="cpp__mark" data-mark' + (spot ? '' : ' hidden') + '>'
       + '<circle class="cpp__halo" r="5.5"/><circle class="cpp__pin" r="2.4"/>'
-      + '</g></svg>';
+      + '</g>'
+      /* Hidden from a screen reader: the label on the field above already
+         says which way round the pitch is, in a whole sentence, and reading
+         two words off a diagram after it is the same fact twice. */
+      + (e.top ? '<text class="cpp__end" x="50" y="7" aria-hidden="true">'
+        + esc(e.top) + '</text>' : '')
+      + (e.bottom ? '<text class="cpp__end" x="50" y="' + (H - 3)
+        + '" aria-hidden="true">' + esc(e.bottom) + '</text>' : '')
+      + '</svg>';
   }
 
   function place(box, spot) {
@@ -97,7 +118,7 @@
       + '<div class="cpp__head"><h2 class="cpp__h" id="cpp-h">' + esc(o.title || 'Mark it on the pitch') + '</h2>'
       + '<button type="button" class="me__x" data-cpp-close aria-label="Close">&times;</button></div>'
       + (o.hint ? '<p class="cp-note">' + esc(o.hint) + '</p>' : '')
-      + '<div class="cpp__field">' + svg(spot) + '</div>'
+      + '<div class="cpp__field">' + svg(spot, o.ends) + '</div>'
       + '<p class="cpp__read" data-cpp-read aria-live="polite">' + esc(reading(spot)) + '</p>'
       + '<div class="cpp__acts">'
       + '<button type="button" class="btn btn--ghost" data-cpp-clear>Clear the mark</button>'
@@ -217,6 +238,7 @@
       if (e.target.closest('[data-sv-mark]')) {
         var row = spots[at(e.target)];
         open({ spot: { x: row.x, y: row.y }, title: 'Where the save was made',
+          ends: { top: 'The goal he was defending', bottom: 'The goal we were attacking' },
           hint: 'Tap the pitch where he made it, or use the arrow keys. His own goal at the top.',
           onPick: function (spot) { if (spot) { row.x = spot.x; row.y = spot.y; } paint(); } });
         return;
@@ -227,6 +249,7 @@
            carry with no location, which is the half-written entry every
            reader filters out and then cannot explain. */
         open({ spot: null, title: 'Where the save was made',
+          ends: { top: 'The goal he was defending', bottom: 'The goal we were attacking' },
           hint: 'Tap the pitch where he made it, or use the arrow keys. His own goal at the top.',
           onPick: function (spot) {
             if (!spot) return;

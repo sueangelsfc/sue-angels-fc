@@ -1439,6 +1439,34 @@ drawn. Same trap as the form pips and the site header, a third time.
   circle is bigger than the mark and stays that way** (48px against the dashed
   ring's 31px), so what a reader hovers is the area, not a point inside it.
 
+#### A hit circle must never cover the mark beside it
+
+The club found two goals under one crest on Ade Owolana's pitch, with no way
+to read the second. The hit circle is **bigger than its mark on purpose**, so
+where two marks sit close together one circle swallowed the other whole - and
+SVG has no z-index, the pointer going to whatever paints last, so no ordering
+fixes it. **The radius has to.**
+
+- **Each circle is half the distance to its nearest neighbour**, capped at
+  the full size where there is room. Two neighbours then meet exactly between
+  them and neither can reach the other's centre, in any draw order. Measured
+  in viewBox units, which are square on screen, so x and the MAPPED y are
+  comparable.
+- **No floor.** A floor is a radius that can cover a near neighbour again,
+  which is the whole bug. Two marks close enough to need one are close enough
+  that a small target is the honest answer; the smallest on the site is 10px
+  across. Two marks on the SAME point are the one case nothing can separate,
+  and the check says so rather than pretending otherwise.
+- **The check is the geometry, read off the shipped SVG**, because that is
+  what the question is: a check that the radius attribute is PRESENT passes
+  on every radius there is. The probe restores the fixed 7 and names Ade
+  Owolana's two, which is the pair the club reported.
+- **Hit-tested in a real browser as well**, with `elementFromPoint` at each
+  circle's own centre: all nine of his marks answer for themselves. Note that
+  `scrollIntoView` is useless for this here - `html{scroll-behavior:smooth}`
+  means the element has not moved yet when the rectangle is read, and every
+  mark reports as unreachable because it is simply off screen.
+
 #### EVERY POINT THE CLUB MARKED ON THE PITCH WAS THROWN AWAY ON SAVE
 
 The picker set `holder.spot`, the card read **Marked on the pitch**, the zone
@@ -2273,7 +2301,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 5,275 checks against the generated output and the rendered panel
+npm test          # 5,276 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

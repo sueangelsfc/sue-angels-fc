@@ -11071,6 +11071,40 @@ console.log(`\n${'='.repeat(66)}`);
     check('a pitch showing the attacking half crops to it rather than stretching the marks',
       stretched.length === 0, stretched.map((x) => x.q.name).slice(0, 4).join(', '));
 
+    /* NO HIT CIRCLE MAY REACH ANOTHER MARK'S CENTRE. The circle is bigger
+       than the mark on purpose, and where two marks sit close the later one
+       swallowed the earlier whole: two goals under one crest, the other
+       unreadable. SVG has no z-index and the pointer goes to whatever paints
+       last, so only the radius can fix it - each is half the distance to its
+       nearest neighbour. Read off the shipped SVG as geometry, because that
+       is what the question is; a check that the attribute is PRESENT passes
+       on every radius there is. */
+    const swallowed = [];
+    let hitCount = 0;
+    for (const q of pool2) {
+      const f = path.join(ROOT, 'players', `${q.slug}.html`);
+      if (!fs.existsSync(f)) continue;
+      const page = fs.readFileSync(f, 'utf8');
+      for (const svg of page.match(/<svg class="pf-strike__svg"[\s\S]*?<\/svg>/g) || []) {
+        const hits = [...svg.matchAll(/<g class="pf-hit[^"]*" transform="translate\(([-\d.]+) ([-\d.]+)\)">\s*<circle class="pf-hit__t" r="([\d.]+)"/g)]
+          .map((m) => ({ x: Number(m[1]), y: Number(m[2]), r: Number(m[3]) }));
+        hitCount += hits.length;
+        for (const a of hits) {
+          for (const b of hits) {
+            if (a === b) continue;
+            const dist = Math.hypot(a.x - b.x, a.y - b.y);
+            /* Two marks on the same point are the one case nothing can
+               separate, so they are not counted against the rule. */
+            if (dist > 0.01 && a.r > dist - 0.001) {
+              swallowed.push(`${q.name}: a circle of ${a.r} over a mark ${dist.toFixed(1)} away`);
+            }
+          }
+        }
+      }
+    }
+    check('no mark on a shot map is swallowed by the circle belonging to the one beside it',
+      swallowed.length === 0 && hitCount > 10, swallowed.slice(0, 4).join(' | ') || `${hitCount} marks`);
+
     /* ======================================================================
        AND WHERE HE PLAYED THE ASSIST FROM
 

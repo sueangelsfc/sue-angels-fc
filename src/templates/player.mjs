@@ -1358,12 +1358,37 @@ export function playerPage(p, d) {
        shown, so nothing in this layer can cover anything either.
        The words are in the title, in the list under the pitch and in the
        SVG's own description, which is what lets the picture be hover-only. */
+    /* A HIT CIRCLE MUST NEVER COVER ANOTHER MARK. It is deliberately bigger
+       than the mark it belongs to, so where two marks sit close together the
+       later circle swallowed the earlier one whole and that goal could not
+       be pointed at at all - the club found two goals under one crest, with
+       no way to read the other. SVG has no z-index and the pointer goes to
+       whatever paints last, so no ordering fixes this; the radius has to.
+       Each circle is HALF the distance to its nearest neighbour, capped at
+       the full size where there is room. Two neighbours then meet exactly
+       between them and neither can reach the other's centre, whatever order
+       they are drawn in. Measured in viewBox units, which are square on
+       screen, so x and the MAPPED y are directly comparable. */
+    const near = [...v.zoned, ...v.made, ...v.goals].map((s) => ({ x: s.x, y: Number(sy(s.y)) }));
+    const hitR = (s) => {
+      const y = Number(sy(s.y));
+      let d = Infinity;
+      for (const o of near) {
+        const t = Math.hypot(o.x - s.x, o.y - y);
+        if (t > 0.01 && t < d) d = t;
+      }
+      /* No floor. A floor is a radius that can cover a near neighbour again,
+         which is the whole bug, and two marks close enough to need one are
+         close enough that a small target is the honest answer. Two marks on
+         the SAME point are the one case nothing can separate. */
+      return Math.min(7, d / 2);
+    };
     const hit = (s, kind) => {
       const src = oppBadgeSrc(s.opponent, d.badges);
       const words = kind === 'z' ? `${ZONE_WORDS[s.zone]}, the area recorded rather than a spot` : spotWords(s);
       const what = kind === 'g' || (kind === 'z' && s.kind !== 'a') ? 'Goal' : 'Assist';
       return `<g class="pf-hit pf-hit--${kind === 'z' ? (s.kind === 'a' ? 'a' : 'g') : kind}" transform="translate(${s.x.toFixed(1)} ${sy(s.y)})">
-              <circle class="pf-hit__t" r="7"/>${src ? `<image class="pf-hit__tip" aria-hidden="true" href="${attr(src)}" x="-3" y="-3" width="6" height="6" preserveAspectRatio="xMidYMid meet"/>` : ''}
+              <circle class="pf-hit__t" r="${hitR(s).toFixed(1)}"/>${src ? `<image class="pf-hit__tip" aria-hidden="true" href="${attr(src)}" x="-3" y="-3" width="6" height="6" preserveAspectRatio="xMidYMid meet"/>` : ''}
               <title>${esc(what)}${s.minute ? `, ${esc(String(s.minute))}′` : ''} v ${esc(s.opponent)}: ${esc(words)}.</title>
             </g>`;
     };

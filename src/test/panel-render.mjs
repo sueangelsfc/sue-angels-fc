@@ -105,6 +105,103 @@ export async function panelChecks() {
     `control.html declares ${keys.length}`);
 
   /* ---------------------------------------------------------------------
+     0. GETTING IN AT ALL.
+
+     The panel signed in one way - email and password - with no reset link
+     and no second route, so a forgotten password locked the club out of its
+     own website and the only way back was the Supabase dashboard, which is a
+     different login again. It happened. A link in an email is the way in
+     now, and the password is the spare key behind a quiet button.
+
+     RENDERED, NOT GREPPED, because this is the panel's recurring fault with
+     the pieces rearranged: a sign-in screen that draws a button nothing is
+     listening to is a screen that looks completely fine. */
+  {
+    const sent = [];
+    const ctx0 = PR.boot({
+      rows,
+      fetch: (u, o) => {
+        sent.push({ url: String(u), body: o && o.body });
+        if (String(u).indexOf('/auth/v1/user') > -1) {
+          return Promise.resolve({ ok: true, status: 200,
+            json: () => Promise.resolve({ id: 'u-1', email: 'club@example.com' }) });
+        }
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({}) });
+      },
+    });
+    const d0 = ctx0.doc;
+    const linkBtn = d0.querySelector('#cp-link-btn');
+    const passField = d0.querySelector('#cp-pass-field');
+    const toggle = d0.querySelector('#cp-use-pass');
+    check('the sign-in screen leads with the link, not the password',
+      !!linkBtn && !!passField && passField.hidden === true && !!toggle,
+      linkBtn ? `password field hidden: ${passField && passField.hidden}` : 'no link button');
+    /* THE SPARE KEY HAS TO BE REACHABLE. A sign-in that depends on email
+       delivery and nothing else is one mail queue away from a club that
+       cannot publish a result. */
+    if (toggle) {
+      PR.click(toggle);
+      await PR.settle(ctx0);
+      check('and the password is one press away when the email will not come',
+        passField.hidden === false && d0.querySelector('#cp-login-btn').hidden === false
+          && linkBtn.hidden === true,
+        `pass ${passField.hidden}, signin ${d0.querySelector('#cp-login-btn').hidden}`);
+    }
+
+    /* `create_user: false` IS THE WHOLE SECURITY OF THE LINK. Without it an
+       OTP request for any address at all creates the account it then emails,
+       so a stranger past the club word could mint themselves a Supabase
+       user. They still could not write anything, but an account nobody asked
+       for is not a thing to hand out. */
+    await ctx0.win.CP.sendLink('somebody@example.com', 'https://www.suesangelsfc.co.uk/control.html');
+    const otp = sent.filter((r) => r.url.indexOf('/auth/v1/otp') > -1)[0];
+    let body = {};
+    try { body = JSON.parse((otp || {}).body || '{}'); } catch (e) { body = {}; }
+    check('asking for a link never creates the account it emails',
+      !!otp && body.create_user === false && body.email === 'somebody@example.com',
+      otp ? otp.body : 'nothing was sent');
+    check('and the link is told to come back to the panel',
+      !!otp && otp.url.indexOf('redirect_to=') > -1
+        && decodeURIComponent(otp.url.split('redirect_to=')[1]).indexOf('/control.html') > -1,
+      otp ? otp.url : 'nothing was sent');
+
+    /* THE WAY BACK IN. GoTrue returns the session in the URL's own fragment,
+       which is also where this panel keeps its routing. */
+    ctx0.win.location.hash = '#access_token=A1&refresh_token=R1&expires_in=3600&type=magiclink';
+    const got = await ctx0.win.CP.fromLink();
+    check('a link from the email signs the club in',
+      !!got && got.access_token === 'A1' && !!got.user && got.user.email === 'club@example.com',
+      JSON.stringify(got && { t: got.access_token, u: got.user && got.user.email }));
+    /* The half that is not about auth at all: the shell routes on the
+       fragment, so a session left in it opens a panel called
+       `access_token=A1&...`, which is a screen that cannot exist. */
+    check('and the tokens are taken out of the address bar before anything routes on them',
+      ctx0.historyCalls.length > 0 && String(ctx0.win.location.hash).indexOf('access_token') < 0,
+      `${ctx0.historyCalls.length} calls, hash now ${JSON.stringify(ctx0.win.location.hash)}`);
+    check('the session is kept so a reload does not ask again',
+      /R1/.test(ctx0.win.localStorage.getItem('sa-cp-session') || ''),
+      ctx0.win.localStorage.getItem('sa-cp-session'));
+  }
+
+  /* THE NEGATIVE, and it is the one that matters: every screen in the panel
+     reads `state.user`, so a session with nobody in it would enter the app
+     with no idea who is signed in. A token the server will not vouch for is
+     no session at all. */
+  {
+    const ctx0b = PR.boot({
+      rows,
+      fetch: (u) => (String(u).indexOf('/auth/v1/user') > -1
+        ? Promise.resolve({ ok: false, status: 401, json: () => Promise.resolve({}) })
+        : Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({}) })),
+    });
+    ctx0b.win.location.hash = '#access_token=A1&refresh_token=R1&expires_in=3600';
+    const bad = await ctx0b.win.CP.fromLink();
+    check('a token the server will not vouch for signs nobody in',
+      bad === null && !ctx0b.win.localStorage.getItem('sa-cp-session'),
+      JSON.stringify(bad));
+  }
+
+  /* ---------------------------------------------------------------------
      1. EVERY SCREEN RENDERS. Eighteen of the twenty-one live in lazy chunks
      that are fetched through the shell's own need()/load() path, so this
      also proves CHUNK_OF maps every panel to a chunk that exists, registers
@@ -2662,6 +2759,55 @@ export async function panelProbes() {
     });
   }
 
+
+  /* PROBE 7: let the sign-in link create the account it emails, which is the
+     one thing that turns a convenience into a way of minting Supabase users
+     from behind a club word anybody can read in a shipped file. Aimed at the
+     minified literal, because `false` is `!1` by the time it ships. */
+  {
+    const sent = [];
+    const ctx = PR.boot({
+      rows,
+      fetch: (u, o2) => {
+        sent.push({ url: String(u), body: o2 && o2.body });
+        return Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({}) });
+      },
+      transform: (src, file) => (file === 'control.js'
+        ? bust(src, 'create_user:!1', 'create_user:!0')
+        : src),
+    });
+    await ctx.win.CP.sendLink('somebody@example.com', 'https://www.suesangelsfc.co.uk/control.html');
+    const otp = sent.filter((r) => r.url.indexOf('/auth/v1/otp') > -1)[0];
+    let body = {};
+    try { body = JSON.parse((otp || {}).body || '{}'); } catch (e) { body = {}; }
+    results.push({
+      name: 'probe: letting the link create accounts turns the sign-in check red',
+      cond: !!otp && body.create_user !== false,
+      detail: otp ? otp.body : 'nothing was sent, so the probe proved nothing',
+    });
+  }
+
+  /* PROBE 8: leave the tokens in the address bar and confirm the check that
+     they are cleared notices. The fragment is the panel's own router, so
+     this is not tidiness: it is a panel called `access_token=ey...`. */
+  {
+    const ctx = PR.boot({
+      rows,
+      fetch: (u) => (String(u).indexOf('/auth/v1/user') > -1
+        ? Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({ id: 'u-1', email: 'c@e.com' }) })
+        : Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve({}) })),
+      transform: (src, file) => (file === 'control.js'
+        ? bust(src, 'history.replaceState(null,', 'history.nothing&&history.replaceState(null,')
+        : src),
+    });
+    ctx.win.location.hash = '#access_token=A1&refresh_token=R1&expires_in=3600';
+    const got = await ctx.win.CP.fromLink();
+    results.push({
+      name: 'probe: leaving the tokens in the address bar turns the routing check red',
+      cond: !!got && String(ctx.win.location.hash).indexOf('access_token') > -1,
+      detail: `hash ${JSON.stringify(ctx.win.location.hash)}`,
+    });
+  }
 
   return results;
 }

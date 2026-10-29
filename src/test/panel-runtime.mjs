@@ -85,6 +85,12 @@ export function boot({ rows = {}, empty = false, localStorage: ls, onScript, tra
   doc.body.innerHTML = bodyHtml;
 
   const loaded = [];
+  /* WHAT THE PANEL ASKED THE ADDRESS BAR TO DO. A sign-in link arrives in the
+     fragment, which is also where this panel keeps its routing, so clearing
+     it is not a tidy-up: it is what stops the shell trying to open a panel
+     called `access_token=ey...`. A stub that silently swallows the call
+     cannot be asked whether it happened. */
+  const historyCalls = [];
   /* Every chunk that would not parse or run. See the note beside the push. */
   const chunkErrors = [];
   const run = (file) => {
@@ -104,7 +110,14 @@ export function boot({ rows = {}, empty = false, localStorage: ls, onScript, tra
       'fetch', 'FileReader', 'Event', 'CustomEvent', 'MutationObserver', 'navigator',
       'requestAnimationFrame', 'Image', 'FormData', 'Blob', 'URL', 'atob', 'btoa', 'alert',
       '"use strict";' + src);
-    fn(win, doc, win.location, { replaceState: () => {}, pushState: () => {} },
+    const hist = {
+      replaceState: (st, t, url) => {
+        historyCalls.push(url);
+        if (typeof url === 'string') win.location.hash = url.indexOf('#') > -1 ? url.slice(url.indexOf('#')) : '';
+      },
+      pushState: () => {},
+    };
+    fn(win, doc, win.location, hist,
       win.localStorage, win.sessionStorage,
       (f, ms, ...a) => setTimeout(f, ms, ...a), (t) => clearTimeout(t),
       () => 0, () => {},
@@ -161,7 +174,7 @@ export function boot({ rows = {}, empty = false, localStorage: ls, onScript, tra
   const store = fixtureStore(rows, { empty });
   Object.keys(store).forEach((k) => { win.CP[k] = store[k]; });
 
-  return { win, doc, store, loaded, chunkMap, html, run, chunkErrors };
+  return { win, doc, store, loaded, chunkMap, html, run, chunkErrors, historyCalls };
 }
 
 /* Renders one panel and waits for the shell to finish. `render()` is three

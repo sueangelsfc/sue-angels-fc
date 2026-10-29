@@ -57,6 +57,82 @@ window.CP = (function () {
     });
   }
 
+  /* A LINK IN AN EMAIL, NOT A PASSWORD.
+     The club signs in a few times a season and a password used that rarely is
+     a password that gets lost - which is exactly what happened, and the panel
+     had no answer at all: no reset link, no second route, and the only way
+     back in was the Supabase dashboard, which is a different login again.
+
+     `create_user: false` IS THE WHOLE SECURITY OF THIS. Without it an OTP
+     request for any address at all creates the account it then emails, so a
+     stranger past the club word could mint themselves a Supabase user. They
+     still could not write anything - permission is the admin_users registry
+     and this cannot touch it - but an account nobody asked for is not a thing
+     to hand out. With it, the link only ever goes to somebody who already
+     exists.
+
+     The redirect comes back to this page carrying the tokens, so it has to be
+     allow-listed in Supabase -> Authentication -> URL Configuration or GoTrue
+     sends the reader to the Site URL instead and the hash is lost. */
+  function sendLink(email, back) {
+    return fetch(CFG.url + '/auth/v1/otp?redirect_to=' + encodeURIComponent(back), {
+      method: 'POST',
+      headers: { apikey: CFG.anonKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, create_user: false }),
+    }).then(function (r) {
+      /* An address that is not registered answers differently from one that
+         is, and the CALLER is told neither: see the note on its message. What
+         it does need to tell apart is "we could not ask" - a rate limit, a
+         network, a fault at Supabase - because that is the one case where
+         waiting for an email is waiting for nothing. */
+      if (r.status === 429) throw new Error('rate');
+      if (r.status >= 500) throw new Error('down');
+      return true;
+    }, function () { throw new Error('down'); });
+  }
+
+  /* THE WAY BACK IN. GoTrue returns the session in the URL's own fragment,
+     which is also where this panel keeps its routing, so the tokens are read
+     and the fragment is cleared before anything can try to open a panel
+     called `access_token=ey...`. The user is not in the fragment, so it is
+     asked for: every screen reads `state.user`, and a session without one
+     would enter the app with no idea who is in it. */
+  function fromLink() {
+    var h = (location.hash || '').replace(/^#/, '');
+    if (!h || h.indexOf('access_token=') < 0) return Promise.resolve(null);
+    var q = {};
+    h.split('&').forEach(function (part) {
+      var i = part.indexOf('=');
+      if (i > 0) q[decodeURIComponent(part.slice(0, i))] = decodeURIComponent(part.slice(i + 1));
+    });
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    if (!q.access_token || !q.refresh_token) return Promise.resolve(null);
+    var s = {
+      access_token: q.access_token,
+      refresh_token: q.refresh_token,
+      expires_at: Math.floor(Date.now() / 1000) + (Number(q.expires_in) || 3600),
+    };
+    saveSession(s);
+    return fetch(CFG.url + '/auth/v1/user', { headers: authHeaders() })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (u) {
+        if (!u || !u.id) { saveSession(null); return null; }
+        s.user = u;
+        saveSession(s);
+        return s;
+      })
+      .catch(function () { saveSession(null); return null; });
+  }
+
+  /* An expired or already-used link comes back as an error in the same
+     fragment and with no tokens in it. Read before `fromLink` clears it. */
+  function linkError() {
+    var h = (location.hash || '').replace(/^#/, '');
+    if (!h || h.indexOf('error') < 0 || h.indexOf('access_token=') > -1) return null;
+    var m = h.match(/error_description=([^&]*)/);
+    return m ? decodeURIComponent(m[1]).replace(/\+/g, ' ') : 'That link did not work.';
+  }
+
   function refresh() {
     var stored;
     try { stored = JSON.parse(localStorage.getItem(LS) || 'null'); } catch (e) { stored = null; }
@@ -228,7 +304,10 @@ window.CP = (function () {
   return {
     state: state,
     TABLES: TABLES,
-    signIn: signIn, signOut: signOut, refresh: refresh, loadRole: loadRole,
+    signIn: signIn,
+    sendLink: sendLink,
+    fromLink: fromLink,
+    linkError: linkError, signOut: signOut, refresh: refresh, loadRole: loadRole,
     startRefreshTimer: startRefreshTimer,
     rest: rest, readAll: readAll, upsert: upsert, remove: remove, audit: audit,
     readEnquiries: readEnquiries, readSupporters: readSupporters,

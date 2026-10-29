@@ -450,6 +450,46 @@ Plus private `enquiries` and `supporters`.
 
 Modules: dashboard, fixtures, results and reports, squad and staff, player photographs, news, gallery albums, cover pictures, home page banner, photo tagging, video and interviews, recognition, league badges, sponsors, donations, sponsorship pipeline, inbox, settings. Each heavy one is its own file in `src/admin/lazy/`.
 
+### Getting in at all
+
+The panel had **one** way in - an email and a password - and no way back from a
+forgotten one. There is no reset link on the screen, so the answer was the
+Supabase dashboard, which is a developer's tool and not the club's. A sign-in
+screen with one route and no recovery is a club that cannot publish a result.
+
+- **It leads with a link to the club's own address** (`POST /auth/v1/otp`,
+  `sendLink()` in `00-store.js`). The password is still there, one press behind
+  **Use a password instead**, because a route that depends on mail delivery
+  alone is one queue away from the same bind. Two routes, neither of them the
+  only one.
+- **`create_user: false`.** The club word is readable in a shipped file, so a
+  link that created the account it emails would be a way of minting Supabase
+  users from the front page. The link works for an address that is already a
+  user and for no other.
+- **The answer says nothing about who exists.** "If that address can sign in,
+  the link is on its way" is the same sentence whatever the address, so the form
+  cannot be used to find out who the club's administrators are. Only the two
+  faults the reader can act on are distinguished: too many tries, and Supabase
+  not answering.
+- **GoTrue returns the session in the URL FRAGMENT**, which is also the panel's
+  own router. So `fromLink()` reads the tokens, stores the session and
+  `history.replaceState`s them off the address before anything routes, or the
+  panel opens on a screen called `access_token=ey...` and the tokens sit in the
+  address bar for anybody looking over a shoulder.
+- **The fragment does not carry the user**, only the tokens, and the panel
+  needs the account before it can ask the database whether it is an
+  administrator. A `GET /auth/v1/user` that refuses leaves nothing stored: a
+  session saved against a user that could not be read is a panel that looks
+  signed in and cannot write.
+- **Checked by rendering the screen and recording the fetch**, not by grepping:
+  what the link posts, where it says to come back to, that a fragment signs the
+  club in, that the address bar is cleared, and the negative - a 401 from
+  `/auth/v1/user` stores nothing. Two probes: letting the link create accounts,
+  and leaving the tokens in the address bar.
+- **One setup step is the club's**, not code's: `https://www.suesangelsfc.co.uk/control.html`
+  has to be in Supabase -> Authentication -> URL Configuration, or GoTrue sends
+  the reader to the Site URL and the fragment never arrives.
+
 ### It is split, and it has to stay split
 `control.js` shipped all thirteen modules to somebody who opened one, and its budget went 16 → 18 → 24 → 30KB in a single sitting for that one reason. Now:
 
@@ -2126,7 +2166,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 5,257 checks against the generated output and the rendered panel
+npm test          # 5,267 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

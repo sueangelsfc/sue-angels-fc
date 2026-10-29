@@ -1383,9 +1383,13 @@
     menu.setAttribute('aria-expanded', String(open));
   });
 
+  /* ---- Signing in -----------------------------------------------------
+     Two routes to one form. The link is the submit, because it is the one
+     that works when somebody has forgotten everything, and the password is
+     revealed by a quiet button underneath. */
   var form = $('#cp-login');
-  if (form) form.addEventListener('submit', function (e) {
-    e.preventDefault();
+
+  function withPassword() {
     var err = $('#cp-login-error');
     var btn = $('#cp-login-btn');
     err.hidden = true;
@@ -1396,6 +1400,55 @@
       .catch(function (e2) {
         btn.removeAttribute('data-loading');
         err.textContent = e2.message;
+        err.hidden = false;
+      });
+  }
+
+  var passBtn = $('#cp-login-btn');
+  if (passBtn) passBtn.addEventListener('click', withPassword);
+
+  var usePass = $('#cp-use-pass');
+  if (usePass) usePass.addEventListener('click', function () {
+    $('#cp-pass-field').hidden = false;
+    $('#cp-link-btn').hidden = true;
+    $('#cp-login-btn').hidden = false;
+    usePass.hidden = true;
+    $('#cp-email-hint').hidden = true;
+    $('#cp-pass').focus();
+  });
+
+  if (form) form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    /* With the password revealed the form's own submit is the password, so
+       Enter in either field does what the visible button says. */
+    if (!$('#cp-pass-field').hidden) { withPassword(); return; }
+    var err = $('#cp-login-error');
+    var said = $('#cp-login-said');
+    var btn = $('#cp-link-btn');
+    var email = $('#cp-email').value.trim();
+    err.hidden = true;
+    said.hidden = true;
+    if (!email) { err.textContent = 'Put your email address in first.'; err.hidden = false; return; }
+    btn.setAttribute('data-loading', 'true');
+    CP.sendLink(email, location.origin + location.pathname)
+      .then(function () {
+        btn.removeAttribute('data-loading');
+        /* NEUTRAL ON PURPOSE. An address that is registered and one that is
+           not answer differently, and repeating that difference here would
+           turn the form into a way of asking the database who the club's
+           administrators are. It says the same thing either way, which is
+           also true either way. */
+        said.textContent = 'If that address can sign in, the link is on its way. '
+          + 'It lasts an hour and works once.';
+        said.hidden = false;
+      })
+      .catch(function (e2) {
+        btn.removeAttribute('data-loading');
+        /* The one thing worth telling apart: waiting for an email that was
+           never sent. */
+        err.textContent = e2.message === 'rate'
+          ? 'Too many links asked for just now. Give it a few minutes.'
+          : 'Could not ask for a link. Check the connection and try again.';
         err.hidden = false;
       });
   });
@@ -1472,9 +1525,25 @@
 
   /* Restore an existing session if the refresh token is still good. A valid
      session means somebody already got through the door, so it does not ask
-     for the word again. */
-  CP.refresh().then(function (s) {
-    if (!s) return;
-    return CP.loadRole().then(enterApp);
-  });
+     for the word again.
+
+     A LINK FROM AN EMAIL COMES FIRST, and it arrives in the URL's fragment -
+     the same place this panel keeps its routing - so it is read and cleared
+     before anything tries to open a panel called `access_token=ey...`. It
+     does not ask for the club word either, and for a better reason than the
+     refresh token: a signed token from Supabase is the strong half of this
+     door, and the word is the weak half. Being asked for the doorbell after
+     being handed the key is a screen nobody can explain. */
+  var linkFailed = CP.linkError();
+  if (linkFailed) {
+    openLogin();
+    var le = $('#cp-login-error');
+    if (le) { le.textContent = linkFailed + ' Ask for a new one.'; le.hidden = false; }
+  }
+  CP.fromLink()
+    .then(function (s) { return s || CP.refresh(); })
+    .then(function (s) {
+      if (!s) return;
+      return CP.loadRole().then(enterApp);
+    });
 })();

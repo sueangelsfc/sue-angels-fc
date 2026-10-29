@@ -48,6 +48,20 @@
 .cp-gate__title { font-size: var(--step-3); }
 .cp-gate__sub { color: var(--text-subtle); font-size: var(--step--1); margin-block-end: var(--space-6); }
 .cp-gate__form { display: flex; flex-direction: column; gap: var(--space-4); text-align: left; }
+/* WHAT THE SCREEN JUST DID, said where the error would be said. A link sent
+   and nothing on screen is indistinguishable from a button that did nothing,
+   and this is the one moment in the panel where the next step is to leave and
+   go and look somewhere else. */
+.cp-gate__said {
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface-inset);
+  border: 1px solid var(--border);
+  font-size: var(--step--1);
+  color: var(--text);
+  text-align: left;
+}
 .cp-gate__note {
   margin-block-start: var(--space-5);
   font-size: var(--step--2);

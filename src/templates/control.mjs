@@ -124,19 +124,33 @@ export function control() {
         <button class="btn btn--primary btn--block" type="submit">Continue</button>
       </form>
 
+      ${/* A LINK IN AN EMAIL IS THE WAY IN, and the password is the spare key
+           rather than the other way round. The club signs in a few times a
+           season, a password used that rarely is a password that gets lost,
+           and this panel had no answer at all when it was: no reset link, no
+           second route, and the only way back was the Supabase dashboard,
+           which is a different login again.
+
+           THE PASSWORD IS STILL HERE, folded away. A sign-in that depends on
+           email delivery and nothing else is one mail queue away from a club
+           that cannot publish a result, and the fallback costs two fields. */''}
       <form class="cp-gate__form" id="cp-login" novalidate hidden>
         <div class="field">
           <label class="field__label" for="cp-email">Email</label>
           <input class="input" id="cp-email" name="email" type="email" autocomplete="username"
                  inputmode="email" required>
+          <p class="field__hint" id="cp-email-hint">We send a link to this address. Press it and you are in.</p>
         </div>
-        <div class="field">
+        <div class="field" id="cp-pass-field" hidden>
           <label class="field__label" for="cp-pass">Password</label>
           <input class="input" id="cp-pass" name="password" type="password"
-                 autocomplete="current-password" required>
+                 autocomplete="current-password">
         </div>
         <p class="field__error" id="cp-login-error" role="alert" hidden></p>
-        <button class="btn btn--primary btn--block" type="submit" id="cp-login-btn">Sign in</button>
+        <p class="cp-gate__said" id="cp-login-said" role="status" hidden></p>
+        <button class="btn btn--primary btn--block" type="submit" id="cp-link-btn">Email me a sign-in link</button>
+        <button class="btn btn--primary btn--block" type="button" id="cp-login-btn" hidden>Sign in</button>
+        <button class="btn btn--quiet btn--sm btn--block" type="button" id="cp-use-pass">Use a password instead</button>
       </form>
 
       <p class="cp-gate__note">

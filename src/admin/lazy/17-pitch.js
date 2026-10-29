@@ -181,5 +181,69 @@
       + '<span class="cpp-btn__t">' + esc(words || 'Mark it on the pitch') + '</span></button>';
   }
 
-  window.CPPITCH = { open: open, button: button, reading: reading };
+  /* ---- WHERE THE SAVES WERE MADE ---------------------------------------
+     A list of points, edited in place. It lives here rather than in the match
+     editor because that chunk is the most-opened in the panel and this is a
+     field most matches never carry: the same reason the picker itself is a
+     chunk. It knows nothing about a match: it is handed an array and
+     mutates it in place.
+
+     DEFENDING, NOT ATTACKING. The coordinates go in exactly as the picker
+     gives them, with y=0 the goal the event is about, which on a save is his
+     own. That is the one convention that keeps "the six-yard box" a true
+     sentence in both bands without a flag on every reader. */
+  function saves(host, spots) {
+    /* Repainted whole rather than patched: a row carries its index into the
+       array, and removing the second of three renumbers the third. */
+    function paint() {
+      host.innerHTML = '<h4 class="mform__h">Where the saves were made</h4>'
+        + '<p class="cp-note">Optional, and never all of them: mark the ones worth'
+        + ' remembering. They show on his profile under <b>Where he saves</b>, with his'
+        + ' own goal at the top of the pitch. The count above is still what every'
+        + ' published figure is derived from.</p>'
+        + (spots.length ? '<ol class="svlist">' + spots.map(function (s, i) {
+          return '<li class="svlist__row" data-svrow="' + i + '">'
+            + button('data-sv-mark', 'Marked on the pitch')
+            + '<label class="svlist__min"><span class="sr-only">Minute of save ' + (i + 1) + '</span>'
+            + '<input class="input" type="number" min="0" max="130" data-sv-min value="'
+            + esc(s.minute == null ? '' : s.minute) + '" placeholder="Min"></label>'
+            + '<button type="button" class="btn btn--ghost btn--sm" data-sv-drop>Remove'
+            + '<span class="sr-only"> save ' + (i + 1) + '</span></button></li>';
+        }).join('') + '</ol>' : '')
+        + '<button type="button" class="btn btn--ghost btn--sm" data-sv-add>Mark a save</button>';
+    }
+    function at(el) { return Number(el.closest('[data-svrow]').getAttribute('data-svrow')); }
+    host.addEventListener('click', function (e) {
+      if (e.target.closest('[data-sv-mark]')) {
+        var row = spots[at(e.target)];
+        open({ spot: { x: row.x, y: row.y }, title: 'Where the save was made',
+          hint: 'Tap the pitch where he made it, or use the arrow keys. His own goal at the top.',
+          onPick: function (spot) { if (spot) { row.x = spot.x; row.y = spot.y; } paint(); } });
+        return;
+      }
+      if (e.target.matches('[data-sv-add]')) {
+        /* A new save opens the pitch and is only KEPT if somebody marks one.
+           An empty row added to the list first is a save the record would
+           carry with no location, which is the half-written entry every
+           reader filters out and then cannot explain. */
+        open({ spot: null, title: 'Where the save was made',
+          hint: 'Tap the pitch where he made it, or use the arrow keys. His own goal at the top.',
+          onPick: function (spot) {
+            if (!spot) return;
+            spots.push({ x: spot.x, y: spot.y, minute: '' });
+            paint();
+          } });
+        return;
+      }
+      if (e.target.matches('[data-sv-drop]')) { spots.splice(at(e.target), 1); paint(); }
+    });
+    /* The minute goes straight into the array. Left in the DOM it would be
+       thrown away by the next repaint, which is any other row being added. */
+    host.addEventListener('input', function (e) {
+      if (e.target.matches('[data-sv-min]')) spots[at(e.target)].minute = e.target.value;
+    });
+    paint();
+  }
+
+  window.CPPITCH = { open: open, button: button, reading: reading, saves: saves };
 }());

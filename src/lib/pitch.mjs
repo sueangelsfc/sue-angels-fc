@@ -163,3 +163,48 @@ export function assistSpotsFor(matches, num) {
   }
   return out;
 }
+
+/* ---- A SAVE IS THE SAME RECORD READ FROM THE OTHER END ------------------
+   A goal is marked against the goal the club is ATTACKING; a save is made
+   at the one it is DEFENDING. Both are stored with y=0 at the goal THAT
+   EVENT IS ABOUT, which is the only convention under which `zoneOf` and
+   `spotWords` keep meaning what they say: "the six-yard box" is his own
+   six-yard box on a save and theirs on a goal, and both are true sentences.
+
+   The alternative - one absolute pitch with the club always kicking one way -
+   makes a save read as "inside their box, 94 yards out", and every figure
+   derived from the zone would then need to know which kind of event it was
+   looking at. One rule in one place beats a flag on every reader.
+
+   THE COUNT IS STILL THE COUNT. `saves` on the match is what the club
+   recorded and is what every published figure is derived from; these points
+   are detail somebody added afterwards and there are usually fewer of them.
+   A page drawing four marks under a heading of eight saves has to say so,
+   which is why `coverage` is returned rather than left to the caller to
+   work out and get wrong. */
+export function savesFor(matches, num) {
+  const out = [];
+  let made = 0;
+  for (const m of matches || []) {
+    const det = m.detail || {};
+    if (det.keeper == null || Number(det.keeper) !== Number(num)) continue;
+    if (Number.isFinite(Number(det.saves))) made += Number(det.saves);
+    for (const s of det.saveSpots || []) {
+      const spot = spotOf({ spot: s });
+      if (!spot) continue;
+      out.push({
+        ...spot,
+        minute: s.minute,
+        zone: zoneOf(spot),
+        season: m.season,
+        matchId: m.id,
+        opponent: m.opponent,
+        score: m.score,
+      });
+    }
+  }
+  /* Marked can exceed made where somebody marked saves and never typed the
+     count, so the share is floored at the marks rather than reported above
+     100%, and a nought count says "marked" alone instead of "4 of 0". */
+  return { spots: out, made, coverage: made ? Math.min(1, out.length / made) : null };
+}

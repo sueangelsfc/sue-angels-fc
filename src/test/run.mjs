@@ -3009,7 +3009,20 @@ const BUDGET = {
      budget found it. `src/admin/lazy/11-matchedit.js` is budgeted as SOURCE
      below so an edit to the code still shows up on its own, exactly as
      95-home.js and 30-squad.js are. */
-  'control-matchedit.js': 18,
+  /* 18 -> 19 FOR 228 BYTES, and the number to look at is the one before it:
+     this chunk was at 18,356 of 18,432 when the saves arrived. It had 76
+     bytes free, so the next feature of any size was always going to move
+     this, and pretending otherwise would have meant shaving comments off a
+     file whose comments are the only record of why it is shaped this way.
+
+     What the 228 bought, measured: a copy of the stored save points, a
+     static line saying how many are marked, a button, and the writer. What
+     it did NOT buy is the editor - the list, the rows, the minutes and the
+     pitch are in `control-pitch.js`, which went 1,883 -> 2,515 and is fetched
+     by whoever presses the button and by nobody else. The first version put
+     the whole thing here and cost 539; moving it cut that to 228 and is the
+     same decision that made the picker a chunk in the first place. */
+  'control-matchedit.js': 19,
   /* 15 -> 16. What bought it: the length gauge under the notes box, and the
      word count beside the Build button.
 
@@ -3383,7 +3396,12 @@ for (const [f, kb] of Object.entries({
      dialog, an SVG and a drag is `control-pitch.js`, fetched on the first
      press, so the most-opened chunk in the panel carries the hook and not the
      feature. The emitted chunk moved 17.4 -> 17.9 of its 18KB. */
-  'src/admin/lazy/11-matchedit.js': 37,
+  /* 37 -> 38 for the saves, 37,756 -> 38,534 gz of source. Most of that is
+     prose rather than code: the five lines that copy the points, the eight
+     that draw the static line, the four that open the chunk and the seven
+     that write it back, with the reasoning around them. The editor is not in
+     this file at all, which is what kept the emitted figure to 228 bytes. */
+  'src/admin/lazy/11-matchedit.js': 38,
   'src/admin/lazy/95-home.js': 11,
   /* Source, so the bios riding with the chunk cannot hide code growth.
 
@@ -11087,7 +11105,7 @@ let orphanClasses = new Map();
    and would go red and be deleted as noise on the day the club marks its
    first goal from outside the box. */
 {
-  const { zoneOf, spotOf, spotWords, shotsFor, assistSpotsFor, PITCH } =
+  const { zoneOf, spotOf, spotWords, shotsFor, assistSpotsFor, savesFor, PITCH } =
     await import('../lib/pitch.mjs');
 
   /* The boundaries, from both sides. A check that only ever asks about the
@@ -11153,6 +11171,96 @@ let orphanClasses = new Map();
     `${probeDet.goals[1].zone} / ${probeDet.goals[0].zone}`);
   check('a goal with no point keeps whatever bucket it was stored with',
     probeDet.goals[2].zone === undefined, String(probeDet.goals[2].zone));
+
+  /* ---- AND THE SAME RECORD READ FROM THE DEFENDING END ------------------
+     A save is marked against the goal the keeper is DEFENDING, which is why
+     the zone words stay true in both bands with one rule. Crafted for the
+     same reason the goals above are: nobody has marked a save yet, so every
+     one of these passes over the shipped data with nothing implemented. */
+  const keptFor = [
+    { id: 'k1', season: '26/27', opponent: 'Crafted FC', score: '0-0',
+      detail: { keeper: 28, saves: 6,
+        saveSpots: [{ x: 50, y: 3, minute: 12 }, { x: 30, y: 12 }, { x: 50 }] } },
+    /* A match somebody else kept goal in. His saves are not this man's, and
+       a reader that walked every match would quietly credit them. */
+    { id: 'k2', season: '26/27', opponent: 'Other FC', score: '1-1',
+      detail: { keeper: 9, saves: 4, saveSpots: [{ x: 10, y: 10 }] } },
+    /* Marked, with no count typed. */
+    { id: 'k3', season: '26/27', opponent: 'Third FC', score: '2-0',
+      detail: { keeper: 28, saveSpots: [{ x: 60, y: 6 }] } },
+  ];
+  const kept = savesFor(keptFor, 28);
+  check('a save map holds the points his own matches marked and only those',
+    kept.spots.length === 3 && !kept.spots.some((s) => s.opponent === 'Other FC'),
+    `${kept.spots.length} points, from ${[...new Set(kept.spots.map((s) => s.opponent))].join(', ')}`);
+  check('a save point with one coordinate is not a save made anywhere',
+    !kept.spots.some((s) => s.x === 50 && s.y === undefined)
+      && kept.spots.filter((s) => s.matchId === 'k1').length === 2, 'dropped');
+  check('the saves MADE are the club’s count, not the number of marks',
+    kept.made === 6 && kept.spots.length === 3, `${kept.spots.length} of ${kept.made}`);
+  check('a keeper nobody counted saves for has coverage of nothing to report',
+    savesFor([keptFor[2]], 28).coverage === null
+      && savesFor([keptFor[2]], 28).spots.length === 1, 'null');
+  /* More marks than the count is a real record - somebody marked them and
+     never typed the number - and "150% of his saves" is not a sentence. */
+  check('coverage is a share and never passes one',
+    savesFor([{ ...keptFor[0], detail: { keeper: 28, saves: 1, saveSpots: [{ x: 50, y: 3 }, { x: 40, y: 4 }] } }], 28)
+      .coverage === 1, 'floored at one');
+  check('a save in his own six-yard box reads as the six-yard box',
+    spotWords(kept.spots[0]).startsWith('the six-yard box'), spotWords(kept.spots[0]));
+  /* The probe that matters is the keeper gate: drop it and k2's save is his. */
+  const anyKeeper = (ms, n) => ms.flatMap((m) => (m.detail.saveSpots || []).map((s) => ({ ...s, n })));
+  check('probe: a save reader that ignores who kept goal credits the wrong man',
+    anyKeeper(keptFor, 28).length > kept.spots.length, 'probe fires');
+
+  /* ---- AND IT HAS TO REACH A READER ------------------------------------
+     The rule above is a pure function and the band is a string built from
+     it, and this repository's recurring fault is exactly that gap: a correct
+     mechanism with checks that only ever ask the mechanism. The shot map one
+     band up has no rendering check for the same reason this nearly had none,
+     which is that the shipped data marks nothing - so the record is CRAFTED
+     and the real template is asked what came out. */
+  {
+    const { buildDataset: bdSv } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+    const { playerPage: ppSv } = await import(path.join(ROOT, 'src', 'templates', 'player.mjs'));
+    const liveSvRaw = JSON.parse(fs.readFileSync(
+      path.join(ROOT, 'src', 'data', 'recovered-live.json'), 'utf8'));
+    const liveSv = JSON.parse(JSON.stringify(liveSvRaw));
+    const row = liveSv.matches.find((m) => m.key === 'r20260906-three');
+    row.data.saveSpots = [{ x: 50, y: 3, minute: 24 }, { x: 28, y: 11 }];
+    const dSv = bdSv({ live: liveSv });
+    const keep = (dSv.playersCompetitive || dSv.players).find((x) => Number(x.num) === Number(row.data.keeper));
+    const svOut = keep ? ppSv(keep, dSv).body : '';
+    /* ONE LAYER PER SEASON TAB, which is the device the heat map uses and
+       the reason this is a count of views rather than a count of saves: two
+       marks on a profile with a 26/27 tab and an All seasons tab are four
+       elements, and a check expecting two would have been "fixed" by
+       deleting a layer somebody needs. */
+    const svViews = (svOut.match(/class="pf-saves__svg"/g) || []).length;
+    check('a keeper with marked saves gets the band on his profile',
+      /id="pf-saves-h"/.test(svOut) && svViews >= 1
+        && (svOut.match(/pf-sh--s/g) || []).length === 2 * svViews,
+      `${(svOut.match(/pf-sh--s/g) || []).length} marks across ${svViews} tabs`);
+    /* The count is the club's and the marks are detail, so every tab says
+       which is which, over ITS OWN total rather than one figure for the page. */
+    const cov = svOut.match(/2 of \d+ saves marked/g) || [];
+    check('every tab says how many of its saves anybody marked',
+      cov.length === svViews && svViews > 0, cov.join(' · ') || 'no coverage line');
+    check('a save in his own six-yard box is described as his own box',
+      /the six-yard box/.test(svOut), 'said');
+    /* Two probes. Take the marks away and the band must go, or it is a
+       heading over an empty pitch on 46 profiles that never kept goal. */
+    const bare = bdSv({ live: liveSvRaw });
+    const bareKeep = (bare.playersCompetitive || bare.players).find((x) => Number(x.num) === Number(row.data.keeper));
+    check('probe: no marked saves, no band',
+      bareKeep && !/id="pf-saves-h"/.test(ppSv(bareKeep, bare).body), 'absent');
+    /* And an outfielder in the same crafted dataset must not get one: the
+       band is keyed on who kept goal, not on the match being in his list. */
+    const out10 = (dSv.playersCompetitive || dSv.players)
+      .find((x) => Number(x.num) !== Number(row.data.keeper) && (x.apps || x.starts));
+    check('probe: an outfielder in the same match gets no save band',
+      out10 && !/id="pf-saves-h"/.test(ppSv(out10, dSv).body), out10 ? out10.name : 'nobody');
+  }
 
   /* The probe: take the guard out of spotOf and a goal nobody marked
      acquires a point and a zone, which is the failure this whole file is

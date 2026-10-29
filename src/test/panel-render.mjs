@@ -463,6 +463,134 @@ export async function panelChecks() {
       }
     }
 
+    /* MARKING A SAVE, RENDERED AND DRIVEN.
+       The other end of the same record. Two things are worth driving rather
+       than grepping, and neither is "does the button exist".
+
+       The first is that the LIST is not in the match editor. It is in
+       `control-pitch.js`, fetched on the press, because that editor is the
+       most-opened chunk in the panel and a field most matches never carry
+       must not be a download every match pays for. So the screen has to say
+       how many are marked with nothing downloaded at all, and the editor has
+       to arrive when somebody asks for it.
+
+       The second is that a save goes in DEFENDING. There is no way to see
+       that from the markup, so the check is the one fact that follows from
+       it: the point the picker gives is written through unchanged. */
+    {
+      const withSave = {
+        ...chosen,
+        data: { ...chosen.data, keeper: 28, saves: 5, saveSpots: [{ x: 44, y: 7, minute: 31 }] },
+      };
+      const ctx4 = PR.boot({
+        rows: { ...rows, matches: rows.matches.map((m) => (m.key === chosen.key ? withSave : m)) },
+      });
+      const r4 = await PR.openPanel(ctx4, 'results');
+      const tr4 = r4.body.querySelectorAll('tr[data-key]')
+        .filter((t) => t.getAttribute('data-key') === chosen.key)[0];
+      PR.click(tr4.querySelector('[data-edit]'));
+      await PR.settle(ctx4);
+      PR.flushMutations(ctx4.doc.body);
+      await PR.settle(ctx4);
+      const m4 = ctx4.doc.querySelector('.modal-backdrop');
+      const host = m4 && m4.querySelector('[data-saves]');
+      check('a match with marked saves says how many, before anything is fetched',
+        !!host && /1 save is marked/.test(host.textContent)
+          && !host.querySelector('[data-svrow]'),
+        host ? host.textContent.slice(0, 80) : 'no host');
+      const open4 = host && host.querySelector('[data-sv-open]');
+      check('and the button offers to edit them rather than to start',
+        !!open4 && /Edit them/.test(open4.textContent), open4 ? open4.textContent : 'no button');
+      if (open4) {
+        PR.click(open4);
+        await PR.settle(ctx4);
+        await PR.settle(ctx4);
+        const rowsSv = host.querySelectorAll('[data-svrow]');
+        check('pressing it fetches the pitch chunk, which brings the list with it',
+          rowsSv.length === 1 && !!rowsSv[0].querySelector('[data-sv-mark]'),
+          `${rowsSv.length} rows`);
+        /* The minute is a fact about the save and was reaching nobody while
+           it lived only in the DOM: any other row being added repaints the
+           list and takes it away. */
+        const min = rowsSv[0] && rowsSv[0].querySelector('[data-sv-min]');
+        check('the stored minute comes back in its own field',
+          !!min && String(min.value) === '31', min ? String(min.value) : 'no field');
+        /* Marking another one, through the picker the club actually uses. */
+        const add = host.querySelector('[data-sv-add]');
+        if (add) {
+          PR.click(add);
+          await PR.settle(ctx4);
+          const dlg4 = ctx4.doc.querySelector('.cpp');
+          check('marking another save opens the same pitch',
+            !!dlg4 && !!dlg4.querySelector('.cpp__svg'), dlg4 ? 'open' : 'nothing opened');
+          if (dlg4) {
+            const fld = dlg4.querySelector('.cpp__svg');
+            const ev4 = new PR.DomEvent('keydown', { bubbles: true });
+            ev4.key = 'ArrowUp';
+            fld.dispatchEvent(ev4);
+            await PR.settle(ctx4);
+            /* Closing must not add it a SECOND time. The picker reports a
+               point as it moves and again on the way out would be the fault
+               that put eight assists on a two-goal match: one press, one
+               row, and the close is the realistic way somebody leaves. */
+            const added = host.querySelectorAll('[data-svrow]').length;
+            const done = dlg4.querySelector('[data-cpp-close]');
+            check('the dialog has a way out that is not the escape key',
+              !!done, 'Done');
+            if (done) { PR.click(done); await PR.settle(ctx4); }
+            check('and a point marked there becomes one row, not two',
+              added === 2 && host.querySelectorAll('[data-svrow]').length === 2,
+              `${added} on the press, ${host.querySelectorAll('[data-svrow]').length} after closing`);
+          }
+        }
+        /* THE PROBE IS THE REMOVE, because the half that silently fails is
+           the index: every row carries its own place in the array and taking
+           the first of two must leave the second, not renumber it away. */
+        const drop = host.querySelector('[data-sv-drop]');
+        if (drop) {
+          PR.click(drop);
+          await PR.settle(ctx4);
+          const left = host.querySelectorAll('[data-svrow]');
+          check('removing one save leaves the others, renumbered from nought',
+            left.length >= 1 && left[0].getAttribute('data-svrow') === '0',
+            `${left.length} left, first is ${left[0] && left[0].getAttribute('data-svrow')}`);
+        }
+        /* AND THE WHOLE POINT: it reaches the record. Everything above is a
+           screen, and a screen that paints rows it never writes is this
+           panel's recurring fault with the pieces in a different order. The
+           editor holds a COPY, so nothing here is saved until Save is. */
+        const saveBtn = m4.querySelector('[data-save]');
+        if (saveBtn) {
+          PR.click(saveBtn);
+          await PR.settle(ctx4);
+          await PR.settle(ctx4);
+          const wroteSv = ctx4.store.writes
+            .filter((x) => x.op === 'upsert' && x.t === 'matches' && x.d);
+          const spots = (wroteSv[0] || {}).d ? (wroteSv[0].d.saveSpots || []) : [];
+          /* IT HAS TO BE THE POINT SOMEBODY JUST MARKED, not a count. The
+             editor writes the rest of the record back untouched, so a stored
+             `saveSpots` passes straight through a writer that has been
+             deleted - and with the first row removed and one added the counts
+             coincide at one. The check that bites is the coordinates: the
+             stored point was {x: 44, y: 7} and the row left on screen is the
+             new one, so a record still holding 44/7 is the probe going green
+             on nothing having happened. */
+          const onlySpot = spots[0] || {};
+          check('the marked saves are written onto the match record',
+            spots.length === host.querySelectorAll('[data-svrow]').length && spots.length === 1
+              && typeof onlySpot.x === 'number' && typeof onlySpot.y === 'number'
+              && !(onlySpot.x === 44 && onlySpot.y === 7),
+            `${wroteSv.length} writes, ${spots.length} points: ${JSON.stringify(spots)}`);
+          /* A minute nobody typed is left OFF rather than stored empty, the
+             rule the approach axes already follow, so a record carries only
+             what somebody actually answered. */
+          check('a save with no minute carries no minute',
+            spots.every((s) => !('minute' in s) || typeof s.minute === 'number'),
+            JSON.stringify(spots));
+        }
+      }
+    }
+
     /* THE SHOOTOUT, RENDERED. The record could not hold one and the form
        said so in a note, so the club could enter a 0-0 and nothing else of
        an afternoon decided on penalties. Driven rather than grepped: the box

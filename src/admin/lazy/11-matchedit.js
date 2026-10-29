@@ -1036,6 +1036,14 @@
 
     var carried = carryAssists(d.goals || [], oldAssists, legacySituation);
     var goals = carried.goals;
+    /* WHERE THE SAVES WERE MADE. Copied row by row, so abandoning the dialog
+       abandons the edits: the stored array is not touched until Save, and a
+       `slice()` would share the objects the picker writes into. What is kept
+       is decided by the WRITER below, not here, so there is one rule for what
+       a usable point is rather than two that can part. */
+    var svSpots = (d.saveSpots || []).map(function (s) {
+      return { x: s && s.x, y: s && s.y, minute: (s && s.minute) || '' };
+    });
     /* Assists that never matched a goal are kept so nothing is lost, but they
        are not editable here: an assist without a goal is not a thing. */
     var orphanAssists = carried.orphans;
@@ -1359,6 +1367,22 @@
                   esc(d.saves != null ? d.saves : '') + '" placeholder="How many he made">' +
                 '<p class="field__hint">Counts toward his saves per game across the season.</p></div>' +
             '</div>' +
+            /* THE COUNT IS THE RECORD AND THESE ARE DETAIL. A keeper's saves
+               per game is counted from the number above; marking where they
+               were made adds to it and never replaces it, so a match with six
+               saves and two marked is a real record rather than a broken one.
+
+               STATIC, AND IT STAYS STATIC UNTIL SOMEBODY PRESSES. The pitch,
+               the drag and the list all live in `control-pitch.js`, fetched on
+               the press, so the most-opened chunk in the panel does not carry
+               a field most matches will never use. */
+            '<div data-saves><h4 class="mform__h">Where the saves were made</h4>' +
+              '<p class="cp-note">' + (svSpots.length
+                ? svSpots.length + (svSpots.length === 1 ? ' save is' : ' saves are') + ' marked.'
+                : 'Nothing marked yet.') +
+                ' They show on his profile under <b>Where he saves</b>.</p>' +
+              '<button type="button" class="btn btn--ghost btn--sm" data-sv-open>' +
+                (svSpots.length ? 'Edit them' : 'Mark a save') + '</button></div>' +
             '<h4 class="mform__h">The opposition</h4>' +
             '<div class="grid grid--2">' +
               '<div class="field"><label class="field__label" for="m-oppgoals">Goals we conceded from penalties</label>' +
@@ -1733,6 +1757,12 @@
          version of this sat among the goal card's dropdowns on the `change`
          listener, where everything around it is a select and nothing it
          could ever be told about is a press. */
+      if (e.target.matches('[data-sv-open]')) {
+        U.chunk('pitch').then(function () {
+          window.CPPITCH.saves($('[data-saves]', back), svSpots);
+        }).catch(function (err) { toast(err.message, 'error'); });
+        return;
+      }
       var mk = e.target.closest('[data-g-mark]');
       if (mk) {
         var mg = mk.closest('[data-goal]');
@@ -2152,6 +2182,16 @@
         opponentGoals: theirGoalsNow(),
         keeper: $('#m-keeper', back).value === '' ? null : Number($('#m-keeper', back).value),
         saves: $('#m-saves', back).value === '' ? null : Number($('#m-saves', back).value),
+        /* A point needs both coordinates to be one, and a minute nobody
+           typed is left OFF rather than stored empty - the rule the approach
+           axes already follow, so a record carries only what was answered. */
+        saveSpots: svSpots.filter(function (s) {
+          return typeof s.x === 'number' && typeof s.y === 'number';
+        }).map(function (s) {
+          var o = { x: s.x, y: s.y };
+          if (String(s.minute) !== '') o.minute = Number(s.minute);
+          return o;
+        }),
         penaltiesConceded: Number($('#m-oppgoals', back).value || 0),
         opponentRedCards: new Array(Number($('#m-oppreds', back).value || 0)).fill({}),
         /* Derived from where the XI actually lined up, so it can never

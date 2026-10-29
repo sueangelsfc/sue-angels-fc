@@ -37,7 +37,7 @@ import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { BODY_PARTS, ZONES, SITUATIONS, ASSIST_TYPES } from '../lib/football.mjs';
 import { POSITION_LABEL, POSITION_XY, positionName } from '../lib/positions.mjs';
-import { pitchMarks, shotsFor, assistSpotsFor, spotWords } from '../lib/pitch.mjs';
+import { pitchMarks, shotsFor, assistSpotsFor, savesFor, spotWords } from '../lib/pitch.mjs';
 import { playerProfile, playerStats, fmtDate, isLeague, ordinal } from '../lib/stats.mjs';
 import { FRIENDLY_NOTE_SHORT } from '../lib/prose.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
@@ -1326,6 +1326,71 @@ export function playerPage(p, d) {
       </div>
     </section>` : '';
 
+  /* ---- WHERE HE SAVES ---------------------------------------------------
+     The other end of the same record, and the only band on a profile that
+     is about a man stopping something rather than doing it. Its own class
+     names rather than the shot map's: the two are the same component and
+     sharing a name is how `.pf-shots__grid` came to be declared twice for
+     two different bands.
+
+     ONLY A KEEPER GETS ONE, and only one somebody has marked. An outfielder
+     who went in goal for ten minutes has no saves on record, and a band that
+     drew for him would be a heading over an empty pitch. */
+  const saveOf = (list) => {
+    const r = savesFor(list, p.num);
+    const deep = r.spots.some((s) => s.y > 50);
+    return { saves: r.spots, made: r.made, coverage: r.coverage, sspan: deep ? 100 : 55 };
+  };
+  const saveViews = views.map((v) => ({ ...v, ...saveOf(v.list) }));
+  const saveAny = saveViews.some((v) => v.saves.length);
+  const savePitch = (v) => {
+    const H = 140;
+    const mk = pitchMarks(H);
+    const sy = (y) => ((y / v.sspan) * H).toFixed(2);
+    return `<svg class="pf-saves__svg" viewBox="0 0 100 ${H}" preserveAspectRatio="xMidYMid meet" data-season-scope="${attr(v.key)}" role="img" aria-labelledby="pf-sv-t${attr(v.key.split(' ')[0])}">
+            <title id="pf-sv-t${attr(v.key.split(' ')[0])}">Where ${esc(p.first)} made ${v.saves.length === 1 ? 'his marked save' : `the ${v.saves.length} saves somebody has marked`}, his own goal at the top. Every one is listed under the pitch.</title>
+            <rect class="pf-sh__turf" x="1" y="1" width="98" height="${H - 2}" rx="3"/>
+            <path class="pf-sh__lines" d="${mk.lines}"/><path class="pf-sh__lines" d="${mk.arcs}"/>
+            <circle class="pf-sh__lines" cx="${mk.circle.cx}" cy="${mk.circle.cy}" r="${mk.circle.r}"/>
+            ${mk.spots.map((s) => `<circle class="pf-sh__pk" cx="${s.cx}" cy="${s.cy}" r="0.9"/>`).join('')}
+            ${v.saves.map((s, i) => `<g class="pf-sh pf-sh--s" style="--n:${i}" transform="translate(${s.x.toFixed(1)} ${sy(s.y)})">
+              <circle class="pf-sh__o" r="4.6"/><path class="pf-sh__x" d="M-1.9 -1.9L1.9 1.9M1.9 -1.9L-1.9 1.9"/>
+              <title>Save${s.minute ? `, ${s.minute}′` : ''} v ${esc(s.opponent)}: ${esc(spotWords(s))}.</title>
+            </g>`).join('')}
+          </svg>`;
+  };
+  /* The coverage sentence is per tab, because a keeper can have every save
+     marked in one season and none in the next, and one figure over both
+     would be a share of a number the reader cannot see. */
+  const saveCover = (v) => {
+    if (!v.saves.length) return 'Nothing marked on the pitch for this season.';
+    if (!v.made) return `${v.saves.length} ${v.saves.length === 1 ? 'save' : 'saves'} marked on the pitch.`;
+    return `${v.saves.length} of ${v.made} ${v.made === 1 ? 'save' : 'saves'} marked on the pitch.`;
+  };
+  const LAST_SV = saveViews[saveViews.length - 1];
+  const saveBand = saveAny ? `<section class="sec pf-saves" aria-labelledby="pf-saves-h">
+      <div class="wrap">
+        ${rail(RAIL.next(), 'Where he saves', `${LAST_SV.saves.length} marked`)}
+        <h2 class="h2 rv" id="pf-saves-h">Where he <span class="volt">saves.</span></h2>
+        <div class="pf-saves__grid rv">
+          <figure class="pf-saves__fig">
+            ${saveViews.map((v) => (v.saves.length ? savePitch(v) : `<p class="pf-saves__none" data-season-scope="${attr(v.key)}">Nothing marked on the pitch for this season.</p>`)).join('\n            ')}
+            <figcaption>His own goal at the top, so the box at the top of the pitch is the one
+              ${esc(p.first)} was defending. Only saves somebody has marked in the control panel appear
+              here, and the count beside each season is the club's own.</figcaption>
+          </figure>
+          <div class="pf-saves__body">
+            ${saveViews.map((v) => `<div data-season-scope="${attr(v.key)}">
+              <p class="pf-saves__cov">${esc(saveCover(v))}</p>
+              <ol class="pf-shots__list">
+              ${v.saves.map((s) => `<li><b>Save</b><span>${esc(s.opponent)}${s.minute ? `, ${esc(String(s.minute))}′` : ''}</span><i>${esc(spotWords(s))}</i></li>`).join('')}
+              </ol>
+            </div>`).join('\n            ')}
+          </div>
+        </div>
+      </div>
+    </section>` : '';
+
   const pitchBand = heat.length ? `<section class="sec pf-pitch" aria-labelledby="pf-pitch-h">
       <div class="wrap">
         ${/* The count follows the tab: each layer's own number of positions. */''}
@@ -1646,7 +1711,7 @@ export function playerPage(p, d) {
        break is still whitespace, so nothing renders differently: no player
        page holds a <pre>, a <textarea> or white-space: pre. */
     body: numberRails(siteHeader('/squad.html') + hero + seasonBand + versusBand
-      + pitchBand + strikeBand + howBand + shotsBand + honoursBand + ctaBand).replace(/\n[ \t]+/g, '\n'),
+      + pitchBand + strikeBand + saveBand + howBand + shotsBand + honoursBand + ctaBand).replace(/\n[ \t]+/g, '\n'),
     bodyClass: 'is-home is-sub is-player',
     css: 'home.css',
     shell: 'home',

@@ -1138,7 +1138,6 @@ html.js .pf-pitch__grid.is-picking .pf-spot.is-picked{opacity: 1;}
 .pf-sh{pointer-events: none;}
 .pf-hit__t{fill: transparent;}
 .pf-hit__tip{opacity: 0; transition: opacity 0.14s ease;}
-.pf-hit__tip rect{fill: #fff; stroke: rgba(0, 0, 0, 0.18); stroke-width: 0.4;}
 .pf-hit:hover .pf-hit__tip{opacity: 1;}
 @media (prefers-reduced-motion: reduce){.pf-hit__tip{transition: none;}}
 /* EVERY MARK IN WORDS, CLOSED. Eleven marks is eleven rows of three facts,

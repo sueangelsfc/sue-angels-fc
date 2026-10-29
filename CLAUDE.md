@@ -1387,12 +1387,14 @@ drawn. Same trap as the form pips and the site header, a third time.
   and that the layer comes after every mark.
 - **It is hover-only and hides nothing**: the same sentence is in the title, in
   the list under the pitch and in the SVG's own description.
-- **The crest is 10 viewBox units**, 34px on the shipped 340px pitch, cut back
-  from 18 over two passes at the club's request: a badge wide enough to cover
-  the mark beside the one being pointed at is a tooltip arguing with the chart
-  it explains. **The hit circle is bigger than the mark and stays that way**
-  (48px against the dashed ring's 31px), so what a reader hovers is the area,
-  not a point inside it.
+- **The crest is 6 viewBox units and wears no tile**, 20px on the shipped
+  340px pitch, cut back from 18 units over three passes at the club's request:
+  a badge wide enough to cover the mark beside the one being pointed at is a
+  tooltip arguing with the chart it explains. It is the `<image>` itself now,
+  with the white plate and its hairline gone - a crest is already a shape on
+  a dark field, and a tile around it was a second object to read. **The hit
+  circle is bigger than the mark and stays that way** (48px against the dashed
+  ring's 31px), so what a reader hovers is the area, not a point inside it.
 
 #### EVERY POINT THE CLUB MARKED ON THE PITCH WAS THROWN AWAY ON SAVE
 

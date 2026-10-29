@@ -1360,7 +1360,7 @@ export function playerPage(p, d) {
       const words = kind === 'z' ? `${ZONE_WORDS[s.zone]}, the area recorded rather than a spot` : spotWords(s);
       const what = kind === 'g' || (kind === 'z' && s.kind !== 'a') ? 'Goal' : 'Assist';
       return `<g class="pf-hit" transform="translate(${s.x.toFixed(1)} ${sy(s.y)})">
-              <circle class="pf-hit__t" r="7"/>${src ? `<g class="pf-hit__tip" aria-hidden="true"><rect x="-9" y="-25.5" width="18" height="18" rx="4.5"/><image href="${attr(src)}" x="-6.5" y="-23" width="13" height="13" preserveAspectRatio="xMidYMid meet"/></g>` : ''}
+              <circle class="pf-hit__t" r="7"/>${src ? `<g class="pf-hit__tip" aria-hidden="true"><rect x="-6.5" y="-19" width="13" height="13" rx="3.25"/><image href="${attr(src)}" x="-4.75" y="-17.25" width="9.5" height="9.5" preserveAspectRatio="xMidYMid meet"/></g>` : ''}
               <title>${esc(what)}${s.minute ? `, ${esc(String(s.minute))}′` : ''} v ${esc(s.opponent)}: ${esc(words)}.</title>
             </g>`;
     };

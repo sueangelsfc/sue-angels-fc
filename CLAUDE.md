@@ -1387,6 +1387,22 @@ drawn. Same trap as the form pips and the site header, a third time.
   and that the layer comes after every mark.
 - **It is hover-only and hides nothing**: the same sentence is in the title, in
   the list under the pitch and in the SVG's own description.
+- **The crest is 13 viewBox units**, 44px on the shipped 340px pitch, cut back
+  from 18 at the club's request: a badge wide enough to cover the mark beside
+  the one being pointed at is a tooltip arguing with the chart it explains.
+
+#### The control panel's pitch is twice the size
+
+A goal is marked by tapping a point, so the accuracy of the record is bounded
+by the size of the thing being tapped: 260px of pitch is about two and a half
+millimetres per yard. It is 520px now, and **nothing in `17-pitch.js` changed**
+- the reader divides by the measured rectangle (`fromView`), so the picker has
+always been resolution-independent and the size is a CSS fact alone. The cap is
+`min(520px, 100%, 54vh)` because the pitch is 100 by 140: capped on width
+alone, a laptop would get 728px of pitch inside a 900px window and the club
+would be scrolling to see the goal it was aiming at. `.cpp__panel` went 380 to
+640 to hold it, and `vector-effect: non-scaling-stroke` keeps the markings
+hairline at either size.
 
 #### Every mark in words, collapsed
 

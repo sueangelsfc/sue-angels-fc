@@ -70,13 +70,13 @@
   padding: var(--space-3); background: rgba(0, 0, 0, 0.62); overflow: auto;}
 .cpp__panel{background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-lg); padding: var(--space-4);
-  width: min(380px, 100%); display: grid; gap: var(--space-3);}
+  width: min(640px, 100%); display: grid; gap: var(--space-3);}
 .cpp__head{display: flex; align-items: center; justify-content: space-between;
   gap: var(--space-3);}
 .cpp__h{margin: 0; font-size: var(--step-1); font-weight: var(--weight-semi);
   color: var(--text);}
 .cpp__field{display: grid; justify-items: center;}
-.cpp__svg{width: min(260px, 100%); height: auto; display: block;
+.cpp__svg{width: min(520px, 100%, 54vh); height: auto; display: block;
   border-radius: var(--radius-sm); cursor: crosshair; touch-action: none;}
 .cpp__turf{fill: var(--surface-inset);}
 .cpp__lines{fill: none; stroke: var(--border); stroke-width: 0.7;

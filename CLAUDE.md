@@ -1464,6 +1464,27 @@ trap, three hundred lines above the writer that fell into it.
   zone: where the ball was struck from is a fact about the side that put it
   in. Its assist carries one, because the man who forced it played here.
 
+#### AND THE FIRST MARKS ARE ON THE SITE
+
+The club marked four points the day saving was fixed - two goals and two
+assists, all in the Three Little Birds match - and they are drawn as solid
+marks at those coordinates, beside the dashed areas of the goals nobody has
+marked. That is the whole vocabulary working at once on one pitch.
+
+**The check reads the stored record, never `spotOf`.** Its first version asked
+that function for the points and then asked whether they were drawn, and the
+probe is what said what that is worth: break `spotOf`, the page loses every
+mark and the check loses every expectation, nought equals nought and it
+passes while the band is empty. **A check that reads its subject through the
+thing it is checking can only ever agree with it** - which is, exactly, how
+the save bug lived for months behind a wall of green.
+
+**The area block's floor is a precondition and it falls as the club works.**
+It was 26 goals when the band was written and 19 the day those first two were
+marked, so the number is a floor rather than a tally. At nought the right
+answer is to RETIRE that block - the archive has been marked - and not to
+lower the figure again.
+
 #### The control panel's pitch is twice the size
 
 A goal is marked by tapping a point, so the accuracy of the record is bounded
@@ -2166,7 +2187,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 5,267 checks against the generated output and the rendered panel
+npm test          # 5,268 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

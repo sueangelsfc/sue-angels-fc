@@ -10807,13 +10807,21 @@ console.log(`\n${'='.repeat(66)}`);
        the penalty spot drew at twice the depth of the penalty spot beside
        it. Nothing caught it, because the band had never appeared.
        ====================================================================== */
-    const { ZONE_AREA, ZONE_WORDS, zoneGoalsFor, zoneAssistsFor } = await import(path.join(ROOT, 'src', 'lib', 'pitch.mjs'));
+    const { ZONE_AREA, ZONE_WORDS, zoneGoalsFor, zoneAssistsFor, spotOf } = await import(path.join(ROOT, 'src', 'lib', 'pitch.mjs'));
     const PH = 140;
     const zoneOfWords = (t) => Object.keys(ZONE_WORDS).find((k) => t.includes(ZONE_WORDS[k]));
     const zoned = pool2.map((q) => ({ q, list: zoneGoalsFor(counted, q.num) }))
       .filter((x) => x.list.length);
+    /* A PRECONDITION, AND IT FALLS AS THE CLUB WORKS. Everything under it
+       asks a question of the AREA fallback, so it has to be sure there are
+       areas left to ask about - but every goal somebody marks on the pitch
+       in the panel leaves this set, which is the whole point of the picker.
+       It stood at 26 when the band was written and 19 the day the club
+       marked its first two. So the floor is a floor, not a tally: when it
+       reaches nought the right answer is to RETIRE this block, because the
+       archive has been marked, and not to lower the number again. */
     check('the archive holds goals whose area the club recorded and nobody has marked',
-      zoned.length >= 5 && zoned.reduce((t, x) => t + x.list.length, 0) >= 20,
+      zoned.length >= 3 && zoned.reduce((t, x) => t + x.list.length, 0) >= 10,
       `${zoned.reduce((t, x) => t + x.list.length, 0)} across ${zoned.length} players`);
 
     const noMap = [];
@@ -10898,6 +10906,73 @@ console.log(`\n${'='.repeat(66)}`);
       painted.length === 0, painted.slice(0, 4).join(', '));
     check('the list of every mark in words is collapsed, and says how many it holds',
       shut.length === 0, shut.slice(0, 4).join(' | '));
+
+    /* ======================================================================
+       AND A POINT SOMEBODY MARKED IS DRAWN WHERE HE MARKED IT
+
+       The band above is the fallback, and for months it was the ONLY thing
+       on this pitch, because the panel's writer rebuilt each goal from a
+       named list of fields and never named `spot` - so every point the club
+       tapped was thrown away on save and the archive held nought of them.
+       Every check in this file passed throughout, because every one of them
+       asked about the AREA: a page drawing nothing but dashed marks is
+       exactly what a working fallback looks like.
+
+       So this asks the other half, off the club's own record: a goal or an
+       assist carrying a point must reach his pitch as a SOLID mark at that
+       point, and the count must match. `mark()` writes x untransformed and
+       crops y to the frame, so x is what can be compared against the record
+       without copying the cropping rule in here.
+
+       It is live data rather than crafted, and that is the argument for it:
+       the crafted assist check was written the day the field was added and
+       could not have caught a writer that dropped it. This one goes red the
+       moment the chain breaks anywhere between the panel and the page.
+       ====================================================================== */
+    /* THE RECORD IS READ HERE, NOT THROUGH `spotOf`. The first version asked
+       that function for the points and then asked whether they were drawn,
+       and the probe said what that is worth: break `spotOf` and the page
+       loses every mark AND this check loses every expectation, so nought
+       equals nought and it passes. A check that reads its subject through
+       the thing it is checking can only ever agree with it. */
+    const pointOf = (o) => {
+      const sp = o && o.spot;
+      const x = Number(sp && sp.x); const y = Number(sp && sp.y);
+      return Number.isFinite(x) && Number.isFinite(y) ? { x, y } : null;
+    };
+    const marked = [];
+    for (const q of pool2) {
+      const pts = { g: [], a: [] };
+      for (const m of counted) {
+        for (const g of (m.detail || {}).goals || []) {
+          const sp = pointOf(g);
+          if (sp && !g.og && Number(g.num) === Number(q.num)) pts.g.push(sp);
+          const asp = g.assist ? pointOf(g.assist) : null;
+          if (asp && Number(g.assist.num) === Number(q.num)) pts.a.push(asp);
+        }
+      }
+      if (!pts.g.length && !pts.a.length) continue;
+      const f = path.join(ROOT, 'players', `${q.slug}.html`);
+      if (!fs.existsSync(f)) { marked.push(`${q.name}: no page`); continue; }
+      const sec = (fs.readFileSync(f, 'utf8').match(/<section class="sec pf-strike"[\s\S]*?<\/section>/) || [])[0];
+      if (!sec) { marked.push(`${q.name}: no pitch, ${pts.g.length + pts.a.length} marked`); continue; }
+      const svgs = [...sec.matchAll(/<svg class="pf-strike__svg"[\s\S]*?<\/svg>/g)].map((m) => m[0]);
+      const career = svgs[svgs.length - 1] || '';
+      for (const kind of ['g', 'a']) {
+        const drawn = [...career.matchAll(
+          new RegExp(`<g class="pf-sh pf-sh--${kind}"[^>]*transform="translate\\(([\\d.]+) `, 'g'),
+        )].map((m) => m[1]);
+        if (drawn.length !== pts[kind].length) {
+          marked.push(`${q.name}: ${drawn.length} ${kind} drawn, ${pts[kind].length} marked`);
+          continue;
+        }
+        for (const sp of pts[kind]) {
+          if (!drawn.includes(sp.x.toFixed(1))) marked.push(`${q.name}: ${kind} at ${sp.x} not drawn`);
+        }
+      }
+    }
+    check('a point the club marked on the pitch is drawn on his profile, at that point',
+      marked.length === 0 && zoned.length > 0, marked.slice(0, 4).join(' | ') || 'nothing marked');
 
     /* THE PRECISION IS SAID OUT LOUD, twice: on the mark and in the list.
        A dash is not a sentence. */

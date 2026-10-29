@@ -6160,24 +6160,42 @@
         "goals": [
           {
             "num": 21,
+            "spot": {
+              "x": 35.5,
+              "y": 13.4
+            },
             "zone": "box",
             "assist": {
               "num": 9,
-              "type": "pass"
+              "spot": {
+                "x": 16.9,
+                "y": 7.7
+              },
+              "type": "pass",
+              "zone": null
             },
-            "minute": null,
+            "minute": 19,
             "penalty": false,
             "bodyPart": "left",
             "situation": "open"
           },
           {
             "num": 9,
+            "spot": {
+              "x": 28.3,
+              "y": 34.7
+            },
             "zone": "outside",
             "assist": {
               "num": 3,
-              "type": "headpass"
+              "spot": {
+                "x": 16.8,
+                "y": 36.9
+              },
+              "type": "headpass",
+              "zone": null
             },
-            "minute": null,
+            "minute": 26,
             "penalty": false,
             "bodyPart": "right",
             "situation": "open"
@@ -6191,18 +6209,18 @@
           {
             "num": 9,
             "type": "pass",
-            "minute": null,
+            "minute": 19,
             "forGoalBy": 21
           },
           {
             "num": 3,
             "type": "headpass",
-            "minute": null,
+            "minute": 26,
             "forGoalBy": 9
           }
         ],
         "captain": 25,
-        "savedAt": "2026-10-29T02:16:09.910Z",
+        "savedAt": "2026-10-29T10:24:18.355Z",
         "approach": {},
         "redCards": [],
         "starters": [
@@ -6382,7 +6400,7 @@
         "opponentRedCards": [],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-10-29T02:16:09.91+00:00"
+      "updated_at": "2026-10-29T10:24:18.355+00:00"
     },
     {
       "key": "r20260913-haydons",

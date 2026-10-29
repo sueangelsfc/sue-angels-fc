@@ -1513,6 +1513,36 @@ marked, so the number is a floor rather than a tally. At nought the right
 answer is to RETIRE that block - the archive has been marked - and not to
 lower the figure again.
 
+#### One control, not three buttons
+
+The switch shipped as three separate pills in a row under the heading, with
+**SHOW** in tracked-out capitals beside them, and the club's word for it was
+that it looked bad. Four faults, every one of them a decision rather than a
+defect:
+
+- **It sat beside the heading instead of over the thing it changes.** It is one
+  track of three segments now, the width of the pitch and directly above it, so
+  the question is asked against its own answer. A segment carries no border of
+  its own - the track holds the only line on screen, so the chosen answer is the
+  only filled shape in it.
+- **The ring goes round the TRACK, not round a segment.** Chrome shows a radio's
+  focus ring after a mouse click as well as after a key press, so a ring on the
+  segment drew a heavy second outline inside the orange fill of the answer just
+  pressed. Round the whole control it reads as the control being focused, and
+  the filled segment goes on saying which answer is current. Still
+  `:focus-visible`, so a mouse leaves nothing behind.
+- **The group's name is said, not shown.** Capitals tracked out beside three
+  sentence-case words is two typographic voices arguing over a control two
+  inches wide, and the segments already say what they do. The span is clipped
+  rather than deleted, so a screen reader still has it.
+- **Three equal segments cannot wrap.** The loose pills broke onto a second line
+  on a phone; this is 272px of track and three 87px segments on one line at 320.
+
+**Only the label div moved.** The three inputs stay where they were, as
+siblings at the top of the grid, because every rule in the band reaches its
+target with `:checked ~` - and the rules that hide the other kind, which the
+suite reads off the minified sheet, are untouched.
+
 #### The control panel's pitch is twice the size
 
 A goal is marked by tapping a point, so the accuracy of the record is bounded

@@ -1390,8 +1390,15 @@ export function playerPage(p, d) {
   const strikeBoth = strikeViews.some((v) => v.shown.goals) && strikeViews.some((v) => v.shown.made);
   const strikePick = strikeBoth ? `<input class="pf-k pf-k--all" type="radio" name="pf-k" id="pf-k-all" checked>
           <input class="pf-k pf-k--g" type="radio" name="pf-k" id="pf-k-g">
-          <input class="pf-k pf-k--a" type="radio" name="pf-k" id="pf-k-a">
-          <div class="pf-pick"><span class="pf-pick__l" id="pf-pick-l">Show</span><label for="pf-k-all">Both</label><label for="pf-k-g">Goals</label><label for="pf-k-a">Assists</label></div>` : '';
+          <input class="pf-k pf-k--a" type="radio" name="pf-k" id="pf-k-a">` : '';
+  /* THE CONTROL SITS OVER THE PITCH, NOT BESIDE THE HEADING. Three loose pills
+     under an h2 read as three buttons that happen to be next to each other;
+     one track with three segments, the width of the pitch and directly above
+     it, reads as one question about the thing underneath. The inputs stay
+     where they are, as siblings before the figure, because every rule in the
+     band reaches them with `:checked ~`. */
+  const strikeSeg = strikeBoth ? `<div class="pf-pick"><span class="pf-pick__l">Show</span><label for="pf-k-all">Both</label><label for="pf-k-g">Goals</label><label for="pf-k-a">Assists</label></div>
+            ` : '';
   const strikeBand = strikeAny ? `<section class="sec pf-strike" aria-labelledby="pf-strike-h">
       <div class="wrap">
         ${/* A FIGURE IN THE RAIL IS A CAREER FIGURE ON EVERY TAB. The rail sits
@@ -1404,7 +1411,7 @@ export function playerPage(p, d) {
         <div class="pf-strike__grid rv">
           ${strikePick}
           <figure class="pf-strike__fig">
-            ${strikeViews.map((v) => (v.any ? strikePitch(v) : `<p class="pf-strike__none" data-season-scope="${attr(v.key)}">Nothing marked on the pitch for this season.</p>`)).join('\n            ')}
+            ${strikeSeg}${strikeViews.map((v) => (v.any ? strikePitch(v) : `<p class="pf-strike__none" data-season-scope="${attr(v.key)}">Nothing marked on the pitch for this season.</p>`)).join('\n            ')}
             <figcaption>Attacking upward. Filled is a goal, hollow is where he played an assist from. A dashed mark sits anywhere in the area the club recorded rather than on a spot: mark it on the pitch in the control panel and it moves to where it happened. Hover a mark for the club it was against.</figcaption>
           </figure>
           <div class="pf-strike__body">

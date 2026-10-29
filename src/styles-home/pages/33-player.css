@@ -1113,29 +1113,38 @@ html.js .pf-pitch__grid.is-picking .pf-spot.is-picked{opacity: 1;}
    and off every screen reader. */
 .pf-k{position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
   overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;}
-.pf-pick{grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center;
-  gap: 8px; margin: -4px 0 -8px;}
-.pf-pick__l{font-family: var(--ui); font-size: 10px; font-weight: 700;
-  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);
-  margin-right: 2px;}
-.pf-pick label{font-family: var(--ui); font-size: 11.5px; font-weight: 700;
-  letter-spacing: 0.04em; color: var(--ink-2); cursor: pointer;
-  padding: 6px 13px; border-radius: 999px;
-  border: 1px solid var(--line-d); background: rgba(var(--lift), 0.03);}
-.pf-pick label:hover{color: var(--fg); border-color: rgba(255, 255, 255, 0.3);}
-.pf-k--all:checked ~ .pf-pick label[for="pf-k-all"],
-.pf-k--g:checked ~ .pf-pick label[for="pf-k-g"],
-.pf-k--a:checked ~ .pf-pick label[for="pf-k-a"]{background: var(--volt);
-  border-color: var(--volt); color: var(--text-on-brand);}
-/* THE RING GOES ON THE LABEL, because the input it belongs to is a clipped
-   pixel in the corner. Without this a keyboard moves through three controls
-   with nothing on screen to say which one it is on. */
-.pf-k:focus-visible ~ .pf-pick label[for="pf-k-all"]{outline: 2px solid var(--volt); outline-offset: 3px;}
-.pf-k--all:focus-visible ~ .pf-pick label[for="pf-k-all"],
-.pf-k--g:focus-visible ~ .pf-pick label[for="pf-k-g"],
-.pf-k--a:focus-visible ~ .pf-pick label[for="pf-k-a"]{outline: 2px solid var(--volt); outline-offset: 3px;}
-.pf-k--g:focus-visible ~ .pf-pick label[for="pf-k-all"],
-.pf-k--a:focus-visible ~ .pf-pick label[for="pf-k-all"]{outline: 0;}
+/* ONE TRACK, THREE SEGMENTS, THE WIDTH OF THE PITCH IT FILTERS. Three
+   separate pills in a row under the heading read as three buttons rather than
+   as one question with one answer, and they wrapped onto a second line on a
+   phone. A segment carries no border of its own: the track holds the only
+   line on screen, so the selected answer is the only filled shape in it. */
+.pf-pick{width: 100%; max-width: 340px; display: flex; gap: 2px; padding: 3px;
+  border: 1px solid var(--line-d); border-radius: var(--pillr);
+  background: rgba(var(--lift), 0.04);}
+/* THE GROUP'S NAME IS SAID, NOT SHOWN. "SHOW" set in tracked-out capitals
+   beside three sentence-case words is two typographic voices arguing over a
+   control two inches wide, and the three segments already say what they do. */
+.pf-pick__l{position: absolute; width: 1px; height: 1px; margin: -1px;
+  padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap;}
+.pf-pick label{flex: 1; text-align: center; font-family: var(--ui);
+  font-size: 12px; font-weight: 600; letter-spacing: 0.01em; line-height: 1;
+  color: var(--ink-2); cursor: pointer; padding: 9px 6px;
+  border-radius: var(--pillr);
+  transition: background 0.2s var(--ease-out-expo), color 0.2s linear;}
+.pf-pick label:hover{color: var(--fg); background: rgba(var(--lift), 0.07);}
+.pf-k--all:checked ~ .pf-strike__fig label[for="pf-k-all"],
+.pf-k--g:checked ~ .pf-strike__fig label[for="pf-k-g"],
+.pf-k--a:checked ~ .pf-strike__fig label[for="pf-k-a"]{background: var(--volt);
+  color: var(--text-on-brand);}
+/* THE RING GOES ROUND THE TRACK, not round a segment. The input it belongs to
+   is a clipped pixel in the corner, so without a ring somewhere a keyboard
+   moves through three controls with nothing on screen to say so - and Chrome
+   shows a radio's focus ring after a mouse click too, which on a segment drew
+   a heavy second outline inside the orange fill of the answer just chosen.
+   Round the whole control it reads as the control being focused, and the
+   filled segment goes on saying which answer is current. */
+.pf-k:focus-visible ~ .pf-strike__fig .pf-pick{outline: 2px solid var(--volt);
+  outline-offset: 3px;}
 /* WHAT EACH ANSWER HIDES - the mark, the circle that carries its crest, and
    its row in the list, so the pitch and the words can never disagree. */
 .pf-k--g:checked ~ .pf-strike__fig .pf-sh--a,

@@ -76,6 +76,29 @@ console.log(`matches with detail records: ${d.matches.filter((m) => m.detail).le
   if (sc.length && res.length) {
     const over = compareScorers(sc, res);
     console.log(`\n=== ${l8.division || 'NEW DIVISION'} SCORERS vs RESULTS (as of ${l8.scorersAsOf || 'undated'}) ===`);
+    /* TWO READINGS OF ONE DIVISION HAVE TO BE OF THE SAME DAY, and when they
+       are not this comparison says the wrong thing with total confidence. A
+       scorers page read after the results it is checked against credits goals
+       from matches nobody has transcribed, so it fails as "scorers total 21,
+       results say 7" - which reads as a mistyped transcription and is
+       actually the results being three weekends behind. Measured on the real
+       files: a 28 October stat leaders page against results stopping on the
+       11th fails SEVEN of the eight clubs. The deploy runs this, so that is
+       the club unable to publish anything, over a transcription that was
+       correct.
+
+       The latest result is the honest comparison rather than a `resultsAsOf`
+       field: a date somebody has to remember to update is a date that goes
+       stale, and the results carry their own. */
+    const lastRes = (res || []).map((r) => Date.parse(`${r.date} 12:00`))
+      .filter((t) => !Number.isNaN(t)).sort((a, b) => b - a)[0];
+    const scAt = l8.scorersAsOf ? Date.parse(`${l8.scorersAsOf} 12:00`) : NaN;
+    if (!Number.isNaN(scAt) && lastRes && scAt > lastRes) {
+      const days = Math.round((scAt - lastRes) / 86400000);
+      console.log(`NOTE  the scorers were read ${days} day(s) after the last`
+        + ` transcribed result, so any failure below may be the RESULTS being`
+        + ` behind rather than the scorers being wrong. Re-read both of a day.`);
+    }
     if (over.length) {
       fails += over.length;
       over.forEach((g) => console.log(`FAIL  ${g}`));

@@ -38,7 +38,9 @@ import { CLUB } from '../lib/club.mjs';
 import { BODY_PARTS, ZONES, SITUATIONS, ASSIST_TYPES } from '../lib/football.mjs';
 import { POSITION_LABEL, POSITION_XY, positionName } from '../lib/positions.mjs';
 import { pitchMarks, shotsFor, assistSpotsFor, savesFor, spotWords } from '../lib/pitch.mjs';
-import { playerProfile, playerStats, fmtDate, isLeague, ordinal } from '../lib/stats.mjs';
+import {
+  playerProfile, playerStats, playerOpponents, fmtDate, isLeague, ordinal,
+} from '../lib/stats.mjs';
 import { FRIENDLY_NOTE_SHORT } from '../lib/prose.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
 import { photoCredit } from './gallery.mjs';
@@ -1609,6 +1611,79 @@ export function playerPage(p, d) {
      data-album hands the grid to the viewer in sa.js, so a tap opens the
      photograph in place with the rest of them rather than leaving the site
      for a bare image URL. */
+  /* ========================================================================
+     WHO HE DOES IT AGAINST
+
+     Every goal he has scored and every assist he has made, by the club it
+     came against, ranked by the pair. The one cut of a career with COMPLETE
+     coverage that the site never published: a minute is on 25 goals of 161
+     and a body part on 23, so the band above has to quote a fraction of the
+     evidence, and which club is on every single one.
+
+     RANKED BARS, not a ring and not a column per match. The job is magnitude
+     against identity with long names and up to seventeen of them, which is a
+     horizontal bar list; a column chart per match was deliberately taken off
+     this page in favour of the pip strip and is not coming back by a side
+     door.
+
+     TWO MEASURES, ONE HUE. Goals solid, assists the same mark hollow, which
+     is the vocabulary the shot maps and the panel's own pitch picker already
+     use - orange is the site's only accent and win, draw and loss express
+     difference through weight and structure here as everywhere else. The key
+     is drawn once and the order is said once in a sentence, rather than
+     repeating "scored" and "made" down eight rows.
+
+     EVERY FIGURE IS PRINTED, so the bar is decoration over readable values
+     and carries no information of its own: no tooltip gates a number, and the
+     band needs no screen-reader table beside it because the list already is
+     one. The crest takes `alt=""` because the name is printed next to it,
+     which is this site's rule for a crest that is not the only label there
+     is. */
+  /* ================= WHO HE DOES IT AGAINST =================
+     Every goal and every assist the club records names an opponent, and no
+     profile had ever said so. PER SEASON, like every other band here: the
+     first draft was career-only behind data-season-scope="all", which the
+     season script hides on every tab but the last - and the page opens on
+     the latest season, so it shipped invisible on the only screen anybody
+     arrives at.
+
+     One list per tab, the device the heat map and the shot map already use,
+     and the cap is six clubs with a sentence accounting for the rest,
+     because the heaviest profile has two kilobytes left of its ceiling. */
+  const VS_SHOW = 5;
+  const vsViews = views.map((v) => {
+    const rows = playerOpponents(p, v.list);
+    return {
+      ...v,
+      rows,
+      top: rows.slice(0, VS_SHOW),
+      rest: rows.slice(VS_SHOW),
+      max: Math.max(1, ...rows.map((r) => r.total)),
+    };
+  });
+  const vsBand = vsViews.some((v) => v.rows.length) ? `<section class="sec pf-opp" aria-labelledby="pf-opp-h">
+      <div class="wrap">
+        ${rail(RAIL.next(), 'Who he does it against', `${vsViews[vsViews.length - 1].rows.length} clubs`)}
+        <h2 class="h2 rv" id="pf-opp-h">Who he does it <span class="volt">against.</span></h2>
+        <p class="pf-opp__key rv">
+          <span class="pf-opp__sw" aria-hidden="true"></span>Scored
+          <span class="pf-opp__sw pf-opp__sw--a" aria-hidden="true"></span>Made
+          <i>Goals scored, then assists made.</i>
+        </p>
+        ${vsViews.map((v) => (v.rows.length ? `<ol class="pf-opp__list rv" data-season-scope="${attr(v.key)}">
+          ${v.top.map((r) => `<li class="pf-opp__row" style="--g:${Math.round((r.goals / v.max) * 100)}%;--a:${Math.round((r.assists / v.max) * 100)}%">
+            ${oppBadge(r.club, d.badges, 26, 26, 'pf-opp__crest', true)}<span class="pf-opp__name">${esc(r.club)}</span>
+            <span class="pf-opp__bar" aria-hidden="true"><i></i><b></b></span>
+            <span class="pf-opp__v">${r.goals}<i>+</i>${r.assists}</span>
+          </li>`).join('')}
+        </ol>${v.rest.length ? `<p class="pf-opp__more rv" data-season-scope="${attr(v.key)}">${v.rest.length}
+          ${v.rest.length === 1 ? 'more club' : 'more clubs'}, ${v.rest.reduce((t, r) => t + r.goals, 0)}
+          ${v.rest.reduce((t, r) => t + r.goals, 0) === 1 ? 'goal' : 'goals'} and ${v.rest.reduce((t, r) => t + r.assists, 0)}
+          ${v.rest.reduce((t, r) => t + r.assists, 0) === 1 ? 'assist' : 'assists'} between them.</p>` : ''}`
+    : `<p class="pf-opp__none rv" data-season-scope="${attr(v.key)}">Nothing scored or made ${esc(v.where)}.</p>`)).join('\n        ')}
+      </div>
+    </section>` : '';
+
   const shots = (d.playerPhotos || {})[p.slug] || [];
   const SHOW = 18;
   const shotsBand = shots.length ? `<section class="sec pf-shots" aria-labelledby="pf-sh-h">
@@ -1730,7 +1805,7 @@ export function playerPage(p, d) {
        break is still whitespace, so nothing renders differently: no player
        page holds a <pre>, a <textarea> or white-space: pre. */
     body: numberRails(siteHeader('/squad.html') + hero + seasonBand + versusBand
-      + pitchBand + strikeBand + saveBand + howBand + shotsBand + honoursBand + ctaBand).replace(/\n[ \t]+/g, '\n'),
+      + pitchBand + strikeBand + saveBand + howBand + vsBand + shotsBand + honoursBand + ctaBand).replace(/\n[ \t]+/g, '\n'),
     bodyClass: 'is-home is-sub is-player',
     css: 'home.css',
     shell: 'home',

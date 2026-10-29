@@ -1160,3 +1160,75 @@ html.js .pf-pitch__grid.is-picking .pf-spot.is-picked{opacity: 1;}
   color: var(--ink-2);}
 .pf-sh--s .pf-sh__o{fill: none; stroke: var(--volt); stroke-width: 1;}
 .pf-sh__x{stroke: var(--volt); stroke-width: 1.4; stroke-linecap: round; fill: none;}
+
+/* WHO HE DOES IT AGAINST. A ranked bar per club: magnitude against identity,
+   with names too long and too many for a ring. The crest carries the
+   identity, the bar the size and the figures the exact pair, so nothing here
+   is encoded by colour alone and no number is behind a pointer.
+
+   GOALS SOLID, ASSISTS THE SAME MARK HOLLOW, because orange is the only
+   accent on this site and a second hue is not available to tell two measures
+   apart. It is the vocabulary the shot maps and the panel's pitch picker
+   already use, so a reader who has seen one has seen all three. */
+.pf-opp__key {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: 6px 10px; margin: 0 0 var(--sp-4, 1rem);
+  font-size: 0.82rem; color: var(--ink-3);
+}
+.pf-opp__key i { font-style: normal; color: var(--ink-3); opacity: 0.75; }
+.pf-opp__sw {
+  width: 16px; height: 10px; border-radius: 99px;
+  background: var(--volt, #FF7034);
+}
+/* The hollow mark. An inset ring rather than a border, so the swatch and the
+   bar segment are the same 10px tall whichever they are: a border would add
+   its width outside the box and the two would not line up. */
+.pf-opp__sw--a { background: rgb(255 255 255 / 0.06); box-shadow: inset 0 0 0 1.5px var(--volt, #FF7034); }
+.pf-opp__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; counter-reset: none; }
+.pf-opp__row {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 8.4rem) minmax(0, 1fr) auto;
+  gap: 0 10px; align-items: center;
+}
+.pf-opp__crest { width: 26px; height: 26px; object-fit: contain; flex: none; }
+.pf-opp__name {
+  font-size: 0.86rem; color: var(--fg-1, #fff);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* The track is a hairline surface, not a gridline: solid, one shade off the
+   page, and never dashed. The two segments sit in a flex row with a 2px gap
+   of the surface between them rather than a rule drawn round either. */
+.pf-opp__bar {
+  display: flex; align-items: stretch; gap: 2px;
+  height: 10px; border-radius: 99px;
+  background: rgb(255 255 255 / 0.07);
+  min-width: 0;
+}
+.pf-opp__bar i, .pf-opp__bar b {
+  display: block; border-radius: 99px; min-width: 0;
+}
+/* Anchored to the baseline at the left and rounded at the data end, which is
+   what the outer radius above already gives each segment. A width of nought
+   draws nothing at all rather than a 1px crumb. */
+.pf-opp__bar i { width: var(--g, 0%); background: var(--volt, #FF7034); }
+.pf-opp__bar b { width: var(--a, 0%); background: rgb(255 255 255 / 0.06); box-shadow: inset 0 0 0 1.5px var(--volt, #FF7034); }
+.pf-opp__v {
+  font-family: var(--display, inherit);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700; font-size: 0.92rem;
+  color: var(--fg-1, #fff); white-space: nowrap;
+}
+.pf-opp__v i { font-style: normal; font-weight: 400; color: var(--ink-3); margin: 0 1px; }
+.pf-opp__more { margin: var(--sp-4, 1rem) 0 0; font-size: 0.82rem; color: var(--ink-3); }
+
+/* A phone has no room for a fixed name column beside a bar, and an 11rem
+   track squeezed to nothing is a chart that cannot be read. The name and the
+   figures share the first line and the bar takes the second. */
+@media (max-width: 560px) {
+  .pf-opp__row { grid-template-columns: 26px minmax(0, 1fr) auto; row-gap: 6px; }
+  .pf-opp__bar { grid-column: 1 / -1; order: 3; }
+}
+
+/* a season he contributed nothing in says so, rather than the band vanishing
+   under one tab and reappearing under the next */
+.pf-opp__none { margin: 14px 0 0; color: var(--ink-3); font-size: 0.86rem; }

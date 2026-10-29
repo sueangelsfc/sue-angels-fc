@@ -1609,6 +1609,56 @@ export function opponentRecords(matches) {
     || String(a.opponent).localeCompare(String(b.opponent)));
 }
 
+/* WHO HE DOES IT AGAINST. Every goal he has scored and every assist he has
+   made, grouped by the club it came against and ranked by the pair.
+
+   The only thing on a player page with complete coverage that nothing
+   published: the minute is on 25 goals of 161 and the body part on 23, so
+   every richer cut of a career has to state a fraction, and WHICH CLUB is on
+   all of them.
+
+   Grouped on `clubIdentity()`, which is what `opponentRecords()` groups on,
+   so the band and the head-to-head cannot disagree about what counts as one
+   club: a club spelled two ways is one row, and a 2.0 is not its 1st Team.
+   The row takes the most recent spelling, as that function does.
+
+   An own goal belongs to nobody's record (`g.og || g.num == null`), exactly
+   as the engine reads it everywhere else. The assist is taken from the flat
+   `assists` array rather than off each goal, because that is the list every
+   published assist figure is counted from - reading `goal.assist` here would
+   cover the 22 goals that carry one and silently lose 121. */
+export function playerOpponents(player, matches) {
+  const num = Number(player && player.num);
+  if (!Number.isFinite(num)) return [];
+  const map = new Map();
+  for (const m of (matches || []).filter((x) => x.played && x.opponent)) {
+    const det = m.detail || {};
+    const goals = (det.goals || [])
+      .filter((g) => !(g.og || g.num == null) && Number(g.num) === num).length;
+    const assists = (det.assists || [])
+      .filter((a) => Number(a && a.num != null ? a.num : a) === num).length;
+    if (!goals && !assists) continue;
+    const k = clubIdentity(m.opponent) || m.opponent;
+    if (!map.has(k)) map.set(k, { identity: k, goals: 0, assists: 0, games: 0, list: [] });
+    const row = map.get(k);
+    row.goals += goals; row.assists += assists; row.games += 1; row.list.push(m);
+  }
+  return [...map.values()].map((row) => {
+    const byDate = row.list.slice().sort((a, b) => (b.iso || '').localeCompare(a.iso || ''));
+    return {
+      identity: row.identity,
+      club: byDate[0].opponent,
+      latest: byDate[0],
+      goals: row.goals,
+      assists: row.assists,
+      total: row.goals + row.assists,
+      games: row.games,
+    };
+  }).sort((a, b) => b.total - a.total
+    || b.goals - a.goals
+    || String(a.club).localeCompare(String(b.club)));
+}
+
 /* ==========================================================================
    THE THIRTY ADDED IN AUGUST
 

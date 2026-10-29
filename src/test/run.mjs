@@ -10640,6 +10640,143 @@ console.log(`\n${'='.repeat(66)}`);
       bare.length > 0 && drawnAnyway.length === 0,
       `${bare.length} without detail, ${drawnAnyway.map((q) => q.name).slice(0, 4).join(', ')} drawn anyway`);
   }
+
+  /* ========================================================================
+     WHO HE DOES IT AGAINST
+
+     Every goal and every assist the club records names an opponent, and no
+     profile had ever said so: the page published how many, how they were
+     struck and when they came, and never once who they came against.
+
+     IT IS PER SEASON, and that is the half worth checking. The first draft
+     was career figures behind data-season-scope="all", which the season
+     script hides on every tab but the last - and the page opens on the
+     LATEST season, so the band shipped invisible on the only screen anybody
+     arrives at. The club looked at a profile and reported it missing.
+
+     So the questions are: is it there, does every season's list add up to
+     the career one, and does the career one add up to the goals and assists
+     printed everywhere else on the same page. A band that quietly dropped a
+     club would look perfectly healthy.
+     ======================================================================== */
+  {
+    const { playerOpponents: oppOf } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+    const unesc = (s) => String(s).replace(/&#39;/g, "'").replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+    const counted = (dCS.played || []).filter((m) => m.played && !m.friendly);
+    const pool2 = (dCS.playersCompetitive || dCS.players || []).filter((q) => !q.unknown);
+    /* Every list on the page, keyed by the tab it belongs to, with the
+       sentence accounting for the clubs the cap left off. */
+    const bandOf = (slug) => {
+      const f = path.join(ROOT, 'players', `${slug}.html`);
+      if (!fs.existsSync(f)) return null;
+      const html = fs.readFileSync(f, 'utf8');
+      const sec = html.match(/<section class="sec pf-opp"[^>]*>[\s\S]*?<\/section>/);
+      if (!sec) return null;
+      const lists = [...sec[0].matchAll(
+        /<ol class="pf-opp__list rv" data-season-scope="([^"]*)">([\s\S]*?)<\/ol>\s*(?:<p class="pf-opp__more rv" data-season-scope="[^"]*">([\s\S]*?)<\/p>)?/g,
+      )].map((m) => {
+        const rows = [...m[2].matchAll(
+          /<span class="pf-opp__name">([^<]*)<\/span>[\s\S]*?<span class="pf-opp__v">(\d+)<i>\+<\/i>(\d+)<\/span>/g,
+        )].map((r) => ({ club: unesc(r[1]), goals: Number(r[2]), assists: Number(r[3]) }));
+        const n = m[3] ? [...m[3].matchAll(/(\d+)/g)].map((x) => Number(x[1])) : [0, 0, 0];
+        return { scope: m[1], rows, rest: { clubs: n[0], goals: n[1], assists: n[2] } };
+      });
+      return { open: sec[0].match(/<section[^>]*>/)[0], lists };
+    };
+
+    const has = pool2.filter((q) => (q.goals || 0) + (q.assists || 0) > 0);
+    const none = pool2.filter((q) => !(q.goals || 0) && !(q.assists || 0));
+    check('a player who has scored or made one carries the band that says against whom',
+      has.length > 10 && has.every((q) => bandOf(q.slug)),
+      `${has.length} with a contribution, ${has.filter((q) => !bandOf(q.slug)).map((q) => q.name).slice(0, 4).join(', ')} silent`);
+    check('and a player who has done neither carries no band at all',
+      none.length > 0 && none.every((q) => !bandOf(q.slug)),
+      `${none.length} without one, ${none.filter((q) => bandOf(q.slug)).map((q) => q.name).slice(0, 4).join(', ')} drawn anyway`);
+
+    /* THE BAND ITSELF IS NOT SCOPED. Scoping the section is what hid it:
+       the lists carry the tabs, so there is always one showing. */
+    const scoped = has.filter((q) => {
+      const b = bandOf(q.slug);
+      return b && /data-season-scope/.test(b.open);
+    });
+    check('the band shows on whichever season tab the page opens on',
+      scoped.length === 0, scoped.map((q) => q.name).slice(0, 4).join(', '));
+    const seasoned = has.filter((q) => {
+      const b = bandOf(q.slug);
+      return b && !b.lists.some((l) => /\d/.test(l.scope));
+    });
+    check('and it is a list per season rather than one career list',
+      seasoned.length === 0, seasoned.map((q) => q.name).slice(0, 4).join(', '));
+
+    const offBy = [];
+    const seasonSum = [];
+    const outOfOrder = [];
+    const wrongRow = [];
+    const badTail = [];
+    for (const q of has) {
+      const b = bandOf(q.slug);
+      if (!b) continue;
+      const tot = (l) => ({
+        g: l.rows.reduce((t, r) => t + r.goals, 0) + l.rest.goals,
+        a: l.rows.reduce((t, r) => t + r.assists, 0) + l.rest.assists,
+      });
+      /* A ONE-SEASON PROFILE HAS ONE LIST, under both tabs at once ("0 all"),
+         so the career list is the one whose scope mentions all. */
+      const career = b.lists.find((l) => /\ball\b/.test(l.scope));
+      if (!career) { offBy.push(`${q.name}: no all-seasons list`); continue; }
+      const c = tot(career);
+      if (c.g !== (q.goals || 0) || c.a !== (q.assists || 0)) {
+        offBy.push(`${q.name}: band ${c.g}+${c.a}, page ${q.goals || 0}+${q.assists || 0}`);
+      }
+      /* EVERY SEASON ADDS UP TO THE CAREER. This needs no copy of the view
+         machinery: the seasons partition the matches, so their figures have
+         to come to the same pair. */
+      const perSeason = b.lists.filter((l) => l !== career && /\d/.test(l.scope));
+      if (perSeason.length) {
+        const sg = perSeason.reduce((t, l) => t + tot(l).g, 0);
+        const sa = perSeason.reduce((t, l) => t + tot(l).a, 0);
+        if (sg !== c.g || sa !== c.a) {
+          seasonSum.push(`${q.name}: seasons ${sg}+${sa}, career ${c.g}+${c.a}`);
+        }
+      }
+      for (const l of b.lists) {
+        const t = l.rows.map((r) => r.goals + r.assists);
+        if (t.some((n, i) => i && n > t[i - 1])) outOfOrder.push(`${q.name} (${l.scope})`);
+      }
+      const want = oppOf(q, counted);
+      if (want.length !== career.rows.length + career.rest.clubs) {
+        badTail.push(`${q.name}: ${career.rows.length} shown + ${career.rest.clubs} more, ${want.length} clubs`);
+      }
+      const head = want.slice(0, career.rows.length);
+      if (head.some((r, i) => r.club !== career.rows[i].club
+        || r.goals !== career.rows[i].goals || r.assists !== career.rows[i].assists)) {
+        wrongRow.push(`${q.name}: ${career.rows.map((r) => `${r.club} ${r.goals}+${r.assists}`).slice(0, 2).join(', ')}`);
+      }
+    }
+    check('the career list adds up to the goals and assists the page publishes',
+      offBy.length === 0, offBy.slice(0, 5).join(' | '));
+    check('and every season on the page adds up to that career list',
+      seasonSum.length === 0, seasonSum.slice(0, 5).join(' | '));
+    check('the clubs are ranked by what he did against them, biggest first',
+      outOfOrder.length === 0, outOfOrder.slice(0, 5).join(', '));
+    check('each row is the club the engine named, with the engine\'s figures',
+      wrongRow.length === 0, wrongRow.slice(0, 4).join(' | '));
+    check('the clubs the cap left off are counted in the sentence under the list',
+      badTail.length === 0, badTail.slice(0, 5).join(' | '));
+
+    /* GOALS AND ASSISTS ARE TOLD APART BY STRUCTURE, NEVER A SECOND HUE.
+       The filled segment is the goals and the outlined one the assists, and
+       the key says which is which - without it the band is two shapes and no
+       vocabulary. */
+    const noKey = has.filter((q) => {
+      const f = path.join(ROOT, 'players', `${q.slug}.html`);
+      const sec = fs.readFileSync(f, 'utf8').match(/<section class="sec pf-opp"[^>]*>[\s\S]*?<\/section>/);
+      return !sec || !/pf-opp__sw[\s\S]{0,80}Scored[\s\S]{0,160}pf-opp__sw--a[\s\S]{0,80}Made/.test(sec[0]);
+    });
+    check('the band names its own two marks rather than relying on the shapes',
+      noKey.length === 0, noKey.map((q) => q.name).slice(0, 4).join(', '));
+  }
 }
 
 /* ==========================================================================

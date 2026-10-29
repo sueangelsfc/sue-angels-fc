@@ -1308,6 +1308,34 @@ out what this side usually does.
 - `approachUse()` went with the band. A derivation nothing reads is the same
   fault as a field nothing reads.
 
+### Who he does it against
+
+`playerOpponents()` in `stats.mjs`, band `pf-opp` on every profile. Every goal
+and every assist the club records names an opponent, and no profile had ever
+said so: the page published how many, how they were struck and when they came,
+and never once who they came against.
+
+- **A list per season, and the first draft was not.** It shipped with
+  `data-season-scope="all"` on the section, which the season script hides on
+  every tab but the last - and the page opens on the LATEST season, so the band
+  was invisible on the only screen anybody arrives at. The club looked at a
+  profile and reported it missing. The section carries no scope now; the lists
+  carry the tabs, the way the heat map and the shot map already do.
+- **Goals solid, assists the same mark hollow.** Orange is the only accent on
+  this site, so a second measure cannot have a second hue. The key names both,
+  because two shapes with no vocabulary is colour-alone encoding wearing a
+  different hat.
+- **Five clubs, and a sentence accounting for the rest.** The heaviest profile
+  had 2,060 bytes left of its 160KB ceiling; six rows per season spent 452 more
+  than it had. Dropping the row's wrapper span and rounding the bar widths to
+  whole percentages paid for the per-season lists.
+- **The check is not that the band drew.** Every season's figures must add up
+  to the career list, and the career list to the goals and assists printed
+  everywhere else on the page - which needs no copy of the view machinery,
+  because the seasons partition the matches. A band quietly dropping a club
+  would look perfectly healthy.
+- **Grouped on `clubIdentity()`**, so one club spelled two ways is one row.
+
 ### A season on a player's page, and on the manager's
 
 The season panel was six tiles, three bars, four ranks and five charts, and it
@@ -1905,7 +1933,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 5,225 checks against the generated output and the rendered panel
+npm test          # 5,235 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

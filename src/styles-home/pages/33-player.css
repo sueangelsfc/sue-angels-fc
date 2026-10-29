@@ -1105,6 +1105,56 @@ html.js .pf-pitch__grid.is-picking .pf-spot.is-picked{opacity: 1;}
 .pf-strike__fig figcaption{font-size: 12px; line-height: 1.5; color: var(--ink-3);
   max-width: 34ch;}
 .pf-strike__none{margin: 0; color: var(--ink-3); font-size: 14px;}
+/* GOALS OR ASSISTS, BY RADIO AND NOTHING ELSE. Three inputs at the top of
+   the grid and `:checked ~` down the rest of it: no JavaScript, so it works
+   with the script blocked, and `sa.js` keeps the 92 bytes it has left.
+   The inputs are hidden the way every other visually-hidden control here is
+   - clipped, not `display: none`, which would take them out of the tab order
+   and off every screen reader. */
+.pf-k{position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0;}
+.pf-pick{grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center;
+  gap: 8px; margin: -4px 0 -8px;}
+.pf-pick__l{font-family: var(--ui); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);
+  margin-right: 2px;}
+.pf-pick label{font-family: var(--ui); font-size: 11.5px; font-weight: 700;
+  letter-spacing: 0.04em; color: var(--ink-2); cursor: pointer;
+  padding: 6px 13px; border-radius: 999px;
+  border: 1px solid var(--line-d); background: rgba(var(--lift), 0.03);}
+.pf-pick label:hover{color: var(--fg); border-color: rgba(255, 255, 255, 0.3);}
+.pf-k--all:checked ~ .pf-pick label[for="pf-k-all"],
+.pf-k--g:checked ~ .pf-pick label[for="pf-k-g"],
+.pf-k--a:checked ~ .pf-pick label[for="pf-k-a"]{background: var(--volt);
+  border-color: var(--volt); color: var(--text-on-brand);}
+/* THE RING GOES ON THE LABEL, because the input it belongs to is a clipped
+   pixel in the corner. Without this a keyboard moves through three controls
+   with nothing on screen to say which one it is on. */
+.pf-k:focus-visible ~ .pf-pick label[for="pf-k-all"]{outline: 2px solid var(--volt); outline-offset: 3px;}
+.pf-k--all:focus-visible ~ .pf-pick label[for="pf-k-all"],
+.pf-k--g:focus-visible ~ .pf-pick label[for="pf-k-g"],
+.pf-k--a:focus-visible ~ .pf-pick label[for="pf-k-a"]{outline: 2px solid var(--volt); outline-offset: 3px;}
+.pf-k--g:focus-visible ~ .pf-pick label[for="pf-k-all"],
+.pf-k--a:focus-visible ~ .pf-pick label[for="pf-k-all"]{outline: 0;}
+/* WHAT EACH ANSWER HIDES - the mark, the circle that carries its crest, and
+   its row in the list, so the pitch and the words can never disagree. */
+.pf-k--g:checked ~ .pf-strike__fig .pf-sh--a,
+.pf-k--g:checked ~ .pf-strike__fig .pf-sh--za,
+.pf-k--g:checked ~ .pf-strike__fig .pf-hit--a,
+.pf-k--g:checked ~ .pf-strike__body .pf-mark--a,
+.pf-k--a:checked ~ .pf-strike__fig .pf-sh--g,
+.pf-k--a:checked ~ .pf-strike__fig .pf-sh--z:not(.pf-sh--za),
+.pf-k--a:checked ~ .pf-strike__fig .pf-hit--g,
+.pf-k--a:checked ~ .pf-strike__body .pf-mark--g{display: none;}
+/* And the count beside the summary. Absent the switch only the first of
+   these is written, which is why it is the one that shows by default. */
+.pf-kc{display: none; font-style: normal; font-family: var(--display);
+  font-size: 12px; letter-spacing: 0; color: var(--volt-text);}
+.pf-kc--all{display: inline;}
+.pf-k--g:checked ~ .pf-strike__body .pf-kc--all,
+.pf-k--a:checked ~ .pf-strike__body .pf-kc--all{display: none;}
+.pf-k--g:checked ~ .pf-strike__body .pf-kc--g,
+.pf-k--a:checked ~ .pf-strike__body .pf-kc--a{display: inline;}
 .pf-sh__turf{fill: rgba(255, 255, 255, 0.03);}
 .pf-sh__lines{fill: none; stroke: rgba(255, 255, 255, 0.22); stroke-width: 0.6;
   vector-effect: non-scaling-stroke;}

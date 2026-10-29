@@ -10851,7 +10851,7 @@ console.log(`\n${'='.repeat(66)}`);
         /<g class="pf-sh pf-sh--z( pf-sh--za)?"[^>]*transform="translate\(([\d.]+) ([\d.]+)\)"/g,
       )];
       const hits = [...career.matchAll(
-        /<g class="pf-hit" transform="translate\(([\d.]+) ([\d.]+)\)">[\s\S]*?<title>([\s\S]*?)<\/title>/g,
+        /<g class="pf-hit[^"]*" transform="translate\(([\d.]+) ([\d.]+)\)">[\s\S]*?<title>([\s\S]*?)<\/title>/g,
       )].filter((m) => / the area recorded rather than a spot\.$/.test(m[3]));
       if (marks.length !== list.length) {
         miscount.push(`${q.name}: ${marks.length} drawn, ${list.length} recorded`);
@@ -10864,7 +10864,7 @@ console.log(`\n${'='.repeat(66)}`);
       for (const h of hits) if (!at.has(`${h[1]},${h[2]}`)) adrift.push(`${q.name}: ${h[1]},${h[2]}`);
       /* And the layer carrying it has to come after every mark it covers. */
       const lastMark = career.lastIndexOf('<g class="pf-sh ');
-      const firstHit = career.indexOf('<g class="pf-hit"');
+      const firstHit = career.indexOf('<g class="pf-hit ');
       if (firstHit !== -1 && lastMark > firstHit) painted.push(q.name);
       for (const m of hits) {
         const key = zoneOfWords(m[3]);
@@ -10885,8 +10885,8 @@ console.log(`\n${'='.repeat(66)}`);
       if (!det.length) shut.push(`${q.name}: no details`);
       for (const x of det) {
         if (/<details\b[^>]*\sopen[\s>]/.test(x[0])) shut.push(`${q.name}: open`);
-        const n = (x[1].match(/<li>/g) || []).length;
-        const said = Number((x[1].match(/<summary>[^<]*<i>(\d+)<\/i>/) || [])[1]);
+        const n = (x[1].match(/<li[ >]/g) || []).length;
+        const said = Number((x[1].match(/<i class="pf-kc pf-kc--all">(\d+)<\/i>/) || [])[1]);
         if (!n || said !== n) shut.push(`${q.name}: says ${said}, holds ${n}`);
       }
     }
@@ -10974,6 +10974,80 @@ console.log(`\n${'='.repeat(66)}`);
     check('a point the club marked on the pitch is drawn on his profile, at that point',
       marked.length === 0 && zoned.length > 0, marked.slice(0, 4).join(' | ') || 'nothing marked');
 
+    /* ======================================================================
+       GOALS OR ASSISTS, AND NO JAVASCRIPT
+
+       The club asked to be able to look at one or the other. `sa.js` has 92
+       bytes left of its ceiling, so the switch is three radios and
+       `:checked ~` - which means the whole thing lives in the stylesheet and
+       the suite's DOM, having no cascade, can never see it work. So this
+       asks the two halves it CAN answer: that every mark and every row wears
+       a class saying which it is, and that the sheet has a rule hiding that
+       class under each answer. A mark wearing neither would stay on the
+       pitch under both, which is the one failure that reads as the filter
+       being broken rather than absent.
+
+       AND IT IS ONLY THERE WHERE HE HAS DONE BOTH. A control offering the
+       assists of a man with none is a dead button, and a pitch that can only
+       be emptied is worse than no pitch. */
+    const pcss = fs.readFileSync(path.join(ROOT, 'p-player.css'), 'utf8');
+    const unclassed = [];
+    const wrongPick = [];
+    const miscounted = [];
+    for (const q of pool2) {
+      const f = path.join(ROOT, 'players', `${q.slug}.html`);
+      if (!fs.existsSync(f)) continue;
+      const html = fs.readFileSync(f, 'utf8');
+      const sec = (html.match(/<section class="sec pf-strike"[\s\S]*?<\/section>/) || [])[0];
+      if (!sec) continue;
+      const hasG = /<g class="pf-sh pf-sh--g"|<g class="pf-sh pf-sh--z"/.test(sec);
+      const hasA = /<g class="pf-sh pf-sh--a"|pf-sh--za/.test(sec);
+      const pick = sec.includes('class="pf-pick"');
+      if (pick !== (hasG && hasA)) {
+        wrongPick.push(`${q.name}: switch ${pick ? 'shown' : 'absent'}, goals ${hasG}, assists ${hasA}`);
+      }
+      /* Every mark says which it is, and so does every circle carrying a
+         crest and every row in the words underneath. */
+      for (const m of sec.matchAll(/<g class="pf-sh ([^"]*)"/g)) {
+        if (!/pf-sh--(g|a|z)\b/.test(m[1])) unclassed.push(`${q.name}: mark ${m[1]}`);
+      }
+      for (const m of sec.matchAll(/<g class="pf-hit ([^"]*)"/g)) {
+        if (!/pf-hit--(g|a)\b/.test(m[1])) unclassed.push(`${q.name}: hit ${m[1]}`);
+      }
+      for (const m of sec.matchAll(/<li class="([^"]*)"/g)) {
+        if (!/pf-mark--(g|a)\b/.test(m[1])) unclassed.push(`${q.name}: row ${m[1]}`);
+      }
+      if (!pick) continue;
+      /* THE COUNT FOLLOWS THE SWITCH. A summary reading 7 over five visible
+         rows is the band disagreeing with itself, and the CSS cannot
+         recount, so all three figures are written and have to add up. */
+      for (const det of sec.matchAll(/<details class="pf-marks"[\s\S]*?<\/details>/g)) {
+        const said = (k) => Number((det[0].match(new RegExp(`<i class="pf-kc pf-kc--${k}">(\\d+)</i>`)) || [])[1]);
+        const rows = (k) => (det[0].match(new RegExp(`<li class="pf-mark--${k}"`, 'g')) || []).length;
+        for (const k of ['all', 'g', 'a']) {
+          const want = k === 'all' ? rows('g') + rows('a') : rows(k);
+          if (said(k) !== want) miscounted.push(`${q.name}: ${k} says ${said(k)}, holds ${want}`);
+        }
+      }
+    }
+    check('every mark and every row says whether it is a goal or an assist',
+      unclassed.length === 0, unclassed.slice(0, 4).join(' | '));
+    check('the goals-or-assists switch is on a profile with both, and only there',
+      wrongPick.length === 0, wrongPick.slice(0, 4).join(' | '));
+    check('and each of its three counts equals the rows it describes',
+      miscounted.length === 0, miscounted.slice(0, 4).join(' | '));
+    /* The rules themselves, because a class nothing hides is a switch that
+       does nothing - which is the shape every defect in this panel takes. */
+    /* READ OFF THE SHIPPED SHEET, which is minified, so the combinator
+       carries no spaces: `~` is written `~` with nothing round it. A check
+       written against the source would pass on a sheet that never shipped. */
+    const hiddenBy = (ans, c) => new RegExp(`\\.pf-k--${ans}:checked~[^{,]*\\.${c}[^{,]*[,{]`).test(pcss);
+    const noRule = ['pf-sh--a', 'pf-sh--za', 'pf-hit--a', 'pf-mark--a'].filter((c) => !hiddenBy('g', c))
+      .concat(['pf-sh--g', 'pf-hit--g', 'pf-mark--g'].filter((c) => !hiddenBy('a', c)));
+    check('the stylesheet hides the other kind under each answer',
+      noRule.length === 0 && /\.pf-k--a:checked~[^{,]*\.pf-sh--z:not\(\.pf-sh--za\)/.test(pcss),
+      noRule.join(', ') || 'every class has its rule');
+
     /* THE PRECISION IS SAID OUT LOUD, twice: on the mark and in the list.
        A dash is not a sentence. */
     const quietAbout = zoned.filter(({ q }) => {
@@ -11037,7 +11111,7 @@ console.log(`\n${'='.repeat(66)}`);
     check('and it is listed as an assist, naming the area and not a spot',
       /<b>Assist<\/b>[\s\S]{0,120}?inside the box, area only</.test(inBox.html), '');
     check('and the crest of the club he made it against is on its mark',
-      new RegExp(`<g class="pf-hit"[^>]*>[\\s\\S]{0,400}?<title>Assist[^<]*v ${
+      new RegExp(`<g class="pf-hit[^"]*"[^>]*>[\\s\\S]{0,400}?<title>Assist[^<]*v ${
         inBox.opponent.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}: inside the box`).test(inBox.html), '');
     /* THE PROBE IS THE GUARD. Take the zone off and the mark has to go: a
        check that only confirms a mark appears passes just as happily on a

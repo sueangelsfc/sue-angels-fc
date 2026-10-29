@@ -1359,7 +1359,7 @@ export function playerPage(p, d) {
       const src = oppBadgeSrc(s.opponent, d.badges);
       const words = kind === 'z' ? `${ZONE_WORDS[s.zone]}, the area recorded rather than a spot` : spotWords(s);
       const what = kind === 'g' || (kind === 'z' && s.kind !== 'a') ? 'Goal' : 'Assist';
-      return `<g class="pf-hit" transform="translate(${s.x.toFixed(1)} ${sy(s.y)})">
+      return `<g class="pf-hit pf-hit--${kind === 'z' ? (s.kind === 'a' ? 'a' : 'g') : kind}" transform="translate(${s.x.toFixed(1)} ${sy(s.y)})">
               <circle class="pf-hit__t" r="7"/>${src ? `<image class="pf-hit__tip" aria-hidden="true" href="${attr(src)}" x="-3" y="-3" width="6" height="6" preserveAspectRatio="xMidYMid meet"/>` : ''}
               <title>${esc(what)}${s.minute ? `, ${esc(String(s.minute))}′` : ''} v ${esc(s.opponent)}: ${esc(words)}.</title>
             </g>`;
@@ -1378,6 +1378,20 @@ export function playerPage(p, d) {
             ${v.zoned.map((s) => hit(s, 'z')).join('')}${v.made.map((s) => hit(s, 'a')).join('')}${v.goals.map((s) => hit(s, 'g')).join('')}
           </svg>`;
   };
+  /* GOALS OR ASSISTS, AND NO JAVASCRIPT. The club asked to be able to look
+     at one or the other, and `sa.js` has 92 bytes left of its ceiling, so
+     this is three radios and a sibling selector: the inputs sit at the top
+     of the grid and every rule hangs off `:checked ~`. It survives scripting
+     being blocked, which a script-driven filter would not, and it costs the
+     page nothing but its own markup.
+     ONLY WHERE HE HAS DONE BOTH. A control offering to show the assists of a
+     man with none is a dead button that reads as a bug, and a pitch that can
+     only be emptied is worse than no pitch. */
+  const strikeBoth = strikeViews.some((v) => v.shown.goals) && strikeViews.some((v) => v.shown.made);
+  const strikePick = strikeBoth ? `<input class="pf-k pf-k--all" type="radio" name="pf-k" id="pf-k-all" checked>
+          <input class="pf-k pf-k--g" type="radio" name="pf-k" id="pf-k-g">
+          <input class="pf-k pf-k--a" type="radio" name="pf-k" id="pf-k-a">
+          <div class="pf-pick"><span class="pf-pick__l" id="pf-pick-l">Show</span><label for="pf-k-all">Both</label><label for="pf-k-g">Goals</label><label for="pf-k-a">Assists</label></div>` : '';
   const strikeBand = strikeAny ? `<section class="sec pf-strike" aria-labelledby="pf-strike-h">
       <div class="wrap">
         ${/* A FIGURE IN THE RAIL IS A CAREER FIGURE ON EVERY TAB. The rail sits
@@ -1388,6 +1402,7 @@ export function playerPage(p, d) {
         ${rail(RAIL.next(), 'Where he scores from', 'Goals and assists')}
         <h2 class="h2 rv" id="pf-strike-h">Where he <span class="volt">scores.</span></h2>
         <div class="pf-strike__grid rv">
+          ${strikePick}
           <figure class="pf-strike__fig">
             ${strikeViews.map((v) => (v.any ? strikePitch(v) : `<p class="pf-strike__none" data-season-scope="${attr(v.key)}">Nothing marked on the pitch for this season.</p>`)).join('\n            ')}
             <figcaption>Attacking upward. Filled is a goal, hollow is where he played an assist from. A dashed mark sits anywhere in the area the club recorded rather than on a spot: mark it on the pitch in the control panel and it moves to where it happened. Hover a mark for the club it was against.</figcaption>
@@ -1402,10 +1417,15 @@ export function playerPage(p, d) {
       ...v.zoned.map((s) => ({ ...s, kind: s.kind === 'a' ? 'Assist' : 'Goal', words: `${ZONE_WORDS[s.zone]}, area only` })),
       ...v.made.map((s) => ({ ...s, kind: 'Assist', words: spotWords(s) }))];
     if (!rows.length) return '';
+    /* THE COUNT FOLLOWS THE SWITCH TOO. A summary reading 7 over five
+       visible rows is the band disagreeing with itself, and a CSS filter
+       cannot recount - so all three figures are written and the same
+       `:checked` rules show the one that is true of what is on screen. */
+    const nG = rows.filter((s) => s.kind === 'Goal').length;
     return `<details class="pf-marks" data-season-scope="${attr(v.key)}">
-              <summary>Every mark, in words <i>${rows.length}</i></summary>
+              <summary>Every mark, in words <i class="pf-kc pf-kc--all">${rows.length}</i>${strikeBoth ? `<i class="pf-kc pf-kc--g">${nG}</i><i class="pf-kc pf-kc--a">${rows.length - nG}</i>` : ''}</summary>
               <ol class="pf-marklist">${rows
-    .map((s) => `<li><b>${esc(s.kind)}</b><span>${esc(s.opponent)}${s.minute ? `, ${esc(String(s.minute))}′` : ''}</span><i>${esc(s.words)}</i></li>`).join('')}</ol>
+    .map((s) => `<li class="pf-mark--${s.kind === 'Goal' ? 'g' : 'a'}"><b>${esc(s.kind)}</b><span>${esc(s.opponent)}${s.minute ? `, ${esc(String(s.minute))}′` : ''}</span><i>${esc(s.words)}</i></li>`).join('')}</ol>
             </details>`;
   }).join('\n            ')}
           </div>

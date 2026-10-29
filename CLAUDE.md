@@ -1464,6 +1464,34 @@ trap, three hundred lines above the writer that fell into it.
   zone: where the ball was struck from is a fact about the side that put it
   in. Its assist carries one, because the man who forced it played here.
 
+#### Goals or assists, and not one byte of JavaScript
+
+The club asked to be able to look at one or the other. `sa.js` has 92 bytes
+left of its ceiling, so the switch is **three radios and `:checked ~`**: the
+inputs sit at the top of the grid, clipped rather than `display: none` so they
+keep their place in the tab order, and every rule hangs off them. It survives
+scripting being blocked, which a script-driven filter would not.
+
+- **Only where he has done both.** A control offering the assists of a man
+  with none is a dead button, and a pitch that can only be emptied is worse
+  than no pitch.
+- **The mark, its crest and its row all move together.** The hit circles had
+  to grow a kind of their own (`pf-hit--g` / `pf-hit--a`) and the list rows
+  theirs, or the pitch and the words underneath would disagree about what is
+  being shown.
+- **The count follows the switch.** A summary reading 7 over five visible rows
+  is the band arguing with itself, and CSS cannot recount - so all three
+  figures are written and the same rules show the one that is true.
+- **The suite cannot see a cascade, so it asks the two halves it can.** That
+  every mark and every row says which it is - one wearing neither would stay
+  on the pitch under both answers, which reads as the filter being broken
+  rather than absent - and that the SHIPPED sheet, which is minified and so
+  writes `~` with no spaces, carries a rule hiding each class under each
+  answer. Four probes, one per check.
+- **The suite caught the change three times over**, which is what it is for:
+  two checks anchored on `class="pf-hit"` exactly, and the summary's count was
+  read by a regular expression that assumed one bare `<i>`.
+
 #### AND THE FIRST MARKS ARE ON THE SITE
 
 The club marked four points the day saving was fixed - two goals and two
@@ -2187,7 +2215,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 5,268 checks against the generated output and the rendered panel
+npm test          # 5,272 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

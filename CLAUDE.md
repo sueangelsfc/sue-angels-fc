@@ -1392,7 +1392,10 @@ drawn. Same trap as the form pips and the site header, a third time.
   a badge wide enough to cover the mark beside the one being pointed at is a
   tooltip arguing with the chart it explains. It is the `<image>` itself now,
   with the white plate and its hairline gone - a crest is already a shape on
-  a dark field, and a tile around it was a second object to read. **The hit
+  a dark field, and a tile around it was a second object to read. **It sits ON
+  the mark, not above it**: floating clear of the thing it names is what made
+  a plate and a pointer line look necessary in the first place, and the dashed
+  ring around it is the area the mark was already claiming. **The hit
   circle is bigger than the mark and stays that way** (48px against the dashed
   ring's 31px), so what a reader hovers is the area, not a point inside it.
 

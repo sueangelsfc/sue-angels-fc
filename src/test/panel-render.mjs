@@ -2198,7 +2198,7 @@ export async function panelChecks() {
       /* Both are still shown, because the name is what the page is and the
          address is how to reach it. */
       check('a named page still shows its address',
-        /<b>Joe Bloggs<\/b><br><a class="cpp" href="\/players\/joe\.html"/.test(chost.html),
+        /<b>Joe Bloggs<\/b><br><a class="cp-path" href="\/players\/joe\.html"/.test(chost.html),
         'the address is how somebody opens it');
 
       check('the club’s own reports and articles are listed against their dates',

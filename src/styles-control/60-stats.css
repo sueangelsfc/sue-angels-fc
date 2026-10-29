@@ -219,9 +219,17 @@
 }
 
 /* An address under the name it belongs to. Quiet, because the name is the
-   thing being read and the address is how to find it. */
-.cpp { font-size: var(--step--2); color: var(--text-subtle); }
-a.cpp { text-decoration: underline; }
+   thing being read and the address is how to find it.
+
+   IT WAS `.cpp`, WHICH THE PITCH PICKER OWNS. Both sheets are concatenated
+   into `control.css` and the picker's file sorts last, so its rules won: every
+   page address on this screen was being drawn as the picker's backdrop -
+   `position: fixed; inset: 0; z-index: 320` over a semi-opaque black - which
+   is a full-screen overlay per row of the what-moved table. The picker in turn
+   took this rule's font size and muted colour. A three-letter name, two
+   components, and neither of them asked for the other's rules. */
+.cp-path { font-size: var(--step--2); color: var(--text-subtle); }
+a.cp-path { text-decoration: underline; }
 
 /* The pages nobody opened. A list, not a table: there is one fact per row and
    a table of one column is a list with extra furniture. */

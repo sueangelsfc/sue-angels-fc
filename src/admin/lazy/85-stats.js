@@ -861,7 +861,7 @@
     var rowsFor = function (list) {
       return table(['Page', 'Now', 'Before', 'Change'], list.map(function (r) {
         var name = nameOf(r.key);
-        return '<tr><td>' + (name ? '<b>' + esc(name) + '</b><br><span class="cpp">'
+        return '<tr><td>' + (name ? '<b>' + esc(name) + '</b><br><span class="cp-path">'
           + esc(r.key) + '</span>' : esc(r.key)) + '</td>'
           + '<td>' + esc(String(r.now)) + '</td>'
           + '<td>' + esc(String(r.was)) + '</td>'
@@ -2857,7 +2857,7 @@
       var name = nameOf(r.key);
       return '<tr><td>'
         + (name ? '<b>' + esc(name) + '</b><br>' : '')
-        + '<a class="cpp" href="' + esc(r.key) + '" target="_blank" rel="noopener">'
+        + '<a class="cp-path" href="' + esc(r.key) + '" target="_blank" rel="noopener">'
         + esc(r.key) + '</a></td>'
         + '<td>' + esc(areaOf(r.key)) + '</td>'
         + '<td><b>' + esc(String(r.views)) + '</b></td>'
@@ -2929,7 +2929,7 @@
       return table([label, 'Published', 'Days old', 'Views', 'Average time', 'Share', ''],
         list.slice(0, 25).map(function (r) {
           return '<tr' + (r.fresh ? ' class="is-new"' : '') + '><td>'
-            + '<b>' + esc(r.e.t) + '</b><br><a class="cpp" href="' + esc(r.e.p)
+            + '<b>' + esc(r.e.t) + '</b><br><a class="cp-path" href="' + esc(r.e.p)
             + '" target="_blank" rel="noopener">' + esc(r.e.p) + '</a></td>'
             + '<td>' + esc(shortDate(r.e.d)) + '</td>'
             + '<td>' + esc(r.age === null ? '' : String(r.age)) + '</td>'
@@ -2994,11 +2994,11 @@
       sub: '<b>' + esc(String(missing.length)) + '</b> of the site’s '
         + esc(String(pub)) + ' published pages had no views at all in this period.',
       body: kinds.map(function (k) {
-        return '<h4 class="cp-sub">' + esc(k) + ' <span class="cpp">'
+        return '<h4 class="cp-sub">' + esc(k) + ' <span class="cp-path">'
           + esc(String(byKind[k].length)) + '</span></h4>'
           + '<ul class="cpu">' + byKind[k].slice(0, 40).map(function (e) {
             return '<li><a href="' + esc(e.p) + '" target="_blank" rel="noopener">'
-              + esc(e.t || e.p) + '</a>' + (e.d ? ' <span class="cpp">'
+              + esc(e.t || e.p) + '</a>' + (e.d ? ' <span class="cp-path">'
               + esc(shortDate(e.d)) + '</span>' : '') + '</li>';
           }).join('') + '</ul>'
           + (byKind[k].length > 40

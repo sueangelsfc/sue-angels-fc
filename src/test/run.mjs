@@ -7445,6 +7445,134 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   check('League Eight\'s scorers add up to no more than each club scored',
     cmpSc(l8.scorers || [], l8.results || [], cupPool).length === 0,
     cmpSc(l8.scorers || [], l8.results || [], cupPool).join(' | '));
+  /* ---- A CLASS THAT MAKES AN OVERLAY OWNS ITS NAME OUTRIGHT -------------
+     `.cpp` meant two things. The pitch picker is `cpp` - control panel pitch -
+     with a dozen `cpp__*` children, and the Website stats screen used the same
+     three letters for a quiet page address under a page's name. Both sheets
+     are concatenated into `control.css` and the picker's file sorts last, so
+     ITS rules won: every page address on that screen was being drawn as
+     `position: fixed; inset: 0; z-index: 320` over a semi-opaque black, which
+     is a full-screen overlay per row of the what-moved table. The picker took
+     this one's font size and muted colour in exchange.
+
+     ASKED AS "TWO FILES", NOT "TWO VALUES". The property check further down
+     only looks at `block__element` names, and `cpp` has no `__`; asked of
+     every shared bare class instead it reports twenty in `sa.css` alone, all
+     of them `10-base.css` legitimately layering with a later file, and a gate
+     that noisy gets switched off within the hour. What is never legitimate is
+     SHARING A NAME WITH AN OVERLAY: a rule that pins its class to all four
+     edges converts whatever carries it into a full-bleed layer, and no second
+     component can survive that.
+
+     A print sheet is exempt, and that is the only exemption: hiding every
+     piece of chrome for the printer is exactly what one is for. */
+  {
+    const topRules2 = (raw, media = '') => {
+      const css = raw.replace(/\/\*[\s\S]*?\*\//g, '');
+      const out = []; let i = 0, depth = 0, start = 0, head = '';
+      while (i < css.length) {
+        if (css[i] === '{') {
+          if (depth === 0) { head = css.slice(start, i).trim(); start = i + 1; }
+          depth++; i++; continue;
+        }
+        if (css[i] === '}') {
+          depth--;
+          if (depth === 0) {
+            const body = css.slice(start, i);
+            if (head.startsWith('@media')) out.push(...topRules2(body, head.replace(/\s+/g, ' ')));
+            else if (!head.startsWith('@')) out.push({ media, sel: head, body });
+            start = i + 1; head = '';
+          }
+          i++; continue;
+        }
+        i++;
+      }
+      return out;
+    };
+    const isOverlay = (b) => /position:\s*fixed/.test(b)
+      && (/inset:\s*0/.test(b) || (/top:\s*0/.test(b) && /left:\s*0/.test(b)));
+    const bundles = {
+      'sa.css': path.join('src', 'styles'),
+      'control.css': path.join('src', 'styles-control'),
+      'home.css': path.join('src', 'styles-home'),
+      'route bands': path.join('src', 'styles-home', 'pages'),
+    };
+    const shared = [];
+    let overlays = 0;
+    for (const [name, rel] of Object.entries(bundles)) {
+      const dir = path.join(ROOT, rel);
+      if (!fs.existsSync(dir)) continue;
+      const files = fs.readdirSync(dir).filter((f) => f.endsWith('.css')).sort();
+      const seen = new Map();
+      const owns = new Map();
+      for (const f of files) {
+        for (const r of topRules2(fs.readFileSync(path.join(dir, f), 'utf8'))) {
+          if (/print/.test(r.media)) continue;
+          for (const sel of r.sel.split(',').map((s) => s.trim())) {
+            const m = /^(?:[a-z]+)?\.([A-Za-z][\w-]*)$/.exec(sel);
+            if (!m) continue;
+            if (isOverlay(r.body)) owns.set(m[1], f);
+            if (!seen.has(m[1])) seen.set(m[1], new Set());
+            seen.get(m[1]).add(f);
+          }
+        }
+      }
+      overlays += owns.size;
+      for (const [cls, f] of owns) {
+        const others = [...seen.get(cls)].filter((x) => x !== f);
+        if (others.length) shared.push(`${name}: .${cls} is an overlay in ${f}, also in ${others.join(', ')}`);
+      }
+    }
+    check('no overlay class is declared by a second file in its own bundle',
+      shared.length === 0, shared.slice(0, 3).join(' · ') || `none, across ${overlays} overlay classes`);
+    /* The question has to have found some overlays to ask about, or it passes
+       on a bundle whose sheets it never read. */
+    check('and there were overlay classes to ask about',
+      overlays >= 4, `${overlays} found`);
+  }
+
+  /* ---- THE PITCH PICKER OPENS FROM A DIALOG, SO IT COVERS ONE ----------
+     `.cpp` sat at z-index 60 while `.modal-backdrop` is at 300, so the pitch
+     opened UNDERNEATH the match editor every time somebody pressed Mark it
+     on the pitch. The marker could not be reached and the only sign was the
+     screen dimming a second time. The club reported it; nothing here could
+     have found it, because the suite's DOM has no cascade and the two numbers
+     live in two different stylesheets - `control.css` and `sa.css` - which
+     `control.html` loads together.
+
+     ASKED AS A RELATIONSHIP, NEVER AS A NUMBER. A check reading 320 passes
+     the day somebody lifts the modal to 400 and buries the picker again,
+     which is the whole failure. Read off the shipped sheets, both of them,
+     because that is what the browser loads. */
+  {
+    const saSheet = fs.readFileSync(path.join(ROOT, 'sa.css'), 'utf8');
+    const cpSheet = fs.readFileSync(path.join(ROOT, 'control.css'), 'utf8');
+    const zOf = (css, sel) => {
+      const m = new RegExp(`${sel.replace(/[.]/g, '\\.')}\\{[^}]*\\}`).exec(css);
+      const z = m && /z-index:(-?\d+)/.exec(m[0]);
+      return z ? Number(z[1]) : null;
+    };
+    const zCpp = zOf(cpSheet, '.cpp');
+    const zModal = zOf(saSheet, '.modal-backdrop');
+    const zToast = zOf(saSheet, '.toasts');
+    const zConsent = zOf(saSheet, '.consent');
+    check('the pitch picker is painted above the dialog it opens from',
+      zCpp != null && zModal != null && zCpp > zModal, `cpp ${zCpp}, modal ${zModal}`);
+    /* A save has to be readable over it, and a consent banner must never be
+       buried by it: both are reasons the number is not simply "very high". */
+    check('and below the toasts and the consent banner',
+      zCpp != null && zToast != null && zConsent != null
+        && zCpp < zToast && zCpp < zConsent,
+      `cpp ${zCpp}, consent ${zConsent}, toasts ${zToast}`);
+    /* AND control.html REALLY DOES LOAD BOTH, which is the premise of the
+       whole comparison: if it loaded control.css alone the modal would have
+       no z-index at all and document order would decide. */
+    const cpHtml = fs.readFileSync(path.join(ROOT, 'control.html'), 'utf8');
+    check('the panel loads both sheets, so the two numbers are in one stack',
+      /href="\/sa\.css/.test(cpHtml) && /href="\/control\.css/.test(cpHtml),
+      'both linked');
+  }
+
   /* ---- THE CLUB'S OWN ROWS IN THE CHART ARE DERIVED ----------------------
      Every published figure on this site comes from match records, and the one
      place that was quietly untrue is the club's own men inside a transcribed

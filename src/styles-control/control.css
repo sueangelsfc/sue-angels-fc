@@ -55,7 +55,18 @@
 .cpp-btn.is-set .cpp-btn__i::before{content: ""; position: absolute;
   left: 50%; top: 55%; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px;
   border-radius: 50%; background: currentColor;}
-.cpp{position: fixed; inset: 0; z-index: 60; display: grid; place-items: center;
+/* IT OPENS FROM A DIALOG, SO IT HAS TO COVER ONE. `.cpp` sat at 60 while
+   `.modal-backdrop` is at 300 - declared in `30-components.css`, which is
+   part of `sa.css`, and `control.html` loads BOTH sheets - so the pitch
+   opened UNDERNEATH the match editor every time. The marker was unreachable
+   and the only sign of it was the screen dimming a second time.
+
+   That is the `.pghead` fault again, one dialog wide: a z-index means nothing
+   on its own and everything beside the number next to it. 320 is above the
+   modal and the drawer (310) and below the consent banner (350) and the
+   toasts (400), because a save must still be readable over this and a
+   consent banner must never be buried by it. */
+.cpp{position: fixed; inset: 0; z-index: 320; display: grid; place-items: center;
   padding: var(--space-3); background: rgba(0, 0, 0, 0.62); overflow: auto;}
 .cpp__panel{background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-lg); padding: var(--space-4);

@@ -10419,6 +10419,135 @@ console.log(`\n${'='.repeat(66)}`);
   }
   check('probe: the club record and the position rule genuinely differ, so the check above is not vacuous',
     probeRed, 'every recorded clean sheet happens to match the regex, so this proves nothing');
+
+  /* ========================================================================
+     ONE WORD, ONE FIGURE, ON THE PAGE ITSELF
+
+     Everything above asks whether the CREDITED figure is the one the club
+     recorded, and all of it passed throughout while each of the 36 player
+     pages printed two different clean-sheet counts under the same word. The
+     tile counted the club's clean sheets over the matches he played - a fact
+     about the team - and the wheel beside it counted the club's clean sheets
+     he is credited with. Stewart Luwawa's 26/27 panel read "3 clean sheets,
+     of 6 on record" directly above a wheel reading "Clean sheets 0 of 3".
+
+     Nothing could have caught it, because no check compared two figures on
+     one page. This one does, and it reads the shipped HTML rather than the
+     engine: both numbers come from the same engine now, and a check asking
+     the engine would pass on the day a template picks the wrong field again.
+     ======================================================================== */
+  {
+    const pfiles = fs.readdirSync(path.join(ROOT, 'players')).filter((f) => f.endsWith('.html'));
+    const clash = [];
+    let compared = 0;
+    let panels = 0;
+    for (const f of pfiles) {
+      const html = fs.readFileSync(path.join(ROOT, 'players', f), 'utf8');
+      /* Per season panel, because the contradiction was per season: one
+         profile's figures agreed on the career tab and not on 26/27. */
+      const parts = html.split(/<div class="pf-panel" id="pf-s-\d+"/).slice(1);
+      for (const [i, part] of parts.entries()) {
+        panels += 1;
+        const tile = part.match(
+          /<b data-count="(\d+)">\d+<\/b>\s*<span>Clean sheets<\/span>/,
+        );
+        const wheel = part.match(/Clean sheets: (\d+) of (\d+) clean sheets/);
+        if (!wheel) continue;
+        const credited = Number(wheel[1]);
+        compared += 1;
+        /* A tile is dropped at nought - "no tile for a non-event" - so its
+           absence is only an answer when the wheel says nought too. */
+        const shown = tile ? Number(tile[1]) : 0;
+        if (shown !== credited) {
+          clash.push(`${f} panel ${i}: tile ${tile ? tile[1] : 'absent'} against wheel ${credited}`);
+        }
+      }
+    }
+    check('there are player pages with clean-sheet figures to compare',
+      compared > 40 && panels > 80, `${compared} wheels over ${panels} panels`);
+    check('no player page prints two different clean-sheet figures',
+      clash.length === 0, clash.slice(0, 6).join(' | '));
+    /* AND THE FIGURES ARE NOT ALL NOUGHT, which is the shape every check in
+       this family passes on: 0 === 0 on 47 pages reads exactly like
+       agreement. */
+    const anyReal = pfiles.some((f) => /Clean sheets: ([1-9]\d*) of/
+      .test(fs.readFileSync(path.join(ROOT, 'players', f), 'utf8')));
+    check('and at least one of them is a figure somebody could get wrong', anyReal);
+  }
+
+  /* ========================================================================
+     A MAN WHO DID NOT COME ON CANNOT HAVE KEPT A CLEAN SHEET
+
+     The same rule the archive already holds about goals, asked about the back
+     line. `cleanSheets` (the keeper) was in the list of things that PROVE a
+     substitute was on the pitch and `cleanSheetContributors` (the back line)
+     was not, which is the keeper-against-back-line asymmetry this file fixed
+     once for the credit and never for the proof. Two men were credited with a
+     clean sheet while their own match entry read "unused substitute", so the
+     squad list counted it and their pages could not.
+     ======================================================================== */
+  {
+    const unused = [];
+    for (const p of dCS.players || []) {
+      for (const r of p.matches || []) {
+        if (r.clean && r.role === 'bench') unused.push(`#${p.num} ${r.id}`);
+      }
+    }
+    check('no clean sheet is credited to a man the record says never came on',
+      unused.length === 0, unused.slice(0, 6).join(' | '));
+    /* Marked at all, or the check above is asking nothing. */
+    const marked = (dCS.players || []).reduce(
+      (t, p) => t + (p.matches || []).filter((r) => r.clean).length, 0,
+    );
+    check('clean sheets are marked on the match entries they were credited from',
+      marked > 50, `${marked} marks`);
+    /* And a substitute really is credited somewhere, or "no bench credit"
+       passes because the credit never reaches a substitute at all. */
+    const subCredit = (dCS.players || []).some(
+      (p) => (p.matches || []).some((r) => r.clean && r.role === 'sub'),
+    );
+    check('a substitute the club named is credited, so the rule above is not simply "starters only"',
+      subCredit, 'every credit is a starter');
+
+    /* A WALKOVER CANNOT PROVE ONE. All three are recorded as nought
+       conceded, because no football was played, so the engine's own
+       `theirGoals === 0` was true of each and it credited every defender on
+       their sheets. It cost nothing only because none of the three HAS a team
+       sheet. */
+    const woClean = [];
+    for (const m of dCS.matches) {
+      if (m.played && !m.countsGoals) {
+        for (const p of dCS.players || []) {
+          if ((p.matches || []).some((r) => r.id === m.id && r.clean)) woClean.push(`#${p.num} ${m.id}`);
+        }
+      }
+    }
+    check('a walkover credits nobody with a clean sheet',
+      woClean.length === 0, woClean.slice(0, 4).join(' | '));
+    /* CRAFTED, BECAUSE THE ARCHIVE CANNOT ASK IT. None of the three
+       walkovers has a team sheet, so the check above passes over an empty
+       set whichever way the rule falls - a probe against the real data
+       changes nothing and the check is describing the archive rather than
+       testing the engine. Here is a walkover WITH a sheet. */
+    const { playerStats: psWO } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+    const woSheet = (counts) => psWO([{
+      id: 'craft-wo', iso: '2026-03-01', played: true, kind: 'walkover',
+      countsGoals: counts, ourGoals: 3, theirGoals: 0, outcome: 'W',
+      competition: 'League Eight', season: '26/27',
+      detail: {
+        starters: [{ num: 901, positions: ['GK'] }, { num: 902, positions: ['CB'] }],
+        bench: [], goals: [], assists: [],
+      },
+    }], [{ num: 901, name: 'Crafted Keeper' }, { num: 902, name: 'Crafted Centre Back' }]);
+    const woGot = woSheet(false).reduce((t, p) => t + (p.cleanSheets || 0), 0);
+    check('a walkover with a team sheet still credits nobody',
+      woGot === 0, `${woGot} credited from an afternoon nobody played`);
+    /* And the same sheet on a real result DOES credit them, or the check
+       above passes because the crafted record credits nobody either way. */
+    const okGot = woSheet(true).reduce((t, p) => t + (p.cleanSheets || 0), 0);
+    check('probe: the same team sheet on a real nil is credited, so the walkover rule is what refused it',
+      okGot === 2, `${okGot} credited from a played nil`);
+  }
 }
 
 /* ==========================================================================

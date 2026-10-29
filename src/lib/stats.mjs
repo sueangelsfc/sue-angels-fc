@@ -566,7 +566,18 @@ export function playerStats(matches, squad, trialists = {}, signedOn = () => nul
       if (g.assist) prove(g.assist.num);
     }
     for (const a of d.assists || []) prove(a.num);
-    for (const f of ['yellowCards', 'redCards', 'cleanSheets', 'penaltiesSaved', 'penaltiesMissed']) {
+    /* `cleanSheetContributors` IS EVIDENCE, and leaving it out of this list
+       while `cleanSheets` was in it is the keeper-against-back-line asymmetry
+       this file fixed once already, for the credit, and never applied to the
+       proof. Being named in the club's own back line is the same kind of
+       claim as scoring: the club says he was on the pitch. Two men in the
+       archive are named in a clean sheet and listed on a bench nobody ticked
+       - Kieron Horrill at Larkhall and Michael Brabrook against Pure - so the
+       squad list credited them and their own pages could not, because an
+       unused substitute is not in the set a profile counts over. Each gains
+       the substitute appearance the club's answer already implied. */
+    for (const f of ['yellowCards', 'redCards', 'cleanSheets', 'cleanSheetContributors',
+      'penaltiesSaved', 'penaltiesMissed']) {
       for (const x of d[f] || []) prove(x && x.num != null ? x.num : x);
     }
     prove(d.keeper); prove(d.motm); prove(d.captain);
@@ -607,8 +618,16 @@ export function playerStats(matches, squad, trialists = {}, signedOn = () => nul
     const csFromShape = (d.starters || [])
       .filter((x) => /GK|CB|LB|RB|WB/.test((x.positions || []).join('')))
       .map((x) => Number(x.num));
+    /* A WALKOVER CANNOT PROVE A CLEAN SHEET. It is recorded as 0 conceded
+       because no football was played, so `theirGoals === 0` is true of all
+       three in the archive and this credited every defender on their sheets.
+       It cost nothing only because none of the three HAS a team sheet - the
+       day somebody enters one, eleven men would gain a clean sheet from an
+       afternoon nobody turned up for. `playerProfile` already asked this
+       question and the engine did not, which is how one figure came to be
+       the ceiling of the other. */
     const keptIt = new Set(
-      (m.theirGoals === 0 && m.played)
+      (m.theirGoals === 0 && m.played && m.countsGoals)
         ? (csRecorded.length ? csRecorded : csFromShape)
         : [],
     );
@@ -619,7 +638,6 @@ export function playerStats(matches, squad, trialists = {}, signedOn = () => nul
       const mins = minutesPlayed(num, d);
       if (mins != null) { p.minutes += mins; p.minutesGames += 1; }
       p.matches.push({ id: m.id, role: 'start' });
-      if (keptIt.has(Number(num))) { p.cleanSheets++; keptIt.delete(Number(num)); }
     }
     for (const num of bench) {
       const p = ensure(num);
@@ -642,10 +660,26 @@ export function playerStats(matches, squad, trialists = {}, signedOn = () => nul
         p.matches.push({ id: m.id, role: 'bench' });
       }
     }
-    /* Whoever the club named and the eleven did not account for: a substitute
-       defender, or a keeper who came on. Named by the club is evidence in
-       exactly the way a name on the bench with nothing beside it is not. */
-    for (const num of keptIt) ensure(num).cleanSheets++;
+    /* EVERYBODY CREDITED, IN ONE PLACE, AND MARKED ON HIS OWN MATCH ENTRY.
+       Starters, substitutes, and whoever the club named that the eleven did
+       not account for - a substitute defender, or a keeper who came on.
+       Named by the club is evidence in exactly the way a name on the bench
+       with nothing beside it is not.
+
+       The mark is what lets a player page slice this figure by season and by
+       competition without working the rule out a second time. It used to be
+       a season total only, so the page had nothing to break down and printed
+       the TEAM's clean sheets over his matches instead - two figures under
+       one word, on all 36 profiles. Same reason the per-match tallies below
+       exist: a total nothing can be derived from is a total something else
+       will be derived beside. */
+    for (const num of keptIt) {
+      const p = ensure(num);
+      p.cleanSheets++;
+      let rec = p.matches.find((r) => r.id === m.id);
+      if (!rec) { rec = { id: m.id, role: 'unlisted' }; p.matches.push(rec); }
+      rec.clean = 1;
+    }
     /* Per-match tallies are recorded on the player's own match entry as well
        as on the season total. A scoring streak cannot be derived from a
        season total, and re-reading every match detail to work one out would
@@ -1248,6 +1282,22 @@ export function playerProfile(player, matches, squad) {
   const bench = mine.filter((r) => r.role === 'bench').length;
 
   const comps = new Map();
+  /* A CLEAN SHEET IS CREDITED, NOT WITNESSED. This counted the matches he
+     was on the pitch for where the club conceded nothing, which is a fact
+     about the TEAM over his matches - and the page published it under the
+     word "Clean sheets" beside a wheel wedge reading the club's clean sheets
+     he is CREDITED with. On 29 October 2026 Stewart Luwawa's 26/27 panel read
+     "3 clean sheets, of 6 on record" over a wheel reading "Clean sheets 0 of
+     3", and all 36 profiles carried the same pair. Both figures were true;
+     one word was doing two jobs.
+
+     The credited figure is the one the club answers for on the match form,
+     and the one the leaderboards, the club records, the milestones and the
+     keeper's own record all count, so it is the only one published here now.
+     It is read off the marks the engine leaves on each match entry rather
+     than worked out again, so a profile and the squad list cannot disagree.
+     They coincided for a goalkeeper, who is named for every one, and parted
+     company for everybody else. */
   let conceded = 0, cleanSheets = 0, won = 0, drawn = 0, lost = 0, onRecord = 0;
   /* Counted from THESE matches, not from the player's all-time record, so the
      same function answers correctly for one season or for a career.
@@ -1256,8 +1306,8 @@ export function playerProfile(player, matches, squad) {
      player was involved in, INCLUDING the ones he came on in. Counting them
      only from starts lost a substitute's goals: it took one off Frazier's 31
      and would have quietly under-reported every impact player at the club.
-     Clean sheets and the win record follow the same set: they are claims
-     about a match the player was on the pitch for, not about one he began. */
+     The win record follows the same set: it is a claim about a match the
+     player was on the pitch for, not about one he began. */
   let goals = 0, assists = 0, motm = 0;
   for (const r of mine) {
     const m = byId.get(r.id);
@@ -1271,10 +1321,15 @@ export function playerProfile(player, matches, squad) {
   /* Which of these he began, so a page leading with starts can count them per
      competition and home and away from the same set. */
   const startIds = new Set(mine.filter((r) => r.role === 'start').map((r) => r.id));
+  /* And which of them he is credited a clean sheet for, marked by the engine
+     when it applied the club's own answer. */
+  const cleanIds = new Set(mine.filter((r) => r.clean).map((r) => r.id));
 
   for (const m of played) {
     const c = m.competition || 'Other';
-    if (!comps.has(c)) comps.set(c, { comp: c, apps: 0, starts: 0, goals: 0, assists: 0, cleanSheets: 0, conceded: 0, motm: 0 });
+    if (!comps.has(c)) {
+      comps.set(c, { comp: c, apps: 0, starts: 0, goals: 0, assists: 0, cleanSheets: 0, conceded: 0, motm: 0 });
+    }
     const row = comps.get(c);
     row.apps++;
     if (startIds.has(m.id)) row.starts++;
@@ -1289,7 +1344,7 @@ export function playerProfile(player, matches, squad) {
     if (m.countsGoals) {
       onRecord++;
       row.conceded += m.theirGoals; conceded += m.theirGoals;
-      if (m.theirGoals === 0) { row.cleanSheets++; cleanSheets++; runClean++; }
+      if (cleanIds.has(m.id)) { row.cleanSheets++; cleanSheets++; runClean++; }
     }
     if (m.outcome === 'W') won++; else if (m.outcome === 'D') drawn++; else if (m.outcome === 'L') lost++;
 

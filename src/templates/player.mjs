@@ -412,7 +412,7 @@ const profileWheel = (me, won, team, gk, where, face) => {
                 </div>
                 <ol class="pf-wheel__list">${rows.map((r, i) => `<li style="--i:${i}"><span>${esc(r.k)}</span><b data-count="${r.pct}%">${r.pct}%</b><i>${esc(r.v)} of ${esc(r.of)} ${esc(r.noun)}</i></li>`).join('')}</ol>
               </div>
-              <p class="pf-chart__sub">Each wedge is his part of the club’s own total ${esc(where)}: his starts out of the matches played, his goals out of the goals the club scored, his assists out of every assist, his wins out of the club’s wins and his clean sheets out of the club’s clean sheets.</p>
+              <p class="pf-chart__sub">Each wedge is his part of the club’s own total ${esc(where)}: his starts out of the matches played, his goals out of the goals the club scored, his assists out of every assist, his wins out of the club’s wins and the clean sheets he is credited with out of the club’s clean sheets.</p>
             </figure>`;
 };
 
@@ -772,7 +772,9 @@ export function playerPage(p, d) {
     { v: x.perGame, k: 'Goals + assists a game' },
     /* An outfielder's share of the clean sheets, which the club records by
        NAMING the back line. It is his afternoon's work as much as a goal is
-       a striker's, and the page had no way of saying so. */
+       a striker's, and the page had no way of saying so. This read the
+       club's clean sheets over his matches until October 2026, which is a
+       fact about the team wearing his name. */
     { v: x.cleanSheets, k: 'Clean sheets', sub: x.onRecord ? `of ${x.onRecord} on record` : '' },
     { v: x.motm, k: 'Man of the Match' },
     { v: x.bench, k: 'Unused sub' },

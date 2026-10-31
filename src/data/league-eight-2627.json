@@ -411,6 +411,22 @@
       "home": "Sue's Angels FC",
       "away": "TSM Rovers",
       "venue": "The Reeves Sports Club"
+    },
+    {
+      "iso": "2026-11-08",
+      "date": "08 Nov 26",
+      "kick": "10:30",
+      "home": "Bristol City (London) Supporters",
+      "away": "Three Little Birds FC",
+      "venue": "Clapham Common, Pitch 9"
+    },
+    {
+      "iso": "2026-11-08",
+      "date": "08 Nov 26",
+      "kick": "10:30",
+      "home": "Brockwell Violets FC",
+      "away": "Sue's Angels FC",
+      "venue": "Clapham Common, Pitch 8"
     }
   ],
   "_cancelledNote": "Mousa Mountain FC folded on 17 October 2026 and the league confirmed their removal from League Eight. They are out of `table` and out of `clubs`, and the 18 October fixture against them is cancelled in src/data/fixture-cancellations.json, which is what removes the club's own copy of it from the database. No points were awarded to anyone for the cancelled fixtures. The division is nine clubs now, so the published results and the derived table are reconciled over nine. Pure Football FC 1st Team collapsed on 25 October 2026 and were removed in turn: they are out of `table`, `clubs`, `results` and `fixtures`, and because their three played matches were EXPUNGED rather than left standing, Brockwell Violets, TSM Rovers and Bristol City all lost the record of a match they had played. Brockwell go 12 points to 9, TSM 6 to 3, Bristol City 4 to 3 - a draw taken away, not a win, which is why they drop a point rather than three. The division is eight clubs and the derived table reconciles over eight.",

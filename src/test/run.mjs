@@ -8434,6 +8434,49 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     const noteOf = (c) => String((ROLES.find((r) => r.code === c) || {}).note || '');
     check('the deep-lying playmaker and the regista are told apart by the free role',
       /holding his position/i.test(noteOf('REG')) && /free role/i.test(noteOf('RGA')));
+    /* A LEFT-SIDED POSITION AND ITS RIGHT-SIDED TWIN ARE ONE JOB ON TWO
+       FLANKS, so nine pairs must offer nine identical lists. This is the
+       general form of the asymmetry that put a deep playmaker on the one
+       central spelling nobody records: a `for` list is typed by hand and a
+       side left out of it is invisible from the data, because the dropdown
+       that is missing a role looks exactly like a role that does not exist. */
+    const twins = POSITIONS.filter((p) => p.code.startsWith('L')
+      && POSITIONS.some((q) => q.code === `R${p.code.slice(1)}`))
+      .map((p) => [p.code, `R${p.code.slice(1)}`]);
+    const lopsided = twins.filter(([l, r]) =>
+      rolesFor(l).map((x) => x.code).join(' ') !== rolesFor(r).map((x) => x.code).join(' '));
+    check('every left-sided position offers what its right-sided twin offers',
+      twins.length === 9 && lopsided.length === 0,
+      lopsided.map(([l, r]) => `${l}/${r}`).join(' ') || `${twins.length} pairs agree`);
+    /* THE WIDE AREAS ARE PICKED FOR CREATING AND HAD ONE WAY TO SAY SO. The
+       club asked for the wingers after the centre midfielders; everything
+       else out there describes where he goes rather than what he does with
+       it, and the full backs had four roles with nothing about delivery. */
+    for (const c of ['LW', 'RW', 'LM', 'RM']) {
+      check(`a winger at ${c} is offered the wide, the half-space and the early creator`,
+        ['WPM', 'HSP', 'ECR'].every((k) => rolesFor(c).some((r) => r.code === k)),
+        rolesFor(c).map((r) => r.code).join(' '));
+    }
+    check('a wide forward can be described as a half-space playmaker',
+      ['LF', 'RF'].every((c) => rolesFor(c).some((r) => r.code === 'HSP')));
+    check('a full back or wing back can be credited with the delivery',
+      ['LB', 'RB', 'LWB', 'RWB'].every((c) => rolesFor(c).some((r) => r.code === 'ECR')),
+      rolesFor('LB').map((r) => r.code).join(' '));
+    /* The wide creator and the touchline winger are opposite answers to one
+       question - whether he has to beat his man first - so each has to say
+       which, or the pair reads as a preference about wording. */
+    check('the early crosser and the touchline winger are told apart by beating the man',
+      /instead of taking his full back on/i.test(noteOf('ECR'))
+      && /takes the full back on/i.test(noteOf('TWG')));
+    /* THE SIDES OF THE ATTACKING LINE GET THE ROAMING ONE and deliberately
+       not the shadow striker, which is a central job: running beyond the
+       forward off his shoulder. So that line is three lists and only two of
+       them are identical, which is a decision rather than the fault above. */
+    check('a wide attacking midfielder is offered the roaming playmaker',
+      ['LAM', 'RAM'].every((c) => rolesFor(c).some((r) => r.code === 'RPM')));
+    check('the shadow striker stays a central job',
+      ['LAM', 'RAM'].every((c) => !rolesFor(c).some((r) => r.code === 'SHD'))
+      && rolesFor('CAM').some((r) => r.code === 'SHD'));
   }
 
   /* ====================================================================

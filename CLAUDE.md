@@ -1268,7 +1268,7 @@ stand-first and a drop cap; and the players' names in that prose linked.
 - **`ordinal()` moved into `stats.mjs`.** `home.mjs` and `player.mjs` each
   carried an identical copy and this needed a third.
 
-### Forty roles, and how the side played
+### Forty-two roles, and how the side played
 
 **A role is attached to a position, never instead of one.** A false nine is a
 centre forward with a job. `ROLES` in `src/lib/positions.mjs` held nineteen,
@@ -1277,7 +1277,7 @@ worse than no dropdown at all" - which is true of forty invented by a video
 game and not of the ones a manager actually says out loud. The club asked for
 more and named one: a forward who **runs the channels**.
 
-- **Forty now**, three to ten per position, every one carrying the
+- **Forty-two now**, four to ten per position, every one carrying the
   sentence that explains it. The suite asks that no two share a code, a name
   **or a description** - the last one because that is how a duplicate hides,
   with different letters over the same idea - and that every position offers at
@@ -1298,10 +1298,34 @@ more and named one: a forward who **runs the channels**.
   on the form at ten. A regista is not a second deep-lying playmaker: the
   difference is the free role, so the disciplined one's own sentence had to say
   it holds its position or the pair would have read as one job twice.
-- **`control-matchedit.js` has 642 bytes left** of its 19KB, measured the way
-  the suite measures it. The roles are DATA riding with that chunk, so the two
-  of them cost the reader **86 gzipped bytes** - cut them back out of the
-  shipped file and it drops from 18,814 to 18,728 - and cost
+- **THE WIDE AREAS HAD ONE CREATOR BETWEEN THEM**, and the club asked for the
+  wingers straight after the centre midfielders. Everything else out there
+  describes where a wide man GOES - inside onto his stronger foot, down the
+  line, off the far shoulder, holding it up - while the two jobs he is actually
+  picked for had nothing: **half-space playmaker** (`HSP`, also the wide
+  forwards) is the one who comes into the pocket and picks the pass, and
+  **early crosser** (`ECR`) is the one who never beats his full back and does
+  not need to. The second reaches the **full backs and wing backs**, who had
+  four roles and not one of them about putting a ball in. It is the opposite
+  answer to the touchline winger's, so each note has to say whether he beats
+  his man first or the pair reads as a preference about wording.
+- **`RPM` reached the middle of the attacking line and not the sides of it**,
+  twenty stored team sheets each - the same hand-typed asymmetry as `REG`, and
+  invisible the same way, because a dropdown missing a role looks exactly like
+  a role that does not exist. `LAM` and `RAM` are deliberately **not** given
+  the shadow striker, which is a central job (running beyond the forward off
+  his shoulder), so that line is three lists of which only two are identical.
+  That is a decision, and the suite asserts the exclusion rather than leaving
+  it to look like the fault.
+- **The general form of both faults is now one check**: a left-sided position
+  and its right-sided twin are one job on two flanks, so the **nine pairs must
+  offer nine identical lists**. It would have caught neither of the two found
+  by hand - both were centre-against-pair, not left-against-right - which is
+  why it is worth having: it is the next one.
+- **`control-matchedit.js` has 563 bytes left** of its 19KB, measured the way
+  the suite measures it. The roles are DATA riding with that chunk, so a pair
+  of them costs the reader **about 85 gzipped bytes** - cut the two wide ones
+  back out of the shipped file and it drops from 18,893 to 18,813 - and costs
   `11-matchedit.js`'s source ceiling nothing at all, which is exactly the split
   those two budgets exist to show.
 

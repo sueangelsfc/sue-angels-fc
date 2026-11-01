@@ -170,7 +170,12 @@ export const ROLES = [
     note: 'Drifts into the channel outside his own centre and arrives late.' },
   { code: 'APM', name: 'Advanced playmaker', for: ['CAM', 'AM', 'LAM', 'RAM', 'CM', 'LCM', 'RCM'],
     note: 'The one everything goes through in the final third.' },
-  { code: 'RPM', name: 'Roaming playmaker', for: ['CM', 'LCM', 'RCM', 'CAM', 'AM'],
+  /* LAM AND RAM GET THE ROAMING ONE, for the reason the central trio got the
+     deep one: twenty stored team sheets each, and the role reached the middle
+     of that line and not the sides of it. They are NOT given the shadow
+     striker, which is a central job - running beyond the forward off his
+     shoulder - so that line is deliberately not three identical lists. */
+  { code: 'RPM', name: 'Roaming playmaker', for: ['CM', 'LCM', 'RCM', 'CAM', 'AM', 'LAM', 'RAM'],
     note: 'Leaves his position to find the ball wherever it has gone.' },
   { code: 'TRQ', name: 'Free role', for: ['CAM', 'AM', 'LAM', 'RAM', 'SS'],
     note: 'Roams between the lines with no fixed job.' },
@@ -184,6 +189,17 @@ export const ROLES = [
     note: 'Stays wide, takes the full back on, and puts it in the box.' },
   { code: 'WPM', name: 'Wide playmaker', for: ['LW', 'RW', 'LM', 'RM'],
     note: 'Drops in from wide to make the play rather than beat a man.' },
+  /* THE WIDE AREAS HAD ONE CREATOR BETWEEN THEM. Everything else out here is
+     about where he goes - inside, down the line, off the shoulder, holding it
+     up - and the two jobs a wide man is actually picked for got nothing: the
+     one who comes into the pocket and picks the pass, and the one who never
+     beats his full back and does not need to because of his delivery. The
+     second reaches the full backs and wing backs as well, who had four roles
+     and not one of them about putting a ball in. */
+  { code: 'HSP', name: 'Half-space playmaker', for: ['LW', 'RW', 'LM', 'RM', 'LF', 'RF'],
+    note: 'Comes inside into the pocket between the lines and picks the pass from there.' },
+  { code: 'ECR', name: 'Early crosser', for: ['LW', 'RW', 'LM', 'RM', 'LWB', 'RWB', 'LB', 'RB'],
+    note: 'Delivers it from deep instead of taking his full back on first.' },
   { code: 'RAI', name: 'Blind-side runner', for: ['LW', 'RW', 'LF', 'RF', 'SS'],
     note: 'Plays off the far shoulder of the full back and arrives in the box unseen.' },
   { code: 'WTM', name: 'Wide target man', for: ['LW', 'RW', 'LM', 'RM', 'LF', 'RF'],

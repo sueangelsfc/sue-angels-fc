@@ -12,79 +12,92 @@
   "division": "League Eight",
   "started": false,
   "clubs": [
-    "Barnes Stormers FC",
-    "Bristol City (London) Supporters",
-    "Brockwell Violets FC",
-    "Haydons Park",
-    "Junction Elite FC Sunday 3rd Team",
     "Sue's Angels FC",
+    "Brockwell Violets FC",
+    "Three Little Birds FC",
     "TSM Rovers",
-    "Three Little Birds FC"
+    "Junction Elite FC Sunday 3rd Team",
+    "Bristol City (London) Supporters",
+    "Haydons Park",
+    "Pure Football FC 1st Team",
+    "Barnes Stormers FC"
   ],
-  "tableAsOf": "2026-10-17",
+  "tableAsOf": "2026-11-01",
   "table": [
     {
       "p": 1,
       "c": "Sue's Angels FC",
-      "pl": 4,
-      "w": 4,
+      "pl": 5,
+      "w": 5,
       "d": 0,
       "l": 0,
-      "gf": 20,
-      "ga": 3,
-      "gd": 17,
-      "pts": 12
+      "gf": 26,
+      "ga": 4,
+      "gd": 22,
+      "pts": 15
     },
     {
       "p": 2,
       "c": "Brockwell Violets FC",
-      "pl": 3,
-      "w": 3,
+      "pl": 5,
+      "w": 4,
       "d": 0,
-      "l": 0,
-      "gf": 8,
-      "ga": 3,
-      "gd": 5,
-      "pts": 9
+      "l": 1,
+      "gf": 10,
+      "ga": 4,
+      "gd": 6,
+      "pts": 12
     },
     {
       "p": 3,
       "c": "Three Little Birds FC",
-      "pl": 3,
-      "w": 2,
+      "pl": 4,
+      "w": 3,
       "d": 0,
       "l": 1,
-      "gf": 8,
+      "gf": 9,
       "ga": 5,
-      "gd": 3,
-      "pts": 6
+      "gd": 4,
+      "pts": 9
     },
     {
       "p": 4,
       "c": "TSM Rovers",
-      "pl": 2,
-      "w": 1,
+      "pl": 4,
+      "w": 2,
       "d": 0,
-      "l": 1,
-      "gf": 7,
-      "ga": 5,
-      "gd": 2,
-      "pts": 3
+      "l": 2,
+      "gf": 12,
+      "ga": 11,
+      "gd": 1,
+      "pts": 6
     },
     {
       "p": 5,
-      "c": "Bristol City (London) Supporters",
-      "pl": 3,
-      "w": 1,
+      "c": "Junction Elite FC Sunday 3rd Team",
+      "pl": 5,
+      "w": 2,
       "d": 0,
-      "l": 2,
-      "gf": 3,
-      "ga": 7,
+      "l": 3,
+      "gf": 8,
+      "ga": 12,
       "gd": -4,
-      "pts": 3
+      "pts": 6
     },
     {
       "p": 6,
+      "c": "Bristol City (London) Supporters",
+      "pl": 4,
+      "w": 1,
+      "d": 1,
+      "l": 2,
+      "gf": 6,
+      "ga": 10,
+      "gd": -4,
+      "pts": 4
+    },
+    {
+      "p": 7,
       "c": "Haydons Park",
       "pl": 3,
       "w": 1,
@@ -96,31 +109,56 @@
       "pts": 3
     },
     {
-      "p": 7,
-      "c": "Junction Elite FC Sunday 3rd Team",
-      "pl": 4,
-      "w": 1,
-      "d": 0,
-      "l": 3,
-      "gf": 6,
-      "ga": 12,
+      "p": 8,
+      "c": "Pure Football FC 1st Team",
+      "pl": 3,
+      "w": 0,
+      "d": 1,
+      "l": 2,
+      "gf": 3,
+      "ga": 9,
       "gd": -6,
-      "pts": 3
+      "pts": 1,
+      "note": "Have not played since 4 October. The club was reported to have collapsed on 25 October and the league expunged their three results; the table published on 1 November has the club and those three results back in, and the points from them have returned to the clubs that played them. Nothing has been published about the rest of their season."
     },
     {
-      "p": 8,
+      "p": 9,
       "c": "Barnes Stormers FC",
-      "pl": 4,
+      "pl": 5,
       "w": 0,
       "d": 0,
-      "l": 4,
+      "l": 5,
       "gf": 3,
-      "ga": 14,
-      "gd": -11,
+      "ga": 16,
+      "gd": -13,
       "pts": 0
     }
   ],
   "results": [
+    {
+      "date": "01 Nov 26",
+      "kick": "10:30",
+      "home": "Three Little Birds FC",
+      "hs": 1,
+      "as": 0,
+      "away": "Brockwell Violets FC"
+    },
+    {
+      "date": "01 Nov 26",
+      "kick": "10:30",
+      "home": "Barnes Stormers FC",
+      "hs": 0,
+      "as": 2,
+      "away": "Junction Elite FC Sunday 3rd Team"
+    },
+    {
+      "date": "01 Nov 26",
+      "kick": "11:00",
+      "home": "Sue's Angels FC",
+      "hs": 6,
+      "as": 1,
+      "away": "TSM Rovers"
+    },
     {
       "date": "11 Oct 26",
       "kick": "10:30",
@@ -224,6 +262,30 @@
       "hs": 1,
       "as": 4,
       "away": "TSM Rovers"
+    },
+    {
+      "date": "04 Oct 26",
+      "kick": "12:30",
+      "home": "Pure Football FC 1st Team",
+      "hs": 0,
+      "as": 4,
+      "away": "TSM Rovers"
+    },
+    {
+      "date": "20 Sep 26",
+      "kick": "12:30",
+      "home": "Pure Football FC 1st Team",
+      "hs": 3,
+      "as": 3,
+      "away": "Bristol City (London) Supporters"
+    },
+    {
+      "date": "13 Sep 26",
+      "kick": "10:30",
+      "home": "Brockwell Violets FC",
+      "hs": 2,
+      "as": 0,
+      "away": "Pure Football FC 1st Team"
     }
   ],
   "_scorersNote": "RESTORED 27 OCTOBER 2026, with the expunged goals removed player by player. The chart was transcribed on 4 October and counted goals scored in the three Pure Football FC 1st Team matches, which the league expunged when it removed the club. The club supplied Full-Time's match sheets for all three, so who scored them is read rather than guessed: Makheyi Chilumbi 1 and Vincent Narayna 2 (Pure 0-4 TSM Rovers), Meddy Deschamps, Ben Earle and Samuel Sayer 1 each (Pure 3-3 Bristol City), Charlie Green and Aaron Boniface 1 each (Brockwell Violets 2-0 Pure). Illo Sissoko also scored in the first of those and is below Full-Time's 25-row cut, so he was never in the chart. Deschamps, Sayer and Boniface fall to no goals at all and their rows are gone; a man with nothing but an expunged goal is not a scorer in this division. Appearances are reduced by one for everybody named in those three team sheets, which is why the apps column still reconciles with the table. Club totals after it: TSM Rovers 7 (results 7), Bristol City 3 (results 3), Brockwell Violets 4 (results 8, the rest below the cut). ASSISTS ARE STILL HELD EMPTY at the club's request - they are being re-read separately - and `_clubAssists` is kept for reapplying after that read.\n\nThe division's scorers, from Full-Time's stat leaders page (Player stats, Summary, League Eight 26/27), which excludes county cup football. Every player with a goal is kept, spelt as Full-Time prints them; the page lists appearances for everybody else and those are not kept. npm run verify fails if a club's scorers add up to more goals than its results say it scored. THE PAGE SHOWS 25 ROWS AND THE DIVISION HAS MORE, so a re-read is MERGED, never swapped in. On 4 October the cut fell inside the one-goal group at surname O, and six real scorers sat below it (Otudeko, Reid, Rixon, Sayer, Theivendran, Wing); replacing the list would have deleted all six and taken a goal off four clubs. Reconciling every club's scorers against the goals its table row claims is how the transcription is checked: no club is credited with more than it scored, and the shortfalls are own goals and the rows below the cut. Full-Time lists Drew Daley of Haydons Park with a goal and no appearance, which is its own figure and is kept as printed rather than corrected here.",
@@ -430,15 +492,11 @@
     }
   ],
   "_cancelledNote": "Mousa Mountain FC folded on 17 October 2026 and the league confirmed their removal from League Eight. They are out of `table` and out of `clubs`, and the 18 October fixture against them is cancelled in src/data/fixture-cancellations.json, which is what removes the club's own copy of it from the database. No points were awarded to anyone for the cancelled fixtures. The division is nine clubs now, so the published results and the derived table are reconciled over nine. Pure Football FC 1st Team collapsed on 25 October 2026 and were removed in turn: they are out of `table`, `clubs`, `results` and `fixtures`, and because their three played matches were EXPUNGED rather than left standing, Brockwell Violets, TSM Rovers and Bristol City all lost the record of a match they had played. Brockwell go 12 points to 9, TSM 6 to 3, Bristol City 4 to 3 - a draw taken away, not a win, which is why they drop a point rather than three. The division is eight clubs and the derived table reconciles over eight.",
-  "_tableNoteNote": "A `note` on a table row prints as an asterisk against that club with the sentence under the table, on every page that draws the division. Nothing carries one at the moment: Mousa Mountain did while their record was in limbo, and the mark went when the league settled it. The suite exercises the mechanism on a crafted row rather than on the shipped data, so it keeps testing after a mark is retired.",
+  "_tableNoteNote": "A `note` on a table row prints as an asterisk against that club with the sentence under the table, on every page that draws the division. Pure Football FC 1st Team carries one: the club was reported collapsed and expunged on 25 October and is back in the published table of 1 November with its record intact, which is the limbo the mark exists for - Mousa Mountain wore it in the same way and lost it when the league settled their case. The suite exercises the mechanism on a crafted row rather than on the shipped data, so it keeps testing after a mark is retired.",
   "removed": [
     {
       "club": "Mousa Mountain FC",
       "note": "Folded on 17 October 2026 and removed from League Eight by the league. Their fixture at Sue’s Angels on Sunday 18 October was not played, and no points were awarded."
-    },
-    {
-      "club": "Pure Football FC 1st Team",
-      "note": "Collapsed on 25 October 2026 and removed from League Eight by the league. Their three results were expunged, so the clubs that played them no longer carry the points from those matches. With two clubs gone the division is eight, and no club will be relegated from League Eight this season."
     }
   ],
   "_removedNote": "A club the league has taken OUT of the division, named under the table rather than deleted from the page. A removed club is not a row - it has no position and no record to stand on - but a reader who remembers the fixture is owed an explanation, and a table that simply has one fewer club than last week explains nothing. Rendered with the same tableFootnote() that draws a marked row's asterisk, on the three pages that draw the division.",

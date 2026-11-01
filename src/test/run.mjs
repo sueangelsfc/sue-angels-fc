@@ -2400,10 +2400,46 @@ for (const [f, h] of pages) {
   const us = (l8.table || []).find((r) => /sue.s angels/i.test(r.c));
   const league = mr(compM.filter((m) => m.season === '26/27' && /League Eight/i.test(m.competition)),
     dM.playersBySeason['26/27']);
+  /* THE CLUB'S OWN RECORD IS ALLOWED TO BE BEHIND THE LEAGUE'S TABLE, and only
+     behind. The table is transcribed the morning after a round and the match
+     record is typed into the panel whenever somebody gets to it, so demanding
+     equality makes this check go red every Sunday for a state that is normal
+     and nobody's fault - and a check that cries wolf on match day is a check
+     somebody switches off. It is not relaxed to an inequality either: the
+     shortfall has to be EXACTLY the transcribed results the archive has no
+     match for, so the derived figures plus the outstanding ones equal the
+     published row to the goal. The archive disagreeing about a match both
+     sources hold still fails, and the archive running AHEAD of the league
+     fails, because then there is nothing outstanding to make up the gap. */
+  const MON8 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const iso8 = (s) => {
+    const m = /^(\d{2}) (\w{3}) (\d{2})$/.exec(String(s || '').trim());
+    return m ? `20${m[3]}-${String(MON8.indexOf(m[2]) + 1).padStart(2, '0')}-${m[1]}` : '';
+  };
+  const haveIso = new Set(compM.filter((m) => m.season === '26/27'
+    && /League Eight/i.test(m.competition)).map((m) => m.iso));
+  const outstanding = (l8.results || [])
+    .filter((r) => /sue.s angels/i.test(`${r.home} ${r.away}`))
+    .filter((r) => !haveIso.has(iso8(r.date)))
+    .map((r) => {
+      const home = /sue.s angels/i.test(r.home);
+      return { iso: iso8(r.date), for: home ? r.hs : r.as, against: home ? r.as : r.hs };
+    });
+  const owed = {
+    pl: outstanding.length,
+    w: outstanding.filter((o) => o.for > o.against).length,
+    gf: outstanding.reduce((a, o) => a + o.for, 0),
+    ga: outstanding.reduce((a, o) => a + o.against, 0),
+  };
   check('the manager\u2019s League Eight figures match the published table row',
-    !us || (league.played === us.pl && league.won === us.w && league.goalsFor === us.gf
-      && league.goalsAgainst === us.ga),
-    us ? `derived ${league.played}/${league.won}/${league.goalsFor}/${league.goalsAgainst} vs table ${us.pl}/${us.w}/${us.gf}/${us.ga}` : 'no row');
+    !us || (league.played + owed.pl === us.pl && league.won + owed.w === us.w
+      && league.goalsFor + owed.gf === us.gf && league.goalsAgainst + owed.ga === us.ga),
+    us ? `derived ${league.played}/${league.won}/${league.goalsFor}/${league.goalsAgainst} + ${owed.pl} not yet in the record (${outstanding.map((o) => o.iso).join(', ') || 'none'}) vs table ${us.pl}/${us.w}/${us.gf}/${us.ga}` : 'no row');
+  /* And the outstanding ones are named, so a growing pile is visible rather
+     than quietly absorbed by the check that is meant to catch it. */
+  if (outstanding.length) {
+    console.log(`  League Eight results the league has published and the match record has not: ${outstanding.map((o) => o.iso).join(', ')}`);
+  }
 
   /* THE DATE IS THE WHOLE POINT. Crafted, because Stephen founded the club
      and his record IS the club's, so today's data cannot tell a working

@@ -8407,6 +8407,33 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     /* The club asked for this one by name. */
     check('a forward can be described as a channel runner',
       rolesFor('ST').some((r) => r.code === 'CHR') && rolesFor('CF').some((r) => r.code === 'CHR'));
+    /* THREE SPELLINGS OF ONE PLACE MUST OFFER ONE LIST. `CM`, `LCM` and `RCM`
+       are the same job on the form, and the deep-lying playmaker's `for` list
+       reached only the first - which the club barely records, fifteen stored
+       sheets each for the pair against seven for the single. So the asymmetry
+       was invisible from the data: the position that had the role was the one
+       nobody used. Asked of the whole list rather than of the playmakers,
+       because the next role added to one of the three has the same fault
+       waiting in it. */
+    const trio = ['CM', 'LCM', 'RCM'].map((c) => rolesFor(c).map((r) => r.code).join(' '));
+    check('the central midfield trio offers one list, not three',
+      trio[0] === trio[1] && trio[1] === trio[2],
+      trio.join(' / '));
+    /* The club asked for playmakers on a centre midfielder. A regista is not
+       a second deep-lying playmaker - the difference IS the free role - so the
+       disciplined one has to say it holds its position, or the pair reads as
+       one job entered twice. */
+    const pmk = (c) => rolesFor(c).filter((r) => /playmaker|regista/i.test(r.name)).map((r) => r.code);
+    check('a centre midfielder is offered the deep, the advanced, the roaming and the free playmaker',
+      ['CM', 'LCM', 'RCM'].every((c) => ['REG', 'RGA', 'APM', 'RPM'].every((k) => pmk(c).includes(k))),
+      pmk('LCM').join(' '));
+    /* NULL-SAFE, because a probe has to turn this red rather than throw: a
+       rename puts `undefined` where the role was, and a throw here takes the
+       whole report down with it and discards every failure above. Gotcha 10,
+       met head-on by the probe for this very check. */
+    const noteOf = (c) => String((ROLES.find((r) => r.code === c) || {}).note || '');
+    check('the deep-lying playmaker and the regista are told apart by the free role',
+      /holding his position/i.test(noteOf('REG')) && /free role/i.test(noteOf('RGA')));
   }
 
   /* ====================================================================

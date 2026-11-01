@@ -104,8 +104,12 @@ export const POSITIONS = [
 
    These are the ones a Sunday-league manager would actually write down.
    Football has a longer list, most of it invented by a video game, and a
-   dropdown of forty instructions nobody uses is worse than no dropdown at
-   all. Definitions follow how the game uses the terms.
+   dropdown of instructions nobody uses is worse than no dropdown at all.
+   What keeps that honest is that each one has to be a job somebody says out
+   loud: the club asked for more and named them, which is how the list went
+   nineteen to thirty-eight to forty. Definitions follow how the game uses
+   the terms. A position never offers all of them - the central trio is the
+   longest list on the form, at ten.
    ========================================================================== */
 export const ROLES = [
   /* ---- In goal ---- */
@@ -145,8 +149,17 @@ export const ROLES = [
     note: 'Drops between the centre backs to take the ball off them.' },
   { code: 'BWM', name: 'Ball-winning midfielder', for: ['CDM', 'DM', 'LDM', 'RDM', 'CM', 'LCM', 'RCM'],
     note: 'Hunts the ball and breaks play up.' },
-  { code: 'REG', name: 'Deep-lying playmaker', for: ['CDM', 'DM', 'LDM', 'RDM', 'CM'],
-    note: 'Sets the tempo by passing from the base of midfield.' },
+  { code: 'REG', name: 'Deep-lying playmaker', for: ['CDM', 'DM', 'LDM', 'RDM', 'CM', 'LCM', 'RCM'],
+    note: 'Sets the tempo by passing from the base of midfield, holding his position.' },
+  /* THE PLAYMAKERS ARE THE SAME FAMILY ACROSS THE WHOLE CENTRAL TRIO. REG
+     reached CM and not LCM or RCM, and the club records its midfield as a
+     pair far more often than as a single CM - fifteen stored team sheets each
+     against seven - so the one position nobody actually uses was the only one
+     offered a deep playmaker. */
+  { code: 'RGA', name: 'Regista', for: ['CDM', 'DM', 'LDM', 'RDM', 'CM', 'LCM', 'RCM'],
+    note: 'Dictates it from deep with a free role, going to find the ball instead of waiting for it.' },
+  { code: 'BCM', name: 'Ball-carrying midfielder', for: ['CM', 'LCM', 'RCM', 'CAM', 'AM', 'LAM', 'RAM'],
+    note: 'Creates by running at the defence with it rather than releasing it early.' },
   { code: 'SV', name: 'Breaking midfielder', for: ['CDM', 'DM', 'LDM', 'RDM'],
     note: 'Starts at the base and breaks past the forwards into the box.' },
   { code: 'B2B', name: 'Box to box midfielder', for: ['CM', 'LCM', 'RCM'],

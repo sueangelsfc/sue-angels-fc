@@ -1268,7 +1268,7 @@ stand-first and a drop cap; and the players' names in that prose linked.
 - **`ordinal()` moved into `stats.mjs`.** `home.mjs` and `player.mjs` each
   carried an identical copy and this needed a third.
 
-### Thirty-eight roles, and how the side played
+### Forty roles, and how the side played
 
 **A role is attached to a position, never instead of one.** A false nine is a
 centre forward with a job. `ROLES` in `src/lib/positions.mjs` held nineteen,
@@ -1277,7 +1277,7 @@ worse than no dropdown at all" - which is true of forty invented by a video
 game and not of the ones a manager actually says out loud. The club asked for
 more and named one: a forward who **runs the channels**.
 
-- **Thirty-eight now**, three to eight per position, every one carrying the
+- **Forty now**, three to ten per position, every one carrying the
   sentence that explains it. The suite asks that no two share a code, a name
   **or a description** - the last one because that is how a duplicate hides,
   with different letters over the same idea - and that every position offers at
@@ -1287,6 +1287,23 @@ more and named one: a forward who **runs the channels**.
   nothing where the club had answered.
 - **The dropdown is built from `ROLE_VOCAB`**, so what can be entered and what
   can be published cannot drift apart. A new role needs no panel change.
+- **The playmakers are one family across the whole central trio, and they were
+  not.** The club asked for playmaker roles on a centre midfielder, and the
+  deep-lying playmaker's `for` list reached `CM` and neither `LCM` nor `RCM` -
+  which is the one spelling the club barely uses, fifteen stored team sheets
+  each against seven. So the position nobody records was the only one offered a
+  deep playmaker, and the two that are recorded were offered the advanced and
+  roaming ones alone. **Regista** (`RGA`) and **ball-carrying midfielder**
+  (`BCM`) are the two additions, and the central trio is now the longest list
+  on the form at ten. A regista is not a second deep-lying playmaker: the
+  difference is the free role, so the disciplined one's own sentence had to say
+  it holds its position or the pair would have read as one job twice.
+- **`control-matchedit.js` has 642 bytes left** of its 19KB, measured the way
+  the suite measures it. The roles are DATA riding with that chunk, so the two
+  of them cost the reader **86 gzipped bytes** - cut them back out of the
+  shipped file and it drops from 18,814 to 18,728 - and cost
+  `11-matchedit.js`'s source ceiling nothing at all, which is exactly the split
+  those two budgets exist to show.
 
 **`DM` and `AM` are aliases, not duplicates.** They name the same place as
 `CDM` and `CAM`, and the archive holds both spellings - 10 sheets say CDM and 4

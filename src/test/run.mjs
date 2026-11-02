@@ -11918,23 +11918,38 @@ let orphanClasses = new Map();
     }
     check('every page carrying an interview links a sheet that styles it',
       seen > 0 && bad.length === 0, `${seen} pages with one${bad.length ? `, ${bad.slice(0, 3).join(' | ')}` : ''}`);
-    /* THE PROBE IS THE DEFECT, PUT BACK: the interview vocabulary present in
-       the media band and absent from the report band. */
-    const probeCss = sheetText['p-media.css'] || '';
+    /* THE PROBE IS THE DEFECT, PUT BACK, and it is asked of every page's OWN
+       band rather than of the report band by name. The first version stripped
+       `p-report.css` alone, because that was the band the defect shipped on -
+       and the day the three TSM interviews moved out of the match report into
+       articles of their own it caught nothing at all and reported the check
+       as weak when the check was fine. A probe aimed at where a bug happened
+       once is a probe that retires with the content. */
     let probeBad = 0;
-    for (const [f, html] of pages) {
+    for (const [, html] of pages) {
       if (!/class="(?:[^"]* )?(?:aud|qa__q)(?: [^"]*)?"/.test(html)) continue;
-      const names = [...html.matchAll(/<link[^>]+href="\/([\w.-]+\.css)/g)].map((m) => m[1]);
-      /* The report band, as it was: its own sheet with the shared partial
-         stripped back out of it. */
-      const css = names.map((n) => (n === 'p-report.css'
-        ? (sheetText[n] || '').split(probeCss).join('')
-          .replace(/\.(?:aud|qa__)[\w-]*/g, '.x-gone')
-        : sheetText[n] || '')).join('\n');
+      const css = [...html.matchAll(/<link[^>]+href="\/([\w.-]+\.css)/g)]
+        .map((m) => (sheetText[m[1]] || '').replace(/\.(?:aud|qa__)[\w-]*/g, '.x-gone')).join('\n');
       if (!/\.aud(?![\w-])/.test(css) && /class="(?:[^"]* )?aud(?: [^"]*)?"/.test(html)) probeBad += 1;
     }
     check('probe: an interview on a page whose band does not style it is caught',
       probeBad > 0, `${probeBad} page(s) caught`);
+    /* AND THE BAND THAT CAN DRAW IT MUST STYLE IT, whether or not a page
+       ships one today. `articleBody` is called by news.mjs AND report.mjs, so
+       both bands can render this vocabulary - which is the whole reason the
+       partial is shared rather than living in the media band. Asked of the
+       template rather than of the output, because the output only proves it
+       on the day somebody puts a recording in a match report, and that is the
+       day it is too late. */
+    for (const [tpl, band] of [['news.mjs', 'p-media.css'], ['report.mjs', 'p-report.css']]) {
+      const src = fs.readFileSync(path.join(ROOT, 'src', 'templates', tpl), 'utf8');
+      if (!/articleBody/.test(src)) continue;
+      const css = sheetText[band] || '';
+      const gaps = ['aud', 'qa__q', 'qa__pull', 'nw-art__film']
+        .filter((c) => !new RegExp(`\\.${c}(?![\\w-])`).test(css));
+      check(`${band} styles the interview, because ${tpl} can render one`,
+        css.length > 0 && gaps.length === 0, gaps.join(', ') || 'all declared');
+    }
   }
 
   /* 5. A SPAN MAY NOT HOLD A HEADING.

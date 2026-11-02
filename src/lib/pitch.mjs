@@ -32,6 +32,11 @@ export const PITCH = {
   six: { x0: 36.7, x1: 63.3, y1: 5.2 },
   spot: { x: 50, y: 10.4 },
   arc: 8.0,
+  /* The goal itself: 8 yards across 75, centred. Only the match report's
+     goal cards draw it - a heat map of where a man STOOD has no use for it -
+     but the dimension is a fact about a pitch and belongs with the others
+     rather than being worked out again at the one place that needs it. */
+  goal: { x0: 44.7, x1: 55.3 },
 };
 
 /* The three zones the club already records, derived from a point. The panel

@@ -807,7 +807,16 @@ export const articlePhoto = (a) => {
    source for one fact and the two would disagree the first time somebody
    forgot - the rule this repository keeps relearning. So the kind is read
    from the piece, and the stored category still decides everything else. */
-export const articleKind = (a) => (!a.isReport && leadClip(a.lede) ? 'Interview' : a.category);
+/* AND FILMED COUNTS AS RECORDED. `leadClip` is audio only, so an interview
+   somebody filmed would have published under whatever category was stored -
+   or have asked the club to pick "Interview" by hand, which is the second
+   source this rule exists to avoid. `film()` is the one address rule for our
+   own video, so what it refuses is not a recording of ours either. */
+export const hasFilm = (text) => String(text || '').split(/\n\s*\n/)
+  .some((b) => !!film(b.trim()));
+
+export const articleKind = (a) => (!a.isReport && (leadClip(a.lede) || hasFilm(a.lede))
+  ? 'Interview' : a.category);
 
 export function news(d) {
   const items = sorted([...(d.articles || []), ...reportEntries(d)]);
@@ -1022,8 +1031,17 @@ export function newsArticle(a, d) {
   const prose = railed ? written.replace(audOne[0], '') : written;
 
   const body = `<section class="sec nw-art" aria-label="Article">
-      <div class="wrap wrap--narrow${isIv ? ' wrap--iv' : ''}">
-        <div class="nw-art__body${isIv ? ' nw-art__body--iv' : ''} rv">
+      <div class="wrap wrap--narrow${railed ? ' wrap--iv' : ''}">
+        ${/* THE TWO-COLUMN SHAPE IS THE RAIL'S, so it is `railed` that asks
+              for it and not `isIv`. An interview somebody FILMED carries
+              questions and no audio figure, so it is `isIv` and has nothing
+              to put in a rail - and `.nw-art__body--iv` is a two-column grid
+              with auto placement, so its paragraphs would have laid out one
+              per cell, alternating down two columns. The sheet's own note
+              says the class is never set on a page that wants one centred
+              measure; that was true of every page that existed when it was
+              written and stopped being true of the first filmed one. */''}
+        <div class="nw-art__body${railed ? ' nw-art__body--iv' : ''} rv">
         ${railHtml}${railed ? '<div class="nw-art__col">' : ''}
         ${prose}
         ${railed ? '</div>' : ''}</div>

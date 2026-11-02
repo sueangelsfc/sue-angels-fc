@@ -352,7 +352,8 @@
 .mr-tl{margin-top: clamp(20px, 3vw, 34px);}
 .mr-tl__board{position: relative; display: grid; gap: 0;
   grid-template-rows: auto 26px auto;}
-.mr-tl__lane{position: relative; min-height: 62px;}
+.mr-tl__lane{position: relative; --rowh: 34px;
+  min-height: calc(20px + var(--rows, 1) * var(--rowh));}
 /* A match the opponents did not score in leaves that lane with nothing in it,
    and an empty 62px band under the axis reads as something that failed to
    draw. It collapses to the depth of the markers' own discs. */
@@ -368,13 +369,26 @@
 .mr-tl__ft{left: calc(var(--x) - 1px) !important;}
 .mr-tl__ft i{left: auto !important; right: 4px;}
 
-.mr-tl__mark{position: absolute; left: var(--x); transform: translateX(-50%);
-  display: grid; justify-items: center; gap: 3px; width: max-content;
-  max-width: 140px; text-align: center;}
-.mr-tl__mark.is-start{transform: translateX(-10%);}
-.mr-tl__mark.is-end{transform: translateX(-90%);}
-.mr-tl__lane--us .mr-tl__mark{bottom: calc(4px + var(--r, 0) * 30px);}
-.mr-tl__lane--them .mr-tl__mark{top: calc(4px + var(--r, 0) * 30px);}
+/* THE DISC STAYS ON THE AXIS AND THE LABEL IS WHAT MOVES. The marker used to
+   be one stack - minute, name and disc together - lifted a row at a time, so
+   the discs sat at four different heights and none of them was on the axis
+   they were meant to be marking. A leader line joins each label to its own
+   disc, which is what lets four rows of them be read at all. */
+.mr-tl__mark{position: absolute; left: var(--x); width: 0;}
+.mr-tl__lane--us .mr-tl__mark{bottom: 0;}
+.mr-tl__lane--them .mr-tl__mark{top: 0;}
+.mr-tl__lbl{position: absolute; left: 0; transform: translateX(-50%);
+  display: grid; justify-items: center; gap: 2px; width: max-content;
+  max-width: 96px; text-align: center;}
+.mr-tl__mark.is-start .mr-tl__lbl{transform: translateX(-10%);}
+.mr-tl__mark.is-end .mr-tl__lbl{transform: translateX(-90%);}
+.mr-tl__lane--us .mr-tl__lbl{bottom: calc(15px + var(--r, 0) * var(--rowh, 34px));}
+.mr-tl__lane--them .mr-tl__lbl{top: calc(15px + var(--r, 0) * var(--rowh, 34px));}
+.mr-tl__mark:after{content: ""; position: absolute; left: -0.5px; width: 1px;
+  background: rgba(var(--volt-rgb), 0.3);
+  height: calc(6px + var(--r, 0) * var(--rowh, 34px));}
+.mr-tl__lane--us .mr-tl__mark:after{bottom: 9px;}
+.mr-tl__lane--them .mr-tl__mark:after{top: 9px;}
 .mr-tl__min{font-family: var(--ui); font-size: 9.5px; font-weight: 800;
   letter-spacing: 0.04em; color: var(--volt-text); font-variant-numeric: tabular-nums;}
 .mr-tl__who{font-size: 11.5px; line-height: 1.25; color: var(--ink-2);}
@@ -386,9 +400,10 @@
   text-transform: uppercase; color: var(--ink-3);}
 /* A goal is a filled disc on the axis, a card and a substitution a hollow
    one: three kinds of event told apart by fill and weight, not by colour. */
-.mr-tl__mark:before{content: ""; width: 9px; height: 9px; border-radius: 50%;
-  background: var(--volt); order: 2;}
-.mr-tl__lane--us .mr-tl__mark:before{order: 3;}
+.mr-tl__mark:before{content: ""; position: absolute; left: -4.5px;
+  width: 9px; height: 9px; border-radius: 50%; background: var(--volt);}
+.mr-tl__lane--us .mr-tl__mark:before{bottom: 0;}
+.mr-tl__lane--them .mr-tl__mark:before{top: 0;}
 .mr-tl__mark--yellow:before, .mr-tl__mark--red:before, .mr-tl__mark--sub:before{
   background: transparent; border: 2px solid rgba(var(--lift), 0.5);}
 .mr-tl__mark--goal.is-them:before{background: rgba(var(--lift), 0.55);}
@@ -425,10 +440,10 @@
    other. Every one of those names is in the goal cards directly below, so
    nothing is lost by taking them off the strip. */
 @media (max-width: 680px){
-  .mr-tl__mark{max-width: 44px;}
+  .mr-tl__lbl{max-width: 44px;}
   .mr-tl__who{display: none;}
   .mr-tl__min{font-size: 9px;}
-  .mr-tl__lane{min-height: 26px;}
+  .mr-tl__lane{--rowh: 15px; min-height: calc(12px + var(--rows, 1) * var(--rowh));}
   .mr-tl__lane.is-empty{min-height: 4px;}
 }
 
@@ -462,11 +477,31 @@
 .mr-g__film{justify-self: start; margin-top: 4px; font-family: var(--ui);
   font-size: 9px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--volt-text); text-decoration: underline; text-underline-offset: 3px;}
-/* Where it was struck from, to the honest limit of the record: three bands,
-   because three is what somebody remembers after the game. */
-.mr-g__zone{width: 60px; height: 50px; flex: none;}
-.mr-g__turf{fill: rgba(var(--lift), 0.06); stroke: var(--line-d); stroke-width: 1;}
-.mr-g__lines{fill: none; stroke: rgba(var(--lift), 0.3); stroke-width: 1;}
+/* WHERE IT WAS STRUCK FROM, AND WHERE THE BALL CAME FROM. Filled is the
+   goal, hollow is the assist, dashed is an area nobody marked a point in:
+   the profile's shot map reads the same way, and one vocabulary beats two.
+   The height comes from the frame the match computed, in the viewBox's own
+   units, so a card cannot stretch its pitch out of shape - `--ph` is set
+   inline by the build and the width is fixed. */
+.mr-g__zone{width: clamp(112px, 13vw, 148px);
+  height: calc(clamp(112px, 13vw, 148px) * (var(--ph, 112) / 100)); flex: none;
+  background: rgba(var(--lift), 0.05);
+  border: 1px solid var(--line-d); border-radius: 4px;}
+.mr-g__lines{fill: none; stroke: rgba(var(--lift), 0.26); stroke-width: 0.9;
+  vector-effect: non-scaling-stroke;}
+.mr-g__pk{fill: rgba(var(--lift), 0.32);}
+.mr-g__goal{fill: none; stroke: rgba(var(--lift), 0.75); stroke-width: 2.4;
+  stroke-linecap: butt; vector-effect: non-scaling-stroke;}
+/* A dashed ring is the one piece of vocabulary nothing else on the pitch
+   uses, which is what lets an AREA be told from a point without a second
+   colour. */
+.mr-g__area{fill: rgba(var(--volt-rgb), 0.07); stroke: var(--volt);
+  stroke-width: 1; stroke-dasharray: 3 2.4; vector-effect: non-scaling-stroke;}
+.mr-g__area--made{fill: none; stroke: rgba(var(--volt-rgb), 0.5);}
+.mr-g__pass{fill: none; stroke: rgba(var(--volt-rgb), 0.5); stroke-width: 1.2;
+  stroke-linecap: round; stroke-dasharray: 2.6 2.6; vector-effect: non-scaling-stroke;}
+.mr-g__made-dot{fill: none; stroke: var(--volt); stroke-width: 1.4;
+  vector-effect: non-scaling-stroke;}
 .mr-g__spot{fill: var(--volt);}
 @media (prefers-reduced-motion: no-preference){
   .mr-gs.rv.is-in .mr-g{animation: mr-rise 0.56s var(--ease-out-expo) both;
@@ -477,8 +512,14 @@
 }
 @keyframes mr-ping{from{transform: scale(0);} to{transform: scale(1);}}
 @media (max-width: 560px){
-  .mr-g{grid-template-columns: 44px minmax(0, 1fr); gap: 12px;}
-  .mr-g__zone{display: none;}
+  /* THE PITCH GOES UNDER THE WORDS, it does not go away. It used to be
+     hidden below 560px, which was right while it drew one of three pictures
+     and is wrong now that it carries the point the club marked: where across
+     the goal the ball was struck from is in the picture and in no sentence,
+     so hiding it on a phone takes it off most of the readers. */
+  .mr-g{grid-template-columns: 44px minmax(0, 1fr); gap: 10px 12px;}
+  .mr-g__zone{grid-column: 2; justify-self: start; width: 132px;
+    height: calc(132px * (var(--ph, 112) / 100)); margin-top: 2px;}
 }
 
 /* The award, and who wore the armband. */

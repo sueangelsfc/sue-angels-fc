@@ -39,6 +39,7 @@ import { substitutions, minutesPlayed } from './subs.mjs';
 export { minutesPlayed };
 import { deriveTable, toISO, fmtDate, isLeague, isCup, ordinal } from './stats.mjs';
 import { sameClub } from './preseason.mjs';
+import { PITCH, ZONE_AREA, ZONE_WORDS, pitchMarks, spotOf, spotWords } from './pitch.mjs';
 
 /* ---- The gate -------------------------------------------------------------
    A season is `26/27`, so the start year is the first two digits plus 2000.
@@ -156,12 +157,16 @@ export function timeline(m, d) {
   }
   for (const g of det.opponentGoals || []) {
     const who = g.name && !/^unknown$/i.test(g.name) ? g.name : '';
+    /* NOBODY TOOK THE SCORER'S NAME, so the mark says whose goal it was: the
+       club's. It read "A goal", under a lane the reader has to already know
+       is theirs, which is a label that names nothing at all. */
+    const unnamed = String(m.opponent || '').trim() || 'A goal';
     evs.push({
       side: 'them',
       kind: 'goal',
       min: num(g.minute),
-      who: g.og ? 'Own goal' : who || 'A goal',
-      html: esc(g.og ? 'Own goal' : who || 'A goal'),
+      who: g.og ? 'Own goal' : who || unnamed,
+      html: esc(g.og ? 'Own goal' : who || unnamed),
       note: g.penalty ? 'pen' : '',
     });
   }
@@ -235,41 +240,73 @@ export function timeline(m, d) {
           </svg>`;
   })();
 
+  /* ONE MARKER PER MINUTE, which is what a triple substitution on the hour
+     actually is. Three events at 60' were three markers at the same x: the
+     first took a row of its own and the other two were both pushed to row
+     one, on top of each other, so the hour read as "Osunkoya" and "Lloyd"
+     printed through one another over "FOR BURNETT". Grouped by side AND kind,
+     because the disc says which kind of event it is and a goal sharing a disc
+     with a booking would be a mark that means two things. */
+  const groups = [];
+  for (const e of timed) {
+    const last = groups[groups.length - 1];
+    if (last && last.min === e.min && last.side === e.side && last.kind === e.kind) {
+      last.lines.push(e);
+      continue;
+    }
+    groups.push({ min: e.min, side: e.side, kind: e.kind, x: atMin(e.min), lines: [e] });
+  }
+
+  /* AND THEN THEY ARE PACKED, lowest free row first, rather than lifted one
+     row whenever the last marker was close. The old rule compared each marker
+     with the PREVIOUS one only, so three in nine minutes put two in the same
+     place - and four in eight minutes, which is what 73, 77, 80 and 81 are,
+     could not be laid out at all.
+
+     Measured in MINUTES, because this is laid out in percentages and a build
+     has no pixels: a label is capped at 96px and the axis is about 1,100px on
+     a laptop, so nine minutes is the width of one. Below 680px the names come
+     off the strip and the minutes alone stay, which is the only honest answer
+     at 375px wide. */
+  const GAP = 9;
+  const ROWS = 4;
+  for (const side of ['us', 'them']) {
+    const lastAt = [];
+    for (const g of groups.filter((x) => x.side === side)) {
+      let r = 0;
+      while (r < ROWS - 1 && lastAt[r] != null && g.min - lastAt[r] < GAP) r += 1;
+      g.row = r;
+      lastAt[r] = g.min;
+    }
+  }
+  const rowsOn = (side) => 1 + Math.max(0, ...groups
+    .filter((g) => g.side === side).map((g) => g.row || 0));
+
   /* A MARKER AT THE EDGE IS ALIGNED TO IT, not centred on it. Centred, half
      of a 90th-minute label hangs off the right of the page, and the eighth
      goal of an 8-1 is exactly the one a reader goes looking for. */
-  const mark = (e, i) => `<span class="mr-tl__mark mr-tl__mark--${e.kind} is-${e.side}${
-    e.x > 0.9 ? ' is-end' : e.x < 0.1 ? ' is-start' : ''}"
-            style="--x:${(e.x * 100).toFixed(2)}%;--i:${i}">
-            <span class="mr-tl__min">${esc(String(e.min))}'</span>
-            <span class="mr-tl__who">${e.html}${e.note ? ` <i>${esc(e.note)}</i>` : ''}</span>
+  const mark = (g, i) => `<span class="mr-tl__mark mr-tl__mark--${g.kind} is-${g.side}${
+    g.x > 0.9 ? ' is-end' : g.x < 0.1 ? ' is-start' : ''}"
+            style="--x:${(g.x * 100).toFixed(2)}%;--r:${g.row || 0};--i:${i}">
+            <span class="mr-tl__lbl">
+              <span class="mr-tl__min">${esc(String(g.min))}'</span>
+              ${g.lines.map((e) => `<span class="mr-tl__who">${e.html}${e.note ? ` <i>${esc(e.note)}</i>` : ''}</span>`).join('')}
+            </span>
           </span>`;
-  /* Two markers close together would sit on top of one another, so the later
-     one is lifted a row. Measured in MINUTES, because this is laid out in
-     percentages and a build has no pixels to measure: nine minutes is a tenth
-     of the axis, which is about the width of a surname on a laptop. It is not
-     enough on a phone and nothing here can know that, which is why the names
-     come off the axis below 680px and the minutes alone stay. */
-  const withRows = timed.map((e) => ({ ...e, x: atMin(e.min) }));
-  let lastUs = -99;
-  let lastThem = -99;
-  for (const e of withRows) {
-    const last = e.side === 'us' ? lastUs : lastThem;
-    e.row = e.min - last < 9 ? 1 : 0;
-    if (e.side === 'us') lastUs = e.min; else lastThem = e.min;
-  }
 
   return `<div class="mr-tl rv">
           <div class="mr-tl__board">
-            <div class="mr-tl__lane mr-tl__lane--us${withRows.some((e) => e.side === 'us') ? '' : ' is-empty'}">
-              ${withRows.filter((e) => e.side === 'us').map((e, i) => mark(e, i).replace('--i:', `--r:${e.row};--i:`)).join('\n              ')}
+            <div class="mr-tl__lane mr-tl__lane--us${groups.some((g) => g.side === 'us') ? '' : ' is-empty'}"
+              style="--rows:${rowsOn('us')}">
+              ${groups.filter((g) => g.side === 'us').map((g, i) => mark(g, i)).join('\n              ')}
             </div>
             <div class="mr-tl__axis" aria-hidden="true">
               <span class="mr-tl__ht" style="--x:50%"><i>HT</i></span>
               <span class="mr-tl__ft" style="--x:100%"><i>FT</i></span>
             </div>
-            <div class="mr-tl__lane mr-tl__lane--them${withRows.some((e) => e.side === 'them') ? '' : ' is-empty'}">
-              ${withRows.filter((e) => e.side === 'them').map((e, i) => mark(e, i).replace('--i:', `--r:${e.row};--i:`)).join('\n              ')}
+            <div class="mr-tl__lane mr-tl__lane--them${groups.some((g) => g.side === 'them') ? '' : ' is-empty'}"
+              style="--rows:${rowsOn('them')}">
+              ${groups.filter((g) => g.side === 'them').map((g, i) => mark(g, i)).join('\n              ')}
             </div>
           </div>
           ${ribbon ? `<figure class="mr-tl__marginfig">
@@ -285,10 +322,116 @@ export function timeline(m, d) {
 /* ---- 3. Every goal, with what the club recorded about it ------------------
    The vocabulary is `football.mjs`, shared with the panel and the stats
    engine, so the page cannot describe a goal in words the form could not
-   produce. The mini pitch marks the BAND the goal was struck from, which is
-   the honest limit of what the record holds: three zones, because that is
-   what somebody remembers after the game. No zone, no diagram. */
-const ZONE_Y = { six: 14, box: 26, outside: 46 };
+   produce.
+
+   AND THE PITCH DRAWS WHAT SOMEBODY MARKED. It used to put one dot in the
+   MIDDLE of the pitch at the depth of the goal's zone - six, box or outside -
+   so every goal from inside the box drew the identical picture, and all six
+   of the TSM Rovers cards were the same diagram with different names above
+   them. Every one of those twelve points, six goals and six assists, was in
+   the record: the club marked them on the panel's pitch. A graphic that can
+   only ever draw three pictures, over a record holding exact coordinates, is
+   a chart with its data thrown away at the door.
+
+   SO THE GOAL IS WHERE IT WAS STRUCK AND THE ASSIST IS WHERE IT WAS PLAYED,
+   joined by the pass. Filled is the goal, hollow is the assist - the same
+   vocabulary as the profile's shot map, because a reader meeting the two
+   should not have to learn it twice - and where nobody marked a point the
+   zone is drawn as the dashed AREA it is, which is that map's rule as well.
+
+   ONE FRAME FOR EVERY CARD IN THE MATCH, cut to the deepest mark of the lot.
+   Cropping each card to its own marks would draw six pitches at six scales,
+   and the whole use of a column of them is reading one against another: a tap
+   in from the six-yard box should LOOK nearer than a drive from outside it.
+
+   The markings come from `pitchMarks`, which the heat map and the panel's own
+   picker draw from, so three pitches cannot put the penalty spot in three
+   places. The card used to draw its own and had the box five units wide of
+   where the laws put it. */
+
+/* THE PITCH IS 140 UNITS TALL whatever is drawn on it, so a mark's depth
+   means the same thing on a card as it does on a profile. The viewBox is
+   cropped; the mapping never is. That is the bug the shot map shipped with -
+   markings drawn over the whole pitch and marks divided by the span, so a
+   goal on the penalty spot drew at twice the depth of the penalty spot
+   beside it. */
+const PH = 140;
+const sy = (v) => ((Math.min(100, Math.max(0, v)) / 100) * PH);
+const MARKS = pitchMarks(PH);
+
+/* HOW DEEP THE FRAME IS, AND THE GOALS DECIDE IT. The card's subject is
+   where the goal was struck from, so that is what the picture is cut to -
+   plus the edge of the box, because a frame cut to three tap-ins would be a
+   goalmouth with no goalmouth in it.
+
+   AN ASSIST DOES NOT GET A VOTE. The ball for the fourth against TSM was
+   played from 71 per cent of the way back up the pitch, and a frame deep
+   enough to hold that mark puts all six goals in the top eighth of six
+   pictures, every one of them mostly empty grass. The pass is still drawn
+   from where it was played: the line simply runs off the bottom edge, which
+   is what a ball played in from deeper looks like, and the figure's own label
+   says exactly where it came from in words.
+
+   ONE FRAME FOR EVERY CARD IN THE MATCH, so a column of them can be read one
+   against another: a tap-in from the six-yard box has to LOOK nearer than a
+   drive from the edge, and six pitches at six scales would say nothing. */
+export function pitchFrame(list) {
+  let deep = PITCH.box.y1 + 4;
+  for (const g of list || []) {
+    const gs = spotOf(g);
+    if (gs) deep = Math.max(deep, gs.y);
+    else if (ZONE_AREA[g.zone]) deep = Math.max(deep, ZONE_AREA[g.zone].y1);
+  }
+  const depth = Math.min(100, Math.ceil((deep + 6) / 5) * 5);
+  return { depth, h: Number(sy(depth).toFixed(1)) };
+}
+
+/* A dashed area, for a goal nobody marked a point for. The zone IS the
+   evidence, at the precision it was recorded at, so it is drawn as the
+   rectangle it claims rather than as a point in the middle of it. */
+const area = (zone, cls) => {
+  const a = ZONE_AREA[zone];
+  if (!a) return '';
+  const y1 = Math.min(a.y1, 100);
+  return `<rect class="mr-g__area ${cls}" x="${a.x0}" y="${sy(a.y0).toFixed(1)}"
+                width="${(a.x1 - a.x0).toFixed(1)}" height="${(sy(y1) - sy(a.y0)).toFixed(1)}" rx="2" />`;
+};
+
+function goalPitch(g, frame) {
+  const gs = spotOf(g);
+  const as = g.assist && g.assist.num != null ? spotOf(g.assist) : null;
+  const gz = gs ? null : (g.zone || null);
+  const az = as || !g.assist || g.assist.num == null ? null : (g.assist.zone || null);
+  if (!gs && !gz) return '';
+  /* WHAT IT SAYS OUT LOUD. The sentence beside it names the zone ("from
+     inside the box") and the picture adds where across the pitch, which is
+     information a reader cannot get from the words - so the figure is a
+     labelled image rather than decoration. `spotWords` is the panel's own
+     sentence for a marked point, so the card and the form describe one mark
+     the same way. */
+  const words = [
+    gs ? `Struck from ${spotWords(gs)}` : `Struck from ${ZONE_WORDS[gz] || 'the pitch'}, area only`,
+    as ? `after a ball from ${spotWords(as)}` : az ? `after a ball from ${ZONE_WORDS[az] || 'the pitch'}, area only` : '',
+  ].filter(Boolean).join(', ');
+  const gx = gs ? gs.x : null;
+  const gy = gs ? sy(gs.y) : null;
+  return `<svg class="mr-g__zone" viewBox="0 0 100 ${frame.h}" role="img"
+              aria-label="${attr(`${words}.`)}" style="--ph:${frame.h}">
+              <path class="mr-g__lines" d="${MARKS.lines}" />
+              ${/* THE GOAL, so the picture reads as a goalmouth at a glance.
+                    Without it the top edge is just the edge of a diagram, and
+                    a reader has to work out which end is which from the shape
+                    of the boxes. */''}
+              <path class="mr-g__goal" d="M${PITCH.goal.x0} 1.4H${PITCH.goal.x1}" />
+              <path class="mr-g__lines" d="${MARKS.arcs}" />
+              <circle class="mr-g__pk" cx="${PITCH.spot.x}" cy="${sy(PITCH.spot.y).toFixed(1)}" r="1.3" />
+              ${gz ? area(gz, 'mr-g__area--goal') : ''}
+              ${az ? area(az, 'mr-g__area--made') : ''}
+              ${gs && as ? `<path class="mr-g__pass" d="M${as.x.toFixed(1)} ${sy(as.y).toFixed(1)}L${gx.toFixed(1)} ${gy.toFixed(1)}" />` : ''}
+              ${as && sy(as.y) < frame.h - 2 ? `<circle class="mr-g__made-dot" cx="${as.x.toFixed(1)}" cy="${sy(as.y).toFixed(1)}" r="2.6" />` : ''}
+              ${gs ? `<circle class="mr-g__spot" cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="3.2" />` : ''}
+            </svg>`;
+}
 
 export function goalCards(m, d) {
   const det = m.detail || {};
@@ -304,6 +447,7 @@ export function goalCards(m, d) {
   if (!detailed.length) return '';
   const ordered = [...goals].map((g, i) => ({ ...g, n: i + 1 }))
     .sort((a, b) => (num(a.minute) || 999) - (num(b.minute) || 999));
+  const frame = pitchFrame(ordered);
   return `<ol class="mr-gs rv">
           ${ordered.map((g, i) => {
     const words = describeGoal(g);
@@ -311,7 +455,6 @@ export function goalCards(m, d) {
     const made = g.assist && g.assist.num != null
       ? describeAssist(g.assist, link(g.assist.num, nameFor(g.assist.num)))
       : '';
-    const y = ZONE_Y[g.zone];
     return `<li class="mr-g" id="g-${g.n}" style="--i:${i}">
             <span class="mr-g__min">${g.minute ? `${esc(String(g.minute))}<i>′</i>` : '<i>No minute</i>'}</span>
             <span class="mr-g__body">
@@ -320,11 +463,7 @@ export function goalCards(m, d) {
               ${made ? `<span class="mr-g__made">${made.charAt(0).toUpperCase() + made.slice(1)}.</span>` : ''}
               ${filmed.has(g.n) ? `<a class="mr-g__film" href="#goal-${g.n}">Watch it <span aria-hidden="true">↓</span></a>` : ''}
             </span>
-            ${y ? `<svg class="mr-g__zone" viewBox="0 0 60 50" aria-hidden="true" focusable="false">
-              <rect class="mr-g__turf" x="0.5" y="0.5" width="59" height="49" rx="3" />
-              <path class="mr-g__lines" d="M10 0.5 V16 H50 V0.5 M22 0.5 V7 H38 V0.5" />
-              <circle class="mr-g__spot" cx="30" cy="${y}" r="3.4" />
-            </svg>` : ''}
+            ${goalPitch(g, frame)}
           </li>`;
   }).join('\n          ')}
         </ol>`;
@@ -478,7 +617,10 @@ const LINES = [
   { key: 'fwd', label: 'Up front' },
   { key: '', label: 'Also named' },
 ];
-const spotOf = (s) => {
+/* Named for the team sheet, because `spotOf` is the pitch's own: a POINT
+   somebody marked. Two things called the same thing in one file is how a
+   graphic comes to draw a position where a coordinate belongs. */
+const sheetSpot = (s) => {
   const code = String(((s.positions || [])[0]) || '').toUpperCase();
   const xy = POSITION_XY[code];
   return { code, group: GROUP_OF[code] || '', x: xy ? xy[0] : 50, y: xy ? xy[1] : -1 };
@@ -503,7 +645,7 @@ const band = (y) => Math.round(y / 8);
 const LINE_RANK = { gk: 0, def: 1, mid: 2, fwd: 3 };
 const rank = (g) => (LINE_RANK[g] == null ? 4 : LINE_RANK[g]);
 export const inPositionOrder = (list) => (list || [])
-  .map((s, i) => ({ s, i, ...spotOf(s) }))
+  .map((s, i) => ({ s, i, ...sheetSpot(s) }))
   .sort((a, b) => (rank(a.group) - rank(b.group))
     || (band(b.y) - band(a.y)) || (a.x - b.x) || (a.i - b.i))
   .map((r) => r.s);
@@ -574,7 +716,7 @@ export function sheetRows(m, d) {
   let seq = 0;
   const row = (s, kind) => {
     const n = Number(s.num);
-    const spot = spotOf(s);
+    const spot = sheetSpot(s);
     const spells = (s.spells || []).filter((p) => p && p.pos);
     /* EVERY PLACE HE PLAYED, not only the first. The record holds a spell per
        position and the page threw all but one away, so a centre half who
@@ -628,7 +770,7 @@ export function sheetRows(m, d) {
 
   const starters = inPositionOrder(det.starters || []);
   const xi = LINES.map((ln) => {
-    const men = starters.filter((s) => spotOf(s).group === ln.key);
+    const men = starters.filter((s) => sheetSpot(s).group === ln.key);
     if (!men.length) return '';
     return `<h4 class="mr-line">${esc(ln.label)}</h4>
             <ol class="mr-whos">

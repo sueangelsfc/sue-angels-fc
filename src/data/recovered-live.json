@@ -6497,10 +6497,19 @@
         "goals": [
           {
             "num": 12,
+            "spot": {
+              "x": 52.5,
+              "y": 11.4
+            },
             "zone": "box",
             "assist": {
               "num": 9,
-              "type": "pass"
+              "spot": {
+                "x": 69.6,
+                "y": 12.6
+              },
+              "type": "pass",
+              "zone": null
             },
             "minute": 12,
             "penalty": false,
@@ -6509,10 +6518,16 @@
           },
           {
             "num": 3,
+            "spot": null,
             "zone": null,
             "assist": {
               "num": 20,
-              "type": "headpass"
+              "spot": {
+                "x": 66.4,
+                "y": 16.5
+              },
+              "type": "headpass",
+              "zone": "outside"
             },
             "minute": 29,
             "penalty": true,
@@ -6521,10 +6536,19 @@
           },
           {
             "num": 9,
+            "spot": {
+              "x": 62.1,
+              "y": 2.8
+            },
             "zone": "six",
             "assist": {
               "num": 2,
-              "type": "pass"
+              "spot": {
+                "x": 15.8,
+                "y": 10.4
+              },
+              "type": "cross",
+              "zone": "outside"
             },
             "minute": 34,
             "penalty": false,
@@ -6533,10 +6557,19 @@
           },
           {
             "num": 12,
+            "spot": {
+              "x": 61.1,
+              "y": 9.4
+            },
             "zone": "box",
             "assist": {
               "num": 9,
-              "type": "pass"
+              "spot": {
+                "x": 43.4,
+                "y": 14.7
+              },
+              "type": "pass",
+              "zone": null
             },
             "minute": 38,
             "penalty": false,
@@ -6545,10 +6578,19 @@
           },
           {
             "num": 9,
+            "spot": {
+              "x": 60.7,
+              "y": 10.2
+            },
             "zone": "box",
             "assist": {
               "num": 25,
-              "type": "through"
+              "spot": {
+                "x": 29.3,
+                "y": 59.8
+              },
+              "type": "through",
+              "zone": null
             },
             "minute": 43,
             "penalty": false,
@@ -6557,10 +6599,19 @@
           },
           {
             "num": 6,
+            "spot": {
+              "x": 57,
+              "y": 4.4
+            },
             "zone": "six",
             "assist": {
               "num": 20,
-              "type": "corner"
+              "spot": {
+                "x": 1.9,
+                "y": 1.4
+              },
+              "type": "corner",
+              "zone": null
             },
             "minute": 57,
             "penalty": false,
@@ -6569,6 +6620,10 @@
           },
           {
             "num": 9,
+            "spot": {
+              "x": 61.1,
+              "y": 17.3
+            },
             "zone": "outside",
             "assist": null,
             "minute": 88,
@@ -6578,10 +6633,19 @@
           },
           {
             "num": 12,
+            "spot": {
+              "x": 37.2,
+              "y": 8.8
+            },
             "zone": "box",
             "assist": {
               "num": 3,
-              "type": "through"
+              "spot": {
+                "x": 56.3,
+                "y": 26.8
+              },
+              "type": "through",
+              "zone": null
             },
             "minute": 92,
             "penalty": false,
@@ -6626,7 +6690,7 @@
           },
           {
             "num": 2,
-            "type": "pass",
+            "type": "cross",
             "minute": 34,
             "forGoalBy": 9
           },
@@ -6656,7 +6720,7 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-10-29T02:15:12.905Z",
+        "savedAt": "2026-10-29T11:08:41.600Z",
         "approach": {},
         "redCards": [],
         "starters": [
@@ -6817,7 +6881,7 @@
         "opponentRedCards": [],
         "penaltiesConceded": 1
       },
-      "updated_at": "2026-10-29T02:15:12.905+00:00"
+      "updated_at": "2026-10-29T11:08:41.6+00:00"
     },
     {
       "key": "r20260920-junction",
@@ -6927,10 +6991,19 @@
         "goals": [
           {
             "num": 12,
+            "spot": {
+              "x": 38.2,
+              "y": 11.7
+            },
             "zone": "box",
             "assist": {
               "num": 4,
-              "type": "through"
+              "spot": {
+                "x": 7.4,
+                "y": 64.5
+              },
+              "type": "through",
+              "zone": "outside"
             },
             "minute": 2,
             "penalty": false,
@@ -6939,10 +7012,19 @@
           },
           {
             "num": 12,
+            "spot": {
+              "x": 67.7,
+              "y": 17.1
+            },
             "zone": "outside",
             "assist": {
               "num": 3,
-              "type": "freekick"
+              "spot": {
+                "x": 68,
+                "y": 17.4
+              },
+              "type": "freekick",
+              "zone": "outside"
             },
             "minute": 30,
             "penalty": false,
@@ -6951,10 +7033,19 @@
           },
           {
             "num": 9,
+            "spot": {
+              "x": 42.3,
+              "y": 6.5
+            },
             "zone": "box",
             "assist": {
               "num": 20,
-              "type": "cross"
+              "spot": {
+                "x": 89.4,
+                "y": 8.9
+              },
+              "type": "cross",
+              "zone": "outside"
             },
             "minute": 84,
             "penalty": false,
@@ -6987,7 +7078,7 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-10-29T02:08:05.761Z",
+        "savedAt": "2026-10-29T10:59:02.957Z",
         "approach": {},
         "redCards": [],
         "starters": [
@@ -7198,7 +7289,7 @@
         "opponentRedCards": [],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-10-29T02:08:05.761+00:00"
+      "updated_at": "2026-10-29T10:59:02.957+00:00"
     },
     {
       "key": "r20260927-barnes",
@@ -7341,10 +7432,19 @@
         "goals": [
           {
             "num": 9,
+            "spot": {
+              "x": 51.3,
+              "y": 2.7
+            },
             "zone": "six",
             "assist": {
               "num": 12,
-              "type": "rebound"
+              "spot": {
+                "x": 30.4,
+                "y": 8.8
+              },
+              "type": "rebound",
+              "zone": null
             },
             "minute": null,
             "penalty": false,
@@ -7353,10 +7453,19 @@
           },
           {
             "num": 12,
+            "spot": {
+              "x": 65.5,
+              "y": 17.6
+            },
             "zone": "outside",
             "assist": {
               "num": 3,
-              "type": "pass"
+              "spot": {
+                "x": 78.3,
+                "y": 10.4
+              },
+              "type": "pass",
+              "zone": null
             },
             "minute": null,
             "penalty": false,
@@ -7365,10 +7474,16 @@
           },
           {
             "num": 3,
+            "spot": null,
             "zone": null,
             "assist": {
               "num": 2,
-              "type": "pass"
+              "spot": {
+                "x": 27.7,
+                "y": 5.6
+              },
+              "type": "wonpenalty",
+              "zone": null
             },
             "minute": null,
             "penalty": true,
@@ -7377,10 +7492,19 @@
           },
           {
             "num": null,
+            "spot": {
+              "x": 56.1,
+              "y": 3.7
+            },
             "zone": null,
             "assist": {
               "num": 20,
-              "type": "corner"
+              "spot": {
+                "x": 1.9,
+                "y": 1.4
+              },
+              "type": "corner",
+              "zone": null
             },
             "minute": null,
             "penalty": false,
@@ -7389,6 +7513,10 @@
           },
           {
             "num": 17,
+            "spot": {
+              "x": 60.5,
+              "y": 17.5
+            },
             "zone": "outside",
             "assist": null,
             "minute": null,
@@ -7398,10 +7526,19 @@
           },
           {
             "num": 9,
+            "spot": {
+              "x": 32.8,
+              "y": 13.5
+            },
             "zone": "box",
             "assist": {
               "num": 4,
-              "type": "through"
+              "spot": {
+                "x": 22.2,
+                "y": 52.8
+              },
+              "type": "through",
+              "zone": null
             },
             "minute": null,
             "penalty": false,
@@ -7410,10 +7547,19 @@
           },
           {
             "num": 12,
+            "spot": {
+              "x": 66.8,
+              "y": 13.3
+            },
             "zone": "outside",
             "assist": {
               "num": 20,
-              "type": "pass"
+              "spot": {
+                "x": 80.8,
+                "y": 37.1
+              },
+              "type": "pass",
+              "zone": null
             },
             "minute": null,
             "penalty": false,
@@ -7440,7 +7586,7 @@
           },
           {
             "num": 2,
-            "type": "pass",
+            "type": "wonpenalty",
             "minute": null,
             "forGoalBy": 3
           },
@@ -7464,7 +7610,7 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-10-29T02:06:42.162Z",
+        "savedAt": "2026-10-29T11:06:39.489Z",
         "approach": {},
         "redCards": [],
         "starters": [
@@ -7654,7 +7800,7 @@
         ],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-10-29T02:06:42.162+00:00"
+      "updated_at": "2026-10-29T11:06:39.489+00:00"
     },
     {
       "key": "r20261011-peps",
@@ -7718,10 +7864,19 @@
         "goals": [
           {
             "num": 12,
+            "spot": {
+              "x": 68.5,
+              "y": 16.9
+            },
             "zone": "outside",
             "assist": {
               "num": 2,
-              "type": "headpass"
+              "spot": {
+                "x": 48.8,
+                "y": 14.4
+              },
+              "type": "headpass",
+              "zone": "box"
             },
             "minute": 6,
             "penalty": false,
@@ -7730,10 +7885,19 @@
           },
           {
             "num": 3,
+            "spot": {
+              "x": 50.9,
+              "y": 2.7
+            },
             "zone": "six",
             "assist": {
               "num": 47,
-              "type": "throwin"
+              "spot": {
+                "x": 99.2,
+                "y": 16.3
+              },
+              "type": "throwin",
+              "zone": null
             },
             "minute": 13,
             "penalty": false,
@@ -7742,10 +7906,19 @@
           },
           {
             "num": 25,
+            "spot": {
+              "x": 61.8,
+              "y": 5
+            },
             "zone": "box",
             "assist": {
               "num": 20,
-              "type": "corner"
+              "spot": {
+                "x": 1.4,
+                "y": 1
+              },
+              "type": "corner",
+              "zone": null
             },
             "minute": 49,
             "penalty": false,
@@ -7754,10 +7927,19 @@
           },
           {
             "num": 12,
+            "spot": {
+              "x": 60,
+              "y": 3
+            },
             "zone": "six",
             "assist": {
               "num": 9,
-              "type": "flickon"
+              "spot": {
+                "x": 25.5,
+                "y": 44.7
+              },
+              "type": "flickon",
+              "zone": null
             },
             "minute": 53,
             "penalty": false,
@@ -7812,7 +7994,7 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-10-29T02:02:59.817Z",
+        "savedAt": "2026-10-29T10:51:47.883Z",
         "approach": {
           "build": "counter",
           "press": "mid",
@@ -8021,7 +8203,7 @@
         "opponentRedCards": [],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-10-29T02:02:59.817+00:00"
+      "updated_at": "2026-10-29T10:51:47.883+00:00"
     },
     {
       "key": "r20261025-juizo",
@@ -8291,6 +8473,484 @@
         "penaltiesConceded": 0
       },
       "updated_at": "2026-10-28T20:14:30.389+00:00"
+    },
+    {
+      "key": "r20261101-tsm",
+      "data": {
+        "as": 1,
+        "hs": 6,
+        "id": "r20261101-tsm",
+        "away": "TSM Rovers",
+        "date": "01 Nov 2026",
+        "home": "Sue's Angels FC",
+        "kick": "11:00",
+        "kind": "score",
+        "motm": 29,
+        "subs": [
+          {
+            "on": 47,
+            "off": 10,
+            "minute": 60
+          },
+          {
+            "on": 30,
+            "off": 9,
+            "minute": 60
+          },
+          {
+            "on": 21,
+            "off": 3,
+            "minute": 60
+          },
+          {
+            "on": 29,
+            "off": 20,
+            "minute": 70
+          },
+          {
+            "on": 41,
+            "off": 12,
+            "minute": 80
+          }
+        ],
+        "bench": [
+          {
+            "on": true,
+            "num": 30,
+            "onAt": 60,
+            "role": "APM",
+            "spells": [
+              {
+                "pos": "LAM",
+                "half": "2",
+                "role": "APM"
+              }
+            ],
+            "positions": [
+              "LAM"
+            ]
+          },
+          {
+            "on": true,
+            "num": 21,
+            "onAt": 60,
+            "role": "APM",
+            "spells": [
+              {
+                "pos": "RAM",
+                "half": "2",
+                "role": "APM"
+              }
+            ],
+            "positions": [
+              "RAM"
+            ]
+          },
+          {
+            "on": true,
+            "num": 41,
+            "onAt": 80,
+            "role": "F9",
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "2",
+                "role": "F9"
+              }
+            ],
+            "positions": [
+              "ST"
+            ]
+          },
+          {
+            "on": true,
+            "num": 29,
+            "onAt": 70,
+            "role": "OFB",
+            "spells": [
+              {
+                "pos": "RWB",
+                "half": "2",
+                "role": "OFB"
+              }
+            ],
+            "positions": [
+              "RWB"
+            ]
+          },
+          {
+            "on": true,
+            "num": 47,
+            "onAt": 60,
+            "role": "ANC",
+            "spells": [
+              {
+                "pos": "RDM",
+                "half": "2",
+                "role": "ANC"
+              }
+            ],
+            "positions": [
+              "RDM"
+            ]
+          }
+        ],
+        "cover": "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/cover-match-1793575380428.jpg",
+        "goals": [
+          {
+            "num": 3,
+            "spot": {
+              "x": 53.2,
+              "y": 5.9
+            },
+            "zone": "six",
+            "assist": {
+              "num": 23,
+              "spot": {
+                "x": 58,
+                "y": 10.4
+              },
+              "type": "flickon",
+              "zone": "box"
+            },
+            "minute": 16,
+            "penalty": false,
+            "bodyPart": "right",
+            "situation": "open"
+          },
+          {
+            "num": 9,
+            "spot": {
+              "x": 71.7,
+              "y": 13.1
+            },
+            "zone": "box",
+            "assist": {
+              "num": 10,
+              "spot": {
+                "x": 91,
+                "y": 58.5
+              },
+              "type": "through",
+              "zone": "outside"
+            },
+            "minute": 24,
+            "penalty": false,
+            "bodyPart": "right",
+            "situation": "open"
+          },
+          {
+            "num": 12,
+            "spot": {
+              "x": 57.9,
+              "y": 12
+            },
+            "zone": "box",
+            "assist": {
+              "num": 3,
+              "spot": {
+                "x": 70,
+                "y": 10.5
+              },
+              "type": "pass",
+              "zone": "box"
+            },
+            "minute": 41,
+            "penalty": false,
+            "bodyPart": "left",
+            "situation": "corner"
+          },
+          {
+            "num": 30,
+            "spot": {
+              "x": 65.4,
+              "y": 3.5
+            },
+            "zone": "box",
+            "assist": {
+              "num": 23,
+              "spot": {
+                "x": 85.3,
+                "y": 71.5
+              },
+              "type": "through",
+              "zone": "outside"
+            },
+            "minute": 73,
+            "penalty": false,
+            "bodyPart": "left",
+            "situation": "open"
+          },
+          {
+            "num": 29,
+            "spot": {
+              "x": 55,
+              "y": 4.2
+            },
+            "zone": "six",
+            "assist": {
+              "num": 21,
+              "spot": {
+                "x": 72.6,
+                "y": 3.2
+              },
+              "type": "pass",
+              "zone": "box"
+            },
+            "minute": 77,
+            "penalty": false,
+            "bodyPart": "right",
+            "situation": "open"
+          },
+          {
+            "num": 29,
+            "spot": {
+              "x": 47.9,
+              "y": 5.7
+            },
+            "zone": "six",
+            "assist": {
+              "num": 30,
+              "spot": {
+                "x": 11.9,
+                "y": 7
+              },
+              "type": "cross",
+              "zone": "outside"
+            },
+            "minute": 81,
+            "penalty": false,
+            "bodyPart": "right",
+            "situation": "open"
+          }
+        ],
+        "saves": 3,
+        "shape": "",
+        "venue": "The Reeves Sports Club",
+        "keeper": 28,
+        "assists": [
+          {
+            "num": 23,
+            "type": "flickon",
+            "minute": 16,
+            "forGoalBy": 3
+          },
+          {
+            "num": 10,
+            "type": "through",
+            "minute": 24,
+            "forGoalBy": 9
+          },
+          {
+            "num": 3,
+            "type": "pass",
+            "minute": 41,
+            "forGoalBy": 12
+          },
+          {
+            "num": 23,
+            "type": "through",
+            "minute": 73,
+            "forGoalBy": 30
+          },
+          {
+            "num": 21,
+            "type": "pass",
+            "minute": 77,
+            "forGoalBy": 29
+          },
+          {
+            "num": 30,
+            "type": "cross",
+            "minute": 81,
+            "forGoalBy": 29
+          }
+        ],
+        "captain": 25,
+        "savedAt": "2026-11-02T00:02:44.080Z",
+        "approach": {},
+        "redCards": [],
+        "starters": [
+          {
+            "num": 28,
+            "role": "SHS",
+            "spells": [
+              {
+                "pos": "GK",
+                "half": "1",
+                "role": "SHS"
+              }
+            ],
+            "positions": [
+              "GK"
+            ]
+          },
+          {
+            "num": 20,
+            "role": "OFB",
+            "spells": [
+              {
+                "pos": "RWB",
+                "half": "1",
+                "role": "OFB"
+              }
+            ],
+            "positions": [
+              "RWB"
+            ],
+            "subbedOff": true
+          },
+          {
+            "num": 10,
+            "role": "BPD",
+            "spells": [
+              {
+                "pos": "RCB",
+                "half": "1",
+                "role": "BPD"
+              }
+            ],
+            "positions": [
+              "RCB"
+            ],
+            "subbedOff": true
+          },
+          {
+            "num": 40,
+            "role": "STP",
+            "spells": [
+              {
+                "pos": "CB",
+                "half": "1",
+                "role": "STP"
+              }
+            ],
+            "positions": [
+              "CB"
+            ]
+          },
+          {
+            "num": 25,
+            "role": "BPD",
+            "spells": [
+              {
+                "pos": "LCB",
+                "half": "1",
+                "role": "BPD"
+              }
+            ],
+            "positions": [
+              "LCB"
+            ]
+          },
+          {
+            "num": 4,
+            "role": "IFB",
+            "spells": [
+              {
+                "pos": "LWB",
+                "half": "1",
+                "role": "IFB"
+              }
+            ],
+            "positions": [
+              "LWB"
+            ]
+          },
+          {
+            "num": 23,
+            "role": "RGA",
+            "spells": [
+              {
+                "pos": "RCM",
+                "half": "1",
+                "role": "RGA"
+              },
+              {
+                "pos": "RCB",
+                "half": "2",
+                "role": "BPD"
+              }
+            ],
+            "positions": [
+              "RCM",
+              "RCB"
+            ]
+          },
+          {
+            "num": 2,
+            "role": "MEZ",
+            "spells": [
+              {
+                "pos": "LCM",
+                "half": "1",
+                "role": "MEZ"
+              }
+            ],
+            "positions": [
+              "LCM"
+            ]
+          },
+          {
+            "num": 12,
+            "role": "TRQ",
+            "spells": [
+              {
+                "pos": "CAM",
+                "half": "1",
+                "role": "TRQ"
+              }
+            ],
+            "positions": [
+              "CAM"
+            ],
+            "subbedOff": true
+          },
+          {
+            "num": 3,
+            "role": "TM",
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "1",
+                "role": "TM"
+              }
+            ],
+            "positions": [
+              "ST"
+            ],
+            "subbedOff": true
+          },
+          {
+            "num": 9,
+            "role": "CHR",
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "1",
+                "role": "CHR"
+              }
+            ],
+            "positions": [
+              "ST"
+            ],
+            "subbedOff": true
+          }
+        ],
+        "formation": "3-4-1-2",
+        "saveSpots": [],
+        "commentary": "",
+        "cleanSheets": [],
+        "competition": "League Eight",
+        "yellowCards": [],
+        "opponentGoals": [],
+        "penaltiesSaved": [],
+        "polishedReport": "Angels hit six to make it five wins from five\n\n**Sue’s Angels 6–1 TSM Rovers**  \n**League Eight | Sunday 1 November 2026 | The Reeves Sports Club**\n\nBack at The Reeves and back among the goals. We returned to league action for the first time since September with a 6–1 win over TSM Rovers, making it five wins from five and moving three points clear at the top.\n\nLJ, Charlie and Ade put us 3–1 ahead at the break before the substitutes got involved. Frazier added our fourth, while Sama came on at right wing-back to score twice and take home Man of the Match.\n\nAfter the frustration of going out on penalties against Juizo last weekend, it was a good way to respond. We now have 15 points from a possible 15, with 26 goals scored and just four conceded.\n\nTSM started with a clear plan, setting up in a compact 4–5–1 and looking to keep things tight. With plenty of bodies behind the ball, the challenge was to move them around and find a way through.\n\nWe started brightly and thought Charlie had done exactly that after five minutes, only for the offside flag to go up. It looked a close call, with Charlie appearing to be behind the centre-back when the ball was played, but we didn’t have to wait too much longer for the opener.\n\nThat came in the 16th minute. Stewart flicked the ball on to LJ, who swivelled and caught it beautifully on the volley with his right foot to put us 1–0 up.\n\nCharlie got his goal eight minutes later. Jimi sent him through on the right side of the box, and he lifted a lovely lob over the goalkeeper to double our lead.\n\nWe had chances to stretch the lead further, but the TSM goalkeeper pulled off a string of excellent saves to keep it at 2–0. Those stops kept the visitors in the game, and in the 33rd minute they pulled one back.\n\nThere wasn’t much anyone could do about their goal. A superb free-kick flew straight into the top-right corner, leaving Luke no chance. A proper postage-stamp finish, and one that gave TSM fresh belief.\n\nOur response came before the break. Following a corner, LJ found Ade inside the box, and he guided a cultured left-footed volley home in the 41st minute to restore our two-goal lead.\n\nIt was an important goal at a good time. TSM had given themselves a way back into the match, but we went into half-time 3–1 ahead, with three quality finishes to show for our work.\n\nMike spent much of the afternoon trying to win his own battle with their goalkeeper. He kept getting into positions to score, but the keeper kept finding an answer, producing several fine saves to keep him off the scoresheet.\n\nOn the hour, Stephen brought on Bas, Frazier and Jon for Jimi, Charlie and LJ. Sama then replaced Dean at right wing-back in the 70th minute, and the bench soon made its mark.\n\nFrazier got our fourth in the 73rd minute. Stewart played the ball through, and a moment of hesitation between the centre-back and goalkeeper gave him his chance. With both waiting for the other to react, Frazier nipped in, rounded the keeper and slotted home with his left foot, leaving the defender on the line with no chance.\n\nJon then helped make it five with some brilliant work down the right. He had been giving their left-back a difficult time since coming on, threatening to beat him inside and out. This time he went down the outside, reached the byline and drove into the box before putting the ball on a plate for Sama to finish from close range in the 77th minute.\n\nFour minutes later, Sama was there again.\n\nSome lovely, controlled football between Mike, Andy and Frazier opened things up down the left. Frazier delivered the cross, and Sama arrived to finish with his right foot and make it 6–1.\n\nHe nearly capped his afternoon with a hat-trick, too, but the TSM goalkeeper produced another outstanding save to deny him a third. Even with the game beyond the visitors, their keeper kept making us work and deserves real credit for his performance.\n\nTwo goals and almost a third after coming on at right wing-back was some contribution. Sama’s runs into the box paid off, earning him Man of the Match and rounding off a good afternoon for the substitutes.\n\nLiam also joined the action late on as we saw the game out and secured another three points.\n\nThe win makes it 23 straight league victories stretching back to last season’s unbeaten title win. There’s plenty of football still to play, but five wins from five is exactly the start we wanted in League Eight.\n\nNext up, first meets second.\n\nWe head to Clapham Common on Sunday 8 November to face Brockwell Violets, with kick-off at 10:30am. They sit three points behind us after their 1–0 defeat to Three Little Birds, giving next weekend’s meeting a little extra edge.\n\nLast season we finished champions and Brockwell runners-up. Now we meet again in League Eight with both clubs at the top. A win would put us six points clear of them; a win for Brockwell would bring them level on points.\n\nStill early days, but this is one to look forward to.\n\nThank you to TSM Rovers for the game. We wish them all the best for the rest of the season.",
+        "penaltiesMissed": [],
+        "opponentRedCards": [],
+        "penaltiesConceded": 0
+      },
+      "updated_at": "2026-11-02T00:02:44.081+00:00"
     }
   ],
   "articles": [
@@ -11686,19 +12346,6 @@
     }
   ],
   "fixtures": [
-    {
-      "key": "f20261101-tsm",
-      "data": {
-        "away": "TSM Rovers",
-        "date": "01 Nov 2026",
-        "home": "Sue's Angels FC",
-        "kick": "11:00",
-        "kind": "fixture",
-        "venue": "The Reeves Sports Club",
-        "competition": "League Eight"
-      },
-      "updated_at": "2026-10-28T19:56:05.45+00:00"
-    },
     {
       "key": "f20261115-station-sljc",
       "data": {

@@ -1393,7 +1393,17 @@ export function playerPage(p, d) {
             </g>`;
     };
     return `<svg class="pf-strike__svg" viewBox="0 0 100 ${VH}" preserveAspectRatio="xMidYMid meet" data-season-scope="${attr(v.key)}" role="img" aria-labelledby="pf-sh-t${attr(v.key.split(' ')[0])}">
-            <title id="pf-sh-t${attr(v.key.split(' ')[0])}">Where ${esc(p.first)} struck ${v.shown.goals === 1 ? 'his goal' : `his ${v.shown.goals} goals`} from${v.shown.made ? ` and where he played ${v.shown.made === 1 ? 'his assist' : 'his assists'} from` : ''}. Every one is listed under the pitch.</title>
+            ${/* A PITCH WITH NO GOALS ON IT DOES NOT MENTION HIS GOALS. The
+                  description counted them unconditionally, so six profiles
+                  shipped "Where Stewart struck his 0 goals from" - and this
+                  `<title>` is the band's ONLY label, so a nought was the first
+                  thing a screen reader heard about a pitch carrying two
+                  assists. Each half is named only where it is drawn, which is
+                  the same rule the three captions above already follow. */''}
+            <title id="pf-sh-t${attr(v.key.split(' ')[0])}">Where ${esc(p.first)} ${[
+    v.shown.goals ? `struck ${v.shown.goals === 1 ? 'his goal' : `his ${v.shown.goals} goals`} from` : '',
+    v.shown.made ? `played ${v.shown.made === 1 ? 'his assist' : 'his assists'} from` : '',
+  ].filter(Boolean).join(' and where he ')}. Every one is listed under the pitch.</title>
             <rect class="pf-sh__turf" x="1" y="1" width="98" height="${VH - 2}" rx="3"/>
             <path class="pf-sh__lines" d="${mk.lines}"/><path class="pf-sh__lines" d="${mk.arcs}"/>
             <circle class="pf-sh__lines" cx="${mk.circle.cx}" cy="${mk.circle.cy}" r="${mk.circle.r}"/>

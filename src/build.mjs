@@ -184,6 +184,9 @@ let homeCss = bundle('styles-home', homeCssFiles);
 
 const pageCssDir = path.join(ROOT, 'src', 'styles-home', 'pages');
 const pageCssFiles = fs.readdirSync(pageCssDir).filter((f) => f.endsWith('.css')).sort();
+const sharedCssDir = path.join(ROOT, 'src', 'styles-home', 'shared');
+/* Which bands include which shared partial, by band name. */
+const BAND_SHARED = { media: ['interview'], report: ['interview'] };
 
 // Font URLs are written relative in source so the file reads naturally;
 // rewrite to absolute for the deployed bundle at the root.
@@ -266,7 +269,20 @@ for (const f of pageCssFiles) {
     );
   }
   seenBand.set(name, f);
-  const body = minifyCss(absAssets(fs.readFileSync(path.join(pageCssDir, f), 'utf8')));
+  /* A BAND MAY INCLUDE A SHARED PARTIAL, and exactly one does so far. The
+     interview vocabulary is rendered by `articleBody()`, which news.mjs and
+     report.mjs both call, so it belongs to two bands and a page loads one
+     sheet. It shipped in the media band alone and a match report carrying an
+     interview drew it with no styling at all - see the head of
+     src/styles-home/shared/interview.css.
+
+     Concatenated here rather than duplicated in both source files, because
+     two copies of a component's styling drift. */
+  const body = minifyCss(absAssets(
+    (BAND_SHARED[f.replace(/^\d+-|\.css$/g, '')] || [])
+      .map((n) => `${fs.readFileSync(path.join(sharedCssDir, `${n}.css`), 'utf8')}\n`).join('')
+    + fs.readFileSync(path.join(pageCssDir, f), 'utf8'),
+  ));
   write(name, body);
   pageCss.set(f.replace(/^\d+-|\.css$/g, ''), {
     href: name,

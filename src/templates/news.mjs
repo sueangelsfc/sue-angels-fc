@@ -256,6 +256,26 @@ export function parseClip(b) {
 export const leadClip = (text) => String(text || '').split(/\n\s*\n/)
   .map((b) => parseClip(b)).find(Boolean) || null;
 
+/* WHO IS SPEAKING, READ OFF THE CAPTION. This line said "with the manager",
+   flat, which was true of the only three recordings that existed when it was
+   written and became a false statement the day somebody else spoke: Samakab
+   Nur's Man of the Match interview published under "1:41 with the manager".
+
+   The caption already names them ("Samakab Nur, Man of the Match against TSM
+   Rovers"), so the name is read from it rather than carried a second time -
+   two fields for one fact is how a panel comes to disagree with its own
+   caption. The run of capitalised words at the front is the name; the first
+   word that is not one ends it, which is what stops "after the win over TSM
+   Rovers" being read as part of somebody's name.
+
+   NOTHING IS GUESSED. A caption that does not open with a name produces no
+   phrase at all, because a wrong name said confidently is worse than the
+   length standing on its own. */
+const speaker = (cap) => {
+  const m = /^([A-Z][\w'\u2019-]*(?: [A-Z][\w'\u2019-]*)*)/.exec((cap || '').trim());
+  return m ? m[1] : '';
+};
+
 function clip(b, nav = {}) {
   const c = parseClip(b);
   if (!c) return '';
@@ -287,7 +307,8 @@ function clip(b, nav = {}) {
   const len = dur ? `<p class="aud__len">`
     + `<b class="aud__num" aria-hidden="true">${esc(dur[1])}</b>`
     + `<span class="sr-only">${esc(said)}</span>`
-    + `<span class="aud__said">with the manager</span></p>` : '';
+    + `${speaker(cap) ? `<span class="aud__said">with ${esc(speaker(cap))}</span>` : ''}`
+    + `</p>` : '';
   /* WHAT IS IN IT, AND WHERE. Each chapter is a LINK to the written answer, so
      with no JavaScript at all it does the useful half of its job; `sa.js`
      upgrades the press to seek the audio instead. A control that needs a script

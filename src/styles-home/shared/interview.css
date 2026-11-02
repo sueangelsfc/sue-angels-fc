@@ -1,0 +1,355 @@
+/* ==========================================================================
+   AN INTERVIEW, WHEREVER IT IS WRITTEN  (shared band partial)
+
+   `articleBody()` in news.mjs renders the audio panel, the filmed clip, the
+   questions and the pull quotes, and report.mjs calls that same function - so
+   a match report can carry an interview and three of them now do. Every rule
+   for that vocabulary lived in 39-media.css, which is the MEDIA band, and a
+   match report wears the REPORT band and loads one sheet.
+
+   SO AN INTERVIEW ON A MATCH PAGE DREW WITH NO STYLING AT ALL: a bare <audio>
+   element where the panel should be, the pull quotes as 16px body text, the
+   filmed clip with no frame. The markup was perfectly correct, which is the
+   whole difficulty - nothing throws and nothing reads wrongly in the HTML.
+
+   It was caught in a browser before it was ever pushed, and the suite had
+   the question all along ("no page uses a class defined only in another
+   page's stylesheet", which names this as the split bug). That check goes
+   red on this the moment the band stops including this file, which is how
+   the fix was proved.
+
+   It is one copy, included by both bands at build time, rather than a second
+   copy in 40-report.css: two sheets drawing the same component is how a
+   reader meets one player on a news page and a different one on a report.
+
+   Needs `.nw-art__body` on the prose wrapper, which both pages set. */
+
+
+
+/* AN AUDIO INTERVIEW IN AN ARTICLE (`@[caption](address|portrait)`).
+
+   WHAT THIS BLOCK IS FOR is getting somebody to press play, and the first
+   version did the opposite: the browser's grey control bar in a thin frame,
+   dropped between two paragraphs, so the smallest and dullest thing on the
+   page was the thing the page was about.
+
+   THE SPEAKER AND THE SHAPE OF THE RECORDING, together. The portrait says
+   somebody is talking; the waveform says how much of it there is and where
+   the talking sits. This note used to argue against a waveform on the grounds
+   that it would be decoration pretending to be data - which was true while
+   there was no amplitude to draw. There is now: `scripts/make-waveform.mjs`
+   reads the committed mp3 with ffmpeg and the build draws its actual peaks,
+   so the shape on the page is this recording's own. The argument stands and
+   the answer changed, which is the difference between a rule and a habit.
+
+   The controls stay the browser's. They are keyboard-operable and labelled
+   in the reader's own language for nothing, and `sa.js` has about a
+   kilobyte of headroom: rebuilding a pause button is not what to spend it
+   on. The panel around them does the work. */
+.aud{display: grid; grid-template-columns: minmax(0, 1fr); gap: 0;
+  margin: clamp(30px, 4.5vw, 46px) 0; border-radius: 20px; overflow: hidden;
+  border: 1px solid rgba(var(--volt-rgb), 0.28);
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(var(--volt-rgb), 0.16), transparent 58%),
+    linear-gradient(168deg, rgba(var(--lift), 0.05), rgba(var(--sink), 0.72));}
+
+/* A PORTRAIT THAT IS ONE. It was 190px tall above the panel and 168px wide
+   beside it, which is a thumbnail of a face on the page whose whole subject
+   is that face. The eyes sit high in the frame, so the crop is pinned there
+   rather than centred. */
+.aud__face{width: 100%; height: clamp(230px, 46vw, 330px); object-fit: cover;
+  /* A PORTRAIT IS NOT CENTRED ON ITS MIDDLE. `cover` crops from the centre,
+     which on a standing figure takes the chest and loses the top of the head;
+     these are photographs of somebody talking, so the face is the content. */
+  object-position: 50% 24%;
+  object-position: 50% 16%; display: block;
+  border-bottom: 1px solid rgba(var(--volt-rgb), 0.22);}
+
+.aud__body{padding: clamp(18px, 3vw, 26px);}
+
+/* One word, sentence case, doing one job: saying what this is before the
+   reader works it out from a control bar. */
+.aud__kind{margin: 0; font-family: var(--ui); font-size: 0.78rem;
+  font-weight: 700; letter-spacing: 0.02em; color: var(--volt-text);}
+
+/* Archivo, stated. The site's --display is Geist, so var(--display) would
+   quietly set this in the body face - the same trap the news plate hit. */
+.aud__h{margin: 6px 0 0; font-family: Archivo, var(--display), sans-serif;
+  font-weight: 600; font-size: clamp(1.18rem, 3.4vw, 1.5rem); line-height: 1.2;
+  letter-spacing: -0.015em; color: var(--fg); max-width: 24ch;}
+
+/* THE LENGTH, SET AS TYPE. It was a 0.92rem grey line under the title - the
+   one number a reader actually weighs before pressing play, printed in the
+   size and colour of a caption. The digits are the graphic and are hidden
+   from a screen reader, which gets the words beside them instead; "4:16"
+   read aloud mid-sentence is noise. */
+.aud__len{margin: 14px 0 0; display: flex; align-items: baseline; gap: 10px;
+  flex-wrap: wrap;}
+.aud__num{font-family: Archivo, var(--display), sans-serif; font-weight: 600;
+  font-size: clamp(2rem, 7vw, 2.9rem); line-height: 0.9;
+  letter-spacing: -0.04em; color: var(--fg);
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;}
+.aud__said{color: var(--ink-2); font-size: 0.9rem; line-height: 1.4;}
+
+/* THE WAVEFORM. One path of round-capped zero-height subpaths, drawn from
+   ffmpeg's peaks, plus a second copy revealed by `--p` so the shape doubles
+   as the progress bar. `sa.js` sets `--p`; with the script blocked the front
+   copy sits at 0% and never appears, which leaves a waveform.
+
+   preserveAspectRatio="none" because the point is the envelope, not its
+   proportions: it stretches to whatever width the panel has. */
+.aud__wave{display: block; width: 100%; height: auto; max-height: 64px;
+  margin: 14px 0 0; overflow: visible;}
+.aud__wv{fill: none; stroke: rgba(var(--volt-rgb), 0.32);}
+.aud__wv--on{stroke: var(--volt);
+  clip-path: inset(0 calc(100% - var(--p, 0%)) 0 0);}
+/* WHERE YOU ARE, NOT ONLY HOW FAR YOU HAVE GOT. The played part of the
+   envelope was lit and nothing marked the edge of it, so on a quiet passage -
+   which is most of the start of an interview - the boundary between played
+   and unplayed is two faint strokes and a reader cannot see the position at
+   all. The script already writes `--p` on the figure for the fill, so the
+   head costs nothing but a rule. Hidden until there is a script, because
+   without one `--p` never moves and a playhead frozen at nought is furniture
+   pretending to be a control. */
+.aud__head{display: none;}
+html.js .aud__head{display: block; position: absolute; top: 0; bottom: 0;
+  left: var(--p, 0%); width: 2px; margin-left: -1px; border-radius: 2px;
+  background: var(--volt); box-shadow: 0 0 0 3px rgba(var(--volt-rgb), 0.18);
+  pointer-events: none;}
+.aud__track{position: relative;}
+/* IT HAS TO LOOK PRESSABLE. Clicking the envelope has seeked since it was
+   written and nothing said so: the cursor changed and that is all, which a
+   touch reader never sees. The unplayed stroke lifts on hover and on focus,
+   so the whole strip reads as one control. */
+html.js .aud__track:hover .aud__wv{stroke: rgba(var(--volt-rgb), 0.5);}
+
+/* An <audio> has an intrinsic width that ignores its container, so the width
+   has to be stated. The height gives the control bar room to read as part of
+   the panel rather than as something dropped onto it. */
+.aud__player{width: 100%; height: 44px; display: block;
+  margin-top: clamp(12px, 2vw, 16px); border-radius: 999px;
+  /* Ask the browser for its DARK controls. Without this Chrome draws the
+     light set on a panel that is nearly black, which is the one piece of the
+     block that still looks like somebody else's furniture. */
+  color-scheme: dark;}
+/* WebKit and Chrome let the control strip's own background go, so it sits on
+   the panel instead of on a grey pill of its own. Ignored everywhere else,
+   where the strip simply stays as it was. */
+.aud__player::-webkit-media-controls-enclosure,
+.aud__player::-webkit-media-controls-panel{
+  background: rgba(var(--sink), 0.55); border-radius: 999px;}
+
+/* HOW FAST, AND WHERE YOU GOT TO. Neither of these can do anything without a
+   script - there is no "slower" to fall back to and no stored position to
+   offer - so unlike every other control in this panel they are hidden until
+   `html.js` says there is one. That is this repository's standing answer to
+   content that depends on JavaScript, and it is the opposite of the rule the
+   chapters and timestamps follow, deliberately. */
+.aud__rates{display: none;}
+html.js .aud__rates{display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+  margin: 12px 0 0;}
+.aud__rates-l{font-family: var(--ui); font-size: 0.72rem; font-weight: 700;
+  letter-spacing: 0.04em; color: var(--ink-3); margin-right: 2px;}
+.aud__rate{appearance: none; cursor: pointer;
+  padding: 4px 10px; border-radius: 999px;
+  border: 1px solid rgba(var(--volt-rgb), 0.28);
+  background: transparent; color: var(--ink-2);
+  font-family: var(--ui); font-size: 0.78rem; font-weight: 650;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;}
+.aud__rate:hover{background: rgba(var(--volt-rgb), 0.12); color: var(--fg);}
+/* The pressed one is the state, said in `aria-pressed` and shown here, so the
+   two cannot drift: there is no separate class deciding which looks on. */
+.aud__rate[aria-pressed="true"]{background: var(--volt); border-color: var(--volt);
+  color: var(--text-on-brand);}
+
+.aud__again{margin: 12px 0 0;}
+.aud__again-b{appearance: none; cursor: pointer; width: 100%;
+  padding: 9px 12px; border-radius: 10px; text-align: left;
+  border: 1px solid rgba(var(--volt-rgb), 0.3);
+  background: rgba(var(--volt-rgb), 0.08); color: var(--volt-text);
+  font-family: var(--body); font-size: 0.86rem; font-weight: 600;}
+.aud__again-b:hover{background: rgba(var(--volt-rgb), 0.18);}
+
+/* PRESSING THE WAVEFORM SEEKS, so it has to look like something that can be
+   pressed. Only where there is a pointer that can hover: on a phone a cursor
+   is nothing and the bars are a thumb-wide target either way. */
+@media (hover: hover) and (pointer: fine) {
+  html.js .aud__wave{cursor: pointer;}
+}
+
+/* WHAT IS IN IT. Each row is a link to the written answer, so it works with
+   no script at all; `sa.js` upgrades the press to seek the recording. The
+   time is tabular so the column of numerals lines up, which is what makes
+   this read as a contents list rather than as five more links. */
+.aud__chs{list-style: none; margin: 16px 0 0; padding: 14px 0 0;
+  border-top: 1px solid rgba(var(--volt-rgb), 0.18);}
+.aud__chs li + li{margin-top: 2px;}
+.nw-art__body .aud__ch{display: grid; grid-template-columns: 3.4em minmax(0, 1fr);
+  gap: 10px; align-items: baseline;
+  padding: 7px 8px; margin: 0 -8px; border-radius: 10px;
+  color: var(--ink-2); text-decoration: none;
+  font-size: 0.92rem; line-height: 1.35;
+  transition: background-color 0.18s ease, color 0.18s ease;}
+.nw-art__body .aud__ch:hover,.nw-art__body .aud__ch:focus-visible{background: rgba(var(--volt-rgb), 0.1);
+  color: var(--fg);}
+.nw-art__body .aud__ch.is-now{background: rgba(var(--volt-rgb), 0.14);
+  color: var(--fg);}
+.nw-art__body .aud__ch.is-now .aud__chn{color: var(--volt);}
+.nw-art__body .aud__chn{font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  font-weight: 650; color: var(--volt-text); font-size: 0.86rem;}
+
+/* Says the words exist and takes you to them. Named as the player's
+   description, so a screen reader hears it with the control. */
+.aud__note{margin: 12px 0 0; color: var(--ink-3);
+  font-size: 0.86rem; line-height: 1.45;}
+.nw-art__body .aud__note a{color: var(--volt-text);}
+
+/* Side by side once there is room for the portrait to be a portrait. */
+@media (min-width: 620px) {
+  .aud{grid-template-columns: 230px minmax(0, 1fr); align-items: stretch;}
+  .aud__face{height: 100%; min-height: 300px; border-bottom: 0;
+    border-right: 1px solid rgba(var(--volt-rgb), 0.22);}
+}
+
+/* A VIDEO CLIP, the same frame as the audio one so an article carrying both
+   does not look like two different components. The element is given its own
+   aspect through width/height in the markup, so this only has to stop it
+   spilling and round its corners to match. A black letterbox is the browser's
+   own when a clip is not 16:9, and it is better than stretching somebody. */
+.nw-art__film{margin: clamp(24px, 3.4vw, 38px) 0; padding: 10px;
+  border: 1px solid var(--line-d); border-radius: 16px;
+  background: linear-gradient(168deg, rgba(var(--volt-rgb), 0.07), rgba(var(--sink), 0.55) 70%);}
+/* A CLIP FILMED ON A PHONE IS UPRIGHT, AND `width: 100%` IS WRONG FOR ONE.
+   This rule was written for 16:9 footage; given a 720x1280 interview it draws
+   a video 1,244px tall in a 700px column, so the reader meets one face and has
+   to scroll past it to reach the next paragraph. `width: auto` lets the
+   intrinsic ratio the markup already states do the sizing, and the two maxima
+   cap it either way: a landscape clip is held to the column, an upright one to
+   a height somebody can see the whole of without scrolling. */
+.nw-art__video{width: auto; height: auto; max-width: 100%;
+  max-height: min(72vh, 560px); display: block; margin-inline: auto;
+  border-radius: 10px; background: #000;}
+.nw-art__film figcaption{margin: 12px 8px 4px; color: var(--ink-3);
+  font-size: 0.84rem; line-height: 1.45;}
+
+
+   THE HIERARCHY WAS BACKWARDS. The interviewer's questions were set large
+   and white and the manager's answers small and grey, so the loudest thing
+   on a page of somebody's words was somebody else's prompts. The questions
+   are scaffolding. His answers are the piece, and they are now the largest
+   body type on the page.
+
+   Scale is the whole device, and it is the one thing taken from the
+   "premium" playbook that belongs here: a page of uniform grey paragraphs
+   reads as a wall whatever else is done to it. What is NOT taken is the
+   rest of that playbook - no scroll hijacking, no custom cursor, no
+   animation library. `sa.js` has about a kilobyte of headroom, the policy
+   does not permit the script hosts those need, and this site's own rule is
+   subtle, purposeful transitions and nothing else. Nothing here moves. */
+
+/* The prompt. Quiet, and marked by a rule rather than by shouting: the eye
+   needs to find where each answer begins, which is structure doing the job
+   that size was doing badly. */
+.nw-art__body .qa__q{position: relative; margin: clamp(34px, 5vw, 52px) 0 0;
+  padding-left: 18px; max-width: 52ch;
+  font-family: Archivo, var(--display), sans-serif; font-weight: 500;
+  font-size: clamp(0.95rem, 1.9vw, 1.04rem); line-height: 1.45;
+  letter-spacing: 0.002em; color: var(--ink-2);}
+.nw-art__body .qa__q::before{content: ""; position: absolute; left: 0; top: 0.35em;
+  width: 3px; height: calc(100% - 0.7em); border-radius: 2px;
+  background: var(--volt); opacity: 0.85;}
+
+/* His voice. The largest body type on the page, with the leading to match -
+   a long measure at this size needs it or it reads as a slab. */
+.nw-art__body .qa__a{margin: 14px 0 0; max-width: 60ch;
+  font-size: clamp(1.1rem, 2.5vw, 1.32rem); line-height: 1.62;
+  letter-spacing: -0.004em; color: var(--fg);}
+.nw-art__body .qa__q + .qa__a{margin-top: 16px;}
+
+/* One sentence worth stopping on. It breaks the measure and the rhythm,
+   which is the only reason to have it: a second one on the same page would
+   make it furniture. */
+.nw-art__body .qa__pull{margin: clamp(38px, 6vw, 62px) 0; padding: 0;
+  border: 0; max-width: 20ch;
+  font-family: Archivo, var(--display), sans-serif; font-weight: 600;
+  font-size: clamp(1.6rem, 6vw, 2.5rem); line-height: 1.1;
+  letter-spacing: -0.028em; color: var(--fg);
+  text-wrap: balance;}
+.nw-art__body .qa__pull::before{content: ""; display: block;
+  width: 56px; height: 3px; border-radius: 2px; background: var(--volt);
+  margin-bottom: clamp(16px, 2.4vw, 22px);}
+
+/* THE TIMESTAMP BESIDE A QUESTION. A link, pointing at the player, upgraded
+   by `sa.js` into "play this answer". Tabular, so five of them down the page
+   form a column rather than five different widths, and quiet: it is a way in,
+   not a thing to read. */
+.nw-art__body .qa__t{display: inline-flex; align-items: center;
+  margin-right: 10px; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid rgba(var(--volt-rgb), 0.3);
+  background: rgba(var(--volt-rgb), 0.08);
+  color: var(--volt-text); text-decoration: none;
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  font-size: 0.8rem; font-weight: 650; letter-spacing: 0.01em;
+  vertical-align: 0.1em;
+  transition: background-color 0.18s ease, border-color 0.18s ease;}
+.nw-art__body .qa__t,.nw-art__body .qa__t:hover{text-decoration: none;}
+.nw-art__body .qa__t i{font-style: normal;}
+.nw-art__body .qa__t:hover,.nw-art__body .qa__t:focus-visible{
+  background: rgba(var(--volt-rgb), 0.2); border-color: rgba(var(--volt-rgb), 0.55);}
+
+/* WHERE THE RECORDING HAS GOT TO. `sa.js` moves `is-now` down the questions
+   from `timeupdate`, so somebody reading one answer while hearing another can
+   see which is which. It is the existing rule brightening and the question
+   coming up to full colour - no new furniture appears, because something
+   appearing on the page while you read it is a distraction and this is meant
+   to be a bearing. */
+.nw-art__body .qa__q.is-now{color: var(--fg);}
+.nw-art__body .qa__q.is-now::before{opacity: 1; width: 4px;}
+.nw-art__body .qa__q.is-now .qa__t{background: var(--volt);
+  border-color: var(--volt); color: var(--text-on-brand);}
+
+/* A FIGURE THE SITE DERIVED, beside what somebody said about it (`++[26/27]`
+   in news.mjs). Numerals in Archivo, labels at the size labels belong at, and
+   a line underneath saying when it was counted - because a record printed next
+   to a quotation reads as the record at the time of the quotation, and it is
+   not. */
+.qa__plate{margin: clamp(26px, 4vw, 40px) 0; padding: clamp(16px, 2.6vw, 22px);
+  border: 1px solid rgba(var(--volt-rgb), 0.26); border-radius: 16px;
+  background: linear-gradient(168deg, rgba(var(--volt-rgb), 0.08), rgba(var(--sink), 0.6) 70%);}
+.qa__plate-h{margin: 0; font-family: var(--ui); font-size: 0.78rem;
+  font-weight: 700; letter-spacing: 0.02em; color: var(--volt-text);}
+.qa__fig{display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px 10px; margin: 14px 0 0;}
+.qa__fig dt{font-family: var(--ui); font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.04em; text-transform: none; color: var(--ink-3);}
+.qa__fig dd{margin: 2px 0 0; font-family: Archivo, var(--display), sans-serif;
+  font-weight: 600; font-size: clamp(1.5rem, 5vw, 1.95rem); line-height: 1;
+  letter-spacing: -0.03em; color: var(--fg);
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;}
+.qa__plate-f{margin: 14px 0 0; color: var(--ink-3); font-size: 0.78rem;}
+@media (min-width: 560px) {
+  .qa__fig{grid-template-columns: repeat(6, minmax(0, 1fr));}
+}
+
+/* HEAR HIM SAY IT. The pull quote is the hook of the piece and was the one
+   large thing on the page that did nothing. The quote itself is NOT the link:
+   three lines of display type wrapped in an anchor is an enormous target and
+   an underline through a sentence meant to be read, so the control is its own
+   short line underneath, the same shape as the timestamps beside the
+   questions. */
+.nw-art__body .qa__hear{display: inline-flex; align-items: center; gap: 8px;
+  margin-top: clamp(14px, 2vw, 20px);
+  font-family: var(--body); font-size: 0.84rem; font-weight: 600;
+  letter-spacing: 0;
+  color: var(--volt-text); text-decoration: none;}
+.nw-art__body .qa__hear:hover{text-decoration: underline;}
+.nw-art__body .qa__hear i{font-style: normal;
+  padding: 2px 8px; border-radius: 999px;
+  border: 1px solid rgba(var(--volt-rgb), 0.3);
+  background: rgba(var(--volt-rgb), 0.08);
+  font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1;
+  font-size: 0.78rem;}
+/* The quote is display type and the control under it is not, so the control
+   has to opt out of everything the blockquote sets. */
+.nw-art__body .qa__pull{display: flex; flex-direction: column; align-items: flex-start;}

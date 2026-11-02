@@ -11814,6 +11814,78 @@ let orphanClasses = new Map();
     }
   }
 
+  /* AN INTERVIEW IS STYLED WHEREVER IT IS WRITTEN, ASKED OF EVERY PAGE.
+
+     `articleBody()` renders the audio panel, the filmed clip, the questions
+     and the pull quotes, and report.mjs calls that same function - so a match
+     report can carry an interview. Every rule for that vocabulary lived in
+     39-media.css, which is the media BAND, and a page loads exactly one band.
+
+     SO SAMAKAB NUR'S INTERVIEW DREW ON THE TSM REPORT WITH NO STYLING AT
+     ALL: a bare <audio> element, the pull quotes as 16px body text. Found in
+     a browser before it was pushed, and the cross-band check at 12b catches
+     it too - that one is the general rule and this is the named case, which
+     earns its place because it says which component is unstyled rather than
+     listing six class names.
+
+     The markup was correct throughout, which is the difficulty: nothing
+     throws, nothing reads wrongly in the HTML, and the check above that asks
+     about a class no rule REACHES is reported rather than failed for the
+     public pages, because most of its list is layout wrappers.
+
+     AND THAT REPORT COULD NOT HAVE SEEN IT ANYWAY. It takes one page per
+     family to stay fast, and the `matches/` family resolves to the first id
+     in the manifest, which is a 25/26 match with no interview in it - the
+     same trap `npm run visual` already records by name.
+
+     So this asks every page, by text, and it is a fact rather than a
+     judgement: a page that ships the markup must link a sheet that declares
+     it. Cheap enough to ask of all 143 because it is a regex over the
+     stylesheets a page names, not a DOM. */
+  {
+    const IV_CLASSES = ['aud', 'aud__face', 'aud__body', 'aud__chs', 'aud__ch',
+      'aud__player', 'aud__rate', 'qa__q', 'qa__pull', 'qa__hear', 'qa__t',
+      'nw-art__film', 'nw-art__video'];
+    const sheetText = {};
+    for (const f of fs.readdirSync(ROOT).filter((x) => x.endsWith('.css'))) {
+      sheetText[f] = fs.readFileSync(path.join(ROOT, f), 'utf8');
+    }
+    const bad = [];
+    let seen = 0;
+    for (const [f, html] of pages) {
+      if (!/class="(?:[^"]* )?(?:aud|qa__q)(?: [^"]*)?"/.test(html)) continue;
+      seen += 1;
+      const css = [...html.matchAll(/<link[^>]+href="\/([\w.-]+\.css)/g)]
+        .map((m) => sheetText[m[1]] || '').join('\n');
+      /* Only the classes this page actually ships: a report carries no
+         chapter list unless its interview has chapters, and asking for a rule
+         it has no element for would be a check on the media band's contents. */
+      const missing = IV_CLASSES
+        .filter((c) => new RegExp(`class="(?:[^"]* )?${c}(?: [^"]*)?"`).test(html))
+        .filter((c) => !new RegExp(`\\.${c}(?![\\w-])`).test(css));
+      if (missing.length) bad.push(`${f}: ${missing.join(', ')}`);
+    }
+    check('every page carrying an interview links a sheet that styles it',
+      seen > 0 && bad.length === 0, `${seen} pages with one${bad.length ? `, ${bad.slice(0, 3).join(' | ')}` : ''}`);
+    /* THE PROBE IS THE DEFECT, PUT BACK: the interview vocabulary present in
+       the media band and absent from the report band. */
+    const probeCss = sheetText['p-media.css'] || '';
+    let probeBad = 0;
+    for (const [f, html] of pages) {
+      if (!/class="(?:[^"]* )?(?:aud|qa__q)(?: [^"]*)?"/.test(html)) continue;
+      const names = [...html.matchAll(/<link[^>]+href="\/([\w.-]+\.css)/g)].map((m) => m[1]);
+      /* The report band, as it was: its own sheet with the shared partial
+         stripped back out of it. */
+      const css = names.map((n) => (n === 'p-report.css'
+        ? (sheetText[n] || '').split(probeCss).join('')
+          .replace(/\.(?:aud|qa__)[\w-]*/g, '.x-gone')
+        : sheetText[n] || '')).join('\n');
+      if (!/\.aud(?![\w-])/.test(css) && /class="(?:[^"]* )?aud(?: [^"]*)?"/.test(html)) probeBad += 1;
+    }
+    check('probe: an interview on a page whose band does not style it is caught',
+      probeBad > 0, `${probeBad} page(s) caught`);
+  }
+
   /* 5. A SPAN MAY NOT HOLD A HEADING.
 
      Phrasing content may only contain phrasing content, and `cz-sign__text`
@@ -12847,12 +12919,22 @@ let orphanClasses = new Map();
     }
     return out;
   };
-  const sheetDirs = ['styles', 'styles-home', path.join('styles-home', 'pages'), 'styles-control'];
-  const sheetFiles = sheetDirs.flatMap((d) => {
-    const dir = path.join(ROOT, 'src', d);
+  /* EVERY SOURCE SHEET, FOUND RATHER THAN LISTED. This was four hard-coded
+     directories, and `src/styles-home/shared` - added when the interview
+     vocabulary had to be shared by the media and report bands - was invisible
+     to every check in this block the moment it existed: the one that asks
+     whether a named re-theme still has a class went red naming `aud__face`,
+     which is declared, in a folder nothing was looking at. A list of folders
+     is a list that goes stale the day somebody adds one, and the failure it
+     produces points at the wrong thing. */
+  const sheetFiles = (function walk(dir) {
     if (!fs.existsSync(dir)) return [];
-    return fs.readdirSync(dir).filter((f) => f.endsWith('.css')).map((f) => path.join(dir, f));
-  });
+    return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+      const full = path.join(dir, e.name);
+      if (e.isDirectory()) return walk(full);
+      return e.name.endsWith('.css') ? [full] : [];
+    });
+  }(path.join(ROOT, 'src'))).sort();
   const clashes = [];
   let first = new Map();
   for (const f of sheetFiles) {

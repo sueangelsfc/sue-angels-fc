@@ -18,6 +18,14 @@
       "was": "flickon",
       "now": "through",
       "why": "The assist is Charlie Dunkley's and always was. The TYPE described the wrong action: the report has LJ flicking the ball on to Charlie, whose touch released Ade on a third-man run, so the flick-on is Burnett's and Dunkley played him through. The card read 'Flicked on by Charlie Dunkley' over prose saying otherwise. The club has confirmed the report's account of the assists is correct."
+    },
+    {
+      "match": "r20261101-tsm",
+      "goal": 1,
+      "field": "assist.type",
+      "was": "flickon",
+      "now": "pass",
+      "why": "The assist is Stewart Luwawa's and always was; the TYPE described the wrong action. The club's fuller account of the opener has him bringing the ball down on his chest and attempting a volley he did not catch cleanly, with the ball falling to LJ - which is neither a flick-on nor a deliberate lay-off. The card read 'Flicked on by Stewart Luwawa' directly above prose saying otherwise. `pass` claims the least about how the ball arrived, which is the right answer when the club's own account is that it was mishit."
     }
   ]
 }

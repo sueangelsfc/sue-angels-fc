@@ -313,11 +313,21 @@ export function matchReport(m, d) {
     : '<p class="mr-col__none">No assist is recorded for this match.</p>'}
           </div>
         </div>`}
-        ${((m.detail || {}).opponentGoals || []).length ? `<p class="mr-how__theirs rv">${esc(shortClub(m.opponent))} scored through ${esc(m.detail.opponentGoals
-    .map((g) => [g.minute ? `${g.minute}′` : '',
-      g.og ? `an own goal${g.name && !/^unknown$/i.test(g.name) ? `, ${g.name}` : ''}`
-        : (g.name && !/^unknown$/i.test(g.name) ? g.name : 'a goal'), g.penalty ? '(pen)' : '']
-      .filter(Boolean).join(' ')).join(', '))}.</p>` : ''}
+        ${/* WHO SCORED IT, where anybody knows. "Scored through a goal" is
+              what the named form reads as when nothing is named, so an
+              unnamed goal is said by its minute instead and the preposition
+              goes with it. TSM's free kick of 1 November is the first of
+              these: the club wrote the goal up and nobody took the scorer's
+              name. */''}
+        ${((m.detail || {}).opponentGoals || []).length ? `<p class="mr-how__theirs rv">${esc(shortClub(m.opponent))} scored ${
+  m.detail.opponentGoals.some((g) => g.og || (g.name && !/^unknown$/i.test(g.name))) ? 'through ' : ''}${esc(m.detail.opponentGoals
+    .map((g) => {
+      const who = g.og ? `an own goal${g.name && !/^unknown$/i.test(g.name) ? `, ${g.name}` : ''}`
+        : (g.name && !/^unknown$/i.test(g.name) ? g.name : '');
+      return [who ? (g.minute ? `${g.minute}′` : '') : '',
+        who || (g.minute ? `on ${g.minute} minutes` : 'a goal'),
+        g.penalty ? '(pen)' : ''].filter(Boolean).join(' ');
+    }).join(', '))}.</p>` : ''}
         ${motm ? `<div class="mr-award rv">
           <span class="mr-award__k">Player of the Match</span>
           <b class="mr-award__n">${esc(motm)}</b>

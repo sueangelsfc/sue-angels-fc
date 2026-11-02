@@ -2,6 +2,7 @@
   "_why": "A CORRECTION THE CLUB HAS AGREED AND HAS NOT YET SAVED. The matches table cannot be written from a developer machine: an anonymous write is refused by row-level security, which is the posture working exactly as designed, so only an admin session in Control panel can change a stored record. This file is the bridge, and it is the same device as report-editions.json rather than a second source of truth.",
   "_how_it_retires_itself": "Every correction names the value it is correcting, in `was`. It is applied ONLY while the stored record still holds that value, so the moment somebody types the right figure in the panel the correction matches nothing and vanishes from the build. It cannot drift, it cannot fight the panel, and forgetting to delete it costs nothing. That is report-editions.json's basedOn hash, applied to one field instead of to a whole report.",
   "_what_it_may_touch": "Goals only, by their place in the match's own goal list, which is the same identity match-clips.json files a clip against. Not the scoreline, not the team sheet, not who scored: those are the record, and a file that could rewrite them would be the second source this repository keeps having to remove. Where a goal's assist is corrected the derived flat `assists` entry is brought into line with it, because that list is derived from the goals on save and the two disagreeing is the fault that once published four assists each for two men.",
+  "_and_their_goals": "A `theirGoals` entry supplies the opponents' goal lines, because the form stores those as a whole list typed into one box and there is no index to correct. It names the list it is replacing, in `was`, and is applied only while the stored list still reads that way, so `was: []` retires the moment the club types anything into Their goals. The list, never the scoreline: a conceded figure disagreeing with its own goal lines is what the record checker reports, and a file that could edit the score would hide that rather than close it.",
   "corrections": [
     {
       "match": "r20261011-peps",
@@ -26,6 +27,12 @@
       "was": "flickon",
       "now": "pass",
       "why": "The assist is Stewart Luwawa's and always was; the TYPE described the wrong action. The club's fuller account of the opener has him bringing the ball down on his chest and attempting a volley he did not catch cleanly, with the ball falling to LJ - which is neither a flick-on nor a deliberate lay-off. The card read 'Flicked on by Stewart Luwawa' directly above prose saying otherwise. `pass` claims the least about how the ball arrived, which is the right answer when the club's own account is that it was mishit."
+    },
+    {
+      "match": "r20261101-tsm",
+      "theirGoals": [{ "name": "", "type": "open", "minute": "33", "penalty": false }],
+      "was": [],
+      "why": "TSM's free kick is in the club's own report - 33rd minute, straight into the top-right corner - and the stored record holds one conceded goal with no line under Their goals for it. So the match page read 'Conceded 1' with an empty lane beneath the axis, which is what a thing that failed to draw looks like, and the record checker counted the match as short of a goal line. The minute is all the panel can hold for an opponent's goal: their goals carry open, pen and og and nothing about a free kick, so the detail stays in the prose where the club wrote it. Nobody has named the scorer, and the page leaves it unnamed rather than guessing."
     }
   ]
 }

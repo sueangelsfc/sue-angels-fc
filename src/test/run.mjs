@@ -8581,7 +8581,13 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
      ==================================================================== */
   {
     const { applyCorrections } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
-    const fixes = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'match-corrections.json'), 'utf8')).corrections || [];
+    const all = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'match-corrections.json'), 'utf8')).corrections || [];
+    /* Two kinds, because their goals are stored as a whole list typed into
+       one box and have no index to correct. The checks below are about a
+       goal of ours by its place in the list; the block after this one is
+       about the list of theirs. */
+    const fixes = all.filter((c) => !c.theirGoals);
+    const theirs = all.filter((c) => c.theirGoals);
     check('a correction changes something, and says what it is changing',
       fixes.length > 0 && fixes.every((c) => c.match && c.goal && c.field
         && c.was !== undefined && c.now !== undefined && String(c.was) !== String(c.now)
@@ -8637,6 +8643,51 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
             && x.assist && String(x.assist.num) === String(a.num));
           return !g || (a.type === g.assist.type && String(a.minute) === String(g.minute));
         }));
+    }
+    /* THEIR GOALS, the same device over a list. The archive holds ten
+       records short of a line under Their goals, so the page reads
+       "Conceded 1" over an empty lane, which is what a thing that failed to
+       draw looks like. A correction supplies the lines and names the list it
+       is replacing, so it retires the moment the club types anything into
+       that box. */
+    check('a their-goals correction says what list it is replacing, and why',
+      theirs.every((c) => c.match && Array.isArray(c.was) && Array.isArray(c.theirGoals)
+        && c.theirGoals.length > c.was.length
+        && c.theirGoals.every((g) => g.minute || g.name)
+        && String(c.why || '').length > 40));
+    for (const c of theirs) {
+      const now = stored().get(c.match);
+      const held = now ? (now.opponentGoals || []) : [];
+      const shape = (l) => (l || []).map((g) => `${g.minute || ''}|${g.name || ''}`).join(',');
+      check(`the record this corrects is the one it says: ${c.match} their goals`,
+        shape(held) === shape(c.was) || shape(held) === shape(c.theirGoals), shape(held));
+      const after = stored();
+      applyCorrections(after, all);
+      check(`and the site publishes their goal lines: ${c.match}`,
+        shape((after.get(c.match) || {}).opponentGoals) === shape(c.theirGoals));
+      /* AND THE PAGE SAYS IT. A correction the match page does not print is
+         a record nobody reads, which is this repository's own recurring
+         fault read the other way round. */
+      const mm = (base.played || []).find((x) => x.id === c.match);
+      const pf = mm && path.join(ROOT, 'matches', `${mm.slug}.html`);
+      const pg = pf && fs.existsSync(pf) ? fs.readFileSync(pf, 'utf8') : '';
+      for (const g of c.theirGoals) {
+        if (!g.minute) continue;
+        check(`the match page prints their ${g.minute}th minute: ${c.match}`,
+          new RegExp(`${g.minute}\u2032`).test(pg) || new RegExp(`on ${g.minute} minutes`).test(pg));
+      }
+    }
+    /* THE GUARD BITES ON A LIST TOO, which is the whole safety of this half:
+       `was: []` means "only while nobody has typed one", and a correction
+       aimed at a list the record does not hold must leave it alone. */
+    if (theirs.length) {
+      const held = stored();
+      const victim = held.get(theirs[0].match);
+      victim.opponentGoals = [{ name: 'Somebody the club typed', type: 'open', minute: '70', penalty: false }];
+      applyCorrections(held, all);
+      check('a their-goals correction aimed at a list the record does not hold changes nothing',
+        (victim.opponentGoals || []).length === 1 && victim.opponentGoals[0].minute === '70',
+        JSON.stringify(victim.opponentGoals));
     }
   }
 

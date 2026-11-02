@@ -99,6 +99,26 @@ export function applyCorrections(detailById, corrections) {
   const done = [];
   for (const c of corrections || []) {
     const data = detailById.get ? detailById.get(c.match) : detailById[c.match];
+    /* A GOAL THE OPPONENTS SCORED THAT THE RECORD DOES NOT HOLD. The form
+       stores their goals as a whole list typed into one box, so there is no
+       index to correct: the correction names the list it is replacing, in
+       `was`, and is applied only while the stored list still reads that way.
+       An entry written as `was: []` therefore retires itself the moment the
+       club types anything at all into Their goals, which is the same guard as
+       every other correction here and the only reason this is safe.
+
+       It is the LIST, never the scoreline: a record whose conceded figure
+       disagrees with its own goal lines is exactly what the record checker
+       reports, and a file that could edit the score would hide that rather
+       than close it. */
+    if (c.theirGoals) {
+      if (!data) continue;
+      const shape = (l) => (l || []).map((g) => `${g.minute || ''}|${g.name || ''}|${g.type || ''}`).join('\n');
+      if (shape(data.opponentGoals) !== shape(c.was)) continue;
+      data.opponentGoals = c.theirGoals.map((g) => ({ ...g }));
+      done.push(c);
+      continue;
+    }
     const goal = data && (data.goals || [])[Number(c.goal) - 1];
     if (!goal) continue;
     const path = String(c.field || '').split('.');

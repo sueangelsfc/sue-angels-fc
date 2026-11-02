@@ -1268,7 +1268,7 @@ stand-first and a drop cap; and the players' names in that prose linked.
 - **`ordinal()` moved into `stats.mjs`.** `home.mjs` and `player.mjs` each
   carried an identical copy and this needed a third.
 
-### Forty-two roles, and how the side played
+### Forty-nine roles, and how the side played
 
 **A role is attached to a position, never instead of one.** A false nine is a
 centre forward with a job. `ROLES` in `src/lib/positions.mjs` held nineteen,
@@ -1277,11 +1277,16 @@ worse than no dropdown at all" - which is true of forty invented by a video
 game and not of the ones a manager actually says out loud. The club asked for
 more and named one: a forward who **runs the channels**.
 
-- **Forty-two now**, four to ten per position, every one carrying the
+- **Forty-nine now**, four to eleven per position, every one carrying the
   sentence that explains it. The suite asks that no two share a code, a name
   **or a description** - the last one because that is how a duplicate hides,
   with different letters over the same idea - and that every position offers at
-  least two, so the second dropdown is never a dead control beside the first.
+  least FOUR, raised from two: two is a dropdown that exists, and the keeper
+  sat on three for as long as the list has while two of the four things a
+  Sunday keeper is judged on had no entry at all. **A thin list reads as a
+  complete one**, because nothing on the screen says what is missing from it.
+  The message names the thinnest position so the next addition knows where the
+  floor actually is rather than what it says - `SW` at four.
 - **Nothing the archive uses was dropped.** Twelve role codes are in stored
   team sheets and the check names them, so a tidy that renamed one would print
   nothing where the club had answered.
@@ -1322,10 +1327,45 @@ more and named one: a forward who **runs the channels**.
   offer nine identical lists**. It would have caught neither of the two found
   by hand - both were centre-against-pair, not left-against-right - which is
   why it is worth having: it is the next one.
-- **`control-matchedit.js` has 563 bytes left** of its 19KB, measured the way
-  the suite measures it. The roles are DATA riding with that chunk, so a pair
-  of them costs the reader **about 85 gzipped bytes** - cut the two wide ones
-  back out of the shipped file and it drops from 18,893 to 18,813 - and costs
+- **THE KEEPER, THE BACK LINE AND THE FORWARDS**, asked for after the wingers
+  and the centre midfielders, which is the whole pitch now. Seven more, each
+  of them a job nothing on the form could express:
+  - **Commanding keeper** and **long-kicking keeper** (`CMK`, `LKG`). The
+    keeper had the thinnest list on the form at three. Commanding is about his
+    **box** - the crosses and the set pieces - which is neither holding his
+    line nor coming off it to defend space, and the long kick is the *opposite*
+    answer to the ball-playing keeper rather than the same answer reworded.
+  - **Set-piece threat** (`SPT`, the centre halves and the sweeper). What a
+    centre half does at the other end was on the form nowhere, and on a Sunday
+    the tall one going up for every corner is half the reason he is picked.
+  - **Man-marker** (`MMK`) - **one instruction, one role**, reaching the centre
+    halves, the full backs, the holding midfield and the wide midfield. Four
+    codes carrying one sentence is exactly the duplicate the description check
+    refuses, so the suite asks both that it reaches all four rings *and* that
+    it is the only role in the list about following a man.
+  - **Long-range shooter** (`SHO`, the central and attacking midfield).
+    **Nothing on the form said anything about shooting, forty-two roles in**:
+    the playmakers pick the pass, the runners arrive in the box, and the man
+    who hits it from twenty-five yards could not be described at all.
+  - **Tracking wide man** (`TRK`, the wingers, wide midfield and wide
+    forwards). The one thing most often *asked* of a winger on a Sunday - go
+    back with him and defend the flank - and the one thing the form could not
+    record. It is the opposite instruction to pressing, not a softer wording
+    of it, so the two notes have to disagree about where the work happens.
+  - **Aerial finisher** (`AER`, both strikers and the second striker). **The
+    header is not the target man**: one holds it up thirty yards out and brings
+    others into it, the other is in the six yard box attacking the cross, and
+    the poacher beside him is about where he stands rather than what he scores
+    with.
+- **Every position gained something**, which is the club's ask read literally,
+  and the per-position counts are printed on every run because a count is the
+  only thing that says whether a place was quietly skipped. The central trio is
+  the longest at eleven, the sweeper the shortest at four.
+- **`control-matchedit.js` has 310 bytes left** of its 19KB, measured the way
+  the suite measures it, and **the ceiling has not moved once across the
+  eleven roles added in three sittings**. They are DATA riding with that chunk,
+  so they cost about 36 gzipped bytes each - cut the last seven back out of the
+  shipped file and it drops from 19,146 to 18,893 - and they cost
   `11-matchedit.js`'s source ceiling nothing at all, which is exactly the split
   those two budgets exist to show.
 

@@ -8389,9 +8389,16 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     /* A POSITION WITH NO ROLES IS A DROPDOWN WITH NOTHING IN IT. Every place
        on the pitch offers at least two, so the second question is never a
        dead control beside the first. */
-    check('every position offers roles, so the second dropdown is never empty',
-      POSITIONS.every((p) => rolesFor(p.code).length >= 2),
-      POSITIONS.filter((p) => rolesFor(p.code).length < 2).map((p) => p.code).join(' ') || 'all');
+    /* THE FLOOR IS FOUR, raised from two. Two is a dropdown that exists, and
+       the keeper sat on three for as long as the list has existed while two
+       of the four things a Sunday keeper is judged on had no entry at all: a
+       thin list reads as a complete one, because nothing on the screen says
+       what is missing from it. The message names the thinnest so the next
+       addition knows where the floor actually is rather than what it says. */
+    const thinnest = [...POSITIONS].sort((a, b) => rolesFor(a.code).length - rolesFor(b.code).length)[0];
+    check('every position offers at least four roles, so no list reads as complete when it is not',
+      POSITIONS.every((p) => rolesFor(p.code).length >= 4),
+      `thinnest ${thinnest.code} at ${rolesFor(thinnest.code).length}`);
     /* THE ARCHIVE KEEPS WHAT IT HAS. Twelve role codes are in stored team
        sheets and a rename or a tidy that dropped one would print nothing
        where the club had answered. */
@@ -8477,6 +8484,52 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     check('the shadow striker stays a central job',
       ['LAM', 'RAM'].every((c) => !rolesFor(c).some((r) => r.code === 'SHD'))
       && rolesFor('CAM').some((r) => r.code === 'SHD'));
+    /* THE KEEPER, THE BACK LINE AND THE FORWARDS, asked the way the wingers
+       were: not whether the role exists, but whether the man standing there
+       is offered it. A role defined and attached to the wrong place is the
+       fault this block keeps finding, and it looks identical to a role that
+       was never written. */
+    check('a keeper can be described all five ways he is judged on',
+      ['SK', 'SHS', 'BPG', 'CMK', 'LKG'].every((k) => rolesFor('GK').some((r) => r.code === k)),
+      rolesFor('GK').map((r) => r.code).join(' '));
+    check('the commanding keeper and the sweeper keeper are told apart by the box',
+      /Owns his box/i.test(noteOf('CMK')) && /off his line/i.test(noteOf('SK')));
+    check('the long kick and the ball-playing keeper are opposite answers',
+      /Goes long/i.test(noteOf('LKG')) && /with his feet/i.test(noteOf('BPG')));
+    check('a centre half can be credited with what he does at the other end',
+      ['CB', 'LCB', 'RCB', 'SW'].every((c) => rolesFor(c).some((r) => r.code === 'SPT')),
+      rolesFor('CB').map((r) => r.code).join(' '));
+    /* ONE INSTRUCTION, ONE ROLE. Man-marking is given to a centre half, a
+       full back, a holding midfielder and a wide midfielder, and four codes
+       carrying one sentence is the duplicate the description check refuses -
+       so the test is both that it reaches all four rings AND that it is the
+       only role in the list about following a man. */
+    const marks = ['CB', 'LB', 'LWB', 'CDM', 'LM'];
+    check('man-marking reaches every ring that is ever asked to do it',
+      marks.every((c) => rolesFor(c).some((r) => r.code === 'MMK')),
+      marks.filter((c) => !rolesFor(c).some((r) => r.code === 'MMK')).join(' ') || 'all');
+    check('man-marking is one role rather than four saying the same thing',
+      ROLES.filter((r) => /follows one opponent/i.test(r.note)).length === 1);
+    check('shooting from distance is on the form at last',
+      ['CM', 'LCM', 'RCM', 'CAM', 'AM', 'LAM', 'RAM']
+        .every((c) => rolesFor(c).some((r) => r.code === 'SHO')));
+    check('a wide man who gets back has something to be called',
+      ['LW', 'RW', 'LM', 'RM', 'LF', 'RF'].every((c) => rolesFor(c).some((r) => r.code === 'TRK')),
+      rolesFor('LF').map((r) => r.code).join(' '));
+    /* The tracking wide man is the OPPOSITE instruction to pressing, not a
+       softer wording of it, so the two notes have to disagree about where the
+       work happens. */
+    check('tracking back and pressing high are told apart by where the work is',
+      /all the way back/i.test(noteOf('TRK')) && /from the front of midfield/i.test(noteOf('WRK')));
+    check('a forward can be credited with heading them in',
+      ['ST', 'CF', 'SS'].every((c) => rolesFor(c).some((r) => r.code === 'AER')));
+    check('the aerial finisher is neither the target man nor the poacher',
+      /heads them/i.test(noteOf('AER')) && /Holds it up thirty yards out/i.test(noteOf('TM'))
+      && /six yard box and does little else/i.test(noteOf('POA')));
+    /* EVERY POSITION GAINED SOMETHING, which is the club's ask read literally
+       - "more roles for all positions" - and the figure is printed because a
+       count is the only thing that says whether a place was quietly skipped. */
+    console.log(`  roles per position: ${POSITIONS.map((p) => `${p.code} ${rolesFor(p.code).length}`).join(' · ')}`);
   }
 
   /* ====================================================================

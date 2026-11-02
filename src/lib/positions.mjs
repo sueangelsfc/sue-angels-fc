@@ -107,9 +107,10 @@ export const POSITIONS = [
    dropdown of instructions nobody uses is worse than no dropdown at all.
    What keeps that honest is that each one has to be a job somebody says out
    loud: the club asked for more and named them, which is how the list went
-   nineteen to thirty-eight to forty. Definitions follow how the game uses
-   the terms. A position never offers all of them - the central trio is the
-   longest list on the form, at ten.
+   nineteen to thirty-eight to forty-nine. Definitions follow how the game
+   uses the terms. A position never offers all of them - the central trio is
+   the longest list on the form, at eleven - and the keeper the shortest, at
+   five.
    ========================================================================== */
 export const ROLES = [
   /* ---- In goal ---- */
@@ -119,6 +120,16 @@ export const ROLES = [
     note: 'Holds his line and deals with whatever reaches it.' },
   { code: 'BPG', name: 'Ball-playing keeper', for: ['GK'],
     note: 'Starts the attack with his feet instead of clearing it.' },
+  /* THE KEEPER HAD THE THINNEST LIST ON THE FORM, at three, and two of the
+     four things a Sunday keeper is actually judged on were not among them.
+     Commanding is about his BOX - the crosses and the set pieces - which is
+     neither holding his line nor coming off it to defend space, and the long
+     kick is the opposite answer to the ball-playing one rather than the same
+     answer worded differently. */
+  { code: 'CMK', name: 'Commanding keeper', for: ['GK'],
+    note: 'Owns his box and comes for the crosses and the set pieces.' },
+  { code: 'LKG', name: 'Long-kicking keeper', for: ['GK'],
+    note: 'Goes long over the midfield rather than building from the back.' },
 
   /* ---- Defence ---- */
   { code: 'BPD', name: 'Ball-playing centre back', for: ['CB', 'LCB', 'RCB', 'SW'],
@@ -133,6 +144,20 @@ export const ROLES = [
     note: 'The outside man of a back three, carrying it into the channel.' },
   { code: 'LIB', name: 'Libero', for: ['SW', 'CB'],
     note: 'Sweeps behind the line and brings the ball out into midfield himself.' },
+  /* WHAT A CENTRE HALF DOES AT THE OTHER END was on the form nowhere, and on
+     a Sunday the tall one going up for every corner is half the reason he is
+     picked. It is a fact about the attacking box, so it is not the stopper,
+     the cover man or the no-nonsense one wearing a different word. */
+  { code: 'SPT', name: 'Set-piece threat', for: ['CB', 'LCB', 'RCB', 'SW'],
+    note: 'Goes up for every corner and free kick at the other end.' },
+  /* MAN-MARKING IS ONE INSTRUCTION WHEREVER IT IS GIVEN - to a centre half on
+     their nine, a full back on their winger, a holding midfielder on their
+     playmaker, a wide midfielder on whoever is overlapping. One role across
+     all of them rather than four codes saying the same sentence, which is the
+     duplicate the suite's description check exists to refuse. */
+  { code: 'MMK', name: 'Man-marker', for: ['CB', 'LCB', 'RCB', 'LB', 'RB', 'LWB', 'RWB',
+    'CDM', 'DM', 'LDM', 'RDM', 'LM', 'RM'],
+    note: 'Follows one opponent wherever he goes and does nothing else.' },
   { code: 'IFB', name: 'Inverted full back', for: ['LB', 'RB', 'LWB', 'RWB'],
     note: 'Tucks into midfield with the ball instead of staying wide.' },
   { code: 'OFB', name: 'Overlapping full back', for: ['LB', 'RB', 'LWB', 'RWB'],
@@ -181,6 +206,11 @@ export const ROLES = [
     note: 'Roams between the lines with no fixed job.' },
   { code: 'WRK', name: 'Pressing midfielder', for: ['CM', 'LCM', 'RCM', 'CAM', 'AM', 'LAM', 'RAM'],
     note: 'Chases the ball down from the front of midfield and gives them no time.' },
+  /* NOTHING ON THE FORM SAID ANYTHING ABOUT SHOOTING, forty-two roles in. The
+     playmakers pick the pass, the runners arrive in the box, and the man who
+     hits it from twenty-five yards had no way to be described at all. */
+  { code: 'SHO', name: 'Long-range shooter', for: ['CM', 'LCM', 'RCM', 'CAM', 'AM', 'LAM', 'RAM'],
+    note: 'Takes it on from outside the box when the lane opens up.' },
 
   /* ---- Attack ---- */
   { code: 'IW', name: 'Inverted winger', for: ['LW', 'RW', 'LM', 'RM', 'LF', 'RF'],
@@ -204,6 +234,13 @@ export const ROLES = [
     note: 'Plays off the far shoulder of the full back and arrives in the box unseen.' },
   { code: 'WTM', name: 'Wide target man', for: ['LW', 'RW', 'LM', 'RM', 'LF', 'RF'],
     note: 'Holds it up on the touchline and brings the runners past him.' },
+  /* A WIDE MAN WHO GETS BACK had nothing to be called. Pressing is about
+     winning it high up and this is the opposite instruction: go with him, all
+     the way, and defend the flank beside your own full back. It is the one
+     thing most often ASKED of a winger on a Sunday and the one thing the form
+     could not record. */
+  { code: 'TRK', name: 'Tracking wide man', for: ['LW', 'RW', 'LM', 'RM', 'LF', 'RF'],
+    note: 'Comes all the way back with his full back and defends the flank.' },
   { code: 'F9', name: 'False nine', for: ['ST', 'CF'],
     note: 'Starts as the centre forward and drops between the lines.' },
   { code: 'DLF', name: 'Deep-lying forward', for: ['ST', 'CF', 'SS'],
@@ -218,6 +255,12 @@ export const ROLES = [
     note: 'Lives in the six yard box and does little else, which is a compliment.' },
   { code: 'CFW', name: 'Complete forward', for: ['ST', 'CF'],
     note: 'Leads the line, drops in, runs the channels, finishes.' },
+  /* THE HEADER IS NOT THE TARGET MAN. One holds it up thirty yards out and
+     brings others into it; the other is in the six yard box attacking the
+     cross, and the poacher beside him is about where he stands rather than
+     what he scores with. */
+  { code: 'AER', name: 'Aerial finisher', for: ['ST', 'CF', 'SS'],
+    note: 'Attacks the crosses and heads them rather than finishing on the floor.' },
   { code: 'SHD', name: 'Shadow striker', for: ['SS', 'CAM', 'AM'],
     note: 'Runs beyond the striker into the box.' },
 ];

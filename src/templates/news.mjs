@@ -1026,21 +1026,29 @@ export function newsArticle(a, d) {
      no nested `</figure>`, so this takes exactly one block and leaves the rest
      of the article untouched. */
   const audOne = /<figure class="aud"[\s\S]*?<\/figure>/.exec(written);
-  const railed = isIv && audOne;
-  const railHtml = railed ? `<div class="nw-art__rail">${audOne[0]}</div>` : '';
-  const prose = railed ? written.replace(audOne[0], '') : written;
+  /* A FILMED INTERVIEW IS THE SAME USE AND WAS GETTING THE OPPOSITE SHAPE.
+     The rail exists so the recording stays in view while the answers are
+     read, which is as true of a video as of an audio clip - and the note
+     below used to say a filmed one has "nothing to put in a rail", which was
+     a description of this line rather than of the page. Left inline, a
+     portrait clip filmed on a phone is a 315px column of video adrift in the
+     middle of a 746px measure, with the reader scrolling past a face to get
+     back to the words. Neither figure nests another `</figure>`, so one
+     block moves and the rest of the article is untouched. */
+  const filmOne = audOne ? null : /<figure class="nw-art__film">[\s\S]*?<\/figure>/.exec(written);
+  const railOne = audOne || filmOne;
+  const railed = isIv && railOne;
+  const railHtml = railed ? `<div class="nw-art__rail">${railOne[0]}</div>` : '';
+  const prose = railed ? written.replace(railOne[0], '') : written;
 
   const body = `<section class="sec nw-art" aria-label="Article">
       <div class="wrap wrap--narrow${railed ? ' wrap--iv' : ''}">
         ${/* THE TWO-COLUMN SHAPE IS THE RAIL'S, so it is `railed` that asks
-              for it and not `isIv`. An interview somebody FILMED carries
-              questions and no audio figure, so it is `isIv` and has nothing
-              to put in a rail - and `.nw-art__body--iv` is a two-column grid
-              with auto placement, so its paragraphs would have laid out one
-              per cell, alternating down two columns. The sheet's own note
-              says the class is never set on a page that wants one centred
-              measure; that was true of every page that existed when it was
-              written and stopped being true of the first filmed one. */''}
+              for it and not `isIv`: `.nw-art__body--iv` is a two-column grid
+              with auto placement, so on a page with nothing in the rail its
+              paragraphs would lay out one per cell, alternating down two
+              columns. An interview with questions and no clip of any kind is
+              exactly that page and still gets one centred measure. */''}
         <div class="nw-art__body${railed ? ' nw-art__body--iv' : ''} rv">
         ${railHtml}${railed ? '<div class="nw-art__col">' : ''}
         ${prose}

@@ -353,6 +353,14 @@ html.js .nw-card[hidden]{display: none;}
   .nw-art__body--iv > .nw-art__rail > .aud .aud__num{font-size: 2.3rem;}
   .nw-art__body--iv > .nw-art__rail > .aud .aud__wave{max-height: 84px;
     margin-top: 18px;}
+  /* A FILMED INTERVIEW RAILS THE SAME WAY. The film figure already draws its
+     own frame, so all it needs is the pin and its margins off - and a lower
+     ceiling on the video itself, because 560px of upright clip plus a caption
+     is taller than the window it is meant to stay inside. */
+  .nw-art__body--iv > .nw-art__rail > .nw-art__film{position: sticky; top: 92px;
+    margin: 0;}
+  .nw-art__body--iv > .nw-art__rail > .nw-art__film .nw-art__video{
+    max-height: min(58vh, 520px); width: 100%;}
   /* The rail item itself has to be the full height for sticky to have a
      containing block worth travelling in. */
   .nw-art__body--iv > .nw-art__rail{align-self: stretch;}

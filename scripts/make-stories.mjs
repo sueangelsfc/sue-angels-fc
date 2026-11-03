@@ -111,7 +111,7 @@ html,body{width:1080px;height:1920px;background:#000;overflow:hidden}
    a story, so the padding is not symmetry: it is keeping the crest and the
    address out from under it. The middle block takes the slack. */
 .in{position:absolute;inset:0;display:flex;flex-direction:column;
-  padding:132px 96px 230px}
+  padding:132px 96px 96px}
 .mid{flex:1;display:flex;flex-direction:column;justify-content:center}
 .crest{width:150px;height:auto;display:block}
 .eyebrow{margin-top:54px;font-family:Geist;font-weight:700;font-size:28px;
@@ -119,10 +119,13 @@ html,body{width:1080px;height:1920px;background:#000;overflow:hidden}
 .title{font-family:Archivo;font-weight:500;font-size:104px;line-height:1.02;
   letter-spacing:-.035em;font-variation-settings:'wdth' 108;color:#FFF8F3}
 .rule{width:132px;height:5px;background:#FF7034;margin:52px 0 0}
-.foot{font-family:Geist;font-weight:600;font-size:30px;letter-spacing:.04em;
-  color:rgba(255,248,243,.66)}
 .date{font-family:Geist;font-weight:700;font-size:26px;letter-spacing:.2em;
-  text-transform:uppercase;color:rgba(255,248,243,.42);margin-bottom:14px}
+  text-transform:uppercase;color:rgba(255,248,243,.42)}
+/* The address is not printed. A story carries a link STICKER, which the club
+   places itself and which Instagram draws over the bottom of the frame, so a
+   typed URL is both unclickable and the thing most likely to be covered.
+   This is the room it goes in: nothing is drawn here on purpose. */
+.sticker{height:300px}
 /* The match card: the two badges either side of the scoreline, home on the
    left the way the score is written, and the scorers underneath, because a
    story that says only 6-1 makes the reader open the page to learn nothing. */
@@ -158,7 +161,7 @@ html,body{width:1080px;height:1920px;background:#000;overflow:hidden}
       </div>
       ${c.sub ? `<div class="venue">${c.sub}</div>` : ''}`}
   </div>
-  <div><div class="date">${c.date}</div><div class="foot">${c.foot}</div></div>
+  <div><div class="date">${c.date}</div><div class="sticker"></div></div>
 </div></body></html>`;
 
 const PORT = 4399;

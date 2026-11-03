@@ -243,6 +243,11 @@
       "source": "/news/angels-at-home-to-the-station-in-the-county-cup",
       "destination": "/news/back-at-the-reeves-and-back-in-the-county-cup.html",
       "permanent": true
+    },
+    {
+      "source": "/news/stephen-on-a-different-team-in-front-of-goal.html",
+      "destination": "/news/the-gaffer-on-a-different-team-in-front-of-goal.html",
+      "permanent": true
     }
   ],
   "headers": [

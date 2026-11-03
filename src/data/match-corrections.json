@@ -30,9 +30,32 @@
     },
     {
       "match": "r20261101-tsm",
-      "theirGoals": [{ "name": "", "type": "open", "minute": "33", "penalty": false }],
+      "theirGoals": [
+        {
+          "name": "",
+          "type": "open",
+          "minute": "33",
+          "penalty": false
+        }
+      ],
       "was": [],
       "why": "TSM's free kick is in the club's own report - 33rd minute, straight into the top-right corner - and the stored record holds one conceded goal with no line under Their goals for it. So the match page read 'Conceded 1' with an empty lane beneath the axis, which is what a thing that failed to draw looks like, and the record checker counted the match as short of a goal line. The minute is all the panel can hold for an opponent's goal: their goals carry open, pen and og and nothing about a free kick, so the detail stays in the prose where the club wrote it. Nobody has named the scorer, and the page leaves it unnamed rather than guessing."
+    },
+    {
+      "match": "r20261101-tsm",
+      "goal": 3,
+      "field": "situation",
+      "was": "corner",
+      "now": "throwin",
+      "why": "The club's fuller account of the third has it coming from one of Michael Brabrook's long throws: the throw caused trouble in the area, a TSM defender hacked the clearance straight back out to Brabrook on the touchline, and he crossed first time. A long throw is not a corner, and the goal card read 'from a corner' directly above prose saying otherwise. `throwin` is the situation the form already offers for exactly this."
+    },
+    {
+      "match": "r20261101-tsm",
+      "goal": 3,
+      "field": "assist.type",
+      "was": "pass",
+      "now": "layoff",
+      "why": "The assist is Leon Burnett's and always was; the TYPE described the wrong action. The club's account has him getting across his marker and laying the ball off for Ade Owolana to volley, which is what `layoff` is for. `pass` claims nothing about how the ball arrived, and the club has now said how it arrived."
     }
   ]
 }

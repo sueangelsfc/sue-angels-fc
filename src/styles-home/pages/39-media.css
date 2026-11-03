@@ -319,13 +319,13 @@ html.js .nw-card[hidden]{display: none;}
      answers would have been harder to read than before anything was done to
      them. The wrap widens by about the width of the rail, so the reading
      column comes out where it was and the panel is beside it. */
-  .wrap--iv{max-width: 1140px;}
+  .wrap--iv{max-width: 1186px;}
   /* TWO ITEMS, ONE ROW. The prose is a column and the rail is a column, which
      is what lets the rail's grid area be the height of the whole article and
      so gives the sticky panel somewhere to travel. The reading column first,
      because that is the reading order on a narrow screen too. */
   .nw-art__body--iv{display: grid; align-items: start;
-    grid-template-columns: minmax(0, 1fr) 330px;
+    grid-template-columns: minmax(0, 1fr) 376px;
     column-gap: clamp(30px, 4vw, 56px);}
   .nw-art__body--iv > .nw-art__col{grid-column: 1; grid-row: 1; min-width: 0;}
   .nw-art__body--iv > .nw-art__rail{grid-column: 2; grid-row: 1;}
@@ -337,9 +337,22 @@ html.js .nw-card[hidden]{display: none;}
     /* In the rail the portrait goes back on top: 330px is not a two-column
        width, and a face is better tall than wide. */
     grid-template-columns: minmax(0, 1fr);}
-  .nw-art__body--iv > .nw-art__rail > .aud .aud__face{height: 250px;
+  .nw-art__body--iv > .nw-art__rail > .aud .aud__face{height: 300px;
     border-bottom: 1px solid rgba(var(--volt-rgb), 0.22);
-    border-right: 0; min-height: 0;}
+    border-right: 0; min-height: 0;
+    /* HIGHER IN THE FRAME THAN THE FULL-WIDTH PANEL WANTS. The shared crop is
+       set for a wide letterbox; in a tall rail box the same figure arrives
+       with the top of the head against the edge. */
+    object-position: 50% 16%;}
+  /* THE RAIL IS NOT A NARROW COPY OF THE PANEL. At 1.5rem over a 300px
+     column the caption took three lines and the number under it took a
+     fourth, so the one thing in the box that is a graphic - the envelope -
+     was the last thing in it. The caption is set smaller, the envelope
+     taller, and the panel reads top to bottom as face, name, length, shape. */
+  .nw-art__body--iv > .nw-art__rail > .aud .aud__h{font-size: 1.18rem;}
+  .nw-art__body--iv > .nw-art__rail > .aud .aud__num{font-size: 2.3rem;}
+  .nw-art__body--iv > .nw-art__rail > .aud .aud__wave{max-height: 84px;
+    margin-top: 18px;}
   /* The rail item itself has to be the full height for sticky to have a
      containing block worth travelling in. */
   .nw-art__body--iv > .nw-art__rail{align-self: stretch;}

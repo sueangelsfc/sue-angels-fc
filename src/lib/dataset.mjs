@@ -1332,6 +1332,15 @@ export function buildDataset(overrides = {}) {
     .filter((r) => r && !cloudRecIds.has(r.id))
     .filter((r) => r.type !== 'leadership'
       || !cloudRecognition.some((c) => c.type === 'leadership' && String(c.season || '') === String(r.season || '')))
+    /* A Player of the Month is a fact about ONE month of one season, and the
+       panel mints its own id from a timestamp, so the id test can never match
+       and the file's copy would sit beside the club's own as a second winner
+       of the same month. The month is the identity here, as the season is for
+       a leadership record. */
+    .filter((r) => r.type !== 'potm'
+      || !cloudRecognition.some((c) => c.type === 'potm'
+        && String(c.season || '') === String(r.season || '')
+        && String(c.month || '').toLowerCase() === String(r.month || '').toLowerCase()))
     .map((r) => ({ ...r, source: 'extra' }));
   const recognition = [
     ...cloudRecognition,

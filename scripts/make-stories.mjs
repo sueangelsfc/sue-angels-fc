@@ -39,6 +39,10 @@ fs.mkdirSync(TMP, { recursive: true });
 
 const d = buildDataset();
 const esc = (s) => String(s == null ? '' : s)
+  /* The club's own name is stored with a straight apostrophe in some records
+     and a typographic one in others, and a card showing Sue's beside Sue’s
+     is the site disagreeing with itself in the largest type it ever sets. */
+  .replace(/'/g, '\u2019')
   .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 /* What each card says. A match report leads with the scoreline, because the
@@ -58,6 +62,31 @@ function badgeFor(club) {
 }
 
 function cardFor(key) {
+  /* THE PROGRAMME. Not a report and not an article: the news is that a file
+     exists to download, so the card carries the fixture rather than a result,
+     and what is inside it is read from the same file the programme PAGE reads
+     rather than typed here. Two sources for one list is how a story comes to
+     promise a page the document does not hold. */
+  if (key === 'programme') {
+    const f = d.nextFixture;
+    if (!f) return null;
+    let inside = [];
+    try {
+      const c = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/data/programme-contents.json'), 'utf8'));
+      inside = (((c.fixtures || {})[f.id] || {}).items || []).slice(0, 3);
+    } catch { inside = []; }
+    return {
+      file: `programme-${f.id}.jpg`,
+      eyebrow: 'Matchday programme',
+      home: esc(f.home), away: esc(f.away),
+      homeBadge: badgeFor(f.home), awayBadge: badgeFor(f.away),
+      vs: true,
+      inside: inside.map(esc),
+      sub: esc([f.venue, f.kickoff || '10:30'].filter(Boolean).join(' \u00b7 ')),
+      foot: 'suesangelsfc.co.uk/programme.html',
+      date: esc(f.date || ''),
+    };
+  }
   const m = (d.played || []).find((x) => x.id === key || x.slug === key);
   if (m) {
     const nameOf = (n) => (d.players || []).find((p) => p.num === n);
@@ -142,6 +171,7 @@ html,body{width:1080px;height:1920px;background:#000;overflow:hidden}
 .sc i{display:block;margin-bottom:12px;font-style:normal;color:#FF7034;font-weight:700;
   font-size:25px;letter-spacing:.22em;text-transform:uppercase}
 .sc--them{color:rgba(255,248,243,.56)}
+.nums--v{font-size:120px;font-weight:500;color:#FF7034;text-transform:lowercase}
 .venue{margin-top:48px;font-family:Geist;font-size:32px;color:rgba(255,248,243,.5)}
 </style></head><body>
 <div class="bg"></div><div class="grain"></div>
@@ -149,7 +179,17 @@ html,body{width:1080px;height:1920px;background:#000;overflow:hidden}
   <div><img class="crest" src="/assets/badge/sue-angels-badge-orange.png" alt="">
     <div class="eyebrow">${c.eyebrow}</div></div>
   <div class="mid">
-    ${c.hs == null ? `<div class="title">${c.title}</div><div class="rule"></div>` : `
+    ${c.vs ? `
+      <div class="score">
+        <div class="side"><img class="badge" src="/${c.homeBadge}" alt=""><div class="club">${c.home}</div></div>
+        <div class="nums nums--v">v</div>
+        <div class="side"><img class="badge" src="/${c.awayBadge}" alt=""><div class="club">${c.away}</div></div>
+      </div>
+      <div class="scorers">
+        ${c.inside.length ? `<div class="sc"><i>Inside the issue</i>${c.inside.join('<br>')}</div>` : ''}
+      </div>
+      ${c.sub ? `<div class="venue">${c.sub}</div>` : ''}`
+    : c.hs == null ? `<div class="title">${c.title}</div><div class="rule"></div>` : `
       <div class="score">
         <div class="side"><img class="badge" src="/${c.homeBadge}" alt=""><div class="club">${c.home}</div></div>
         <div class="nums">${c.hs}&ndash;${c.as}</div>

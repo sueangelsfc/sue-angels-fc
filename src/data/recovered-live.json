@@ -8767,7 +8767,7 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-11-02T16:45:18.379Z",
+        "savedAt": "2026-11-08T21:10:05.677Z",
         "approach": {},
         "redCards": [],
         "starters": [
@@ -8950,13 +8950,14 @@
         "opponentRedCards": [],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-11-02T16:45:18.379+00:00"
+      "updated_at": "2026-11-08T21:10:05.677+00:00"
     },
     {
       "key": "r20261108-brockwell",
       "data": {
         "as": 6,
         "hs": 1,
+        "id": "r20261108-brockwell",
         "away": "Sue's Angels FC",
         "date": "08 Nov 2026",
         "home": "Brockwell Violets FC",
@@ -9065,8 +9066,8 @@
           {
             "num": 12,
             "spot": {
-              "x": 62,
-              "y": 18.2
+              "x": 65.9,
+              "y": 18.9
             },
             "zone": "outside",
             "assist": {
@@ -9086,8 +9087,8 @@
           {
             "num": 20,
             "spot": {
-              "x": 26.1,
-              "y": 8.6
+              "x": 26.2,
+              "y": 9
             },
             "zone": "box",
             "assist": {
@@ -9107,8 +9108,8 @@
           {
             "num": 40,
             "spot": {
-              "x": 53,
-              "y": 2.9
+              "x": 51.6,
+              "y": 3.9
             },
             "zone": "six",
             "assist": {
@@ -9122,14 +9123,14 @@
             },
             "minute": 26,
             "penalty": false,
-            "bodyPart": null,
+            "bodyPart": "head",
             "situation": "corner"
           },
           {
             "num": 30,
             "spot": {
-              "x": 54.5,
-              "y": 14.7
+              "x": 60.4,
+              "y": 15.3
             },
             "zone": "box",
             "assist": {
@@ -9149,15 +9150,15 @@
           {
             "num": 12,
             "spot": {
-              "x": 59.7,
-              "y": 17.2
+              "x": 64.8,
+              "y": 17.8
             },
             "zone": "outside",
             "assist": {
               "num": 9,
               "spot": {
-                "x": 46.9,
-                "y": 32.3
+                "x": 38.5,
+                "y": 55.5
               },
               "type": "through",
               "zone": "outside"
@@ -9170,15 +9171,15 @@
           {
             "num": 21,
             "spot": {
-              "x": 72.2,
-              "y": 18.7
+              "x": 74.4,
+              "y": 19.3
             },
             "zone": "outside",
             "assist": {
               "num": 12,
               "spot": {
-                "x": 49.5,
-                "y": 21.5
+                "x": 26.6,
+                "y": 53.7
               },
               "type": "pass",
               "zone": "outside"
@@ -9232,7 +9233,7 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-11-08T20:43:47.031Z",
+        "savedAt": "2026-11-08T22:46:39.168Z",
         "approach": {
           "build": "keep",
           "press": "mid"
@@ -9265,10 +9266,16 @@
                 "pos": "RWB",
                 "half": "1",
                 "role": "OFB"
+              },
+              {
+                "pos": "GK",
+                "half": "2",
+                "role": ""
               }
             ],
             "positions": [
-              "RWB"
+              "RWB",
+              "GK"
             ]
           },
           {
@@ -9337,10 +9344,16 @@
                 "pos": "RCM",
                 "half": "1",
                 "role": "BWM"
+              },
+              {
+                "pos": "CM",
+                "half": "2",
+                "role": ""
               }
             ],
             "positions": [
-              "RCM"
+              "RCM",
+              "CM"
             ],
             "subbedOff": true
           },
@@ -9366,10 +9379,16 @@
                 "pos": "LAM",
                 "half": "1",
                 "role": "RPM"
+              },
+              {
+                "pos": "RCM",
+                "half": "2",
+                "role": ""
               }
             ],
             "positions": [
-              "LAM"
+              "LAM",
+              "RCM"
             ]
           },
           {
@@ -9432,14 +9451,22 @@
             "num": 28
           }
         ],
-        "opponentGoals": [],
+        "opponentGoals": [
+          {
+            "og": false,
+            "name": "th min Penalty",
+            "type": "open",
+            "minute": "50",
+            "penalty": false
+          }
+        ],
         "penaltiesSaved": [],
-        "polishedReport": ".",
+        "polishedReport": "# Angels hit six to go six clear of Brockwell\n\n**Brockwell Violets 1–6 Sue’s Angels**  \n**League Eight | Sunday 8 November 2026 | Clapham Common**\n\nFive goals before half-time and a brilliant solo effort from Jon helped us win 6–1 at Brockwell Violets, making it six league wins from six.\n\nAde scored twice, with Dean, Frazier, Adam and Jon also finding the net. But this wasn’t just an afternoon about our finishing. Luke’s sending-off shortly after the break left us a man down, with Dean taking the gloves for around 40 minutes as we adjusted and saw the game through.\n\nWe arrived at Clapham Common with three points separating the sides. Brockwell had the chance to draw level with us; we left six points clear of them, with Andy taking home Man of the Match.\n\nThe opener came after just two minutes, starting with some quick thinking from Luke.\n\nHaving put the ball down, he spotted Brockwell’s high line and sent Ade through. With the goalkeeper caught off his line, Ade kept his composure and lifted the ball over him. The wind seemed to keep it hanging in the air forever before it finally dropped into the net. A slightly longer wait for the celebration than expected, but the perfect start.\n\nOur second came in the 18th minute, with a bit of Sunday league confusion thrown in.\n\nCharlie found Dean inside the area, just as a whistle sounded from a neighbouring pitch. Brockwell thought play had stopped, and Dean wasn’t entirely sure either, but he went ahead and lofted a right-footed finish over the goalkeeper towards the far post.\n\nThe goal stood, much to Dean’s own surprise. As the lads ran over to congratulate him, it became clear that the whistle had nothing to do with our game. We were 2–0 up.\n\nOur third came after we kept the attack alive following a corner. Mike picked out Frazier on the edge of the box, and he calmly met the ball on the half-volley, guiding it into the bottom-right corner. A lovely, measured finish, making it goals in consecutive games for him after scoring against TSM last weekend.\n\nAnother corner brought our fourth. Ade delivered, Dean flicked it on, and Adam put his head where it could hurt as Brockwell tried to clear. His bravery was rewarded as he headed home from close range.\n\nAfter going close against TSM, Adam had his goal this week, while Dean had added an assist to his own finish.\n\nJust before half-time, Ade made it five.\n\nA good passage of play brought the ball into Charlie’s feet, and he held it up brilliantly before slipping a well-weighted pass through to Ade. The goalkeeper came out but found himself stranded, and Ade met the ball on the volley, sending it past him for his second of the afternoon.\n\nTwo composed finishes took Ade to 12 goals in all competitions, while Charlie had supplied two more assists. We went into the break 5–0 ahead after a first half in which both our set pieces and our play in behind had caused Brockwell problems.\n\nThe second half quickly brought a different challenge.\n\nBrockwell were awarded a penalty after their attacker got through. Our appeals were for offside in the build-up rather than the foul itself, but with no linesman, the referee judged the player to be onside and pointed to the spot.\n\nLuke received a yellow card before the penalty was taken, then another shortly after Brockwell converted to make it 5–1. The two bookings in quick succession left the lads frustrated and us facing most of the half with ten men.\n\nDean went in goal, and we changed from our starting 3–4–2–1 to a 4–3–1–1.\n\nBrockwell understandably grew in confidence. They had a goal back, an extra man and an outfield player to test in goal. Our job was to make sure they couldn’t turn that lift into a way back into the match.\n\nWe did that by looking after the ball. We slowed things down when needed, kept possession and made Brockwell work to get it back. As we settled into the new shape, our confidence grew again and their early momentum began to fade.\n\nThen, in the 67th minute, Jon produced a moment to remember.\n\nAde found him outside the area, and Jon set off on one of his trademark mazy runs. He weaved past three or four players before cutting onto his left foot and firing into the far corner, giving the goalkeeper no chance.\n\nIt was a brilliant goal on its own, and an important one in the game. Having gone down to ten men and conceded early in the half, we had restored our five-goal lead.\n\nFrom there, we continued to manage the game and saw out a win that showed two different sides to us: the quality to score five before the break and the patience to stay in control when the second half became more difficult.\n\nAndy took home Man of the Match, while Dean finished an eventful afternoon with a goal, an assist and a lengthy shift between the posts.\n\nThe result puts us on 18 points from a possible 18, with 32 league goals scored, and stretches our winning league run to 24 matches across our first two seasons.\n\nThere’s still plenty of football ahead, but coming away from the side who started the day closest to us with a 6–1 win is a result we can be pleased with.\n\nNext up, we return to The Reeves to face The Station in the Surrey FA Sunday Lower Junior County Cup on Sunday 15 November, with kick-off at 11am.\n\nThank you to Brockwell Violets for hosting us. We wish them all the best for the rest of the season.",
         "penaltiesMissed": [],
         "opponentRedCards": [],
         "penaltiesConceded": 1
       },
-      "updated_at": "2026-11-08T20:43:47.031+00:00"
+      "updated_at": "2026-11-08T22:46:39.168+00:00"
     }
   ],
   "articles": [

@@ -1996,6 +1996,13 @@ export function playerPage(p, d) {
     body: numberRails(siteHeader('/squad.html') + hero + seasonBand + versusBand
       + pitchBand + strikeBand + saveBand + howBand + vsBand + shotsBand + honoursBand + ctaBand)
       .replace(/\n[ \t]+/g, '\n')
+      /* AND THE LINE BREAK ITSELF, where the next thing is a block element.
+         Whitespace between block boxes renders nothing, so this is bytes and
+         not layout - and it is deliberately NOT done before an inline tag,
+         where the same newline is the space between two words. No player
+         page holds a <pre> or white-space: pre, which is what the strip
+         above already rests on. 827 raw bytes on the heaviest profile. */
+      .replace(/\n(?=<\/?(?:section|div|ul|ol|li|p|h[1-6]|figure|figcaption|table|thead|tbody|tr|td|th|nav|header|footer|aside|details|summary|dl|dt|dd)\b)/g, '')
       .replace(/--d:0\.0s/g, '--d:0s')
       .replace(/<svg[\s>][\s\S]*?<\/svg>/g, (m) => tightenSvg(m)),
     bodyClass: 'is-home is-sub is-player',

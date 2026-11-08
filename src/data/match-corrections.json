@@ -56,6 +56,28 @@
       "was": "pass",
       "now": "layoff",
       "why": "The assist is Leon Burnett's and always was; the TYPE described the wrong action. The club's account has him getting across his marker and laying the ball off for Ade Owolana to volley, which is what `layoff` is for. `pass` claims nothing about how the ball arrived, and the club has now said how it arrived."
+    },
+    {
+      "match": "r20261108-brockwell",
+      "theirGoals": [
+        {
+          "og": false,
+          "name": "",
+          "type": "open",
+          "minute": "50",
+          "penalty": true
+        }
+      ],
+      "was": [
+        {
+          "og": false,
+          "name": "th min Penalty",
+          "type": "open",
+          "minute": "50",
+          "penalty": false
+        }
+      ],
+      "why": "The club entered Brockwell's goal in the panel and the free-text box mis-parsed what was typed: the SCORER'S NAME came out as \"th min Penalty\", so the match page credited the goal to a person of that name and the timeline mark read the same. The minute, 50, is right and is kept. Two corrections in one: the name is emptied, because nobody has named Brockwell's scorer and the page then falls back to the club, which is the honest answer; and `penalty` is set true, which is what the word in that box was trying to say. The club's own report of the match says it plainly - Brockwell were awarded a penalty after their attacker got through, the appeals were for offside in the build-up rather than the foul, and Luke was booked before it was taken and again shortly after it was converted - and the record already carries `penaltiesConceded: 1` beside it. Fix the field in Control panel and this correction stops matching and vanishes."
     }
   ]
 }

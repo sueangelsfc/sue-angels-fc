@@ -4292,14 +4292,10 @@ for (const [f, kb] of Object.entries({
                the same reason as Barnes: a real gap in a new record, struck
                out the moment the club writes it in. */
             'r20261101-tsm',
-            /* The 6-1 at Brockwell Violets, 8 November. Brockwell scored
-               once and the line under Their goals is empty, exactly as with
-               Barnes and TSM - three new records in a row now carrying this
-               same gap, which is worth saying out loud rather than adding a
-               third name quietly: it is the one field of the match form that
-               is being missed every week. Struck out the moment it is
-               filled. */
-            'r20261108-brockwell',
+            /* r20261108-brockwell was here and is STRUCK OUT, which is what
+               this list is for: the club entered Brockwell's goal itself,
+               so the record holds its line and the checker no longer counts
+               the match as short of one. */
           ].filter((k) => heldKeys.has(k)).join(), askedOf(/opponents scored/).join(', ') || 'none');
         /* Asked with the squad's real names: the report question compares
            surnames, and `P12` has none. */
@@ -5818,8 +5814,31 @@ const heaviestBands = (h) => h.split('<section class="sec sec--').slice(1)
    frame instead of cropping to its own marks, which is a decision about what
    the page shows rather than a trim, and the club wanted the report live. So
    this is a raise with the bill attached and a job outstanding, not a
-   ceiling quietly following the content up. */
-const GZ_CEIL = 23;
+   ceiling quietly following the content up.
+
+   23 -> 24 ON 8 NOVEMBER, AND THE RAW ONE DID NOT MOVE. The club won 6-1 at
+   Brockwell Violets and wrote the report, and that is what pushed the page
+   over: a match adds a pip to the run strip, a row to the opponents band and
+   a column to the match-by-match chart, all of it unique text, which is the
+   part gzip cannot absorb. A ceiling a club breaches by playing football and
+   writing about it is measuring the season rather than the code.
+
+   EVERYTHING LOSSLESS WAS SPENT FIRST, measured rather than estimated, and
+   the two named in this file as the trims for exactly this were taken: the
+   line breaks inside an inline SVG (1,248 raw, 190 gz) and the redundant
+   trailing `.0` on a coordinate, then the line break before a block element
+   (827 raw, 29 gz). Together they put raw back UNDER 170 unaided - 173,813 of
+   174,080 - so only the gzipped ceiling moves, and it moves by 53 bytes of
+   genuine overshoot rather than by a round number chosen for comfort.
+
+   AND THE JOB ABOVE IS STILL THE JOB, now measured rather than predicted:
+   merging the two shot pitches into one saves 1,748 raw and FORTY gzipped
+   bytes, because the second pitch is near-identical text and gzip has
+   already eaten it. So it would not have saved this raise. The gzipped
+   kilobyte on this page is unique content, which means the next time it is
+   reached the answer is a decision about what a profile publishes - and
+   this note is where that will be argued, not a third raise. */
+const GZ_CEIL = 24;
 const RAW_CEIL = 170;
 for (const [f, h] of pages) {
   const raw = Buffer.byteLength(h) / 1024;
@@ -8746,11 +8765,26 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
        draw looks like. A correction supplies the lines and names the list it
        is replacing, so it retires the moment the club types anything into
        that box. */
+    /* NEVER FEWER LINES, AND IT MUST CHANGE SOMETHING. This asked for
+       strictly MORE lines than the stored list, which was true of the only
+       case that existed - supplying goals to a record holding none - and is
+       not the rule. The club entered Brockwell's goal itself and the
+       free-text box mis-parsed it, storing the scorer's name as "th min
+       Penalty" with the penalty flag false, so the correction replaces one
+       line with one line and the old assertion refused it. What must never
+       happen is a correction QUIETLY DROPPING a goal the club recorded, so
+       the floor is the stored length; and a correction that changes nothing
+       is dead text pretending to be a fix, so the two have to differ. */
+    const sameList = (a, b) => JSON.stringify(a || []) === JSON.stringify(b || []);
     check('a their-goals correction says what list it is replacing, and why',
       theirs.every((c) => c.match && Array.isArray(c.was) && Array.isArray(c.theirGoals)
-        && c.theirGoals.length > c.was.length
+        && c.theirGoals.length >= c.was.length
+        && !sameList(c.theirGoals, c.was)
         && c.theirGoals.every((g) => g.minute || g.name)
         && String(c.why || '').length > 40));
+    check('probe: a their-goals correction that changes nothing is refused',
+      sameList([{ minute: '50' }], [{ minute: '50' }])
+        && !sameList([{ minute: '50' }], [{ minute: '51' }]));
     for (const c of theirs) {
       const now = stored().get(c.match);
       const held = now ? (now.opponentGoals || []) : [];

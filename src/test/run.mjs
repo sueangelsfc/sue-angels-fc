@@ -4285,6 +4285,21 @@ for (const [f, kb] of Object.entries({
                in, so this is a real gap in a new record rather than an old
                one: added deliberately, and struck out again the moment the
                club fills it. */
+            /* The 7-1 against Barnes Stormers, entered in the panel on
+               30 September. Barnes scored once and the record holds no line
+               under Their goals.
+
+               IT IS STILL NAMED THOUGH THE PAGE IS FIXED, and that is the
+               distinction worth keeping. The club gave the minute (85) and
+               `match-corrections.json` supplies the line, so the match page
+               no longer reads 'Conceded 1' over an empty lane. But this
+               check asks the PANEL's question, of the stored row merged
+               under the seeded match, and a stored `opponentGoals: []` is
+               not null so it wins: the club's own dashboard still, rightly,
+               reports the record as short of a goal line, because it is. A
+               correction publishes a figure; it does not type one into the
+               database. Struck out the day somebody enters it in Control
+               panel, which is also the day the correction retires itself. */
             'r20260927-barnes',
             /* The 6-1 against TSM Rovers, 1 November. TSM scored once, from a
                free kick in the 33rd minute that the club's own report

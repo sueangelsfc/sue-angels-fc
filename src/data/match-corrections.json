@@ -78,6 +78,20 @@
         }
       ],
       "why": "The club entered Brockwell's goal in the panel and the free-text box mis-parsed what was typed: the SCORER'S NAME came out as \"th min Penalty\", so the match page credited the goal to a person of that name and the timeline mark read the same. The minute, 50, is right and is kept. Two corrections in one: the name is emptied, because nobody has named Brockwell's scorer and the page then falls back to the club, which is the honest answer; and `penalty` is set true, which is what the word in that box was trying to say. The club's own report of the match says it plainly - Brockwell were awarded a penalty after their attacker got through, the appeals were for offside in the build-up rather than the foul, and Luke was booked before it was taken and again shortly after it was converted - and the record already carries `penaltiesConceded: 1` beside it. Fix the field in Control panel and this correction stops matching and vanishes."
+    },
+    {
+      "match": "r20260927-barnes",
+      "theirGoals": [
+        {
+          "og": false,
+          "name": "",
+          "type": "open",
+          "minute": "85",
+          "penalty": false
+        }
+      ],
+      "was": [],
+      "why": "Barnes Stormers scored once in the 7-1 of 27 September and the record held no line under Their goals, so the match page read 'Conceded 1' over an empty lane and the record checker counted the match as short of a goal line. The club has given the minute: 85. Nobody has named their scorer, so the name is left empty and the page falls back to the club rather than guessing, and the record carries no conceded penalty for this match so the goal is recorded as open play. `was: []` retires this the moment anybody types anything into that box in Control panel."
     }
   ]
 }

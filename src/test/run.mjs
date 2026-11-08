@@ -1792,6 +1792,21 @@ for (const f of shipped) {
       'index.html :: Leon Burnett 3',
       'league.html :: Leon Burnett 3',
       'programme.html :: Leon Burnett 3',
+      /* awards.html, the OTHER end of the same row. The leaderboard prints
+         rank, name, count, and after the Brockwell win Allen is SECOND on one
+         award - "2 Andrew Allen 1" - so the rank now collides with his key as
+         well as the count once did. Both ends of one row, both read off the
+         flattened line, neither of them a number the club prints. */
+      'awards.html :: 2 Andrew Allen',
+      /* THE GOALS COLUMN AGAIN, with a scorer whose tally has reached his own
+         key. Ade Owolana is on twelve League Eight goals and wears 12. On
+         index.html it is the division's top-scorer list, `<b>12</b>` in the
+         same column every row carries; on stats.html it is the leader card,
+         where the very next words are "12 goals and 2 awards". Verified in
+         the markup, not in the flattened text. It retires itself the moment
+         he scores his thirteenth. */
+      'index.html :: Ade Owolana 12',
+      'stats.html :: Ade Owolana 12',
     ]);
     const rx = (t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const { buildDataset: bdN } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
@@ -2437,9 +2452,37 @@ for (const [f, h] of pages) {
     gf: outstanding.reduce((a, o) => a + o.for, 0),
     ga: outstanding.reduce((a, o) => a + o.against, 0),
   };
+  /* AND AHEAD, which is the commoner direction and the paragraph above had it
+     backwards. The table is transcribed when somebody sends the Full-Time
+     page; the result is typed into the panel the same afternoon, usually
+     first. So between the two the archive holds a match the published row
+     cannot - the Brockwell win of 8 November against a table read on the 1st,
+     derived 6/6/32/5 against a published 5/5/26/4, the difference being
+     exactly that afternoon - and "nothing outstanding to make up the gap" is
+     then the normal state rather than a fault.
+
+     It is not loosened to an inequality in this direction either: the excess
+     has to be EXACTLY the club's own matches played after the day the table
+     was read. A disagreement about a match both sources hold still fails, and
+     so does an archive ahead by a match dated inside the table's own period,
+     which is the typo this exists to catch. `tableAsOf` is the pivot and it
+     is a date the transcription already keeps, so nothing new goes stale. */
+  const asOf = String(l8.tableAsOf || '');
+  const ahead = asOf ? compM.filter((m) => m.season === '26/27'
+    && /League Eight/i.test(m.competition) && String(m.iso || '') > asOf) : [];
+  const ourSide = (m) => (/sue.s angels/i.test(String(m.home || ''))
+    ? { for: Number(m.hs) || 0, against: Number(m.as) || 0 }
+    : { for: Number(m.as) || 0, against: Number(m.hs) || 0 });
+  const got = {
+    pl: ahead.length,
+    w: ahead.filter((m) => ourSide(m).for > ourSide(m).against).length,
+    gf: ahead.reduce((a, m) => a + ourSide(m).for, 0),
+    ga: ahead.reduce((a, m) => a + ourSide(m).against, 0),
+  };
   check('the manager\u2019s League Eight figures match the published table row',
-    !us || (league.played + owed.pl === us.pl && league.won + owed.w === us.w
-      && league.goalsFor + owed.gf === us.gf && league.goalsAgainst + owed.ga === us.ga),
+    !us || (league.played + owed.pl - got.pl === us.pl && league.won + owed.w - got.w === us.w
+      && league.goalsFor + owed.gf - got.gf === us.gf
+      && league.goalsAgainst + owed.ga - got.ga === us.ga),
     us ? `derived ${league.played}/${league.won}/${league.goalsFor}/${league.goalsAgainst} + ${owed.pl} not yet in the record (${outstanding.map((o) => o.iso).join(', ') || 'none'}) vs table ${us.pl}/${us.w}/${us.gf}/${us.ga}` : 'no row');
   /* And the outstanding ones are named, so a growing pile is visible rather
      than quietly absorbed by the check that is meant to catch it. */
@@ -4249,6 +4292,14 @@ for (const [f, kb] of Object.entries({
                the same reason as Barnes: a real gap in a new record, struck
                out the moment the club writes it in. */
             'r20261101-tsm',
+            /* The 6-1 at Brockwell Violets, 8 November. Brockwell scored
+               once and the line under Their goals is empty, exactly as with
+               Barnes and TSM - three new records in a row now carrying this
+               same gap, which is worth saying out loud rather than adding a
+               third name quietly: it is the one field of the match form that
+               is being missed every week. Struck out the moment it is
+               filled. */
+            'r20261108-brockwell',
           ].filter((k) => heldKeys.has(k)).join(), askedOf(/opponents scored/).join(', ') || 'none');
         /* Asked with the squad's real names: the report question compares
            surnames, and `P12` has none. */
@@ -7532,7 +7583,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     check('probe: with no chart transcribed the league page draws no scorer table',
       !/data-l8-scorers/.test(panN) && !/data-l8-assists/.test(panN));
   }
-  const { compareScorers: cmpSc, cupResultRows: cupRows } =
+  const { compareScorers: cmpSc, cupResultRows: cupRows, ownChartResults: ownRows } =
     await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
   /* THE POOL IS EVERY MATCH FULL-TIME COUNTS, AND IT IS NOT THE LEAGUE ALONE.
      Its stat leaders page excludes County cup stats and nothing else, so the
@@ -7543,9 +7594,48 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     const cupsJ = JSON.parse(fs.readFileSync(
       path.join(ROOT, 'src', 'data', 'cups-2627.json'), 'utf8'));
   const cupPool = cupRows(cupsJ.cups);
+  /* AND THE CLUB'S OWN ROWS ARE JUDGED AGAINST ITS OWN RECORDS, because they
+     are derived from them rather than transcribed. Saving a result moves them
+     the same afternoon and the round is typed in days later, so held against
+     the transcription this club is over by exactly that match every single
+     week: 35 against 30 on the Brockwell win of 8 November, with nothing
+     wrong. `npm run verify` runs in Vercel's buildCommand, so it was the club
+     unable to publish the result it had just entered. */
+  const { buildDataset: bdL8 } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const dL8 = bdL8();
+  const l8Us = ((l8.table || []).find((r) => r.us) || {}).club
+    || ((l8.scorers || []).find((x) => /Sue.s Angels/.test(x.club || '')) || {}).club || '';
+  const ownPool = ownRows(dL8.played, {
+    club: l8Us,
+    season: l8.season,
+    division: l8.division,
+    cupNames: (cupsJ.cups || []).map((c) => c.name),
+  });
+  const derivedArg = { club: l8Us, results: ownPool };
   check('League Eight\'s scorers add up to no more than each club scored',
-    cmpSc(l8.scorers || [], l8.results || [], cupPool).length === 0,
-    cmpSc(l8.scorers || [], l8.results || [], cupPool).join(' | '));
+    cmpSc(l8.scorers || [], l8.results || [], cupPool, derivedArg).length === 0,
+    cmpSc(l8.scorers || [], l8.results || [], cupPool, derivedArg).join(' | '));
+  check('and the club has matches of its own in that pool, so the swap is not an exemption',
+    !!l8Us && ownPool.length > 0, `${JSON.stringify(l8Us)} · ${ownPool.length} rows`);
+
+  /* CRAFTED, because today's files can only ever show one of the two cases.
+     A transcribed club over its results must still fail; the derived club
+     must be measured against its own records and not against a transcription
+     that has not caught up. */
+  {
+    const sc2 = [{ club: 'Us FC', name: 'A', goals: 6 }, { club: 'Them FC', name: 'B', goals: 9 }];
+    const res2 = [{ home: 'Them FC', away: 'Other FC', hs: 2, as: 0 }];
+    const mine2 = [{ home: 'Rivals FC', away: 'Us FC', hs: 1, as: 6 }];
+    const out2 = cmpSc(sc2, res2, [], { club: 'Us FC', results: mine2 });
+    check('a club whose rows are derived is measured against its own records',
+      !out2.some((l) => /^Us FC:/.test(l)), out2.join(' | '));
+    check('and a transcribed club over its own results still fails',
+      out2.some((l) => /^Them FC: scorers total 9, results say 2/.test(l)), out2.join(' | '));
+    const out3 = cmpSc(sc2, res2, [], { club: 'Us FC', results: [] });
+    check('probe: taking the club\'s own records away turns that check red',
+      out3.some((l) => /^Us FC: scorers total 6, its own records say 0/.test(l)),
+      out3.join(' | '));
+  }
   /* ---- A CLASS THAT MAKES AN OVERLAY OWNS ITS NAME OUTRIGHT -------------
      `.cpp` meant two things. The pitch picker is `cpp` - control panel pitch -
      with a dozen `cpp__*` children, and the Website stats screen used the same
@@ -11303,8 +11393,18 @@ console.log(`\n${'='.repeat(66)}`);
           marked.push(`${q.name}: ${drawn.length} ${kind} drawn, ${pts[kind].length} marked`);
           continue;
         }
+        /* COMPARED AS NUMBERS, never as the text the build happened to
+           write. This read `toFixed(1)` and went red on four real marks the
+           day the profile's SVGs had their redundant trailing `.0` trimmed
+           to get the page back under its ceiling: `60.0` became `60`, every
+           mark was still exactly where it had always been, and the check
+           reported the club's own marks as not drawn. A check that asserts a
+           number's spelling is a check that fails on a byte saving. */
+        const at = drawn.map(Number);
         for (const sp of pts[kind]) {
-          if (!drawn.includes(sp.x.toFixed(1))) marked.push(`${q.name}: ${kind} at ${sp.x} not drawn`);
+          if (!at.some((v) => Math.abs(v - sp.x) < 0.051)) {
+            marked.push(`${q.name}: ${kind} at ${sp.x} not drawn`);
+          }
         }
       }
     }
@@ -12873,7 +12973,20 @@ let orphanClasses = new Map();
     const { playerPage: ppSv } = await import(path.join(ROOT, 'src', 'templates', 'player.mjs'));
     const liveSvRaw = JSON.parse(fs.readFileSync(
       path.join(ROOT, 'src', 'data', 'recovered-live.json'), 'utf8'));
-    const liveSv = JSON.parse(JSON.stringify(liveSvRaw));
+    /* STRIPPED FIRST, and that is not tidiness. This crafted two marks onto
+       one match and then asserted "two marks per tab", which was true only
+       while the archive marked nothing anywhere - and on 8 November the club
+       marked all five of Luke Munns's saves at Brockwell, so the same keeper
+       arrived carrying seven and the check read 14 across two tabs. A crafted
+       check laid on top of live data is a check whose expectation the club
+       can change by doing its job. */
+    const stripSpots = (snap) => {
+      const c = JSON.parse(JSON.stringify(snap));
+      for (const m of c.matches) if (m.data) delete m.data.saveSpots;
+      return c;
+    };
+    const liveBare = stripSpots(liveSvRaw);
+    const liveSv = stripSpots(liveSvRaw);
     const row = liveSv.matches.find((m) => m.key === 'r20260906-three');
     row.data.saveSpots = [{ x: 50, y: 3, minute: 24 }, { x: 28, y: 11 }];
     const dSv = bdSv({ live: liveSv });
@@ -12898,7 +13011,7 @@ let orphanClasses = new Map();
       /the six-yard box/.test(svOut), 'said');
     /* Two probes. Take the marks away and the band must go, or it is a
        heading over an empty pitch on 46 profiles that never kept goal. */
-    const bare = bdSv({ live: liveSvRaw });
+    const bare = bdSv({ live: liveBare });
     const bareKeep = (bare.playersCompetitive || bare.players).find((x) => Number(x.num) === Number(row.data.keeper));
     check('probe: no marked saves, no band',
       bareKeep && !/id="pf-saves-h"/.test(ppSv(bareKeep, bare).body), 'absent');
@@ -12908,6 +13021,31 @@ let orphanClasses = new Map();
       .find((x) => Number(x.num) !== Number(row.data.keeper) && (x.apps || x.starts));
     check('probe: an outfielder in the same match gets no save band',
       out10 && !/id="pf-saves-h"/.test(ppSv(out10, dSv).body), out10 ? out10.name : 'nobody');
+
+    /* AND IT IS ON THE SITE NOW, which is the half no crafted record can
+       show. The band shipped for months with nothing to draw, so every check
+       about it was a question about a template nobody had ever seen render
+       against the club's own evidence. Luke Munns's five saves at Brockwell
+       on 8 November are the first marks in the archive. Conditioned on the
+       data rather than asserting a figure: it retires itself if the club
+       un-marks them, and it is the real page that is asked. */
+    const dReal = bdSv();
+    const marked = (dReal.played || []).filter((m) => ((m.detail || {}).saveSpots || []).length);
+    if (marked.length) {
+      const kNum = marked[0].detail.keeper;
+      const kReal = (dReal.playersCompetitive || dReal.players)
+        .find((x) => Number(x.num) === Number(kNum));
+      const realOut = kReal ? ppSv(kReal, dReal).body : '';
+      const views = (realOut.match(/class="pf-saves__svg"/g) || []).length;
+      const marks = (realOut.match(/pf-sh--s/g) || []).length;
+      const spots = marked.reduce((a, m) => a + m.detail.saveSpots.length, 0);
+      check('the keeper whose saves the club has marked carries them on his page',
+        views > 0 && marks === spots * views,
+        `${marks} marks across ${views} tabs for ${spots} marked saves`);
+      check('and every tab says how many of its saves those marks cover',
+        (realOut.match(/\d+ of \d+ saves marked/g) || []).length === views,
+        (realOut.match(/\d+ of \d+ saves marked/g) || []).join(' · ') || 'no coverage line');
+    }
   }
 
   /* The probe: take the guard out of spotOf and a goal nobody marked

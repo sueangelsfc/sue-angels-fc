@@ -1099,17 +1099,64 @@ export function compareDivision(rows, results) {
 
    It passed before today by luck: the published reading predates the club's
    first cup tie of the season, so there were no cup goals to miss. */
-export function compareScorers(scorers, results, cupResults) {
-  const scored = {};
-  for (const r of [...(results || []), ...(cupResults || [])]) {
-    scored[r.home] = (scored[r.home] || 0) + (Number(r.hs) || 0);
-    scored[r.away] = (scored[r.away] || 0) + (Number(r.as) || 0);
-  }
+/* AND ONE CLUB'S ROWS ARE NOT TRANSCRIBED AT ALL, which makes comparing
+   them against a transcription a check that must fail every week.
+
+   `clubChartRows` derives this club's own men from its match records, so
+   those rows move the moment a result is saved in the panel - and the
+   results beside them are typed in from Full-Time days later. Recording a
+   win is therefore the FIRST thing that happens and typing the round in is
+   the last, so between the two the club is credited with goals that no
+   transcribed result accounts for and this reads as a mistyped figure. It
+   fired on the Brockwell win of 8 November: 35 against 30, the exact six of
+   that afternoon, with nothing whatever wrong. `npm run verify` runs inside
+   Vercel's buildCommand, so that was the club unable to publish its own
+   result at all.
+
+   The note above already saw the shape of this - two readings of one
+   division have to be of the same day - and only printed a warning, because
+   both sides were transcribed then and a date could line them up. These two
+   can never be of the same day.
+
+   So the derived club is measured against the SAME source its rows come
+   from: its own match records, as result rows. That is not a weaker check
+   and not a tautology - it catches a goal credited to a man in a match the
+   record does not hold, which is the fault this exists to find - and every
+   other club is still judged against the transcription exactly as before. */
+/* The club's own matches in the competitions the chart counts, as result
+   rows under the spelling the DIVISION uses. One definition, because the
+   deploy gate and the suite both need this pool and two copies of a rule
+   about the club's own record is the fault this repository keeps having. */
+export function ownChartResults(played, opts) {
+  const o = opts || {};
+  if (!o.club) return [];
+  const comps = new Set([o.division, ...(o.cupNames || [])].filter(Boolean));
+  return (played || [])
+    .filter((m) => (!o.season || m.season === o.season) && comps.has(m.competition))
+    .map((m) => (isUs(m.home)
+      ? { home: o.club, away: m.away, hs: Number(m.hs) || 0, as: Number(m.as) || 0 }
+      : { home: m.home, away: o.club, hs: Number(m.hs) || 0, as: Number(m.as) || 0 }));
+}
+
+export function compareScorers(scorers, results, cupResults, derived) {
+  const own = derived || {};
+  const tally = (rows) => {
+    const scored = {};
+    for (const r of rows || []) {
+      scored[r.home] = (scored[r.home] || 0) + (Number(r.hs) || 0);
+      scored[r.away] = (scored[r.away] || 0) + (Number(r.as) || 0);
+    }
+    return scored;
+  };
+  const scored = tally([...(results || []), ...(cupResults || [])]);
+  const mine = own.club ? tally(own.results) : {};
+  const poolFor = (club) => (own.club && club === own.club ? mine : scored);
   const byClub = {};
   for (const s of scorers || []) byClub[s.club] = (byClub[s.club] || 0) + (Number(s.goals) || 0);
   return Object.entries(byClub)
-    .filter(([club, goals]) => goals > (scored[club] || 0))
-    .map(([club, goals]) => `${club}: scorers total ${goals}, results say ${scored[club] || 0}`);
+    .filter(([club, goals]) => goals > (poolFor(club)[club] || 0))
+    .map(([club, goals]) => `${club}: scorers total ${goals}, `
+      + `${club === own.club ? 'its own records' : 'results'} say ${poolFor(club)[club] || 0}`);
 }
 
 /* THE CLUB'S OWN ROWS IN THE DIVISION'S CHART ARE DERIVED, NOT TRANSCRIBED.

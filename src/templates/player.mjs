@@ -1964,6 +1964,29 @@ export function playerPage(p, d) {
       </div>
     </section>` : '';
 
+  /* AND THE LINE BREAKS INSIDE AN INLINE SVG GO TOO.
+     Stripping the indentation leaves the newline, and a drawing is the part
+     of a profile written one element to a line: on the longest career the
+     inline SVGs carry about 1,900 of them. In SVG a line break between two
+     elements renders nothing at all, which is NOT true of HTML, where the
+     same collapse would weld two inline elements together - so this is
+     scoped to the drawings and to nothing else.
+
+     Text is protected, because inside <text>, <title> and <desc> whitespace
+     IS content and collapsing it joins two words. The trailing `.0` on a
+     coordinate and `--d:0.0s` go the same way, and both are named with this
+     in CLAUDE.md as the measured lossless trims for exactly this ceiling.
+     Nothing renders differently; this is only bytes. */
+  const tightenSvg = (html) => html.replace(/<svg[\s>][\s\S]*?<\/svg>/g, (svg) => {
+    const keep = [];
+    const hidden = svg.replace(/<(text|title|desc)\b[\s\S]*?<\/\1>/g,
+      (m) => `\u0000${keep.push(m) - 1}\u0000`);
+    return hidden
+      .replace(/>\s*\n\s*</g, '><')
+      .replace(/(\d)\.0(?![0-9])/g, '$1')
+      .replace(/\u0000(\d+)\u0000/g, (_, i) => keep[Number(i)]);
+  });
+
   return {
     /* THE SOURCE'S INDENTATION STAYS IN THE SOURCE. A profile carries a panel
        per season, so every new season adds another copy of it, and on the
@@ -1971,7 +1994,10 @@ export function playerPage(p, d) {
        break is still whitespace, so nothing renders differently: no player
        page holds a <pre>, a <textarea> or white-space: pre. */
     body: numberRails(siteHeader('/squad.html') + hero + seasonBand + versusBand
-      + pitchBand + strikeBand + saveBand + howBand + vsBand + shotsBand + honoursBand + ctaBand).replace(/\n[ \t]+/g, '\n'),
+      + pitchBand + strikeBand + saveBand + howBand + vsBand + shotsBand + honoursBand + ctaBand)
+      .replace(/\n[ \t]+/g, '\n')
+      .replace(/--d:0\.0s/g, '--d:0s')
+      .replace(/<svg[\s>][\s\S]*?<\/svg>/g, (m) => tightenSvg(m)),
     bodyClass: 'is-home is-sub is-player',
     css: 'home.css',
     shell: 'home',

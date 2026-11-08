@@ -8616,7 +8616,7 @@
             "minute": 16,
             "penalty": false,
             "bodyPart": "right",
-            "situation": "open"
+            "situation": "corner"
           },
           {
             "num": 9,
@@ -8767,7 +8767,7 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-11-02T00:02:44.080Z",
+        "savedAt": "2026-11-02T16:45:18.379Z",
         "approach": {},
         "redCards": [],
         "starters": [
@@ -8950,7 +8950,496 @@
         "opponentRedCards": [],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-11-02T00:02:44.081+00:00"
+      "updated_at": "2026-11-02T16:45:18.379+00:00"
+    },
+    {
+      "key": "r20261108-brockwell",
+      "data": {
+        "as": 6,
+        "hs": 1,
+        "away": "Sue's Angels FC",
+        "date": "08 Nov 2026",
+        "home": "Brockwell Violets FC",
+        "kick": "10:30",
+        "kind": "score",
+        "motm": 2,
+        "subs": [
+          {
+            "on": 21,
+            "off": 4,
+            "minute": 45
+          },
+          {
+            "on": 47,
+            "off": 10,
+            "minute": 45
+          },
+          {
+            "on": 3,
+            "off": 9,
+            "minute": 60
+          },
+          {
+            "on": 29,
+            "off": 23,
+            "minute": 70
+          },
+          {
+            "on": 9,
+            "off": 3,
+            "minute": 88
+          }
+        ],
+        "bench": [
+          {
+            "on": true,
+            "num": 3,
+            "onAt": 60,
+            "role": "TM",
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "1",
+                "role": "TM"
+              }
+            ],
+            "positions": [
+              "ST"
+            ]
+          },
+          {
+            "num": 41,
+            "positions": []
+          },
+          {
+            "on": true,
+            "num": 29,
+            "onAt": 70,
+            "role": "OFB",
+            "spells": [
+              {
+                "pos": "RWB",
+                "half": "2",
+                "role": "OFB"
+              }
+            ],
+            "positions": [
+              "RWB"
+            ]
+          },
+          {
+            "on": true,
+            "num": 21,
+            "onAt": 45,
+            "role": "OFB",
+            "spells": [
+              {
+                "pos": "LWB",
+                "half": "2",
+                "role": "OFB"
+              }
+            ],
+            "positions": [
+              "LWB"
+            ]
+          },
+          {
+            "on": true,
+            "num": 47,
+            "onAt": 45,
+            "role": "BPD",
+            "spells": [
+              {
+                "pos": "RCB",
+                "half": "2",
+                "role": "BPD"
+              }
+            ],
+            "positions": [
+              "RCB"
+            ]
+          }
+        ],
+        "cover": "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/cover-match-1794159317820.jpg",
+        "goals": [
+          {
+            "num": 12,
+            "spot": {
+              "x": 62,
+              "y": 18.2
+            },
+            "zone": "outside",
+            "assist": {
+              "num": 28,
+              "spot": {
+                "x": 37.6,
+                "y": 86.3
+              },
+              "type": "pass",
+              "zone": "outside"
+            },
+            "minute": 2,
+            "penalty": false,
+            "bodyPart": "left",
+            "situation": "open"
+          },
+          {
+            "num": 20,
+            "spot": {
+              "x": 26.1,
+              "y": 8.6
+            },
+            "zone": "box",
+            "assist": {
+              "num": 9,
+              "spot": {
+                "x": 39.3,
+                "y": 13.3
+              },
+              "type": "pass",
+              "zone": "box"
+            },
+            "minute": 18,
+            "penalty": false,
+            "bodyPart": null,
+            "situation": "corner"
+          },
+          {
+            "num": 40,
+            "spot": {
+              "x": 53,
+              "y": 2.9
+            },
+            "zone": "six",
+            "assist": {
+              "num": 20,
+              "spot": {
+                "x": 71.1,
+                "y": 2.6
+              },
+              "type": "flickon",
+              "zone": "box"
+            },
+            "minute": 26,
+            "penalty": false,
+            "bodyPart": null,
+            "situation": "corner"
+          },
+          {
+            "num": 30,
+            "spot": {
+              "x": 54.5,
+              "y": 14.7
+            },
+            "zone": "box",
+            "assist": {
+              "num": 4,
+              "spot": {
+                "x": 24.8,
+                "y": 13.6
+              },
+              "type": "pass",
+              "zone": "box"
+            },
+            "minute": 33,
+            "penalty": false,
+            "bodyPart": "left",
+            "situation": "corner"
+          },
+          {
+            "num": 12,
+            "spot": {
+              "x": 59.7,
+              "y": 17.2
+            },
+            "zone": "outside",
+            "assist": {
+              "num": 9,
+              "spot": {
+                "x": 46.9,
+                "y": 32.3
+              },
+              "type": "through",
+              "zone": "outside"
+            },
+            "minute": 41,
+            "penalty": false,
+            "bodyPart": "left",
+            "situation": "open"
+          },
+          {
+            "num": 21,
+            "spot": {
+              "x": 72.2,
+              "y": 18.7
+            },
+            "zone": "outside",
+            "assist": {
+              "num": 12,
+              "spot": {
+                "x": 49.5,
+                "y": 21.5
+              },
+              "type": "pass",
+              "zone": "outside"
+            },
+            "minute": 67,
+            "penalty": false,
+            "bodyPart": "left",
+            "situation": "open"
+          }
+        ],
+        "saves": 5,
+        "shape": "",
+        "venue": "Clapham Common",
+        "keeper": 28,
+        "assists": [
+          {
+            "num": 28,
+            "type": "pass",
+            "minute": 2,
+            "forGoalBy": 12
+          },
+          {
+            "num": 9,
+            "type": "pass",
+            "minute": 18,
+            "forGoalBy": 20
+          },
+          {
+            "num": 20,
+            "type": "flickon",
+            "minute": 26,
+            "forGoalBy": 40
+          },
+          {
+            "num": 4,
+            "type": "pass",
+            "minute": 33,
+            "forGoalBy": 30
+          },
+          {
+            "num": 9,
+            "type": "through",
+            "minute": 41,
+            "forGoalBy": 12
+          },
+          {
+            "num": 12,
+            "type": "pass",
+            "minute": 67,
+            "forGoalBy": 21
+          }
+        ],
+        "captain": 25,
+        "savedAt": "2026-11-08T20:43:47.031Z",
+        "approach": {
+          "build": "keep",
+          "press": "mid"
+        },
+        "redCards": [
+          {
+            "num": 28
+          }
+        ],
+        "starters": [
+          {
+            "num": 28,
+            "role": "SHS",
+            "spells": [
+              {
+                "pos": "GK",
+                "half": "1",
+                "role": "SHS"
+              }
+            ],
+            "positions": [
+              "GK"
+            ]
+          },
+          {
+            "num": 20,
+            "role": "OFB",
+            "spells": [
+              {
+                "pos": "RWB",
+                "half": "1",
+                "role": "OFB"
+              }
+            ],
+            "positions": [
+              "RWB"
+            ]
+          },
+          {
+            "num": 10,
+            "role": "BPD",
+            "spells": [
+              {
+                "pos": "RCB",
+                "half": "1",
+                "role": "BPD"
+              }
+            ],
+            "positions": [
+              "RCB"
+            ],
+            "subbedOff": true
+          },
+          {
+            "num": 40,
+            "role": "BPD",
+            "spells": [
+              {
+                "pos": "CB",
+                "half": "1",
+                "role": "BPD"
+              }
+            ],
+            "positions": [
+              "CB"
+            ]
+          },
+          {
+            "num": 25,
+            "role": "BPD",
+            "spells": [
+              {
+                "pos": "LCB",
+                "half": "1",
+                "role": "BPD"
+              }
+            ],
+            "positions": [
+              "LCB"
+            ]
+          },
+          {
+            "num": 4,
+            "role": "UFB",
+            "spells": [
+              {
+                "pos": "LWB",
+                "half": "1",
+                "role": "UFB"
+              }
+            ],
+            "positions": [
+              "LWB"
+            ],
+            "subbedOff": true
+          },
+          {
+            "num": 23,
+            "role": "BWM",
+            "spells": [
+              {
+                "pos": "RCM",
+                "half": "1",
+                "role": "BWM"
+              }
+            ],
+            "positions": [
+              "RCM"
+            ],
+            "subbedOff": true
+          },
+          {
+            "num": 2,
+            "role": "BWM",
+            "spells": [
+              {
+                "pos": "LCM",
+                "half": "1",
+                "role": "BWM"
+              }
+            ],
+            "positions": [
+              "LCM"
+            ]
+          },
+          {
+            "num": 30,
+            "role": "RPM",
+            "spells": [
+              {
+                "pos": "LAM",
+                "half": "1",
+                "role": "RPM"
+              }
+            ],
+            "positions": [
+              "LAM"
+            ]
+          },
+          {
+            "num": 12,
+            "role": "TRQ",
+            "spells": [
+              {
+                "pos": "RAM",
+                "half": "1",
+                "role": "TRQ"
+              }
+            ],
+            "positions": [
+              "RAM"
+            ]
+          },
+          {
+            "num": 9,
+            "role": "CHR",
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "1",
+                "role": "CHR"
+              }
+            ],
+            "positions": [
+              "ST"
+            ]
+          }
+        ],
+        "formation": "3-4-2-1",
+        "saveSpots": [
+          {
+            "x": 62.2,
+            "y": 23.7
+          },
+          {
+            "x": 34.7,
+            "y": 19.4
+          },
+          {
+            "x": 58.5,
+            "y": 23.7
+          },
+          {
+            "x": 69.2,
+            "y": 13.8
+          },
+          {
+            "x": 68.7,
+            "y": 26.4
+          }
+        ],
+        "commentary": "",
+        "cleanSheets": [],
+        "competition": "League Eight",
+        "yellowCards": [
+          {
+            "num": 28
+          }
+        ],
+        "opponentGoals": [],
+        "penaltiesSaved": [],
+        "polishedReport": ".",
+        "penaltiesMissed": [],
+        "opponentRedCards": [],
+        "penaltiesConceded": 1
+      },
+      "updated_at": "2026-11-08T20:43:47.031+00:00"
     }
   ],
   "articles": [
@@ -12346,6 +12835,19 @@
     }
   ],
   "fixtures": [
+    {
+      "key": "f20261108-brockwell",
+      "data": {
+        "away": "Sue's Angels FC",
+        "date": "08 Nov 2026",
+        "home": "Brockwell Violets FC",
+        "kick": "10:30",
+        "kind": "fixture",
+        "venue": "Clapham Common, Pitch 8",
+        "competition": "League Eight"
+      },
+      "updated_at": "2026-11-08T20:44:01.609+00:00"
+    },
     {
       "key": "f20261115-station-sljc",
       "data": {

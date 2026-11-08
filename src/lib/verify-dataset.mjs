@@ -5,7 +5,7 @@
 import { buildDataset } from './dataset.mjs';
 import { teamSummary, leaderboard, clubRecords, formGuide, homeAwaySplit, byCompetition,
   deriveTable, compareTable, compareDivision, compareScorers,
-  cupResultRows } from './stats.mjs';
+  cupResultRows, isUs, ownChartResults } from './stats.mjs';
 
 const d = buildDataset();
 let fails = 0;
@@ -78,7 +78,22 @@ console.log(`matches with detail records: ${d.matches.filter((m) => m.detail).le
     /* The league's own cups count towards these figures, so they count
        towards the pool the figures are checked against. */
     const cupRows = cupResultRows(d.cups && d.cups.cups);
-    const over = compareScorers(sc, res, cupRows);
+    /* THE CLUB'S OWN ROWS ARE DERIVED, so they are judged against the source
+       they are derived FROM. Its chart rows move the moment a result is saved
+       in the panel and the transcription arrives days later, so measuring one
+       against the other fails every week on a correct file - and this runs in
+       Vercel's buildCommand, so it fails it in the one place that stops the
+       club publishing. Same competitions as the chart: the division and the
+       league's own cups, never a friendly. */
+    const usName = (rows.find((r) => r.us) || {}).club
+      || ((sc || []).find((x) => isUs(x.club)) || {}).club || '';
+    const ownRes = ownChartResults(d.played, {
+      club: usName,
+      season: l8.season,
+      division: l8.division,
+      cupNames: ((d.cups && d.cups.cups) || []).map((c) => c.name),
+    });
+    const over = compareScorers(sc, res, cupRows, { club: usName, results: ownRes });
     console.log(`\n=== ${l8.division || 'NEW DIVISION'} SCORERS vs RESULTS (as of ${l8.scorersAsOf || 'undated'}) ===`);
     /* TWO READINGS OF ONE DIVISION HAVE TO BE OF THE SAME DAY, and when they
        are not this comparison says the wrong thing with total confidence. A

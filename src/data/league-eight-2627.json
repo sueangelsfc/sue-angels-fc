@@ -22,43 +22,43 @@
     "Pure Football FC 1st Team",
     "Barnes Stormers FC"
   ],
-  "tableAsOf": "2026-11-01",
+  "tableAsOf": "2026-11-08",
   "table": [
     {
       "p": 1,
       "c": "Sue's Angels FC",
-      "pl": 5,
-      "w": 5,
+      "pl": 6,
+      "w": 6,
       "d": 0,
       "l": 0,
-      "gf": 26,
-      "ga": 4,
-      "gd": 22,
-      "pts": 15
+      "gf": 32,
+      "ga": 5,
+      "gd": 27,
+      "pts": 18
     },
     {
       "p": 2,
-      "c": "Brockwell Violets FC",
+      "c": "Three Little Birds FC",
       "pl": 5,
       "w": 4,
       "d": 0,
       "l": 1,
-      "gf": 10,
-      "ga": 4,
+      "gf": 13,
+      "ga": 7,
       "gd": 6,
       "pts": 12
     },
     {
       "p": 3,
-      "c": "Three Little Birds FC",
-      "pl": 4,
-      "w": 3,
+      "c": "Brockwell Violets FC",
+      "pl": 6,
+      "w": 4,
       "d": 0,
-      "l": 1,
-      "gf": 9,
-      "ga": 5,
-      "gd": 4,
-      "pts": 9
+      "l": 2,
+      "gf": 11,
+      "ga": 10,
+      "gd": 1,
+      "pts": 12
     },
     {
       "p": 4,
@@ -87,13 +87,13 @@
     {
       "p": 6,
       "c": "Bristol City (London) Supporters",
-      "pl": 4,
+      "pl": 5,
       "w": 1,
       "d": 1,
-      "l": 2,
-      "gf": 6,
-      "ga": 10,
-      "gd": -4,
+      "l": 3,
+      "gf": 8,
+      "ga": 14,
+      "gd": -6,
       "pts": 4
     },
     {
@@ -286,6 +286,22 @@
       "hs": 2,
       "as": 0,
       "away": "Pure Football FC 1st Team"
+    },
+    {
+      "date": "08 Nov 26",
+      "kick": "10:30",
+      "home": "Bristol City (London) Supporters",
+      "hs": 2,
+      "as": 4,
+      "away": "Three Little Birds FC"
+    },
+    {
+      "date": "08 Nov 26",
+      "kick": "10:30",
+      "home": "Brockwell Violets FC",
+      "hs": 1,
+      "as": 6,
+      "away": "Sue's Angels FC"
     }
   ],
   "_scorersNote": "RESTORED 27 OCTOBER 2026, with the expunged goals removed player by player. The chart was transcribed on 4 October and counted goals scored in the three Pure Football FC 1st Team matches, which the league expunged when it removed the club. The club supplied Full-Time's match sheets for all three, so who scored them is read rather than guessed: Makheyi Chilumbi 1 and Vincent Narayna 2 (Pure 0-4 TSM Rovers), Meddy Deschamps, Ben Earle and Samuel Sayer 1 each (Pure 3-3 Bristol City), Charlie Green and Aaron Boniface 1 each (Brockwell Violets 2-0 Pure). Illo Sissoko also scored in the first of those and is below Full-Time's 25-row cut, so he was never in the chart. Deschamps, Sayer and Boniface fall to no goals at all and their rows are gone; a man with nothing but an expunged goal is not a scorer in this division. Appearances are reduced by one for everybody named in those three team sheets, which is why the apps column still reconciles with the table. Club totals after it: TSM Rovers 7 (results 7), Bristol City 3 (results 3), Brockwell Violets 4 (results 8, the rest below the cut). ASSISTS ARE STILL HELD EMPTY at the club's request - they are being re-read separately - and `_clubAssists` is kept for reapplying after that read.\n\nThe division's scorers, from Full-Time's stat leaders page (Player stats, Summary, League Eight 26/27), which excludes county cup football. Every player with a goal is kept, spelt as Full-Time prints them; the page lists appearances for everybody else and those are not kept. npm run verify fails if a club's scorers add up to more goals than its results say it scored. THE PAGE SHOWS 25 ROWS AND THE DIVISION HAS MORE, so a re-read is MERGED, never swapped in. On 4 October the cut fell inside the one-goal group at surname O, and six real scorers sat below it (Otudeko, Reid, Rixon, Sayer, Theivendran, Wing); replacing the list would have deleted all six and taken a goal off four clubs. Reconciling every club's scorers against the goals its table row claims is how the transcription is checked: no club is credited with more than it scored, and the shortfalls are own goals and the rows below the cut. Full-Time lists Drew Daley of Haydons Park with a goal and no appearance, which is its own figure and is kept as printed rather than corrected here.",

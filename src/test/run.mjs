@@ -680,8 +680,14 @@ for (const f of shipped) {
 
     /* And the lists must actually defer rather than call a function that left. */
     const listSrc = fs.readFileSync(path.join(ROOT, 'src', 'admin', 'lazy', '10-match.js'), 'utf8');
+    /* COUNTED AGAINST THE CALLS, never against a number typed here. This
+       asserted `=== 3` and went red on the fourth call site, which is a check
+       measuring how many there are rather than whether each one defers - and
+       a fifth added without its chunk call would have passed the moment
+       somebody corrected the figure. */
+    const opens = (listSrc.match(/CPME\.openMatch/g) || []).length;
     check('the lists fetch the editor by name before opening a match',
-      (listSrc.match(/chunk\('matchedit'\)/g) || []).length === 3,
+      opens > 0 && (listSrc.match(/chunk\('matchedit'\)/g) || []).length === opens,
       'a call site still expects the editor to be present');
     check('no list calls openMatch directly any more',
       !/(^|[^.\w])openMatch\s*\(/.test(listSrc.replace(/\/\*[\s\S]*?\*\//g, ' ')),

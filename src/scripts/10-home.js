@@ -351,11 +351,20 @@
     }
 
     /* The two sides swap when home and away do, so the club on the left is
-       the club at home. */
+       the club at home. ALL THREE CHILDREN ARE RE-APPENDED, not one moved to
+       the front: the row is [side, v, side], and lifting the far side to
+       position 0 leaves [side, side, v] with the v stranded on the right of
+       both crests. It showed the morning the Brockwell fixture passed and
+       the card moved itself on to a home tie. appendChild moves a node that
+       is already in the document, so three appends in order is the whole
+       reordering and it is right whatever order the build shipped. */
     var fixture = card.querySelector('.hx__fixture');
-    var first = card.querySelector(pick.weAreHome ? '[data-nx-us]' : '[data-nx-them]');
-    if (fixture && first && fixture.firstElementChild !== first) {
-      fixture.insertBefore(first, fixture.firstElementChild);
+    var usSide = card.querySelector('[data-nx-us]');
+    var themSide = card.querySelector('[data-nx-them]');
+    var vsMark = fixture && fixture.querySelector('.hx__vs');
+    if (fixture && usSide && themSide && vsMark) {
+      var order = pick.weAreHome ? [usSide, vsMark, themSide] : [themSide, vsMark, usSide];
+      for (var oi = 0; oi < order.length; oi += 1) fixture.appendChild(order[oi]);
     }
 
     /* The attribute as well as the clock. countdown() is given the new

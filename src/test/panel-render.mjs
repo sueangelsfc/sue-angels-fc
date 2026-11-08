@@ -2809,5 +2809,85 @@ export async function panelProbes() {
     });
   }
 
+  /* PLAYED AND NOT RECORDED. `baselineFixtures` offers to IMPORT a transcribed
+     fixture and is filtered to what the site still calls upcoming, so the
+     Brockwell match of 8 November stopped being offered at the same moment it
+     stopped being a fixture: no Enter result anywhere in the panel, and the
+     only route left was typing the date, the opponent, the competition and the
+     venue into Results by hand.
+
+     CRAFTED, never read off the shipped seed. A check over today's data would
+     be green while a fixture happens to be overdue and vacuous the week
+     everything is recorded, which is how a mechanism ends up with no test by
+     the time somebody needs it. Both halves are asked: a dated fixture with no
+     record is offered, and an UNDATED one is not, because a cup tie with no
+     day on it cannot be overdue and must wait rather than nag. */
+  {
+    const due = [
+      { id: 'f20200101-probe', iso: '2020-01-01', date: '1 Jan 2020',
+        home: 'Probe Rovers', away: "Sue's Angels FC", competition: 'League Eight',
+        venue: 'Probe Park', kick: '10:30', neutral: false },
+      { id: 'f29991231-undated', iso: '', date: '',
+        home: "Sue's Angels FC", away: 'Undated Athletic', competition: "President's Cup",
+        venue: '', kick: '', neutral: false },
+    ];
+    const ctx = PR.boot({
+      rows,
+      transform: (src, file) => (file === 'control-seed.js'
+        ? `${src};window.SA_SEED.awaitingResult=${JSON.stringify(due)};`
+        : src),
+    });
+    const res = await PR.openPanel(ctx, 'results');
+    const btns = Array.from(res.body.querySelectorAll('[data-due]'));
+    const ids = btns.map((b) => b.getAttribute('data-due'));
+    results.push({
+      name: 'a fixture that has been played and never recorded is offered on the results screen',
+      cond: ids.indexOf('f20200101-probe') > -1,
+      detail: `offered ${JSON.stringify(ids)}`,
+    });
+    results.push({
+      name: 'and a fixture with no date is not, because it cannot be overdue',
+      cond: ids.indexOf('f29991231-undated') === -1,
+      detail: `offered ${JSON.stringify(ids)}`,
+    });
+
+    /* And pressing it has to OPEN the editor on that fixture. A banner that
+       counts the gap and does nothing about it is the duplication the button
+       exists to remove. */
+    let seeded = '';
+    const btn = btns.filter((b) => b.getAttribute('data-due') === 'f20200101-probe')[0];
+    if (btn) {
+      PR.click(btn);
+      await PR.settle(ctx);
+      PR.flushMutations(ctx.doc.body);
+      await PR.settle(ctx);
+      const modal = ctx.doc.querySelector('.modal-backdrop');
+      const opp = modal && modal.querySelector('#m-opp');
+      seeded = opp ? String(opp.value || '') : '';
+    }
+    results.push({
+      name: 'pressing it opens the match editor already carrying that fixture',
+      cond: seeded === 'Probe Rovers',
+      detail: `opponent read ${JSON.stringify(seeded)}`,
+    });
+  }
+
+  /* PROBE: take the seeded list away and the three checks above go red. A
+     banner reading its own hard-coded list would pass all of them. */
+  {
+    const ctx = PR.boot({
+      rows,
+      transform: (src, file) => (file === 'control-seed.js'
+        ? `${src};window.SA_SEED.awaitingResult=[];`
+        : src),
+    });
+    const res = await PR.openPanel(ctx, 'results');
+    results.push({
+      name: 'probe: an empty awaiting list turns the played-and-not-recorded check red',
+      cond: res.body.querySelectorAll('[data-due]').length === 0,
+      detail: 'a fixture was still offered with nothing seeded',
+    });
+  }
+
   return results;
 }

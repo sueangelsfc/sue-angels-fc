@@ -561,6 +561,29 @@ const adminSeed = {
     ...(d.matches || []).filter((m) => !m.detail?.cover && drawnCover(m.id)).map((m) => m.id),
     ...(d.articles || []).filter((a) => (!a.cover || isDrawnCard(a.cover)) && drawnCover(`a-${articleSlug(a)}`)).map((a) => a.key),
   ].filter(Boolean),
+  /* A MATCH THAT HAS BEEN PLAYED AND NOT RECORDED.
+     `baselineFixtures` offers to IMPORT a transcribed fixture, and it is
+     filtered to what the site is still showing as upcoming, which is right
+     for that question and leaves a hole the morning after: the Brockwell
+     match of 8 November was played, had no row in the fixtures table, and so
+     stopped being offered for import at the same moment it stopped being a
+     fixture. No Enter result anywhere in the panel, and the only way left
+     was to type the date, the opponent, the competition and the venue into
+     Results by hand, which is the duplication that button exists to remove.
+
+     Every fixture the site knows that has no match record, whether it is a
+     database row or a transcription, with no date test at all: the site
+     knows whether a result exists and the BROWSER knows what day it is, and
+     a build is days old by the time anybody opens the panel. */
+  awaitingResult: (d.fixtures || [])
+    .filter((f) => !(d.matches || []).some((m) => m.played
+      && String(m.id || '').slice(1, 9) === String(f.id || '').slice(1, 9)))
+    .map((f) => ({
+      id: f.id, iso: f.iso || '', date: f.date || '',
+      home: f.home || '', away: f.away || '',
+      competition: f.competition || '', venue: f.venue || '',
+      kick: f.kick || '', neutral: !!f.neutral,
+    })),
   baselineFixtures: (JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'fixtures-2627.json'), 'utf8')).fixtures || [])
     /* A FIXTURE THAT HAS BEEN PLAYED IS NOT MISSING FROM ANYTHING.
        The panel offers to import any of these that is not a row in the

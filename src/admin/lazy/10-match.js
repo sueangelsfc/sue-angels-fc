@@ -660,11 +660,14 @@
        rather than taken from the build seed: the club may have marked
        somebody departed a minute ago and would expect the next team sheet to
        know, without waiting for a rebuild. */
-    return Promise.all([CP.readAll('matches'), CP.readAll('player_photos')])
+    var fxRows = [];
+    return Promise.all([CP.readAll('matches'), CP.readAll('player_photos'),
+      CP.readAll('fixtures').catch(function () { return []; })])
       .then(function (both) {
         /* Rebuilt so a player or trialist added since the page loaded is
            pickable. */
         loadRoster(both[1] || []);
+        fxRows = both[2] || [];
         return both[0];
       })
       .then(function (rows) {
@@ -699,7 +702,36 @@
         return x.polishedReport || x.commentary;
       }).length;
 
-      host.innerHTML = sec({
+      /* PLAYED AND NOT RECORDED. The site says which fixtures have no match
+         record; the day is asked of the browser, because a build is days old
+         by the time anybody opens this. A fixture with no date cannot be
+         overdue, so an undated cup tie waits rather than nagging. */
+      var today = new Date();
+      var todayIso = today.getFullYear() + '-'
+        + String(today.getMonth() + 1).padStart(2, '0') + '-'
+        + String(today.getDate()).padStart(2, '0');
+      var recorded = {};
+      (list || []).forEach(function (r) { recorded[String(r.key).slice(1, 9)] = true; });
+      var due = (SEED.awaitingResult || []).filter(function (f) {
+        return f.iso && f.iso <= todayIso && !recorded[String(f.id).slice(1, 9)];
+      }).sort(function (a, b) { return String(a.iso).localeCompare(String(b.iso)); });
+
+      host.innerHTML = (due.length
+        ? sec({
+          warn: true,
+          title: due.length === 1 ? 'A match has been played and not recorded'
+            : due.length + ' matches have been played and not recorded',
+          sub: 'The website is still carrying ' + (due.length === 1 ? 'this' : 'these')
+            + ' as a fixture. <b>Enter result</b> opens the match form already filled in, '
+            + 'so the date, the opponent, the competition and the venue do not have to be typed again.',
+          body: '<ul class="cp-list">' + due.map(function (f) {
+            return '<li>' + esc(f.date + ' \u00b7 ' + f.home + ' v ' + f.away
+              + (f.competition ? ' \u00b7 ' + f.competition : ''))
+              + ' <button class="btn btn--primary btn--sm" data-due="' + esc(f.id)
+              + '">Enter result</button></li>';
+          }).join('') + '</ul>',
+        })
+        : '') + sec({
         title: 'Match records',
         sub: esc(list.length) + ' recorded, ' + esc(withReport) + ' with a written report. '
           + 'Everything a match page shows is entered here: the team sheet and its shape, '
@@ -739,6 +771,28 @@
       });
 
       host.addEventListener('click', function (e) {
+        if (e.target.matches('[data-due]')) {
+          if (!guard()) return;
+          var fid = e.target.getAttribute('data-due');
+          var fx = due.filter(function (x) { return x.id === fid; })[0];
+          if (!fx) return;
+          /* `fromFixture` ONLY where there is a row to clear. A transcribed
+             fixture has none, and naming one would ask the save to delete a
+             record that does not exist. */
+          var isRow = (fxRows || []).some(function (r) { return r.key === fid; });
+          Promise.all([U.chunk('matchedit'), U.chunk('writing').catch(function () {})])
+            .then(function () {
+              window.CPME.openMatch({
+                seed: {
+                  kind: 'score', date: fx.date, home: fx.home, away: fx.away,
+                  competition: fx.competition, venue: fx.venue, kick: fx.kick,
+                },
+                fromFixture: isRow ? fid : '',
+                after: function () { refresh('results'); },
+              });
+            });
+          return;
+        }
         if (e.target.matches('[data-new-match]')) {
           /* THE EDITOR ARRIVES WHEN IT IS ASKED FOR, not with the list.
              Most visits to this screen read it and leave. */

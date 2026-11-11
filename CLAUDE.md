@@ -985,9 +985,16 @@ stayed and how far down they got. `migrations/007_page_stats.sql`,
   for a page with 7; and the drill-down check matched `7 of the period's 24
   views` inside **`17` of the period's 24 views**, so it passed on an
   unfiltered panel.
-- **Inert until the migration is run**, like 002 and 004. Until then every
-  call is a 404, the failure is swallowed, and the screen names the file that
-  turns it on rather than showing an empty page that reads as broken.
+- **Inert until the migration is run.** Until then every call is a 404, the
+  failure is swallowed, and the screen names the file that turns it on rather
+  than showing an empty page that reads as broken. **007 has been run, and so
+  has everything else.** Checked 11 November 2026 without a sign-in, by this
+  file's own technique - `200 []` is RLS on a table that exists, `PGRST205` is
+  no table - and every table created by 002 to 012 answered `200 []`, with
+  005's diagnostic table gone as 006 intended. The audit is written down at
+  the foot of `migrations/016_page_stats_cleanup.sql`. 008 is the one it
+  cannot answer, because 008 and 009 both create `page_stats_hourly`, and it
+  does not matter: 009 supersedes it.
 - **A swallowed failure hid a total outage for eight days.** 008 was never run
   on the database, and from 4 September 2026 the beacon sent `p_hour` to
   `record_page_view`. PostgREST resolves a function by argument NAMES, found
@@ -2573,9 +2580,15 @@ claiming they are finished.
   a button to the screen that fixes it. That is the part code can do: turn a
   gap into a job.
 - **The machine rows in `page_stats`.** Deleting them needs the sign-in only
-  the club has. `migrations/016_page_stats_cleanup.sql` reports first and
-  leaves the delete commented out, because the table cannot be read without
-  that sign-in and a DELETE written against a guessed pattern has no undo.
+  the club has. `migrations/016_page_stats_cleanup.sql` carries the clause
+  now, with the evidence for it beside it, and still reports before it
+  deletes: the transaction ends in `rollback`, so running it as it stands
+  changes nothing and prints what it would have taken. **The date bound is
+  the part that matters.** `zone = 'UTC' and seconds_total = views` is also
+  true of a real reader on a real one-second bounce, and on a single-view
+  bucket the two cannot be told apart; the guard landed on 11 October, so
+  everything after that is certainly a reader and `day <= '2026-10-11'`
+  removes the whole class of mistake for nothing.
 - **Layout, in `npm test` itself.** `src/test/dom.mjs` has no cascade and
   refuses `getComputedStyle` rather than inventing one, which keeps the suite
   runnable anywhere in eight seconds. `npm run visual` is the browser (below),

@@ -695,6 +695,37 @@ export function articleBody(text, opts = {}) {
     const tbl = table(b.split('\n').map((l) => l.replace(/^ +| +$/g, '')).filter((l) => l.trim()), opts);
     if (tbl) return tbl;
     const lines = b.split('\n').map((l) => l.trim()).filter(Boolean);
+    /* A FIGURE STRIP, `= value | words` on every line of a block:
+
+         = 18 | Points, and top of League Eight
+         = 32 | Scored in six games
+
+       A club's writing is full of figures and the only way to publish one was
+       inside a sentence, so a piece built on numbers came out as a column of
+       grey prose with its substance buried mid-paragraph. The strip is for
+       the two to four figures a piece actually turns on.
+
+       EVERY LINE MUST CARRY THE MARKER, like the bullet list, so a stray `=`
+       in ordinary prose cannot turn a paragraph into a chart. One marker, one
+       meaning.
+
+       THE LABEL IS NOT OPTIONAL. A figure with nothing naming it is a numeral
+       on its own beside a name, which is the one thing this site refuses to
+       print, so a line with no `|` is left as the text it is and the writer
+       can see it did not work. */
+    if (lines.length > 1 && lines.every((l) => /^=\s*[^|]+\|.+/.test(l))) {
+      inAnswer = false;
+      const cells = lines.map((l) => {
+        const [, v, w] = /^=\s*([^|]+)\|\s*(.+)$/.exec(l);
+        return `<div class="nw-num"><b>${inline(v.trim())}</b>`
+          + `<i>${inline(w.trim())}</i></div>`;
+      });
+      /* Four is the most that stays readable in a 74ch column, and the grid
+         is told how many there are so three do not lay out as two and a
+         widow. */
+      return `<div class="nw-nums" data-n="${attr(String(Math.min(cells.length, 4)))}">`
+        + `${cells.join('')}</div>`;
+    }
     if (lines.length > 1 && lines.every((l) => /^[-*·•]\s+/.test(l))) {
       return `<ul class="nw-art__list">${lines
         .map((l) => `<li>${inline(l.replace(/^[-*·•]\s+/, ''))}</li>`).join('')}</ul>`;

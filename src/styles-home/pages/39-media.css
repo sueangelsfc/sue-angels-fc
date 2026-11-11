@@ -485,3 +485,89 @@ html.js .nw-card[hidden]{display: none;}
     border-radius: 0 3px 3px 0; pointer-events: none;}
 }
 
+
+/* ==========================================================================
+   AN ARTICLE THAT IS MADE OF FIGURES  (.nw-nums, the stand-first, the rule)
+
+   The club writes about football, which means it writes numbers, and the
+   body had exactly one way to publish one: inside a sentence. So a piece
+   whose whole substance was six wins, 32 goals and five conceded shipped as
+   an undifferentiated grey column with every figure buried mid-paragraph,
+   and a reader skimming it on a phone came away with nothing. These three
+   rules are typographic only. No article has to change to get them, and the
+   strip is there for the two to four figures a piece actually turns on.
+   ========================================================================== */
+
+/* THE STAND-FIRST. The first paragraph of a piece is doing a different job
+   from the fourteenth: it is the promise the headline made, and it was set
+   identically to every other paragraph. `:first-of-type` rather than a class
+   so nothing in the panel has to know about it, and so the hundred articles
+   already written get it too. */
+.nw-art__body > p:first-of-type,
+.nw-art__col > p:first-of-type{
+  font-size: clamp(18px, 2vw, 21px); line-height: 1.62;
+  color: var(--ink-1); letter-spacing: -0.008em;
+}
+
+/* A SECTION HEADING GETS AIR AND A LINE. Headings sat eight pixels off the
+   paragraph above, so a 1,200-word piece read as one block with occasional
+   bold text in it. The hairline is the cheapest way to say "new section"
+   without a decorative device, and it is suppressed on the first heading,
+   which has the stand-first above it and needs no separating from anything. */
+.nw-art__body .nw-art__h{
+  margin-block-start: clamp(18px, 2.6vw, 30px);
+  padding-block-start: clamp(16px, 2.2vw, 24px);
+  border-block-start: 1px solid var(--line-d);
+}
+/* A sub-heading is inside a section, so it must not draw the line that marks
+   the start of one. */
+.nw-art__body .nw-art__h--sub,
+.nw-art__body .nw-art__sub{border-block-start: 0; padding-block-start: 0;}
+
+/* THE FIGURE STRIP. Archivo at the width axis the rest of the site uses for
+   numerals, so a figure here and a figure on the league table are the same
+   object. The orange is on the number and nothing else: the label is quiet,
+   because the label is not the news. */
+.nw-nums{
+  display: grid; gap: 1px; margin: 6px 0;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+  background: var(--line-d);
+  border: 1px solid var(--line-d); border-radius: var(--r-sm); overflow: hidden;
+}
+.nw-num{
+  display: grid; gap: 6px; align-content: start;
+  padding: clamp(16px, 2.2vw, 22px) clamp(14px, 2vw, 20px);
+  background: var(--navy, #0a0f1c);
+}
+.nw-num b{
+  font-family: var(--display); font-weight: 600;
+  font-variation-settings: 'wdth' var(--wide-num, 100);
+  font-size: clamp(34px, 5.2vw, 46px); line-height: 0.95;
+  letter-spacing: -0.03em; color: var(--volt-text, var(--volt));
+  font-variant-numeric: tabular-nums;
+}
+.nw-num i{
+  font-style: normal; font-family: var(--ui);
+  font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  line-height: 1.45; color: var(--ink-3, var(--ink-2));
+}
+/* TWO FIGURES ARE A COMPARISON, not a row that happens to be short, so they
+   hold half the width each rather than stretching to a quarter of the column
+   apiece and leaving the pair looking like an accident. */
+.nw-nums[data-n="2"]{grid-template-columns: repeat(2, 1fr);}
+/* ON A PHONE THE STRIP LIES DOWN. Stacked, three cells of big type and a
+   caps label underneath ran 360px, which is half a phone screen spent on
+   three numbers and pushes the thing they introduce off the bottom. Side by
+   side they read as a scoreboard and cost a third of that. A pair stays a
+   pair: two short figures sit beside each other at any width, because the
+   whole point of two is the comparison. */
+@media (max-width: 420px){
+  .nw-nums{grid-template-columns: 1fr;}
+  .nw-num{grid-template-columns: auto 1fr; align-items: baseline;
+    gap: 14px; padding: 14px 16px;}
+  .nw-num b{font-size: 30px;}
+  .nw-num i{font-size: 10.5px; letter-spacing: 0.08em;}
+  .nw-nums[data-n="2"]{grid-template-columns: repeat(2, 1fr);}
+  .nw-nums[data-n="2"] .nw-num{grid-template-columns: 1fr; gap: 6px;
+    padding: 16px 14px;}
+}

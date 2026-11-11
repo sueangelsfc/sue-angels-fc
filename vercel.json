@@ -20,6 +20,11 @@
   },
   "redirects": [
     {
+      "source": "/news/six-from-six-and-the-hard-half-already-played.html",
+      "destination": "/news/six-from-six-and-a-third-of-the-season-gone.html",
+      "permanent": true
+    },
+    {
       "source": "/news/sundays-match-is-off-mousa-mountain-have-folded.html",
       "destination": "/news/sunday-is-off-here-is-where-it-leaves-us.html",
       "permanent": true

@@ -75,9 +75,16 @@ console.log(`matches with detail records: ${d.matches.filter((m) => m.detail).le
   }
   const sc = l8.scorers || [];
   if (sc.length && res.length) {
-    /* The league's own cups count towards these figures, so they count
-       towards the pool the figures are checked against. */
-    const cupRows = cupResultRows(d.cups && d.cups.cups);
+    /* THE POOL IS THE DIVISION, BECAUSE THE FIGURES ARE. They were read from
+       Full-Time's Summary view, which counts the league's own cups, and the
+       cups are where this check goes blind: most of their ties have no
+       transcribed result, so the pool was short of goals that really were
+       scored and two clubs failed on a correct file. Read from League Only
+       the two sides are the same competition again. Leaving the cup results
+       in the pool would not fail anything - a wider pool only ever passes
+       more - which is the reason to take them out: a mistyped league goal
+       could then hide under a cup goal nothing compares it with. */
+    const cupRows = [];
     /* THE CLUB'S OWN ROWS ARE DERIVED, so they are judged against the source
        they are derived FROM. Its chart rows move the moment a result is saved
        in the panel and the transcription arrives days later, so measuring one
@@ -91,7 +98,8 @@ console.log(`matches with detail records: ${d.matches.filter((m) => m.detail).le
       club: usName,
       season: l8.season,
       division: l8.division,
-      cupNames: ((d.cups && d.cups.cups) || []).map((c) => c.name),
+      /* The division alone, the same as the chart rows this measures. */
+      cupNames: [],
     });
     const over = compareScorers(sc, res, cupRows, { club: usName, results: ownRes });
     console.log(`\n=== ${l8.division || 'NEW DIVISION'} SCORERS vs RESULTS (as of ${l8.scorersAsOf || 'undated'}) ===`);

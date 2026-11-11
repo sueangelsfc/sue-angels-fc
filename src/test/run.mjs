@@ -7827,14 +7827,30 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     });
     check('no row credits a man with more goals than his own profile publishes',
       off.length === 0, off.map((s) => `${s.name} chart ${s.goals}`).join(', ') || 'none');
-    /* A MAN THE CLUB HAS SINCE RECORDED A GOAL FOR IS IN IT. Daniel McLane's
-       only goal of the season is the President's Cup tie at Peps, and the
-       transcription cannot have him: he is one goal in a group the 25-row
-       page cuts off at surname Hayes. The derived rows are the only thing
-       that puts him in the chart at all. */
+    /* A MAN THE CLUB HAS SINCE RECORDED A GOAL FOR IS IN IT. The 25-row page
+       cuts the one-goal group off at a surname - D on the 11 November read -
+       so three of the club's own one-goal men are past it. Dean Knight is
+       one, and the derived rows are the only thing that puts him in the
+       chart at all.
+
+       IT USED TO NAME DANIEL McLANE AND THAT EXAMPLE IS DEAD, which is worth
+       the paragraph because it died of the chart being made honest rather
+       than of a bug. His only goal of the season is the President's Cup tie
+       at Peps, and the chart is the DIVISION now: the transcription was
+       re-read from Full-Time's League Only view because the Summary view
+       counts the league's own cups and most of those ties have no
+       transcribed result, so two clubs failed the reconciliation on a
+       correct file. A chart with every other club counted over the league
+       alone cannot carry this club's cup goals, so McLane leaves it - and
+       asking that he has is the sharper half of this check, because it goes
+       red the day somebody widens the overlay back out and quietly puts one
+       row of the ranking on a different basis from the rest. */
     check('a scorer the transcription could not reach is in the chart',
-      mine.some((s) => s.name === 'Daniel McLane'),
+      mine.some((s) => s.name === 'Dean Knight'),
       mine.map((s) => s.name).join(', '));
+    check('and a man whose only goal is a cup goal is not, because the chart is the division',
+      !mine.some((s) => s.name === 'Daniel McLane'),
+      mine.map((s) => `${s.name} ${s.goals}`).join(', '));
     /* AND THE ASSISTS TABLE IS NOT OVERLAID, which is not timidity. A chart
        is a ranking and a ranking is a claim about a division: with no
        opposition assist read at all, overlaying ours would publish a table

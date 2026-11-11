@@ -1122,7 +1122,18 @@ export function buildDataset(overrides = {}) {
     const ours = clubChartRows(matches, {
       season: forSeason,
       division: t.division || divisionOf(forSeason),
-      cupNames: (cups.cups || []).map((x) => x.name),
+      /* THE DIVISION ONLY, AND NO CUP, BECAUSE THE REST OF THE CHART IS THE
+         DIVISION ONLY. The transcription was read from Full-Time's Summary
+         view, which counts the league's own cups, and that view cannot be
+         reconciled here: most of those ties have no transcribed result, so
+         the pool is smaller than the figures and two clubs failed the check
+         on correct data. It is read from League Only now, so overlaying
+         league-and-cup rows for this club would put one row of a ranking on
+         a different basis from every other row - Ade Owolana at 12 beside
+         men counted over the league alone - which is a chart that quietly
+         lies about who leads it. His 12 is published on his own profile,
+         where it is a claim about him rather than about the division. */
+      cupNames: [],
       /* The name the DIVISION spells it with, taken from its own table, so
          an overlaid row sits beside the transcribed ones under one spelling
          rather than introducing a second. */

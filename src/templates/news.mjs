@@ -471,36 +471,55 @@ function leagueTable(rows, badges) {
       .map((c) => `<td>${inline(c || '')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
 }
 
-/* A SCORING CHART IS A CHART, NOT A TABLE. A table headed exactly
-   Player, Club, Goals becomes a ranked bar per scorer: the name, the club
-   behind it, the tally, and a track as long as the tally is against the
-   leader. The club's own scorers are lit in the one accent and everybody
-   else recedes, which is the whole question a reader brings to a scoring
-   chart - are ours top - answered before a word is read.
+/* WHAT OUR PLAYERS HAVE DONE, drawn rather than listed. A table headed
+   exactly Player, Goals, Assists becomes one bar per man: goals solid,
+   assists in the same hue at a quarter of the weight, both measured against
+   the LEADER's total so the rows are comparable at a glance.
 
-   NO RANK NUMERAL. The order IS the rank and the bar IS the magnitude, so a
-   column of digits beside a column of names would say nothing twice - and a
-   bare numeral next to a player's name is the one thing this site refuses to
-   print, because it reads as the squad number the club does not use.
+   TWO MEASURES ON ONE BAR, because the single most interesting thing about
+   this squad is invisible in a goals column: one man is almost all goals and
+   another almost all assists, and they are a point apart on involvement. A
+   ranked list of goals says the second man had a quiet season.
 
-   Widths are whole percentages of the leader, which is as precise as a 7px
-   bar can be and keeps the markup short. The rows are `aria-hidden`; the
-   table under them carries every figure, the way the league table does. */
-const SCORER_HEAD = 'player|club|goals';
-function scorerChart(rows) {
+   ONE ACCENT, and identity never rests on it. Orange is the only accent on
+   this site, so the two measures differ in weight, not in hue - and every row
+   says "12 goals, 2 assists" in words underneath, so the split is readable
+   with no colour at all.
+
+   THE BIG NUMERAL IS THE TOTAL, and that is a design decision with a second
+   reason behind it: a goals tally printed beside a name is the squad number
+   this site refuses to print, and two of this squad are currently level with
+   their own key (Ade Owolana on twelve wearing 12, Leon Burnett on three
+   wearing 3). An involvement total collides with neither.
+
+   NO RANK COLUMN. The order is the rank and the bar is the figure. */
+const INVOLVE_HEAD = 'player|goals|assists';
+function involveChart(rows) {
   const body = rows.slice(1).filter((r) => r[0]);
-  const nums = body.map((r) => Number(r[2]) || 0);
-  const top = Math.max(1, ...nums);
-  return '<div class="nw-lb">'
-    + body.map((r, i) => `<div class="nw-lb__r${isUs(r[1]) ? ' nw-lb__r--us' : ''}"`
-      + ` style="--w:${Math.round((nums[i] / top) * 100)}%" aria-hidden="true">`
-      + `<span class="nw-lb__n">${inline(r[0])} <span class="nw-lb__c">${inline(r[1] || '')}</span></span>`
-      + `<b class="nw-lb__v">${inline(r[2] || '')}</b><span class="nw-lb__t"></span></div>`).join('')
+  const n = (v) => Number(v) || 0;
+  const top = Math.max(1, ...body.map((r) => n(r[1]) + n(r[2])));
+  const pc = (v) => `${Math.round((v / top) * 100)}%`;
+  const say = (v, one, many) => (v === 1 ? `1 ${one}` : `${v} ${many}`);
+  return '<div class="nw-gi">'
+    + '<p class="nw-gi__key" aria-hidden="true"><span class="nw-gi__sw"></span>Goals'
+    + '<span class="nw-gi__sw nw-gi__sw--a"></span>Assists</p>'
+    + body.map((r) => {
+      const g = n(r[1]); const a = n(r[2]);
+      return `<div class="nw-gi__r" style="--g:${pc(g)};--a:${pc(a)}" aria-hidden="true">`
+        + `<span class="nw-gi__n">${inline(r[0])}</span><b class="nw-gi__v">${g + a}</b>`
+        + '<span class="nw-gi__t"><i class="nw-gi__g"></i><i class="nw-gi__a"></i></span>'
+        + `<span class="nw-gi__d">${say(g, 'goal', 'goals')}, ${say(a, 'assist', 'assists')}</span></div>`;
+    }).join('')
     + '</div>'
-    + '<table class="sr-only"><thead><tr><th scope="col">Player</th><th scope="col">Club</th>'
-    + '<th scope="col">Goals</th></tr></thead><tbody>'
-    + body.map((r) => `<tr><th scope="row">${inline(r[0])}</th><td>${inline(r[1] || '')}</td>`
-      + `<td>${inline(r[2] || '')}</td></tr>`).join('')
+    /* THE TOTAL FIRST, as the chart prints it: the table should lead on the
+       same figure the eye does. It also keeps the goals column away from the
+       name, and a goals tally beside a name is the squad number this site
+       refuses to print - Ade Owolana is on twelve and wears 12 today. */
+    + '<table class="sr-only"><thead><tr><th scope="col">Player</th>'
+    + '<th scope="col">Goals and assists</th><th scope="col">Goals</th>'
+    + '<th scope="col">Assists</th></tr></thead><tbody>'
+    + body.map((r) => `<tr><th scope="row">${inline(r[0])}</th><td>${n(r[1]) + n(r[2])}</td>`
+      + `<td>${n(r[1])}</td><td>${n(r[2])}</td></tr>`).join('')
     + '</tbody></table>';
 }
 
@@ -513,7 +532,7 @@ function table(lines, opts = {}) {
   if (rows.length < 2) return '';
   const headKey = rows[0].map((c) => c.trim().toLowerCase()).join('|');
   if (opts.badges && headKey === LEAGUE_HEAD) return leagueTable(rows, opts.badges);
-  if (headKey === SCORER_HEAD) return scorerChart(rows);
+  if (headKey === INVOLVE_HEAD) return involveChart(rows);
   const width = Math.max(...rows.map((r) => r.length));
   const full = (r) => [...r, ...Array(width - r.length).fill('')];
   const [head, ...body] = rows;

@@ -8400,25 +8400,28 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
         && /<img class="nw-art__crest" src="\/assets\/badge\/tsm-rovers\.webp" alt="TSM Rovers club crest"[^>]*>TSM Rovers/.test(withCrests)
         && /<span class="nw-art__club">Nobody Known FC<\/span>/.test(withCrests)
         && !/nw-art__crest/.test(ab(clubText)), withCrests.slice(0, 500));
-    /* THE SCORING CHART. Crafted, because the article that uses it today can
-       be edited tomorrow and a check reading the shipped rows would then be
-       describing whatever is there rather than the rule. Three questions: the
-       club's own scorers are the lit ones, every bar is its share of the
-       LEADER rather than of the column, and no rank numeral is printed - a
-       digit beside a player's name is the squad number this site refuses. */
-    const scorerText = '| Player | Club | Goals |\n|---|---|---|\n| A | Sue\u2019s Angels FC | 10 |'
-      + '\n| B | Three Little Birds FC | 5 |\n| C | TSM Rovers | 4 |';
-    const sc = ab(scorerText);
-    check('a scoring chart in an article lights the club\u2019s own scorers and sizes every bar against the leader',
-      /<div class="nw-lb">/.test(sc)
-        && /<div class="nw-lb__r nw-lb__r--us" style="--w:100%"/.test(sc)
-        && /<div class="nw-lb__r" style="--w:50%"/.test(sc)
-        && /<div class="nw-lb__r" style="--w:40%"/.test(sc)
-        && !/nw-lb__r--us[^>]*>[\s\S]{0,120}Three Little Birds/.test(sc)
-        /* the figures reach a screen reader, which the aria-hidden rows do not */
-        && /<table class="sr-only">[\s\S]*<th scope="row">A<\/th><td>Sue\u2019s Angels FC<\/td><td>10<\/td>/.test(sc), sc.slice(0, 400));
-    check('a scoring chart prints no rank numeral beside a name',
-      !/nw-lb__n">\s*\d/.test(sc) && !/<span class="nw-lb__rank/.test(sc), sc.slice(0, 300));
+    /* WHAT OUR PLAYERS HAVE DONE. Crafted, because the article using it today
+       can be edited tomorrow and a check reading the shipped rows would then
+       describe whatever is there rather than the rule. Four questions: the
+       big figure is the TOTAL (not the goals, which is what collides with a
+       squad number), both segments are measured against the LEADER's total
+       rather than against each man's own, the split is said in words so it
+       never rests on the two weights of one hue, and no rank numeral is
+       printed beside a name. */
+    const involveText = '| Player | Goals | Assists |\n|---|---|---|\n| A | 8 | 2 |'
+      + '\n| B | 1 | 4 |\n| C | 1 | 0 |';
+    const gi = ab(involveText);
+    check('a goals-and-assists chart prints the total and sizes both segments against the leader',
+      /<div class="nw-gi">/.test(gi)
+        && /<div class="nw-gi__r" style="--g:80%;--a:20%"[\s\S]{0,120}<b class="nw-gi__v">10<\/b>/.test(gi)
+        && /<div class="nw-gi__r" style="--g:10%;--a:40%"[\s\S]{0,120}<b class="nw-gi__v">5<\/b>/.test(gi)
+        && /<table class="sr-only">[\s\S]*<th scope="row">A<\/th><td>10<\/td><td>8<\/td><td>2<\/td>/.test(gi), gi.slice(0, 400));
+    check('a goals-and-assists chart says the split in words, singular where it is one',
+      /<span class="nw-gi__d">8 goals, 2 assists<\/span>/.test(gi)
+        && /<span class="nw-gi__d">1 goal, 4 assists<\/span>/.test(gi)
+        && /<span class="nw-gi__d">1 goal, 0 assists<\/span>/.test(gi), gi.slice(0, 600));
+    check('a goals-and-assists chart prints no rank numeral beside a name',
+      !/nw-gi__n">\s*\d/.test(gi), gi.slice(0, 300));
     check('without the crest registry a league-shaped table stays an ordinary table',
       !/class="tbl"/.test(ab(leagueText)) && /nw-art__table/.test(ab(leagueText)));
     /* LINKS: a page on the site or an https address, escaped first, and never

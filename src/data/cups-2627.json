@@ -323,6 +323,12 @@
           "on": "2026-10-18"
         },
         {
+          "n": 5,
+          "hs": 3,
+          "as": 1,
+          "on": "2026-11-01"
+        },
+        {
           "n": 6,
           "wo": "H-W",
           "on": "2026-10-18"
@@ -1050,5 +1056,5 @@
       ]
     }
   ],
-  "_resultsNote": "Cup ties the club has seen a result for, by tie number, so a club that has been knocked out stops being listed as a side we could still meet. Scorelines are recorded and the loser is DERIVED, never typed: a list of losers is a second place to be wrong. A tie with no entry has not been played as far as this file knows, so both clubs stay in - absent means unknown, never eliminated. An ABANDONED tie (Catania v Hillside, 11 Oct, A-A) is deliberately absent: nobody went out, it will be replayed. A WALKOVER carries no score, because the league awards none, so it is recorded as `wo`, H-W or A-W, exactly as a match record is (BPR Men's over Pure Football FC 1st Team, 18 Oct). Read as a missing scoreline it would have left a club in a cup it is out of. Results read from the league's full results table, pages covering 11 and 18 October 2026, sent by the club on 18 October. A TIE LEVEL AFTER NINETY MINUTES CARRIES ITS SHOOTOUT, in `pens`, written home-away exactly as the scoreline is, because the league prints one and a cup tie settled on penalties has a loser like any other. Without it a 0-0 left both clubs in, which on 25 October would have left THIS club listed as still in the Marcus Lipton Cup it had just gone out of. A drawn tie with no shootout recorded still eliminates nobody. Updated from the league’s table of 25 October 2026, which also carries a Shepherds Tuesday walkover over Mousa Mountain FC on 25 September: that tie is in no round of the bracket transcribed here, so it is NOT recorded against a guessed number."
+  "_resultsNote": "Cup ties the club has seen a result for, by tie number, so a club that has been knocked out stops being listed as a side we could still meet. Scorelines are recorded and the loser is DERIVED, never typed: a list of losers is a second place to be wrong. A tie with no entry has not been played as far as this file knows, so both clubs stay in - absent means unknown, never eliminated. An ABANDONED tie (Catania v Hillside, 11 Oct, A-A) is deliberately absent: nobody went out, it will be replayed. A WALKOVER carries no score, because the league awards none, so it is recorded as `wo`, H-W or A-W, exactly as a match record is (BPR Men's over Pure Football FC 1st Team, 18 Oct). Read as a missing scoreline it would have left a club in a cup it is out of. Results read from the league's full results table, pages covering 11 and 18 October 2026, sent by the club on 18 October. A TIE LEVEL AFTER NINETY MINUTES CARRIES ITS SHOOTOUT, in `pens`, written home-away exactly as the scoreline is, because the league prints one and a cup tie settled on penalties has a loser like any other. Without it a 0-0 left both clubs in, which on 25 October would have left THIS club listed as still in the Marcus Lipton Cup it had just gone out of. A drawn tie with no shootout recorded still eliminates nobody. Updated from the league’s table of 25 October 2026, which also carries a Shepherds Tuesday walkover over Mousa Mountain FC on 25 September: that tie is in no round of the bracket transcribed here, so it is NOT recorded against a guessed number. Updated again from the league's table of 11 November 2026, which added one first-round result: Dynamo Putney FC 3-1 Chelsea Rovers FC (Sundays), played 1 November, the last of the twelve to be settled. It takes Chelsea Rovers out of the only round this club could have met them in, the final, so the field there goes from nine clubs to eight. Catania against Hillside is still the one tie of the twelve with nobody out of it."
 }

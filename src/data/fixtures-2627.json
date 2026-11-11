@@ -95,8 +95,8 @@
     },
     {
       "id": "f2627-pcup-r2-swans",
-      "date": "",
-      "tbc": true,
+      "date": "29 Nov 2026",
+      "kick": "11:00",
       "home": "Sue's Angels FC",
       "away": "Celtic Swans FC",
       "venue": "The Reeves Sports Club",
@@ -128,6 +128,15 @@
       "away": "The Station",
       "venue": "The Reeves Sports Club",
       "competition": "Surrey FA Sunday Lower Junior County Cup"
+    },
+    {
+      "id": "f20261122-brockwell",
+      "date": "22 Nov 2026",
+      "kick": "11:00",
+      "home": "Sue's Angels FC",
+      "away": "Brockwell Violets FC",
+      "venue": "The Reeves Sports Club",
+      "competition": "League Eight"
     }
   ],
   "_tbc": "A fixture with `tbc: true` is one the league has CONFIRMED but not yet dated. The flag is required rather than inferred from an empty date, because a fixture whose date went missing by accident and one the league has not set yet look identical in the data and are completely different things. The suite holds every undated fixture to carrying it.",

@@ -471,6 +471,46 @@ function leagueTable(rows, badges) {
       .map((c) => `<td>${inline(c || '')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
 }
 
+/* THE RESULTS, AS A ROW OF RESULTS. A table headed exactly Opponent, Score,
+   Venue becomes one tile per match: the opponent's crest, the score with ours
+   first, and where it was played. A piece whose first three words are "six
+   from six" should show the six.
+
+   WON, DRAWN AND LOST DIFFER IN WEIGHT, NEVER IN A SECOND HUE. That is the
+   site's rule for football data and it is the reason this is readable with no
+   colour at all: a win carries the accent and a full-weight score, anything
+   else recedes, and the outcome is written out in the table underneath.
+
+   THE OUTCOME IS DERIVED FROM THE SCORE, never typed, so a strip cannot
+   contradict the figures beside it. A score that is not two numbers either
+   side of a dash is drawn as the text it is, with no outcome claimed - the
+   way every marker in this file fails. */
+const RUN_HEAD = 'opponent|score|venue';
+function runStrip(rows, badges) {
+  const body = rows.slice(1).filter((r) => r[0]);
+  const out = (sc) => {
+    const m = /^\s*(\d+)\s*[-\u2013]\s*(\d+)\s*$/.exec(sc || '');
+    if (!m) return null;
+    return Number(m[1]) > Number(m[2]) ? 'W' : Number(m[1]) < Number(m[2]) ? 'L' : 'D';
+  };
+  const WORD = { W: 'Won', D: 'Drawn', L: 'Lost' };
+  return '<div class="nw-run">'
+    + body.map((r) => {
+      const o = out(r[1]);
+      return `<div class="nw-run__m${o === 'W' ? ' nw-run__m--w' : ''}" aria-hidden="true">`
+        + `${oppBadge(r[0], badges, 30, 30) || '<span class="nw-run__gap"></span>'}`
+        + `<b class="nw-run__s">${inline(r[1] || '')}</b>`
+        + `<span class="nw-run__o">${inline(r[0])}</span>`
+        + `<span class="nw-run__v">${inline(r[2] || '')}</span></div>`;
+    }).join('')
+    + '</div>'
+    + '<table class="sr-only"><thead><tr><th scope="col">Opponent</th><th scope="col">Score</th>'
+    + '<th scope="col">Venue</th><th scope="col">Result</th></tr></thead><tbody>'
+    + body.map((r) => `<tr><th scope="row">${inline(r[0])}</th><td>${inline(r[1] || '')}</td>`
+      + `<td>${inline(r[2] || '')}</td><td>${WORD[out(r[1])] || ''}</td></tr>`).join('')
+    + '</tbody></table>';
+}
+
 /* WHAT OUR PLAYERS HAVE DONE, drawn rather than listed. A table headed
    exactly Player, Goals, Assists becomes one bar per man: goals solid,
    assists in the same hue at a quarter of the weight, both measured against
@@ -533,6 +573,7 @@ function table(lines, opts = {}) {
   const headKey = rows[0].map((c) => c.trim().toLowerCase()).join('|');
   if (opts.badges && headKey === LEAGUE_HEAD) return leagueTable(rows, opts.badges);
   if (headKey === INVOLVE_HEAD) return involveChart(rows);
+  if (opts.badges && headKey === RUN_HEAD) return runStrip(rows, opts.badges);
   const width = Math.max(...rows.map((r) => r.length));
   const full = (r) => [...r, ...Array(width - r.length).fill('')];
   const [head, ...body] = rows;

@@ -611,3 +611,32 @@ html.js .nw-card[hidden]{display: none;}
   color: var(--ink-3); line-height: 1.3;
 }
 
+
+/* THE RESULTS, AS A ROW OF RESULTS (`runStrip` in news.mjs). Six tiles that
+   fit one line on a laptop and two on a phone. A win carries the accent and
+   the full-weight score; anything else recedes. No second hue, which is the
+   site's rule for football data. */
+.nw-run{
+  display: grid; gap: 8px; margin: 14px 0 18px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 112px), 1fr));
+}
+.nw-run__m{
+  display: grid; justify-items: center; gap: 5px; text-align: center;
+  padding: 14px 8px 12px;
+  border: 1px solid var(--line-d); border-radius: var(--r-sm);
+  background: var(--navy, #0a0f1c);
+}
+.nw-run__m img, .nw-run__gap{width: 30px; height: 30px; object-fit: contain;}
+.nw-run__s{
+  font-family: var(--display); font-weight: 600;
+  font-size: clamp(21px, 2.6vw, 25px); line-height: 1; letter-spacing: -0.02em;
+  color: var(--ink-2); font-variant-numeric: tabular-nums;
+  font-variation-settings: 'wdth' var(--wide-num, 100);
+}
+.nw-run__m--w{border-color: color-mix(in srgb, var(--volt) 45%, transparent);}
+.nw-run__m--w .nw-run__s{color: var(--volt-text, var(--volt));}
+.nw-run__o{
+  font-family: var(--ui); font-size: 12px; font-weight: 600; line-height: 1.25;
+  color: var(--ink-2); text-wrap: balance;
+}
+.nw-run__v{font-family: var(--ui); font-size: 11px; color: var(--ink-3);}

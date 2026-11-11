@@ -8422,6 +8422,21 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
         && /<span class="nw-gi__d">1 goal, 0 assists<\/span>/.test(gi), gi.slice(0, 600));
     check('a goals-and-assists chart prints no rank numeral beside a name',
       !/nw-gi__n">\s*\d/.test(gi), gi.slice(0, 300));
+    /* THE RESULTS STRIP. The outcome is DERIVED from the score, so the check
+       that matters is the one a strip of six wins cannot ask: give it a draw
+       and a defeat and watch them lose the accent the win keeps. A score that
+       is not a scoreline claims no outcome at all. */
+    const runText = '| Opponent | Score | Venue |\n|---|---|---|\n| TSM Rovers | 6-1 | Home |'
+      + '\n| Kew Antigua | 2-2 | Away |\n| Juizo FC | 0-1 | Away |\n| Mala Vida FC | tbc | Home |';
+    const rs = ab(runText, { badges: {} });
+    check('a results strip derives won, drawn and lost from the score and lights only the win',
+      (rs.match(/nw-run__m--w/g) || []).length === 1
+        && /<div class="nw-run__m nw-run__m--w"[\s\S]{0,160}<b class="nw-run__s">6-1<\/b>/.test(rs)
+        && /<td>Won<\/td>/.test(rs) && /<td>Drawn<\/td>/.test(rs) && /<td>Lost<\/td>/.test(rs)
+        /* a score that is not a scoreline claims nothing */
+        && /<td>tbc<\/td><td>Home<\/td><td><\/td>/.test(rs), rs.slice(0, 400));
+    check('a results strip without the crest registry stays an ordinary table',
+      /nw-art__table/.test(ab(runText)) && !/nw-run/.test(ab(runText)));
     check('without the crest registry a league-shaped table stays an ordinary table',
       !/class="tbl"/.test(ab(leagueText)) && /nw-art__table/.test(ab(leagueText)));
     /* LINKS: a page on the site or an https address, escaped first, and never

@@ -571,3 +571,33 @@ html.js .nw-card[hidden]{display: none;}
   .nw-nums[data-n="2"] .nw-num{grid-template-columns: 1fr; gap: 6px;
     padding: 16px 14px;}
 }
+
+/* A SCORING CHART INSIDE AN ARTICLE (`scorerChart` in news.mjs). One measure,
+   one accent: ours are lit and the rest of the division recedes, so identity
+   is weight and position rather than a second hue. No rank column - the order
+   is the rank and the bar is the figure. */
+.nw-lb{display: grid; gap: clamp(15px, 2.2vw, 20px); margin: 10px 0;}
+.nw-lb__r{display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 6px 14px;}
+.nw-lb__n{
+  font-family: var(--ui); font-size: 15px; font-weight: 600;
+  color: var(--ink-2); min-width: 0; line-height: 1.3;
+}
+.nw-lb__c{font-weight: 400; font-size: 13px; color: var(--ink-3);}
+.nw-lb__v{
+  font-family: var(--display); font-weight: 600;
+  font-size: clamp(24px, 3.4vw, 30px); line-height: 1; letter-spacing: -0.025em;
+  color: var(--ink-3); font-variant-numeric: tabular-nums;
+  font-variation-settings: 'wdth' var(--wide-num, 100);
+}
+.nw-lb__t{
+  grid-column: 1 / -1; position: relative; overflow: hidden;
+  height: 7px; border-radius: 999px; background: var(--line-d);
+}
+.nw-lb__t::after{
+  content: ''; position: absolute; inset: 0 auto 0 0;
+  width: var(--w, 0%); border-radius: 999px;
+  background: var(--ink-3); opacity: 0.5;
+}
+.nw-lb__r--us .nw-lb__n{color: var(--ink-1);}
+.nw-lb__r--us .nw-lb__v{color: var(--volt-text, var(--volt));}
+.nw-lb__r--us .nw-lb__t::after{background: var(--volt); opacity: 1;}

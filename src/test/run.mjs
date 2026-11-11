@@ -8392,13 +8392,33 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
         && (lg.match(/<div\b/g) || []).length === (lg.match(/<\/div>/g) || []).length
         && /<span>\+8<\/span><b class="tbl__pts">6<\/b>/.test(lg)
         && /<table class="sr-only">[\s\S]*<th scope="row">TSM Rovers<\/th><td>2<\/td><td>1<\/td><td>0<\/td><td>1<\/td><td>7<\/td>/.test(lg), lg.slice(0, 400));
-    const clubText = '| Player | Club | Goals |\n|---|---|---|\n| A | Sue’s Angels FC | 4 |\n| B | TSM Rovers | 4 |\n| C | Nobody Known FC | 1 |';
+    /* NOT headed Goals: that header is the scoring chart's now, checked below. */
+    const clubText = '| Player | Club | Appearances |\n|---|---|---|\n| A | Sue’s Angels FC | 4 |\n| B | TSM Rovers | 4 |\n| C | Nobody Known FC | 1 |';
     const withCrests = ab(clubText, { badges: { 'TSM Rovers FC': { src: '/assets/badge/tsm-rovers.webp', match: 'tsm' } } });
     check('a Club column in an article table wears the crests: the orange one for the Angels, the registry\'s for others, none for an unknown club',
       /<span class="nw-art__club"><img class="nw-art__crest" src="\/assets\/badge\/sue-angels-badge-orange\.webp" alt="Sue’s Angels FC club crest"[^>]*>Sue’s Angels FC<\/span>/.test(withCrests)
         && /<img class="nw-art__crest" src="\/assets\/badge\/tsm-rovers\.webp" alt="TSM Rovers club crest"[^>]*>TSM Rovers/.test(withCrests)
         && /<span class="nw-art__club">Nobody Known FC<\/span>/.test(withCrests)
         && !/nw-art__crest/.test(ab(clubText)), withCrests.slice(0, 500));
+    /* THE SCORING CHART. Crafted, because the article that uses it today can
+       be edited tomorrow and a check reading the shipped rows would then be
+       describing whatever is there rather than the rule. Three questions: the
+       club's own scorers are the lit ones, every bar is its share of the
+       LEADER rather than of the column, and no rank numeral is printed - a
+       digit beside a player's name is the squad number this site refuses. */
+    const scorerText = '| Player | Club | Goals |\n|---|---|---|\n| A | Sue\u2019s Angels FC | 10 |'
+      + '\n| B | Three Little Birds FC | 5 |\n| C | TSM Rovers | 4 |';
+    const sc = ab(scorerText);
+    check('a scoring chart in an article lights the club\u2019s own scorers and sizes every bar against the leader',
+      /<div class="nw-lb">/.test(sc)
+        && /<div class="nw-lb__r nw-lb__r--us" style="--w:100%"/.test(sc)
+        && /<div class="nw-lb__r" style="--w:50%"/.test(sc)
+        && /<div class="nw-lb__r" style="--w:40%"/.test(sc)
+        && !/nw-lb__r--us[^>]*>[\s\S]{0,120}Three Little Birds/.test(sc)
+        /* the figures reach a screen reader, which the aria-hidden rows do not */
+        && /<table class="sr-only">[\s\S]*<th scope="row">A<\/th><td>Sue\u2019s Angels FC<\/td><td>10<\/td>/.test(sc), sc.slice(0, 400));
+    check('a scoring chart prints no rank numeral beside a name',
+      !/nw-lb__n">\s*\d/.test(sc) && !/<span class="nw-lb__rank/.test(sc), sc.slice(0, 300));
     check('without the crest registry a league-shaped table stays an ordinary table',
       !/class="tbl"/.test(ab(leagueText)) && /nw-art__table/.test(ab(leagueText)));
     /* LINKS: a page on the site or an https address, escaped first, and never

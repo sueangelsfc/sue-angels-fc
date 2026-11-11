@@ -471,6 +471,39 @@ function leagueTable(rows, badges) {
       .map((c) => `<td>${inline(c || '')}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
 }
 
+/* A SCORING CHART IS A CHART, NOT A TABLE. A table headed exactly
+   Player, Club, Goals becomes a ranked bar per scorer: the name, the club
+   behind it, the tally, and a track as long as the tally is against the
+   leader. The club's own scorers are lit in the one accent and everybody
+   else recedes, which is the whole question a reader brings to a scoring
+   chart - are ours top - answered before a word is read.
+
+   NO RANK NUMERAL. The order IS the rank and the bar IS the magnitude, so a
+   column of digits beside a column of names would say nothing twice - and a
+   bare numeral next to a player's name is the one thing this site refuses to
+   print, because it reads as the squad number the club does not use.
+
+   Widths are whole percentages of the leader, which is as precise as a 7px
+   bar can be and keeps the markup short. The rows are `aria-hidden`; the
+   table under them carries every figure, the way the league table does. */
+const SCORER_HEAD = 'player|club|goals';
+function scorerChart(rows) {
+  const body = rows.slice(1).filter((r) => r[0]);
+  const nums = body.map((r) => Number(r[2]) || 0);
+  const top = Math.max(1, ...nums);
+  return '<div class="nw-lb">'
+    + body.map((r, i) => `<div class="nw-lb__r${isUs(r[1]) ? ' nw-lb__r--us' : ''}"`
+      + ` style="--w:${Math.round((nums[i] / top) * 100)}%" aria-hidden="true">`
+      + `<span class="nw-lb__n">${inline(r[0])} <span class="nw-lb__c">${inline(r[1] || '')}</span></span>`
+      + `<b class="nw-lb__v">${inline(r[2] || '')}</b><span class="nw-lb__t"></span></div>`).join('')
+    + '</div>'
+    + '<table class="sr-only"><thead><tr><th scope="col">Player</th><th scope="col">Club</th>'
+    + '<th scope="col">Goals</th></tr></thead><tbody>'
+    + body.map((r) => `<tr><th scope="row">${inline(r[0])}</th><td>${inline(r[1] || '')}</td>`
+      + `<td>${inline(r[2] || '')}</td></tr>`).join('')
+    + '</tbody></table>';
+}
+
 function table(lines, opts = {}) {
   const tabbed = lines.every((l) => l.includes('\t'));
   const piped = lines.every((l) => /^\|.*\|$/.test(l));
@@ -478,7 +511,9 @@ function table(lines, opts = {}) {
   const rows = lines.filter((l) => !TABLE_RULE.test(l))
     .map((l) => (tabbed ? l.split('\t') : l.slice(1, -1).split('|')).map((c) => c.trim()));
   if (rows.length < 2) return '';
-  if (opts.badges && rows[0].map((c) => c.toLowerCase()).join('|') === LEAGUE_HEAD) return leagueTable(rows, opts.badges);
+  const headKey = rows[0].map((c) => c.trim().toLowerCase()).join('|');
+  if (opts.badges && headKey === LEAGUE_HEAD) return leagueTable(rows, opts.badges);
+  if (headKey === SCORER_HEAD) return scorerChart(rows);
   const width = Math.max(...rows.map((r) => r.length));
   const full = (r) => [...r, ...Array(width - r.length).fill('')];
   const [head, ...body] = rows;

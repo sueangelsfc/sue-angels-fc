@@ -9467,6 +9467,313 @@
         "penaltiesConceded": 1
       },
       "updated_at": "2026-11-08T22:46:39.168+00:00"
+    },
+    {
+      "key": "r20261115-the",
+      "data": {
+        "as": 2,
+        "hs": 3,
+        "away": "The Station",
+        "date": "15 Nov 2026",
+        "home": "Sue's Angels FC",
+        "kick": "11:00",
+        "kind": "score",
+        "motm": null,
+        "subs": [
+          {
+            "on": 3,
+            "off": 9,
+            "minute": 70
+          },
+          {
+            "on": 29,
+            "off": 12,
+            "minute": 80
+          }
+        ],
+        "bench": [
+          {
+            "on": true,
+            "num": 3,
+            "onAt": 70,
+            "role": "TM",
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "2",
+                "role": "TM"
+              }
+            ],
+            "positions": [
+              "ST"
+            ]
+          },
+          {
+            "on": true,
+            "num": 29,
+            "onAt": 80,
+            "role": "RPM",
+            "spells": [
+              {
+                "pos": "CAM",
+                "half": "2",
+                "role": "RPM"
+              }
+            ],
+            "positions": [
+              "CAM"
+            ]
+          },
+          {
+            "num": 41,
+            "positions": []
+          }
+        ],
+        "cover": "https://hvbquuvxcswylyguplfb.supabase.co/storage/v1/object/public/gallery/cover-match-1794781235809.jpg",
+        "goals": [
+          {
+            "num": 9,
+            "spot": {
+              "x": 61.7,
+              "y": 14.6
+            },
+            "zone": null,
+            "assist": null,
+            "minute": 27,
+            "penalty": false,
+            "bodyPart": "right",
+            "situation": "open"
+          },
+          {
+            "num": 9,
+            "spot": {
+              "x": 44.5,
+              "y": 7.8
+            },
+            "zone": "box",
+            "assist": {
+              "num": 21,
+              "spot": {
+                "x": 88.9,
+                "y": 5.9
+              },
+              "type": "cross",
+              "zone": "outside"
+            },
+            "minute": 34,
+            "penalty": false,
+            "bodyPart": "right",
+            "situation": "open"
+          },
+          {
+            "num": 21,
+            "spot": {
+              "x": 26.6,
+              "y": 10.9
+            },
+            "zone": "box",
+            "assist": null,
+            "minute": 74,
+            "penalty": false,
+            "bodyPart": "left",
+            "situation": "open"
+          }
+        ],
+        "saves": null,
+        "shape": "",
+        "venue": "The Reeves Sports Club",
+        "keeper": 38,
+        "assists": [
+          {
+            "num": 21,
+            "type": "cross",
+            "minute": 34,
+            "forGoalBy": 9
+          }
+        ],
+        "captain": 25,
+        "savedAt": "2026-11-15T22:20:34.413Z",
+        "approach": {},
+        "redCards": [],
+        "starters": [
+          {
+            "num": 38,
+            "role": "BPG",
+            "spells": [
+              {
+                "pos": "GK",
+                "half": "1",
+                "role": "BPG"
+              }
+            ],
+            "positions": [
+              "GK"
+            ]
+          },
+          {
+            "num": 20,
+            "role": "OFB",
+            "spells": [
+              {
+                "pos": "RWB",
+                "half": "1",
+                "role": "OFB"
+              }
+            ],
+            "positions": [
+              "RWB"
+            ]
+          },
+          {
+            "num": 10,
+            "role": "BPD",
+            "spells": [
+              {
+                "pos": "RCB",
+                "half": "1",
+                "role": "BPD"
+              }
+            ],
+            "positions": [
+              "RCB"
+            ]
+          },
+          {
+            "num": 40,
+            "role": "COV",
+            "spells": [
+              {
+                "pos": "CB",
+                "half": "1",
+                "role": "COV"
+              }
+            ],
+            "positions": [
+              "CB"
+            ]
+          },
+          {
+            "num": 25,
+            "role": "STP",
+            "spells": [
+              {
+                "pos": "LCB",
+                "half": "1",
+                "role": "STP"
+              }
+            ],
+            "positions": [
+              "LCB"
+            ]
+          },
+          {
+            "num": 4,
+            "role": "IFB",
+            "spells": [
+              {
+                "pos": "LWB",
+                "half": "1",
+                "role": "IFB"
+              }
+            ],
+            "positions": [
+              "LWB"
+            ]
+          },
+          {
+            "num": 23,
+            "role": "REG",
+            "spells": [
+              {
+                "pos": "RCM",
+                "half": "1",
+                "role": "REG"
+              }
+            ],
+            "positions": [
+              "RCM"
+            ]
+          },
+          {
+            "num": 2,
+            "role": "B2B",
+            "spells": [
+              {
+                "pos": "LCM",
+                "half": "1",
+                "role": "B2B"
+              }
+            ],
+            "positions": [
+              "LCM"
+            ]
+          },
+          {
+            "num": 21,
+            "role": "BCM",
+            "spells": [
+              {
+                "pos": "CAM",
+                "half": "1",
+                "role": "BCM"
+              }
+            ],
+            "positions": [
+              "CAM"
+            ]
+          },
+          {
+            "num": 12,
+            "role": "SHD",
+            "spells": [
+              {
+                "pos": "CAM",
+                "half": "1",
+                "role": "SHD"
+              }
+            ],
+            "positions": [
+              "CAM"
+            ],
+            "subbedOff": true
+          },
+          {
+            "num": 9,
+            "role": "CHR",
+            "spells": [
+              {
+                "pos": "ST",
+                "half": "1",
+                "role": "CHR"
+              }
+            ],
+            "positions": [
+              "ST"
+            ],
+            "subbedOff": true
+          }
+        ],
+        "formation": "3-4-2-1",
+        "saveSpots": [],
+        "commentary": "",
+        "cleanSheets": [],
+        "competition": "Surrey FA Sunday Lower Junior County Cup",
+        "yellowCards": [
+          {
+            "num": 23
+          }
+        ],
+        "opponentGoals": [],
+        "penaltiesSaved": [
+          {
+            "num": 2
+          }
+        ],
+        "penaltiesMissed": [],
+        "opponentRedCards": [],
+        "penaltiesConceded": 0
+      },
+      "updated_at": "2026-11-15T22:20:36.365+00:00"
     }
   ],
   "articles": [
@@ -12876,17 +13183,17 @@
       "updated_at": "2026-11-08T20:44:01.609+00:00"
     },
     {
-      "key": "f20261115-station-sljc",
+      "key": "f20261122-brockwell",
       "data": {
-        "away": "The Station",
-        "date": "15 Nov 2026",
+        "away": "Brockwell Violets FC",
+        "date": "22 Nov 2026",
         "home": "Sue's Angels FC",
         "kick": "11:00",
         "kind": "fixture",
         "venue": "The Reeves Sports Club",
-        "competition": "Surrey FA Sunday Lower Junior County Cup"
+        "competition": "League Eight"
       },
-      "updated_at": "2026-10-28T19:56:05.541+00:00"
+      "updated_at": "2026-11-15T22:11:37.802+00:00"
     },
     {
       "key": "f2627-pcup-r2-swans",

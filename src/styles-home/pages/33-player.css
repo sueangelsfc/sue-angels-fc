@@ -433,6 +433,12 @@ html.js .pf-plot.is-in .pf-plot__pulse{animation: pf-plot-pulse 2.4s ease-out 2.
    control panel. */
 .pf-spot__dot,
 .pf-spot text{transform-box: fill-box; transform-origin: center;}
+/* Said once here instead of on every marker in the document. See the note in
+   player.mjs: fifteen markers on the heaviest profile each repeated the same
+   six presentation attributes. */
+.pf-spot__dot{fill: var(--volt); stroke: #0D0F12; stroke-width: 0.9;}
+.pf-spot text{fill: var(--text-on-brand); font: 600 3.5px Geist, sans-serif;
+  text-anchor: middle;}
 
 /* The field breathes. Every sample drifts on its own offset, so the mass
    undulates the way a heat map of a real season does rather than pulsing as

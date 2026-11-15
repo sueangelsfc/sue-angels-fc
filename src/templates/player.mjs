@@ -1633,12 +1633,15 @@ export function playerPage(p, d) {
               <g class="pf-heat" clip-path="url(#pf-clip-${attr(p.slug)})" filter="url(#pf-heat-${attr(p.slug)})">${blobsFor(v)}</g>
               <g class="pf-radiate" aria-hidden="true">${v.primary.map((h, n) => `<circle class="pf-radiate__r" cx="${h.x.toFixed(1)}" cy="${(h.y * 1.4).toFixed(1)}" r="${(4.2 + 1.7 * h.k).toFixed(1)}" style="--d:${(n * 0.9).toFixed(2)}s"/>`).join('')}</g>
               ${v.primary.map((h, n) => `<g class="pf-spot" data-pos="${attr(h.code)}" style="--n:${n}">
-                <circle class="pf-spot__dot" cx="${h.x.toFixed(1)}" cy="${(h.y * 1.4).toFixed(1)}"
-                  r="${(4.2 + 1.7 * h.k).toFixed(1)}" fill="var(--volt)"
-                  stroke="#0D0F12" stroke-width="0.9" />
-                <text x="${h.x.toFixed(1)}" y="${(h.y * 1.4 + 1.4).toFixed(1)}" text-anchor="middle"
-                  font-family="Geist, sans-serif" font-size="3.5" font-weight="600"
-                  fill="var(--text-on-brand)"><title>${esc(positionName(h.code))}</title>${esc(h.code)}</text>
+${/* THE FILL, THE STROKE AND THE FONT ARE IN THE SHEET, NOT ON EVERY MARKER.
+     A profile draws one of these per position per season tab - fifteen on the
+     heaviest - and each carried about 150 bytes of presentation attributes
+     that never vary. That is 2.1KB of raw markup on the page that sits
+     closest to its ceiling, to say the same six things fifteen times.
+     `.pf-spot__dot` and `.pf-spot text` already had rules, so this is the
+     declaration moving to where the class already was. The numbers stay
+     inline because they are the data. */''}
+                <circle class="pf-spot__dot" cx="${h.x.toFixed(1)}" cy="${(h.y * 1.4).toFixed(1)}" r="${(4.2 + 1.7 * h.k).toFixed(1)}"/><text x="${h.x.toFixed(1)}" y="${(h.y * 1.4 + 1.4).toFixed(1)}"><title>${esc(positionName(h.code))}</title>${esc(h.code)}</text>
               </g>`).join('')}
               </g>`).join('\n              ')}
               <g clip-path="url(#pf-clip-${attr(p.slug)})" aria-hidden="true"><rect class="pf-scan" x="1" y="0" width="98" height="18" fill="url(#pf-scan-${attr(p.slug)})"/></g>

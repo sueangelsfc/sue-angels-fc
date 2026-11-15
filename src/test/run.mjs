@@ -4357,6 +4357,12 @@ for (const [f, kb] of Object.entries({
                the same reason as Barnes: a real gap in a new record, struck
                out the moment the club writes it in. */
             'r20261101-tsm',
+            /* The 3-2 against The Station in the Surrey FA county cup,
+               15 November, entered in the panel the same evening. The Station
+               scored twice and the record holds no line under Their goals.
+               Added for the same reason as the two above: a real gap in a new
+               record, struck out the moment the club writes the two in. */
+            'r20261115-the',
             /* r20261108-brockwell was here and is STRUCK OUT, which is what
                this list is for: the club entered Brockwell's goal itself,
                so the record holds its line and the checker no longer counts

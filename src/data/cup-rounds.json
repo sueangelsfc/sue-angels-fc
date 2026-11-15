@@ -1,6 +1,6 @@
 {
   "_note": "Which round of a knockout competition each cup tie was. Nothing in the match record says this, and a cup run reads as a list of friendlies without it.",
-  "_derivation": "The Dylan Rigobert Trophy is confirmed by the club: 17 May 2026 was the FINAL, played at a neutral ground. The four earlier ties are then fixed by working backwards from it in date order, since a knockout run has exactly one tie per round.",
+  "_derivation": "The Dylan Rigobert Trophy is confirmed by the club: 17 May 2026 was the FINAL, played at a neutral ground. The four earlier ties are then fixed by working backwards from it in date order, since a knockout run has exactly one tie per round. THE 26/27 TIES ARE NOT WORKED BACKWARDS AND ARE NOT ASSUMED. The two league cups carry their round in the draw itself (src/data/cups-2627.json): the Peps tie is tie 2 of the President's Cup and the Juizo tie is tie 2 of the Marcus Lipton, both 1st Round, so these are read rather than inferred. The Surrey FA county cup has no draw file here, and the club's own matchday graphic for 15 November 2026 names it ROUND ONE, which is the club saying so.",
   "_pending": "The other three competitions are labelled by their position in the run only. The club has not confirmed which named round each exit was, so Round 3 may in fact have been a quarter-final. Ordinal position is true either way; a named round would not be. Replace these with the real names once confirmed.",
   "rounds": {
     "r20251214-brockwell-drt": {
@@ -75,6 +75,14 @@
     },
     "r20261011-peps": {
       "round": "1st Round",
+      "short": "R1"
+    },
+    "r20261025-juizo": {
+      "round": "1st Round",
+      "short": "R1"
+    },
+    "r20261115-the": {
+      "round": "Round 1",
       "short": "R1"
     }
   },

@@ -72,7 +72,16 @@ export function coaches(d) {
     .filter((p) => (p.starts || 0) > 0)
     .sort((a, b) => b.starts - a.starts)
     .slice(0, 5)
-    .map((p) => ({ ...p, code: (byNum.get(p.num) || {}).positionCode || '', slug: p.slug }));
+    .map((p) => ({
+      ...p, code: (byNum.get(p.num) || {}).positionCode || '',
+      /* The full name rides with the code, because a chip reading LDM beside a
+         name is the one thing the site refuses to publish: full names
+         everywhere text is read, and a short code only where it is the
+         graphic. Here it is the graphic - a dense row of five - so the code
+         stays visible and the words go behind .sr-only. */
+      pos: (byNum.get(p.num) || {}).position || '',
+      slug: p.slug,
+    }));
   const maxStarts = Math.max(1, ...used.map((p) => p.starts));
 
   /* "Best keeper" has to be drawn from the goalkeepers. The engine credits a
@@ -243,7 +252,7 @@ export function coaches(d) {
     ? `<img src="${attr(playerShot(p.num))}" alt="" width="30" height="30" loading="lazy" decoding="async" />`
     : `<img class="co-used__crest" src="${STAR}" alt="" width="16" height="20" loading="lazy" decoding="async" />`}</span>
                   <span class="co-used__n">${esc(p.name)}</span>
-                  ${p.code ? `<span class="co-used__pos">${esc(p.code)}</span>` : ''}
+                  ${p.code ? `<span class="co-used__pos" aria-hidden="true">${esc(p.code)}</span>${p.pos ? `<span class="sr-only">${esc(p.pos)}</span>` : ''}` : ''}
                   <span class="co-used__v">${esc(p.starts)}</span>
                   <span class="co-used__bar" aria-hidden="true"><i style="--w:${Math.round((p.starts / maxStarts) * 100)}%"></i></span>
                 </a>

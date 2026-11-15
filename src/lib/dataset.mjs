@@ -26,42 +26,99 @@ const read = (f) => JSON.parse(fs.readFileSync(path.join(DATA_DIR, f), 'utf8'));
 /* Position is not stored on the squad record; it is inferred from where the
    player actually lines up across real match records, which is more accurate
    than a static label. Falls back to the goalkeeper flag. */
-function inferPositions(matches) {
+function tallyPositions(matches) {
   const tally = new Map();
+  const bump = (num, code, n) => {
+    if (!tally.has(num)) tally.set(num, new Map());
+    const t = tally.get(num);
+    t.set(code, (t.get(code) || 0) + n);
+  };
   for (const m of matches) {
     for (const s of m.detail?.starters || []) {
-      if (!tally.has(s.num)) tally.set(s.num, new Map());
-      for (const code of s.positions || []) {
-        const t = tally.get(s.num);
-        t.set(code, (t.get(code) || 0) + 1);
-      }
+      for (const code of s.positions || []) bump(s.num, code, 1);
     }
-    for (const b of m.detail?.bench || []) {
-      if (!tally.has(b.num)) tally.set(b.num, new Map());
-      for (const code of b.positions || []) {
-        const t = tally.get(b.num);
-        t.set(code, (t.get(code) || 0) + 0.5);
-      }
-    }
-  }
-  const out = new Map();
-  for (const [num, codes] of tally) {
-    const ranked = [...codes.entries()].sort((a, b) => b[1] - a[1]);
-    const top = ranked[0]?.[0];
-    if (!top) continue;
-    const group = POSITION_GROUPS.find((g) => g.codes.includes(top))?.key || 'mid';
     /* The counts are what make a heat map possible: how OFTEN a player lined
        up somewhere, not merely that they once did. A bench slot counts half,
        because being named there is not the same as playing there. */
-    out.set(num, {
-      /* A name, never the code. `|| top` here is what put "RDM" on a player
-         page in place of a position. */
-      code: top, label: positionName(top), group,
-      all: ranked.map((r) => r[0]),
-      weights: ranked.map(([c, n]) => ({ code: c, n })),
-    });
+    for (const b of m.detail?.bench || []) {
+      for (const code of b.positions || []) bump(b.num, code, 0.5);
+    }
+  }
+  return tally;
+}
+
+/* One man's tally, read as an answer. `lead` and `runnerUp` ride along
+   because whether the answer is CLEAR is a question only the caller asks:
+   the career reading takes the top code whatever the margin, and the
+   current-season reading refuses a tie. */
+function rankPositions(codes) {
+  const ranked = [...codes.entries()].sort((a, b) => b[1] - a[1]);
+  const top = ranked[0]?.[0];
+  if (!top) return null;
+  const group = POSITION_GROUPS.find((g) => g.codes.includes(top))?.key || 'mid';
+  return {
+    /* A name, never the code. `|| top` here is what put "RDM" on a player
+       page in place of a position. */
+    code: top, label: positionName(top), group,
+    all: ranked.map((r) => r[0]),
+    weights: ranked.map(([c, n]) => ({ code: c, n })),
+    lead: ranked[0][1], runnerUp: ranked[1]?.[1] ?? 0,
+  };
+}
+
+function inferPositions(matches) {
+  const out = new Map();
+  for (const [num, codes] of tallyPositions(matches)) {
+    const r = rankPositions(codes);
+    if (r) out.set(num, r);
   }
   return out;
+}
+
+/* WHERE HE PLAYS THIS SEASON, which is the question a reader is asking.
+
+   The career reading is the right answer for a man with a season behind him
+   and the WRONG one the moment he is moved, and that was the whole argument
+   for letting a stated position win outright: "a left wing back playing as a
+   forward this season cannot be discovered by reading last year's sheets."
+   True of last year's sheets, and not true of this year's. Read the season
+   the club is actually playing and the move is discoverable, so the stated
+   position stops being the only way to express it - and seven men of this
+   squad were being published at last season's position because of it.
+   Dean Knight has started at right wing back eight times in 26/27 and the
+   site said right back.
+
+   THE SEASON IS THE LATEST ONE WITH EVIDENCE, never a date and never a name.
+   In July a new season has no team sheets, so the answer falls back to the
+   last season that had them on its own; in August it reads the friendlies,
+   because where a man stood in a friendly is still where he stood. Typing a
+   season in would be wrong from the following July, which is the fault this
+   repository has written down for copy and is no different here.
+
+   IT REFUSES A THIN OR A TIED ANSWER, and both halves are the point. One
+   appearance is not a position: Tom Sheehan has a single start at left
+   centre back this season and the club calls him a right back, and
+   overturning that on one afternoon would be the site arguing with the club
+   on no evidence. A tie is not a most-played position either - Jon Lloyd has
+   been used at six places, one apiece, and whichever came out of the sort
+   first is not an answer about football. Both fall through to what the club
+   said, which is what makes this safe to put above a stated position: it can
+   only ever speak where the record is unambiguous. */
+const NOW_FLOOR = 2;
+export function inferPositionsNow(matches) {
+  const seasons = [...new Set((matches || []).map((m) => m.season).filter(Boolean))]
+    .sort().reverse();
+  for (const season of seasons) {
+    const tally = tallyPositions(matches.filter((m) => m.season === season));
+    if (!tally.size) continue;
+    const byNum = new Map();
+    for (const [num, codes] of tally) {
+      const r = rankPositions(codes);
+      if (r && r.lead >= NOW_FLOOR && r.lead > r.runnerUp) byNum.set(num, r);
+    }
+    return { season, byNum };
+  }
+  return { season: null, byNum: new Map() };
 }
 
 /* `overrides.live` replaces the database snapshot, and exists for one reason:
@@ -474,6 +531,9 @@ export function buildDataset(overrides = {}) {
 
   /* ---- Squad ---- */
   const posByNum = inferPositions(matches);
+  /* Where each man has played THIS season, where the record gives a clear
+     answer. Beats a stated position; see inferPositionsNow. */
+  const nowPos = inferPositionsNow(matches);
   const bios = ps.PLAYER_BIOS || {};
   const photoKeys = new Set((live.player_photos || []).map((p) => String(p.key)));
   /* Where the club says somebody plays, by shirt number. Loses to a position
@@ -608,25 +668,32 @@ export function buildDataset(overrides = {}) {
   const squad = baseSquad.map((p) => {
     const name = `${p.first} ${p.last}`.trim();
     const pos = posByNum.get(p.num);
-    const isGk = p.gk || pos?.code === 'GK';
-    /* A STATED POSITION WINS OVER THE INFERRED ONE, FULL STOP.
+    const now = nowPos.byNum.get(p.num);
+    /* This season first, then the career: a keeper who has moved outfield, or
+       an outfielder who has gone in goal, is a fact about now. */
+    const read = now || pos;
+    const isGk = p.gk || read?.code === 'GK';
+    /* A STATED POSITION BEATS THE CAREER READING, AND LOSES TO THIS SEASON'S.
 
-       It used to win only where there was nothing to infer, which made the
-       position field on the panel's player form do nothing for anybody who
-       had played: twenty-two of the twenty-four in this squad. A field that
-       is offered, saved, and then silently overridden is the same fault as a
-       field with no consumer at all, and harder to notice.
+       It used to win over both, full stop, and the argument for that was
+       sound as far as it went: inference over a career is the right answer
+       for a player nobody has said anything about and the wrong one the
+       moment a man is moved, because a left wing back playing as a forward
+       this season cannot be discovered by reading last year's sheets. The
+       answer to that is to read THIS year's sheets, which inferPositionsNow
+       does, and which only speaks where the season's record is unambiguous.
 
-       Inference reads team sheets, which is the right answer for a player
-       nobody has said anything about and the wrong one the moment a man is
-       moved: a left wing back playing as a forward this season cannot be
-       discovered by reading last year's sheets.
+       So the order is: where he has played this season, then what the club
+       said, then where he played across his career, then nothing. The middle
+       term still matters and is still why the panel's position field is not
+       decoration - it is the whole answer for a signing who has not played,
+       and the answer wherever a season's record is thin or tied.
 
        positions-extra.json is the club saying so where the panel has not been
        used yet, and it LOSES to the panel: a position on the player's own
        record wins over the file. */
     const said = p.position || positionsExtra[String(p.num)] || '';
-    if (said) {
+    if (said && !now) {
       /* Grouped by the FIRST position named, and midfield before defence:
          "Defensive midfielder" contains "def", so the old order filed a
          holding midfielder with the defenders, and "Left back or left
@@ -654,11 +721,11 @@ export function buildDataset(overrides = {}) {
       name,
       slug: slugify(name),
       gk: isGk,
-      position: isGk ? 'Goalkeeper' : pos?.label || 'Squad player',
-      positionCode: isGk ? 'GK' : pos?.code || '',
-      positionGroup: isGk ? 'gk' : pos?.group || 'mid',
-      positionsPlayed: pos?.all || [],
-      positionWeights: pos?.weights || [],
+      position: isGk ? 'Goalkeeper' : read?.label || 'Squad player',
+      positionCode: isGk ? 'GK' : read?.code || '',
+      positionGroup: isGk ? 'gk' : read?.group || 'mid',
+      positionsPlayed: read?.all || [],
+      positionWeights: read?.weights || [],
       bio: bios[p.num] || bios[name] || null,
       hasPhoto: photoKeys.has(String(p.num)),
       status: rosterStatus[String(p.num)] || p.status || 'active',

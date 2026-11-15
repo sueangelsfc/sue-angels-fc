@@ -32,7 +32,7 @@ src/
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        5,225-check suite against the generated output
+  test/run.mjs        5,564-check suite against the generated output
   test/dom.mjs        a small, strict DOM that throws rather than guessing
   test/panel-render.mjs  the panel, rendered, and asked what came out
 ```
@@ -880,6 +880,79 @@ It does not fall back to something sensible: the whole declaration is invalid at
 - **A player's season tab is that season, and every season has its own tab.** `player.mjs` counted friendlies into the club's total ("1 of 7 played" for one League Eight match), and its opening sentence printed career totals dated to the current season, which is how 25/26 read as 26/27 on every profile. The totals are competitive only (league and cup, never pre-season), an **All seasons** tab sits last (`data-season-all`), and **a season tab shows that season and nothing else**: the opening sentence rides on `data-lede-<i>` and the tab script swaps it, and the bands counted over the whole career (against the squad, the detail, recognition) carry `data-season-scope="all"` and show only under All seasons. **The player stats page has "In pictures" too** (`picsBand` in `stats.mjs`, one `data-chart-view` panel per season view, switched with the leaders and the share): every match as goals scored above the line and conceded below, the results as a ring, the goals by position, and the six biggest goal-and-assist figures. Its CSS is in `34-stats.css`, not `home.css`, which is near its ceiling. **Each player page's season panel has "In pictures"**: a results ring (won, drawn, lost when playing), a share gauge (his part in the goals scored while he played, or clean sheet rate for a keeper), a home-and-away split, and match-by-match columns (season tabs only; under All seasons they would be the longest season again). Built at build time as inline SVG from the same profile as the figures, results told apart by shade of the one accent, animated on reveal under `html.js` with a reduced-motion rest, and held by the suite to agreeing with the record printed beside them. The All seasons panel drops the running-total plot unless more than one season has one, and drops "The last time out", both of which were the latest season again. **The heat map follows the tab, in one band.** Each season's heat is built from that season's team sheets - a start once per position named, a bench place half - and drawn as its own `<g data-season-scope="i">` layer on one pitch, with All seasons carrying the career layer (a player with one season has one layer scoped `"i all"`). The position list is one list whose rows carry every tab's count and bar width in `data-heat`, and each match row is written once, tagged with its season. Three separate bands put a profile at 207KB, most of it the same match rows twice, and the interaction script only ever wired the first. The page opens on the latest season the player played in, or All seasons if he played in none; with the script blocked everything shows.
 - **Goal clips the club sends are filed in `src/data/match-clips.json`**, against a match id and the goal's place in that match's own goal list, with the web encodes in `/assets/video` (1080p H.264, `+faststart`, from the club's 4K HEVC originals). The panel's clip slots write to the database, which a developer machine cannot, so this is the same device as `fixtures-2627.json`. `d.goalFilmFor(m)` resolves each clip's scorer and assist from the record, never from the file, and the match page shows each one captioned "Goal 1 · scorer, assisted by ..." under the result's cover (`poster`, `preload="none"`), anchored `#goal-N`; the videos page lists them linking there. First filed: both goals of the 2-1 against Three Little Birds (Jon Lloyd from Charlie Dunkley, then Charlie Dunkley from Leon Burnett, with a headed pass). The suite checks every filed clip against its page and the file on disk.
 - **The registered squad is the club's FA registration list**, transcribed in `src/data/registered-2627.json` (names as registered: Jack Bridges, Robert Heath, Ade Owolana). The sponsors page's "Sponsor a player's season" shelf reads it rather than the squad record, links each name by `num`, and leaves the manager off (`sponsorship: false`). On 12 September 2026 the club's record was brought into line with it through the panel: Louis Allen, Danny Cain, George Churchill and Samuel Nichols added (42-45), Jim El Bayati, Richard Epathite, Danny Jackson, David Jones, Daniel Rand, Kafele Brown, Alfie James Inman and Malachi Mullings set In the squad for 26/27, Harry Pyke Left the club, the three renames made, and the trialist entries for Liam Alford and Liam Kirby removed once the 2 August friendly credited Liam Kirby's signed record. **A player with no status entry and no 26/27 team sheet reads as "Not at the club" and the Squad screen offers no dropdown for him**, so that state has to be written to `roster:status` directly.
+### A position is where he plays THIS season
+
+`inferPositionsNow()` in `dataset.mjs`. A player's published position is his
+**most played position in the latest season with team sheets** - the single
+code with the most weight, a start counting one and a bench naming half, which
+is the same currency the heat map is drawn in.
+
+**It beats a position the club has stated, and that is a reversal.** The old
+rule was *a stated position wins over the inferred one, full stop*, and the
+argument for it was sound as far as it went: inference over a CAREER is the
+right answer for a man nobody has said anything about and the wrong one the
+moment he is moved, because "a left wing back playing as a forward this season
+cannot be discovered by reading last year's sheets". True of last year's
+sheets. Not true of this year's. Read the season the club is actually playing
+and the move is discoverable, so the stated position stops being the only way
+to express one - and **seven men were being published at last season's
+position**: Dean Knight had started at right wing back eight times in 26/27 and
+the site said right back, Daniel McLane at left centre back eight times and the
+site said centre back, Andrew Allen at left wing back where the site said left
+back.
+
+**The order is now: this season, then what the club said, then the career, then
+nothing.** The middle term still matters and is still why the panel's position
+field is not decoration - it is the whole answer for a signing who has not
+played, and the answer wherever a season's record is thin or tied.
+
+**IT REFUSES A THIN OR A TIED ANSWER, and that is what makes it safe above the
+club's own word.** One appearance is not a position: Tom Sheehan has a single
+start at left centre back and the club calls him a right back, and overturning
+that on one afternoon would be the site arguing with the club on no evidence.
+A tie is not a most-played position either - Jon Lloyd has been used at six
+places, one apiece, and whichever came out of the sort first is not an answer
+about football. The floor is two starts' worth, so four bench namings reach it
+and three do not. Both fall through to what the club said, so this can only
+ever speak where the record is unambiguous: it answers for 13 of the squad and
+is silent for the rest.
+
+**The season is the latest one WITH TEAM SHEETS, never a date and never a
+name.** In July a new season has none, so the answer falls back to the last
+season that had them on its own; in August it reads the friendlies, because
+where a man stood in a friendly is still where he stood. Typing a season in
+would be wrong from the following July, which is the rule this file already
+keeps for copy and is no different here.
+
+**Last season is untouched**, which is the club's instruction and also the
+mechanism: a man with no clear current season keeps every word he had, so the
+retired and the departed are described exactly as before. The 25/26 season tab,
+the per-season heat map and every historical figure were already derived per
+season and none of them moved.
+
+**`positions-extra.json` keeps its overridden entries.** Six of the eighteen are
+currently beaten by the season reading, and deleting one because of that would
+blank the man the week he stops playing there. The file's note says so.
+
+**The suite asks both halves, and the second is the one a change like this
+drops**: that a clear season reading is what gets published, that it moved at
+least four men the file disagrees with, and that a stated position still beats
+the career reading. **The check for the move reads the published position, not
+the function** - its first version asked whether the file and the season
+disagreed, which is a fact about two inputs and true whichever of them wins, so
+putting the stated position back on top left it green while the squad page went
+back to last season's answers. The floor and the tie rule are asked on
+**crafted** sheets, because no man in the archive sits exactly at the floor or
+at a dead tie at two, and a check over real data passes with both deleted.
+Five probes: the precedence, the floor, the tie rule, the season window, and
+the stated-beats-career half.
+
+**A role is recorded per spell and still reaches a reader only on the match
+report's team sheet.** The club records them (Knight is an overlapping full
+back in all eight, Allen has been an inverted full back, an overlapping one, a
+mezzala and a ball-winning midfielder), and nothing on a profile or a squad
+card publishes one yet.
+
 - **Stated positions group by the first position named, midfield before defence.** The club gave a position for every registered player (positions-extra.json for those without a panel record, the record itself for the rest). The old rule tested "def" first, so "Defensive midfielder" filed a holding midfielder with the defenders.
 - **The home page tab reads "League Eight 26/27 · Sue's Angels FC"** once the division has a match played (`homeMeta` in `build.mjs`), overriding the recovered "League Ten Champions" title; before that the recovered title stands.
 - **The hero and ticker quote the title season's record**, not every league match: from the first League Eight result they read "19 wins from 19 · League Ten Champions 25/26".
@@ -2419,7 +2492,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 5,276 checks against the generated output and the rendered panel
+npm test          # 5,564 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

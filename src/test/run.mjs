@@ -2559,6 +2559,21 @@ for (const [f, h] of pages) {
     allM.formations.total <= allM.played && allM.formations.rows.length > 1,
     `${allM.formations.total} of ${allM.played}, ${allM.formations.rows.length} shapes`);
 
+  /* A POSITION CHIP IS NEVER A BARE CODE. The players-used row prints the
+     short code because it is the graphic in a dense row of five, so the words
+     ride behind .sr-only and the code is hidden from a screen reader that
+     would otherwise read "LDM". It shipped as a bare code, and the adaptive
+     position reading widened it from 20 rows to 27 before anybody looked. */
+  {
+     const html = fs.readFileSync(path.join(ROOT, 'coaches.html'), 'utf8');
+     const chips = [...html.matchAll(/<span class="co-used__pos"([^>]*)>([^<]+)<\/span>(\s*<span class="sr-only">([^<]*)<\/span>)?/g)];
+     const bare = chips.filter((m) => !/aria-hidden="true"/.test(m[1]) || !m[4]
+       || m[4].length <= m[2].length);
+     check('a position chip on the staff page carries the words, not only the code',
+       chips.length >= 3 && bare.length === 0,
+       bare.length ? bare.map((m) => m[2]).join(', ') : `${chips.length} chips named`);
+  }
+
   /* IT IS HIS PAGE, NOT THE DUGOUT'S. The figures were a band on
      /coaches.html first, where a record this detailed reads as the club's,
      and where it could not be linked to. */
@@ -7334,35 +7349,92 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
 }
 
 /* ==========================================================================
-   WHERE THE CLUB SAYS SOMEBODY PLAYS
+   WHERE A PLAYER PLAYS, AND WHO GETS TO SAY SO
 
-   A stated position used to win only where there was nothing to infer, which
-   made the position field on the panel's player form do nothing for anybody
-   who had played: twenty-two of the twenty-four in this squad. A field that is
-   offered, saved and then silently overridden is worse than one that is
-   missing, because nobody can tell. */
+   Three answers in strict order: where he has played THIS season, then what
+   the club stated, then where he played across his career. The middle term
+   used to beat both others outright, and the reason given was that a career
+   reading cannot discover a man being moved - which is true of a career
+   reading and not true of a season one. Seven men of this squad were
+   published at last season's position because of it.
+
+   So both halves are checked, and the SECOND is the one most easily lost:
+   a stated position still has to beat the career reading, or the panel's
+   position field goes back to being decoration. */
 {
-  const { buildDataset: bdX } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const { buildDataset: bdX, inferPositionsNow: nowOf } = await import(
+    path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
   const extra = JSON.parse(fs.readFileSync(
     path.join(ROOT, 'src', 'data', 'positions-extra.json'), 'utf8')).positions || {};
   const dX = bdX();
   const byNum = Object.fromEntries((dX.squad || []).map((p) => [String(p.num), p]));
+  const now = nowOf(dX.matches);
 
-  const wrong = Object.entries(extra)
-    .filter(([num, said]) => byNum[num] && byNum[num].position !== said)
-    .map(([num, said]) => `${(byNum[num] || {}).name}: ${(byNum[num] || {}).position} not ${said}`);
-  check('a position the club has stated beats the one inferred from team sheets',
-    wrong.length === 0, wrong.join(' | '));
+  /* THE SEASON IS DERIVED, never typed: the latest one with team sheets. */
+  check('the season a position is read from is the latest one with team sheets',
+    now.season === [...new Set(dX.matches.map((m) => m.season).filter(Boolean))].sort().pop(),
+    String(now.season));
+
+  /* A clear season reading wins, whatever the club or the archive say. */
+  const over = Object.entries(byNum)
+    .filter(([num]) => now.byNum.has(Number(num)) || now.byNum.has(num))
+    .map(([num, p]) => [p, now.byNum.get(Number(num)) || now.byNum.get(num)]);
+  const notRead = over.filter(([p, r]) => p.position !== r.label && !p.gk)
+    .map(([p, r]) => `${p.name}: ${p.position} not ${r.label}`);
+  check('where a man has clearly played this season is the position published',
+    over.length >= 10 && notRead.length === 0,
+    notRead.length ? notRead.join(' | ') : `${over.length} read from ${now.season}`);
+
+  /* AND IT MOVED SOMEBODY. A precedence rule that happens to agree with
+     every stated position on this data is untested by this data, so the
+     check has to see the disagreement it exists to settle.
+
+     IT READS THE PUBLISHED POSITION, not the season reading. Its first
+     version asked whether the file and the function disagreed, which is a
+     fact about two inputs and true whichever of them wins - so putting the
+     stated position back on top left it green while the squad page went
+     back to last season's answers. */
+  const moved = over
+    .filter(([p, r]) => extra[String(p.num)] && extra[String(p.num)] !== r.label)
+    .filter(([p, r]) => p.position === r.label);
+  check('a man moved this season is published where he plays, not where the club last said',
+    moved.length >= 4, moved.map(([p, r]) => `${p.last} ${extra[String(p.num)]}->${p.position}`).join(', '));
+
+  /* A STATED POSITION STILL BEATS THE CAREER READING, which is the half the
+     change could silently drop: every one of these men has a career tally
+     that disagrees with what the club says, and the club wins. */
+  const careerOnly = Object.entries(extra)
+    .filter(([num]) => byNum[num] && !now.byNum.has(Number(num)))
+    .filter(([num, said]) => byNum[num].position !== said)
+    .map(([num, said]) => `${byNum[num].name}: ${byNum[num].position} not ${said}`);
+  check('a position the club has stated beats the one inferred from a career',
+    careerOnly.length === 0, careerOnly.join(' | '));
+
+  /* A THIN OR TIED SEASON IS NOT AN ANSWER, and this is what makes the
+     season reading safe above a stated one: one appearance cannot overturn
+     the club, and neither can six positions at one apiece. */
+  const thin = Object.entries(extra).filter(([num]) => byNum[num] && !now.byNum.has(Number(num)));
+  check('a season too thin or too tied to answer leaves the stated position standing',
+    thin.length >= 6 && thin.every(([num, said]) => byNum[num].position === said),
+    `${thin.length} left to the club`);
 
   /* AND IT REACHES THE GROUPING, not only the label. The squad page and the
      programme group by positionGroup, so a stated "Forward" that still sits
      in midfield has changed a caption and nothing else. */
   const GROUP_OF = { 'Centre back': 'def', Forward: 'fwd', 'Central midfielder': 'mid' };
   const mis = Object.entries(extra)
+    .filter(([num]) => !now.byNum.has(Number(num)))
     .filter(([num, said]) => GROUP_OF[said] && byNum[num] && byNum[num].positionGroup !== GROUP_OF[said])
     .map(([num, said]) => `${(byNum[num] || {}).name}: ${(byNum[num] || {}).positionGroup} not ${GROUP_OF[said]}`);
   check('a stated position changes the group the player is listed under',
     mis.length === 0, mis.join(' | '));
+
+  /* LAST SEASON IS UNTOUCHED. Nobody whose last football was 25/26 may be
+     re-described by this: the retired and the departed keep every word. */
+  const past = (dX.squad || []).filter((p) => !now.byNum.has(Number(p.num)) && p.position);
+  check('a man with no clear season behind him is described exactly as before',
+    past.length >= 25 && past.every((p) => p.position === (extra[String(p.num)] || p.position)),
+    `${past.length} unchanged`);
 
   /* INFERENCE STILL WORKS for everybody the club has said nothing about,
      which is the half most easily lost when a precedence rule is changed. */
@@ -7370,6 +7442,49 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     && (p.positionsPlayed || []).length && p.position && p.position !== 'Squad player');
   check('players the club has not spoken about still get a position from the archive',
     inferred.length >= 8, `${inferred.length} inferred`);
+
+  /* CRAFTED, BOTH WAYS, because the shipped data cannot ask either question:
+     it has no man whose season is exactly at the floor and none whose season
+     is a dead tie at two. A check over real data would pass with the floor
+     and the tie rule both deleted. */
+  const sheet = (season, rows) => ({
+    season, played: true, detail: { starters: rows, bench: [] },
+  });
+  const twice = nowOf([
+    sheet('26/27', [{ num: 99, positions: ['ST'] }]),
+    sheet('26/27', [{ num: 99, positions: ['ST'] }]),
+  ]);
+  const once = nowOf([sheet('26/27', [{ num: 99, positions: ['ST'] }])]);
+  check('two starts at one position answer, and one start does not',
+    twice.byNum.get(99)?.label === 'Striker' && !once.byNum.has(99),
+    `two: ${twice.byNum.get(99)?.label} · one: ${once.byNum.get(99)?.label || 'no answer'}`);
+  const tie = nowOf([
+    sheet('26/27', [{ num: 99, positions: ['ST'] }, { num: 98, positions: ['CB'] }]),
+    sheet('26/27', [{ num: 99, positions: ['ST'] }, { num: 98, positions: ['CB'] }]),
+    sheet('26/27', [{ num: 99, positions: ['LW'] }]),
+    sheet('26/27', [{ num: 99, positions: ['LW'] }]),
+  ]);
+  check('a dead tie is no answer at all, however much of it there is',
+    !tie.byNum.has(99) && tie.byNum.get(98)?.label === 'Centre back',
+    `${tie.byNum.get(99)?.label || 'no answer'} for the tied man`);
+  /* The window is the latest season WITH SHEETS, so a new season that has
+     kicked off and recorded nothing falls back rather than blanking. */
+  const over27 = nowOf([
+    sheet('26/27', [{ num: 99, positions: ['ST'] }]),
+    sheet('26/27', [{ num: 99, positions: ['ST'] }]),
+    { season: '27/28', played: false, detail: { starters: [], bench: [] } },
+  ]);
+  check('a season with no team sheets yet falls back to the last one that had them',
+    over27.season === '26/27' && over27.byNum.get(99)?.label === 'Striker',
+    String(over27.season));
+  /* A bench slot is half an answer, so it takes four of them to reach the
+     floor two starts reach. Being named a substitute is not playing there. */
+  const onBench = (n) => nowOf(Array.from({ length: n }, () => ({
+    season: '26/27', played: true, detail: { starters: [], bench: [{ num: 99, positions: ['ST'] }] },
+  })));
+  check('a bench slot counts half, so four of them answer and three do not',
+    onBench(4).byNum.get(99)?.label === 'Striker' && !onBench(3).byNum.has(99),
+    `four: ${onBench(4).byNum.get(99)?.label} · three: ${onBench(3).byNum.get(99)?.label || 'no answer'}`);
 
   /* The file is a stopgap and says so, the way every other one here does. */
   const raw = JSON.parse(fs.readFileSync(

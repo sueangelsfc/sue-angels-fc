@@ -1979,7 +1979,7 @@ for (const [f, h] of pages) {
    a bracket, which is exactly the shape that passes a weak check: a route of
    the right LENGTH says nothing about whether it followed the right ties. */
 {
-  const { cupRoutes: cr, clubsUnder: cu, routeThrough: rt } =
+  const { cupRoutes: cr, clubsUnder: cu, routeThrough: rt, settledSide: ss } =
     await import(path.join(ROOT, 'src', 'lib', 'cups.mjs'));
   const cupsD = JSON.parse(fs.readFileSync(path.join(ROOT, 'src/data/cups-2627.json'), 'utf8'));
   const US = "Sue's Angels FC";
@@ -2077,7 +2077,24 @@ for (const [f, h] of pages) {
   /* THE POSSIBLE OPPONENTS GROW, and the last round before the final must
      cover a real slice of the draw rather than one branch. */
   for (const cup of routes) {
-    const counts = cup.bracket.map((r) => r.opponents.length);
+    /* READ OFF THE DRAW, NOT OFF WHAT IS LEFT OF IT.
+
+       This counted `bracket`, whose opponent sets are PRUNED of clubs that
+       have gone out - and the whole point of a knockout is that they narrow.
+       It passed for as long as every result on file was a first-round one,
+       and the first second-round round of results took the President's Cup
+       final from eight possible opponents to seven and turned it red. The
+       check was then measuring how far the cup had got, which it has no
+       business failing on.
+
+       What it is actually for is the draw-walking: a bracket parsed with a
+       hole in it collapses to one branch and nothing else would say so. That
+       is a fact about the league's draw and never moves, so it asks
+       `routeThrough`, which is the unpruned walk. The pruning has its own
+       check below - nobody knocked out may appear in a route - and the two
+       together say what one of them was being asked to say alone. */
+    const raw = rt(cupsD.cups.find((c) => c.id === cup.id), US);
+    const counts = raw.map((r) => r.opponents.length);
     /* NOT STRICTLY, BECAUSE A BYE IS A ROUND WITH ONE KNOWN OPPONENT. Celtic
        Swans were byed into the President's Cup second round, so rounds one
        and two both have exactly one: the field never narrows, and the round
@@ -2111,6 +2128,27 @@ for (const [f, h] of pages) {
   check('a draw, an abandonment and a tie nobody has played knock out nobody',
     el(toy([{ n: 1, hs: 1, as: 1 }])).size === 0 && el(toy([])).size === 0
       && el(toy([{ n: 1 }])).size === 0);
+  /* ---- LOSING A TIE BETWEEN TWO BRANCHES PUTS YOU OUT ----
+     A second-round tie is drawn as "Winner of Tie 1 v Gamma FC", and
+     `eliminated()` read the loser off that text: a branch is not a club, so
+     it skipped it and nobody went out. Unreachable for as long as every
+     result on file was a first-round one, and live on 15 November 2026, when
+     BPR Men's beat Larkhall City 8-4 in the President's Cup second round and
+     Larkhall went on being listed as a side the club could still meet.
+     Crafted both ways round, because a rule that resolved the winning side
+     instead would pass a check that only ever looks at one of them - and the
+     guard is the half that matters: a tie whose feeder nobody has played
+     settles to nobody and must still knock nobody out, or an unplayed first
+     round would start eliminating clubs. */
+  const outOf = (results) => [...el(toy(results))].sort().join();
+  check('losing a second-round tie puts you out whichever side of it you were on',
+    outOf([{ n: 1, hs: 2, as: 0 }, { n: 2, hs: 0, as: 3 }]) === 'Alpha FC,Beta FC'
+      && outOf([{ n: 1, hs: 2, as: 0 }, { n: 2, hs: 3, as: 0 }]) === 'Beta FC,Gamma FC',
+    outOf([{ n: 1, hs: 2, as: 0 }, { n: 2, hs: 0, as: 3 }]));
+  check('and a branch whose own tie is unplayed settles to nobody, so puts nobody out',
+    el(toy([{ n: 2, hs: 0, as: 3 }])).size === 0
+      && outOf([{ n: 1, hs: 1, as: 1 }, { n: 2, hs: 0, as: 3 }]) === '',
+    outOf([{ n: 2, hs: 0, as: 3 }]) || 'nobody');
   /* A WALKOVER HAS A WINNER AND NO SCORE. BPR Men's were given one over Pure
      Football FC 1st Team on 18 October, and read as a missing scoreline it
      left a club in a cup it is out of - the one direction the route is not
@@ -2274,9 +2312,21 @@ for (const [f, h] of pages) {
      of a cup may appear anywhere in that cup's route. */
   for (const cup of cupsD.cups) {
     const byNum = new Map(cup.ties.map((t) => [t.n, t]));
+    /* A BRANCH CANNOT PLAY, AND A SETTLED BRANCH IS NOT ONE.
+
+       This read the tie AS DRAWN and refused any result whose sides said
+       "Winner of Tie N" - which is every tie past the first round, so the
+       first second-round results the club sent could not be recorded at all.
+       The invariant it wants is the right one and it was asking it of the
+       wrong text: what must be true is that each side RESOLVES, through the
+       results, to exactly one club. Tie 15 reads "Winner of Tie 6 v Winner
+       of Tie 7" and settles to BPR Men's against Larkhall City, which is a
+       tie between two clubs; a tie whose feeder nobody has played settles to
+       nothing and still fails, which is the case worth refusing. */
+    const resById = new Map((cup.results || []).map((r) => [Number(r.n), r]));
     const bad = (cup.results || []).filter((r) => {
       const t = byNum.get(Number(r.n));
-      return !t || [t.home, t.away].some((x) => /^winner of tie/i.test(String(x)));
+      return !t || [t.home, t.away].some((x) => !ss(x, byNum, resById));
     });
     check(`${cup.short}: every recorded result names a tie between two clubs`,
       bad.length === 0, bad.map((r) => r.n).join(', '));

@@ -129,19 +129,55 @@ export function winnerOf(r) {
   return Number(m[1]) > Number(m[2]) ? 'home' : 'away';
 }
 
+/**
+ * WHO IS ACTUALLY ON THIS SIDE OF A TIE, once the results have said.
+ *
+ * `clubsUnder` answers who COULD arrive, which is the question the route band
+ * asks of a round nobody has played. This is the other question, and until
+ * 15 November 2026 nothing asked it, because every result on file was a
+ * FIRST-round one and a first-round tie names its two clubs outright.
+ *
+ * The first second-round results made it reachable and showed what it cost.
+ * `eliminated()` read the loser off the tie AS DRAWN, and a second-round tie
+ * is drawn as "Winner of Tie 6 v Winner of Tie 7" - so BPR Men's 8-4
+ * Larkhall City put nobody out at all, and Larkhall went on being listed as
+ * a side the club could still meet in a cup they had just gone out of. The
+ * guard that skipped branches was right that a branch cannot be knocked out
+ * and wrong to stop there: a branch whose feeding tie has been played is not
+ * a branch any more.
+ *
+ * Returns the one club, or null while the tie that feeds this side is still
+ * open. Null is a real answer and the honest one: absent means unknown.
+ */
+export function settledSide(side, byNum, results, seen = new Set()) {
+  const name = String(side || '').trim();
+  const m = WINNER.exec(name);
+  if (!m) return name || null;
+  const n = Number(m[1]);
+  /* Same reason `clubsUnder` carries one: the deploy runs the generator, so a
+     cycle in a malformed draw would fail the club's own publish. */
+  if (seen.has(n)) return null;
+  seen.add(n);
+  const tie = byNum.get(n);
+  if (!tie) return null;
+  const won = winnerOf(results.get(n));
+  if (!won) return null;
+  return settledSide(won === 'home' ? tie.home : tie.away, byNum, results, seen);
+}
+
 export function eliminated(cup) {
   const { byNum } = index(cup);
+  const byN = new Map((cup.results || []).map((r) => [Number(r.n), r]));
   const gone = new Set();
-  const out = (club) => {
-    /* "Winner of Tie 7" is a branch, not a club, so it cannot be knocked out. */
-    if (club && !WINNER.test(String(club).trim())) gone.add(String(club).trim());
-  };
   for (const r of cup.results || []) {
     const tie = byNum.get(Number(r.n));
     if (!tie) continue;
     const won = winnerOf(r);
     if (!won) continue;
-    out(won === 'home' ? tie.away : tie.home);
+    /* The losing SIDE, resolved through the draw: a club by name in the first
+       round, and whoever won the tie that fed it after that. */
+    const lost = settledSide(won === 'home' ? tie.away : tie.home, byNum, byN);
+    if (lost) gone.add(lost);
   }
   return gone;
 }

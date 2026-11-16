@@ -9606,7 +9606,7 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-11-16T08:38:43.643Z",
+        "savedAt": "2026-11-16T08:58:48.894Z",
         "approach": {},
         "redCards": [],
         "starters": [
@@ -9738,11 +9738,12 @@
           },
           {
             "num": 12,
+            "role": "APM",
             "spells": [
               {
                 "pos": "RAM",
                 "half": "1",
-                "role": ""
+                "role": "APM"
               }
             ],
             "positions": [
@@ -9786,7 +9787,7 @@
         "opponentRedCards": [],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-11-16T08:38:43.644+00:00"
+      "updated_at": "2026-11-16T08:58:48.894+00:00"
     }
   ],
   "articles": [

@@ -580,7 +580,14 @@ export function playerPage(p, d) {
         </div>
         <div>
           <p class="pf-chips">
-            <span class="pf-chip pf-chip--pos">${esc(squadRec.position || p.position)}</span>
+            ${/* THE JOB BESIDE THE PLACE. A role is attached to a position
+                  and never instead of one, so it rides inside the position's
+                  own chip rather than standing beside it as a second claim:
+                  "Right wing back · Overlapping full back" is one fact about
+                  one man, and two pills would read as two. Drawn only where
+                  this season's record answers it clearly - see
+                  inferRolesNow - so a chip is never a guess. */''}
+            <span class="pf-chip pf-chip--pos">${esc(squadRec.position || p.position)}${squadRec.role ? `<i>${esc(squadRec.role)}</i>` : ''}</span>
             ${/* Career ranks, so they say so: under a season tab an undated "Top
                   goalscorer" reads as that season's. */''}
             ${seasonAccolades.map((a) => `<span class="pf-chip">${esc(a.label)}<i>${esc(a.season)}</i></span>`).join('\n            ')}

@@ -235,7 +235,7 @@ export function squad(d) {
                    where there is room for nothing else and each carries its
                    name in a <title>. */''}
               <span class="pc__tags">
-                <span class="pc__pos${p.positionCode ? '' : ' is-none'}">${esc(p.position || 'Squad player')}</span>
+                <span class="pc__pos${p.positionCode ? '' : ' is-none'}">${esc(p.position || 'Squad player')}${p.role ? `<i>${esc(p.role)}</i>` : ''}</span>
                 ${/* Always present so switching season can fill it, hidden
                      when this view has no leader mark for him. [hidden] is
                      display:none, so an empty chip never paints. */''}

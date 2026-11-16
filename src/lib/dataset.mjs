@@ -8,7 +8,7 @@ import { reconcileAssists, clubChartRows } from './stats.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { POSITION_GROUPS, positionName } from './positions.mjs';
+import { POSITION_GROUPS, positionName, roleName } from './positions.mjs';
 import { zoneOf, spotOf } from './pitch.mjs';
 import { readStatusRecord, statusIn, statusLabelIn, isPlaying, joinedAfter, signedOn,
   statusDetail } from './squad-status.mjs';
@@ -115,6 +115,79 @@ export function inferPositionsNow(matches) {
     for (const [num, codes] of tally) {
       const r = rankPositions(codes);
       if (r && r.lead >= NOW_FLOOR && r.lead > r.runnerUp) byNum.set(num, r);
+    }
+    return { season, byNum };
+  }
+  return { season: null, byNum: new Map() };
+}
+
+/* THE JOB HE IS ASKED TO DO THERE, which is a different question from where
+   he stands, and the club records it per spell: Dean Knight is not merely a
+   right wing back, he is an OVERLAPPING right wing back in all eight of them.
+   Until now that reached a reader on the match report's team sheet and
+   nowhere else, so a profile could say where a man played and never what he
+   was there to do.
+
+   A ROLE IS ATTACHED TO A POSITION, NEVER INSTEAD OF ONE - a false nine is a
+   centre forward with a job - so it is counted AT one. The tally is keyed on
+   (position, role) and the caller reads the column for the position the site
+   actually publishes, which is what stops a man published as a left wing back
+   wearing a mezzala tag earned in the eleven matches he spent in midfield.
+
+   SO A STATED POSITION CARRIES NO ROLE, and it needs no rule to say so: a
+   stated position is a sentence rather than a place on the pitch, it has no
+   code, and there is nothing to read a role at. It is the same floor and the
+   same tie rule as the position itself,
+   for the same reason and from the same constant: one afternoon is not a
+   role, and a dead heat between two jobs is not an answer about football. */
+function tallyRoles(matches) {
+  const tally = new Map();
+  const bump = (num, pos, role, n) => {
+    if (!pos || !role) return;
+    if (!tally.has(num)) tally.set(num, new Map());
+    const byPos = tally.get(num);
+    if (!byPos.has(pos)) byPos.set(pos, new Map());
+    const t = byPos.get(pos);
+    t.set(role, (t.get(role) || 0) + n);
+  };
+  const read = (e, n) => {
+    const spells = e.spells || [];
+    if (spells.length) {
+      for (const sp of spells) bump(e.num, sp.pos, sp.role, n);
+      return;
+    }
+    /* A sheet written before spells existed carries one role for the whole
+       match, so it belongs to every position named on it. */
+    for (const code of e.positions || []) bump(e.num, code, e.role, n);
+  };
+  for (const m of matches) {
+    for (const s of m.detail?.starters || []) read(s, 1);
+    for (const b of m.detail?.bench || []) read(b, 0.5);
+  }
+  return tally;
+}
+
+export function inferRolesNow(matches) {
+  const seasons = [...new Set((matches || []).map((m) => m.season).filter(Boolean))]
+    .sort().reverse();
+  for (const season of seasons) {
+    const tally = tallyRoles(matches.filter((m) => m.season === season));
+    if (!tally.size) continue;
+    const byNum = new Map();
+    for (const [num, byPos] of tally) {
+      const out = new Map();
+      for (const [pos, roles] of byPos) {
+        const ranked = [...roles.entries()].sort((a, b) => b[1] - a[1]);
+        const [code, lead] = ranked[0];
+        const runnerUp = ranked[1]?.[1] ?? 0;
+        /* A name, never the code, for the reason rankPositions says: "OFB"
+           is a thing the club's records hold and not a thing anybody calls a
+           player. */
+        if (lead >= NOW_FLOOR && lead > runnerUp && roleName(code)) {
+          out.set(pos, { code, label: roleName(code) });
+        }
+      }
+      if (out.size) byNum.set(num, out);
     }
     return { season, byNum };
   }
@@ -534,6 +607,9 @@ export function buildDataset(overrides = {}) {
   /* Where each man has played THIS season, where the record gives a clear
      answer. Beats a stated position; see inferPositionsNow. */
   const nowPos = inferPositionsNow(matches);
+  /* And the job he is asked to do there, read off the same season's sheets
+     and keyed on the position it was recorded at. See inferRolesNow. */
+  const nowRole = inferRolesNow(matches);
   const bios = ps.PLAYER_BIOS || {};
   const photoKeys = new Set((live.player_photos || []).map((p) => String(p.key)));
   /* Where the club says somebody plays, by shirt number. Loses to a position
@@ -708,6 +784,7 @@ export function buildDataset(overrides = {}) {
         positionCode: group === 'gk' ? 'GK' : '',
         positionGroup: group,
         positionsPlayed: [], positionWeights: [],
+        role: '', roleCode: '',
         bio: p.bio || bios[p.num] || bios[name] || null,
         hasPhoto: photoKeys.has(String(p.num)),
         status: rosterStatus[String(p.num)] || p.status || 'active',
@@ -726,6 +803,13 @@ export function buildDataset(overrides = {}) {
       positionGroup: isGk ? 'gk' : read?.group || 'mid',
       positionsPlayed: read?.all || [],
       positionWeights: read?.weights || [],
+      /* READ AT THE POSITION THE SITE PUBLISHES, whatever decided that
+         position. A stated one carries no code - it is a sentence, not a
+         place on the pitch - so it gets no role without a guard, which is
+         why there is not one here: a guard that cannot fail is a comment
+         pretending to be code. */
+      role: nowRole.byNum.get(p.num)?.get(read?.code)?.label || '',
+      roleCode: nowRole.byNum.get(p.num)?.get(read?.code)?.code || '',
       bio: bios[p.num] || bios[name] || null,
       hasPhoto: photoKeys.has(String(p.num)),
       status: rosterStatus[String(p.num)] || p.status || 'active',

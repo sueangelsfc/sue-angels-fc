@@ -7362,7 +7362,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
    a stated position still has to beat the career reading, or the panel's
    position field goes back to being decoration. */
 {
-  const { buildDataset: bdX, inferPositionsNow: nowOf } = await import(
+  const { buildDataset: bdX, inferPositionsNow: nowOf, inferRolesNow: roleOf } = await import(
     path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
   const extra = JSON.parse(fs.readFileSync(
     path.join(ROOT, 'src', 'data', 'positions-extra.json'), 'utf8')).positions || {};
@@ -7485,6 +7485,69 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   check('a bench slot counts half, so four of them answer and three do not',
     onBench(4).byNum.get(99)?.label === 'Striker' && !onBench(3).byNum.has(99),
     `four: ${onBench(4).byNum.get(99)?.label} · three: ${onBench(3).byNum.get(99)?.label || 'no answer'}`);
+
+  /* ------------------------------------------------------------------
+     AND THE JOB HE DOES THERE
+
+     A role is attached to a position and never instead of one, so every
+     question below is about the PAIR. The failure this guards is the one
+     that cannot be seen on a page: a role earned at one position printed
+     beside another, which reads perfectly and is a different man's season.
+     ------------------------------------------------------------------ */
+  const roles = roleOf(dX.matches);
+
+  check('a role is read from the same season the position is',
+    roles.season === now.season, `${roles.season} against ${now.season}`);
+
+  /* THE ROLE IS THE ONE RECORDED AT THE PUBLISHED POSITION. Read off the
+     shipped squad record rather than off the function, because a published
+     role that came from somewhere else is exactly what this is for. */
+  const withRole = Object.values(byNum).filter((p) => p.role);
+  const wrongPos = withRole.filter(
+    (p) => roles.byNum.get(p.num)?.get(p.positionCode)?.label !== p.role);
+  check('a published role was recorded at the position published beside it',
+    withRole.length >= 6 && wrongPos.length === 0,
+    wrongPos.length ? wrongPos.map((p) => `${p.name}: ${p.role}`).join(', ')
+      : `${withRole.length} men carry one`);
+
+  /* And it reaches a reader, on both pages that publish a position. */
+  const sqH = fs.readFileSync(path.join(ROOT, 'squad.html'), 'utf8');
+  const lead = withRole[0];
+  const profH = fs.readFileSync(
+    path.join(ROOT, 'players', `${lead.slug}.html`), 'utf8');
+  check('the role is published inside the position chip, on the card and the profile',
+    new RegExp(`class="pc__pos">${lead.position}<i>${lead.role}</i>`).test(sqH)
+      && new RegExp(`pf-chip--pos">${lead.position}<i>${lead.role}</i>`).test(profH),
+    `${lead.name}: ${lead.position} · ${lead.role}`);
+
+  /* A STATED POSITION CARRIES NO ROLE. It is a sentence rather than a place
+     on the pitch, so there is no code to read one at, and a job printed
+     beside a position the record never agreed with would be the site making
+     one up. Twenty-odd men are published this way, so this is a fact about
+     the shipped page rather than a hypothetical. */
+  const said = Object.values(byNum).filter((p) => !p.positionCode && p.position);
+  const saidRole = said.filter((p) => p.role);
+  check('a position the club stated publishes no role beside it',
+    said.length >= 5 && saidRole.length === 0,
+    saidRole.length ? saidRole.map((p) => p.name).join(', ')
+      : `${said.length} stated positions, none with a role`);
+
+  /* Crafted, because no man in the archive sits exactly at the floor or at a
+     dead tie: a check over real data passes with both rules deleted. */
+  const sheets = (n, role, pos = 'ST') => Array.from({ length: n }, () => ({
+    season: '26/27', played: true,
+    detail: { starters: [{ num: 98, positions: [pos], spells: [{ pos, role }] }], bench: [] },
+  }));
+  check('two matches answer a role and one does not',
+    roleOf(sheets(2, 'TM')).byNum.get(98)?.get('ST')?.label === 'Target man'
+      && !roleOf(sheets(1, 'TM')).byNum.has(98),
+    'one afternoon is not a role');
+  check('a dead tie between two jobs is no answer at all',
+    !roleOf([...sheets(2, 'TM'), ...sheets(2, 'PCH')]).byNum.get(98)?.get('ST'),
+    'whichever sorted first is not an answer about football');
+  check('a role counts at the position it was recorded at, and at no other',
+    roleOf(sheets(3, 'TM')).byNum.get(98)?.get('LWB') === undefined,
+    'a striker\u2019s job is not a full back\u2019s');
 
   /* The file is a stopgap and says so, the way every other one here does. */
   const raw = JSON.parse(fs.readFileSync(

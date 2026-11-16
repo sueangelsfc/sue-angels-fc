@@ -127,6 +127,16 @@ html.js .sq-grp[hidden]{display: none;}
 /* Position is inferred from team sheets, so a player who never started has
    none. A neutral chip keeps the grid even and says why. */
 .pc__pos.is-none{background: rgba(255, 255, 255, 0.13); color: var(--ink-2);}
+/* The job he does there, under the place he does it. A card is 150px wide
+   and the position already runs to two lines on the longest of them, so the
+   role goes on its own line with a rule above it rather than inline, where
+   it would read as one run-on phrase. Set in the same ink as the selected
+   season chip's sub-label, which is the token for small text on a filled
+   volt pill. */
+.pc__pos i{display: block; margin-top: 4px; padding-top: 4px;
+  border-top: 1px solid rgba(26, 10, 2, 0.28); font-style: normal;
+  font-size: 8px; font-weight: 700; letter-spacing: 0.1em;
+  color: var(--text-on-brand-2);}
 
 .sq-note{margin-top: clamp(24px, 3vw, 34px); max-width: 76ch;
   font-size: 13px; line-height: 1.7; color: var(--ink-3);}

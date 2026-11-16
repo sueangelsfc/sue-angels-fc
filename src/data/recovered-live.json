@@ -9233,7 +9233,7 @@
           }
         ],
         "captain": 25,
-        "savedAt": "2026-11-08T22:46:39.168Z",
+        "savedAt": "2026-11-16T08:39:00.125Z",
         "approach": {
           "build": "keep",
           "press": "mid"
@@ -9466,7 +9466,7 @@
         "opponentRedCards": [],
         "penaltiesConceded": 1
       },
-      "updated_at": "2026-11-08T22:46:39.168+00:00"
+      "updated_at": "2026-11-16T08:39:00.125+00:00"
     },
     {
       "key": "r20261115-the",
@@ -9478,7 +9478,7 @@
         "home": "Sue's Angels FC",
         "kick": "11:00",
         "kind": "score",
-        "motm": null,
+        "motm": 21,
         "subs": [
           {
             "on": 3,
@@ -9572,7 +9572,15 @@
               "y": 10.9
             },
             "zone": "box",
-            "assist": null,
+            "assist": {
+              "num": 2,
+              "spot": {
+                "x": 68.9,
+                "y": 17
+              },
+              "type": "pass",
+              "zone": "outside"
+            },
             "minute": 74,
             "penalty": false,
             "bodyPart": "left",
@@ -9589,10 +9597,16 @@
             "type": "cross",
             "minute": 34,
             "forGoalBy": 9
+          },
+          {
+            "num": 2,
+            "type": "pass",
+            "minute": 74,
+            "forGoalBy": 21
           }
         ],
         "captain": 25,
-        "savedAt": "2026-11-15T22:20:34.413Z",
+        "savedAt": "2026-11-16T08:38:43.643Z",
         "approach": {},
         "redCards": [],
         "starters": [
@@ -9710,30 +9724,29 @@
           },
           {
             "num": 21,
-            "role": "BCM",
+            "role": "RPM",
             "spells": [
               {
-                "pos": "CAM",
+                "pos": "LAM",
                 "half": "1",
-                "role": "BCM"
+                "role": "RPM"
               }
             ],
             "positions": [
-              "CAM"
+              "LAM"
             ]
           },
           {
             "num": 12,
-            "role": "SHD",
             "spells": [
               {
-                "pos": "CAM",
+                "pos": "RAM",
                 "half": "1",
-                "role": "SHD"
+                "role": ""
               }
             ],
             "positions": [
-              "CAM"
+              "RAM"
             ],
             "subbedOff": true
           },
@@ -9773,7 +9786,7 @@
         "opponentRedCards": [],
         "penaltiesConceded": 0
       },
-      "updated_at": "2026-11-15T22:20:36.365+00:00"
+      "updated_at": "2026-11-16T08:38:43.644+00:00"
     }
   ],
   "articles": [

@@ -32,7 +32,7 @@ src/
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        5,564-check suite against the generated output
+  test/run.mjs        5,572-check suite against the generated output
   test/dom.mjs        a small, strict DOM that throws rather than guessing
   test/panel-render.mjs  the panel, rendered, and asked what came out
 ```
@@ -947,11 +947,46 @@ at a dead tie at two, and a check over real data passes with both deleted.
 Five probes: the precedence, the floor, the tie rule, the season window, and
 the stated-beats-career half.
 
-**A role is recorded per spell and still reaches a reader only on the match
-report's team sheet.** The club records them (Knight is an overlapping full
-back in all eight, Allen has been an inverted full back, an overlapping one, a
-mezzala and a ball-winning midfielder), and nothing on a profile or a squad
-card publishes one yet.
+#### And the job he does there
+
+A role is attached to a position and never instead of one - a false nine is a
+centre forward with a job - so **it is counted AT one**. `inferRolesNow()`
+tallies the same season's spells keyed on the PAIR, and the squad record reads
+the column for the position the site actually publishes. Ten men carry one:
+Knight is an overlapping full back, Munns a shot stopper, Dunkley a channel
+runner, McLane and El Bayati ball-playing centre backs.
+
+- **Keying on the pair is the whole safety.** Read a man's roles without it and
+  Stewart Luwawa, published at left defensive midfielder, wears *Ball-playing
+  centre back* - a real role of his, earned in the two matches he spent at
+  right centre back, printed beside a position he did not earn it at. That
+  reads perfectly and is a different man's season, which is why the check is
+  of the PUBLISHED role against the published position rather than of the
+  function against itself, and why the probe is the one that removes the key.
+- **The same floor and the same tie rule as the position**, from the same
+  constant. One afternoon is not a role, and a dead heat between two jobs is
+  not an answer about football: Andrew Allen has an inverted full back, an
+  overlapping one and a defensive one at left wing back this season, so he is
+  published with no role at all, which is the honest answer. Both are asked on
+  **crafted** sheets, because nobody in the archive sits exactly at the floor
+  or at a dead tie and a check over real data passes with both deleted.
+- **A STATED POSITION CARRIES NO ROLE, AND NEEDS NO RULE TO SAY SO.** It is a
+  sentence rather than a place on the pitch, it has no code, and there is
+  nothing to read a role at. The first version of this guarded it explicitly
+  and the probe said what that was worth: removing the guard changed not one
+  published byte, because it could never fire. A guard that cannot fail is a
+  comment pretending to be code. The check stayed - twenty-odd men are
+  published from a stated position, so it is a fact about the shipped page -
+  and it is probed by breaking the branch that sets it instead.
+- **It rides INSIDE the position's own chip**, as the sub-label an accolade
+  already uses for its season, because one fact about one man is one object
+  and two pills would read as two claims. `.pf-chip--pos i` needed an ink of
+  its own: the generic rule's `--volt-text` is a colour for volt ON the
+  canvas and the position chip is a solid volt FILL, so it is
+  `--text-on-brand-2`, the token this project already settled on for a small
+  secondary label inside a filled orange pill. On a 150px squad card it is a
+  second line under a hairline rather than inline, where the two names would
+  read as one run-on phrase.
 
 - **Stated positions group by the first position named, midfield before defence.** The club gave a position for every registered player (positions-extra.json for those without a panel record, the record itself for the rest). The old rule tested "def" first, so "Defensive midfielder" filed a holding midfielder with the defenders.
 - **The home page tab reads "League Eight 26/27 · Sue's Angels FC"** once the division has a match played (`homeMeta` in `build.mjs`), overriding the recovered "League Ten Champions" title; before that the recovered title stands.
@@ -2492,7 +2527,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 5,564 checks against the generated output and the rendered panel
+npm test          # 5,572 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

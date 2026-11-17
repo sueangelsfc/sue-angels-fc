@@ -33,6 +33,15 @@
   color: var(--text-on-brand); font-weight: 800;}
 .mr-meta__res--d{border-color: rgba(var(--lift), 0.3); color: var(--fg);}
 .mr-meta__res--l{opacity: 0.62;}
+/* The ground is the one link in this line, and the line is already 9.5px
+   tracked-out capitals in a muted ink. Hue alone would not separate it from
+   the date beside it even if the hue were strong, so it is underlined - the
+   rule this project wrote down after an audit found links in the pre-season
+   band distinguished by colour alone. */
+.mr-meta__gr{color: var(--fg); text-decoration: underline;
+  text-decoration-color: rgba(var(--lift), 0.45); text-underline-offset: 3px;}
+.mr-meta__gr:hover,
+.mr-meta__gr:focus-visible{color: var(--volt-text); text-decoration-color: currentColor;}
 .mr-note{margin-top: 12px; font-size: 13.5px; color: var(--ink-3);}
 /* A friendly's caveat. Reads as a note, not an alarm: the result stands, it
    just counts towards nothing. Orange is the only accent hue, so weight and a

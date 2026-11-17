@@ -1,0 +1,146 @@
+/* ==========================================================================
+   A CLUB'S OWN PAGE  (/clubs/<slug>.html) and the index (/clubs.html)
+
+   A head-to-head is a table of results, so the surfaces are opaque the way
+   the coach and stats pages are: glass under a list somebody reads line by
+   line is the wrong trade.
+
+   Won, drawn and lost are told apart by WEIGHT AND FILL, never a second hue.
+   Orange is the only accent on this site and a result is football data, so
+   the status colours stay where they belong - forms, toasts and the panel.
+
+   This sheet is loaded by these two routes alone, so every token it reaches
+   for has to be one home.css declares: --fg, --ink-1/2/3, --volt, --display,
+   --ui, --r, --r-sm, --slab, --line-d, --lift, --volt-rgb. An undefined
+   custom property deletes its whole declaration rather than falling back, so
+   a card written in sa.css's vocabulary would have no surface at all and
+   would read as a layout bug.
+   ========================================================================== */
+.is-club .pageaura{--pa-mul: 0.3;}
+
+/* ---- Hero -------------------------------------------------------------- */
+.cl-hero{padding-top: clamp(24px, 3.4vw, 42px);}
+.cl-hero__grid{display: grid; gap: clamp(20px, 3vw, 40px); align-items: center;
+  grid-template-columns: minmax(0, 180px) minmax(0, 1fr);}
+.cl-hero__im{display: grid; place-items: center; aspect-ratio: 1;
+  border-radius: 24px; border: 1px solid var(--line-d);
+  background: linear-gradient(170deg, rgba(var(--lift), 0.07), rgba(var(--lift), 0.02));}
+.cl-hero__badge{width: 62%; height: auto; object-fit: contain;}
+.cl-hero__body .h1b{margin: 8px 0 clamp(14px, 2vw, 22px);}
+.cl-lede{margin: clamp(12px, 1.6vw, 18px) 0 0; max-width: 62ch;
+  font-size: clamp(15px, 1.35vw, 17px); line-height: 1.72; color: var(--ink-2);}
+.cl-rel a{color: var(--volt-text); text-decoration: underline;
+  text-underline-offset: 3px;}
+.cl-figs{list-style: none; margin: 0; padding: 0;
+  display: flex; flex-wrap: wrap; gap: clamp(18px, 3vw, 44px);}
+.cl-figs b{display: block; font-family: var(--display); font-weight: 300;
+  font-size: clamp(32px, 4.4vw, 54px); line-height: 1;
+  font-variation-settings: "wdth" var(--wide-num); color: var(--fg);}
+.cl-figs span{display: block; margin-top: 8px;
+  font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3);}
+
+@media (max-width: 680px){
+  .cl-hero__grid{grid-template-columns: minmax(0, 1fr); gap: 18px;}
+  .cl-hero__im{max-width: 132px;}
+}
+
+/* ---- The record -------------------------------------------------------- */
+.cl-wdl{list-style: none; display: flex; margin: clamp(18px, 2.4vw, 26px) 0 0; padding: 0;
+  gap: 4px; height: 12px;}
+.cl-wdl li{width: var(--w); border-radius: 99px; min-width: 8px;}
+.cl-wdl__w{background: var(--volt);}
+.cl-wdl__d{border: 1px solid rgba(var(--volt-rgb), 0.5);}
+.cl-wdl__l{background: rgba(var(--lift), 0.16);}
+
+.cl-tiles{list-style: none; margin: clamp(18px, 2.4vw, 28px) 0 0; padding: 0;
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr));}
+.cl-tiles li{padding: 14px 16px; border-radius: var(--r-sm);
+  border: 1px solid var(--line-d); background: var(--slab);}
+.cl-tiles b{display: block; font-family: var(--display); font-weight: 300;
+  font-size: clamp(24px, 2.8vw, 34px); line-height: 1;
+  font-variation-settings: "wdth" var(--wide-num); color: var(--fg);}
+.cl-tiles span{display: block; margin-top: 7px;
+  font-size: 10.5px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-3);}
+.cl-note{margin: clamp(14px, 1.8vw, 18px) 0 0; max-width: 64ch;
+  font-size: 13.5px; line-height: 1.66; color: var(--ink-3);}
+.cl-note a{color: var(--volt-text); text-decoration: underline; text-underline-offset: 3px;}
+
+/* ---- Every meeting ------------------------------------------------------ */
+.cl-list{list-style: none; margin: clamp(20px, 2.6vw, 30px) 0 0; padding: 0;
+  display: grid; gap: 8px;}
+.cl-m__a{display: grid; align-items: center; gap: clamp(12px, 2vw, 22px);
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  padding: 14px clamp(14px, 1.8vw, 20px);
+  border-radius: var(--r-sm); border: 1px solid var(--line-d);
+  background: var(--slab); color: inherit; text-decoration: none;
+  transition: border-color 0.3s, transform 0.3s;}
+.cl-m__a:hover{border-color: rgba(var(--volt-rgb), 0.34); transform: translateX(3px);}
+.cl-m__res{display: grid; place-items: center; width: 34px; height: 34px;
+  border-radius: 10px; font-family: var(--ui); font-weight: 700; font-size: 13px;
+  border: 1px solid rgba(var(--lift), 0.14); color: var(--ink-2);}
+.cl-m.is-w .cl-m__res{background: var(--volt); border-color: transparent;
+  color: var(--text-on-brand);}
+.cl-m.is-d .cl-m__res{border-color: rgba(var(--volt-rgb), 0.5); color: var(--fg);}
+.cl-m__score{display: block; font-family: var(--display); font-weight: 400;
+  font-size: clamp(17px, 1.9vw, 21px); line-height: 1.15;
+  font-variation-settings: "wdth" var(--wide-num); color: var(--fg);}
+.cl-m__where{display: block; margin-top: 5px; font-style: normal;
+  font-size: 12.5px; color: var(--ink-3);}
+.cl-m__date{font-size: 12.5px; color: var(--ink-3); white-space: nowrap;}
+
+@media (max-width: 560px){
+  .cl-m__a{grid-template-columns: 34px minmax(0, 1fr);}
+  .cl-m__date{grid-column: 2; margin-top: 2px;}
+}
+
+/* ---- Who has scored against them ----------------------------------------
+   A bar and a figure rather than a column of numerals, for the reason the
+   template gives: a bare number beside a name is the one shape this site
+   refuses to print. ---------------------------------------------------- */
+.cl-sc__list{list-style: none; margin: clamp(18px, 2.4vw, 28px) 0 0; padding: 0;
+  display: grid; gap: 2px;}
+.cl-sc__i{display: grid; align-items: center; gap: 12px;
+  grid-template-columns: minmax(60px, 90px) auto minmax(0, 1fr);
+  padding: 9px 0; border-bottom: 1px solid var(--line-d);}
+.cl-sc__bar{display: block; height: 7px; border-radius: 99px;
+  background: rgba(var(--lift), 0.1);}
+.cl-sc__bar i{display: block; width: var(--w); height: 100%; border-radius: 99px;
+  background: var(--volt);}
+.cl-sc__n{font-size: 14.5px; color: var(--fg); text-decoration: none;
+  border-bottom: 1px solid transparent;}
+a.cl-sc__n:hover{color: var(--volt-text); border-bottom-color: rgba(var(--volt-rgb), 0.5);}
+.cl-sc__f{font-size: 13px; color: var(--ink-3);
+  font-variation-settings: "wdth" var(--wide-num);}
+
+@media (max-width: 520px){
+  .cl-sc__i{grid-template-columns: 52px auto minmax(0, 1fr); gap: 9px;}
+  .cl-sc__f{grid-column: 2 / -1; margin-top: 2px;}
+}
+
+/* ---- Now ---------------------------------------------------------------- */
+.cl-next{margin: clamp(18px, 2.2vw, 24px) 0 0; padding: 16px clamp(14px, 1.8vw, 20px);
+  border-radius: var(--r-sm); border: 1px solid rgba(var(--volt-rgb), 0.26);
+  background: var(--slab); font-size: 14.5px; line-height: 1.7; color: var(--ink-2);}
+.cl-next b{display: block; margin-bottom: 4px; font-family: var(--ui);
+  font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--volt-text);}
+.cl-next a{color: var(--volt-text); text-decoration: underline; text-underline-offset: 3px;}
+.cl-btns{margin: clamp(18px, 2.2vw, 26px) 0 0;}
+
+/* ---- The index ---------------------------------------------------------- */
+.cl-ihero{padding-top: clamp(24px, 3.4vw, 42px);}
+.cl-ihero .h1b{margin: 8px 0 0;}
+.cl-cards{list-style: none; margin: clamp(20px, 2.6vw, 30px) 0 0; padding: 0;
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));}
+.cl-card__a{display: grid; align-items: center; gap: 14px;
+  grid-template-columns: 44px minmax(0, 1fr);
+  padding: 14px 16px; border-radius: var(--r-sm);
+  border: 1px solid var(--line-d); background: var(--slab);
+  color: inherit; text-decoration: none;
+  transition: border-color 0.3s, transform 0.3s;}
+.cl-card__a:hover{border-color: rgba(var(--volt-rgb), 0.34); transform: translateY(-2px);}
+.cl-card__im{display: grid; place-items: center; width: 44px; height: 44px;}
+.cl-card__im img{max-width: 100%; max-height: 100%; object-fit: contain;}
+.cl-card__n{display: block; font-size: 15px; line-height: 1.3; color: var(--fg);}
+.cl-card__r{grid-column: 2; margin-top: 3px; font-size: 12px; color: var(--ink-3);}

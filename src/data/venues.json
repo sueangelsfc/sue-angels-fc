@@ -54,6 +54,25 @@
     "Dulwich Park",
     "Dundonald Recreation Ground"
   ],
+  "_notGroundsNote": [
+    "TWO OF THE NAMES IN `known` ARE NOT GROUNDS. They are the opponent's",
+    "club name typed into the venue field on an away tie, and the note at the",
+    "top of this file explains why each one stands rather than being",
+    "corrected: it does say where the game was, in the way a Sunday-league",
+    "player would say it.",
+    "",
+    "What it cannot do is head a page. /grounds/<slug>.html is a page about a",
+    "PLACE - where it is, how to park, the club's record there - and a page",
+    "titled 'Woking Veterans Sundays' with a map link under it would be the",
+    "site inventing a ground out of a club's name. Listed here rather than",
+    "tested for in code, because which strings are grounds is a fact about",
+    "this data and not a rule anybody can derive. The club naming the real",
+    "ground in Control panel -> Results retires the entry on its own."
+  ],
+  "notGrounds": [
+    "Woking Veterans Sundays",
+    "Tattenham Rovers"
+  ],
   "_groundsNote": "What a visitor needs to find a ground, keyed by the canonical name above. `address` is what the map search is pointed at, so directions land on the ground rather than on a name the map may not know; `parking` is printed under the next-match card. Each entry says where it was read.",
   "grounds": {
     "Richardson Evans Memorial Playing Fields": {

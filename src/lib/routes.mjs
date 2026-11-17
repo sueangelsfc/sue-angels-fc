@@ -40,11 +40,13 @@ export const LIVE_ROUTES = new Set([
   'join.html',
   'contact.html',
   'privacy.html',
+  'clubs.html',
+  'grounds.html',
   '404.html',
 ]);
 
-/* Detail families: 'players' | 'matches' | 'news' | 'gallery' | 'coaches'. */
-export const LIVE_GROUPS = new Set(['players', 'news', 'matches', 'gallery', 'coaches']);
+/* Detail families: 'players' | 'matches' | 'news' | 'gallery' | 'coaches' | 'clubs' | 'grounds'. */
+export const LIVE_GROUPS = new Set(['players', 'news', 'matches', 'gallery', 'coaches', 'clubs', 'grounds']);
 
 /* Routes the rebuild has not reached. A link to one of these resolves on the
    live site and will resolve here again once the page is rebuilt, so the

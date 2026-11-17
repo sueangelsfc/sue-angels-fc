@@ -1,0 +1,82 @@
+/* ==========================================================================
+   A GROUND'S OWN PAGE  (/grounds/<slug>.html) and the index (/grounds.html)
+
+   The same vocabulary rule as every band here: only tokens home.css declares,
+   because an undefined custom property deletes its whole declaration and a
+   card written in sa.css's names would have no surface at all.
+
+   Results are told apart by weight and fill, never a second hue.
+   ========================================================================== */
+.is-ground .pageaura{--pa-mul: 0.3;}
+
+.gr-hero, .gr-ihero{padding-top: clamp(24px, 3.4vw, 42px);}
+.gr-hero .h1b, .gr-ihero .h1b{margin: 8px 0 0;}
+.gr-lede{margin: clamp(14px, 1.8vw, 20px) 0 0; max-width: 62ch;
+  font-size: clamp(15px, 1.35vw, 17px); line-height: 1.72; color: var(--ink-2);}
+.gr-btns{margin: clamp(18px, 2.2vw, 26px) 0 0;}
+.gr-note{margin: clamp(16px, 2vw, 22px) 0 0; max-width: 64ch;
+  font-size: 14px; line-height: 1.7; color: var(--ink-3);}
+.gr-note strong{color: var(--fg); font-weight: 500;}
+
+/* ---- Getting there, and the record -------------------------------------- */
+.gr-lines{list-style: none; margin: clamp(18px, 2.4vw, 26px) 0 0; padding: 0;
+  display: grid; gap: 8px;}
+.gr-lines li{display: grid; gap: 4px; padding: 13px clamp(14px, 1.8vw, 18px);
+  border-radius: var(--r-sm); border: 1px solid var(--line-d); background: var(--slab);}
+.gr-lines i{font-style: normal; font-size: 10.5px; letter-spacing: 0.09em;
+  text-transform: uppercase; color: var(--ink-3);}
+.gr-lines b{font-weight: 400; font-size: 15px; line-height: 1.5; color: var(--fg);}
+
+.gr-tiles{list-style: none; margin: clamp(18px, 2.4vw, 28px) 0 0; padding: 0;
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 120px), 1fr));}
+.gr-tiles li{padding: 14px 16px; border-radius: var(--r-sm);
+  border: 1px solid var(--line-d); background: var(--slab);}
+.gr-tiles b{display: block; font-family: var(--display); font-weight: 300;
+  font-size: clamp(24px, 2.8vw, 34px); line-height: 1;
+  font-variation-settings: "wdth" var(--wide-num); color: var(--fg);}
+.gr-tiles span{display: block; margin-top: 7px;
+  font-size: 10.5px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-3);}
+
+/* ---- Every match here ---------------------------------------------------- */
+.gr-list{list-style: none; margin: clamp(20px, 2.6vw, 30px) 0 0; padding: 0;
+  display: grid; gap: 8px;}
+.gr-m__a{display: grid; align-items: center; gap: clamp(12px, 2vw, 22px);
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  padding: 14px clamp(14px, 1.8vw, 20px);
+  border-radius: var(--r-sm); border: 1px solid var(--line-d);
+  background: var(--slab); color: inherit; text-decoration: none;
+  transition: border-color 0.3s, transform 0.3s;}
+.gr-m__a:hover{border-color: rgba(var(--volt-rgb), 0.34); transform: translateX(3px);}
+.gr-m__res{display: grid; place-items: center; width: 34px; height: 34px;
+  border-radius: 10px; font-family: var(--ui); font-weight: 700; font-size: 13px;
+  border: 1px solid rgba(var(--lift), 0.14); color: var(--ink-2);}
+.gr-m.is-w .gr-m__res{background: var(--volt); border-color: transparent;
+  color: var(--text-on-brand);}
+.gr-m.is-d .gr-m__res{border-color: rgba(var(--volt-rgb), 0.5); color: var(--fg);}
+.gr-m__score{display: block; font-family: var(--display); font-weight: 400;
+  font-size: clamp(17px, 1.9vw, 21px); line-height: 1.15;
+  font-variation-settings: "wdth" var(--wide-num); color: var(--fg);}
+.gr-m__opp{display: block; margin-top: 5px; font-style: normal;
+  font-size: 12.5px; color: var(--ink-3);}
+.gr-m__date{font-size: 12.5px; color: var(--ink-3); white-space: nowrap;}
+
+@media (max-width: 560px){
+  .gr-m__a{grid-template-columns: 34px minmax(0, 1fr);}
+  .gr-m__date{grid-column: 2; margin-top: 2px;}
+}
+
+/* ---- The index ----------------------------------------------------------- */
+.gr-cards{list-style: none; margin: clamp(20px, 2.6vw, 30px) 0 0; padding: 0;
+  display: grid; gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));}
+.gr-card__a{display: block; padding: 16px 18px; border-radius: var(--r-sm);
+  border: 1px solid var(--line-d); background: var(--slab);
+  color: inherit; text-decoration: none;
+  transition: border-color 0.3s, transform 0.3s;}
+.gr-card__a:hover{border-color: rgba(var(--volt-rgb), 0.34); transform: translateY(-2px);}
+.gr-card__n{display: block; font-size: 15.5px; line-height: 1.35; color: var(--fg);}
+.gr-card__r{display: block; margin-top: 6px; font-size: 12.5px; color: var(--volt-text);
+  font-variation-settings: "wdth" var(--wide-num);}
+.gr-card__c{display: block; margin-top: 5px; font-size: 12px; line-height: 1.5;
+  color: var(--ink-3);}

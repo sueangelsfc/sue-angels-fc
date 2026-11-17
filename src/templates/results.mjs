@@ -179,7 +179,8 @@ function matchesPage(d, mode) {
             <span data-hero-season>${esc(VIEWS[DEFAULT].label)}</span></p>
           <h1 class="mt-hero__title" id="mt-h">Results<span class="volt">.</span></h1>
           <p class="mt-hero__lede">Every match ${esc(CLUB.name)} has played, across league and cups.
-            Filter by competition, by home or away, or by how it finished.</p>
+            Filter by competition, by home or away, or by how it finished.
+            <a class="mt-hero__link" href="/clubs.html">Or read it club by club.</a></p>
         </div>
         ${/* Follows the season bar. These were the club's career totals under
              an eyebrow naming one season, so 26/27 read "Played 33, Won 29,
@@ -398,7 +399,8 @@ function matchesPage(d, mode) {
           <h1 class="mt-hero__title" id="fx-h">Fixtures<span class="volt">.</span></h1>
           <p class="mt-hero__lede">Every game still to come. As soon as a result is entered the
             match moves across to <a href="/results.html">results</a>, so this page only ever shows
-            what has yet to be played.</p>
+            what has yet to be played.
+            <a class="mt-hero__link" href="/grounds.html">Where each one is played.</a></p>
         </div>
         ${upcoming.length ? `<dl class="mt-tally glassbox">
           <div><dt>Still to play</dt><dd>${esc(upcoming.length)}</dd></div>

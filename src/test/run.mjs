@@ -10917,6 +10917,7 @@ console.log(`\n${'='.repeat(66)}`);
        accepting an empty string from anything. */
     const PER_ITEM = new Set(['newsArticle', 'matchReport', 'galleryAlbum',
       'matchPage', 'articlePage', 'playerPage', 'coachPage', 'control',
+      'clubPage', 'clubsIndex', 'groundPage', 'groundsIndex',
       'articleSlug', 'splitTitle', 'isDrawnCard']);
     const wanted = new Map();
     for (const m of buildSrc.matchAll(/import \{([^}]+)\} from '\.\/templates\/([\w-]+\.mjs)'/g)) {
@@ -10959,6 +10960,404 @@ console.log(`\n${'='.repeat(66)}`);
       } catch (e) { why = e.message.slice(0, 90); }
       check('the manager page renders for a club that has recorded nothing', ok, why);
     }
+
+    /* AND SO ARE THE OPPONENT PAGES. `clubPages()` returns nothing for a club
+       that has played nobody, so the LIST is empty and the index still has to
+       draw - a heading over no clubs rather than a throw. The page itself is
+       asked with a club carrying no meetings and no division row, which is
+       the state a brand-new club's first opponent is in the moment somebody
+       adds a fixture: the one shape that must not publish a record. */
+    {
+      const { clubPage: clE, clubsIndex: ciE } = await import(path.join(ROOT, 'src', 'templates', 'club.mjs'));
+      const { clubPages: cpsE } = await import(path.join(ROOT, 'src', 'lib', 'clubs.mjs'));
+      let list = null; let why2 = '';
+      try { list = cpsE(dE); } catch (e) { why2 = e.message.slice(0, 90); }
+      /* IT IS NOT NOUGHT PAGES, AND THAT IS THE RIGHT ANSWER. The division's
+         table is transcribed into a FILE, not stored in the database, so a
+         club with an empty database still has nine clubs with a standing and
+         a fixture list - which is content, and is exactly what qualifies
+         them. What must hold on any data is the rule itself: every page has a
+         meeting or a row behind it, and with nothing played not one of them
+         claims a record. */
+      check('every opponent page has a meeting or a division row behind it',
+        Array.isArray(list) && list.length > 0
+          && list.every((c) => c.meetings.length || c.row),
+        why2 || `${list && list.length} clubs`);
+      check('an empty club has met nobody, so no opponent page claims a record',
+        Array.isArray(list) && list.every((c) => c.meetings.length === 0),
+        `${(list || []).filter((c) => c.meetings.length).length} with meetings`);
+
+      let ok2 = false;
+      try {
+        const out = ciE(dE, list || []);
+        ok2 = typeof out.body === 'string' && out.body.length > 0;
+      } catch (e) { why2 = e.message.slice(0, 90); }
+      check('the clubs index renders with no clubs in it', ok2, why2);
+
+      let ok3 = false; let noRecord = false;
+      try {
+        const bareClub = {
+          identity: 'a club', name: 'A Club', slug: 'a-club', meetings: [],
+          summary: { played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0 },
+          row: null, next: null, related: [], scorers: [], venues: [],
+        };
+        const out = clE(bareClub, dE);
+        ok3 = typeof out.body === 'string' && out.body.length > 0;
+        noRecord = !/The\s+<span class="volt">record/.test(out.body);
+      } catch (e) { why2 = e.message.slice(0, 90); }
+      check('an opponent page renders for a club never played', ok3, why2);
+      check('a club never played publishes no record at all', ok3 && noRecord);
+    }
+
+    /* AND SO ARE THE GROUNDS. A ground earns its page from a match played
+       there or a fixture about to be, so an empty database leaves exactly the
+       transcribed fixtures' venues and nothing else - which is the state the
+       page has to be right in, because it is the one a reader turning up on
+       Sunday is in too. The page is asked with a ground carrying no matches
+       at all, and must print directions and no record rather than a nought. */
+    {
+      const { groundPage: gpE, groundsIndex: giE } = await import(path.join(ROOT, 'src', 'templates', 'ground.mjs'));
+      const { groundPages: gpsE } = await import(path.join(ROOT, 'src', 'lib', 'grounds.mjs'));
+      const venuesE = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'venues.json'), 'utf8'));
+      let gl = null; let why3 = '';
+      try { gl = gpsE(dE, venuesE); } catch (e) { why3 = e.message.slice(0, 90); }
+      check('every ground page has a match or a fixture behind it',
+        Array.isArray(gl) && gl.every((g) => g.matches.length || g.fixtures.length),
+        why3 || `${gl && gl.length} grounds`);
+      check('an empty club has played nowhere, so no ground page claims a record',
+        Array.isArray(gl) && gl.every((g) => g.matches.length === 0),
+        `${(gl || []).filter((g) => g.matches.length).length} with matches`);
+
+      let gok = false;
+      try {
+        const out = giE(dE, gl || []);
+        gok = typeof out.body === 'string' && out.body.length > 0;
+      } catch (e) { why3 = e.message.slice(0, 90); }
+      check('the grounds index renders with no grounds in it', gok, why3);
+
+      let gok2 = false;
+      try {
+        const out = gpE({
+          name: 'A Ground', slug: 'a-ground', matches: [], fixtures: [],
+          home: 0, away: 0, neutral: 0, clubs: [],
+          summary: { played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0 },
+          address: '', parking: '', source: '',
+        }, dE);
+        gok2 = typeof out.body === 'string' && out.body.length > 0;
+      } catch (e) { why3 = e.message.slice(0, 90); }
+      check('a ground page renders for a ground nobody has played at', gok2, why3);
+    }
+  }
+}
+
+/* ==========================================================================
+   A CLUB'S OWN PAGE  (/clubs/<slug>.html)
+
+   The shape of this family is what makes it worth checking. Every other
+   generated family keys on something the database already made unique - a
+   row key, a slug, a player number - and this one keys on a CLUB NAME typed
+   into a panel by hand, reduced by `clubIdentity()`. Get that reduction
+   wrong in one direction and the site publishes two half-records under two
+   addresses; wrong in the other and it publishes a record against a side it
+   has never met, on the page that side is most likely to read.
+
+   So the questions here are not "did it draw". They are the two failures
+   that would look perfectly healthy on the page: a club split in two, and
+   two clubs merged into one. Both are asked of the SHIPPED markup, and both
+   have a probe, because a check that reads its subject through the thing it
+   is checking can only ever agree with it.
+   ========================================================================== */
+{
+  const { buildDataset: bdC } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const { clubPages: cpC } = await import(path.join(ROOT, 'src', 'lib', 'clubs.mjs'));
+  const { clubIdentity: ciC } = await import(path.join(ROOT, 'src', 'lib', 'club-name.mjs'));
+  const dC = bdC();
+  const clubs = cpC(dC);
+  const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
+  const onDisk = clubs.filter((c) => fs.existsSync(path.join(ROOT, 'clubs', `${c.slug}.html`)));
+
+  check('every club with a record or a standing has a page on disk',
+    onDisk.length === clubs.length && clubs.length >= 25,
+    `${onDisk.length} of ${clubs.length}`);
+
+  /* ---- ONE CLUB, ONE PAGE ----
+     The archive spells them "BPR Men's" and the transcribed fixture list
+     "BPR FC". Two pages would each carry part of the record and each would
+     read as complete. */
+  {
+    const ids = clubs.map((c) => c.identity);
+    check('no two opponent pages are the same club under two spellings',
+      new Set(ids).size === ids.length,
+      ids.filter((x, i) => ids.indexOf(x) !== i).join(', '));
+    const spellings = new Set((dC.played || []).map((m) => m.opponent).filter(Boolean));
+    const bpr = [...spellings].filter((n) => /^bpr/i.test(n));
+    check('the two BPR spellings are in the archive, so the merge is not vacuous',
+      bpr.length >= 2, bpr.join(' | '));
+    const bprPages = clubs.filter((c) => /^bpr/i.test(c.name));
+    check('both BPR spellings reach ONE page carrying every meeting',
+      bprPages.length === 1
+        && bprPages[0].meetings.length
+          === (dC.played || []).filter((m) => /^bpr/i.test(m.opponent || '')).length,
+      bprPages.map((c) => `${c.slug} ${c.meetings.length}`).join(' | '));
+  }
+
+  /* ---- ONE CLUB, TWO SIDES ----
+     Pure Football FC 2.0 was beaten three times in a friendly programme.
+     Pure Football FC 1st Team is in League Eight and has never been played.
+     Reduce both far enough and the site claims played 3, won 3 against a
+     side it has never met. */
+  {
+    const pure = clubs.filter((c) => /^pure football/i.test(c.name));
+    check('a related side keeps its own page rather than being merged',
+      pure.length === 2, pure.map((c) => c.slug).join(' | '));
+    const first = pure.find((c) => /1st/i.test(c.name));
+    check('the side never played publishes no meetings',
+      !!first && first.meetings.length === 0 && first.summary.played === 0,
+      first ? `${first.meetings.length} meetings` : 'no 1st Team page');
+    if (first) {
+      const html = read(`clubs/${first.slug}.html`);
+      check('and its page says in words that the other side is a different one',
+        /different side of the same club/i.test(html)
+          && /clubs\/pure-football-fc-2-0\.html/.test(html));
+      check('a club never played prints no played figure at all',
+        !/<li><b>\d+<\/b><span>Meetings?<\/span><\/li>/.test(html));
+    }
+  }
+
+  /* ---- THE PAGE AGREES WITH THE ENGINE ----
+     Counted a second way here, off the shipped markup, because the whole
+     value of the page is that it is the club's real record. */
+  {
+    const bad = [];
+    for (const c of onDisk) {
+      if (!c.summary.played) continue;
+      const html = read(`clubs/${c.slug}.html`);
+      /* THE RECORD BAND ALONE. The "Now" band carries the club's DIVISION
+         row, which is Played/Won/Drawn/Lost under the same labels in the
+         same markup - reading the whole document adds their league season
+         to our head-to-head and gets Brockwell at played 7. */
+      const band = (html.split('id="record"')[1] || '').split('</section>')[0];
+      const tiles = [...band.matchAll(/<li><b>([^<]+)<\/b><span>(Played|Won|Drawn|Lost)<\/span><\/li>/g)]
+        .reduce((a, m) => ({ ...a, [m[2]]: Number(m[1]) }), {});
+      if (tiles.Played !== c.summary.played || tiles.Won !== c.summary.won
+        || tiles.Drawn !== c.summary.drawn || tiles.Lost !== c.summary.lost) {
+        bad.push(`${c.slug}: page ${JSON.stringify(tiles)} v record ${c.summary.played}/${c.summary.won}/${c.summary.drawn}/${c.summary.lost}`);
+      }
+      const links = [...html.matchAll(/href="\/matches\/([^"]+)\.html"/g)].map((m) => m[1]);
+      const missing = c.meetings.filter((m) => !links.includes(m.slug));
+      if (missing.length) bad.push(`${c.slug}: ${missing.length} meetings not linked`);
+    }
+    check('every opponent page prints the record the engine derives, and links every meeting',
+      bad.length === 0, bad.slice(0, 3).join(' | '));
+  }
+
+  /* ---- THE CLUB'S OWN TOTALS ----
+     The meetings partition the matches, so the pages must add up to the
+     archive. A page quietly dropping a club would look perfectly healthy. */
+  {
+    const summed = clubs.reduce((a, c) => a + c.meetings.length, 0);
+    const withOpp = (dC.played || []).filter((m) => m.opponent).length;
+    check('every played match appears on exactly one opponent page',
+      summed === withOpp, `${summed} on pages, ${withOpp} played`);
+    check('the Angels never get a page of their own',
+      !clubs.some((c) => ciC(c.name) === ciC("Sue's Angels FC")));
+  }
+
+  /* ---- THE INDEX IS THE ONLY WAY IN ---- */
+  {
+    const idx = read('clubs.html');
+    const linked = clubs.filter((c) => idx.includes(`/clubs/${c.slug}.html`));
+    check('the index links every club page, so none of them is an orphan',
+      linked.length === clubs.length, `${linked.length} of ${clubs.length}`);
+  }
+
+  /* ---- PROBES ----
+     Three, one per failure the family is actually prone to. Each rebuilds the
+     derivation with one rule broken and asserts the check above goes red;
+     a probe that changes nothing reports a sound check as weak. */
+  {
+    /* 1. The identity reduction stops merging: BPR becomes two pages. */
+    const naive = new Map();
+    for (const m of (dC.played || [])) {
+      if (!m.opponent) continue;
+      if (!naive.has(m.opponent)) naive.set(m.opponent, []);
+      naive.get(m.opponent).push(m);
+    }
+    const naiveBpr = [...naive.keys()].filter((n) => /^bpr/i.test(n));
+    check('probe: grouping on the raw name splits one club into two pages',
+      naiveBpr.length === 2);
+
+    /* 2. The reduction goes too far: the two Pure Football sides collapse,
+          and the page for a side never played claims three wins. */
+    const { clubBase: cbC } = await import(path.join(ROOT, 'src', 'lib', 'club-name.mjs'));
+    const pureIds = new Set(clubs.filter((c) => /^pure football/i.test(c.name))
+      .map((c) => cbC(c.name)));
+    check('probe: reducing to the base alone merges a 2.0 with a 1st Team',
+      pureIds.size === 1);
+
+    /* 3. The qualifying rule is dropped: being named anywhere earns a page,
+          and the site publishes URLs with nothing on them. */
+    const have = new Set(clubs.map((c) => c.identity));
+    const nameOnly = (dC.knownClubs || []).map((n) => ciC(n))
+      .filter((k) => k && !have.has(k) && k !== ciC("Sue's Angels FC"));
+    check('probe: qualifying on a name alone would publish pages with no content',
+      nameOnly.length > 0, `${nameOnly.length} names earn no page`);
+  }
+}
+
+/* ==========================================================================
+   A GROUND'S OWN PAGE  (/grounds/<slug>.html)
+
+   The club publishes the name of a ground on every fixture and every result
+   and has never said where any of them is. Somebody driving to a Sunday
+   morning kick-off at a ground the club has played once gets a string.
+
+   Two things make this family worth checking rather than merely drawing.
+
+   The first is that a venue field is free text typed in a panel, so it holds
+   things that are not grounds at all: two of the archive's venues are an
+   OPPONENT'S CLUB NAME ("Woking Veterans Sundays", "Tattenham Rovers"),
+   which would head a page about a place with the name of a club. They are
+   named in `notGrounds` in venues.json and the check is that they publish
+   nothing.
+
+   The second is the home-and-away split, which is the one figure here a
+   reasonable person would assume rather than count. The Reeves is the club's
+   own ground and twelve matches have been played on it - and ONE OF THEM IS
+   AN AWAY FIXTURE, BPR Men's on 24 May 2026, who were the home side on this
+   pitch. Assume and the page says twelve at home; count and it says eleven
+   and one. The probe is the assumption.
+   ========================================================================== */
+{
+  const { buildDataset: bdG } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const { groundPages: gpG } = await import(path.join(ROOT, 'src', 'lib', 'grounds.mjs'));
+  const dG = bdG();
+  const venuesG = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'venues.json'), 'utf8'));
+  const grounds = gpG(dG, venuesG);
+  const readG = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
+  const diskG = grounds.filter((g) => fs.existsSync(path.join(ROOT, 'grounds', `${g.slug}.html`)));
+
+  check('every ground the club has played at or is going to has a page',
+    diskG.length === grounds.length && grounds.length >= 10,
+    `${diskG.length} of ${grounds.length}`);
+
+  /* ---- A CLUB NAME IS NOT A GROUND ---- */
+  {
+    const bad = (venuesG.notGrounds || []);
+    check('the venues file names what is typed in that field and is not a place',
+      bad.length >= 2, `${bad.length} named`);
+    const published = grounds.map((g) => g.name.toLowerCase());
+    check('a venue that is really an opponent publishes no ground page',
+      bad.every((n) => !published.includes(String(n).toLowerCase())),
+      bad.filter((n) => published.includes(String(n).toLowerCase())).join(', '));
+    /* The probe is the omission: with the list empty, those two strings
+       qualify exactly as every other venue does. */
+    const { groundPages: gpP } = await import(path.join(ROOT, 'src', 'lib', 'grounds.mjs'));
+    const loose = gpP(dG, { ...venuesG, notGrounds: [] }).map((g) => g.name.toLowerCase());
+    check('probe: with nothing excluded, an opponent would head a ground page',
+      bad.some((n) => loose.includes(String(n).toLowerCase())));
+  }
+
+  /* ---- THE SPLIT IS COUNTED, NOT ASSUMED ---- */
+  {
+    const reeves = grounds.find((g) => /reeves/i.test(g.name));
+    check('the club has played an AWAY fixture at its own ground',
+      !!reeves && reeves.away >= 1 && reeves.home >= 1,
+      reeves && `${reeves.home} home, ${reeves.away} away`);
+    const htm = reeves && fs.existsSync(path.join(ROOT, 'grounds', `${reeves.slug}.html`))
+      ? readG(`grounds/${reeves.slug}.html`) : '';
+    const words = htm.replace(/<[^>]+>/g, ' ').replace(/&#39;/g, "'").replace(/\s+/g, ' ');
+    check('the page prints the split it counted, not the one it could assume',
+      !!reeves && words.includes(`${reeves.home} matches at home here, ${reeves.away} away`),
+      reeves && `${reeves.home}/${reeves.away}`);
+    /* The probe is the assumption itself: our ground, therefore at home. */
+    check('probe: assuming the home ground is always home overstates it by one',
+      !!reeves && reeves.home !== reeves.matches.length);
+  }
+
+  /* ---- EVERY PLAYED MATCH IS ON EXACTLY ONE GROUND PAGE ----
+     Venue spellings are folded by `canonical` in venues.json. Fold two
+     grounds together and one of them loses its record entirely; fold none
+     and "Dulwich Park, Pitch 1" becomes a ninth ground with one match. */
+  {
+    const seen = new Map();
+    for (const g of grounds) for (const m of g.matches) seen.set(m.id, (seen.get(m.id) || 0) + 1);
+    const twice = [...seen.values()].filter((n) => n > 1).length;
+    check('no played match is listed at two different grounds', twice === 0, `${twice}`);
+    const withVenue = (dG.played || []).filter((m) => m.venue
+      && !(venuesG.notGrounds || []).map((n) => String(n).toLowerCase())
+        .includes(String(m.venue).toLowerCase()));
+    const missing = withVenue.filter((m) => !seen.has(m.id));
+    check('every match with a real venue reaches a ground page',
+      missing.length === 0, missing.slice(0, 3).map((m) => m.venue).join(', '));
+  }
+
+  /* ---- A WRONG PIN IS WORSE THAN NONE ----
+     One ground of the eleven has an address on record. The other ten must
+     offer no directions link at all: a map search on "Clapham Common" alone
+     can land a mile from the pitch, and a reader who followed it would have
+     no way of knowing the site never knew. */
+  {
+    const withAddr = grounds.filter((g) => g.address);
+    const without = grounds.filter((g) => !g.address);
+    check('the club has recorded an address for at least one ground',
+      withAddr.length >= 1, `${withAddr.length} of ${grounds.length}`);
+    const links = (g) => (readG(`grounds/${g.slug}.html`).match(/google\.[a-z.]+\/maps/g) || []).length;
+    check('a ground with an address offers directions',
+      withAddr.every((g) => links(g) > 0));
+    check('a ground with no address offers no directions at all',
+      without.every((g) => links(g) === 0),
+      without.filter((g) => links(g) > 0).map((g) => g.slug).join(', '));
+    check('and it says which field fills the gap',
+      without.every((g) => /Control panel/.test(readG(`grounds/${g.slug}.html`))));
+    /* The probe: a link built from the name alone would pass the first of
+       those and silently break the second on ten pages. */
+    check('probe: ten grounds would get a pin built from a name alone',
+      without.length >= 5, `${without.length}`);
+  }
+
+  /* ---- THE INDEX, AND GETTING TO ANY OF IT ----
+     A family reachable only from itself is an island: 196 sitemap entries and
+     no way in from a page anybody opens. The grounds are entered from
+     /fixtures.html, from the venue named on every match page, and from the
+     club pages' "Met at" line. The check that matters is the LAST one, and it
+     is negative: two of the archive's venues are an opponent's club name, and
+     those must stay as text. A link is a claim that the page behind it is
+     about a place. */
+  {
+    const idx = readG('grounds.html');
+    const miss = grounds.filter((g) => !idx.includes(`/grounds/${g.slug}.html`));
+    check('the grounds index links every ground page', miss.length === 0,
+      miss.map((g) => g.slug).join(', '));
+    check('the fixtures page is a way in to the grounds',
+      readG('fixtures.html').includes('href="/grounds.html"'));
+
+    /* Every match whose venue earned a page links at it; every match whose
+       venue did not - no venue at all, or an opponent's name - links at
+       nothing and prints the name it always printed. */
+    const slugOf = new Map(grounds.map((g) => [g.name, g.slug]));
+    let linked = 0; let wrongly = 0; let unlinked = 0;
+    for (const m of (dG.played || [])) {
+      const f = path.join(ROOT, 'matches', `${m.id}.html`);
+      if (!fs.existsSync(f)) continue;
+      const htm = fs.readFileSync(f, 'utf8');
+      const has = /class="mr-meta__gr"/.test(htm);
+      if (slugOf.has(m.venue)) {
+        if (has && htm.includes(`/grounds/${slugOf.get(m.venue)}.html`)) linked += 1;
+      } else if (has) wrongly += 1;
+      else unlinked += 1;
+    }
+    check('every match played at a known ground links to it',
+      linked === (dG.played || []).filter((m) => slugOf.has(m.venue)).length && linked >= 30,
+      `${linked} linked`);
+    check('a match whose venue is an opponent or blank links to no ground',
+      wrongly === 0 && unlinked >= 10, `${wrongly} wrongly, ${unlinked} plain`);
+
+    const anyClub = fs.readdirSync(path.join(ROOT, 'clubs'))
+      .filter((f) => f.endsWith('.html'))
+      .map((f) => fs.readFileSync(path.join(ROOT, 'clubs', f), 'utf8'))
+      .filter((h) => h.includes('/grounds/')).length;
+    check('an opponent page links to the grounds they were met at', anyClub >= 10, `${anyClub}`);
   }
 }
 

@@ -275,18 +275,10 @@ export function about(d) {
           <p class="ab-faced__sub">Every club we met on the way to the ${esc(d.titleDivision)} title. We beat all of them.</p>
         </div>
         <ul class="ab-crests rv">
-          ${/* EACH CREST IS A LINK NOW. The club has a page per opponent -
-               every meeting, the record, who scored - and a wall of crests
-               is where a reader is already asking the question it answers.
-               The badge is muted because the anchor prints the name. */''}
-          ${facedNames.map((n) => {
-    const href = d.clubHref ? d.clubHref(n) : '';
-    const inner = `<span class="ab-crest__im">${oppBadge(n, d.badges, 44, 44, '', !!href)}</span>
-              <span class="ab-crest__n">${esc(shortClub(n))}</span>`;
-    return `<li class="ab-crest">
-            ${href ? `<a class="ab-crest__a" href="${attr(href)}">${inner}</a>` : inner}
-          </li>`;
-  }).join('\n          ')}
+          ${facedNames.map((n) => `<li class="ab-crest">
+            <span class="ab-crest__im">${oppBadge(n, d.badges, 44, 44)}</span>
+            <span class="ab-crest__n">${esc(shortClub(n))}</span>
+          </li>`).join('\n          ')}
         </ul>
       </div>
     </section>` : '';

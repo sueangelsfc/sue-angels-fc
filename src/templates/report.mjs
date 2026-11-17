@@ -158,20 +158,7 @@ export function matchReport(m, d) {
           <span class="mr-meta__res mr-meta__res--${esc(String(m.outcome || 'x').toLowerCase())}">${esc(OUTCOME[m.outcome] || 'Result')}</span>
           <span>${esc(fmtDate(m.date, { weekday: true, long: true }))}</span>
           ${m.kick ? `<span>${esc(m.kick)}</span>` : ''}
-          ${/* THE GROUND IS A PLACE, AND IT WAS A STRING. Every result and
-               every fixture names a ground and the site had never said where
-               one is, so somebody driving to a pitch the club has played once
-               got a name and nothing else. The link is resolved through
-               `d.groundHref`, which answers only for a ground that earned a
-               page, so a venue field holding an opponent's club name - two of
-               them do - prints as the text it always was. */''}
-          ${(() => {
-    const label = m.neutral ? `${m.venue} (neutral)` : m.venue || m.homeAway;
-    const href = m.venue && d.groundHref ? d.groundHref(m.venue) : '';
-    return href
-      ? `<span><a class="mr-meta__gr" href="${attr(href)}">${esc(label)}</a></span>`
-      : `<span>${esc(label)}</span>`;
-  })()}
+          <span>${esc(m.neutral ? `${m.venue} (neutral)` : m.venue || m.homeAway)}</span>
         </p>
         ${m.resultNote ? `<p class="mr-note">${esc(m.resultNote)}.</p>` : ''}
         ${m.friendly ? `<p class="mr-note is-flag">${esc(FRIENDLY_NOTE)}</p>` : ''}

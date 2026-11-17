@@ -1,8 +1,8 @@
 /* ==========================================================================
-   FINDING ANYTHING ON 198 PAGES
+   FINDING ANYTHING ON 151 PAGES
 
-   The site publishes 198 pages - 47 players, 48 matches, 34 opponents, 22
-   articles, 12 grounds - and there has never been a way to find one. A
+   The site publishes 151 pages - 47 players, 48 matches, 22 articles, 7
+   albums - and there has never been a way to find one. A
    reader who wants Charlie Dunkley's profile has to guess that Squad is the
    way in; a reader who wants the 8-1 against Haydons Park has to know it was
    September. The nav is eight items and the sitemap is for crawlers.
@@ -44,9 +44,7 @@ import { fmtDate } from '../lib/stats.mjs';
 const GROUPS = [
   ['player', 'Players', 'player', 'players'],
   ['match', 'Matches', 'match', 'matches'],
-  ['club', 'Opponents', 'opponent', 'opponents'],
   ['news', 'News and reports', 'article', 'articles'],
-  ['ground', 'Grounds', 'ground', 'grounds'],
   ['gallery', 'Photo albums', 'album', 'albums'],
   ['coach', 'Staff', 'member of staff', 'staff'],
   ['main', 'Pages', 'page', 'pages'],
@@ -66,7 +64,7 @@ const rail = (n, count, one, many) => `<div class="xrail" aria-hidden="true">
    same is true of a surname: somebody looking for Ade Owolana may well type
    "owolana" and somebody looking for the Peps tie may type "peps all stars".
    So the haystack is the title with its punctuation flattened, plus the
-   singular name of what the row IS - "player", "ground" - so that typing the
+   singular name of what the row IS - "player", "album" - so that typing the
    kind lists the kind.
 
    AN APOSTROPHE VANISHES, IT DOES NOT BECOME A SPACE. Every other separator
@@ -126,21 +124,21 @@ export function search(d, catalogue) {
         <p class="eyebrow"><i class="eyebrow__dash" aria-hidden="true"></i> ${esc(String(total))} pages</p>
         <h1 class="se-hero__title" id="se-h">Find <span class="volt">anything.</span></h1>
         <p class="se-hero__lede">Every page on this website, in one list: every player, every match,
-          every club played, every ground, every article and every album. Start typing to narrow it.</p>
+          every article and every album. Start typing to narrow it.</p>
         ${/* A real label, visible, because a magnifying glass is a picture and
              this is the one control on the page. `type="search"` is what gives
              a phone the right keyboard and a clear button. */''}
         <div class="se-box">
           <label class="se-box__l" for="se-q">Search this website</label>
           <input class="se-box__i" id="se-q" type="search" name="q" autocomplete="off"
-            spellcheck="false" placeholder="A name, a club, a ground, a season" />
+            spellcheck="false" placeholder="A name, a club, a season" />
         </div>
         ${/* The count is announced, not only shown: a reader using a screen
              reader gets no information at all from a list quietly shortening.
              It opens saying what is there, so it is never empty furniture. */''}
         <p class="se-box__n" data-se-count role="status" aria-live="polite">${esc(String(total))} pages</p>
-        <p class="se-box__none" data-se-none hidden>Nothing matches that. Try a surname, a club,
-          a ground or a season - or clear the box to see all ${esc(String(total))} pages again.</p>
+        <p class="se-box__none" data-se-none hidden>Nothing matches that. Try a surname, a club
+          or a season - or clear the box to see all ${esc(String(total))} pages again.</p>
       </div>
     </section>`;
 

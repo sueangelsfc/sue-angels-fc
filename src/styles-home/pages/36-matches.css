@@ -323,11 +323,6 @@ html.js .mt[hidden]{display: none;}
 .mt-comps__note{margin: 12px 0 0; max-width: 74ch; font-size: 12.5px;
   line-height: 1.7; color: var(--ink-3);}
 
-/* Results opens on the match list; the club-by-club reading of the same
-   archive is one line away rather than a nav item of its own. */
-.mt-hero__link{color: var(--volt-text); text-decoration: underline;
-  text-underline-offset: 3px;}
-
 /* ---- Put it in a phone --------------------------------------------------
    Two buttons, because `webcal://` does nothing at all in a browser with no
    calendar app registered and a dead button is worse than two. They wrap

@@ -87,17 +87,17 @@ function fold(line) {
 const stampOf = (iso) => `${String(iso).replace(/-/g, '')}T000000Z`;
 const utcOf = (instant) => `${instant.replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z')}`;
 
-/* The ground's own page is the one place the address lives, so the feed is
-   handed the derived grounds rather than re-reading venues.json: two readers
-   of one fact are two answers to it. */
+/* The caller passes the venues that are a ground, each with its recorded
+   address, rather than this file re-reading venues.json: two readers of one
+   fact are two answers to it. */
 export function fixturesIcs(d, grounds = [], opts = {}) {
   const site = String(opts.site || '').replace(/\/$/, '');
   const name = String(opts.name || 'Fixtures');
-  /* The derived grounds are also what says a venue IS one. Two of the
-     archive's venue fields hold an opponent's CLUB NAME, which is the same
-     free-text field doing the same thing to the ground pages - and a club
-     name in a calendar entry's LOCATION is a phone offering directions to a
-     team. A venue that earned no ground carries no location at all. */
+  /* That list is also what says a venue IS one. Two of the archive's venue
+     fields hold an opponent's CLUB NAME, because the field is free text typed
+     in a panel - and a club name in a calendar entry's LOCATION is a phone
+     offering directions to a team. A venue not on the list carries no
+     location at all. */
   const addrOf = new Map((grounds || []).map((g) => [g.name, g.address || '']));
   const isGround = (v) => addrOf.has(v);
 

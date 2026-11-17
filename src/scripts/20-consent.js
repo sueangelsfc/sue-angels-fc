@@ -26,13 +26,38 @@
    off clears what it had stored on the device. Nothing third-party is ever
    fetched before a choice to allow it.
 
+   BEING ASKED ON EVERY PAGE IS NOT BEING ASKED ONCE. A visitor who answers
+   has never been asked again - that part always worked - but a visitor who
+   scrolls past the banner got it again on the next page, and the one after,
+   for as long as they read the site. That is the commonest thing a reader
+   actually does with a consent banner, so it was the commonest experience of
+   this one.
+
+   The law wants the visitor TOLD and able to object, not pestered until they
+   click. So the banner records that it has been on screen ('sa-privacy-seen',
+   a day stamp) and does not come back for seven days, and `informed` reads
+   that record - which is the same fact it always read, now surviving a page
+   load. Nothing is permitted by it: the two consent purposes still need a
+   SAVED choice, and silence is still not consent.
+
+   What makes that safe rather than a way of asking nobody is that the choice
+   is always one press away and always was: every page's footer links to
+   /privacy.html, which carries the button that reopens this. A banner
+   suppressed with no way back would be worse than the nagging.
+
    Stored on the device: localStorage 'sa-privacy', the choice itself, which
-   is recording a selection the visitor made (strictly necessary).
+   is recording a selection the visitor made (strictly necessary), and
+   'sa-privacy-seen', the day they were told.
    ========================================================================== */
 (function () {
   'use strict';
 
   var KEY = 'sa-privacy';
+  var SEEN = 'sa-privacy-seen';
+  /* Long enough that reading the site is not an interrogation, short enough
+     that somebody who ignored it in August is asked again rather than counted
+     as told for ever. */
+  var SEEN_DAYS = 7;
   /* Raised whenever the list of purposes changes: a new purpose means asking
      again, which the ICO's guidance requires. 2 added figures for sponsors
      and returning visits. */
@@ -55,7 +80,21 @@
      the banner comes back and asks. */
   var choice = saved && saved.v === VERSION ? saved : null;
   var earlier = saved && !choice && typeof saved.stats === 'boolean' ? saved : null;
-  var informed = !!(choice || earlier);
+
+  /* TOLD, BUT NOT ANSWERED. A day stamp under the CURRENT version, so raising
+     VERSION asks everybody again exactly as it always did - a new purpose is
+     a new thing to be told about, and a stamp that outlived it would be the
+     banner quietly skipping the one page it exists for. A storage that throws
+     falls through to the old behaviour rather than taking the banner down. */
+  function seenRecently() {
+    try {
+      var r = JSON.parse(localStorage.getItem(SEEN) || 'null');
+      if (!r || r.v !== VERSION || !r.at) return false;
+      return (Date.now() - Date.parse(r.at)) < SEEN_DAYS * 864e5;
+    } catch (e) { return false; }
+  }
+  var told = seenRecently();
+  var informed = !!(choice || earlier || told);
 
   function prefs() {
     return choice || { v: VERSION, stats: earlier ? earlier.stats : !signalled,
@@ -237,8 +276,10 @@
         decide(next);
       });
     }
-    /* On screen is the moment the visitor has been told. */
+    /* On screen is the moment the visitor has been told, and the moment it
+       stops being true of this page alone. */
     informed = true;
+    try { localStorage.setItem(SEEN, JSON.stringify({ v: VERSION, at: new Date().toISOString() })); } catch (e) {}
     if (choosing) {
       el.querySelector('.consent__opts').hidden = false;
       el.querySelector('[data-choice="choose"]').hidden = true;
@@ -256,6 +297,9 @@
   });
 
   if (choice) startAnalytics();
+  /* Told already and said nothing: leave them alone. The footer's link to
+     /privacy.html is the way back, on every page. */
+  else if (told) startAnalytics();
   /* After the boot screen, so it never lands on top of the arrival, and
      until then nothing is counted: the visitor has not been told yet. */
   else if (document.getElementById('sa-boot')) setTimeout(function () { show(false); }, 4200);

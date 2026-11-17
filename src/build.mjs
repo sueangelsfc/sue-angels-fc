@@ -46,13 +46,8 @@ import { matchPage, articlePage } from './templates/detail.mjs';
 import { plainText } from './lib/prose.mjs';
 import { playerPage } from './templates/player.mjs';
 import { coachPage } from './templates/coach.mjs';
-import { clubPage, clubsIndex } from './templates/club.mjs';
-import { clubPages } from './lib/clubs.mjs';
-import { groundPage, groundsIndex } from './templates/ground.mjs';
 import { search } from './templates/search.mjs';
 import { fixturesIcs } from './lib/ics.mjs';
-import { groundPages } from './lib/grounds.mjs';
-import { clubIdentity } from './lib/club-name.mjs';
 import { control } from './templates/control.mjs';
 import { VOCAB } from './lib/football.mjs';
 import { POSITION_VOCAB, ROLE_VOCAB } from './lib/positions.mjs';
@@ -337,11 +332,7 @@ const PAGE_CSS = {
   'join.html': 'join',
   'contact.html': 'contact',
   'programme.html': 'programme',
-  'clubs.html': 'club',
   'search.html': 'search',
-  'clubs/': 'club',
-  'grounds.html': 'ground',
-  'grounds/': 'ground',
   '404.html': 'notfound',
 };
 const bandFor = (file) => {
@@ -355,35 +346,18 @@ const bandFor = (file) => {
 /* ---- Data ---- */
 const d = buildDataset();
 
-/* ---- The clubs the Angels have met ----
-   Derived ONCE and handed to both the index and the pages, so the two can
-   never disagree about how many times two clubs have met. */
-const CLUBS = groupLive('clubs') ? clubPages(d) : [];
-
-/* WHERE AN OPPONENT'S OWN PAGE LIVES, BY NAME, so no template ever has to
-   guess a slug. The page for "BPR Men's" is addressed `bpr-fc.html`, because
-   the identity merges the two spellings the archive holds and the page takes
-   the most recent of them - a template slugifying whichever name it happened
-   to be holding would link at an address nobody generated. Empty for a club
-   with no page, so the caller prints the name plain rather than a dead link. */
-{
-  const by = new Map();
-  for (const c of CLUBS) by.set(clubIdentity(c.name), `/clubs/${c.slug}.html`);
-  d.clubHref = (name) => by.get(clubIdentity(name)) || '';
-}
-
-/* ---- The grounds the Angels play on ----
-   The venues file is read here rather than inside the library, because which
-   strings are grounds and which are an opponent's name typed into the venue
-   field is a fact recorded in that file. */
-const GROUNDS = groupLive('grounds')
-  ? groundPages(d, JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'venues.json'), 'utf8')))
-  : [];
-{
-  const by = new Map(GROUNDS.map((g) => [g.name, `/grounds/${g.slug}.html`]));
-  d.groundHref = (name) => by.get(String(name || '').trim()) || '';
-}
-
+/* ---- The venues that are a GROUND ----
+   Read here rather than inside the calendar, because which strings are a
+   ground and which are an opponent's club name typed into a free-text venue
+   field is a fact recorded in venues.json. A calendar entry whose LOCATION is
+   a team would send somebody looking for a place that is not one. */
+const ICS_GROUNDS = (() => {
+  const v = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'venues.json'), 'utf8'));
+  const skip = new Set(v.notGrounds || []);
+  const addr = v.grounds || {};
+  return (v.known || []).filter((n) => !skip.has(n))
+    .map((n) => ({ name: n, address: (addr[n] && addr[n].address) || '' }));
+})();
 
 /* THE PROGRAMME PDF, IF ONE HAS BEEN MADE. Checked on disk rather than
    assumed, exactly like the drawn share cards and for the same reason: the
@@ -1131,11 +1105,9 @@ const breadcrumb = (items) => ({
 const groundPlace = (venue) => {
   if (!venue) return undefined;
   const addr = d.groundFor ? (d.groundFor(venue) || null) : null;
-  const href = d.groundHref ? d.groundHref(venue) : '';
   return {
     '@type': 'Place',
     name: venue,
-    ...(href ? { url: `${CLUB.site}${href}` } : {}),
     ...(addr && addr.address
       ? { address: { '@type': 'PostalAddress', streetAddress: addr.address, addressCountry: 'GB' } }
       : {}),
@@ -1230,8 +1202,6 @@ const OG = {
   'behind-the-scenes.html': ['og-videos', 'Behind the scenes at Sue’s Angels FC'],
   'join.html': ['og-join', 'Join Sue’s Angels FC: play, volunteer, shoot or sponsor'],
   'contact.html': ['og-contact', 'Contact Sue’s Angels FC at The Reeves, Hanworth'],
-  'clubs.html': ['og-results', 'Every club Sue’s Angels FC have played, and how each meeting went'],
-  'grounds.html': ['og-fixtures', 'Every ground Sue’s Angels FC play on, and how to get to each one'],
   '404.html': ['og-404', 'Off target: that page does not exist on the Sue’s Angels FC website'],
 };
 const ogCard = (name) => `/assets/social/${name}.jpg`;
@@ -1431,16 +1401,6 @@ const routes = [
 
   { file: 'contact.html', tpl: () => contact(d), ...meta('contact', `Contact · ${CLUB.name}`,
       `Get in touch with ${CLUB.name}. Enquiries about trials, volunteering, media, sponsorship and the cause.`) },
-
-  { file: 'clubs.html', tpl: () => clubsIndex(d, CLUBS),
-    title: `Every club played · ${CLUB.name}`,
-    description: `Every club ${CLUB.name} have played in league and cup, the full record against each of them, who scored, and where each club stands now.`,
-    schema: [breadcrumb([{ label: 'Home', href: '/' }, { label: 'Every club played', href: '/clubs.html' }])] },
-
-  { file: 'grounds.html', tpl: () => groundsIndex(d, GROUNDS),
-    title: `Every ground played on · ${CLUB.name}`,
-    description: `Every ground ${CLUB.name} have played on, the club's record at each of them, every match played there, and how to get to it.`,
-    schema: [breadcrumb([{ label: 'Home', href: '/' }, { label: 'Every ground played on', href: '/grounds.html' }])] },
 
   { file: '404.html', tpl: () => notFound(d), title: `Page not found · ${CLUB.name}`,
     description: "That page does not exist. Find Sue's Angels FC results, the squad, the league table, club news and how to get in touch from here instead.",
@@ -1672,86 +1632,6 @@ if (manager) {
   cat(`/coaches/${manager.slug}.html`, manager.name, 'coach');
 }
 
-/* ---- A page per club the Angels have met ----
-   WHO QUALIFIES IS clubPages()'s DECISION, not this file's: a played match or
-   a row in the division the club is in now, and nothing else. See the header
-   of src/lib/clubs.mjs for why being mentioned somewhere is not content. */
-for (const c of CLUBS) {
-  const out = clubPage(c, d);
-  const s2 = c.summary;
-  write(`clubs/${c.slug}.html`, page({
-    title: `${c.name} v ${CLUB.name} · Head to head`,
-    description: fitDesc(
-      s2.played
-        ? `${CLUB.name} v ${c.name}: played ${s2.played}, won ${s2.won}, drawn ${s2.drawn}, lost ${s2.lost}.`
-        : `${CLUB.name} have not yet played ${c.name}.`,
-      s2.played ? `Every meeting, the scorers and the full record.` : `Their division, their standing and the fixture to come.`,
-      `Sunday-league football in south-west London.`),
-    path: `/clubs/${c.slug}.html`,
-    ogImage: ogCard('og-results'),
-    ogImageAlt: `${CLUB.name} against ${c.name}`,
-    body: out.body,
-    bodyClass: out.bodyClass,
-    css: out.css,
-    pageCss: bandFor('clubs/'),
-    shell: out.shell,
-    footerHtml: out.footerHtml,
-    preMain: out.preMain,
-    assetV: homeV,
-    jsV: assetV,
-    schema: [
-      {
-        '@type': 'SportsTeam',
-        '@id': `${CLUB.site}/clubs/${c.slug}.html#club`,
-        name: c.name,
-        sport: 'Association football',
-        url: `${CLUB.site}/clubs/${c.slug}.html`,
-      },
-      breadcrumb([{ label: 'Home', href: '/' }, { label: 'Every club played', href: '/clubs.html' },
-        { label: c.name, href: `/clubs/${c.slug}.html` }]),
-    ],
-  }));
-  cat(`/clubs/${c.slug}.html`, `${c.name} head to head`, 'club');
-}
-
-/* ---- A page per ground the Angels play on ---- */
-for (const g of GROUNDS) {
-  const out = groundPage(g, d);
-  write(`grounds/${g.slug}.html`, page({
-    title: `${g.name} · ${CLUB.name}`,
-    description: fitDesc(
-      g.summary.played
-        ? `${CLUB.name} at ${g.name}: played ${g.summary.played}, won ${g.summary.won}.`
-        : `${CLUB.name} have a fixture at ${g.name}.`,
-      g.address ? `${g.address}.` : 'Every match played here, and the club\u2019s record on it.',
-      `Sunday-league football in south-west London.`),
-    path: `/grounds/${g.slug}.html`,
-    ogImage: ogCard('og-fixtures'),
-    ogImageAlt: `${CLUB.name} at ${g.name}`,
-    body: out.body,
-    bodyClass: out.bodyClass,
-    css: out.css,
-    pageCss: bandFor('grounds/'),
-    shell: out.shell,
-    footerHtml: out.footerHtml,
-    preMain: out.preMain,
-    assetV: homeV,
-    jsV: assetV,
-    schema: [
-      {
-        '@type': 'Place',
-        '@id': `${CLUB.site}/grounds/${g.slug}.html#place`,
-        name: g.name,
-        url: `${CLUB.site}/grounds/${g.slug}.html`,
-        ...(g.address ? { address: { '@type': 'PostalAddress', streetAddress: g.address, addressCountry: 'GB' } } : {}),
-      },
-      breadcrumb([{ label: 'Home', href: '/' }, { label: 'Every ground played on', href: '/grounds.html' },
-        { label: g.name, href: `/grounds/${g.slug}.html` }]),
-    ],
-  }));
-  cat(`/grounds/${g.slug}.html`, g.name, 'ground');
-}
-
 /* ---- Match centre ----
    Every PLAYED match gets a page. A fixture with no result has nothing to
    report yet and lives on /fixtures.html until it does, so writing a page for
@@ -1957,9 +1837,9 @@ write('stats-pages.json', JSON.stringify(catalogue));
 /* ---- The fixtures as a calendar ----------------------------------------
    A subscription, so a phone re-reads it and a fixture cancelled in the panel
    leaves the calendar on the next publish. src/lib/ics.mjs holds the six
-   decisions; what matters here is that it is handed the DERIVED grounds, so
-   the only reader of a ground's address is the one that derived it. */
-write('fixtures.ics', fixturesIcs(d, GROUNDS, {
+   decisions; what matters here is that it is told which venues are a ground,
+   because a LOCATION pointed at an opponent's name is worse than none. */
+write('fixtures.ics', fixturesIcs(d, ICS_GROUNDS, {
   site: CLUB.site, name: `${CLUB.name} fixtures`, club: CLUB.name,
 }));
 
@@ -2052,11 +1932,10 @@ console.log(`sitemap urls: ${urls.length}`);
    nobody trusts, and if this ever removes something it should not, the line
    it prints is the evidence. */
 if (!CHECK) {
-  /* `clubs` and `coaches` were missing from this list, which is the same
-     latent orphan either way: a club renamed in the panel, or a manager, and
-     the old address stays on disk serving a page nothing links to and the
-     sitemap does not know about. */
-  const OWNED = ['news', 'matches', 'players', 'gallery', 'clubs', 'coaches', 'grounds'];
+  /* `coaches` was missing from this list, a latent orphan: a manager renamed
+     in the panel leaves the old address on disk serving a page nothing links
+     to and the sitemap does not know about. */
+  const OWNED = ['news', 'matches', 'players', 'gallery', 'coaches'];
   const kept = new Set(written);
   const orphans = [];
   for (const dir of OWNED) {

@@ -242,6 +242,25 @@ b{font-weight: 700;}
 .mnav__nav{display: flex; flex-direction: column; gap: 26px;
   width: 100%; max-width: 460px;
   padding: 92px 28px 40px;}
+.mnav__search{position: relative; display: flex; align-items: center;
+  height: 52px;
+  padding: 0 14px 0 42px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.15);}
+.mnav__search:focus-within{border-color: rgba(var(--volt-rgb), 0.55);
+  box-shadow: 0 0 0 3px rgba(var(--volt-rgb), 0.18);}
+.mnav__search__i{position: absolute; left: 15px; top: 50%;
+  display: flex; transform: translateY(-50%);
+  color: var(--ink-3); pointer-events: none;}
+.mnav__search:focus-within .mnav__search__i{color: var(--volt);}
+/* 16px, because anything smaller makes iOS zoom the page on focus and the
+   reader lands inside a menu they then have to pinch back out of. */
+.mnav__search__f{width: 100%;
+  background: none; border: 0; outline: none;
+  color: var(--fg);
+  font-family: var(--body); font-weight: 600; font-size: 16px;}
+.mnav__search__f::placeholder{color: var(--ink-3); font-weight: 500;}
 .mnav__home{font-family: var(--display); font-weight: 700;
   font-size: 30px; letter-spacing: -0.03em; color: var(--fg);}
 .mnav__home:hover{color: var(--volt);}
@@ -349,6 +368,41 @@ b{font-weight: 700;}
   backdrop-filter: blur(3px) saturate(118%);
   border-color: rgba(255, 255, 255, 0.22);}
 .hx__navright{display: flex; align-items: center; gap: 12px;}
+
+/* ---- The search box, top right ----------------------------------------
+   A plain form, so it weighs nothing in `sa.js`. It sits beside Join the
+   club because that is the corner a reader looks in for one, and it is
+   narrow on purpose: the index it opens is the place to read a list, and a
+   box wide enough to compete with the nav would be a second headline. */
+.hx__search{position: relative; display: flex; align-items: center;
+  height: 42px; width: 168px;
+  padding: 0 12px 0 34px;
+  border-radius: var(--pillr);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  transition: width 0.4s var(--ease-out-expo), background 0.3s, border-color 0.3s;}
+/* The ring goes round the whole control, not round an input with no border
+   of its own. */
+.hx__search:focus-within{width: 232px;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(var(--volt-rgb), 0.55);
+  box-shadow: 0 0 0 3px rgba(var(--volt-rgb), 0.18);}
+.hx__search__i{position: absolute; left: 12px; top: 50%;
+  display: flex; transform: translateY(-50%);
+  color: var(--ink-3); pointer-events: none;
+  transition: color 0.3s;}
+.hx__search:focus-within .hx__search__i{color: var(--volt);}
+.hx__search__f{width: 100%;
+  background: none; border: 0; outline: none;
+  color: var(--fg);
+  font-family: var(--body); font-weight: 600; font-size: 14px;}
+.hx__search__f::placeholder{color: var(--ink-3); font-weight: 500;}
+/* Safari paints a magnifier of its own inside a search field and it would
+   sit on top of ours. The browser's own clear button is left alone: drawing
+   one costs a quarter of a kilobyte of masked data URI and home.css is at
+   its ceiling. */
+.hx__search__f::-webkit-search-decoration,
+.hx__search__f::-webkit-search-results-button{-webkit-appearance: none;}
 .hx__join{background: var(--volt); color: var(--navy);
   font-family: var(--body); font-weight: 750; font-size: 14.5px;
   padding: 12px 24px; border-radius: var(--pillr);
@@ -526,6 +580,9 @@ b{font-weight: 700;}
   box-shadow: 0 12px 34px rgba(var(--volt-rgb), 0.28);}
 @media (max-width: 920px){
 .hx__mainnav{display: none;}
+/* The bar has room for a brand and a burger. The same form is in the menu
+   the burger opens, full width, so nobody on a phone loses the search. */
+.hx__search{display: none;}
 .hx__burger{display: flex;}
 .hx__foot{flex-direction: column; align-items: stretch;}
 .hx__card{width: 100%;}

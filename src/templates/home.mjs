@@ -218,6 +218,7 @@ const shortClub = (name) => String(name || '')
 const SVG = {
   star: '<svg class="spark" viewBox="0 0 16 16" width="10" height="10" fill="currentColor" aria-hidden="true"><path d="M8 1l1.5 5L15 8l-5.5 1.5L8 15l-1.5-5.5L1 8l5.5-1.5z"/></svg>',
   chev: (d) => `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`,
+  magnifier: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>',
   caret: '<svg class="hx__chev" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>',
   calendar: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>',
   clock: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>',
@@ -383,6 +384,19 @@ export function home(d) {
             ${navGroups}
           </nav>
           <div class="hx__navright">
+            <form class="hx__search" role="search" action="/search.html" method="get">
+              ${/* A PLAIN FORM, so a search box on every page of the site costs
+                   `sa.js` nothing - it had 92 bytes left of its ceiling and a
+                   header control is not a reason to raise it. Submitting goes
+                   to the index with ?q=, which search.js reads; with scripting
+                   blocked the reader still lands on the complete index rather
+                   than on nothing, because the index IS the page. */''}
+              <label class="sr-only" for="hx-q">Search this website</label>
+              <span class="hx__search__i" aria-hidden="true">${SVG.magnifier}</span>
+              <input class="hx__search__f" id="hx-q" type="search" name="q" autocomplete="off"
+                spellcheck="false" placeholder="Search" />
+              <button class="sr-only" type="submit">Search</button>
+            </form>
             <a class="hx__join" href="/join.html">Join the club</a>
             <button class="hx__burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mnav">
               <span></span><span></span><span></span>
@@ -2787,6 +2801,17 @@ export function sitePreMain() {
 <div class="gridlines" aria-hidden="true"></div>
 <div class="mnav" id="mnav" inert>
   <nav class="mnav__nav" aria-label="Mobile">
+    ${/* The same form, full width, because the header's is not drawn below
+         1024: a phone's bar has room for a brand and a burger and nothing
+         else, and a search a reader cannot reach on a phone leaves out most
+         of the audience. */''}
+    <form class="mnav__search" role="search" action="/search.html" method="get">
+      <label class="sr-only" for="mn-q">Search this website</label>
+      <span class="mnav__search__i" aria-hidden="true">${SVG.magnifier}</span>
+      <input class="mnav__search__f" id="mn-q" type="search" name="q" autocomplete="off"
+        spellcheck="false" placeholder="Search the site" />
+      <button class="sr-only" type="submit">Search</button>
+    </form>
     <a class="mnav__home" href="/">Home</a>
     <div class="mnav__grid">
       ${NAV_TREE.map((g) => `<div class="mnav__grp">
@@ -2820,6 +2845,19 @@ export function siteHeader(current) {
             ${groups}
           </nav>
           <div class="hx__navright">
+            <form class="hx__search" role="search" action="/search.html" method="get">
+              ${/* A PLAIN FORM, so a search box on every page of the site costs
+                   `sa.js` nothing - it had 92 bytes left of its ceiling and a
+                   header control is not a reason to raise it. Submitting goes
+                   to the index with ?q=, which search.js reads; with scripting
+                   blocked the reader still lands on the complete index rather
+                   than on nothing, because the index IS the page. */''}
+              <label class="sr-only" for="hx-q">Search this website</label>
+              <span class="hx__search__i" aria-hidden="true">${SVG.magnifier}</span>
+              <input class="hx__search__f" id="hx-q" type="search" name="q" autocomplete="off"
+                spellcheck="false" placeholder="Search" />
+              <button class="sr-only" type="submit">Search</button>
+            </form>
             <a class="hx__join" href="/join.html">Join the club</a>
             <button class="hx__burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mnav">
               <span></span><span></span><span></span>

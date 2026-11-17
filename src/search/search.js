@@ -24,9 +24,16 @@
      eight of them is worse, and a strip reading 01 then 04 is the defect this
      site already fixed once on the home page.
 
-   It does not debounce. The list is 198 rows of two text nodes and the work
+   It does not debounce. The list is 151 rows of two text nodes and the work
    is a substring test per row; a timer here would add latency to make a
    measurement look better.
+
+   THE HEADER'S BOX ARRIVES HERE AS ?q=. That box is on every page of the
+   site and is a plain form, because the alternative was a site-wide control
+   in `sa.js`, which had 92 bytes left of its ceiling. So the query comes in
+   on the address, is put into this page's own box and applied before the
+   first paint of the filtered list - and the address still holds it
+   afterwards, which is what makes a search shareable and bookmarkable.
    ========================================================================== */
 (function () {
   var box = document.querySelector('[data-se-count]');
@@ -97,6 +104,15 @@
       if (terms.length && !shown) none.removeAttribute('hidden');
       else none.setAttribute('hidden', '');
     }
+  }
+
+  /* Read BEFORE the first apply, never after, or a reader arriving from the
+     header watches 151 rows draw and then vanish. A half-escaped address is
+     not a reason to blank the page, so a bad escape leaves the box empty and
+     the index whole. */
+  var q = /[?&]q=([^&]*)/.exec(location.search);
+  if (q && !input.value) {
+    try { input.value = decodeURIComponent(q[1].replace(/\+/g, ' ')); } catch (e) {}
   }
 
   input.addEventListener('input', apply);

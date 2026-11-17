@@ -336,6 +336,32 @@ export function normaliseMatch(raw, detail) {
 }
 
 /* ---- Team summary ----------------------------------------------------- */
+/* ==========================================================================
+   WHAT A PLAYER COULD HAVE PLAYED IN
+
+   A WALKOVER IS A MATCH THE CLUB PLAYED AND NOBODY APPEARED IN. The league
+   awards it, three points go on the table, the played column moves - and no
+   football happened, so no player started, came on, scored, kept a clean
+   sheet or wore the armband. That is already the rule everywhere the engine
+   counts what a player DID: a walkover carries no goals, and since October
+   it cannot prove a clean sheet either.
+
+   It was not the rule for what a player COULD have done, and a denominator
+   is exactly that claim. Stewart Luwawa started every match of 25/26 that
+   was actually contested and his profile read "30 starts, of 33 played",
+   drawing a gap on the ring for three Sundays nobody was asked to turn up
+   for. All three are 25/26, so the club's record reads 42 competitive and
+   39 contested, and every man in the squad was being measured against three
+   afternoons that did not exist.
+
+   The club's own figures are untouched and must be: played, won and the
+   points are the league's arithmetic, not this one, and `npm run verify`
+   reconciles them against the published table. This is the other question -
+   out of how many was he available - and it has a different answer.
+   ========================================================================== */
+export const isPlayable = (m) => !!m && m.played && !m.friendly && m.kind !== 'walkover';
+export const playableMatches = (list) => (list || []).filter(isPlayable);
+
 export function teamSummary(matches) {
   const played = matches.filter((m) => m.played);
   const s = {

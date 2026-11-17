@@ -28,8 +28,8 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="preload" href="/assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
 
-<link rel="stylesheet" href="/home.css?v=ecbdf22d">
-<link rel="stylesheet" href="/p-about.css?v=515e86fa">
+<link rel="stylesheet" href="/home.css?v=15f06f71">
+<link rel="stylesheet" href="/p-about.css?v=70114cad">
 <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":["SportsTeam","SportsOrganization"],"@id":"https://www.suesangelsfc.co.uk/#club","name":"Sue's Angels FC","alternateName":["Sue's Angels","Sues Angels","Sues Angels FC","Sue's Angels Football Club","The Angels"],"url":"https://www.suesangelsfc.co.uk/","sport":"Association football","foundingDate":"2025","logo":"https://www.suesangelsfc.co.uk/assets/brand/badge.png","email":"suesangelsfc@gmail.com","inLanguage":"en-GB","memberOf":{"@type":"SportsOrganization","name":"Southern Sunday Football League"},"location":{"@type":"Place","name":"The Reeves Sports Club","address":{"@type":"PostalAddress","streetAddress":"Snakey Lane","addressLocality":"Hanworth","addressRegion":"London","addressCountry":"GB"}},"areaServed":[{"@type":"Place","name":"Kingston upon Thames"},{"@type":"Place","name":"Hanworth"},{"@type":"Place","name":"Sunbury-on-Thames"},{"@type":"Place","name":"Twickenham"},{"@type":"Place","name":"Staines-upon-Thames"}],"sameAs":["https://www.instagram.com/suesangelsfc/","https://www.tiktok.com/@suesangelsfc","https://www.facebook.com/people/Sues-Angels-FC/61576808678302/"]},{"@type":"WebSite","@id":"https://www.suesangelsfc.co.uk/#website","url":"https://www.suesangelsfc.co.uk/","name":"Sue's Angels FC","inLanguage":"en-GB","publisher":{"@id":"https://www.suesangelsfc.co.uk/#club"}},{"@type":"AboutPage","@id":"https://www.suesangelsfc.co.uk/about.html#webpage","url":"https://www.suesangelsfc.co.uk/about.html","name":"Our story · Sue's Angels FC","description":"How Sue's Angels FC began in 2025 in memory of Susan Anne Martin, and how a club built on one family's loss won its league unbeaten at the first try.","inLanguage":"en-GB","isPartOf":{"@id":"https://www.suesangelsfc.co.uk/#website"},"about":{"@id":"https://www.suesangelsfc.co.uk/#club"},"primaryImageOfPage":{"@type":"ImageObject","url":"https://www.suesangelsfc.co.uk/assets/social/og-about.jpg"},"breadcrumb":{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://www.suesangelsfc.co.uk/"},{"@type":"ListItem","position":2,"name":"Our story","item":"https://www.suesangelsfc.co.uk/about.html"}]}}]}</script>
 </head>
 <body class="is-home is-sub">
@@ -45,6 +45,14 @@
 <div class="gridlines" aria-hidden="true"></div>
 <div class="mnav" id="mnav" inert>
   <nav class="mnav__nav" aria-label="Mobile">
+    
+    <form class="mnav__search" role="search" action="/search.html" method="get">
+      <label class="sr-only" for="mn-q">Search this website</label>
+      <span class="mnav__search__i" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></span>
+      <input class="mnav__search__f" id="mn-q" type="search" name="q" autocomplete="off"
+        spellcheck="false" placeholder="Search the site" />
+      <button class="sr-only" type="submit">Search</button>
+    </form>
     <a class="mnav__home" href="/">Home</a>
     <div class="mnav__grid">
       <div class="mnav__grp">
@@ -134,6 +142,14 @@
             </div>
           </nav>
           <div class="hx__navright">
+            <form class="hx__search" role="search" action="/search.html" method="get">
+              
+              <label class="sr-only" for="hx-q">Search this website</label>
+              <span class="hx__search__i" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></span>
+              <input class="hx__search__f" id="hx-q" type="search" name="q" autocomplete="off"
+                spellcheck="false" placeholder="Search" />
+              <button class="sr-only" type="submit">Search</button>
+            </form>
             <a class="hx__join" href="/join.html">Join the club</a>
             <button class="hx__burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mnav">
               <span></span><span></span><span></span>
@@ -317,62 +333,61 @@
           <p class="ab-faced__sub">Every club we met on the way to the League Ten title. We beat all of them.</p>
         </div>
         <ul class="ab-crests rv">
-          
           <li class="ab-crest">
-            <a class="ab-crest__a" href="/clubs/pure-football-fc-2-0.html"><span class="ab-crest__im"><img src="/assets/badge/pure-fc.webp" alt="" width="44" height="44" loading="lazy" decoding="async" /></span>
-              <span class="ab-crest__n">Pure Football</span></a>
+            <span class="ab-crest__im"><img src="/assets/badge/pure-fc.webp" alt="Pure Football FC 2.0 club crest" width="44" height="44" loading="lazy" decoding="async" /></span>
+            <span class="ab-crest__n">Pure Football</span>
           </li>
           <li class="ab-crest">
-            <a class="ab-crest__a" href="/clubs/dynamo-london-fc.html"><span class="ab-crest__im"><img src="/assets/badge/dynamo-london.webp" alt="" width="44" height="44" loading="lazy" decoding="async" /></span>
-              <span class="ab-crest__n">Dynamo London</span></a>
+            <span class="ab-crest__im"><img src="/assets/badge/dynamo-london.webp" alt="Dynamo London FC club crest" width="44" height="44" loading="lazy" decoding="async" /></span>
+            <span class="ab-crest__n">Dynamo London</span>
           </li>
           <li class="ab-crest">
-            <a class="ab-crest__a" href="/clubs/brockwell-violets-fc.html"><span class="ab-crest__im"><img src="/assets/badge/brockwell-violets.webp" alt="" width="44" height="44" loading="lazy" decoding="async" /></span>
-              <span class="ab-crest__n">Brockwell Violets</span></a>
+            <span class="ab-crest__im"><img src="/assets/badge/brockwell-violets.webp" alt="Brockwell Violets FC club crest" width="44" height="44" loading="lazy" decoding="async" /></span>
+            <span class="ab-crest__n">Brockwell Violets</span>
           </li>
           <li class="ab-crest">
-            <a class="ab-crest__a" href="/clubs/hillside-elite-fc-blues.html"><span class="ab-crest__im"><img src="/assets/badge/hillside-elite.webp" alt="" width="44" height="44" loading="lazy" decoding="async" /></span>
-              <span class="ab-crest__n">Hillside Elite FC Blues</span></a>
+            <span class="ab-crest__im"><img src="/assets/badge/hillside-elite.webp" alt="Hillside Elite FC Blues club crest" width="44" height="44" loading="lazy" decoding="async" /></span>
+            <span class="ab-crest__n">Hillside Elite FC Blues</span>
           </li>
           <li class="ab-crest">
-            <a class="ab-crest__a" href="/clubs/old-freemens.html"><span class="ab-crest__im"><img src="/assets/badge/old-freemens.webp" alt="" width="44" height="44" loading="lazy" decoding="async" /></span>
-              <span class="ab-crest__n">Old Freemen&#39;s</span></a>
+            <span class="ab-crest__im"><img src="/assets/badge/old-freemens.webp" alt="Old Freemen&#39;s club crest" width="44" height="44" loading="lazy" decoding="async" /></span>
+            <span class="ab-crest__n">Old Freemen&#39;s</span>
           </li>
           <li class="ab-crest">
-            <a class="ab-crest__a" href="/clubs/shepherds-tuesday.html"><span class="ab-crest__im"><img src="/assets/badge/shepherds-tuesday.webp" alt="" width="44" height="44" loading="lazy" decoding="async" /></span>
-              <span class="ab-crest__n">Shepherd&#39;s Tuesday</span></a>
+            <span class="ab-crest__im"><img src="/assets/badge/shepherds-tuesday.webp" alt="Shepherd&#39;s Tuesday club crest" width="44" height="44" loading="lazy" decoding="async" /></span>
+            <span class="ab-crest__n">Shepherd&#39;s Tuesday</span>
           </li>
           <li class="ab-crest">
-            <a class="ab-crest__a" href="/clubs/sporting-club-catania.html"><span class="ab-crest__im"><img src="/assets/badge/sporting-catania.webp" alt="" width="44" height="44" loading="lazy" decoding="async" /></span>
-              <span class="ab-crest__n">Sporting Club Catania</span></a>
+            <span class="ab-crest__im"><img src="/assets/badge/sporting-catania.webp" alt="Sporting Club Catania club crest" width="44" height="44" loading="lazy" decoding="async" /></span>
+            <span class="ab-crest__n">Sporting Club Catania</span>
           </li>
           <li class="ab-crest">
-            <a class="ab-crest__a" href="/clubs/balham-bteckerz.html"><span class="ab-crest__im"><img src="/assets/badge/balham-bteckerz.webp" alt="" width="44" height="44" loading="lazy" decoding="async" /></span>
-              <span class="ab-crest__n">Balham Bteckerz</span></a>
+            <span class="ab-crest__im"><img src="/assets/badge/balham-bteckerz.webp" alt="Balham Bteckerz club crest" width="44" height="44" loading="lazy" decoding="async" /></span>
+            <span class="ab-crest__n">Balham Bteckerz</span>
           </li>
           <li class="ab-crest">
-            <a class="ab-crest__a" href="/clubs/bpr-fc.html"><span class="ab-crest__im"><img src="/assets/badge/bpr-fc.webp" alt="" width="44" height="44" loading="lazy" decoding="async" /></span>
-              <span class="ab-crest__n">BPR Men&#39;s</span></a>
+            <span class="ab-crest__im"><img src="/assets/badge/bpr-fc.webp" alt="BPR Men&#39;s club crest" width="44" height="44" loading="lazy" decoding="async" /></span>
+            <span class="ab-crest__n">BPR Men&#39;s</span>
           </li>
           <li class="ab-crest">
-            <a class="ab-crest__a" href="/clubs/three-little-birds-fc.html"><span class="ab-crest__im"><img src="/assets/badge/three-little-birds.webp" alt="" width="44" height="44" loading="lazy" decoding="async" /></span>
-              <span class="ab-crest__n">Three Little Birds</span></a>
+            <span class="ab-crest__im"><img src="/assets/badge/three-little-birds.webp" alt="Three Little Birds FC club crest" width="44" height="44" loading="lazy" decoding="async" /></span>
+            <span class="ab-crest__n">Three Little Birds</span>
           </li>
           <li class="ab-crest">
-            <a class="ab-crest__a" href="/clubs/haydons-park.html"><span class="ab-crest__im"><img src="/assets/badge/haydons-park.png" alt="" width="44" height="44" loading="lazy" decoding="async" /></span>
-              <span class="ab-crest__n">Haydons Park</span></a>
+            <span class="ab-crest__im"><img src="/assets/badge/haydons-park.png" alt="Haydons Park club crest" width="44" height="44" loading="lazy" decoding="async" /></span>
+            <span class="ab-crest__n">Haydons Park</span>
           </li>
           <li class="ab-crest">
-            <a class="ab-crest__a" href="/clubs/junction-elite-fc-sunday-3rd-team.html"><span class="ab-crest__im"><img src="/assets/badge/junction-elite.webp" alt="" width="44" height="44" loading="lazy" decoding="async" /></span>
-              <span class="ab-crest__n">Junction Elite FC Sunday 3rd Team</span></a>
+            <span class="ab-crest__im"><img src="/assets/badge/junction-elite.webp" alt="Junction Elite FC Sunday 3rd Team club crest" width="44" height="44" loading="lazy" decoding="async" /></span>
+            <span class="ab-crest__n">Junction Elite FC Sunday 3rd Team</span>
           </li>
           <li class="ab-crest">
-            <a class="ab-crest__a" href="/clubs/barnes-stormers-fc.html"><span class="ab-crest__im"><img src="/assets/badge/barnes-stormers.webp" alt="" width="44" height="44" loading="lazy" decoding="async" /></span>
-              <span class="ab-crest__n">Barnes Stormers</span></a>
+            <span class="ab-crest__im"><img src="/assets/badge/barnes-stormers.webp" alt="Barnes Stormers FC club crest" width="44" height="44" loading="lazy" decoding="async" /></span>
+            <span class="ab-crest__n">Barnes Stormers</span>
           </li>
           <li class="ab-crest">
-            <a class="ab-crest__a" href="/clubs/tsm-rovers.html"><span class="ab-crest__im"><img src="/assets/badge/tsm-rovers.webp" alt="" width="44" height="44" loading="lazy" decoding="async" /></span>
-              <span class="ab-crest__n">TSM Rovers</span></a>
+            <span class="ab-crest__im"><img src="/assets/badge/tsm-rovers.webp" alt="TSM Rovers club crest" width="44" height="44" loading="lazy" decoding="async" /></span>
+            <span class="ab-crest__n">TSM Rovers</span>
           </li>
         </ul>
       </div>
@@ -532,6 +547,6 @@
   </footer>
 <div class="toasts" data-toasts role="region" aria-label="Notifications" aria-live="polite"></div>
 
-<script src="/sa.js?v=788df07b" defer></script>
+<script src="/sa.js?v=45ea0832" defer></script>
 </body>
 </html>

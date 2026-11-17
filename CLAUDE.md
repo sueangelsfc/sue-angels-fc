@@ -32,7 +32,7 @@ src/
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        5,572-check suite against the generated output
+  test/run.mjs        5,682-check suite against the generated output
   test/dom.mjs        a small, strict DOM that throws rather than guessing
   test/panel-render.mjs  the panel, rendered, and asked what came out
 ```
@@ -768,6 +768,78 @@ the pre-push hook stopped the club's own match report leaving the laptop.
   dropping the trailing `.0` off coordinates and `--d:0.0s` is 0.9KB raw and
   0.1KB gz. Together they are half the gzipped overshoot.
 
+### A walkover is not a match anybody could have played in
+
+The club's played column keeps all three, because that is the league's
+arithmetic and `npm run verify` reconciles it against the published table. A
+player's denominator is a different claim - **out of how many was he
+available** - and it was being handed the same number, so every man in the
+squad was measured against three afternoons nobody was asked to turn up for.
+Stewart Luwawa's profile read **"30 starts, of 33 played"** when 30 of 30 was
+the whole story, and the share wheel drew him a gap he could never have
+filled.
+
+- **The figures, checked before anything was changed**, which is what the club
+  asked for: 42 competitive matches played, 3 of them walkovers (all 25/26),
+  so 39 contested. 25/26 is 33 played, 3 walkovers, 30 contested; 26/27 is 9
+  and 9.
+- **`isPlayable()` and `playableMatches()` in `stats.mjs`**, used by the
+  profile's `teamGames` and by the wheel. Nothing else moved: a walkover was
+  already out of what a player DID - `countsGoals` is false on one, so goals
+  and clean sheets never counted them - and this is the other half, what he
+  COULD have done.
+- **The wheel's wins wedge was the same defect twice.** It measured a player
+  against three wins he could not have been in, so the two faults were one
+  line apart and only one of them was visible as a sentence.
+- **The check is the shipped page, not the function.** A denominator read back
+  through `playableMatches` can only ever agree with it; the pages are read
+  instead and every printed figure must be a contested count. The probe is
+  **the old rule put back** - the played counts - and it is only worth having
+  because at least one of them is now a figure no profile prints.
+
+### A search box on every page, for nothing
+
+`sa.js` had 92 bytes left of its 24KB ceiling, so a site-wide scripted control
+was not available at any price. It did not need one: the box is a plain
+`<form method="get" action="/search.html">`, so the query lands on the address,
+the search is shareable and bookmarkable, and **`sa.js` does not know the
+feature exists**. `/search.html` reads `?q=` into its own box and filters
+before the first paint, or a reader arriving from the header would watch 151
+rows draw and then vanish.
+
+- **Below 920 the bar has a brand and a burger and no room**, so the mobile
+  menu carries the same form rather than the box shrinking to nothing. Two
+  boxes on one page, two ids, and the suite asks that they differ.
+- **`home.css` 17 to 18.** Measured at 17,387 gzipped bytes of a 17,408
+  ceiling before the change, so there were 21 bytes of room and no trim to
+  find: the two that existed (a masked cancel-button data URI, a duplicated
+  `:focus-within` rule) are already taken and the bill is written down beside
+  the constant in `run.mjs`.
+- **The probes are cuts of the shipped files**, because every check here is a
+  regular expression and one passes just as happily on a file it was never
+  aimed at. The `?q=` probe is aimed at the minified SHAPE, not at a name the
+  minifier owns.
+
+### Being asked on every page is not being asked once
+
+A visitor who ANSWERED was never asked again, and that always worked. A
+visitor who scrolled past got the banner again on every page for as long as
+they read the site - which is the commonest thing anybody does with a banner,
+and is what the club reported.
+
+- **Being told is not having answered.** PECR's statistics exception asks that
+  the visitor be told clearly and able to object simply; it does not ask that
+  they be pestered until they click. `sa-privacy-seen` records that the banner
+  was on screen, with the consent VERSION and the day, and it suppresses the
+  banner for seven days.
+- **Silence is still not consent.** The two consent purposes - Google
+  Analytics and the Meta pixel - go on needing a SAVED choice, and the check
+  that says so is probed by loosening it. Raising the purpose list still asks
+  everybody again, because the stamp carries the version.
+- **The choice is still one press away**, on a page every footer links to, and
+  a `localStorage` that throws falls back to asking rather than taking the
+  banner down.
+
 ### A team qualifier is not noise
 `clubIdentity()` lives in **`src/lib/club-name.mjs`** (dependency-free, because `stats.mjs` and `preseason.mjs` both need it and `preseason.mjs` already imports `stats.mjs`). It strips the legal suffix (FC, AFC, Football Club) and **keeps** the team qualifier (1st Team, 2.0, B, Reserves, Sundays, Vets). Two clubs match only when what remains is equal.
 
@@ -1000,7 +1072,7 @@ Enter result fills the team sheet from the squad picked on the Matchday screen, 
 
 ### What the website is actually read for
 
-The club publishes 198 pages and had no way of knowing which of them anybody
+The club publishes 151 pages and had no way of knowing which of them anybody
 opens. **Control panel → Website stats** answers it: what gets read, where in
 the world the reader is, what sent them, what they read it on, how long they
 stayed and how far down they got. `migrations/007_page_stats.sql`,
@@ -2467,51 +2539,6 @@ last season, the quiz, the word search, the cause and the partners.
   at 2.74:1, because `--volt-ink` resolves to a blend: dark ink on this orange
   has to be solid and stated.
 
-### A page for every club played, and for every ground played on
-
-Two route families derived from records the site already held.
-`/clubs/<slug>.html` (34) and `/grounds/<slug>.html` (12), with an index each,
-`src/lib/clubs.mjs` / `src/lib/grounds.mjs` and the templates beside them.
-
-- **EVIDENCE QUALIFIES A PAGE, NEVER A NAME.** A club earns one from a match
-  played or a row in the current division. `knownClubs` holds 29 names and
-  **seven of them earn no page**, because being mentioned somewhere is not
-  content; that is the probe for the rule.
-- **The grouping is `clubIdentity()` and it is wrong in both directions or
-  neither.** Too loose and "BPR Men's" and "BPR FC" become two half-records at
-  two addresses, each reading as complete. Too tight, on `clubBase`, and Pure
-  Football FC 2.0 merges with their 1st Team and the site publishes "played 3,
-  won 3" against a side it has never met, on the page that side is most likely
-  to read. A related side is a **link and a sentence**, never a merged figure.
-  Both directions are mutation probes.
-- **The page is named from the most recent spelling**, or the division's,
-  because an address built from the reduced identity would head a page "bpr".
-- **ONE GROUND OF ELEVEN HAS AN ADDRESS.** The other ten print no directions
-  link at all, with the reason said out loud and the panel field named: a map
-  search on "Clapham Common" lands a mile from the pitch and a reader who
-  followed it would have no way of knowing the site never knew. **A wrong pin
-  is worse than none.**
-- **The home-and-away split is COUNTED, not assumed.** The Reeves is the
-  club's own ground, twelve matches have been played on it, and **one is an
-  away fixture** - BPR Men's on 24 May 2026, who were the home side on this
-  pitch. The probe is the assumption.
-- **A venue field is free text, so two of the archive's venues are an
-  opponent's club name.** `notGrounds` in `venues.json` keeps those off a page
-  about a place, and the check is the negative one: those two matches link to
-  nothing and print the name they always printed.
-- **Discoverability, because a family reachable only from itself is an
-  island.** Results reads it club by club, Fixtures says where each one is
-  played, the About page's crest wall links every crest, every match page's
-  venue links at its ground, and each club page links the grounds met at - all
-  through `d.clubHref()` / `d.groundHref()`, never `slugify()` at the call
-  site, which would link at an address nobody generated.
-- A three-column scorers table tripped the squad-number check twenty times
-  (`<th>Adio</th><td>1</td>` flattens to "Adio 1"). **The design changed**
-  rather than the allow-list growing twenty coincidences that churn with every
-  goal.
-- `clubs` and `coaches` were missing from the build's **orphan-pruning list**,
-  a latent bug this surfaced rather than caused.
-
 ### The fixtures, as a calendar somebody can subscribe to
 
 `/fixtures.ics`, `src/lib/ics.mjs`, linked from the Fixtures page. A
@@ -2530,8 +2557,12 @@ club cancels in the panel leaves the calendar on the next publish.
   The check builds it twice and compares bytes.
 - **A fixture with no kick-off is a whole day**, not eleven o'clock. Crafted
   too, because nothing in the record is in that state.
-- **LOCATION is the ground's recorded address where there is one**, read
-  through the same derived grounds, so one reader of that fact.
+- **LOCATION is the ground's recorded address where there is one**, and a
+  venue that is not a ground at all carries none: the venue field is free
+  text, so two of the archive's hold an opponent's CLUB NAME, and a club name
+  in LOCATION is a phone offering directions to a team. `notGrounds` in
+  `venues.json` records which, and the build reads it once and hands the feed
+  the list, so there is one reader of that fact.
 - Two hours is a convention and the all-day fallback is a fallback; **both are
   explained beside the subscribe button and not in each entry's
   DESCRIPTION**, which is read on a lock screen.
@@ -2560,7 +2591,7 @@ names two sides and claims neither was at home.
 ### Finding anything
 
 `/search.html`, `src/templates/search.mjs`, `src/search/search.js`, band
-`48-search.css`. 198 pages and no way to find one.
+`48-search.css`. 151 pages and no way to find one.
 
 - **THE WHOLE INDEX IS IN THE HTML**, so the script only hides rows. `sa.js`
   had 92 bytes left of its ceiling, so this page carries its own script,
@@ -2652,11 +2683,11 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 6,775 checks against the generated output and the rendered panel
+npm test          # 5,682 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 
-`npm test` covers: document structure, one h1 per page, heading order, alt text, resolvable assets and internal links, JSON-LD validity, asset-version consistency, overflow guards, reduced motion, both themes, WCAG AA contrast on every text token pair, form labelling, security headers, no service-role key in output, sitemap/robots correctness, and performance budgets. It also asks, of every page, that **no id is defined twice**, that **every aria reference lands**, that **no image repeats the text of the link it sits inside**, and that **no complementary landmark is nested** - the four things an `@accesslint/core` audit found that nothing here had a question for. And of the API: that the gated endpoints ask the database who is calling, and that the two anonymous ones throttle and escape everything the caller sent. Budgets are **gzipped KB**, one per bundle, and they are ceilings over a split thing rather than one big one: `sa.css` 13, `home.css` 17, `sa.js` 24, `control.css` 10, `control.js` 15, `control-seed.js` 9, and one per lazy panel chunk. **Those six figures are asserted against `BUDGET` in the suite**, because FIVE of them were wrong here for weeks - the check found the fifth on its first run, after I had corrected the four I could see: this file said `sa.css` 22 against a real 13 and `home.css` 26 against 17, so anybody reading it would have believed there was ten kilobytes of room where there was one and a half. A ceiling exists to make somebody write down what they spent, and a ceiling misquoted in the only document that explains it is a ceiling nobody is really keeping. **`sa.js` has 92 bytes left** at the moment, measured the way the suite measures it: it was 235 before Google Analytics, and the measurement ID cost 31 raw bytes of that. **Code is budgeted apart from data**: `control-home.js` carries seventy-five band descriptions, so its emitted ceiling moved three times for growth that was not code, and `src/admin/lazy/95-home.js` and `10-match.js` are now measured as source so an edit to the code shows up on its own. **The deploy does not run this suite** (`sync && build && verify && guard`), so a page over budget still publishes: these are a signal to whoever is reading, not a gate on the club. **The pre-push hook DOES run it**, so a budget can still stop a result leaving the laptop, and when it did the answer was not to move a ceiling or bypass the hook. Every row of all five `.lg-sc` tables is the same three columns in the same order, head and body alike, and saying so in a class attribute on 399 cells cost the league page 7.7KB and bought nothing a positional selector scoped to `.lg-sc` does not; the stats page got the indentation strip the league and player pages already had, 26KB of it. League 161 to 153KB, stats 162 to 139KB, which leaves room for a season of scorer and assist rows. **The suite caught that change three times over**, which is the point of it: two checks read rows by the class that had gone, and the goals-and-assists row sum began reading the rank as a goal tally once the rank cell stopped being told apart by a class. The home page's margin is printed on every run for that reason. It also asserts the split stays split: that the match form and the photo tagger are not in the core, that every deferred panel maps to a chunk that exists and is cache-busted, and that routing does not gate on a module having been downloaded.
+`npm test` covers: document structure, one h1 per page, heading order, alt text, resolvable assets and internal links, JSON-LD validity, asset-version consistency, overflow guards, reduced motion, both themes, WCAG AA contrast on every text token pair, form labelling, security headers, no service-role key in output, sitemap/robots correctness, and performance budgets. It also asks, of every page, that **no id is defined twice**, that **every aria reference lands**, that **no image repeats the text of the link it sits inside**, and that **no complementary landmark is nested** - the four things an `@accesslint/core` audit found that nothing here had a question for. And of the API: that the gated endpoints ask the database who is calling, and that the two anonymous ones throttle and escape everything the caller sent. Budgets are **gzipped KB**, one per bundle, and they are ceilings over a split thing rather than one big one: `sa.css` 13, `home.css` 18, `sa.js` 24, `control.css` 10, `control.js` 15, `control-seed.js` 9, and one per lazy panel chunk. **Those six figures are asserted against `BUDGET` in the suite**, because FIVE of them were wrong here for weeks - the check found the fifth on its first run, after I had corrected the four I could see: this file said `sa.css` 22 against a real 13 and `home.css` 26 against 17, so anybody reading it would have believed there was ten kilobytes of room where there was one and a half. A ceiling exists to make somebody write down what they spent, and a ceiling misquoted in the only document that explains it is a ceiling nobody is really keeping. **`sa.js` has 92 bytes left** at the moment, measured the way the suite measures it: it was 235 before Google Analytics, and the measurement ID cost 31 raw bytes of that. **Code is budgeted apart from data**: `control-home.js` carries seventy-five band descriptions, so its emitted ceiling moved three times for growth that was not code, and `src/admin/lazy/95-home.js` and `10-match.js` are now measured as source so an edit to the code shows up on its own. **The deploy does not run this suite** (`sync && build && verify && guard`), so a page over budget still publishes: these are a signal to whoever is reading, not a gate on the club. **The pre-push hook DOES run it**, so a budget can still stop a result leaving the laptop, and when it did the answer was not to move a ceiling or bypass the hook. Every row of all five `.lg-sc` tables is the same three columns in the same order, head and body alike, and saying so in a class attribute on 399 cells cost the league page 7.7KB and bought nothing a positional selector scoped to `.lg-sc` does not; the stats page got the indentation strip the league and player pages already had, 26KB of it. League 161 to 153KB, stats 162 to 139KB, which leaves room for a season of scorer and assist rows. **The suite caught that change three times over**, which is the point of it: two checks read rows by the class that had gone, and the goals-and-assists row sum began reading the rank as a goal tally once the rank cell stopped being told apart by a class. The home page's margin is printed on every run for that reason. It also asserts the split stays split: that the match form and the photo tagger are not in the core, that every deferred panel maps to a chunk that exists and is cache-busted, and that routing does not gate on a module having been downloaded.
 
 **Images are budgeted too, and were not.** Every bundle had a gzipped ceiling and images had none, so the whole apparatus watched 32KB of stylesheet while 231KB of photograph walked past it - on the home page the images outweigh the HTML, the CSS and the JavaScript together. Now measured: the heaviest page's **eager** payload (288KB ceiling, index.html at 231KB), the mean across all 108 (96KB ceiling, currently 62KB), `width` and `height` on all 2,954 images, and a **srcset on anything over 100KB**. Raw bytes, not gzipped: these formats are already compressed and a gzip figure would be a fiction dressed as precision.
 

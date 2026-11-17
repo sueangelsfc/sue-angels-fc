@@ -297,9 +297,3 @@
   .ab-beat__title{max-width: none;}
 }
 
-
-/* The crest wall links each club to its own head-to-head page. The badge is
-   muted inside the anchor, which prints the name, so a screen reader hears
-   the club once. */
-.ab-crest__a{display: contents; color: inherit; text-decoration: none;}
-.ab-crest:hover .ab-crest__n{color: var(--volt-text);}

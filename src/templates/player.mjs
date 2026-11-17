@@ -39,7 +39,7 @@ import { BODY_PARTS, ZONES, SITUATIONS, ASSIST_TYPES } from '../lib/football.mjs
 import { POSITION_LABEL, POSITION_XY, positionName } from '../lib/positions.mjs';
 import { pitchMarks, shotsFor, assistSpotsFor, savesFor, spotWords, zoneGoalsFor, zoneAssistsFor, zoneLayout, ZONE_WORDS } from '../lib/pitch.mjs';
 import {
-  playerProfile, playerStats, playerOpponents, fmtDate, isLeague, ordinal,
+  playerProfile, playerStats, playerOpponents, fmtDate, isLeague, ordinal, playableMatches,
 } from '../lib/stats.mjs';
 import { FRIENDLY_NOTE_SHORT } from '../lib/prose.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge, oppBadgeSrc } from './home.mjs';
@@ -462,11 +462,16 @@ export function playerPage(p, d) {
   const seasons = seasonNames.map((name) => {
     const ms = counted.filter((m) => m.season === name);
     const profile = Object.assign(playerProfile(p, ms, d.players), keeping(ms));
-    profile.teamGames = ms.length;
+    /* NOT `ms.length`. A walkover is a match the club played and nobody
+       appeared in, so it belongs in the club's played column and not in the
+       denominator of what a man could have played in. See `isPlayable` in
+       stats.mjs: this read "30 starts, of 33 played" for a player who had
+       started every match that was actually contested. */
+    profile.teamGames = playableMatches(ms).length;
     return { name, profile, matches: ms };
   });
   const all = Object.assign(playerProfile(p, counted, d.players), keeping(counted));
-  all.teamGames = counted.length;
+  all.teamGames = playableMatches(counted).length;
   /* The tab the page opens on: the latest season he actually played in, or
      every season when he has played in none of them. */
   const openIdx = seasons.some((s) => s.profile.apps || s.profile.bench)
@@ -952,11 +957,21 @@ export function playerPage(p, d) {
     const teamList = sn === 'All seasons' ? counted : ((seasons.find((s) => s.name === sn) || {}).matches || []);
     const scored = teamList.filter((m) => m.countsGoals);
     const team = {
-      matches: teamList.length,
+      /* The wheel's Starts and Captained wedges are a share of this, so it is
+         the contested matches for the same reason the tile is. The goals,
+         assists, wins and clean sheets below are the CLUB's own totals and
+         stay exactly as the club's record has them - a walkover contributes
+         no goals to one and three points to the other already. */
+      matches: playableMatches(teamList).length,
       goals: scored.reduce((t, m) => t + (m.ourGoals || 0), 0),
       assists: wheelPool.reduce((t, q) => t + (q.assists || 0), 0),
       cleanSheets: scored.filter((m) => m.theirGoals === 0).length,
-      wins: teamList.filter((m) => m.outcome === 'W').length,
+      /* And the wins, for the same reason: three of the club's are walkovers
+         and his own tally can never include one, so measuring him against
+         them caps every wedge below 100% for a man who won every match he
+         was in. The goals and clean sheets above already exclude them,
+         because `countsGoals` is false on a walkover. */
+      wins: playableMatches(teamList).filter((m) => m.outcome === 'W').length,
     };
     const wheel = profileWheel(wheelPool.find((q) => q.num === p.num), x.won, team, gk,
       sn === 'All seasons' ? 'across every season' : `in ${sn}`, shot);

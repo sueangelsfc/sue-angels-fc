@@ -93,7 +93,13 @@ const utcOf = (instant) => `${instant.replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z
 export function fixturesIcs(d, grounds = [], opts = {}) {
   const site = String(opts.site || '').replace(/\/$/, '');
   const name = String(opts.name || 'Fixtures');
+  /* The derived grounds are also what says a venue IS one. Two of the
+     archive's venue fields hold an opponent's CLUB NAME, which is the same
+     free-text field doing the same thing to the ground pages - and a club
+     name in a calendar entry's LOCATION is a phone offering directions to a
+     team. A venue that earned no ground carries no location at all. */
   const addrOf = new Map((grounds || []).map((g) => [g.name, g.address || '']));
+  const isGround = (v) => addrOf.has(v);
 
   const lines = [
     'BEGIN:VCALENDAR',
@@ -124,7 +130,7 @@ export function fixturesIcs(d, grounds = [], opts = {}) {
       f.weAreHome ? 'Home' : 'Away',
       /* The ground is already in LOCATION, so it is repeated here only where
          LOCATION is an ADDRESS and the name would otherwise go unsaid. */
-      addr ? where : '',
+      addr && isGround(where) ? where : '',
       timed ? '' : 'Kick-off to be confirmed',
       site ? `${site}/fixtures.html` : '',
     ].filter(Boolean);
@@ -141,7 +147,7 @@ export function fixturesIcs(d, grounds = [], opts = {}) {
       lines.push('DURATION:P1D');
     }
     lines.push(`SUMMARY:${txt(summary)}`);
-    if (where) lines.push(`LOCATION:${txt(addr || where)}`);
+    if (where && isGround(where)) lines.push(`LOCATION:${txt(addr || where)}`);
     lines.push(`DESCRIPTION:${txt(bits.join(' · '))}`);
     if (site) lines.push(`URL:${txt(`${site}/fixtures.html`)}`);
     lines.push('STATUS:CONFIRMED');

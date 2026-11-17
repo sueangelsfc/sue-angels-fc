@@ -41,6 +41,7 @@ export const LIVE_ROUTES = new Set([
   'contact.html',
   'privacy.html',
   'clubs.html',
+  'search.html',
   'grounds.html',
   '404.html',
 ]);

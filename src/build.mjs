@@ -49,6 +49,7 @@ import { coachPage } from './templates/coach.mjs';
 import { clubPage, clubsIndex } from './templates/club.mjs';
 import { clubPages } from './lib/clubs.mjs';
 import { groundPage, groundsIndex } from './templates/ground.mjs';
+import { search } from './templates/search.mjs';
 import { fixturesIcs } from './lib/ics.mjs';
 import { groundPages } from './lib/grounds.mjs';
 import { clubIdentity } from './lib/club-name.mjs';
@@ -241,6 +242,15 @@ write('sa.js', js);
    sa.js: the whole point is that it is absent unless asked for. */
 write('perf.js', minifyJs(fs.readFileSync(path.join(ROOT, 'src', 'perf', 'perf.js'), 'utf8')));
 
+/* The site's own search, which is one page's script and nobody else's.
+   `sa.js` has 92 bytes left of its 24KB ceiling, and a search that every
+   visitor to every page downloads to render a page that cannot use it is the
+   fault `control.css` was split out of `sa.css` to fix. It carries its own
+   content hash for the same reason every other bundle does. */
+const searchJs = minifyJs(fs.readFileSync(path.join(ROOT, 'src', 'search', 'search.js'), 'utf8'));
+const searchV = crypto.createHash('sha256').update(searchJs).digest('hex').slice(0, 8);
+write('search.js', searchJs);
+
 /* The service worker, stamped with the same content hash the pages carry, so
    a deploy renames the cache and `activate` drops every older one. The
    retired site hard-coded its cache name and relied on somebody remembering
@@ -328,6 +338,7 @@ const PAGE_CSS = {
   'contact.html': 'contact',
   'programme.html': 'programme',
   'clubs.html': 'club',
+  'search.html': 'search',
   'clubs/': 'club',
   'grounds.html': 'ground',
   'grounds/': 'ground',
@@ -1844,6 +1855,44 @@ for (const g of (groupLive('gallery') ? d.galleries : [])) {
     ],
   }));
   cat(`/gallery/${g.slug}.html`, g.title, 'gallery', g.date);
+}
+
+/* ---- THE INDEX, WHICH IS THE LAST PAGE WRITTEN -------------------------
+   198 pages and no way to find one. /search.html is the whole catalogue as
+   linked markup, filtered in the browser by a script this page alone loads,
+   so a reader with JavaScript off gets a complete browsable index rather
+   than a search box over nothing.
+
+   It is outside the `routes` array ON PURPOSE. `catalogue` is filled as each
+   page is written, so a page about the pages cannot be rendered in the middle
+   of writing them: in the route loop it would have listed the 27 static
+   routes and known nothing of the 47 players, the 48 matches or either of the
+   two families added this week. It reads the same catalogue the panel's
+   website-stats screen reads as stats-pages.json - one statement of what this
+   site publishes, two readers. */
+if (isLive('search.html')) {
+  const searchOut = search(d, catalogue);
+  write('search.html', page({
+    title: `Find anything · ${CLUB.name}`,
+    description: `Search every page on the ${CLUB.name} website: every player, every match, every club played, every ground, every article and every album.`,
+    path: '/search.html',
+    body: searchOut.body,
+    bodyClass: searchOut.bodyClass,
+    schema: searchOut.schema,
+    ogImage: ogCard('og-default'),
+    ogImageAlt: `${CLUB.name} club crest`,
+    css: 'home.css',
+    pageCss: bandFor('search.html'),
+    shell: searchOut.shell,
+    footerHtml: searchOut.footerHtml,
+    preMain: searchOut.preMain,
+    preScript: `search.js?v=${searchV}`,
+    assetV: homeV,
+    jsV: assetV,
+  }));
+  /* It catalogues itself AFTER rendering, so the page never lists itself:
+     a search result reading "Find anything" is a reader going in a circle. */
+  cat('/search.html', 'Find anything', 'main');
 }
 
 /* ---- Sitemap, robots, manifest ---- */

@@ -7036,6 +7036,12 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     /* The club's own clips of its own Sundays. There is nothing outside the
        club to cite for a video somebody filmed on the way to a pitch. */
     'behind-the-scenes.html',
+    /* AN INDEX OF THIS SITE'S OWN PAGES RESTS ON NOTHING OUTSIDE IT. Every
+       one of its 197 rows is a link to a page that carries its own sources
+       where it has any, and a citation on the index would be a claim about
+       whichever page a reader then opened. The same argument as news.html
+       and gallery.html, which are the other two lists of the club's work. */
+    'search.html',
   ]);
   /* THE HOME PAGE IS WHAT THE CLUB PUTS ON IT, so it is held to the sources
      behind the bands it actually publishes rather than to a count. It carried
@@ -11362,6 +11368,130 @@ console.log(`\n${'='.repeat(66)}`);
 }
 
 /* ==========================================================================
+   FINDING ANYTHING  (/search.html)
+
+   198 pages and no way to find one. The index ships as MARKUP - every page as
+   a linked row - and the script only hides rows, so the questions here split
+   cleanly in two: is the list complete and correct in the HTML, and does the
+   one rule the script shares with the build still match it.
+
+   THE SECOND IS THE ONE THAT BIT. The flattening is written twice, once in
+   Node and once in the browser, and the first version turned an apostrophe
+   into a SPACE like every other separator - so "Sue's Angels" flattened to
+   "sue s angels" and `sues angels`, the one search this club's own name
+   invites, returned nothing at all. It shipped, under a comment claiming to
+   handle exactly that case, and was found by typing it into the page. The
+   check is the same device this project uses for the home page's ordering
+   rule: run both copies over the same strings and fail if they part company.
+   ========================================================================== */
+{
+  const { search: seT, flat: flatT } = await import(path.join(ROOT, 'src', 'templates', 'search.mjs'));
+  const file = path.join(ROOT, 'search.html');
+  check('the site has a page for finding anything on it', fs.existsSync(file));
+  const htm = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+
+  /* ---- THE LIST IS COMPLETE, AND IT IS THE BUILD'S OWN CATALOGUE ---- */
+  {
+    const cat = JSON.parse(fs.readFileSync(path.join(ROOT, 'stats-pages.json'), 'utf8'));
+    const want = cat.filter((r) => r.k !== 'panel' && r.p !== '/search.html');
+    const hrefs = [...htm.matchAll(/class="se-row__a" href="([^"]+)"/g)].map((m) => m[1]);
+    check('every page the site publishes is in the index',
+      hrefs.length === want.length && want.every((r) => hrefs.includes(r.p)),
+      `${hrefs.length} rows, ${want.length} pages`);
+    /* The panel is noindex and is reached by typing a word. Publishing the
+       doorway on the one page built for finding things would undo that. */
+    check('the control panel is not in the index', !hrefs.includes('/control.html'));
+    check('and the index does not list itself', !hrefs.includes('/search.html'));
+    const missing = hrefs.filter((h) => !fs.existsSync(path.join(ROOT, h.replace(/^\//, ''))));
+    check('every row in the index points at a page that exists',
+      missing.length === 0, missing.slice(0, 3).join(', '));
+  }
+
+  /* ---- IT WORKS WITH NO JAVASCRIPT, WHICH IS THE WHOLE DESIGN ----
+     This project's rule is that anything revealed by script is scoped to
+     html.js, or a script failure blanks it. Here there is nothing to reveal:
+     the index is the page. So no row may ship hidden. */
+  {
+    const hidden = (htm.match(/class="se-row"[^>]*\shidden/g) || []).length;
+    check('no row in the index ships hidden', hidden === 0, `${hidden}`);
+    check('and no group does either',
+      !/data-se-group[^>]*\shidden/.test(htm));
+    check('the index carries its own script and sa.js carries none of it',
+      /src="\/search\.js\?v=/.test(htm)
+        && !fs.readFileSync(path.join(ROOT, 'sa.js'), 'utf8').includes('data-se-group'));
+    const others = fs.readdirSync(ROOT).filter((f) => f.endsWith('.html') && f !== 'search.html')
+      .filter((f) => fs.readFileSync(path.join(ROOT, f), 'utf8').includes('search.js?v='));
+    check('and no other page downloads it', others.length === 0, others.join(', '));
+  }
+
+  /* ---- ONE RULE, TWO RUNTIMES ---- */
+  {
+    const bodyOf = (src) => {
+      const i = src.indexOf('function flat(v) {');
+      if (i < 0) return '';
+      const j = src.indexOf('\n  }', i) >= 0 ? src.indexOf('}', src.indexOf('.trim();', i)) : -1;
+      return j < 0 ? '' : src.slice(i, j).replace(/\s+/g, ' ').trim();
+    };
+    const a = bodyOf(fs.readFileSync(path.join(ROOT, 'src', 'templates', 'search.mjs'), 'utf8'));
+    const b = bodyOf(fs.readFileSync(path.join(ROOT, 'src', 'search', 'search.js'), 'utf8'));
+    check('the build and the browser flatten text the same way',
+      a.length > 40 && a === b, a === b ? '' : `${a.slice(0, 60)} :: ${b.slice(0, 60)}`);
+
+    /* And what that rule has to produce. Every one of these is a search
+       somebody actually makes. */
+    check('an apostrophe vanishes rather than becoming a space',
+      flatT("Sue’s Angels FC") === 'sues angels fc'
+        && flatT("O'Connor") === 'oconnor');
+    check('an accent is folded', flatT('Frazier-Isaías Osunkoya') === 'frazier isaias osunkoya');
+    check('and everything else collapses to a space',
+      flatT('Sue’s Angels FC 8-1 Haydons Park') === 'sues angels fc 8 1 haydons park');
+  }
+
+  /* ---- THE HAYSTACK HOLDS WHAT A READER WOULD TYPE ---- */
+  {
+    const hay = [...htm.matchAll(/data-se="([^"]*)"/g)].map((m) => m[1]);
+    const { buildDataset: bdS } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+    const dS = bdS();
+    const misses = (dS.players || []).filter((p) => p.name)
+      .filter((p) => !hay.some((h) => h.includes(flatT(p.name))));
+    check('every player is findable by his own name', misses.length === 0,
+      misses.slice(0, 3).map((p) => p.name).join(', '));
+    /* The search the club's own name invites, which returned nothing. */
+    const sues = hay.filter((h) => h.includes('sues angels')).length;
+    check('the club is findable without its apostrophe', sues >= 30, `${sues} rows`);
+    check('typing what a page IS lists that kind',
+      hay.filter((h) => / ground$| ground /.test(h)).length >= 12);
+  }
+
+  /* ---- GETTING TO IT ---- */
+  {
+    /* The two that carry no footer at all, named rather than the check
+       loosened: the control panel is the admin app on its own shell, and the
+       Google verification token is a bare file with a string in it. */
+    const NO_FOOTER = new Set(['control.html', 'googlef4b3315c2212b0ef.html']);
+    const pages = fs.readdirSync(ROOT)
+      .filter((f) => f.endsWith('.html') && !NO_FOOTER.has(f));
+    const without = pages.filter((f) => !fs.readFileSync(path.join(ROOT, f), 'utf8')
+      .includes('href="/search.html"'));
+    check('every page with a footer is one link from the index',
+      without.length === 0 && pages.length > 20, without.slice(0, 3).join(', '));
+    check('and the two with no footer are the two that have never had one',
+      [...NO_FOOTER].every((f) => !fs.existsSync(path.join(ROOT, f))
+        || !fs.readFileSync(path.join(ROOT, f), 'utf8').includes('class="ftr__legal"')));
+  }
+
+  /* ---- AND A BRAND-NEW CLUB'S INDEX IS NOT A CRASH ---- */
+  {
+    let ok = false; let why = '';
+    try {
+      const out = seT({}, []);
+      ok = typeof out.body === 'string' && out.body.length > 0 && !out.body.includes('se-row');
+    } catch (e) { why = e.message.slice(0, 90); }
+    check('the index renders for a site with nothing published yet', ok, why);
+  }
+}
+
+/* ==========================================================================
    A MATCH, AND A FIXTURE, AS A SPORTS EVENT
 
    `SportsEvent` shipped on all 48 match pages and on NOT ONE FIXTURE, which
@@ -11644,6 +11774,16 @@ console.log(`\n${'='.repeat(66)}`);
     check('and a ground with no address carries its name',
       names.every((n) => raw.includes(`LOCATION:${n}`) || (groundsI.find((g) => g.name === n) || {}).address),
       names.join(', '));
+    /* A VENUE FIELD HOLDING AN OPPONENT'S CLUB NAME CARRIES NO LOCATION.
+       The same free text that would have headed a ground page with a club,
+       here would have a phone offering directions to a team. Crafted,
+       because no fixture is in that state today - only two played matches
+       are, and the archive is not in the feed. */
+    const bad = (venI.notGrounds || [])[0];
+    const faked = fiI({ upcoming: [{ ...(dI.upcoming || [])[0], id: 'f-craft-club', venue: bad }] },
+      groundsI, opts);
+    check('a venue that is really an opponent carries no location at all',
+      !!bad && !/LOCATION:/.test(faked), (faked.match(/LOCATION:[^\r\n]*/) || [''])[0]);
   }
 
   /* ---- GETTING TO IT ----

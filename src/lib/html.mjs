@@ -292,6 +292,10 @@ export function footer() {
         <div class="ftr__bottom">
           <p>&copy; ${new Date().getUTCFullYear()} ${esc(CLUB.name)}. ${esc(CLUB.memorial.motto)}</p>
           <div class="ftr__legal">
+            ${/* The index goes first in this row because it is the only link
+                 here somebody arrives looking for. The home page draws its own
+                 footer, so it carries this separately. */''}
+            <a href="/search.html">Find anything</a>
             <a href="mailto:${attr(CLUB.email)}">${esc(CLUB.email)}</a>
             <a href="/sepsis.html">Sepsis awareness</a>
             <a href="/privacy.html">Privacy and your choices</a>

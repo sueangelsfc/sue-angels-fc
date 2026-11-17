@@ -1000,7 +1000,7 @@ Enter result fills the team sheet from the squad picked on the Matchday screen, 
 
 ### What the website is actually read for
 
-The club publishes 108 pages and had no way of knowing which of them anybody
+The club publishes 198 pages and had no way of knowing which of them anybody
 opens. **Control panel → Website stats** answers it: what gets read, where in
 the world the reader is, what sent them, what they read it on, how long they
 stayed and how far down they got. `migrations/007_page_stats.sql`,
@@ -2467,6 +2467,131 @@ last season, the quiz, the word search, the cause and the partners.
   at 2.74:1, because `--volt-ink` resolves to a blend: dark ink on this orange
   has to be solid and stated.
 
+### A page for every club played, and for every ground played on
+
+Two route families derived from records the site already held.
+`/clubs/<slug>.html` (34) and `/grounds/<slug>.html` (12), with an index each,
+`src/lib/clubs.mjs` / `src/lib/grounds.mjs` and the templates beside them.
+
+- **EVIDENCE QUALIFIES A PAGE, NEVER A NAME.** A club earns one from a match
+  played or a row in the current division. `knownClubs` holds 29 names and
+  **seven of them earn no page**, because being mentioned somewhere is not
+  content; that is the probe for the rule.
+- **The grouping is `clubIdentity()` and it is wrong in both directions or
+  neither.** Too loose and "BPR Men's" and "BPR FC" become two half-records at
+  two addresses, each reading as complete. Too tight, on `clubBase`, and Pure
+  Football FC 2.0 merges with their 1st Team and the site publishes "played 3,
+  won 3" against a side it has never met, on the page that side is most likely
+  to read. A related side is a **link and a sentence**, never a merged figure.
+  Both directions are mutation probes.
+- **The page is named from the most recent spelling**, or the division's,
+  because an address built from the reduced identity would head a page "bpr".
+- **ONE GROUND OF ELEVEN HAS AN ADDRESS.** The other ten print no directions
+  link at all, with the reason said out loud and the panel field named: a map
+  search on "Clapham Common" lands a mile from the pitch and a reader who
+  followed it would have no way of knowing the site never knew. **A wrong pin
+  is worse than none.**
+- **The home-and-away split is COUNTED, not assumed.** The Reeves is the
+  club's own ground, twelve matches have been played on it, and **one is an
+  away fixture** - BPR Men's on 24 May 2026, who were the home side on this
+  pitch. The probe is the assumption.
+- **A venue field is free text, so two of the archive's venues are an
+  opponent's club name.** `notGrounds` in `venues.json` keeps those off a page
+  about a place, and the check is the negative one: those two matches link to
+  nothing and print the name they always printed.
+- **Discoverability, because a family reachable only from itself is an
+  island.** Results reads it club by club, Fixtures says where each one is
+  played, the About page's crest wall links every crest, every match page's
+  venue links at its ground, and each club page links the grounds met at - all
+  through `d.clubHref()` / `d.groundHref()`, never `slugify()` at the call
+  site, which would link at an address nobody generated.
+- A three-column scorers table tripped the squad-number check twenty times
+  (`<th>Adio</th><td>1</td>` flattens to "Adio 1"). **The design changed**
+  rather than the allow-list growing twenty coincidences that churn with every
+  goal.
+- `clubs` and `coaches` were missing from the build's **orphan-pruning list**,
+  a latent bug this surfaced rather than caused.
+
+### The fixtures, as a calendar somebody can subscribe to
+
+`/fixtures.ics`, `src/lib/ics.mjs`, linked from the Fixtures page. A
+SUBSCRIPTION rather than a download: the phone re-reads it, so a fixture the
+club cancels in the panel leaves the calendar on the next publish.
+
+- **THE TIME IS AN INSTANT, NOT A WALL CLOCK**, and this cannot be checked
+  against today's data. `isoDateTime()` already converts UK local time, so the
+  feed emits UTC and carries no VTIMEZONE. Both current fixtures are in
+  November, when London IS UTC, so a check over the real list passes with the
+  bug fully present - which is how the programme's countdown shipped an hour
+  wrong once. Asked on a **crafted August fixture**, 11:00 London against
+  10:00Z, with the wall clock as the probe.
+- **DTSTAMP comes from the record, never the clock.** The output of this site
+  is committed, so a clock timestamp would rewrite the file on every build.
+  The check builds it twice and compares bytes.
+- **A fixture with no kick-off is a whole day**, not eleven o'clock. Crafted
+  too, because nothing in the record is in that state.
+- **LOCATION is the ground's recorded address where there is one**, read
+  through the same derived grounds, so one reader of that fact.
+- Two hours is a convention and the all-day fallback is a fallback; **both are
+  explained beside the subscribe button and not in each entry's
+  DESCRIPTION**, which is read on a lock screen.
+- `webcal://` makes one press subscribe; the https link is beside it because a
+  browser with no calendar app would otherwise do nothing. The address is
+  `CLUB.site` with the scheme swapped, never a host field of its own.
+- The `text/calendar` header is **asserted against `vercel.json`, never
+  generated into it**, for the reason the CSP is not.
+
+### A fixture is a sports event too
+
+`SportsEvent` shipped on all 48 match pages and on **not one fixture** - and
+"when do Sue's Angels play next" is what somebody asks a search engine. The
+fixtures have no page, so each is a node on the page that lists them inside an
+`ItemList`; the next one rides on the front page alone, and with no fixture
+there is no node.
+
+Three defects in the existing node, each invisible by construction:
+`eventStatus: m.played ? EventScheduled : EventScheduled` (both branches the
+same string, so 48 played matches advertised themselves as scheduled); a flat
+`competitor` pair, so **which side was at home was nowhere in the node** though
+the site knows; and the address was the literal **"London" on every match at
+every ground**, which is a fact about none of them. A **neutral ground** still
+names two sides and claims neither was at home.
+
+### Finding anything
+
+`/search.html`, `src/templates/search.mjs`, `src/search/search.js`, band
+`48-search.css`. 198 pages and no way to find one.
+
+- **THE WHOLE INDEX IS IN THE HTML**, so the script only hides rows. `sa.js`
+  had 92 bytes left of its ceiling, so this page carries its own script,
+  linked by this page alone - and because the index is the page, **the
+  no-JavaScript fallback is a complete browsable index** rather than a search
+  box over nothing.
+- **It reads the build's own catalogue**, the one the panel's website-stats
+  screen reads as `stats-pages.json`. One statement of what the site
+  publishes, two readers. It is therefore **the last page written**, outside
+  the `routes` array: a page about the pages cannot render in the middle of
+  writing them, and in the loop it would have known nothing of the 47 players
+  or either family added this week.
+- **AN APOSTROPHE VANISHES, IT DOES NOT BECOME A SPACE.** The first version
+  collapsed it like every other separator, so "Sue's Angels" flattened to
+  "sue s angels" and **`sues angels`, the one search this club's own name
+  invites, returned nothing at all.** It shipped under a comment claiming to
+  handle exactly that case, and was found by typing it into the page in a
+  browser.
+- **There are two copies of the flattening rule**, one in Node and one in the
+  browser. The suite runs both over the same strings and fails if they part
+  company - the device already used for the home page's ordering rule. Both
+  probes bite, and the second reproduces the bug exactly at "0 rows".
+- **The rail renumbers as groups hide**, because a strip reading 01 then 04 is
+  the defect this site already fixed on the home page, and the count beside it
+  is rewritten so a heading never reads "48 matches" over two.
+- The control panel is **not** in the index: it is noindex and reached by
+  typing a word, and publishing the doorway on the page built for finding
+  things would undo that. The index does not list itself either.
+- Every page with a footer is one link from it. `control.html` and the Google
+  verification token carry no footer and are named as the two exceptions.
+
 ### An article the club has written but has not yet entered
 
 `src/data/articles-extra.json` exists because the `articles` table **cannot be
@@ -2527,7 +2652,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 5,572 checks against the generated output and the rendered panel
+npm test          # 6,775 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

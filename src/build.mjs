@@ -1092,23 +1092,90 @@ const breadcrumb = (items) => ({
   })),
 });
 
-const matchSchema = (m) => ({
-  '@context': 'https://schema.org',
+/* A MATCH, AND A FIXTURE, AS A SPORTS EVENT
+
+   `matchSchema` has shipped on all 48 match pages for months and the fixtures
+   had nothing at all - which is the half that matters, because "when do Sue's
+   Angels play next" is a question somebody asks a search engine and a played
+   match is one they ask about afterwards.
+
+   Four things the old node got wrong, three of them silent.
+
+   - `eventStatus: m.played ? EventScheduled : EventScheduled`. Both branches
+     were the same string. Schema.org has no "finished", so the honest answer
+     is to say nothing about status on a match already played and to declare
+     it only on a fixture, where it means something a reader can act on.
+   - `homeTeam` and `awayTeam` instead of a flat `competitor` pair. The sides
+     were named in document order and which of them was at home was nowhere
+     in the node, though the site knows. A NEUTRAL GROUND still names two
+     sides, because a bracket has to, and carries no claim that either was at
+     home: the club's own rule for the Dylan Rigobert Trophy final.
+   - The address was the literal string "London" on every match at every
+     ground, which is a fact about none of them. It is the ground's recorded
+     address where there is one, through the same derived grounds the calendar
+     reads, and the ground's NAME alone where there is not - a Place with a
+     name and no address is honest; one with an invented locality is not.
+   - `isAccessibleForFree`. Grassroots Sunday league charges nobody on the
+     touchline, and that is a real fact about the event rather than padding. */
+const groundPlace = (venue) => {
+  if (!venue) return undefined;
+  const addr = d.groundFor ? (d.groundFor(venue) || null) : null;
+  const href = d.groundHref ? d.groundHref(venue) : '';
+  return {
+    '@type': 'Place',
+    name: venue,
+    ...(href ? { url: `${CLUB.site}${href}` } : {}),
+    ...(addr && addr.address
+      ? { address: { '@type': 'PostalAddress', streetAddress: addr.address, addressCountry: 'GB' } }
+      : {}),
+  };
+};
+
+const eventBase = (m, { url, upcoming }) => ({
   '@type': 'SportsEvent',
-  name: m.title,
+  name: m.title || `${m.home} v ${m.away}`,
   sport: 'Association football',
   startDate: m.isoDateTime || m.iso,
-  eventStatus: m.played ? 'https://schema.org/EventScheduled' : 'https://schema.org/EventScheduled',
-  url: `${CLUB.site}/matches/${m.slug}.html`,
-  location: m.venue
-    ? { '@type': 'Place', name: m.venue, address: { '@type': 'PostalAddress', addressLocality: 'London', addressCountry: 'GB' } }
-    : undefined,
-  competitor: [
-    { '@type': 'SportsTeam', name: m.home },
-    { '@type': 'SportsTeam', name: m.away },
-  ],
+  eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+  isAccessibleForFree: true,
+  ...(upcoming ? { eventStatus: 'https://schema.org/EventScheduled' } : {}),
+  ...(url ? { url } : {}),
+  location: groundPlace(m.venue),
+  /* Which side is at home is a fact the site holds and the node did not, and
+     a neutral ground is the one case where nobody is: the sides are still
+     named, because a fixture has to name them. */
+  ...(m.neutral
+    ? { competitor: [{ '@type': 'SportsTeam', name: m.home }, { '@type': 'SportsTeam', name: m.away }] }
+    : {
+      homeTeam: { '@type': 'SportsTeam', name: m.home },
+      awayTeam: { '@type': 'SportsTeam', name: m.away },
+    }),
+  organizer: { '@id': CLUB_ID },
   superEvent: { '@type': 'SportsOrganization', name: m.competition },
 });
+
+const matchSchema = (m) => eventBase(m, {
+  url: `${CLUB.site}/matches/${m.slug}.html`, upcoming: false,
+});
+
+/* The fixtures have no page of their own, so each one is a node on the page
+   that lists them, inside an ItemList that says what the page IS - a list of
+   matches to come - rather than leaving a search engine to infer it from
+   several loose events. The next one rides on the home page too, where the
+   card already answers the same question in words. */
+const fixtureSchema = (f) => eventBase(f, {
+  url: `${CLUB.site}/fixtures.html`, upcoming: true,
+});
+
+const fixtureListSchema = (list) => (list.length ? {
+  '@type': 'ItemList',
+  name: `${CLUB.name} fixtures`,
+  numberOfItems: list.length,
+  itemListOrder: 'https://schema.org/ItemListOrderAscending',
+  itemListElement: list.map((f, i) => ({
+    '@type': 'ListItem', position: i + 1, item: fixtureSchema(f),
+  })),
+} : null);
 
 /* ---- Which routes are live ----
    The gate itself lives in src/lib/routes.mjs so the test suite reads the
@@ -1277,7 +1344,14 @@ if ((l8Now.rows || []).some((r) => (r.played || 0) > 0)) {
 }
 
 const routes = [
+  /* THE NEXT MATCH IS WHAT THE FRONT PAGE IS ASKED. The card already answers
+     it in words and in a countdown; this is the same answer in the form a
+     search engine reads, and it is the NEXT fixture alone rather than the
+     list, because that is what the page shows. Where there is no fixture -
+     May, and the whole of the summer - there is no node, because a page with
+     no next match must not claim one. */
   { file: 'index.html', tpl: () => home(d), ...homeMeta,
+    schema: d.nextFixture ? [fixtureSchema(d.nextFixture)] : [],
     clubExtra },
 
   { file: 'about.html', tpl: () => about(d), ...meta('about', `Our story · ${CLUB.name}`,
@@ -1308,7 +1382,8 @@ const routes = [
       `Meet the coaching staff guiding ${CLUB.name}, the people shaping our ${TITLE_DIV} champions on and off the pitch.`) },
 
   { file: 'fixtures.html', tpl: () => fixtures(d), ...meta('fixtures', `Fixtures · ${CLUB.name}`,
-      `Upcoming ${CLUB.name} fixtures across league and cups. Each one moves to the results page once it has been played.`) },
+      `Upcoming ${CLUB.name} fixtures across league and cups. Each one moves to the results page once it has been played.`),
+    schema: [fixtureListSchema(d.upcoming || [])] },
 
   { file: 'results.html', tpl: () => results(d), ...meta('results', `Results · ${CLUB.name}`,
       `Every ${CLUB.name} result across league and cups, from our unbeaten ${TITLE_DIV} title-winning season.`) },

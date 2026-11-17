@@ -11362,6 +11362,161 @@ console.log(`\n${'='.repeat(66)}`);
 }
 
 /* ==========================================================================
+   A MATCH, AND A FIXTURE, AS A SPORTS EVENT
+
+   `SportsEvent` shipped on all 48 match pages and on NOT ONE FIXTURE, which
+   is the half that matters: "when do Sue's Angels play next" is a question
+   somebody asks a search engine, and a match already played is one they ask
+   about afterwards. Every check about the markup passed throughout, because
+   each asked whether the node a match page carries is valid.
+
+   Three of the four defects in that node were invisible by construction.
+   `eventStatus` was a ternary whose branches were the same string. The sides
+   were a flat `competitor` pair, so which of them was at home was nowhere in
+   the node though the site knows. And the address was the literal "London" on
+   every match at every ground, which is a fact about none of them.
+
+   The questions here are the ones a valid-JSON-LD check cannot ask: does the
+   node agree with the record it describes.
+   ========================================================================== */
+{
+  const { buildDataset: bdE } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const { CLUB: clE } = await import(path.join(ROOT, 'src', 'lib', 'club.mjs'));
+  const dE = bdE();
+  const ldOf = (f) => {
+    const m = fs.readFileSync(path.join(ROOT, f), 'utf8')
+      .match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+    try { return m ? JSON.parse(m[1]) : null; } catch { return null; }
+  };
+  const eventsIn = (g) => {
+    const out = [];
+    const walk = (n) => {
+      if (!n || typeof n !== 'object') return;
+      if (Array.isArray(n)) { n.forEach(walk); return; }
+      if (n['@type'] === 'SportsEvent') out.push(n);
+      Object.values(n).forEach(walk);
+    };
+    walk(g && g['@graph']);
+    return out;
+  };
+
+  /* ---- THE FIXTURES, WHICH HAD NOTHING ---- */
+  {
+    const g = ldOf('fixtures.html');
+    const list = ((g && g['@graph']) || []).find((n) => n['@type'] === 'ItemList');
+    const evs = eventsIn(g);
+    check('the fixtures page publishes its fixtures as events',
+      evs.length === (dE.upcoming || []).length && evs.length > 0,
+      `${evs.length} events, ${(dE.upcoming || []).length} fixtures`);
+    check('and says what the page is, rather than leaving loose events',
+      !!list && list.numberOfItems === (dE.upcoming || []).length);
+    check('every fixture event is declared as still to be played',
+      evs.length > 0 && evs.every((e) => e.eventStatus === 'https://schema.org/EventScheduled'));
+    check('a fixture event carries the instant the calendar carries',
+      evs.every((e) => (dE.upcoming || []).some((f) => (f.isoDateTime || f.iso) === e.startDate)));
+    /* The front page is asked this more than any other, and the answer must
+       be the NEXT fixture rather than the list. */
+    const hg = eventsIn(ldOf('index.html'));
+    check('the front page publishes the next match and only the next match',
+      dE.nextFixture ? hg.length === 1
+        && hg[0].startDate === (dE.nextFixture.isoDateTime || dE.nextFixture.iso)
+        : hg.length === 0,
+      `${hg.length} on the home page`);
+  }
+
+  /* ---- WHICH SIDE WAS AT HOME, WHICH THE NODE NEVER SAID ---- */
+  {
+    let named = 0; let wrong = 0; let neutral = 0;
+    for (const m of (dE.played || [])) {
+      const f = path.join('matches', `${m.slug}.html`);
+      if (!fs.existsSync(path.join(ROOT, f))) continue;
+      const e = eventsIn(ldOf(f))[0];
+      if (!e) continue;
+      if (m.neutral) {
+        /* NOBODY IS AT HOME AT A NEUTRAL GROUND. The sides are still named,
+           because a fixture has to name them, and the node must make no
+           claim about which of them was at home. */
+        neutral += 1;
+        if (e.homeTeam || e.awayTeam || !Array.isArray(e.competitor)) wrong += 1;
+      } else if (e.homeTeam && e.awayTeam) {
+        named += 1;
+        if (e.homeTeam.name !== m.home || e.awayTeam.name !== m.away) wrong += 1;
+      } else wrong += 1;
+    }
+    check('every match names which side was at home, and names it correctly',
+      named >= 30 && wrong === 0, `${named} named, ${neutral} neutral, ${wrong} wrong`);
+    check('a match at a neutral ground claims no home side at all',
+      neutral >= 1, `${neutral}`);
+    /* The probe for the old shape: a flat competitor pair in document order
+       carries no home side, and reads as complete. */
+    const flat = (dE.played || []).filter((m) => !m.neutral)
+      .filter((m) => {
+        const f = path.join('matches', `${m.slug}.html`);
+        if (!fs.existsSync(path.join(ROOT, f))) return false;
+        const e = eventsIn(ldOf(f))[0];
+        return e && !e.homeTeam && Array.isArray(e.competitor);
+      });
+    check('probe: no match is left with a competitor pair and no home side',
+      flat.length === 0, `${flat.length}`);
+  }
+
+  /* ---- THE ADDRESS IS THE GROUND'S, OR THERE IS NONE ----
+     "London" on every match at every ground is a fact about none of them. A
+     Place with a name and no address is honest; one with an invented locality
+     is a pin a reader would follow. */
+  {
+    let withAddr = 0; let invented = 0; let named = 0;
+    for (const m of (dE.played || [])) {
+      const f = path.join('matches', `${m.slug}.html`);
+      if (!fs.existsSync(path.join(ROOT, f))) continue;
+      const e = eventsIn(ldOf(f))[0];
+      if (!e || !e.location) continue;
+      named += 1;
+      const real = dE.groundFor ? dE.groundFor(m.venue) : null;
+      if (e.location.address) {
+        withAddr += 1;
+        if (!real || e.location.address.streetAddress !== real.address) invented += 1;
+      }
+      if (e.location.address && e.location.address.addressLocality) invented += 1;
+    }
+    check('a ground with a recorded address publishes it', withAddr >= 1, `${withAddr}`);
+    check('and no match invents an address for a ground the club never located',
+      invented === 0, `${invented} invented`);
+    check('a match whose venue has a page links the event at it',
+      named >= 30 && (dE.played || []).filter((m) => {
+        const f = path.join('matches', `${m.slug}.html`);
+        if (!fs.existsSync(path.join(ROOT, f))) return false;
+        const e = eventsIn(ldOf(f))[0];
+        return e && e.location && dE.groundHref && dE.groundHref(m.venue)
+          && e.location.url !== `${clE.site}${dE.groundHref(m.venue)}`;
+      }).length === 0, `${named} located`);
+  }
+
+  /* ---- THE DEAD TERNARY ----
+     A played match says nothing about status, because Schema.org has no
+     "finished" and the old node declared `EventScheduled` on all 48. */
+  {
+    const statuses = (dE.played || []).map((m) => {
+      const f = path.join('matches', `${m.slug}.html`);
+      if (!fs.existsSync(path.join(ROOT, f))) return null;
+      const e = eventsIn(ldOf(f))[0];
+      return e ? e.eventStatus : null;
+    }).filter((x) => x !== null);
+    check('a match already played is not advertised as scheduled',
+      statuses.length > 0 && statuses.every((x) => x === undefined),
+      `${statuses.filter(Boolean).length} still scheduled`);
+    check('every match event is an offline event somebody can watch free',
+      (dE.played || []).slice(0, 5).every((m) => {
+        const f = path.join('matches', `${m.slug}.html`);
+        if (!fs.existsSync(path.join(ROOT, f))) return true;
+        const e = eventsIn(ldOf(f))[0];
+        return e && e.isAccessibleForFree === true
+          && e.eventAttendanceMode === 'https://schema.org/OfflineEventAttendanceMode';
+      }));
+  }
+}
+
+/* ==========================================================================
    THE FIXTURES AS A CALENDAR  (/fixtures.ics)
 
    Three things here are wrong silently, and the third is the one no check

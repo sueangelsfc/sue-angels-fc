@@ -11362,6 +11362,156 @@ console.log(`\n${'='.repeat(66)}`);
 }
 
 /* ==========================================================================
+   THE FIXTURES AS A CALENDAR  (/fixtures.ics)
+
+   Three things here are wrong silently, and the third is the one no check
+   over today's data can ask.
+
+   A calendar carrying the ARCHIVE reads as a working feed: thirty-eight
+   events in a phone, every one of them a match already played. So the count
+   is asserted against what is still to come and against nothing else.
+
+   A DTSTAMP taken from the clock rewrites a COMMITTED file on every build.
+   The check is that building the feed twice produces identical bytes.
+
+   AND THE TIME. A kick-off is stored as UK local time; emit it as though it
+   were UTC and every summer fixture is an hour early on every phone. Both of
+   the club's current fixtures are in November, when London IS UTC, so a
+   check over real data passes with the bug fully present - which is exactly
+   how the programme's countdown shipped an hour wrong once already. It is
+   asked on a CRAFTED August fixture, and the probe is the wall clock.
+   ========================================================================== */
+{
+  const { buildDataset: bdI } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const { groundPages: gpI } = await import(path.join(ROOT, 'src', 'lib', 'grounds.mjs'));
+  const { fixturesIcs: fiI } = await import(path.join(ROOT, 'src', 'lib', 'ics.mjs'));
+  const { isoDateTime: idtI } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+  const { CLUB: clI } = await import(path.join(ROOT, 'src', 'lib', 'club.mjs'));
+  const dI = bdI();
+  const venI = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'venues.json'), 'utf8'));
+  const groundsI = gpI(dI, venI);
+  const opts = { site: clI.site, name: `${clI.name} fixtures`, club: clI.name };
+
+  const file = path.join(ROOT, 'fixtures.ics');
+  check('the build writes a fixtures calendar', fs.existsSync(file));
+  const raw = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '';
+
+  /* ---- The shape RFC 5545 actually requires ---- */
+  check('the calendar opens and closes as one VCALENDAR',
+    raw.startsWith('BEGIN:VCALENDAR\r\n') && raw.endsWith('END:VCALENDAR\r\n'));
+  check('every line ends CRLF, which is not optional',
+    raw.length > 0 && !/(^|[^\r])\n/.test(raw));
+  {
+    const long = raw.split('\r\n').filter((l) => Buffer.byteLength(l, 'utf8') > 75);
+    check('no content line is longer than 75 octets', long.length === 0,
+      long.slice(0, 2).map((l) => l.slice(0, 40)).join(' | '));
+  }
+  check('it declares how often a subscriber should come back',
+    /REFRESH-INTERVAL;VALUE=DURATION:PT12H/.test(raw) && /X-PUBLISHED-TTL:/.test(raw));
+
+  /* ---- WHAT IS IN IT: only what is still to come ---- */
+  {
+    const events = (raw.match(/BEGIN:VEVENT/g) || []).length;
+    check('one event per fixture still to be played, and no more',
+      events === (dI.upcoming || []).length && events > 0,
+      `${events} events, ${(dI.upcoming || []).length} fixtures`);
+    const uids = raw.match(/^UID:(.+)$/gm) || [];
+    check('every event has its own stable identity',
+      new Set(uids).size === uids.length && uids.length === events);
+    /* The failure that reads as a working feed. */
+    const played = (dI.played || []).map((m) => m.id).filter(Boolean);
+    check('no match already played is in the calendar',
+      played.every((id) => !raw.includes(`UID:${id}@`)),
+      played.filter((id) => raw.includes(`UID:${id}@`)).slice(0, 2).join(', '));
+  }
+
+  /* ---- A COMMITTED FILE MUST NOT CHURN ---- */
+  {
+    const a = fiI(dI, groundsI, opts);
+    const b = fiI(dI, groundsI, opts);
+    check('building the calendar twice produces the same bytes', a === b);
+    check('the committed file is what the generator writes now', a === raw);
+    /* The probe is the obvious reading of the spec: DTSTAMP = now. */
+    const nowStamp = `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}T`;
+    const stamps = (a.match(/^DTSTAMP:(\d{8})T/gm) || []).map((l) => l.slice(8, 17));
+    check('probe: no DTSTAMP is today unless a fixture is today',
+      stamps.every((st) => st === nowStamp.slice(0, 9)
+        ? (dI.upcoming || []).some((f) => String(f.iso || '').replace(/-/g, '') === st.slice(0, 8))
+        : true));
+  }
+
+  /* ---- THE TIME IS AN INSTANT, ON A CRAFTED SUMMER FIXTURE ---- */
+  {
+    const real = (dI.upcoming || [])[0];
+    check('every real fixture carries the instant, not the wall clock',
+      (dI.upcoming || []).every((f) => {
+        if (!/^\d{1,2}:\d{2}$/.test(String(f.kick || ''))) return true;
+        const want = idtI(f.iso, f.kick).replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+        return raw.includes(`DTSTART:${want}`);
+      }), real && real.iso);
+
+    /* August, 11:00 London, which is 10:00 UTC. There is no such fixture in
+       the record, and there will not be one until next pre-season. */
+    const summer = {
+      ...real, id: 'f-craft-summer', iso: '2027-08-15', kick: '11:00',
+      date: '15 Aug 2027', venue: real && real.venue,
+    };
+    const out = fiI({ upcoming: [summer] }, groundsI, opts);
+    check('a summer kick-off is an hour behind the wall clock in UTC',
+      out.includes('DTSTART:20270815T100000Z'),
+      (out.match(/DTSTART:[^\r\n]*/) || [''])[0]);
+    check('probe: emitting the wall clock would put it an hour early',
+      !out.includes('DTSTART:20270815T110000Z'));
+
+    /* A kick-off nobody has set is a whole day, not eleven o'clock. Nothing
+       in the record is in that state today either. */
+    const tbc = { ...summer, id: 'f-craft-tbc', kick: '' };
+    const out2 = fiI({ upcoming: [tbc] }, groundsI, opts);
+    check('a fixture with no kick-off is held as an all-day entry',
+      out2.includes('DTSTART;VALUE=DATE:20270815') && out2.includes('DURATION:P1D')
+        && !/DTSTART:\d{8}T110000Z/.test(out2));
+    check('and it says the kick-off is not confirmed rather than inventing one',
+      /Kick-off to be confirmed/.test(out2));
+  }
+
+  /* ---- THE ADDRESS IS WHY THE GROUNDS WERE WORTH DERIVING ----
+     A LOCATION that is an address is what makes a phone offer directions. The
+     feed reads the DERIVED grounds rather than venues.json, so there is one
+     reader of a ground's address and it cannot disagree with the page. */
+  {
+    const withAddr = groundsI.filter((g) => g.address);
+    const used = withAddr.filter((g) => raw.includes(`LOCATION:${g.address.replace(/,/g, '\\,')}`));
+    check('a fixture at a ground with an address carries the address',
+      withAddr.every((g) => !(dI.upcoming || []).some((f) => f.venue === g.name)
+        || used.includes(g)),
+      `${used.length} of ${withAddr.length} in use`);
+    const names = [...new Set((dI.upcoming || []).map((f) => f.venue).filter(Boolean))];
+    check('and a ground with no address carries its name',
+      names.every((n) => raw.includes(`LOCATION:${n}`) || (groundsI.find((g) => g.name === n) || {}).address),
+      names.join(', '));
+  }
+
+  /* ---- GETTING TO IT ----
+     `webcal://` is what makes one press subscribe. Asserted against
+     vercel.json and never generated into it, for the reason the CSP is:
+     Vercel reads that file BEFORE the build runs. */
+  {
+    const fx = fs.readFileSync(path.join(ROOT, 'fixtures.html'), 'utf8');
+    const webcal = `${clI.site.replace(/^https?:/, 'webcal:')}/fixtures.ics`;
+    check('the fixtures page offers the subscription', fx.includes(`href="${webcal}"`), webcal);
+    check('and the download, because a browser may register no calendar app',
+      /href="\/fixtures\.ics" download/.test(fx));
+    check('the webcal address is the https one with the scheme swapped',
+      webcal.replace(/^webcal:/, 'https:') === `${clI.site}/fixtures.ics`);
+    const vj = JSON.parse(fs.readFileSync(path.join(ROOT, 'vercel.json'), 'utf8'));
+    const hdr = (vj.headers || []).find((h) => h.source === '/fixtures.ics');
+    check('vercel serves it as a calendar, not as a file to download',
+      !!hdr && (hdr.headers || []).some((x) => x.key === 'Content-Type'
+        && /text\/calendar/.test(x.value)));
+  }
+}
+
+/* ==========================================================================
    IMAGES WERE NOT BUDGETED, AND THEY ARE THE BIGGEST THING ON THE PAGE
 
    sa.css, home.css, sa.js, control.js and every lazy chunk have a gzipped

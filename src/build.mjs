@@ -49,6 +49,7 @@ import { coachPage } from './templates/coach.mjs';
 import { clubPage, clubsIndex } from './templates/club.mjs';
 import { clubPages } from './lib/clubs.mjs';
 import { groundPage, groundsIndex } from './templates/ground.mjs';
+import { fixturesIcs } from './lib/ics.mjs';
 import { groundPages } from './lib/grounds.mjs';
 import { clubIdentity } from './lib/club-name.mjs';
 import { control } from './templates/control.mjs';
@@ -1828,6 +1829,15 @@ write('baseline-articles.json', JSON.stringify(
    by nobody else. Not in the sitemap and not linked from any page, because it
    is not a page: it is the panel's copy of what the site publishes. */
 write('stats-pages.json', JSON.stringify(catalogue));
+
+/* ---- The fixtures as a calendar ----------------------------------------
+   A subscription, so a phone re-reads it and a fixture cancelled in the panel
+   leaves the calendar on the next publish. src/lib/ics.mjs holds the six
+   decisions; what matters here is that it is handed the DERIVED grounds, so
+   the only reader of a ground's address is the one that derived it. */
+write('fixtures.ics', fixturesIcs(d, GROUNDS, {
+  site: CLUB.site, name: `${CLUB.name} fixtures`, club: CLUB.name,
+}));
 
 write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

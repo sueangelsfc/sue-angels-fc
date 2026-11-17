@@ -1,0 +1,38 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Sue’s Angels FC//fixtures//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Sue's Angels FC fixtures
+NAME:Sue's Angels FC fixtures
+REFRESH-INTERVAL;VALUE=DURATION:PT12H
+X-PUBLISHED-TTL:PT12H
+BEGIN:VEVENT
+UID:f20261122-brockwell@suesangelsfc.co.uk
+DTSTAMP:20261122T000000Z
+SEQUENCE:0
+DTSTART:20261122T110000Z
+DURATION:PT2H
+SUMMARY:Sue's Angels FC v Brockwell Violets FC
+LOCATION:The Reeves Sports Club
+DESCRIPTION:League Eight · Home · https://www.suesangelsfc.co.uk/fixtures
+ .html
+URL:https://www.suesangelsfc.co.uk/fixtures.html
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:f2627-pcup-r2-swans@suesangelsfc.co.uk
+DTSTAMP:20261129T000000Z
+SEQUENCE:0
+DTSTART:20261129T110000Z
+DURATION:PT2H
+SUMMARY:Sue's Angels FC v Celtic Swans FC
+LOCATION:The Reeves Sports Club
+DESCRIPTION:Brian Howard President's Cup · Home · https://www.suesangelsf
+ c.co.uk/fixtures.html
+URL:https://www.suesangelsfc.co.uk/fixtures.html
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR

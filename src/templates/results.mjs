@@ -451,6 +451,43 @@ function matchesPage(d, mode) {
       </div>
     </section>`;
 
+  /* ---- Put it in a phone -------------------------------------------------
+     Everything above requires somebody to come and look. The feed is a
+     SUBSCRIPTION, which is the whole point: a phone re-reads it, so a fixture
+     the club cancels in the panel leaves the calendar on the next publish
+     rather than sending somebody to a ground on a Sunday morning.
+
+     `webcal://` is what makes one press subscribe rather than download a file
+     the reader then has to find. It is the same address over the same TLS;
+     only the scheme differs, and a calendar app is what registers it. The
+     https link is beside it because a browser with nothing registered would
+     do nothing at all, and a dead button is worse than two buttons.
+
+     The two hours and the all-day fallback are explained HERE, where somebody
+     is deciding whether to subscribe, and not in each entry's description -
+     that is read on a lock screen by somebody who only wanted to know where
+     to be. */
+  const calBand = mode === 'fixtures' && upcoming.length ? `<section class="sec mt-cal" aria-labelledby="fx-cal-h">
+      <div class="wrap">
+        ${rail(2, 'In your calendar', `${upcoming.length} ${upcoming.length === 1 ? 'date' : 'dates'}`)}
+        <h2 class="h2 rv" id="fx-cal-h">Put it in your <span class="volt">phone.</span></h2>
+        <p class="mt-lede rv">Subscribe once and every fixture appears in your calendar, with the
+          ground and the kick-off. It updates itself, so a match called off stops being in there.</p>
+        <p class="mt-cal__btns rv">
+          ${/* The address is CLUB.site with the scheme swapped, never a host
+               field of its own: every share card on this site pointed at
+               `co.ukundefined` for weeks because a drawer read a `CLUB.url`
+               that does not exist. One source, and the guard would catch it
+               if it ever stopped resolving. */''}
+          <a class="btn btn--volt" href="${attr(`${CLUB.site.replace(/^https?:/, 'webcal:')}/fixtures.ics`)}">Subscribe to the fixtures</a>
+          <a class="btn btn--ghost" href="/fixtures.ics" download>Download the file instead</a>
+        </p>
+        <p class="mt-cal__note rv">Each match is held for two hours. Sunday-league returns do not
+          record a final whistle, so that is the convention rather than a measurement, and a fixture
+          whose kick-off has not been confirmed is held as an all-day entry rather than guessed at.</p>
+      </div>
+    </section>` : '';
+
   /* ================= CTA ================= */
   const ctaBand = mode === 'fixtures'
     ? `<section class="sec sec--cta mt-cta" aria-labelledby="mt-cta-h">
@@ -632,7 +669,7 @@ function matchesPage(d, mode) {
 
   return {
     body: siteHeader(isFixtures ? '/fixtures.html' : '/results.html')
-      + (isFixtures ? fixHero + fixBand + cupBand : hero + recordBand + awaitingBand + listBand)
+      + (isFixtures ? fixHero + fixBand + calBand + cupBand : hero + recordBand + awaitingBand + listBand)
       + liveBand
       + sourceNote(['fulltime', 'surreyfa'])
       + ctaBand,

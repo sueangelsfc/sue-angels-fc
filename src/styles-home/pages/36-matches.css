@@ -327,3 +327,13 @@ html.js .mt[hidden]{display: none;}
    archive is one line away rather than a nav item of its own. */
 .mt-hero__link{color: var(--volt-text); text-decoration: underline;
   text-underline-offset: 3px;}
+
+/* ---- Put it in a phone --------------------------------------------------
+   Two buttons, because `webcal://` does nothing at all in a browser with no
+   calendar app registered and a dead button is worse than two. They wrap
+   rather than shrink: at 320px two buttons side by side would each be too
+   narrow to read the verb on. */
+.mt-cal__btns{display: flex; flex-wrap: wrap; gap: 12px;
+  margin: clamp(14px, 2vw, 20px) 0 0;}
+.mt-cal__note{margin-top: clamp(14px, 2vw, 18px); max-width: 64ch;
+  font-size: 13.5px; line-height: 1.7; color: var(--ink-3);}

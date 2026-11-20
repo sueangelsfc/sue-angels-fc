@@ -2520,14 +2520,17 @@ for (const [f, h] of pages) {
   const asOf = String(l8.tableAsOf || '');
   const ahead = asOf ? compM.filter((m) => m.season === '26/27'
     && /League Eight/i.test(m.competition) && String(m.iso || '') > asOf) : [];
-  const ourSide = (m) => (/sue.s angels/i.test(String(m.home || ''))
-    ? { for: Number(m.hs) || 0, against: Number(m.as) || 0 }
-    : { for: Number(m.as) || 0, against: Number(m.hs) || 0 });
+  /* READ OFF THE ENGINE, NOT OFF THE SCORELINE. A walkover is three points
+     and no goals, and `hs`/`as` are null on one - so comparing them made the
+     Brockwell walkover of 22 November a match played and not won, and the
+     check failed by exactly one win against a correct record. `outcome` and
+     `ourGoals` already know the rule, and `mr` on the other side of the sum
+     counts the same way, which is what makes the two comparable at all. */
   const got = {
     pl: ahead.length,
-    w: ahead.filter((m) => ourSide(m).for > ourSide(m).against).length,
-    gf: ahead.reduce((a, m) => a + ourSide(m).for, 0),
-    ga: ahead.reduce((a, m) => a + ourSide(m).against, 0),
+    w: ahead.filter((m) => m.outcome === 'W').length,
+    gf: ahead.reduce((a, m) => a + (Number(m.ourGoals) || 0), 0),
+    ga: ahead.reduce((a, m) => a + (Number(m.theirGoals) || 0), 0),
   };
   check('the manager\u2019s League Eight figures match the published table row',
     !us || (league.played + owed.pl - got.pl === us.pl && league.won + owed.w - got.w === us.w
@@ -3156,8 +3159,16 @@ const BUDGET = {
   'control-matchday.js': 4,
   /* 16 -> 6. The five-tab editor left for control-matchedit.js, so this is now
      the two LISTS: 15.9KB of a 16KB ceiling became 4.9KB. The ceiling comes
-     down with it, or the split quietly rots back. */
-  'control-match.js': 6,
+     down with it, or the split quietly rots back.
+
+     6 -> 7, once, for the banner that offers to ADOPT a match the website is
+     publishing from src/data/match-additions.json: the identity test, the
+     list, and the import that upserts each one as a record the club owns.
+     5,627 gz before and 6,156 after, so 529 bytes, measured the way this
+     suite measures it. The alternative was leaving the club looking at a
+     result on its own website that the panel does not know exists, which is
+     the bind the News screen's article import already answers. */
+  'control-match.js': 7,
   /* The editor, fetched the first time somebody opens a match. Nobody who
      only reads the results list pays for it.
 
@@ -4847,7 +4858,14 @@ for (const [f, kb] of Object.entries({
       const { buildDataset: bdPS } = await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
       const dPS = bdPS();
       const cur = dPS.currentSeason;
-      const compCur = dPS.played.filter((m) => m.played && !m.friendly && m.season === cur).length;
+      /* CONTESTED, NOT COMPETITIVE. The denominator on a profile is "out of
+         how many was he available", so a walkover is not in it - see
+         playableMatches(). This counted competitive matches and passed only
+         while no walkover fell in the season a profile opens on; the
+         Brockwell walkover of 22 November put 26/27 at 10 competitive and 9
+         contested, and the page was right. */
+      const { playableMatches: pmPS } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+      const compCur = pmPS(dPS.played.filter((m) => m.played && !m.friendly && m.season === cur)).length;
       const cdHtml = fs.readFileSync(path.join(ROOT, 'players', 'charlie-dunkley.html'), 'utf8');
       const cd = (dPS.players || []).find((x) => x.slug === 'charlie-dunkley') || {};
       const tabIdx = (dPS.seasons || []).findIndex((s) => s.name === cur);
@@ -4855,8 +4873,8 @@ for (const [f, kb] of Object.entries({
       const playedOf = (curPanel.match(/of (\d+) played/) || [])[1];
       /* League and cup together: the club does not want cup ties split out. */
       check('there is no separate Cup ties tab on a player page', !/Cup ties/.test(cdHtml));
-      check('a player\'s season tab counts only that season\'s competitive matches',
-        tabIdx > -1 && Number(playedOf) === compCur, `${cur}: of ${playedOf} played, ${compCur} competitive`);
+      check('a player\'s season tab counts only that season\'s contested matches',
+        tabIdx > -1 && Number(playedOf) === compCur, `${cur}: of ${playedOf} played, ${compCur} contested`);
       /* A season tab reads that season alone. */
       const ledeEl = (cdHtml.match(/<p class="pf-hero__lede"[^>]*>([\s\S]*?)<\/p>/) || []);
       const lede = (ledeEl[1] || '').replace(/\s+/g, ' ');
@@ -7197,7 +7215,14 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
        taken out; the shipped record is held to its latest COMPETITIVE season. */
     const rawK = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'recovered-live.json'), 'utf8'));
     /* A panel-saved match can carry only `date` ("06 Sep 2026") and no iso. */
-    const summerK = bdK({ live: { ...rawK, matches: (rawK.matches || []).filter((m) => {
+  /* AND IT TAKES OUT EVERY SOURCE OF A COMPETITIVE MATCH, not just the
+     database. src/data/match-additions.json carries a result only an admin
+     session can write, so a state constructed by filtering `live.matches`
+     alone kept the Brockwell walkover of 22 November, and "the record with
+     this season's competitive matches taken out" read as 26/27 with seven
+     friendlies. `additions` is the override hook for exactly this, the same
+     as `live` and `fixtures`. */
+    const summerK = bdK({ additions: { matches: [] }, live: { ...rawK, matches: (rawK.matches || []).filter((m) => {
       const x = m.data || {};
       const t = x.iso ? Date.parse(`${x.iso}T12:00`) : Date.parse(x.date || '');
       return !(t >= Date.parse('2026-07-01T00:00') && !/friendly|pre.?season/i.test(x.competition || ''));
@@ -7327,7 +7352,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
         venue: 'The Reeves Sports Club', ...extra,
       },
     });
-    return bdS({ live });
+    return bdS({ live, additions: { matches: [] } });
   };
   const openTabOf = (d) => {
     const html = statsTpl(d).body;
@@ -7337,7 +7362,14 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   const chipsOf = (d) => [...new Set(
     [...statsTpl(d).body.matchAll(/data-season="([^"]+)"/g)].map((x) => x[1]))];
 
-  const today = bdS({ live: summerRaw });
+  /* AND IT TAKES OUT EVERY SOURCE OF A COMPETITIVE MATCH, not just the
+     database. src/data/match-additions.json carries a result only an admin
+     session can write, so a state constructed by filtering `live.matches`
+     alone kept the Brockwell walkover of 22 November, and "the record with
+     this season's competitive matches taken out" read as 26/27 with seven
+     friendlies. `additions` is the override hook for exactly this, the same
+     as `live` and `fixtures`. */
+  const today = bdS({ live: summerRaw, additions: { matches: [] } });
   const chips = chipsOf(today);
   check('the player stats page offers every season and all of them together',
     chips.includes('all') && chips.filter((c) => c !== 'all').length >= 2,
@@ -8244,7 +8276,14 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   };
   liveW.matches = (liveW.matches || [])
     .filter((m) => { const t = playedOnW(m); return !(t !== null && t >= seasonStartW); });
-  const bare = String((statsW(bdW({ live: JSON.parse(JSON.stringify(liveW)) })) || {}).body || '');
+  /* AND IT TAKES OUT EVERY SOURCE OF A COMPETITIVE MATCH, not just the
+     database. src/data/match-additions.json carries a result only an admin
+     session can write, so a state constructed by filtering `live.matches`
+     alone kept the Brockwell walkover of 22 November, and "the record with
+     this season's competitive matches taken out" read as 26/27 with seven
+     friendlies. `additions` is the override hook for exactly this, the same
+     as `live` and `fixtures`. */
+  const bare = String((statsW(bdW({ live: JSON.parse(JSON.stringify(liveW)), additions: { matches: [] } })) || {}).body || '');
   liveW.matches.push({
     key: 'simw20260906-tlb', updated_at: '2026-09-06T12:00:00Z',
     data: {
@@ -8253,7 +8292,7 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
       venue: 'The Reeves Sports Club',
     },
   });
-  const noSheet = String((statsW(bdW({ live: liveW })) || {}).body || '');
+  const noSheet = String((statsW(bdW({ live: liveW, additions: { matches: [] } })) || {}).body || '');
   check('the player stats page says a new season has started and why its figures are not showing',
     /data-season-waiting/.test(noSheet) && /has started, with 1 competitive match played/.test(noSheet)
       && /team sheet has not been entered yet/.test(noSheet),
@@ -11378,8 +11417,15 @@ console.log(`\n${'='.repeat(66)}`);
     check('a fixture with no kick-off is held as an all-day entry',
       out2.includes('DTSTART;VALUE=DATE:20270815') && out2.includes('DURATION:P1D')
         && !/DTSTART:\d{8}T110000Z/.test(out2));
+    /* UNFOLDED FIRST. RFC 5545 breaks a line at 75 octets and continues it
+       after a CRLF and a space, so a DESCRIPTION reads "Kick-off to be
+       confirme\r\n d" whenever what comes before it is long enough - which it
+       became the day the next fixture was the Brian Howard President's Cup
+       rather than a League Eight tie. The check was reading the file the way
+       nothing reads it: every calendar unfolds before it parses. */
+    const unfold = (t) => String(t).replace(/\r\n[ \t]/g, '');
     check('and it says the kick-off is not confirmed rather than inventing one',
-      /Kick-off to be confirmed/.test(out2));
+      /Kick-off to be confirmed/.test(unfold(out2)));
   }
 
   /* ---- THE ADDRESS IS WHY THE GROUNDS WERE WORTH DERIVING ----
@@ -14223,6 +14269,179 @@ console.log(`  classes on an element no rule reaches, one page per family: ${orp
   const deaf = sjs2.replace(/\[\?&\]q=\(\[\^&\]\*\)\/\.exec\(location\.search\)/, 'false');
   check('probe: an index that ignores ?q= is caught',
     deaf !== sjs2 && !/\[\?&\]q=\(\[\^&\]\*\)/.test(deaf));
+}
+
+/* ==========================================================================
+   A MATCH THE CLUB HAS BEEN AWARDED AND HAS NOT YET SAVED
+
+   src/data/match-additions.json, applied by addMatches() in dataset.mjs. The
+   `matches` table cannot be written from a developer machine, so a walkover -
+   where there is no afternoon to wait for and nothing to find out afterwards -
+   would otherwise sit off the site until somebody is at a laptop with an admin
+   session, and the club's own played column, points and form would all be a
+   match behind what the league had already awarded.
+
+   What is checked is the GUARD, not the feature. Adding a match is the easy
+   half; the half that matters is that an entry cannot go on adding a match the
+   club has since recorded itself, because the duplicate would be a match
+   counted twice in every figure the site publishes, which reads as a
+   miscounting engine rather than as a stale file.
+   ========================================================================== */
+{
+  const { buildDataset: bdAM, addMatches: amAM, matchIdentity: miAM } =
+    await import(path.join(ROOT, 'src', 'lib', 'dataset.mjs'));
+  const file = JSON.parse(fs.readFileSync(path.join(ROOT, 'src', 'data', 'match-additions.json'), 'utf8'));
+  const entries = file.matches || [];
+  const dAM = bdAM();
+  const none = bdAM({ additions: { matches: [] } });
+
+  /* THE OVERRIDE IS THE THING THE REST OF THE SUITE NEEDS. Three constructed
+     states take this season's competitive matches out by filtering the
+     database, and an addition is not in the database: without a way to switch
+     them off, "the record with this season's competitive matches removed"
+     silently kept one. */
+  /* COUNTED ON WHAT IS PLAYED, not on the match list. The list is the same
+     length either way, because taking the addition out puts the fixture it
+     replaces back - which is itself the mechanism working. */
+  check('an addition can be switched off, which is how a crafted state stays craftable',
+    none.played.length === dAM.played.length - entries.length,
+    `${dAM.played.length} played with, ${none.played.length} without, ${entries.length} in the file`);
+
+  /* Conditioned on the file, so this block retires with the entry rather than
+     going red the day the club records it in the panel. */
+  if (entries.length) {
+    const added = entries.map((a) => dAM.matches.find((m) => m.id === a.id)).filter(Boolean);
+    check('every addition is a match the site publishes', added.length === entries.length,
+      `${added.length} of ${entries.length}`);
+    check('and each has a page of its own',
+      added.every((m) => fs.existsSync(path.join(ROOT, 'matches', `${m.id}.html`))));
+    /* A WALKOVER IS THREE POINTS AND NO GOALS, which is the league's own
+       arithmetic and the rule npm run verify reconciles the archive against.
+       Read off the engine rather than asserted of the file: an entry carrying
+       a scoreline by mistake would move the goals for and against. */
+    for (const m of added.filter((x) => x.kind === 'walkover')) {
+      check(`a walkover carries no goals either way (${m.id})`,
+        m.countsGoals === false && m.ourGoals === 0 && m.theirGoals === 0
+          && (m.outcome === 'W' || m.outcome === 'L'),
+        `${m.outcome} ${m.ourGoals}-${m.theirGoals} countsGoals=${m.countsGoals}`);
+    }
+    /* AND IT IS NOT IN ANY PLAYER'S DENOMINATOR. The club's played column
+       keeps a walkover because the league does; "out of how many was he
+       available" cannot, because nobody was asked to turn up. */
+    const { playableMatches: pmAM } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+    const woIds = new Set(added.filter((x) => x.kind === 'walkover').map((x) => x.id));
+    check('a walkover added here is in the played column and in nobody’s denominator',
+      !woIds.size || pmAM(dAM.matches.filter((m) => m.played && !m.friendly))
+        .every((m) => !woIds.has(m.id)));
+    /* THE FIXTURE IT REPLACES GOES, with no second rule: the result's identity
+       joins the set the fixture merge already tests against. This is the whole
+       reason the addition is applied before rawResults rather than afterwards,
+       and it is live - the 22 November fixture is a row in the database that
+       only an admin session can delete. */
+    check('the fixture the addition replaces is no longer still to come',
+      added.every((m) => !(dAM.upcoming || []).some((f) => miAM(f) === miAM(m))),
+      added.map((m) => miAM(m)).join(' | '));
+    /* AND IT WAS THERE BEFORE. Without this the check above passes on a
+       fixture that never existed, which is every match the club has played
+       since the panel cleared its own row. */
+    check('and the addition is what took it off the fixture list',
+      added.every((m) => {
+        const was = (none.matches || []).find((f) => miAM(f) === miAM(m));
+        return !was || !was.played;
+      }));
+    /* THE PANEL IS TOLD, because a result on the website that the panel does
+       not know exists is a record the club cannot put a team sheet on. */
+    const seedAM = JSON.parse(fs.readFileSync(path.join(ROOT, 'control-seed.js'), 'utf8')
+      .replace(/^[^{]*/, '').replace(/;?\s*$/, ''));
+    const offered = (seedAM.matchAdditions || []).map((m) => m.id);
+    check('the panel is offered every one of them to adopt',
+      entries.every((a) => offered.includes(a.id)), offered.join(', '));
+    check('and the whole record, so adopting is one write and not a half-filled form',
+      (seedAM.matchAdditions || []).every((m) => m.date && m.home && m.away && m.kind
+        && m.competition));
+    check('and a note to whoever reads the file is not part of the record',
+      (seedAM.matchAdditions || []).every((m) => !Object.keys(m).some((k) => k.startsWith('_')))
+        && entries.some((a) => Object.keys(a).some((k) => k.startsWith('_'))));
+    const matchJs = fs.readFileSync(path.join(ROOT, 'control-match.js'), 'utf8');
+    check('the Results screen offers the import and writes it to `matches`',
+      /data-import-matches/.test(matchJs) && /upsert\(["']matches["']/.test(matchJs));
+
+    /* THE SHARE CARD SAYS WHAT HAPPENED. A walkover kept "VS" on the build's
+       card, on the reasoning that the league records no goals and a number
+       would invent one - right about the number, and it left a link to a
+       match the club had been awarded looking exactly like a link to
+       Sunday's fixture. The PANEL's drawer has printed W/O all along, so the
+       two disagreed about the same match; they are asked together here
+       because that is the fault rather than either card on its own. */
+    const { matchCover: mcAM } = await import(path.join(ROOT, 'src', 'lib', 'cover-art.mjs'));
+    const woAM = dAM.played.filter((m) => m.isWalkover);
+    const coversJs = fs.readFileSync(path.join(ROOT, 'control-covers.js'), 'utf8');
+    check('a walkover\u2019s share card says it was awarded, not VS',
+      woAM.length > 0 && woAM.every((m) => {
+        const html = mcAM(m, () => '');
+        return /W\/O/.test(html) && !/>VS</.test(html);
+      }), `${woAM.length} walkovers`);
+    check('and the panel draws the same thing, so two cards cannot disagree',
+      /W\/O/.test(coversJs));
+  }
+
+  /* ---- THE GUARD, ON CRAFTED ENTRIES ----
+     Crafted, because the real file holds one entry that correctly applies, and
+     a check over it alone passes with the guard deleted. */
+  {
+    const oneOf = (iso, home, away, id) => ({
+      id, date: iso, home, away, kind: 'score', hs: 1, as: 0, competition: 'League Eight',
+    });
+    const played = dAM.matches.filter((m) => m.played && m.home && m.away);
+    const real = played.find((m) => m.kind === 'score') || played[0];
+    const dupeById = bdAM({ additions: { matches: [{ ...real, id: real.id }] } });
+    check('an addition keyed as a match the club already has changes nothing',
+      dupeById.matches.length === dAM.matches.length);
+    /* THE KEY IS NOT THE MATCH. A result entered through Fixtures carries its
+       fixture's key, so an addition written under the obvious `r` key would
+       not collide with it and the afternoon would ship twice. */
+    const dupeByDay = bdAM({ additions: { matches: [oneOf(real.date, real.home, real.away, 'craft-dupe')] } });
+    check('nor one under a different key for the same day and the same two clubs',
+      dupeByDay.matches.length === dAM.matches.length,
+      `${dupeByDay.matches.length} vs ${dAM.matches.length}`);
+    check('and the two clubs either way round are the same match',
+      bdAM({ additions: { matches: [oneOf(real.date, real.away, real.home, 'craft-swap')] } })
+        .matches.length === dAM.matches.length);
+    /* AND IT IS NOT A REFUSAL TO ADD ANYTHING. A guard that dropped
+       everything would pass all three above. */
+    const fresh = bdAM({ additions: { matches: [oneOf('04 Apr 2027', "Sue's Angels FC", 'Craft Town FC', 'craft-new')] } });
+    check('a match the club does not have is added',
+      fresh.matches.length === dAM.matches.length + 1
+        && !!fresh.matches.find((m) => m.id === 'craft-new'));
+    check('an entry with no key is not a match', bdAM({ additions: { matches: [{ date: '04 Apr 2027' }] } })
+      .matches.length === dAM.matches.length);
+
+    /* ---- PROBES ---- */
+    const byId = new Map(dAM.matches.filter((m) => m.id).map((m) => [m.id, m]));
+    const loose = new Map(byId);
+    /* The guard removed: the id test alone, which is what the obvious
+       implementation looks like. */
+    const slack = { ...oneOf(real.date, real.home, real.away, 'craft-dupe') };
+    if (!loose.has(slack.id)) loose.set(slack.id, slack);
+    check('probe: matching on the key alone would ship the same afternoon twice',
+      loose.size === byId.size + 1);
+    /* And the identity test itself: the day has to be part of it. */
+    check('probe: the same two clubs on a different day is a different match',
+      miAM(real) !== miAM({ ...real, date: '04 Apr 2027' })
+        && miAM(real) !== miAM({ ...real, away: 'Craft Town FC' }));
+    /* THE UNDERSCORE STRIP, ASKED OF addMatches ITSELF. Asked of `d.matches`
+       it proves nothing: that list is normalised from a known set of fields,
+       so a note is dropped there whether this strips it or not. What carries
+       the raw record is `rawMatches`, which is what the panel is seeded from -
+       so the strip is the difference between a note reaching the club's own
+       screen and not. Removing it leaves this green and turns the seed check
+       above red, which is why both are here. */
+    const noteMap = new Map();
+    amAM(noteMap, [{ ...oneOf('11 Apr 2027', "Sue's Angels FC", 'Craft Town FC', 'craft-note'), _why: 'a note' }]);
+    check('a note to the reader of the file never reaches the record',
+      !Object.keys(noteMap.get('craft-note') || {}).includes('_why')
+        && (noteMap.get('craft-note') || {}).home === "Sue's Angels FC");
+  }
 }
 
 /* ==========================================================================

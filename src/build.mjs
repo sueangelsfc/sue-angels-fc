@@ -896,6 +896,13 @@ const adminSeed = {
        reopens a walkover with no winner and saving would quietly drop one. */
     wo: m.wo || '',
   })),
+  /* MATCHES THE SITE PUBLISHES AND THE PANEL CANNOT EDIT. The `matches` table
+     refuses an anonymous write, so a result only an admin session can enter is
+     carried in src/data/match-additions.json until it is entered - and the
+     club IS signed in on the Results screen, so it offers to adopt them. The
+     whole record, because adopting is one upsert of exactly this. Normally an
+     empty list, which is the resting state and costs the seed nothing. */
+  matchAdditions: d.addedMatches || [],
   /* How a goal was scored and how the chance was made, defined once in
      src/lib/football.mjs. The panel builds its dropdowns from this, so the
      words it offers and the words the website prints cannot drift apart. */

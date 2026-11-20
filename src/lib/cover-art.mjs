@@ -116,11 +116,16 @@ export function matchCover(m, badgeFor) {
      card for Sunday's game showing 0-0 would be stating a result that does
      not exist.
 
-     A walkover keeps VS as well: it was awarded rather than played, the
-     league records no goals for it, and a number here would invent one. */
+     A WALKOVER IS NEITHER. It kept VS on the reasoning that the league
+     records no goals for it and a number here would invent one - which is
+     right about the number and wrong about the card: a link to a match the
+     club has been awarded then looks exactly like a link to Sunday's fixture,
+     and the one thing anybody opening it wants to know is the thing the card
+     does not say. W/O is not a number, it is the scoreline the engine already
+     prints for one, so nothing is invented. */
   const middle = !m.played
     ? '<span class="vs">VS</span>'
-    : (m.isWalkover ? '<span class="vs">VS</span>' : `${ls}<em>-</em>${rs}`);
+    : (m.isWalkover ? '<span class="vs">W/O</span>' : `${ls}<em>-</em>${rs}`);
 
   return SHELL(`<div class="card">
     <div class="eyebrow"><s></s>${esc(m.competition || 'Match')}${m.round ? ` · ${esc(m.round)}` : ''}</div>

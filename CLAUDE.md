@@ -32,7 +32,7 @@ src/
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        5,682-check suite against the generated output
+  test/run.mjs        5,729-check suite against the generated output
   test/dom.mjs        a small, strict DOM that throws rather than guessing
   test/panel-render.mjs  the panel, rendered, and asked what came out
 ```
@@ -767,6 +767,87 @@ the pre-push hook stopped the club's own match report leaving the laptop.
   newlines between tags inside the inline SVGs is 3KB raw and 0.37KB gz, and
   dropping the trailing `.0` off coordinates and `--d:0.0s` is 0.9KB raw and
   0.1KB gz. Together they are half the gzipped overshoot.
+
+### A match the club has been awarded and has not yet saved
+
+`src/data/match-additions.json`, applied by `addMatches()` in `dataset.mjs`.
+The `matches` table **cannot be written from a developer machine** - an
+anonymous INSERT is refused with `42501`, the posture working as designed - so
+a result only an admin session can enter would sit off the site until somebody
+is at a laptop signed in. A **walkover** is the case this exists for: there is
+no afternoon to wait for, no scoreline to type and nothing to find out
+afterwards, so the record is complete the moment the league awards it and
+every figure the site publishes should already carry the points.
+
+**First used on 20 November 2026.** Brockwell Violets could not field a team
+for League Eight matchday seven at The Reeves on the 22nd, so the match was
+awarded to Sue's Angels: League Eight goes P6 to **P7, won 7, 21 points**, and
+the goals do not move, which is the league's own arithmetic.
+
+- **IT RETIRES ITSELF**, which is the only reason a second source for match
+  data is safe here. An entry is dropped the moment the club's own record
+  holds the same match - by its key, **or by the match's own identity**, the
+  day plus the two clubs in whatever order they were typed. The key alone is
+  not enough and that is the whole guard: a result entered through
+  **Fixtures → Enter result** carries its FIXTURE's key, `f20261122-brockwell`
+  against the file's `r20261122-brockwell`, so an id test would have shipped
+  the same afternoon twice in every figure on the site. Same device as
+  `match-corrections.json`, `fixtures-2627.json` and `articles-extra.json`.
+- **`matchIdentity()` is at module scope now**, because three things ask it:
+  the fixture merge, this, and the suite. Two copies of "is this the same
+  afternoon" would be two answers, and the safety of this file is that it asks
+  exactly the question the merge already asks.
+- **Applied before anything is derived**, into the same map the baseline and
+  the stored rows go into, so the played column, the points, the form guide
+  and the fixture list all read one match list. And because the result's
+  identity joins `knownMatches`, **the fixture it replaces drops out of what is
+  still to come with no second rule** - which matters here, because that
+  fixture is a row in the database only an admin session can delete.
+- **The panel is offered the match to adopt.** A result on the club's own
+  website that the panel does not know exists is a record nobody can put a
+  team sheet or a report on. The club IS signed in on **Control panel →
+  Results**, so their session writes what the anonymous key cannot: the screen
+  carries the same banner the News screen carries for `articles-extra.json`,
+  one press upserts it, and the offer disappears the moment the row exists.
+  `control-match.js` **6 → 7KB**, 529 gzipped bytes, measured and written down
+  beside the constant in `run.mjs`.
+- **THE DIVISION TABLE IS NOT TOUCHED.** `league-eight-2627.json` is
+  transcribed from FA Full-Time and `npm run verify` reconciles every club in
+  it against the results it is made of, so writing a row nobody read off
+  Full-Time would make that file a second source for the LEAGUE's record
+  rather than the club's. The club's own figures carry the win now and the
+  published table moves when the league publishes it. The check that compares
+  the two already allows the archive to run ahead of a table read earlier -
+  `tableAsOf` is the pivot - and it was reading `hs`/`as` to decide a win,
+  which are null on a walkover, so a correct record failed by exactly one win.
+  It reads `outcome` and `ourGoals` now, the same rule the other side of the
+  sum counts by.
+- **A constructed state has to take out every source of a competitive match.**
+  Three checks build "the record with this season's competitive matches
+  removed" by filtering `live.matches`, and an addition is not in
+  `live.matches`, so the summer silently kept the walkover and read as 26/27
+  with seven friendlies. `additions` is the override hook for exactly that,
+  beside `live` and `fixtures`.
+- **The guard is asked on crafted entries**, because the real file holds one
+  that correctly applies and a check over it alone passes with the guard
+  deleted. The probe is the id test on its own, and it goes red.
+- **A note to whoever reads the file never reaches the record.** Keys starting
+  with an underscore are stripped in `addMatches`. Asked of that function and
+  not of `d.matches`: the published list is normalised from a known set of
+  fields, so a note is dropped there whether this strips it or not, and what
+  carries the raw record is `rawMatches`, which is what the panel is seeded
+  from.
+
+#### A walkover's share card said VS
+
+Every link to the awarded match looked exactly like a link to Sunday's
+fixture. The reasoning written beside it was that the league records no goals
+and a number in the middle of the card would invent one, which is right about
+the number and is not an argument for VS: **W/O is not a number**, it is the
+scoreline the engine already prints for a walkover. **The panel's own drawer
+has printed W/O all along**, so the two cards disagreed about the same match,
+and the check asks them together because that is the fault rather than either
+card on its own. The three archive walkovers were redrawn with it.
 
 ### A walkover is not a match anybody could have played in
 
@@ -2683,7 +2764,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 5,682 checks against the generated output and the rendered panel
+npm test          # 5,729 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

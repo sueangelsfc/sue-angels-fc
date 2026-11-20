@@ -1,0 +1,20 @@
+{
+  "_what": "A MATCH THE CLUB HAS BEEN AWARDED AND HAS NOT YET SAVED. The `matches` table cannot be written from a developer machine - an anonymous INSERT is refused by row-level security, which is the posture working as designed - so a result only an admin session can enter would otherwise sit off the site until somebody is at a laptop signed in. A walkover is the case this file exists for: there is no afternoon to wait for, no scoreline to type and nothing to find out, so the record is complete the moment the league awards it, and every figure the site publishes should already carry the points.",
+  "_retires": "IT RETIRES ITSELF, which is the only reason a second source for match data is safe here. Each entry is dropped the moment the club's own record holds the same match - by its key, or by the match's own identity, the day plus the two clubs in whatever order they were typed, which is the same test that tells a fixture from its result in dataset.mjs. So the file cannot drift, cannot fight the panel, and forgetting to delete an entry costs nothing. Same device as match-corrections.json, fixtures-2627.json and articles-extra.json.",
+  "_adopt": "The club IS signed in on Control panel -> Results, so their session writes what the anonymous key cannot: the screen offers the match for import, and the offer disappears the moment a stored row exists. Nothing on the website changes when they press it.",
+  "_division": "THE DIVISION TABLE IS NOT TOUCHED. league-eight-2627.json is transcribed from FA Full-Time and `npm run verify` reconciles every club in it against the results it is made of; writing a row nobody read off Full-Time would make this file a second source for the LEAGUE's record rather than the club's. So the club's own figures carry the win and the points now, and the published table moves when the league publishes it.",
+  "matches": [
+    {
+      "id": "r20261122-brockwell",
+      "date": "22 Nov 2026",
+      "kick": "11:00",
+      "home": "Sue's Angels FC",
+      "away": "Brockwell Violets FC",
+      "kind": "walkover",
+      "wo": "H-W",
+      "competition": "League Eight",
+      "venue": "The Reeves Sports Club",
+      "_why": "League Eight matchday seven, at The Reeves. Brockwell Violets could not field a team, so the match was awarded to Sue's Angels: three points and, as the league's arithmetic has it, no goals either way. A walkover counts as played in the club's played column and in nobody's player figures, which is already how the engine reads the other three in the archive."
+    }
+  ]
+}

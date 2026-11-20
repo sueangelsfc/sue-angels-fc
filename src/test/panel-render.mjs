@@ -367,6 +367,59 @@ export async function panelChecks() {
      existed, so the date filter found no date field and waved everybody
      through. Counted here on the rendered dialog. */
   const res = await PR.openPanel(ctx, 'results');
+
+  /* A MATCH THE WEBSITE PUBLISHES THAT THE PANEL DOES NOT KNOW EXISTS.
+     src/data/match-additions.json carries a result only an admin session can
+     write - a walkover, where nothing has to be found out afterwards - so the
+     points reach every published figure at once. Until it is a real row the
+     club cannot put a team sheet or a report on it, which is the same bind the
+     News screen's article import answers. Rendered rather than grepped,
+     because this panel's recurring fault is a correct mechanism attached to
+     nothing. */
+  {
+    const seedAdds = (ctx.win.SA_SEED || {}).matchAdditions || [];
+    const banner = res.body.querySelectorAll('[data-import-matches]');
+    if (seedAdds.length) {
+      check('the Results screen offers a match the site publishes and the database lacks',
+        banner.length === 1 && /not in the database yet/.test(res.html)
+          && seedAdds.every((m) => res.html.includes(m.home) && res.html.includes(m.date)),
+        `${banner.length} buttons, ${seedAdds.length} offered`);
+      /* THE GUARD, RENDERED. An offer to import a match the club has already
+         recorded is worse than no offer: pressing it would overwrite the team
+         sheet and the report with the file's bare record. */
+      const owned = PR.boot({
+        rows: {
+          ...rows,
+          matches: [...rows.matches, ...seedAdds.map((m) => ({
+            key: m.id, updated_at: '2026-11-22T12:00:00Z', data: { ...m },
+          }))],
+        },
+      });
+      const r6 = await PR.openPanel(owned, 'results');
+      check('and says nothing once the club has recorded it itself',
+        r6.body.querySelectorAll('[data-import-matches]').length === 0
+          && !/not in the database yet/.test(r6.html));
+      /* AND UNDER ITS OWN KEY, which a result entered through Fixtures has:
+         `f20261122-brockwell`, not the `r` key the file is written under. */
+      const viaFixture = PR.boot({
+        rows: {
+          ...rows,
+          matches: [...rows.matches, ...seedAdds.map((m) => ({
+            key: String(m.id).replace(/^r/, 'f'), updated_at: '2026-11-22T12:00:00Z',
+            data: { ...m, id: undefined },
+          }))],
+        },
+      });
+      const r7 = await PR.openPanel(viaFixture, 'results');
+      check('matched on the day and the two clubs, not on the key the file used',
+        r7.body.querySelectorAll('[data-import-matches]').length === 0,
+        r7.html.slice(0, 0) || 'offered again under a different key');
+    } else {
+      check('the Results screen offers nothing to import when there is nothing to import',
+        banner.length === 0);
+    }
+  }
+
   let sheetSize = 0; let modal = null; let chosen = null;
   for (const tr of res.body.querySelectorAll('tr[data-key]')) {
     const k = tr.getAttribute('data-key');

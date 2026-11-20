@@ -278,6 +278,62 @@ export function applyCorrections(detailById, corrections) {
   return done;
 }
 
+/* A FIXTURE AND ITS RESULT ARE THE SAME MATCH, and the id does not say so:
+   entering a result writes `r20260802-pure` while the fixture it came from is
+   `f20260802-pure`. So identity is the match itself - the day it was played
+   and the two clubs, in whatever order they were typed.
+
+   AT MODULE SCOPE because three things now ask it: the fixture merge, the
+   addition rule below, and the suite. Two copies of this test would be two
+   answers to "is this the same afternoon", and the whole safety of
+   match-additions.json is that it asks exactly the question the merge does. */
+export function matchIdentity(m) {
+  return [
+    String(m.date || '').slice(0, 10),
+    toISO(m.date || '') || '',
+    [String(m.home || '').toLowerCase(), String(m.away || '').toLowerCase()].sort().join(' v '),
+  ].filter(Boolean).slice(-2).join('|');
+}
+
+/* A MATCH THE CLUB HAS BEEN AWARDED AND HAS NOT YET SAVED
+   (src/data/match-additions.json). The `matches` table cannot be written from
+   a developer machine - an anonymous INSERT is refused by row-level security,
+   the posture working as designed - so a result only an admin session can
+   enter would otherwise sit off the site until somebody is at a laptop signed
+   in. A walkover is the case this exists for: nothing has to be found out
+   afterwards, so the record is complete the moment the league awards it.
+
+   IT RETIRES ITSELF, which is the only reason a second source for match data
+   is safe here. An addition is dropped the moment the club's own record holds
+   the same match - by its key, or by the identity above, so a result the panel
+   saved under its fixture's own key still wins. Forgetting to delete an entry
+   therefore costs nothing, and the file can never fight the panel.
+
+   APPLIED BEFORE ANYTHING IS DERIVED, into the same map the baseline and the
+   stored rows went into, so the played column, the points, the form guide and
+   the fixture list all read one match list. Adding it to the assembled list
+   afterwards is how a band that counts a match comes to disagree with the band
+   that drew it - and because the result's identity joins `knownMatches`, the
+   fixture it replaces drops out of what is still to come with no second rule.
+
+   Keys beginning with an underscore are notes to whoever reads the file and
+   are never part of the record. */
+export function addMatches(byId, additions) {
+  const have = new Set();
+  for (const m of byId.values()) have.add(matchIdentity(m));
+  const added = [];
+  for (const a of additions || []) {
+    if (!a || !a.id) continue;
+    if (byId.has(a.id) || have.has(matchIdentity(a))) continue;
+    const row = {};
+    for (const [k, v] of Object.entries(a)) if (!k.startsWith('_')) row[k] = v;
+    byId.set(row.id, row);
+    have.add(matchIdentity(row));
+    added.push(row);
+  }
+  return added;
+}
+
 export function buildDataset(overrides = {}) {
   const ps = overrides.pageshell || read('recovered-pageshell.json');
   /* Club-written prose gets the house typography on the way in, once, rather
@@ -360,6 +416,11 @@ export function buildDataset(overrides = {}) {
     if (!Object.keys(overlay).length) continue;
     byId.set(key, { ...(byId.get(key) || { id: key }), ...overlay });
   }
+  /* See addMatches() above: a match only an admin session can enter, carried
+     here until it is entered, and dropped the moment it is. */
+  const addedMatches = addMatches(byId,
+    (overrides.additions || read('match-additions.json')).matches || []);
+
   const rawResults = [...byId.values()];
 
   /* Upcoming fixtures. Real rows in the `fixtures` table win; the transcribed
@@ -367,24 +428,14 @@ export function buildDataset(overrides = {}) {
      as that table is empty. Anything already in the results baseline wins
      over both, so a fixture that has since been played is not duplicated by
      its own placeholder. */
-  /* A FIXTURE AND ITS RESULT ARE THE SAME MATCH, and the id does not say so.
-
-     Entering a result writes `r20260802-pure` while the fixture it came from
-     is `f20260802-pure`: the same game, the same afternoon, two keys that
-     differ by one letter. Matching on the id therefore did not notice, and
-     Pure Football 2.0 away appeared twice on the site at once, with the 0-2
-     on the results page and the same match still on the home page under
-     "Played, not yet counted".
-
-     So identity is the match itself: the day it was played and the two clubs,
-     in whatever order they were typed. The panel is meant to clear the
-     fixture when a result is saved and mostly does, but the site should not
-     depend on that having worked. */
-  const identity = (m) => [
-    String(m.date || '').slice(0, 10),
-    toISO(m.date || '') || '',
-    [String(m.home || '').toLowerCase(), String(m.away || '').toLowerCase()].sort().join(' v '),
-  ].filter(Boolean).slice(-2).join('|');
+  /* matchIdentity(), at module scope above: the day plus the two clubs, never
+     the key. Matching on the id did not notice that `r20260802-pure` and
+     `f20260802-pure` are the same afternoon, and Pure Football 2.0 away
+     appeared twice on the site at once - the 0-2 on the results page and the
+     same match still on the home page under "Played, not yet counted". The
+     panel is meant to clear the fixture when a result is saved and mostly
+     does, but the site should not depend on that having worked. */
+  const identity = matchIdentity;
 
   const known = new Set(rawResults.map((r) => r.id));
   const knownMatches = new Set(rawResults.map(identity));
@@ -1818,6 +1869,12 @@ export function buildDataset(overrides = {}) {
        control panel needs it to pre-fill a match whose scoreline still comes
        from the code baseline rather than from a row it can edit. */
     rawMatches: rawResults,
+    /* The matches the site is publishing from src/data/match-additions.json
+       because only an admin session can write them. Handed to the panel so it
+       can offer to adopt them: the club IS signed in there, so their session
+       writes what the anonymous key cannot, and the file retires itself the
+       moment the row exists. Empty is the resting state and the normal one. */
+    addedMatches,
     squad, players, playersCompetitive, playersBySeason, statsByNum, nameFor, friendlyFor,
     /* BEHIND-THE-SCENES CLIPS. Read once here rather than in the template, so
        a page and any band that ever shows them cannot disagree about which

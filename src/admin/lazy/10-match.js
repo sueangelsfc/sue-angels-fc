@@ -716,7 +716,64 @@
         return f.iso && f.iso <= todayIso && !recorded[String(f.id).slice(1, 9)];
       }).sort(function (a, b) { return String(a.iso).localeCompare(String(b.iso)); });
 
-      host.innerHTML = (due.length
+      /* MATCHES THE WEBSITE IS PUBLISHING THAT ARE NOT IN THE DATABASE.
+         A result only an admin session can write - a walkover above all,
+         where there is no afternoon to wait for and nothing to find out
+         afterwards - can be committed to src/data/match-additions.json so the
+         points reach every figure the site publishes at once. Until it is a
+         real row it cannot be edited here without a deploy.
+
+         The club IS signed in on this screen, so their session writes what
+         the anonymous key cannot. Importing makes it an ordinary match record
+         they own, and the file copy loses to it from that moment.
+
+         Matched on the DAY AND THE TWO CLUBS as well as the key, because a
+         result entered through Fixtures carries its fixture's key and a
+         banner offering a match the club has already recorded is worse than
+         no banner at all. */
+      var sameMatch = function (m) {
+        var when = isoFromPretty(m.date || '') || String(m.date || '');
+        var who = [String(m.home || '').toLowerCase(), String(m.away || '').toLowerCase()]
+          .sort().join(' v ');
+        return when + '|' + who;
+      };
+      var mine = {};
+      (list || []).forEach(function (r) {
+        mine[r.key] = 1;
+        var whole = {};
+        var b = BASE[r.key] || {};
+        Object.keys(b).forEach(function (k) { whole[k] = b[k]; });
+        Object.keys(r.data || {}).forEach(function (k) {
+          if ((r.data || {})[k] != null) whole[k] = (r.data || {})[k];
+        });
+        mine[sameMatch(whole)] = 1;
+      });
+      var unowned = (SEED.matchAdditions || []).filter(function (m) {
+        return !mine[m.id] && !mine[sameMatch(m)];
+      });
+
+      host.innerHTML = (unowned.length
+        ? sec({
+          warn: true,
+          title: unowned.length + ' match' + (unowned.length === 1 ? ' is' : 'es are')
+            + ' not in the database yet',
+          sub: 'The website is already counting ' + (unowned.length === 1 ? 'this' : 'these')
+            + ' - the result, the points and every figure worked out from them. It is being '
+            + 'published from the site\u2019s code, so it cannot be edited here and a change '
+            + 'needs a developer. Import it once and it becomes an ordinary match record you '
+            + 'control, with a team sheet and a report. Nothing on the website changes when you do.',
+          actions: '<button class="btn btn--primary" data-import-matches>Import '
+            + esc(unowned.length) + (unowned.length === 1 ? ' match' : ' matches') + '</button>',
+          body: '<ul class="cp-list">' + unowned.map(function (m) {
+            return '<li><b>' + esc(m.home + ' v ' + m.away) + '</b> \u00b7 ' + esc(m.date || '')
+              + (m.competition ? ' \u00b7 ' + esc(m.competition) : '')
+              + ' \u00b7 ' + esc(m.kind === 'walkover'
+                ? 'awarded as a walkover, no goals either way'
+                : (m.hs != null && m.as != null) ? m.hs + '-' + m.as : 'no score recorded')
+              + '</li>';
+          }).join('') + '</ul>',
+        })
+        : '') + (due.length
         ? sec({
           warn: true,
           title: due.length === 1 ? 'A match has been played and not recorded'
@@ -771,6 +828,28 @@
       });
 
       host.addEventListener('click', function (e) {
+        if (e.target.matches('[data-import-matches]')) {
+          if (!guard()) return;
+          e.target.disabled = true;
+          /* ONE AT A TIME, IN ORDER, and the screen only refreshes once every
+             write has landed. A partial import that reported success would
+             leave the club looking at a banner that no longer matches what is
+             stored. */
+          unowned.reduce(function (chain, m) {
+            return chain.then(function () {
+              var rec = {};
+              Object.keys(m).forEach(function (k) { if (k !== 'id') rec[k] = m[k]; });
+              return CP.upsert('matches', m.id, rec);
+            });
+          }, Promise.resolve()).then(function () {
+            toast('Imported. You can add the team sheet and a report here now.');
+            refresh('results');
+          }).catch(function () {
+            e.target.disabled = false;
+            toast('Could not import. Nothing was changed on the website.', 'error');
+          });
+          return;
+        }
         if (e.target.matches('[data-due]')) {
           if (!guard()) return;
           var fid = e.target.getAttribute('data-due');

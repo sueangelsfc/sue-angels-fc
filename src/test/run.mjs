@@ -7778,6 +7778,45 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
       && new RegExp(`\\d+(st|nd|rd|th) in League Eight on ${us8.points} points?`).test(homeText.slice(nextAt, nextAt + 700)),
     homeText.slice(nextAt, nextAt + 300));
 
+  /* BOTH FIGURES, WHILE THEY DIFFER. The transcribed table is a fact about
+     the day it was read; the club's own record can legitimately run ahead of
+     it, because a walkover is awarded before the afternoon it replaces. The
+     front page said "on 18 points" over a record carrying 21. Quoting only
+     one of them is wrong either way, so the sentence names both and says
+     which is which - and the clause has to RETIRE ITSELF when the league
+     publishes the round, or it becomes the site arguing with itself.
+
+     Asked of the shipped sentence, not of the derivation, and conditioned on
+     the data: while the two agree there must be exactly one figure in it. */
+  const { teamSummary: tsL8 } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+  const ownL8 = tsL8((dL.played || []).filter((m) => m.played && m.competition === 'League Eight'));
+  const lastSent = nextAt > -1 ? homeText.slice(nextAt, nextAt + 700) : '';
+  const bothSaid = new RegExp(`in League Eight on ${us8 ? us8.points : -1} points?, ${ownL8.points} on the club.s own record`).test(lastSent);
+  if (us8 && us8.played > 0 && ownL8.points > us8.points) {
+    check('the standing names the published figure and the club\'s own, while they differ',
+      bothSaid, lastSent.slice(0, 220));
+    check('probe: the published figure alone would understate what the club has won',
+      ownL8.points !== us8.points && !new RegExp(`on ${us8.points} points?\\.`).test(lastSent));
+  } else if (us8 && us8.played > 0) {
+    check('the standing carries one figure once the published table has caught up',
+      !/on the club.s own record/.test(lastSent), lastSent.slice(0, 220));
+  }
+
+  /* THE DAY A WALKOVER WAS AWARDED, which is not the day of the match it
+     replaces. Crafted, because `awardedOn` is optional and a check over the
+     record alone passes on a build that never reads the field. */
+  const { normaliseMatch: nmW } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+  const woBase = { id: 'wo-x', date: '22 Nov 2026', home: "Sue's Angels FC", away: 'Craft Town FC', kind: 'walkover', wo: 'H-W' };
+  check('a walkover says the day the league awarded it, where the record holds one',
+    nmW({ ...woBase, awardedOn: '20 Nov 2026' }).resultNote === 'Awarded as a walkover on 20 November 2026');
+  check('and reads exactly as it always has where it does not',
+    nmW(woBase).resultNote === 'Awarded as a walkover'
+      && nmW({ ...woBase, wo: 'A-W', awardedOn: '20 Nov 2026' }).resultNote === 'Conceded as a walkover on 20 November 2026');
+  check('the match keeps its own date, so the fixture it replaces still matches',
+    nmW({ ...woBase, awardedOn: '20 Nov 2026' }).iso === '2026-11-22');
+  check('probe: a date on a match that is not a walkover is not announced',
+    !/awarded/i.test(String(nmW({ id: 'x', date: '22 Nov 2026', home: "Sue's Angels FC", away: 'Craft Town FC', kind: 'score', hs: 1, as: 0, awardedOn: '20 Nov 2026' }).resultNote || '')));
+
   /* LEAGUE EIGHT, PINNED UNDER THE HERO. The club's layout has the table,
      results and fixtures off, so this band is the division on the front page.
      It must come before every band the layout places, carry every club in the division,

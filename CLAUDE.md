@@ -32,7 +32,7 @@ src/
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        5,729-check suite against the generated output
+  test/run.mjs        5,760-check suite against the generated output
   test/dom.mjs        a small, strict DOM that throws rather than guessing
   test/panel-render.mjs  the panel, rendered, and asked what came out
 ```
@@ -848,6 +848,39 @@ scoreline the engine already prints for a walkover. **The panel's own drawer
 has printed W/O all along**, so the two cards disagreed about the same match,
 and the check asks them together because that is the fault rather than either
 card on its own. The three archive walkovers were redrawn with it.
+
+#### The day it was awarded, and the day it replaces
+
+A walkover is settled before the afternoon it stands in for: Brockwell
+Violets could not field a team on the Sunday and the league awarded the
+match on **Friday 20 November**, two days before the 22nd. For those two
+days the site reported a match in the past tense that had not happened yet,
+which reads as a clock that has gone wrong rather than as a result.
+
+- **`awardedOn` is a second fact beside the date, never instead of it.**
+  The match keeps the 22nd, because that is the round it belongs to **and
+  the identity the stored fixture is matched on** - move the date and
+  `matchIdentity()` stops recognising the fixture it replaces, and the
+  cancelled match walks back onto the front page.
+- **It rides in `resultNote`**, so the one sentence the fixture card, the
+  match page and the report band already print is the one that says it, and
+  a record without the field reads exactly as it always has.
+- **Crafted, because the field is optional.** A check over the archive
+  passes on a build that never reads it, so the suite asks `normaliseMatch`
+  directly, both ways round, and probes a non-walkover carrying the field.
+
+#### The published table and the club's own
+
+`d.nextDivisionTable` is transcribed from Full-Time on the day it was read,
+so the club's record is allowed to run ahead of it, and the day this walkover
+landed it did: the front page said **"1st in League Eight on 18 points"**
+over a record carrying **21**. Quoting the club's own figure alone would
+disagree with the table printed four bands below it; quoting the league's
+alone loses points the club has already won. The sentence carries both, each
+named for what it is, **and only while they differ** - when the league
+publishes the round the two meet and the clause disappears with no second
+rule to remember. The check is conditioned the same way, so it asserts the
+single figure once the transcription catches up rather than going red.
 
 ### A walkover is not a match anybody could have played in
 
@@ -2764,7 +2797,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 5,729 checks against the generated output and the rendered panel
+npm test          # 5,760 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

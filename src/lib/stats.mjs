@@ -317,8 +317,17 @@ export function normaliseMatch(raw, detail) {
       : hasScore && played
         ? `${home} ${hs}-${as} ${away}`
         : `${home} v ${away}`,
+    /* THE DAY THE LEAGUE AWARDED IT, WHICH IS NOT THE DAY OF THE MATCH.
+       A walkover is settled before the afternoon it replaces, so for the days
+       in between the site reports a future match in the past tense and reads
+       as a clock that has gone wrong. The match keeps its own date, because
+       that is the round it belongs to and the identity the stored fixture is
+       matched on; this is a second, optional fact beside it, and where the
+       record does not carry it the note reads exactly as it always has. */
+    awardedOn: isWalkover && raw.awardedOn ? raw.awardedOn : '',
     resultNote: isWalkover
-      ? (outcome === 'L' ? 'Conceded as a walkover' : 'Awarded as a walkover')
+      ? `${outcome === 'L' ? 'Conceded as a walkover' : 'Awarded as a walkover'}${
+          raw.awardedOn ? ` on ${fmtDate(raw.awardedOn, { long: true })}` : ''}`
       : isPenalty
         /* NAMED WHERE THE CLUB HAS RECORDED IT. The note said only "Decided
            on penalties" because for a long time the record could not hold a

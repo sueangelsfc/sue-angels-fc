@@ -286,8 +286,23 @@ export function home(d) {
   const l8Rows = l8.rows || [];
   const l8Live = l8Rows.some((r) => (r.played || 0) > 0);
   const usL8 = l8Live ? l8Rows.find((r) => r.us) : null;
+  /* THE PUBLISHED FIGURE AND THE CLUB'S OWN, where they differ.
+     `d.nextDivisionTable` is transcribed from FA Full-Time on the day it was
+     read, and the club's record can legitimately run ahead of it: a walkover
+     is awarded before the afternoon it replaces, so for a week the front page
+     said "on 18 points" over a record carrying 21. Quoting only the club's
+     own would disagree with the table printed four bands below it, and
+     quoting only the league's loses points the club has already won. Both,
+     each named for what it is - AND ONLY WHILE THEY DIFFER: the moment the
+     league publishes the round, the two meet and the clause disappears with
+     no second rule to remember. */
+  const l8Own = teamSummary((d.played || []).filter(
+    (m) => m.played && m.competition === (l8.division || 'League Eight')));
   const standing = usL8
-    ? `${ordinal(usL8.pos)} in ${l8.division} on ${usL8.points} point${usL8.points === 1 ? '' : 's'}`
+    ? `${ordinal(usL8.pos)} in ${l8.division} on ${usL8.points} point${usL8.points === 1 ? '' : 's'}${
+        l8Own.points > usL8.points
+          ? `, ${l8Own.points} on the club's own record`
+          : ''}`
     : '';
   /* The form strip reads left to right in the order the games were played. */
   const form = formGuide(d.competitive, 6).slice().reverse();

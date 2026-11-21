@@ -12,9 +12,10 @@
       "away": "Brockwell Violets FC",
       "kind": "walkover",
       "wo": "H-W",
+      "awardedOn": "20 Nov 2026",
       "competition": "League Eight",
       "venue": "The Reeves Sports Club",
-      "_why": "League Eight matchday seven, at The Reeves. Brockwell Violets could not field a team, so the match was awarded to Sue's Angels: three points and, as the league's arithmetic has it, no goals either way. A walkover counts as played in the club's played column and in nobody's player figures, which is already how the engine reads the other three in the archive."
+      "_why": "League Eight matchday seven, at The Reeves. Brockwell Violets could not field a team, so the match was awarded to Sue's Angels on 20 November, two days before it would have been played: three points and, as the league's arithmetic has it, no goals either way. `awardedOn` is that day and `date` stays on the 22nd, because the 22nd is the round the match belongs to and the identity the stored fixture is matched on. A walkover counts as played in the club's played column and in nobody's player figures, which is already how the engine reads the other three in the archive."
     }
   ]
 }

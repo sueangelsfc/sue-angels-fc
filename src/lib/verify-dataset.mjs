@@ -64,7 +64,7 @@ console.log(`matches with detail records: ${d.matches.filter((m) => m.detail).le
   const rows = l8.rows || [];
   const res = l8.results || [];
   if (rows.length && res.length) {
-    const gaps = compareDivision(rows, res);
+    const gaps = compareDivision(rows, res, l8.tableAsOf);
     console.log(`\n=== ${l8.division || 'NEW DIVISION'} TABLE vs ${res.length} RESULTS (as of ${l8.tableAsOf || 'undated'}) ===`);
     if (gaps.length) {
       fails += gaps.length;

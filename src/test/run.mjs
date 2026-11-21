@@ -7750,8 +7750,8 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
   }
   check('the player stats page leaves pre-season out of its competitions',
     /data-comp-chips/.test(stHtml) && !/Pre-season/.test((stHtml.match(/data-comp-chips[\s\S]*?<\/div>/) || [''])[0]));
-  const { compareDivision: cmpDiv } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
-  const gaps8 = cmpDiv(l8.rows || [], l8.results || []);
+  const { compareDivision: cmpDiv, toISO: toISOL } = await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
+  const gaps8 = cmpDiv(l8.rows || [], l8.results || [], l8.tableAsOf);
   /* COUNTED FROM THE DIVISION, not from a literal: a tenth club joined in
      September and a hard-coded 9 failed a check that had caught nothing. */
   const l8Clubs = (l8.clubs || []).length;
@@ -7762,7 +7762,30 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     cmpDiv((l8.rows || []).map((r) => (r.us ? { ...r, goalsFor: r.goalsFor + 1 } : r)), l8.results || []).length > 0);
   check('probe: a result for a club the table says has not played is caught',
     cmpDiv(l8.rows || [], [...(l8.results || []),
-      { date: '06 Sep 26', home: 'Haydons Park', hs: 1, as: 0, away: 'Barnes Stormers FC' }]).length > 0);
+      { date: '06 Sep 26', home: 'Haydons Park', hs: 1, as: 0, away: 'Barnes Stormers FC' }], l8.tableAsOf).length > 0);
+  /* A RESULT THE LEAGUE HAS PUBLISHED AND ITS TABLE HAS NOT COUNTED. Full-Time
+     put the Brockwell walkover on the results page while the table still read
+     P6, so transcribing what the league published made a correct transcription
+     fail by exactly that match - on a gate that runs inside Vercel's build, so
+     the club could not have published at all. The cut is the day the TABLE was
+     read. Crafted, because the real file has to go on passing the check above
+     whichever way this falls, and the probe is the gate removed. */
+  const ahead8 = [...(l8.results || []),
+    { iso: '2099-01-01', date: '01 Jan 99', home: 'Barnes Stormers FC', away: 'Haydons Park', wo: 'H-W' }];
+  check('a result dated after the table was read is not held against the table',
+    cmpDiv(l8.rows || [], ahead8, l8.tableAsOf).length === 0,
+    cmpDiv(l8.rows || [], ahead8, l8.tableAsOf).join(' | '));
+  check('probe: with no cut, the round the league has not counted yet fails the gate',
+    cmpDiv(l8.rows || [], ahead8).length > 0);
+  /* INCLUSIVE, and that is the half a cut gets wrong. The 15 November round
+     IS in the table read that day, and the results carry a pretty date with
+     no `iso` of their own, so the filter has to parse one. Taking that round
+     out must break the comparison. */
+  const onDay8 = (l8.results || []).filter((r) => (r.iso || toISOL(r.date) || '') === l8.tableAsOf);
+  check('and a result on the day the table was read is still counted',
+    onDay8.length > 0
+      && cmpDiv(l8.rows || [], (l8.results || []).filter((r) => !onDay8.includes(r)), l8.tableAsOf).length > 0,
+    `${onDay8.length} results on ${l8.tableAsOf}`);
 
   /* THE HOME PAGE'S NEXT-MATCH BAND says how the last match went and where it
      left the club, because it is the band the club always shows. */

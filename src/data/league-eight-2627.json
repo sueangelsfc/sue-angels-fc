@@ -23,6 +23,7 @@
     "Barnes Stormers FC"
   ],
   "tableAsOf": "2026-11-15",
+  "resultsAsOf": "2026-11-21",
   "table": [
     {
       "p": 1,
@@ -318,6 +319,16 @@
       "hs": 0,
       "as": 3,
       "away": "Brockwell Violets FC"
+    },
+    {
+      "iso": "2026-11-22",
+      "date": "22 Nov 26",
+      "home": "Sue's Angels FC",
+      "hs": null,
+      "as": null,
+      "away": "Brockwell Violets FC",
+      "wo": "H-W",
+      "_note": "Full-Time's results page prints this as \"Home Walkover  H - W\". Read 21 November 2026. The TABLE published that day still has the club on P6 and 18 points, which is why compareDivision ignores a result dated after tableAsOf: the league publishes a result before it publishes the table that counts it."
     }
   ],
   "_scorersNote": "RE-READ 11 NOVEMBER 2026, AND THE BASIS CHANGED, WHICH MATTERS MORE THAN THE FIGURES. Both views of Full-Time's stat leaders page were sent, Summary and League Only, and the Summary one CANNOT BE CHECKED HERE. Summary counts the league's own cup football as well as the league, and this file holds no results for most of those ties, so the pool `compareScorers` reconciles against is smaller than the figures: merged from Summary, Three Little Birds came to 18 goals against a pool of 13 and Junction Elite to 11 against 10. Neither is a transcription error - both are cup goals with nowhere to be counted - and a check that fails on correct data is a check somebody turns off. League Only is the view the division's own results can answer, so it is the basis now, and every figure read today is a LEAGUE figure. \n\nTHE LIST IS THEREFORE MIXED, deliberately and visibly. Rows read today carry league goals; rows below today's cut still carry whatever the Summary read of 4 October left them, which can only ever be the same or higher. That is the merge rule doing its job rather than a lapse: the page shows 25 rows and the division has more, so replacing the list would delete every scorer below the cut. The reconciliation is what keeps the mixture honest - no club is credited with more than its results say it scored. \n\nTODAY'S CUT FALLS AT SURNAME D IN THE ONE-GOAL GROUP (Drew Daley, row 25), so the league figure of anybody with one goal and a later surname is unreadable. Three men the Summary view shows with goals are left OUT rather than guessed at - Kokulan Thananjeyan 3, Evan Hoblyn 2, Illo Sissoko 2 - because Summary cannot say how many of those were league goals and League Only hides them. Mamadou Barry is the same question answered: Summary gives him one goal and League Only, sorted by surname, would have printed him two rows above Boniface if it were a league goal. It does not, so it was a cup goal, and he is not a league scorer. \n\nMEDDY DESCHAMPS AND SAMUEL SAYER ARE RESTORED. Their rows were deleted on 27 October because their only goals came in the three Pure Football FC 1st Team matches the league expunged. The league put those results back in - the table published on 1 November carries the club and all three - so the goals stand again, at the figures held before the removal. Everybody else the removal touched is read fresh today and corrects itself. \n\nThe division's scorers, spelt as Full-Time prints them. `npm run verify` fails if a club's scorers add up to more goals than its results say it scored. Full-Time lists Drew Daley of Haydons Park with a goal and no appearance, which is its own figure and is kept as printed rather than corrected here. ASSISTS ARE STILL HELD EMPTY in `assisters` at the club's request; what a scorer's own row carries is what the page printed beside him, which is not a complete assist read because the chart is sorted by goals and a man with assists and no goals never appears on it.",

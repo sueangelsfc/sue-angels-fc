@@ -1102,9 +1102,32 @@ export function compareTable(published, derived) {
    results do not mention is compared as a row of noughts: a published zero
    row then passes, and a published row claiming a match nobody transcribed
    fails, which is the typo this exists to catch. One function, called by
-   `npm run verify` and by the suite, so the two cannot drift apart. */
-export function compareDivision(rows, results) {
-  const derived = deriveTable(results || []);
+   `npm run verify` and by the suite, so the two cannot drift apart.
+
+   TWO READINGS OF ONE DIVISION HAVE TO BE OF THE SAME DAY, and Full-Time
+   publishes a result before it publishes the table that counts it. The
+   Brockwell walkover of 22 November was on the results page on the 21st -
+   "Home Walkover H - W" against the club's name - while the table still read
+   P6 and 18 points, so transcribing the result the league had published made
+   a correct transcription fail by exactly that match, on both clubs, and
+   `npm run verify` runs inside Vercel's buildCommand: the club would have
+   been unable to publish anything at all.
+
+   So a result dated after the day the TABLE was read is left out of the
+   comparison. It is not left out of the file, and not out of the site: the
+   round shows under Around League Eight the day the league publishes it,
+   which is the whole point of transcribing it. `asOf` is the pivot the
+   archive check already uses for the same reason. Omit it and nothing is
+   filtered, which is the old behaviour. */
+export function compareDivision(rows, results, asOf = '') {
+  const cut = String(asOf || '').slice(0, 10);
+  const inPlay = cut
+    ? (results || []).filter((r) => {
+        const iso = r.iso || toISO(r.date) || '';
+        return !iso || iso <= cut;
+      })
+    : (results || []);
+  const derived = deriveTable(inPlay);
   const known = new Set(derived.map((r) => r.club));
   const full = derived.concat((rows || []).filter((r) => !known.has(r.club)).map((r) => ({
     club: r.club, played: 0, won: 0, drawn: 0, lost: 0, goalsFor: 0, goalsAgainst: 0, points: 0,

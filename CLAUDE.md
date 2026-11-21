@@ -32,7 +32,7 @@ src/
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        5,760-check suite against the generated output
+  test/run.mjs        5,763-check suite against the generated output
   test/dom.mjs        a small, strict DOM that throws rather than guessing
   test/panel-render.mjs  the panel, rendered, and asked what came out
 ```
@@ -881,6 +881,30 @@ named for what it is, **and only while they differ** - when the league
 publishes the round the two meet and the clause disappears with no second
 rule to remember. The check is conditioned the same way, so it asserts the
 single figure once the transcription catches up rather than going red.
+
+#### A result the league has published and its table has not counted
+
+Full-Time put the walkover on its **results** page - "Home Walkover H - W"
+against the club's name - while the **table** that page feeds still read P6
+and 18 points. So transcribing what the league had published made a correct
+transcription fail by exactly that match, on both clubs, and `compareDivision`
+runs inside `npm run verify`, which runs inside Vercel's `buildCommand`: the
+club would have been unable to publish anything at all.
+
+- **Two readings of one division have to be of the same day**, which this file
+  already wrote down about the club's own rows. `compareDivision` now takes
+  the day the TABLE was read and ignores a result dated after it. The cut is
+  **inclusive**, because the 15 November round IS in the table read that day,
+  and the results carry a pretty date with no `iso` of their own, so it has to
+  parse one.
+- **Nothing is left out of the file or off the site.** The round shows under
+  Around League Eight the day the league publishes it, which is the only
+  reason to transcribe it. `resultsAsOf` records the day that page was read,
+  beside `tableAsOf` for the table.
+- **Crafted, because the real file has to go on passing either way.** The
+  probe is the gate removed; the third check takes the table's own day out of
+  the results and insists the comparison breaks, which is what stops an
+  off-by-one cut from silently ignoring a whole round.
 
 ### A walkover is not a match anybody could have played in
 
@@ -2797,7 +2821,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 5,760 checks against the generated output and the rendered panel
+npm test          # 5,763 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

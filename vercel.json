@@ -20,6 +20,11 @@
   },
   "redirects": [
     {
+      "source": "/news/sundays-match-is-awarded-and-the-points-with-it.html",
+      "destination": "/news/no-game-on-sunday-and-three-points-anyway.html",
+      "permanent": true
+    },
+    {
       "source": "/news/six-from-six-and-the-hard-half-already-played.html",
       "destination": "/news/six-from-six-and-a-third-of-the-season-gone.html",
       "permanent": true
@@ -350,8 +355,14 @@
     {
       "source": "/fixtures.ics",
       "headers": [
-        { "key": "Content-Type", "value": "text/calendar; charset=utf-8" },
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+        {
+          "key": "Content-Type",
+          "value": "text/calendar; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
       ]
     },
     {

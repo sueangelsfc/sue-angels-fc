@@ -19,38 +19,25 @@
     "Junction Elite FC Sunday 3rd Team",
     "Bristol City (London) Supporters",
     "Haydons Park",
-    "Pure Football FC 1st Team",
     "Barnes Stormers FC"
   ],
-  "tableAsOf": "2026-11-15",
+  "tableAsOf": "2026-11-22",
   "resultsAsOf": "2026-11-21",
   "table": [
     {
       "p": 1,
       "c": "Sue's Angels FC",
-      "pl": 6,
-      "w": 6,
+      "pl": 7,
+      "w": 7,
       "d": 0,
       "l": 0,
       "gf": 32,
       "ga": 5,
       "gd": 27,
-      "pts": 18
+      "pts": 21
     },
     {
       "p": 2,
-      "c": "Brockwell Violets FC",
-      "pl": 7,
-      "w": 5,
-      "d": 0,
-      "l": 2,
-      "gf": 14,
-      "ga": 10,
-      "gd": 4,
-      "pts": 15
-    },
-    {
-      "p": 3,
       "c": "Three Little Birds FC",
       "pl": 5,
       "w": 4,
@@ -62,31 +49,31 @@
       "pts": 12
     },
     {
-      "p": 4,
-      "c": "Bristol City (London) Supporters",
-      "pl": 6,
-      "w": 2,
-      "d": 1,
+      "p": 3,
+      "c": "Brockwell Violets FC",
+      "pl": 7,
+      "w": 4,
+      "d": 0,
       "l": 3,
-      "gf": 11,
-      "ga": 15,
-      "gd": -4,
-      "pts": 7
+      "gf": 12,
+      "ga": 10,
+      "gd": 2,
+      "pts": 12
     },
     {
-      "p": 5,
-      "c": "TSM Rovers",
-      "pl": 4,
+      "p": 4,
+      "c": "Bristol City (London) Supporters",
+      "pl": 5,
       "w": 2,
       "d": 0,
-      "l": 2,
-      "gf": 12,
-      "ga": 11,
-      "gd": 1,
+      "l": 3,
+      "gf": 8,
+      "ga": 12,
+      "gd": -4,
       "pts": 6
     },
     {
-      "p": 6,
+      "p": 5,
       "c": "Junction Elite FC Sunday 3rd Team",
       "pl": 6,
       "w": 2,
@@ -96,6 +83,18 @@
       "ga": 15,
       "gd": -7,
       "pts": 6
+    },
+    {
+      "p": 6,
+      "c": "TSM Rovers",
+      "pl": 3,
+      "w": 1,
+      "d": 0,
+      "l": 2,
+      "gf": 8,
+      "ga": 11,
+      "gd": -3,
+      "pts": 3
     },
     {
       "p": 7,
@@ -111,19 +110,6 @@
     },
     {
       "p": 8,
-      "c": "Pure Football FC 1st Team",
-      "pl": 3,
-      "w": 0,
-      "d": 1,
-      "l": 2,
-      "gf": 3,
-      "ga": 9,
-      "gd": -6,
-      "pts": 1,
-      "note": "Have not played since 4 October. The club was reported to have collapsed on 25 October and the league expunged their three results; the table published on 1 November has the club and those three results back in, and the points from them have returned to the clubs that played them. Nothing has been published about the rest of their season."
-    },
-    {
-      "p": 9,
       "c": "Barnes Stormers FC",
       "pl": 5,
       "w": 0,
@@ -270,7 +256,8 @@
       "home": "Pure Football FC 1st Team",
       "hs": 0,
       "as": 4,
-      "away": "TSM Rovers"
+      "away": "TSM Rovers",
+      "expunged": "2026-11-21"
     },
     {
       "date": "20 Sep 26",
@@ -278,7 +265,8 @@
       "home": "Pure Football FC 1st Team",
       "hs": 3,
       "as": 3,
-      "away": "Bristol City (London) Supporters"
+      "away": "Bristol City (London) Supporters",
+      "expunged": "2026-11-21"
     },
     {
       "date": "13 Sep 26",
@@ -286,7 +274,8 @@
       "home": "Brockwell Violets FC",
       "hs": 2,
       "as": 0,
-      "away": "Pure Football FC 1st Team"
+      "away": "Pure Football FC 1st Team",
+      "expunged": "2026-11-21"
     },
     {
       "date": "08 Nov 26",
@@ -596,6 +585,10 @@
     {
       "club": "Mousa Mountain FC",
       "note": "Folded on 17 October 2026 and removed from League Eight by the league. Their fixture at Sue’s Angels on Sunday 18 October was not played, and no points were awarded."
+    },
+    {
+      "club": "Pure Football FC 1st Team",
+      "note": "Expunged from League Eight, with the three matches they had played. The club had not played since 4 October and was reported to have collapsed on 25 October; the league took their results out once, put them back on 1 November, and has now removed the club. The three matches stay in this file marked expunged, because the scorers were read before the removal and their goals are still in those tallies."
     }
   ],
   "_removedNote": "A club the league has taken OUT of the division, named under the table rather than deleted from the page. A removed club is not a row - it has no position and no record to stand on - but a reader who remembers the fixture is owed an explanation, and a table that simply has one fewer club than last week explains nothing. Rendered with the same tableFootnote() that draws a marked row's asterisk, on the three pages that draw the division.",
@@ -647,5 +640,6 @@
       }
     ]
   },
-  "_clubAssistsRetired": "WAS _clubAssists: a hand-kept map of the two assist figures Full-Time counted one short of the club's own records, to be reapplied after every transcription or it reverted in silence. The club's own rows are derived now, so there is nothing to reapply and nothing to forget. Charlie Dunkley and Leon Burnett read 4 each off the records."
+  "_clubAssistsRetired": "WAS _clubAssists: a hand-kept map of the two assist figures Full-Time counted one short of the club's own records, to be reapplied after every transcription or it reverted in silence. The club's own rows are derived now, so there is nothing to reapply and nothing to forget. Charlie Dunkley and Leon Burnett read 4 each off the records.",
+  "_tableProvenance": "THESE ROWS ARE DERIVED FROM THE RESULTS BELOW, NOT TRANSCRIBED, and that is a departure recorded rather than hidden. On 21 November 2026 Full-Time's RESULTS page carried the Brockwell walkover and the club confirmed that Pure Football FC 1st Team had been expunged with their three matches, while the TABLE on the same site still had Pure Football in it and the club on six played and 18 points. The table a reader is shown is therefore the one its own results make, which `npm run verify` reconciles exactly. It goes back to being a transcription the next time the page is read: replace these rows with what Full-Time prints and set tableAsOf to that day. tableAsOf is the last day the rows account for, which is what compareDivision cuts on, and it is the 22nd because the walkover awarded on the 20th belongs to that round. resultsAsOf is the day Full-Time's results page was read."
 }

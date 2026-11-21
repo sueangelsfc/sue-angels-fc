@@ -73,6 +73,12 @@ console.log(`matches with detail records: ${d.matches.filter((m) => m.detail).le
       console.log(`PASS  all ${rows.length} clubs agree with the results`);
     }
   }
+  /* THE SCORERS ARE COMPARED AGAINST THE MATCHES THEY WERE READ OVER, which
+     includes the ones the league has since expunged: those goals are still
+     in the tallies on Full-Time's stat page until it is read again, and
+     taking the matches out of the pool alone would report three clubs as
+     having scored goals no result accounts for. */
+  const scPool = [...res, ...(l8.expunged || [])];
   const sc = l8.scorers || [];
   if (sc.length && res.length) {
     /* THE POOL IS THE DIVISION, BECAUSE THE FIGURES ARE. They were read from
@@ -101,7 +107,7 @@ console.log(`matches with detail records: ${d.matches.filter((m) => m.detail).le
       /* The division alone, the same as the chart rows this measures. */
       cupNames: [],
     });
-    const over = compareScorers(sc, res, cupRows, { club: usName, results: ownRes });
+    const over = compareScorers(sc, scPool, cupRows, { club: usName, results: ownRes });
     console.log(`\n=== ${l8.division || 'NEW DIVISION'} SCORERS vs RESULTS (as of ${l8.scorersAsOf || 'undated'}) ===`);
     /* TWO READINGS OF ONE DIVISION HAVE TO BE OF THE SAME DAY, and when they
        are not this comparison says the wrong thing with total confidence. A

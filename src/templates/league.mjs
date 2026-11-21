@@ -26,7 +26,7 @@ import { esc, attr } from '../lib/html.mjs';
 import { CLUB } from '../lib/club.mjs';
 import { fmtDate, isUs, slugify, positionByRound, ordinal } from '../lib/stats.mjs';
 import { siteFooter, sitePreMain, siteHeader, oppBadge } from './home.mjs';
-import { sourceNote, tableMark, tableFootnote } from '../lib/blocks.mjs';
+import { sourceNote, tableMark, tableFootnote, transcribedScore } from '../lib/blocks.mjs';
 import { leagueUnderway } from '../lib/home-layout.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -435,9 +435,9 @@ export function league(d) {
   /* A bare "-" read as missing data rather than as an awarded tie. The rest
      of the site prints W/O, so this does too. */
   const scoreCell = (r) => {
-    if (r.wo) return '<abbr class="lg-res__wo" title="Awarded as a walkover">W/O</abbr>';
-    const hasScore = Number.isFinite(+r.hs) && Number.isFinite(+r.as);
-    return hasScore ? `${esc(r.hs)}-${esc(r.as)}` : '<span class="lg-res__wo">·</span>';
+    const said = transcribedScore(r);
+    if (said === 'W/O') return '<abbr class="lg-res__wo" title="Awarded as a walkover">W/O</abbr>';
+    return said === '·' ? '<span class="lg-res__wo">·</span>' : esc(said);
   };
 
   const resultRows = (rows) => rows.map((r) => {

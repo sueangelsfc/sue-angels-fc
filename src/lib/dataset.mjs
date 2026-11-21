@@ -1292,6 +1292,19 @@ export function buildDataset(overrides = {}) {
   const nextDivisionTable = (() => {
     const t = read('league-eight-2627.json');
     const forSeason = t.season || latestSeason;
+    /* A MATCH THE LEAGUE HAS STRUCK OFF IS NOT A RESULT ANY MORE, and it is
+       not nothing either. Pure Football FC 1st Team collapsed and the league
+       expunged the club with the three matches it had played, so those three
+       count towards no table, show on no page and are still in the file: the
+       scorers chart was read BEFORE the removal and its tallies include the
+       nine goals scored in them, so comparing it against a pool those matches
+       had been deleted from would report three clubs as having scored goals
+       no result accounts for. Filtered once, here, so every reader of
+       `results` - the table, the page, the round just played, the standing at
+       a match - sees the division as it now is, and `expunged` carries the
+       struck list for the one check that needs it. */
+    const liveResults = (t.results || []).filter((r) => !r.expunged);
+    const expunged = (t.results || []).filter((r) => !!r.expunged);
     const played = competitive.some((m) => m.season === forSeason && isLeague(m));
     /* THE NEW DIVISION'S OWN STANDING, once the league publishes one.
        Transcribed into `table` in the same compact shape as the League Ten
@@ -1368,6 +1381,8 @@ export function buildDataset(overrides = {}) {
     ];
     return {
       ...t,
+      results: liveResults,
+      expunged,
       division: t.division || divisionOf(forSeason),
       started: t.started || played || anyPlayed,
       rows,

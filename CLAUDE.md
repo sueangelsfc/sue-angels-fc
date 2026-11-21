@@ -32,7 +32,7 @@ src/
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        5,763-check suite against the generated output
+  test/run.mjs        5,766-check suite against the generated output
   test/dom.mjs        a small, strict DOM that throws rather than guessing
   test/panel-render.mjs  the panel, rendered, and asked what came out
 ```
@@ -881,6 +881,49 @@ named for what it is, **and only while they differ** - when the league
 publishes the round the two meet and the clause disappears with no second
 rule to remember. The check is conditioned the same way, so it asserts the
 single figure once the transcription catches up rather than going red.
+
+#### A club the league has struck off, and the results with it
+
+Pure Football FC 1st Team had not played since 4 October and was reported to
+have collapsed on the 25th. The league expunged their results once, put them
+back on 1 November, and has now removed the club and the three matches it did
+play. **Those three stay in `league-eight-2627.json`, flagged `expunged`**,
+and `dataset.mjs` filters them out once so every reader of `results` - the
+table, the league page, the round just played, the standing printed on a match
+report - sees the division as it now is.
+
+- **The scorers are compared against the matches they were read over.** Nine
+  goals were scored in those three, by three other clubs' players, and they
+  are still in Full-Time's tallies until that page is read again. Delete the
+  matches from the pool alone and `compareScorers` reports three clubs as
+  having scored goals no result accounts for, which is a correct transcription
+  failing a deploy gate. `expunged` is what that one check adds back.
+- **THE TABLE IS DERIVED HERE, NOT TRANSCRIBED, and the file says so.** On 21
+  November Full-Time's results page carried the walkover and the club
+  confirmed the expungement, while the TABLE on the same site still had Pure
+  Football in it and this club on six played. The rows a reader is shown are
+  the ones the division's own results make, which `npm run verify` reconciles
+  exactly; `_tableProvenance` records the departure and how to end it, which
+  is to paste in what Full-Time prints the next time it is read.
+- **`tableAsOf` is the last day the rows account for**, which is what the cut
+  above compares against, and `resultsAsOf` is the day the results page was
+  read. They are not the same day and conflating them is how the cut would
+  silently drop a round.
+- **The club's own figure and the published one met again on their own.** The
+  front page's "21 on the club's own record" clause retired itself the moment
+  the table carried 21, with nothing to remember, which is what that clause
+  was built to do.
+
+#### A transcribed row carries no score when the league awarded the match
+
+`${r.hs}-${r.as}` on an awarded match is **`null-null`**, and that is what the
+home page's Latest results band printed for the club's own walkover, in the
+largest type in the band. The league page had had this right for a year -
+`scoreCell` tests `r.wo` first - and its rule was its own, which is exactly
+why the other two callers never got it. `transcribedScore()` in `blocks.mjs`
+is the one definition now, returning text because the three callers wrap it
+differently, and the question the suite asks is of **every generated page**
+rather than of the band: a null printed anywhere is the same bug.
 
 #### A result the league has published and its table has not counted
 
@@ -2821,7 +2864,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 5,763 checks against the generated output and the rendered panel
+npm test          # 5,766 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

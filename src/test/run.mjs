@@ -7787,6 +7787,41 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
       && cmpDiv(l8.rows || [], (l8.results || []).filter((r) => !onDay8.includes(r)), l8.tableAsOf).length > 0,
     `${onDay8.length} results on ${l8.tableAsOf}`);
 
+  /* A TRANSCRIBED ROW CARRIES NO SCORE WHEN THE LEAGUE AWARDED THE MATCH, and
+     the home page's Latest results reached straight for `hs` and `as`: the
+     club's own walkover shipped as "null-null" in the largest type in the
+     band. The league page had got this right for a year and its rule was its
+     own, which is how the other two callers never got it. One definition in
+     blocks.mjs now, and the question asked of every page rather than of the
+     band, because a null printed anywhere is the same bug. */
+  const { transcribedScore: tscore } = await import(path.join(ROOT, 'src', 'lib', 'blocks.mjs'));
+  check('a transcribed walkover says W/O, a played match says its score, and neither says null',
+    tscore({ home: 'a', away: 'b', wo: 'H-W' }) === 'W/O'
+      && tscore({ hs: 1, as: 3 }) === '1-3'
+      && tscore({ hs: 0, as: 0 }) === '0-0'
+      && tscore({ hs: null, as: null }) === '·'
+      && tscore({}) === '·' && tscore(null) === '·');
+  check('probe: reading the two score fields straight off an awarded match is the bug',
+    `${({ wo: 'H-W' }).hs}-${({ wo: 'H-W' }).as}` === 'undefined-undefined');
+  const nullish = [...pages.entries()]
+    .filter(([, h]) => /\bnull\s*[-–]\s*null\b|>\s*null\s*</.test(String(h)))
+    .map(([f]) => f);
+  check('no generated page prints a null where a figure belongs',
+    nullish.length === 0, nullish.slice(0, 5).join(', '));
+  /* And the band itself, conditioned on the latest round holding one. */
+  const l8LastIso = (l8.results || []).reduce((b, r) => {
+    const i = r.iso || toISOL(r.date) || '';
+    return i > b ? i : b;
+  }, '');
+  const l8LastWo = (l8.results || []).filter((r) => (r.iso || toISOL(r.date) || '') === l8LastIso && r.wo);
+  if (l8LastWo.length) {
+    const hB0 = String(pages.get('index.html') || '');
+    const l8At0 = hB0.indexOf('id="league-eight"');
+    const l8Band = l8At0 > -1 ? hB0.slice(l8At0, l8At0 + 4000) : '';
+    check('the latest-results band prints the awarded match as W/O',
+      /l8__mid">W\/O</.test(l8Band), l8Band.slice(0, 200));
+  }
+
   /* THE HOME PAGE'S NEXT-MATCH BAND says how the last match went and where it
      left the club, because it is the band the club always shows. */
   const { home: homeTpl } = await import(path.join(ROOT, 'src', 'templates', 'home.mjs'));

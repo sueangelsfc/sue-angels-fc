@@ -40,7 +40,7 @@ import {
 } from '../lib/home-layout.mjs';
 import { preseasonFor, seasonAhead, sameClub, relatedClub, recordOf } from '../lib/preseason.mjs';
 import { reportText, house, plainText, FRIENDLY_NOTE_SHORT, FRIENDLY_NOTE_SET } from '../lib/prose.mjs';
-import { sourceNote, tableMark, tableFootnote } from '../lib/blocks.mjs';
+import { sourceNote, tableMark, tableFootnote, transcribedScore } from '../lib/blocks.mjs';
 /* A cycle (news.mjs imports the shared shell from here) that is safe because
    coverPlate is only called while a page renders, never while either module
    loads. */
@@ -1047,7 +1047,7 @@ export function home(d) {
           ${l8Round.length ? `<div class="l8__card">
             <h3 class="l8__h3">Latest results <span>${esc(dayOf(l8LastDay))}</span></h3>
             <ol class="l8__games">
-              ${l8Round.map((r) => l8Line(r.home, `${r.hs}-${r.as}`, r.away)).join('\n              ')}
+              ${l8Round.map((r) => l8Line(r.home, transcribedScore(r), r.away)).join('\n              ')}
             </ol>
           </div>` : ''}
           ${l8NextRound.length ? `<div class="l8__card">
@@ -1949,7 +1949,7 @@ export function home(d) {
         ${rowList(others.map((r) => ({
     a: `<b>${esc(shortClub(r.home))}</b>`,
     b: esc(r.date || ''),
-    c: `${esc(`${r.hs}-${r.as}`)} <i>${esc(shortClub(r.away))}</i>`,
+    c: `${esc(transcribedScore(r))} <i>${esc(shortClub(r.away))}</i>`,
   })))}
         <p class="psn__note rv">${esc(`The ten most recent of ${otherResults(d).length} the club was not involved in.`)}</p>
       </div>

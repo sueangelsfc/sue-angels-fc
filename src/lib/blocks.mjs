@@ -115,6 +115,25 @@ export function playerCard(p) {
    who hovers gets the answer where they are looking, and the footnote is
    there for everybody who does not hover, which is most people and every
    printed copy. */
+/* WHAT A TRANSCRIBED RESULT'S MIDDLE SAYS. A transcribed row carries `hs`
+   and `as` for a match that was played and NEITHER for one the league
+   awarded, so a template reaching straight for them prints `null-null` - as
+   the home page's Latest results did, in the largest type in the band, for
+   the club's own walkover. Full-Time prints it as "Home Walkover H - W"; the
+   rest of this site prints W/O, which is the scoreline the engine already
+   gives a walkover, so this does too and the two cannot disagree.
+
+   Text, not markup, because the three callers wrap it differently and the
+   fact being settled here is what the row SAYS. A row with no score and no
+   walkover is a result nobody has read yet, which is a dot rather than a
+   guess at nought-nought. */
+export const transcribedScore = (r) => {
+  if (!r) return '·';
+  if (r.wo) return 'W/O';
+  return Number.isFinite(+r.hs) && Number.isFinite(+r.as) && r.hs !== null && r.as !== null
+    ? `${r.hs}-${r.as}` : '·';
+};
+
 export function tableMark(r) {
   return r && r.note
     ? `<abbr class="tbl-mark" title="${attr(`${r.club}: ${r.note}`)}">*</abbr>`

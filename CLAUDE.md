@@ -32,7 +32,7 @@ src/
   admin/*.js          the panel shell and its light modules -> control.js
   admin/lazy/*.js     one module per file, fetched when its panel is first opened
   data/               recovered evidence + runtime config
-  test/run.mjs        5,766-check suite against the generated output
+  test/run.mjs        5,774-check suite against the generated output
   test/dom.mjs        a small, strict DOM that throws rather than guessing
   test/panel-render.mjs  the panel, rendered, and asked what came out
 ```
@@ -869,6 +869,45 @@ which reads as a clock that has gone wrong rather than as a result.
   passes on a build that never reads it, so the suite asks `normaliseMatch`
   directly, both ways round, and probes a non-walkover carrying the field.
 
+#### The division without the clubs that may not finish it
+
+The league has struck Pure Football FC 1st Team's results off once and put
+them back, and on 22 November they are still in the published table on one
+point. So "where would we stand without them" is a real question with no
+answer anywhere on the site, and the obvious way to answer it - deriving the
+table - is the one thing this file refuses, because `table` is a
+TRANSCRIPTION and `npm run verify` reconciles it against the division's own
+results.
+
+- **The published table is untouched.** `table` is what Full-Time prints,
+  and the front page and the programme draw that one and nothing else. The
+  what-if is a `<details>`, closed, on `/league.html`'s Table tab, and the
+  suite asks of **every other generated page** that it is not there - because
+  "the league page only" is a claim about the other 150, and a second set of
+  standings on the front page would be the site inventing a league table.
+- **Named in the data, not tested for in code.** `atRisk.clubs` in
+  `league-eight-2627.json` says which clubs, with the reason beside it;
+  `dataset.mjs` derives `without` from the division's own results with every
+  match those clubs played taken out. Empty the list and the band disappears
+  with no code change, which is what happens the day the league settles it.
+- **Matched on `clubIdentity()`**, not the raw string, or a club spelled two
+  ways across twenty transcribed rows is half-removed, which is the worst of
+  both tables.
+- **AND THE FIRST VERSION OF THE CHECKS WAS A COMPLETE NO-OP.** `l8` in the
+  suite is the DATASET's view, where `atRisk` is already the list of names,
+  and the checks read `l8.atRisk.clubs` - the raw file's shape. Every one of
+  them retired itself on `risk.length === 0`, so deleting the band outright
+  left the suite reporting all 5,773 checks passing. Found by running that
+  exact probe. The list is asserted non-empty before anything is asked of it
+  now, which is the only thing that stops the block going quiet again.
+- **The rows are read off the shipped markup**, never back through `without`:
+  a check that reads its subject through the thing it is checking can only
+  ever agree with it. One row fewer than the published table per club
+  removed, the club in the published table and in no row of this one (both
+  halves, since a what-if that still lists the club has removed nothing), and
+  closed rather than `open`. Four probes: the band undrawn, the removal doing
+  nothing, the band on another page, and nothing at risk.
+
 #### The published table and the club's own
 
 `d.nextDivisionTable` is transcribed from Full-Time on the day it was read,
@@ -882,37 +921,38 @@ publishes the round the two meet and the clause disappears with no second
 rule to remember. The check is conditioned the same way, so it asserts the
 single figure once the transcription catches up rather than going red.
 
-#### A club the league has struck off, and the results with it
+#### A CLUB THE CLUB'S WORD SAID WAS STRUCK OFF, AND THE LEAGUE'S DID NOT
 
 Pure Football FC 1st Team had not played since 4 October and was reported to
-have collapsed on the 25th. The league expunged their results once, put them
-back on 1 November, and has now removed the club and the three matches it did
-play. **Those three stay in `league-eight-2627.json`, flagged `expunged`**,
-and `dataset.mjs` filters them out once so every reader of `results` - the
-table, the league page, the round just played, the standing printed on a match
-report - sees the division as it now is.
+have collapsed on the 25th. The league expunged their results once and put
+them back on 1 November. On 21 November the club reported that they were out
+for good, so the three matches they did play were flagged `expunged`, they
+were moved into `removed`, and **the table was DERIVED rather than
+transcribed** to match - the one time this file has ever let that happen.
 
-- **The scorers are compared against the matches they were read over.** Nine
-  goals were scored in those three, by three other clubs' players, and they
-  are still in Full-Time's tallies until that page is read again. Delete the
-  matches from the pool alone and `compareScorers` reports three clubs as
-  having scored goals no result accounts for, which is a correct transcription
-  failing a deploy gate. `expunged` is what that one check adds back.
-- **THE TABLE IS DERIVED HERE, NOT TRANSCRIBED, and the file says so.** On 21
-  November Full-Time's results page carried the walkover and the club
-  confirmed the expungement, while the TABLE on the same site still had Pure
-  Football in it and this club on six played. The rows a reader is shown are
-  the ones the division's own results make, which `npm run verify` reconciles
-  exactly; `_tableProvenance` records the departure and how to end it, which
-  is to paste in what Full-Time prints the next time it is read.
-- **`tableAsOf` is the last day the rows account for**, which is what the cut
-  above compares against, and `resultsAsOf` is the day the results page was
-  read. They are not the same day and conflating them is how the cut would
-  silently drop a round.
-- **The club's own figure and the published one met again on their own.** The
-  front page's "21 on the club's own record" clause retired itself the moment
-  the table carried 21, with nothing to remember, which is what that clause
-  was built to do.
+**IT WAS WRONG BY THE NEXT MORNING.** Full-Time published the 22 November
+round and Pure Football are still in the division, still eighth, still on one
+point, with all three results counting. So the derived table disagreed with
+the league's own on five rows and the site was publishing a standing nobody
+else had. **A club's report of another club folding is not the league's
+record of it**, and the only thing that settles a transcribed table is
+reading the page it is transcribed from. The rows went back to a
+transcription, the `expunged` flags came off, the club went back into `clubs`
+and out of `removed`, and `_tableProvenance` went with them.
+
+- **What the mechanism itself is worth keeping.** `expunged` on a result, and
+  `dataset.mjs` filtering it out once so every reader of `results` sees the
+  division as it stands, is the right shape for the day the league does act -
+  and so is the half nobody would think of: **the scorers are compared
+  against the matches they were read over.** Nine goals were scored in those
+  three, by three other clubs' players, and they stay in Full-Time's tallies
+  until that page is read again, so `compareScorers` has to see them or a
+  correct transcription fails a deploy gate.
+- **What the site publishes instead** is the what-if, below: the question the
+  club actually had, asked on one page, labelled as not being the table.
+- **`tableAsOf` is the last day the rows account for** and `resultsAsOf` the
+  day the results page was read. They are not the same day and conflating
+  them is how a cut silently drops a round.
 
 #### A transcribed row carries no score when the league awarded the match
 
@@ -2864,7 +2904,7 @@ npm run covers    # redraw the committed share cards (needs a local Chrome)
 npm run visual    # render every page family and panel screen in a headless Chrome
 npm run guard     # refuse to publish output that is broken (the deploy runs this)
 npm run verify    # assert derived stats against the published league table
-npm test          # 5,766 checks against the generated output and the rendered panel
+npm test          # 5,774 checks against the generated output and the rendered panel
 npm run serve     # local preview on :4321
 ```
 

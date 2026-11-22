@@ -591,7 +591,39 @@ export function league(d) {
           </div>${note ? `
           <p class="tbl-foot">${esc(note)}</p>` : ''}` : '');
   const APPS = ['apps', 'Apps', 'Appearances'];
-  const eightExtra = positionChart(next, next.division || d.divisionOf(d.nextSeason))
+  /* ================= THE DIVISION WITHOUT THE CLUBS AT RISK =================
+
+     A WHAT-IF, AND IT SAYS SO IN ITS OWN HEADING. The table above is what
+     Full-Time prints and is the only table this site publishes as the record:
+     the front page and the programme draw that one and nothing else, which is
+     why this lives here and nowhere else. The question it answers is the one
+     the published table cannot: Pure Football have not played since 4 October,
+     the league expunged their results once and put them back, and if it does
+     it again the standings move. A reader who followed that is owed the
+     arithmetic rather than being left to do it.
+
+     Derived from the division's own results, so it cannot disagree with the
+     table above about anything the two share - and `<details>`, closed, so it
+     needs no JavaScript and cannot be mistaken for the standings. */
+  const without = next.without || [];
+  const risk = next.atRisk || [];
+  const whatIf = without.length && risk.length
+    ? `<details class="lg-whatif">
+          <summary class="lg-whatif__s"><b>Without ${esc(risk.map(shortClub).join(' and '))}</b><i>${esc(`a what-if: ${without.length} clubs, those results struck off`)}</i></summary>
+          <p class="lg-note">${esc(next.atRiskNote || '')} This is not the league's table: it is the one the division's own results give with every match ${esc(risk.map(shortClub).join(' and '))} played removed.</p>
+          ${standings(without, `${next.division || d.divisionOf(d.nextSeason)} ${next.season || d.nextSeason} without ${risk.join(' and ')}`)}
+          <p class="lg-note">${esc(`${CLUB.short} would be ${ordinal((without.find((r) => r.us) || {}).pos || 0)} on ${(without.find((r) => r.us) || {}).points || 0} points${(() => {
+    const now = (next.rows || []).find((r) => r.us);
+    const then = without.find((r) => r.us);
+    if (!now || !then) return '';
+    return now.points === then.points && now.pos === then.pos
+      ? ', which is where the published table already has them'
+      : `, against ${ordinal(now.pos)} on ${now.points} in the table as published`;
+  })()}.`)}</p>
+        </details>`
+    : '';
+
+  const eightExtra = whatIf + positionChart(next, next.division || d.divisionOf(d.nextSeason))
     + statTable('Scorers', 'data-l8-scorers', 'scorers', eightScorers, [['goals', 'G', 'Goals'], APPS], next.scorersNote || '')
     + statTable('Assists', 'data-l8-assists', 'assists', next.assisters || [], [['assists', 'A', 'Assists'], APPS])
     + statTable('Goals and assists', 'data-l8-ga', 'goals and assists', next.contributions || [],

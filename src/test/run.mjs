@@ -8002,6 +8002,63 @@ check('outbound links are https and safely targeted', badOutbound.length === 0,
     check('probe: with no chart transcribed the league page draws no scorer table',
       !/data-l8-scorers/.test(panN) && !/data-l8-assists/.test(panN));
   }
+  /* ===== THE DIVISION WITHOUT THE CLUBS AT RISK =====
+
+     A WHAT-IF, AND THE CHECK THAT MATTERS IS WHERE IT IS NOT. The table the
+     site PUBLISHES is the one Full-Time prints, and the front page and the
+     programme draw that one; a second set of standings leaking onto either of
+     them would be the site inventing a league table. So the first two
+     questions are of those two pages, and they go red before the one about
+     the league page does.
+
+     The rows themselves are asked of the shipped markup rather than of
+     `without`, because reading them back through the thing that derived them
+     can only ever agree with it. */
+  {
+    /* `l8` here is the DATASET's view, where `atRisk` is already the list of
+       club names - not the raw file's `{clubs, note}`. The first version read
+       `l8.atRisk.clubs`, got undefined, and every check below retired itself:
+       the band could be deleted outright and the suite reported all 5,773
+       passing. So the list is asserted non-empty before anything is asked of
+       it, which is what stops this whole block going quiet again. */
+    const risk = Array.isArray(l8.atRisk) ? l8.atRisk : ((l8.atRisk && l8.atRisk.clubs) || []);
+    check('the division names at least one club whose results may be struck off',
+      risk.length > 0, JSON.stringify(l8.atRisk || null));
+    const riskIn = (l8.table || []).some((r) => risk.some((c) => String(r.c || r.club || '').includes(c.split(' ')[0])));
+    const wi = (panel8.match(/<details class="lg-whatif"[\s\S]*?<\/details>/) || [''])[0];
+    check('the league page carries the division without the clubs at risk',
+      risk.length === 0 || !!wi, `${risk.length} at risk, ${wi.length} bytes`);
+    check('and it is closed, so it cannot be read as the standings',
+      !/<details class="lg-whatif" open/.test(panel8));
+    check('and it says in its own heading that it is not the league\'s table',
+      risk.length === 0 || (/not the league/i.test(wi) && /what-if/i.test(wi)), wi.slice(0, 0));
+    /* THE AT-RISK CLUB IS IN THE PUBLISHED TABLE AND OUT OF THIS ONE. Both
+       halves: a what-if that still lists the club has removed nothing, and
+       one drawn over a club the league has already struck off would be a
+       second copy of the removal rather than a question about it. */
+    check('the at-risk club is in the published table and in no row of the what-if',
+      risk.length === 0 || (riskIn && risk.every((c) => !new RegExp(c.split(' ')[0], 'i').test(
+        (wi.match(/<tbody>[\s\S]*?<\/tbody>/) || [''])[0]))),
+      `${riskIn ? 'published yes' : 'published NO'}`);
+    /* One row fewer than the published table, exactly. */
+    const rowsIn = (t) => ((t.match(/<tbody>[\s\S]*?<\/tbody>/) || [''])[0].match(/<tr/g) || []).length;
+    const pubT = (panel8.match(/<div class="lg-tablewrap">[\s\S]*?<\/div>/) || [''])[0];
+    check('it is the published table less the clubs at risk, one row each',
+      risk.length === 0 || rowsIn(wi) === rowsIn(pubT) - risk.length,
+      `${rowsIn(wi)} rows against ${rowsIn(pubT)} published`);
+    /* AND IT IS ON THAT TAB AND NOWHERE ELSE. Asked of every generated page,
+       because "the league page only" is a claim about the other 150. */
+    const leaks = [...pages.entries()]
+      .filter(([f, html]) => f !== 'league.html' && /lg-whatif/.test(String(html)))
+      .map(([f]) => f);
+    check('the what-if table is on the league page and on no other page',
+      leaks.length === 0, leaks.slice(0, 5).join(', '));
+    /* PROBE: with nothing at risk the band must go, or every check above
+       passes on a page that always draws it. */
+    const bodyW = String((lgFn({ ...dL, nextDivisionTable: { ...l8, atRisk: [], without: [] } }) || {}).body || '');
+    check('probe: with no club at risk the league page draws no what-if table',
+      !/lg-whatif/.test(bodyW));
+  }
   const { compareScorers: cmpSc, cupResultRows: cupRows, ownChartResults: ownRows } =
     await import(path.join(ROOT, 'src', 'lib', 'stats.mjs'));
   /* THE POOL IS EVERY MATCH FULL-TIME COUNTS, AND IT IS NOT THE LEAGUE ALONE.

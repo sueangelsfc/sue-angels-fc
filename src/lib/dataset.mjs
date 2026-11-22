@@ -17,8 +17,9 @@ import { partnersFrom } from './partners.mjs';
 import { fulltimeLinks } from './fulltime.mjs';
 import { behindTheScenes } from './bts.mjs';
 import { normaliseMatch, normaliseTable, playerStats, slugify, isUs, seasonOf, toISO, isLeague, isCup,
-  isCompetitive, isFriendly, figuresSeason, tableSeasonOf,
+  isCompetitive, isFriendly, figuresSeason, tableSeasonOf, deriveTable,
 } from './stats.mjs';
+import { clubIdentity } from './club-name.mjs';
 
 const DATA_DIR = path.join(process.cwd(), 'src', 'data');
 const read = (f) => JSON.parse(fs.readFileSync(path.join(DATA_DIR, f), 'utf8'));
@@ -1318,6 +1319,25 @@ export function buildDataset(overrides = {}) {
        club is not involved in. */
     const rows = normaliseTable(t.table || []);
     const anyPlayed = rows.some((r) => (r.played || 0) > 0);
+
+    /* THE DIVISION WITHOUT THE CLUBS THAT MAY NOT FINISH IT, which is a
+       what-if and never the record. `table` above is what Full-Time prints,
+       and that is the only table the front page and the programme publish.
+       This is derived from the division's own results with every match
+       involving an at-risk club taken out, for the one question the published
+       table cannot answer: where would the club stand if the league struck
+       those results off. It has already done it once to Pure Football and put
+       them back.
+
+       Matched on `clubIdentity()`, not on the raw string, because a club
+       spelled two ways across twenty transcribed rows would otherwise be
+       half-removed, which is the worst of both tables. */
+    const atRisk = (t.atRisk && t.atRisk.clubs) || [];
+    const riskIds = new Set(atRisk.map((c) => clubIdentity(c)));
+    const without = riskIds.size
+      ? deriveTable(liveResults.filter((r) => !riskIds.has(clubIdentity(r.home))
+        && !riskIds.has(clubIdentity(r.away))))
+      : [];
     /* The division's fixtures still to be played, against the day the site
        is generated, which is the same day d.upcoming is measured against. */
     const now = new Date();
@@ -1383,6 +1403,9 @@ export function buildDataset(overrides = {}) {
       ...t,
       results: liveResults,
       expunged,
+      atRisk,
+      atRiskNote: (t.atRisk && t.atRisk.note) || '',
+      without,
       division: t.division || divisionOf(forSeason),
       started: t.started || played || anyPlayed,
       rows,

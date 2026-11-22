@@ -352,3 +352,23 @@
   .lg-mv__now b{font-size: 28px;}
   .lg-mv__now i{margin-left: 0;}
 }
+
+/* THE DIVISION WITHOUT THE CLUBS AT RISK. A what-if, so it is drawn as a
+   question somebody opens rather than as a second set of standings: closed by
+   default, dashed like .lg-fresh (the page's existing vocabulary for "not the
+   record"), and never the solid panel the published table sits in. */
+.lg-whatif{margin-top: clamp(16px, 2.2vw, 24px); padding: clamp(14px, 1.8vw, 20px);
+  border-radius: 18px; border: 1px dashed var(--line-d);
+  background: rgba(var(--lift), 0.022);}
+.lg-whatif__s{cursor: pointer; list-style: none; display: flex; flex-wrap: wrap;
+  align-items: baseline; gap: 4px 12px;}
+.lg-whatif__s::-webkit-details-marker{display: none;}
+.lg-whatif__s b{font-family: var(--display); font-weight: 400;
+  font-size: clamp(17px, 2vw, 21px); letter-spacing: -0.02em; color: var(--fg);}
+.lg-whatif__s i{font-family: var(--ui); font-style: normal; font-size: 10px;
+  font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-3);}
+.lg-whatif__s:hover b{color: var(--volt-text);}
+.lg-whatif__s:focus-visible{outline: 2px solid var(--volt); outline-offset: 4px;
+  border-radius: 8px;}
+.lg-whatif[open] .lg-whatif__s{margin-bottom: 4px;}
